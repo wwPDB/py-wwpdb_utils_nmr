@@ -132,6 +132,9 @@
 # 14-Oct-2021  M. Yokochi - remove unassigned chemical shifts, clear incompletely assigned spectral peaks (DAOTHER-7389, issue #3)
 # 27-Oct-2021  M. Yokochi - fix collection of unmapped sequences and utilize Auth_asym_ID* tag for chain_id if Entity_assembly_ID* is not available (DAOTHER-7421)
 # 28-Oct-2021  M. Yokochi - resolve case-insensitive saveframe name collision for CIF (DAOTHER-7389, issue #4)
+# 16-Nov-2021  M. Yokochi - fix sequence conflict in case that large sequence gap in CS implies multi chain complex (DAOTHER-7465)
+# 16-Nov-2021  M. Yokochi - fix server crash with dusulfide bond, which is not supported by chemical shifts (DAOTHER-7475)
+# 16-Nov-2021  M. Yokochi - revised error message for malformed XPLOR-NIH RDC restraints (DAOTHER-7478)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -233,6 +236,18 @@ def get_first_sf_tag(sf_data=None, tag=None):
         return ''
 
     return array[0]
+
+def has_large_seq_gap(s1, s2):
+    """ Return whether large gap in sequence id.
+    """
+
+    seq_ids = sorted(set(s1['seq_id']) | set(s2['seq_id']))
+
+    for l, i in enumerate(seq_ids):
+        if l > 0 and i - seq_ids[l - 1] > 20:
+            return True
+
+    return False
 
 def fill_blank_comp_id(s1, s2):
     """ Fill blanked comp ID in s2 against s1.
@@ -697,6 +712,11 @@ def score_of_seq_align(my_align):
                 if myPr0 != '.' and myPr1 == '.'\
                     and offset_1 == 0: # DAOTHER-7421
                     offset_2 += 1
+                if myPr0 == '.' and myPr1 == '.': # DAOTHER-7465
+                    if offset_2 == 0:
+                        offset_1 += 1
+                    if offset_1 == 0:
+                        offset_2 += 1
             unmapped += 1
         elif myPr0 != myPr1:
             conflict += 1
@@ -3556,7 +3576,10 @@ class NmrDpUtility:
             elif type == 'file_list':
                 self.__inputParamDict[name] = [os.path.abspath(f) for f in value]
             elif type == 'file_dict_list':
-                self.__inputParamDict[name] = [{'file_name': os.path.abspath(f['file_name']), 'file_type': f['file_type']} for f in value]
+                if any(f for f in value if 'original_file_name' in f):
+                    self.__inputParamDict[name] = [{'file_name': os.path.abspath(f['file_name']), 'file_type': f['file_type'], 'original_file_name': f['original_file_name']} for f in value]
+                else:
+                    self.__inputParamDict[name] = [{'file_name': os.path.abspath(f['file_name']), 'file_type': f['file_type']} for f in value]
             else:
                 raise ValueError("+NmrDpUtility.addInput() ++ Error  - Unknown input type %s." % type)
 
@@ -3893,6 +3916,8 @@ class NmrDpUtility:
                     input_source.setItemValue('file_name', os.path.basename(ar['file_name']))
                     input_source.setItemValue('file_type', ar['file_type'])
                     input_source.setItemValue('content_type', 'nmr-restraints')
+                    if 'original_file_name' in ar:
+                        input_source.setItemValue('original_file_name', ar['original_file_name'])
 
                     file_path_list_len += 1
 
@@ -6164,6 +6189,10 @@ class NmrDpUtility:
 
                     file_name = input_source_dic['file_name']
                     file_type = input_source_dic['file_type']
+                    if 'original_file_name' in input_source_dic:
+                        original_file_name = input_source_dic['original_file_name']
+                        if file_name != original_file_name:
+                            file_name = '%s (%s)' % (original_file_name, file_name)
 
                     is_aux_amb = file_type == 'nm-aux-amb'
 
@@ -6187,6 +6216,7 @@ class NmrDpUtility:
                     has_dihed_restraint = False
                     has_rdc_restraint = False
                     has_plane_restraint = False
+                    has_rdc_origins = False
 
                     has_coordinate = False
                     has_amb_coord = False
@@ -6206,6 +6236,9 @@ class NmrDpUtility:
                             real_likes = 0
                             names = []
                             resids = []
+
+                            rdc_atom_names = set()
+
                             cs_range_like = False
                             dist_range_like = False
                             dihed_range_like = False
@@ -6271,6 +6304,10 @@ class NmrDpUtility:
                                                 names.append(name)
                                         else:
                                             atom_unlikes += 1
+                                            if name in ('OO', 'X', 'Y', 'Z'):
+                                                rdc_atom_names.add(name)
+                                                if (len(rdc_atom_names) == 4):
+                                                    has_rdc_origins = True
 
                                     elif _t.lower() == 'resid':
                                         try:
@@ -6883,7 +6920,21 @@ class NmrDpUtility:
 
                     elif has_chem_shift and not has_coordinate and not has_amb_inpcrd and not has_dist_restraint and not has_dihed_restraint and not has_rdc_restraint and not has_plane_restraint:
 
-                        if not is_aux_amb:
+                        if has_rdc_origins:
+
+                            hint = 'assign ( resid # and name OO ) ( resid # and name X ) ( resid # and name Y ) ( resid # and name Z ) ( segid $ and resid # and name $ ) ( segid $ and resid # and name $ ) #.# #.#'
+
+                            err = "NMR restraint file (%s) seems to be a malformed XPLOR-NIH RDC restraint file. Tips for XPLOR-NIH RDC restraints: %r pattern must be present in the file. Did you accidentally select the wrong format? Please re-upload the NMR restraint file." % (mr_format_name, hint)
+
+                            self.report.error.appendDescription('content_mismatch', {'file_name': file_name, 'description': err})
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Error  - %s\n" % err)
+
+                            has_chem_shift = False
+
+                        elif not is_aux_amb:
 
                             err = "NMR restraint file (%s) includes assigned chemical shifts. Did you accidentally select the wrong format? Please re-upload the NMR restraint file." % mr_format_name
 
@@ -6907,15 +6958,15 @@ class NmrDpUtility:
                     if not is_aux_amb and not has_chem_shift and not has_dist_restraint and not has_dihed_restraint and not has_rdc_restraint and not has_plane_restraint:
 
                         hint = ""
-                        if file_type in ('nm-res-cns', 'nm-res-xpl'):
+                        if file_type in ('nm-res-cns', 'nm-res-xpl') and not has_rdc_origins:
                             hint = 'assign ( segid $ and resid # and name $ ) ( segid $ and resid # and name $ ) #.# #.# #.#'
                         elif file_type == 'nm-res-amb':
                             hint = '&rst iat=#[,#], r1=#.#, r2=#.#, r3=#.#, r4=#.#, [igr1=#[,#],] [igr2=#[,#],] &end'
 
                         if len(hint) > 0:
-                            hint = ' Tips for %s restraints: ' % mr_format_name + "%r pattern must be present in the file" % hint
+                            hint = ' Tips for %s restraints: ' % mr_format_name + "%r pattern must be present in the file." % hint
 
-                        warn = "Constraint type of the NMR restraint file (%s) could not be identified.%s. Did you accidentally select the wrong format?" % (mr_format_name, hint)
+                        warn = "Constraint type of the NMR restraint file (%s) could not be identified.%s Did you accidentally select the wrong format?" % (mr_format_name, hint)
 
                         self.report.warning.appendDescription('missing_content', {'file_name': file_name, 'description': warn})
                         self.report.setWarning()
@@ -6945,9 +6996,9 @@ class NmrDpUtility:
                         hint = " Tips for AMBER topology: Proper contents starting with '%FLAG ATOM_NAME', '%FLAG RESIDUE_LABEL', and '%FLAG RESIDUE_POINTER' lines must be present in the file"
 
                         if has_coordinate:
-                            hint = " Tips for AMBER coordinates: It should be directory generated by 'ambpdb' command and must not have MODEL/ENDMDL keywords to ensure that AMBER atomic IDs, referred as 'iat' in the AMBER restraint file, are preserved in the file"
+                            hint = " Tips for AMBER coordinates: It should be directory generated by 'ambpdb' command and must not have MODEL/ENDMDL keywords to ensure that AMBER atomic IDs, referred as 'iat' in the AMBER restraint file, are preserved in the file."
 
-                        err = "%r is neither AMBER topology (.prmtop) nor coordinates (.inpcrd.pdb)%s.%s. Did you accidentally select the wrong format? Please re-upload the AMBER topology file." % (file_name, subtype_name, hint)
+                        err = "%r is neither AMBER topology (.prmtop) nor coordinates (.inpcrd.pdb)%s.%s Did you accidentally select the wrong format? Please re-upload the AMBER topology file." % (file_name, subtype_name, hint)
 
                         self.report.error.appendDescription('content_mismatch', {'file_name': file_name, 'description': err})
                         self.report.setError()
@@ -14989,7 +15040,15 @@ class NmrDpUtility:
 
                 result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == ref_chain_id and seq_align['test_chain_id'] == test_chain_id), None)
 
-                nmr2ca[ref_chain_id] = result
+                if ref_chain_id not in nmr2ca:
+                    nmr2ca[ref_chain_id] = []
+
+                complex = {'seq_align': result} # DAOTHER-7465
+
+                if 'unmapped_sequence' in chain_assign:
+                    complex['seq_unmap'] = [unmapped['ref_seq_id'] for unmapped in chain_assign['unmapped_sequence']]
+
+                nmr2ca[ref_chain_id].append(complex)
 
             if self.__star_data_type[fileListId] == 'Loop':
 
@@ -15049,7 +15108,10 @@ class NmrDpUtility:
                     if not chain_id in nmr2ca:
                         continue
 
-                    ca = nmr2ca[chain_id]
+                    ca = next((ca['seq_align'] for ca in nmr2ca[chain_id] if ('seq_unmap' not in ca or (seq_id not in ca['seq_unmap']))), None) # DAOTHER-7465
+
+                    if ca is None:
+                        continue
 
                     cif_chain_id = ca['test_chain_id']
 
@@ -15662,6 +15724,8 @@ class NmrDpUtility:
 
                     chain_id = sc['chain_id']
 
+                    _chain_id = chain_id if file_type == 'nef' else str(self.__nefT.letter_to_int(chain_id))
+
                     cc['chain_id'] = chain_id
 
                     # all atoms
@@ -15734,7 +15798,7 @@ class NmrDpUtility:
 
                                 for j in lp_data:
 
-                                    if j[chain_id_name] != chain_id or j[seq_id_name] != seq_id or j[comp_id_name] != comp_id or j[value_name] in self.empty_value:
+                                    if j[chain_id_name] != _chain_id or j[seq_id_name] != seq_id or j[comp_id_name] != comp_id or j[value_name] in self.empty_value:
                                         continue
 
                                     atom_id = j[atom_id_name]
@@ -15872,7 +15936,7 @@ class NmrDpUtility:
 
                                 for j in lp_data:
 
-                                    if j[chain_id_name] != chain_id or j[seq_id_name] != seq_id or j[comp_id_name] != comp_id or j[value_name] in self.empty_value:
+                                    if j[chain_id_name] != _chain_id or j[seq_id_name] != seq_id or j[comp_id_name] != comp_id or j[value_name] in self.empty_value:
                                         continue
 
                                     atom_id = j[atom_id_name]
@@ -15997,7 +16061,7 @@ class NmrDpUtility:
 
                                 for j in lp_data:
 
-                                    if j[chain_id_name] != chain_id or j[seq_id_name] != seq_id or j[comp_id_name] != comp_id or j[value_name] in self.empty_value:
+                                    if j[chain_id_name] != _chain_id or j[seq_id_name] != seq_id or j[comp_id_name] != comp_id or j[value_name] in self.empty_value:
                                         continue
 
                                     atom_id = j[atom_id_name]
@@ -16111,7 +16175,7 @@ class NmrDpUtility:
 
                                 for j in lp_data:
 
-                                    if j[chain_id_name] != chain_id or j[seq_id_name] != seq_id or j[comp_id_name] != comp_id or j[value_name] in self.empty_value:
+                                    if j[chain_id_name] != _chain_id or j[seq_id_name] != seq_id or j[comp_id_name] != comp_id or j[value_name] in self.empty_value:
                                         continue
 
                                     atom_id = j[atom_id_name]
@@ -16217,7 +16281,7 @@ class NmrDpUtility:
 
                                 for j in lp_data:
 
-                                    if j[chain_id_name] != chain_id or j[seq_id_name] != seq_id or j[comp_id_name] != comp_id or j[value_name] in self.empty_value:
+                                    if j[chain_id_name] != _chain_id or j[seq_id_name] != seq_id or j[comp_id_name] != comp_id or j[value_name] in self.empty_value:
                                         continue
 
                                     atom_id = j[atom_id_name]
@@ -16298,6 +16362,8 @@ class NmrDpUtility:
                 atom_id = i[atom_id_name]
                 value = i[value_name]
 
+                _chain_id = chain_id if file_type == 'nef' else str(self.__nefT.letter_to_int(chain_id))
+
                 if value in self.empty_value:
                     continue
 
@@ -16322,7 +16388,7 @@ class NmrDpUtility:
                 # non-standard residue
                 if self.__get1LetterCode(comp_id) == 'X':
 
-                    neighbor_comp_ids = set(j[comp_id_name] for j in lp_data if j[chain_id_name] == chain_id and abs(j[seq_id_name] - seq_id) < 4 and j[seq_id_name] != seq_id)
+                    neighbor_comp_ids = set(j[comp_id_name] for j in lp_data if j[chain_id_name] == _chain_id and abs(j[seq_id_name] - seq_id) < 4 and j[seq_id_name] != seq_id)
 
                     polypeptide_like = False
 
@@ -16433,6 +16499,8 @@ class NmrDpUtility:
 
                     chain_id = sc['chain_id']
 
+                    _chain_id = chain_id if file_type == 'nef' else str(self.__nefT.letter_to_int(chain_id))
+
                     s = next((s for s in polymer_sequence if s['chain_id'] == chain_id), None)
 
                     if not s is None:
@@ -16451,14 +16519,14 @@ class NmrDpUtility:
 
                                 atom_id = j[atom_id_name]
 
-                                if j[chain_id_name] == chain_id and j[seq_id_name] == seq_id and j[comp_id_name] == comp_id:
+                                if j[chain_id_name] == _chain_id and j[seq_id_name] == seq_id and j[comp_id_name] == comp_id:
                                     if atom_id == 'CA':
                                         ca_chem_shift = j[value_name]
                                     elif atom_id == 'CB':
                                         cb_chem_shift = j[value_name]
 
                                 if ca_chem_shift is None or cb_chem_shift is None:
-                                    if j[chain_id_name] == chain_id and j[seq_id_name] > seq_id:
+                                    if j[chain_id_name] == _chain_id and j[seq_id_name] > seq_id:
                                         break
                                 else:
                                     break
@@ -16510,6 +16578,8 @@ class NmrDpUtility:
 
                     chain_id = sc['chain_id']
 
+                    _chain_id = chain_id if file_type == 'nef' else str(self.__nefT.letter_to_int(chain_id))
+
                     s = next((s for s in polymer_sequence if s['chain_id'] == chain_id), None)
 
                     if not s is None:
@@ -16528,14 +16598,14 @@ class NmrDpUtility:
 
                                 atom_id = j[atom_id_name]
 
-                                if j[chain_id_name] == chain_id and j[seq_id_name] == seq_id and j[comp_id_name] == comp_id:
+                                if j[chain_id_name] == _chain_id and j[seq_id_name] == seq_id and j[comp_id_name] == comp_id:
                                     if atom_id == 'CB':
                                         cb_chem_shift = j[value_name]
                                     elif atom_id == 'CG':
                                         cg_chem_shift = j[value_name]
 
                                 if cb_chem_shift is None or cg_chem_shift is None:
-                                    if j[chain_id_name] == chain_id and j[seq_id_name] > seq_id:
+                                    if j[chain_id_name] == _chain_id and j[seq_id_name] > seq_id:
                                         break
                                 else:
                                     break
@@ -16610,6 +16680,8 @@ class NmrDpUtility:
 
                     chain_id = sc['chain_id']
 
+                    _chain_id = chain_id if file_type == 'nef' else str(self.__nefT.letter_to_int(chain_id))
+
                     s = next((s for s in polymer_sequence if s['chain_id'] == chain_id), None)
 
                     if not s is None:
@@ -16630,7 +16702,7 @@ class NmrDpUtility:
 
                                 atom_id = j[atom_id_name]
 
-                                if j[chain_id_name] == chain_id and j[seq_id_name] == seq_id and j[comp_id_name] == comp_id:
+                                if j[chain_id_name] == _chain_id and j[seq_id_name] == seq_id and j[comp_id_name] == comp_id:
                                     if atom_id == 'CG':
                                         cg_chem_shift = j[value_name]
                                     elif atom_id == 'CD2':
@@ -16641,7 +16713,7 @@ class NmrDpUtility:
                                         ne2_chem_shift = j[value_name]
 
                                 if cg_chem_shift is None or cd2_chem_shift is None or nd1_chem_shift is None or ne2_chem_shift is None:
-                                    if j[chain_id_name] == chain_id and j[seq_id_name] > seq_id:
+                                    if j[chain_id_name] == _chain_id and j[seq_id_name] > seq_id:
                                         break
                                 else:
                                     break
@@ -16713,6 +16785,8 @@ class NmrDpUtility:
 
                     chain_id = sc['chain_id']
 
+                    _chain_id = chain_id if file_type == 'nef' else str(self.__nefT.letter_to_int(chain_id))
+
                     s = next((s for s in polymer_sequence if s['chain_id'] == chain_id), None)
 
                     if not s is None:
@@ -16733,7 +16807,7 @@ class NmrDpUtility:
 
                                     atom_id = j[atom_id_name]
 
-                                    if j[chain_id_name] == chain_id and j[seq_id_name] == seq_id and j[comp_id_name] == comp_id and atom_id.startswith('CG'):
+                                    if j[chain_id_name] == _chain_id and j[seq_id_name] == seq_id and j[comp_id_name] == comp_id and atom_id.startswith('CG'):
 
                                         _atom_id = atom_id
 
@@ -16746,7 +16820,7 @@ class NmrDpUtility:
                                             cg2_chem_shift = j[value_name]
 
                                     if cg1_chem_shift is None or cg2_chem_shift is None:
-                                        if j[chain_id_name] == chain_id and j[seq_id_name] > seq_id:
+                                        if j[chain_id_name] == _chain_id and j[seq_id_name] > seq_id:
                                             break
                                     else:
                                         break
@@ -16824,7 +16898,7 @@ class NmrDpUtility:
 
                                     atom_id = j[atom_id_name]
 
-                                    if j[chain_id_name] == chain_id and j[seq_id_name] == seq_id and j[comp_id_name] == comp_id and atom_id.startswith('CD'):
+                                    if j[chain_id_name] == _chain_id and j[seq_id_name] == seq_id and j[comp_id_name] == comp_id and atom_id.startswith('CD'):
 
                                         _atom_id = atom_id
 
@@ -16837,7 +16911,7 @@ class NmrDpUtility:
                                             cd2_chem_shift = j[value_name]
 
                                     if cd1_chem_shift is None or cd2_chem_shift is None:
-                                        if j[chain_id_name] == chain_id and j[seq_id_name] > seq_id:
+                                        if j[chain_id_name] == _chain_id and j[seq_id_name] > seq_id:
                                             break
                                     else:
                                         break
@@ -16914,12 +16988,12 @@ class NmrDpUtility:
 
                                     atom_id = j[atom_id_name]
 
-                                    if j[chain_id_name] == chain_id and j[seq_id_name] == seq_id and j[comp_id_name] == comp_id:
+                                    if j[chain_id_name] == _chain_id and j[seq_id_name] == seq_id and j[comp_id_name] == comp_id:
                                         if atom_id == 'CD1':
                                             cd1_chem_shift = j[value_name]
 
                                     if cd1_chem_shift is None:
-                                        if j[chain_id_name] == chain_id and j[seq_id_name] > seq_id:
+                                        if j[chain_id_name] == _chain_id and j[seq_id_name] > seq_id:
                                             break
                                     else:
                                         break
@@ -16998,6 +17072,8 @@ class NmrDpUtility:
 
                     chain_id = sc['chain_id']
 
+                    _chain_id = chain_id if file_type == 'nef' else str(self.__nefT.letter_to_int(chain_id))
+
                     s = next((s for s in polymer_sequence if s['chain_id'] == chain_id), None)
 
                     if not s is None:
@@ -17030,7 +17106,7 @@ class NmrDpUtility:
 
                             for j in lp_data:
 
-                                if j[chain_id_name] != chain_id or j[seq_id_name] != seq_id or j[comp_id_name] != comp_id or j[value_name] in self.empty_value:
+                                if j[chain_id_name] != _chain_id or j[seq_id_name] != seq_id or j[comp_id_name] != comp_id or j[value_name] in self.empty_value:
                                     continue
 
                                 atom_id = j[atom_id_name]
@@ -17069,14 +17145,14 @@ class NmrDpUtility:
 
                                         atom_id = j[atom_id_name]
 
-                                        if j[chain_id_name] == chain_id and j[seq_id_name] == seq_id and j[comp_id_name] == comp_id:
+                                        if j[chain_id_name] == _chain_id and j[seq_id_name] == seq_id and j[comp_id_name] == comp_id:
                                             if atom_id == 'CA':
                                                 ca_chem_shift = j[value_name]
                                             elif atom_id == 'CB':
                                                 cb_chem_shift = j[value_name]
 
                                         if ca_chem_shift is None or cb_chem_shift is None:
-                                            if j[chain_id_name] == chain_id and j[seq_id_name] > seq_id:
+                                            if j[chain_id_name] == _chain_id and j[seq_id_name] > seq_id:
                                                 break
                                         else:
                                             break
@@ -21720,6 +21796,29 @@ class NmrDpUtility:
                 _s1 = s1 if offset_1 == 0 else fill_blank_comp_id_with_offset(s1, offset_1)
                 _s2 = s2 if offset_2 == 0 else fill_blank_comp_id_with_offset(s2, offset_2)
 
+                if conflict > 0 and has_large_seq_gap(_s1, _s2): # DAOTHER-7465
+                    __s1 = fill_blank_comp_id(_s2, _s1)
+                    __s2 = fill_blank_comp_id(_s1, _s2)
+                    _s1_ = __s1
+                    _s2_ = __s2
+
+                    self.__pA.setReferenceSequence(_s1_['comp_id'], 'REF' + chain_id)
+                    self.__pA.addTestSequence(_s2_['comp_id'], chain_id)
+                    self.__pA.doAlign()
+
+                    myAlign = self.__pA.getAlignment(chain_id)
+
+                    length = len(myAlign)
+
+                    _matched, unmapped, _conflict, _offset_1, _offset_2 = score_of_seq_align(myAlign)
+
+                    if _conflict == 0 and len(__s2['comp_id']) - len(s2['comp_id']) == conflict:
+                        conflict = 0
+                        offset_1 = _offset_1
+                        offset_2 = _offset_2
+                        _s1 = __s1
+                        _s2 = __s2
+
                 ref_length = len(s1['seq_id'])
 
                 ref_code = self.__get1LetterCodeSequence(_s1['comp_id'])
@@ -21814,6 +21913,29 @@ class NmrDpUtility:
 
                 _s1 = s1 if offset_1 == 0 else fill_blank_comp_id_with_offset(s1, offset_1)
                 _s2 = s2 if offset_2 == 0 else fill_blank_comp_id_with_offset(s2, offset_2)
+
+                if conflict > 0 and has_large_seq_gap(_s1, _s2): # DAOTHER-7465
+                    __s1 = fill_blank_comp_id(_s2, _s1)
+                    __s2 = fill_blank_comp_id(_s1, _s2)
+                    _s1_ = __s1
+                    _s2_ = __s2
+
+                    self.__pA.setReferenceSequence(_s1_['comp_id'], 'REF' + chain_id)
+                    self.__pA.addTestSequence(_s2_['comp_id'], chain_id)
+                    self.__pA.doAlign()
+
+                    myAlign = self.__pA.getAlignment(chain_id)
+
+                    length = len(myAlign)
+
+                    _matched, unmapped, _conflict, _offset_1, _offset_2 = score_of_seq_align(myAlign)
+
+                    if _conflict == 0 and len(__s1['comp_id']) - len(s1['comp_id']) == conflict:
+                        conflict = 0
+                        offset_1 = _offset_1
+                        offset_2 = _offset_2
+                        _s1 = __s1
+                        _s2 = __s2
 
                 ref_length = len(s1['seq_id'])
 
@@ -22017,6 +22139,31 @@ class NmrDpUtility:
                     myAlign = self.__pA.getAlignment(chain_id)
 
                     length = len(myAlign)
+
+                    _matched, unmapped, conflict, offset_1, offset_2 = score_of_seq_align(myAlign)
+
+                    _s1 = s1 if offset_1 == 0 else fill_blank_comp_id_with_offset(s1, offset_1)
+                    _s2 = s2 if offset_2 == 0 else fill_blank_comp_id_with_offset(s2, offset_2)
+
+                    if conflict > 0 and has_large_seq_gap(_s1, _s2): # DAOTHER-7465
+                        __s1 = fill_blank_comp_id(_s2, _s1)
+                        __s2 = fill_blank_comp_id(_s1, _s2)
+                        _s1 = __s1
+                        _s2 = __s2
+
+                        self.__pA.setReferenceSequence(_s1['comp_id'], 'REF' + chain_id)
+                        self.__pA.addTestSequence(_s2['comp_id'], chain_id)
+                        self.__pA.doAlign()
+
+                        myAlign = self.__pA.getAlignment(chain_id)
+
+                        length = len(myAlign)
+
+                        _matched, unmapped, _conflict, _, _ = score_of_seq_align(myAlign)
+
+                        if _conflict == 0 and len(__s2['comp_id']) - len(s2['comp_id']) == conflict:
+                            result['conflict'] = 0
+                            s2 = __s2
 
                     ref_code = self.__get1LetterCodeSequence(s1['comp_id'])
                     test_code = self.__get1LetterCodeSequence(s2['comp_id'])
@@ -22350,6 +22497,31 @@ class NmrDpUtility:
 
                     length = len(myAlign)
 
+                    _matched, unmapped, conflict, offset_1, offset_2 = score_of_seq_align(myAlign)
+
+                    _s1 = s1 if offset_1 == 0 else fill_blank_comp_id_with_offset(s1, offset_1)
+                    _s2 = s2 if offset_2 == 0 else fill_blank_comp_id_with_offset(s2, offset_2)
+
+                    if conflict > 0 and has_large_seq_gap(_s1, _s2): # DAOTHER-7465
+                        __s1 = fill_blank_comp_id(_s2, _s1)
+                        __s2 = fill_blank_comp_id(_s1, _s2)
+                        _s1 = __s1
+                        _s2 = __s2
+
+                        self.__pA.setReferenceSequence(_s1['comp_id'], 'REF' + chain_id)
+                        self.__pA.addTestSequence(_s2['comp_id'], chain_id)
+                        self.__pA.doAlign()
+
+                        myAlign = self.__pA.getAlignment(chain_id)
+
+                        length = len(myAlign)
+
+                        _matched, unmapped, _conflict, _, _ = score_of_seq_align(myAlign)
+
+                        if _conflict == 0 and len(__s1['comp_id']) - len(s1['comp_id']) == conflict:
+                            result['conflict'] = 0
+                            s1 = __s1
+
                     if result['unmapped'] > 0 or result['conflict'] > 0:
 
                         aligned = [True] * length
@@ -22590,7 +22762,7 @@ class NmrDpUtility:
                                     _result['mid_code'] = get_middle_code(_ref_code, _test_code)
 
                                     offset_2 += 1
-i                               """
+                                """
                         if len(unmapped) > 0:
                             chain_assign['unmapped_sequence'] = unmapped
 
@@ -22746,7 +22918,15 @@ i                               """
 
                 result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == ref_chain_id and seq_align['test_chain_id'] == test_chain_id), None)
 
-                nmr2ca[ref_chain_id] = result
+                if ref_chain_id not in nmr2ca:
+                    nmr2ca[ref_chain_id] = []
+
+                complex = {'seq_align': result} # DAOTHER-7465
+
+                if 'unmapped_sequence' in chain_assign:
+                    complex['seq_unmap'] = [unmapped['ref_seq_id'] for unmapped in chain_assign['unmapped_sequence']]
+
+                nmr2ca[ref_chain_id].append(complex)
 
             if nmr_input_source_dic['content_subtype'] is None:
                 continue
@@ -22960,7 +23140,10 @@ i                               """
                 if not chain_id in nmr2ca:
                     continue
 
-                ca = nmr2ca[chain_id]
+                ca = next((ca['seq_align'] for ca in nmr2ca[chain_id] if ('seq_unmap' not in ca or (seq_id not in ca['seq_unmap']))), None) # DAOTHER-7465
+
+                if ca is None:
+                    continue
 
                 cif_chain_id = ca['test_chain_id']
 
@@ -24969,6 +25152,9 @@ i                               """
                 disulf['comp_id_2'] = sc['ptnr2_label_comp_id']
                 disulf['atom_id_2'] = sc['ptnr2_label_atom_id']
                 disulf['distance_value'] = sc['pdbx_dist_value']
+                # DAOTHER-7475
+                disulf['warning_description_1'] = None
+                disulf['warning_description_2'] = None
                 asm.append(disulf)
 
             if len(asm) > 0:
@@ -25339,6 +25525,9 @@ i                               """
                 other['comp_id_2'] = sc['ptnr2_label_comp_id']
                 other['atom_id_2'] = sc['ptnr2_label_atom_id']
                 other['distance_value'] = sc['pdbx_dist_value']
+                # DAOTHER-7475
+                other['warning_description_1'] = None
+                other['warning_description_2'] = None
                 asm.append(other)
 
             if len(asm) > 0:

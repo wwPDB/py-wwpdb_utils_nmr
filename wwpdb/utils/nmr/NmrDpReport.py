@@ -52,6 +52,7 @@
 # 13-Oct-2021  M. Yokochi - code revision according to PEP8 using Pylint (DAOTHER-7389, issue #5)
 # 14-Oct-2021  M. Yokochi - add 'incompletely_ssigned_chemical_shift' and 'incompletely_assigned_spectral_peak' (DAOTHER-7389, issue #3)
 # 28-Oct-2021  M. Yokochi - add 'corrected_saveframe_name' warning (DAOTHER-7389, issue #4)
+# 16-Nov-2021  M. Yokochi - revised error message for malformed XPLOR-NIH RDC restraints (DAOTHER-7478)
 ##
 """ Wrapper class for data processing report of NMR data.
     @author: Masashi Yokochi
@@ -1659,7 +1660,7 @@ class NmrDpReportInputSource:
     """
 
     def __init__(self):
-        self.items = ('file_name', 'file_type', 'content_type', 'content_subtype',
+        self.items = ('file_name', 'file_type', 'original_file_name', 'content_type', 'content_subtype',
                       'polymer_sequence', 'polymer_sequence_in_loop',
                       'non_standard_residue', 'disulfide_bond', 'other_bond',
                       'stats_of_exptl_data')

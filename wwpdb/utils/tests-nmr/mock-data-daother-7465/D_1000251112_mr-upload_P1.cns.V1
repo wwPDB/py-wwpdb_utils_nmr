@@ -1,0 +1,275 @@
+!
+! ACO file produced by PDBStat [5.19-exp jueves, 22 de noviembre de 2018, 20:32:59 UTC] 
+!
+   assign (segid  A and resid  10 and name C   )   (segid  A and resid  11 and name N   )
+          (segid  A and resid  11 and name CA  )   (segid  A and resid  11 and name C   )   1.0   -71.350   32.350   2 
+   assign (segid  A and resid  11 and name N   )   (segid  A and resid  11 and name CA  )
+          (segid  A and resid  11 and name C   )   (segid  A and resid  12 and name N   )   1.0   143.550   37.350   2 
+   assign (segid  A and resid  12 and name C   )   (segid  A and resid  13 and name N   )
+          (segid  A and resid  13 and name CA  )   (segid  A and resid  13 and name C   )   1.0   -92.450   46.950   2 
+   assign (segid  A and resid  13 and name N   )   (segid  A and resid  13 and name CA  )
+          (segid  A and resid  13 and name C   )   (segid  A and resid  14 and name N   )   1.0   140.450   25.850   2 
+   assign (segid  A and resid  13 and name C   )   (segid  A and resid  14 and name N   )
+          (segid  A and resid  14 and name CA  )   (segid  A and resid  14 and name C   )   1.0   -72.700   20.000   2 
+   assign (segid  A and resid  14 and name N   )   (segid  A and resid  14 and name CA  )
+          (segid  A and resid  14 and name C   )   (segid  A and resid  15 and name N   )   1.0   155.600   31.900   2 
+   assign (segid  A and resid  14 and name C   )   (segid  A and resid  15 and name N   )
+          (segid  A and resid  15 and name CA  )   (segid  A and resid  15 and name C   )   1.0   -59.000   20.000   2 
+   assign (segid  A and resid  15 and name N   )   (segid  A and resid  15 and name CA  )
+          (segid  A and resid  15 and name C   )   (segid  A and resid  16 and name N   )   1.0   -37.500   20.000   2 
+   assign (segid  A and resid  15 and name C   )   (segid  A and resid  16 and name N   )
+          (segid  A and resid  16 and name CA  )   (segid  A and resid  16 and name C   )   1.0   -66.300   20.000   2 
+   assign (segid  A and resid  16 and name N   )   (segid  A and resid  16 and name CA  )
+          (segid  A and resid  16 and name C   )   (segid  A and resid  17 and name N   )   1.0   -42.400   20.000   2 
+   assign (segid  A and resid  16 and name C   )   (segid  A and resid  17 and name N   )
+          (segid  A and resid  17 and name CA  )   (segid  A and resid  17 and name C   )   1.0   -67.000   20.000   2 
+   assign (segid  A and resid  17 and name N   )   (segid  A and resid  17 and name CA  )
+          (segid  A and resid  17 and name C   )   (segid  A and resid  18 and name N   )   1.0   -39.700   20.000   2 
+   assign (segid  A and resid  17 and name C   )   (segid  A and resid  18 and name N   )
+          (segid  A and resid  18 and name CA  )   (segid  A and resid  18 and name C   )   1.0   -62.900   20.000   2 
+   assign (segid  A and resid  18 and name N   )   (segid  A and resid  18 and name CA  )
+          (segid  A and resid  18 and name C   )   (segid  A and resid  19 and name N   )   1.0   -42.400   20.000   2 
+   assign (segid  A and resid  18 and name C   )   (segid  A and resid  19 and name N   )
+          (segid  A and resid  19 and name CA  )   (segid  A and resid  19 and name C   )   1.0   -64.700   20.000   2 
+   assign (segid  A and resid  19 and name N   )   (segid  A and resid  19 and name CA  )
+          (segid  A and resid  19 and name C   )   (segid  A and resid  20 and name N   )   1.0   -40.500   20.000   2 
+   assign (segid  A and resid  19 and name C   )   (segid  A and resid  20 and name N   )
+          (segid  A and resid  20 and name CA  )   (segid  A and resid  20 and name C   )   1.0   -65.100   20.000   2 
+   assign (segid  A and resid  20 and name N   )   (segid  A and resid  20 and name CA  )
+          (segid  A and resid  20 and name C   )   (segid  A and resid  21 and name N   )   1.0   -41.400   20.000   2 
+   assign (segid  A and resid  20 and name C   )   (segid  A and resid  21 and name N   )
+          (segid  A and resid  21 and name CA  )   (segid  A and resid  21 and name C   )   1.0   -66.900   20.000   2 
+   assign (segid  A and resid  21 and name N   )   (segid  A and resid  21 and name CA  )
+          (segid  A and resid  21 and name C   )   (segid  A and resid  22 and name N   )   1.0   -38.700   20.000   2 
+   assign (segid  A and resid  21 and name C   )   (segid  A and resid  22 and name N   )
+          (segid  A and resid  22 and name CA  )   (segid  A and resid  22 and name C   )   1.0   -64.700   20.000   2 
+   assign (segid  A and resid  22 and name N   )   (segid  A and resid  22 and name CA  )
+          (segid  A and resid  22 and name C   )   (segid  A and resid  23 and name N   )   1.0   -41.300   20.000   2 
+   assign (segid  A and resid  22 and name C   )   (segid  A and resid  23 and name N   )
+          (segid  A and resid  23 and name CA  )   (segid  A and resid  23 and name C   )   1.0   -64.700   20.000   2 
+   assign (segid  A and resid  23 and name N   )   (segid  A and resid  23 and name CA  )
+          (segid  A and resid  23 and name C   )   (segid  A and resid  24 and name N   )   1.0   -41.300   20.000   2 
+   assign (segid  A and resid  23 and name C   )   (segid  A and resid  24 and name N   )
+          (segid  A and resid  24 and name CA  )   (segid  A and resid  24 and name C   )   1.0   -65.000   20.000   2 
+   assign (segid  A and resid  24 and name N   )   (segid  A and resid  24 and name CA  )
+          (segid  A and resid  24 and name C   )   (segid  A and resid  25 and name N   )   1.0   -38.800   20.000   2 
+   assign (segid  A and resid  24 and name C   )   (segid  A and resid  25 and name N   )
+          (segid  A and resid  25 and name CA  )   (segid  A and resid  25 and name C   )   1.0   -64.800   20.000   2 
+   assign (segid  A and resid  25 and name N   )   (segid  A and resid  25 and name CA  )
+          (segid  A and resid  25 and name C   )   (segid  A and resid  26 and name N   )   1.0   -42.200   20.000   2 
+   assign (segid  A and resid  25 and name C   )   (segid  A and resid  26 and name N   )
+          (segid  A and resid  26 and name CA  )   (segid  A and resid  26 and name C   )   1.0   -65.100   20.000   2 
+   assign (segid  A and resid  26 and name N   )   (segid  A and resid  26 and name CA  )
+          (segid  A and resid  26 and name C   )   (segid  A and resid  27 and name N   )   1.0   -41.400   20.000   2 
+   assign (segid  A and resid  26 and name C   )   (segid  A and resid  27 and name N   )
+          (segid  A and resid  27 and name CA  )   (segid  A and resid  27 and name C   )   1.0   -64.800   20.000   2 
+   assign (segid  A and resid  27 and name N   )   (segid  A and resid  27 and name CA  )
+          (segid  A and resid  27 and name C   )   (segid  A and resid  28 and name N   )   1.0   -41.800   20.000   2 
+   assign (segid  A and resid  27 and name C   )   (segid  A and resid  28 and name N   )
+          (segid  A and resid  28 and name CA  )   (segid  A and resid  28 and name C   )   1.0   -65.300   20.000   2 
+   assign (segid  A and resid  28 and name N   )   (segid  A and resid  28 and name CA  )
+          (segid  A and resid  28 and name C   )   (segid  A and resid  29 and name N   )   1.0   -44.000   20.000   2 
+   assign (segid  A and resid  28 and name C   )   (segid  A and resid  29 and name N   )
+          (segid  A and resid  29 and name CA  )   (segid  A and resid  29 and name C   )   1.0   -63.600   20.000   2 
+   assign (segid  A and resid  29 and name N   )   (segid  A and resid  29 and name CA  )
+          (segid  A and resid  29 and name C   )   (segid  A and resid  30 and name N   )   1.0   -41.900   20.000   2 
+   assign (segid  A and resid  29 and name C   )   (segid  A and resid  30 and name N   )
+          (segid  A and resid  30 and name CA  )   (segid  A and resid  30 and name C   )   1.0   -65.500   20.000   2 
+   assign (segid  A and resid  30 and name N   )   (segid  A and resid  30 and name CA  )
+          (segid  A and resid  30 and name C   )   (segid  A and resid  31 and name N   )   1.0   -42.400   20.000   2 
+   assign (segid  A and resid  30 and name C   )   (segid  A and resid  31 and name N   )
+          (segid  A and resid  31 and name CA  )   (segid  A and resid  31 and name C   )   1.0   -66.200   20.000   2 
+   assign (segid  A and resid  31 and name N   )   (segid  A and resid  31 and name CA  )
+          (segid  A and resid  31 and name C   )   (segid  A and resid  32 and name N   )   1.0   -39.600   20.000   2 
+   assign (segid  A and resid  31 and name C   )   (segid  A and resid  32 and name N   )
+          (segid  A and resid  32 and name CA  )   (segid  A and resid  32 and name C   )   1.0   -63.000   20.000   2 
+   assign (segid  A and resid  32 and name N   )   (segid  A and resid  32 and name CA  )
+          (segid  A and resid  32 and name C   )   (segid  A and resid  33 and name N   )   1.0   -44.600   20.000   2 
+   assign (segid  A and resid  32 and name C   )   (segid  A and resid  33 and name N   )
+          (segid  A and resid  33 and name CA  )   (segid  A and resid  33 and name C   )   1.0   -64.900   20.000   2 
+   assign (segid  A and resid  33 and name N   )   (segid  A and resid  33 and name CA  )
+          (segid  A and resid  33 and name C   )   (segid  A and resid  34 and name N   )   1.0   -38.800   20.000   2 
+   assign (segid  A and resid  33 and name C   )   (segid  A and resid  34 and name N   )
+          (segid  A and resid  34 and name CA  )   (segid  A and resid  34 and name C   )   1.0   -65.600   20.000   2 
+   assign (segid  A and resid  34 and name N   )   (segid  A and resid  34 and name CA  )
+          (segid  A and resid  34 and name C   )   (segid  A and resid  35 and name N   )   1.0   -42.700   20.000   2 
+   assign (segid  A and resid  34 and name C   )   (segid  A and resid  35 and name N   )
+          (segid  A and resid  35 and name CA  )   (segid  A and resid  35 and name C   )   1.0   -63.500   20.000   2 
+   assign (segid  A and resid  35 and name N   )   (segid  A and resid  35 and name CA  )
+          (segid  A and resid  35 and name C   )   (segid  A and resid  36 and name N   )   1.0   -42.300   20.000   2 
+   assign (segid  A and resid  35 and name C   )   (segid  A and resid  36 and name N   )
+          (segid  A and resid  36 and name CA  )   (segid  A and resid  36 and name C   )   1.0   -64.000   20.000   2 
+   assign (segid  A and resid  36 and name N   )   (segid  A and resid  36 and name CA  )
+          (segid  A and resid  36 and name C   )   (segid  A and resid  37 and name N   )   1.0   -40.500   20.000   2 
+   assign (segid  A and resid  36 and name C   )   (segid  A and resid  37 and name N   )
+          (segid  A and resid  37 and name CA  )   (segid  A and resid  37 and name C   )   1.0   -65.100   20.000   2 
+   assign (segid  A and resid  37 and name N   )   (segid  A and resid  37 and name CA  )
+          (segid  A and resid  37 and name C   )   (segid  A and resid  38 and name N   )   1.0   -39.900   20.000   2 
+   assign (segid  A and resid  37 and name C   )   (segid  A and resid  38 and name N   )
+          (segid  A and resid  38 and name CA  )   (segid  A and resid  38 and name C   )   1.0   -66.600   20.000   2 
+   assign (segid  A and resid  38 and name N   )   (segid  A and resid  38 and name CA  )
+          (segid  A and resid  38 and name C   )   (segid  A and resid  39 and name N   )   1.0   -43.400   20.000   2 
+   assign (segid  A and resid  38 and name C   )   (segid  A and resid  39 and name N   )
+          (segid  A and resid  39 and name CA  )   (segid  A and resid  39 and name C   )   1.0   -65.500   20.000   2 
+   assign (segid  A and resid  39 and name N   )   (segid  A and resid  39 and name CA  )
+          (segid  A and resid  39 and name C   )   (segid  A and resid  40 and name N   )   1.0   -40.600   20.000   2 
+   assign (segid  A and resid  39 and name C   )   (segid  A and resid  40 and name N   )
+          (segid  A and resid  40 and name CA  )   (segid  A and resid  40 and name C   )   1.0   -67.400   20.000   2 
+   assign (segid  A and resid  40 and name N   )   (segid  A and resid  40 and name CA  )
+          (segid  A and resid  40 and name C   )   (segid  A and resid  41 and name N   )   1.0   -34.900   20.000   2 
+   assign (segid  A and resid  40 and name C   )   (segid  A and resid  41 and name N   )
+          (segid  A and resid  41 and name CA  )   (segid  A and resid  41 and name C   )   1.0   -73.800   20.000   2 
+   assign (segid  A and resid  41 and name N   )   (segid  A and resid  41 and name CA  )
+          (segid  A and resid  41 and name C   )   (segid  A and resid  42 and name N   )   1.0   -23.900   20.000   2 
+   assign (segid  B and resid 108 and name C   )   (segid  B and resid 109 and name N   )
+          (segid  B and resid 109 and name CA  )   (segid  B and resid 109 and name C   )   1.0   -80.650   35.250   2 
+   assign (segid  B and resid 109 and name N   )   (segid  B and resid 109 and name CA  )
+          (segid  B and resid 109 and name C   )   (segid  B and resid 110 and name N   )   1.0   132.350   28.650   2 
+   assign (segid  B and resid 109 and name C   )   (segid  B and resid 110 and name N   )
+          (segid  B and resid 110 and name CA  )   (segid  B and resid 110 and name C   )   1.0   -72.500   20.000   2 
+   assign (segid  B and resid 110 and name N   )   (segid  B and resid 110 and name CA  )
+          (segid  B and resid 110 and name C   )   (segid  B and resid 111 and name N   )   1.0   160.200   20.000   2 
+   assign (segid  B and resid 110 and name C   )   (segid  B and resid 111 and name N   )
+          (segid  B and resid 111 and name CA  )   (segid  B and resid 111 and name C   )   1.0   -58.600   20.000   2 
+   assign (segid  B and resid 111 and name N   )   (segid  B and resid 111 and name CA  )
+          (segid  B and resid 111 and name C   )   (segid  B and resid 112 and name N   )   1.0   -40.400   20.000   2 
+   assign (segid  B and resid 111 and name C   )   (segid  B and resid 112 and name N   )
+          (segid  B and resid 112 and name CA  )   (segid  B and resid 112 and name C   )   1.0   -66.700   20.000   2 
+   assign (segid  B and resid 112 and name N   )   (segid  B and resid 112 and name CA  )
+          (segid  B and resid 112 and name C   )   (segid  B and resid 113 and name N   )   1.0   -39.400   20.000   2 
+   assign (segid  B and resid 112 and name C   )   (segid  B and resid 113 and name N   )
+          (segid  B and resid 113 and name CA  )   (segid  B and resid 113 and name C   )   1.0   -67.700   20.000   2 
+   assign (segid  B and resid 113 and name N   )   (segid  B and resid 113 and name CA  )
+          (segid  B and resid 113 and name C   )   (segid  B and resid 114 and name N   )   1.0   -41.200   20.000   2 
+   assign (segid  B and resid 113 and name C   )   (segid  B and resid 114 and name N   )
+          (segid  B and resid 114 and name CA  )   (segid  B and resid 114 and name C   )   1.0   -64.000   20.000   2 
+   assign (segid  B and resid 114 and name N   )   (segid  B and resid 114 and name CA  )
+          (segid  B and resid 114 and name C   )   (segid  B and resid 115 and name N   )   1.0   -40.400   20.000   2 
+   assign (segid  B and resid 114 and name C   )   (segid  B and resid 115 and name N   )
+          (segid  B and resid 115 and name CA  )   (segid  B and resid 115 and name C   )   1.0   -65.400   20.000   2 
+   assign (segid  B and resid 115 and name N   )   (segid  B and resid 115 and name CA  )
+          (segid  B and resid 115 and name C   )   (segid  B and resid 116 and name N   )   1.0   -41.500   20.000   2 
+   assign (segid  B and resid 115 and name C   )   (segid  B and resid 116 and name N   )
+          (segid  B and resid 116 and name CA  )   (segid  B and resid 116 and name C   )   1.0   -66.700   20.000   2 
+   assign (segid  B and resid 116 and name N   )   (segid  B and resid 116 and name CA  )
+          (segid  B and resid 116 and name C   )   (segid  B and resid 117 and name N   )   1.0   -41.200   20.000   2 
+   assign (segid  B and resid 116 and name C   )   (segid  B and resid 117 and name N   )
+          (segid  B and resid 117 and name CA  )   (segid  B and resid 117 and name C   )   1.0   -65.700   20.000   2 
+   assign (segid  B and resid 117 and name N   )   (segid  B and resid 117 and name CA  )
+          (segid  B and resid 117 and name C   )   (segid  B and resid 118 and name N   )   1.0   -43.300   20.000   2 
+   assign (segid  B and resid 117 and name C   )   (segid  B and resid 118 and name N   )
+          (segid  B and resid 118 and name CA  )   (segid  B and resid 118 and name C   )   1.0   -65.400   20.000   2 
+   assign (segid  B and resid 118 and name N   )   (segid  B and resid 118 and name CA  )
+          (segid  B and resid 118 and name C   )   (segid  B and resid 119 and name N   )   1.0   -38.900   20.000   2 
+   assign (segid  B and resid 118 and name C   )   (segid  B and resid 119 and name N   )
+          (segid  B and resid 119 and name CA  )   (segid  B and resid 119 and name C   )   1.0   -66.600   20.000   2 
+   assign (segid  B and resid 119 and name N   )   (segid  B and resid 119 and name CA  )
+          (segid  B and resid 119 and name C   )   (segid  B and resid 120 and name N   )   1.0   -40.000   20.000   2 
+   assign (segid  B and resid 119 and name C   )   (segid  B and resid 120 and name N   )
+          (segid  B and resid 120 and name CA  )   (segid  B and resid 120 and name C   )   1.0   -65.400   20.000   2 
+   assign (segid  B and resid 120 and name N   )   (segid  B and resid 120 and name CA  )
+          (segid  B and resid 120 and name C   )   (segid  B and resid 121 and name N   )   1.0   -40.800   20.000   2 
+   assign (segid  B and resid 120 and name C   )   (segid  B and resid 121 and name N   )
+          (segid  B and resid 121 and name CA  )   (segid  B and resid 121 and name C   )   1.0   -64.200   20.000   2 
+   assign (segid  B and resid 121 and name N   )   (segid  B and resid 121 and name CA  )
+          (segid  B and resid 121 and name C   )   (segid  B and resid 122 and name N   )   1.0   -42.800   20.000   2 
+   assign (segid  B and resid 121 and name C   )   (segid  B and resid 122 and name N   )
+          (segid  B and resid 122 and name CA  )   (segid  B and resid 122 and name C   )   1.0   -64.200   20.000   2 
+   assign (segid  B and resid 122 and name N   )   (segid  B and resid 122 and name CA  )
+          (segid  B and resid 122 and name C   )   (segid  B and resid 123 and name N   )   1.0   -40.300   20.000   2 
+   assign (segid  B and resid 122 and name C   )   (segid  B and resid 123 and name N   )
+          (segid  B and resid 123 and name CA  )   (segid  B and resid 123 and name C   )   1.0   -65.100   20.000   2 
+   assign (segid  B and resid 123 and name N   )   (segid  B and resid 123 and name CA  )
+          (segid  B and resid 123 and name C   )   (segid  B and resid 124 and name N   )   1.0   -44.600   20.000   2 
+   assign (segid  B and resid 123 and name C   )   (segid  B and resid 124 and name N   )
+          (segid  B and resid 124 and name CA  )   (segid  B and resid 124 and name C   )   1.0   -63.700   20.000   2 
+   assign (segid  B and resid 124 and name N   )   (segid  B and resid 124 and name CA  )
+          (segid  B and resid 124 and name C   )   (segid  B and resid 125 and name N   )   1.0   -44.000   20.000   2 
+   assign (segid  B and resid 124 and name C   )   (segid  B and resid 125 and name N   )
+          (segid  B and resid 125 and name CA  )   (segid  B and resid 125 and name C   )   1.0   -64.400   20.000   2 
+   assign (segid  B and resid 125 and name N   )   (segid  B and resid 125 and name CA  )
+          (segid  B and resid 125 and name C   )   (segid  B and resid 126 and name N   )   1.0   -39.300   20.000   2 
+   assign (segid  B and resid 125 and name C   )   (segid  B and resid 126 and name N   )
+          (segid  B and resid 126 and name CA  )   (segid  B and resid 126 and name C   )   1.0   -66.600   20.000   2 
+   assign (segid  B and resid 126 and name N   )   (segid  B and resid 126 and name CA  )
+          (segid  B and resid 126 and name C   )   (segid  B and resid 127 and name N   )   1.0   -40.900   20.000   2 
+   assign (segid  B and resid 126 and name C   )   (segid  B and resid 127 and name N   )
+          (segid  B and resid 127 and name CA  )   (segid  B and resid 127 and name C   )   1.0   -67.400   20.000   2 
+   assign (segid  B and resid 127 and name N   )   (segid  B and resid 127 and name CA  )
+          (segid  B and resid 127 and name C   )   (segid  B and resid 128 and name N   )   1.0   -40.600   20.000   2 
+   assign (segid  B and resid 127 and name C   )   (segid  B and resid 128 and name N   )
+          (segid  B and resid 128 and name CA  )   (segid  B and resid 128 and name C   )   1.0   -62.800   20.000   2 
+   assign (segid  B and resid 128 and name N   )   (segid  B and resid 128 and name CA  )
+          (segid  B and resid 128 and name C   )   (segid  B and resid 129 and name N   )   1.0   -45.500   20.000   2 
+   assign (segid  B and resid 128 and name C   )   (segid  B and resid 129 and name N   )
+          (segid  B and resid 129 and name CA  )   (segid  B and resid 129 and name C   )   1.0   -62.800   20.000   2 
+   assign (segid  B and resid 129 and name N   )   (segid  B and resid 129 and name CA  )
+          (segid  B and resid 129 and name C   )   (segid  B and resid 130 and name N   )   1.0   -40.900   20.000   2 
+   assign (segid  B and resid 129 and name C   )   (segid  B and resid 130 and name N   )
+          (segid  B and resid 130 and name CA  )   (segid  B and resid 130 and name C   )   1.0   -65.200   20.000   2 
+   assign (segid  B and resid 130 and name N   )   (segid  B and resid 130 and name CA  )
+          (segid  B and resid 130 and name C   )   (segid  B and resid 131 and name N   )   1.0   -40.700   20.000   2 
+   assign (segid  B and resid 130 and name C   )   (segid  B and resid 131 and name N   )
+          (segid  B and resid 131 and name CA  )   (segid  B and resid 131 and name C   )   1.0   -65.500   20.000   2 
+   assign (segid  B and resid 131 and name N   )   (segid  B and resid 131 and name CA  )
+          (segid  B and resid 131 and name C   )   (segid  B and resid 132 and name N   )   1.0   -41.800   20.000   2 
+   assign (segid  B and resid 131 and name C   )   (segid  B and resid 132 and name N   )
+          (segid  B and resid 132 and name CA  )   (segid  B and resid 132 and name C   )   1.0   -64.400   20.000   2 
+   assign (segid  B and resid 132 and name N   )   (segid  B and resid 132 and name CA  )
+          (segid  B and resid 132 and name C   )   (segid  B and resid 133 and name N   )   1.0   -41.400   20.000   2 
+   assign (segid  B and resid 132 and name C   )   (segid  B and resid 133 and name N   )
+          (segid  B and resid 133 and name CA  )   (segid  B and resid 133 and name C   )   1.0   -66.000   20.000   2 
+   assign (segid  B and resid 133 and name N   )   (segid  B and resid 133 and name CA  )
+          (segid  B and resid 133 and name C   )   (segid  B and resid 134 and name N   )   1.0   -37.800   20.000   2 
+   assign (segid  B and resid 133 and name C   )   (segid  B and resid 134 and name N   )
+          (segid  B and resid 134 and name CA  )   (segid  B and resid 134 and name C   )   1.0   -66.100   20.000   2 
+   assign (segid  B and resid 134 and name N   )   (segid  B and resid 134 and name CA  )
+          (segid  B and resid 134 and name C   )   (segid  B and resid 135 and name N   )   1.0   -42.800   20.000   2 
+   assign (segid  B and resid 134 and name C   )   (segid  B and resid 135 and name N   )
+          (segid  B and resid 135 and name CA  )   (segid  B and resid 135 and name C   )   1.0   -64.400   20.000   2 
+   assign (segid  B and resid 135 and name N   )   (segid  B and resid 135 and name CA  )
+          (segid  B and resid 135 and name C   )   (segid  B and resid 136 and name N   )   1.0   -43.500   20.000   2 
+   assign (segid  B and resid 135 and name C   )   (segid  B and resid 136 and name N   )
+          (segid  B and resid 136 and name CA  )   (segid  B and resid 136 and name C   )   1.0   -66.300   20.000   2 
+   assign (segid  B and resid 136 and name N   )   (segid  B and resid 136 and name CA  )
+          (segid  B and resid 136 and name C   )   (segid  B and resid 137 and name N   )   1.0   -37.200   20.000   2 
+   assign (segid  B and resid 136 and name C   )   (segid  B and resid 137 and name N   )
+          (segid  B and resid 137 and name CA  )   (segid  B and resid 137 and name C   )   1.0   -66.600   20.000   2 
+   assign (segid  B and resid 137 and name N   )   (segid  B and resid 137 and name CA  )
+          (segid  B and resid 137 and name C   )   (segid  B and resid 138 and name N   )   1.0   -40.000   20.000   2 
+   assign (segid  B and resid 137 and name C   )   (segid  B and resid 138 and name N   )
+          (segid  B and resid 138 and name CA  )   (segid  B and resid 138 and name C   )   1.0   -67.600   20.000   2 
+   assign (segid  B and resid 138 and name N   )   (segid  B and resid 138 and name CA  )
+          (segid  B and resid 138 and name C   )   (segid  B and resid 139 and name N   )   1.0   -40.000   20.000   2 
+   assign (segid  B and resid 138 and name C   )   (segid  B and resid 139 and name N   )
+          (segid  B and resid 139 and name CA  )   (segid  B and resid 139 and name C   )   1.0   -66.600   20.000   2 
+   assign (segid  B and resid 139 and name N   )   (segid  B and resid 139 and name CA  )
+          (segid  B and resid 139 and name C   )   (segid  B and resid 140 and name N   )   1.0   -37.700   20.000   2 
+   assign (segid  B and resid 139 and name C   )   (segid  B and resid 140 and name N   )
+          (segid  B and resid 140 and name CA  )   (segid  B and resid 140 and name C   )   1.0   -66.700   20.000   2 
+   assign (segid  B and resid 140 and name N   )   (segid  B and resid 140 and name CA  )
+          (segid  B and resid 140 and name C   )   (segid  B and resid 141 and name N   )   1.0   -40.700   20.000   2 
+   assign (segid  B and resid 140 and name C   )   (segid  B and resid 141 and name N   )
+          (segid  B and resid 141 and name CA  )   (segid  B and resid 141 and name C   )   1.0   -67.300   20.000   2 
+   assign (segid  B and resid 141 and name N   )   (segid  B and resid 141 and name CA  )
+          (segid  B and resid 141 and name C   )   (segid  B and resid 142 and name N   )   1.0   -38.600   20.000   2 
+   assign (segid  B and resid 141 and name C   )   (segid  B and resid 142 and name N   )
+          (segid  B and resid 142 and name CA  )   (segid  B and resid 142 and name C   )   1.0   -67.800   20.000   2 
+   assign (segid  B and resid 142 and name N   )   (segid  B and resid 142 and name CA  )
+          (segid  B and resid 142 and name C   )   (segid  B and resid 143 and name N   )   1.0   -36.000   20.000   2 
+   assign (segid  B and resid 142 and name C   )   (segid  B and resid 143 and name N   )
+          (segid  B and resid 143 and name CA  )   (segid  B and resid 143 and name C   )   1.0   -69.100   20.000   2 
+   assign (segid  B and resid 143 and name N   )   (segid  B and resid 143 and name CA  )
+          (segid  B and resid 143 and name C   )   (segid  B and resid 144 and name N   )   1.0   -38.200   20.000   2 
+   assign (segid  B and resid 152 and name C   )   (segid  B and resid 153 and name N   )
+          (segid  B and resid 153 and name CA  )   (segid  B and resid 153 and name C   )   1.0   -59.300   20.000   2 
+   assign (segid  B and resid 153 and name N   )   (segid  B and resid 153 and name CA  )
+          (segid  B and resid 153 and name C   )   (segid  B and resid 154 and name N   )   1.0   135.600   20.000   2 
+   assign (segid  B and resid 154 and name C   )   (segid  B and resid 155 and name N   )
+          (segid  B and resid 155 and name CA  )   (segid  B and resid 155 and name C   )   1.0   -76.250   20.150   2 
+   assign (segid  B and resid 155 and name N   )   (segid  B and resid 155 and name CA  )
+          (segid  B and resid 155 and name C   )   (segid  B and resid 156 and name N   )   1.0   136.700   29.000   2 
+   assign (segid  B and resid 156 and name C   )   (segid  B and resid 157 and name N   )
+          (segid  B and resid 157 and name CA  )   (segid  B and resid 157 and name C   )   1.0   -78.050   34.950   2 
+   assign (segid  B and resid 157 and name N   )   (segid  B and resid 157 and name CA  )
+          (segid  B and resid 157 and name C   )   (segid  B and resid 158 and name N   )   1.0   130.900   36.000   2 

@@ -76,6 +76,7 @@
 # 27-Oct-2021  M. Yokochi - utilize Auth_asym_ID* tag for chain_id if Entity_assembly_ID* is not available (v3.0.1, DAOTHER-7421)
 # 28-Oct-2021  M. Yokochi - use simple dictionary for return messaging, instead of JSON dump/load (v3.0.2)
 # 28-Oct-2021  M. Yokochi - resolve case-insensitive saveframe name collision for CIF (v3.0.3, DAOTHER-7389, issue #4)
+# 16-Nov-2021  M. Yokochi - map alphabet code of Entity_assembly_ID to valid integer (v3.0.4, DAOTHER-7475)
 ##
 """ Bi-directional translator between NEF and NMR-STAR
     @author: Kumaran Baskaran, Masashi Yokochi
@@ -97,7 +98,7 @@ from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommon
 from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
 from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 
-__version__ = '3.0.3'
+__version__ = '3.0.4'
 
 __pynmrstar_v3_2__ = version.parse(pynmrstar.__version__) >= version.parse("3.2.0")
 __pynmrstar_v3_1__ = version.parse(pynmrstar.__version__) >= version.parse("3.1.0")
@@ -2714,6 +2715,8 @@ class NEFTranslator:
                                     i[j] = ent[name] = self.letter_to_int(val, 1)
                                 elif 'default-from' in k and k['default-from'] in tags:
                                     i[j] = ent[name] = self.letter_to_int(i[tags.index(k['default-from'])], 1)
+                                elif 'default-from' in k and k['default-from'].startswith('Auth_asym_ID'):
+                                    i[j] = ent[name] = self.letter_to_int(val, 1)
                                 elif 'default' in k:
                                     i[j] = ent[name] = int(k['default'])
                                 elif excl_missing_data:
@@ -2966,6 +2969,8 @@ class NEFTranslator:
                                             i[j] = ent[name] = self.letter_to_int(val, 1)
                                         elif 'default-from' in d and d['default-from'] in tags:
                                             i[j] = ent[name] = self.letter_to_int(i[tags.index(d['default-from'])], 1)
+                                        elif 'default-from' in d and d['default-from'].startswith('Auth_asym_ID'):
+                                            i[j] = ent[name] = self.letter_to_int(val, 1)
                                         elif 'default' in d:
                                             i[j] = ent[name] = int(d['default'])
                                         elif excl_missing_data:
@@ -3640,6 +3645,8 @@ class NEFTranslator:
                                 ent[name] = self.letter_to_int(val, 1)
                             elif 'default-from' in t and t['default-from'] in sf_tags.keys():
                                 ent[name] = self.letter_to_int(sf_tags[t['default-from']], 1)
+                            elif 'default-from' in t and t['default-from'].startswith('Auth_asym_ID'):
+                                ent[name] = self.letter_to_int(val, 1)
                             elif 'default' in t:
                                 ent[name] = int(t['default'])
                             else:

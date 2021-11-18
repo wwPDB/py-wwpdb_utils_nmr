@@ -133,8 +133,9 @@
 # 27-Oct-2021  M. Yokochi - fix collection of unmapped sequences and utilize Auth_asym_ID* tag for chain_id if Entity_assembly_ID* is not available (DAOTHER-7421)
 # 28-Oct-2021  M. Yokochi - resolve case-insensitive saveframe name collision for CIF (DAOTHER-7389, issue #4)
 # 16-Nov-2021  M. Yokochi - fix sequence conflict in case that large sequence gap in CS implies multi chain complex (DAOTHER-7465)
-# 16-Nov-2021  M. Yokochi - fix server crash with dusulfide bond, which is not supported by chemical shifts (DAOTHER-7475)
+# 16-Nov-2021  M. Yokochi - fix server crash with disulfide bond, which is not supported by chemical shifts (DAOTHER-7475)
 # 16-Nov-2021  M. Yokochi - revised error message for malformed XPLOR-NIH RDC restraints (DAOTHER-7478)
+# 18-Nov-2021  M. Yokochi - detect content type of XPLOR-NIH hydrogen bond geometry restraints (DAOTHER-7478)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -822,6 +823,7 @@ class NmrDpUtility:
 
         # validation tasks for NMR data only
         __nmrCheckTasks = [self.__detectContentSubType,
+                           self.__detectContentSubTypeOfLegacyMR,
                            self.__extractPolymerSequence,
                            self.__extractPolymerSequenceInLoop,
                            #self.__testSequenceConsistency,
@@ -5948,7 +5950,7 @@ class NmrDpUtility:
             pass
 
     def __detectContentSubType(self):
-        """ Detect content subtypes.
+        """ Detect content subtype of NMR data file in any STAR format.
         """
 
         #if self.report.isError():
@@ -6151,132 +6153,384 @@ class NmrDpUtility:
 
             input_source.setItemValue('content_subtype', content_subtypes)
 
-        if not self.__combined_mode:
+        return not self.report.isError()
 
-            first_atom_pattern = re.compile(r'^ATOM +1 .*')
+    def __detectContentSubTypeOfLegacyMR(self):
+        """ Detect content subtype of legacy NMR restraint files.
+        """
 
-            ar_file_path_list = 'atypical_restraint_file_path_list'
+        if self.__combined_mode:
+            return True
 
-            if ar_file_path_list in self.__inputParamDict:
+        ar_file_path_list = 'atypical_restraint_file_path_list'
 
-                dist_restraint_uploaded = False
+        if not ar_file_path_list in self.__inputParamDict:
+            return True
 
-                cs_range_min = self.chem_shift_range['min_exclusive']
-                cs_range_max = self.chem_shift_range['max_exclusive']
-                dist_range_min = self.dist_restraint_range['min_inclusive']
-                dist_range_max = self.dist_restraint_range['max_inclusive']
-                dihed_range_min = self.dihed_restraint_range['min_inclusive']
-                dihed_range_max = self.dihed_restraint_range['max_inclusive']
-                rdc_range_min = self.rdc_restraint_range['min_exclusive']
-                rdc_range_max = self.rdc_restraint_range['max_exclusive']
+        first_atom_pattern = re.compile(r'^ATOM +1 .*')
+        hbond_da_atom_types = ('O', 'N', 'F')
 
-                fileListId = self.__file_path_list_len
+        dist_restraint_uploaded = False
 
-                md5_list = []
+        cs_range_min = self.chem_shift_range['min_exclusive']
+        cs_range_max = self.chem_shift_range['max_exclusive']
+        dist_range_min = self.dist_restraint_range['min_inclusive']
+        dist_range_max = self.dist_restraint_range['max_inclusive']
+        dihed_range_min = self.dihed_restraint_range['min_inclusive']
+        dihed_range_max = self.dihed_restraint_range['max_inclusive']
+        rdc_range_min = self.rdc_restraint_range['min_exclusive']
+        rdc_range_max = self.rdc_restraint_range['max_exclusive']
 
-                for ar in self.__inputParamDict[ar_file_path_list]:
+        fileListId = self.__file_path_list_len
 
-                    file_path = ar['file_name']
+        md5_list = []
 
-                    with open(file_path, 'r', encoding='UTF-8') as ifp:
+        for ar in self.__inputParamDict[ar_file_path_list]:
 
-                        md5_list.append(hashlib.md5(ifp.read().encode('utf-8')).hexdigest())
+            file_path = ar['file_name']
 
-                        ifp.close()
+            with open(file_path, 'r', encoding='UTF-8') as ifp:
 
-                    input_source = self.report.input_sources[fileListId]
-                    input_source_dic = input_source.get()
+                md5_list.append(hashlib.md5(ifp.read().encode('utf-8')).hexdigest())
 
-                    file_name = input_source_dic['file_name']
-                    file_type = input_source_dic['file_type']
-                    if 'original_file_name' in input_source_dic:
-                        original_file_name = input_source_dic['original_file_name']
-                        if file_name != original_file_name:
-                            file_name = '%s (%s)' % (original_file_name, file_name)
+                ifp.close()
 
-                    is_aux_amb = file_type == 'nm-aux-amb'
+            input_source = self.report.input_sources[fileListId]
+            input_source_dic = input_source.get()
 
-                    if file_type == 'nm-res-cns':
-                        mr_format_name = 'CNS'
-                    elif file_type == 'nm-res-xpl':
-                        mr_format_name = 'XPLOR-NIH'
-                    elif file_type == 'nm-res-amb':
-                        mr_format_name = 'AMBER'
-                    elif is_aux_amb:
-                        mr_format_name = 'AMBER'
-                    elif file_type == 'nm-res-cya':
-                        mr_format_name = 'CYANA'
-                    else:
-                        mr_format_name = 'other format'
+            file_name = input_source_dic['file_name']
+            file_type = input_source_dic['file_type']
+            if 'original_file_name' in input_source_dic:
+                original_file_name = input_source_dic['original_file_name']
+                if file_name != original_file_name:
+                    file_name = '%s (%s)' % (original_file_name, file_name)
 
-                    atom_like_names = self.__csStat.getAtomLikeNameSet(minimum_len=(2 if file_type == 'nm-res-oth' or is_aux_amb else 1))
+            is_aux_amb = file_type == 'nm-aux-amb'
 
-                    has_chem_shift = False
-                    has_dist_restraint = False
-                    has_dihed_restraint = False
-                    has_rdc_restraint = False
-                    has_plane_restraint = False
-                    has_rdc_origins = False
+            if file_type == 'nm-res-cns':
+                mr_format_name = 'CNS'
+            elif file_type == 'nm-res-xpl':
+                mr_format_name = 'XPLOR-NIH'
+            elif file_type == 'nm-res-amb':
+                mr_format_name = 'AMBER'
+            elif is_aux_amb:
+                mr_format_name = 'AMBER'
+            elif file_type == 'nm-res-cya':
+                mr_format_name = 'CYANA'
+            else:
+                mr_format_name = 'other format'
 
-                    has_coordinate = False
-                    has_amb_coord = False
-                    has_amb_inpcrd = False
-                    has_ens_coord = False
-                    has_topology = False
+            atom_like_names = self.__csStat.getAtomLikeNameSet(minimum_len=(2 if file_type == 'nm-res-oth' or is_aux_amb else 1))
 
-                    has_first_atom = False
+            has_chem_shift = False
+            has_dist_restraint = False
+            has_dihed_restraint = False
+            has_rdc_restraint = False
+            has_plane_restraint = False
+            has_hbond_restraint = False
+            has_rdc_origins = False
 
-                    if file_type in ('nm-res-cns', 'nm-res-xpl'):
+            has_coordinate = False
+            has_amb_coord = False
+            has_amb_inpcrd = False
+            has_ens_coord = False
+            has_topology = False
 
-                        with open(file_path, 'r', encoding='UTF-8') as ifp:
+            has_first_atom = False
 
-                            atom_likes = 0
-                            atom_unlikes = 0
-                            resid_likes = 0
-                            real_likes = 0
-                            names = []
-                            resids = []
+            if file_type in ('nm-res-cns', 'nm-res-xpl'):
 
-                            rdc_atom_names = set()
+                with open(file_path, 'r', encoding='UTF-8') as ifp:
 
-                            cs_range_like = False
-                            dist_range_like = False
-                            dihed_range_like = False
-                            rdc_range_like = False
+                    atom_likes = 0
+                    atom_unlikes = 0
+                    resid_likes = 0
+                    real_likes = 0
+                    names = []
+                    resids = []
 
-                            for line in ifp:
+                    rdc_atom_names = set()
 
-                                if line.startswith('ATOM ') and line.count('.') >= 3:
-                                    has_coordinate = True
-                                    if first_atom_pattern.match(line):
-                                        if has_first_atom:
-                                            has_ens_coord = True
-                                        has_first_atom = True
+                    cs_range_like = False
+                    dist_range_like = False
+                    dihed_range_like = False
+                    rdc_range_like = False
 
-                                elif line.startswith('MODEL') or line.startswith('ENDMDL') or\
-                                     line.startswith('_atom_site.pdbx_PDB_model_num') or line.startswith('_atom_site.ndb_model'):
+                    for line in ifp:
+
+                        if line.startswith('ATOM ') and line.count('.') >= 3:
+                            has_coordinate = True
+                            if first_atom_pattern.match(line):
+                                if has_first_atom:
                                     has_ens_coord = True
+                                has_first_atom = True
 
-                                l = " ".join(line.split())
+                        elif line.startswith('MODEL') or line.startswith('ENDMDL') or\
+                             line.startswith('_atom_site.pdbx_PDB_model_num') or line.startswith('_atom_site.ndb_model'):
+                            has_ens_coord = True
 
-                                s = re.split('[ ()]', l)
+                        l = " ".join(line.split())
 
-                                _t = ""
+                        s = re.split('[ ()]', l)
 
-                                for t in s:
+                        _t = ""
 
-                                    if len(t) == 0:
-                                        continue
+                        for t in s:
 
-                                    if t[0] == '#' or t[0] == '!':
-                                        break
+                            if len(t) == 0:
+                                continue
 
-                                    if t.lower().startswith('assi') or (real_likes == 3 and t.lower().startswith('weight')):
+                            if t[0] == '#' or t[0] == '!':
+                                break
 
-                                        if atom_likes == 1 and resid_likes == 1 and cs_range_like:
-                                            has_chem_shift = True
+                            if t.lower().startswith('assi') or (real_likes == 3 and t.lower().startswith('weight')):
 
-                                        elif (atom_likes == 2 or (atom_likes > 0 and resid_likes == 2)) and dist_range_like:
+                                if atom_likes == 1 and resid_likes == 1 and cs_range_like:
+                                    has_chem_shift = True
+
+                                elif (atom_likes == 2 or (atom_likes > 0 and resid_likes == 2)) and dist_range_like:
+                                    has_dist_restraint = True
+
+                                elif atom_likes == 4 and dihed_range_like:
+                                    has_dihed_restraint = True
+
+                                elif atom_likes + atom_unlikes == 6 and rdc_range_like:
+                                    has_rdc_restraint = True
+
+                                elif atom_likes == 3 and not (cs_range_like or dist_range_like or dihed_range_like or rdc_range_like)\
+                                    and names[0][0] in hbond_da_atom_types and names[1][0] == 'H' and names[2][0] in hbond_da_atom_types:
+                                        has_hbond_restraint = True
+
+                                atom_likes = 0
+                                atom_unlikes = 0
+                                resid_likes = 0
+                                real_likes = 0
+                                names = []
+                                resids = []
+                                cs_range_like = False
+                                dist_range_like = False
+                                dihed_range_like = False
+                                rdc_range_like = False
+
+                            elif _t.lower() == 'name':
+                                name = t.upper()
+                                if name in atom_like_names:
+                                    if not name in names or len(names) > 1:
+                                        atom_likes += 1
+                                        names.append(name)
+                                else:
+                                    atom_unlikes += 1
+                                    if name in ('OO', 'X', 'Y', 'Z'):
+                                        rdc_atom_names.add(name)
+                                        if len(rdc_atom_names) == 4:
+                                            has_rdc_origins = True
+
+                            elif _t.lower() == 'resid':
+                                try:
+                                    v = int(t)
+                                    if not v in resids:
+                                        resid_likes += 1
+                                        resids.append(v)
+                                except:
+                                    pass
+
+                            elif '.' in t:
+                                try:
+                                    v = float(t)
+                                    if cs_range_min < v < cs_range_max:
+                                        cs_range_like = True
+                                    if dist_range_min <= v <= dist_range_max:
+                                        dist_range_like = True
+                                    if dihed_range_min <= v <= dihed_range_max:
+                                        dihed_range_like = True
+                                    if rdc_range_min < v < rdc_range_max:
+                                        rdc_range_like = True
+                                    real_likes += 1
+                                except:
+                                    pass
+
+                            _t = t
+
+                    ifp.close()
+
+                with open(file_path, 'r', encoding='UTF-8') as ifp:
+
+                    atom_likes = 0
+                    names = []
+                    has_rest = False
+                    has_plan = False
+                    has_grou = False
+                    has_sele = False
+                    has_resi = False
+
+                    for line in ifp:
+
+                        l = " ".join(line.split())
+
+                        s = re.split('[ ()=]', l)
+
+                        _t = ""
+
+                        for t in s:
+
+                            if len(t) == 0:
+                                continue
+
+                            if t[0] == '#' or t[0] == '!':
+                                break
+
+                            t = t.lower()
+
+                            if t.startswith('rest'):
+                                has_rest = True
+
+                            elif t.startswith('plan'):
+                                has_plan = True
+
+                            elif has_rest and has_plan:
+
+                                if t.startswith('grou'):
+                                    has_grou = True
+
+                                elif t.startswith('sele'):
+                                    has_sele = True
+
+                                    atom_likes = 0
+                                    names = []
+
+                                elif _t == 'name':
+                                    name = t.upper()
+                                    if name in atom_like_names:
+                                        if not name in names or len(names) > 1:
+                                            atom_likes += 1
+                                            names.append(name)
+
+                                elif t.startswith('resi'):
+                                    has_resi = True
+
+                                elif has_grou and has_sele and has_resi and _t.startswith('weig'):
+                                    if atom_likes > 0:
+                                        try:
+                                            v = float(t)
+                                            if self.weight_range['min_inclusive'] <= v <= self.weight_range['max_inclusive']:
+                                                has_plane_restraint = True
+                                        except:
+                                            pass
+
+                                elif t == 'end':
+                                    has_grou = False
+                                    has_sele = False
+                                    has_resi = False
+
+                            _t = t
+
+                    ifp.close()
+
+            elif file_type == 'nm-res-amb':
+
+                ws_pattern = re.compile(r'\s+')
+                r_pattern = re.compile(r'r(\d+)=(.*)')
+
+                with open(file_path, 'r', encoding='UTF-8') as ifp:
+
+                    in_rst = False
+                    in_iat = False
+                    in_igr1 = False
+                    in_igr2 = False
+
+                    names = []
+                    values = []
+
+                    pos = 0
+
+                    for line in ifp:
+
+                        if line.startswith('ATOM ') and line.count('.') >= 3:
+                            has_coordinate = True
+                            if first_atom_pattern.match(line):
+                                if has_first_atom:
+                                    has_ens_coord = True
+                                has_first_atom = True
+
+                        elif line.startswith('MODEL') or line.startswith('ENDMDL') or\
+                             line.startswith('_atom_site.pdbx_PDB_model_num') or line.startswith('_atom_site.ndb_model'):
+                            has_ens_coord = True
+
+                        pos += 1
+
+                        if pos == 1 and line.startswith('defa'):
+                            has_amb_inpcrd = True
+
+                        elif pos == 2 and has_amb_inpcrd:
+                            try:
+                                int(line.lstrip().split()[0])
+                            except:
+                                has_amb_inpcrd = False
+
+                        elif pos == 3 and has_amb_inpcrd:
+                            if line.count('.') != 6:
+                                has_amb_inpcrd = False
+
+                        if '&rst ' in line:
+                            line = re.sub('&rst ', '&rst,', line)
+
+                        elif '&end' in line:
+                            line = re.sub('&end', ',&end', line)
+
+                        elif '/' in line:
+                            line = re.sub('/', ',&end', line)
+
+                        l = " ".join(line.split())
+
+                        if len(l) == 0 or l.startswith('#') or l.startswith('!'):
+                            continue
+
+                        s = re.split(',', ws_pattern.sub('', l).lower())
+
+                        for t in s:
+
+                            if len(t) == 0:
+                                continue
+
+                            if t[0] == '#' or t[0] == '!':
+                                break
+
+                            if t == '&rst':
+                                in_rst = True
+
+                            elif in_rst:
+
+                                if t == '&end':
+
+                                    atom_likes = 0
+                                    atom_unlikes = 0
+
+                                    for name in names:
+
+                                        if isinstance(name, int):
+                                            if int != -1:
+                                                atom_likes += 1
+                                            else:
+                                                atom_unlikes += 1
+
+                                        if isinstance(name, list):
+
+                                            if any(n for n in name if n != -1):
+                                                atom_likes += 1
+                                            else:
+                                                atom_unlikes += 1
+
+                                    if len(values) == 4:
+                                        v = (values[1] + values[2]) / 2.0
+
+                                        if dist_range_min <= v <= dist_range_max:
+                                            dist_range_like = True
+                                        if dihed_range_min <= v <= dihed_range_max:
+                                            dihed_range_like = True
+                                        if rdc_range_min < v < rdc_range_max:
+                                            rdc_range_like = True
+
+                                        if atom_likes == 2 and dist_range_like:
                                             has_dist_restraint = True
 
                                         elif atom_likes == 4 and dihed_range_like:
@@ -6285,803 +6539,570 @@ class NmrDpUtility:
                                         elif atom_likes + atom_unlikes == 6 and rdc_range_like:
                                             has_rdc_restraint = True
 
-                                        atom_likes = 0
-                                        atom_unlikes = 0
-                                        resid_likes = 0
-                                        real_likes = 0
-                                        names = []
-                                        resids = []
-                                        cs_range_like = False
-                                        dist_range_like = False
-                                        dihed_range_like = False
-                                        rdc_range_like = False
+                                    names = []
+                                    values = []
 
-                                    elif _t.lower() == 'name':
-                                        name = t.upper()
-                                        if name in atom_like_names:
-                                            if not name in names or len(names) > 1:
-                                                atom_likes += 1
-                                                names.append(name)
+                                    in_rst = False
+                                    in_iat = False
+                                    in_igr1 = False
+                                    in_igr2 = False
+
+                                elif t.startswith('iat='):
+                                    in_iat = True
+                                    try:
+                                        iat = int(t[4:])
+                                        names.append(iat)
+                                    except ValueError:
+                                        pass
+
+                                    in_igr1 = False
+                                    in_igr2 = False
+
+                                elif not '=' in t and in_iat:
+                                    try:
+                                        iat = int(t)
+                                        names.append(iat)
+                                    except ValueError:
+                                        pass
+
+                                elif r_pattern.match(t):
+                                    len_values = len(values)
+                                    g = r_pattern.search(t).groups()
+                                    try:
+                                        r_idx = int(g[0]) - 1
+                                        v = float(g[1])
+                                        if len_values == r_idx:
+                                            values.append(v)
+                                        elif len_values > r_idx:
+                                            values.insert(r_idx, v)
                                         else:
-                                            atom_unlikes += 1
-                                            if name in ('OO', 'X', 'Y', 'Z'):
-                                                rdc_atom_names.add(name)
-                                                if len(rdc_atom_names) == 4:
-                                                    has_rdc_origins = True
+                                            while len(values) < r_idx:
+                                                values.append(None)
+                                            values.append(v)
+                                    except ValueError:
+                                        pass
 
-                                    elif _t.lower() == 'resid':
-                                        try:
-                                            v = int(t)
-                                            if not v in resids:
-                                                resid_likes += 1
-                                                resids.append(v)
-                                        except:
-                                            pass
+                                    in_iat = False
+                                    in_igr1 = False
+                                    in_igr2 = False
 
-                                    elif '.' in t:
-                                        try:
-                                            v = float(t)
-                                            if cs_range_min < v < cs_range_max:
-                                                cs_range_like = True
-                                            if dist_range_min <= v <= dist_range_max:
-                                                dist_range_like = True
-                                            if dihed_range_min <= v <= dihed_range_max:
-                                                dihed_range_like = True
-                                            if rdc_range_min < v < rdc_range_max:
-                                                rdc_range_like = True
-                                            real_likes += 1
-                                        except:
-                                            pass
+                                elif t.startswith('igr1'):
+                                    in_igr1 = True
+                                    try:
+                                        iat = int(t[5:])
+                                        names.insert(0, [iat])
+                                    except:
+                                        pass
 
-                                    _t = t
+                                    in_iat = False
+                                    in_igr2 = False
 
-                            ifp.close()
+                                elif not '=' in t and in_igr1:
+                                    try:
+                                        iat = int(t)
+                                        g = names[0]
+                                        g.append(iat)
+                                    except:
+                                        pass
 
-                        with open(file_path, 'r', encoding='UTF-8') as ifp:
+                                elif t.startswith('igr2'):
+                                    in_igr2 = True
+                                    try:
+                                        iat = int(t[5:])
+                                        names.insert(1, [iat])
+                                    except:
+                                        pass
+
+                                    in_iat = False
+                                    in_igr1 = False
+
+                                elif not '=' in t and in_igr2:
+                                    try:
+                                        iat = int(t)
+                                        g = names[1]
+                                        g.append(iat)
+                                    except:
+                                        pass
+
+                                elif '=' in t:
+                                    in_iat = False
+                                    in_igr1 = False
+                                    in_igr2 = False
+
+                    ifp.close()
+
+            elif file_type == 'nm-res-cya' or file_type == 'nm-res-oth' or is_aux_amb:
+
+                if is_aux_amb:
+
+                    has_atom_name = False
+                    has_residue_label = False
+                    has_residue_pointer = False
+
+                    chk_atom_name_format = False
+                    chk_residue_label_format = False
+                    chk_residue_pointer_format = False
+
+                    in_atom_name = False
+                    in_residue_label = False
+                    in_residue_pointer = False
+
+                    a_format_pattern = re.compile(r'^%FORMAT\((\d+)a(\d+)\)\s*')
+                    i_format_pattern = re.compile(r'^%FORMAT\((\d+)I(\d+)\)\s*')
+
+                    atom_names = []
+                    residue_labels = []
+                    residue_pointers = []
+
+                atom_like_names_oth = self.__csStat.getAtomLikeNameSet(1)
+                one_letter_codes = self.monDict3.values()
+                three_letter_codes = self.monDict3.keys()
+
+                prohibited_col = set()
+
+                with open(file_path, 'r', encoding='UTF-8') as ifp:
+
+                    pos = 0
+
+                    for line in ifp:
+
+                        pos += 1
+
+                        if line.startswith('ATOM '):
+                            if line.count('.') >= 3:
+                                has_coordinate = True
+                                if first_atom_pattern.match(line):
+                                    if has_first_atom:
+                                        has_ens_coord = True
+                                    has_first_atom = True
+                                if is_aux_amb: # and line.count('.') >= 3:
+                                    has_amb_coord = True
+
+                        elif line.startswith('MODEL') or line.startswith('ENDMDL') or\
+                             line.startswith('_atom_site.pdbx_PDB_model_num') or line.startswith('_atom_site.ndb_model'):
+                            has_ens_coord = True
+
+                        elif is_aux_amb:
+
+                            if pos == 1 and line.startswith('defa'):
+                                has_amb_inpcrd = True
+
+                            elif pos == 2 and has_amb_inpcrd:
+                                try:
+                                    int(line.lstrip().split()[0])
+                                except:
+                                    has_amb_inpcrd = False
+
+                            elif pos == 3 and has_amb_inpcrd:
+                                if line.count('.') != 6:
+                                    has_amb_inpcrd = False
+
+                            if line.startswith('%FLAG'):
+                                in_atom_name = False
+                                in_residue_label = False
+                                in_residue_pointer = False
+
+                                if line.startswith('%FLAG ATOM_NAME'):
+                                    has_atom_name = True
+                                    chk_atom_name_format = True
+
+                                elif line.startswith('%FLAG RESIDUE_LABEL'):
+                                    has_residue_label = True
+                                    chk_residue_label_format = True
+
+                                elif line.startswith('%FLAG RESIDUE_POINTER'):
+                                    has_residue_pointer = True
+                                    chk_residue_pointer_format = True
+
+                            elif chk_atom_name_format:
+                                chk_atom_name_format = a_format_pattern.match(line)
+                                if chk_atom_name_format:
+                                    in_atom_name = True
+                                    g = a_format_pattern.search(line).groups()
+                                    max_cols = int(g[0])
+                                    max_char = int(g[1])
+                                else:
+                                    has_atom_name = False
+                                chk_atom_name_format = False
+
+                            elif chk_residue_label_format:
+                                chk_residue_label_format = a_format_pattern.match(line)
+                                if chk_residue_label_format:
+                                    in_residue_label = True
+                                    g = a_format_pattern.search(line).groups()
+                                    max_cols = int(g[0])
+                                    max_char = int(g[1])
+                                else:
+                                    has_residue_label = False
+                                chk_residue_label_format = False
+
+                            elif chk_residue_pointer_format:
+                                chk_residue_pointer_format = i_format_pattern.match(line)
+                                if chk_residue_pointer_format:
+                                    in_residue_pointer = True
+                                    g = i_format_pattern.search(line).groups()
+                                    max_cols = int(g[0])
+                                    max_char = int(g[1])
+                                else:
+                                    has_residue_pointer = False
+                                chk_residue_pointer_format = False
+
+                            elif in_atom_name:
+                                len_line = len(line)
+                                begin = 0
+                                end = max_char
+                                col = 0
+                                while col < max_cols and end < len_line:
+                                    atom_names.append(line[begin:end].rstrip())
+                                    begin = end
+                                    end += max_char
+                                    col += 1
+
+                            elif in_residue_label:
+                                len_line = len(line)
+                                begin = 0
+                                end = max_char
+                                col = 0
+                                while col < max_cols and end < len_line:
+                                    residue_labels.append(line[begin:end].rstrip())
+                                    begin = end
+                                    end += max_char
+                                    col += 1
+
+                            elif in_residue_pointer:
+                                len_line = len(line)
+                                begin = 0
+                                end = max_char
+                                col = 0
+                                while col < max_cols and end < len_line:
+                                    try:
+                                        residue_pointers.append(int(line[begin:end].lstrip()))
+                                    except ValueError:
+                                        pass
+                                    begin = end
+                                    end += max_char
+                                    col += 1
+
+                        l = " ".join(line.split())
+
+                        if len(l) == 0 or l.startswith('#') or l.startswith('!'):
+                            continue
+
+                        s = re.split('[ ()]', l)
+
+                        atom_likes = 0
+                        names = []
+                        res_like = False
+                        angle_like = False
+                        cs_range_like = False
+                        dist_range_like = False
+                        dihed_range_like = False
+
+                        for t in s:
+
+                            if len(t) == 0:
+                                continue
+
+                            if t[0] == '#' or t[0] == '!':
+                                break
+
+                            name = t.upper()
+
+                            if name in atom_like_names:
+                                if not name in names or len(names) > 1:
+                                    atom_likes += 1
+                                    names.append(name)
+
+                            elif name in one_letter_codes and not name in atom_like_names_oth:
+                                prohibited_col.add(s.index(t))
+
+                            elif '.' in t:
+                                try:
+                                    v = float(t)
+                                    if cs_range_min < v < cs_range_max:
+                                        cs_range_like = True
+                                    if dist_range_min <= v <= dist_range_max:
+                                        dist_range_like = True
+                                    if dihed_range_min <= v <= dihed_range_max:
+                                        dihed_range_like = True
+                                except:
+                                    pass
+
+                            elif name in three_letter_codes:
+                                res_like = True
+
+                            elif name in self.dihed_ang_names:
+                                angle_like = True
+
+                        if atom_likes == 1 and cs_range_like:
+                            has_chem_shift = True
+
+                        elif atom_likes == 2 and dist_range_like:
+                            has_dist_restraint = True
+
+                        elif (atom_likes == 4 or (res_like and angle_like)) and dihed_range_like:
+                            has_dihed_restraint = True
+
+                    ifp.close()
+
+                if file_type == 'nm-res-oth' and has_chem_shift and not has_dist_restraint and not has_dihed_restraint:
+
+                    with open(file_path, 'r', encoding='UTF-8') as ifp:
+                        for line in ifp:
+                            l = " ".join(line.split())
+
+                            if len(l) == 0 or l.startswith('#') or l.startswith('!'):
+                                continue
+
+                            s = re.split('[ ()]', l)
 
                             atom_likes = 0
                             names = []
-                            has_rest = False
-                            has_plan = False
-                            has_grou = False
-                            has_sele = False
-                            has_resi = False
+                            res_like = False
+                            angle_like = False
+                            cs_range_like = False
+                            dist_range_like = False
+                            dihed_range_like = False
 
-                            for line in ifp:
+                            for t in s:
 
-                                l = " ".join(line.split())
+                                if len(t) == 0:
+                                    continue
 
-                                s = re.split('[ ()=]', l)
+                                if t[0] == '#' or t[0] == '!':
+                                    break
 
-                                _t = ""
+                                if s.index(t) in prohibited_col:
+                                    continue
 
-                                for t in s:
+                                name = t.upper()
 
-                                    if len(t) == 0:
-                                        continue
+                                if name in atom_like_names_oth:
+                                    if not name in names or len(names) > 1:
+                                        atom_likes += 1
+                                        names.append(name)
 
-                                    if t[0] == '#' or t[0] == '!':
-                                        break
-
-                                    t = t.lower()
-
-                                    if t.startswith('rest'):
-                                        has_rest = True
-
-                                    elif t.startswith('plan'):
-                                        has_plan = True
-
-                                    elif has_rest and has_plan:
-
-                                        if t.startswith('grou'):
-                                            has_grou = True
-
-                                        elif t.startswith('sele'):
-                                            has_sele = True
-
-                                            atom_likes = 0
-                                            names = []
-
-                                        elif _t == 'name':
-                                            name = t.upper()
-                                            if name in atom_like_names:
-                                                if not name in names or len(names) > 1:
-                                                    atom_likes += 1
-                                                    names.append(name)
-
-                                        elif t.startswith('resi'):
-                                            has_resi = True
-
-                                        elif has_grou and has_sele and has_resi and _t.startswith('weig'):
-                                            if atom_likes > 0:
-                                                try:
-                                                    v = float(t)
-                                                    if self.weight_range['min_inclusive'] <= v <= self.weight_range['max_inclusive']:
-                                                        has_plane_restraint = True
-                                                except:
-                                                    pass
-
-                                        elif t == 'end':
-                                            has_grou = False
-                                            has_sele = False
-                                            has_resi = False
-
-                                    _t = t
-
-                            ifp.close()
-
-                    elif file_type == 'nm-res-amb':
-
-                        ws_pattern = re.compile(r'\s+')
-                        r_pattern = re.compile(r'r(\d+)=(.*)')
-
-                        with open(file_path, 'r', encoding='UTF-8') as ifp:
-
-                            in_rst = False
-                            in_iat = False
-                            in_igr1 = False
-                            in_igr2 = False
-
-                            names = []
-                            values = []
-
-                            pos = 0
-
-                            for line in ifp:
-
-                                if line.startswith('ATOM ') and line.count('.') >= 3:
-                                    has_coordinate = True
-                                    if first_atom_pattern.match(line):
-                                        if has_first_atom:
-                                            has_ens_coord = True
-                                        has_first_atom = True
-
-                                elif line.startswith('MODEL') or line.startswith('ENDMDL') or\
-                                     line.startswith('_atom_site.pdbx_PDB_model_num') or line.startswith('_atom_site.ndb_model'):
-                                    has_ens_coord = True
-
-                                pos += 1
-
-                                if pos == 1 and line.startswith('defa'):
-                                    has_amb_inpcrd = True
-
-                                elif pos == 2 and has_amb_inpcrd:
+                                elif '.' in t:
                                     try:
-                                        int(line.lstrip().split()[0])
+                                        v = float(t)
+                                        if cs_range_min < v < cs_range_max:
+                                            cs_range_like = True
+                                        if dist_range_min <= v <= dist_range_max:
+                                            dist_range_like = True
+                                        if dihed_range_min <= v <= dihed_range_max:
+                                            dihed_range_like = True
                                     except:
-                                        has_amb_inpcrd = False
+                                        pass
 
-                                elif pos == 3 and has_amb_inpcrd:
-                                    if line.count('.') != 6:
-                                        has_amb_inpcrd = False
+                                elif name in three_letter_codes:
+                                    res_like = True
 
-                                if '&rst ' in line:
-                                    line = re.sub('&rst ', '&rst,', line)
+                                elif name in self.dihed_ang_names:
+                                    angle_like = True
 
-                                elif '&end' in line:
-                                    line = re.sub('&end', ',&end', line)
+                            if atom_likes == 1 and cs_range_like:
+                                has_chem_shift = True
 
-                                elif '/' in line:
-                                    line = re.sub('/', ',&end', line)
+                            elif atom_likes == 2 and dist_range_like:
+                                has_dist_restraint = True
 
-                                l = " ".join(line.split())
+                            elif (atom_likes == 4 or (res_like and angle_like)) and dihed_range_like:
+                                has_dihed_restraint = True
 
-                                if len(l) == 0 or l.startswith('#') or l.startswith('!'):
-                                    continue
+                        ifp.close()
 
-                                s = re.split(',', ws_pattern.sub('', l).lower())
+                if is_aux_amb:
 
-                                for t in s:
+                    if has_atom_name and has_residue_label and has_residue_pointer and\
+                       len(atom_names) > 0 and len(residue_labels) > 0 and len(residue_pointers) > 0:
+                        has_topology = True
 
-                                    if len(t) == 0:
-                                        continue
-
-                                    if t[0] == '#' or t[0] == '!':
-                                        break
-
-                                    if t == '&rst':
-                                        in_rst = True
+                    if has_amb_coord and (not has_first_atom or has_ens_coord):
+                        has_amb_coord = False
 
-                                    elif in_rst:
-
-                                        if t == '&end':
-
-                                            atom_likes = 0
-                                            atom_unlikes = 0
-
-                                            for name in names:
-
-                                                if isinstance(name, int):
-                                                    if int != -1:
-                                                        atom_likes += 1
-                                                    else:
-                                                        atom_unlikes += 1
-
-                                                if isinstance(name, list):
-
-                                                    if any(n for n in name if n != -1):
-                                                        atom_likes += 1
-                                                    else:
-                                                        atom_unlikes += 1
-
-                                            if len(values) == 4:
-                                                v = (values[1] + values[2]) / 2.0
-
-                                                if dist_range_min <= v <= dist_range_max:
-                                                    dist_range_like = True
-                                                if dihed_range_min <= v <= dihed_range_max:
-                                                    dihed_range_like = True
-                                                if rdc_range_min < v < rdc_range_max:
-                                                    rdc_range_like = True
-
-                                                if atom_likes == 2 and dist_range_like:
-                                                    has_dist_restraint = True
-
-                                                elif atom_likes == 4 and dihed_range_like:
-                                                    has_dihed_restraint = True
-
-                                                elif atom_likes + atom_unlikes == 6 and rdc_range_like:
-                                                    has_rdc_restraint = True
-
-                                            names = []
-                                            values = []
-
-                                            in_rst = False
-                                            in_iat = False
-                                            in_igr1 = False
-                                            in_igr2 = False
-
-                                        elif t.startswith('iat='):
-                                            in_iat = True
-                                            try:
-                                                iat = int(t[4:])
-                                                names.append(iat)
-                                            except ValueError:
-                                                pass
-
-                                            in_igr1 = False
-                                            in_igr2 = False
-
-                                        elif not '=' in t and in_iat:
-                                            try:
-                                                iat = int(t)
-                                                names.append(iat)
-                                            except ValueError:
-                                                pass
+            if has_coordinate and not has_dist_restraint and not has_dihed_restraint and not has_rdc_restraint and not has_plane_restraint and not has_hbond_restraint:
 
-                                        elif r_pattern.match(t):
-                                            len_values = len(values)
-                                            g = r_pattern.search(t).groups()
-                                            try:
-                                                r_idx = int(g[0]) - 1
-                                                v = float(g[1])
-                                                if len_values == r_idx:
-                                                    values.append(v)
-                                                elif len_values > r_idx:
-                                                    values.insert(r_idx, v)
-                                                else:
-                                                    while len(values) < r_idx:
-                                                        values.append(None)
-                                                    values.append(v)
-                                            except ValueError:
-                                                pass
-
-                                            in_iat = False
-                                            in_igr1 = False
-                                            in_igr2 = False
-
-                                        elif t.startswith('igr1'):
-                                            in_igr1 = True
-                                            try:
-                                                iat = int(t[5:])
-                                                names.insert(0, [iat])
-                                            except:
-                                                pass
-
-                                            in_iat = False
-                                            in_igr2 = False
-
-                                        elif not '=' in t and in_igr1:
-                                            try:
-                                                iat = int(t)
-                                                g = names[0]
-                                                g.append(iat)
-                                            except:
-                                                pass
-
-                                        elif t.startswith('igr2'):
-                                            in_igr2 = True
-                                            try:
-                                                iat = int(t[5:])
-                                                names.insert(1, [iat])
-                                            except:
-                                                pass
-
-                                            in_iat = False
-                                            in_igr1 = False
-
-                                        elif not '=' in t and in_igr2:
-                                            try:
-                                                iat = int(t)
-                                                g = names[1]
-                                                g.append(iat)
-                                            except:
-                                                pass
-
-                                        elif '=' in t:
-                                            in_iat = False
-                                            in_igr1 = False
-                                            in_igr2 = False
-
-                            ifp.close()
-
-                    elif file_type == 'nm-res-cya' or file_type == 'nm-res-oth' or is_aux_amb:
-
-                        if is_aux_amb:
-
-                            has_atom_name = False
-                            has_residue_label = False
-                            has_residue_pointer = False
-
-                            chk_atom_name_format = False
-                            chk_residue_label_format = False
-                            chk_residue_pointer_format = False
-
-                            in_atom_name = False
-                            in_residue_label = False
-                            in_residue_pointer = False
-
-                            a_format_pattern = re.compile(r'^%FORMAT\((\d+)a(\d+)\)\s*')
-                            i_format_pattern = re.compile(r'^%FORMAT\((\d+)I(\d+)\)\s*')
-
-                            atom_names = []
-                            residue_labels = []
-                            residue_pointers = []
-
-                        atom_like_names_oth = self.__csStat.getAtomLikeNameSet(1)
-                        one_letter_codes = self.monDict3.values()
-                        three_letter_codes = self.monDict3.keys()
-
-                        prohibited_col = set()
-
-                        with open(file_path, 'r', encoding='UTF-8') as ifp:
-
-                            pos = 0
-
-                            for line in ifp:
-
-                                pos += 1
-
-                                if line.startswith('ATOM '):
-                                    if line.count('.') >= 3:
-                                        has_coordinate = True
-                                        if first_atom_pattern.match(line):
-                                            if has_first_atom:
-                                                has_ens_coord = True
-                                            has_first_atom = True
-                                        if is_aux_amb: # and line.count('.') >= 3:
-                                            has_amb_coord = True
-
-                                elif line.startswith('MODEL') or line.startswith('ENDMDL') or\
-                                     line.startswith('_atom_site.pdbx_PDB_model_num') or line.startswith('_atom_site.ndb_model'):
-                                    has_ens_coord = True
-
-                                elif is_aux_amb:
-
-                                    if pos == 1 and line.startswith('defa'):
-                                        has_amb_inpcrd = True
-
-                                    elif pos == 2 and has_amb_inpcrd:
-                                        try:
-                                            int(line.lstrip().split()[0])
-                                        except:
-                                            has_amb_inpcrd = False
-
-                                    elif pos == 3 and has_amb_inpcrd:
-                                        if line.count('.') != 6:
-                                            has_amb_inpcrd = False
-
-                                    if line.startswith('%FLAG'):
-                                        in_atom_name = False
-                                        in_residue_label = False
-                                        in_residue_pointer = False
-
-                                        if line.startswith('%FLAG ATOM_NAME'):
-                                            has_atom_name = True
-                                            chk_atom_name_format = True
-
-                                        elif line.startswith('%FLAG RESIDUE_LABEL'):
-                                            has_residue_label = True
-                                            chk_residue_label_format = True
-
-                                        elif line.startswith('%FLAG RESIDUE_POINTER'):
-                                            has_residue_pointer = True
-                                            chk_residue_pointer_format = True
-
-                                    elif chk_atom_name_format:
-                                        chk_atom_name_format = a_format_pattern.match(line)
-                                        if chk_atom_name_format:
-                                            in_atom_name = True
-                                            g = a_format_pattern.search(line).groups()
-                                            max_cols = int(g[0])
-                                            max_char = int(g[1])
-                                        else:
-                                            has_atom_name = False
-                                        chk_atom_name_format = False
-
-                                    elif chk_residue_label_format:
-                                        chk_residue_label_format = a_format_pattern.match(line)
-                                        if chk_residue_label_format:
-                                            in_residue_label = True
-                                            g = a_format_pattern.search(line).groups()
-                                            max_cols = int(g[0])
-                                            max_char = int(g[1])
-                                        else:
-                                            has_residue_label = False
-                                        chk_residue_label_format = False
-
-                                    elif chk_residue_pointer_format:
-                                        chk_residue_pointer_format = i_format_pattern.match(line)
-                                        if chk_residue_pointer_format:
-                                            in_residue_pointer = True
-                                            g = i_format_pattern.search(line).groups()
-                                            max_cols = int(g[0])
-                                            max_char = int(g[1])
-                                        else:
-                                            has_residue_pointer = False
-                                        chk_residue_pointer_format = False
-
-                                    elif in_atom_name:
-                                        len_line = len(line)
-                                        begin = 0
-                                        end = max_char
-                                        col = 0
-                                        while col < max_cols and end < len_line:
-                                            atom_names.append(line[begin:end].rstrip())
-                                            begin = end
-                                            end += max_char
-                                            col += 1
-
-                                    elif in_residue_label:
-                                        len_line = len(line)
-                                        begin = 0
-                                        end = max_char
-                                        col = 0
-                                        while col < max_cols and end < len_line:
-                                            residue_labels.append(line[begin:end].rstrip())
-                                            begin = end
-                                            end += max_char
-                                            col += 1
-
-                                    elif in_residue_pointer:
-                                        len_line = len(line)
-                                        begin = 0
-                                        end = max_char
-                                        col = 0
-                                        while col < max_cols and end < len_line:
-                                            try:
-                                                residue_pointers.append(int(line[begin:end].lstrip()))
-                                            except ValueError:
-                                                pass
-                                            begin = end
-                                            end += max_char
-                                            col += 1
-
-                                l = " ".join(line.split())
-
-                                if len(l) == 0 or l.startswith('#') or l.startswith('!'):
-                                    continue
-
-                                s = re.split('[ ()]', l)
-
-                                atom_likes = 0
-                                names = []
-                                res_like = False
-                                angle_like = False
-                                cs_range_like = False
-                                dist_range_like = False
-                                dihed_range_like = False
-
-                                for t in s:
-
-                                    if len(t) == 0:
-                                        continue
-
-                                    if t[0] == '#' or t[0] == '!':
-                                        break
-
-                                    name = t.upper()
-
-                                    if name in atom_like_names:
-                                        if not name in names or len(names) > 1:
-                                            atom_likes += 1
-                                            names.append(name)
-
-                                    elif name in one_letter_codes and not name in atom_like_names_oth:
-                                        prohibited_col.add(s.index(t))
-
-                                    elif '.' in t:
-                                        try:
-                                            v = float(t)
-                                            if cs_range_min < v < cs_range_max:
-                                                cs_range_like = True
-                                            if dist_range_min <= v <= dist_range_max:
-                                                dist_range_like = True
-                                            if dihed_range_min <= v <= dihed_range_max:
-                                                dihed_range_like = True
-                                        except:
-                                            pass
-
-                                    elif name in three_letter_codes:
-                                        res_like = True
-
-                                    elif name in self.dihed_ang_names:
-                                        angle_like = True
-
-                                if atom_likes == 1 and cs_range_like:
-                                    has_chem_shift = True
-
-                                elif atom_likes == 2 and dist_range_like:
-                                    has_dist_restraint = True
-
-                                elif (atom_likes == 4 or (res_like and angle_like)) and dihed_range_like:
-                                    has_dihed_restraint = True
-
-                            ifp.close()
-
-                        if file_type == 'nm-res-oth' and has_chem_shift and not has_dist_restraint and not has_dihed_restraint:
-
-                            with open(file_path, 'r', encoding='UTF-8') as ifp:
-                                for line in ifp:
-                                    l = " ".join(line.split())
-
-                                    if len(l) == 0 or l.startswith('#') or l.startswith('!'):
-                                        continue
-
-                                    s = re.split('[ ()]', l)
-
-                                    atom_likes = 0
-                                    names = []
-                                    res_like = False
-                                    angle_like = False
-                                    cs_range_like = False
-                                    dist_range_like = False
-                                    dihed_range_like = False
-
-                                    for t in s:
-
-                                        if len(t) == 0:
-                                            continue
-
-                                        if t[0] == '#' or t[0] == '!':
-                                            break
-
-                                        if s.index(t) in prohibited_col:
-                                            continue
-
-                                        name = t.upper()
-
-                                        if name in atom_like_names_oth:
-                                            if not name in names or len(names) > 1:
-                                                atom_likes += 1
-                                                names.append(name)
-
-                                        elif '.' in t:
-                                            try:
-                                                v = float(t)
-                                                if cs_range_min < v < cs_range_max:
-                                                    cs_range_like = True
-                                                if dist_range_min <= v <= dist_range_max:
-                                                    dist_range_like = True
-                                                if dihed_range_min <= v <= dihed_range_max:
-                                                    dihed_range_like = True
-                                            except:
-                                                pass
-
-                                        elif name in three_letter_codes:
-                                            res_like = True
-
-                                        elif name in self.dihed_ang_names:
-                                            angle_like = True
-
-                                    if atom_likes == 1 and cs_range_like:
-                                        has_chem_shift = True
-
-                                    elif atom_likes == 2 and dist_range_like:
-                                        has_dist_restraint = True
-
-                                    elif (atom_likes == 4 or (res_like and angle_like)) and dihed_range_like:
-                                        has_dihed_restraint = True
-
-                                ifp.close()
-
-                        if is_aux_amb:
-
-                            if has_atom_name and has_residue_label and has_residue_pointer and\
-                               len(atom_names) > 0 and len(residue_labels) > 0 and len(residue_pointers) > 0:
-                                has_topology = True
-
-                            if has_amb_coord and (not has_first_atom or has_ens_coord):
-                                has_amb_coord = False
-
-                    if has_coordinate and not has_dist_restraint and not has_dihed_restraint and not has_rdc_restraint and not has_plane_restraint:
-
-                        if not is_aux_amb:
-
-                            err = "NMR restraint file (%s) includes coordinates. Did you accidentally select the wrong format? Please re-upload the NMR restraint file." % mr_format_name
-
-                            self.report.error.appendDescription('content_mismatch', {'file_name': file_name, 'description': err})
-                            self.report.setError()
-
-                            if self.__verbose:
-                                self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Error  - %s\n" % err)
-
-                        has_chem_shift = False
-
-                    elif has_chem_shift and not has_coordinate and not has_amb_inpcrd and not has_dist_restraint and not has_dihed_restraint and not has_rdc_restraint and not has_plane_restraint:
-
-                        if has_rdc_origins:
-
-                            hint = 'assign ( resid # and name OO ) ( resid # and name X ) ( resid # and name Y ) ( resid # and name Z ) ( segid $ and resid # and name $ ) ( segid $ and resid # and name $ ) #.# #.#'
-
-                            err = "NMR restraint file (%s) seems to be a malformed XPLOR-NIH RDC restraint file. Tips for XPLOR-NIH RDC restraints: %r pattern must be present in the file. Did you accidentally select the wrong format? Please re-upload the NMR restraint file." % (mr_format_name, hint)
-
-                            self.report.error.appendDescription('content_mismatch', {'file_name': file_name, 'description': err})
-                            self.report.setError()
-
-                            if self.__verbose:
-                                self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Error  - %s\n" % err)
-
-                            has_chem_shift = False
+                if not is_aux_amb:
 
-                        elif not is_aux_amb:
+                    err = "NMR restraint file (%s) includes coordinates. Did you accidentally select the wrong format? Please re-upload the NMR restraint file." % mr_format_name
 
-                            err = "NMR restraint file (%s) includes assigned chemical shifts. Did you accidentally select the wrong format? Please re-upload the NMR restraint file." % mr_format_name
+                    self.report.error.appendDescription('content_mismatch', {'file_name': file_name, 'description': err})
+                    self.report.setError()
 
-                            self.report.error.appendDescription('content_mismatch', {'file_name': file_name, 'description': err})
-                            self.report.setError()
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Error  - %s\n" % err)
 
-                            if self.__verbose:
-                                self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Error  - %s\n" % err)
+                has_chem_shift = False
 
-                    elif has_chem_shift:
-                        has_chem_shift = False
+            elif has_chem_shift and not has_coordinate and not has_amb_inpcrd and not has_dist_restraint and not has_dihed_restraint and not has_rdc_restraint and not has_plane_restraint and not has_hbond_restraint:
 
-                    content_subtype = {'chem_shift': 1 if has_chem_shift else 0,
-                                       'dist_restraint': 1 if has_dist_restraint else 0,
-                                       'dihed_restraint': 1 if has_dihed_restraint else 0,
-                                       'rdc_restraint': 1 if has_rdc_restraint else 0,
-                                       'plane_restraint': 1 if has_plane_restraint else 0,
-                                       'coordinate': 1 if has_coordinate else 0,
-                                       'topology': 1 if has_topology else 0}
+                if has_rdc_origins:
 
-                    if not is_aux_amb and not has_chem_shift and not has_dist_restraint and not has_dihed_restraint and not has_rdc_restraint and not has_plane_restraint:
+                    hint = 'assign ( resid # and name OO ) ( resid # and name X ) ( resid # and name Y ) ( resid # and name Z ) ( segid $ and resid # and name $ ) ( segid $ and resid # and name $ ) #.# #.#'
 
-                        hint = ""
-                        if file_type in ('nm-res-cns', 'nm-res-xpl') and not has_rdc_origins:
-                            hint = 'assign ( segid $ and resid # and name $ ) ( segid $ and resid # and name $ ) #.# #.# #.#'
-                        elif file_type == 'nm-res-amb':
-                            hint = '&rst iat=#[,#], r1=#.#, r2=#.#, r3=#.#, r4=#.#, [igr1=#[,#],] [igr2=#[,#],] &end'
+                    err = "NMR restraint file (%s) seems to be a malformed XPLOR-NIH RDC restraint file. Tips for XPLOR-NIH RDC restraints: %r pattern must be present in the file. Did you accidentally select the wrong format? Please re-upload the NMR restraint file." % (mr_format_name, hint)
 
-                        if len(hint) > 0:
-                            hint = ' Tips for %s restraints: ' % mr_format_name + "%r pattern must be present in the file." % hint
+                    self.report.error.appendDescription('content_mismatch', {'file_name': file_name, 'description': err})
+                    self.report.setError()
 
-                        warn = "Constraint type of the NMR restraint file (%s) could not be identified.%s Did you accidentally select the wrong format?" % (mr_format_name, hint)
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Error  - %s\n" % err)
 
-                        self.report.warning.appendDescription('missing_content', {'file_name': file_name, 'description': warn})
-                        self.report.setWarning()
+                    has_chem_shift = False
 
-                        if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Warning  - %s\n" % warn)
+                elif not is_aux_amb:
 
-                    elif is_aux_amb and not has_amb_coord and not has_topology:
+                    err = "NMR restraint file (%s) includes assigned chemical shifts. Did you accidentally select the wrong format? Please re-upload the NMR restraint file." % mr_format_name
 
-                        subtype_name = ""
-                        if has_chem_shift:
-                            subtype_name += "assigned chemical shifts, "
-                        if has_dist_restraint:
-                            subtype_name += "distance restraints, "
-                        if has_dihed_restraint:
-                            subtype_name += "torsion angle restraints, "
-                        if has_rdc_restraint:
-                            subtype_name += "RDC restraints, "
-                        if has_plane_restraint:
-                            subtype_name += "Planarity restraints, "
-                        if has_amb_inpcrd:
-                            subtype_name += "AMBER restart coordinates (.rst), "
+                    self.report.error.appendDescription('content_mismatch', {'file_name': file_name, 'description': err})
+                    self.report.setError()
 
-                        if len(subtype_name) > 0:
-                            subtype_name = ". It looks like to have " + subtype_name[:-2] + " instead"
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Error  - %s\n" % err)
 
-                        hint = " Tips for AMBER topology: Proper contents starting with '%FLAG ATOM_NAME', '%FLAG RESIDUE_LABEL', and '%FLAG RESIDUE_POINTER' lines must be present in the file"
+            elif has_chem_shift:
+                has_chem_shift = False
 
-                        if has_coordinate:
-                            hint = " Tips for AMBER coordinates: It should be directory generated by 'ambpdb' command and must not have MODEL/ENDMDL keywords to ensure that AMBER atomic IDs, referred as 'iat' in the AMBER restraint file, are preserved in the file."
+            content_subtype = {'chem_shift': 1 if has_chem_shift else 0,
+                               'dist_restraint': 1 if has_dist_restraint else 0,
+                               'dihed_restraint': 1 if has_dihed_restraint else 0,
+                               'rdc_restraint': 1 if has_rdc_restraint else 0,
+                               'plane_restraint': 1 if has_plane_restraint else 0,
+                               'hbond_restraint': 1 if has_hbond_restraint else 0,
+                               'coordinate': 1 if has_coordinate else 0,
+                               'topology': 1 if has_topology else 0}
 
-                        err = "%r is neither AMBER topology (.prmtop) nor coordinates (.inpcrd.pdb)%s.%s Did you accidentally select the wrong format? Please re-upload the AMBER topology file." % (file_name, subtype_name, hint)
+            if not is_aux_amb and not has_chem_shift and not has_dist_restraint and not has_dihed_restraint and not has_rdc_restraint and not has_plane_restraint and not has_hbond_restraint:
 
-                        self.report.error.appendDescription('content_mismatch', {'file_name': file_name, 'description': err})
-                        self.report.setError()
+                hint = ""
+                if file_type in ('nm-res-cns', 'nm-res-xpl') and not has_rdc_origins:
+                    hint = 'assign ( segid $ and resid # and name $ ) ( segid $ and resid # and name $ ) #.# #.# #.#'
+                elif file_type == 'nm-res-amb':
+                    hint = '&rst iat=#[,#], r1=#.#, r2=#.#, r3=#.#, r4=#.#, [igr1=#[,#],] [igr2=#[,#],] &end'
 
-                        if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Error  - %s\n" % err)
+                if len(hint) > 0:
+                    hint = ' Tips for %s restraints: ' % mr_format_name + "%r pattern must be present in the file." % hint
 
-                    dist_restraint_uploaded |= has_dist_restraint
+                warn = "Constraint type of the NMR restraint file (%s) could not be identified.%s Did you accidentally select the wrong format?" % (mr_format_name, hint)
 
-                    input_source.setItemValue('content_subtype', content_subtype)
+                self.report.warning.appendDescription('missing_content', {'file_name': file_name, 'description': warn})
+                self.report.setWarning()
 
-                    fileListId += 1
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Warning  - %s\n" % warn)
 
-                if not dist_restraint_uploaded:
+            elif is_aux_amb and not has_amb_coord and not has_topology:
 
-                    fileListId = self.__file_path_list_len
+                subtype_name = ""
+                if has_chem_shift:
+                    subtype_name += "Assigned chemical shifts, "
+                if has_dist_restraint:
+                    subtype_name += "Distance restraints, "
+                if has_dihed_restraint:
+                    subtype_name += "Dihedral angle restraints, "
+                if has_rdc_restraint:
+                    subtype_name += "RDC restraints, "
+                if has_plane_restraint:
+                    subtype_name += "Planarity restraints, "
+                if has_hbond_restraint:
+                    subtype_name = "Hydrogen bond restraints, "
+                if has_amb_inpcrd:
+                    subtype_name += "AMBER restart coordinates (.rst), "
 
-                    for ar in self.__inputParamDict[ar_file_path_list]:
+                if len(subtype_name) > 0:
+                    subtype_name = ". It looks like to have " + subtype_name[:-2] + " instead"
 
-                        input_source = self.report.input_sources[fileListId]
-                        input_source_dic = input_source.get()
+                hint = " Tips for AMBER topology: Proper contents starting with '%FLAG ATOM_NAME', '%FLAG RESIDUE_LABEL', and '%FLAG RESIDUE_POINTER' lines must be present in the file"
 
-                        file_name = input_source_dic['file_name']
-                        file_type = input_source_dic['file_type']
-                        content_subtype = input_source_dic['content_subtype']
+                if has_coordinate:
+                    hint = " Tips for AMBER coordinates: It should be directory generated by 'ambpdb' command and must not have MODEL/ENDMDL keywords to ensure that AMBER atomic IDs, referred as 'iat' in the AMBER restraint file, are preserved in the file."
 
-                        fileListId += 1
+                err = "%r is neither AMBER topology (.prmtop) nor coordinates (.inpcrd.pdb)%s.%s Did you accidentally select the wrong format? Please re-upload the AMBER topology file." % (file_name, subtype_name, hint)
 
-                        if (not content_subtype is None and 'dist_restraint' in content_subtype) or file_type == 'nm-aux-amb':
-                            continue
+                self.report.error.appendDescription('content_mismatch', {'file_name': file_name, 'description': err})
+                self.report.setError()
 
-                        if content_subtype is None:
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Error  - %s\n" % err)
 
-                            err = "NMR restraint file does not include mandatory distance restraints or is not recognized properly. Please re-upload the NMR restraint file."
+            dist_restraint_uploaded |= has_dist_restraint
 
-                            self.__suspended_errors_for_polypeptide.append({'content_mismatch': {'file_name': file_name, 'description': err}})
+            input_source.setItemValue('content_subtype', content_subtype)
 
-                            #self.report.error.appendDescription('content_mismatch', {'file_name': file_name, 'description': err})
-                            #self.report.setError()
+            fileListId += 1
 
-                            if self.__verbose:
-                                self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Error  - %s\n" % err)
+        if not dist_restraint_uploaded:
 
-                        elif not 'chem_shift' in content_subtype:
+            fileListId = self.__file_path_list_len
 
-                            subtype_name = ""
-                            if 'dihed_restraint' in content_subtype:
-                                subtype_name += "dihedral angle restraints, "
-                            if 'rdc_restraint' in content_subtype:
-                                subtype_name += "RDC restraints, "
-                            if 'plane_restraint' in content_subtype:
-                                subtype_name += "Planarity restraints, "
+            for ar in self.__inputParamDict[ar_file_path_list]:
 
-                            err = "NMR restraint file includes %s. However, deposition of distance restraints is mandatory. Please re-upload the NMR restraint file." % (subtype_name[:-2])
+                input_source = self.report.input_sources[fileListId]
+                input_source_dic = input_source.get()
 
-                            self.__suspended_errors_for_polypeptide.append({'content_mismatch': {'file_name': file_name, 'description': err}})
+                file_name = input_source_dic['file_name']
+                file_type = input_source_dic['file_type']
+                content_subtype = input_source_dic['content_subtype']
 
-                            #self.report.error.appendDescription('content_mismatch', {'file_name': file_name, 'description': err})
-                            #self.report.setError()
+                fileListId += 1
 
-                            if self.__verbose:
-                                self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Error  - %s\n" % err)
+                if (not content_subtype is None and 'dist_restraint' in content_subtype) or file_type == 'nm-aux-amb':
+                    continue
 
-                md5_set = set(md5_list)
+                if content_subtype is None:
 
-                if len(md5_set) != len(md5_list):
+                    err = "NMR restraint file does not include mandatory distance restraints or is not recognized properly. Please re-upload the NMR restraint file."
 
-                    ar_path_len = len(self.__inputParamDict[ar_file_path_list])
+                    self.__suspended_errors_for_polypeptide.append({'content_mismatch': {'file_name': file_name, 'description': err}})
 
-                    for (i, j) in itertools.combinations(range(0, ar_path_len), 2):
+                    #self.report.error.appendDescription('content_mismatch', {'file_name': file_name, 'description': err})
+                    #self.report.setError()
 
-                        if md5_list[i] == md5_list[j]:
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Error  - %s\n" % err)
 
-                            file_name_1 = os.path.basename(self.__inputParamDict[ar_file_path_list][i]['file_name'])
-                            file_name_2 = os.path.basename(self.__inputParamDict[ar_file_path_list][j]['file_name'])
+                elif not 'chem_shift' in content_subtype:
 
-                            err = "You have uploaded the same NMR restranit file twice. Please replace/delete either %s or %s." % (file_name_1, file_name_2)
+                    subtype_name = ""
+                    if 'dihed_restraint' in content_subtype:
+                        subtype_name += "Dihedral angle restraints, "
+                    if 'rdc_restraint' in content_subtype:
+                        subtype_name += "RDC restraints, "
+                    if 'plane_restraint' in content_subtype:
+                        subtype_name += "Planarity restraints, "
+                    if 'hbond_restraint' in content_subtype:
+                        subtype_name += "Hydrogen bond restraints, "
 
-                            self.report.error.appendDescription('content_mismatch', {'file_name': '%s vs %s' % (file_name_1, file_name_2), 'description': err})
-                            self.report.setError()
+                    err = "NMR restraint file includes %s. However, deposition of distance restraints is mandatory. Please re-upload the NMR restraint file." % (subtype_name[:-2])
 
-                            if self.__verbose:
-                                self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Error  - %s\n" % err)
+                    self.__suspended_errors_for_polypeptide.append({'content_mismatch': {'file_name': file_name, 'description': err}})
+
+                    #self.report.error.appendDescription('content_mismatch', {'file_name': file_name, 'description': err})
+                    #self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Error  - %s\n" % err)
+
+        md5_set = set(md5_list)
+
+        if len(md5_set) != len(md5_list):
+
+            ar_path_len = len(self.__inputParamDict[ar_file_path_list])
+
+            for (i, j) in itertools.combinations(range(0, ar_path_len), 2):
+
+                if md5_list[i] == md5_list[j]:
+
+                    file_name_1 = os.path.basename(self.__inputParamDict[ar_file_path_list][i]['file_name'])
+                    file_name_2 = os.path.basename(self.__inputParamDict[ar_file_path_list][j]['file_name'])
+
+                    err = "You have uploaded the same NMR restranit file twice. Please replace/delete either %s or %s." % (file_name_1, file_name_2)
+
+                    self.report.error.appendDescription('content_mismatch', {'file_name': '%s vs %s' % (file_name_1, file_name_2), 'description': err})
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Error  - %s\n" % err)
 
         return not self.report.isError()
 
@@ -21115,7 +21136,7 @@ class NmrDpUtility:
         return False
 
     def __detectCoordContentSubType(self):
-        """ Detect content subtypes of coordinate file.
+        """ Detect content subtype of coordinate file.
         """
 
         id = self.report.getInputSourceIdOfCoord()
@@ -21225,6 +21246,7 @@ class NmrDpUtility:
                             for msg in self.__suspended_errors_for_polypeptide:
                                 for k, v in msg.items():
                                     self.report.error.appendDescription(k, v)
+                                    self.report.setError()
                             self.__suspended_errors_for_polypeptide = []
 
                     elif 'ribonucleotide' in type:

@@ -91,6 +91,10 @@
               "type": "integer",
               "minimum": 1
             },
+            "hbond_restraint": {
+              "type": "integer",
+              "minimum": 1
+            },
             "spectral_peak": {
               "type": "integer",
               "minimum": 1

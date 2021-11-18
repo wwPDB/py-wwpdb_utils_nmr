@@ -53,6 +53,7 @@
 # 14-Oct-2021  M. Yokochi - add 'incompletely_ssigned_chemical_shift' and 'incompletely_assigned_spectral_peak' (DAOTHER-7389, issue #3)
 # 28-Oct-2021  M. Yokochi - add 'corrected_saveframe_name' warning (DAOTHER-7389, issue #4)
 # 16-Nov-2021  M. Yokochi - revised error message for malformed XPLOR-NIH RDC restraints (DAOTHER-7478)
+# 18-Nov-2021  M. Yokochi - detect content type of XPLOR-NIH hydrogen bond geometry restraints (DAOTHER-7478)
 ##
 """ Wrapper class for data processing report of NMR data.
     @author: Masashi Yokochi
@@ -453,7 +454,7 @@ class NmrDpReport:
                          'constraint_number': rdc_total}
 
             restraints.append(restraint)
-
+        """
         content_subtype = 'plane_restraint'
 
         if content_subtype in content_subtypes:
@@ -488,7 +489,7 @@ class NmrDpReport:
                              'constraint_subtype': 'ring',
                              'constraint_number': nucleic_acids}
                 restraints.append(restraint)
-
+        """
         return restraints if len(restraints) > 0 else None
 
     def __getNmrRestraints(self):
@@ -1667,7 +1668,7 @@ class NmrDpReportInputSource:
         self.file_types = ('pdbx', 'nef', 'nmr-star', 'nm-res-amb', 'nm-res-cns', 'nm-res-cya', 'nm-res-xpl', 'nm-res-oth', 'nm-aux-amb')
         self.content_types = ('model', 'nmr-data-nef', 'nmr-data-str', 'nmr-chemical-shifts', 'nmr-restraints')
         self.content_subtypes = ('coordinate', 'non_poly', 'entry_info', 'poly_seq', 'entity', 'chem_shift',
-                                 'chem_shift_ref', 'dist_restraint', 'dihed_restraint', 'rdc_restraint', 'plane_restraint',
+                                 'chem_shift_ref', 'dist_restraint', 'dihed_restraint', 'rdc_restraint', 'plane_restraint', 'hbond_restraint',
                                  'spectral_peak', 'spectral_peak_alt', 'topology')
 
         self.__contents = {item: None for item in self.items}

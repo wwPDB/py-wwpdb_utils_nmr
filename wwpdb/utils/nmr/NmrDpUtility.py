@@ -136,6 +136,7 @@
 # 16-Nov-2021  M. Yokochi - fix server crash with disulfide bond, which is not supported by chemical shifts (DAOTHER-7475)
 # 16-Nov-2021  M. Yokochi - revised error message for malformed XPLOR-NIH RDC restraints (DAOTHER-7478)
 # 18-Nov-2021  M. Yokochi - detect content type of XPLOR-NIH hydrogen bond geometry restraints (DAOTHER-7478)
+# 18-Nov-2021  M. Yokochi - correct misrecognition as assigned chemical shifts by filtering half spin nucleus (DAOTHER-7491)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -1031,6 +1032,9 @@ class NmrDpUtility:
                               'CD': [113, 111],
                               'CA': [43]
                               }
+
+        # nucleus with half spin
+        self.half_spin_nucleus = ('H', 'C', 'N', 'P', 'F', 'CD')
 
         # ambiguity codes
         self.bmrb_ambiguity_codes = (1, 2, 3, 4, 5, 6, 9)
@@ -6169,6 +6173,7 @@ class NmrDpUtility:
 
         first_atom_pattern = re.compile(r'^ATOM +1 .*')
         hbond_da_atom_types = ('O', 'N', 'F')
+        rdc_origins = ('OO', 'X', 'Y', 'Z')
 
         dist_restraint_uploaded = False
 
@@ -6221,6 +6226,7 @@ class NmrDpUtility:
                 mr_format_name = 'other format'
 
             atom_like_names = self.__csStat.getAtomLikeNameSet(minimum_len=(2 if file_type == 'nm-res-oth' or is_aux_amb else 1))
+            cs_atom_like_names = list(filter(self.__isHalfSpin, atom_like_names)) # DAOTHER-7491
 
             has_chem_shift = False
             has_dist_restraint = False
@@ -6244,6 +6250,7 @@ class NmrDpUtility:
 
                     atom_likes = 0
                     atom_unlikes = 0
+                    cs_atom_likes = 0
                     resid_likes = 0
                     real_likes = 0
                     names = []
@@ -6285,7 +6292,7 @@ class NmrDpUtility:
 
                             if t.lower().startswith('assi') or (real_likes == 3 and t.lower().startswith('weight')):
 
-                                if atom_likes == 1 and resid_likes == 1 and cs_range_like:
+                                if cs_atom_likes == 1 and resid_likes == 1 and cs_range_like:
                                     has_chem_shift = True
 
                                 elif (atom_likes == 2 or (atom_likes > 0 and resid_likes == 2)) and dist_range_like:
@@ -6294,15 +6301,16 @@ class NmrDpUtility:
                                 elif atom_likes == 4 and dihed_range_like:
                                     has_dihed_restraint = True
 
-                                elif atom_likes + atom_unlikes == 6 and rdc_range_like:
+                                elif cs_atom_likes + atom_unlikes == 6 and rdc_range_like:
                                     has_rdc_restraint = True
 
                                 elif atom_likes == 3 and not (cs_range_like or dist_range_like or dihed_range_like or rdc_range_like)\
                                     and names[0][0] in hbond_da_atom_types and names[1][0] == 'H' and names[2][0] in hbond_da_atom_types:
-                                        has_hbond_restraint = True
+                                    has_hbond_restraint = True
 
                                 atom_likes = 0
                                 atom_unlikes = 0
+                                cs_atom_likes = 0
                                 resid_likes = 0
                                 real_likes = 0
                                 names = []
@@ -6318,9 +6326,11 @@ class NmrDpUtility:
                                     if not name in names or len(names) > 1:
                                         atom_likes += 1
                                         names.append(name)
+                                    if name in cs_atom_like_names:
+                                        cs_atom_likes += 1
                                 else:
                                     atom_unlikes += 1
-                                    if name in ('OO', 'X', 'Y', 'Z'):
+                                    if name in rdc_origins:
                                         rdc_atom_names.add(name)
                                         if len(rdc_atom_names) == 4:
                                             has_rdc_origins = True
@@ -6655,6 +6665,8 @@ class NmrDpUtility:
                     residue_pointers = []
 
                 atom_like_names_oth = self.__csStat.getAtomLikeNameSet(1)
+                cs_atom_like_names_oth = list(filter(self.__isHalfSpin, atom_like_names_oth)) # DAOTHER-7491
+
                 one_letter_codes = self.monDict3.values()
                 three_letter_codes = self.monDict3.keys()
 
@@ -6791,6 +6803,7 @@ class NmrDpUtility:
                         s = re.split('[ ()]', l)
 
                         atom_likes = 0
+                        cs_atom_likes = 0
                         names = []
                         res_like = False
                         angle_like = False
@@ -6812,6 +6825,8 @@ class NmrDpUtility:
                                 if not name in names or len(names) > 1:
                                     atom_likes += 1
                                     names.append(name)
+                                if names in cs_atom_like_names:
+                                    cs_atom_likes += 1
 
                             elif name in one_letter_codes and not name in atom_like_names_oth:
                                 prohibited_col.add(s.index(t))
@@ -6834,7 +6849,7 @@ class NmrDpUtility:
                             elif name in self.dihed_ang_names:
                                 angle_like = True
 
-                        if atom_likes == 1 and cs_range_like:
+                        if cs_atom_likes == 1 and cs_range_like:
                             has_chem_shift = True
 
                         elif atom_likes == 2 and dist_range_like:
@@ -6857,6 +6872,7 @@ class NmrDpUtility:
                             s = re.split('[ ()]', l)
 
                             atom_likes = 0
+                            cs_atom_likes = 0
                             names = []
                             res_like = False
                             angle_like = False
@@ -6881,6 +6897,8 @@ class NmrDpUtility:
                                     if not name in names or len(names) > 1:
                                         atom_likes += 1
                                         names.append(name)
+                                    if name in cs_atom_like_names_oth:
+                                        cs_atom_likes += 1
 
                                 elif '.' in t:
                                     try:
@@ -6900,7 +6918,7 @@ class NmrDpUtility:
                                 elif name in self.dihed_ang_names:
                                     angle_like = True
 
-                            if atom_likes == 1 and cs_range_like:
+                            if cs_atom_likes == 1 and cs_range_like:
                                 has_chem_shift = True
 
                             elif atom_likes == 2 and dist_range_like:
@@ -7105,6 +7123,13 @@ class NmrDpUtility:
                         self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Error  - %s\n" % err)
 
         return not self.report.isError()
+
+    def __isHalfSpin(self, name):
+        """ Check if nuclei of a given atom name has a spin 1/2.
+            @return: True for spin 1/2 nuclei, False otherwise
+        """
+
+        return any(nucl for nucl in self.half_spin_nucleus if name.startswith(nucl))
 
     def __getPolymerSequence(self, file_list_id, sf_data, content_subtype):
         """ Wrapper function to retrieve polymer sequence from loop of a specified saveframe and content subtype via NEFTranslator.

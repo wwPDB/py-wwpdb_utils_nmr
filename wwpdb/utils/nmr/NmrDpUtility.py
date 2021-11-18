@@ -136,7 +136,8 @@
 # 16-Nov-2021  M. Yokochi - fix server crash with disulfide bond, which is not supported by chemical shifts (DAOTHER-7475)
 # 16-Nov-2021  M. Yokochi - revised error message for malformed XPLOR-NIH RDC restraints (DAOTHER-7478)
 # 18-Nov-2021  M. Yokochi - detect content type of XPLOR-NIH hydrogen bond geometry restraints (DAOTHER-7478)
-# 18-Nov-2021  M. Yokochi - correct misrecognition as assigned chemical shifts by filtering half spin nucleus (DAOTHER-7491)
+# 18-Nov-2021  M. Yokochi - relax detection of distance restraints for nm-res-cya and nm-res-oth (DAOTHER-7491)
+# 18-Nov-2021  M. Yokochi - do not block MR because assigned chemical shifts are included for nm-res-oth (DAOTHER-7492)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -6938,6 +6939,45 @@ class NmrDpUtility:
                     if has_amb_coord and (not has_first_atom or has_ens_coord):
                         has_amb_coord = False
 
+            if (file_type == 'nm-res-cya' or file_type == 'nm-res-oth') and not has_dist_restraint: # DAOTHER-7491
+
+                with open(file_path, 'r', encoding='UTF-8') as ifp:
+
+                    for line in ifp:
+
+                        l = " ".join(line.split())
+
+                        if len(l) == 0 or l.startswith('#') or l.startswith('!'):
+                            continue
+
+                        s = re.split('[ ()]', l)
+
+                        if len(s) < 7:
+                            continue
+
+                        try:
+                            int(s[0])
+                            int(s[3])
+                            v = float(s[6])
+                            if v < dist_range_min or dist_range_max < v:
+                                continue
+                        except ValueError:
+                            continue
+
+                        if s[1] not in ('#', '!') and s[1].upper() in three_letter_codes:
+                            if not s[2] in atom_like_names:
+                                continue
+
+                        if s[4] not in ('#', '!') and s[4].upper() in three_letter_codes:
+                            if not s[5] in atom_like_names:
+                                continue
+
+                        has_dist_restraint = True
+
+                        break
+
+                    ifp.close()
+
             if has_coordinate and not has_dist_restraint and not has_dihed_restraint and not has_rdc_restraint and not has_plane_restraint and not has_hbond_restraint:
 
                 if not is_aux_amb:
@@ -6970,13 +7010,15 @@ class NmrDpUtility:
 
                 elif not is_aux_amb:
 
-                    err = "NMR restraint file (%s) includes assigned chemical shifts. Did you accidentally select the wrong format? Please re-upload the NMR restraint file." % mr_format_name
+                    if file_type != 'nm-res-oth': # DAOTHER-7492
 
-                    self.report.error.appendDescription('content_mismatch', {'file_name': file_name, 'description': err})
-                    self.report.setError()
+                        err = "NMR restraint file (%s) includes assigned chemical shifts. Did you accidentally select the wrong format? Please re-upload the NMR restraint file." % mr_format_name
 
-                    if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Error  - %s\n" % err)
+                        self.report.error.appendDescription('content_mismatch', {'file_name': file_name, 'description': err})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Error  - %s\n" % err)
 
             elif has_chem_shift:
                 has_chem_shift = False

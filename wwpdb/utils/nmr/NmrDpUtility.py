@@ -137,7 +137,6 @@
 # 16-Nov-2021  M. Yokochi - revised error message for malformed XPLOR-NIH RDC restraints (DAOTHER-7478)
 # 18-Nov-2021  M. Yokochi - detect content type of XPLOR-NIH hydrogen bond geometry restraints (DAOTHER-7478)
 # 18-Nov-2021  M. Yokochi - relax detection of distance restraints for nm-res-cya and nm-res-oth (DAOTHER-7491)
-# 18-Nov-2021  M. Yokochi - do not block MR because assigned chemical shifts are included for nm-res-oth (DAOTHER-7492)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -7010,15 +7009,13 @@ class NmrDpUtility:
 
                 elif not is_aux_amb:
 
-                    if file_type != 'nm-res-oth': # DAOTHER-7492
+                    err = "NMR restraint file (%s) includes assigned chemical shifts. Did you accidentally select the wrong format? Please re-upload the NMR restraint file." % mr_format_name
 
-                        err = "NMR restraint file (%s) includes assigned chemical shifts. Did you accidentally select the wrong format? Please re-upload the NMR restraint file." % mr_format_name
+                    self.report.error.appendDescription('content_mismatch', {'file_name': file_name, 'description': err})
+                    self.report.setError()
 
-                        self.report.error.appendDescription('content_mismatch', {'file_name': file_name, 'description': err})
-                        self.report.setError()
-
-                        if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Error  - %s\n" % err)
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Error  - %s\n" % err)
 
             elif has_chem_shift:
                 has_chem_shift = False

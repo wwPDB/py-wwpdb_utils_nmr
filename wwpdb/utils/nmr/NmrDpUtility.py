@@ -7000,7 +7000,7 @@ class NmrDpUtility:
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Error  - %s\n" % err)
+                        self.__lfh.write("+NmrDpUtility.__detectContentSubTypeOfLegacyMR() ++ Error  - %s\n" % err)
 
                 has_chem_shift = False
 
@@ -7016,7 +7016,7 @@ class NmrDpUtility:
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Error  - %s\n" % err)
+                        self.__lfh.write("+NmrDpUtility.__detectContentSubTypeOfLegacyMR() ++ Error  - %s\n" % err)
 
                     has_chem_shift = False
 
@@ -7028,7 +7028,7 @@ class NmrDpUtility:
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Error  - %s\n" % err)
+                        self.__lfh.write("+NmrDpUtility.__detectContentSubTypeOfLegacyMR() ++ Error  - %s\n" % err)
 
             elif has_chem_shift:
                 has_chem_shift = False
@@ -7059,7 +7059,7 @@ class NmrDpUtility:
                 self.report.setWarning()
 
                 if self.__verbose:
-                    self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Warning  - %s\n" % warn)
+                    self.__lfh.write("+NmrDpUtility.__detectContentSubTypeOfLegacyMR() ++ Warning  - %s\n" % warn)
 
             elif is_aux_amb and not has_amb_coord and not has_topology:
 
@@ -7093,7 +7093,7 @@ class NmrDpUtility:
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Error  - %s\n" % err)
+                    self.__lfh.write("+NmrDpUtility.__detectContentSubTypeOfLegacyMR() ++ Error  - %s\n" % err)
 
             dist_restraint_uploaded |= has_dist_restraint
 
@@ -7129,7 +7129,7 @@ class NmrDpUtility:
                     #self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Error  - %s\n" % err)
+                        self.__lfh.write("+NmrDpUtility.__detectContentSubTypeOfLegacyMR() ++ Error  - %s\n" % err)
 
                 elif not 'chem_shift' in content_subtype:
 
@@ -7151,7 +7151,7 @@ class NmrDpUtility:
                     #self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Error  - %s\n" % err)
+                        self.__lfh.write("+NmrDpUtility.__detectContentSubTypeOfLegacyMR() ++ Error  - %s\n" % err)
 
         md5_set = set(md5_list)
 
@@ -7172,7 +7172,7 @@ class NmrDpUtility:
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Error  - %s\n" % err)
+                        self.__lfh.write("+NmrDpUtility.__detectContentSubTypeOfLegacyMR() ++ Error  - %s\n" % err)
 
         return not self.report.isError()
 

@@ -3230,7 +3230,10 @@
                 "minLength": 1
               },
               "test_seq_id": {
-                "type": "integer"
+                "type": [
+                  "integer",
+                  "null"
+                ]
               },
               "test_comp_id": {
                 "type": "string",

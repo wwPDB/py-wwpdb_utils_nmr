@@ -4051,6 +4051,21 @@ class NmrDpUtility:
                     self.__rescueImmatureStr(0)
 
             elif not self.__fixFormatIssueOfInputSource(0, file_name, file_type, srcPath, 'A', message):
+
+                if any(err_message for err_message in message['error'] if 'The mandatory loop' in err_message):
+
+                    _, star_data_type, star_data = self.__nefT.read_input_file(srcPath) # NEFTranslator.validate_file() generates this object internally, but not re-used.
+
+                    if len(self.__star_data_type) > 0:
+                        del self.__star_data_type[-1]
+                        del self.__star_data[-1]
+
+                    self.__star_data_type.append(star_data_type)
+                    self.__star_data.append(star_data)
+
+                    self.__rescueFormerNef(0)
+                    self.__rescueImmatureStr(0)
+
                 is_done = False
 
             if not srcPath_ is None:

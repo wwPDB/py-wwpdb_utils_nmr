@@ -798,7 +798,7 @@ class NEFTranslator:
 
         self.bad_pattern = re.compile(r'.*[\!\$\&\(\)\=\~\^\\\|\`\@\{\}\[\]\;\:\<\>\,\/].*')
 
-    def read_input_file(self, in_file):
+    def read_input_file(self, in_file):  # pylint: disable=no-self-use
         """ Read input NEF/NMR-STAR file.
             @param in_file: input NEF/NMR-STAR file path
             @return: status, Entry/Saveframe/Loop data type or message, data object
@@ -1224,7 +1224,7 @@ class NEFTranslator:
 
         return not any(d in self.empty_value or self.bad_pattern.match(d) for d in data)
 
-    def resolve_sf_names_for_cif(self, star_data, data_type):  # DAOTHER-7389, issue #4
+    def resolve_sf_names_for_cif(self, star_data, data_type):  # pylint: disable=no-self-use # DAOTHER-7389, issue #4
         """ Resolve saveframe names to prevent case-insensitive name collisions occur in CIF format.
             @return: status, list of correction messages, dictionary of saveframe name corrections
         """
@@ -1261,7 +1261,7 @@ class NEFTranslator:
 
         return len(messages) == 0, messages, corrections
 
-    def get_data_content(self, star_data, data_type):
+    def get_data_content(self, star_data, data_type):  # pylint: disable=no-self-use
         """ Extract saveframe categories and loop categories from star data object.
             @return: list of saveframe categories, list of loop categories
         """
@@ -3263,7 +3263,7 @@ class NEFTranslator:
 
         return data
 
-    def letter_to_int(self, code, min=0):  # pylint: disable=redefined-builtin
+    def letter_to_int(self, code, min=0):  # pylint: disable=redefined-builtin, disable=no-self-use
         """ Return digit from a given chain code.
         """
 
@@ -3285,7 +3285,7 @@ class NEFTranslator:
 
         return ret if ret >= min else min
 
-    def index_to_letter(self, index):
+    def index_to_letter(self, index):  # pylint: disable=no-self-use
         """ Return chain code from a given index (0 based).
         """
 
@@ -3303,7 +3303,7 @@ class NEFTranslator:
 
         return str(chr(64 + (index // 729))) + str(chr(64 + ((index % 729) // 27))) + str(chr(65 + (index % 27)))
 
-    def get_conflict_id(self, star_data, lp_category, key_items):
+    def get_conflict_id(self, star_data, lp_category, key_items):  # pylint: disable=no-self-use
         """ Return list of conflicted row IDs except for rows of the first occurrence.
             @author: Masashi Yokochi
             @return: list of row IDs in reverse order for each loop
@@ -3360,7 +3360,7 @@ class NEFTranslator:
 
         return data
 
-    def get_conflict_id_set(self, star_data, lp_category, key_items):
+    def get_conflict_id_set(self, star_data, lp_category, key_items):  # pylint: disable=no-self-use
         """ Return list of conflicted row ID sets.
             @author: Masashi Yokochi
             @return: list of row ID sets for each loop
@@ -3521,7 +3521,7 @@ class NEFTranslator:
                     loops = [star_data.get_loop(lp_category)]
                 else:
                     loops = [star_data.get_loop_by_category(lp_category)]
-            except:  # AttributeError:   # noqa: E722 pylint: disable=bare-except
+            except:  # AttributeError:  # noqa: E722 pylint: disable=bare-except
                 loops = [star_data]
 
         data = []  # data of all loops

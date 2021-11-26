@@ -161,7 +161,7 @@ import numpy as np
 
 from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
 from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
-from wwpdb.utils.align.alignlib import PairwiseAlign
+from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
 from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 from wwpdb.utils.config.ConfigInfo import getSiteId
 from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommon
@@ -8983,7 +8983,7 @@ class NmrDpUtility:
                             _s1 = s1 if offset_1 == 0 else fill_blank_comp_id_with_offset(s1, offset_1)
                             _s2 = s2 if offset_2 == 0 else fill_blank_comp_id_with_offset(s2, offset_2)
 
-                            if conflict > 0 and _s1['seq_id'][0] < 0 and _s2['seq_id'][0] < 0:
+                            if conflict > 0 and _s1['seq_id'][0] < 0 and _s2['seq_id'][0] < 0:  # pylint: disable=chained-comparison
                                 continue
 
                             if self.__tolerant_seq_align: # and not alt_chain:
@@ -9343,7 +9343,7 @@ class NmrDpUtility:
                             _s1 = s1 if offset_1 == 0 else fill_blank_comp_id_with_offset(s1, offset_1)
                             _s2 = s2 if offset_2 == 0 else fill_blank_comp_id_with_offset(s2, offset_2)
 
-                            if conflict > 0 and _s1['seq_id'][0] < 0 and _s2['seq_id'][0] < 0:
+                            if conflict > 0 and _s1['seq_id'][0] < 0 and _s2['seq_id'][0] < 0:  # pylint: disable=chained-comparison
                                 continue
 
                             if self.__tolerant_seq_align: # and not alt_chain:
@@ -9653,7 +9653,7 @@ class NmrDpUtility:
                                     _s1 = s1 if offset_1 == 0 else fill_blank_comp_id_with_offset(s1, offset_1)
                                     _s2 = s2 if offset_2 == 0 else fill_blank_comp_id_with_offset(s2, offset_2)
 
-                                    if conflict > 0 and _s1['seq_id'][0] < 0 and _s2['seq_id'][0] < 0:
+                                    if conflict > 0 and _s1['seq_id'][0] < 0 and _s2['seq_id'][0] < 0:  # pylint: disable=chained-comparison
                                         continue
 
                                     if self.__tolerant_seq_align:

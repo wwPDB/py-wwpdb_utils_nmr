@@ -2172,7 +2172,7 @@ class NEFTranslator:
 
                 if i[3] not in self.empty_value:
 
-                    if i[2] in self.empty_value or not i[2] in ('4', '5', '6', '9'):
+                    if i[2] in self.empty_value or i[2] not in ('4', '5', '6', '9'):
                         if l < len(loop.data):
                             r = {}
                             for j, t in enumerate(loop.tags):
@@ -2550,7 +2550,7 @@ class NEFTranslator:
                                     raise ValueError("%s must not be empty. #_of_row %s, data_of_row %s." % (name, l + 1, r))
 
                             for d in data_items:
-                                if d['name'] == name and d['mandatory'] and 'default' not in d and not('remove-bad-pattern' in d and d['detele-bad-pattern']):
+                                if d['name'] == name and d['mandatory'] and 'default' not in d and not ('remove-bad-pattern' in d and d['detele-bad-pattern']):
                                     r = {}
                                     for _j, _t in enumerate(loop.tags):
                                         r[_t] = loop.data[l][_j]
@@ -2881,7 +2881,7 @@ class NEFTranslator:
                         elif type == 'enum-int':
                             try:
                                 enum = k['enum']
-                                if not int(val) in enum:
+                                if int(val) not in enum:
                                     if 'enforce-enum' in k and k['enforce-enum']:
                                         raise ValueError("%s%s %r must be one of %s." % (get_idx_msg(idx_tag_ids, tags, ent), name, val, enum))
                                     if enforce_enum:
@@ -3149,7 +3149,7 @@ class NEFTranslator:
                                 elif type == 'enum-int':
                                     try:
                                         enum = d['enum']
-                                        if not int(val) in enum:
+                                        if int(val) not in enum:
                                             if 'enforce-enum' in d and d['enforce-enum']:
                                                 raise ValueError("%s%s %r must be one of %s." % (get_idx_msg(idx_tag_ids, tags, ent), name, val, enum))
                                             if enforce_enum:
@@ -3186,40 +3186,40 @@ class NEFTranslator:
                     if 'group-mandatory' in d and d['group-mandatory']:
                         name = d['name']
                         group = d['group']
-                        if name in ent and not ent[name] is None:
-                            if not group['coexist-with'] is None:
+                        if name in ent and ent[name] is not None:
+                            if group['coexist-with'] is not None:
                                 for cw in group['coexist-with']:
                                     if cw not in ent or ent[cw] is None:
                                         raise ValueError("%sOne of data item %s must not be empty for a row having %s %r." % (get_idx_msg(idx_tag_ids, tags, ent), cw, name, ent[name]))
 
-                            if 'smaller-than' in group and not group['smaller-than'] is None:
+                            if 'smaller-than' in group and group['smaller-than'] is not None:
                                 for st in group['smaller-than']:
-                                    if st in ent and not ent[st] is None:
+                                    if st in ent and ent[st] is not None:
                                         if ent[name] < ent[st]:
                                             if 'circular-shift' in group:
                                                 ent[st] -= abs(group['circular-shift'])
                                             if ent[name] < ent[st]:
                                                 raise ValueError("%sData item %s %r must be larger than %s %r." % (get_idx_msg(idx_tag_ids, tags, ent), name, ent[name], st, ent[st]))
 
-                            if 'larger-than' in group and not group['larger-than'] is None:
+                            if 'larger-than' in group and group['larger-than'] is not None:
                                 for lt in group['larger-than']:
-                                    if lt in ent and not ent[lt] is None:
+                                    if lt in ent and ent[lt] is not None:
                                         if ent[name] > ent[lt]:
                                             if 'circular-shift' in group:
                                                 ent[lt] += abs(group['circular-shift'])
                                             if ent[name] > ent[lt]:
                                                 raise ValueError("%sData item %s %r must be smaller than %s %r." % (get_idx_msg(idx_tag_ids, tags, ent), name, ent[name], lt, ent[lt]))
 
-                            if 'not-equal-to' in group and not group['not-equal-to'] is None:
+                            if 'not-equal-to' in group and group['not-equal-to'] is not None:
                                 for ne in group['not-equal-to']:
-                                    if ne in ent and not ent[ne] is None:
+                                    if ne in ent and ent[ne] is not None:
                                         if ent[name] == ent[ne]:
                                             raise ValueError("%sData item %s %r must not be equal to %s %r." % (get_idx_msg(idx_tag_ids, tags, ent), name, ent[name], ne, ent[ne]))
 
-                        elif not group['member-with'] is None:
+                        elif group['member-with'] is not None:
                             has_member = False
                             for mw in group['member-with']:
-                                if mw in ent and not ent[mw] is None:
+                                if mw in ent and ent[mw] is not None:
                                     has_member = True
                                     break
                             if not has_member:
@@ -3559,7 +3559,7 @@ class NEFTranslator:
         mand_tag_names = [t['name'] for t in tag_items if t['mandatory']]
 
         for t in tag_items:
-            if not t['type'] in item_types:
+            if t['type'] not in item_types:
                 raise TypeError("Type %s of tag item %s must be one of %s." % (t['type'], t['name'], item_types))
 
         if allowed_tags is not None:
@@ -3570,11 +3570,11 @@ class NEFTranslator:
             for t in tag_items:
                 if 'group-mandatory' in t and t['group-mandatory']:
                     group = t['group']
-                    if not group['member-with'] is None:
+                    if group['member-with'] is not None:
                         for mw in group['member-with']:
                             if mw not in allowed_tags:
                                 raise ValueError("Member tag item %s of %s must exists in allowed tags." % (mw, t['name']))
-                    if not group['coexist-with'] is None:
+                    if group['coexist-with'] is not None:
                         for cw in group['coexist-with']:
                             if cw not in allowed_tags:
                                 raise ValueError("Coexisting tag item %s of %s must exists in allowed tags." % (cw, t['name']))
@@ -3590,13 +3590,13 @@ class NEFTranslator:
                 name = t['name']
                 group = t['group']
                 if name in sf_tags.keys():
-                    if not group['coexist-with'] is None:
+                    if group['coexist-with'] is not None:
                         for cw in group['coexist-with']:
                             if cw not in sf_tags.keys():
                                 missing_tags = list(set(group['coexist-with']).add(name) - set(sf_tags.keys()))
                                 raise LookupError("Missing mandatory %s saveframe tag%s." % (missing_tags, 's' if len(missing_tags) > 1 else ''))
 
-                elif not group['member-with'] is None:
+                elif group['member-with'] is not None:
                     has_member = False
                     for mw in group['member-with']:
                         if mw in sf_tags.keys():
@@ -3752,7 +3752,7 @@ class NEFTranslator:
                     elif type == 'enum-int':
                         try:
                             enum = t['enum']
-                            if not int(val) in enum:
+                            if int(val) not in enum:
                                 if 'enforce-enum' in t and t['enforce-enum']:
                                     raise ValueError("%s %r must be one of %s." % (name, val, enum))
                                 if enforce_enum:
@@ -3769,40 +3769,40 @@ class NEFTranslator:
                 if 'group-mandatory' in t and t['group-mandatory']:
                     name = t['name']
                     group = t['group']
-                    if name in ent and not ent[name] is None:
-                        if not group['coexist-with'] is None:
+                    if name in ent and ent[name] is not None:
+                        if group['coexist-with'] is not None:
                             for cw in group['coexist-with']:
                                 if cw not in ent or ent[cw] is None:
                                     raise ValueError("One of tag item %s must not be empty due to %s %r." % (cw, name, ent[name]))
 
-                        if 'smaller-than' in group and not group['smaller-than'] is None:
+                        if 'smaller-than' in group and group['smaller-than'] is not None:
                             for st in group['smaller-than']:
-                                if st in ent and not ent[st] is None:
+                                if st in ent and ent[st] is not None:
                                     if ent[name] < ent[st]:
                                         if 'circular-shift' in group:
                                             ent[st] -= abs(group['circular-shift'])
                                         if ent[name] < ent[st]:
                                             raise ValueError("Tag item %s %r must be larger than %s %r." % (name, ent[name], st, ent[st]))
 
-                        if 'larger-than' in group and not group['larger-than'] is None:
+                        if 'larger-than' in group and group['larger-than'] is not None:
                             for lt in group['larger-than']:
-                                if lt in ent and not ent[lt] is None:
+                                if lt in ent and ent[lt] is not None:
                                     if ent[name] > ent[lt]:
                                         if 'circular-shift' in group:
                                             ent[lt] += abs(group['circular-shift'])
                                         if ent[name] > ent[lt]:
                                             raise ValueError("Tag item %s %r must be smaller than %s %r." % (name, ent[name], lt, ent[lt]))
 
-                        if 'not-equal-to' in group and not group['not-equal-to'] is None:
+                        if 'not-equal-to' in group and group['not-equal-to'] is not None:
                             for ne in group['not-equal-to']:
-                                if ne in ent and not ent[ne] is None:
+                                if ne in ent and ent[ne] is not None:
                                     if ent[name] == ent[ne]:
                                         raise ValueError("Tag item %s %r must not be equal to %s %r." % (name, ent[name], ne, ent[ne]))
 
-                    elif not group['member-with'] is None:
+                    elif group['member-with'] is not None:
                         has_member = False
                         for mw in group['member-with']:
-                            if mw in ent and not ent[mw] is None:
+                            if mw in ent and ent[mw] is not None:
                                 has_member = True
                                 break
                         if not has_member:
@@ -4301,7 +4301,7 @@ class NEFTranslator:
                 if nef_atom[-1].lower() == 'x' or nef_atom[-1].lower() == 'y' and nef_atom[:-1] + '1' in methyl_atoms:
                     return self.get_star_atom(comp_id, nef_atom[:-1] + '%', ('%s converted to %s%%.' % (nef_atom, nef_atom[:-1])) if leave_unmatched else None, leave_unmatched)
 
-                if ((comp_code != 'X' and nef_atom[-1] == '%') or nef_atom[-1] == '*') and not (nef_atom[:-1] + '1' in methyl_atoms) and\
+                if ((comp_code != 'X' and nef_atom[-1] == '%') or nef_atom[-1] == '*') and (nef_atom[:-1] + '1' not in methyl_atoms) and\
                    len(nef_atom) > 2 and (nef_atom[-2].lower() == 'x' or nef_atom[-2].lower() == 'y'):
                     return self.get_star_atom(comp_id, nef_atom[:-2] + ('1' if nef_atom[-2].lower() == 'x' else '2') + '%',
                                               ('%s converted to %s%%.' % (nef_atom, nef_atom[:-2]
@@ -4737,7 +4737,7 @@ class NEFTranslator:
 
         self.__updateChemCompDict(comp_id)
 
-        if not self.__last_comp_id_test or atom_id is None or not atom_id[0] in ('H', 'C', 'N', 'O'):
+        if not self.__last_comp_id_test or atom_id is None or atom_id[0] not in ('H', 'C', 'N', 'O'):
             return None, None
 
         try:
@@ -4768,7 +4768,7 @@ class NEFTranslator:
 
         self.__updateChemCompDict(comp_id)
 
-        if not self.__last_comp_id_test or atom_id is None or not atom_id[0] in ('H', 'C', 'N', 'O'):
+        if not self.__last_comp_id_test or atom_id is None or atom_id[0] not in ('H', 'C', 'N', 'O'):
             return None, None
 
         atom_id, h_list = self.get_group(comp_id, atom_id)
@@ -4791,10 +4791,10 @@ class NEFTranslator:
             hvy_2 = next(c[self.__ccb_atom_id_1 if c[self.__ccb_atom_id_2] == hvy_conn else self.__ccb_atom_id_2]
                          for c in self.__last_chem_comp_bonds
                          if (c[self.__ccb_atom_id_2] == hvy_conn and c[self.__ccb_atom_id_1] != atom_id and c[self.__ccb_atom_id_1][0] != 'H'
-                             and not self.get_group(comp_id, c[self.__ccb_atom_id_1])[1] is None
+                             and self.get_group(comp_id, c[self.__ccb_atom_id_1])[1] is not None
                              and len(self.get_group(comp_id, c[self.__ccb_atom_id_1])[1]) == h_list_len)
                          or (c[self.__ccb_atom_id_1] == hvy_conn and c[self.__ccb_atom_id_2] != atom_id and c[self.__ccb_atom_id_2][0] != 'H'
-                             and not self.get_group(comp_id, c[self.__ccb_atom_id_2])[1] is None
+                             and self.get_group(comp_id, c[self.__ccb_atom_id_2])[1] is not None
                              and len(self.get_group(comp_id, c[self.__ccb_atom_id_2])[1]) == h_list_len))
 
             return self.get_group(comp_id, hvy_2)
@@ -4995,7 +4995,7 @@ class NEFTranslator:
             for k, v in self.star2nef_chain_mapping.items():
                 if self.star2cif_chain_mapping[k] is None:
                     for _k_ in [_k for _k, _v in self.star2nef_chain_mapping.items() if _v != v]:
-                        if not self.star2nef_chain_mapping[_k_] in self.star2cif_chain_mapping.values():
+                        if self.star2nef_chain_mapping[_k_] not in self.star2cif_chain_mapping.values():
                             self.star2cif_chain_mapping[k] = self.star2nef_chain_mapping[_k_]
                             break
 
@@ -5616,7 +5616,7 @@ class NEFTranslator:
                     cif_chain = nef_chain
                     _cif_seq = _nef_seq
 
-                in_row = [i for i in loop_data if i[chain_index] == nef_chain and i[seq_index] == nef_seq and not i[value_index] in self.empty_value]
+                in_row = [i for i in loop_data if i[chain_index] == nef_chain and i[seq_index] == nef_seq and i[value_index] not in self.empty_value]
 
                 if len(in_row) == 0:
                     continue
@@ -5704,8 +5704,8 @@ class NEFTranslator:
 
             mapped_seq_id = [s for c, s in self.authSeqMap.keys() if c == _star_chain]
             unmapped_seq_id = set(int(i[seq_index]) for i in loop_data if i[chain_index] == star_chain
-                                  and not i[seq_index] in self.empty_value
-                                  and not self.int_pattern.match(i[seq_index]) is None and not int(i[seq_index]) in mapped_seq_id)
+                                  and i[seq_index] not in self.empty_value
+                                  and self.int_pattern.match(i[seq_index]) is not None and int(i[seq_index]) not in mapped_seq_id)
 
             if len(unmapped_seq_id) > 0:
                 mapped_seq_id.extend(unmapped_seq_id)
@@ -5714,7 +5714,7 @@ class NEFTranslator:
 
                 star_seq = str(_star_seq)
 
-                in_row = [i for i in loop_data if i[chain_index] == star_chain and i[seq_index] == star_seq and not i[value_index] in self.empty_value]
+                in_row = [i for i in loop_data if i[chain_index] == star_chain and i[seq_index] == star_seq and i[value_index] not in self.empty_value]
 
                 if len(in_row) == 0:
                     continue
@@ -5849,7 +5849,7 @@ class NEFTranslator:
 
                 in_row = [i for i in loop_data if (i[chain_index] == in_star_chain or i[chain_index] in self.empty_value)
                           and i[seq_index] == in_star_seq
-                          and not i[value_index] in self.empty_value]
+                          and i[value_index] not in self.empty_value]
 
                 if len(in_row) == 0:
                     continue
@@ -8139,17 +8139,17 @@ class NEFTranslator:
                         nef_tag = '{}.{}'.format(saveframe.tag_prefix, tag[0])
                         auth_tag = self.get_star_tag(nef_tag)[0]
                         if auth_tag is not None:
-                            sf.add_tag(auth_tag, tag[1] if not tag[1] in self.dist_alt_constraint_type['nmr-star'] else self.dist_alt_constraint_type['nmr-star'][tag[1]])
+                            sf.add_tag(auth_tag, tag[1] if tag[1] not in self.dist_alt_constraint_type['nmr-star'] else self.dist_alt_constraint_type['nmr-star'][tag[1]])
                     elif saveframe.category == 'nef_dihedral_restraint_list' and tag[0] == 'restraint_origin':
                         nef_tag = '{}.{}'.format(saveframe.tag_prefix, tag[0])
                         auth_tag = self.get_star_tag(nef_tag)[0]
                         if auth_tag is not None:
-                            sf.add_tag(auth_tag, tag[1] if not tag[1] in self.dihed_alt_constraint_type['nmr-star'] else self.dihed_alt_constraint_type['nmr-star'][tag[1]])
+                            sf.add_tag(auth_tag, tag[1] if tag[1] not in self.dihed_alt_constraint_type['nmr-star'] else self.dihed_alt_constraint_type['nmr-star'][tag[1]])
                     elif saveframe.category == 'nef_rdc_restraint_list' and tag[0] == 'restraint_origin':
                         nef_tag = '{}.{}'.format(saveframe.tag_prefix, tag[0])
                         auth_tag = self.get_star_tag(nef_tag)[0]
                         if auth_tag is not None:
-                            sf.add_tag(auth_tag, tag[1] if not tag[1] in self.rdc_alt_constraint_type['nmr-star'] else self.rdc_alt_constraint_type['nmr-star'][tag[1]])
+                            sf.add_tag(auth_tag, tag[1] if tag[1] not in self.rdc_alt_constraint_type['nmr-star'] else self.rdc_alt_constraint_type['nmr-star'][tag[1]])
                     else:
                         nef_tag = '{}.{}'.format(saveframe.tag_prefix, tag[0])
                         auth_tag = self.get_star_tag(nef_tag)[0]
@@ -8334,17 +8334,17 @@ class NEFTranslator:
                         nef_tag = '{}.{}'.format(saveframe.tag_prefix, tag[0])
                         auth_tag = self.get_star_tag(nef_tag)[0]
                         if auth_tag is not None:
-                            sf.add_tag(auth_tag, tag[1] if not tag[1] in self.dist_alt_constraint_type['nmr-star'] else self.dist_alt_constraint_type['nmr-star'][tag[1]])
+                            sf.add_tag(auth_tag, tag[1] if tag[1] not in self.dist_alt_constraint_type['nmr-star'] else self.dist_alt_constraint_type['nmr-star'][tag[1]])
                     elif saveframe.category == 'nef_dihedral_restraint_list' and tag[0] == 'restraint_origin':
                         nef_tag = '{}.{}'.format(saveframe.tag_prefix, tag[0])
                         auth_tag = self.get_star_tag(nef_tag)[0]
                         if auth_tag is not None:
-                            sf.add_tag(auth_tag, tag[1] if not tag[1] in self.dihed_alt_constraint_type['nmr-star'] else self.dihed_alt_constraint_type['nmr-star'][tag[1]])
+                            sf.add_tag(auth_tag, tag[1] if tag[1] not in self.dihed_alt_constraint_type['nmr-star'] else self.dihed_alt_constraint_type['nmr-star'][tag[1]])
                     elif saveframe.category == 'nef_rdc_restraint_list' and tag[0] == 'restraint_origin':
                         nef_tag = '{}.{}'.format(saveframe.tag_prefix, tag[0])
                         auth_tag = self.get_star_tag(nef_tag)[0]
                         if auth_tag is not None:
-                            sf.add_tag(auth_tag, tag[1] if not tag[1] in self.rdc_alt_constraint_type['nmr-star'] else self.rdc_alt_constraint_type['nmr-star'][tag[1]])
+                            sf.add_tag(auth_tag, tag[1] if tag[1] not in self.rdc_alt_constraint_type['nmr-star'] else self.rdc_alt_constraint_type['nmr-star'][tag[1]])
                     else:
                         nef_tag = '{}.{}'.format(saveframe.tag_prefix, tag[0])
                         auth_tag = self.get_star_tag(nef_tag)[0]
@@ -8636,15 +8636,15 @@ class NEFTranslator:
                     elif saveframe.category == 'general_distance_constraints' and tag_name == 'constraint_type':
                         nef_tag, _ = self.get_nef_tag(saveframe.tag_prefix + '.' + tag[0])
                         if nef_tag is not None:
-                            sf.add_tag(nef_tag, tag[1] if not tag[1] in self.dist_alt_constraint_type['nef'] else self.dist_alt_constraint_type['nef'][tag[1]])
+                            sf.add_tag(nef_tag, tag[1] if tag[1] not in self.dist_alt_constraint_type['nef'] else self.dist_alt_constraint_type['nef'][tag[1]])
                     elif saveframe.category == 'torsion_angle_constraints' and tag_name == 'constraint_type':
                         nef_tag, _ = self.get_nef_tag(saveframe.tag_prefix + '.' + tag[0])
                         if nef_tag is not None:
-                            sf.add_tag(nef_tag, tag[1] if not tag[1] in self.dihed_alt_constraint_type['nef'] else self.dihed_alt_constraint_type['nef'][tag[1]])
+                            sf.add_tag(nef_tag, tag[1] if tag[1] not in self.dihed_alt_constraint_type['nef'] else self.dihed_alt_constraint_type['nef'][tag[1]])
                     elif saveframe.category == 'RDC_constraints' and tag_name == 'constraint_type':
                         nef_tag, _ = self.get_nef_tag(saveframe.tag_prefix + '.' + tag[0])
                         if nef_tag is not None:
-                            sf.add_tag(nef_tag, tag[1] if not tag[1] in self.rdc_alt_constraint_type['nef'] else self.rdc_alt_constraint_type['nef'][tag[1]])
+                            sf.add_tag(nef_tag, tag[1] if tag[1] not in self.rdc_alt_constraint_type['nef'] else self.rdc_alt_constraint_type['nef'][tag[1]])
                     else:
                         nef_tag, _ = self.get_nef_tag(saveframe.tag_prefix + '.' + tag[0])
                         if nef_tag is not None:
@@ -8787,7 +8787,7 @@ class NEFTranslator:
                         elif saveframe.category == 'general_distance_constraints' and tag_name == 'constraint_type':
                             nef_tag, _ = self.get_nef_tag(saveframe.tag_prefix + '.' + tag[0])
                             if nef_tag is not None:
-                                sf.add_tag(nef_tag, tag[1] if not tag[1] in self.dist_alt_constraint_type['nef'] else self.dist_alt_constraint_type['nef'][tag[1]])
+                                sf.add_tag(nef_tag, tag[1] if tag[1] not in self.dist_alt_constraint_type['nef'] else self.dist_alt_constraint_type['nef'][tag[1]])
                         elif saveframe.category == 'torsion_angle_constraints' and tag_name == 'constraint_type':
                             nef_tag, _ = self.get_nef_tag(saveframe.tag_prefix + '.' + tag[0])
                             if nef_tag is not None:
@@ -8795,7 +8795,7 @@ class NEFTranslator:
                         elif saveframe.category == 'RDC_constraints' and tag_name == 'constraint_type':
                             nef_tag, _ = self.get_nef_tag(saveframe.tag_prefix + '.' + tag[0])
                             if nef_tag is not None:
-                                sf.add_tag(nef_tag, tag[1] if not tag[1] in self.rdc_alt_constraint_type['nef'] else self.rdc_alt_constraint_type['nef'][tag[1]])
+                                sf.add_tag(nef_tag, tag[1] if tag[1] not in self.rdc_alt_constraint_type['nef'] else self.rdc_alt_constraint_type['nef'][tag[1]])
                         else:
                             nef_tag, _ = self.get_nef_tag(saveframe.tag_prefix + '.' + tag[0])
                             if nef_tag is not None:
@@ -9076,17 +9076,17 @@ class NEFTranslator:
                         star_tag = '{}.{}'.format(saveframe.tag_prefix, tag[0])
                         auth_tag = self.get_star_auth_tag(star_tag)[0]
                         if auth_tag is not None:
-                            sf.add_tag(auth_tag, tag[1] if not tag[1] in self.dist_alt_constraint_type['nmr-star'] else self.dist_alt_constraint_type['nmr-star'][tag[1]])
+                            sf.add_tag(auth_tag, tag[1] if tag[1] not in self.dist_alt_constraint_type['nmr-star'] else self.dist_alt_constraint_type['nmr-star'][tag[1]])
                     elif saveframe.tag_prefix == '_Torsion_angle_constraint_list' and tag[0] == 'Constraint_type':
                         star_tag = '{}.{}'.format(saveframe.tag_prefix, tag[0])
                         auth_tag = self.get_star_auth_tag(star_tag)[0]
                         if auth_tag is not None:
-                            sf.add_tag(auth_tag, tag[1] if not tag[1] in self.dihed_alt_constraint_type['nmr-star'] else self.dihed_alt_constraint_type['nmr-star'][tag[1]])
+                            sf.add_tag(auth_tag, tag[1] if tag[1] not in self.dihed_alt_constraint_type['nmr-star'] else self.dihed_alt_constraint_type['nmr-star'][tag[1]])
                     elif saveframe.tag_prefix == '_RDC_constraint_list' and tag[0] == 'Constraint_type':
                         star_tag = '{}.{}'.format(saveframe.tag_prefix, tag[0])
                         auth_tag = self.get_star_auth_tag(star_tag)[0]
                         if auth_tag is not None:
-                            sf.add_tag(auth_tag, tag[1] if not tag[1] in self.rdc_alt_constraint_type['nmr-star'] else self.rdc_alt_constraint_type['nmr-star'][tag[1]])
+                            sf.add_tag(auth_tag, tag[1] if tag[1] not in self.rdc_alt_constraint_type['nmr-star'] else self.rdc_alt_constraint_type['nmr-star'][tag[1]])
                     else:
                         star_tag = '{}.{}'.format(saveframe.tag_prefix, tag[0])
                         auth_tag = self.get_star_auth_tag(star_tag)[0]
@@ -9255,17 +9255,17 @@ class NEFTranslator:
                         star_tag = '{}.{}'.format(saveframe.tag_prefix, tag[0])
                         auth_tag = self.get_star_auth_tag(star_tag)[0]
                         if auth_tag is not None:
-                            sf.add_tag(auth_tag, tag[1] if not tag[1] in self.dist_alt_constraint_type['nmr-star'] else self.dist_alt_constraint_type['nmr-star'][tag[1]])
+                            sf.add_tag(auth_tag, tag[1] if tag[1] not in self.dist_alt_constraint_type['nmr-star'] else self.dist_alt_constraint_type['nmr-star'][tag[1]])
                     elif saveframe.tag_prefix == '_Torsion_angle_constraint_list' and tag[0] == 'Constraint_type':
                         star_tag = '{}.{}'.format(saveframe.tag_prefix, tag[0])
                         auth_tag = self.get_star_auth_tag(star_tag)[0]
                         if auth_tag is not None:
-                            sf.add_tag(auth_tag, tag[1] if not tag[1] in self.dihed_alt_constraint_type['nmr-star'] else self.dihed_alt_constraint_type['nmr-star'][tag[1]])
+                            sf.add_tag(auth_tag, tag[1] if tag[1] not in self.dihed_alt_constraint_type['nmr-star'] else self.dihed_alt_constraint_type['nmr-star'][tag[1]])
                     elif saveframe.tag_prefix == '_RDC_constraint_list' and tag[0] == 'Constraint_type':
                         star_tag = '{}.{}'.format(saveframe.tag_prefix, tag[0])
                         auth_tag = self.get_star_auth_tag(star_tag)[0]
                         if auth_tag is not None:
-                            sf.add_tag(auth_tag, tag[1] if not tag[1] in self.rdc_alt_constraint_type['nmr-star'] else self.rdc_alt_constraint_type['nmr-star'][tag[1]])
+                            sf.add_tag(auth_tag, tag[1] if tag[1] not in self.rdc_alt_constraint_type['nmr-star'] else self.rdc_alt_constraint_type['nmr-star'][tag[1]])
                     else:
                         star_tag = '{}.{}'.format(saveframe.tag_prefix, tag[0])
                         auth_tag = self.get_star_auth_tag(star_tag)[0]

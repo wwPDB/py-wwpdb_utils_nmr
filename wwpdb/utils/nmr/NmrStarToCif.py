@@ -125,12 +125,12 @@ class NmrStarToCif:
                             dList, _ = cifObj.GetValueAndItemByBlock(k, lp_tags[content_subtype])
 
                             try:
-                                entry_id = next(row[entry_id_tag] for row in dList if not row[entry_id_tag] in self.empty_value)
+                                entry_id = next(row[entry_id_tag] for row in dList if row[entry_id_tag] not in self.empty_value)
                             except:  # noqa: E722 pylint: disable=bare-except
                                 entry_id = '?'
 
                             try:
-                                list_id = next(row[list_id_tags[content_subtype]] for row in dList if not row[list_id_tags[content_subtype]] in self.empty_value)
+                                list_id = next(row[list_id_tags[content_subtype]] for row in dList if row[list_id_tags[content_subtype]] not in self.empty_value)
                             except:  # noqa: E722 pylint: disable=bare-except
                                 list_id = '?'
 
@@ -143,11 +143,11 @@ class NmrStarToCif:
 
                             try:
                                 info = next(info for info in cs_list_cif_info if info['sf_framecode'] == k)
-                                if 'entry_id' in info and not info['entry_id'] in self.empty_value:
+                                if 'entry_id' in info and info['entry_id'] not in self.empty_value:
                                     entry_id = info['entry_id']
-                                if 'id' in info and not info['id'] in self.empty_value:
+                                if 'id' in info and info['id'] not in self.empty_value:
                                     list_id = info['id']
-                                if 'data_file_name' in info and not info['data_file_name'] in self.empty_value:
+                                if 'data_file_name' in info and info['data_file_name'] not in self.empty_value:
                                     originalFileName = info['data_file_name']
                             except StopIteration:
                                 pass
@@ -242,12 +242,12 @@ class NmrStarToCif:
                             dList, _ = cifObj.GetValueAndItemByBlock(k, cs_loop_str)
 
                             try:
-                                entry_id = next(row[entry_id_tag] for row in dList if not row[entry_id_tag] in self.empty_value)
+                                entry_id = next(row[entry_id_tag] for row in dList if row[entry_id_tag] not in self.empty_value)
                             except:  # noqa: E722 pylint: disable=bare-except
                                 entry_id = '?'
 
                             try:
-                                list_id = next(row[list_id_tag] for row in dList if not row[list_id_tag] in self.empty_value)
+                                list_id = next(row[list_id_tag] for row in dList if row[list_id_tag] not in self.empty_value)
                             except:  # noqa: E722 pylint: disable=bare-except
                                 list_id = '?'
 
@@ -428,7 +428,7 @@ class NmrStarToCif:
                             items = cifObj.GetAttributes(k, lp_category)
                             max_dim = 0
                             for i in range(1, 16):
-                                if not 'Atom_ID_' + str(i) in items:
+                                if 'Atom_ID_' + str(i) not in items:
                                     break
                                 max_dim = i
 
@@ -462,7 +462,7 @@ class NmrStarToCif:
                                         dst = []
                                         for auth_item in auth_items:
                                             dst.append(src[auth_item])
-                                            if not src[auth_item] in self.empty_value:
+                                            if src[auth_item] not in self.empty_value:
                                                 has_auth_value = True
                                         extended_data_list.append(dst)
 

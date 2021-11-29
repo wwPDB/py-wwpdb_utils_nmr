@@ -506,10 +506,10 @@ class BMRBChemShiftStat:
         cs_stat = self.__get(comp_id)
 
         if comp_id in self.__std_comp_ids or polypeptide_like:
-            return [i['atom_id'] for i in cs_stat if not i['atom_id'] in bb_atoms
+            return [i['atom_id'] for i in cs_stat if i['atom_id'] not in bb_atoms
                     and (not excl_minor_atom or (excl_minor_atom and i['primary']))]
 
-        return [i['atom_id'] for i in cs_stat if not i['atom_id'] in bb_atoms
+        return [i['atom_id'] for i in cs_stat if i['atom_id'] not in bb_atoms
                 and (not excl_minor_atom or 'secondary' not in i or (excl_minor_atom and i['secondary']))]
 
     def loadStatFromCsvFiles(self):
@@ -597,7 +597,7 @@ class BMRBChemShiftStat:
 
                         atm_list.append(_row)
 
-                elif comp_id == 'HEM' and not re.match(r'^HM[A-D]$', _atom_id) is None:  # others.csv dependent code
+                elif comp_id == 'HEM' and re.match(r'^HM[A-D]$', _atom_id) is not None:  # others.csv dependent code
 
                     for i in ['', 'A', 'B']:
                         _row = {}
@@ -621,7 +621,7 @@ class BMRBChemShiftStat:
 
                         atm_list.append(_row)
 
-                elif comp_id == 'HEB' and (not re.match(r'^HM[A-D]1$', _atom_id) is None or _atom_id == 'HBB1'):  # others.csv dependent code
+                elif comp_id == 'HEB' and (re.match(r'^HM[A-D]1$', _atom_id) is not None or _atom_id == 'HBB1'):  # others.csv dependent code
 
                     for i in range(1, 4):
                         _row = {}
@@ -645,7 +645,7 @@ class BMRBChemShiftStat:
 
                         atm_list.append(_row)
 
-                elif comp_id == 'HEC' and (not re.match(r'^HM[A-D]$', _atom_id) is None or not re.match(r'^HB[BC]$', _atom_id) is None):  # others.csv dependent code
+                elif comp_id == 'HEC' and (re.match(r'^HM[A-D]$', _atom_id) is not None or re.match(r'^HB[BC]$', _atom_id) is not None):  # others.csv dependent code
 
                     for i in range(1, 4):
                         _row = {}
@@ -695,9 +695,9 @@ class BMRBChemShiftStat:
 
                         atm_list.append(_row)
 
-                elif not((comp_id == 'HEM' and not re.match(r'^HM[A-D][AB]$', _atom_id) is None)
-                         or (comp_id == 'HEB' and (not re.match(r'^HM[A-D][23]$', _atom_id) is None or not re.match(r'^HBB[23]', _atom_id) is None))
-                         or (comp_id == 'HEC' and (not re.match(r'^HM[A-D][123]$', _atom_id) is None or not re.match(r'^HB[BC][123]$', _atom_id) is None))):
+                elif not((comp_id == 'HEM' and re.match(r'^HM[A-D][AB]$', _atom_id) is not None)
+                         or (comp_id == 'HEB' and (re.match(r'^HM[A-D][23]$', _atom_id) is not None or re.match(r'^HBB[23]', _atom_id) is not None))
+                         or (comp_id == 'HEC' and (re.match(r'^HM[A-D][123]$', _atom_id) is not None or re.match(r'^HB[BC][123]$', _atom_id) is not None))):
                     _row = {}
                     _row['comp_id'] = comp_id
                     _row['atom_id'] = _atom_id
@@ -729,7 +729,7 @@ class BMRBChemShiftStat:
 
                     for a in self.__last_chem_comp_atoms:
 
-                        if a[self.__cca_leaving_atom_flag] == 'Y' or not a[self.__cca_type_symbol] in ('H', 'C', 'N', 'P'):
+                        if a[self.__cca_leaving_atom_flag] == 'Y' or a[self.__cca_type_symbol] not in ('H', 'C', 'N', 'P'):
                             continue
 
                         if not any(i for i in atm_list if i['comp_id'] == comp_id and i['atom_id'] == a[self.__cca_atom_id]):
@@ -765,7 +765,7 @@ class BMRBChemShiftStat:
 
         for a in self.__last_chem_comp_atoms:
 
-            if a[self.__cca_leaving_atom_flag] == 'Y' or not a[self.__cca_type_symbol] in ('H', 'C', 'N', 'P'):
+            if a[self.__cca_leaving_atom_flag] == 'Y' or a[self.__cca_type_symbol] not in ('H', 'C', 'N', 'P'):
                 continue
 
             _row = {}
@@ -884,7 +884,7 @@ class BMRBChemShiftStat:
 
                 leaving_atom_list = [a[self.__cca_atom_id] for a in self.__last_chem_comp_atoms if a[self.__cca_leaving_atom_flag] == 'Y']
 
-                cn_h_bonds = collections.Counter([b[self.__ccb_atom_id_1] for b in self.__last_chem_comp_bonds if b[self.__ccb_atom_id_2].startswith('H') and not b[self.__ccb_atom_id_2] in leaving_atom_list])  # noqa: E501
+                cn_h_bonds = collections.Counter([b[self.__ccb_atom_id_1] for b in self.__last_chem_comp_bonds if b[self.__ccb_atom_id_2].startswith('H') and b[self.__ccb_atom_id_2] not in leaving_atom_list])  # noqa: E501
 
                 h_list = [i for i in _list if i['atom_id'].startswith('H') and i['desc'] == 'isolated']
 

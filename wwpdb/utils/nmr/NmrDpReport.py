@@ -882,7 +882,7 @@ class NmrDpReport:
         for stat in self.getNmrStatsOfExptlData(content_subtype):
             loop = []
 
-            if not stat['loop'] is None:
+            if stat['loop'] is not None:
                 for el in stat['loop']:
                     _l = {}
                     for k, v in el.items():
@@ -893,7 +893,7 @@ class NmrDpReport:
 
             saveframe_tag = {}
 
-            if not stat['saveframe_tag'] is None:
+            if stat['saveframe_tag'] is not None:
                 for k, v in stat['saveframe_tag'].items():
                     if v is None or k == 'Entry_ID' or k.startswith('Sf_'):
                         continue
@@ -931,7 +931,7 @@ class NmrDpReport:
             for stat in stats:
                 loop = []
 
-                if not stat['loop'] is None:
+                if stat['loop'] is not None:
                     for el in stat['loop']:
                         _l = {}
                         for k, v in el.items():
@@ -942,7 +942,7 @@ class NmrDpReport:
 
                 saveframe_tag = {}
 
-                if not stat['saveframe_tag'] is None:
+                if stat['saveframe_tag'] is not None:
                     for k, v in stat['saveframe_tag'].items():
                         if v is None or k == 'Entry_ID' or k.startswith('Sf_'):
                             continue
@@ -1287,7 +1287,7 @@ class NmrDpReport:
         if not (cif_beg_seq_id in poly_seq['seq_id'] and cif_end_seq_id in poly_seq['seq_id']):
             return None
 
-        rmsd = [s[rmsd_label] for s in poly_seq if s['seq_id'] >= cif_beg_seq_id and s['seq_id'] <= cif_end_seq_id and not s[rmsd_label] is None]
+        rmsd = [s[rmsd_label] for s in poly_seq if s['seq_id'] >= cif_beg_seq_id and s['seq_id'] <= cif_end_seq_id and s[rmsd_label] is not None]
 
         if len(rmsd) == 0:
             return None

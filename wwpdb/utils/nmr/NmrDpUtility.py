@@ -315,7 +315,7 @@ def get_gauge_code(seq_id, offset=0):
             _seq_id.append(sid)
         seq_id = _seq_id
 
-    sid_len = len([sid for sid in seq_id if not sid is None])
+    sid_len = len([sid for sid in seq_id if sid is not None])
     code_len = 0
 
     chars = []
@@ -400,11 +400,11 @@ def predict_redox_state_of_cystein(ca_chem_shift, cb_chem_shift):
     oxi = 1.0
     red = 1.0
 
-    if not ca_chem_shift is None:
+    if ca_chem_shift is not None:
         oxi *= probability_density(ca_chem_shift, oxi_ca['avr'], oxi_ca['std'])
         red *= probability_density(ca_chem_shift, red_ca['avr'], red_ca['std'])
 
-    if not cb_chem_shift is None:
+    if cb_chem_shift is not None:
         if cb_chem_shift < 32.0:
             oxi = 0.0
         else:
@@ -442,7 +442,7 @@ def predict_cis_trans_peptide_of_proline(cb_chem_shift, cg_chem_shift):
     cis = 1.0
     trs = 1.0
 
-    if not cb_chem_shift is None:
+    if cb_chem_shift is not None:
         if cb_chem_shift < cis_cb['min'] - cis_cb['std'] or cb_chem_shift > cis_cb['max'] + cis_cb['std']:
             cis = 0.0
         else:
@@ -452,7 +452,7 @@ def predict_cis_trans_peptide_of_proline(cb_chem_shift, cg_chem_shift):
         else:
             trs *= probability_density(cb_chem_shift, trs_cb['avr'], trs_cb['std'])
 
-    if not cg_chem_shift is None:
+    if cg_chem_shift is not None:
         if cg_chem_shift < cis_cg['min'] - cis_cg['std'] or cg_chem_shift > cis_cg['max'] + cis_cg['std']:
             cis = 0.0
         else:
@@ -462,7 +462,7 @@ def predict_cis_trans_peptide_of_proline(cb_chem_shift, cg_chem_shift):
         else:
             trs *= probability_density(cg_chem_shift, trs_cg['avr'], trs_cg['std'])
 
-    if (not cb_chem_shift is None) and (not cg_chem_shift is None):
+    if cb_chem_shift is not None and cg_chem_shift is not None:
         delta_shift = cb_chem_shift - cg_chem_shift
 
         cis *= probability_density(delta_shift, cis_dl['avr'], cis_dl['std'])
@@ -504,22 +504,22 @@ def predict_tautomer_state_of_histidine(cg_chem_shift, cd2_chem_shift, nd1_chem_
     tau = 1.0
     pi = 1.0
 
-    if not cg_chem_shift is None:
+    if cg_chem_shift is not None:
         bip *= probability_density(cg_chem_shift, bip_cg['avr'], bip_cg['std'])
         tau *= probability_density(cg_chem_shift, tau_cg['avr'], tau_cg['std'])
         pi *= probability_density(cg_chem_shift, pi_cg['avr'], pi_cg['std'])
 
-    if not cd2_chem_shift is None:
+    if cd2_chem_shift is not None:
         bip *= probability_density(cd2_chem_shift, bip_cd2['avr'], bip_cd2['std'])
         tau *= probability_density(cd2_chem_shift, tau_cd2['avr'], tau_cd2['std'])
         pi *= probability_density(cd2_chem_shift, pi_cd2['avr'], pi_cd2['std'])
 
-    if not nd1_chem_shift is None:
+    if nd1_chem_shift is not None:
         bip *= probability_density(nd1_chem_shift, bip_nd1['avr'], bip_nd1['std'])
         tau *= probability_density(nd1_chem_shift, tau_nd1['avr'], tau_nd1['std'])
         pi *= probability_density(nd1_chem_shift, pi_nd1['avr'], pi_nd1['std'])
 
-    if not ne2_chem_shift is None:
+    if ne2_chem_shift is not None:
         bip *= probability_density(ne2_chem_shift, bip_ne2['avr'], bip_ne2['std'])
         tau *= probability_density(ne2_chem_shift, tau_ne2['avr'], tau_ne2['std'])
         pi *= probability_density(ne2_chem_shift, pi_ne2['avr'], pi_ne2['std'])
@@ -541,7 +541,7 @@ def predict_rotamer_state_of_leucine(cd1_chem_shift, cd2_chem_shift):
           DOI: 10.1021/ja802729t
     """
 
-    if not cd1_chem_shift is None and not cd2_chem_shift is None:
+    if cd1_chem_shift is not None and cd2_chem_shift is not None:
 
         delta = cd1_chem_shift - cd2_chem_shift
 
@@ -559,11 +559,11 @@ def predict_rotamer_state_of_leucine(cd1_chem_shift, cd2_chem_shift):
     gp = 1.0
     t = 1.0
 
-    if not cd1_chem_shift is None:
+    if cd1_chem_shift is not None:
         gp *= probability_density(cd1_chem_shift, gp_cd1['avr'], gp_cd1['std'])
         t *= probability_density(cd1_chem_shift, t_cd1['avr'], t_cd1['std'])
 
-    if not cd2_chem_shift is None:
+    if cd2_chem_shift is not None:
         gp *= probability_density(cd2_chem_shift, gp_cd2['avr'], gp_cd2['std'])
         t *= probability_density(cd2_chem_shift, t_cd2['avr'], t_cd2['std'])
 
@@ -597,12 +597,12 @@ def predict_rotamer_state_of_valine(cg1_chem_shift, cg2_chem_shift):
     gp = 1.0
     t = 1.0
 
-    if not cg1_chem_shift is None:
+    if cg1_chem_shift is not None:
         gm *= probability_density(cg1_chem_shift, gm_cg1['avr'], gm_cg1['std'])
         gp *= probability_density(cg1_chem_shift, gp_cg1['avr'], gp_cg1['std'])
         t *= probability_density(cg1_chem_shift, t_cg1['avr'], t_cg1['std'])
 
-    if not cg2_chem_shift is None:
+    if cg2_chem_shift is not None:
         gm *= probability_density(cg2_chem_shift, gm_cg2['avr'], gm_cg2['std'])
         gp *= probability_density(cg2_chem_shift, gp_cg2['avr'], gp_cg2['std'])
         t *= probability_density(cg2_chem_shift, t_cg2['avr'], t_cg2['std'])
@@ -3559,14 +3559,14 @@ class NmrDpUtility:
         """ Set primary destination file path.
         """
 
-        if not fPath is None:
+        if fPath is not None:
             self.__dstPath = os.path.abspath(fPath)
 
     def setLog(self, fPath):
         """ Set a log file path for the primary input source.
         """
 
-        if not fPath is None:
+        if fPath is not None:
             self.__logPath = os.path.abspath(fPath)
 
     def addInput(self, name=None, value=None, type='file'):
@@ -3626,7 +3626,7 @@ class NmrDpUtility:
         else:
             cs_file_path_list = 'chem_shift_file_path_list'
 
-            if not cs_file_path_list in self.__inputParamDict:
+            if cs_file_path_list not in self.__inputParamDict:
                 raise ValueError("+NmrDpUtility.op() ++ Error  - No input provided for workflow operation %s." % op)
 
             self.__cs_file_path_list_len = len(self.__inputParamDict[cs_file_path_list])
@@ -3643,10 +3643,10 @@ class NmrDpUtility:
         if self.__verbose:
             self.__lfh.write("+NmrDpUtility.op() starting op %s\n" % op)
 
-        if not op in self.__workFlowOps:
+        if op not in self.__workFlowOps:
             raise KeyError("+NmrDpUtility.op() ++ Error  - Unknown workflow operation %s." % op)
 
-        if 'bmrb_only' in self.__inputParamDict and not self.__inputParamDict['bmrb_only'] is None:
+        if 'bmrb_only' in self.__inputParamDict and self.__inputParamDict['bmrb_only'] is not None:
             if isinstance(self.__inputParamDict['bmrb_only'], bool):
                 self.__bmrb_only = self.__inputParamDict['bmrb_only']
             else:
@@ -3657,43 +3657,43 @@ class NmrDpUtility:
             self.cs_unusual_error_scaled_by_sigma = 3.5
             self.cs_diff_error_scaled_by_sigma = 4.0
 
-        if 'nonblk_anomalous_cs' in self.__inputParamDict and not self.__inputParamDict['nonblk_anomalous_cs'] is None:
+        if 'nonblk_anomalous_cs' in self.__inputParamDict and self.__inputParamDict['nonblk_anomalous_cs'] is not None:
             if isinstance(self.__inputParamDict['nonblk_anomalous_cs'], bool):
                 self.__nonblk_anomalous_cs = self.__inputParamDict['nonblk_anomalous_cs']
             else:
                 self.__nonblk_anomalous_cs = self.__inputParamDict['nonblk_anomalous_cs'] in self.true_value
 
-        if 'nonblk_bad_nterm' in self.__inputParamDict and not self.__inputParamDict['nonblk_bad_nterm'] is None:
+        if 'nonblk_bad_nterm' in self.__inputParamDict and self.__inputParamDict['nonblk_bad_nterm'] is not None:
             if isinstance(self.__inputParamDict['nonblk_bad_nterm'], bool):
                 self.__nonblk_bad_nterm = self.__inputParamDict['nonblk_bad_nterm']
             else:
                 self.__nonblk_bad_nterm = self.__inputParamDict['nonblk_bad_nterm'] in self.true_value
 
-        if 'update_poly_seq' in self.__inputParamDict and not self.__inputParamDict['update_poly_seq'] is None:
+        if 'update_poly_seq' in self.__inputParamDict and self.__inputParamDict['update_poly_seq'] is not None:
             if isinstance(self.__inputParamDict['update_poly_seq'], bool):
                 self.__update_poly_seq = self.__inputParamDict['update_poly_seq']
             else:
                 self.__update_poly_seq = self.__inputParamDict['update_poly_seq'] in self.true_value
 
-        if 'resolve_conflict' in self.__inputParamDict and not self.__inputParamDict['resolve_conflict'] is None:
+        if 'resolve_conflict' in self.__inputParamDict and self.__inputParamDict['resolve_conflict'] is not None:
             if isinstance(self.__inputParamDict['resolve_conflict'], bool):
                 self.__resolve_conflict = self.__inputParamDict['resolve_conflict']
             else:
                 self.__resolve_conflict = self.__inputParamDict['resolve_conflict'] in self.true_value
 
-        if 'check_mandatory_tag' in self.__inputParamDict and not self.__inputParamDict['check_mandatory_tag'] is None:
+        if 'check_mandatory_tag' in self.__inputParamDict and self.__inputParamDict['check_mandatory_tag'] is not None:
             if isinstance(self.__inputParamDict['check_mandatory_tag'], bool):
                 self.__check_mandatory_tag = self.__inputParamDict['check_mandatory_tag']
             else:
                 self.__check_mandatory_tag = self.__inputParamDict['check_mandatory_tag'] in self.true_value
 
-        if 'check_auth_seq' in self.__inputParamDict and not self.__inputParamDict['check_auth_seq'] is None:
+        if 'check_auth_seq' in self.__inputParamDict and self.__inputParamDict['check_auth_seq'] is not None:
             if isinstance(self.__inputParamDict['check_auth_seq'], bool):
                 self.__check_auth_seq = self.__inputParamDict['check_auth_seq']
             else:
                 self.__check_auth_seq = self.__inputParamDict['check_auth_seq'] in self.true_value
 
-        if 'transl_pseudo_name' in self.__inputParamDict and not self.__inputParamDict['transl_pseudo_name'] is None:
+        if 'transl_pseudo_name' in self.__inputParamDict and self.__inputParamDict['transl_pseudo_name'] is not None:
             if isinstance(self.__inputParamDict['transl_pseudo_name'], bool):
                 self.__transl_pseudo_name = self.__inputParamDict['transl_pseudo_name']
             else:
@@ -3701,13 +3701,13 @@ class NmrDpUtility:
         elif op in ('nmr-str-consistency-check', 'nmr-str2str-deposit', 'nmr-str2nef-release'):
             self.__transl_pseudo_name = True
 
-        if 'tolerant_seq_align' in self.__inputParamDict and not self.__inputParamDict['tolerant_seq_align'] is None:
+        if 'tolerant_seq_align' in self.__inputParamDict and self.__inputParamDict['tolerant_seq_align'] is not None:
             if isinstance(self.__inputParamDict['tolerant_seq_align'], bool):
                 self.__tolerant_seq_align = self.__inputParamDict['tolerant_seq_align']
             else:
                 self.__tolerant_seq_align = self.__inputParamDict['tolerant_seq_align'] in self.true_value
 
-        if 'fix_format_issue' in self.__inputParamDict and not self.__inputParamDict['fix_format_issue'] is None:
+        if 'fix_format_issue' in self.__inputParamDict and self.__inputParamDict['fix_format_issue'] is not None:
             if isinstance(self.__inputParamDict['fix_format_issue'], bool):
                 self.__fix_format_issue = self.__inputParamDict['fix_format_issue']
             else:
@@ -3715,7 +3715,7 @@ class NmrDpUtility:
         elif not self.__combined_mode or self.__release_mode:
             self.__fix_format_issue = True
 
-        if 'excl_missing_data' in self.__inputParamDict and not self.__inputParamDict['excl_missing_data'] is None:
+        if 'excl_missing_data' in self.__inputParamDict and self.__inputParamDict['excl_missing_data'] is not None:
             if isinstance(self.__inputParamDict['excl_missing_data'], bool):
                 self.__excl_missing_data = self.__inputParamDict['excl_missing_data']
             else:
@@ -3723,7 +3723,7 @@ class NmrDpUtility:
         elif not self.__combined_mode:
             self.__excl_missing_data = True
 
-        if 'trust_pdbx_nmr_ens' in self.__inputParamDict and not self.__inputParamDict['trust_pdbx_nmr_ens'] is None:
+        if 'trust_pdbx_nmr_ens' in self.__inputParamDict and self.__inputParamDict['trust_pdbx_nmr_ens'] is not None:
             if isinstance(self.__inputParamDict['trust_pdbx_nmr_ens'], bool):
                 self.__trust_pdbx_nmr_ens = self.__inputParamDict['trust_pdbx_nmr_ens']
             else:
@@ -3731,32 +3731,32 @@ class NmrDpUtility:
         elif self.__release_mode:
             self.__trust_pdbx_nmr_ens = True
 
-        if 'cutoff_rmsd' in self.__inputParamDict and not self.__inputParamDict['cutoff_rmsd'] is None:
+        if 'cutoff_rmsd' in self.__inputParamDict and self.__inputParamDict['cutoff_rmsd'] is not None:
             if isinstance(self.__inputParamDict['cutoff_rmsd'], float):
                 self.cutoff_rmsd = self.__inputParamDict['cutoff_rmsd']
 
-        if 'entry_id' in self.__outputParamDict and not self.__outputParamDict['entry_id'] is None:
+        if 'entry_id' in self.__outputParamDict and self.__outputParamDict['entry_id'] is not None:
             self.__entry_id = self.__outputParamDict['entry_id']
 
-        if 'insert_entry_id_to_loops' in self.__outputParamDict and not self.__outputParamDict['insert_entry_id_to_loops'] is None:
+        if 'insert_entry_id_to_loops' in self.__outputParamDict and self.__outputParamDict['insert_entry_id_to_loops'] is not None:
             if isinstance(self.__outputParamDict['insert_entry_id_to_loops'], bool):
                 self.__insert_entry_id_to_loops = self.__outputParamDict['insert_entry_id_to_loops']
             else:
                 self.__insert_entry_id_to_loops = self.__outputParamDict['insert_entry_id_to_loops'] in self.true_value
 
-        if 'retain_original' in self.__outputParamDict and not self.__outputParamDict['retain_original'] is None:
+        if 'retain_original' in self.__outputParamDict and self.__outputParamDict['retain_original'] is not None:
             if isinstance(self.__outputParamDict['retain_original'], bool):
                 self.__retain_original = self.__outputParamDict['retain_original']
             else:
                 self.__retain_original = self.__outputParamDict['retain_original'] in self.true_value
 
-        if 'leave_intl_note' in self.__outputParamDict and not self.__outputParamDict['leave_intl_note'] is None:
+        if 'leave_intl_note' in self.__outputParamDict and self.__outputParamDict['leave_intl_note'] is not None:
             if isinstance(self.__outputParamDict['leave_intl_note'], bool):
                 self.__leave_intl_note = self.__outputParamDict['leave_intl_note']
             else:
                 self.__leave_intl_note = self.__outputParamDict['leave_intl_note'] in self.true_value
 
-        if 'reduced_atom_notation' in self.__outputParamDict and not self.__outputParamDict['reduced_atom_notation'] is None:
+        if 'reduced_atom_notation' in self.__outputParamDict and self.__outputParamDict['reduced_atom_notation'] is not None:
             if isinstance(self.__outputParamDict['reduced_atom_notation'], bool):
                 self.__reduced_atom_notation = self.__outputParamDict['reduced_atom_notation']
             else:
@@ -3825,15 +3825,15 @@ class NmrDpUtility:
         """ Dump current NMR data processing report.
         """
 
-        if not self.report_prev is None:
+        if self.report_prev is not None:
             self.report.inheritFormatIssueErrors(self.report_prev)
             self.report.inheritCorrectedFormatIssueWarnings(self.report_prev)
             self.report.inheritCorrectedSaveframeNameWarnings(self.report_prev)
 
-            if not self.report_prev.error.get() is None:
+            if self.report_prev.error.get() is not None:
                 self.report.setCorrectedError(self.report_prev)
 
-            if not self.report_prev.warning.get() is None:
+            if self.report_prev.warning.get() is not None:
                 self.report.setCorrectedWarning(self.report_prev)
 
         self.report.warning.sortChemicalShiftValidation()
@@ -3863,7 +3863,7 @@ class NmrDpUtility:
             # set primary input source as NMR unified data
             input_source = self.report.input_sources[0]
 
-            file_type = 'nef' if 'nef' in self.__op and not 'str2nef' in self.__op else 'nmr-star'
+            file_type = 'nef' if 'nef' in self.__op and 'str2nef' not in self.__op else 'nmr-star'
             content_type = self.content_type[file_type]
 
             input_source.setItemValue('file_name', os.path.basename(srcPath))
@@ -4025,7 +4025,7 @@ class NmrDpUtility:
 
                     if len(message['error']) > 0:
                         for err_message in message['error']:
-                            if not 'No such file or directory' in err_message:
+                            if 'No such file or directory' not in err_message:
                                 err += ' ' + re.sub('not in list', 'unknown item.', err_message)
 
                     self.report.error.appendDescription('content_mismatch', {'file_name': file_name, 'description': err})
@@ -4068,7 +4068,7 @@ class NmrDpUtility:
 
                 is_done = False
 
-            if not srcPath_ is None:
+            if srcPath_ is not None:
                 try:
                     os.remove(srcPath_)
                 except:
@@ -4104,7 +4104,7 @@ class NmrDpUtility:
                 if cs_file_path_list in self.__outputParamDict:
                     if csListId < len(self.__outputParamDict[cs_file_path_list]):
                         dstPath = self.__outputParamDict[cs_file_path_list][csListId]
-                        if not dstPath is None and not dstPath in self.__inputParamDict[cs_file_path_list]:
+                        if dstPath is not None and dstPath not in self.__inputParamDict[cs_file_path_list]:
                             shutil.copyfile(csPath, dstPath)
 
                 if is_valid:
@@ -4120,7 +4120,7 @@ class NmrDpUtility:
 
                         if len(message['error']) > 0:
                             for err_message in message['error']:
-                                if not 'No such file or directory' in err_message:
+                                if 'No such file or directory' not in err_message:
                                     err += ' ' + re.sub('not in list', 'unknown item.', err_message)
 
                         self.report.error.appendDescription('content_mismatch', {'file_name': file_name, 'description': err})
@@ -4157,7 +4157,7 @@ class NmrDpUtility:
                 elif not self.__fixFormatIssueOfInputSource(csListId, file_name, file_type, csPath, 'S', message):
                     is_done = False
 
-                if not csPath_ is None:
+                if csPath_ is not None:
                     try:
                         os.remove(csPath_)
                     except:
@@ -4195,7 +4195,7 @@ class NmrDpUtility:
                     if mr_file_path_list in self.__outputParamDict:
                         if file_path_list_len - self.__cs_file_path_list_len < len(self.__outputParamDict[mr_file_path_list]):
                             dstPath = self.__outputParamDict[mr_file_path_list][file_path_list_len - self.__cs_file_path_list_len]
-                            if not dstPath is None and not dstPath in self.__inputParamDict[mr_file_path_list]:
+                            if dstPath is not None and dstPath not in self.__inputParamDict[mr_file_path_list]:
                                 shutil.copyfile(mrPath, dstPath)
 
                     if is_valid:
@@ -4211,7 +4211,7 @@ class NmrDpUtility:
 
                             if len(message['error']) > 0:
                                 for err_message in message['error']:
-                                    if not 'No such file or directory' in err_message:
+                                    if 'No such file or directory' not in err_message:
                                         err += ' ' + re.sub('not in list', 'unknown item.', err_message)
 
                             self.report.error.appendDescription('content_mismatch', {'file_name': file_name, 'description': err})
@@ -4253,7 +4253,7 @@ class NmrDpUtility:
 
                     file_path_list_len += 1
 
-                    if not mrPath_ is None:
+                    if mrPath_ is not None:
                         try:
                             os.remove(mrPath_)
                         except:
@@ -4276,7 +4276,7 @@ class NmrDpUtility:
                         convert_codec(arPath, arPath_, codec, 'utf-8')
                         arPath = arPath_
 
-                    if not arPath_ is None:
+                    if arPath_ is not None:
                         try:
                             os.remove(arPath_)
                         except:
@@ -4288,9 +4288,9 @@ class NmrDpUtility:
         """ Fix format issue of NMR data.
         """
 
-        if not self.__fix_format_issue or srcPath is None or not fileSubType in ('A', 'S', 'R') or message is None:
+        if not self.__fix_format_issue or srcPath is None or fileSubType not in ('A', 'S', 'R') or message is None:
 
-            if not message is None:
+            if message is not None:
 
                 missing_loop = True
 
@@ -4302,7 +4302,7 @@ class NmrDpUtility:
 
                         err = ''
                         for err_message in message['error']:
-                            if not 'No such file or directory' in err_message:
+                            if 'No such file or directory' not in err_message:
                                 err += re.sub('not in list', 'unknown item.', err_message) + ' '
                         err = err[:-1]
 
@@ -4310,7 +4310,7 @@ class NmrDpUtility:
                         missing_loop = False
 
                         for err_message in self.__original_error_message[file_list_id]['error']:
-                            if not 'No such file or directory' in err_message:
+                            if 'No such file or directory' not in err_message:
                                 err += ' ' + re.sub('not in list', 'unknown item.', err_message)
 
                 self.report.error.appendDescription('missing_mandatory_content' if missing_loop else 'format_issue', {'file_name': file_name, 'description': err})
@@ -4764,7 +4764,7 @@ class NmrDpUtility:
 
             for msg in message['error']:
 
-                if not msg_template in msg:
+                if msg_template not in msg:
                     continue
 
                 try:
@@ -4788,7 +4788,7 @@ class NmrDpUtility:
                                     if category_pattern.match(line):
                                         target['lp_category'] = '_' + category_pattern.search(line).groups()[0]
                                         content_subtype = next((k for k, v in self.lp_categories[file_type].items() if v == target['lp_category']), None)
-                                        if not content_subtype is None:
+                                        if content_subtype is not None:
                                             target['sf_category'] = self.sf_categories[file_type][content_subtype]
                                             target['sf_tag_prefix'] = self.sf_tag_prefixes[file_type][content_subtype]
                                         break
@@ -4846,7 +4846,7 @@ class NmrDpUtility:
         try:
 
             msg = next(msg for msg in message['error'] if msg_template in msg)
-            warn = 'Saveframe(s), instead of the datablock, must hook more than one loops. Loops detected:%s' % (msg[len(msg_template):].replace('<pynmrstar.', '').replace("'>", "'"))
+            warn = 'Saveframe(s), instead of the datablock, must hook more than one loop. Loops detected:%s' % (msg[len(msg_template):].replace('<pynmrstar.', '').replace("'>", "'"))
 
             self.report.warning.appendDescription('corrected_format_issue', {'file_name': file_name, 'description': warn})
             self.report.setWarning()
@@ -4861,7 +4861,7 @@ class NmrDpUtility:
 
             for msg in message['error']:
 
-                if not msg_template in msg:
+                if msg_template not in msg:
                     continue
 
                 try:
@@ -4875,8 +4875,8 @@ class NmrDpUtility:
                         target = {'lp_category': lp_category}
 
                         pass_loop = False
-                        in_loop = False
 
+                        lp_loc = -1
                         i = 1
 
                         with open(_srcPath, 'r', encoding='UTF-8') as ifp:
@@ -4885,22 +4885,20 @@ class NmrDpUtility:
                                     if category_pattern.match(line):
                                         _lp_category = '_' + category_pattern.search(line).groups()[0]
                                         if lp_category == _lp_category:
-                                            target['loop_location'] = _i
+                                            target['loop_location'] = lp_loc
                                             content_subtype = next((k for k, v in self.lp_categories[file_type].items() if v == target['lp_category']), None)
                                             if not content_subtype is None:
                                                 target['sf_category'] = self.sf_categories[file_type][content_subtype]
                                                 target['sf_tag_prefix'] = self.sf_tag_prefixes[file_type][content_subtype]
                                                 target['sf_framecode'] = target['sf_category'] + '_1'
                                         pass_loop = False
-                                        in_loop = True
                                 elif loop_pattern.match(line):
                                     pass_loop = True
-                                    in_loop = False
-                                    _i = i
+                                    lp_loc = i
                                 elif stop_pattern.match(line):
-                                    if 'loop_location' in target and not 'stop_location' in target:
+                                    if 'loop_location' in target and 'stop_location' not in target:
                                         target['stop_location'] = i
-                                    in_loop = False
+                                        break
 
                                 i += 1
 
@@ -4931,12 +4929,13 @@ class NmrDpUtility:
                                 ofp.write(target['sf_tag_prefix'] + '.' + ('sf_framecode' if file_type == 'nef' else 'Sf_framecode') + '   ' + target['sf_framecode'] + '\n')
                                 ofp.write(target['sf_tag_prefix'] + '.' + ('sf_category' if file_type == 'nef' else 'Sf_category') + '    ' + target['sf_category'] + '\n')
                                 ofp.write('#\n')
-                        if not i in ignored_loop_locations:
+                        if i not in ignored_loop_locations:
                             ofp.write(line)
                         if i in target_stop_locations:
                             target = next(target for target in targets if target['stop_location'] == i)
                             if 'sf_category' in target:
                                 ofp.write('save_\n')
+
                         i += 1
 
                     _srcPath = ofp.name
@@ -4963,7 +4962,7 @@ class NmrDpUtility:
 
             for msg in message['error']:
 
-                if not msg_template in msg:
+                if msg_template not in msg:
                     continue
 
                 try:
@@ -5007,10 +5006,10 @@ class NmrDpUtility:
                                             if not pass_category_1:
                                                 target['category_1_begin'] = i
                                                 content_subtype = next((k for k, v in self.sf_tag_prefixes[file_type].items() if v == category), None)
-                                                if not content_subtype is None:
+                                                if content_subtype is not None:
                                                     target['content_subtype_1'] = content_subtype
                                                 content_subtype = next((k for k, v in self.lp_categories[file_type].items() if v == category), None)
-                                                if not content_subtype is None:
+                                                if content_subtype is not None:
                                                     target['content_subtype_1'] = content_subtype
                                             pass_category_1 = True
                                             target['category_1_end'] = i
@@ -5018,20 +5017,20 @@ class NmrDpUtility:
                                             if not pass_category_2:
                                                 target['category_2_begin'] = i
                                                 content_subtype = next((k for k, v in self.sf_tag_prefixes[file_type].items() if v == category), None)
-                                                if not content_subtype is None:
+                                                if content_subtype is not None:
                                                     target['category_type_2'] = 'saveframe'
                                                     target['content_subtype_2'] = content_subtype
                                                     target['sf_tag_prefix_2'] = self.sf_tag_prefixes[file_type][content_subtype]
                                                     target['sf_category_2'] = self.sf_categories[file_type][content_subtype]
                                                     target['sf_framecode_2'] = target['sf_category_2'] + '_1'
                                                 content_subtype = next((k for k, v in self.lp_categories[file_type].items() if v == category), None)
-                                                if not content_subtype is None:
+                                                if content_subtype is not None:
                                                     target['category_type_2'] = 'loop'
                                                     target['content_subtype_2'] = content_subtype
                                                     target['sf_tag_prefix_2'] = self.sf_tag_prefixes[file_type][content_subtype]
                                                     target['sf_category_2'] = self.sf_categories[file_type][content_subtype]
                                                     target['sf_framecode_2'] = target['sf_category_2'] + '_1'
-                                                if not 'category_type_2' in target:
+                                                if 'category_type_2' not in target:
                                                     content_subtype = target['content_subtype_1']
                                                     target['category_type_2'] = 'loop'
                                                     target['content_subtype_2'] = content_subtype
@@ -5091,7 +5090,7 @@ class NmrDpUtility:
                                     ofp.write('loop_\n')
                                     lp_tags = ''
                                     lp_values = ''
-                            if not i in loop_category_locations:
+                            if i not in loop_category_locations:
                                 ofp.write(line)
                             else:
                                 g = tagvalue_pattern.search(line).groups()
@@ -5113,6 +5112,7 @@ class NmrDpUtility:
                                     ofp.write(lp_tags)
                                     ofp.write(lp_values.rstrip(' ') + '\n')
                                     ofp.write('stop_\n')
+
                             i += 1
 
                         _srcPath = ofp.name
@@ -5206,7 +5206,7 @@ class NmrDpUtility:
                 if cs_file_path_list in self.__outputParamDict:
                     if file_list_id < len(self.__outputParamDict[cs_file_path_list]):
                         dstPath = self.__outputParamDict[cs_file_path_list][file_list_id]
-                        if not dstPath is None and not dstPath in self.__inputParamDict[cs_file_path_list]:
+                        if dstPath is not None and dstPath not in self.__inputParamDict[cs_file_path_list]:
                             shutil.copyfile(_srcPath, dstPath)
 
             else:
@@ -5216,7 +5216,7 @@ class NmrDpUtility:
                 if mr_file_path_list in self.__outputParamDict:
                     if file_list_id - self.__cs_file_path_list_len < len(self.__outputParamDict[mr_file_path_list]):
                         dstPath = self.__outputParamDict[mr_file_path_list][file_list_id - self.__cs_file_path_list_len]
-                        if not dstPath is None and not dstPath in self.__inputParamDict[mr_file_path_list]:
+                        if dstPath is not None and dstPath not in self.__inputParamDict[mr_file_path_list]:
                             shutil.copyfile(_srcPath, dstPath)
 
         if is_valid:
@@ -5227,7 +5227,7 @@ class NmrDpUtility:
 
                 if len(message['error']) > 0:
                     for err_message in message['error']:
-                        if not 'No such file or directory' in err_message:
+                        if 'No such file or directory' not in err_message:
                             err += ' ' + re.sub('not in list', 'unknown item.', err_message)
 
                 self.report.error.appendDescription('content_mismatch', {'file_name': file_name, 'description': err})
@@ -5279,7 +5279,7 @@ class NmrDpUtility:
 
                     err = ''
                     for err_message in message['error']:
-                        if not 'No such file or directory' in err_message:
+                        if 'No such file or directory' not in err_message:
                             err += re.sub('not in list', 'unknown item.', err_message) + ' '
                     err = err[:-1]
 
@@ -5287,7 +5287,7 @@ class NmrDpUtility:
                     missing_loop = False
 
                     for err_message in self.__original_error_message[file_list_id]['error']:
-                        if not 'No such file or directory' in err_message:
+                        if 'No such file or directory' not in err_message:
                             err += ' ' + re.sub('not in list', 'unknown item.', err_message)
 
             self.report.error.appendDescription('missing_mandatory_content' if missing_loop else 'format_issue', {'file_name': file_name, 'description': err})
@@ -5410,7 +5410,7 @@ class NmrDpUtility:
 
             if self.__star_data_type[file_list_id] == 'Loop':
 
-                if not content_subtype in content_subtypes:
+                if content_subtype not in content_subtypes:
                     continue
 
                 sf_data = self.__star_data[file_list_id]
@@ -5420,7 +5420,7 @@ class NmrDpUtility:
 
             elif self.__star_data_type[file_list_id] == 'Saveframe':
 
-                if not content_subtype in content_subtypes:
+                if content_subtype not in content_subtypes:
                     continue
 
                 sf_data = self.__star_data[file_list_id]
@@ -5457,7 +5457,7 @@ class NmrDpUtility:
 
             index_tag = self.index_tags[file_type][content_subtype]
 
-            if not index_tag is None:
+            if index_tag is not None:
 
                 try:
                     tag_pos = next(loop.tags.index(tag) for tag in loop.tags if tag == 'ordinal')
@@ -5479,7 +5479,7 @@ class NmrDpUtility:
                 except StopIteration:
                     pass
 
-                if not 'index' in loop.tags:
+                if 'index' not in loop.tags:
 
                     lp_tag = lp_category + '.index'
                     err = self.__err_template_for_missing_mandatory_lp_tag % (lp_tag, file_type.upper())
@@ -5510,7 +5510,7 @@ class NmrDpUtility:
                 except StopIteration:
                     pass
 
-                if not 'element' in loop.tags:
+                if 'element' not in loop.tags:
 
                     lp_tag = lp_category + '.element'
                     err = self.__err_template_for_missing_mandatory_lp_tag % (lp_tag, file_type.upper())
@@ -5548,7 +5548,7 @@ class NmrDpUtility:
                                 atom_type = 'H'
                             row[atom_type_col] = atom_type
 
-                if not 'isotope_number' in loop.tags:
+                if 'isotope_number' not in loop.tags:
 
                     lp_tag = lp_category + '.isotope_number'
                     err = self.__err_template_for_missing_mandatory_lp_tag % (lp_tag, file_type.upper())
@@ -5588,7 +5588,7 @@ class NmrDpUtility:
 
             elif content_subtype == 'dihed_restraint':
 
-                if not 'name' in loop.tags:
+                if 'name' not in loop.tags:
 
                     lp_tag = lp_category + '.name'
                     err = self.__err_template_for_missing_mandatory_lp_tag % (lp_tag, file_type.upper())
@@ -5635,7 +5635,7 @@ class NmrDpUtility:
                     _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
                     num_dim = int(_num_dim)
 
-                    if not num_dim in range(1, self.lim_num_dim):
+                    if num_dim not in range(1, self.lim_num_dim):
                         raise ValueError()
 
                 except ValueError: # raised error already at __testIndexConsistency()
@@ -5741,7 +5741,7 @@ class NmrDpUtility:
 
             if self.__star_data_type[file_list_id] == 'Loop':
 
-                if not content_subtype in content_subtypes:
+                if content_subtype not in content_subtypes:
                     continue
 
                 sf_data = self.__star_data[file_list_id]
@@ -5751,7 +5751,7 @@ class NmrDpUtility:
 
             elif self.__star_data_type[file_list_id] == 'Saveframe':
 
-                if not content_subtype in content_subtypes:
+                if content_subtype not in content_subtypes:
                     continue
 
                 sf_data = self.__star_data[file_list_id]
@@ -5788,7 +5788,7 @@ class NmrDpUtility:
 
             if content_subtype == 'chem_shift':
 
-                if not 'Atom_type' in loop.tags:
+                if 'Atom_type' not in loop.tags:
 
                     lp_tag = lp_category + '.Atom_type'
                     err = self.__err_template_for_missing_mandatory_lp_tag % (lp_tag, file_type.upper())
@@ -5826,7 +5826,7 @@ class NmrDpUtility:
                                 atom_type = 'H'
                             row[atom_type_col] = atom_type
 
-                if not 'Atom_isotope_number' in loop.tags:
+                if 'Atom_isotope_number' not in loop.tags:
 
                     lp_tag = lp_category + '.Atom_isotope_number'
                     err = self.__err_template_for_missing_mandatory_lp_tag % (lp_tag, file_type.upper())
@@ -5866,7 +5866,7 @@ class NmrDpUtility:
 
             elif content_subtype == 'dihed_restraint':
 
-                if not 'Torsion_angle_name' in loop.tags:
+                if 'Torsion_angle_name' not in loop.tags:
 
                     lp_tag = lp_category + '.Torsion_angle_name'
                     err = self.__err_template_for_missing_mandatory_lp_tag % (lp_tag, file_type.upper())
@@ -5890,7 +5890,7 @@ class NmrDpUtility:
 
             elif content_subtype.startswith('spectral_peak'):
 
-                if not 'Atom_type' in loop.tags:
+                if 'Atom_type' not in loop.tags:
 
                     lp_tag = lp_category + '.Atom_type'
                     err = self.__err_template_for_missing_mandatory_lp_tag % (lp_tag, file_type.upper())
@@ -5914,7 +5914,7 @@ class NmrDpUtility:
                     except ValueError:
                         pass
 
-                if not 'Atom_isotope_number' in loop.tags:
+                if 'Atom_isotope_number' not in loop.tags:
 
                     lp_tag = lp_category + '.Atom_isotope_number'
                     err = self.__err_template_for_missing_mandatory_lp_tag % (lp_tag, file_type.upper())
@@ -5938,7 +5938,7 @@ class NmrDpUtility:
                     except ValueError:
                         pass
 
-                if not 'Axis_code' in loop.tags:
+                if 'Axis_code' not in loop.tags:
 
                     lp_tag = lp_category + '.Axis_code'
                     err = self.__err_template_for_missing_mandatory_lp_tag % (lp_tag, file_type.upper())
@@ -6026,7 +6026,7 @@ class NmrDpUtility:
                 if file_type == 'nmr-star' and sf_category == 'entity':
                     self.__has_star_entity = True
 
-                if not sf_category is None and not sf_category in self.sf_categories[file_type].values():
+                if sf_category is not None and sf_category not in self.sf_categories[file_type].values():
 
                     if not self.__bmrb_only:
 
@@ -6182,7 +6182,7 @@ class NmrDpUtility:
 
         ar_file_path_list = 'atypical_restraint_file_path_list'
 
-        if not ar_file_path_list in self.__inputParamDict:
+        if ar_file_path_list not in self.__inputParamDict:
             return True
 
         first_atom_pattern = re.compile(r'^ATOM +1 .*')
@@ -6337,7 +6337,7 @@ class NmrDpUtility:
                             elif _t.lower() == 'name':
                                 name = t.upper()
                                 if name in atom_like_names:
-                                    if not name in names or len(names) > 1:
+                                    if name not in names or len(names) > 1:
                                         atom_likes += 1
                                         names.append(name)
                                     if name in cs_atom_like_names:
@@ -6352,7 +6352,7 @@ class NmrDpUtility:
                             elif _t.lower() == 'resid':
                                 try:
                                     v = int(t)
-                                    if not v in resids:
+                                    if v not in resids:
                                         resid_likes += 1
                                         resids.append(v)
                                 except:
@@ -6425,7 +6425,7 @@ class NmrDpUtility:
                                 elif _t == 'name':
                                     name = t.upper()
                                     if name in atom_like_names:
-                                        if not name in names or len(names) > 1:
+                                        if name not in names or len(names) > 1:
                                             atom_likes += 1
                                             names.append(name)
 
@@ -6582,7 +6582,7 @@ class NmrDpUtility:
                                     in_igr1 = False
                                     in_igr2 = False
 
-                                elif not '=' in t and in_iat:
+                                elif '=' not in t and in_iat:
                                     try:
                                         iat = int(t)
                                         names.append(iat)
@@ -6621,7 +6621,7 @@ class NmrDpUtility:
                                     in_iat = False
                                     in_igr2 = False
 
-                                elif not '=' in t and in_igr1:
+                                elif '=' not in t and in_igr1:
                                     try:
                                         iat = int(t)
                                         g = names[0]
@@ -6640,7 +6640,7 @@ class NmrDpUtility:
                                     in_iat = False
                                     in_igr1 = False
 
-                                elif not '=' in t and in_igr2:
+                                elif '=' not in t and in_igr2:
                                     try:
                                         iat = int(t)
                                         g = names[1]
@@ -6836,13 +6836,13 @@ class NmrDpUtility:
                             name = t.upper()
 
                             if name in atom_like_names:
-                                if not name in names or len(names) > 1:
+                                if name not in names or len(names) > 1:
                                     atom_likes += 1
                                     names.append(name)
                                 if names in cs_atom_like_names:
                                     cs_atom_likes += 1
 
-                            elif name in one_letter_codes and not name in atom_like_names_oth:
+                            elif name in one_letter_codes and name not in atom_like_names_oth:
                                 prohibited_col.add(s.index(t))
 
                             elif '.' in t:
@@ -6908,7 +6908,7 @@ class NmrDpUtility:
                                 name = t.upper()
 
                                 if name in atom_like_names_oth:
-                                    if not name in names or len(names) > 1:
+                                    if name not in names or len(names) > 1:
                                         atom_likes += 1
                                         names.append(name)
                                     if name in cs_atom_like_names_oth:
@@ -6982,7 +6982,7 @@ class NmrDpUtility:
                             atom_id = s[2].upper()
 
                             if comp_id in three_letter_codes:
-                                if not atom_id in atom_like_names:
+                                if atom_id not in atom_like_names:
                                     continue
 
                             elif not self.__updateChemCompDict(comp_id):
@@ -6993,7 +6993,7 @@ class NmrDpUtility:
                             atom_id = s[5].upper()
 
                             if comp_id in three_letter_codes:
-                                if not atom_id in atom_like_names:
+                                if atom_id not in atom_like_names:
                                     continue
 
                             elif not self.__updateChemCompDict(comp_id):
@@ -7131,7 +7131,7 @@ class NmrDpUtility:
 
                 fileListId += 1
 
-                if (not content_subtype is None and 'dist_restraint' in content_subtype) or file_type == 'nm-aux-amb':
+                if (content_subtype is not None and 'dist_restraint' in content_subtype) or file_type == 'nm-aux-amb':
                     continue
 
                 if content_subtype is None:
@@ -7146,7 +7146,7 @@ class NmrDpUtility:
                     if self.__verbose:
                         self.__lfh.write("+NmrDpUtility.__detectContentSubTypeOfLegacyMR() ++ Error  - %s\n" % err)
 
-                elif not 'chem_shift' in content_subtype:
+                elif 'chem_shift' not in content_subtype:
 
                     subtype_name = ""
                     if 'dihed_restraint' in content_subtype:
@@ -7209,7 +7209,7 @@ class NmrDpUtility:
 
         if file_type == 'nef': # DAOTHER-7389, issue #3, allow empty for 'chem_shift'
             return self.__nefT.get_nef_seq(sf_data, lp_category=self.lp_categories[file_type][content_subtype],
-                                           allow_empty=(content_subtype in ('chem_shift', 'spectral_peak')), allow_gap=(not content_subtype in ('poly_seq', 'entity')))
+                                           allow_empty=(content_subtype in ('chem_shift', 'spectral_peak')), allow_gap=(content_subtype not in ('poly_seq', 'entity')))
 
         if content_subtype == 'spectral_peak_alt':
             return self.__nefT.get_star_seq(sf_data, lp_category='_Assigned_peak_chem_shift',
@@ -7217,7 +7217,7 @@ class NmrDpUtility:
 
         # DAOTHER-7389, issue #3, allow empty for 'chem_shift'
         return self.__nefT.get_star_seq(sf_data, lp_category=self.lp_categories[file_type][content_subtype],
-                                        allow_empty=(content_subtype in ('chem_shift', 'spectral_peak')), allow_gap=(not content_subtype in ('poly_seq', 'entity')))
+                                        allow_empty=(content_subtype in ('chem_shift', 'spectral_peak')), allow_gap=(content_subtype not in ('poly_seq', 'entity')))
 
     def __extractPolymerSequence(self):
         """ Extract reference polymer sequence.
@@ -7242,7 +7242,7 @@ class NmrDpUtility:
 
             content_subtype = 'poly_seq'
 
-            if not content_subtype in input_source_dic['content_subtype'].keys():
+            if content_subtype not in input_source_dic['content_subtype'].keys():
                 continue
 
             sf_category = self.sf_categories[file_type][content_subtype]
@@ -7616,7 +7616,7 @@ class NmrDpUtility:
 
         except KeyError as e:
 
-            if not 'Auth' in str(e) or self.__check_auth_seq:
+            if 'Auth' not in str(e) or self.__check_auth_seq:
                 self.report.error.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
                 self.report.setError()
 
@@ -7653,7 +7653,7 @@ class NmrDpUtility:
 
                 if warn.startswith('[Invalid data]'):
 
-                    if not 'Auth' in warn or self.__check_auth_seq:
+                    if 'Auth' not in warn or self.__check_auth_seq:
 
                         p = warn.index(']') + 2
                         warn = warn[p:]
@@ -7713,7 +7713,7 @@ class NmrDpUtility:
             for subtype_pair in itertools.combinations_with_replacement(subtype_with_poly_seq, 2):
 
                 # poly_seq is reference sequence and suppress tests on combinations of two sequences in loop
-                if has_poly_seq and ((not poly_seq in subtype_pair) or subtype_pair == (poly_seq, poly_seq)):
+                if has_poly_seq and ((poly_seq not in subtype_pair) or subtype_pair == (poly_seq, poly_seq)):
                     continue
 
                 subtype1 = subtype_pair[0] # poly_seq will appear only on subtype1
@@ -7745,7 +7745,7 @@ class NmrDpUtility:
 
                             chain_id = s2['chain_id']
 
-                            if not chain_id in ref_chain_ids and not ('identical_chain_id' in s2 and not chain_id in s2['identical_chain_id']):
+                            if chain_id not in ref_chain_ids and not ('identical_chain_id' in s2 and chain_id not in s2['identical_chain_id']):
                                 return False
 
                             for s1 in ps1:
@@ -7755,7 +7755,7 @@ class NmrDpUtility:
 
                                 for seq_id, comp_id in zip(s2['seq_id'], s2['comp_id']):
 
-                                    if not seq_id in s1['seq_id']:
+                                    if seq_id not in s1['seq_id']:
 
                                         if comp_id != '.':
                                             return False
@@ -7764,7 +7764,7 @@ class NmrDpUtility:
                                         i = s1['seq_id'].index(seq_id)
                                         _comp_id = s1['comp_id'][i]
 
-                                        if not comp_id in self.empty_value and not _comp_id in self.empty_value and comp_id != _comp_id:
+                                        if comp_id not in self.empty_value and _comp_id not in self.empty_value and comp_id != _comp_id:
                                             return False
 
                 # brute force check
@@ -7797,7 +7797,7 @@ class NmrDpUtility:
                                             i = s1['seq_id'].index(seq_id)
                                             _comp_id = s1['comp_id'][i]
 
-                                            if not comp_id in self.empty_value and not _comp_id in self.empty_value and comp_id != _comp_id:
+                                            if comp_id not in self.empty_value and _comp_id not in self.empty_value and comp_id != _comp_id:
                                                 return False
 
                             # inverse check required for unverified sequences
@@ -7816,7 +7816,7 @@ class NmrDpUtility:
                                             j = s2['seq_id'].index(seq_id)
                                             _comp_id = s2['comp_id'][j]
 
-                                            if not comp_id in self.empty_value and not _comp_id in self.empty_value and comp_id != _comp_id:
+                                            if comp_id not in self.empty_value and _comp_id not in self.empty_value and comp_id != _comp_id:
                                                 return False
 
         return True
@@ -7860,7 +7860,7 @@ class NmrDpUtility:
             for subtype_pair in itertools.combinations_with_replacement(subtype_with_poly_seq, 2):
 
                 # poly_seq is reference sequence and suppress tests on combinations of two sequences in loop
-                if has_poly_seq and ((not poly_seq in subtype_pair) or subtype_pair == (poly_seq, poly_seq)):
+                if has_poly_seq and ((poly_seq not in subtype_pair) or subtype_pair == (poly_seq, poly_seq)):
                     continue
 
                 subtype1 = subtype_pair[0] # poly_seq will appear only on subtype1
@@ -7892,7 +7892,7 @@ class NmrDpUtility:
 
                             chain_id = s2['chain_id']
 
-                            if not chain_id in ref_chain_ids and not ('identical_chain_id' in s2 and not chain_id in s2['identical_chain_id']):
+                            if chain_id not in ref_chain_ids and not ('identical_chain_id' in s2 and chain_id not in s2['identical_chain_id']):
 
                                 err = "Invalid chain_id %r in a loop %s." % (chain_id, lp_category2)
 
@@ -7912,18 +7912,18 @@ class NmrDpUtility:
                                     if 'identical_chain_id' in s2:
                                         _s1 = next((_s1 for _s1 in ps1 if _s1['chain_id'] == chain_id), None)
                                         __s1 = next((_s1 for _s1 in ps1 if _s1['chain_id'] in s2['identical_chain_id']), None)
-                                        if not _s1 is None and len(s1['seq_id']) != len(_s1['seq_id']):
+                                        if _s1 is not None and len(s1['seq_id']) != len(_s1['seq_id']):
                                             continue
-                                        if not __s1 is None and len(s1['seq_id']) != len(__s1['seq_id']):
+                                        if __s1 is not None and len(s1['seq_id']) != len(__s1['seq_id']):
                                             continue
 
                                     for seq_id, comp_id in zip(s2['seq_id'], s2['comp_id']):
 
-                                        if not seq_id in s1['seq_id']:
+                                        if seq_id not in s1['seq_id']:
 
                                             if comp_id != '.':
 
-                                                if not self.__target_framecode in self.empty_value:
+                                                if self.__target_framecode not in self.empty_value:
                                                     print(sf_framecode2)
                                                     print(s1['chain_id'])
                                                     print(s1['seq_id'])
@@ -7949,9 +7949,9 @@ class NmrDpUtility:
                                             i = s1['seq_id'].index(seq_id)
                                             _comp_id = s1['comp_id'][i]
 
-                                            if not comp_id in self.empty_value and not _comp_id in self.empty_value and comp_id != _comp_id:
+                                            if comp_id not in self.empty_value and _comp_id not in self.empty_value and comp_id != _comp_id:
 
-                                                if not self.__target_framecode in self.empty_value:
+                                                if self.__target_framecode not in self.empty_value:
                                                     print(sf_framecode2)
                                                     print(s1['chain_id'])
                                                     print(s1['seq_id'])
@@ -8024,7 +8024,7 @@ class NmrDpUtility:
                                             i = s1['seq_id'].index(seq_id)
                                             _comp_id = s1['comp_id'][i]
 
-                                            if not comp_id in self.empty_value and not _comp_id in self.empty_value and comp_id != _comp_id:
+                                            if comp_id not in self.empty_value and _comp_id not in self.empty_value and comp_id != _comp_id:
 
                                                 err = "Unmatched comp_id %r vs %r (seq_id %s, chain_id %s) exists against %r saveframe." % (comp_id, _comp_id, seq_id, chain_id, sf_framecode1)
 
@@ -8058,7 +8058,7 @@ class NmrDpUtility:
                                             j = s2['seq_id'].index(seq_id)
                                             _comp_id = s2['comp_id'][j]
 
-                                            if not comp_id in self.empty_value and not _comp_id in self.empty_value and comp_id != _comp_id:
+                                            if comp_id not in self.empty_value and _comp_id not in self.empty_value and comp_id != _comp_id:
 
                                                 err = "Unmatched comp_id %r vs %r (seq_id %s, chain_id %s) exists against %r saveframe." % (comp_id, _comp_id, seq_id, chain_id, sf_framecode2)
 
@@ -8095,7 +8095,7 @@ class NmrDpUtility:
 
         elif self.__get1LetterCode(comp_id) == 'X' and self.__updateChemCompDict(comp_id):
             if '_chem_comp.mon_nstd_parent_comp_id' in self.__last_chem_comp_dict: # matches with comp_id in CCD
-                if not self.__last_chem_comp_dict['_chem_comp.mon_nstd_parent_comp_id'] in self.empty_value:
+                if self.__last_chem_comp_dict['_chem_comp.mon_nstd_parent_comp_id'] not in self.empty_value:
                     comp_id = self.__last_chem_comp_dict['_chem_comp.mon_nstd_parent_comp_id']
                     if comp_id in ('A', 'C', 'G', 'T', 'I', 'U') and len(ref_comp_id) == 2 and ref_comp_id.startswith('D'):
                         comp_id = 'D' + comp_id
@@ -8107,7 +8107,7 @@ class NmrDpUtility:
 
         elif self.__get1LetterCode(ref_comp_id) == 'X' and self.__updateChemCompDict(ref_comp_id):
             if '_chem_comp.mon_nstd_parent_comp_id' in self.__last_chem_comp_dict: # matches with comp_id in CCD
-                if not self.__last_chem_comp_dict['_chem_comp.mon_nstd_parent_comp_id'] in self.empty_value:
+                if self.__last_chem_comp_dict['_chem_comp.mon_nstd_parent_comp_id'] not in self.empty_value:
                     ref_comp_id = self.__last_chem_comp_dict['_chem_comp.mon_nstd_parent_comp_id']
                     if ref_comp_id in ('A', 'C', 'G', 'T', 'I', 'U') and len(comp_id) == 2 and comp_id.startswith('D'):
                         ref_comp_id = 'D' + ref_comp_id
@@ -8175,7 +8175,7 @@ class NmrDpUtility:
                 _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
                 num_dim = int(_num_dim)
 
-                if not num_dim in range(1, self.lim_num_dim):
+                if num_dim not in range(1, self.lim_num_dim):
                     raise ValueError()
 
             except ValueError: # raised error already at __testIndexConsistency()
@@ -8292,7 +8292,7 @@ class NmrDpUtility:
 
                             s = next((s for s in ps if s['chain_id'] == primary_chain_id), None)
 
-                            if not s is None:
+                            if s is not None:
 
                                 _s1 = fill_blank_comp_id_with_offset(primary_s, 0)
                                 _s2 = fill_blank_comp_id_with_offset(s, 0)
@@ -8322,7 +8322,7 @@ class NmrDpUtility:
                 for s in ps:
                     chain_id = s['chain_id']
 
-                    if not chain_id in common_poly_seq:
+                    if chain_id not in common_poly_seq:
                         common_poly_seq[chain_id] = set()
 
             chains = common_poly_seq.keys()
@@ -8356,12 +8356,12 @@ class NmrDpUtility:
                     if len(_comp_id) == 1:
                         comp_id_list.append(_comp_id[0])
                     else:
-                        comp_id_list.append(next(comp_id for comp_id in _comp_id if not comp_id in self.empty_value))
+                        comp_id_list.append(next(comp_id for comp_id in _comp_id if comp_id not in self.empty_value))
 
                 if self.__combined_mode and self.__has_star_entity:
                     ent = self.__extractPolymerSequenceInEntityLoopOfChain(fileListId, chain_id)
 
-                    if not ent is None:
+                    if ent is not None:
                         asm.append(ent)
                         continue
 
@@ -8577,7 +8577,7 @@ class NmrDpUtility:
                     c = str(i[2])
 
                     chain_ids.add(c)
-                    if not c in seq:
+                    if c not in seq:
                         seq[c] = set()
                     seq[c].add('{:04d} {}'.format(int(i[0]), i[1]))
                 except ValueError:
@@ -8656,7 +8656,7 @@ class NmrDpUtility:
                     c = str(i[2])
 
                     chain_ids.add(c)
-                    if not c in seq:
+                    if c not in seq:
                         seq[c] = set()
                     seq[c].add('{:04d} {}'.format(int(i[0]), i[1]))
                 except ValueError:
@@ -8932,12 +8932,12 @@ class NmrDpUtility:
                                    (sf_framecode2 in map_chain_ids and chain_id in map_chain_ids[sf_framecode2]):
                                     continue
 
-                                if not sf_framecode2 in dst_chain_ids:
+                                if sf_framecode2 not in dst_chain_ids:
                                     dst_chain_ids[sf_framecode2] = set()
 
                                 dst_chain_ids[sf_framecode2].add(__chain_id)
 
-                                if not sf_framecode2 in map_chain_ids:
+                                if sf_framecode2 not in map_chain_ids:
                                     map_chain_ids[sf_framecode2] = {}
 
                                 map_chain_ids[sf_framecode2][chain_id] = __chain_id
@@ -8960,17 +8960,17 @@ class NmrDpUtility:
                                 update_poly_seq = True
 
                             if conflict == 0 and self.__alt_chain and not alt_chain and chain_id != s2['chain_id'] and\
-                               (not sf_framecode2 in dst_chain_ids or not chain_id in dst_chain_ids[sf_framecode2]) and\
-                               (not sf_framecode2 in map_chain_ids or not s2['chain_id'] in map_chain_ids[sf_framecode2]) and\
+                               (sf_framecode2 not in dst_chain_ids or chain_id not in dst_chain_ids[sf_framecode2]) and\
+                               (sf_framecode2 not in map_chain_ids or s2['chain_id'] not in map_chain_ids[sf_framecode2]) and\
                                unmapped != offset_1 + 1 and unmapped != offset_2 + 1 and\
                                unmapped <= _matched + offset_1 and unmapped <= _matched + offset_2:
 
-                                if not sf_framecode2 in dst_chain_ids:
+                                if sf_framecode2 not in dst_chain_ids:
                                     dst_chain_ids[sf_framecode2] = set()
 
                                 dst_chain_ids[sf_framecode2].add(chain_id)
 
-                                if not sf_framecode2 in map_chain_ids:
+                                if sf_framecode2 not in map_chain_ids:
                                     map_chain_ids[sf_framecode2] = {}
 
                                 map_chain_ids[sf_framecode2][s2['chain_id']] = chain_id
@@ -8996,12 +8996,12 @@ class NmrDpUtility:
                                     continue
 
                             if not alt_chain:
-                                if not sf_framecode2 in dst_chain_ids:
+                                if sf_framecode2 not in dst_chain_ids:
                                     dst_chain_ids[sf_framecode2] = set()
 
                                 dst_chain_ids[sf_framecode2].add(chain_id)
 
-                            if not sf_framecode2 in ref_chain_ids:
+                            if sf_framecode2 not in ref_chain_ids:
                                 ref_chain_ids[sf_framecode2] = []
 
                             ref_chain_ids[sf_framecode2].append(chain_id)
@@ -9017,14 +9017,14 @@ class NmrDpUtility:
                             self.__alt_chain |= alt_chain
 
                             if self.__tolerant_seq_align and (seq_mismatch or comp_mismatch): # and not alt_chain:
-                                if not sf_framecode2 in map_seq_ids:
+                                if sf_framecode2 not in map_seq_ids:
                                     map_seq_ids[sf_framecode2] = set()
                                 map_seq_ids[sf_framecode2].add(chain_id)
                                 if _s2['seq_id'] == list(range(_s2['seq_id'][0], _s2['seq_id'][-1] + 1)):
                                     seq_id_conv_dict = {str(__s2): str(__s1) for __s1, __s2 in zip(_s1['seq_id'], _s2['seq_id']) if __s2 != '.'}
                                     if comp_mismatch:
                                         _seq_align = self.__getSeqAlignCode(fileListId, file_type, content_subtype, sf_framecode2,
-                                                                            chain_id, _s1, _s2, myAlign, None if not sf_framecode2 in map_chain_ids else map_chain_ids[sf_framecode2],
+                                                                            chain_id, _s1, _s2, myAlign, None if sf_framecode2 not in map_chain_ids else map_chain_ids[sf_framecode2],
                                                                             ref_gauge_code, ref_code, mid_code, test_code, test_gauge_code)
                                         _s2['seq_id'] = _seq_align['test_seq_id']
                                         if _s1['seq_id'][0] < 0 and _s2['seq_id'][0] < 0:
@@ -9044,16 +9044,16 @@ class NmrDpUtility:
                                         if sf_framecode2 == self.__target_framecode:
                                             print('#a %s %s %s %s %s' % (chain_id2, _matched, offset_1, offset_2, seq_id_conv_dict))
 
-                                        if not sf_framecode2 in proc_chain_ids:
+                                        if sf_framecode2 not in proc_chain_ids:
                                             proc_chain_ids[sf_framecode2] = set()
 
-                                        if not chain_id2 in proc_chain_ids[sf_framecode2]:
+                                        if chain_id2 not in proc_chain_ids[sf_framecode2]:
                                             self.__fixSeqIdInLoop(fileListId, file_type, content_subtype, sf_framecode2, chain_id2, seq_id_conv_dict)
                                             proc_chain_ids[sf_framecode2].add(chain_id2)
 
                                             if 'identical_chain_id' in s2:
                                                 for chain_id2_ in s2['identical_chain_id']:
-                                                    if not chain_id2_ in proc_chain_ids[sf_framecode2]:
+                                                    if chain_id2_ not in proc_chain_ids[sf_framecode2]:
                                                         self.__fixSeqIdInLoop(fileListId, file_type, content_subtype, sf_framecode2, chain_id2_, seq_id_conv_dict)
                                                         proc_chain_ids[sf_framecode2].add(chain_id2_)
 
@@ -9063,7 +9063,7 @@ class NmrDpUtility:
                                 else:
                                     if seq_mismatch:
                                         _seq_align = self.__getSeqAlignCode(fileListId, file_type, content_subtype, sf_framecode2,
-                                                                            chain_id, _s1, _s2, myAlign, None if not sf_framecode2 in map_chain_ids else map_chain_ids[sf_framecode2],
+                                                                            chain_id, _s1, _s2, myAlign, None if sf_framecode2 not in map_chain_ids else map_chain_ids[sf_framecode2],
                                                                             ref_gauge_code, ref_code, mid_code, test_code, test_gauge_code)
                                         _s2['seq_id'] = _seq_align['test_seq_id']
                                         if _s1['seq_id'][0] < 0 and _s2['seq_id'][0] < 0:
@@ -9122,10 +9122,10 @@ class NmrDpUtility:
                                                 if sf_framecode2 == self.__target_framecode:
                                                     print('#d %s %s %s %s %s' % (chain_id2_, _matched_, offset_1_, offset_2_, seq_id_conv_dict))
 
-                                                if not sf_framecode2 in proc_chain_ids:
+                                                if sf_framecode2 not in proc_chain_ids:
                                                     proc_chain_ids[sf_framecode2] = set()
 
-                                                if not chain_id2_ in proc_chain_ids[sf_framecode2]:
+                                                if chain_id2_ not in proc_chain_ids[sf_framecode2]:
                                                     self.__fixSeqIdInLoop(fileListId, file_type, content_subtype, sf_framecode2, chain_id2_, seq_id_conv_dict)
                                                     proc_chain_ids[sf_framecode2].add(chain_id2_)
                                                 _s2_['seq_id'] = _s1['seq_id']
@@ -9293,12 +9293,12 @@ class NmrDpUtility:
                                    (sf_framecode2 in map_chain_ids and chain_id in map_chain_ids[sf_framecode2]):
                                     continue
 
-                                if not sf_framecode2 in dst_chain_ids:
+                                if sf_framecode2 not in dst_chain_ids:
                                     dst_chain_ids[sf_framecode2] = set()
 
                                 dst_chain_ids[sf_framecode2].add(__chain_id)
 
-                                if not sf_framecode2 in map_chain_ids:
+                                if sf_framecode2 not in map_chain_ids:
                                     map_chain_ids[sf_framecode2] = {}
 
                                 map_chain_ids[sf_framecode2][chain_id] = __chain_id
@@ -9321,16 +9321,16 @@ class NmrDpUtility:
                                 update_poly_seq = True
                             """
                             if conflict == 0 and self.__alt_chain and not alt_chain and chain_id != s2['chain_id'] and\
-                               (not sf_framecode2 in dst_chain_ids or not chain_id in dst_chain_ids[sf_framecode2]) and\
-                               (not sf_framecode2 in map_chain_ids or not s2['chain_id'] in map_chain_ids[sf_framecode2]) and\
+                               (sf_framecode2 not in dst_chain_ids or chain_id not in dst_chain_ids[sf_framecode2]) and\
+                               (sf_framecode2 not in map_chain_ids or s2['chain_id'] not in map_chain_ids[sf_framecode2]) and\
                                unmapped != offset_1 + 1 and unmapped != offset_2 + 1:
 
-                                if not sf_framecode2 in dst_chain_ids:
+                                if sf_framecode2 not in dst_chain_ids:
                                     dst_chain_ids[sf_framecode2] = set()
 
                                 dst_chain_ids[sf_framecode2].add(chain_id)
 
-                                if not sf_framecode2 in map_chain_ids:
+                                if sf_framecode2 not in map_chain_ids:
                                     map_chain_ids[sf_framecode2] = {}
 
                                 map_chain_ids[sf_framecode2][s2['chain_id']] = chain_id
@@ -9355,13 +9355,13 @@ class NmrDpUtility:
                                 if 0 < _matched < 4 and unmapped // _matched > 20 and seq_mismatch and len(polymer_sequence) > 1:
                                     continue
 
-                            if not sf_framecode2 in ref_chain_ids:
+                            if sf_framecode2 not in ref_chain_ids:
                                 ref_chain_ids[sf_framecode2] = []
 
-                            if not sf_framecode2 in map_chain_ids:
+                            if sf_framecode2 not in map_chain_ids:
                                 map_chain_ids[sf_framecode2] = {}
 
-                            if not sf_framecode2 in ref_chain_ids or not chain_id in ref_chain_ids[sf_framecode2]:
+                            if sf_framecode2 not in ref_chain_ids or chain_id not in ref_chain_ids[sf_framecode2]:
                                 map_chain_ids[sf_framecode2][s2['chain_id']] = chain_id
 
                             ref_chain_ids[sf_framecode2].append(chain_id)
@@ -9383,14 +9383,14 @@ class NmrDpUtility:
                                                     if __c1 != '.' and __c2 != '.' and __c1 != __c2)
 
                             if self.__tolerant_seq_align and (seq_mismatch or comp_mismatch): # and not alt_chain:
-                                if not sf_framecode2 in map_seq_ids:
+                                if sf_framecode2 not in map_seq_ids:
                                     map_seq_ids[sf_framecode2] = set()
                                 map_seq_ids[sf_framecode2].add(chain_id)
                                 if _s2['seq_id'] == list(range(_s2['seq_id'][0], _s2['seq_id'][-1] + 1)):
                                     seq_id_conv_dict = {str(__s2): str(__s1) for __s1, __s2 in zip(_s1['seq_id'], _s2['seq_id']) if __s2 != '.'}
                                     if comp_mismatch:
                                         _seq_align = self.__getSeqAlignCode(fileListId, file_type, content_subtype, sf_framecode2,
-                                                                            chain_id, _s1, _s2, myAlign, None if not sf_framecode2 in map_chain_ids else map_chain_ids[sf_framecode2],
+                                                                            chain_id, _s1, _s2, myAlign, None if sf_framecode2 not in map_chain_ids else map_chain_ids[sf_framecode2],
                                                                             ref_gauge_code, ref_code, mid_code, test_code, test_gauge_code)
                                         _s2['seq_id'] = _seq_align['test_seq_id']
                                         if _s1['seq_id'][0] < 0 and _s2['seq_id'][0] < 0:
@@ -9410,16 +9410,16 @@ class NmrDpUtility:
                                         if sf_framecode2 == self.__target_framecode:
                                             print('#b %s %s %s %s %s' % (chain_id2, _matched, offset_1, offset_2, seq_id_conv_dict))
 
-                                        if not sf_framecode2 in proc_chain_ids:
+                                        if sf_framecode2 not in proc_chain_ids:
                                             proc_chain_ids[sf_framecode2] = set()
 
-                                        if not chain_id2 in proc_chain_ids[sf_framecode2]:
+                                        if chain_id2 not in proc_chain_ids[sf_framecode2]:
                                             self.__fixSeqIdInLoop(fileListId, file_type, content_subtype, sf_framecode2, chain_id2, seq_id_conv_dict)
                                             proc_chain_ids[sf_framecode2].add(chain_id2)
 
                                             if 'identical_chain_id' in s2:
                                                 for chain_id2_ in s2['identical_chain_id']:
-                                                    if not chain_id2_ in proc_chain_ids[sf_framecode2]:
+                                                    if chain_id2_ not in proc_chain_ids[sf_framecode2]:
                                                         self.__fixSeqIdInLoop(fileListId, file_type, content_subtype, sf_framecode2, chain_id2_, seq_id_conv_dict)
                                                         proc_chain_ids[sf_framecode2].add(chain_id2_)
 
@@ -9429,7 +9429,7 @@ class NmrDpUtility:
                                 else:
                                     if seq_mismatch:
                                         _seq_align = self.__getSeqAlignCode(fileListId, file_type, content_subtype, sf_framecode2,
-                                                                            chain_id, _s1, _s2, myAlign, None if not sf_framecode2 in map_chain_ids else map_chain_ids[sf_framecode2],
+                                                                            chain_id, _s1, _s2, myAlign, None if sf_framecode2 not in map_chain_ids else map_chain_ids[sf_framecode2],
                                                                             ref_gauge_code, ref_code, mid_code, test_code, test_gauge_code)
                                         _s2['seq_id'] = _seq_align['test_seq_id']
                                         if _s1['seq_id'][0] < 0 and _s2['seq_id'][0] < 0:
@@ -9700,16 +9700,16 @@ class NmrDpUtility:
                                                 if sf_framecode2 == self.__target_framecode:
                                                     print('#c %s %s %s %s %s' % (chain_id2, _matched, offset_1, offset_2, seq_id_conv_dict))
 
-                                                if not sf_framecode2 in proc_chain_ids:
+                                                if sf_framecode2 not in proc_chain_ids:
                                                     proc_chain_ids[sf_framecode2] = set()
 
-                                                if not chain_id2 in proc_chain_ids[sf_framecode2]:
+                                                if chain_id2 not in proc_chain_ids[sf_framecode2]:
                                                     self.__fixSeqIdInLoop(fileListId, file_type, content_subtype, sf_framecode2, chain_id2, seq_id_conv_dict)
                                                     proc_chain_ids[sf_framecode2].add(chain_id2)
 
                                                     if 'identical_chain_id' in s2:
                                                         for chain_id2_ in s2['identical_chain_id']:
-                                                            if not chain_id2_ in proc_chain_ids[sf_framecode2]:
+                                                            if chain_id2_ not in proc_chain_ids[sf_framecode2]:
                                                                 self.__fixSeqIdInLoop(fileListId, file_type, content_subtype, sf_framecode2, chain_id2_, seq_id_conv_dict)
                                                                 proc_chain_ids[sf_framecode2].add(chain_id2_)
 
@@ -9742,7 +9742,7 @@ class NmrDpUtility:
                                     _seq_align = next((_seq_align for _seq_align in seq_align_set\
                                                        if _seq_align['list_id'] == ps_in_loop['list_id'] and _seq_align['sf_framecode'] == sf_framecode2 and _seq_align['chain_id'] == chain_id), None)
 
-                                    if not _seq_align is None:
+                                    if _seq_align is not None:
                                         seq_align_set.remove(_seq_align)
 
                                     seq_align = {'list_id': ps_in_loop['list_id'],
@@ -9843,7 +9843,7 @@ class NmrDpUtility:
             else:
                 seq_id2.append(None)
                 comp_id2.append('.')
-        seq_id_conv_dict = {str(_s2): str(_s1) for _s1, _s2 in zip(seq_id1, seq_id2) if not _s1 is None and not _s2 is None}
+        seq_id_conv_dict = {str(_s2): str(_s1) for _s1, _s2 in zip(seq_id1, seq_id2) if _s1 is not None and _s2 is not None}
         if s1['seq_id'] != list(range(s1['seq_id'][0], s1['seq_id'][-1] + 1)) and not any(k for k in seq_id_conv_dict.keys() if seq_id_conv_dict[k] != k):
             s2['seq_id'] = s1['seq_id']
             ref_code = test_code
@@ -9851,7 +9851,7 @@ class NmrDpUtility:
             ref_gauge_code = test_gauge_code
         else:
             chain_id2 = chain_id
-            if not mapping is None and chain_id in mapping.values():
+            if mapping is not None and chain_id in mapping.values():
                 chain_id2 = next(k for k, v in mapping.items() if v == chain_id)
             self.__fixSeqIdInLoop(file_list_id, file_type, content_subtype, sf_framecode, chain_id2, seq_id_conv_dict)
             s2['seq_id'] = s1['seq_id']
@@ -9932,7 +9932,7 @@ class NmrDpUtility:
                 _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
                 num_dim = int(_num_dim)
 
-                if not num_dim in range(1, self.lim_num_dim):
+                if num_dim not in range(1, self.lim_num_dim):
                     raise ValueError()
 
             except ValueError: # raised error already at __testIndexConsistency()
@@ -9949,7 +9949,7 @@ class NmrDpUtility:
 
             chain_id_col = loop.tags.index(chain_id_name) if chain_id_name in loop.tags else -1
             entity_id_col = -1
-            if not entity_id_name is None:
+            if entity_id_name is not None:
                 entity_id_col = loop.tags.index(entity_id_name) if entity_id_name in loop.tags else -1
 
             if chain_id_col == -1:
@@ -9974,7 +9974,7 @@ class NmrDpUtility:
 
                 chain_id_col = loop.tags.index(_chain_id_name) if _chain_id_name in loop.tags else -1
                 entity_id_col = -1
-                if not _entity_id_name is None:
+                if _entity_id_name is not None:
                     entity_id_col = loop.tags.index(_entity_id_name) if _entity_id_name in loop.tags else -1
 
                 if chain_id_col == -1:
@@ -10049,7 +10049,7 @@ class NmrDpUtility:
                 _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
                 num_dim = int(_num_dim)
 
-                if not num_dim in range(1, self.lim_num_dim):
+                if num_dim not in range(1, self.lim_num_dim):
                     raise ValueError()
 
             except ValueError: # raised error already at __testIndexConsistency()
@@ -10067,7 +10067,7 @@ class NmrDpUtility:
             chain_id_col = loop.tags.index(chain_id_name) if chain_id_name in loop.tags else -1
             seq_id_col = loop.tags.index(seq_id_name) if seq_id_name in loop.tags else -1
             seq_id_alt_col = -1
-            if not seq_id_alt_name is None:
+            if seq_id_alt_name is not None:
                 seq_id_alt_col = loop.tags.index(seq_id_alt_name) if seq_id_alt_name in loop.tags else -1
 
             if chain_id_col == -1 or seq_id_col == -1:
@@ -10101,7 +10101,7 @@ class NmrDpUtility:
                 chain_id_col = loop.tags.index(_chain_id_name) if _chain_id_name in loop.tags else -1
                 seq_id_col = loop.tags.index(_seq_id_name) if _seq_id_name in loop.tags else -1
                 seq_id_alt_col = -1
-                if not seq_id_alt_name is None:
+                if seq_id_alt_name is not None:
                     _seq_id_alt_name = seq_id_alt_name + '_' + str(i)
                     seq_id_alt_col = loop.tags.index(_seq_id_alt_name) if _seq_id_alt_name in loop.tags else -1
 
@@ -10175,7 +10175,7 @@ class NmrDpUtility:
 
             first_comp_ids = set()
 
-            if not polymer_sequence is None:
+            if polymer_sequence is not None:
                 for s in polymer_sequence:
                     first_comp_id = s['comp_id'][0]
 
@@ -10195,7 +10195,7 @@ class NmrDpUtility:
                 if content_subtype == 'poly_seq':
                     lp_category = self.aux_lp_categories[file_type][content_subtype][0]
 
-                    if not lp_category in self.__lp_category_list:
+                    if lp_category not in self.__lp_category_list:
                         continue
 
                 if file_type == 'nmr-star' and content_subtype == 'spectral_peak_alt':
@@ -10395,7 +10395,7 @@ class NmrDpUtility:
                                 if len(_atom_id) > 0:
                                     atom_id = _atom_id[0]
 
-                            if not atom_id in ref_atom_ids:
+                            if atom_id not in ref_atom_ids:
                                 unk_atom_ids.append(atom_id)
 
                         if len(unk_atom_ids) > 0:
@@ -10728,7 +10728,7 @@ class NmrDpUtility:
                 _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
                 num_dim = int(_num_dim)
 
-                if not num_dim in range(1, self.lim_num_dim):
+                if num_dim not in range(1, self.lim_num_dim):
                     raise ValueError()
 
             except ValueError: # raised error already at __testIndexConsistency()
@@ -10806,7 +10806,7 @@ class NmrDpUtility:
 
             content_subtype = 'chem_shift'
 
-            if not content_subtype in input_source_dic['content_subtype'].keys():
+            if content_subtype not in input_source_dic['content_subtype'].keys():
                 """
                 err = "Assigned chemical shift loop does not exist in %r file." % file_name
 
@@ -10868,7 +10868,7 @@ class NmrDpUtility:
                 isotope_nums = a_type['isotope_number']
                 atom_ids = a_type['atom_id']
 
-                if not atom_type in self.atom_isotopes.keys():
+                if atom_type not in self.atom_isotopes.keys():
 
                     err = "Invalid atom_type %r in a loop %s." % (atom_type, lp_category)
 
@@ -10881,7 +10881,7 @@ class NmrDpUtility:
                 else:
 
                     for isotope_num in isotope_nums:
-                        if not isotope_num in self.atom_isotopes[atom_type]:
+                        if isotope_num not in self.atom_isotopes[atom_type]:
 
                             err = "Invalid isotope number %r (atom_type %s, allowed isotope number %s) in a loop %s." % (isotope_num, atom_type, self.atom_isotopes[atom_type], lp_category)
 
@@ -10978,7 +10978,7 @@ class NmrDpUtility:
 
             content_subtype = 'chem_shift'
 
-            if not content_subtype in input_source_dic['content_subtype'].keys():
+            if content_subtype not in input_source_dic['content_subtype'].keys():
                 """
                 err = "Assigned chemical shift loop does not exist in %r file." % file_name
 
@@ -11353,7 +11353,7 @@ class NmrDpUtility:
                 _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
                 num_dim = int(_num_dim)
 
-                if not num_dim in range(1, self.lim_num_dim):
+                if num_dim not in range(1, self.lim_num_dim):
                     raise ValueError()
 
             except ValueError: # raised error already at __testIndexConsistency()
@@ -11549,7 +11549,7 @@ class NmrDpUtility:
             if self.__verbose:
                 self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ Error  - %s" % str(e))
         """
-        if (not lp_data is None) and len(lp_data) == 0 and self.__check_empty_loop:
+        if (lp_data is not None) and len(lp_data) == 0 and self.__check_empty_loop:
 
             warn = "Unexpectedly, a loop has no rows."
 
@@ -11686,7 +11686,7 @@ class NmrDpUtility:
                     for d in data_items:
                         dname = d['name']
 
-                        if not dname in row_1:
+                        if dname not in row_1:
                             continue
 
                         val_1 = row_1[dname]
@@ -11873,7 +11873,7 @@ class NmrDpUtility:
                             _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
                             num_dim = int(_num_dim)
 
-                            if not num_dim in range(1, self.lim_num_dim):
+                            if num_dim not in range(1, self.lim_num_dim):
                                 raise ValueError()
 
                         except ValueError:
@@ -12144,13 +12144,13 @@ class NmrDpUtility:
                             if sp_dim['dimension_id'] != i:
                                 continue
 
-                            first_point = None if not 'value_first_point' in sp_dim else sp_dim['value_first_point']
-                            sp_width = None if not 'spectral_width' in sp_dim else sp_dim['spectral_width']
+                            first_point = None if 'value_first_point' not in sp_dim else sp_dim['value_first_point']
+                            sp_width = None if 'spectral_width' not in sp_dim else sp_dim['spectral_width']
                             # acq = sp_dim['is_acquisition']
-                            sp_freq = None if not 'spectrometer_frequency' in sp_dim else sp_dim['spectrometer_frequency']
-                            abs[i - 1] = False if not 'absolute_peak_positions' in sp_dim else sp_dim['absolute_peak_positions']
+                            sp_freq = None if 'spectrometer_frequency' not in sp_dim else sp_dim['spectrometer_frequency']
+                            abs[i - 1] = False if 'absolute_peak_positions' not in sp_dim else sp_dim['absolute_peak_positions']
 
-                            if 'axis_unit' in sp_dim and sp_dim['axis_unit'] == 'Hz' and not sp_freq is None and not first_point is None and not sp_width is None:
+                            if 'axis_unit' in sp_dim and sp_dim['axis_unit'] == 'Hz' and sp_freq is not None and first_point is not None and sp_width is not None:
                                 first_point /= sp_freq
                                 sp_width /= sp_freq
 
@@ -12159,13 +12159,13 @@ class NmrDpUtility:
                             if sp_dim['ID'] != i:
                                 continue
 
-                            first_point = None if not 'Value_first_point' in sp_dim else sp_dim['Value_first_point']
-                            sp_width = None if not 'Sweep_width' in sp_dim else sp_dim['Sweep_width']
+                            first_point = None if 'Value_first_point' not in sp_dim else sp_dim['Value_first_point']
+                            sp_width = None if 'Sweep_width' not in sp_dim else sp_dim['Sweep_width']
                             # acq = sp_dim['Acquisition']
-                            sp_freq = None if not 'Spectrometer_frequency' in sp_dim else sp_dim['Spectrometer_frequency']
-                            abs[i - 1] = False if not 'Absolute_peak_positions' in sp_dim else sp_dim['Absolute_peak_positions']
+                            sp_freq = None if 'Spectrometer_frequency' not in sp_dim else sp_dim['Spectrometer_frequency']
+                            abs[i - 1] = False if 'Absolute_peak_positions' not in sp_dim else sp_dim['Absolute_peak_positions']
 
-                            if 'Sweep_width_units' in sp_dim and sp_dim['Sweep_width_units'] == 'Hz' and not sp_freq is None and not first_point is None and not sp_width is None:
+                            if 'Sweep_width_units' in sp_dim and sp_dim['Sweep_width_units'] == 'Hz' and sp_freq is not None and first_point is not None and sp_width is not None:
                                 first_point /= sp_freq
                                 sp_width /= sp_freq
 
@@ -12174,7 +12174,7 @@ class NmrDpUtility:
                         min_limit = None
                         max_limit = None
 
-                        if not first_point is None and not sp_width is None:
+                        if first_point is not None and sp_width is not None:
 
                             last_point = first_point - sp_width
 
@@ -12184,19 +12184,19 @@ class NmrDpUtility:
                             min_limit = min_point
                             max_limit = max_point
 
-                            if not sp_freq is None and not min_point is None and not max_point is None:
+                            if sp_freq is not None and min_point is not None and max_point is not None:
                                 center_point = (max_point - min_point) / 2.0
                                 min_limit = center_point - self.hard_probe_limit / 2.0 / sp_freq
                                 max_limit = center_point + self.hard_probe_limit / 2.0 / sp_freq
 
-                        if not min_point is None:
+                        if min_point is not None:
                             min_points[i - 1] = float('{:.7f}'.format(min_point))
-                        if not max_point is None:
+                        if max_point is not None:
                             max_points[i - 1] = float('{:.7f}'.format(max_point))
 
-                        if not min_limit is None:
+                        if min_limit is not None:
                             min_limits[i - 1] = float('{:.7f}'.format(min_limit))
-                        if not max_limit is None:
+                        if max_limit is not None:
                             max_limits[i - 1] = float('{:.7f}'.format(max_limit))
 
                         break
@@ -12214,7 +12214,7 @@ class NmrDpUtility:
 
                 lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode), None)
 
-                if not lp_data is None:
+                if lp_data is not None:
 
                     for i in lp_data:
                         for j in range(num_dim):
@@ -12259,7 +12259,7 @@ class NmrDpUtility:
 
             for i in aux_data:
                 for name in [j['name'] for j in self.aux_key_items[file_type][content_subtype][lp_category]]:
-                    if not i[name] in range(1, max_dim):
+                    if i[name] not in range(1, max_dim):
 
                         err = "%s %r must be one of %s." % (name, i[name], range(1, max_dim))
 
@@ -12303,13 +12303,13 @@ class NmrDpUtility:
                         if sp_dim['ID'] != i:
                             continue
 
-                        first_point = None if not 'Value_first_point' in sp_dim else sp_dim['Value_first_point']
-                        sp_width = None if not 'Sweep_width' in sp_dim else sp_dim['Sweep_width']
-                        sp_freq = None if not 'Spectrometer_frequency' in sp_dim else sp_dim['Spectrometer_frequency']
+                        first_point = None if 'Value_first_point' not in sp_dim else sp_dim['Value_first_point']
+                        sp_width = None if 'Sweep_width' not in sp_dim else sp_dim['Sweep_width']
+                        sp_freq = None if 'Spectrometer_frequency' not in sp_dim else sp_dim['Spectrometer_frequency']
                         # acq = sp_dim['Acquisition']
-                        abs[i - 1] = False if not 'Absolute_peak_positions' in sp_dim else sp_dim['Absolute_peak_positions']
+                        abs[i - 1] = False if 'Absolute_peak_positions' not in sp_dim else sp_dim['Absolute_peak_positions']
 
-                        if 'Sweep_width_units' in sp_dim and sp_dim['Sweep_width_units'] == 'Hz' and not sp_freq is None and not first_point is None and not sp_width is None:
+                        if 'Sweep_width_units' in sp_dim and sp_dim['Sweep_width_units'] == 'Hz' and sp_freq is not None and first_point is not None and sp_width is not None:
                             first_point /= sp_freq
                             sp_width /= sp_freq
 
@@ -12318,7 +12318,7 @@ class NmrDpUtility:
                         min_limit = None
                         max_limit = None
 
-                        if not first_point is None and not sp_width is None:
+                        if first_point is not None and sp_width is not None:
 
                             last_point = first_point - sp_width
 
@@ -12328,19 +12328,19 @@ class NmrDpUtility:
                             min_limit = min_point
                             max_limit = max_point
 
-                            if not sp_freq is None and not min_point is None and not max_point is None:
+                            if sp_freq is not None and min_point is not None and max_point is not None:
                                 center_point = (max_point - min_point) / 2.0
                                 min_limit = center_point - self.hard_probe_limit / 2.0 / sp_freq
                                 max_limit = center_point + self.hard_probe_limit / 2.0 / sp_freq
 
-                        if not min_point is None:
+                        if min_point is not None:
                             min_points[i - 1] = float('{:.7f}'.format(min_point))
-                        if not max_point is None:
+                        if max_point is not None:
                             max_points[i - 1] = float('{:.7f}'.format(max_point))
 
-                        if not min_limit is None:
+                        if min_limit is not None:
                             min_limits[i - 1] = float('{:.7f}'.format(min_limit))
-                        if not max_limit is None:
+                        if max_limit is not None:
                             max_limits[i - 1] = float('{:.7f}'.format(max_limit))
 
                         break
@@ -12362,7 +12362,7 @@ class NmrDpUtility:
                 dim_id_name = 'Spectral_dim_ID'
                 position_name = 'Chem_shift_val'
 
-                if not _pk_char_data is None:
+                if _pk_char_data is not None:
 
                     for i in _pk_char_data:
 
@@ -12416,7 +12416,7 @@ class NmrDpUtility:
 
             for i in aux_data:
                 for name in [j['name'] for j in self.aux_key_items[file_type][content_subtype][lp_category]]:
-                    if not i[name] in range(1, max_dim):
+                    if i[name] not in range(1, max_dim):
 
                         err = "%s %r must be one of %s." % (name, i[name], range(1, max_dim))
 
@@ -12539,7 +12539,7 @@ class NmrDpUtility:
                                         except AttributeError:
                                             g = self.chk_desc_pat_one.search(warn).groups()
 
-                                    if not self._sf_tag_items[file_type][content_subtype] is None:
+                                    if self._sf_tag_items[file_type][content_subtype] is not None:
 
                                         if any(i for i in self._sf_tag_items[file_type][content_subtype] if i == g[0]):
                                             if not self.__nefT.is_mandatory_tag('_' + sf_category + '.' + g[0], file_type):
@@ -12623,7 +12623,7 @@ class NmrDpUtility:
 
             lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode), None)
 
-            if not lp_data is None:
+            if lp_data is not None:
 
                 for i in lp_data:
                     if child_key_name in i and i[child_key_name] != parent_key:
@@ -12643,7 +12643,7 @@ class NmrDpUtility:
 
                 aux_data = next((l['data'] for l in self.__aux_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode and l['category'] == lp_category), None)
 
-                if not aux_data is None:
+                if aux_data is not None:
                     for i in aux_data:
                         if child_key_name in i and i[child_key_name] != parent_key:
 
@@ -12687,7 +12687,7 @@ class NmrDpUtility:
 
             content_subtype = 'chem_shift'
 
-            if not content_subtype in input_source_dic['content_subtype'].keys():
+            if content_subtype not in input_source_dic['content_subtype'].keys():
                 """
                 err = "Assigned chemical shift loop does not exist in %r file." % file_name
 
@@ -12802,7 +12802,7 @@ class NmrDpUtility:
                         atom_id_ = atom_id
                         atom_name = atom_id
 
-                        if not details is None:
+                        if details is not None:
                             atom_name += ' (' + details.rstrip('.') + ')'
 
                     else:
@@ -12857,7 +12857,7 @@ class NmrDpUtility:
 
                                 methyl_cs_key = "%s %04d %s" % (chain_id, seq_id, _atom_id)
 
-                                if not methyl_cs_key in methyl_cs_vals:
+                                if methyl_cs_key not in methyl_cs_vals:
                                     methyl_cs_vals[methyl_cs_key] = value
 
                                 elif value != methyl_cs_vals[methyl_cs_key]:
@@ -12930,7 +12930,7 @@ class NmrDpUtility:
                                             if file_type == 'nmr-star' and details_col != -1:
                                                 _details = loop.data[l][details_col]
                                                 details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic/ferromagnetic atom were found in the vicinity. Please check for folded/aliased signals.\n' % (full_value_name, value, avg_value, std_value, min_value, max_value, z_score)
-                                                if _details in self.empty_value or (not details in _details):
+                                                if _details in self.empty_value or (details not in _details):
                                                     if _details in self.empty_value:
                                                         loop.data[l][details_col] = details
                                                     else:
@@ -12967,7 +12967,7 @@ class NmrDpUtility:
                                             if file_type == 'nmr-star' and details_col != -1 and (na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic):
                                                 _details = loop.data[l][details_col]
                                                 details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring %s:%s:%s is located at a distance of %s angstroms, and has an elevation angle of %s degrees with the ring plane.\n' % (full_value_name, value, avg_value, std_value, min_value, max_value, z_score, na['chain_id'], na['seq_id'], na['comp_id'], na['ring_distance'], na['ring_angle'])
-                                                if _details in self.empty_value or (not details in _details):
+                                                if _details in self.empty_value or (details not in _details):
                                                     if _details in self.empty_value:
                                                         loop.data[l][details_col] = details
                                                     else:
@@ -13002,7 +13002,7 @@ class NmrDpUtility:
                                         if file_type == 'nmr-star' and details_col != -1 and pa['distance'] > self.vicinity_paramagnetic:
                                             _details = loop.data[l][details_col]
                                             details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic/ferromagnetic atom %s:%s:%s is located at a distance of %s angstroms.\n' % (full_value_name, value, avg_value, std_value, min_value, max_value, z_score, pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['distance'])
-                                            if _details in self.empty_value or (not details in _details):
+                                            if _details in self.empty_value or (details not in _details):
                                                 if _details in self.empty_value:
                                                     loop.data[l][details_col] = details
                                                 else:
@@ -13079,7 +13079,7 @@ class NmrDpUtility:
                                     warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma), which is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s).' %\
                                            (chain_id, seq_id, comp_id, atom_name, value, sigma, avg_value + 5.0 * std_value, avg_value - 5.0 * std_value, avg_value, std_value, min_value, max_value)
 
-                                    if not na is None:
+                                    if na is not None:
 
                                         if na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic:
                                             warn += ' The nearest aromatic ring (%s:%s:%s:%s) is located at a distance of %s angstroms, and has an elevation angle of %s degrees with the ring plane.' %\
@@ -13090,7 +13090,7 @@ class NmrDpUtility:
                                             warn = None
                                             warn_alt = None
 
-                                    elif not pa is None:
+                                    elif pa is not None:
 
                                         if pa['distance'] > self.vicinity_paramagnetic:
                                             warn += ' The nearest paramagnetic/ferromagnetic atom (%s:%s:%s:%s) is located at a distance of %s angstroms.' %\
@@ -13105,7 +13105,7 @@ class NmrDpUtility:
                                         warn += ' Neither aromatic ring nor paramagnetic/ferromagnetic atom were found in the vicinity.'
                                         warn_alt += ' Neither aromatic ring nor paramagnetic/ferromagnetic atom were found in the vicinity.'
 
-                                    if not warn is None:
+                                    if warn is not None:
                                         self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn, 'value': value, 'z_score': z_score, 'description_alt': warn_alt, 'sigma': sigma})
                                         self.report.setWarning()
 
@@ -13151,7 +13151,7 @@ class NmrDpUtility:
                                             if file_type == 'nmr-star' and details_col != -1:
                                                 _details = loop.data[l][details_col]
                                                 details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic/ferromagnetic atom were found in the vicinity. Please check for folded/aliased signals.\n' % (full_value_name, value, avg_value, std_value, min_value, max_value, z_score)
-                                                if _details in self.empty_value or (not details in _details):
+                                                if _details in self.empty_value or (details not in _details):
                                                     if _details in self.empty_value:
                                                         loop.data[l][details_col] = details
                                                     else:
@@ -13190,7 +13190,7 @@ class NmrDpUtility:
                                                 if file_type == 'nmr-star' and details_col != -1:
                                                     _details = loop.data[l][details_col]
                                                     details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring %s:%s:%s is located at a distance of %s angstroms, and has an elevation angle of %s degrees with the ring plane.\n' % (full_value_name, value, avg_value, std_value, min_value, max_value, z_score, na['chain_id'], na['seq_id'], na['comp_id'], na['ring_distance'], na['ring_angle'])
-                                                    if _details in self.empty_value or (not details in _details):
+                                                    if _details in self.empty_value or (details not in _details):
                                                         if _details in self.empty_value:
                                                             loop.data[l][details_col] = details
                                                         else:
@@ -13227,7 +13227,7 @@ class NmrDpUtility:
                                             if file_type == 'nmr-star' and details_col != -1:
                                                 _details = loop.data[l][details_col]
                                                 details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic/ferromagnetic atom %s:%s:%s is located at a distance of %s angstroms.\n' % (full_value_name, value, avg_value, std_value, min_value, max_value, z_score, pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['distance'])
-                                                if _details in self.empty_value or (not details in _details):
+                                                if _details in self.empty_value or (details not in _details):
                                                     if _details in self.empty_value:
                                                         loop.data[l][details_col] = details
                                                     else:
@@ -13310,7 +13310,7 @@ class NmrDpUtility:
                             if atom_id_.startswith('H') and 'methyl' in cs_stat['desc']:
                                 methyl_cs_key = "%s %04d %s" % (chain_id, seq_id, atom_id_[:-1])
 
-                                if not methyl_cs_key in methyl_cs_vals:
+                                if methyl_cs_key not in methyl_cs_vals:
                                     methyl_cs_vals[methyl_cs_key] = value
 
                                 elif value != methyl_cs_vals[methyl_cs_key]:
@@ -13381,7 +13381,7 @@ class NmrDpUtility:
                                         if file_type == 'nmr-star' and details_col != -1:
                                             _details = loop.data[l][details_col]
                                             details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic/ferromagnetic atom were found in the vicinity. Please check for folded/aliased signals.\n' % (full_value_name, value, avg_value, std_value, min_value, max_value, z_score)
-                                            if _details in self.empty_value or (not details in _details):
+                                            if _details in self.empty_value or (details not in _details):
                                                 if _details in self.empty_value:
                                                     loop.data[l][details_col] = details
                                                 else:
@@ -13418,7 +13418,7 @@ class NmrDpUtility:
                                         if file_type == 'nmr-star' and details_col != -1 and (na['ring_angle'] - self.magic_angle * z_score > 0.0 or self.__nonblk_anomalous_cs):
                                             _details = loop.data[l][details_col]
                                             details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring %s:%s:%s is located at a distance of %s angstroms, and has an elevation angle of %s degrees with the ring plane.\n' % (full_value_name, value, avg_value, std_value, min_value, max_value, z_score, na['chain_id'], na['seq_id'], na['comp_id'], na['ring_distance'], na['ring_angle'])
-                                            if _details in self.empty_value or (not details in _details):
+                                            if _details in self.empty_value or (details not in _details):
                                                 if _details in self.empty_value:
                                                     loop.data[l][details_col] = details
                                                 else:
@@ -13453,7 +13453,7 @@ class NmrDpUtility:
                                     if file_type == 'nmr-star' and details_col != -1 and pa['distance'] > self.vicinity_paramagnetic:
                                         _details = loop.data[l][details_col]
                                         details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic/ferromagnetic atom %s:%s:%s is located at a distance of %s angstroms.\n' % (full_value_name, value, avg_value, std_value, min_value, max_value, z_score, pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['distance'])
-                                        if _details in self.empty_value or (not details in _details):
+                                        if _details in self.empty_value or (details not in _details):
                                             if _details in self.empty_value:
                                                 loop.data[l][details_col] = details
                                             else:
@@ -13530,7 +13530,7 @@ class NmrDpUtility:
                                 warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma), which is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s).' %\
                                        (chain_id, seq_id, comp_id, atom_name, value, sigma, avg_value + 5.0 * std_value, avg_value - 5.0 * std_value, avg_value, std_value, min_value, max_value)
 
-                                if not na is None:
+                                if na is not None:
 
                                     if na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic:
                                         warn += ' The nearest aromatic ring (%s:%s:%s:%s) is located at a distance of %s angstroms, and has an elevation angle of %s degrees with the ring plane.' %\
@@ -13541,7 +13541,7 @@ class NmrDpUtility:
                                         warn = None
                                         warn_alt = None
 
-                                elif not pa is None:
+                                elif pa is not None:
 
                                     if pa['distance'] > self.vicinity_paramagnetic:
                                         warn += ' The nearest paramagnetic/ferromagnetic atom (%s:%s:%s:%s) is located at a distance of %s angstroms.' %\
@@ -13556,7 +13556,7 @@ class NmrDpUtility:
                                     warn += ' Neither aromatic ring nor paramagnetic/ferromagnetic atom were found in the vicinity.'
                                     warn_alt += ' Neither aromatic ring nor paramagnetic/ferromagnetic atom were found in the vicinity.'
 
-                                if not warn is None:
+                                if warn is not None:
                                     self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn, 'value': value, 'z_score': z_score, 'description_alt': warn_alt, 'sigma': sigma})
                                     self.report.setWarning()
 
@@ -13665,7 +13665,7 @@ class NmrDpUtility:
 
                         ambig_set_id_name = 'Ambiguity_set_ID'
 
-                        if not ambig_set_id_name in i:
+                        if ambig_set_id_name not in i:
 
                             err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + "] %s %r requires %r loop tag." %\
                                   (ambig_code_name, ambig_code, ambig_set_id_name)
@@ -13878,7 +13878,7 @@ class NmrDpUtility:
 
             content_subtype = 'spectral_peak'
 
-            if not content_subtype in input_source_dic['content_subtype'].keys():
+            if content_subtype not in input_source_dic['content_subtype'].keys():
                 continue
 
             sf_category = self.sf_categories[file_type][content_subtype]
@@ -13909,7 +13909,7 @@ class NmrDpUtility:
 
                 except StopIteration:
 
-                    if not cs_list in self.empty_value:
+                    if cs_list not in self.empty_value:
 
                         err = "Assigned chemical shifts are mandatory. Referred %r saveframe does not exist." % cs_list
 
@@ -13931,7 +13931,7 @@ class NmrDpUtility:
                     _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
                     num_dim = int(_num_dim)
 
-                    if not num_dim in range(1, self.lim_num_dim):
+                    if num_dim not in range(1, self.lim_num_dim):
                         raise ValueError()
 
                 except ValueError: # raised error already at __testIndexConsistency()
@@ -13945,16 +13945,16 @@ class NmrDpUtility:
                 abs_pk_pos = []
                 sp_widths = []
 
-                if not aux_data is None and len(aux_data) > 0:
+                if aux_data is not None and len(aux_data) > 0:
                     for i in range(1, max_dim):
                         for sp_dim in aux_data:
                             if file_type == 'nef':
                                 if sp_dim['dimension_id'] != i:
                                     continue
                                 axis_codes.append(sp_dim['axis_code'])
-                                abs_pk_pos.append(False if not 'absolute_peak_poistions' in sp_dim else sp_dim['absolute_peak_positions'])
-                                sp_width = None if not 'spectral_width' in sp_dim or not 'axis_unit' in sp_dim else sp_dim['spectral_width']
-                                if 'axis_unit' in sp_dim and sp_dim['axis_unit'] == 'Hz' and 'spectrometer_frequency' in sp_dim and not sp_width is None:
+                                abs_pk_pos.append(False if 'absolute_peak_poistions' not in sp_dim else sp_dim['absolute_peak_positions'])
+                                sp_width = None if 'spectral_width' not in sp_dim or 'axis_unit' not in sp_dim else sp_dim['spectral_width']
+                                if 'axis_unit' in sp_dim and sp_dim['axis_unit'] == 'Hz' and 'spectrometer_frequency' in sp_dim and sp_width is not None:
                                     sp_freq = sp_dim['spectrometer_frequency']
                                     sp_width /= sp_freq
                                 sp_widths.append(sp_width)
@@ -13962,9 +13962,9 @@ class NmrDpUtility:
                                 if sp_dim['ID'] != i:
                                     continue
                                 axis_codes.append(sp_dim['Axis_code'])
-                                abs_pk_pos.append(False if not 'Absolute_peak_positions' in sp_dim else sp_dim['Absolute_peak_positions'])
-                                sp_width = None if not 'Sweep_width' in sp_dim or not 'Sweep_width_units' in sp_dim else sp_dim['Sweep_width']
-                                if 'Sweep_width_units' in sp_dim and sp_dim['Sweep_width_units'] == 'Hz' and 'Spectrometer_frequency' in sp_dim and not sp_width is None:
+                                abs_pk_pos.append(False if 'Absolute_peak_positions' not in sp_dim else sp_dim['Absolute_peak_positions'])
+                                sp_width = None if 'Sweep_width' not in sp_dim or 'Sweep_width_units' not in sp_dim else sp_dim['Sweep_width']
+                                if 'Sweep_width_units' in sp_dim and sp_dim['Sweep_width_units'] == 'Hz' and 'Spectrometer_frequency' in sp_dim and sp_width is not None:
                                     sp_freq = sp_dim['Spectrometer_frequency']
                                     sp_width /= sp_freq
                                 sp_widths.append(sp_width)
@@ -13978,7 +13978,7 @@ class NmrDpUtility:
                 aux_data = next((l['data'] for l in self.__aux_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode and l['category'] == self.aux_lp_categories[file_type][content_subtype][1]), None)
 
                 onebond = [[False] * num_dim for i in range(num_dim)]
-                if not aux_data is None:
+                if aux_data is not None:
                     for sp_dim_trans in aux_data:
                         if file_type == 'nef':
                             if sp_dim_trans['transfer_type'] == 'onebond':
@@ -13994,7 +13994,7 @@ class NmrDpUtility:
                                 onebond[dim_2 - 1][dim_1 - 1] = True
 
                 jcoupling = [[False] * num_dim for i in range(num_dim)]
-                if not aux_data is None:
+                if aux_data is not None:
                     for sp_dim_trans in aux_data:
                         if file_type == 'nef':
                             if sp_dim_trans['transfer_type'].startswith('j'):
@@ -14010,7 +14010,7 @@ class NmrDpUtility:
                                 jcoupling[dim_2 - 1][dim_1 - 1] = True
 
                 relayed = [[False] * num_dim for i in range(num_dim)]
-                if not aux_data is None:
+                if aux_data is not None:
                     for sp_dim_trans in aux_data:
                         if file_type == 'nef':
                             if sp_dim_trans['transfer_type'].startswith('relayed'):
@@ -14054,7 +14054,7 @@ class NmrDpUtility:
 
                     lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode), None)
 
-                    if not lp_data is None:
+                    if lp_data is not None:
 
                         for i in lp_data:
                             for d in range(num_dim):
@@ -14116,7 +14116,7 @@ class NmrDpUtility:
 
                                     if abs(position - value) > error:
 
-                                        if not abs_pk_pos[d] and not sp_widths[d] is None:
+                                        if not abs_pk_pos[d] and sp_widths[d] is not None:
                                             if position < value:
                                                 while position < value:
                                                     position += sp_widths[d]
@@ -14147,7 +14147,7 @@ class NmrDpUtility:
 
                                     axis_code = str(cs[cs_iso_number]) + cs[cs_atom_type]
 
-                                    if not axis_codes[d] is None and axis_code != axis_codes[d]:
+                                    if axis_codes[d] is not None and axis_code != axis_codes[d]:
 
                                         err = '[Check row of %s %s] Assignment of spectral peak %s is inconsistent with axis code %s vs %s.' %\
                                               (index_tag, i[index_tag], self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id, comp_id_names[d], comp_id, atom_id_names[d], atom_id), axis_code, axis_codes[d])
@@ -14177,7 +14177,7 @@ class NmrDpUtility:
                                             comp_id2 = i[comp_id_names[d2]]
                                             atom_id2 = i[atom_id_names[d2]]
 
-                                            if not atom_id2 is None:
+                                            if atom_id2 is not None:
                                                 diff = len(atom_id) != len(atom_id2)
                                                 _atom_id = '_' + (atom_id[1:-1] if atom_id.startswith('H') and diff else atom_id[1:])
                                                 _atom_id2 = '_' + (atom_id2[1:-1] if atom_id2.startswith('H') and diff else atom_id2[1:])
@@ -14272,7 +14272,7 @@ class NmrDpUtility:
 
             content_subtype = 'spectral_peak_alt'
 
-            if not content_subtype in input_source_dic['content_subtype'].keys():
+            if content_subtype not in input_source_dic['content_subtype'].keys():
                 continue
 
             sf_category = self.sf_categories[file_type][content_subtype]
@@ -14305,7 +14305,7 @@ class NmrDpUtility:
 
                     except StopIteration:
 
-                        if not cs_list in self.empty_value:
+                        if cs_list not in self.empty_value:
 
                             err = "Assigned chemical shifts are mandatory. Referred %r saveframe does not exist." % cs_list
 
@@ -14344,7 +14344,7 @@ class NmrDpUtility:
                     _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
                     num_dim = int(_num_dim)
 
-                    if not num_dim in range(1, self.lim_num_dim):
+                    if num_dim not in range(1, self.lim_num_dim):
                         raise ValueError()
 
                 except ValueError: # raised error already at __testIndexConsistency()
@@ -14378,15 +14378,15 @@ class NmrDpUtility:
                 abs_pk_pos = []
                 sp_widths = []
 
-                if not aux_data is None and len(aux_data) > 0:
+                if aux_data is not None and len(aux_data) > 0:
                     for i in range(1, max_dim):
                         for sp_dim in aux_data:
                             if sp_dim['ID'] != i:
                                 continue
                             axis_codes.append(sp_dim['Axis_code'])
-                            abs_pk_pos.append(False if not 'Absolute_peak_positions' in sp_dim else sp_dim['Absolute_peak_positions'])
-                            sp_width = None if not 'Sweep_width' in sp_dim or not 'Sweep_width_units' in sp_dim else sp_dim['Sweep_width']
-                            if 'Sweep_width_units' in sp_dim and sp_dim['Sweep_width_units'] == 'Hz' and 'Spectrometer_frequency' in sp_dim and not sp_width is None:
+                            abs_pk_pos.append(False if 'Absolute_peak_positions' not in sp_dim else sp_dim['Absolute_peak_positions'])
+                            sp_width = None if 'Sweep_width' not in sp_dim or 'Sweep_width_units' not in sp_dim else sp_dim['Sweep_width']
+                            if 'Sweep_width_units' in sp_dim and sp_dim['Sweep_width_units'] == 'Hz' and 'Spectrometer_frequency' in sp_dim and sp_width is not None:
                                 sp_freq = sp_dim['Spectrometer_frequency']
                                 sp_width /= sp_freq
                             sp_widths.append(sp_width)
@@ -14400,7 +14400,7 @@ class NmrDpUtility:
                 aux_data = next((l['data'] for l in self.__aux_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode and l['category'] == self.aux_lp_categories[file_type][content_subtype][1]), None)
 
                 onebond = [[False] * num_dim for i in range(num_dim)]
-                if not aux_data is None:
+                if aux_data is not None:
                     for sp_dim_trans in aux_data:
                         if sp_dim_trans['Type'] == 'onebond':
                             dim_1 = sp_dim_trans['Spectral_dim_ID_1']
@@ -14409,7 +14409,7 @@ class NmrDpUtility:
                             onebond[dim_2 - 1][dim_1 - 1] = True
 
                 jcoupling = [[False] * num_dim for i in range(num_dim)]
-                if not aux_data is None:
+                if aux_data is not None:
                     for sp_dim_trans in aux_data:
                         if sp_dim_trans['Type'].startswith('j'):
                             dim_1 = sp_dim_trans['Spectral_dim_ID_1']
@@ -14418,7 +14418,7 @@ class NmrDpUtility:
                             jcoupling[dim_2 - 1][dim_1 - 1] = True
 
                 relayed = [[False] * num_dim for i in range(num_dim)]
-                if not aux_data is None:
+                if aux_data is not None:
                     for sp_dim_trans in aux_data:
                         if sp_dim_trans['Type'].startswith('relayed'):
                             dim_1 = sp_dim_trans['Spectral_dim_ID_1']
@@ -14436,7 +14436,7 @@ class NmrDpUtility:
 
                     lp_data = next((l['data'] for l in self.__aux_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode and l['category'] == lp_category), None)
 
-                    if not lp_data is None:
+                    if lp_data is not None:
 
                         for i in lp_data:
 
@@ -14522,7 +14522,7 @@ class NmrDpUtility:
 
                                 if abs(position - value) > error:
 
-                                    if d < num_dim and not abs_pk_pos[d] and not sp_widths[d] is None:
+                                    if d < num_dim and not abs_pk_pos[d] and sp_widths[d] is not None:
                                         if position < value:
                                             while position < value:
                                                 position += sp_widths[d]
@@ -14553,7 +14553,7 @@ class NmrDpUtility:
 
                                 axis_code = str(cs[cs_iso_number]) + cs[cs_atom_type]
 
-                                if not aux_data is None and d < num_dim and axis_code != axis_codes[d]:
+                                if aux_data is not None and d < num_dim and axis_code != axis_codes[d]:
 
                                     err = '[Check row of %s %s] Assignment of spectral peak %s is inconsistent with axis code %s vs %s.' %\
                                           (pk_id_name, i[pk_id_name], self.__getReducedAtomNotation(cs_chain_id_name, chain_id, cs_seq_id_name, seq_id, cs_comp_id_name, comp_id, cs_atom_id_name, atom_id), axis_code, axis_codes[d])
@@ -14589,7 +14589,7 @@ class NmrDpUtility:
                                         comp_id2 = j[cs_comp_id_name]
                                         atom_id2 = j[cs_atom_id_name]
 
-                                        if not atom_id2 is None:
+                                        if atom_id2 is not None:
                                             diff = len(atom_id) != len(atom_id2)
                                             _atom_id = '_' + (atom_id[1:-1] if atom_id.startswith('H') and diff else atom_id[1:])
                                             _atom_id2 = '_' + (atom_id2[1:-1] if atom_id2.startswith('H') and diff else atom_id2[1:])
@@ -14690,7 +14690,7 @@ class NmrDpUtility:
 
             content_subtype = 'rdc_restraint'
 
-            if not content_subtype in input_source_dic['content_subtype'].keys():
+            if content_subtype not in input_source_dic['content_subtype'].keys():
                 continue
 
             sf_category = self.sf_categories[file_type][content_subtype]
@@ -14742,7 +14742,7 @@ class NmrDpUtility:
 
             lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode), None)
 
-            if not lp_data is None:
+            if lp_data is not None:
 
                 for i in lp_data:
                     chain_id_1 = i[chain_id_1_name]
@@ -14754,7 +14754,7 @@ class NmrDpUtility:
                     comp_id_2 = i[comp_id_2_name]
                     atom_id_2 = i[atom_id_2_name]
 
-                    if (not atom_id_1[0] in self.atom_isotopes) or (not atom_id_2[0] in self.atom_isotopes):
+                    if (atom_id_1[0] not in self.atom_isotopes) or (atom_id_2[0] not in self.atom_isotopes):
 
                         idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
 
@@ -14879,7 +14879,7 @@ class NmrDpUtility:
 
             content_subtype = 'poly_seq'
 
-            if not content_subtype in input_source_dic['content_subtype'].keys():
+            if content_subtype not in input_source_dic['content_subtype'].keys():
                 continue
 
             sf_category = self.sf_categories[file_type][content_subtype]
@@ -14930,7 +14930,7 @@ class NmrDpUtility:
 
             aux_data = next((l['data'] for l in self.__aux_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode and l['category'] == lp_category), None)
 
-            if not aux_data is None:
+            if aux_data is not None:
 
                 for l, i in enumerate(aux_data):
                     chain_id_1 = i[chain_id_1_name]
@@ -15008,7 +15008,7 @@ class NmrDpUtility:
         result_1 = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == nmr_chain_id_1 and seq_align['test_chain_id'] == cif_chain_id_1), None)
         result_2 = result_1 if intra_chain else next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == nmr_chain_id_2 and seq_align['test_chain_id'] == cif_chain_id_2), None)
 
-        if not result_1 is None and not result_2 is None:
+        if result_1 is not None and result_2 is not None:
 
             cif_seq_id_1 = next((test_seq_id for ref_seq_id, test_seq_id in zip(result_1['ref_seq_id'], result_1['test_seq_id']) if ref_seq_id == nmr_seq_id_1), None)
 
@@ -15105,19 +15105,19 @@ class NmrDpUtility:
 
             content_subtype = 'poly_seq'
 
-            if not content_subtype in nmr_input_source_dic['content_subtype'].keys():
+            if content_subtype not in nmr_input_source_dic['content_subtype'].keys():
                 continue
 
             sf_category = self.sf_categories[file_type][content_subtype]
             lp_category = self.aux_lp_categories[file_type][content_subtype][1] # nef: _nef_sequence, nmr-star: _Entity_deleted_atom
 
-            if not lp_category in self.__lp_category_list[fileListId]:
+            if lp_category not in self.__lp_category_list[fileListId]:
                 continue
 
             seq_align_dic = self.report.sequence_alignment.get()
             chain_assign_dic = self.report.chain_assignment.get()
 
-            if not 'nmr_poly_seq_vs_model_poly_seq' in chain_assign_dic:
+            if 'nmr_poly_seq_vs_model_poly_seq' not in chain_assign_dic:
 
                 err = "Chain assignment does not exist, __assignCoordPolymerSequence() should be invoked."
 
@@ -15201,7 +15201,7 @@ class NmrDpUtility:
             aux_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, None,
                                               excl_missing_data=self.__excl_missing_data)[0]
 
-            if not aux_data is None:
+            if aux_data is not None:
 
                 for i in aux_data:
                     chain_id = i[chain_id_name]
@@ -15209,7 +15209,7 @@ class NmrDpUtility:
                     comp_id = i[comp_id_name]
                     variant = i[variant_name]
 
-                    if not chain_id in nmr2ca:
+                    if chain_id not in nmr2ca:
                         continue
 
                     ca = next((ca['seq_align'] for ca in nmr2ca[chain_id] if ('seq_unmap' not in ca or (seq_id not in ca['seq_unmap']))), None) # DAOTHER-7465
@@ -15233,7 +15233,7 @@ class NmrDpUtility:
 
                     seq_key = (cif_chain_id, cif_seq_id)
 
-                    coord_atom_id_ = None if not seq_key in self.__coord_atom_id else self.__coord_atom_id[seq_key]
+                    coord_atom_id_ = None if seq_key not in self.__coord_atom_id else self.__coord_atom_id[seq_key]
 
                     self.__updateChemCompDict(comp_id)
 
@@ -15245,7 +15245,7 @@ class NmrDpUtility:
                         for _variant in variant.split(','):
                             _variant_ = _variant.strip(' ')
 
-                            if not _variant_[0] in ('-', '+'):
+                            if _variant_[0] not in ('-', '+'):
 
                                 warn = "Residue variant %r should start with either '-' or '+' symbol according to the NEF sepcification." % _variant_
 
@@ -15269,7 +15269,7 @@ class NmrDpUtility:
                                     atom_id_ = atom_id
                                     atom_name = atom_id
 
-                                    if not details is None:
+                                    if details is not None:
                                         atom_name += ' (' + details.rstrip('.') + ')'
 
                                 else:
@@ -15302,7 +15302,7 @@ class NmrDpUtility:
                                         if self.__verbose:
                                             self.__lfh.write("+NmrDpUtility.__textResidueVariant() ++ Warning  - %s\n" % warn)
 
-                                if not coord_atom_id_ is None and coord_atom_id_['comp_id'] == cif_comp_id and atom_id_ in coord_atom_id_['atom_id']:
+                                if coord_atom_id_ is not None and coord_atom_id_['comp_id'] == cif_comp_id and atom_id_ in coord_atom_id_['atom_id']:
 
                                     err = "Atom (%s, %s %r) is unexpectedly incorporated in the coordinate." %\
                                         (self.__getReducedAtomNotation(chain_id_name, chain_id, seq_id_name, seq_id, comp_id_name, comp_id, atom_id_name, atom_name), variant_name, _variant_)
@@ -15315,7 +15315,7 @@ class NmrDpUtility:
 
                             else:
 
-                                if not coord_atom_id_ is None and coord_atom_id_['comp_id'] == cif_comp_id and not atom_id_ in coord_atom_id_['atom_id']:
+                                if coord_atom_id_ is not None and coord_atom_id_['comp_id'] == cif_comp_id and atom_id_ not in coord_atom_id_['atom_id']:
 
                                     err = "Atom (%s) which is a %s %r is not present in the coordinate." %\
                                         (self.__getReducedAtomNotation(chain_id_name, chain_id, seq_id_name, seq_id, comp_id_name, comp_id, atom_id_name, atom_name), variant_name, _variant_)
@@ -15340,7 +15340,7 @@ class NmrDpUtility:
                                 atom_id_ = atom_id
                                 atom_name = atom_id
 
-                                if not details is None:
+                                if details is not None:
                                     atom_name += ' (' + details.rstrip('.') + ')'
 
                             else:
@@ -15371,7 +15371,7 @@ class NmrDpUtility:
                                     if self.__verbose:
                                         self.__lfh.write("+NmrDpUtility.__textResidueVariant() ++ Warning  - %s\n" % warn)
 
-                            if not coord_atom_id_ is None and coord_atom_id_['comp_id'] == cif_comp_id and atom_id_ in coord_atom_id_['atom_id']:
+                            if coord_atom_id_ is not None and coord_atom_id_['comp_id'] == cif_comp_id and atom_id_ in coord_atom_id_['atom_id']:
 
                                 err = "Atom (%s) is unexpectedly incorporated in the coordinate." %\
                                     self.__getReducedAtomNotation(chain_id_name, chain_id, seq_id_name, seq_id, comp_id_name, comp_id, atom_id_name, atom_name)
@@ -15453,9 +15453,9 @@ class NmrDpUtility:
                 if content_subtype in ('entry_info', 'entity'):
                     continue
 
-                if not self.report_prev is None:
+                if self.report_prev is not None:
                     prev_stats = self.report_prev.getNmrLegacyStatsOfExptlData(fileListId, content_subtype)
-                    if not prev_stats is None:
+                    if prev_stats is not None:
                         stats[content_subtype] = prev_stats
                     continue
 
@@ -15533,7 +15533,7 @@ class NmrDpUtility:
         if content_subtype in ('dist_restraint', 'dihed_restraint', 'rdc_restraint'):
 
             type = sf_data.get_tag('restraint_origin' if file_type == 'nef' else 'Constraint_type')
-            if len(type) > 0 and not type[0] in self.empty_value:
+            if len(type) > 0 and type[0] not in self.empty_value:
                 ent['exp_type'] = type[0]
             else:
                 ent['exp_type'] = 'Unknown'
@@ -15541,7 +15541,7 @@ class NmrDpUtility:
         elif content_subtype.startswith('spectral_peak'):
 
             type = sf_data.get_tag('experiment_type' if file_type == 'nef' else 'Experiment_type')
-            if len(type) > 0 and not type[0] in self.empty_value:
+            if len(type) > 0 and type[0] not in self.empty_value:
                 ent['exp_type'] = type[0]
             else:
                 ent['exp_type'] = 'Unknown'
@@ -15550,7 +15550,7 @@ class NmrDpUtility:
 
             sa_name = 'nmr_poly_seq_vs_' + content_subtype
 
-            if sa_name in seq_align_dic and not seq_align_dic[sa_name] is None:
+            if sa_name in seq_align_dic and seq_align_dic[sa_name] is not None:
 
                 low_seq_coverage = ''
 
@@ -15566,7 +15566,7 @@ class NmrDpUtility:
                         sc['sequence_coverage'] = seq_align['sequence_coverage']
 
                         if seq_align['sequence_coverage'] < self.low_seq_coverage and seq_align['length'] > 1:
-                            if (not 'exp_type' in ent) or (not ent['exp_type'] in ('disulfide bound', 'disulfide_bond', 'paramagnetic relaxation', 'pre', 'symmetry', 'J-couplings', 'jcoupling')):
+                            if ('exp_type' not in ent) or (ent['exp_type'] not in ('disulfide bound', 'disulfide_bond', 'paramagnetic relaxation', 'pre', 'symmetry', 'J-couplings', 'jcoupling')):
                                 low_seq_coverage += 'coverage %s for chain_id %s, length %s, ' % (seq_align['sequence_coverage'], seq_align['chain_id'], seq_align['length'])
 
                         seq_coverage.append(sc)
@@ -15597,7 +15597,7 @@ class NmrDpUtility:
 
                         cs_ann = []
 
-                        if not anomalous_errs is None:
+                        if anomalous_errs is not None:
 
                             for a_err in anomalous_errs:
                                 ann = {}
@@ -15622,7 +15622,7 @@ class NmrDpUtility:
 
                                 cs_ann.append(ann)
 
-                        if not anomalous_warns is None:
+                        if anomalous_warns is not None:
 
                             for a_warn in anomalous_warns:
                                 ann = {}
@@ -15647,7 +15647,7 @@ class NmrDpUtility:
 
                                 cs_ann.append(ann)
 
-                        if not unusual_warns is None:
+                        if unusual_warns is not None:
 
                             for u_warn in unusual_warns:
                                 ann = {}
@@ -15693,19 +15693,19 @@ class NmrDpUtility:
                     inconsistent = set()
                     redundant = set()
 
-                    if not conflict_warns is None:
+                    if conflict_warns is not None:
 
                         for c_warn in conflict_warns:
                             for index in c_warn['row_locations'][index_tag]:
                                 inconsistent.add(int(index))
 
-                    if not inconsist_warns is None:
+                    if inconsist_warns is not None:
 
                         for i_warn in inconsist_warns:
                             for index in i_warn['row_locations'][index_tag]:
                                 inconsistent.add(int(index))
 
-                    if not redundant_warns is None:
+                    if redundant_warns is not None:
 
                         for d_warn in redundant_warns:
                             for index in d_warn['row_locations'][index_tag]:
@@ -15727,7 +15727,7 @@ class NmrDpUtility:
                     _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
                     num_dim = int(_num_dim)
 
-                    if not num_dim in range(1, self.lim_num_dim):
+                    if num_dim not in range(1, self.lim_num_dim):
                         raise ValueError()
 
                 except ValueError: # raised error already at __testIndexConsistency()
@@ -15872,7 +15872,7 @@ class NmrDpUtility:
 
                     s = next((s for s in polymer_sequence if s['chain_id'] == chain_id), None)
 
-                    if not s is None:
+                    if s is not None:
 
                         for seq_id, comp_id in zip(s['seq_id'], s['comp_id']):
 
@@ -15886,7 +15886,7 @@ class NmrDpUtility:
 
                                 for a in all_atoms:
 
-                                    if h1_col != -1 and not a in non_rep_methyl_pros and a.startswith('H'):
+                                    if h1_col != -1 and a not in non_rep_methyl_pros and a.startswith('H'):
                                         all_c[h1_col]['number_of_target_shifts'] += 1
 
                                     elif c13_col != -1 and a.startswith('C'):
@@ -15923,7 +15923,7 @@ class NmrDpUtility:
 
                                             if a in all_atoms:
 
-                                                if data_type == '1H' and h1_col != -1 and not a in non_rep_methyl_pros and a.startswith('H'):
+                                                if data_type == '1H' and h1_col != -1 and a not in non_rep_methyl_pros and a.startswith('H'):
                                                     all_c[h1_col]['number_of_assigned_shifts'] += 1
 
                                                 elif data_type == '13C' and c13_col != -1:
@@ -15947,7 +15947,7 @@ class NmrDpUtility:
 
                                         if atom_id in all_atoms:
 
-                                            if data_type == '1H' and h1_col != -1 and not atom_id in non_rep_methyl_pros and atom_id.startswith('H'):
+                                            if data_type == '1H' and h1_col != -1 and atom_id not in non_rep_methyl_pros and atom_id.startswith('H'):
                                                 all_c[h1_col]['number_of_assigned_shifts'] += 1
 
                                             elif data_type == '13C' and c13_col != -1:
@@ -16011,7 +16011,7 @@ class NmrDpUtility:
 
                         l += 1
 
-                    if not s is None:
+                    if s is not None:
 
                         for seq_id, comp_id in zip(s['seq_id'], s['comp_id']):
 
@@ -16024,7 +16024,7 @@ class NmrDpUtility:
 
                                 for a in bb_atoms:
 
-                                    if h1_col != -1 and not a in non_rep_methyl_pros and a.startswith('H'):
+                                    if h1_col != -1 and a not in non_rep_methyl_pros and a.startswith('H'):
                                         bb_c[h1_col]['number_of_target_shifts'] += 1
 
                                     elif c13_col != -1 and a.startswith('C'):
@@ -16061,7 +16061,7 @@ class NmrDpUtility:
 
                                                 atom_set.add(a)
 
-                                                if data_type == '1H' and h1_col != -1 and not a in non_rep_methyl_pros and a.startswith('H'):
+                                                if data_type == '1H' and h1_col != -1 and a not in non_rep_methyl_pros and a.startswith('H'):
                                                     bb_c[h1_col]['number_of_assigned_shifts'] += 1
 
                                                 elif data_type == '13C' and c13_col != -1:
@@ -16080,7 +16080,7 @@ class NmrDpUtility:
 
                                         atom_set.add(atom_id)
 
-                                        if data_type == '1H' and h1_col != -1 and not atom_id in non_rep_methyl_pros and atom_id.startswith('H'):
+                                        if data_type == '1H' and h1_col != -1 and atom_id not in non_rep_methyl_pros and atom_id.startswith('H'):
                                             bb_c[h1_col]['number_of_assigned_shifts'] += 1
 
                                         elif data_type == '13C' and c13_col != -1:
@@ -16136,7 +16136,7 @@ class NmrDpUtility:
 
                         l += 1
 
-                    if not s is None:
+                    if s is not None:
 
                         for seq_id, comp_id in zip(s['seq_id'], s['comp_id']):
 
@@ -16149,7 +16149,7 @@ class NmrDpUtility:
 
                                 for a in sc_atoms:
 
-                                    if h1_col != -1 and not a in non_rep_methyl_pros and a.startswith('H'):
+                                    if h1_col != -1 and a not in non_rep_methyl_pros and a.startswith('H'):
                                         sc_c[h1_col]['number_of_target_shifts'] += 1
 
                                     elif c13_col != -1 and a.startswith('C'):
@@ -16186,7 +16186,7 @@ class NmrDpUtility:
 
                                                 atom_set.add(a)
 
-                                                if data_type == '1H' and h1_col != -1 and not a in non_rep_methyl_pros and a.startswith('H'):
+                                                if data_type == '1H' and h1_col != -1 and a not in non_rep_methyl_pros and a.startswith('H'):
                                                     sc_c[h1_col]['number_of_assigned_shifts'] += 1
 
                                                 elif data_type == '13C' and c13_col != -1:
@@ -16205,7 +16205,7 @@ class NmrDpUtility:
 
                                         atom_set.add(atom_id)
 
-                                        if data_type == '1H' and h1_col != -1 and not atom_id in non_rep_methyl_pros and atom_id.startswith('H'):
+                                        if data_type == '1H' and h1_col != -1 and atom_id not in non_rep_methyl_pros and atom_id.startswith('H'):
                                             sc_c[h1_col]['number_of_assigned_shifts'] += 1
 
                                         elif data_type == '13C' and c13_col != -1:
@@ -16256,7 +16256,7 @@ class NmrDpUtility:
 
                         l += 1
 
-                    if not s is None:
+                    if s is not None:
 
                         for seq_id, comp_id in zip(s['seq_id'], s['comp_id']):
 
@@ -16269,7 +16269,7 @@ class NmrDpUtility:
 
                                 for a in ch3_atoms:
 
-                                    if h1_col != -1 and not a in non_rep_methyl_pros and a.startswith('H'):
+                                    if h1_col != -1 and a not in non_rep_methyl_pros and a.startswith('H'):
                                         ch3_c[h1_col]['number_of_target_shifts'] += 1
 
                                     elif c13_col != -1 and a.startswith('C'):
@@ -16300,7 +16300,7 @@ class NmrDpUtility:
 
                                                 atom_set.add(a)
 
-                                                if data_type == '1H' and h1_col != -1 and not a in non_rep_methyl_pros and a.startswith('H'):
+                                                if data_type == '1H' and h1_col != -1 and a not in non_rep_methyl_pros and a.startswith('H'):
                                                     ch3_c[h1_col]['number_of_assigned_shifts'] += 1
 
                                                 elif data_type == '13C' and c13_col != -1:
@@ -16313,7 +16313,7 @@ class NmrDpUtility:
 
                                         atom_set.add(atom_id)
 
-                                        if data_type == '1H' and h1_col != -1 and not atom_id in non_rep_methyl_pros and atom_id.startswith('H'):
+                                        if data_type == '1H' and h1_col != -1 and atom_id not in non_rep_methyl_pros and atom_id.startswith('H'):
                                             ch3_c[h1_col]['number_of_assigned_shifts'] += 1
 
                                         elif data_type == '13C' and c13_col != -1:
@@ -16359,7 +16359,7 @@ class NmrDpUtility:
 
                         l += 1
 
-                    if not s is None:
+                    if s is not None:
 
                         for seq_id, comp_id in zip(s['seq_id'], s['comp_id']):
 
@@ -16372,7 +16372,7 @@ class NmrDpUtility:
 
                                 for a in aro_atoms:
 
-                                    if h1_col != -1 and not a in non_rep_methyl_pros and a.startswith('H'):
+                                    if h1_col != -1 and a not in non_rep_methyl_pros and a.startswith('H'):
                                         aro_c[h1_col]['number_of_target_shifts'] += 1
 
                                     elif c13_col != -1 and a.startswith('C'):
@@ -16406,7 +16406,7 @@ class NmrDpUtility:
 
                                                 atom_set.add(a)
 
-                                                if data_type == '1H' and h1_col != -1 and not a in non_rep_methyl_pros and a.startswith('H'):
+                                                if data_type == '1H' and h1_col != -1 and a not in non_rep_methyl_pros and a.startswith('H'):
                                                     aro_c[h1_col]['number_of_assigned_shifts'] += 1
 
                                                 elif data_type == '13C' and c13_col != -1:
@@ -16422,7 +16422,7 @@ class NmrDpUtility:
 
                                         atom_set.add(atom_id)
 
-                                        if data_type == '1H' and h1_col != -1 and not atom_id in non_rep_methyl_pros and atom_id.startswith('H'):
+                                        if data_type == '1H' and h1_col != -1 and atom_id not in non_rep_methyl_pros and atom_id.startswith('H'):
                                             aro_c[h1_col]['number_of_assigned_shifts'] += 1
 
                                         elif data_type == '13C' and c13_col != -1:
@@ -16607,7 +16607,7 @@ class NmrDpUtility:
 
                     s = next((s for s in polymer_sequence if s['chain_id'] == chain_id), None)
 
-                    if not s is None:
+                    if s is not None:
 
                         for seq_id, comp_id in zip(s['seq_id'], s['comp_id']):
 
@@ -16638,14 +16638,14 @@ class NmrDpUtility:
                             cys['ca_chem_shift'] = ca_chem_shift
                             cys['cb_chem_shift'] = cb_chem_shift
 
-                            if not cb_chem_shift is None:
+                            if cb_chem_shift is not None:
                                 if cb_chem_shift < 32.0:
                                     cys['redox_state_pred'] = 'reduced'
                                 elif cb_chem_shift > 35.0:
                                     cys['redox_state_pred'] = 'oxidized'
                                 else:
                                     cys['redox_state_pred'] = 'ambiguous'
-                            elif not ca_chem_shift is None:
+                            elif ca_chem_shift is not None:
                                 cys['redox_state_pred'] = 'ambiguous'
                             else:
                                 cys['redox_state_pred'] = 'unknown'
@@ -16660,12 +16660,12 @@ class NmrDpUtility:
                                     cys['redox_state_pred'] = 'oxidized %s (%%), reduced %s (%%)' % ('{:.1f}'.format(oxi * 100.0), '{:.1f}'.format(red * 100.0))
 
                             cys['in_disulfide_bond'] = False
-                            if not input_source_dic['disulfide_bond'] is None:
+                            if input_source_dic['disulfide_bond'] is not None:
                                 if any(b for b in input_source_dic['disulfide_bond'] if (b['chain_id_1'] == chain_id and b['seq_id_1'] == seq_id) or (b['chain_id_2'] == chain_id and b['seq_id_2'] == seq_id)):
                                     cys['in_disulfide_bond'] = True
 
                             cys['in_other_bond'] = False
-                            if not input_source_dic['other_bond'] is None:
+                            if input_source_dic['other_bond'] is not None:
                                 if any(b for b in input_source_dic['other_bond'] if (b['chain_id_1'] == chain_id and b['seq_id_1'] == seq_id) or (b['chain_id_2'] == chain_id and b['seq_id_2'] == seq_id)):
                                     cys['in_other_bond'] = True
 
@@ -16686,7 +16686,7 @@ class NmrDpUtility:
 
                     s = next((s for s in polymer_sequence if s['chain_id'] == chain_id), None)
 
-                    if not s is None:
+                    if s is not None:
 
                         for seq_id, comp_id in zip(s['seq_id'], s['comp_id']):
 
@@ -16717,7 +16717,7 @@ class NmrDpUtility:
                             pro['cb_chem_shift'] = cb_chem_shift
                             pro['cg_chem_shift'] = cg_chem_shift
 
-                            if (not cb_chem_shift is None) and (not cg_chem_shift is None):
+                            if (cb_chem_shift is not None) and (cg_chem_shift is not None):
                                 delta = cb_chem_shift - cg_chem_shift
                                 if delta < 4.8:
                                     pro['cis_trans_pred'] = 'trans'
@@ -16725,7 +16725,7 @@ class NmrDpUtility:
                                     pro['cis_trans_pred'] = 'cis'
                                 else:
                                     pro['cis_trans_pred'] = 'ambiguous'
-                            elif (not cb_chem_shift is None) or (not cg_chem_shift is None):
+                            elif (cb_chem_shift is not None) or (cg_chem_shift is not None):
                                 pro['cis_trans_pred'] = 'ambiguous'
                             else:
                                 pro['cis_trans_pred'] = 'unknown'
@@ -16754,12 +16754,12 @@ class NmrDpUtility:
                                     else:
                                         item = 'anomalous_chemical_shift'
 
-                                    if not item is None:
+                                    if item is not None:
 
                                         shifts = ''
-                                        if not cb_chem_shift is None:
+                                        if cb_chem_shift is not None:
                                             shifts += 'CB %s ppm, ' % cb_chem_shift
-                                        if not cg_chem_shift is None:
+                                        if cg_chem_shift is not None:
                                             shifts += 'CG %s ppm, ' % cg_chem_shift
 
                                         warn = "%s-peptide bond of %s:%s:%s can not be verified with the assigned chemical shift values (%scis_trans_pred %s)." %\
@@ -16788,7 +16788,7 @@ class NmrDpUtility:
 
                     s = next((s for s in polymer_sequence if s['chain_id'] == chain_id), None)
 
-                    if not s is None:
+                    if s is not None:
 
                         for seq_id, comp_id in zip(s['seq_id'], s['comp_id']):
 
@@ -16827,7 +16827,7 @@ class NmrDpUtility:
                             his['nd1_chem_shift'] = nd1_chem_shift
                             his['ne2_chem_shift'] = ne2_chem_shift
 
-                            if (not cg_chem_shift is None) or (not cd2_chem_shift is None) or (not nd1_chem_shift is None) or (not ne2_chem_shift is None):
+                            if (cg_chem_shift is not None) or (cd2_chem_shift is not None) or (nd1_chem_shift is not None) or (ne2_chem_shift is not None):
                                 bip, tau, pi = predict_tautomer_state_of_histidine(cg_chem_shift, cd2_chem_shift, nd1_chem_shift, ne2_chem_shift)
                                 if tau < 0.001 and pi < 0.001:
                                     his['tautomeric_state_pred'] = 'biprotonated'
@@ -16855,16 +16855,16 @@ class NmrDpUtility:
                                     else:
                                         item = 'anomalous_chemical_shift'
 
-                                if not item is None:
+                                if item is not None:
 
                                     shifts = ''
-                                    if not cg_chem_shift is None:
+                                    if cg_chem_shift is not None:
                                         shifts += 'CG %s ppm, ' % cg_chem_shift
-                                    if not cd2_chem_shift is None:
+                                    if cd2_chem_shift is not None:
                                         shifts += 'CD2 %s ppm, ' % cd2_chem_shift
-                                    if not nd1_chem_shift is None:
+                                    if nd1_chem_shift is not None:
                                         shifts += 'ND1 %s ppm, ' % nd1_chem_shift
-                                    if not ne2_chem_shift is None:
+                                    if ne2_chem_shift is not None:
                                         shifts += 'NE2 %s ppm, ' % ne2_chem_shift
 
                                     warn = "Tautomeric state %s of %s:%s:%s can not be verified with the assigned chemical shift values (%stautomeric_state_pred %s)." %\
@@ -16893,11 +16893,11 @@ class NmrDpUtility:
 
                     s = next((s for s in polymer_sequence if s['chain_id'] == chain_id), None)
 
-                    if not s is None:
+                    if s is not None:
 
                         for seq_id, comp_id in zip(s['seq_id'], s['comp_id']):
 
-                            if not comp_id in ('VAL', 'LEU', 'ILE'):
+                            if comp_id not in ('VAL', 'LEU', 'ILE'):
                                 continue
 
                             ilv = {'chain_id': chain_id, 'seq_id': seq_id, 'comp_id': comp_id}
@@ -16932,7 +16932,7 @@ class NmrDpUtility:
                                 ilv['cg1_chem_shift'] = cg1_chem_shift
                                 ilv['cg2_chem_shift'] = cg2_chem_shift
 
-                                if (not cg1_chem_shift is None) or (not cg2_chem_shift is None):
+                                if (cg1_chem_shift is not None) or (cg2_chem_shift is not None):
                                     gp, t, gm = predict_rotamer_state_of_valine(cg1_chem_shift, cg2_chem_shift)
                                     if t < 0.001 and gm < 0.001:
                                         ilv['rotameric_state_pred'] = 'gauche+'
@@ -16965,7 +16965,7 @@ class NmrDpUtility:
 
                                 if ilv['rotameric_state_pred'] != 'unknown':
                                     item = None
-                                    if not _rotameric_state in (ilv['rotameric_state_pred'], 'unknown'):
+                                    if _rotameric_state not in (ilv['rotameric_state_pred'], 'unknown'):
                                         if ',' in ilv['rotameric_state_pred']:
                                             if (_rotameric_state == 'gauche+' and gp > t and gp > gm) or\
                                                (_rotameric_state == 'trans' and t > gm and t > gp) or\
@@ -16976,12 +16976,12 @@ class NmrDpUtility:
                                         else:
                                             item = 'anomalous_chemical_shift'
 
-                                    if not item is None:
+                                    if item is not None:
 
                                         shifts = ''
-                                        if not cg1_chem_shift is None:
+                                        if cg1_chem_shift is not None:
                                             shifts += 'CG1 %s ppm, ' % cg1_chem_shift
-                                        if not cg2_chem_shift is None:
+                                        if cg2_chem_shift is not None:
                                             shifts += 'CG2 %s ppm, ' % cg2_chem_shift
 
                                         warn = "Rotameric state %s of %s:%s:%s can not be verified with the assigned chemical shift values (%srotameric_state_pred %s)." %\
@@ -17023,7 +17023,7 @@ class NmrDpUtility:
                                 ilv['cd1_chem_shift'] = cd1_chem_shift
                                 ilv['cd2_chem_shift'] = cd2_chem_shift
 
-                                if (not cd1_chem_shift is None) or (not cd2_chem_shift is None):
+                                if (cd1_chem_shift is not None) or (cd2_chem_shift is not None):
                                     gp, t, gm = predict_rotamer_state_of_leucine(cd1_chem_shift, cd2_chem_shift)
                                     if t < 0.001 and gm < 0.001:
                                         ilv['rotameric_state_pred'] = 'gauche+'
@@ -17056,7 +17056,7 @@ class NmrDpUtility:
 
                                 if ilv['rotameric_state_pred'] != 'unknown':
                                     item = None
-                                    if not _rotameric_state in (ilv['rotameric_state_pred'], 'unknown'):
+                                    if _rotameric_state not in (ilv['rotameric_state_pred'], 'unknown'):
                                         if ',' in ilv['rotameric_state_pred']:
                                             if (_rotameric_state == 'gauche+' and gp > t and gp > gm) or\
                                                (_rotameric_state == 'trans' and t > gm and t > gp) or\
@@ -17067,12 +17067,12 @@ class NmrDpUtility:
                                         else:
                                             item = 'anomalous_chemical_shift'
 
-                                    if not item is None:
+                                    if item is not None:
 
                                         shifts = ''
-                                        if not cd1_chem_shift is None:
+                                        if cd1_chem_shift is not None:
                                             shifts += 'CD1 %s ppm, ' % cd1_chem_shift
-                                        if not cd2_chem_shift is None:
+                                        if cd2_chem_shift is not None:
                                             shifts += 'CD2 %s ppm, ' % cd2_chem_shift
 
                                         warn = "Rotameric state %s of %s:%s:%s can not be verified with the assigned chemical shift values (%srotameric_state_pred %s)." %\
@@ -17104,7 +17104,7 @@ class NmrDpUtility:
 
                                 ilv['cd1_chem_shift'] = cd1_chem_shift
 
-                                if not cd1_chem_shift is None:
+                                if cd1_chem_shift is not None:
                                     gp, t, gm = predict_rotamer_state_of_isoleucine(cd1_chem_shift)
                                     if t < 0.001 and gm < 0.001:
                                         ilv['rotameric_state_pred'] = 'gauche+'
@@ -17137,7 +17137,7 @@ class NmrDpUtility:
 
                                 if ilv['rotameric_state_pred'] != 'unknown':
                                     item = None
-                                    if not _rotameric_state in (ilv['rotameric_state_pred'], 'unknown'):
+                                    if _rotameric_state not in (ilv['rotameric_state_pred'], 'unknown'):
                                         if ',' in ilv['rotameric_state_pred']:
                                             if (_rotameric_state == 'gauche+' and gp > t and gp > gm) or\
                                                (_rotameric_state == 'trans' and t > gm and t > gp) or\
@@ -17148,10 +17148,10 @@ class NmrDpUtility:
                                         else:
                                             item = 'anomalous_chemical_shift'
 
-                                    if not item is None:
+                                    if item is not None:
 
                                         shifts = ''
-                                        if not cd1_chem_shift is None:
+                                        if cd1_chem_shift is not None:
                                             shifts += 'CD1 %s ppm, ' % cd1_chem_shift
 
                                         warn = "Rotameric state %s of %s:%s:%s can not be verified with the assigned chemical shift values (%srotameric_state_pred %s)." %\
@@ -17180,7 +17180,7 @@ class NmrDpUtility:
 
                     s = next((s for s in polymer_sequence if s['chain_id'] == chain_id), None)
 
-                    if not s is None:
+                    if s is not None:
 
                         rci_residues = []
                         rci_assignments = []
@@ -17189,16 +17189,16 @@ class NmrDpUtility:
 
                         for seq_id, comp_id in zip(s['seq_id'], s['comp_id']):
 
-                            if not comp_id in self.empty_value:
-                                if not comp_id in self.monDict3.keys():
+                            if comp_id not in self.empty_value:
+                                if comp_id not in self.monDict3.keys():
                                     continue
                                 if not self.__csStat.getTypeOfCompId(comp_id)[0]:
                                     continue
                                 rci_residues.append([comp_id, seq_id])
                             else:
                                 _comp_id = self.__getCoordCompId(chain_id, seq_id)
-                                if not _comp_id is None:
-                                    if not _comp_id in self.monDict3.keys():
+                                if _comp_id is not None:
+                                    if _comp_id not in self.monDict3.keys():
                                         continue
                                     if not self.__csStat.getTypeOfCompId(_comp_id)[0]:
                                         continue
@@ -17231,7 +17231,7 @@ class NmrDpUtility:
                                 else:
                                     atom_id_ = atom_id
 
-                                if not atom_id_ in ('HA', 'HA1', 'HA2', 'HA3', 'H', 'HN', 'NH', 'C', 'CO', 'N', 'CA', 'CB'):
+                                if atom_id_ not in ('HA', 'HA1', 'HA2', 'HA3', 'H', 'HN', 'NH', 'C', 'CO', 'N', 'CA', 'CB'):
                                     continue
 
                                 rci_assignments.append([comp_id, seq_id, atom_id, j[atom_type], j[value_name]])
@@ -17263,14 +17263,14 @@ class NmrDpUtility:
 
                                     ambig_redox_state = False
 
-                                    if not cb_chem_shift is None:
+                                    if cb_chem_shift is not None:
                                         if cb_chem_shift < 32.0:
                                             pass
                                         elif cb_chem_shift > 35.0:
                                             oxidized_cys_seq_ids.append(seq_id)
                                         else:
                                             ambig_redox_state = True
-                                    elif not ca_chem_shift is None:
+                                    elif ca_chem_shift is not None:
                                         ambig_redox_state = True
 
                                     if ambig_redox_state:
@@ -17297,7 +17297,7 @@ class NmrDpUtility:
 
                                 cif_ps = self.report.getModelPolymerSequenceWithNmrChainId(chain_id)
 
-                                if not cif_ps is None and 'ca_rmsd' in cif_ps and len(cif_ps['ca_rmsd']) > 0 and 'rmsd_in_well_defined_region' in cif_ps['ca_rmsd'][0]:
+                                if cif_ps is not None and 'ca_rmsd' in cif_ps and len(cif_ps['ca_rmsd']) > 0 and 'rmsd_in_well_defined_region' in cif_ps['ca_rmsd'][0]:
                                     rmsd = cif_ps['ca_rmsd'][0]['rmsd_in_well_defined_region']
                                     result['rmsd_in_well_defined_region'] = rmsd
 
@@ -17336,7 +17336,7 @@ class NmrDpUtility:
         atom_id_1_name = item_names['atom_id_1']
         atom_id_2_name = item_names['atom_id_2']
         target_value_name = item_names['target_value']
-        if 'target_value_alt' in item_names and not target_value_name in lp_data[0].keys():
+        if 'target_value_alt' in item_names and target_value_name not in lp_data[0].keys():
             target_value_name = item_names['target_value_alt']
         lower_limit_name = item_names['lower_limit']
         upper_limit_name = item_names['upper_limit']
@@ -17366,7 +17366,7 @@ class NmrDpUtility:
 
             polymer_sequence = input_source_dic['polymer_sequence']
 
-            if not polymer_sequence is None:
+            if polymer_sequence is not None:
 
                 for s in polymer_sequence:
                     struct_conf = self.__extractCoordStructConf(s['chain_id'], s['seq_id'])
@@ -17389,7 +17389,7 @@ class NmrDpUtility:
                 comp_id_2 = i[comp_id_2_name]
                 atom_id_1 = i[atom_id_1_name]
                 atom_id_2 = i[atom_id_2_name]
-                weight = None if not weight_name in i else i[weight_name]
+                weight = None if weight_name not in i else i[weight_name]
                 set_id.add(i[id_tag])
 
                 target_value = i[target_value_name] if target_value_name in i else None
@@ -17399,25 +17399,25 @@ class NmrDpUtility:
 
                 if target_value is None:
 
-                    if lower_limit_name in i and (not i[lower_limit_name] is None) and upper_limit_name in i and (not i[upper_limit_name] is None):
+                    if lower_limit_name in i and (i[lower_limit_name] is not None) and upper_limit_name in i and (i[upper_limit_name] is not None):
                         target_value = (i[lower_limit_name] + i[upper_limit_name]) / 2.0
 
-                    elif lower_linear_limit_name in i and (not i[lower_linear_limit_name] is None) and upper_linear_limit_name is i and (not i[upper_linear_limit_name] is None):
+                    elif lower_linear_limit_name in i and (i[lower_linear_limit_name] is not None) and upper_linear_limit_name is i and (i[upper_linear_limit_name] is not None):
                         target_value = (i[lower_linear_limit_name] + i[upper_linear_limit_name]) / 2.0
 
-                    elif upper_linear_limit_name in i and (not i[upper_linear_limit_name] is None):
+                    elif upper_linear_limit_name in i and (i[upper_linear_limit_name] is not None):
                         target_value = i[upper_linear_limit_name]
                         upper_limit_value = target_value
 
-                    elif upper_limit_name in i and (not i[upper_limit_name] is None):
+                    elif upper_limit_name in i and (i[upper_limit_name] is not None):
                         target_value = i[upper_limit_name]
                         upper_limit_value = target_value
 
-                    elif lower_linear_limit_name in i and (not i[lower_linear_limit_name] is None):
+                    elif lower_linear_limit_name in i and (i[lower_linear_limit_name] is not None):
                         target_value = i[lower_linear_limit_name]
                         lower_limit_value = target_value
 
-                    elif lower_limit_name in i and (not i[lower_limit_name] is None):
+                    elif lower_limit_name in i and (i[lower_limit_name] is not None):
                         target_value = i[lower_limit_name]
                         lower_limit_value = target_value
 
@@ -17436,15 +17436,15 @@ class NmrDpUtility:
                 if 'hydrogen_bonds' in data_type and ('too close!' in data_type or 'too far!' in data_type):
 
                     values = ''
-                    if target_value_name in i and not i[target_value_name] is None:
+                    if target_value_name in i and i[target_value_name] is not None:
                         values += '%s %s, ' % (target_value_name, i[target_value_name])
-                    if lower_limit_name in i and not i[lower_limit_name] is None:
+                    if lower_limit_name in i and i[lower_limit_name] is not None:
                         values += '%s %s, ' % (lower_limit_name, i[lower_limit_name])
-                    if upper_limit_name in i and not i[upper_limit_name] is None:
+                    if upper_limit_name in i and i[upper_limit_name] is not None:
                         values += '%s %s, ' % (upper_limit_name, i[upper_limit_name])
-                    if lower_linear_limit_name in i and not i[lower_linear_limit_name] is None:
+                    if lower_linear_limit_name in i and i[lower_linear_limit_name] is not None:
                         values += '%s %s, ' % (lower_linear_limit_name, i[lower_linear_limit_name])
-                    if upper_linear_limit_name in i and not i[upper_linear_limit_name] is None:
+                    if upper_linear_limit_name in i and i[upper_linear_limit_name] is not None:
                         values += '%s %s, ' % (upper_linear_limit_name, i[upper_linear_limit_name])
 
                     warn = "Hydrogen bond constraint (%s:%s:%s:%s, %s:%s:%s:%s) is too %s (%s)." %\
@@ -17459,15 +17459,15 @@ class NmrDpUtility:
                 elif 'disulfide_bonds' in data_type and ('too close!' in data_type or 'too far!' in data_type):
 
                     values = ''
-                    if target_value_name in i and not i[target_value_name] is None:
+                    if target_value_name in i and i[target_value_name] is not None:
                         values += '%s %s, ' % (target_value_name, i[target_value_name])
-                    if lower_limit_name in i and not i[lower_limit_name] is None:
+                    if lower_limit_name in i and i[lower_limit_name] is not None:
                         values += '%s %s, ' % (lower_limit_name, i[lower_limit_name])
-                    if upper_limit_name in i and not i[upper_limit_name] is None:
+                    if upper_limit_name in i and i[upper_limit_name] is not None:
                         values += '%s %s, ' % (upper_limit_name, i[upper_limit_name])
-                    if lower_linear_limit_name in i and not i[lower_linear_limit_name] is None:
+                    if lower_linear_limit_name in i and i[lower_linear_limit_name] is not None:
                         values += '%s %s, ' % (lower_linear_limit_name, i[lower_linear_limit_name])
-                    if upper_linear_limit_name in i and not i[upper_linear_limit_name] is None:
+                    if upper_linear_limit_name in i and i[upper_linear_limit_name] is not None:
                         values += '%s %s, ' % (upper_linear_limit_name, i[upper_linear_limit_name])
 
                     warn = "Disulfide bond constraint (%s:%s:%s:%s, %s:%s:%s:%s) is too %s (%s)." %\
@@ -17482,15 +17482,15 @@ class NmrDpUtility:
                 elif 'diselenide_bonds' in data_type and ('too close!' in data_type or 'too far!' in data_type):
 
                     values = ''
-                    if target_value_name in i and not i[target_value_name] is None:
+                    if target_value_name in i and i[target_value_name] is not None:
                         values += '%s %s, ' % (target_value_name, i[target_value_name])
-                    if lower_limit_name in i and not i[lower_limit_name] is None:
+                    if lower_limit_name in i and i[lower_limit_name] is not None:
                         values += '%s %s, ' % (lower_limit_name, i[lower_limit_name])
-                    if upper_limit_name in i and not i[upper_limit_name] is None:
+                    if upper_limit_name in i and i[upper_limit_name] is not None:
                         values += '%s %s, ' % (upper_limit_name, i[upper_limit_name])
-                    if lower_linear_limit_name in i and not i[lower_linear_limit_name] is None:
+                    if lower_linear_limit_name in i and i[lower_linear_limit_name] is not None:
                         values += '%s %s, ' % (lower_linear_limit_name, i[lower_linear_limit_name])
-                    if upper_linear_limit_name in i and not i[upper_linear_limit_name] is None:
+                    if upper_linear_limit_name in i and i[upper_linear_limit_name] is not None:
                         values += '%s %s, ' % (upper_linear_limit_name, i[upper_linear_limit_name])
 
                     warn = "Diselenide bond constraint (%s:%s:%s:%s, %s:%s:%s:%s) is too %s (%s)." %\
@@ -17505,15 +17505,15 @@ class NmrDpUtility:
                 elif 'other_bonds' in data_type and ('too close!' in data_type or 'too far!' in data_type):
 
                     values = ''
-                    if target_value_name in i and not i[target_value_name] is None:
+                    if target_value_name in i and i[target_value_name] is not None:
                         values += '%s %s, ' % (target_value_name, i[target_value_name])
-                    if lower_limit_name in i and not i[lower_limit_name] is None:
+                    if lower_limit_name in i and i[lower_limit_name] is not None:
                         values += '%s %s, ' % (lower_limit_name, i[lower_limit_name])
-                    if upper_limit_name in i and not i[upper_limit_name] is None:
+                    if upper_limit_name in i and i[upper_limit_name] is not None:
                         values += '%s %s, ' % (upper_limit_name, i[upper_limit_name])
-                    if lower_linear_limit_name in i and not i[lower_linear_limit_name] is None:
+                    if lower_linear_limit_name in i and i[lower_linear_limit_name] is not None:
                         values += '%s %s, ' % (lower_linear_limit_name, i[lower_linear_limit_name])
-                    if upper_linear_limit_name in i and not i[upper_linear_limit_name] is None:
+                    if upper_linear_limit_name in i and i[upper_linear_limit_name] is not None:
                         values += '%s %s, ' % (upper_linear_limit_name, i[upper_linear_limit_name])
 
                     warn = "Other bond constraint (%s:%s:%s:%s, %s:%s:%s:%s) is too %s (%s)." %\
@@ -17530,13 +17530,13 @@ class NmrDpUtility:
                 else:
                     count[data_type] = 1
 
-                if (not comb_id is None) and (not comb_id in self.empty_value):
+                if (comb_id is not None) and (comb_id not in self.empty_value):
                     if data_type in comb_count:
                         comb_count[data_type] += 1
                     else:
                         comb_count[data_type] = 1
 
-                if not index is None:
+                if index is not None:
 
                     if index in inconsistent:
                         if data_type in inco_count:
@@ -17552,8 +17552,8 @@ class NmrDpUtility:
 
                 # detect weight
 
-                if not weight is None:
-                    if not data_type in weights:
+                if weight is not None:
+                    if data_type not in weights:
                         weights[data_type] = []
                     weights[data_type].append(weight)
 
@@ -17565,37 +17565,37 @@ class NmrDpUtility:
                 lower_linear_limit_value = i[lower_linear_limit_name] if lower_linear_limit_name in i else None
                 upper_linear_limit_value = i[upper_linear_limit_name] if upper_linear_limit_name in i else None
 
-                if (not lower_limit_value is None) and\
-                   (not upper_limit_value is None) and\
+                if (lower_limit_value is not None) and\
+                   (upper_limit_value is not None) and\
                    lower_linear_limit_value is None and\
                    upper_linear_limit_value is None:
                     potential_type = 'square-well-parabolic'
-                elif (not lower_limit_value is None) and\
-                   (not upper_limit_value is None) and\
-                   (not lower_linear_limit_value is None) and\
-                   (not upper_linear_limit_value is None):
+                elif (lower_limit_value is not None) and\
+                   (upper_limit_value is not None) and\
+                   (lower_linear_limit_value is not None) and\
+                   (upper_linear_limit_value is not None):
                     potential_type = 'square-well-parabolic-linear'
                 elif lower_limit_value is None and\
-                   (not upper_limit_value is None) and\
+                   (upper_limit_value is not None) and\
                    lower_linear_limit_value is None and\
                    upper_linear_limit_value is None:
                     potential_type = 'upper-bound-parabolic'
-                elif (not lower_limit_value is None) and\
+                elif (lower_limit_value is not None) and\
                    upper_limit_value is None and\
                    lower_linear_limit_value is None and\
                    upper_linear_limit_value is None:
                     potential_type = 'lower-bound-parabolic'
                 elif lower_limit_value is None and\
-                   (not upper_limit_value is None) and\
+                   (upper_limit_value is not None) and\
                    lower_linear_limit_value is None and\
-                   (not upper_linear_limit_value is None):
+                   (upper_linear_limit_value is not None):
                     potential_type = 'upper-bound-parabolic-linear'
-                elif (not lower_limit_value is None) and\
+                elif (lower_limit_value is not None) and\
                    upper_limit_value is None and\
-                   (not lower_linear_limit_value is None) and\
+                   (lower_linear_limit_value is not None) and\
                    upper_linear_limit_value is None:
                     potential_type = 'lower-bound-parabolic-linear'
-                elif (not target_value is None) and\
+                elif (target_value is not None) and\
                    lower_limit_value is None and\
                    upper_limit_value is None and\
                    lower_linear_limit_value is None and\
@@ -17604,17 +17604,17 @@ class NmrDpUtility:
                 else:
                     potential_type = 'undefined'
 
-                if not potential_type is None:
-                    if not data_type in potential_types:
+                if potential_type is not None:
+                    if data_type not in potential_types:
                         potential_types[data_type] = []
                     potential_types[data_type].append(potential_type)
 
-                if not polymer_sequence is None:
+                if polymer_sequence is not None:
 
                     # count per residue
 
                     for c in count_per_residue:
-                        if not data_type in c:
+                        if data_type not in c:
                             c[data_type] = [0] * len(c['seq_id'])
                         if c['chain_id'] == chain_id_1 and seq_id_1 in c['seq_id']:
                             c[data_type][c['seq_id'].index(seq_id_1)] += 1
@@ -17626,7 +17626,7 @@ class NmrDpUtility:
                     if chain_id_1 == chain_id_2:
 
                         for c in count_on_map:
-                            if not data_type in c:
+                            if data_type not in c:
                                 c[data_type] = []
                             if c['chain_id'] == chain_id_1:
                                 try:
@@ -17639,7 +17639,7 @@ class NmrDpUtility:
                     else:
 
                         for c in count_on_asym_map:
-                            if not data_type in c:
+                            if data_type not in c:
                                 c[data_type] = []
                             if c['chain_id_1'] == chain_id_1 and c['chain_id_2'] == chain_id_2:
                                 try:
@@ -17669,7 +17669,7 @@ class NmrDpUtility:
                 ent['number_of_inconsistent_constraints'] = inco_count
             if len(redu_count) > 0:
                 ent['number_of_redundant_constraints'] = redu_count
-            if not polymer_sequence is None:
+            if polymer_sequence is not None:
                 ent['constraints_per_residue'] = count_per_residue
                 ent['constraints_on_contact_map'] = count_on_map
             if has_inter_chain_constraint:
@@ -17733,25 +17733,25 @@ class NmrDpUtility:
 
                     if target_value is None:
 
-                        if lower_limit_name in i and (not i[lower_limit_name] is None) and upper_limit_name in i and (not i[upper_limit_name] is None):
+                        if lower_limit_name in i and (i[lower_limit_name] is not None) and upper_limit_name in i and (i[upper_limit_name] is not None):
                             target_value = (i[lower_limit_name] + i[upper_limit_name]) / 2.0
 
-                        elif lower_linear_limit_name in i and (not i[lower_linear_limit_name] is None) and upper_linear_limit_name is i and (not i[upper_linear_limit_name] is None):
+                        elif lower_linear_limit_name in i and (i[lower_linear_limit_name] is not None) and upper_linear_limit_name is i and (i[upper_linear_limit_name] is not None):
                             target_value = (i[lower_linear_limit_name] + i[upper_linear_limit_name]) / 2.0
 
-                        elif upper_linear_limit_name in i and (not i[upper_linear_limit_name] is None):
+                        elif upper_linear_limit_name in i and (i[upper_linear_limit_name] is not None):
                             target_value = i[upper_linear_limit_name]
                             upper_limit_value = target_value
 
-                        elif upper_limit_name in i and (not i[upper_limit_name] is None):
+                        elif upper_limit_name in i and (i[upper_limit_name] is not None):
                             target_value = i[upper_limit_name]
                             upper_limit_value = target_value
 
-                        elif lower_linear_limit_name in i and (not i[lower_linear_limit_name] is None):
+                        elif lower_linear_limit_name in i and (i[lower_linear_limit_name] is not None):
                             target_value = i[lower_linear_limit_name]
                             lower_limit_value = target_value
 
-                        elif lower_limit_name in i and (not i[lower_limit_name] is None):
+                        elif lower_limit_name in i and (i[lower_limit_name] is not None):
                             target_value = i[lower_limit_name]
                             lower_limit_value = target_value
 
@@ -17794,7 +17794,7 @@ class NmrDpUtility:
                 """
                 ent['histogram'] = {'range_of_values': range_of_vals, 'number_of_values': transposed}
 
-            if not conflict_id_set is None:
+            if conflict_id_set is not None:
 
                 #max_inclusive = self.dist_restraint_error['max_inclusive']
 
@@ -17819,44 +17819,44 @@ class NmrDpUtility:
 
                             if target_value_1 is None:
 
-                                if lower_limit_name in row_1 and (not row_1[lower_limit_name] is None) and upper_limit_name in row_1 and (not row_1[upper_limit_name] is None):
+                                if lower_limit_name in row_1 and (row_1[lower_limit_name] is not None) and upper_limit_name in row_1 and (row_1[upper_limit_name] is not None):
                                     target_value_1 = (row_1[lower_limit_name] + row_1[upper_limit_name]) / 2.0
 
-                                elif lower_linear_limit_name in row_1 and (not row_1[lower_linear_limit_name] is None) and upper_linear_limit_name is i and (not row_1[upper_linear_limit_name] is None):
+                                elif lower_linear_limit_name in row_1 and (row_1[lower_linear_limit_name] is not None) and upper_linear_limit_name is i and (row_1[upper_linear_limit_name] is not None):
                                     target_value_1 = (row_1[lower_linear_limit_name] + row_1[upper_linear_limit_name]) / 2.0
 
-                                elif upper_linear_limit_name in row_1 and (not row_1[upper_linear_limit_name] is None):
+                                elif upper_linear_limit_name in row_1 and (row_1[upper_linear_limit_name] is not None):
                                     target_value_1 = row_1[upper_linear_limit_name]
 
-                                elif upper_limit_name in row_1 and (not row_1[upper_limit_name] is None):
+                                elif upper_limit_name in row_1 and (row_1[upper_limit_name] is not None):
                                     target_value_1 = row_1[upper_limit_name]
 
-                                elif lower_linear_limit_name in row_1 and (not row_1[lower_linear_limit_name] is None):
+                                elif lower_linear_limit_name in row_1 and (row_1[lower_linear_limit_name] is not None):
                                     target_value_1 = row_1[lower_linear_limit_name]
 
-                                elif lower_limit_name in row_1 and (not row_1[lower_limit_name] is None):
+                                elif lower_limit_name in row_1 and (row_1[lower_limit_name] is not None):
                                     target_value_1 = row_1[lower_limit_name]
 
                             target_value_2 = row_2[target_value_name] if target_value_name in row_2 else None
 
                             if target_value_2 is None:
 
-                                if lower_limit_name in row_2 and (not row_2[lower_limit_name] is None) and upper_limit_name in row_2 and (not row_2[upper_limit_name] is None):
+                                if lower_limit_name in row_2 and (row_2[lower_limit_name] is not None) and upper_limit_name in row_2 and (row_2[upper_limit_name] is not None):
                                     target_value_2 = (row_2[lower_limit_name] + row_2[upper_limit_name]) / 2.0
 
-                                elif lower_linear_limit_name in row_2 and (not row_2[lower_linear_limit_name] is None) and upper_linear_limit_name is i and (not row_2[upper_linear_limit_name] is None):
+                                elif lower_linear_limit_name in row_2 and (row_2[lower_linear_limit_name] is not None) and upper_linear_limit_name is i and (row_2[upper_linear_limit_name] is not None):
                                     target_value_2 = (row_2[lower_linear_limit_name] + row_2[upper_linear_limit_name]) / 2.0
 
-                                elif upper_linear_limit_name in row_2 and (not row_2[upper_linear_limit_name] is None):
+                                elif upper_linear_limit_name in row_2 and (row_2[upper_linear_limit_name] is not None):
                                     target_value_2 = row_2[upper_linear_limit_name]
 
-                                elif upper_limit_name in row_2 and (not row_2[upper_limit_name] is None):
+                                elif upper_limit_name in row_2 and (row_2[upper_limit_name] is not None):
                                     target_value_2 = row_2[upper_limit_name]
 
-                                elif lower_linear_limit_name in row_2 and (not row_2[lower_linear_limit_name] is None):
+                                elif lower_linear_limit_name in row_2 and (row_2[lower_linear_limit_name] is not None):
                                     target_value_2 = row_2[lower_linear_limit_name]
 
-                                elif lower_limit_name in row_2 and (not row_2[lower_limit_name] is None):
+                                elif lower_limit_name in row_2 and (row_2[lower_limit_name] is not None):
                                     target_value_2 = row_2[lower_limit_name]
 
                             if target_value_1 is None or target_value_2 is None:
@@ -17936,44 +17936,44 @@ class NmrDpUtility:
 
                                     if target_value_1 is None:
 
-                                        if lower_limit_name in row_1 and (not row_1[lower_limit_name] is None) and upper_limit_name in row_1 and (not row_1[upper_limit_name] is None):
+                                        if lower_limit_name in row_1 and (row_1[lower_limit_name] is not None) and upper_limit_name in row_1 and (row_1[upper_limit_name] is not None):
                                             target_value_1 = (row_1[lower_limit_name] + row_1[upper_limit_name]) / 2.0
 
-                                        elif lower_linear_limit_name in row_1 and (not row_1[lower_linear_limit_name] is None) and upper_linear_limit_name is i and (not row_1[upper_linear_limit_name] is None):
+                                        elif lower_linear_limit_name in row_1 and (row_1[lower_linear_limit_name] is not None) and upper_linear_limit_name is i and (row_1[upper_linear_limit_name] is not None):
                                             target_value_1 = (row_1[lower_linear_limit_name] + row_1[upper_linear_limit_name]) / 2.0
 
-                                        elif upper_linear_limit_name in row_1 and (not row_1[upper_linear_limit_name] is None):
+                                        elif upper_linear_limit_name in row_1 and (row_1[upper_linear_limit_name] is not None):
                                             target_value_1 = row_1[upper_linear_limit_name]
 
-                                        elif upper_limit_name in row_1 and (not row_1[upper_limit_name] is None):
+                                        elif upper_limit_name in row_1 and (row_1[upper_limit_name] is not None):
                                             target_value_1 = row_1[upper_limit_name]
 
-                                        elif lower_linear_limit_name in row_1 and (not row_1[lower_linear_limit_name] is None):
+                                        elif lower_linear_limit_name in row_1 and (row_1[lower_linear_limit_name] is not None):
                                             target_value_1 = row_1[lower_linear_limit_name]
 
-                                        elif lower_limit_name in row_1 and (not row_1[lower_limit_name] is None):
+                                        elif lower_limit_name in row_1 and (row_1[lower_limit_name] is not None):
                                             target_value_1 = row_1[lower_limit_name]
 
                                     target_value_2 = row_2[target_value_name] if target_value_name in row_2 else None
 
                                     if target_value_2 is None:
 
-                                        if lower_limit_name in row_2 and (not row_2[lower_limit_name] is None) and upper_limit_name in row_2 and (not row_2[upper_limit_name] is None):
+                                        if lower_limit_name in row_2 and (row_2[lower_limit_name] is not None) and upper_limit_name in row_2 and (row_2[upper_limit_name] is not None):
                                             target_value_2 = (row_2[lower_limit_name] + row_2[upper_limit_name]) / 2.0
 
-                                        elif lower_linear_limit_name in row_2 and (not row_2[lower_linear_limit_name] is None) and upper_linear_limit_name is i and (not row_2[upper_linear_limit_name] is None):
+                                        elif lower_linear_limit_name in row_2 and (row_2[lower_linear_limit_name] is not None) and upper_linear_limit_name is i and (row_2[upper_linear_limit_name] is not None):
                                             target_value_2 = (row_2[lower_linear_limit_name] + row_2[upper_linear_limit_name]) / 2.0
 
-                                        elif upper_linear_limit_name in row_2 and (not row_2[upper_linear_limit_name] is None):
+                                        elif upper_linear_limit_name in row_2 and (row_2[upper_linear_limit_name] is not None):
                                             target_value_2 = row_2[upper_linear_limit_name]
 
-                                        elif upper_limit_name in row_2 and (not row_2[upper_limit_name] is None):
+                                        elif upper_limit_name in row_2 and (row_2[upper_limit_name] is not None):
                                             target_value_2 = row_2[upper_limit_name]
 
-                                        elif lower_linear_limit_name in row_2 and (not row_2[lower_linear_limit_name] is None):
+                                        elif lower_linear_limit_name in row_2 and (row_2[lower_linear_limit_name] is not None):
                                             target_value_2 = row_2[lower_linear_limit_name]
 
-                                        elif lower_limit_name in row_2 and (not row_2[lower_limit_name] is None):
+                                        elif lower_limit_name in row_2 and (row_2[lower_limit_name] is not None):
                                             target_value_2 = row_2[lower_limit_name]
 
                                     if target_value_1 is None and target_value_2 is None:
@@ -18000,25 +18000,25 @@ class NmrDpUtility:
 
                                     if target_value is None:
 
-                                        if lower_limit_name in row_1 and (not row_1[lower_limit_name] is None) and upper_limit_name in row_1 and (not row_1[upper_limit_name] is None):
+                                        if lower_limit_name in row_1 and (row_1[lower_limit_name] is not None) and upper_limit_name in row_1 and (row_1[upper_limit_name] is not None):
                                             target_value = (row_1[lower_limit_name] + row_1[upper_limit_name]) / 2.0
 
-                                        elif lower_linear_limit_name in row_1 and (not row_1[lower_linear_limit_name] is None) and upper_linear_limit_name is i and (not row_1[upper_linear_limit_name] is None):
+                                        elif lower_linear_limit_name in row_1 and (row_1[lower_linear_limit_name] is not None) and upper_linear_limit_name is i and (row_1[upper_linear_limit_name] is not None):
                                             target_value = (row_1[lower_linear_limit_name] + row_1[upper_linear_limit_name]) / 2.0
 
-                                        elif upper_linear_limit_name in row_1 and (not row_1[upper_linear_limit_name] is None):
+                                        elif upper_linear_limit_name in row_1 and (row_1[upper_linear_limit_name] is not None):
                                             target_value = row_1[upper_linear_limit_name]
                                             upper_limit_value = target_value
 
-                                        elif upper_limit_name in row_1 and (not row_1[upper_limit_name] is None):
+                                        elif upper_limit_name in row_1 and (row_1[upper_limit_name] is not None):
                                             target_value = row_1[upper_limit_name]
                                             upper_limit_value = target_value
 
-                                        elif lower_linear_limit_name in row_1 and (not row_1[lower_linear_limit_name] is None):
+                                        elif lower_linear_limit_name in row_1 and (row_1[lower_linear_limit_name] is not None):
                                             target_value = row_1[lower_linear_limit_name]
                                             lower_limit_value = target_value
 
-                                        elif lower_limit_name in row_1 and (not row_1[lower_limit_name] is None):
+                                        elif lower_limit_name in row_1 and (row_1[lower_limit_name] is not None):
                                             target_value = row_1[lower_limit_name]
                                             lower_limit_value = target_value
 
@@ -18048,25 +18048,25 @@ class NmrDpUtility:
 
                                 if target_value is None:
 
-                                    if lower_limit_name in row_1 and (not row_1[lower_limit_name] is None) and upper_limit_name in row_1 and (not row_1[upper_limit_name] is None):
+                                    if lower_limit_name in row_1 and (row_1[lower_limit_name] is not None) and upper_limit_name in row_1 and (row_1[upper_limit_name] is not None):
                                         target_value = (row_1[lower_limit_name] + row_1[upper_limit_name]) / 2.0
 
-                                    elif lower_linear_limit_name in row_1 and (not row_1[lower_linear_limit_name] is None) and upper_linear_limit_name is i and (not row_1[upper_linear_limit_name] is None):
+                                    elif lower_linear_limit_name in row_1 and (row_1[lower_linear_limit_name] is not None) and upper_linear_limit_name is i and (row_1[upper_linear_limit_name] is not None):
                                         target_value = (row_1[lower_linear_limit_name] + row_1[upper_linear_limit_name]) / 2.0
 
-                                    elif upper_linear_limit_name in row_1 and (not row_1[upper_linear_limit_name] is None):
+                                    elif upper_linear_limit_name in row_1 and (row_1[upper_linear_limit_name] is not None):
                                         target_value = row_1[upper_linear_limit_name]
                                         upper_limit_value = target_value
 
-                                    elif upper_limit_name in row_1 and (not row_1[upper_limit_name] is None):
+                                    elif upper_limit_name in row_1 and (row_1[upper_limit_name] is not None):
                                         target_value = row_1[upper_limit_name]
                                         upper_limit_value = target_value
 
-                                    elif lower_linear_limit_name in row_1 and (not row_1[lower_linear_limit_name] is None):
+                                    elif lower_linear_limit_name in row_1 and (row_1[lower_linear_limit_name] is not None):
                                         target_value = row_1[lower_linear_limit_name]
                                         lower_limit_value = target_value
 
-                                    elif lower_limit_name in row_1 and (not row_1[lower_limit_name] is None):
+                                    elif lower_limit_name in row_1 and (row_1[lower_limit_name] is not None):
                                         target_value = row_1[lower_limit_name]
                                         lower_limit_value = target_value
 
@@ -18154,7 +18154,7 @@ class NmrDpUtility:
 
             polymer_sequence = input_source_dic['polymer_sequence']
 
-            if not polymer_sequence is None:
+            if polymer_sequence is not None:
 
                 for s in polymer_sequence:
                     struct_conf = self.__extractCoordStructConf(s['chain_id'], s['seq_id'])
@@ -18236,14 +18236,14 @@ class NmrDpUtility:
                 else:
                     count[data_type] = 1
 
-                if not polymer_sequence is None:
+                if polymer_sequence is not None:
 
                     # count on map
 
                     if chain_id_1 == chain_id_2:
 
                         for c in count_on_map:
-                            if not data_type in c:
+                            if data_type not in c:
                                 c[data_type] = []
                             if c['chain_id'] == chain_id_1:
                                 try:
@@ -18256,7 +18256,7 @@ class NmrDpUtility:
                     else:
 
                         for c in count_on_asym_map:
-                            if not data_type in c:
+                            if data_type not in c:
                                 c[data_type] = []
                             if c['chain_id_1'] == chain_id_1 and c['chain_id_2'] == chain_id_2:
                                 try:
@@ -18279,7 +18279,7 @@ class NmrDpUtility:
                 return
 
             ent['number_of_constraints'] = count
-            if not polymer_sequence is None:
+            if polymer_sequence is not None:
                 ent['constraints_on_contact_map'] = count_on_map
             if has_inter_chain_constraint:
                 ent['constraints_on_asym_contact_map'] = count_on_asym_map
@@ -18320,9 +18320,9 @@ class NmrDpUtility:
             atom_id_1_ = atom_id_1[0]
             atom_id_2_ = atom_id_2[0]
 
-            if not upper_limit_value is None:
+            if upper_limit_value is not None:
                 target_value -= 0.4
-            elif not lower_limit_value is None:
+            elif lower_limit_value is not None:
                 target_value += 0.4
 
             if (atom_id_1_ == 'F' and atom_id_2_ == 'H') or (atom_id_2_ == 'F' and atom_id_1_ == 'H'):
@@ -19046,7 +19046,7 @@ class NmrDpUtility:
 
             polymer_sequence = input_source_dic['polymer_sequence']
 
-            if not polymer_sequence is None:
+            if polymer_sequence is not None:
 
                 for s in polymer_sequence:
                     struct_conf = self.__extractCoordStructConf(s['chain_id'], s['seq_id'])
@@ -19060,10 +19060,10 @@ class NmrDpUtility:
 
                 if target_value is None:
 
-                    if lower_limit_name in i and (not i[lower_limit_name] is None) and upper_limit_name in i and (not i[upper_limit_name] is None):
+                    if lower_limit_name in i and (i[lower_limit_name] is not None) and upper_limit_name in i and (i[upper_limit_name] is not None):
                         target_value = (i[lower_limit_name] + i[upper_limit_name]) / 2.0
 
-                    elif lower_linear_limit_name in i and (not i[lower_linear_limit_name] is None) and upper_linear_limit_name in i and (not i[upper_linear_limit_name] is None):
+                    elif lower_linear_limit_name in i and (i[lower_linear_limit_name] is not None) and upper_linear_limit_name in i and (i[upper_linear_limit_name] is not None):
                         target_value = (i[lower_linear_limit_name] + i[upper_linear_limit_name]) / 2.0
 
                     else:
@@ -19076,7 +19076,7 @@ class NmrDpUtility:
                 while target_value < -180.0:
                     target_value += 360.0
 
-                if lower_limit_name in i and (not i[lower_limit_name] is None) and upper_limit_name in i and (not i[upper_limit_name] is None):
+                if lower_limit_name in i and (i[lower_limit_name] is not None) and upper_limit_name in i and (i[upper_limit_name] is not None):
                     lower_limit = i[lower_limit_name]
                     upper_limit = i[upper_limit_name]
 
@@ -19090,7 +19090,7 @@ class NmrDpUtility:
                     while upper_limit - target_value < -180.0:
                         upper_limit += 360.0
 
-                elif lower_linear_limit_name in i and (not i[lower_linear_limit_name] is None) and upper_linear_limit_name in i and (not i[upper_linear_limit_name] is None):
+                elif lower_linear_limit_name in i and (i[lower_linear_limit_name] is not None) and upper_linear_limit_name in i and (i[upper_linear_limit_name] is not None):
                     lower_limit = i[lower_linear_limit_name]
                     upper_limit = i[upper_linear_limit_name]
 
@@ -19125,7 +19125,7 @@ class NmrDpUtility:
                 atom_id_3 = i[atom_id_3_name]
                 atom_id_4 = i[atom_id_4_name]
                 data_type = i[angle_type_name]
-                weight = None if not weight_name in i else i[weight_name]
+                weight = None if weight_name not in i else i[weight_name]
                 set_id.add(i[id_tag])
 
                 data_type, seq_id_common, comp_id_common =\
@@ -19138,13 +19138,13 @@ class NmrDpUtility:
                 else:
                     count[data_type] = 1
 
-                if (not comb_id is None) and (not comb_id in self.empty_value):
+                if (comb_id is not None) and (comb_id not in self.empty_value):
                     if data_type in comb_count:
                         comb_count[data_type] += 1
                     else:
                         comb_count[data_type] = 1
 
-                if not index is None:
+                if index is not None:
 
                     if index in inconsistent:
                         if data_type in inco_count:
@@ -19222,8 +19222,8 @@ class NmrDpUtility:
 
                 # detect weight
 
-                if not weight is None:
-                    if not data_type in weights:
+                if weight is not None:
+                    if data_type not in weights:
                         weights[data_type] = []
                     weights[data_type].append(weight)
 
@@ -19235,37 +19235,37 @@ class NmrDpUtility:
                 lower_linear_limit_value = i[lower_linear_limit_name] if lower_linear_limit_name in i else None
                 upper_linear_limit_value = i[upper_linear_limit_name] if upper_linear_limit_name in i else None
 
-                if (not lower_limit_value is None) and\
-                   (not upper_limit_value is None) and\
+                if (lower_limit_value is not None) and\
+                   (upper_limit_value is not None) and\
                    lower_linear_limit_value is None and\
                    upper_linear_limit_value is None:
                     potential_type = 'square-well-parabolic'
-                elif (not lower_limit_value is None) and\
-                   (not upper_limit_value is None) and\
-                   (not lower_linear_limit_value is None) and\
-                   (not upper_linear_limit_value is None):
+                elif (lower_limit_value is not None) and\
+                   (upper_limit_value is not None) and\
+                   (lower_linear_limit_value is not None) and\
+                   (upper_linear_limit_value is not None):
                     potential_type = 'square-well-parabolic-linear'
                 elif lower_limit_value is None and\
-                   (not upper_limit_value is None) and\
+                   (upper_limit_value is not None) and\
                    lower_linear_limit_value is None and\
                    upper_linear_limit_value is None:
                     potential_type = 'upper-bound-parabolic'
-                elif (not lower_limit_value is None) and\
+                elif (lower_limit_value is not None) and\
                    upper_limit_value is None and\
                    lower_linear_limit_value is None and\
                    upper_linear_limit_value is None:
                     potential_type = 'lower-bound-parabolic'
                 elif lower_limit_value is None and\
-                   (not upper_limit_value is None) and\
+                   (upper_limit_value is not None) and\
                    lower_linear_limit_value is None and\
-                   (not upper_linear_limit_value is None):
+                   (upper_linear_limit_value is not None):
                     potential_type = 'upper-bound-parabolic-linear'
-                elif (not lower_limit_value is None) and\
+                elif (lower_limit_value is not None) and\
                    upper_limit_value is None and\
-                   (not lower_linear_limit_value is None) and\
+                   (lower_linear_limit_value is not None) and\
                    upper_linear_limit_value is None:
                     potential_type = 'lower-bound-parabolic-linear'
-                elif (not target_value is None) and\
+                elif (target_value is not None) and\
                    lower_limit_value is None and\
                    upper_limit_value is None and\
                    lower_linear_limit_value is None and\
@@ -19274,19 +19274,19 @@ class NmrDpUtility:
                 else:
                     potential_type = 'undefined'
 
-                if not potential_type is None:
-                    if not data_type in potential_types:
+                if potential_type is not None:
+                    if data_type not in potential_types:
                         potential_types[data_type] = []
                     potential_types[data_type].append(potential_type)
 
-                if not polymer_sequence is None:
+                if polymer_sequence is not None:
 
                     # value per residue
 
                     for c in value_per_residue:
-                        if not data_type in c:
+                        if data_type not in c:
                             c[data_type] = [None] * len(c['seq_id'])
-                        if c['chain_id'] == chain_id_1 and not target_value is None and seq_id_common[0][0] in c['seq_id']:
+                        if c['chain_id'] == chain_id_1 and target_value is not None and seq_id_common[0][0] in c['seq_id']:
                             b = c['seq_id'].index(seq_id_common[0][0])
                             if c[data_type][b] is None:
                                 c[data_type][b] = float(target_value)
@@ -19294,7 +19294,7 @@ class NmrDpUtility:
                                 j = 2
                                 while True:
                                     _data_type = data_type + '_' + str(j)
-                                    if not _data_type in c:
+                                    if _data_type not in c:
                                         c[_data_type] = [None] * len(c['seq_id'])
                                     if c[_data_type][b] is None:
                                         c[_data_type][b] = float(target_value)
@@ -19311,7 +19311,7 @@ class NmrDpUtility:
                 if len(redu_count) > 0:
                     ent['number_of_redundant_constraints'] = redu_count
                 ent['constraints_per_polymer_type'] = polymer_types
-                if not polymer_sequence is None:
+                if polymer_sequence is not None:
                     ent['constraints_per_residue'] = value_per_residue
                 if len(weights) > 0:
                     _weights = {}
@@ -19335,14 +19335,14 @@ class NmrDpUtility:
 
                     for psi in [psi for psi in psi_list if psi['chain_id'] == phi['chain_id'] and psi['seq_id'] == phi['seq_id']]:
 
-                        if not comp_id in phi_psi_value:
+                        if comp_id not in phi_psi_value:
                             phi_psi_value[comp_id] = []
 
                         phi_psi_value[comp_id].append([phi['value'], psi['value'], phi['chain_id'] + ':' + str(phi['seq_id']) + ':' + phi['comp_id']])
 
-                        if (not phi['error'] is None) or (not psi['error'] is None):
+                        if (phi['error'] is not None) or (psi['error'] is not None):
 
-                            if not comp_id in phi_psi_error:
+                            if comp_id not in phi_psi_error:
                                 phi_psi_error[comp_id] = []
 
                             phi_psi_error[comp_id].append([phi['value'], psi['value'],
@@ -19373,14 +19373,14 @@ class NmrDpUtility:
 
                     for chi2 in [chi2 for chi2 in chi2_list if chi2['chain_id'] == chi1['chain_id'] and chi2['seq_id'] == chi1['seq_id']]:
 
-                        if not comp_id in chi1_chi2_value:
+                        if comp_id not in chi1_chi2_value:
                             chi1_chi2_value[comp_id] = []
 
                         chi1_chi2_value[comp_id].append([chi1['value'], chi2['value'], chi1['chain_id'] + ':' + str(chi1['seq_id']) + ':' + chi1['comp_id']])
 
-                        if (not chi1['error'] is None) or (not chi2['error'] is None):
+                        if (chi1['error'] is not None) or (chi2['error'] is not None):
 
-                            if not comp_id in chi1_chi2_error:
+                            if comp_id not in chi1_chi2_error:
                                 chi1_chi2_error[comp_id] = []
 
                             chi1_chi2_error[comp_id].append([chi1['value'], chi2['value'],
@@ -19400,7 +19400,7 @@ class NmrDpUtility:
 
                     ent['chi1_chi2_plot'] = chi1_chi2_plot
 
-            if not conflict_id_set is None:
+            if conflict_id_set is not None:
 
                 max_inclusive = self.dihed_restraint_error['max_inclusive']
 
@@ -19425,44 +19425,44 @@ class NmrDpUtility:
 
                             if target_value_1 is None:
 
-                                if lower_limit_name in row_1 and (not row_1[lower_limit_name] is None) and upper_limit_name in row_1 and (not row_1[upper_limit_name] is None):
+                                if lower_limit_name in row_1 and (row_1[lower_limit_name] is not None) and upper_limit_name in row_1 and (row_1[upper_limit_name] is not None):
                                     target_value_1 = (row_1[lower_limit_name] + row_1[upper_limit_name]) / 2.0
 
-                                elif lower_linear_limit_name in row_1 and (not row_1[lower_linear_limit_name] is None) and upper_linear_limit_name is i and (not row_1[upper_linear_limit_name] is None):
+                                elif lower_linear_limit_name in row_1 and (row_1[lower_linear_limit_name] is not None) and upper_linear_limit_name is i and (row_1[upper_linear_limit_name] is not None):
                                     target_value_1 = (row_1[lower_linear_limit_name] + row_1[upper_linear_limit_name]) / 2.0
 
-                                elif upper_linear_limit_name in row_1 and (not row_1[upper_linear_limit_name] is None):
+                                elif upper_linear_limit_name in row_1 and (row_1[upper_linear_limit_name] is not None):
                                     target_value_1 = row_1[upper_linear_limit_name]
 
-                                elif upper_limit_name in row_1 and (not row_1[upper_limit_name] is None):
+                                elif upper_limit_name in row_1 and (row_1[upper_limit_name] is not None):
                                     target_value_1 = row_1[upper_limit_name]
 
-                                elif lower_linear_limit_name in row_1 and (not row_1[lower_linear_limit_name] is None):
+                                elif lower_linear_limit_name in row_1 and (row_1[lower_linear_limit_name] is not None):
                                     target_value_1 = row_1[lower_linear_limit_name]
 
-                                elif lower_limit_name in row_1 and (not row_1[lower_limit_name] is None):
+                                elif lower_limit_name in row_1 and (row_1[lower_limit_name] is not None):
                                     target_value_1 = row_1[lower_limit_name]
 
                             target_value_2 = row_2[target_value_name] if target_value_name in row_2 else None
 
                             if target_value_2 is None:
 
-                                if lower_limit_name in row_2 and (not row_2[lower_limit_name] is None) and upper_limit_name in row_2 and (not row_2[upper_limit_name] is None):
+                                if lower_limit_name in row_2 and (row_2[lower_limit_name] is not None) and upper_limit_name in row_2 and (row_2[upper_limit_name] is not None):
                                     target_value_2 = (row_2[lower_limit_name] + row_2[upper_limit_name]) / 2.0
 
-                                elif lower_linear_limit_name in row_2 and (not row_2[lower_linear_limit_name] is None) and upper_linear_limit_name is i and (not row_2[upper_linear_limit_name] is None):
+                                elif lower_linear_limit_name in row_2 and (row_2[lower_linear_limit_name] is not None) and upper_linear_limit_name is i and (row_2[upper_linear_limit_name] is not None):
                                     target_value_2 = (row_2[lower_linear_limit_name] + row_2[upper_linear_limit_name]) / 2.0
 
-                                elif upper_linear_limit_name in row_2 and (not row_2[upper_linear_limit_name] is None):
+                                elif upper_linear_limit_name in row_2 and (row_2[upper_linear_limit_name] is not None):
                                     target_value_2 = row_2[upper_linear_limit_name]
 
-                                elif upper_limit_name in row_2 and (not row_2[upper_limit_name] is None):
+                                elif upper_limit_name in row_2 and (row_2[upper_limit_name] is not None):
                                     target_value_2 = row_2[upper_limit_name]
 
-                                elif lower_linear_limit_name in row_2 and (not row_2[lower_linear_limit_name] is None):
+                                elif lower_linear_limit_name in row_2 and (row_2[lower_linear_limit_name] is not None):
                                     target_value_2 = row_2[lower_linear_limit_name]
 
-                                elif lower_limit_name in row_2 and (not row_2[lower_limit_name] is None):
+                                elif lower_limit_name in row_2 and (row_2[lower_limit_name] is not None):
                                     target_value_2 = row_2[lower_limit_name]
 
                             if target_value_1 is None or target_value_2 is None:
@@ -19576,44 +19576,44 @@ class NmrDpUtility:
 
                                     if target_value_1 is None:
 
-                                        if lower_limit_name in row_1 and (not row_1[lower_limit_name] is None) and upper_limit_name in row_1 and (not row_1[upper_limit_name] is None):
+                                        if lower_limit_name in row_1 and (row_1[lower_limit_name] is not None) and upper_limit_name in row_1 and (row_1[upper_limit_name] is not None):
                                             target_value_1 = (row_1[lower_limit_name] + row_1[upper_limit_name]) / 2.0
 
-                                        elif lower_linear_limit_name in row_1 and (not row_1[lower_linear_limit_name] is None) and upper_linear_limit_name is i and (not row_1[upper_linear_limit_name] is None):
+                                        elif lower_linear_limit_name in row_1 and (row_1[lower_linear_limit_name] is not None) and upper_linear_limit_name is i and (row_1[upper_linear_limit_name] is not None):
                                             target_value_1 = (row_1[lower_linear_limit_name] + row_1[upper_linear_limit_name]) / 2.0
 
-                                        elif upper_linear_limit_name in row_1 and (not row_1[upper_linear_limit_name] is None):
+                                        elif upper_linear_limit_name in row_1 and (row_1[upper_linear_limit_name] is not None):
                                             target_value_1 = row_1[upper_linear_limit_name]
 
-                                        elif upper_limit_name in row_1 and (not row_1[upper_limit_name] is None):
+                                        elif upper_limit_name in row_1 and (row_1[upper_limit_name] is not None):
                                             target_value_1 = row_1[upper_limit_name]
 
-                                        elif lower_linear_limit_name in row_1 and (not row_1[lower_linear_limit_name] is None):
+                                        elif lower_linear_limit_name in row_1 and (row_1[lower_linear_limit_name] is not None):
                                             target_value_1 = row_1[lower_linear_limit_name]
 
-                                        elif lower_limit_name in row_1 and (not row_1[lower_limit_name] is None):
+                                        elif lower_limit_name in row_1 and (row_1[lower_limit_name] is not None):
                                             target_value_1 = row_1[lower_limit_name]
 
                                     target_value_2 = row_2[target_value_name] if target_value_name in row_2 else None
 
                                     if target_value_2 is None:
 
-                                        if lower_limit_name in row_2 and (not row_2[lower_limit_name] is None) and upper_limit_name in row_2 and (not row_2[upper_limit_name] is None):
+                                        if lower_limit_name in row_2 and (row_2[lower_limit_name] is not None) and upper_limit_name in row_2 and (row_2[upper_limit_name] is not None):
                                             target_value_2 = (row_2[lower_limit_name] + row_2[upper_limit_name]) / 2.0
 
-                                        elif lower_linear_limit_name in row_2 and (not row_2[lower_linear_limit_name] is None) and upper_linear_limit_name is i and (not row_2[upper_linear_limit_name] is None):
+                                        elif lower_linear_limit_name in row_2 and (row_2[lower_linear_limit_name] is not None) and upper_linear_limit_name is i and (row_2[upper_linear_limit_name] is not None):
                                             target_value_2 = (row_2[lower_linear_limit_name] + row_2[upper_linear_limit_name]) / 2.0
 
-                                        elif upper_linear_limit_name in row_2 and (not row_2[upper_linear_limit_name] is None):
+                                        elif upper_linear_limit_name in row_2 and (row_2[upper_linear_limit_name] is not None):
                                             target_value_2 = row_2[upper_linear_limit_name]
 
-                                        elif upper_limit_name in row_2 and (not row_2[upper_limit_name] is None):
+                                        elif upper_limit_name in row_2 and (row_2[upper_limit_name] is not None):
                                             target_value_2 = row_2[upper_limit_name]
 
-                                        elif lower_linear_limit_name in row_2 and (not row_2[lower_linear_limit_name] is None):
+                                        elif lower_linear_limit_name in row_2 and (row_2[lower_linear_limit_name] is not None):
                                             target_value_2 = row_2[lower_linear_limit_name]
 
-                                        elif lower_limit_name in row_2 and (not row_2[lower_limit_name] is None):
+                                        elif lower_limit_name in row_2 and (row_2[lower_limit_name] is not None):
                                             target_value_2 = row_2[lower_limit_name]
 
                                     if target_value_1 is None and target_value_2 is None:
@@ -19862,7 +19862,7 @@ class NmrDpUtility:
         index_tag = self.index_tags[file_type]['rdc_restraint']
         item_names = self.potential_items[file_type]['rdc_restraint']
         target_value_name = item_names['target_value']
-        if 'target_value_alt' in item_names and not target_value_name in lp_data[0].keys():
+        if 'target_value_alt' in item_names and target_value_name not in lp_data[0].keys():
             target_value_name = item_names['target_value_alt']
         lower_limit_name = item_names['lower_limit']
         upper_limit_name = item_names['upper_limit']
@@ -19882,22 +19882,22 @@ class NmrDpUtility:
 
                 if target_value is None:
 
-                    if lower_limit_name in i and (not i[lower_limit_name] is None) and upper_limit_name in i and (not i[upper_limit_name] is None):
+                    if lower_limit_name in i and (i[lower_limit_name] is not None) and upper_limit_name in i and (i[upper_limit_name] is not None):
                         target_value = (i[lower_limit_name] + i[upper_limit_name]) / 2.0
 
-                    elif lower_linear_limit_name in i and (not i[lower_linear_limit_name] is None) and upper_linear_limit_name is i and (not i[upper_linear_limit_name] is None):
+                    elif lower_linear_limit_name in i and (i[lower_linear_limit_name] is not None) and upper_linear_limit_name is i and (i[upper_linear_limit_name] is not None):
                         target_value = (i[lower_linear_limit_name] + i[upper_linear_limit_name]) / 2.0
 
-                    elif upper_linear_limit_name in i and (not i[upper_linear_limit_name] is None):
+                    elif upper_linear_limit_name in i and (i[upper_linear_limit_name] is not None):
                         target_value = i[upper_linear_limit_name]
 
-                    elif upper_limit_name in i and (not i[upper_limit_name] is None):
+                    elif upper_limit_name in i and (i[upper_limit_name] is not None):
                         target_value = i[upper_limit_name]
 
-                    elif lower_linear_limit_name in i and (not i[lower_linear_limit_name] is None):
+                    elif lower_linear_limit_name in i and (i[lower_linear_limit_name] is not None):
                         target_value = i[lower_linear_limit_name]
 
-                    elif lower_limit_name in i and (not i[lower_limit_name] is None):
+                    elif lower_limit_name in i and (i[lower_limit_name] is not None):
                         target_value = i[lower_limit_name]
 
                     else:
@@ -19940,7 +19940,7 @@ class NmrDpUtility:
 
             polymer_sequence = input_source_dic['polymer_sequence']
 
-            if not polymer_sequence is None:
+            if polymer_sequence is not None:
 
                 for s in polymer_sequence:
                     struct_conf = self.__extractCoordStructConf(s['chain_id'], s['seq_id'])
@@ -19954,7 +19954,7 @@ class NmrDpUtility:
                 seq_id_1 = i[seq_id_1_name]
                 atom_id_1 = i[atom_id_1_name]
                 atom_id_2 = i[atom_id_2_name]
-                weight = None if not weight_name in i else i[weight_name]
+                weight = None if weight_name not in i else i[weight_name]
                 set_id.add(i[id_tag])
 
                 data_type = self.__getTypeOfRdcRestraint(atom_id_1, atom_id_2)
@@ -19964,13 +19964,13 @@ class NmrDpUtility:
                 else:
                     count[data_type] = 1
 
-                if (not comb_id is None) and (not comb_id in self.empty_value):
+                if (comb_id is not None) and (comb_id not in self.empty_value):
                     if data_type in comb_count:
                         comb_count[data_type] += 1
                     else:
                         comb_count[data_type] = 1
 
-                if not index is None:
+                if index is not None:
 
                     if index in inconsistent:
                         if data_type in inco_count:
@@ -19986,8 +19986,8 @@ class NmrDpUtility:
 
                 # detect weight
 
-                if not weight is None:
-                    if not data_type in weights:
+                if weight is not None:
+                    if data_type not in weights:
                         weights[data_type] = []
                     weights[data_type].append(weight)
 
@@ -19999,37 +19999,37 @@ class NmrDpUtility:
                 lower_linear_limit_value = i[lower_linear_limit_name] if lower_linear_limit_name in i else None
                 upper_linear_limit_value = i[upper_linear_limit_name] if upper_linear_limit_name in i else None
 
-                if (not lower_limit_value is None) and\
-                   (not upper_limit_value is None) and\
+                if (lower_limit_value is not None) and\
+                   (upper_limit_value is not None) and\
                    lower_linear_limit_value is None and\
                    upper_linear_limit_value is None:
                     potential_type = 'square-well-parabolic'
-                elif (not lower_limit_value is None) and\
-                   (not upper_limit_value is None) and\
-                   (not lower_linear_limit_value is None) and\
-                   (not upper_linear_limit_value is None):
+                elif (lower_limit_value is not None) and\
+                   (upper_limit_value is not None) and\
+                   (lower_linear_limit_value is not None) and\
+                   (upper_linear_limit_value is not None):
                     potential_type = 'square-well-parabolic-linear'
                 elif lower_limit_value is None and\
-                   (not upper_limit_value is None) and\
+                   (upper_limit_value is not None) and\
                    lower_linear_limit_value is None and\
                    upper_linear_limit_value is None:
                     potential_type = 'upper-bound-parabolic'
-                elif (not lower_limit_value is None) and\
+                elif (lower_limit_value is not None) and\
                    upper_limit_value is None and\
                    lower_linear_limit_value is None and\
                    upper_linear_limit_value is None:
                     potential_type = 'lower-bound-parabolic'
                 elif lower_limit_value is None and\
-                   (not upper_limit_value is None) and\
+                   (upper_limit_value is not None) and\
                    lower_linear_limit_value is None and\
-                   (not upper_linear_limit_value is None):
+                   (upper_linear_limit_value is not None):
                     potential_type = 'upper-bound-parabolic-linear'
-                elif (not lower_limit_value is None) and\
+                elif (lower_limit_value is not None) and\
                    upper_limit_value is None and\
-                   (not lower_linear_limit_value is None) and\
+                   (lower_linear_limit_value is not None) and\
                    upper_linear_limit_value is None:
                     potential_type = 'lower-bound-parabolic-linear'
-                elif (not target_value is None) and\
+                elif (target_value is not None) and\
                    lower_limit_value is None and\
                    upper_limit_value is None and\
                    lower_linear_limit_value is None and\
@@ -20038,19 +20038,19 @@ class NmrDpUtility:
                 else:
                     potential_type = 'undefined'
 
-                if not potential_type is None:
-                    if not data_type in potential_types:
+                if potential_type is not None:
+                    if data_type not in potential_types:
                         potential_types[data_type] = []
                     potential_types[data_type].append(potential_type)
 
-                if not polymer_sequence is None:
+                if polymer_sequence is not None:
 
                     # value per residue
 
                     for c in value_per_residue:
-                        if not data_type in c:
+                        if data_type not in c:
                             c[data_type] = [None] * len(c['seq_id'])
-                        if c['chain_id'] == chain_id_1 and not targe_value is None and seq_id_1 in c['seq_id']:
+                        if c['chain_id'] == chain_id_1 and targe_value is not None and seq_id_1 in c['seq_id']:
                             b = c['seq_id'].index(seq_id_1)
                             if c[data_type][b] is None:
                                 c[data_type][b] = float(targe_value)
@@ -20058,7 +20058,7 @@ class NmrDpUtility:
                                 j = 2
                                 while True:
                                     _data_type = data_type + '_' + str(j)
-                                    if not _data_type in c:
+                                    if _data_type not in c:
                                         c[_data_type] = [None] * len(c['seq_id'])
                                     if c[_data_type][b] is None:
                                         c[_data_type][b] = float(target_value)
@@ -20076,7 +20076,7 @@ class NmrDpUtility:
                 ent['number_of_inconsistent_constraints'] = inco_count
             if len(redu_count) > 0:
                 ent['number_of_redundant_constraints'] = redu_count
-            if not polymer_sequence is None:
+            if polymer_sequence is not None:
                 ent['constraints_per_residue'] = value_per_residue
             ent['range'] = {'max_value': max_val_, 'min_value': min_val_}
             if len(weights) > 0:
@@ -20125,22 +20125,22 @@ class NmrDpUtility:
 
                     if target_value is None:
 
-                        if lower_limit_name in i and (not i[lower_limit_name] is None) and upper_limit_name in i and (not i[upper_limit_name] is None):
+                        if lower_limit_name in i and (i[lower_limit_name] is not None) and upper_limit_name in i and (i[upper_limit_name] is not None):
                             target_value = (i[lower_limit_name] + i[upper_limit_name]) / 2.0
 
-                        elif lower_linear_limit_name in i and (not i[lower_linear_limit_name] is None) and upper_linear_limit_name is i and (not i[upper_linear_limit_name] is None):
+                        elif lower_linear_limit_name in i and (i[lower_linear_limit_name] is not None) and upper_linear_limit_name is i and (i[upper_linear_limit_name] is not None):
                             target_value = (i[lower_linear_limit_name] + i[upper_linear_limit_name]) / 2.0
 
-                        elif upper_linear_limit_name in i and (not i[upper_linear_limit_name] is None):
+                        elif upper_linear_limit_name in i and (i[upper_linear_limit_name] is not None):
                             target_value = i[upper_linear_limit_name]
 
-                        elif upper_limit_name in i and (not i[upper_limit_name] is None):
+                        elif upper_limit_name in i and (i[upper_limit_name] is not None):
                             target_value = i[upper_limit_name]
 
-                        elif lower_linear_limit_name in i and (not i[lower_linear_limit_name] is None):
+                        elif lower_linear_limit_name in i and (i[lower_linear_limit_name] is not None):
                             target_value = i[lower_linear_limit_name]
 
-                        elif lower_limit_name in i and (not i[lower_limit_name] is None):
+                        elif lower_limit_name in i and (i[lower_limit_name] is not None):
                             target_value = i[lower_limit_name]
 
                         else:
@@ -20184,7 +20184,7 @@ class NmrDpUtility:
                 """
                 ent['histogram'] = {'range_of_values': range_of_vals, 'number_of_values': transposed}
 
-            if not conflict_id_set is None:
+            if conflict_id_set is not None:
 
                 max_inclusive = self.rdc_restraint_error['max_inclusive']
 
@@ -20209,44 +20209,44 @@ class NmrDpUtility:
 
                             if target_value_1 is None:
 
-                                if lower_limit_name in row_1 and (not row_1[lower_limit_name] is None) and upper_limit_name in row_1 and (not row_1[upper_limit_name] is None):
+                                if lower_limit_name in row_1 and (row_1[lower_limit_name] is not None) and upper_limit_name in row_1 and (row_1[upper_limit_name] is not None):
                                     target_value_1 = (row_1[lower_limit_name] + row_1[upper_limit_name]) / 2.0
 
-                                elif lower_linear_limit_name in row_1 and (not row_1[lower_linear_limit_name] is None) and upper_linear_limit_name is i and (not row_1[upper_linear_limit_name] is None):
+                                elif lower_linear_limit_name in row_1 and (row_1[lower_linear_limit_name] is not None) and upper_linear_limit_name is i and (row_1[upper_linear_limit_name] is not None):
                                     target_value_1 = (row_1[lower_linear_limit_name] + row_1[upper_linear_limit_name]) / 2.0
 
-                                elif upper_linear_limit_name in row_1 and (not row_1[upper_linear_limit_name] is None):
+                                elif upper_linear_limit_name in row_1 and (row_1[upper_linear_limit_name] is not None):
                                     target_value_1 = row_1[upper_linear_limit_name]
 
-                                elif upper_limit_name in row_1 and (not row_1[upper_limit_name] is None):
+                                elif upper_limit_name in row_1 and (row_1[upper_limit_name] is not None):
                                     target_value_1 = row_1[upper_limit_name]
 
-                                elif lower_linear_limit_name in row_1 and (not row_1[lower_linear_limit_name] is None):
+                                elif lower_linear_limit_name in row_1 and (row_1[lower_linear_limit_name] is not None):
                                     target_value_1 = row_1[lower_linear_limit_name]
 
-                                elif lower_limit_name in row_1 and (not row_1[lower_limit_name] is None):
+                                elif lower_limit_name in row_1 and (row_1[lower_limit_name] is not None):
                                     target_value_1 = row_1[lower_limit_name]
 
                             target_value_2 = row_2[target_value_name] if target_value_name in row_2 else None
 
                             if target_value_2 is None:
 
-                                if lower_limit_name in row_2 and (not row_2[lower_limit_name] is None) and upper_limit_name in row_2 and (not row_2[upper_limit_name] is None):
+                                if lower_limit_name in row_2 and (row_2[lower_limit_name] is not None) and upper_limit_name in row_2 and (row_2[upper_limit_name] is not None):
                                     target_value_2 = (row_2[lower_limit_name] + row_2[upper_limit_name]) / 2.0
 
-                                elif lower_linear_limit_name in row_2 and (not row_2[lower_linear_limit_name] is None) and upper_linear_limit_name is i and (not row_2[upper_linear_limit_name] is None):
+                                elif lower_linear_limit_name in row_2 and (row_2[lower_linear_limit_name] is not None) and upper_linear_limit_name is i and (row_2[upper_linear_limit_name] is not None):
                                     target_value_2 = (row_2[lower_linear_limit_name] + row_2[upper_linear_limit_name]) / 2.0
 
-                                elif upper_linear_limit_name in row_2 and (not row_2[upper_linear_limit_name] is None):
+                                elif upper_linear_limit_name in row_2 and (row_2[upper_linear_limit_name] is not None):
                                     target_value_2 = row_2[upper_linear_limit_name]
 
-                                elif upper_limit_name in row_2 and (not row_2[upper_limit_name] is None):
+                                elif upper_limit_name in row_2 and (row_2[upper_limit_name] is not None):
                                     target_value_2 = row_2[upper_limit_name]
 
-                                elif lower_linear_limit_name in row_2 and (not row_2[lower_linear_limit_name] is None):
+                                elif lower_linear_limit_name in row_2 and (row_2[lower_linear_limit_name] is not None):
                                     target_value_2 = row_2[lower_linear_limit_name]
 
-                                elif lower_limit_name in row_2 and (not row_2[lower_limit_name] is None):
+                                elif lower_limit_name in row_2 and (row_2[lower_limit_name] is not None):
                                     target_value_2 = row_2[lower_limit_name]
 
                             if target_value_1 is None or target_value_2 is None:
@@ -20318,44 +20318,44 @@ class NmrDpUtility:
 
                                     if target_value_1 is None:
 
-                                        if lower_limit_name in row_1 and (not row_1[lower_limit_name] is None) and upper_limit_name in row_1 and (not row_1[upper_limit_name] is None):
+                                        if lower_limit_name in row_1 and (row_1[lower_limit_name] is not None) and upper_limit_name in row_1 and (row_1[upper_limit_name] is not None):
                                             target_value_1 = (row_1[lower_limit_name] + row_1[upper_limit_name]) / 2.0
 
-                                        elif lower_linear_limit_name in row_1 and (not row_1[lower_linear_limit_name] is None) and upper_linear_limit_name is i and (not row_1[upper_linear_limit_name] is None):
+                                        elif lower_linear_limit_name in row_1 and (row_1[lower_linear_limit_name] is not None) and upper_linear_limit_name is i and (row_1[upper_linear_limit_name] is not None):
                                             target_value_1 = (row_1[lower_linear_limit_name] + row_1[upper_linear_limit_name]) / 2.0
 
-                                        elif upper_linear_limit_name in row_1 and (not row_1[upper_linear_limit_name] is None):
+                                        elif upper_linear_limit_name in row_1 and (row_1[upper_linear_limit_name] is not None):
                                             target_value_1 = row_1[upper_linear_limit_name]
 
-                                        elif upper_limit_name in row_1 and (not row_1[upper_limit_name] is None):
+                                        elif upper_limit_name in row_1 and (row_1[upper_limit_name] is not None):
                                             target_value_1 = row_1[upper_limit_name]
 
-                                        elif lower_linear_limit_name in row_1 and (not row_1[lower_linear_limit_name] is None):
+                                        elif lower_linear_limit_name in row_1 and (row_1[lower_linear_limit_name] is not None):
                                             target_value_1 = row_1[lower_linear_limit_name]
 
-                                        elif lower_limit_name in row_1 and (not row_1[lower_limit_name] is None):
+                                        elif lower_limit_name in row_1 and (row_1[lower_limit_name] is not None):
                                             target_value_1 = row_1[lower_limit_name]
 
                                     target_value_2 = row_2[target_value_name] if target_value_name in row_2 else None
 
                                     if target_value_2 is None:
 
-                                        if lower_limit_name in row_2 and (not row_2[lower_limit_name] is None) and upper_limit_name in row_2 and (not row_2[upper_limit_name] is None):
+                                        if lower_limit_name in row_2 and (row_2[lower_limit_name] is not None) and upper_limit_name in row_2 and (row_2[upper_limit_name] is not None):
                                             target_value_2 = (row_2[lower_limit_name] + row_2[upper_limit_name]) / 2.0
 
-                                        elif lower_linear_limit_name in row_2 and (not row_2[lower_linear_limit_name] is None) and upper_linear_limit_name is i and (not row_2[upper_linear_limit_name] is None):
+                                        elif lower_linear_limit_name in row_2 and (row_2[lower_linear_limit_name] is not None) and upper_linear_limit_name is i and (row_2[upper_linear_limit_name] is not None):
                                             target_value_2 = (row_2[lower_linear_limit_name] + row_2[upper_linear_limit_name]) / 2.0
 
-                                        elif upper_linear_limit_name in row_2 and (not row_2[upper_linear_limit_name] is None):
+                                        elif upper_linear_limit_name in row_2 and (row_2[upper_linear_limit_name] is not None):
                                             target_value_2 = row_2[upper_linear_limit_name]
 
-                                        elif upper_limit_name in row_2 and (not row_2[upper_limit_name] is None):
+                                        elif upper_limit_name in row_2 and (row_2[upper_limit_name] is not None):
                                             target_value_2 = row_2[upper_limit_name]
 
-                                        elif lower_linear_limit_name in row_2 and (not row_2[lower_linear_limit_name] is None):
+                                        elif lower_linear_limit_name in row_2 and (row_2[lower_linear_limit_name] is not None):
                                             target_value_2 = row_2[lower_linear_limit_name]
 
-                                        elif lower_limit_name in row_2 and (not row_2[lower_limit_name] is None):
+                                        elif lower_limit_name in row_2 and (row_2[lower_limit_name] is not None):
                                             target_value_2 = row_2[lower_limit_name]
 
                                     if target_value_1 is None and target_value_2 is None:
@@ -20484,7 +20484,7 @@ class NmrDpUtility:
 
             mag_link = []
 
-            if not aux_data is None:
+            if aux_data is not None:
                 for sp_dim_trans in aux_data:
                     if file_type == 'nef':
                         if sp_dim_trans['transfer_type'] == 'onebond': # or sp_dim_trans['transfer_type'].startswith('j') or sp_dim_trans['transfer_type'].startswith('relayed'):
@@ -20499,7 +20499,7 @@ class NmrDpUtility:
 
             aux_data = next((l['data'] for l in self.__aux_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode and l['category'] == self.aux_lp_categories[file_type][content_subtype][0]), None)
 
-            if not aux_data is None:
+            if aux_data is not None:
                 for i in range(1, max_dim):
                     for sp_dim in aux_data:
                         sp_freq = None
@@ -20514,9 +20514,9 @@ class NmrDpUtility:
                             axis_code = sp_dim['axis_code']
                             atom_type = ''.join(j for j in axis_code if not j.isdigit())
                             atom_isotope_number = int(''.join(j for j in axis_code if j.isdigit()))
-                            axis_unit = 'Hz' if not 'axis_unit' in sp_dim else sp_dim['axis_unit']
-                            first_point = None if not 'value_first_point' in sp_dim else sp_dim['value_first_point']
-                            sp_width = None if not 'spectral_width' in sp_dim else sp_dim['spectral_width']
+                            axis_unit = 'Hz' if 'axis_unit' not in sp_dim else sp_dim['axis_unit']
+                            first_point = None if 'value_first_point' not in sp_dim else sp_dim['value_first_point']
+                            sp_width = None if 'spectral_width' not in sp_dim else sp_dim['spectral_width']
                             if 'spectrometer_frequency' in sp_dim:
                                 sp_freq = sp_dim['spectrometer_frequency']
                             if 'folding' in sp_dim:
@@ -20527,9 +20527,9 @@ class NmrDpUtility:
                             axis_code = sp_dim['Axis_code']
                             atom_type = ''.join(j for j in axis_code if not j.isdigit())
                             atom_isotope_number = int(''.join(j for j in axis_code if j.isdigit()))
-                            axis_unit = 'Hz' if not 'Sweep_width_units' in sp_dim else sp_dim['Sweep_width_units']
-                            first_point = None if not 'Value_first_point' in sp_dim else sp_dim['Value_first_point']
-                            sp_width = None if not 'Sweep_width' in sp_dim else sp_dim['Sweep_width']
+                            axis_unit = 'Hz' if 'Sweep_width_units' not in sp_dim else sp_dim['Sweep_width_units']
+                            first_point = None if 'Value_first_point' not in sp_dim else sp_dim['Value_first_point']
+                            sp_width = None if 'Sweep_width' not in sp_dim else sp_dim['Sweep_width']
                             if 'Spectrometer_frequency' in sp_dim:
                                 sp_freq = sp_dim['Spectrometer_frequency']
                             if 'Under_sampling_type' in sp_dim:
@@ -20551,16 +20551,16 @@ class NmrDpUtility:
                                 if mag_link_id in self.empty_value:
                                     mag_link_id = None
 
-                        if not sp_freq is None and sp_freq in self.empty_value:
+                        if sp_freq is not None and sp_freq in self.empty_value:
                             sp_freq = None
 
                         if center_point is None:
                             center_point = None if first_point is None or sp_width is None else (first_point - sp_width / 2.0)
 
-                        if not under_sampling_type is None and under_sampling_type in self.empty_value:
+                        if under_sampling_type is not None and under_sampling_type in self.empty_value:
                             under_sampling_type = None
 
-                        if not under_sampling_type is None and under_sampling_type in ('circular', 'mirror', 'none'):
+                        if under_sampling_type is not None and under_sampling_type in ('circular', 'mirror', 'none'):
                             if under_sampling_type == 'circular':
                                 under_sampling_type = 'folded'
                             elif under_sampling_type == 'mirror':
@@ -20578,7 +20578,7 @@ class NmrDpUtility:
                                         'sweep_width': copy.copy(sp_width), 'sweep_width_units': axis_unit, 'center_frequency_offset': None if center_point is None else float('{:.8f}'.format(center_point)),
                                         'under_sampling_type': under_sampling_type, 'encoding_code': encoding_code, 'encoded_source_dimension_id': encoded_src_dim_id, 'magnetization_linkage_id': mag_link_id}
 
-                        if axis_unit == 'Hz' and not sp_freq is None and not first_point is None and not center_point is None and not sp_width is None:
+                        if axis_unit == 'Hz' and sp_freq is not None and first_point is not None and center_point is not None and sp_width is not None:
                             first_point /= sp_freq
                             center_point /= sp_freq
                             sp_width /= sp_freq
@@ -20609,15 +20609,15 @@ class NmrDpUtility:
                                     if _atom_type == 'C':
                                         _center_point = None
                                         if file_type == 'nef':
-                                            _axis_unit = 'Hz' if not 'axis_unit' in _sp_dim else _sp_dim['axis_unit']
-                                            _first_point = None if not 'value_first_point' in _sp_dim else _sp_dim['value_first_point']
-                                            _sp_width = None if not 'spectral_width' in _sp_dim or not 'axis_unit' in _sp_dim else _sp_dim['spectral_width']
+                                            _axis_unit = 'Hz' if 'axis_unit' not in _sp_dim else _sp_dim['axis_unit']
+                                            _first_point = None if 'value_first_point' not in _sp_dim else _sp_dim['value_first_point']
+                                            _sp_width = None if 'spectral_width' not in _sp_dim or 'axis_unit' not in _sp_dim else _sp_dim['spectral_width']
                                             if 'spectrometer_frequency' in _sp_dim:
                                                 _sp_freq = _sp_dim['spectrometer_frequency']
                                         else:
-                                            _axis_unit = 'Hz' if not 'Sweep_width_units' in _sp_dim else _sp_dim['Sweep_width_units']
-                                            _first_point = None if not 'Value_first_point' in _sp_dim else _sp_dim['Value_first_point']
-                                            _sp_width = None if not 'Sweep_width' in _sp_dim or not 'Sweep_width_units' in _sp_dim else _sp_dim['Sweep_width']
+                                            _axis_unit = 'Hz' if 'Sweep_width_units' not in _sp_dim else _sp_dim['Sweep_width_units']
+                                            _first_point = None if 'Value_first_point' not in _sp_dim else _sp_dim['Value_first_point']
+                                            _sp_width = None if 'Sweep_width' not in _sp_dim or 'Sweep_width_units' not in _sp_dim else _sp_dim['Sweep_width']
                                             if 'Spectrometer_frequency' in _sp_dim:
                                                 _sp_freq = _sp_dim['Spectrometer_frequency']
                                             if 'Center_frequency_offset' in _sp_dim:
@@ -20625,13 +20625,13 @@ class NmrDpUtility:
                                                 if _center_point in self.empty_value:
                                                     _center_point = None
 
-                                        if not _sp_freq is None and _sp_freq in self.empty_value:
+                                        if _sp_freq is not None and _sp_freq in self.empty_value:
                                             _sp_freq = None
 
                                         if _center_point is None:
                                             _center_point = None if _first_point is None or _sp_width is None else (_first_point - _sp_width / 2.0)
 
-                                        if _axis_unit == 'Hz' and not _sp_freq is None and not _first_point is None and not _center_point is None and not _sp_width is None:
+                                        if _axis_unit == 'Hz' and _sp_freq is not None and _first_point is not None and _center_point is not None and _sp_width is not None:
                                             _first_point /= _sp_freq
                                             _center_point /= _sp_freq
                                             _sp_width /= _sp_freq
@@ -20749,7 +20749,7 @@ class NmrDpUtility:
 
             mag_link = []
 
-            if not aux_data is None:
+            if aux_data is not None:
                 for sp_dim_trans in aux_data:
                     if sp_dim_trans['Type'] == 'onebond': # or sp_dim_trans['Type'].startswith('j') or sp_dim_trans['Type'].startswith('relayed'):
                         dim_1 = sp_dim_trans['Spectral_dim_ID_1']
@@ -20758,7 +20758,7 @@ class NmrDpUtility:
 
             aux_data = next((l['data'] for l in self.__aux_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode and l['category'] == self.aux_lp_categories[file_type][content_subtype][0]), None)
 
-            if not aux_data is None:
+            if aux_data is not None:
                 for i in range(1, max_dim):
                     for sp_dim in aux_data:
                         sp_freq = None
@@ -20772,9 +20772,9 @@ class NmrDpUtility:
                         axis_code = sp_dim['Axis_code']
                         atom_type = ''.join(j for j in axis_code if not j.isdigit())
                         atom_isotope_number = int(''.join(j for j in axis_code if j.isdigit()))
-                        axis_unit = 'Hz' if not 'Sweep_width_units' in sp_dim else sp_dim['Sweep_width_units']
-                        first_point = None if not 'Value_first_point' in sp_dim else sp_dim['Value_first_point']
-                        sp_width = None if not 'Sweep_width' in sp_dim else sp_dim['Sweep_width']
+                        axis_unit = 'Hz' if 'Sweep_width_units' not in sp_dim else sp_dim['Sweep_width_units']
+                        first_point = None if 'Value_first_point' not in sp_dim else sp_dim['Value_first_point']
+                        sp_width = None if 'Sweep_width' not in sp_dim else sp_dim['Sweep_width']
                         if 'Spectrometer_frequency' in sp_dim:
                             sp_freq = sp_dim['Spectrometer_frequency']
                         if 'Under_sampling_type' in sp_dim:
@@ -20796,16 +20796,16 @@ class NmrDpUtility:
                             if mag_link_id in self.empty_value:
                                 mag_link_id = None
 
-                        if not sp_freq is None and sp_freq in self.empty_value:
+                        if sp_freq is not None and sp_freq in self.empty_value:
                             sp_freq = None
 
                         if center_point is None:
                             center_point = None if first_point is None or sp_width is None else (first_point - sp_width / 2.0)
 
-                        if not under_sampling_type is None and under_sampling_type in self.empty_value:
+                        if under_sampling_type is not None and under_sampling_type in self.empty_value:
                             under_sampling_type = None
 
-                        if not under_sampling_type is None and under_sampling_type in ('circular', 'mirror', 'none'):
+                        if under_sampling_type is not None and under_sampling_type in ('circular', 'mirror', 'none'):
                             if under_sampling_type == 'circular':
                                 under_sampling_type = 'folded'
                             elif under_sampling_type == 'mirror':
@@ -20823,7 +20823,7 @@ class NmrDpUtility:
                                         'sweep_width': copy.copy(sp_width), 'sweep_width_units': axis_unit, 'center_frequency_offset': None if center_point is None else float('{:.8f}'.format(center_point)),
                                         'under_sampling_type': under_sampling_type, 'encoding_code': encoding_code, 'encoded_source_dimension_id': encoded_src_dim_id, 'magnetization_linkage_id': mag_link_id}
 
-                        if axis_unit == 'Hz' and not sp_freq is None and not first_point is None and not center_point is None and not sp_width is None:
+                        if axis_unit == 'Hz' and sp_freq is not None and first_point is not None and center_point is not None and sp_width is not None:
                             first_point /= sp_freq
                             center_point /= sp_freq
                             sp_width /= sp_freq
@@ -20847,9 +20847,9 @@ class NmrDpUtility:
 
                                     if _atom_type == 'C':
                                         _center_point = None
-                                        _axis_unit = 'Hz' if not 'Sweep_width_units' in _sp_dim else _sp_dim['Sweep_width_units']
-                                        _first_point = None if not 'Value_first_point' in _sp_dim else _sp_dim['Value_first_point']
-                                        _sp_width = None if not 'Sweep_width' in _sp_dim or not 'Sweep_width_units' in _sp_dim else _sp_dim['Sweep_width']
+                                        _axis_unit = 'Hz' if 'Sweep_width_units' not in _sp_dim else _sp_dim['Sweep_width_units']
+                                        _first_point = None if 'Value_first_point' not in _sp_dim else _sp_dim['Value_first_point']
+                                        _sp_width = None if 'Sweep_width' not in _sp_dim or 'Sweep_width_units' not in _sp_dim else _sp_dim['Sweep_width']
                                         if 'Spectrometer_frequency' in _sp_dim:
                                             _sp_freq = _sp_dim['Spectrometer_frequency']
                                         if 'Center_frequency_offset' in _sp_dim:
@@ -20857,13 +20857,13 @@ class NmrDpUtility:
                                             if _center_point in self.empty_value:
                                                 _center_point = None
 
-                                        if not _sp_freq is None and _sp_freq in self.empty_value:
+                                        if _sp_freq is not None and _sp_freq in self.empty_value:
                                             _sp_freq = None
 
                                         if _center_point is None:
                                             _center_point = None if _first_point is None or _sp_width is None else (_first_point - _sp_width / 2.0)
 
-                                        if _axis_unit == 'Hz' and not _sp_freq is None and not _first_point is None and not _center_point is None and not _sp_width is None:
+                                        if _axis_unit == 'Hz' and _sp_freq is not None and _first_point is not None and _center_point is not None and _sp_width is not None:
                                             _first_point /= _sp_freq
                                             _center_point /= _sp_freq
                                             _sp_width /= _sp_freq
@@ -20980,7 +20980,7 @@ class NmrDpUtility:
 
         cif_chain_id = cif_ps['chain_id']
 
-        if not 'struct_conf' in cif_ps:
+        if 'struct_conf' not in cif_ps:
             return nmr_struct_conf
 
         seq_align_dic = self.report.sequence_alignment.get()
@@ -20990,7 +20990,7 @@ class NmrDpUtility:
 
         result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)
 
-        if not result is None:
+        if result is not None:
 
             for nmr_seq_id in nmr_seq_ids:
 
@@ -20999,7 +20999,7 @@ class NmrDpUtility:
                 if cif_seq_id is None:
                     continue
 
-                if not cif_seq_id in cif_ps['seq_id']:
+                if cif_seq_id not in cif_ps['seq_id']:
                     continue
 
                 nmr_struct_conf[nmr_seq_ids.index(nmr_seq_id)] = cif_ps['struct_conf'][cif_ps['seq_id'].index(cif_seq_id)]
@@ -21026,7 +21026,7 @@ class NmrDpUtility:
 
         result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)
 
-        if not result is None:
+        if result is not None:
 
             cif_seq_id = next((test_seq_id for ref_seq_id, test_seq_id in zip(result['ref_seq_id'], result['test_seq_id']) if ref_seq_id == nmr_seq_id), None)
 
@@ -21112,7 +21112,7 @@ class NmrDpUtility:
             if self.__entry_id == 'EXTRACT_FROM_COORD':
                 entry = self.__cR.getDictList('entry')
 
-                if len(entry) == 0 or (not 'id' in entry[0]):
+                if len(entry) == 0 or ('id' not in entry[0]):
                     self.__entry_id = self.__entry_id__
                 else:
                     self.__entry_id = entry[0]['id']
@@ -21189,7 +21189,7 @@ class NmrDpUtility:
         """ Parse effective coordinate file path.
         """
 
-        if not self.__cifPath is None:
+        if self.__cifPath is not None:
             return True
 
         if 'coordinate_file_path' in self.__inputParamDict:
@@ -21286,7 +21286,7 @@ class NmrDpUtility:
 
         content_subtype = 'poly_seq'
 
-        if not content_subtype in input_source_dic['content_subtype'].keys():
+        if content_subtype not in input_source_dic['content_subtype'].keys():
             return True
 
         alias = False
@@ -21346,7 +21346,7 @@ class NmrDpUtility:
                             model_id = r['model_id']
 
                             if 'rmsd_in_well_defined_region' in r and r['rmsd_in_well_defined_region'] > self.cutoff_rmsd:
-                                if not chain_id in not_superimposed_models:
+                                if chain_id not in not_superimposed_models:
                                     not_superimposed_models[chain_id] = [{'model_id': model_id, 'rmsd': r['rmsd_in_well_defined_region']}]
                                 else:
                                     not_superimposed_models[chain_id].append({'model_id': model_id, 'rmsd': r['rmsd_in_well_defined_region']})
@@ -21432,7 +21432,7 @@ class NmrDpUtility:
 
         content_subtype = 'non_poly'
 
-        if not content_subtype in input_source_dic['content_subtype'].keys():
+        if content_subtype not in input_source_dic['content_subtype'].keys():
             return True
 
         alias = False
@@ -21656,7 +21656,7 @@ class NmrDpUtility:
                     chain_id = s['chain_id']
                     chains.add(chain_id)
 
-                    if not chain_id in common_poly_seq:
+                    if chain_id not in common_poly_seq:
                         common_poly_seq[chain_id] = set()
 
         _offset_seq_ids = {c: 0 for c in chains}
@@ -21699,7 +21699,7 @@ class NmrDpUtility:
                     if len(_comp_id) == 1:
                         comp_id_list.append(_comp_id[0])
                     else:
-                        comp_id_list.append(next(comp_id for comp_id in _comp_id if not comp_id in self.empty_value))
+                        comp_id_list.append(next(comp_id for comp_id in _comp_id if comp_id not in self.empty_value))
 
                 asm.append({'chain_id': chain_id, 'seq_id': seq_id_list, 'comp_id': comp_id_list})
 
@@ -22183,7 +22183,7 @@ class NmrDpUtility:
 
                         result = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq'] if seq_align['ref_chain_id'] == chain_id and seq_align['test_chain_id'] == chain_id2), None)
 
-                        if not result is None:
+                        if result is not None:
                             cost[nmr_polymer_sequence.index(s2)] = result['unmapped'] + result['conflict'] - result['length']
                             if not self.__combined_mode and result['length'] >= len(s1['seq_id']) - result['unmapped']:
                                 indices.append((cif_polymer_sequence.index(s1), nmr_polymer_sequence.index(s2)))
@@ -22363,7 +22363,7 @@ class NmrDpUtility:
 
                                     auth_seq = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_coordinate'] if seq_align['chain_id'] == chain_id), None)
 
-                                    if not auth_seq is None:
+                                    if auth_seq is not None:
                                         try:
                                             auth_seq_id = auth_seq['test_seq_id'][auth_seq['ref_seq_id'].index(seq_id1[i])]
                                             if seq_id1[i] != auth_seq_id:
@@ -22394,7 +22394,7 @@ class NmrDpUtility:
 
                                 auth_seq = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_coordinate'] if seq_align['chain_id'] == chain_id), None)
 
-                                if not auth_seq is None and cif_comp_id != '.':
+                                if auth_seq is not None and cif_comp_id != '.':
                                     try:
                                         auth_seq_id = auth_seq['test_seq_id'][auth_seq['ref_seq_id'].index(seq_id1[i])]
                                         if seq_id1[i] != auth_seq_id:
@@ -22434,7 +22434,7 @@ class NmrDpUtility:
                                     offset = 0
                                     hit = False
                                     while i + offset >= 0:
-                                        if not seq_id1[i + offset] is None:
+                                        if seq_id1[i + offset] is not None:
                                             hit = True
                                             break
                                         offset -= 1
@@ -22466,7 +22466,7 @@ class NmrDpUtility:
                                     offset = 0
                                     hit = False
                                     while i + offset >= 0:
-                                        if not seq_id2[i + offset] is None:
+                                        if seq_id2[i + offset] is not None:
                                             hit = True
                                             break
                                         offset -= 1
@@ -22507,7 +22507,7 @@ class NmrDpUtility:
                             result['conflict'] = chain_assign['conflict']
                             result['unmapped'] = chain_assign['unmapped']
 
-                            if not _result is None:
+                            if _result is not None:
                                 _result['conflict'] = chain_assign['conflict']
                                 _result['unmapped'] = chain_assign['unmapped']
 
@@ -22525,7 +22525,7 @@ class NmrDpUtility:
                                     continue
 
                                 chain_id = chain_assign['ref_chain_id']
-                                auth_chain_id = None if not 'ref_auth_chain_id' in chain_assign else chain_assign['ref_auth_chain_id']
+                                auth_chain_id = None if 'ref_auth_chain_id' not in chain_assign else chain_assign['ref_auth_chain_id']
 
                                 try:
                                     identity = next(s['identical_chain_id'] for s in cif_polymer_sequence if s['chain_id'] == chain_id and 'identical_chain_id' in s)
@@ -22535,7 +22535,7 @@ class NmrDpUtility:
                                         if not any(_chain_assign for _chain_assign in chain_assign_set if _chain_assign['ref_chain_id'] == chain_id):
                                             _chain_assign = copy.copy(chain_assign)
                                             _chain_assign['ref_chain_id'] = chain_id
-                                            if not auth_chain_id is None:
+                                            if auth_chain_id is not None:
                                                 _chain_assign['ref_auth_chain_id'] = auth_chain_id
                                             chain_assign_set.append(_chain_assign)
 
@@ -22559,7 +22559,7 @@ class NmrDpUtility:
 
                         result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == chain_id and seq_align['test_chain_id'] == chain_id2), None)
 
-                        if not result is None:
+                        if result is not None:
                             cost[cif_polymer_sequence.index(s2)] = result['unmapped'] + result['conflict'] - result['length']
                             if not self.__combined_mode and result['length'] >= len(s2['seq_id']) - result['unmapped']:
                                 indices.append((nmr_polymer_sequence.index(s1), cif_polymer_sequence.index(s2)))
@@ -22671,10 +22671,10 @@ class NmrDpUtility:
                             myPr = myAlign[i]
                             if aligned[i]:
                                 if str(myPr[0]) == '.':
-                                    if (not seq_id2[i] is None) and ((i > 0 and not seq_id2[i - 1] is None and seq_id2[i - 1] + 1 == seq_id2[i]) or (i + 1 < len(seq_id2) and not seq_id2[i + 1] is None and seq_id2[i + 1] - 1 == seq_id2[i])):
+                                    if (seq_id2[i] is not None) and ((i > 0 and seq_id2[i - 1] is not None and seq_id2[i - 1] + 1 == seq_id2[i]) or (i + 1 < len(seq_id2) and seq_id2[i + 1] is not None and seq_id2[i + 1] - 1 == seq_id2[i])):
                                         aligned[i] = False
                                 if str(myPr[1]) == '.':
-                                    if (not seq_id1[i] is None) and ((i > 0 and not seq_id1[i - 1] is None and seq_id1[i - 1] + 1 == seq_id1[i]) or (i + 1 < len(seq_id1) and not seq_id1[i + 1] is None and seq_id1[i + 1] - 1 == seq_id1[i])):
+                                    if (seq_id1[i] is not None) and ((i > 0 and seq_id1[i - 1] is not None and seq_id1[i - 1] + 1 == seq_id1[i]) or (i + 1 < len(seq_id1) and seq_id1[i + 1] is not None and seq_id1[i + 1] - 1 == seq_id1[i])):
                                         aligned[i] = False
 
                         if not self.__combined_mode:
@@ -22717,7 +22717,7 @@ class NmrDpUtility:
 
                                 if not aligned[i]:
 
-                                    if self.__combined_mode or not chain_id in concatenated_nmr_chain or not chain_id2 in concatenated_nmr_chain[chain_id]:
+                                    if self.__combined_mode or chain_id not in concatenated_nmr_chain or chain_id2 not in concatenated_nmr_chain[chain_id]:
                                         warn = "%s:%s:%s is not present in the coordinate (chain_id %s). Please update the sequence in the Macromolecules page." %\
                                                (chain_id, seq_id1[i], nmr_comp_id, chain_id2)
 
@@ -22734,7 +22734,7 @@ class NmrDpUtility:
                                     offset = 0
                                     hit = False
                                     while i + offset >= 0:
-                                        if not seq_id2[i + offset] is None:
+                                        if seq_id2[i + offset] is not None:
                                             hit = True
                                             break
                                         offset -= 1
@@ -22767,7 +22767,7 @@ class NmrDpUtility:
 
                                 auth_seq = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_coordinate'] if seq_align['chain_id'] == chain_id2), None)
 
-                                if not auth_seq is None and cif_comp_id != '.':
+                                if auth_seq is not None and cif_comp_id != '.':
                                     try:
                                         auth_seq_id = auth_seq['test_seq_id'][auth_seq['ref_seq_id'].index(seq_id2[i])]
                                         if seq_id2[i] != auth_seq_id:
@@ -22807,7 +22807,7 @@ class NmrDpUtility:
                                     offset = 0
                                     hit = False
                                     while i + offset >= 0:
-                                        if not seq_id1[i + offset] is None:
+                                        if seq_id1[i + offset] is not None:
                                             hit = True
                                             break
                                         offset -= 1
@@ -22839,7 +22839,7 @@ class NmrDpUtility:
                                     offset = 0
                                     hit = False
                                     while i + offset >= 0:
-                                        if not seq_id2[i + offset] is None:
+                                        if seq_id2[i + offset] is not None:
                                             hit = True
                                             break
                                         offset -= 1
@@ -22880,7 +22880,7 @@ class NmrDpUtility:
                             result['conflict'] = chain_assign['conflict']
                             result['unmapped'] = chain_assign['unmapped']
 
-                            if not _result is None:
+                            if _result is not None:
                                 _result['conflict'] = chain_assign['conflict']
                                 _result['unmapped'] = chain_assign['unmapped']
 
@@ -22898,7 +22898,7 @@ class NmrDpUtility:
                                     continue
 
                                 _chain_id = chain_assign['test_chain_id']
-                                _auth_chain_id = None if not 'test_auth_chain_id' in chain_assign else chain_assign['test_auth_chain_id']
+                                _auth_chain_id = None if 'test_auth_chain_id' not in chain_assign else chain_assign['test_auth_chain_id']
 
                                 try:
                                     identity = next(s['identical_chain_id'] for s in cif_polymer_sequence if s['chain_id'] == _chain_id and 'identical_chain_id' in s)
@@ -22908,7 +22908,7 @@ class NmrDpUtility:
                                         if not any(_chain_assign for _chain_assign in chain_assign_set if _chain_assign['test_chain_id'] == _chain_id):
                                             _chain_assign = copy.copy(chain_assign)
                                             _chain_assign['test_chain_id'] = _chain_id
-                                            if not _auth_chain_id is None:
+                                            if _auth_chain_id is not None:
                                                 _chain_assign['test_auth_chain_id'] = _auth_chain_id
                                             chain_assign_set.append(_chain_assign)
 
@@ -22966,11 +22966,11 @@ class NmrDpUtility:
                 self.__coord_atom_id = {}
                 chain_ids = set(c['chain_id'] for c in coord)
                 for chain_id in chain_ids:
-                    seq_ids = set((int(c['seq_id']) if not c['seq_id'] is None else c['auth_seq_id']) for c in coord if c['chain_id'] == chain_id)
+                    seq_ids = set((int(c['seq_id']) if c['seq_id'] is not None else c['auth_seq_id']) for c in coord if c['chain_id'] == chain_id)
                     for seq_id in seq_ids:
                         seq_key = (chain_id, seq_id)
-                        comp_id = next(c['comp_id'] for c in coord if c['chain_id'] == chain_id and ((not c['seq_id'] is None and int(c['seq_id']) == seq_id) or (c['seq_id'] is None and c['auth_seq_id'] == seq_id)))
-                        atom_ids = [c['atom_id'] for c in coord if c['chain_id'] == chain_id and ((not c['seq_id'] is None and int(c['seq_id']) == seq_id) or (c['seq_id'] is None and c['auth_seq_id'] == seq_id))]
+                        comp_id = next(c['comp_id'] for c in coord if c['chain_id'] == chain_id and ((c['seq_id'] is not None and int(c['seq_id']) == seq_id) or (c['seq_id'] is None and c['auth_seq_id'] == seq_id)))
+                        atom_ids = [c['atom_id'] for c in coord if c['chain_id'] == chain_id and ((c['seq_id'] is not None and int(c['seq_id']) == seq_id) or (c['seq_id'] is None and c['auth_seq_id'] == seq_id))]
                         self.__coord_atom_id[seq_key] = {'comp_id': comp_id, 'atom_id': atom_ids}
 
             except Exception as e:
@@ -22994,7 +22994,7 @@ class NmrDpUtility:
             seq_align_dic = self.report.sequence_alignment.get()
             chain_assign_dic = self.report.chain_assignment.get()
 
-            if not 'nmr_poly_seq_vs_model_poly_seq' in chain_assign_dic:
+            if 'nmr_poly_seq_vs_model_poly_seq' not in chain_assign_dic:
 
                 err = "Chain assignment does not exist, __assignCoordPolymerSequence() should be invoked."
 
@@ -23105,7 +23105,7 @@ class NmrDpUtility:
                     _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
                     num_dim = int(_num_dim)
 
-                    if not num_dim in range(1, self.lim_num_dim):
+                    if num_dim not in range(1, self.lim_num_dim):
                         raise ValueError()
 
                 except ValueError: # raised error already at __testIndexConsistency()
@@ -23155,7 +23155,7 @@ class NmrDpUtility:
 
         sa_name = 'nmr_poly_seq_vs_' + content_subtype
 
-        if sa_name in seq_align_dic and not seq_align_dic[sa_name] is None:
+        if sa_name in seq_align_dic and seq_align_dic[sa_name] is not None:
 
             for seq_align in seq_align_dic[sa_name]:
 
@@ -23188,7 +23188,7 @@ class NmrDpUtility:
                     _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
                     num_dim = int(_num_dim)
 
-                    if not num_dim in range(1, self.lim_num_dim):
+                    if num_dim not in range(1, self.lim_num_dim):
                         raise ValueError()
 
                 except ValueError: # raised error already at __testIndexConsistency()
@@ -23240,7 +23240,7 @@ class NmrDpUtility:
                 if content_subtype.startswith('spectral_peak') and (chain_id in self.empty_value or seq_id in self.empty_value or comp_id in self.empty_value or atom_id in self.empty_value):
                     continue
 
-                if not chain_id in nmr2ca:
+                if chain_id not in nmr2ca:
                     continue
 
                 ca = next((ca['seq_align'] for ca in nmr2ca[chain_id] if ('seq_unmap' not in ca or (seq_id not in ca['seq_unmap']))), None) # DAOTHER-7465
@@ -23272,7 +23272,7 @@ class NmrDpUtility:
                         atom_id_ = atom_id
                         atom_name = atom_id
 
-                        if not details is None:
+                        if details is not None:
                             atom_name += ' (' + details.rstrip('.') + ')'
 
                     else:
@@ -23292,12 +23292,12 @@ class NmrDpUtility:
 
                 seq_key = (cif_chain_id, cif_seq_id)
 
-                coord_atom_id_ = None if not seq_key in self.__coord_atom_id else self.__coord_atom_id[seq_key]
+                coord_atom_id_ = None if seq_key not in self.__coord_atom_id else self.__coord_atom_id[seq_key]
 
-                if coord_atom_id_ is None or coord_atom_id_['comp_id'] != cif_comp_id or not atom_id_ in coord_atom_id_['atom_id']:
+                if coord_atom_id_ is None or coord_atom_id_['comp_id'] != cif_comp_id or atom_id_ not in coord_atom_id_['atom_id']:
 
                     idx_msg = ''
-                    if not index_tag is None:
+                    if index_tag is not None:
                         idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
 
                     err = "%sAtom (%s) is not present in the coordinate." %\
@@ -23323,7 +23323,7 @@ class NmrDpUtility:
                         if file_type == 'nmr-star' and details_col != -1:
                             _details = loop.data[l][details_col]
                             details = "%s:%s:%s:%s is not present in the coordinate. However, it is acceptable if an appropriate atom name, H1, is given because of a cyclic-peptide.\n" % (chain_id, seq_id, comp_id, atom_name)
-                            if _details in self.empty_value or (not details in _details):
+                            if _details in self.empty_value or (details not in _details):
                                 if _details in self.empty_value:
                                     loop.data[l][details_col] = details
                                 else:
@@ -23381,7 +23381,7 @@ class NmrDpUtility:
             else:
                 self.__sf_name_corr[0] = corrections
 
-        if not 'report_file_path' in self.__inputParamDict:
+        if 'report_file_path' not in self.__inputParamDict:
             self.__initializeDpReport()
             self.__dstPath = self.__srcPath
 
@@ -23441,7 +23441,7 @@ class NmrDpUtility:
                         _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
                         num_dim = int(_num_dim)
 
-                        if not num_dim in range(1, self.lim_num_dim):
+                        if num_dim not in range(1, self.lim_num_dim):
                             raise ValueError()
 
                     except ValueError: # raised error already at __testIndexConsistency()
@@ -23530,7 +23530,7 @@ class NmrDpUtility:
                         _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
                         num_dim = int(_num_dim)
 
-                        if not num_dim in range(1, self.lim_num_dim):
+                        if num_dim not in range(1, self.lim_num_dim):
                             raise ValueError()
 
                     except ValueError: # raised error already at __testIndexConsistency()
@@ -23672,7 +23672,7 @@ class NmrDpUtility:
 
             if self.__star_data_type[0] == 'Entry' or self.__star_data_type[0] == 'Saveframe':
 
-                if not 'sf_category' in w:
+                if 'sf_category' not in w:
 
                     err = "Could not specify 'sf_category' in NMR data processing report."
 
@@ -23741,7 +23741,7 @@ class NmrDpUtility:
 
             if self.__star_data_type[0] == 'Entry' or self.__star_data_type[0] == 'Saveframe':
 
-                if not 'sf_framecode' in w:
+                if 'sf_framecode' not in w:
 
                     err = "Could not specify 'sf_framecode' in NMR data processing report."
 
@@ -23767,7 +23767,7 @@ class NmrDpUtility:
 
                         continue
 
-                    if not 'category' in w:
+                    if 'category' not in w:
 
                         err = "Could not specify 'category' in NMR data processing report."
 
@@ -23922,32 +23922,32 @@ class NmrDpUtility:
                 except:
                     pass
 
-            if not orig_lp_data is None and len(orig_lp_data) > 0:
+            if orig_lp_data is not None and len(orig_lp_data) > 0:
 
                 if file_type == 'nef':
                     if 'residue_variant' in orig_lp_data[0]:
-                        if any(i for i in orig_lp_data if not i['residue_variant'] in self.empty_value):
+                        if any(i for i in orig_lp_data if i['residue_variant'] not in self.empty_value):
                             has_res_var_dat = True
 
                 else:
                     if 'Auth_variant_ID' in orig_lp_data[0]:
-                        if any(i for i in orig_lp_data if not i['Auth_variant_ID'] in self.empty_value):
+                        if any(i for i in orig_lp_data if i['Auth_variant_ID'] not in self.empty_value):
                             has_res_var_dat = True
 
                     if 'Auth_asym_ID' in orig_lp_data[0]:
-                        if any(i for i in orig_lp_data if not i['Auth_asym_ID'] in self.empty_value):
+                        if any(i for i in orig_lp_data if i['Auth_asym_ID'] not in self.empty_value):
                             has_auth_asym_id = True
 
                     if 'Auth_seq_ID' in orig_lp_data[0]:
-                        if any(i for i in orig_lp_data if not i['Auth_seq_ID'] in self.empty_value):
+                        if any(i for i in orig_lp_data if i['Auth_seq_ID'] not in self.empty_value):
                             has_auth_seq_id = True
 
                     if 'Auth_comp_ID' in orig_lp_data[0]:
-                        if any(i for i in orig_lp_data if not i['Auth_comp_ID'] in self.empty_value):
+                        if any(i for i in orig_lp_data if i['Auth_comp_ID'] not in self.empty_value):
                             has_auth_comp_id = True
 
                     if 'NEF_index' in orig_lp_data[0]:
-                        if any(i for i in orig_lp_data if not i['NEF_index'] in self.empty_value):
+                        if any(i for i in orig_lp_data if i['NEF_index'] not in self.empty_value):
                             has_nef_index = True
 
                     if 'Assembly_ID' in orig_lp_data[0]:
@@ -23971,7 +23971,7 @@ class NmrDpUtility:
 
         tagNames = None
 
-        if not orig_poly_seq_sf_data is None:
+        if orig_poly_seq_sf_data is not None:
 
             tagNames = [t[0] for t in orig_poly_seq_sf_data.tags]
 
@@ -23992,7 +23992,7 @@ class NmrDpUtility:
         tag_value = 'nef_molecular_system' if file_type == 'nef' else 'assembly'
 
         for tag_name in tag_names:
-            if tagNames is None or (not tag_name in tagNames):
+            if tagNames is None or (tag_name not in tagNames):
                 poly_seq_sf_data.add_tag(sf_cat_name + '.' + tag_name, tag_value)
             else:
                 poly_seq_sf_data.tags[tagNames.index(tag_name)][1] = tag_value
@@ -24019,7 +24019,7 @@ class NmrDpUtility:
 
         polymer_sequence = input_source_dic['polymer_sequence']
 
-        if not polymer_sequence is None:
+        if polymer_sequence is not None:
 
             cid_offset = 0
 
@@ -24061,7 +24061,7 @@ class NmrDpUtility:
                             if s_['chain_id'] in s['identical_chain_id']:
                                 auth_comp_id = s_['comp_id'][j]
                                 comp_id = auth_comp_id.upper()
-                            if not comp_id in self.empty_value:
+                            if comp_id not in self.empty_value:
                                 break
 
                     if comp_id in self.empty_value:
@@ -24111,7 +24111,7 @@ class NmrDpUtility:
 
                         if has_res_var_dat:
                             orig_row = None if orig_lp_data is None else next((i for i in orig_lp_data if i['chain_code'] == chain_id and i['sequence_code'] == auth_seq_id and i['residue_name'] == auth_comp_id), None)
-                            if not orig_row is None:
+                            if orig_row is not None:
                                 row.append(orig_row['residue_variant'])
                             else:
                                 row.append('.')
@@ -24140,7 +24140,7 @@ class NmrDpUtility:
                         # Auth_asym_ID
 
                         if has_auth_asym_id:
-                            if not orig_row is None:
+                            if orig_row is not None:
                                 row.append(orig_row['Auth_asym_ID'])
                             else:
                                 row.append(chain_id)
@@ -24150,7 +24150,7 @@ class NmrDpUtility:
                         # Auth_seq_ID
 
                         if has_auth_seq_id:
-                            if not orig_row is None:
+                            if orig_row is not None:
                                 row.append(orig_row['Auth_seq_ID'])
                             else:
                                 row.append(auth_seq_id)
@@ -24160,7 +24160,7 @@ class NmrDpUtility:
                         # Auth_comp_ID
 
                         if has_auth_comp_id:
-                            if not orig_row is None:
+                            if orig_row is not None:
                                 row.append(orig_row['Auth_comp_ID'])
                             else:
                                 row.append(auth_comp_id)
@@ -24170,7 +24170,7 @@ class NmrDpUtility:
                         # Auth_variant_ID
 
                         if has_res_var_dat:
-                            if not orig_row is None:
+                            if orig_row is not None:
                                 row.append(orig_row['Auth_variant_ID'])
                             else:
                                 row.append('.')
@@ -24204,7 +24204,7 @@ class NmrDpUtility:
                         # NEF_index
 
                         if has_nef_index:
-                            if not orig_row is None:
+                            if orig_row is not None:
                                 row.append(orig_row['NEF_index'])
                             else:
                                 row.append('.')
@@ -24212,7 +24212,7 @@ class NmrDpUtility:
                         # Assembly_ID
 
                         if has_assembly_id:
-                            if not orig_row is None:
+                            if orig_row is not None:
                                 row.append(orig_row['Assembly_ID'])
                             else:
                                 row.append(1)
@@ -24221,7 +24221,7 @@ class NmrDpUtility:
                             row.append(1)
 
                         if has_entry_id:
-                            if not orig_row is None:
+                            if orig_row is not None:
                                 row.append(orig_row['Entry_ID'])
                             else:
                                 row.append('.')
@@ -24233,12 +24233,12 @@ class NmrDpUtility:
                 asym_ids_for_same_entity = self.report.getAsymIdsForSameEntity()
                 chain_ids_for_same_entity = self.report.getChainIdsForSameEntity()
 
-                if not asym_ids_for_same_entity is None and chain_ids_for_same_entity is None:
+                if asym_ids_for_same_entity is not None and chain_ids_for_same_entity is None:
                     for asym_id in asym_ids_for_same_entity.keys():
                         nmr_ps = self.report.getNmrPolymerSequenceWithModelChainId(asym_id)
-                        if not nmr_ps is None and nmr_ps['chain_id'] == chain_id:
+                        if nmr_ps is not None and nmr_ps['chain_id'] == chain_id:
                             cif_ps = self.report.getModelPolymerSequenceWithNmrChainId(chain_id)
-                            if not cif_ps is None and cif_ps['chain_id'] != asym_id:
+                            if cif_ps is not None and cif_ps['chain_id'] != asym_id:
 
                                 cid_offset += 1
 
@@ -24281,7 +24281,7 @@ class NmrDpUtility:
 
                                         if has_res_var_dat:
                                             orig_row = None if orig_lp_data is None else next((i for i in orig_lp_data if i['chain_code'] == chain_id and i['sequence_code'] == auth_seq_id and i['residue_name'] == auth_comp_id), None)
-                                            if not orig_row is None:
+                                            if orig_row is not None:
                                                 row.append(orig_row['residue_variant'])
                                             else:
                                                 row.append('.')
@@ -24310,7 +24310,7 @@ class NmrDpUtility:
                                         # Auth_asym_ID
 
                                         if has_auth_asym_id:
-                                            if not orig_row is None:
+                                            if orig_row is not None:
                                                 row.append(orig_row['Auth_asym_ID'])
                                             else:
                                                 row.append(chain_id)
@@ -24320,7 +24320,7 @@ class NmrDpUtility:
                                         # Auth_seq_ID
 
                                         if has_auth_seq_id:
-                                            if not orig_row is None:
+                                            if orig_row is not None:
                                                 row.append(orig_row['Auth_seq_ID'])
                                             else:
                                                 row.append(auth_seq_id)
@@ -24330,7 +24330,7 @@ class NmrDpUtility:
                                         # Auth_comp_ID
 
                                         if has_auth_comp_id:
-                                            if not orig_row is None:
+                                            if orig_row is not None:
                                                 row.append(orig_row['Auth_comp_ID'])
                                             else:
                                                 row.append(auth_comp_id)
@@ -24340,7 +24340,7 @@ class NmrDpUtility:
                                         # Auth_variant_ID
 
                                         if has_res_var_dat:
-                                            if not orig_row is None:
+                                            if orig_row is not None:
                                                 row.append(orig_row['Auth_variant_ID'])
                                             else:
                                                 row.append('.')
@@ -24374,7 +24374,7 @@ class NmrDpUtility:
                                         # NEF_index
 
                                         if has_nef_index:
-                                            if not orig_row is None:
+                                            if orig_row is not None:
                                                 row.append(orig_row['NEF_index'])
                                             else:
                                                 row.append('.')
@@ -24382,7 +24382,7 @@ class NmrDpUtility:
                                         # Assembly_ID
 
                                         if has_assembly_id:
-                                            if not orig_row is None:
+                                            if orig_row is not None:
                                                 row.append(orig_row['Assembly_ID'])
                                             else:
                                                 row.append(1)
@@ -24391,7 +24391,7 @@ class NmrDpUtility:
                                             row.append(1)
 
                                         if has_entry_id:
-                                            if not orig_row is None:
+                                            if orig_row is not None:
                                                 row.append(orig_row['Entry_ID'])
                                             else:
                                                 row.append('.')
@@ -24416,7 +24416,7 @@ class NmrDpUtility:
 
             sf_list = self.__star_data[0].get_saveframes_by_category(sf_category)
 
-            if not sf_list is None:
+            if sf_list is not None:
 
                 for old_sf_data in reversed(sf_list):
                     del self.__star_data[0][old_sf_data]
@@ -24429,14 +24429,14 @@ class NmrDpUtility:
 
             if content_subtype == 'poly_seq':
 
-                if not polymer_sequence is None:
+                if polymer_sequence is not None:
                     norm_star_data.add_saveframe(poly_seq_sf_data)
 
             elif has_key_value(input_source_dic['content_subtype'], content_subtype):
 
                 sf_list = self.__star_data[0].get_saveframes_by_category(sf_category)
 
-                if not sf_list is None:
+                if sf_list is not None:
 
                     for old_sf_data in reversed(sf_list):
                         del norm_star_data[old_sf_data]
@@ -24486,7 +24486,7 @@ class NmrDpUtility:
 
         chain_assign_dic = self.report.chain_assignment.get()
 
-        if not 'nmr_poly_seq_vs_model_poly_seq' in chain_assign_dic:
+        if 'nmr_poly_seq_vs_model_poly_seq' not in chain_assign_dic:
             """
             err = "Chain assignment does not exist, __assignCoordPolymerSequence() should be invoked."
 
@@ -24715,7 +24715,7 @@ class NmrDpUtility:
 
         result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)
 
-        if not result is None:
+        if result is not None:
 
             cif_seq_id = next((test_seq_id for ref_seq_id, test_seq_id in zip(result['ref_seq_id'], result['test_seq_id']) if ref_seq_id == nmr_seq_id), None)
 
@@ -24775,7 +24775,7 @@ class NmrDpUtility:
 
         result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)
 
-        if not result is None:
+        if result is not None:
 
             cif_seq_id = next((test_seq_id for ref_seq_id, ref_code, test_seq_id in zip(result['ref_seq_id'], result['ref_code'], result['test_seq_id']) if ref_seq_id == nmr_seq_id and ref_code == 'H'), None)
 
@@ -24858,7 +24858,7 @@ class NmrDpUtility:
 
         result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)
 
-        if not result is None:
+        if result is not None:
 
             cif_seq_id = next((test_seq_id for ref_seq_id, ref_code, test_seq_id in zip(result['ref_seq_id'], result['ref_code'], result['test_seq_id']) if ref_seq_id == nmr_seq_id and ref_code == 'V'), None)
 
@@ -24961,7 +24961,7 @@ class NmrDpUtility:
 
         result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)
 
-        if not result is None:
+        if result is not None:
 
             cif_seq_id = next((test_seq_id for ref_seq_id, ref_code, test_seq_id in zip(result['ref_seq_id'], result['ref_code'], result['test_seq_id']) if ref_seq_id == nmr_seq_id and ref_code == 'L'), None)
 
@@ -25085,7 +25085,7 @@ class NmrDpUtility:
 
         result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)
 
-        if not result is None:
+        if result is not None:
 
             cif_seq_id = next((test_seq_id for ref_seq_id, ref_code, test_seq_id in zip(result['ref_seq_id'], result['ref_code'], result['test_seq_id']) if ref_seq_id == nmr_seq_id and ref_code == 'I'), None)
 
@@ -25196,7 +25196,7 @@ class NmrDpUtility:
 
         chain_assign_dic = self.report.chain_assignment.get()
 
-        if not 'model_poly_seq_vs_nmr_poly_seq' in chain_assign_dic:
+        if 'model_poly_seq_vs_nmr_poly_seq' not in chain_assign_dic:
 
             err = "Chain assignment does not exist, __assignCoordPolymerSequence() should be invoked."
 
@@ -25413,12 +25413,12 @@ class NmrDpUtility:
                 disulf['ca_chem_shift_2'] = ca_chem_shift_2
                 disulf['cb_chem_shift_2'] = cb_chem_shift_2
 
-                if not cb_chem_shift_1 is None:
+                if cb_chem_shift_1 is not None:
                     if cb_chem_shift_1 < 32.0:
                         disulf['redox_state_pred_1'] = 'reduced'
                     elif cb_chem_shift_1 > 35.0:
                         disulf['redox_state_pred_1'] = 'oxidized'
-                    elif not cb_chem_shift_2 is None:
+                    elif cb_chem_shift_2 is not None:
                         if cb_chem_shift_2 < 32.0:
                             disulf['redox_state_pred_1'] = 'reduced'
                         elif cb_chem_shift_2 > 35.0:
@@ -25430,12 +25430,12 @@ class NmrDpUtility:
                 else:
                     disulf['redox_state_pred_1'] = 'unknown'
 
-                if not cb_chem_shift_2 is None:
+                if cb_chem_shift_2 is not None:
                     if cb_chem_shift_2 < 32.0:
                         disulf['redox_state_pred_2'] = 'reduced'
                     elif cb_chem_shift_2 > 35.0:
                         disulf['redox_state_pred_2'] = 'oxidized'
-                    elif not cb_chem_shift_1 is None:
+                    elif cb_chem_shift_1 is not None:
                         if cb_chem_shift_1 < 32.0:
                             disulf['redox_state_pred_2'] = 'reduced'
                         elif cb_chem_shift_1 > 35.0:
@@ -25447,11 +25447,11 @@ class NmrDpUtility:
                 else:
                     disulf['redox_state_pred_2'] = 'unknown'
 
-                if disulf['redox_state_pred_1'] == 'ambiguous' and ((not ca_chem_shift_1 is None) or (not cb_chem_shift_1 is None)):
+                if disulf['redox_state_pred_1'] == 'ambiguous' and ((ca_chem_shift_1 is not None) or (cb_chem_shift_1 is not None)):
                     oxi, red = predict_redox_state_of_cystein(ca_chem_shift_1, cb_chem_shift_1)
                     disulf['redox_state_pred_1'] = 'oxidized %s (%%), reduced %s (%%)' % ('{:.1f}'.format(oxi * 100.0), '{:.1f}'.format(red * 100.0))
 
-                if disulf['redox_state_pred_2'] == 'ambiguous' and ((not ca_chem_shift_2 is None) or (not cb_chem_shift_2 is None)):
+                if disulf['redox_state_pred_2'] == 'ambiguous' and ((ca_chem_shift_2 is not None) or (cb_chem_shift_2 is not None)):
                     oxi, red = predict_redox_state_of_cystein(ca_chem_shift_2, cb_chem_shift_2)
                     disulf['redox_state_pred_2'] = 'oxidized %s (%%), reduced %s (%%)' % ('{:.1f}'.format(oxi * 100.0), '{:.1f}'.format(red * 100.0))
 
@@ -25529,7 +25529,7 @@ class NmrDpUtility:
                 except:
                     pass
 
-            if not lp_data is None:
+            if lp_data is not None:
 
                 for i in lp_data:
                     chain_id = i[chain_id_name]
@@ -25569,7 +25569,7 @@ class NmrDpUtility:
 
         chain_assign_dic = self.report.chain_assignment.get()
 
-        if not 'model_poly_seq_vs_nmr_poly_seq' in chain_assign_dic:
+        if 'model_poly_seq_vs_nmr_poly_seq' not in chain_assign_dic:
 
             err = "Chain assignment does not exist, __assignCoordPolymerSequence() should be invoked."
 
@@ -25787,12 +25787,12 @@ class NmrDpUtility:
                 other['ca_chem_shift_2'] = ca_chem_shift_2
                 other['cb_chem_shift_2'] = cb_chem_shift_2
 
-                if not cb_chem_shift_1 is None:
+                if cb_chem_shift_1 is not None:
                     if cb_chem_shift_1 < 32.0:
                         other['redox_state_pred_1'] = 'reduced'
                     elif cb_chem_shift_1 > 35.0:
                         other['redox_state_pred_1'] = 'oxidized'
-                    elif not cb_chem_shift_2 is None:
+                    elif cb_chem_shift_2 is not None:
                         if cb_chem_shift_2 < 32.0:
                             other['redox_state_pred_1'] = 'reduced'
                         elif cb_chem_shift_2 > 35.0:
@@ -25804,12 +25804,12 @@ class NmrDpUtility:
                 else:
                     other['redox_state_pred_1'] = 'unknown'
 
-                if not cb_chem_shift_2 is None:
+                if cb_chem_shift_2 is not None:
                     if cb_chem_shift_2 < 32.0:
                         other['redox_state_pred_2'] = 'reduced'
                     elif cb_chem_shift_2 > 35.0:
                         other['redox_state_pred_2'] = 'oxidized'
-                    elif not cb_chem_shift_1 is None:
+                    elif cb_chem_shift_1 is not None:
                         if cb_chem_shift_1 < 32.0:
                             other['redox_state_pred_2'] = 'reduced'
                         elif cb_chem_shift_1 > 35.0:
@@ -25821,11 +25821,11 @@ class NmrDpUtility:
                 else:
                     other['redox_state_pred_2'] = 'unknown'
 
-                if other['redox_state_pred_1'] == 'ambiguous' and ((not ca_chem_shift_1 is None) or (not cb_chem_shift_1 is None)):
+                if other['redox_state_pred_1'] == 'ambiguous' and ((ca_chem_shift_1 is not None) or (cb_chem_shift_1 is not None)):
                     oxi, red = predict_redox_state_of_cystein(ca_chem_shift_1, cb_chem_shift_1)
                     other['redox_state_pred_1'] = 'oxidized %s (%%), reduced %s (%%)' % ('{:.1f}'.format(oxi * 100.0), '{:.1f}'.format(red * 100.0))
 
-                if other['redox_state_pred_2'] == 'ambiguous' and ((not ca_chem_shift_2 is None) or (not cb_chem_shift_2 is None)):
+                if other['redox_state_pred_2'] == 'ambiguous' and ((ca_chem_shift_2 is not None) or (cb_chem_shift_2 is not None)):
                     oxi, red = predict_redox_state_of_cystein(ca_chem_shift_2, cb_chem_shift_2)
                     other['redox_state_pred_2'] = 'oxidized %s (%%), reduced %s (%%)' % ('{:.1f}'.format(oxi * 100.0), '{:.1f}'.format(red * 100.0))
 
@@ -25903,7 +25903,7 @@ class NmrDpUtility:
                 except:
                     pass
 
-            if not lp_data is None:
+            if lp_data is not None:
 
                 for i in lp_data:
                     chain_id = i[chain_id_name]
@@ -25954,7 +25954,7 @@ class NmrDpUtility:
 
         result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)
 
-        if not result is None:
+        if result is not None:
 
             cif_seq_id = next((test_seq_id for ref_seq_id, test_seq_id in zip(result['ref_seq_id'], result['test_seq_id']) if ref_seq_id == nmr_seq_id), None)
 
@@ -26059,7 +26059,7 @@ class NmrDpUtility:
 
                 result = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq'] if seq_align['ref_chain_id'] == _cif_chain_id and seq_align['test_chain_id'] == _nmr_chain_id), None)
 
-                if not result is None:
+                if result is not None:
 
                     _nmr_seq_id = next((test_seq_id for ref_seq_id, test_seq_id in zip(result['ref_seq_id'], result['test_seq_id']) if ref_seq_id == n['seq_id']), None)
 
@@ -26284,7 +26284,7 @@ class NmrDpUtility:
 
         result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)
 
-        if not result is None:
+        if result is not None:
 
             cif_seq_id = next((test_seq_id for ref_seq_id, test_seq_id in zip(result['ref_seq_id'], result['test_seq_id']) if ref_seq_id == nmr_seq_id), None)
 
@@ -26773,7 +26773,7 @@ class NmrDpUtility:
                     except:
                         pass
 
-                if not lp_data is None:
+                if lp_data is not None:
 
                     phi_index = []
                     psi_index = []
@@ -26805,7 +26805,7 @@ class NmrDpUtility:
                             atom_ids.append(i[atom_id_4_name])
                             angle_type = i[angle_type_name]
 
-                            if not angle_type in self.empty_value:
+                            if angle_type not in self.empty_value:
                                 continue
 
                             if chain_id_1 != chain_id_2 or chain_id_2 != chain_id_3 or chain_id_3 != chain_id_4:
@@ -26970,7 +26970,7 @@ class NmrDpUtility:
 
             if self.__star_data_type[0] == 'Entry' or self.__star_data_type[0] == 'Saveframe':
 
-                if not 'sf_framecode' in w:
+                if 'sf_framecode' not in w:
 
                     err = "Could not specify 'sf_framecode' in NMR data processing report."
 
@@ -26996,7 +26996,7 @@ class NmrDpUtility:
 
                         continue
 
-                    if not 'category' in w:
+                    if 'category' not in w:
 
                         err = "Could not specify 'category' in NMR data processing report."
 
@@ -27012,7 +27012,7 @@ class NmrDpUtility:
 
                             category = w['category'] if w['category'].startswith('_') else '_' + w['category'] # pynmrstar v2.6.5.1
 
-                            content_subtype = next(c for c in input_source_dic['content_subtype'].keys() if self.lp_categories[file_type][c] == category and not self.index_tags[file_type][c] is None)
+                            content_subtype = next(c for c in input_source_dic['content_subtype'].keys() if self.lp_categories[file_type][c] == category and self.index_tags[file_type][c] is not None)
 
                             if __pynmrstar_v3_2__:
                                 loop = sf_data.get_loop(w['category'])
@@ -27065,12 +27065,12 @@ class NmrDpUtility:
 
         for w in warnings:
 
-            if not "should not have zero value" in w['description']:
+            if "should not have zero value" not in w['description']:
                 continue
 
             if self.__star_data_type[0] == 'Entry' or self.__star_data_type[0] == 'Saveframe':
 
-                if not 'sf_framecode' in w:
+                if 'sf_framecode' not in w:
 
                     err = "Could not specify 'sf_framecode' in NMR data processing report."
 
@@ -27096,7 +27096,7 @@ class NmrDpUtility:
 
                         continue
 
-                    if not 'category' in w:
+                    if 'category' not in w:
 
                         err = "Could not specify 'category' in NMR data processing report."
 
@@ -27115,7 +27115,7 @@ class NmrDpUtility:
                         else:
                             loop = sf_data.get_loop_by_category(w['category'])
 
-                        if not itName in loop.tags:
+                        if itName not in loop.tags:
 
                             err = "Could not find loop tag %s in %s category, %r saveframe, %r file." % (itName, w['category'], w['sf_framecode'], file_name)
 
@@ -27177,12 +27177,12 @@ class NmrDpUtility:
 
         for w in warnings:
 
-            if not "should not have negative value" in w['description']:
+            if "should not have negative value" not in w['description']:
                 continue
 
             if self.__star_data_type[0] == 'Entry' or self.__star_data_type[0] == 'Saveframe':
 
-                if not 'sf_framecode' in w:
+                if 'sf_framecode' not in w:
 
                     err = "Could not specify 'sf_framecode' in NMR data processing report."
 
@@ -27208,7 +27208,7 @@ class NmrDpUtility:
 
                         continue
 
-                    if not 'category' in w:
+                    if 'category' not in w:
 
                         err = "Could not specify 'category' in NMR data processing report."
 
@@ -27227,7 +27227,7 @@ class NmrDpUtility:
                         else:
                             loop = sf_data.get_loop_by_category(w['category'])
 
-                        if not itName in loop.tags:
+                        if itName not in loop.tags:
 
                             err = "Could not find loop tag %s in %s category, %r saveframe, %r file." % (itName, w['category'], w['sf_framecode'], file_name)
 
@@ -27327,7 +27327,7 @@ class NmrDpUtility:
 
         for w in warnings:
 
-            if not "be one of" in w['description']:
+            if "be one of" not in w['description']:
                 continue
 
             if w['description'].startswith('The mandatory type'):
@@ -27349,7 +27349,7 @@ class NmrDpUtility:
 
             if self.__star_data_type[0] == 'Entry' or self.__star_data_type[0] == 'Saveframe':
 
-                if not 'sf_framecode' in w:
+                if 'sf_framecode' not in w:
 
                     err = "Could not specify 'sf_framecode' in NMR data processing report."
 
@@ -27375,11 +27375,11 @@ class NmrDpUtility:
 
                         continue
 
-                    if not 'category' in w:
+                    if 'category' not in w:
 
                         tagNames = [t[0] for t in sf_data.tags]
 
-                        if not itName in tagNames:
+                        if itName not in tagNames:
 
                             err = "Could not find saveframe tag %s in %r saveframe, %r file." % (itName, w['sf_framecode'], file_name)
 
@@ -27434,7 +27434,7 @@ class NmrDpUtility:
                                                 except:
                                                     pass
 
-                                            if not lp_data is None:
+                                            if lp_data is not None:
 
                                                 if content_subtype == 'dist_restraint':
 
@@ -27498,7 +27498,7 @@ class NmrDpUtility:
                                                 except:
                                                     pass
 
-                                            if not lp_data is None:
+                                            if lp_data is not None:
 
                                                 # 'log-harmonic', 'parabolic'
                                                 # 'square-well-parabolic', 'square-well-parabolic-linear',
@@ -27544,7 +27544,7 @@ class NmrDpUtility:
                         else:
                             loop = sf_data.get_loop_by_category(w['category'])
 
-                        if not itName in loop.tags:
+                        if itName not in loop.tags:
 
                             err = "Could not find loop tag %s in %s category, %r saveframe, %r file." % (itName, w['category'], w['sf_framecode'], file_name)
 
@@ -27629,7 +27629,7 @@ class NmrDpUtility:
         atom_id_1_name = item_names['atom_id_1']
         atom_id_2_name = item_names['atom_id_2']
         target_value_name = item_names['target_value']
-        if 'target_value_alt' in item_names and not target_value_name in lp_data[0].keys():
+        if 'target_value_alt' in item_names and target_value_name not in lp_data[0].keys():
             target_value_name = item_names['target_value_alt']
         lower_limit_name = item_names['lower_limit']
         upper_limit_name = item_names['upper_limit']
@@ -27654,25 +27654,25 @@ class NmrDpUtility:
 
                 if target_value is None:
 
-                    if lower_limit_name in i and (not i[lower_limit_name] is None) and upper_limit_name in i and (not i[upper_limit_name] is None):
+                    if lower_limit_name in i and (i[lower_limit_name] is not None) and upper_limit_name in i and (i[upper_limit_name] is not None):
                         target_value = (i[lower_limit_name] + i[upper_limit_name]) / 2.0
 
-                    elif lower_linear_limit_name in i and (not i[lower_linear_limit_name] is None) and upper_linear_limit_name is i and (not i[upper_linear_limit_name] is None):
+                    elif lower_linear_limit_name in i and (i[lower_linear_limit_name] is not None) and upper_linear_limit_name is i and (i[upper_linear_limit_name] is not None):
                         target_value = (i[lower_linear_limit_name] + i[upper_linear_limit_name]) / 2.0
 
-                    elif upper_linear_limit_name in i and (not i[upper_linear_limit_name] is None):
+                    elif upper_linear_limit_name in i and (i[upper_linear_limit_name] is not None):
                         target_value = i[upper_linear_limit_name]
                         upper_limit_value = target_value
 
-                    elif upper_limit_name in i and (not i[upper_limit_name] is None):
+                    elif upper_limit_name in i and (i[upper_limit_name] is not None):
                         target_value = i[upper_limit_name]
                         upper_limit_value = target_value
 
-                    elif lower_linear_limit_name in i and (not i[lower_linear_limit_name] is None):
+                    elif lower_linear_limit_name in i and (i[lower_linear_limit_name] is not None):
                         target_value = i[lower_linear_limit_name]
                         lower_limit_value = target_value
 
-                    elif lower_limit_name in i and (not i[lower_limit_name] is None):
+                    elif lower_limit_name in i and (i[lower_limit_name] is not None):
                         target_value = i[lower_limit_name]
                         lower_limit_value = target_value
 
@@ -27682,9 +27682,9 @@ class NmrDpUtility:
                 atom_id_1_ = i[atom_id_1_name][0]
                 atom_id_2_ = i[atom_id_2_name][0]
 
-                if not upper_limit_value is None:
+                if upper_limit_value is not None:
                     target_value -= 0.4
-                elif not lower_limit_value is None:
+                elif lower_limit_value is not None:
                     target_value += 0.4
 
                 if (atom_id_1_ == 'F' and atom_id_2_ == 'H') or (atom_id_2_ == 'F' and atom_id_1_ == 'H'):
@@ -27760,7 +27760,7 @@ class NmrDpUtility:
         atom_id_1_name = item_names['atom_id_1']
         atom_id_2_name = item_names['atom_id_2']
         target_value_name = item_names['target_value']
-        if 'target_value_alt' in item_names and not target_value_name in lp_data[0].keys():
+        if 'target_value_alt' in item_names and target_value_name not in lp_data[0].keys():
             target_value_name = item_names['target_value_alt']
         lower_limit_name = item_names['lower_limit']
         upper_limit_name = item_names['upper_limit']
@@ -27785,25 +27785,25 @@ class NmrDpUtility:
 
                 if target_value is None:
 
-                    if lower_limit_name in i and (not i[lower_limit_name] is None) and upper_limit_name in i and (not i[upper_limit_name] is None):
+                    if lower_limit_name in i and (i[lower_limit_name] is not None) and upper_limit_name in i and (i[upper_limit_name] is not None):
                         target_value = (i[lower_limit_name] + i[upper_limit_name]) / 2.0
 
-                    elif lower_linear_limit_name in i and (not i[lower_linear_limit_name] is None) and upper_linear_limit_name is i and (not i[upper_linear_limit_name] is None):
+                    elif lower_linear_limit_name in i and (i[lower_linear_limit_name] is not None) and upper_linear_limit_name is i and (i[upper_linear_limit_name] is not None):
                         target_value = (i[lower_linear_limit_name] + i[upper_linear_limit_name]) / 2.0
 
-                    elif upper_linear_limit_name in i and (not i[upper_linear_limit_name] is None):
+                    elif upper_linear_limit_name in i and (i[upper_linear_limit_name] is not None):
                         target_value = i[upper_linear_limit_name]
                         upper_limit_value = target_value
 
-                    elif upper_limit_name in i and (not i[upper_limit_name] is None):
+                    elif upper_limit_name in i and (i[upper_limit_name] is not None):
                         target_value = i[upper_limit_name]
                         upper_limit_value = target_value
 
-                    elif lower_linear_limit_name in i and (not i[lower_linear_limit_name] is None):
+                    elif lower_linear_limit_name in i and (i[lower_linear_limit_name] is not None):
                         target_value = i[lower_linear_limit_name]
                         lower_limit_value = target_value
 
-                    elif lower_limit_name in i and (not i[lower_limit_name] is None):
+                    elif lower_limit_name in i and (i[lower_limit_name] is not None):
                         target_value = i[lower_limit_name]
                         lower_limit_value = target_value
 
@@ -27813,9 +27813,9 @@ class NmrDpUtility:
                 atom_id_1_ = i[atom_id_1_name][0]
                 atom_id_2_ = i[atom_id_2_name][0]
 
-                if not upper_limit_value is None:
+                if upper_limit_value is not None:
                     target_value -= 0.4
-                elif not lower_limit_value is None:
+                elif lower_limit_value is not None:
                     target_value += 0.4
 
                 if atom_id_1_ == 'S' and atom_id_2_ == 'S':
@@ -27977,7 +27977,7 @@ class NmrDpUtility:
 
                 angle_type = angle_type.lower()
 
-                if not angle_type in ('phi', 'psi'):
+                if angle_type not in ('phi', 'psi'):
                     return False
 
                 if chain_id_1 != chain_id_2 or chain_id_2 != chain_id_3 or chain_id_3 != chain_id_4:
@@ -28031,7 +28031,7 @@ class NmrDpUtility:
 
                 chain_id = chain_id_1
 
-                if not chain_id in dh_seq_ids:
+                if chain_id not in dh_seq_ids:
                     dh_seq_ids[chain_id] = set()
 
                 dh_seq_ids[chain_id].add(seq_id_common[0][0])
@@ -28084,7 +28084,7 @@ class NmrDpUtility:
                     except:
                         pass
 
-                if not lp_data is None:
+                if lp_data is not None:
 
                     for i in lp_data:
                         chain_id = i[chain_id_name]
@@ -28094,7 +28094,7 @@ class NmrDpUtility:
                         if chain_id in dh_chains and seq_id in dh_seq_ids[chain_id] and atom_id == 'CA':
                             cs_chains.add(chain_id)
 
-                            if not chain_id in cs_seq_ids:
+                            if chain_id not in cs_seq_ids:
                                 cs_seq_ids[chain_id] = set()
 
                             cs_seq_ids[chain_id].add(seq_id)
@@ -28143,10 +28143,10 @@ class NmrDpUtility:
             upper_linear_limit_name = item_names['upper_linear_limit']
 
             for i in lp_data:
-                if (lower_limit_name in i and not i[lower_limit_name] is None) and\
-                   (upper_limit_name in i and not i[upper_limit_name] is None) and\
-                   ((not lower_linear_limit_name in i) or i[lower_linear_limit_name] is None) and\
-                   ((not upper_linear_limit_name in i) or i[upper_linear_limit_name] is None):
+                if (lower_limit_name in i and i[lower_limit_name] is not None) and\
+                   (upper_limit_name in i and i[upper_limit_name] is not None) and\
+                   ((lower_linear_limit_name not in i) or i[lower_linear_limit_name] is None) and\
+                   ((upper_linear_limit_name not in i) or i[upper_linear_limit_name] is None):
                     continue
 
                 return False
@@ -28187,10 +28187,10 @@ class NmrDpUtility:
             upper_linear_limit_name = item_names['upper_linear_limit']
 
             for i in lp_data:
-                if (lower_limit_name in i and not i[lower_limit_name] is None) and\
-                   (upper_limit_name in i and not i[upper_limit_name] is None) and\
-                   (lower_linear_limit_name in i and not i[lower_linear_limit_name] is None) and\
-                   (upper_linear_limit_name in i and not i[upper_linear_limit_name] is None):
+                if (lower_limit_name in i and i[lower_limit_name] is not None) and\
+                   (upper_limit_name in i and i[upper_limit_name] is not None) and\
+                   (lower_linear_limit_name in i and i[lower_linear_limit_name] is not None) and\
+                   (upper_linear_limit_name in i and i[upper_linear_limit_name] is not None):
                     continue
 
                 return False
@@ -28231,10 +28231,10 @@ class NmrDpUtility:
             upper_linear_limit_name = item_names['upper_linear_limit']
 
             for i in lp_data:
-                if ((not lower_limit_name in i) or i[lower_limit_name] is None) and\
-                   (upper_limit_name in i and not i[upper_limit_name] is None) and\
-                   ((not lower_linear_limit_name in i) or i[lower_linear_limit_name] is None) and\
-                   ((not upper_linear_limit_name in i) or i[upper_linear_limit_name] is None):
+                if ((lower_limit_name not in i) or i[lower_limit_name] is None) and\
+                   (upper_limit_name in i and i[upper_limit_name] is not None) and\
+                   ((lower_linear_limit_name not in i) or i[lower_linear_limit_name] is None) and\
+                   ((upper_linear_limit_name not in i) or i[upper_linear_limit_name] is None):
                     continue
 
                 return False
@@ -28275,10 +28275,10 @@ class NmrDpUtility:
             upper_linear_limit_name = item_names['upper_linear_limit']
 
             for i in lp_data:
-                if (lower_limit_name in i and not i[lower_limit_name] is None) and\
-                   ((not upper_limit_name in i) or i[upper_limit_name] is None) and\
-                   ((not lower_linear_limit_name in i) or i[lower_linear_limit_name] is None) and\
-                   ((not upper_linear_limit_name in i) or i[upper_linear_limit_name] is None):
+                if (lower_limit_name in i and i[lower_limit_name] is not None) and\
+                   ((upper_limit_name not in i) or i[upper_limit_name] is None) and\
+                   ((lower_linear_limit_name not in i) or i[lower_linear_limit_name] is None) and\
+                   ((upper_linear_limit_name not in i) or i[upper_linear_limit_name] is None):
                     continue
 
                 return False
@@ -28319,10 +28319,10 @@ class NmrDpUtility:
             upper_linear_limit_name = item_names['upper_linear_limit']
 
             for i in lp_data:
-                if ((not lower_limit_name in i) or i[lower_limit_name] is None) and\
-                   (upper_limit_name in i and not i[upper_limit_name] is None) and\
-                   ((not lower_linear_limit_name in i) or i[lower_linear_limit_name] is None) and\
-                   (upper_linear_limit_name in i and not i[upper_linear_limit_name] is None):
+                if ((lower_limit_name not in i) or i[lower_limit_name] is None) and\
+                   (upper_limit_name in i and i[upper_limit_name] is not None) and\
+                   ((lower_linear_limit_name not in i) or i[lower_linear_limit_name] is None) and\
+                   (upper_linear_limit_name in i and i[upper_linear_limit_name] is not None):
                     continue
 
                 return False
@@ -28363,10 +28363,10 @@ class NmrDpUtility:
             upper_linear_limit_name = item_names['upper_linear_limit']
 
             for i in lp_data:
-                if (lower_limit_name in i and not i[lower_limit_name] is None) and\
-                   ((not upper_limit_name in i) or i[upper_limit_name] is None) and\
-                   (lower_linear_limit_name in i and not i[lower_linear_limit_name] is None) and\
-                   ((not upper_linear_limit_name in i) or i[upper_linear_limit_name] is None):
+                if (lower_limit_name in i and i[lower_limit_name] is not None) and\
+                   ((upper_limit_name not in i) or i[upper_limit_name] is None) and\
+                   (lower_linear_limit_name in i and i[lower_linear_limit_name] is not None) and\
+                   ((upper_linear_limit_name not in i) or i[upper_linear_limit_name] is None):
                     continue
 
                 return False
@@ -28402,7 +28402,7 @@ class NmrDpUtility:
 
             item_names = self.potential_items[file_type][content_subtype]
             target_value_name = item_names['target_value']
-            if 'target_value_alt' in item_names and not target_value_name in lp_data[0].keys():
+            if 'target_value_alt' in item_names and target_value_name not in lp_data[0].keys():
                 target_value_name = item_names['target_value_alt']
             lower_limit_name = item_names['lower_limit']
             upper_limit_name = item_names['upper_limit']
@@ -28410,11 +28410,11 @@ class NmrDpUtility:
             upper_linear_limit_name = item_names['upper_linear_limit']
 
             for i in lp_data:
-                if (target_value_name in i and not i[target_value_name] is None) and\
-                   ((not lower_limit_name in i) or i[lower_limit_name] is None) and\
-                   ((not upper_limit_name in i) or i[upper_limit_name] is None) and\
-                   ((not lower_linear_limit_name in i) or i[lower_linear_limit_name] is None) and\
-                   ((not upper_linear_limit_name in i) or i[upper_linear_limit_name] is None):
+                if (target_value_name in i and i[target_value_name] is not None) and\
+                   ((lower_limit_name not in i) or i[lower_limit_name] is None) and\
+                   ((upper_limit_name not in i) or i[upper_limit_name] is None) and\
+                   ((lower_linear_limit_name not in i) or i[lower_linear_limit_name] is None) and\
+                   ((upper_linear_limit_name not in i) or i[upper_linear_limit_name] is None):
                     continue
 
                 return False
@@ -28458,12 +28458,12 @@ class NmrDpUtility:
 
         for w in warnings:
 
-            if not "the same residue was not found." in w['description']:
+            if "the same residue was not found." not in w['description']:
                 continue
 
             if self.__star_data_type[0] == 'Entry' or self.__star_data_type[0] == 'Saveframe':
 
-                if not 'sf_framecode' in w:
+                if 'sf_framecode' not in w:
 
                     err = "Could not specify 'sf_framecode' in NMR data processing report."
 
@@ -28473,7 +28473,7 @@ class NmrDpUtility:
                     if self.__verbose:
                         self.__lfh.write("+NmrDpUtility.__fixBadAmbiguityCode() ++ Error  - %s\n" % err)
 
-                elif not 'category' in w:
+                elif 'category' not in w:
 
                     err = "Could not specify 'category' in NMR data processing report."
 
@@ -28483,7 +28483,7 @@ class NmrDpUtility:
                     if self.__verbose:
                         self.__lfh.write("+NmrDpUtility.__fixBadAmbiguityCode() ++ Error  - %s\n" % err)
 
-                elif not 'row_location' in w:
+                elif 'row_location' not in w:
 
                     err = "Could not specify 'row_location' in NMR data processing report."
 
@@ -28519,7 +28519,7 @@ class NmrDpUtility:
                     else:
                         loop = sf_data.get_loop_by_category(w['category'])
 
-                    if not itName in loop.tags:
+                    if itName not in loop.tags:
 
                         err = "Could not find loop tag %s in %s category, %r saveframe, %r file." % (itName, w['category'], w['sf_framecode'], file_name)
 
@@ -28645,7 +28645,7 @@ class NmrDpUtility:
                         _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
                         num_dim = int(_num_dim)
 
-                        if not num_dim in range(1, self.lim_num_dim):
+                        if num_dim not in range(1, self.lim_num_dim):
                             raise ValueError()
 
                     except ValueError: # raised error already at __testIndexConsistency()
@@ -28777,7 +28777,7 @@ class NmrDpUtility:
                         _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
                         num_dim = int(_num_dim)
 
-                        if not num_dim in range(1, self.lim_num_dim):
+                        if num_dim not in range(1, self.lim_num_dim):
                             raise ValueError()
 
                     except ValueError: # raised error already at __testIndexConsistency()
@@ -28820,12 +28820,12 @@ class NmrDpUtility:
 
                 has_bool_key = False
 
-                if not key_items is None:
+                if key_items is not None:
                     has_bool_key = next((k['type'] == 'bool' for k in key_items if k['type'] == 'bool'), False)
 
                 has_bool_data = False
 
-                if not data_items is None:
+                if data_items is not None:
                     has_bool_data = next((d['type'] == 'bool' for d in data_items if d['type'] == 'bool'), False)
 
                 if has_bool_key or has_bool_data:
@@ -28925,12 +28925,12 @@ class NmrDpUtility:
 
                         has_bool_key = False
 
-                        if not key_items is None:
+                        if key_items is not None:
                             has_bool_key = next((k['type'] == 'bool' for k in key_items if k['type'] == 'bool'), False)
 
                         has_bool_data = False
 
-                        if not data_items is None:
+                        if data_items is not None:
                             has_bool_data = next((d['type'] == 'bool' for d in data_items if d['type'] == 'bool'), False)
 
                         if has_bool_key or has_bool_data:
@@ -29013,10 +29013,10 @@ class NmrDpUtility:
 
             list_id_tag_in_lp = None
 
-            if not data_items is None:
+            if data_items is not None:
                 list_id_tag_in_lp = next((d for d in data_items if d['type'] == 'pointer-index'), None)
 
-            if not list_id_tag_in_lp is None:
+            if list_id_tag_in_lp is not None:
 
                 for sf_data in self.__star_data[0].get_saveframes_by_category(sf_category):
 
@@ -29027,7 +29027,7 @@ class NmrDpUtility:
 
                     warn_desc = self.report.warning.getDescription('duplicated_index', file_name, sf_framecode)
 
-                    if (not warn_desc is None) and warn_desc.split(' ')[0] == self.sf_tag_prefixes[file_type][content_subtype].lstrip('_') + '.ID':
+                    if (warn_desc is not None) and warn_desc.split(' ')[0] == self.sf_tag_prefixes[file_type][content_subtype].lstrip('_') + '.ID':
                         continue
 
                     if __pynmrstar_v3_2__:
@@ -29112,7 +29112,7 @@ class NmrDpUtility:
         proc_sf_categories = set()
 
         # supported sf_categories
-        if not input_source_dic['content_subtype'] is None:
+        if input_source_dic['content_subtype'] is not None:
 
             for content_subtype in input_source_dic['content_subtype'].keys():
 
@@ -29151,7 +29151,7 @@ class NmrDpUtility:
                         except KeyError:
                             continue
 
-                        if not loop is None:
+                        if loop is not None:
 
                             if entryIdTag in self.allowed_tags[file_type][content_subtype]:
 
@@ -29271,7 +29271,7 @@ class NmrDpUtility:
 
         content_subtype = 'chem_shift'
 
-        if not content_subtype in input_source_dic['content_subtype'].keys():
+        if content_subtype not in input_source_dic['content_subtype'].keys():
             """
             err = "Assigned chemical shift loop does not exist in %r file." % file_name
 
@@ -29316,7 +29316,7 @@ class NmrDpUtility:
                 except:
                     pass
 
-            if not lp_data is None:
+            if lp_data is not None:
 
                 atoms = []
 
@@ -29391,7 +29391,7 @@ class NmrDpUtility:
 
         content_subtype = 'chem_shift'
 
-        if not content_subtype in input_source_dic['content_subtype'].keys():
+        if content_subtype not in input_source_dic['content_subtype'].keys():
             """
             err = "Assigned chemical shift loop does not exist in %r file." % file_name
 
@@ -29435,7 +29435,7 @@ class NmrDpUtility:
 
                     ambig_set_id = row[ambig_set_id_col]
 
-                    if not ambig_set_id in self.empty_value:
+                    if ambig_set_id not in self.empty_value:
                         ambig_set_ids.append(str(ambig_set_id))
 
                 if len(ambig_set_ids) > 0:
@@ -29459,7 +29459,7 @@ class NmrDpUtility:
                 for row in loop:
                     ambig_set_id = row[ambig_set_id_col]
 
-                    if not ambig_set_id in self.empty_value:
+                    if ambig_set_id not in self.empty_value:
                         row[ambig_set_id_col] = int(ambig_set_id_dic[str(ambig_set_id)])
 
             if 'ID' in loop.tags:
@@ -29516,7 +29516,7 @@ class NmrDpUtility:
 
         content_subtype = 'chem_shift'
 
-        if not content_subtype in input_source_dic['content_subtype'].keys():
+        if content_subtype not in input_source_dic['content_subtype'].keys():
             """
             err = "Assigned chemical shift loop does not exist in %r file." % file_name
 
@@ -29555,7 +29555,7 @@ class NmrDpUtility:
                 except:
                     pass
 
-            if not lp_data is None:
+            if lp_data is not None:
 
                 ambig_set_id_name = 'Ambiguity_set_ID'
 
@@ -29563,7 +29563,7 @@ class NmrDpUtility:
 
                 for i in lp_data:
 
-                    if ambig_set_id_name in i and not i[ambig_set_id_name] in self.empty_value:
+                    if ambig_set_id_name in i and i[ambig_set_id_name] not in self.empty_value:
                         has_ambig_set_id = True
                         break
 
@@ -29587,7 +29587,7 @@ class NmrDpUtility:
 
                     for l, i in enumerate(lp_data, start=1):
 
-                        if ambig_set_id_name in i and not i[ambig_set_id_name] in self.empty_value:
+                        if ambig_set_id_name in i and i[ambig_set_id_name] not in self.empty_value:
 
                             row = []
 
@@ -29636,7 +29636,7 @@ class NmrDpUtility:
         else:
             self.__star_data[0].write_to_file(self.__dstPath)
 
-        if not 'nef' in self.__op and 'deposit' in self.__op and 'nmr-cif_file_path' in self.__outputParamDict:
+        if 'nef' not in self.__op and 'deposit' in self.__op and 'nmr-cif_file_path' in self.__outputParamDict:
             star_to_cif = NmrStarToCif()
 
             original_file_name = ''
@@ -29765,7 +29765,7 @@ class NmrDpUtility:
         file_name = os.path.basename(self.__dstPath)
         file_type = input_source_dic['file_type']
 
-        if not 'nmr-star_file_path' in self.__outputParamDict:
+        if 'nmr-star_file_path' not in self.__outputParamDict:
             raise KeyError("+NmrDpUtility.__translateNef2Str() ++ Error  - Could not find 'nmr-star_file_path' output parameter.")
 
         out_file_path = self.__outputParamDict['nmr-star_file_path']
@@ -29774,7 +29774,7 @@ class NmrDpUtility:
 
             is_valid, message = self.__nefT.nef_to_nmrstar(self.__dstPath, out_file_path, report=self.report, leave_unmatched=self.__leave_intl_note) # (None if self.__alt_chain else self.report))
 
-            if self.__release_mode and not self.__tmpPath is None:
+            if self.__release_mode and self.__tmpPath is not None:
                 os.remove(self.__tmpPath)
                 self.__tmpPath = None
 
@@ -29782,7 +29782,7 @@ class NmrDpUtility:
 
             err = "%s is not compliant with the %s dictionary." % (file_name, self.readable_file_type[file_type])
 
-            if not 'No such file or directory' in str(e):
+            if 'No such file or directory' not in str(e):
                 err += ' ' + re.sub('not in list', 'unknown item.', str(e))
 
             if not self.report.isError():
@@ -29814,7 +29814,7 @@ class NmrDpUtility:
 
         if len(message['error']) > 0:
             for err_message in message['error']:
-                if not 'No such file or directory' in err_message:
+                if 'No such file or directory' not in err_message:
                     err += ' ' + re.sub('not in list', 'unknown item.', err_message)
 
         if not self.report.isError():
@@ -29841,8 +29841,8 @@ class NmrDpUtility:
 
             self.__srcPath = self.__outputParamDict['nmr-star_file_path']
             self.__dstPath = self.__srcPath
-            self.__logPath = None if not 'report_file_path' in self.__outputParamDict else self.__outputParamDict['report_file_path']
-            if not self.__logPath is None:
+            self.__logPath = None if 'report_file_path' not in self.__outputParamDict else self.__outputParamDict['report_file_path']
+            if self.__logPath is not None:
                 self.addInput('report_file_path', self.__logPath, type='file')
             self.__op = 'nmr-star-consistency-check'
 
@@ -29880,7 +29880,7 @@ class NmrDpUtility:
         file_name = os.path.basename(self.__dstPath)
         file_type = input_source_dic['file_type']
 
-        if not 'nef_file_path' in self.__outputParamDict:
+        if 'nef_file_path' not in self.__outputParamDict:
             raise KeyError("+NmrDpUtility.__translateStr2Nef() ++ Error  - Could not find 'nef_file_path' output parameter.")
 
         out_file_path = self.__outputParamDict['nef_file_path']
@@ -29889,7 +29889,7 @@ class NmrDpUtility:
 
             is_valid, message = self.__nefT.nmrstar_to_nef(self.__dstPath, out_file_path, report=self.report) # (None if self.__alt_chain else self.report))
 
-            if self.__release_mode and not self.__tmpPath is None:
+            if self.__release_mode and self.__tmpPath is not None:
                 os.remove(self.__tmpPath)
                 self.__tmpPath = None
 
@@ -29897,7 +29897,7 @@ class NmrDpUtility:
 
             err = "%s is not compliant with the %s dictionary." % (file_name, self.readable_file_type[file_type])
 
-            if not 'No such file or directory' in str(e):
+            if 'No such file or directory' not in str(e):
                 err += ' ' + re.sub('not in list', 'unknown item.', str(e))
 
             if not self.report.isError():
@@ -29919,7 +29919,7 @@ class NmrDpUtility:
 
         if len(message['error']) > 0:
             for err_message in message['error']:
-                if not 'No such file or directory' in err_message:
+                if 'No such file or directory' not in err_message:
                     err += ' ' + re.sub('not in list', 'unknown item.', err_message)
 
         if not self.report.isError():
@@ -29946,8 +29946,8 @@ class NmrDpUtility:
 
             self.__srcPath = self.__outputParamDict['nef_file_path']
             self.__dstPath = self.__srcPath
-            self.__logPath = None if not 'report_file_path' in self.__outputParamDict else self.__outputParamDict['report_file_path']
-            if not self.__logPath is None:
+            self.__logPath = None if 'report_file_path' not in self.__outputParamDict else self.__outputParamDict['report_file_path']
+            if self.__logPath is not None:
                 self.addInput('report_file_path', self.__logPath, type='file')
             self.__op = 'nef-consistency-check'
 

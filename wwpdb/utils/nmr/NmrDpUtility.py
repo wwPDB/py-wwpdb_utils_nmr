@@ -93,7 +93,8 @@
 # 09-Jul-2020  M. Yokochi - add support for categories in NMR-STAR specific peak list (DAOTHER-5926)
 # 09-Jul-2020  M. Yokochi - adjust arguments of pynmrstar write_to_file() to prevent data losses (v2.6.1, DAOTHER-5926)
 # 17-Aug-2020  M. Yokochi - add support for residue variant (DAOTHER-5906)
-# 20-Aug-2020  M. Yokochi - add 'leave_intl_note' output parameter decides whether to leave internal commentary note in processed NMR-STAR file, set False for OneDep environment (DAOTHER-6030)
+# 20-Aug-2020  M. Yokochi - add 'leave_intl_note' output parameter decides whether to leave internal commentary note in processed NMR-STAR file, set False for
+#                           OneDep environment (DAOTHER-6030)
 # 10-Sep-2020  M. Yokochi - add 'transl_pseudo_name' input parameter decides whether to translate conventional pseudo atom nomenclature in combined NMR-STAR file (DAOTHER-6128)
 # 16-Sep-2020  M. Yokochi - bug fix release based on internal test using BMRB NMR restraint archive of 6.3k entries (DAOTHER-6128)
 # 18-Sep-2020  M. Yokochi - bug fix release for negative sequence numbers (DAOTHER-6128)
@@ -109,7 +110,8 @@
 # 17-Dec-2020  M. Yokochi - support 'atom_not_found' error with message revision (DAOTHER-6345)
 # 25-Jan-2021  M. Yokochi - simplify code for Entity_assemble_ID and chain_code
 # 25-Jan-2021  M. Yokochi - add CS validation code about rotameric state of ILE/LEU/VAL residue
-# 03-Feb-2021  M. Yokochi - update polymer sequence which shares the same entity and missing in the molecular assembly information if necessary, i.e. double stranded DNA (DAOTHER-6128, BMRB entry: 16812, PDB ID: 6kae)
+# 03-Feb-2021  M. Yokochi - update polymer sequence which shares the same entity and missing in the molecular assembly information if necessary,
+#                           i.e. double stranded DNA (DAOTHER-6128, BMRB entry: 16812, PDB ID: 6kae)
 # 10-Mar-2021  M. Yokochi - block NEF deposition missing '_nef_sequence' category and turn off salvage routine for the case (DAOTHER-6694)
 # 10-Mar-2021  M. Yokochi - add support for audit loop in NEF (DAOTHER-6327)
 # 12-Mar-2021  M. Yokochi - add diagnostic routine to fix inconsistent sf_framecode of conventional CS file (DAOTHER-6693)
@@ -176,6 +178,7 @@ __pynmrstar_v3_2__ = version.parse(pynmrstar.__version__) >= version.parse("3.2.
 __pynmrstar_v3_1__ = version.parse(pynmrstar.__version__) >= version.parse("3.1.0")
 __pynmrstar_v3__ = version.parse(pynmrstar.__version__) >= version.parse("3.0.0")
 
+
 def detect_bom(in_file, default='utf-8'):
     """ Detect BOM of input file.
     """
@@ -192,6 +195,7 @@ def detect_bom(in_file, default='utf-8'):
 
     return default
 
+
 def convert_codec(in_file, out_file, in_codec='utf-8', out_codec='utf-8'):
     """ Convert codec of input file.
     """
@@ -204,6 +208,7 @@ def convert_codec(in_file, out_file, in_codec='utf-8', out_codec='utf-8'):
             ofp.close()
 
         ifp.close()
+
 
 def has_key_value(d=None, key=None):
     """ Return whether a given dictionary has effective value for a key.
@@ -218,11 +223,13 @@ def has_key_value(d=None, key=None):
 
     return False
 
+
 def get_lp_tag(lp_data, tags):
     """ Return the selected loop tags by row as a list of lists.
     """
 
     return lp_data.get_tag(tags) if __pynmrstar_v3__ else lp_data.get_data_by_tag(tags)
+
 
 def get_first_sf_tag(sf_data=None, tag=None):
     """ Return the first value of a given saveframe tag.
@@ -239,17 +246,19 @@ def get_first_sf_tag(sf_data=None, tag=None):
 
     return array[0]
 
+
 def has_large_seq_gap(s1, s2):
     """ Return whether large gap in sequence id.
     """
 
     seq_ids = sorted(set(s1['seq_id']) | set(s2['seq_id']))
 
-    for l, i in enumerate(seq_ids):
-        if l > 0 and i - seq_ids[l - 1] > 20:
+    for lp, i in enumerate(seq_ids):
+        if lp > 0 and i - seq_ids[lp - 1] > 20:
             return True
 
     return False
+
 
 def fill_blank_comp_id(s1, s2):
     """ Fill blanked comp ID in s2 against s1.
@@ -270,6 +279,7 @@ def fill_blank_comp_id(s1, s2):
 
     return {'chain_id': s2['chain_id'], 'seq_id': seq_ids, 'comp_id': comp_ids}
 
+
 def fill_blank_comp_id_with_offset(s, offset):
     """ Fill blanked comp ID with offset.
     """
@@ -289,6 +299,7 @@ def fill_blank_comp_id_with_offset(s, offset):
 
     return {'chain_id': s['chain_id'], 'seq_id': seq_ids, 'comp_id': comp_ids}
 
+
 def get_middle_code(ref_seq, test_seq):
     """ Return array of middle code of sequence alignment.
     """
@@ -303,14 +314,15 @@ def get_middle_code(ref_seq, test_seq):
 
     return array
 
+
 def get_gauge_code(seq_id, offset=0):
     """ Return gauge code for seq ID.
     """
 
     if offset > 0:
         _seq_id = list(range(1, offset + 1))
-        for l, sid in enumerate(seq_id):
-            if l < offset:
+        for lp, sid in enumerate(seq_id):
+            if lp < offset:
                 continue
             _seq_id.append(sid)
         seq_id = _seq_id
@@ -339,7 +351,7 @@ def get_gauge_code(seq_id, offset=0):
         else:
             chars.append('-')
 
-    for l, sid in enumerate(seq_id):
+    for lp, sid in enumerate(seq_id):
 
         if sid is None or sid % 10 != 0:
             continue
@@ -347,14 +359,14 @@ def get_gauge_code(seq_id, offset=0):
         code = str(sid)
         code_len = len(code)
 
-        if l - code_len > 0:
+        if lp - code_len > 0:
             for j in range(code_len):
-                chars[l + j - code_len + 1] = chars[l + j]
-                chars[l + j] = '-'
+                chars[lp + j - code_len + 1] = chars[lp + j]
+                chars[lp + j] = '-'
 
     if offset > 0:
-        for l in range(offset):
-            chars[l] = '-'
+        for lp in range(offset):
+            chars[lp] = '-'
 
     array = ''.join(chars)
 
@@ -364,14 +376,15 @@ def get_gauge_code(seq_id, offset=0):
     _sid_len = len(seq_id)
 
     offset = 0
-    for l, sid in enumerate(seq_id):
+    for lp, sid in enumerate(seq_id):
 
         if sid is None:
-            p = l + offset
+            p = lp + offset
             array = array[0:p] + ' ' + array[p:]
             offset += 1
 
     return array[:_sid_len]
+
 
 def probability_density(value, mean, stddev):
     """ Return probability density.
@@ -380,6 +393,7 @@ def probability_density(value, mean, stddev):
     stddev2 = stddev ** 2.0
 
     return math.exp(-((value - mean) ** 2.0) / (2.0 * stddev2)) / math.sqrt(2.0 * math.pi * stddev2)
+
 
 def predict_redox_state_of_cystein(ca_chem_shift, cb_chem_shift):
     """ Return prediction of redox state of Cystein using assigned CA, CB chemical shifts.
@@ -420,6 +434,7 @@ def predict_redox_state_of_cystein(ca_chem_shift, cb_chem_shift):
         return 0.0, 0.0
 
     return oxi / total, red / total
+
 
 def predict_cis_trans_peptide_of_proline(cb_chem_shift, cg_chem_shift):
     """ Return prediction of cis-trans peptide bond of Proline using assigned CB, CG chemical shifts.
@@ -462,7 +477,7 @@ def predict_cis_trans_peptide_of_proline(cb_chem_shift, cg_chem_shift):
         else:
             trs *= probability_density(cg_chem_shift, trs_cg['avr'], trs_cg['std'])
 
-    if cb_chem_shift is not None and cg_chem_shift is not None:
+    if (cb_chem_shift is not None) and (cg_chem_shift is not None):
         delta_shift = cb_chem_shift - cg_chem_shift
 
         cis *= probability_density(delta_shift, cis_dl['avr'], cis_dl['std'])
@@ -474,6 +489,7 @@ def predict_cis_trans_peptide_of_proline(cb_chem_shift, cg_chem_shift):
         return 0.0, 0.0
 
     return cis / total, trs / total
+
 
 def predict_tautomer_state_of_histidine(cg_chem_shift, cd2_chem_shift, nd1_chem_shift, ne2_chem_shift):
     """ Return prediction of tautomeric state of Histidine using assigned CG, CD2, ND1, and NE2 chemical shifts.
@@ -531,6 +547,7 @@ def predict_tautomer_state_of_histidine(cg_chem_shift, cd2_chem_shift, nd1_chem_
 
     return bip / total, tau / total, pi / total
 
+
 def predict_rotamer_state_of_leucine(cd1_chem_shift, cd2_chem_shift):
     """ Return prediction of romermeric state of Leucine using assigned CD1 and CD2 chemical shifts.
         @return: probability of gauche+, trans, gauche-
@@ -574,6 +591,7 @@ def predict_rotamer_state_of_leucine(cd1_chem_shift, cd2_chem_shift):
 
     return gp / total, t / total, 0.0
 
+
 def predict_rotamer_state_of_valine(cg1_chem_shift, cg2_chem_shift):
     """ Return prediction of romermeric state of Valine using assigned CG1 and CG2 chemical shifts.
         @return: probability of gauche+, trans, gauche-
@@ -614,6 +632,7 @@ def predict_rotamer_state_of_valine(cg1_chem_shift, cg2_chem_shift):
 
     return gp / total, t / total, gm / total
 
+
 def predict_rotamer_state_of_isoleucine(cd1_chem_shift):
     """ Return prediction of romermeric state of Isoleucine using assigned CD1 chemical shift.
         @return: probability of gauche+, trans, gauche-
@@ -637,17 +656,20 @@ def predict_rotamer_state_of_isoleucine(cd1_chem_shift):
 
     return (1.0 - pgm) * (4.0 / 85.0), (1.0 - pgm) * (81.0 / 85.0), pgm
 
+
 def to_np_array(a):
     """ Return Numpy array of a given Cartesian coordinate in {'x': float, 'y': float, 'z': float} format.
     """
 
     return np.asarray([a['x'], a['y'], a['z']])
 
+
 def to_unit_vector(a):
     """ Return unit vector of a given vector.
     """
 
     return a / np.linalg.norm(a)
+
 
 def dihedral_angle(p0, p1, p2, p3):
     """ Return dihedral angle from a series of four points.
@@ -675,6 +697,7 @@ def dihedral_angle(p0, p1, p2, p3):
     y = np.dot(np.cross(b1, v), w)
 
     return np.degrees(np.arctan2(y, x))
+
 
 def score_of_seq_align(my_align):
     """ Return score of sequence alignment.
@@ -708,13 +731,11 @@ def score_of_seq_align(my_align):
         myPr1 = str(myPr[1])
         if myPr0 == '.' or myPr1 == '.':
             if not_aligned and not aligned[i]:
-                if myPr0 == '.' and myPr1 != '.'\
-                    and offset_2 == 0: # DAOTHER-7421
+                if myPr0 == '.' and myPr1 != '.' and offset_2 == 0:  # DAOTHER-7421
                     offset_1 += 1
-                if myPr0 != '.' and myPr1 == '.'\
-                    and offset_1 == 0: # DAOTHER-7421
+                if myPr0 != '.' and myPr1 == '.' and offset_1 == 0:  # DAOTHER-7421
                     offset_2 += 1
-                if myPr0 == '.' and myPr1 == '.': # DAOTHER-7465
+                if myPr0 == '.' and myPr1 == '.':  # DAOTHER-7465
                     if offset_2 == 0:
                         offset_1 += 1
                     if offset_1 == 0:
@@ -728,13 +749,14 @@ def score_of_seq_align(my_align):
 
     return _matched, unmapped, conflict, offset_1, offset_2
 
+
 class NmrDpUtility:
     """ Wrapper class for data processing for NMR data.
     """
 
     def __init__(self, verbose=False, log=sys.stderr):
         self.__verbose = verbose
-        self.__debug=False
+        self.__debug = False
 
         self.__lfh = log
 
@@ -772,7 +794,7 @@ class NmrDpUtility:
         # whether to exclude missing mandatory data (enabled if NMR separated deposition)
         self.__excl_missing_data = False
         # whether to detect empty row in a loop # NEFTranslator.validate_file() already prompts the empty low error
-        #self.__check_empty_loop = False
+        # self.__check_empty_loop = False
         # whether to trust pdbx_nmr_ensemble to get total number of models
         self.__trust_pdbx_nmr_ens = True
 
@@ -827,7 +849,7 @@ class NmrDpUtility:
                            self.__detectContentSubTypeOfLegacyMR,
                            self.__extractPolymerSequence,
                            self.__extractPolymerSequenceInLoop,
-                           #self.__testSequenceConsistency,
+                           # self.__testSequenceConsistency,
                            self.__extractCommonPolymerSequence,
                            self.__extractNonStandardResidue,
                            self.__appendPolymerSequenceAlignment,
@@ -845,7 +867,7 @@ class NmrDpUtility:
                            self.__testDataConsistencyInAuxLoop,
                            self.__appendSfTagItem,
                            self.__testSfTagConsistency,
-                           #self.__validateCSValue,
+                           # self.__validateCSValue,
                            self.__testCSValueConsistencyInPkLoop,
                            self.__testCSValueConsistencyInPkAltLoop,
                            self.__testRDCVector
@@ -904,7 +926,7 @@ class NmrDpUtility:
                           self.__fixNonSenseNegativeValue,
                           self.__fixEnumMismatch,
                           self.__fixEnumMismatchIgnorable,
-                          #self.__fixBadAmbiguityCode,
+                          # self.__fixBadAmbiguityCode,
                           self.__resetCapitalStringInLoop,
                           self.__resetBoolValueInLoop,
                           self.__resetBoolValueInAuxLoop,
@@ -988,7 +1010,8 @@ class NmrDpUtility:
         self.true_value = ('true', 't', 'yes', 'y', '1')
 
         # NMR content types
-        self.nmr_content_subtypes = ('entry_info', 'poly_seq', 'entity', 'chem_shift', 'chem_shift_ref', 'dist_restraint', 'dihed_restraint', 'rdc_restraint', 'spectral_peak', 'spectral_peak_alt')
+        self.nmr_content_subtypes = ('entry_info', 'poly_seq', 'entity', 'chem_shift', 'chem_shift_ref',
+                                     'dist_restraint', 'dihed_restraint', 'rdc_restraint', 'spectral_peak', 'spectral_peak_alt')
 
         # CIF content types
         self.cif_content_subtypes = ('poly_seq', 'non_poly', 'coordinate')
@@ -1013,7 +1036,10 @@ class NmrDpUtility:
                              }
 
         # paramagnetic elements, except for Oxygen
-        self.paramag_elems = ('LI', 'NA', 'MG', 'AL', 'K', 'CA', 'SC', 'TI', 'V', 'MN', 'RB', 'SR', 'Y', 'ZR', 'NB', 'MO', 'TC', 'RU', 'RH', 'PD', 'SN', 'CS', 'BA', 'LA', 'CE', 'PR', 'ND', 'PM', 'SM', 'EU', 'GD', 'TB', 'DY', 'HO', 'ER', 'TM', 'YB', 'LU', 'HF', 'TA', 'W', 'RE', 'OS', 'IR', 'PT', 'FR', 'RA', 'AC')
+        self.paramag_elems = ('LI', 'NA', 'MG', 'AL', 'K', 'CA', 'SC', 'TI', 'V', 'MN', 'RB', 'SR',
+                              'Y', 'ZR', 'NB', 'MO', 'TC', 'RU', 'RH', 'PD', 'SN', 'CS', 'BA', 'LA',
+                              'CE', 'PR', 'ND', 'PM', 'SM', 'EU', 'GD', 'TB', 'DY', 'HO', 'ER', 'TM',
+                              'YB', 'LU', 'HF', 'TA', 'W', 'RE', 'OS', 'IR', 'PT', 'FR', 'RA', 'AC')
 
         # ferromagnetic elements
         self.ferromag_elems = ('CR', 'FE', 'CO', 'NI')
@@ -1357,7 +1383,7 @@ class NmrDpUtility:
                                        'spectral_peak': None,
                                        'spectral_peak_alt': [{'name': 'ID', 'type': 'positive-int'},
                                                              {'name': 'Spectral_peak_list_ID', 'type': 'positive-int', 'default': '1', 'default-from': 'self'}
-                                                            ]
+                                                             ]
                                        },
                           'pdbx': {'poly_seq': [{'name': 'asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                                 {'name': 'seq_id', 'type': 'int', 'alt_name': 'seq_id'},
@@ -1393,14 +1419,14 @@ class NmrDpUtility:
                                                       {'name': 'pdbx_PDB_ins_code', 'type': 'str', 'alt_name': 'ins_code', 'default': '?'},
                                                       {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'label_seq_id', 'default': '.'},
                                                       {'name': 'pdbx_PDB_model_num', 'type': 'int', 'alt_name': 'model_id'}
-                                                     ],
+                                                      ],
                                    'coordinate_ins_alias': [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                                             {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
                                                             {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
                                                             {'name': 'ndb_ins_code', 'type': 'str', 'alt_name': 'ins_code', 'default': '?'},
                                                             {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'label_seq_id', 'default': '.'},
                                                             {'name': 'ndb_model', 'type': 'int', 'alt_name': 'model_id'}
-                                                           ]
+                                                            ]
                                    }
                           }
 
@@ -1469,8 +1495,7 @@ class NmrDpUtility:
                                                                    {'name': 'Comp_ID_4', 'type': 'str', 'uppercase': True},
                                                                    {'name': 'Atom_ID_4', 'type': 'str'}
                                                                    ],
-                                               'rdc_restraint': [
-                                                                 {'name': 'Entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID_1'},
+                                               'rdc_restraint': [{'name': 'Entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID_1'},
                                                                  {'name': 'Comp_index_ID_1', 'type': 'int'},
                                                                  {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
                                                                  {'name': 'Atom_ID_1', 'type': 'str'},
@@ -1515,13 +1540,13 @@ class NmrDpUtility:
                                                   ],
                                    'chem_shift_ref': None,
                                    'dist_restraint': [{'name': 'index', 'type': 'index-int', 'mandatory': True},
-                                                      #{'name': 'restraint_id', 'type': 'positive-int', 'mandatory': True,
+                                                      # {'name': 'restraint_id', 'type': 'positive-int', 'mandatory': True,
                                                       # 'enforce-non-zero': True},
                                                       {'name': 'restraint_combination_id', 'type': 'positive-int', 'mandatory': False,
                                                        'enforce-non-zero': True},
                                                       {'name': 'weight', 'type': 'range-float', 'mandatory': True,
                                                        'range': self.weight_range},
-                                                      #'enforce-non-zero': True},
+                                                      # 'enforce-non-zero': True},
                                                       {'name': 'target_value', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True, 'void-zero': True,
                                                        'range': self.dist_restraint_range,
                                                        'group': {'member-with': ['lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit'],
@@ -1533,36 +1558,36 @@ class NmrDpUtility:
                                                       {'name': 'lower_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True, 'void-zero': True,
                                                        'range': self.dist_restraint_range,
                                                        'group': {'member-with': ['target_value', 'lower_limit', 'upper_limit', 'upper_linear_limit'],
-                                                                 'coexist-with': None, # ['lower_limit', 'upper_limit', 'upper_linear_limit'],
+                                                                 'coexist-with': None,  # ['lower_limit', 'upper_limit', 'upper_linear_limit'],
                                                                  'smaller-than': None,
                                                                  'larger-than': ['lower_limit', 'upper_limit', 'upper_linear_limit']}},
                                                       {'name': 'lower_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True, 'void-zero': True,
                                                        'range': self.dist_restraint_range,
                                                        'group': {'member-with': ['target_value', 'lower_linear_limit', 'upper_limit', 'upper_linear_limit'],
-                                                                 'coexist-with': None, # ['upper_limit'],
+                                                                 'coexist-with': None,  # ['upper_limit'],
                                                                  'smaller-than':['lower_linear_limit'],
                                                                  'larger-than': ['upper_limit', 'upper_linear_limit']}},
                                                       {'name': 'upper_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True, 'void-zero': True,
                                                        'range': self.dist_restraint_range,
                                                        'group': {'member-with': ['target_value', 'lower_linear_limit', 'lower_limit', 'upper_linear_limit'],
-                                                                 'coexist-with': None, # ['lower_limit'],
+                                                                 'coexist-with': None,  # ['lower_limit'],
                                                                  'smaller-than': ['lower_linear_limit', 'lower_limit'],
                                                                  'larger-than': ['upper_linear_limit']}},
                                                       {'name': 'upper_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True, 'void-zero': True,
                                                        'range': self.dist_restraint_range,
                                                        'group': {'member-with': ['target_value', 'lower_linear_limit', 'lower_limit', 'upper_limit'],
-                                                                 'coexist-with': None, # ['lower_linear_limit', 'lower_limit', 'upper_limit'],
+                                                                 'coexist-with': None,  # ['lower_linear_limit', 'lower_limit', 'upper_limit'],
                                                                  'smaller-than': ['lower_linear_limit', 'lower_limit', 'upper_limit'],
                                                                  'larger-than': None}}
                                                       ],
                                    'dihed_restraint': [{'name': 'index', 'type': 'index-int', 'mandatory': True},
-                                                       #{'name': 'restraint_id', 'type': 'positive-int', 'mandatory': True,
+                                                       # {'name': 'restraint_id', 'type': 'positive-int', 'mandatory': True,
                                                        # 'enforce-non-zero': True},
                                                        {'name': 'restraint_combination_id', 'type': 'positive-int', 'mandatory': False,
                                                         'enforce-non-zero': True},
                                                        {'name': 'weight', 'type': 'range-float', 'mandatory': True,
                                                         'range': self.weight_range},
-                                                       #'enforce-non-zero': True},
+                                                       # 'enforce-non-zero': True},
                                                        {'name': 'target_value', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                         'range': self.dihed_restraint_range,
                                                         'group': {'member-with': ['lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit'],
@@ -1575,35 +1600,35 @@ class NmrDpUtility:
                                                        {'name': 'lower_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                         'range': self.dihed_restraint_range,
                                                         'group': {'member-with': ['target_value', 'lower_limit', 'upper_limit', 'upper_linear_limit'],
-                                                                  'coexist-with': None, # ['lower_limit', 'upper_limit', 'upper_linear_limit'],
+                                                                  'coexist-with': None,  # ['lower_limit', 'upper_limit', 'upper_linear_limit'],
                                                                   'smaller-than': None,
                                                                   'larger-than': ['lower_limit', 'upper_limit', 'upper_linear_limit'],
                                                                   'circular-shift': 360.0}},
                                                        {'name': 'lower_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                         'range': self.dihed_restraint_range,
                                                         'group': {'member-with': ['target_value', 'lower_linear_limit', 'upper_limit', 'upper_linear_limit'],
-                                                                  'coexist-with': None, # ['upper_limit'],
+                                                                  'coexist-with': None,  # ['upper_limit'],
                                                                   'smaller-than': ['lower_linear_limit'],
                                                                   'larger-than': ['upper_limit', 'upper_linear_limit'],
                                                                   'circular-shift': 360.0}},
                                                        {'name': 'upper_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                         'range': self.dihed_restraint_range,
                                                         'group': {'member-with': ['target_value', 'lower_linear_limit', 'lower_limit', 'upper_linear_limit'],
-                                                                  'coexist-with': None, # ['lower_limit'],
+                                                                  'coexist-with': None,  # ['lower_limit'],
                                                                   'smaller-than': ['lower_linear_limit', 'lower_limit'],
                                                                   'larger-than': ['upper_linear_limit'],
                                                                   'circular-shift': 360.0}},
                                                        {'name': 'upper_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                         'range': self.dihed_restraint_range,
                                                         'group': {'member-with': ['target_value', 'lower_linear_limit', 'lower_limit', 'upper_limit'],
-                                                                  'coexist-with': None, # ['lower_linear_limit', 'lower_limit', 'upper_limit'],
+                                                                  'coexist-with': None,  # ['lower_linear_limit', 'lower_limit', 'upper_limit'],
                                                                   'smaller-than': ['lower_linear_limit', 'lower_limit', 'upper_limit'],
                                                                   'larger-than': None,
                                                                   'circular-shift': 360.0}},
-                                                        {'name': 'name', 'type': 'str', 'mandatory': False}
-                                                        ],
+                                                       {'name': 'name', 'type': 'str', 'mandatory': False}
+                                                       ],
                                    'rdc_restraint': [{'name': 'index', 'type': 'index-int', 'mandatory': True},
-                                                     #{'name': 'restraint_id', 'type': 'positive-int', 'mandatory': True,
+                                                     # {'name': 'restraint_id', 'type': 'positive-int', 'mandatory': True,
                                                      # 'enforce-non-zero': True},
                                                      {'name': 'restraint_combination_id', 'type': 'positive-int', 'mandatory': False,
                                                       'enforce-non-zero': True},
@@ -1618,25 +1643,25 @@ class NmrDpUtility:
                                                      {'name': 'lower_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                       'range': self.rdc_restraint_range,
                                                       'group': {'member-with': ['target_value', 'lower_limit', 'upper_limit', 'upper_linear_limit'],
-                                                                'coexist-with': None, # ['lower_limit', 'upper_limit', 'upper_linear_limit'],
+                                                                'coexist-with': None,  # ['lower_limit', 'upper_limit', 'upper_linear_limit'],
                                                                 'smaller-than': None,
                                                                 'larger-than': ['lower_limit', 'upper_limit', 'upper_linear_limit']}},
                                                      {'name': 'lower_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                       'range': self.rdc_restraint_range,
                                                       'group': {'member-with': ['target_value', 'lower_linear_limit', 'upper_limit', 'upper_linear_limit'],
-                                                                'coexist-with': None, # ['upper_limit'],
+                                                                'coexist-with': None,  # ['upper_limit'],
                                                                 'smaller-than': ['lower_linear_limit'],
                                                                 'larger-than': ['upper_limit', 'upper_linear_limit']}},
                                                      {'name': 'upper_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                       'range': self.rdc_restraint_range,
                                                       'group': {'member-with': ['target_value', 'lower_linear_limit', 'lower_limit', 'upper_linear_limit'],
-                                                                'coexist-with': None, # ['lower_limit'],
+                                                                'coexist-with': None,  # ['lower_limit'],
                                                                 'smaller-than': ['lower_linear_limit', 'lower_limit'],
                                                                 'larger-than': ['upper_linear_limit']}},
                                                      {'name': 'upper_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                       'range': self.rdc_restraint_range,
                                                       'group': {'member-with': ['target_value', 'lower_linear_limit', 'lower_limit', 'upper_limit'],
-                                                                'coexist-with': None, # ['lower_linear_limit', 'lower_limit', 'upper_limit'],
+                                                                'coexist-with': None,  # ['lower_linear_limit', 'lower_limit', 'upper_limit'],
                                                                 'smaller-than': ['lower_linear_limit', 'lower_limit', 'upper_limit'],
                                                                 'larger-than': None}},
                                                      {'name': 'scale', 'type': 'range-float', 'mandatory': False,
@@ -1701,7 +1726,13 @@ class NmrDpUtility:
                                                            {'name': 'External_ref_axis', 'type': 'enum', 'mandatory': False,
                                                             'enum': ('parallel', 'perpendicular')},
                                                            {'name': 'External_ref_loc', 'type': 'enum', 'mandatory': False,
-                                                            'enum': ('insert at center of a separate sample tube', 'insert at center of experimental sample tube', 'insert at outer edge of a separate sample tube', 'insert at outer edge of experimental sample tube', 'other', 'separate tube (no insert) not similar to the experimental sample tube', 'separate tube (no insert) similar to the experimental sample tube')},
+                                                            'enum': ('insert at center of a separate sample tube',
+                                                                     'insert at center of experimental sample tube',
+                                                                     'insert at outer edge of a separate sample tube',
+                                                                     'insert at outer edge of experimental sample tube',
+                                                                     'other',
+                                                                     'separate tube (no insert) not similar to the experimental sample tube',
+                                                                     'separate tube (no insert) similar to the experimental sample tube')},
                                                            {'name': 'External_ref_sample_geometry', 'type': 'enum', 'mandatory': False,
                                                             'enum': ('cylindrical', 'other', 'spherical')},
                                                            {'name': 'Indirect_shift_ratio', 'type': 'range-float', 'mandatory': False,
@@ -1716,7 +1747,7 @@ class NmrDpUtility:
                                                            {'name': 'Chem_shift_reference_ID', 'type': 'pointer-index', 'mandatory': True, 'default': '1'}
                                                            ],
                                         'dist_restraint': [{'name': 'Index_ID', 'type': 'index-int', 'mandatory': False},
-                                                           #{'name': 'ID', 'type': 'positive-int', 'mandatory': True,
+                                                           # {'name': 'ID', 'type': 'positive-int', 'mandatory': True,
                                                            # 'enforce-non-zero': True},
                                                            {'name': 'Combination_ID', 'type': 'positive-int', 'mandatory': False,
                                                             'enforce-non-zero': True},
@@ -1725,7 +1756,11 @@ class NmrDpUtility:
                                                             'enforce-enum': True},
                                                            {'name': 'Target_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True, 'void-zero': True,
                                                             'range': self.dist_restraint_range,
-                                                            'group': {'member-with': ['Distance_val', 'Lower_linear_limit', 'Upper_linear_limit', 'Distance_lower_bound_val', 'Distance_upper_bound_val'],
+                                                            'group': {'member-with': ['Distance_val',
+                                                                                      'Lower_linear_limit',
+                                                                                      'Upper_linear_limit',
+                                                                                      'Distance_lower_bound_val',
+                                                                                      'Distance_upper_bound_val'],
                                                                       'coexist-with': None,
                                                                       'smaller-than': ['Lower_linear_limit', 'Distance_lower_bound_val'],
                                                                       'larger-than': ['Distance_upper_bound_val', 'Upper_linear_limit']}},
@@ -1733,26 +1768,34 @@ class NmrDpUtility:
                                                             'range': self.dist_restraint_error},
                                                            {'name': 'Lower_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True, 'void-zero': True,
                                                             'range': self.dist_restraint_range,
-                                                            'group': {'member-with': ['Distance_val', 'Target_val', 'Upper_linear_limit', 'Distance_lower_bound_val', 'Distance_upper_bound_val'],
-                                                                      'coexist-with': None, # ['Upper_linear_limit', 'Distance_lower_bound_val', 'Distance_upper_bound_val'],
+                                                            'group': {'member-with': ['Distance_val',
+                                                                                      'Target_val',
+                                                                                      'Upper_linear_limit',
+                                                                                      'Distance_lower_bound_val',
+                                                                                      'Distance_upper_bound_val'],
+                                                                      'coexist-with': None,  # ['Upper_linear_limit', 'Distance_lower_bound_val', 'Distance_upper_bound_val'],
                                                                       'smaller-than': None,
                                                                       'larger-than': ['Distance_lower_bound_val', 'Distance_upper_bound_val', 'Upper_linear_limit']}},
                                                            {'name': 'Upper_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True, 'void-zero': True,
                                                             'range': self.dist_restraint_range,
-                                                            'group': {'member-with': ['Distance_val', 'Target_val', 'Lower_linear_limit', 'Distance_lower_bound_val', 'Distance_upper_bound_val'],
-                                                                      'coexist-with': None, # ['Lower_linear_limit', 'Distance_lower_bound_val', 'Distance_upper_bound_val'],
+                                                            'group': {'member-with': ['Distance_val',
+                                                                                      'Target_val',
+                                                                                      'Lower_linear_limit',
+                                                                                      'Distance_lower_bound_val',
+                                                                                      'Distance_upper_bound_val'],
+                                                                      'coexist-with': None,  # ['Lower_linear_limit', 'Distance_lower_bound_val', 'Distance_upper_bound_val'],
                                                                       'smaller-than': ['Lower_linear_limit', 'Distance_lower_bound_val', 'Distance_upper_bound_val'],
                                                                       'larger-than': None}},
                                                            {'name': 'Distance_lower_bound_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True, 'void-zero': True,
                                                             'range': self.dist_restraint_range,
                                                             'group': {'member-with': ['Distance_val', 'Target_val', 'Lower_linear_limit', 'Upper_linear_limit', 'Distance_upper_bound_val'],
-                                                                      'coexist-with': None, # ['Distance_upper_bound_val'],
+                                                                      'coexist-with': None,  # ['Distance_upper_bound_val'],
                                                                       'smaller-than': ['Lower_linear_limit'],
                                                                       'larger-than': ['Distance_upper_bound_val', 'Upper_linear_limit']}},
                                                            {'name': 'Distance_upper_bound_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True, 'void-zero': True,
                                                             'range': self.dist_restraint_range,
                                                             'group': {'member-with': ['Distance_val', 'Target_val', 'Lower_linear_limit', 'Upper_linear_limit', 'Distance_lower_bound_val'],
-                                                                      'coexist-with': None, # ['Distance_lower_bound_val'],
+                                                                      'coexist-with': None,  # ['Distance_lower_bound_val'],
                                                                       'smaller-than': ['Lower_linear_limit', 'Distance_lower_bound_val'],
                                                                       'larger-than': ['Upper_linear_limit']}},
                                                            {'name': 'Distance_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
@@ -1763,7 +1806,7 @@ class NmrDpUtility:
                                                                               'larger-than': None}},
                                                            {'name': 'Weight', 'type': 'range-float', 'mandatory': False,
                                                             'range': self.weight_range},
-                                                           #'enforce-non-zero': True},
+                                                           # 'enforce-non-zero': True},
                                                            {'name': 'Auth_asym_ID_1', 'type': 'str', 'mandatory': False},
                                                            {'name': 'Auth_seq_ID_1', 'type': 'int', 'mandatory': False},
                                                            {'name': 'Auth_comp_ID_1', 'type': 'str', 'mandatory': False},
@@ -1775,7 +1818,7 @@ class NmrDpUtility:
                                                            {'name': 'Gen_dist_constraint_list_ID', 'type': 'pointer-index', 'mandatory': True, 'default': '1'}
                                                            ],
                                         'dihed_restraint': [{'name': 'Index_ID', 'type': 'index-int', 'mandatory': False},
-                                                            #{'name': 'ID', 'type': 'index-int', 'mandatory': True,
+                                                            # {'name': 'ID', 'type': 'index-int', 'mandatory': True,
                                                             # 'enforce-non-zero': True},
                                                             {'name': 'Combination_ID', 'type': 'positive-int', 'mandatory': False,
                                                              'enforce-non-zero': True},
@@ -1783,20 +1826,23 @@ class NmrDpUtility:
                                                             {'name': 'Angle_lower_bound_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                              'range': self.dihed_restraint_range,
                                                              'group': {'member-with': ['Angle_target_val', 'Angle_lower_linear_limit', 'Angle_upper_linear_limit', 'Angle_upper_bound_val'],
-                                                                       'coexist-with': None, # ['Angle_upper_bound_val'],
+                                                                       'coexist-with': None,  # ['Angle_upper_bound_val'],
                                                                        'smaller-than': ['Angle_lower_linear_limit'],
                                                                        'larger-than': ['Angle_upper_bound_val', 'Angle_upper_linear_limit'],
                                                                        'circular-shift': 360.0}},
                                                             {'name': 'Angle_upper_bound_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                              'range': self.dihed_restraint_range,
                                                              'group': {'member-with': ['Angle_target_val', 'Angle_lower_linear_limit', 'Angle_upper_linear_limit', 'Angle_lower_bound_val'],
-                                                                       'coexist-with': None, # ['Angle_lower_bound_val'],
+                                                                       'coexist-with': None,  # ['Angle_lower_bound_val'],
                                                                        'smaller-than': ['Angle_lower_bound_val', 'Angle_upper_linear_limit'],
                                                                        'larger-than': ['Angle_upper_linear_limit'],
                                                                        'circular-shift': 360.0}},
                                                             {'name': 'Angle_target_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                              'range': self.dihed_restraint_range,
-                                                             'group': {'member-with': ['Angle_lower_linear_limit', 'Angle_upper_linear_limit', 'Angle_lower_bound_val', 'Angle_upper_bound_val'],
+                                                             'group': {'member-with': ['Angle_lower_linear_limit',
+                                                                                       'Angle_upper_linear_limit',
+                                                                                       'Angle_lower_bound_val',
+                                                                                       'Angle_upper_bound_val'],
                                                                        'coexist-with': None,
                                                                        'smaller-than': ['Angle_lower_linear_limit', 'Angle_lower_bound_val'],
                                                                        'larger-than': ['Angle_upper_bound_val', 'Angle_upper_linear_limit'],
@@ -1806,20 +1852,20 @@ class NmrDpUtility:
                                                             {'name': 'Angle_lower_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                              'range': self.dihed_restraint_range,
                                                              'group': {'member-with': ['Angle_target_val', 'Angle_upper_linear_limit', 'Angle_lower_bound_val', 'Angle_upper_bound_val'],
-                                                                       'coexist-with': None, # ['Angle_upper_linear_limit', 'Angle_lower_bound_val', 'Angle_upper_bound_val'],
+                                                                       'coexist-with': None,  # ['Angle_upper_linear_limit', 'Angle_lower_bound_val', 'Angle_upper_bound_val'],
                                                                        'smaller-than': None,
                                                                        'larger-than': ['Angle_lower_bound_val', 'Angle_upper_bound', 'Angle_upper_linear_limit'],
                                                                        'circular-shift': 360.0}},
                                                             {'name': 'Angle_upper_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                              'range': self.dihed_restraint_range,
                                                              'group': {'member-with': ['Angle_target_val', 'Angle_lower_linear_limit', 'Angle_lower_bound_val', 'Angle_upper_bound_val'],
-                                                                      'coexist-with': None, # ['Angle_lower_linear_limit', 'Angle_lower_bound_val', 'Angle_upper_bound_val'],
-                                                                      'smaller-than': ['Angle_lower_linear_limit', 'Angle_lower_bound_val', 'Angle_upper_bound_val'],
-                                                                      'larger-than': None,
-                                                                      'circular-shift': 360.0}},
+                                                                       'coexist-with': None,  # ['Angle_lower_linear_limit', 'Angle_lower_bound_val', 'Angle_upper_bound_val'],
+                                                                       'smaller-than': ['Angle_lower_linear_limit', 'Angle_lower_bound_val', 'Angle_upper_bound_val'],
+                                                                       'larger-than': None,
+                                                                       'circular-shift': 360.0}},
                                                             {'name': 'Weight', 'type': 'range-float', 'mandatory': False,
                                                              'range': self.weight_range},
-                                                            #'enforce-non-zero': True},
+                                                            # 'enforce-non-zero': True},
                                                             {'name': 'Auth_asym_ID_1', 'type': 'str', 'mandatory': False},
                                                             {'name': 'Auth_seq_ID_1', 'type': 'int', 'mandatory': False},
                                                             {'name': 'Auth_comp_ID_1', 'type': 'str', 'mandatory': False},
@@ -1837,15 +1883,15 @@ class NmrDpUtility:
                                                             {'name': 'Auth_comp_ID_4', 'type': 'str', 'mandatory': False},
                                                             {'name': 'Auth_atom_ID_4', 'type': 'str', 'mandatory': False},
                                                             {'name': 'Torsion_angle_constraint_list_ID', 'type': 'pointer-index', 'mandatory': True, 'default': '1'}
-                                            ],
+                                                            ],
                                         'rdc_restraint': [{'name': 'Index_ID', 'type': 'index-int', 'mandatory': False},
-                                                          #{'name': 'ID', 'type': 'index-int', 'mandatory': True,
+                                                          # {'name': 'ID', 'type': 'index-int', 'mandatory': True,
                                                           # 'enforce-non-zero': True},
                                                           {'name': 'Combination_ID', 'type': 'positive-int', 'mandatory': False,
                                                            'enforce-non-zero': True},
                                                           {'name': 'Weight', 'type': 'range-float', 'mandatory': False,
                                                            'range': self.weight_range},
-                                                           #'enforce-non-zero': True},
+                                                          # 'enforce-non-zero': True},
                                                           {'name': 'Target_value', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                            'range': self.rdc_restraint_range,
                                                            'group': {'member-with': ['RDC_val', 'RDC_lower_linear_limit', 'RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
@@ -1857,25 +1903,25 @@ class NmrDpUtility:
                                                           {'name': 'RDC_lower_bound', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                            'range': self.rdc_restraint_range,
                                                            'group': {'member-with': ['RDC_val', 'Target_value', 'RDC_lower_linear_limit', 'RDC_upper_linear_limit', 'RDC_upper_bound'],
-                                                                     'coexist-with': None, # ['RDC_upper_bound'],
+                                                                     'coexist-with': None,  # ['RDC_upper_bound'],
                                                                      'smaller-than': ['RDC_lower_linear_limit'],
                                                                      'larger-than': ['RDC_upper_bound', 'RDC_upper_linear_limit']}},
                                                           {'name': 'RDC_upper_bound', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                            'range': self.rdc_restraint_range,
                                                            'group': {'member-with': ['RDC_val', 'Target_value', 'RDC_lower_linear_limit', 'RDC_upper_linear_limit', 'RDC_lower_bound'],
-                                                                     'coexist-with': None, # ['RDC_lower_bound'],
+                                                                     'coexist-with': None,  # ['RDC_lower_bound'],
                                                                      'smaller-than': ['RDC_lower_linear_limit', 'RDC_lower_bound'],
                                                                      'larger-than': ['RDC_upper_linear_limit']}},
                                                           {'name': 'RDC_lower_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                            'range': self.rdc_restraint_range,
                                                            'group': {'member-with': ['RDC_val', 'Target_value', 'RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
-                                                                     'coexist-with': None, # ['RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
+                                                                     'coexist-with': None,  # ['RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
                                                                      'smaller-than': None,
                                                                      'larger-than': ['RDC_lower_bound', 'RDC_upper_bound', 'RDC_upper_linear_limit']}},
                                                           {'name': 'RDC_upper_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                            'range': self.rdc_restraint_range,
                                                            'group': {'member-with': ['RDC_val', 'Target_value', 'RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
-                                                                     'coexist-with': None, # ['RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
+                                                                     'coexist-with': None,  # ['RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
                                                                      'smaller-than': ['RDC_lower_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
                                                                      'larger-than': None}},
                                                           {'name': 'RDC_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
@@ -1901,7 +1947,7 @@ class NmrDpUtility:
                                                           {'name': 'RDC_constraint_list_ID', 'type': 'pointer-index', 'mandatory': True, 'default': '1'}
                                                           ],
                                         'spectral_peak': [{'name': 'Index_ID', 'type': 'index-int', 'mandatory': False},
-                                                          #{'name': 'ID', 'type': 'positive-int', 'mandatory': True,
+                                                          # {'name': 'ID', 'type': 'positive-int', 'mandatory': True,
                                                           # 'enforce-non-zero': True},
                                                           {'name': 'Volume', 'type': 'float', 'mandatory': False, 'group-mandatory': True,
                                                            'group': {'member-with': ['Height'],
@@ -1934,61 +1980,61 @@ class NmrDpUtility:
                                                               {'name': 'lower_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                                'range': self.dist_restraint_range,
                                                                'group': {'member-with': ['target_value', 'lower_limit', 'upper_limit', 'upper_linear_limit'],
-                                                                         'coexist-with': None, # ['lower_limit', 'upper_limit', 'upper_linear_limit'],
+                                                                         'coexist-with': None,  # ['lower_limit', 'upper_limit', 'upper_linear_limit'],
                                                                          'smaller-than': None,
                                                                          'larger-than': ['lower_limit', 'upper_limit', 'upper_linear_limit']}},
                                                               {'name': 'lower_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                                'range': self.dist_restraint_range,
                                                                'group': {'member-with': ['target_value', 'lower_linear_limit', 'upper_limit', 'upper_linear_limit'],
-                                                                         'coexist-with': None, # ['upper_limit'],
+                                                                         'coexist-with': None,  # ['upper_limit'],
                                                                          'smaller-than': ['lower_linear_limit'],
                                                                          'larger-than': ['upper_limit', 'upper_linear_limit']}},
                                                               {'name': 'upper_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                                'range': self.dist_restraint_range,
                                                                'group': {'member-with': ['target_value', 'lower_linear_limit', 'lower_limit', 'upper_linear_limit'],
-                                                                         'coexist-with': None, # ['lower_limit'],
+                                                                         'coexist-with': None,  # ['lower_limit'],
                                                                          'smaller-than': ['lower_linear_limit', 'lower_limit'],
                                                                          'larger-than': ['upper_linear_limit']}},
                                                               {'name': 'upper_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                                'range': self.dist_restraint_range,
                                                                'group': {'member-with': ['target_value', 'lower_linear_limit', 'lower_limit', 'upper_limit'],
-                                                                         'coexist-with': None, # ['lower_linear_limit', 'lower_limit', 'upper_limit'],
+                                                                         'coexist-with': None,  # ['lower_linear_limit', 'lower_limit', 'upper_limit'],
                                                                          'smaller-than': ['lower_linear_limit', 'lower_limit', 'upper_limit'],
                                                                          'larger-than': None}}
                                                               ],
                                            'dihed_restraint': [{'name': 'target_value', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                                'range': self.dihed_restraint_range,
-                                                               'group': {'member-with': ['lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit'],
-                                                                         'coexist-with': None,
-                                                                         'smaller-than': ['lower_linear_limit', 'lower_limit'],
-                                                                         'larger-than': ['upper_limit', 'upper_linear_limit']}},
+                                                                'group': {'member-with': ['lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit'],
+                                                                          'coexist-with': None,
+                                                                          'smaller-than': ['lower_linear_limit', 'lower_limit'],
+                                                                          'larger-than': ['upper_limit', 'upper_linear_limit']}},
                                                                {'name': 'target_value_uncertainty', 'type': 'range-float', 'mandatory': False,
                                                                 'range': self.dihed_restraint_error},
                                                                {'name': 'lower_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                                 'range': self.dihed_restraint_range,
                                                                 'group': {'member-with': ['target_value', 'lower_limit', 'upper_limit', 'upper_linear_limit'],
-                                                                          'coexist-with': None, # ['lower_limit', 'upper_limit', 'upper_linear_limit'],
+                                                                          'coexist-with': None,  # ['lower_limit', 'upper_limit', 'upper_linear_limit'],
                                                                           'smaller-than': None,
                                                                           'larger-than': ['lower_limit', 'upper_limit', 'upper_linear_limit']}},
                                                                {'name': 'lower_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                                 'range': self.dihed_restraint_range,
                                                                 'group': {'member-with': ['target_value', 'lower_linear_limit', 'upper_limit', 'upper_linear_limit'],
-                                                                          'coexist-with': None, # ['upper_limit'],
+                                                                          'coexist-with': None,  # ['upper_limit'],
                                                                           'smaller-than': ['lower_linear_limit'],
                                                                           'larger-than': ['upper_limit', 'upper_linear_limit']}},
                                                                {'name': 'upper_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                                 'range': self.dihed_restraint_range,
                                                                 'group': {'member-with': ['target_value', 'lower_linear_limit', 'lower_limit', 'upper_linear_limit'],
-                                                                          'coexist-with': None, # ['lower_limit'],
+                                                                          'coexist-with': None,  # ['lower_limit'],
                                                                           'smaller-than': ['lower_linear_limit', 'lower_limit'],
                                                                           'larger-than': ['upper_linear_limit']}},
                                                                {'name': 'upper_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                                 'range': self.dihed_restraint_range,
                                                                 'group': {'member-with': ['target_value', 'lower_linear_limit', 'lower_limit', 'upper_limit'],
-                                                                          'coexist-with': None, # ['lower_linear_limit', 'lower_limit', 'upper_limit'],
+                                                                          'coexist-with': None,  # ['lower_linear_limit', 'lower_limit', 'upper_limit'],
                                                                           'smaller-than': ['lower_linear_limit', 'lower_limit', 'upper_limit'],
                                                                           'larger-than': None}}
-                                                             ],
+                                                               ],
                                            'rdc_restraint': [{'name': 'target_value', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                               'range': self.rdc_restraint_range,
                                                               'group': {'member-with': ['lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit'],
@@ -2000,25 +2046,25 @@ class NmrDpUtility:
                                                              {'name': 'lower_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                               'range': self.rdc_restraint_range,
                                                               'group': {'member-with': ['target_value', 'lower_limit', 'upper_limit', 'upper_linear_limit'],
-                                                                        'coexist-with': None, # ['lower_limit', 'upper_limit', 'upper_linear_limit'],
+                                                                        'coexist-with': None,  # ['lower_limit', 'upper_limit', 'upper_linear_limit'],
                                                                         'smaller-than': None,
                                                                         'larger-than': ['lower_limit', 'upper_limit', 'upper_linear_limit']}},
                                                              {'name': 'lower_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                               'range': self.rdc_restraint_range,
                                                               'group': {'member-with': ['target_value', 'lower_linear_limit', 'upper_limit', 'upper_linear_limit'],
-                                                                        'coexist-with': None, # ['upper_limit'],
+                                                                        'coexist-with': None,  # ['upper_limit'],
                                                                         'smaller-than': ['lower_linear_limit'],
                                                                         'larger-than': ['upper_limit', 'upper_linear_limit']}},
                                                              {'name': 'upper_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                               'range': self.rdc_restraint_range,
                                                               'group': {'member-with': ['target_value', 'lower_linear_limit', 'lower_limit', 'upper_linear_limit'],
-                                                                        'coexist-with': None, # ['lower_limit'],
+                                                                        'coexist-with': None,  # ['lower_limit'],
                                                                         'smaller-than': ['lower_linear_limit', 'lower_limit'],
                                                                         'larger-than': ['upper_linear_limit']}},
                                                              {'name': 'upper_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                               'range': self.rdc_restraint_range,
                                                               'group': {'member-with': ['target_value', 'lower_linear_limit', 'lower_limit', 'upper_limit'],
-                                                                        'coexist-with': None, # ['lower_linear_limit', 'lower_limit', 'upper_limit'],
+                                                                        'coexist-with': None,  # ['lower_linear_limit', 'lower_limit', 'upper_limit'],
                                                                         'smaller-than': ['lower_linear_limit', 'lower_limit', 'upper_limit'],
                                                                         'larger-than': None}}
                                                              ],
@@ -2027,7 +2073,11 @@ class NmrDpUtility:
                                            },
                                    'nmr-star': {'dist_restraint': [{'name': 'Target_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                                     'range': self.dist_restraint_range,
-                                                                    'group': {'member-with': ['Distance_val', 'Lower_linear_limit', 'Upper_linear_limit', 'Distance_lower_bound_val', 'Distance_upper_bound_val'],
+                                                                    'group': {'member-with': ['Distance_val',
+                                                                                              'Lower_linear_limit',
+                                                                                              'Upper_linear_limit',
+                                                                                              'Distance_lower_bound_val',
+                                                                                              'Distance_upper_bound_val'],
                                                                               'coexist-with': None,
                                                                               'smaller-than': ['Lower_linear_limit', 'Distance_lower_bound_val'],
                                                                               'larger-than': ['Distance_upper_bound_val', 'Upper_linear_limit']}},
@@ -2035,26 +2085,42 @@ class NmrDpUtility:
                                                                     'range': self.dist_restraint_error},
                                                                    {'name': 'Lower_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                                     'range': self.dist_restraint_range,
-                                                                    'group': {'member-with': ['Distance_val', 'Target_val', 'Upper_linear_limit', 'Distance_lower_bound_val', 'Distance_upper_bound_val'],
-                                                                              'coexist-with': None, # ['Upper_linear_limit', 'Distance_lower_bound_val', 'Distance_upper_bound_val'],
+                                                                    'group': {'member-with': ['Distance_val',
+                                                                                              'Target_val',
+                                                                                              'Upper_linear_limit',
+                                                                                              'Distance_lower_bound_val',
+                                                                                              'Distance_upper_bound_val'],
+                                                                              'coexist-with': None,  # ['Upper_linear_limit', 'Distance_lower_bound_val', 'Distance_upper_bound_val'],
                                                                               'smaller-than': None,
                                                                               'larger-than': ['Distance_lower_bound_val', 'Distance_upper_bound_val', 'Upper_linear_limit']}},
                                                                    {'name': 'Upper_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                                     'range': self.dist_restraint_range,
-                                                                    'group': {'member-with': ['Distance_val', 'Target_val', 'Lower_linear_limit', 'Distance_lower_bound_val', 'Distance_upper_bound_val'],
-                                                                              'coexist-with': None, # ['Lower_linear_limit', 'Distance_lower_bound_val', 'Distance_upper_bound_val'],
+                                                                    'group': {'member-with': ['Distance_val',
+                                                                                              'Target_val',
+                                                                                              'Lower_linear_limit',
+                                                                                              'Distance_lower_bound_val',
+                                                                                              'Distance_upper_bound_val'],
+                                                                              'coexist-with': None,  # ['Lower_linear_limit', 'Distance_lower_bound_val', 'Distance_upper_bound_val'],
                                                                               'smaller-than': ['Lower_linear_limit', 'Distance_lower_bound_val', 'Distance_upper_bound_val'],
                                                                               'larger-than': None}},
                                                                    {'name': 'Distance_lower_bound_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                                     'range': self.dist_restraint_range,
-                                                                    'group': {'member-with': ['Distance_val', 'Target_val', 'Lower_linear_limit', 'Upper_linear_limit', 'Distance_upper_bound_val'],
-                                                                              'coexist-with': None, # ['Distance_upper_bound_val'],
+                                                                    'group': {'member-with': ['Distance_val',
+                                                                                              'Target_val',
+                                                                                              'Lower_linear_limit',
+                                                                                              'Upper_linear_limit',
+                                                                                              'Distance_upper_bound_val'],
+                                                                              'coexist-with': None,  # ['Distance_upper_bound_val'],
                                                                               'smaller-than': ['Lower_linear_limit'],
                                                                               'larger-than': ['Distance_upper_bound_val', 'Upper_linear_limit']}},
                                                                    {'name': 'Distance_upper_bound_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                                     'range': self.dist_restraint_range,
-                                                                    'group': {'member-with': ['Distance_val', 'Target_val', 'Lower_linear_limit', 'Upper_linear_limit', 'Distance_lower_bound_val'],
-                                                                              'coexist-with': None, # ['Distance_lower_bound_val'],
+                                                                    'group': {'member-with': ['Distance_val',
+                                                                                              'Target_val',
+                                                                                              'Lower_linear_limit',
+                                                                                              'Upper_linear_limit',
+                                                                                              'Distance_lower_bound_val'],
+                                                                              'coexist-with': None,  # ['Distance_lower_bound_val'],
                                                                               'smaller-than': ['Lower_linear_limit', 'Distance_lower_bound_val'],
                                                                               'larger-than': ['Upper_linear_limit']}},
                                                                    {'name': 'Distance_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
@@ -2066,19 +2132,28 @@ class NmrDpUtility:
                                                                    ],
                                                 'dihed_restraint': [{'name': 'Angle_lower_bound_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                                      'range': self.dihed_restraint_range,
-                                                                     'group': {'member-with': ['Angle_target_val', 'Angle_lower_linear_limit', 'Angle_upper_linear_limit', 'Angle_upper_bound_val'],
-                                                                               'coexist-with': None, # ['Angle_upper_bound_val'],
+                                                                     'group': {'member-with': ['Angle_target_val',
+                                                                                               'Angle_lower_linear_limit',
+                                                                                               'Angle_upper_linear_limit',
+                                                                                               'Angle_upper_bound_val'],
+                                                                               'coexist-with': None,  # ['Angle_upper_bound_val'],
                                                                                'smaller-than': ['Angle_lower_linear_limit'],
                                                                                'larger-than': ['Angle_upper_bound_val', 'Angle_upper_linear_limit']}},
                                                                     {'name': 'Angle_upper_bound_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                                      'range': self.dihed_restraint_range,
-                                                                     'group': {'member-with': ['Angle_target_val', 'Angle_lower_linear_limit', 'Angle_upper_linear_limit', 'Angle_lower_bound_val'],
-                                                                               'coexist-with': None, # ['Angle_lower_bound_val'],
+                                                                     'group': {'member-with': ['Angle_target_val',
+                                                                                               'Angle_lower_linear_limit',
+                                                                                               'Angle_upper_linear_limit',
+                                                                                               'Angle_lower_bound_val'],
+                                                                               'coexist-with': None,  # ['Angle_lower_bound_val'],
                                                                                'smaller-than': ['Angle_lower_linear_limit', 'Angle_lower_bound_val'],
                                                                                'larger-than': ['Angle_upper_linear_limit']}},
                                                                     {'name': 'Angle_target_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                                      'range': self.dihed_restraint_range,
-                                                                     'group': {'member-with': ['Angle_lower_linear_limit', 'Angle_upper_linear_limit', 'Angle_lower_bound_val', 'Angle_upper_bound_val'],
+                                                                     'group': {'member-with': ['Angle_lower_linear_limit',
+                                                                                               'Angle_upper_linear_limit',
+                                                                                               'Angle_lower_bound_val',
+                                                                                               'Angle_upper_bound_val'],
                                                                                'coexist-with': None,
                                                                                'smaller-than': ['Angle_lower_linear_limit', 'Angle_lower_bound_val'],
                                                                                'larger-than': ['Angle_upper_bound_val', 'Angle_upper_linear_limit']}},
@@ -2086,20 +2161,30 @@ class NmrDpUtility:
                                                                      'range': self.dihed_restraint_error},
                                                                     {'name': 'Angle_lower_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                                      'range': self.dihed_restraint_range,
-                                                                     'group': {'member-with': ['Angle_target_val', 'Angle_upper_linear_limit', 'Angle_lower_bound_val', 'Angle_upper_bound_val'],
-                                                                               'coexist-with': None, # ['Angle_upper_linear_limit', 'Angle_lower_bound_val', 'Angle_upper_bound_val'],
+                                                                     'group': {'member-with': ['Angle_target_val',
+                                                                                               'Angle_upper_linear_limit',
+                                                                                               'Angle_lower_bound_val',
+                                                                                               'Angle_upper_bound_val'],
+                                                                               'coexist-with': None,  # ['Angle_upper_linear_limit', 'Angle_lower_bound_val', 'Angle_upper_bound_val'],
                                                                                'smaller-than': None,
                                                                                'larger-than': ['Angle_lower_bound_val', 'Angle_upper_bound_val', 'Angle_upper_linear_limit']}},
                                                                     {'name': 'Angle_upper_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                                      'range': self.dihed_restraint_range,
-                                                                     'group': {'member-with': ['Angle_target_val', 'Angle_lower_linear_limit', 'Angle_lower_bound_val', 'Angle_upper_bound_val'],
-                                                                              'coexist-with': None, # ['Angle_lower_linear_limit', 'Angle_lower_bound_val', 'Angle_upper_bound_val'],
-                                                                              'smaller-than': ['Angle_lower_linear_limit', 'Angle_lower_bound_val', 'Angle_upper_bound_val'],
-                                                                              'larger-than': None}}
-                                                    ],
+                                                                     'group': {'member-with': ['Angle_target_val',
+                                                                                               'Angle_lower_linear_limit',
+                                                                                               'Angle_lower_bound_val',
+                                                                                               'Angle_upper_bound_val'],
+                                                                               'coexist-with': None,  # ['Angle_lower_linear_limit', 'Angle_lower_bound_val', 'Angle_upper_bound_val'],
+                                                                               'smaller-than': ['Angle_lower_linear_limit', 'Angle_lower_bound_val', 'Angle_upper_bound_val'],
+                                                                               'larger-than': None}}
+                                                                    ],
                                                 'rdc_restraint': [{'name': 'Target_value', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                                    'range': self.rdc_restraint_range,
-                                                                   'group': {'member-with': ['RDC_val', 'RDC_lower_linear_limit', 'RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
+                                                                   'group': {'member-with': ['RDC_val',
+                                                                                             'RDC_lower_linear_limit',
+                                                                                             'RDC_upper_linear_limit',
+                                                                                             'RDC_lower_bound',
+                                                                                             'RDC_upper_bound'],
                                                                              'coexist-with': None,
                                                                              'smaller-than': ['RDC_lower_linear_limit', 'RDC_lower_bound'],
                                                                              'larger-than': ['RDC_upper_bound', 'RDC_upper_linear_limit']}},
@@ -2107,26 +2192,34 @@ class NmrDpUtility:
                                                                    'range': self.rdc_restraint_error},
                                                                   {'name': 'RDC_lower_bound', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                                    'range': self.rdc_restraint_range,
-                                                                   'group': {'member-with': ['RDC_val', 'Target_value', 'RDC_lower_linear_limit', 'RDC_upper_linear_limit', 'RDC_upper_bound'],
-                                                                             'coexist-with': None, # ['RDC_upper_bound'],
+                                                                   'group': {'member-with': ['RDC_val',
+                                                                                             'Target_value',
+                                                                                             'RDC_lower_linear_limit',
+                                                                                             'RDC_upper_linear_limit',
+                                                                                             'RDC_upper_bound'],
+                                                                             'coexist-with': None,  # ['RDC_upper_bound'],
                                                                              'smaller-than': ['RDC_lower_linear_limit'],
                                                                              'larger-than': ['RDC_upper_boud', 'RDC_upper_linear_limit']}},
                                                                   {'name': 'RDC_upper_bound', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                                    'range': self.rdc_restraint_range,
-                                                                   'group': {'member-with': ['RDC_val', 'Target_value', 'RDC_lower_linear_limit', 'RDC_upper_linear_limit', 'RDC_lower_bound'],
-                                                                             'coexist-with': None, # ['RDC_lower_bound'],
+                                                                   'group': {'member-with': ['RDC_val',
+                                                                                             'Target_value',
+                                                                                             'RDC_lower_linear_limit',
+                                                                                             'RDC_upper_linear_limit',
+                                                                                             'RDC_lower_bound'],
+                                                                             'coexist-with': None,  # ['RDC_lower_bound'],
                                                                              'smaller-than': ['RDC_lower_linear_limit', 'RDC_lower_bound'],
                                                                              'larger-than': ['RDC_upper_linear_limit']}},
                                                                   {'name': 'RDC_lower_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                                    'range': self.rdc_restraint_range,
                                                                    'group': {'member-with': ['RDC_val', 'Target_value', 'RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
-                                                                             'coexist-with': None, # ['RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
+                                                                             'coexist-with': None,  # ['RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
                                                                              'smaller-than': None,
                                                                              'larger-than': ['RDC_lower_bound', 'RDC_upper_bound', 'RDC_upper_linear_limit']}},
                                                                   {'name': 'RDC_upper_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                                    'range': self.rdc_restraint_range,
                                                                    'group': {'member-with': ['RDC_val', 'Target_value', 'RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
-                                                                             'coexist-with': None, # ['RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
+                                                                             'coexist-with': None,  # ['RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
                                                                              'smaller-than': None,
                                                                              'larger-than': ['RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound']}},
                                                                   {'name': 'RDC_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
@@ -2144,39 +2237,39 @@ class NmrDpUtility:
                                    }
 
         # common potential descriptor items
-        self.potential_items = {'nef': {'dist_restraint':  {'target_value': 'target_value',
-                                                            'lower_limit': 'lower_limit',
-                                                            'upper_limit': 'upper_limit',
-                                                            'lower_linear_limit': 'lower_linear_limit',
-                                                            'upper_linear_limit': 'upper_linear_limit'},
+        self.potential_items = {'nef': {'dist_restraint': {'target_value': 'target_value',
+                                                           'lower_limit': 'lower_limit',
+                                                           'upper_limit': 'upper_limit',
+                                                           'lower_linear_limit': 'lower_linear_limit',
+                                                           'upper_linear_limit': 'upper_linear_limit'},
                                         'dihed_restraint': {'target_value': 'target_value',
                                                             'lower_limit': 'lower_limit',
                                                             'upper_limit': 'upper_limit',
                                                             'lower_linear_limit': 'lower_linear_limit',
                                                             'upper_linear_limit': 'upper_linear_limit'},
-                                        'rdc_restraint':   {'target_value': 'target_value',
-                                                            'lower_limit': 'lower_limit',
-                                                            'upper_limit': 'upper_limit',
-                                                            'lower_linear_limit': 'lower_linear_limit',
-                                                            'upper_linear_limit': 'upper_linear_limit'}
+                                        'rdc_restraint': {'target_value': 'target_value',
+                                                          'lower_limit': 'lower_limit',
+                                                          'upper_limit': 'upper_limit',
+                                                          'lower_linear_limit': 'lower_linear_limit',
+                                                          'upper_linear_limit': 'upper_linear_limit'}
                                         },
-                                'nmr-star': {'dist_restraint':  {'target_value': 'Target_val',
-                                                                 'target_value_alt': 'Distance_val',
-                                                                 'lower_limit': 'Distance_lower_bound_val',
-                                                                 'upper_limit': 'Distance_upper_bound_val',
-                                                                 'lower_linear_limit': 'Lower_linear_limit',
-                                                                 'upper_linear_limit': 'Upper_linear_limit'},
+                                'nmr-star': {'dist_restraint': {'target_value': 'Target_val',
+                                                                'target_value_alt': 'Distance_val',
+                                                                'lower_limit': 'Distance_lower_bound_val',
+                                                                'upper_limit': 'Distance_upper_bound_val',
+                                                                'lower_linear_limit': 'Lower_linear_limit',
+                                                                'upper_linear_limit': 'Upper_linear_limit'},
                                              'dihed_restraint': {'target_value': 'Angle_target_val',
                                                                  'lower_limit': 'Angle_lower_bound_val',
                                                                  'upper_limit': 'Angle_upper_bound_val',
                                                                  'lower_linear_limit': 'Angle_lower_linear_limit',
                                                                  'upper_linear_limit': 'Angle_upper_linear_limit'},
-                                             'rdc_restraint':   {'target_value': 'Target_value',
-                                                                 'target_value_alt': 'RDC_val',
-                                                                 'lower_limit': 'RDC_lower_bound',
-                                                                 'upper_limit': 'RDC_upper_bound',
-                                                                 'lower_linear_limit': 'RDC_lower_linear_limit',
-                                                                 'upper_linear_limit': 'RDC_upper_linear_limit'}
+                                             'rdc_restraint': {'target_value': 'Target_value',
+                                                               'target_value_alt': 'RDC_val',
+                                                               'lower_limit': 'RDC_lower_bound',
+                                                               'upper_limit': 'RDC_upper_bound',
+                                                               'lower_linear_limit': 'RDC_lower_linear_limit',
+                                                               'upper_linear_limit': 'RDC_upper_linear_limit'}
                                              }
                                 }
 
@@ -2226,12 +2319,25 @@ class NmrDpUtility:
                                      'entity': None,
                                      'chem_shift': ['chain_code', 'sequence_code', 'residue_name', 'atom_name', 'value', 'value_uncertainty', 'element', 'isotope_number'],
                                      'chem_shift_ref': None,
-                                     'dist_restraint': ['index', 'restraint_id', 'restraint_combination_id', 'chain_code_1', 'sequence_code_1', 'residue_name_1', 'atom_name_1', 'chain_code_2', 'sequence_code_2', 'residue_name_2', 'atom_name_2', 'weight', 'target_value', 'target_value_uncertainty', 'lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit'],
+                                     'dist_restraint': ['index', 'restraint_id', 'restraint_combination_id', 'chain_code_1',
+                                                        'sequence_code_1', 'residue_name_1', 'atom_name_1', 'chain_code_2',
+                                                        'sequence_code_2', 'residue_name_2', 'atom_name_2', 'weight', 'target_value',
+                                                        'target_value_uncertainty', 'lower_linear_limit', 'lower_limit',
+                                                        'upper_limit', 'upper_linear_limit'],
                                      'dihed_restraint': ['index', 'restraint_id', 'restraint_combination_id',
-                                                         'chain_code_1', 'sequence_code_1', 'residue_name_1', 'atom_name_1', 'chain_code_2', 'sequence_code_2', 'residue_name_2', 'atom_name_2',
-                                                         'chain_code_3', 'sequence_code_3', 'residue_name_3', 'atom_name_3', 'chain_code_4', 'sequence_code_4', 'residue_name_4', 'atom_name_4',
-                                                         'weight', 'target_value', 'target_value_uncertainty', 'lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit', 'name'],
-                                     'rdc_restraint': ['index', 'restraint_id', 'restraint_combination_id', 'chain_code_1', 'sequence_code_1', 'residue_name_1', 'atom_name_1', 'chain_code_2', 'sequence_code_2', 'residue_name_2', 'atom_name_2', 'weight', 'target_value', 'target_value_uncertainty', 'lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit', 'scale', 'distance_dependent'],
+                                                         'chain_code_1', 'sequence_code_1', 'residue_name_1', 'atom_name_1',
+                                                         'chain_code_2', 'sequence_code_2', 'residue_name_2', 'atom_name_2',
+                                                         'chain_code_3', 'sequence_code_3', 'residue_name_3', 'atom_name_3',
+                                                         'chain_code_4', 'sequence_code_4', 'residue_name_4', 'atom_name_4',
+                                                         'weight', 'target_value', 'target_value_uncertainty',
+                                                         'lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit',
+                                                         'name'],
+                                     'rdc_restraint': ['index', 'restraint_id', 'restraint_combination_id',
+                                                       'chain_code_1', 'sequence_code_1', 'residue_name_1', 'atom_name_1',
+                                                       'chain_code_2', 'sequence_code_2', 'residue_name_2', 'atom_name_2',
+                                                       'weight', 'target_value', 'target_value_uncertainty',
+                                                       'lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit',
+                                                       'scale', 'distance_dependent'],
                                      'spectral_peak': ['index', 'peak_id', 'volume', 'volume_uncertainty', 'height', 'height_uncertainty',
                                                        'position_1', 'position_uncertainty_1', 'position_2', 'position_uncertainty_2',
                                                        'position_3', 'position_uncertainty_3', 'position_4', 'position_uncertainty_4',
@@ -2241,81 +2347,196 @@ class NmrDpUtility:
                                                        'position_11', 'position_uncertainty_11', 'position_12', 'position_uncertainty_12',
                                                        'position_13', 'position_uncertainty_13', 'position_14', 'position_uncertainty_14',
                                                        'position_15', 'position_uncertainty_15',
-                                                       'chain_code_1', 'sequence_code_1', 'residue_name_1', 'atom_name_1', 'chain_code_2', 'sequence_code_2', 'residue_name_2', 'atom_name_2',
-                                                       'chain_code_3', 'sequence_code_3', 'residue_name_3', 'atom_name_3', 'chain_code_4', 'sequence_code_4', 'residue_name_4', 'atom_name_4',
-                                                       'chain_code_5', 'sequence_code_5', 'residue_name_5', 'atom_name_5', 'chain_code_6', 'sequence_code_6', 'residue_name_6', 'atom_name_6',
-                                                       'chain_code_7', 'sequence_code_7', 'residue_name_7', 'atom_name_7', 'chain_code_8', 'sequence_code_8', 'residue_name_8', 'atom_name_8',
-                                                       'chain_code_9', 'sequence_code_9', 'residue_name_9', 'atom_name_9', 'chain_code_10', 'sequence_code_10', 'residue_name_10', 'atom_name_10',
-                                                       'chain_code_11', 'sequence_code_11', 'residue_name_11', 'atom_name_11', 'chain_code_12', 'sequence_code_12', 'residue_name_12', 'atom_name_12',
-                                                       'chain_code_13', 'sequence_code_13', 'residue_name_13', 'atom_name_13', 'chain_code_14', 'sequence_code_14', 'residue_name_14', 'atom_name_14',
+                                                       'chain_code_1', 'sequence_code_1', 'residue_name_1', 'atom_name_1',
+                                                       'chain_code_2', 'sequence_code_2', 'residue_name_2', 'atom_name_2',
+                                                       'chain_code_3', 'sequence_code_3', 'residue_name_3', 'atom_name_3',
+                                                       'chain_code_4', 'sequence_code_4', 'residue_name_4', 'atom_name_4',
+                                                       'chain_code_5', 'sequence_code_5', 'residue_name_5', 'atom_name_5',
+                                                       'chain_code_6', 'sequence_code_6', 'residue_name_6', 'atom_name_6',
+                                                       'chain_code_7', 'sequence_code_7', 'residue_name_7', 'atom_name_7',
+                                                       'chain_code_8', 'sequence_code_8', 'residue_name_8', 'atom_name_8',
+                                                       'chain_code_9', 'sequence_code_9', 'residue_name_9', 'atom_name_9',
+                                                       'chain_code_10', 'sequence_code_10', 'residue_name_10', 'atom_name_10',
+                                                       'chain_code_11', 'sequence_code_11', 'residue_name_11', 'atom_name_11',
+                                                       'chain_code_12', 'sequence_code_12', 'residue_name_12', 'atom_name_12',
+                                                       'chain_code_13', 'sequence_code_13', 'residue_name_13', 'atom_name_13',
+                                                       'chain_code_14', 'sequence_code_14', 'residue_name_14', 'atom_name_14',
                                                        'chain_code_15', 'sequence_code_15', 'residue_name_15', 'atom_name_15'],
                                      'spectral_peak_alt': None
                                      },
-                             'nmr-star': {'entry_info': ['Software_ID', 'Software_label', 'Methods_ID', 'Methods_label', 'Software_name', 'Script_name', 'Script', 'Software_specific_info', 'Sf_ID', 'Entry_ID', 'Software_applied_list_ID'],
-                                          'poly_seq': ['Assembly_chem_comp_ID', 'Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Comp_ID', 'Seq_ID', 'Auth_entity_assembly_ID', 'Auth_asym_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_variant_ID', 'Sequence_linking', 'Cis_residue', 'NEF_index', 'Sf_ID', 'Entry_ID', 'Assembly_ID'],
+                             'nmr-star': {'entry_info': ['Software_ID', 'Software_label', 'Methods_ID', 'Methods_label', 'Software_name',
+                                                         'Script_name', 'Script', 'Software_specific_info', 'Sf_ID', 'Entry_ID', 'Software_applied_list_ID'],
+                                          'poly_seq': ['Assembly_chem_comp_ID', 'Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID',
+                                                       'Comp_ID', 'Seq_ID',
+                                                       'Auth_entity_assembly_ID', 'Auth_asym_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_variant_ID',
+                                                       'Sequence_linking', 'Cis_residue', 'NEF_index', 'Sf_ID', 'Entry_ID', 'Assembly_ID'],
                                           'entity': None,
-                                          'chem_shift': ['ID', 'Assembly_atom_ID', 'Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Seq_ID', 'Comp_ID', 'Atom_ID', 'Atom_type', 'Atom_isotope_number', 'Val', 'Val_err', 'Assign_fig_of_merit', 'Ambiguity_code', 'Ambiguity_set_ID', 'Occupancy', 'Resonance_ID',
+                                          'chem_shift': ['ID', 'Assembly_atom_ID', 'Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID',
+                                                         'Seq_ID', 'Comp_ID', 'Atom_ID', 'Atom_type', 'Atom_isotope_number',
+                                                         'Val', 'Val_err', 'Assign_fig_of_merit', 'Ambiguity_code', 'Ambiguity_set_ID', 'Occupancy', 'Resonance_ID',
                                                          'Auth_entity_assembly_ID', 'Auth_asym_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_atom_ID',
                                                          'PDB_record_ID', 'PDB_model_num', 'PDB_strand_ID', 'PDB_ins_code', 'PDB_residue_no', 'PDB_residue_name', 'PDB_atom_name',
-                                                         'Original_PDB_strand_ID', 'Original_PDB_residue_no', 'Original_PDB_residue_name', 'Original_PDB_atom_name', 'Details', 'Sf_ID', 'Entry_ID', 'Assigned_chem_shift_list_ID'],
-                                          'chem_shift_ref': ['Atom_type', 'Atom_isotope_number', 'Mol_common_name', 'Atom_group', 'Concentration_val', 'Concentration_units', 'Solvent', 'Rank', 'Chem_shift_units', 'Chem_shift_val', 'Ref_method', 'Ref_type', 'Indirect_shift_ratio', 'External_ref_loc', 'External_ref_sample_geometry', 'External_ref_axis', 'Indirect_shift_ratio_cit_ID', 'Indirect_shift_ratio_cit_label', 'Ref_correction_type', 'Correction_val', 'Correction_val_cit_ID', 'Correction_val_cit_label', 'Sf_ID', 'Entry_ID', 'Chem_shift_reference_ID'],
+                                                         'Original_PDB_strand_ID', 'Original_PDB_residue_no', 'Original_PDB_residue_name',
+                                                         'Original_PDB_atom_name', 'Details', 'Sf_ID', 'Entry_ID', 'Assigned_chem_shift_list_ID'],
+                                          'chem_shift_ref': ['Atom_type', 'Atom_isotope_number', 'Mol_common_name', 'Atom_group',
+                                                             'Concentration_val', 'Concentration_units', 'Solvent', 'Rank',
+                                                             'Chem_shift_units', 'Chem_shift_val', 'Ref_method', 'Ref_type', 'Indirect_shift_ratio',
+                                                             'External_ref_loc', 'External_ref_sample_geometry', 'External_ref_axis', 'Indirect_shift_ratio_cit_ID'
+                                                             , 'Indirect_shift_ratio_cit_label', 'Ref_correction_type', 'Correction_val', 'Correction_val_cit_ID',
+                                                             'Correction_val_cit_label', 'Sf_ID', 'Entry_ID', 'Chem_shift_reference_ID'],
                                           'dist_restraint': ['Index_ID', 'ID', 'Combination_ID', 'Member_ID', 'Member_logic_code',
-                                                             'Assembly_atom_ID_1', 'Entity_assembly_ID_1', 'Entity_ID_1', 'Comp_index_ID_1', 'Seq_ID_1', 'Comp_ID_1', 'Atom_ID_1', 'Atom_type_1', 'Atom_isotope_number_1', 'Resonance_ID_1', 'Assembly_atom_ID_2', 'Entity_assembly_ID_2', 'Entity_ID_2', 'Comp_index_ID_2', 'Seq_ID_2', 'Comp_ID_2', 'Atom_ID_2', 'Atom_type_2', 'Atom_isotope_number_2', 'Resonance_ID_2',
-                                                             'Intensity_val', 'Intensity_lower_val_err', 'Intensity_upper_val_err', 'Distance_val', 'Target_val', 'Target_val_uncertainty', 'Lower_linear_limit', 'Upper_linear_limit', 'Distance_lower_bound_val', 'Distance_upper_bound_val', 'Contribution_fractional_val', 'Weight',
+                                                             'Assembly_atom_ID_1', 'Entity_assembly_ID_1', 'Entity_ID_1', 'Comp_index_ID_1', 'Seq_ID_1',
+                                                             'Comp_ID_1', 'Atom_ID_1', 'Atom_type_1', 'Atom_isotope_number_1', 'Resonance_ID_1',
+                                                             'Assembly_atom_ID_2', 'Entity_assembly_ID_2', 'Entity_ID_2', 'Comp_index_ID_2', 'Seq_ID_2',
+                                                             'Comp_ID_2', 'Atom_ID_2', 'Atom_type_2', 'Atom_isotope_number_2', 'Resonance_ID_2',
+                                                             'Intensity_val', 'Intensity_lower_val_err', 'Intensity_upper_val_err', 'Distance_val',
+                                                             'Target_val', 'Target_val_uncertainty', 'Lower_linear_limit', 'Upper_linear_limit',
+                                                             'Distance_lower_bound_val', 'Distance_upper_bound_val', 'Contribution_fractional_val', 'Weight',
                                                              'Spectral_peak_ID', 'Spectral_peak_list_ID',
-                                                             'PDB_record_ID_1', 'PDB_model_num_1', 'PDB_strand_ID_1', 'PDB_ins_code_1', 'PDB_residue_no_1', 'PDB_residue_name_1', 'PDB_atom_name_1', 'PDB_record_ID_2', 'PDB_model_num_2', 'PDB_strand_ID_2', 'PDB_ins_code_2', 'PDB_residue_no_2', 'PDB_residue_name_2', 'PDB_atom_name_2',
-                                                             'Auth_entity_assembly_ID_1', 'Auth_asym_ID_1', 'Auth_chain_ID_1', 'Auth_seq_ID_1', 'Auth_comp_ID_1', 'Auth_atom_ID_1', 'Auth_alt_ID_1', 'Auth_atom_name_1', 'Auth_entity_assembly_ID_2', 'Auth_asym_ID_2', 'Auth_chain_ID_2', 'Auth_seq_ID_2', 'Auth_comp_ID_2', 'Auth_atom_ID_2', 'Auth_alt_ID_2', 'Auth_atom_name_2',
+                                                             'PDB_record_ID_1', 'PDB_model_num_1', 'PDB_strand_ID_1', 'PDB_ins_code_1', 'PDB_residue_no_1',
+                                                             'PDB_residue_name_1', 'PDB_atom_name_1', 'PDB_record_ID_2', 'PDB_model_num_2', 'PDB_strand_ID_2'
+                                                             , 'PDB_ins_code_2', 'PDB_residue_no_2', 'PDB_residue_name_2', 'PDB_atom_name_2',
+                                                             'Auth_entity_assembly_ID_1', 'Auth_asym_ID_1', 'Auth_chain_ID_1', 'Auth_seq_ID_1', 'Auth_comp_ID_1',
+                                                             'Auth_atom_ID_1', 'Auth_alt_ID_1', 'Auth_atom_name_1',
+                                                             'Auth_entity_assembly_ID_2', 'Auth_asym_ID_2', 'Auth_chain_ID_2', 'Auth_seq_ID_2', 'Auth_comp_ID_2',
+                                                             'Auth_atom_ID_2', 'Auth_alt_ID_2', 'Auth_atom_name_2',
                                                              'Sf_ID', 'Entry_ID', 'Gen_dist_constraint_list_ID',
                                                              'Original_PDB_strand_ID_1', 'Original_PDB_residue_no_1', 'Original_PDB_residue_name_1',
                                                              'Original_PDB_strand_ID_2', 'Original_PDB_residue_no_2', 'Original_PDB_residue_name_2'],
                                           'dihed_restraint': ['Index_ID', 'ID', 'Combination_ID', 'Set_ID', 'Torsion_angle_name',
-                                                              'Assembly_atom_ID_1', 'Entity_assembly_ID_1', 'Entity_ID_1', 'Comp_index_ID_1', 'Seq_ID_1', 'Comp_ID_1', 'Atom_ID_1', 'Atom_type_1', 'Resonance_ID_1', 'Assembly_atom_ID_2', 'Entity_assembly_ID_2', 'Entity_ID_2', 'Comp_index_ID_2', 'Seq_ID_2', 'Comp_ID_2', 'Atom_ID_2', 'Atom_type_2', 'Resonance_ID_2',
-                                                              'Assembly_atom_ID_3', 'Entity_assembly_ID_3', 'Entity_ID_3', 'Comp_index_ID_3', 'Seq_ID_3', 'Comp_ID_3', 'Atom_ID_3', 'Atom_type_3', 'Resonance_ID_3', 'Assembly_atom_ID_4', 'Entity_assembly_ID_4', 'Entity_ID_4', 'Comp_index_ID_4', 'Seq_ID_4', 'Comp_ID_4', 'Atom_ID_4', 'Atom_type_4', 'Resonance_ID_4',
-                                                              'Angle_lower_bound_val', 'Angle_upper_bound_val', 'Angle_target_val', 'Angle_target_val_err', 'Angle_lower_linear_limit', 'Angle_upper_linear_limit', 'Weight', 'Source_experiment_ID', 'Figure_of_merit',
-                                                              'PDB_record_ID_1', 'PDB_model_num_1', 'PDB_strand_ID_1', 'PDB_ins_code_1', 'PDB_residue_no_1', 'PDB_residue_name_1', 'PDB_atom_name_1', 'PDB_record_ID_2', 'PDB_model_num_2', 'PDB_strand_ID_2', 'PDB_ins_code_2', 'PDB_residue_no_2', 'PDB_residue_name_2', 'PDB_atom_name_2',
-                                                              'PDB_record_ID_3', 'PDB_model_num_3', 'PDB_strand_ID_3', 'PDB_ins_code_3', 'PDB_residue_no_3', 'PDB_residue_name_3', 'PDB_atom_name_3', 'PDB_record_ID_4', 'PDB_model_num_4', 'PDB_strand_ID_4', 'PDB_ins_code_4', 'PDB_residue_no_4', 'PDB_residue_name_4', 'PDB_atom_name_4',
-                                                              'Auth_entity_assembly_ID_1', 'Auth_asym_ID_1', 'Auth_chain_ID_1', 'Auth_seq_ID_1', 'Auth_comp_ID_1', 'Auth_atom_ID_1', 'Auth_alt_ID_1', 'Auth_atom_name_1', 'Auth_entity_assembly_ID_2', 'Auth_asym_ID_2', 'Auth_chain_ID_2', 'Auth_seq_ID_2', 'Auth_comp_ID_2', 'Auth_atom_ID_2', 'Auth_alt_ID_2', 'Auth_atom_name_2',
-                                                              'Auth_entity_assembly_ID_3', 'Auth_asym_ID_3', 'Auth_chain_ID_3', 'Auth_seq_ID_3', 'Auth_comp_ID_3', 'Auth_atom_ID_3', 'Auth_alt_ID_3', 'Auth_atom_name_3', 'Auth_entity_assembly_ID_4', 'Auth_asym_ID_4', 'Auth_chain_ID_4', 'Auth_seq_ID_4', 'Auth_comp_ID_4', 'Auth_atom_ID_4', 'Auth_alt_ID_4', 'Auth_atom_name_4',
+                                                              'Assembly_atom_ID_1', 'Entity_assembly_ID_1', 'Entity_ID_1', 'Comp_index_ID_1', 'Seq_ID_1',
+                                                              'Comp_ID_1', 'Atom_ID_1', 'Atom_type_1', 'Resonance_ID_1',
+                                                              'Assembly_atom_ID_2', 'Entity_assembly_ID_2', 'Entity_ID_2', 'Comp_index_ID_2', 'Seq_ID_2',
+                                                              'Comp_ID_2', 'Atom_ID_2', 'Atom_type_2', 'Resonance_ID_2',
+                                                              'Assembly_atom_ID_3', 'Entity_assembly_ID_3', 'Entity_ID_3', 'Comp_index_ID_3', 'Seq_ID_3',
+                                                              'Comp_ID_3', 'Atom_ID_3', 'Atom_type_3', 'Resonance_ID_3',
+                                                              'Assembly_atom_ID_4', 'Entity_assembly_ID_4', 'Entity_ID_4', 'Comp_index_ID_4', 'Seq_ID_4',
+                                                              'Comp_ID_4', 'Atom_ID_4', 'Atom_type_4', 'Resonance_ID_4',
+                                                              'Angle_lower_bound_val', 'Angle_upper_bound_val', 'Angle_target_val', 'Angle_target_val_err',
+                                                              'Angle_lower_linear_limit', 'Angle_upper_linear_limit', 'Weight', 'Source_experiment_ID', 'Figure_of_merit',
+                                                              'PDB_record_ID_1', 'PDB_model_num_1', 'PDB_strand_ID_1', 'PDB_ins_code_1', 'PDB_residue_no_1',
+                                                              'PDB_residue_name_1', 'PDB_atom_name_1',
+                                                              'PDB_record_ID_2', 'PDB_model_num_2', 'PDB_strand_ID_2', 'PDB_ins_code_2', 'PDB_residue_no_2',
+                                                              'PDB_residue_name_2', 'PDB_atom_name_2',
+                                                              'PDB_record_ID_3', 'PDB_model_num_3', 'PDB_strand_ID_3', 'PDB_ins_code_3', 'PDB_residue_no_3',
+                                                              'PDB_residue_name_3', 'PDB_atom_name_3',
+                                                              'PDB_record_ID_4', 'PDB_model_num_4', 'PDB_strand_ID_4', 'PDB_ins_code_4', 'PDB_residue_no_4',
+                                                              'PDB_residue_name_4', 'PDB_atom_name_4',
+                                                              'Auth_entity_assembly_ID_1', 'Auth_asym_ID_1', 'Auth_chain_ID_1', 'Auth_seq_ID_1', 'Auth_comp_ID_1',
+                                                              'Auth_atom_ID_1', 'Auth_alt_ID_1', 'Auth_atom_name_1',
+                                                              'Auth_entity_assembly_ID_2', 'Auth_asym_ID_2', 'Auth_chain_ID_2', 'Auth_seq_ID_2', 'Auth_comp_ID_2',
+                                                              'Auth_atom_ID_2', 'Auth_alt_ID_2', 'Auth_atom_name_2',
+                                                              'Auth_entity_assembly_ID_3', 'Auth_asym_ID_3', 'Auth_chain_ID_3', 'Auth_seq_ID_3', 'Auth_comp_ID_3',
+                                                              'Auth_atom_ID_3', 'Auth_alt_ID_3', 'Auth_atom_name_3',
+                                                              'Auth_entity_assembly_ID_4', 'Auth_asym_ID_4', 'Auth_chain_ID_4', 'Auth_seq_ID_4', 'Auth_comp_ID_4',
+                                                              'Auth_atom_ID_4', 'Auth_alt_ID_4', 'Auth_atom_name_4',
                                                               'Sf_ID', 'Entry_ID', 'Torsion_angle_constraint_list_ID'],
                                           'rdc_restraint': ['Index_ID', 'ID', 'Combination_ID',
-                                                            'Assembly_atom_ID_1', 'Entity_assembly_ID_1', 'Entity_ID_1', 'Comp_index_ID_1', 'Seq_ID_1', 'Comp_ID_1', 'Atom_ID_1', 'Atom_type_1', 'Atom_isotope_number_1', 'Resonance_ID_1', 'Assembly_atom_ID_2', 'Entity_assembly_ID_2', 'Entity_ID_2', 'Comp_index_ID_2', 'Seq_ID_2', 'Comp_ID_2', 'Atom_ID_2', 'Atom_type_2', 'Atom_isotope_number_2', 'Resonance_ID_2',
-                                                            'Weight', 'RDC_val', 'RDC_val_err', 'Target_value', 'Target_value_uncertainty', 'RDC_lower_bound', 'RDC_upper_bound', 'RDC_lower_linear_limit', 'RDC_upper_linear_limit', 'RDC_val_scale_factor', 'RDC_bond_length', 'RDC_distant_dependent', 'Source_experiment_ID',
-                                                            'PDB_record_ID_1', 'PDB_model_num_1', 'PDB_strand_ID_1', 'PDB_ins_code_1', 'PDB_residue_no_1', 'PDB_residue_name_1', 'PDB_atom_name_1', 'PDB_record_ID_2', 'PDB_model_num_2', 'PDB_strand_ID_2', 'PDB_ins_code_2', 'PDB_residue_no_2', 'PDB_residue_name_2', 'PDB_atom_name_2',
-                                                            'Auth_entity_assembly_ID_1', 'Auth_asym_ID_1', 'Auth_chain_ID_1', 'Auth_seq_ID_1', 'Auth_comp_ID_1', 'Auth_atom_ID_1', 'Auth_alt_ID_1', 'Auth_atom_name_1', 'Auth_entity_assembly_ID_2', 'Auth_asym_ID_2', 'Auth_chain_ID_2', 'Auth_seq_ID_2', 'Auth_comp_ID_2', 'Auth_atom_ID_2', 'Auth_alt_ID_2', 'Auth_atom_name_2',
+                                                            'Assembly_atom_ID_1', 'Entity_assembly_ID_1', 'Entity_ID_1', 'Comp_index_ID_1', 'Seq_ID_1',
+                                                            'Comp_ID_1', 'Atom_ID_1', 'Atom_type_1', 'Atom_isotope_number_1', 'Resonance_ID_1',
+                                                            'Assembly_atom_ID_2', 'Entity_assembly_ID_2', 'Entity_ID_2', 'Comp_index_ID_2', 'Seq_ID_2',
+                                                            'Comp_ID_2', 'Atom_ID_2', 'Atom_type_2', 'Atom_isotope_number_2', 'Resonance_ID_2',
+                                                            'Weight', 'RDC_val', 'RDC_val_err', 'Target_value', 'Target_value_uncertainty',
+                                                            'RDC_lower_bound', 'RDC_upper_bound', 'RDC_lower_linear_limit', 'RDC_upper_linear_limit',
+                                                            'RDC_val_scale_factor', 'RDC_bond_length', 'RDC_distant_dependent', 'Source_experiment_ID',
+                                                            'PDB_record_ID_1', 'PDB_model_num_1', 'PDB_strand_ID_1', 'PDB_ins_code_1', 'PDB_residue_no_1',
+                                                            'PDB_residue_name_1', 'PDB_atom_name_1',
+                                                            'PDB_record_ID_2', 'PDB_model_num_2', 'PDB_strand_ID_2', 'PDB_ins_code_2', 'PDB_residue_no_2'
+                                                            , 'PDB_residue_name_2', 'PDB_atom_name_2',
+                                                            'Auth_entity_assembly_ID_1', 'Auth_asym_ID_1', 'Auth_chain_ID_1', 'Auth_seq_ID_1', 'Auth_comp_ID_1',
+                                                            'Auth_atom_ID_1', 'Auth_alt_ID_1', 'Auth_atom_name_1',
+                                                            'Auth_entity_assembly_ID_2', 'Auth_asym_ID_2', 'Auth_chain_ID_2', 'Auth_seq_ID_2', 'Auth_comp_ID_2',
+                                                            'Auth_atom_ID_2', 'Auth_alt_ID_2', 'Auth_atom_name_2',
                                                             'Sf_ID', 'Entry_ID', 'RDC_constraint_list_ID'],
                                           'spectral_peak': ['Index_ID', 'ID', 'Volume', 'Volume_uncertainty', 'Height', 'Height_uncertainty', 'Figure_of_merit', 'Restraint',
-                                                            'Position_1', 'Position_uncertainty_1', 'Line_width_1', 'Line_width_uncertainty_1', 'Position_2', 'Position_uncertainty_2', 'Line_width_2', 'Line_width_uncertainty_2',
-                                                            'Position_3', 'Position_uncertainty_3', 'Line_width_3', 'Line_width_uncertainty_3', 'Position_4', 'Position_uncertainty_4', 'Line_width_4', 'Line_width_uncertainty_4',
-                                                            'Position_5', 'Position_uncertainty_5', 'Line_width_5', 'Line_width_uncertainty_5', 'Position_6', 'Position_uncertainty_6', 'Line_width_6', 'Line_width_uncertainty_6',
-                                                            'Position_7', 'Position_uncertainty_7', 'Line_width_7', 'Line_width_uncertainty_7', 'Position_8', 'Position_uncertainty_8', 'Line_width_8', 'Line_width_uncertainty_8',
-                                                            'Position_9', 'Position_uncertainty_9', 'Line_width_9', 'Line_width_uncertainty_9', 'Position_10', 'Position_uncertainty_10', 'Line_width_10', 'Line_width_uncertainty_10',
-                                                            'Position_11', 'Position_uncertainty_11', 'Line_width_11', 'Line_width_uncertainty_11', 'Position_12', 'Position_uncertainty_12', 'Line_width_12', 'Line_width_uncertainty_12',
-                                                            'Position_13', 'Position_uncertainty_13', 'Line_width_13', 'Line_width_uncertainty_13', 'Position_14', 'Position_uncertainty_14', 'Line_width_14', 'Line_width_uncertainty_14',
+                                                            'Position_1', 'Position_uncertainty_1', 'Line_width_1', 'Line_width_uncertainty_1',
+                                                            'Position_2', 'Position_uncertainty_2', 'Line_width_2', 'Line_width_uncertainty_2',
+                                                            'Position_3', 'Position_uncertainty_3', 'Line_width_3', 'Line_width_uncertainty_3',
+                                                            'Position_4', 'Position_uncertainty_4', 'Line_width_4', 'Line_width_uncertainty_4',
+                                                            'Position_5', 'Position_uncertainty_5', 'Line_width_5', 'Line_width_uncertainty_5',
+                                                            'Position_6', 'Position_uncertainty_6', 'Line_width_6', 'Line_width_uncertainty_6',
+                                                            'Position_7', 'Position_uncertainty_7', 'Line_width_7', 'Line_width_uncertainty_7',
+                                                            'Position_8', 'Position_uncertainty_8', 'Line_width_8', 'Line_width_uncertainty_8',
+                                                            'Position_9', 'Position_uncertainty_9', 'Line_width_9', 'Line_width_uncertainty_9',
+                                                            'Position_10', 'Position_uncertainty_10', 'Line_width_10', 'Line_width_uncertainty_10',
+                                                            'Position_11', 'Position_uncertainty_11', 'Line_width_11', 'Line_width_uncertainty_11',
+                                                            'Position_12', 'Position_uncertainty_12', 'Line_width_12', 'Line_width_uncertainty_12',
+                                                            'Position_13', 'Position_uncertainty_13', 'Line_width_13', 'Line_width_uncertainty_13',
+                                                            'Position_14', 'Position_uncertainty_14', 'Line_width_14', 'Line_width_uncertainty_14',
                                                             'Position_15', 'Position_uncertainty_15', 'Line_width_15', 'Line_width_uncertainty_15',
-                                                            'Entity_assembly_ID_1', 'Entity_ID_1', 'Comp_index_ID_1', 'Seq_ID_1', 'Comp_ID_1', 'Atom_ID_1', 'Ambiguity_code_1', 'Ambiguity_set_ID_1', 'Entity_assembly_ID_2', 'Entity_ID_2', 'Comp_index_ID_2', 'Seq_ID_2', 'Comp_ID_2', 'Atom_ID_2', 'Ambiguity_code_2', 'Ambiguity_set_ID_2',
-                                                            'Entity_assembly_ID_3', 'Entity_ID_3', 'Comp_index_ID_3', 'Seq_ID_3', 'Comp_ID_3', 'Atom_ID_3', 'Ambiguity_code_3', 'Ambiguity_set_ID_3', 'Entity_assembly_ID_4', 'Entity_ID_4', 'Comp_index_ID_4', 'Seq_ID_4', 'Comp_ID_4', 'Atom_ID_4', 'Ambiguity_code_4', 'Ambiguity_set_ID_4',
-                                                            'Entity_assembly_ID_5', 'Entity_ID_5', 'Comp_index_ID_5', 'Seq_ID_5', 'Comp_ID_5', 'Atom_ID_5', 'Ambiguity_code_5', 'Ambiguity_set_ID_5', 'Entity_assembly_ID_6', 'Entity_ID_6', 'Comp_index_ID_6', 'Seq_ID_6', 'Comp_ID_6', 'Atom_ID_6', 'Ambiguity_code_6', 'Ambiguity_set_ID_6',
-                                                            'Entity_assembly_ID_7', 'Entity_ID_7', 'Comp_index_ID_7', 'Seq_ID_7', 'Comp_ID_7', 'Atom_ID_7', 'Ambiguity_code_7', 'Ambiguity_set_ID_7', 'Entity_assembly_ID_8', 'Entity_ID_8', 'Comp_index_ID_8', 'Seq_ID_8', 'Comp_ID_8', 'Atom_ID_8', 'Ambiguity_code_8', 'Ambiguity_set_ID_8',
-                                                            'Entity_assembly_ID_9', 'Entity_ID_9', 'Comp_index_ID_9', 'Seq_ID_9', 'Comp_ID_9', 'Atom_ID_9', 'Ambiguity_code_9', 'Ambiguity_set_ID_9', 'Entity_assembly_ID_10', 'Entity_ID_10', 'Comp_index_ID_10', 'Seq_ID_10', 'Comp_ID_10', 'Atom_ID_10', 'Ambiguity_code_10', 'Ambiguity_set_ID_10',
-                                                            'Entity_assembly_ID_11', 'Entity_ID_11', 'Comp_index_ID_11', 'Seq_ID_11', 'Comp_ID_11', 'Atom_ID_11', 'Ambiguity_code_11', 'Ambiguity_set_ID_11', 'Entity_assembly_ID_12', 'Entity_ID_12', 'Comp_index_ID_12', 'Seq_ID_12', 'Comp_ID_12', 'Atom_ID_12', 'Ambiguity_code_12', 'Ambiguity_set_ID_12',
-                                                            'Entity_assembly_ID_13', 'Entity_ID_13', 'Comp_index_ID_13', 'Seq_ID_13', 'Comp_ID_13', 'Atom_ID_13', 'Ambiguity_code_13', 'Ambiguity_set_ID_13', 'Entity_assembly_ID_14', 'Entity_ID_14', 'Comp_index_ID_14', 'Seq_ID_14', 'Comp_ID_14', 'Atom_ID_14', 'Ambiguity_code_14', 'Ambiguity_set_ID_14',
-                                                            'Entity_assembly_ID_15', 'Entity_ID_15', 'Comp_index_ID_15', 'Seq_ID_15', 'Comp_ID_15', 'Atom_ID_15', 'Ambiguity_code_15', 'Ambiguity_set_ID_15',
-                                                            'Auth_entity_assembly_ID_1', 'Auth_entity_ID_1', 'Auth_asym_ID_1', 'Auth_seq_ID_1', 'Auth_comp_ID_1', 'Auth_atom_ID_1', 'Auth_ambiguity_code_1', 'Auth_ambiguity_set_ID_1', 'Auth_entity_assembly_ID_2', 'Auth_entity_ID_2', 'Auth_asym_ID_2', 'Auth_seq_ID_2', 'Auth_comp_ID_2', 'Auth_atom_ID_2', 'Auth_ambiguity_code_2', 'Auth_ambiguity_set_ID_2',
-                                                            'Auth_entity_assembly_ID_3', 'Auth_entity_ID_3', 'Auth_asym_ID_3', 'Auth_seq_ID_3', 'Auth_comp_ID_3', 'Auth_atom_ID_3', 'Auth_ambiguity_code_3', 'Auth_ambiguity_set_ID_3', 'Auth_entity_assembly_ID_4', 'Auth_entity_ID_4', 'Auth_asym_ID_4', 'Auth_seq_ID_4', 'Auth_comp_ID_4', 'Auth_atom_ID_4', 'Auth_ambiguity_code_4', 'Auth_ambiguity_set_ID_4',
-                                                            'Auth_entity_assembly_ID_5', 'Auth_entity_ID_5', 'Auth_asym_ID_5', 'Auth_seq_ID_5', 'Auth_comp_ID_5', 'Auth_atom_ID_5', 'Auth_ambiguity_code_5', 'Auth_ambiguity_set_ID_5', 'Auth_entity_assembly_ID_6', 'Auth_entity_ID_6', 'Auth_asym_ID_6', 'Auth_seq_ID_6', 'Auth_comp_ID_6', 'Auth_atom_ID_6', 'Auth_ambiguity_code_6', 'Auth_ambiguity_set_ID_6',
-                                                            'Auth_entity_assembly_ID_7', 'Auth_entity_ID_7', 'Auth_asym_ID_7', 'Auth_seq_ID_7', 'Auth_comp_ID_7', 'Auth_atom_ID_7', 'Auth_ambiguity_code_7', 'Auth_ambiguity_set_ID_7', 'Auth_entity_assembly_ID_8', 'Auth_entity_ID_8', 'Auth_asym_ID_8', 'Auth_seq_ID_8', 'Auth_comp_ID_8', 'Auth_atom_ID_8', 'Auth_ambiguity_code_8', 'Auth_ambiguity_set_ID_8',
-                                                            'Auth_entity_assembly_ID_9', 'Auth_entity_ID_9', 'Auth_asym_ID_9', 'Auth_seq_ID_9', 'Auth_comp_ID_9', 'Auth_atom_ID_9', 'Auth_ambiguity_code_9', 'Auth_ambiguity_set_ID_9', 'Auth_entity_assembly_ID_10', 'Auth_entity_ID_10', 'Auth_asym_ID_10', 'Auth_seq_ID_10', 'Auth_comp_ID_10', 'Auth_atom_ID_10', 'Auth_ambiguity_code_10', 'Auth_ambiguity_set_ID_10',
-                                                            'Auth_entity_assembly_ID_11', 'Auth_entity_ID_11', 'Auth_asym_ID_11', 'Auth_seq_ID_11', 'Auth_comp_ID_11', 'Auth_atom_ID_11', 'Auth_ambiguity_code_11', 'Auth_ambiguity_set_ID_11', 'Auth_entity_assembly_ID_12', 'Auth_entity_ID_12', 'Auth_asym_ID_12', 'Auth_seq_ID_12', 'Auth_comp_ID_12', 'Auth_atom_ID_12', 'Auth_ambiguity_code_12', 'Auth_ambiguity_set_ID_12',
-                                                            'Auth_entity_assembly_ID_13', 'Auth_entity_ID_13', 'Auth_asym_ID_13', 'Auth_seq_ID_13', 'Auth_comp_ID_13', 'Auth_atom_ID_13', 'Auth_ambiguity_code_13', 'Auth_ambiguity_set_ID_13', 'Auth_entity_assembly_ID_14', 'Auth_entity_ID_14', 'Auth_asym_ID_14', 'Auth_seq_ID_14', 'Auth_comp_ID_14', 'Auth_atom_ID_14', 'Auth_ambiguity_code_14', 'Auth_ambiguity_set_ID_14',
-                                                            'Auth_entity_assembly_ID_15', 'Auth_entity_ID_15', 'Auth_asym_ID_15', 'Auth_seq_ID_15', 'Auth_comp_ID_15', 'Auth_atom_ID_15', 'Auth_ambiguity_code_15', 'Auth_ambiguity_set_ID_15',
+                                                            'Entity_assembly_ID_1', 'Entity_ID_1', 'Comp_index_ID_1', 'Seq_ID_1', 'Comp_ID_1'
+                                                            , 'Atom_ID_1', 'Ambiguity_code_1', 'Ambiguity_set_ID_1',
+                                                            'Entity_assembly_ID_2', 'Entity_ID_2', 'Comp_index_ID_2', 'Seq_ID_2', 'Comp_ID_2',
+                                                            'Atom_ID_2', 'Ambiguity_code_2', 'Ambiguity_set_ID_2',
+                                                            'Entity_assembly_ID_3', 'Entity_ID_3', 'Comp_index_ID_3', 'Seq_ID_3', 'Comp_ID_3',
+                                                            'Atom_ID_3', 'Ambiguity_code_3', 'Ambiguity_set_ID_3',
+                                                            'Entity_assembly_ID_4', 'Entity_ID_4', 'Comp_index_ID_4', 'Seq_ID_4', 'Comp_ID_4',
+                                                            'Atom_ID_4', 'Ambiguity_code_4', 'Ambiguity_set_ID_4',
+                                                            'Entity_assembly_ID_5', 'Entity_ID_5', 'Comp_index_ID_5', 'Seq_ID_5', 'Comp_ID_5',
+                                                            'Atom_ID_5', 'Ambiguity_code_5', 'Ambiguity_set_ID_5',
+                                                            'Entity_assembly_ID_6', 'Entity_ID_6', 'Comp_index_ID_6', 'Seq_ID_6', 'Comp_ID_6',
+                                                            'Atom_ID_6', 'Ambiguity_code_6', 'Ambiguity_set_ID_6',
+                                                            'Entity_assembly_ID_7', 'Entity_ID_7', 'Comp_index_ID_7', 'Seq_ID_7', 'Comp_ID_7',
+                                                            'Atom_ID_7', 'Ambiguity_code_7', 'Ambiguity_set_ID_7',
+                                                            'Entity_assembly_ID_8', 'Entity_ID_8', 'Comp_index_ID_8', 'Seq_ID_8', 'Comp_ID_8',
+                                                            'Atom_ID_8', 'Ambiguity_code_8', 'Ambiguity_set_ID_8',
+                                                            'Entity_assembly_ID_9', 'Entity_ID_9', 'Comp_index_ID_9', 'Seq_ID_9', 'Comp_ID_9',
+                                                            'Atom_ID_9', 'Ambiguity_code_9', 'Ambiguity_set_ID_9',
+                                                            'Entity_assembly_ID_10', 'Entity_ID_10', 'Comp_index_ID_10', 'Seq_ID_10', 'Comp_ID_10',
+                                                            'Atom_ID_10', 'Ambiguity_code_10', 'Ambiguity_set_ID_10',
+                                                            'Entity_assembly_ID_11', 'Entity_ID_11', 'Comp_index_ID_11', 'Seq_ID_11', 'Comp_ID_11',
+                                                            'Atom_ID_11', 'Ambiguity_code_11', 'Ambiguity_set_ID_11',
+                                                            'Entity_assembly_ID_12', 'Entity_ID_12', 'Comp_index_ID_12', 'Seq_ID_12', 'Comp_ID_12',
+                                                            'Atom_ID_12', 'Ambiguity_code_12', 'Ambiguity_set_ID_12',
+                                                            'Entity_assembly_ID_13', 'Entity_ID_13', 'Comp_index_ID_13', 'Seq_ID_13', 'Comp_ID_13',
+                                                            'Atom_ID_13', 'Ambiguity_code_13', 'Ambiguity_set_ID_13',
+                                                            'Entity_assembly_ID_14', 'Entity_ID_14', 'Comp_index_ID_14', 'Seq_ID_14', 'Comp_ID_14',
+                                                            'Atom_ID_14', 'Ambiguity_code_14', 'Ambiguity_set_ID_14',
+                                                            'Entity_assembly_ID_15', 'Entity_ID_15', 'Comp_index_ID_15', 'Seq_ID_15', 'Comp_ID_15',
+                                                            'Atom_ID_15', 'Ambiguity_code_15', 'Ambiguity_set_ID_15',
+                                                            'Auth_entity_assembly_ID_1', 'Auth_entity_ID_1', 'Auth_asym_ID_1', 'Auth_seq_ID_1',
+                                                            'Auth_comp_ID_1', 'Auth_atom_ID_1', 'Auth_ambiguity_code_1', 'Auth_ambiguity_set_ID_1',
+                                                            'Auth_entity_assembly_ID_2', 'Auth_entity_ID_2', 'Auth_asym_ID_2', 'Auth_seq_ID_2',
+                                                            'Auth_comp_ID_2', 'Auth_atom_ID_2', 'Auth_ambiguity_code_2', 'Auth_ambiguity_set_ID_2',
+                                                            'Auth_entity_assembly_ID_3', 'Auth_entity_ID_3', 'Auth_asym_ID_3', 'Auth_seq_ID_3',
+                                                            'Auth_comp_ID_3', 'Auth_atom_ID_3', 'Auth_ambiguity_code_3', 'Auth_ambiguity_set_ID_3',
+                                                            'Auth_entity_assembly_ID_4', 'Auth_entity_ID_4', 'Auth_asym_ID_4', 'Auth_seq_ID_4',
+                                                            'Auth_comp_ID_4', 'Auth_atom_ID_4', 'Auth_ambiguity_code_4', 'Auth_ambiguity_set_ID_4',
+                                                            'Auth_entity_assembly_ID_5', 'Auth_entity_ID_5', 'Auth_asym_ID_5', 'Auth_seq_ID_5',
+                                                            'Auth_comp_ID_5', 'Auth_atom_ID_5', 'Auth_ambiguity_code_5', 'Auth_ambiguity_set_ID_5',
+                                                            'Auth_entity_assembly_ID_6', 'Auth_entity_ID_6', 'Auth_asym_ID_6', 'Auth_seq_ID_6',
+                                                            'Auth_comp_ID_6', 'Auth_atom_ID_6', 'Auth_ambiguity_code_6', 'Auth_ambiguity_set_ID_6',
+                                                            'Auth_entity_assembly_ID_7', 'Auth_entity_ID_7', 'Auth_asym_ID_7', 'Auth_seq_ID_7',
+                                                            'Auth_comp_ID_7', 'Auth_atom_ID_7', 'Auth_ambiguity_code_7', 'Auth_ambiguity_set_ID_7',
+                                                            'Auth_entity_assembly_ID_8', 'Auth_entity_ID_8', 'Auth_asym_ID_8', 'Auth_seq_ID_8',
+                                                            'Auth_comp_ID_8', 'Auth_atom_ID_8', 'Auth_ambiguity_code_8', 'Auth_ambiguity_set_ID_8',
+                                                            'Auth_entity_assembly_ID_9', 'Auth_entity_ID_9', 'Auth_asym_ID_9', 'Auth_seq_ID_9',
+                                                            'Auth_comp_ID_9', 'Auth_atom_ID_9', 'Auth_ambiguity_code_9', 'Auth_ambiguity_set_ID_9',
+                                                            'Auth_entity_assembly_ID_10', 'Auth_entity_ID_10', 'Auth_asym_ID_10', 'Auth_seq_ID_10',
+                                                            'Auth_comp_ID_10', 'Auth_atom_ID_10', 'Auth_ambiguity_code_10', 'Auth_ambiguity_set_ID_10',
+                                                            'Auth_entity_assembly_ID_11', 'Auth_entity_ID_11', 'Auth_asym_ID_11', 'Auth_seq_ID_11',
+                                                            'Auth_comp_ID_11', 'Auth_atom_ID_11', 'Auth_ambiguity_code_11', 'Auth_ambiguity_set_ID_11',
+                                                            'Auth_entity_assembly_ID_12', 'Auth_entity_ID_12', 'Auth_asym_ID_12', 'Auth_seq_ID_12',
+                                                            'Auth_comp_ID_12', 'Auth_atom_ID_12', 'Auth_ambiguity_code_12', 'Auth_ambiguity_set_ID_12',
+                                                            'Auth_entity_assembly_ID_13', 'Auth_entity_ID_13', 'Auth_asym_ID_13', 'Auth_seq_ID_13',
+                                                            'Auth_comp_ID_13', 'Auth_atom_ID_13', 'Auth_ambiguity_code_13', 'Auth_ambiguity_set_ID_13',
+                                                            'Auth_entity_assembly_ID_14', 'Auth_entity_ID_14', 'Auth_asym_ID_14', 'Auth_seq_ID_14',
+                                                            'Auth_comp_ID_14', 'Auth_atom_ID_14', 'Auth_ambiguity_code_14', 'Auth_ambiguity_set_ID_14',
+                                                            'Auth_entity_assembly_ID_15', 'Auth_entity_ID_15', 'Auth_asym_ID_15', 'Auth_seq_ID_15',
+                                                            'Auth_comp_ID_15', 'Auth_atom_ID_15', 'Auth_ambiguity_code_15', 'Auth_ambiguity_set_ID_15',
                                                             'Details', 'Sf_ID', 'Entry_ID', 'Spectral_peak_list_ID'],
                                           'spectral_peak_alt': ['Index_ID', 'ID', 'Figure_of_merit', 'Restraint', 'Details', 'Sf_ID', 'Entry_ID', 'Spectral_peak_list_ID']
                                           }
-                              }
+                             }
 
         # disallowed loop tags of spectral peak
         self.spectral_peak_disallowed_tags = {'nef': ['position_%s', 'position_uncertainty_%s', 'chain_code_%s', 'sequence_code_%s', 'residue_name_%s', 'atom_name_%s'],
-                                              'nmr-star': ['Position_%s', 'Position_uncertainty_%s', 'Line_width_%s', 'Line_width_uncertainty_%s', 'Entity_assembly_ID_%s', 'Entity_ID_%s', 'Comp_index_ID_%s', 'Seq_ID_%s', 'Comp_ID_%s', 'Atom_ID_%s', 'Ambiguity_code_%s', 'Ambiguity_set_ID_%s', 'Auth_entity_assembly_ID_%s', 'Auth_entity_ID_%s', 'Auth_asym_ID_%s', 'Auth_seq_ID_%s', 'Auth_comp_ID_%s', 'Auth_atom_ID_%s', 'Auth_ambiguity_code_%s', 'Auth_ambiguity_set_ID_%s']
+                                              'nmr-star': ['Position_%s', 'Position_uncertainty_%s', 'Line_width_%s',
+                                                           'Line_width_uncertainty_%s', 'Entity_assembly_ID_%s', 'Entity_ID_%s',
+                                                           'Comp_index_ID_%s', 'Seq_ID_%s', 'Comp_ID_%s', 'Atom_ID_%s',
+                                                           'Ambiguity_code_%s', 'Ambiguity_set_ID_%s', 'Auth_entity_assembly_ID_%s',
+                                                           'Auth_entity_ID_%s', 'Auth_asym_ID_%s', 'Auth_seq_ID_%s', 'Auth_comp_ID_%s',
+                                                           'Auth_atom_ID_%s', 'Auth_ambiguity_code_%s', 'Auth_ambiguity_set_ID_%s']
                                               }
 
         # error template for missing mandatory loop tag
@@ -2344,7 +2565,7 @@ class NmrDpUtility:
                                              'spectral_peak': '_Spectral_peak_list',
                                              'spectral_peak_alt': '_Spectral_peak_list'
                                              }
-                              }
+                                }
 
         self.alt_potential_type = {'?': 'undefined'}
 
@@ -2438,7 +2659,7 @@ class NmrDpUtility:
                                                       'csp': 'chemical shift perturbation',
                                                       'CSP': 'chemical shift perturbation',
                                                       '?': 'undefined'
-                                                     }
+                                                      }
                                          }
 
         self.dihed_alt_constraint_type = {'nef': {'J-couplings': 'jcoupling',
@@ -2517,7 +2738,7 @@ class NmrDpUtility:
                                           'nmr-star': {'jcoupling': 'J-couplings',
                                                        'Jcoupling': 'J-couplings',
                                                        'jcouplings': 'J-couplings',
-                                                       'Jcouplings':'J-couplings',
+                                                       'Jcouplings': 'J-couplings',
                                                        'j-couplings': 'J-couplings',
                                                        'J couplings': 'J-couplings',
                                                        'j couplings': 'J-couplings',
@@ -2610,7 +2831,7 @@ class NmrDpUtility:
                                                     {'name': 'creation_date', 'type': 'str', 'mandatory': True},
                                                     {'name': 'uuid', 'type': 'str', 'mandatory': True},
                                                     {'name': 'coordinate_file_name', 'type': 'str', 'mandatory': False}
-                                                   ],
+                                                    ],
                                      'entity': None,
                                      'poly_seq': [{'name': 'sf_category', 'type': 'str', 'mandatory': True},
                                                   {'name': 'sf_framecode', 'type': 'str', 'mandatory': True}
@@ -2622,16 +2843,24 @@ class NmrDpUtility:
                                      'dist_restraint': [{'name': 'sf_category', 'type': 'str', 'mandatory': True},
                                                         {'name': 'sf_framecode', 'type': 'str', 'mandatory': True},
                                                         {'name': 'potential_type', 'type': 'enum', 'mandatory': False,
-                                                         'enum': ('log-harmonic', 'parabolic', 'square-well-parabolic', 'square-well-parabolic-linear', 'upper-bound-parabolic', 'lower-bound-parabolic', 'upper-bound-parabolic-linear', 'lower-bound-parabolic-linear', 'undefined', 'unknown'),
+                                                         'enum': ('log-harmonic', 'parabolic', 'square-well-parabolic',
+                                                                  'square-well-parabolic-linear', 'upper-bound-parabolic',
+                                                                  'lower-bound-parabolic', 'upper-bound-parabolic-linear',
+                                                                  'lower-bound-parabolic-linear', 'undefined', 'unknown'),
                                                          'enum-alt': self.alt_potential_type},
                                                         {'name': 'restraint_origin', 'type': 'enum', 'mandatory': False,
-                                                         'enum': ('noe', 'noe_build_up', 'noe_not_seen', 'roe', 'roe_build_up', 'hbond', 'disulfide_bond', 'pre', 'symmetry', 'mutation', 'shift_perturbation', 'undefined', 'unknown'),
+                                                         'enum': ('noe', 'noe_build_up', 'noe_not_seen', 'roe',
+                                                                  'roe_build_up', 'hbond', 'disulfide_bond', 'pre',
+                                                                  'symmetry', 'mutation', 'shift_perturbation',
+                                                                  'undefined', 'unknown'),
                                                          'enum-alt': self.dist_alt_constraint_type['nef']}
                                                         ],
                                      'dihed_restraint': [{'name': 'sf_category', 'type': 'str', 'mandatory': True},
                                                          {'name': 'sf_framecode', 'type': 'str', 'mandatory': True},
                                                          {'name': 'potential_type', 'type': 'enum', 'mandatory': False,
-                                                          'enum': ('parabolic', 'square-well-parabolic', 'square-well-parabolic-linear', 'upper-bound-parabolic', 'lower-bound-parabolic', 'upper-bound-parabolic-linear', 'lower-bound-parabolic-linear', 'undefined', 'unknown'),
+                                                          'enum': ('parabolic', 'square-well-parabolic', 'square-well-parabolic-linear',
+                                                                   'upper-bound-parabolic', 'lower-bound-parabolic', 'upper-bound-parabolic-linear',
+                                                                   'lower-bound-parabolic-linear', 'undefined', 'unknown'),
                                                           'enum-alt': self.alt_potential_type},
                                                          {'name': 'restraint_origin', 'type': 'enum', 'mandatory': False,
                                                           'enum': ('jcoupling', 'chemical_shift', 'undefined', 'unknown'),
@@ -2640,7 +2869,9 @@ class NmrDpUtility:
                                      'rdc_restraint': [{'name': 'sf_category', 'type': 'str', 'mandatory': True},
                                                        {'name': 'sf_framecode', 'type': 'str', 'mandatory': True},
                                                        {'name': 'potential_type', 'type': 'enum', 'mandatory': False,
-                                                        'enum': ('parabolic', 'square-well-parabolic', 'square-well-parabolic-linear', 'upper-bound-parabolic', 'lower-bound-parabolic', 'upper-bound-parabolic-linear', 'lower-bound-parabolic-linear', 'undefined', 'unknown'),
+                                                        'enum': ('parabolic', 'square-well-parabolic', 'square-well-parabolic-linear',
+                                                                 'upper-bound-parabolic', 'lower-bound-parabolic', 'upper-bound-parabolic-linear',
+                                                                 'lower-bound-parabolic-linear', 'undefined', 'unknown'),
                                                         'enum-alt': self.alt_potential_type},
                                                        {'name': 'restraint_origin', 'type': 'enum', 'mandatory': False,
                                                         'enum': ('measured', 'undefined', 'unknown'),
@@ -2698,10 +2929,16 @@ class NmrDpUtility:
                                           'dist_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
                                                              {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
                                                              {'name': 'Constraint_type', 'type': 'enum', 'mandatory': False,
-                                                              'enum': ('NOE', 'NOE build-up', 'NOE not seen', 'ROE', 'ROE build-up', 'hydrogen bond', 'disulfide bond', 'paramagnetic relaxation', 'symmetry', 'general distance', 'mutation', 'chemical shift perturbation', 'undefined', 'unknown'),
+                                                              'enum': ('NOE', 'NOE build-up', 'NOE not seen', 'ROE', 'ROE build-up',
+                                                                       'hydrogen bond', 'disulfide bond', 'paramagnetic relaxation',
+                                                                       'symmetry', 'general distance', 'mutation', 'chemical shift perturbation',
+                                                                       'undefined', 'unknown'),
                                                               'enum-alt': self.dist_alt_constraint_type['nmr-star']},
                                                              {'name': 'Potential_type', 'type': 'enum', 'mandatory': False,
-                                                              'enum': ('log-harmonic', 'parabolic', 'square-well-parabolic', 'square-well-parabolic-linear', 'upper-bound-parabolic', 'lower-bound-parabolic', 'upper-bound-parabolic-linear', 'lower-bound-parabolic-linear', 'undefined', 'unknown'),
+                                                              'enum': ('log-harmonic', 'parabolic', 'square-well-parabolic',
+                                                                       'square-well-parabolic-linear', 'upper-bound-parabolic',
+                                                                       'lower-bound-parabolic', 'upper-bound-parabolic-linear',
+                                                                       'lower-bound-parabolic-linear', 'undefined', 'unknown'),
                                                               'enum-alt': self.alt_potential_type}
                                                              ],
                                           'dihed_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
@@ -2710,23 +2947,27 @@ class NmrDpUtility:
                                                                'enum': ('J-couplings', 'backbone chemical shifts', 'undefined', 'unknown'),
                                                                'enum-alt': self.dihed_alt_constraint_type['nmr-star']},
                                                               {'name': 'Potential_type', 'type': 'enum', 'mandatory': False,
-                                                               'enum': ('parabolic', 'square-well-parabolic', 'square-well-parabolic-linear', 'upper-bound-parabolic', 'lower-bound-parabolic', 'upper-bound-parabolic-linear', 'lower-bound-parabolic-linear', 'undefined', 'unknown'),
+                                                               'enum': ('parabolic', 'square-well-parabolic', 'square-well-parabolic-linear',
+                                                                        'upper-bound-parabolic', 'lower-bound-parabolic', 'upper-bound-parabolic-linear',
+                                                                        'lower-bound-parabolic-linear', 'undefined', 'unknown'),
                                                                'enum-alt': self.alt_potential_type}
                                                               ],
                                           'rdc_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
-                                                              {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
-                                                              {'name': 'Constraint_type', 'type': 'enum', 'mandatory': False,
-                                                               'enum': ('RDC', 'undefined', 'unknown'),
-                                                               'enum-alt': self.rdc_alt_constraint_type['nmr-star']},
-                                                              {'name': 'Potential_type', 'type': 'enum', 'mandatory': False,
-                                                               'enum': ('parabolic', 'square-well-parabolic', 'square-well-parabolic-linear', 'upper-bound-parabolic', 'lower-bound-parabolic', 'upper-bound-parabolic-linear', 'lower-bound-parabolic-linear', 'undefined', 'unknown'),
-                                                               'enum-alt': self.alt_potential_type},
-                                                              {'name': 'Tensor_magnitude', 'type': 'float', 'mandatory': False},
-                                                              {'name': 'Tensor_rhombicity', 'type': 'positive-float', 'mandatory': False},
-                                                              {'name': 'Tensor_auth_asym_ID', 'type': 'str', 'mandatory': False},
-                                                              {'name': 'Tensor_auth_seq_ID', 'type': 'str', 'mandatory': False},
-                                                              {'name': 'Tensor_auth_comp_ID', 'type': 'str', 'mandatory': False}
-                                                              ],
+                                                            {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                                            {'name': 'Constraint_type', 'type': 'enum', 'mandatory': False,
+                                                             'enum': ('RDC', 'undefined', 'unknown'),
+                                                             'enum-alt': self.rdc_alt_constraint_type['nmr-star']},
+                                                            {'name': 'Potential_type', 'type': 'enum', 'mandatory': False,
+                                                             'enum': ('parabolic', 'square-well-parabolic', 'square-well-parabolic-linear',
+                                                                      'upper-bound-parabolic', 'lower-bound-parabolic', 'upper-bound-parabolic-linear',
+                                                                      'lower-bound-parabolic-linear', 'undefined', 'unknown'),
+                                                             'enum-alt': self.alt_potential_type},
+                                                            {'name': 'Tensor_magnitude', 'type': 'float', 'mandatory': False},
+                                                            {'name': 'Tensor_rhombicity', 'type': 'positive-float', 'mandatory': False},
+                                                            {'name': 'Tensor_auth_asym_ID', 'type': 'str', 'mandatory': False},
+                                                            {'name': 'Tensor_auth_seq_ID', 'type': 'str', 'mandatory': False},
+                                                            {'name': 'Tensor_auth_comp_ID', 'type': 'str', 'mandatory': False}
+                                                            ],
                                           'spectral_peak': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
                                                             {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
                                                             {'name': 'Experiment_class', 'type': 'str', 'mandatory': False},
@@ -2758,7 +2999,7 @@ class NmrDpUtility:
                                       'rdc_restraint': ['restraint_origin', 'potential_type'],
                                       'spectral_peak': ['experiment_type'],
                                       'spectral_peak_alt': None
-                                     },
+                                      },
                               'nmr-star': {'entry_info': None,
                                            'poly_seq': None,
                                            'entity': None,
@@ -2773,45 +3014,84 @@ class NmrDpUtility:
                               }
 
         # allowed saveframe tags
-        self.sf_allowed_tags = {'nef': {'entry_info': ['sf_category', 'sf_framecode', 'format_name', 'format_version', 'program_name', 'program_version', 'creation_date', 'uuid', 'coordinate_file_name'],
+        self.sf_allowed_tags = {'nef': {'entry_info': ['sf_category', 'sf_framecode', 'format_name', 'format_version',
+                                                       'program_name', 'program_version', 'creation_date', 'uuid', 'coordinate_file_name'],
                                         'poly_seq': ['sf_category', 'sf_framecode'],
                                         'entity': None,
                                         'chem_shift': ['sf_category', 'sf_framecode'],
                                         'chem_shift_ref': None,
                                         'dist_restraint': ['sf_category', 'sf_framecode', 'potential_type', 'restraint_origin'],
                                         'dihed_restraint': ['sf_category', 'sf_framecode', 'potential_type', 'restraint_origin'],
-                                        'rdc_restraint': ['sf_category', 'sf_framecode', 'potential_type', 'restraint_origin', 'tensor_magnitude', 'tensor_rhombicity', 'tensor_chain_code', 'tensor_sequence_code', 'tensor_residue_name'],
-                                        'spectral_peak': ['sf_category', 'sf_framecode', 'num_dimensions', 'chemical_shift_list', 'experiment_classification', 'experiment_type'],
+                                        'rdc_restraint': ['sf_category', 'sf_framecode', 'potential_type', 'restraint_origin',
+                                                          'tensor_magnitude', 'tensor_rhombicity', 'tensor_chain_code',
+                                                          'tensor_sequence_code', 'tensor_residue_name'],
+                                        'spectral_peak': ['sf_category', 'sf_framecode', 'num_dimensions', 'chemical_shift_list',
+                                                          'experiment_classification', 'experiment_type'],
                                         'spectral_peak_alt': None
                                         },
-                                'nmr-star': {'entry_info': ['Sf_category', 'Sf_framecode', 'Sf_ID', 'ID', 'Title', 'Type', 'Version_type', 'Submission_date', 'Accession_date', 'Last_release_date', 'Original_release_date',
-                                                            'Origination', 'Format_name', 'NMR_STAR_version', 'Original_NMR_STAR_version', 'Experimental_method', 'Experimental_method_subtype',
+                                'nmr-star': {'entry_info': ['Sf_category', 'Sf_framecode', 'Sf_ID', 'ID', 'Title', 'Type',
+                                                            'Version_type', 'Submission_date', 'Accession_date', 'Last_release_date', 'Original_release_date',
+                                                            'Origination', 'Format_name', 'NMR_STAR_version', 'Original_NMR_STAR_version',
+                                                            'Experimental_method', 'Experimental_method_subtype',
                                                             'Source_data_format', 'Source_data_format_version',
-                                                            'Generated_software_name', 'Generated_software_version', 'Generated_software_ID', 'Generated_software_label', 'Generated_date',
-                                                            'DOI', 'UUID', 'Related_coordinate_file_name', 'Dep_release_code_coordinates', 'Dep_release_code_nmr_constraints', 'Dep_release_code_chemical_shifts', 'Dep_release_code_nmr_exptl', 'Dep_release_code_sequence',
+                                                            'Generated_software_name', 'Generated_software_version', 'Generated_software_ID',
+                                                            'Generated_software_label', 'Generated_date',
+                                                            'DOI', 'UUID', 'Related_coordinate_file_name', 'Dep_release_code_coordinates',
+                                                            'Dep_release_code_nmr_constraints', 'Dep_release_code_chemical_shifts',
+                                                            'Dep_release_code_nmr_exptl', 'Dep_release_code_sequence',
                                                             'CASP_target', 'Details', 'Special_processing_instructions',
-                                                            'Update_BMRB_accession_code', 'Replace_BMRB_accession_code', 'Update_PDB_accession_code', 'Replace_PDB_accession_code', 'PDB_coordinate_file_version', 'BMRB_update_details', 'PDB_update_details', 'Release_request',
-                                                            'Release_date_request', 'Release_date_justification', 'Status_code', 'Recvd_deposit_form', 'Date_deposition_form', 'Recvd_coordinates', 'Date_coordinates', 'Recvd_nmr_constraints', 'Date_nmr_constraints', 'Recvd_chemical_shifts', 'Date_chemical_shifts', 'Recvd_manuscript', 'Date_manuscript', 'Recvd_author_approval', 'Date_author_approval',
+                                                            'Update_BMRB_accession_code', 'Replace_BMRB_accession_code',
+                                                            'Update_PDB_accession_code', 'Replace_PDB_accession_code',
+                                                            'PDB_coordinate_file_version', 'BMRB_update_details',
+                                                            'PDB_update_details', 'Release_request',
+                                                            'Release_date_request', 'Release_date_justification',
+                                                            'Status_code', 'Recvd_deposit_form', 'Date_deposition_form',
+                                                            'Recvd_coordinates', 'Date_coordinates', 'Recvd_nmr_constraints',
+                                                            'Date_nmr_constraints', 'Recvd_chemical_shifts', 'Date_chemical_shifts',
+                                                            'Recvd_manuscript', 'Date_manuscript', 'Recvd_author_approval', 'Date_author_approval',
                                                             'Recvd_initial_deposition_date', 'PDB_date_submitted', 'Author_release_status_code',
                                                             'Date_of_PDB_release', 'Date_hold_coordinates', 'Date_hold_nmr_constraints', 'Date_hold_chemical_shifts',
-                                                            'PDB_deposit_site', 'PDB_process_site', 'BMRB_deposit_site', 'BMRB_process_site', 'BMRB_annotator', 'BMRB_internal_directory_name', 'RCSB_annotator', 'Author_approval_type', 'Assigned_BMRB_ID', 'Assigned_BMRB_deposition_code', 'Assigned_PDB_ID', 'Assigned_PDB_deposition_code', 'Assigned_restart_ID'],
-                                             'poly_seq': ['Sf_category', 'Sf_framecode', 'Entry_ID', 'Sf_ID', 'ID', 'Name', 'BMRB_code', 'Number_of_components', 'Organic_ligands', 'Metal_ions', 'Non_standard_bonds', 'Ambiguous_conformational_states', 'Ambiguous_chem_comp_sites', 'Molecules_in_chemical_exchange',
-                                                          'Paramagnetic', 'Thiol_state', 'Molecular_mass', 'Enzyme_commission_number', 'Details', 'DB_query_date', 'DB_query_revised_last_date'],
+                                                            'PDB_deposit_site', 'PDB_process_site', 'BMRB_deposit_site', 'BMRB_process_site',
+                                                            'BMRB_annotator', 'BMRB_internal_directory_name', 'RCSB_annotator', 'Author_approval_type',
+                                                            'Assigned_BMRB_ID', 'Assigned_BMRB_deposition_code', 'Assigned_PDB_ID',
+                                                            'Assigned_PDB_deposition_code', 'Assigned_restart_ID'],
+                                             'poly_seq': ['Sf_category', 'Sf_framecode', 'Entry_ID', 'Sf_ID', 'ID', 'Name', 'BMRB_code',
+                                                          'Number_of_components', 'Organic_ligands', 'Metal_ions', 'Non_standard_bonds',
+                                                          'Ambiguous_conformational_states', 'Ambiguous_chem_comp_sites', 'Molecules_in_chemical_exchange',
+                                                          'Paramagnetic', 'Thiol_state', 'Molecular_mass', 'Enzyme_commission_number',
+                                                          'Details', 'DB_query_date', 'DB_query_revised_last_date'],
                                              'entity': None,
-                                             'chem_shift': ['Sf_category', 'Sf_framecode', 'Entry_ID', 'Sf_ID', 'ID', 'Name', 'Data_file_name', 'Sample_condition_list_ID', 'Sample_condition_list_label', 'Chem_shift_reference_ID', 'Chem_shift_reference_label',
-                                                            'Chem_shift_1H_err', 'Chem_shift_13C_err', 'Chem_shift_15N_err', 'Chem_shift_31P_err', 'Chem_shift_2H_err', 'Chem_shift_19F_err',
+                                             'chem_shift': ['Sf_category', 'Sf_framecode', 'Entry_ID', 'Sf_ID', 'ID', 'Name', 'Data_file_name',
+                                                            'Sample_condition_list_ID', 'Sample_condition_list_label', 'Chem_shift_reference_ID',
+                                                            'Chem_shift_reference_label',
+                                                            'Chem_shift_1H_err', 'Chem_shift_13C_err', 'Chem_shift_15N_err', 'Chem_shift_31P_err',
+                                                            'Chem_shift_2H_err', 'Chem_shift_19F_err',
                                                             'Error_derivation_method', 'Details', 'Text_data_format', 'Text_data'],
-                                             'chem_shift_ref': ['Sf_category', 'Sf_framecode', 'Entry_ID', 'Sf_ID', 'ID', 'Name', 'Proton_shifts_flag', 'Carbon_shifts_flag', 'Nitrogen_shifts_flag', 'Phosphorus_shifts_flag', 'Other_shifts_flag', 'Details'],
-                                             'dist_restraint': ['Sf_category', 'Sf_framecode', 'Entry_ID', 'Sf_ID', 'ID', 'Name', 'Data_file_name', 'Constraint_type', 'Constraint_file_ID', 'Potential_type', 'Block_ID', 'Details', 'Text_data_format', 'Text_data'],
-                                             'dihed_restraint': ['Sf_category', 'Sf_framecode', 'Entry_ID', 'Sf_ID', 'ID', 'Name', 'Data_file_name', 'Constraint_file_ID', 'Potential_type', 'Constraint_type', 'Block_ID', 'Details', 'Text_data_format', 'Text_data'],
-                                             'rdc_restraint': ['Sf_category', 'Sf_framecode', 'Entry_ID', 'Sf_ID', 'ID', 'Name', 'Data_file_name', 'Constraint_file_ID', 'Block_ID', 'Potential_type', 'Constraint_type',
-                                                               'Tensor_entity_assembly_ID', 'Tensor_comp_index_ID', 'Tensor_seq_ID', 'Tensor_comp_ID', 'Tensor_auth_entity_assembly_ID', 'Tensor_auth_asym_ID', 'Tensor_auth_seq_ID', 'Tensor_auth_comp_ID', 'Dipolar_constraint_calib_method', 'Tensor_magnitude', 'Tensor_rhombicity',
+                                             'chem_shift_ref': ['Sf_category', 'Sf_framecode', 'Entry_ID', 'Sf_ID', 'ID', 'Name', 'Proton_shifts_flag',
+                                                                'Carbon_shifts_flag', 'Nitrogen_shifts_flag', 'Phosphorus_shifts_flag', 'Other_shifts_flag', 'Details'],
+                                             'dist_restraint': ['Sf_category', 'Sf_framecode', 'Entry_ID', 'Sf_ID', 'ID', 'Name', 'Data_file_name',
+                                                                'Constraint_type', 'Constraint_file_ID', 'Potential_type', 'Block_ID', 'Details', 'Text_data_format', 'Text_data'],
+                                             'dihed_restraint': ['Sf_category', 'Sf_framecode', 'Entry_ID', 'Sf_ID', 'ID',
+                                                                 'Name', 'Data_file_name', 'Constraint_file_ID', 'Potential_type', 'Constraint_type',
+                                                                 'Block_ID', 'Details', 'Text_data_format', 'Text_data'],
+                                             'rdc_restraint': ['Sf_category', 'Sf_framecode', 'Entry_ID', 'Sf_ID', 'ID',
+                                                               'Name', 'Data_file_name', 'Constraint_file_ID', 'Block_ID', 'Potential_type', 'Constraint_type',
+                                                               'Tensor_entity_assembly_ID', 'Tensor_comp_index_ID', 'Tensor_seq_ID', 'Tensor_comp_ID',
+                                                               'Tensor_auth_entity_assembly_ID', 'Tensor_auth_asym_ID', 'Tensor_auth_seq_ID', 'Tensor_auth_comp_ID',
+                                                               'Dipolar_constraint_calib_method', 'Tensor_magnitude', 'Tensor_rhombicity',
                                                                'Mol_align_tensor_axial_sym_mol', 'Mol_align_tensor_rhombic_mol', 'General_order_param_int_motions',
-                                                               'Bond_length_usage_flag', 'Assumed_H_N_bond_length', 'Assumed_H_C_bond_length', 'Assumed_C_N_bond_length', 'Data_file_format', 'Details', 'Text_data_format', 'Text_data'],
-                                             'spectral_peak': ['Sf_category', 'Sf_framecode', 'Entry_ID', 'Sf_ID', 'ID', 'Name', 'Data_file_name', 'Sample_ID', 'Sample_label', 'Sample_condition_list_ID', 'Sample_condition_list_label',
-                                                               'Experiment_ID', 'Experiment_name', 'Experiment_class', 'Experiment_type', 'Number_of_spectral_dimensions', 'Chemical_shift_list', 'Assigned_chem_shift_list_ID', 'Assigned_chem_shift_list_label', 'Details', 'Text_data_format', 'Text_data'],
-                                             'spectral_peak_alt': ['Sf_category', 'Sf_framecode', 'Entry_ID', 'Sf_ID', 'ID', 'Name', 'Data_file_name', 'Sample_ID', 'Sample_label', 'Sample_condition_list_ID', 'Sample_condition_list_label',
-                                                                   'Experiment_ID', 'Experiment_name', 'Experiment_class', 'Experiment_type', 'Number_of_spectral_dimensions', 'Chemical_shift_list', 'Assigned_chem_shift_list_ID', 'Assigned_chem_shift_list_label', 'Details', 'Text_data_format', 'Text_data']
+                                                               'Bond_length_usage_flag', 'Assumed_H_N_bond_length', 'Assumed_H_C_bond_length',
+                                                               'Assumed_C_N_bond_length', 'Data_file_format', 'Details', 'Text_data_format', 'Text_data'],
+                                             'spectral_peak': ['Sf_category', 'Sf_framecode', 'Entry_ID', 'Sf_ID', 'ID', 'Name', 'Data_file_name',
+                                                               'Sample_ID', 'Sample_label', 'Sample_condition_list_ID', 'Sample_condition_list_label',
+                                                               'Experiment_ID', 'Experiment_name', 'Experiment_class', 'Experiment_type',
+                                                               'Number_of_spectral_dimensions', 'Chemical_shift_list', 'Assigned_chem_shift_list_ID',
+                                                               'Assigned_chem_shift_list_label', 'Details', 'Text_data_format', 'Text_data'],
+                                             'spectral_peak_alt': ['Sf_category', 'Sf_framecode', 'Entry_ID', 'Sf_ID', 'ID', 'Name', 'Data_file_name',
+                                                                   'Sample_ID', 'Sample_label', 'Sample_condition_list_ID', 'Sample_condition_list_label',
+                                                                   'Experiment_ID', 'Experiment_name', 'Experiment_class', 'Experiment_type',
+                                                                   'Number_of_spectral_dimensions', 'Chemical_shift_list', 'Assigned_chem_shift_list_ID',
+                                                                   'Assigned_chem_shift_list_label', 'Details', 'Text_data_format', 'Text_data']
                                              }
                                 }
 
@@ -2820,7 +3100,7 @@ class NmrDpUtility:
 
         # auxiliary loop categories
         self.aux_lp_categories = {'nef': {'entry_info': [],
-                                          'poly_seq':  ['_nef_covalent_links', '_nef_sequence'],
+                                          'poly_seq': ['_nef_covalent_links', '_nef_sequence'],
                                           'entity': [],
                                           'chem_shift': [],
                                           'chem_shift_ref': [],
@@ -2831,7 +3111,7 @@ class NmrDpUtility:
                                           'spectral_peak_alt': []
                                           },
                                   'nmr-star': {'entry_info': [],
-                                               'poly_seq':  ['_Bond', '_Entity_deleted_atom'],
+                                               'poly_seq': ['_Bond', '_Entity_deleted_atom'],
                                                'entity': ['_Entity_poly_seq'],
                                                'chem_shift': [],
                                                'chem_shift_ref': [],
@@ -2845,7 +3125,7 @@ class NmrDpUtility:
 
         # linked loop categories
         self.linked_lp_categories = {'nef': {'entry_info': ['_nef_related_entries', '_nef_program_script', '_nef_run_history', '_audit'],
-                                             'poly_seq':  ['_nef_sequence', '_nef_covalent_links'],
+                                             'poly_seq': ['_nef_sequence', '_nef_covalent_links'],
                                              'entity': [],
                                              'chem_shift': ['_nef_chemical_shift'],
                                              'chem_shift_ref': [],
@@ -2855,57 +3135,145 @@ class NmrDpUtility:
                                              'spectral_peak': ['_nef_spectrum_dimension', '_nef_spectrum_dimension_transfer', '_nef_peak'],
                                              'spectral_peak_alt': []
                                              },
-                                     'nmr-star': {'entry_info': ['_Study_list', '_Entry_experimental_methods', '_Entry_author', '_SG_project', '_Entry_src', '_Struct_keywords', '_Data_set', '_Datum', '_Release', '_Related_entries', '_Matched_entries', '_Auxiliary_files', '_Citation',
-                                                                 '_Assembly', '_Assembly_annotation_list', '_Assembly_subsystem', '_Entity', '_Entity_natural_src_list', '_Entity_natural_src', '_Entity_experimental_src_list', '_Chem_comp', '_Chem_comp_atom', '_Sample', '_Sample_condition_list', '_Entity_purity_list', '_Software', '_Method',
-                                                                 '_Mass_spec', '_Mass_spectrometer_list', '_Mass_spec_ref_compd_set', '_Chromatographic_system', '_Chromatographic_column', '_Fluorescence_instrument', '_EMR_instrument', '_Xray_instrument', '_NMR_spectrometer', '_NMR_spectrometer_list', '_NMR_spectrometer_probe', '_Experiment_list', '_NMR_spec_expt', '_NMR_spectral_processing',
+                                     'nmr-star': {'entry_info': ['_Study_list', '_Entry_experimental_methods', '_Entry_author',
+                                                                 '_SG_project', '_Entry_src', '_Struct_keywords', '_Data_set',
+                                                                 '_Datum', '_Release', '_Related_entries', '_Matched_entries',
+                                                                 '_Auxiliary_files', '_Citation',
+                                                                 '_Assembly', '_Assembly_annotation_list', '_Assembly_subsystem',
+                                                                 '_Entity', '_Entity_natural_src_list', '_Entity_natural_src',
+                                                                 '_Entity_experimental_src_list', '_Chem_comp', '_Chem_comp_atom',
+                                                                 '_Sample', '_Sample_condition_list', '_Entity_purity_list', '_Software', '_Method',
+                                                                 '_Mass_spec', '_Mass_spectrometer_list', '_Mass_spec_ref_compd_set',
+                                                                 '_Chromatographic_system', '_Chromatographic_column',
+                                                                 '_Fluorescence_instrument', '_EMR_instrument', '_Xray_instrument',
+                                                                 '_NMR_spectrometer', '_NMR_spectrometer_list', '_NMR_spectrometer_probe',
+                                                                 '_Experiment_list', '_NMR_spec_expt', '_NMR_spectral_processing',
                                                                  '_MS_expt', '_MS_expt_param', '_MS_expt_software',
-                                                                 '_Computer', '_Chem_shift_reference', '_Assigned_chem_shift_list', '_Chem_shifts_calc_type', '_Theoretical_chem_shift_list', '_Theoretical_chem_shift', '_Coupling_constant_list', '_Theoretical_coupling_constant_list', '_Spectral_peak_list', '_Resonance_linker_list', '_Resonance_assignment',
-                                                                 '_Chem_shift_isotope_effect_list', '_Chem_shift_perturbation_list', '_Chem_shift_anisotropy', '_RDC_list', '_RDC_experiment', '_RDC_software', '_RDC',
-                                                                 '_Dipolar_coupling_list', '_Dipolar_coupling_experiment', '_Dipolar_coupling_software', '_Dipolar_coupling', '_Spectral_density_list', '_Spectral_density_experiment', '_Spectral_density_software', '_Spectral_density', '_Other_data_type_list', '_Other_data_experiment', '_Other_data_software', '_Other_data',
+                                                                 '_Computer', '_Chem_shift_reference', '_Assigned_chem_shift_list',
+                                                                 '_Chem_shifts_calc_type', '_Theoretical_chem_shift_list', '_Theoretical_chem_shift',
+                                                                 '_Coupling_constant_list', '_Theoretical_coupling_constant_list', '_Spectral_peak_list',
+                                                                 '_Resonance_linker_list', '_Resonance_assignment',
+                                                                 '_Chem_shift_isotope_effect_list', '_Chem_shift_perturbation_list', '_Chem_shift_anisotropy',
+                                                                 '_RDC_list', '_RDC_experiment', '_RDC_software', '_RDC',
+                                                                 '_Dipolar_coupling_list', '_Dipolar_coupling_experiment', '_Dipolar_coupling_software',
+                                                                 '_Dipolar_coupling', '_Spectral_density_list', '_Spectral_density_experiment',
+                                                                 '_Spectral_density_software', '_Spectral_density', '_Other_data_type_list',
+                                                                 '_Other_data_experiment', '_Other_data_software', '_Other_data',
                                                                  '_Chemical_rate_list', '_Chemical_rate_experiment', '_Chemical_rate_software', '_Chemical_rate',
                                                                  '_H_exch_rate_list', '_H_exch_rate_experiment', '_H_exch_rate_software', '_H_exch_rate',
-                                                                 '_H_exch_protection_factor_list', '_H_exch_protection_fact_experiment', '_H_exch_protection_fact_software', '_H_exch_protection_factor',
-                                                                 '_Homonucl_NOE_list', '_Homonucl_NOE_experiment', '_Homonucl_NOE_software', '_Homonucl_NOE', '_Heteronucl_NOE_list', '_Heteronucl_NOE_experiment', '_Heteronucl_NOE_software', '_Heteronucl_NOE', '_Theoretical_heteronucl_NOE_list', '_Theoretical_heteronucl_NOE_experiment', '_Theoretical_heteronucl_NOE_software', '_Theoretical_heteronucl_NOE',
-                                                                 '_Heteronucl_T1_list', '_Heteronucl_T1_experiment', '_Heteronucl_T1_software', '_T1', '_Theoretical_heteronucl_T1_list', '_Theoretical_heteronucl_T1_experiment', '_Theoretical_heteronucl_T1_software', '_Theoretical_T1',
-                                                                 '_Heteronucl_T1rho_list', '_Heteronucl_T1rho_experiment', '_Heteronucl_T1rho_software', '_T1rho',
-                                                                 '_Heteronucl_T2_list', '_Heteronucl_T2_experiment', '_Heteronucl_T2_software', '_T2', '_Theoretical_heteronucl_T2_list', '_Theoretical_heteronucl_T2_experiment', '_Theoretical_heteronucl_T2_software', '_Theoretical_T2',
-                                                                 '_Auto_relaxation_list', '_Auto_relaxation_experiment', '_Auto_relaxation_software', '_Auto_relaxation', '_Theoretical_auto_relaxation_list', '_Theoretical_auto_relaxation_experiment', '_Theoretical_auto_relaxation_software', '_Theoretical_auto_relaxation',
-                                                                 '_Dipole_dipole_relax_list', '_Dipole_dipole_relax_experiment', '_Dipole_dipole_relax_software', '_Dipole_dipole_relax',
-                                                                 '_Cross_correlation_DD_list', '_Cross_correlation_DD_experiment', '_Cross_correlation_DD_software', '_Cross_correlation_DD', '_Theoretical_cross_correlation_DD_list', '_Theoretical_cross_correlation_DD_experiment', '_Theoretical_cross_correlation_DD_software', '_Theoretical_cross_correlation_DD',
-                                                                 '_Cross_correlation_D_CSA_list', '_Cross_correlation_D_CSA_experiment', '_Cross_correlation_D_CSA_software', '_Cross_correlation_D_CSA', '_Order_parameter_list', '_Order_parameter_experiment', '_Order_parameter_software', '_Order_param',
-                                                                 '_PH_titration_list', '_PH_titration_experiment', '_PH_titration_software', '_PH_titr_result', '_PH_param_list', '_PH_param', '_D_H_fractionation_factor_list', '_D_H_fract_factor_experiment', '_D_H_fract_factor_software', '_D_H_fractionation_factor',
-                                                                 '_Binding_value_list', '_Binding_experiment', '_Binding_software', '_Binding_result', '_Binding_partners', '_Binding_param_list', '_Binding_param',
-                                                                 '_Deduced_secd_struct_list', '_Deduced_secd_struct_experiment', '_Deduced_secd_struct_software', '_Deduced_secd_struct_exptl', '_Deduced_secd_struct_feature', '_Deduced_H_bond_list', '_Deduced_H_bond_experiment', '_Deduced_H_bond_software', '_Deduced_H_bond',
-                                                                 '_Conformer_stat_list', '_Conformer_stat_list_ens', '_Conformer_stat_list_rep', '_Conf_stats_software', '_Conformer_family_coord_set', '_Conformer_family_refinement', '_Conformer_family_software', '_Energetic_penalty_function', '_Conformer_family_coord_set_expt', '_Conf_family_coord_set_constr_list',
+                                                                 '_H_exch_protection_factor_list', '_H_exch_protection_fact_experiment',
+                                                                 '_H_exch_protection_fact_software', '_H_exch_protection_factor',
+                                                                 '_Homonucl_NOE_list', '_Homonucl_NOE_experiment', '_Homonucl_NOE_software',
+                                                                 '_Homonucl_NOE', '_Heteronucl_NOE_list', '_Heteronucl_NOE_experiment',
+                                                                 '_Heteronucl_NOE_software', '_Heteronucl_NOE', '_Theoretical_heteronucl_NOE_list',
+                                                                 '_Theoretical_heteronucl_NOE_experiment', '_Theoretical_heteronucl_NOE_software',
+                                                                 '_Theoretical_heteronucl_NOE',
+                                                                 '_Heteronucl_T1_list', '_Heteronucl_T1_experiment', '_Heteronucl_T1_software', '_T1',
+                                                                 '_Theoretical_heteronucl_T1_list', '_Theoretical_heteronucl_T1_experiment',
+                                                                 '_Theoretical_heteronucl_T1_software', '_Theoretical_T1',
+                                                                 '_Heteronucl_T1rho_list', '_Heteronucl_T1rho_experiment', '_Heteronucl_T1rho_software',
+                                                                 '_T1rho',
+                                                                 '_Heteronucl_T2_list', '_Heteronucl_T2_experiment', '_Heteronucl_T2_software', '_T2',
+                                                                 '_Theoretical_heteronucl_T2_list', '_Theoretical_heteronucl_T2_experiment',
+                                                                 '_Theoretical_heteronucl_T2_software', '_Theoretical_T2',
+                                                                 '_Auto_relaxation_list', '_Auto_relaxation_experiment', '_Auto_relaxation_software',
+                                                                 '_Auto_relaxation', '_Theoretical_auto_relaxation_list', '_Theoretical_auto_relaxation_experiment',
+                                                                 '_Theoretical_auto_relaxation_software', '_Theoretical_auto_relaxation',
+                                                                 '_Dipole_dipole_relax_list', '_Dipole_dipole_relax_experiment', '_Dipole_dipole_relax_software',
+                                                                 '_Dipole_dipole_relax',
+                                                                 '_Cross_correlation_DD_list', '_Cross_correlation_DD_experiment', '_Cross_correlation_DD_software',
+                                                                 '_Cross_correlation_DD', '_Theoretical_cross_correlation_DD_list', '_Theoretical_cross_correlation_DD_experiment',
+                                                                 '_Theoretical_cross_correlation_DD_software', '_Theoretical_cross_correlation_DD',
+                                                                 '_Cross_correlation_D_CSA_list', '_Cross_correlation_D_CSA_experiment', '_Cross_correlation_D_CSA_software',
+                                                                 '_Cross_correlation_D_CSA', '_Order_parameter_list', '_Order_parameter_experiment',
+                                                                 '_Order_parameter_software', '_Order_param',
+                                                                 '_PH_titration_list', '_PH_titration_experiment', '_PH_titration_software', '_PH_titr_result',
+                                                                 '_PH_param_list', '_PH_param', '_D_H_fractionation_factor_list', '_D_H_fract_factor_experiment',
+                                                                 '_D_H_fract_factor_software', '_D_H_fractionation_factor',
+                                                                 '_Binding_value_list', '_Binding_experiment', '_Binding_software', '_Binding_result',
+                                                                 '_Binding_partners', '_Binding_param_list', '_Binding_param',
+                                                                 '_Deduced_secd_struct_list', '_Deduced_secd_struct_experiment', '_Deduced_secd_struct_software',
+                                                                 '_Deduced_secd_struct_exptl', '_Deduced_secd_struct_feature', '_Deduced_H_bond_list',
+                                                                 '_Deduced_H_bond_experiment', '_Deduced_H_bond_software', '_Deduced_H_bond',
+                                                                 '_Conformer_stat_list', '_Conformer_stat_list_ens', '_Conformer_stat_list_rep', '_Conf_stats_software',
+                                                                 '_Conformer_family_coord_set', '_Conformer_family_refinement', '_Conformer_family_software',
+                                                                 '_Energetic_penalty_function', '_Conformer_family_coord_set_expt', '_Conf_family_coord_set_constr_list',
                                                                  '_Struct_image', '_Local_structure_quality', '_Model_type', '_Atom_site', '_Atom_sites_footnote',
-                                                                 '_Representative_conformer', '_Rep_conf_refinement', '_Rep_conf_software', '_Terminal_residue', '_Rep_conf', '_Rep_coordinate_details',
-                                                                 '_Constraint_stat_list', '_Constraint_stat_list_ens', '_Constraint_stat_list_rep', '_Constraint_stats_constr_list', '_Constraint_file', '_Force_constant_list', '_Force_constant_software', '_Force_constant', '_Angular_order_parameter_list', '_Angular_order_param',
-                                                                 '_Tertiary_struct_element_list', '_Tertiary_struct_element_sel', '_Tertiary_struct', '_Structure_annotation', '_Struct_anno_software', '_Struct_classification', '_Struct_anno_char', '_Secondary_struct_list', '_Secondary_struct_sel', '_Secondary_struct', '_Bond_annotation_list', '_Bond_annotation', '_Bond_observed_conformer',
-                                                                 '_Structure_interaction_list', '_Structure_interaction', '_Observed_conformer', '_Other_struct_feature_list', '_Other_struct_feature', '_Tensor_list', '_Interatomic_distance_list', '_Interatomic_dist',
-                                                                 '_Gen_dist_constraint_list', '_Gen_dist_constraint_expt', '_Gen_dist_constraint_software', '_Gen_dist_constraint_software_param', '_Gen_dist_constraint', '_Gen_dist_constraint_comment_org', '_Gen_dist_constraint_parse_err', '_Gen_dist_constraint_parse_file', '_Gen_dist_constraint_conv_err',
-                                                                 '_Distance_constraint_list', '_Distance_constraint_expt', '_Distance_constraint_software', '_Dist_constr_software_setting', '_Dist_constraint_tree', '_Dist_constraint', '_Dist_constraint_value', '_Dist_constraint_comment_org', '_Dist_constraint_parse_err', '_Dist_constraint_parse_file', '_Dist_constraint_conv_err',
-                                                                 '_Floating_chirality_assign', '_Floating_chirality_software', '_Floating_chirality', '_Torsion_angle_constraint_list', '_Torsion_angle_constraints_expt', '_Torsion_angle_constraint_software', '_Karplus_equation', '_Torsion_angle_constraint', '_TA_constraint_comment_org', '_TA_constraint_parse_err', '_TA_constraint_parse_file', '_TA_constraint_conv_err',
-                                                                 '_RDC_constraint_list', '_RDC_constraint_expt', '_RDC_constraint_software', '_RDC_constraint', '_RDC_constraint_comment_org', '_RDC_constraint_parse_err', '_RDC_constraint_parse_file', '_RDC_constraint_conv_err',
-                                                                 '_J_three_bond_constraint_list', '_J_three_bond_constraint_expt', '_J_three_bond_constraint_software', '_J_three_bond_constraint', '_CA_CB_constraint_list', '_CA_CB_constraint_expt', '_CA_CB_constraint_software', '_CA_CB_constraint',
-                                                                 '_H_chem_shift_constraint_list', '_H_chem_shift_constraint_expt', '_H_chem_shift_constraint_software', '_H_chem_shift_constraint', '_Peak_constraint_link_list', '_Peak_constraint_link',
+                                                                 '_Representative_conformer', '_Rep_conf_refinement', '_Rep_conf_software', '_Terminal_residue',
+                                                                 '_Rep_conf', '_Rep_coordinate_details',
+                                                                 '_Constraint_stat_list', '_Constraint_stat_list_ens', '_Constraint_stat_list_rep',
+                                                                 '_Constraint_stats_constr_list', '_Constraint_file', '_Force_constant_list', '_Force_constant_software',
+                                                                 '_Force_constant', '_Angular_order_parameter_list', '_Angular_order_param',
+                                                                 '_Tertiary_struct_element_list', '_Tertiary_struct_element_sel', '_Tertiary_struct',
+                                                                 '_Structure_annotation', '_Struct_anno_software', '_Struct_classification', '_Struct_anno_char',
+                                                                 '_Secondary_struct_list', '_Secondary_struct_sel', '_Secondary_struct', '_Bond_annotation_list'
+                                                                 , '_Bond_annotation', '_Bond_observed_conformer',
+                                                                 '_Structure_interaction_list', '_Structure_interaction', '_Observed_conformer',
+                                                                 '_Other_struct_feature_list', '_Other_struct_feature', '_Tensor_list',
+                                                                 '_Interatomic_distance_list', '_Interatomic_dist',
+                                                                 '_Gen_dist_constraint_list', '_Gen_dist_constraint_expt', '_Gen_dist_constraint_software',
+                                                                 '_Gen_dist_constraint_software_param', '_Gen_dist_constraint', '_Gen_dist_constraint_comment_org',
+                                                                 '_Gen_dist_constraint_parse_err', '_Gen_dist_constraint_parse_file', '_Gen_dist_constraint_conv_err',
+                                                                 '_Distance_constraint_list', '_Distance_constraint_expt', '_Distance_constraint_software',
+                                                                 '_Dist_constr_software_setting', '_Dist_constraint_tree', '_Dist_constraint',
+                                                                 '_Dist_constraint_value', '_Dist_constraint_comment_org', '_Dist_constraint_parse_err',
+                                                                 '_Dist_constraint_parse_file', '_Dist_constraint_conv_err',
+                                                                 '_Floating_chirality_assign', '_Floating_chirality_software', '_Floating_chirality',
+                                                                 '_Torsion_angle_constraint_list', '_Torsion_angle_constraints_expt', '_Torsion_angle_constraint_software',
+                                                                 '_Karplus_equation', '_Torsion_angle_constraint', '_TA_constraint_comment_org', '_TA_constraint_parse_err',
+                                                                 '_TA_constraint_parse_file', '_TA_constraint_conv_err',
+                                                                 '_RDC_constraint_list', '_RDC_constraint_expt', '_RDC_constraint_software', '_RDC_constraint',
+                                                                 '_RDC_constraint_comment_org', '_RDC_constraint_parse_err', '_RDC_constraint_parse_file',
+                                                                 '_RDC_constraint_conv_err',
+                                                                 '_J_three_bond_constraint_list', '_J_three_bond_constraint_expt', '_J_three_bond_constraint_software',
+                                                                 '_J_three_bond_constraint', '_CA_CB_constraint_list', '_CA_CB_constraint_expt',
+                                                                 '_CA_CB_constraint_software', '_CA_CB_constraint',
+                                                                 '_H_chem_shift_constraint_list', '_H_chem_shift_constraint_expt', '_H_chem_shift_constraint_software',
+                                                                 '_H_chem_shift_constraint', '_Peak_constraint_link_list', '_Peak_constraint_link',
                                                                  '_SAXS_constraint_list', '_SAXS_constraint_expt', '_SAXS_constraint_software', '_SAXS_constraint',
                                                                  '_Other_constraint_list', '_Other_constraint_expt', '_Other_constraint_software', '_Org_constr_file_comment',
-                                                                 '_MZ_ratio_data_list', '_MZ_ratio_experiment', '_MZ_ratio_software', '_MZ_ratio_spectrum_param', '_MZ_precursor_ion', '_MZ_precursor_ion_annotation', '_MZ_product_ion', '_MZ_product_ion_annotation', '_MS_chromatogram_list', '_MS_chromatogram_experiment', '_MS_chromatogram_software', '_MS_chromatogram_param', '_MS_chromatogram_ion', '_MS_chrom_ion_annotation',
-                                                                 '_Software_specific_info_list', '_Software_specific_info', '_Software_applied_list', '_Software_applied_methods', '_Software_applied_history', '_History',
+                                                                 '_MZ_ratio_data_list', '_MZ_ratio_experiment', '_MZ_ratio_software', '_MZ_ratio_spectrum_param',
+                                                                 '_MZ_precursor_ion', '_MZ_precursor_ion_annotation', '_MZ_product_ion', '_MZ_product_ion_annotation',
+                                                                 '_MS_chromatogram_list', '_MS_chromatogram_experiment', '_MS_chromatogram_software', '_MS_chromatogram_param',
+                                                                 '_MS_chromatogram_ion', '_MS_chrom_ion_annotation',
+                                                                 '_Software_specific_info_list', '_Software_specific_info', '_Software_applied_list', '_Software_applied_methods',
+                                                                 '_Software_applied_history', '_History',
                                                                  '_Audit'],
-                                                  'poly_seq':  ['_Assembly_type', '_Entity_assembly', '_Bond', '_Entity_deleted_atom', '_Struct_asym', '_Assembly_db_link', '_Assembly_common_name', '_Assembly_systematic_name', '_Assembly_interaction', '_Chem_comp_assembly', '_PDBX_poly_seq_scheme', '_PDBX_nonpoly_scheme', '_Atom_type', '_Atom', '_Assembly_bio_function', '_Angle', '_Torsion_angle',
-                                                                '_Assembly_segment', '_Assembly_segment_description', '_Assembly_keyword', '_Assembly_citation', '_Author_annotation', '_Sample_component', '_Chemical_rate', '_Auto_relaxation', '_Theoretical_auto_relaxation',
-                                                                '_Binding_result', '_Binding_partners', '_Struct_anno_char'],
+                                                  'poly_seq': ['_Assembly_type', '_Entity_assembly', '_Bond', '_Entity_deleted_atom',
+                                                               '_Struct_asym', '_Assembly_db_link', '_Assembly_common_name',
+                                                               '_Assembly_systematic_name', '_Assembly_interaction', '_Chem_comp_assembly',
+                                                               '_PDBX_poly_seq_scheme', '_PDBX_nonpoly_scheme', '_Atom_type', '_Atom', '_Assembly_bio_function', '_Angle', '_Torsion_angle',
+                                                               '_Assembly_segment', '_Assembly_segment_description', '_Assembly_keyword',
+                                                               '_Assembly_citation', '_Author_annotation', '_Sample_component',
+                                                               '_Chemical_rate', '_Auto_relaxation', '_Theoretical_auto_relaxation',
+                                                               '_Binding_result', '_Binding_partners', '_Struct_anno_char'],
                                                   'entity': [],
-                                                  'chem_shift': ['_Chem_shift_experiment', '_Systematic_chem_shift_offset', '_Chem_shift_software', '_Atom_chem_shift', '_Ambiguous_atom_chem_shift', '_Spectral_peak_list', '_Assigned_peak_chem_shift', '_Assigned_spectral_transition'],
+                                                  'chem_shift': ['_Chem_shift_experiment', '_Systematic_chem_shift_offset',
+                                                                 '_Chem_shift_software', '_Atom_chem_shift', '_Ambiguous_atom_chem_shift',
+                                                                 '_Spectral_peak_list', '_Assigned_peak_chem_shift', '_Assigned_spectral_transition'],
                                                   'chem_shift_ref': ['_Chem_shift_ref', '_Assigned_chem_shift_list', '_Chem_shifts_calc_type'],
-                                                  'dist_restraint': ['_Gen_dist_constraint_expt', '_Gen_dist_constraint_software', '_Gen_dist_constraint_software_param', '_Gen_dist_constraint', '_Gen_dist_constraint_comment_org', '_Gen_dist_constraint_parse_err', '_Gen_dist_constraint_parse_file', '_Gen_dist_constraint_conv_err'],
-                                                  'dihed_restraint': ['_Torsion_angle_constraints_expt', '_Torsion_angle_constraint_software', '_Karplus_equation', '_Torsion_angle_constraint', '_TA_constraint_comment_org', '_TA_constraint_parse_err', '_TA_constraint_parse_file', '_TA_constraint_conv_err'],
-                                                  'rdc_restraint': ['_RDC_constraint_expt', '_RDC_constraint_software', '_RDC_constraint', '_RDC_constraint_comment_org', '_RDC_constraint_parse_err', '_RDC_constraint_parse_file', '_RDC_constraint_conv_err'],
-                                                  'spectral_peak': ['_Spectral_dim', '_Spectral_dim_transfer', '_Spectral_peak_software', '_Peak', '_Peak_general_char', '_Peak_char', '_Assigned_peak_chem_shift', '_Peak_row_format', '_Spectral_transition', '_Spectral_transition_general_char', '_Spectral_transition_char', '_Assigned_spectral_transition', '_Gen_dist_constraint', '_Dist_constraint_value'],
-                                                  'spectral_peak_alt': ['_Spectral_dim', '_Spectral_dim_transfer', '_Spectral_peak_software', '_Peak', '_Peak_general_char', '_Peak_char', '_Assigned_peak_chem_shift', '_Peak_row_format', '_Spectral_transition', '_Spectral_transition_general_char', '_Spectral_transition_char', '_Assigned_spectral_transition', '_Gen_dist_constraint', '_Dist_constraint_value']
+                                                  'dist_restraint': ['_Gen_dist_constraint_expt', '_Gen_dist_constraint_software',
+                                                                     '_Gen_dist_constraint_software_param', '_Gen_dist_constraint',
+                                                                     '_Gen_dist_constraint_comment_org', '_Gen_dist_constraint_parse_err',
+                                                                     '_Gen_dist_constraint_parse_file', '_Gen_dist_constraint_conv_err'],
+                                                  'dihed_restraint': ['_Torsion_angle_constraints_expt', '_Torsion_angle_constraint_software',
+                                                                      '_Karplus_equation', '_Torsion_angle_constraint', '_TA_constraint_comment_org',
+                                                                      '_TA_constraint_parse_err', '_TA_constraint_parse_file', '_TA_constraint_conv_err'],
+                                                  'rdc_restraint': ['_RDC_constraint_expt', '_RDC_constraint_software', '_RDC_constraint',
+                                                                    '_RDC_constraint_comment_org', '_RDC_constraint_parse_err',
+                                                                    '_RDC_constraint_parse_file', '_RDC_constraint_conv_err'],
+                                                  'spectral_peak': ['_Spectral_dim', '_Spectral_dim_transfer', '_Spectral_peak_software',
+                                                                    '_Peak', '_Peak_general_char', '_Peak_char', '_Assigned_peak_chem_shift',
+                                                                    '_Peak_row_format', '_Spectral_transition', '_Spectral_transition_general_char',
+                                                                    '_Spectral_transition_char', '_Assigned_spectral_transition', '_Gen_dist_constraint',
+                                                                    '_Dist_constraint_value'],
+                                                  'spectral_peak_alt': ['_Spectral_dim', '_Spectral_dim_transfer', '_Spectral_peak_software',
+                                                                        '_Peak', '_Peak_general_char', '_Peak_char', '_Assigned_peak_chem_shift',
+                                                                        '_Peak_row_format', '_Spectral_transition', '_Spectral_transition_general_char',
+                                                                        '_Spectral_transition_char', '_Assigned_spectral_transition',
+                                                                        '_Gen_dist_constraint', '_Dist_constraint_value']
                                                   }
-                                  }
+                                     }
 
         # auxiliary loop key items
         self.aux_key_items = {'nef': {'entry_info': None,
@@ -2923,7 +3291,7 @@ class NmrDpUtility:
                                                             {'name': 'sequence_code', 'type': 'int'},
                                                             {'name': 'residue_name', 'type': 'str', 'uppercase': True}
                                                             ]
-                                          },
+                                      },
                                       'entity': None,
                                       'chem_shift': None,
                                       'chem_shift_ref': None,
@@ -2936,14 +3304,16 @@ class NmrDpUtility:
                                           '_nef_spectrum_dimension_transfer': [{'name': 'dimension_1', 'type': 'positive-int'},
                                                                                {'name': 'dimension_2', 'type': 'positive-int'},
                                                                                ]
-                                          },
+                                      },
                                       'spectral_peak_alt': None
                                       },
                               'nmr-star': {'entry_info': None,
                                            'poly_seq': {
                                                '_Bond': [{'name': 'ID', 'type': 'index-int', 'mandatory': True, 'default-from': 'self'},
                                                          {'name': 'Type', 'type': 'enum', 'mandatory': True, 'default': 'covalent',
-                                                          'enum': ('amide', 'covalent', 'directed', 'disulfide', 'ester', 'ether', 'hydrogen', 'metal coordination', 'peptide', 'thioether', 'oxime', 'thioester', 'phosphoester', 'phosphodiester', 'diselenide', 'na')},
+                                                          'enum': ('amide', 'covalent', 'directed', 'disulfide', 'ester', 'ether', 'hydrogen',
+                                                                   'metal coordination', 'peptide', 'thioether', 'oxime', 'thioester',
+                                                                   'phosphoester', 'phosphodiester', 'diselenide', 'na')},
                                                          {'name': 'Value_order', 'type': 'enum', 'mandatory': True, 'default': 'sing',
                                                           'enum': ('sing', 'doub', 'trip', 'quad', 'arom', 'poly', 'delo', 'pi', 'directed')},
                                                          {'name': 'Entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID_1'},
@@ -2961,7 +3331,7 @@ class NmrDpUtility:
                                                                         {'name': 'Comp_ID', 'type': 'str', 'uppercase': True},
                                                                         {'name': 'Atom_ID', 'type': 'str'}
                                                                         ]
-                                               },
+                                           },
                                            'entity': None,
                                            'chem_shift': None,
                                            'chem_shift_ref': None,
@@ -2974,7 +3344,7 @@ class NmrDpUtility:
                                                '_Spectral_dim_transfer': [{'name': 'Spectral_dim_ID_1', 'type': 'positive-int'},
                                                                           {'name': 'Spectral_dim_ID_2', 'type': 'positive-int'},
                                                                           ]
-                                               },
+                                           },
                                            'spectral_peak_alt': {
                                                '_Spectral_dim': [{'name': 'ID', 'type': 'index-int'}
                                                                  ],
@@ -2984,9 +3354,9 @@ class NmrDpUtility:
                                                '_Peak_general_char': [],
                                                '_Peak_char': [],
                                                '_Assigned_peak_chem_shift': []
-                                               }
                                            }
-                                  }
+                                           }
+                              }
 
         # auxiliary loop data items
         self.aux_data_items = {'nef': {'entry_info': None,
@@ -2995,10 +3365,10 @@ class NmrDpUtility:
                                            '_nef_sequence': [{'name': 'linking', 'type': 'enum', 'mandatory': False,
                                                               'enum': ('start', 'end', 'middle', 'cyclic', 'break', 'single', 'dummy'),
                                                               'enforce-enum': True},
-                                                              {'name': 'residue_variant', 'type': 'str', 'mandatory': False},
-                                                              {'name': 'cis_peptide', 'type': 'bool', 'mandatory': False}
-                                                              ]
-                                           },
+                                                             {'name': 'residue_variant', 'type': 'str', 'mandatory': False},
+                                                             {'name': 'cis_peptide', 'type': 'bool', 'mandatory': False}
+                                                             ]
+                                       },
                                        'entity': None,
                                        'chem_shift': None,
                                        'chem_shift_ref': None,
@@ -3025,133 +3395,134 @@ class NmrDpUtility:
                                                                                  'enforce-enum': True},
                                                                                 {'name': 'is_indirect', 'type': 'bool', 'mandatory': False}
                                                                                 ]
-                                           },
+                                       },
                                        'spectral_peak_alt': None
                                        },
-                                  'nmr-star': {'entry_info': None,
-                                               'poly_seq': {
-                                                   '_Bond': [{'name': 'Auth_asym_ID_1', 'type': 'str', 'mandatory': False},
-                                                             {'name': 'Auth_seq_ID_1', 'type': 'int', 'mandatory': False},
-                                                             {'name': 'Auth_comp_ID_1', 'type': 'str', 'mandatory': False},
-                                                             {'name': 'Auth_atom_ID_1', 'type': 'str', 'mandatory': False},
-                                                             {'name': 'Auth_asym_ID_2', 'type': 'str', 'mandatory': False},
-                                                             {'name': 'Auth_seq_ID_2', 'type': 'int', 'mandatory': False},
-                                                             {'name': 'Auth_comp_ID_2', 'type': 'str', 'mandatory': False},
-                                                             {'name': 'Auth_atom_ID_2', 'type': 'str', 'mandatory': False}
-                                                             ],
-                                                   '_Entity_deleted_atom': [{'name': 'Auth_entity_assembly_ID', 'type': 'str', 'mandatory': False},
-                                                                            {'name': 'Auth_seq_ID', 'type': 'int', 'mandatory': False},
-                                                                            {'name': 'Auth_comp_ID', 'type': 'str', 'mandatory': False},
-                                                                            {'name': 'Auth_atom_ID', 'type': 'str', 'mandatory': False}
-                                                                            ]
-                                                   },
-                                               'entity': None,
-                                               'chem_shift': None,
-                                               'chem_shift_ref': None,
-                                               'dist_restraint': None,
-                                               'dihed_restraint': None,
-                                               'rdc_restraint': None,
-                                               'spectral_peak': {
-                                                   '_Spectral_dim': [{'name': 'Axis_code', 'type': 'str', 'mandatory': True},
-                                                                     {'name': 'Spectrometer_frequency', 'type': 'positive-float', 'mandatory': False,
-                                                                      'enforce-non-zero': True},
-                                                                     {'name': 'Under_sampling_type', 'type': 'enum', 'mandatory': False,
-                                                                      'enum': ('aliased', 'folded', 'not observed')},
-                                                                     {'name': 'Sweep_width', 'type': 'positive-float', 'mandatory': False,
-                                                                      'enforce-non-zero': True},
-                                                                     {'name': 'Sweep_width_units', 'type': 'enum', 'mandatory': True,
-                                                                      'enum': ('ppm', 'Hz'),
-                                                                      'enforce-enum': True},
-                                                                     {'name': 'Value_first_point', 'type': 'float', 'mandatory': False},
-                                                                     {'name': 'Absolute_peak_positions', 'type': 'bool', 'mandatory': False},
-                                                                     {'name': 'Acquisition', 'type': 'bool', 'mandatory': False},
-                                                                     {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True}
-                                                                     ],
-                                                   '_Spectral_dim_transfer': [{'name': 'Indirect', 'type': 'bool', 'mandatory': False},
-                                                                              {'name': 'Type', 'type': 'enum', 'mandatory': True,
-                                                                               'enum': ('onebond', 'jcoupling', 'jmultibond', 'relayed', 'relayed-alternate', 'through-space'),
-                                                                               'enforce-enum': True},
-                                                                              {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True}
-                                                                              ]
-                                                   },
-                                               'spectral_peak_alt': {
-                                                   '_Spectral_dim': [{'name': 'Axis_code', 'type': 'str', 'mandatory': True},
-                                                                     {'name': 'Spectrometer_frequency', 'type': 'positive-float', 'mandatory': False,
-                                                                      'enforce-non-zero': True},
-                                                                     {'name': 'Under_sampling_type', 'type': 'enum', 'mandatory': False,
-                                                                      'enum': ('aliased', 'folded', 'not observed')},
-                                                                     {'name': 'Sweep_width', 'type': 'positive-float', 'mandatory': False,
-                                                                      'enforce-non-zero': True},
-                                                                     {'name': 'Sweep_width_units', 'type': 'enum', 'mandatory': True,
-                                                                      'enum': ('ppm', 'Hz'),
-                                                                      'enforce-enum': True},
-                                                                     {'name': 'Value_first_point', 'type': 'float', 'mandatory': False},
-                                                                     {'name': 'Absolute_peak_positions', 'type': 'bool', 'mandatory': False},
-                                                                     {'name': 'Acquisition', 'type': 'bool', 'mandatory': False},
-                                                                     {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True}
-                                                                     ],
-                                                   '_Spectral_dim_transfer': [{'name': 'Indirect', 'type': 'bool', 'mandatory': False},
-                                                                              {'name': 'Type', 'type': 'enum', 'mandatory': True,
-                                                                               'enum': ('onebond', 'jcoupling', 'jmultibond', 'relayed', 'relayed-alternate', 'through-space'),
-                                                                               'enforce-enum': True},
-                                                                              {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True}
-                                                                              ],
-                                                   '_Peak_general_char': [{'name': 'Peak_ID', 'type': 'positive-int', 'mandatory': True},
-                                                                          {'name': 'Intensity_val', 'type': 'float', 'mandatory': True},
-                                                                          {'name': 'Intensity_val_err', 'type': 'positive-float', 'mandatory': False, 'void-zero': True},
-                                                                          {'name': 'Measurement_method', 'type': 'enum', 'mandatory': False,
-                                                                           'enum': ('absolute height', 'height', 'relative height', 'volume', 'number of contours', 'integration')},
-                                                                          {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True}
-                                                                          ],
-                                                   '_Peak_char': [{'name': 'Peak_ID', 'type': 'positive-int', 'mandatory': True},
-                                                                  {'name': 'Spectral_dim_ID', 'type': 'enum-int', 'mandatory': True,
-                                                                   'enum': set(range(1, self.lim_num_dim)),
+                               'nmr-star': {'entry_info': None,
+                                            'poly_seq': {
+                                                '_Bond': [{'name': 'Auth_asym_ID_1', 'type': 'str', 'mandatory': False},
+                                                          {'name': 'Auth_seq_ID_1', 'type': 'int', 'mandatory': False},
+                                                          {'name': 'Auth_comp_ID_1', 'type': 'str', 'mandatory': False},
+                                                          {'name': 'Auth_atom_ID_1', 'type': 'str', 'mandatory': False},
+                                                          {'name': 'Auth_asym_ID_2', 'type': 'str', 'mandatory': False},
+                                                          {'name': 'Auth_seq_ID_2', 'type': 'int', 'mandatory': False},
+                                                          {'name': 'Auth_comp_ID_2', 'type': 'str', 'mandatory': False},
+                                                          {'name': 'Auth_atom_ID_2', 'type': 'str', 'mandatory': False}
+                                                          ],
+                                                '_Entity_deleted_atom': [{'name': 'Auth_entity_assembly_ID', 'type': 'str', 'mandatory': False},
+                                                                         {'name': 'Auth_seq_ID', 'type': 'int', 'mandatory': False},
+                                                                         {'name': 'Auth_comp_ID', 'type': 'str', 'mandatory': False},
+                                                                         {'name': 'Auth_atom_ID', 'type': 'str', 'mandatory': False}
+                                                                         ]
+                                            },
+                                            'entity': None,
+                                            'chem_shift': None,
+                                            'chem_shift_ref': None,
+                                            'dist_restraint': None,
+                                            'dihed_restraint': None,
+                                            'rdc_restraint': None,
+                                            'spectral_peak': {
+                                                '_Spectral_dim': [{'name': 'Axis_code', 'type': 'str', 'mandatory': True},
+                                                                  {'name': 'Spectrometer_frequency', 'type': 'positive-float', 'mandatory': False,
+                                                                   'enforce-non-zero': True},
+                                                                  {'name': 'Under_sampling_type', 'type': 'enum', 'mandatory': False,
+                                                                   'enum': ('aliased', 'folded', 'not observed')},
+                                                                  {'name': 'Sweep_width', 'type': 'positive-float', 'mandatory': False,
+                                                                   'enforce-non-zero': True},
+                                                                  {'name': 'Sweep_width_units', 'type': 'enum', 'mandatory': True,
+                                                                   'enum': ('ppm', 'Hz'),
                                                                    'enforce-enum': True},
-                                                                  {'name': 'Chem_shift_val', 'type': 'range-float', 'mandatory': True,
-                                                                   'range': self.chem_shift_range},
-                                                                  {'name': 'Chem_shift_val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
-                                                                   'range': self.chem_shift_error},
-                                                                  {'name': 'Line_width_val', 'type': 'positive-float', 'mandatory': False},
-                                                                  {'name': 'Line_width_val_err', 'type': 'positive-float', 'mandatory': False, 'void-zero': True},
-                                                                  {'name': 'Coupling_pattern', 'type': 'enum', 'mandatory': False,
-                                                                   'enum': ('d', 'dd', 'ddd', 'dm', 'dt', 'hxt', 'hpt', 'm', 'q', 'qd', 'qn', 's', 'sxt', 't', 'td', 'LR', '1JCH')},
+                                                                  {'name': 'Value_first_point', 'type': 'float', 'mandatory': False},
+                                                                  {'name': 'Absolute_peak_positions', 'type': 'bool', 'mandatory': False},
+                                                                  {'name': 'Acquisition', 'type': 'bool', 'mandatory': False},
                                                                   {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True}
                                                                   ],
-                                                   '_Assigned_peak_chem_shift': [{'name': 'Peak_ID', 'type': 'positive-int', 'mandatory': True},
-                                                                                 {'name': 'Spectral_dim_ID', 'type': 'enum-int', 'mandatory': True,
-                                                                                  'enum': set(range(1, self.lim_num_dim)),
-                                                                                  'enforce-enum': True},
-                                                                                 {'name': 'Set_ID', 'type': 'positive-int', 'mandatory': False},
-                                                                                 {'name': 'Magnetization_linkage_ID', 'type': 'positive-int', 'mandatory': False},
-                                                                                 {'name': 'Val', 'type': 'range-float', 'mandatory': False,
-                                                                                  'range': self.chem_shift_range},
-                                                                                 {'name': 'Contribution_fractional_val', 'type': 'range-float', 'mandatory': False,
-                                                                                  'range': self.weight_range},
-                                                                                 {'name': 'Figure_of_merit', 'type': 'range-float', 'mandatory': False,
-                                                                                  'range': self.weight_range},
-                                                                                 {'name': 'Assigned_chem_shift_list_ID', 'type': 'pointer-index', 'mandatory': False},
-                                                                                 {'name': 'Entity_assembly_ID', 'type': 'positive-int-as-str', 'mandatory': False},
-                                                                                 {'name': 'Comp_index_ID', 'type': 'int', 'mandatory': False},
-                                                                                 {'name': 'Comp_ID', 'type': 'str', 'mandatory': False, 'uppercase': True},
-                                                                                 {'name': 'Atom_ID', 'type': 'str', 'mandatory': False},
-                                                                                 {'name': 'Ambiguity_code', 'type': 'enum-int', 'mandatory': False,
-                                                                                  'enum': self.bmrb_ambiguity_codes},
-                                                                                 {'name': 'Ambiguity_set_ID', 'type': 'positive-int', 'mandatory': False},
-                                                                                 {'name': 'Auth_seq_ID', 'type': 'int', 'mandatory': False},
-                                                                                 {'name': 'Auth_comp_ID', 'type': 'str', 'mandatory': False},
-                                                                                 {'name': 'Auth_atom_ID', 'type': 'str', 'mandatory': False},
-                                                                                 {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True}
-                                                                                 ]
-                                                   }
-                                               }
-                                  }
+                                                '_Spectral_dim_transfer': [{'name': 'Indirect', 'type': 'bool', 'mandatory': False},
+                                                                           {'name': 'Type', 'type': 'enum', 'mandatory': True,
+                                                                            'enum': ('onebond', 'jcoupling', 'jmultibond', 'relayed', 'relayed-alternate', 'through-space'),
+                                                                            'enforce-enum': True},
+                                                                           {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True}
+                                                                           ]
+                                            },
+                                            'spectral_peak_alt': {
+                                                '_Spectral_dim': [{'name': 'Axis_code', 'type': 'str', 'mandatory': True},
+                                                                  {'name': 'Spectrometer_frequency', 'type': 'positive-float', 'mandatory': False,
+                                                                   'enforce-non-zero': True},
+                                                                  {'name': 'Under_sampling_type', 'type': 'enum', 'mandatory': False,
+                                                                   'enum': ('aliased', 'folded', 'not observed')},
+                                                                  {'name': 'Sweep_width', 'type': 'positive-float', 'mandatory': False,
+                                                                   'enforce-non-zero': True},
+                                                                  {'name': 'Sweep_width_units', 'type': 'enum', 'mandatory': True,
+                                                                   'enum': ('ppm', 'Hz'),
+                                                                   'enforce-enum': True},
+                                                                  {'name': 'Value_first_point', 'type': 'float', 'mandatory': False},
+                                                                  {'name': 'Absolute_peak_positions', 'type': 'bool', 'mandatory': False},
+                                                                  {'name': 'Acquisition', 'type': 'bool', 'mandatory': False},
+                                                                  {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True}
+                                                                  ],
+                                                '_Spectral_dim_transfer': [{'name': 'Indirect', 'type': 'bool', 'mandatory': False},
+                                                                           {'name': 'Type', 'type': 'enum', 'mandatory': True,
+                                                                            'enum': ('onebond', 'jcoupling', 'jmultibond', 'relayed', 'relayed-alternate', 'through-space'),
+                                                                            'enforce-enum': True},
+                                                                           {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True}
+                                                                           ],
+                                                '_Peak_general_char': [{'name': 'Peak_ID', 'type': 'positive-int', 'mandatory': True},
+                                                                       {'name': 'Intensity_val', 'type': 'float', 'mandatory': True},
+                                                                       {'name': 'Intensity_val_err', 'type': 'positive-float', 'mandatory': False, 'void-zero': True},
+                                                                       {'name': 'Measurement_method', 'type': 'enum', 'mandatory': False,
+                                                                        'enum': ('absolute height', 'height', 'relative height', 'volume', 'number of contours', 'integration')},
+                                                                       {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True}
+                                                                       ],
+                                                '_Peak_char': [{'name': 'Peak_ID', 'type': 'positive-int', 'mandatory': True},
+                                                               {'name': 'Spectral_dim_ID', 'type': 'enum-int', 'mandatory': True,
+                                                                'enum': set(range(1, self.lim_num_dim)),
+                                                                'enforce-enum': True},
+                                                               {'name': 'Chem_shift_val', 'type': 'range-float', 'mandatory': True,
+                                                                'range': self.chem_shift_range},
+                                                               {'name': 'Chem_shift_val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                                'range': self.chem_shift_error},
+                                                               {'name': 'Line_width_val', 'type': 'positive-float', 'mandatory': False},
+                                                               {'name': 'Line_width_val_err', 'type': 'positive-float', 'mandatory': False, 'void-zero': True},
+                                                               {'name': 'Coupling_pattern', 'type': 'enum', 'mandatory': False,
+                                                                'enum': ('d', 'dd', 'ddd', 'dm', 'dt', 'hxt', 'hpt', 'm', 'q', 'qd', 'qn', 's', 'sxt', 't', 'td', 'LR', '1JCH')},
+                                                               {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True}
+                                                               ],
+                                                '_Assigned_peak_chem_shift': [{'name': 'Peak_ID', 'type': 'positive-int', 'mandatory': True},
+                                                                              {'name': 'Spectral_dim_ID', 'type': 'enum-int', 'mandatory': True,
+                                                                               'enum': set(range(1, self.lim_num_dim)),
+                                                                               'enforce-enum': True},
+                                                                              {'name': 'Set_ID', 'type': 'positive-int', 'mandatory': False},
+                                                                              {'name': 'Magnetization_linkage_ID', 'type': 'positive-int', 'mandatory': False},
+                                                                              {'name': 'Val', 'type': 'range-float', 'mandatory': False,
+                                                                               'range': self.chem_shift_range},
+                                                                              {'name': 'Contribution_fractional_val', 'type': 'range-float', 'mandatory': False,
+                                                                               'range': self.weight_range},
+                                                                              {'name': 'Figure_of_merit', 'type': 'range-float', 'mandatory': False,
+                                                                               'range': self.weight_range},
+                                                                              {'name': 'Assigned_chem_shift_list_ID', 'type': 'pointer-index', 'mandatory': False},
+                                                                              {'name': 'Entity_assembly_ID', 'type': 'positive-int-as-str', 'mandatory': False},
+                                                                              {'name': 'Comp_index_ID', 'type': 'int', 'mandatory': False},
+                                                                              {'name': 'Comp_ID', 'type': 'str', 'mandatory': False, 'uppercase': True},
+                                                                              {'name': 'Atom_ID', 'type': 'str', 'mandatory': False},
+                                                                              {'name': 'Ambiguity_code', 'type': 'enum-int', 'mandatory': False,
+                                                                               'enum': self.bmrb_ambiguity_codes},
+                                                                              {'name': 'Ambiguity_set_ID', 'type': 'positive-int', 'mandatory': False},
+                                                                              {'name': 'Auth_seq_ID', 'type': 'int', 'mandatory': False},
+                                                                              {'name': 'Auth_comp_ID', 'type': 'str', 'mandatory': False},
+                                                                              {'name': 'Auth_atom_ID', 'type': 'str', 'mandatory': False},
+                                                                              {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True}
+                                                                              ]
+                                            }
+                                            }
+                               }
 
         # allowed auxiliary loop tags
         self.aux_allowed_tags = {'nef': {'entry_info': None,
                                          'poly_seq': {
-                                             '_nef_covalent_links': ['chain_code_1', 'sequence_code_1', 'residue_name_1', 'atom_name_1', 'chain_code_2', 'sequence_code_2', 'residue_name_2', 'atom_name_2'],
+                                             '_nef_covalent_links': ['chain_code_1', 'sequence_code_1', 'residue_name_1', 'atom_name_1',
+                                                                     'chain_code_2', 'sequence_code_2', 'residue_name_2', 'atom_name_2'],
                                              '_nef_sequence': ['index', 'chain_code', 'sequence_code', 'residue_name', 'linking', 'residue_variant', 'cis_peptide']
-                                             },
+                                         },
                                          'entity': None,
                                          'chem_shift': None,
                                          'chem_shift_ref': None,
@@ -3159,16 +3530,29 @@ class NmrDpUtility:
                                          'dihed_restraint': None,
                                          'rdc_restraint': None,
                                          'spectral_peak': {
-                                             '_nef_spectrum_dimension': ['dimension_id', 'axis_unit', 'axis_code', 'spectrometer_frequency', 'spectral_width', 'value_first_point', 'folding', 'absolute_peak_positions', 'is_acquisition'],
+                                             '_nef_spectrum_dimension': ['dimension_id', 'axis_unit', 'axis_code',
+                                                                         'spectrometer_frequency', 'spectral_width',
+                                                                         'value_first_point', 'folding',
+                                                                         'absolute_peak_positions', 'is_acquisition'],
                                              '_nef_spectrum_dimension_transfer': ['dimension_1', 'dimension_2', 'transfer_type', 'is_indirect']
-                                             },
+                                         },
                                          'spectral_peak_alt': None
                                          },
                                  'nmr-star': {'entry_info': None,
                                               'poly_seq': {
-                                                  '_Bond': ['ID', 'Type', 'Value_order', 'Assembly_atom_ID_1', 'Entity_assembly_ID_1', 'Entity_assembly_name_1', 'Entity_ID_1', 'Comp_ID_1', 'Comp_index_ID_1', 'Seq_ID_1', 'Atom_ID_1', 'Assembly_atom_ID_2', 'Entity_assembly_ID_2', 'Entity_assembly_name_2', 'Entity_ID_2', 'Comp_ID_2', 'Comp_index_ID_2', 'Seq_ID_2', 'Atom_ID_2', 'Auth_entity_assembly_ID_1', 'Auth_entity_assembly_name_1', 'Auth_asym_ID_1', 'Auth_seq_ID_1', 'Auth_comp_ID_1', 'Auth_atom_ID_1', 'Auth_entity_assembly_ID_2', 'Auth_entity_assembly_name_2', 'Auth_asym_ID_2', 'Auth_seq_ID_2', 'Auth_comp_ID_2', 'Auth_atom_ID_2', 'Sf_ID', 'Entry_ID', 'Assembly_ID'],
-                                                  '_Entity_deleted_atom': ['ID', 'Entity_atom_list_ID', 'Entity_assembly_ID', 'Entity_ID', 'Comp_ID', 'Comp_index_ID', 'Seq_ID', 'Atom_ID', 'Auth_entity_assembly_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_atom_ID', 'Sf_ID', 'Entry_ID', 'Assembly_ID']
-                                                  },
+                                                  '_Bond': ['ID', 'Type', 'Value_order', 'Assembly_atom_ID_1', 'Entity_assembly_ID_1'
+                                                            , 'Entity_assembly_name_1', 'Entity_ID_1', 'Comp_ID_1', 'Comp_index_ID_1',
+                                                            'Seq_ID_1', 'Atom_ID_1',
+                                                            'Assembly_atom_ID_2', 'Entity_assembly_ID_2', 'Entity_assembly_name_2',
+                                                            'Entity_ID_2', 'Comp_ID_2', 'Comp_index_ID_2', 'Seq_ID_2', 'Atom_ID_2',
+                                                            'Auth_entity_assembly_ID_1', 'Auth_entity_assembly_name_1', 'Auth_asym_ID_1',
+                                                            'Auth_seq_ID_1', 'Auth_comp_ID_1', 'Auth_atom_ID_1',
+                                                            'Auth_entity_assembly_ID_2', 'Auth_entity_assembly_name_2', 'Auth_asym_ID_2'
+                                                            , 'Auth_seq_ID_2', 'Auth_comp_ID_2', 'Auth_atom_ID_2', 'Sf_ID', 'Entry_ID', 'Assembly_ID'],
+                                                  '_Entity_deleted_atom': ['ID', 'Entity_atom_list_ID', 'Entity_assembly_ID', 'Entity_ID',
+                                                                           'Comp_ID', 'Comp_index_ID', 'Seq_ID', 'Atom_ID', 'Auth_entity_assembly_ID',
+                                                                           'Auth_seq_ID', 'Auth_comp_ID', 'Auth_atom_ID', 'Sf_ID', 'Entry_ID', 'Assembly_ID']
+                                              },
                                               'entity': None,
                                               'chem_shift': None,
                                               'chem_shift_ref': None,
@@ -3176,18 +3560,39 @@ class NmrDpUtility:
                                               'dihed_restraint': None,
                                               'rdc_restraint': None,
                                               'spectral_peak': {
-                                                  '_Spectral_dim': ['ID', 'Axis_code', 'Spectrometer_frequency', 'Atom_type', 'Atom_isotope_number', 'Spectral_region', 'Magnetization_linkage_ID', 'Under_sampling_type', 'Sweep_width', 'Sweep_width_units', 'Value_first_point', 'Absolute_peak_positions', 'Acquisition', 'Center_frequency_offset', 'Encoding_code', 'Encoded_reduced_dimension_ID', 'Sf_ID', 'Entry_ID', 'Spectral_peak_list_ID'],
-                                                  '_Spectral_dim_transfer': ['Spectral_dim_ID_1', 'Spectral_dim_ID_2', 'Indirect', 'Type', 'Sf_ID', 'Entry_ID', 'Spectral_peak_list_ID']
-                                                  },
+                                                  '_Spectral_dim': ['ID', 'Axis_code', 'Spectrometer_frequency', 'Atom_type',
+                                                                    'Atom_isotope_number', 'Spectral_region', 'Magnetization_linkage_ID',
+                                                                    'Under_sampling_type', 'Sweep_width', 'Sweep_width_units', 'Value_first_point',
+                                                                    'Absolute_peak_positions', 'Acquisition', 'Center_frequency_offset',
+                                                                    'Encoding_code', 'Encoded_reduced_dimension_ID', 'Sf_ID', 'Entry_ID',
+                                                                    'Spectral_peak_list_ID'],
+                                                  '_Spectral_dim_transfer': ['Spectral_dim_ID_1', 'Spectral_dim_ID_2', 'Indirect', 'Type',
+                                                                             'Sf_ID', 'Entry_ID', 'Spectral_peak_list_ID']
+                                              },
                                               'spectral_peak_alt': {
-                                                  '_Spectral_dim': ['ID', 'Axis_code', 'Spectrometer_frequency', 'Atom_type', 'Atom_isotope_number', 'Spectral_region', 'Magnetization_linkage_ID', 'Under_sampling_type', 'Sweep_width', 'Sweep_width_units', 'Value_first_point', 'Absolute_peak_positions', 'Acquisition', 'Center_frequency_offset', 'Encoding_code', 'Encoded_reduced_dimension_ID', 'Sf_ID', 'Entry_ID', 'Spectral_peak_list_ID'],
-                                                  '_Spectral_dim_transfer': ['Spectral_dim_ID_1', 'Spectral_dim_ID_2', 'Indirect', 'Type', 'Sf_ID', 'Entry_ID', 'Spectral_peak_list_ID'],
-                                                  '_Peak_general_char': ['Peak_ID', 'Intensity_val', 'Intensity_val_err', 'Measurement_method', 'Sf_ID', 'Entry_ID', 'Spectral_peak_list_ID'],
-                                                  '_Peak_char': ['Peak_ID', 'Spectral_dim_ID', 'Chem_shift_val', 'Chem_shift_val_err', 'Line_width_val', 'Line_width_val_err', 'Phase_val', 'Phase_val_err', 'Decay_rate_val', 'Decay_rate_val_err', 'Coupling_pattern', 'Bounding_box_upper_val', 'Bounding_box_lower_val', 'Bounding_box_range_val', 'Details', 'Derivation_method_ID', 'Sf_ID', 'Entry_ID', 'Spectral_peak_list_ID'],
-                                                  '_Assigned_peak_chem_shift': ['Peak_ID', 'Spectral_dim_ID', 'Set_ID', 'Magnetization_linkage_ID', 'Assembly_atom_ID', 'Val', 'Contribution_fractional_val', 'Figure_of_merit', 'Assigned_chem_shift_list_ID', 'Atom_chem_shift_ID', 'Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Comp_ID', 'Atom_ID', 'Ambiguity_code', 'Ambiguity_set_ID', 'Auth_atom_peak_num', 'Auth_entity_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_atom_ID', 'Auth_ambiguity_code', 'Auth_ambiguity_set_ID', 'Auth_amb_atom_grp_ID', 'Resonance_ID', 'Details', 'Sf_ID', 'Entry_ID', 'Spectral_peak_list_ID']
-                                                  }
+                                                  '_Spectral_dim': ['ID', 'Axis_code', 'Spectrometer_frequency', 'Atom_type', 'Atom_isotope_number',
+                                                                    'Spectral_region', 'Magnetization_linkage_ID', 'Under_sampling_type', 'Sweep_width',
+                                                                    'Sweep_width_units', 'Value_first_point', 'Absolute_peak_positions', 'Acquisition',
+                                                                    'Center_frequency_offset', 'Encoding_code', 'Encoded_reduced_dimension_ID',
+                                                                    'Sf_ID', 'Entry_ID', 'Spectral_peak_list_ID'],
+                                                  '_Spectral_dim_transfer': ['Spectral_dim_ID_1', 'Spectral_dim_ID_2', 'Indirect',
+                                                                             'Type', 'Sf_ID', 'Entry_ID', 'Spectral_peak_list_ID'],
+                                                  '_Peak_general_char': ['Peak_ID', 'Intensity_val', 'Intensity_val_err', 'Measurement_method',
+                                                                         'Sf_ID', 'Entry_ID', 'Spectral_peak_list_ID'],
+                                                  '_Peak_char': ['Peak_ID', 'Spectral_dim_ID', 'Chem_shift_val', 'Chem_shift_val_err', 'Line_width_val',
+                                                                 'Line_width_val_err', 'Phase_val', 'Phase_val_err', 'Decay_rate_val', 'Decay_rate_val_err',
+                                                                 'Coupling_pattern', 'Bounding_box_upper_val', 'Bounding_box_lower_val', 'Bounding_box_range_val',
+                                                                 'Details', 'Derivation_method_ID', 'Sf_ID', 'Entry_ID', 'Spectral_peak_list_ID'],
+                                                  '_Assigned_peak_chem_shift': ['Peak_ID', 'Spectral_dim_ID', 'Set_ID', 'Magnetization_linkage_ID', 'Assembly_atom_ID',
+                                                                                'Val', 'Contribution_fractional_val', 'Figure_of_merit', 'Assigned_chem_shift_list_ID',
+                                                                                'Atom_chem_shift_ID', 'Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Comp_ID',
+                                                                                'Atom_ID', 'Ambiguity_code', 'Ambiguity_set_ID', 'Auth_atom_peak_num', 'Auth_entity_ID',
+                                                                                'Auth_seq_ID', 'Auth_comp_ID', 'Auth_atom_ID', 'Auth_ambiguity_code',
+                                                                                'Auth_ambiguity_set_ID', 'Auth_amb_atom_grp_ID', 'Resonance_ID', 'Details',
+                                                                                'Sf_ID', 'Entry_ID', 'Spectral_peak_list_ID']
                                               }
-                                  }
+                                              }
+                                 }
 
         # item name in cs loop
         self.item_names_in_cs_loop = {'nef': {'chain_id': 'chain_code',
@@ -3431,7 +3836,7 @@ class NmrDpUtility:
                               'spectral_peak_alt': []
                               }
 
-        #self.__remapped_def_chain_id = {}
+        # self.__remapped_def_chain_id = {}
 
         self.authSeqMap = None
 
@@ -3471,31 +3876,31 @@ class NmrDpUtility:
 
         # taken from wwpdb.apps.ccmodule.io.ChemCompIo
         self.__chem_comp_atom_dict = [
-                ('_chem_comp_atom.comp_id','%s','str',''),
-                ('_chem_comp_atom.atom_id','%s','str',''),
-                ('_chem_comp_atom.alt_atom_id','%s','str',''),
-                ('_chem_comp_atom.type_symbol','%s','str',''),
-                ('_chem_comp_atom.charge','%s','str',''),
-                ('_chem_comp_atom.pdbx_align','%s','str',''),
-                ('_chem_comp_atom.pdbx_aromatic_flag','%s','str',''),
-                ('_chem_comp_atom.pdbx_leaving_atom_flag','%s','str',''),
-                ('_chem_comp_atom.pdbx_stereo_config','%s','str',''),
-                ('_chem_comp_atom.model_Cartn_x','%s','str',''),
-                ('_chem_comp_atom.model_Cartn_y','%s','str',''),
-                ('_chem_comp_atom.model_Cartn_z','%s','str',''),
-                ('_chem_comp_atom.pdbx_model_Cartn_x_ideal','%s','str',''),
-                ('_chem_comp_atom.pdbx_model_Cartn_y_ideal','%s','str',''),
-                ('_chem_comp_atom.pdbx_model_Cartn_z_ideal','%s','str',''),
-                ('_chem_comp_atom.pdbx_component_atom_id','%s','str',''),
-                ('_chem_comp_atom.pdbx_component_comp_id','%s','str',''),
-                ('_chem_comp_atom.pdbx_ordinal','%s','str','')
-                ]
+            ('_chem_comp_atom.comp_id', '%s', 'str', ''),
+            ('_chem_comp_atom.atom_id', '%s', 'str', ''),
+            ('_chem_comp_atom.alt_atom_id', '%s', 'str', ''),
+            ('_chem_comp_atom.type_symbol', '%s', 'str', ''),
+            ('_chem_comp_atom.charge', '%s', 'str', ''),
+            ('_chem_comp_atom.pdbx_align', '%s', 'str', ''),
+            ('_chem_comp_atom.pdbx_aromatic_flag', '%s', 'str', ''),
+            ('_chem_comp_atom.pdbx_leaving_atom_flag', '%s', 'str', ''),
+            ('_chem_comp_atom.pdbx_stereo_config', '%s', 'str', ''),
+            ('_chem_comp_atom.model_Cartn_x', '%s', 'str', ''),
+            ('_chem_comp_atom.model_Cartn_y', '%s', 'str', ''),
+            ('_chem_comp_atom.model_Cartn_z', '%s', 'str', ''),
+            ('_chem_comp_atom.pdbx_model_Cartn_x_ideal', '%s', 'str', ''),
+            ('_chem_comp_atom.pdbx_model_Cartn_y_ideal', '%s', 'str', ''),
+            ('_chem_comp_atom.pdbx_model_Cartn_z_ideal', '%s', 'str', ''),
+            ('_chem_comp_atom.pdbx_component_atom_id', '%s', 'str', ''),
+            ('_chem_comp_atom.pdbx_component_comp_id', '%s', 'str', ''),
+            ('_chem_comp_atom.pdbx_ordinal', '%s', 'str', '')
+        ]
 
         atom_id = next(d for d in self.__chem_comp_atom_dict if d[0] == '_chem_comp_atom.atom_id')
         self.__cca_atom_id = self.__chem_comp_atom_dict.index(atom_id)
 
-        #aromatic_flag = next(d for d in self.__chem_comp_atom_dict if d[0] == '_chem_comp_atom.pdbx_aromatic_flag')
-        #self.__cca_aromatic_flag = self.__chem_comp_atom_dict.index(aromatic_flag)
+        # aromatic_flag = next(d for d in self.__chem_comp_atom_dict if d[0] == '_chem_comp_atom.pdbx_aromatic_flag')
+        # self.__cca_aromatic_flag = self.__chem_comp_atom_dict.index(aromatic_flag)
 
         leaving_atom_flag = next(d for d in self.__chem_comp_atom_dict if d[0] == '_chem_comp_atom.pdbx_leaving_atom_flag')
         self.__cca_leaving_atom_flag = self.__chem_comp_atom_dict.index(leaving_atom_flag)
@@ -3505,14 +3910,14 @@ class NmrDpUtility:
 
         # taken from wwpdb.apps.ccmodule.io.ChemCompIo
         self.__chem_comp_bond_dict = [
-                ('_chem_comp_bond.comp_id','%s','str',''),
-                ('_chem_comp_bond.atom_id_1','%s','str',''),
-                ('_chem_comp_bond.atom_id_2','%s','str',''),
-                ('_chem_comp_bond.value_order','%s','str',''),
-                ('_chem_comp_bond.pdbx_aromatic_flag','%s','str',''),
-                ('_chem_comp_bond.pdbx_stereo_config','%s','str',''),
-                ('_chem_comp_bond.pdbx_ordinal','%s','str','')
-                ]
+            ('_chem_comp_bond.comp_id', '%s', 'str', ''),
+            ('_chem_comp_bond.atom_id_1', '%s', 'str', ''),
+            ('_chem_comp_bond.atom_id_2', '%s', 'str', ''),
+            ('_chem_comp_bond.value_order', '%s', 'str', ''),
+            ('_chem_comp_bond.pdbx_aromatic_flag', '%s', 'str', ''),
+            ('_chem_comp_bond.pdbx_stereo_config', '%s', 'str', ''),
+            ('_chem_comp_bond.pdbx_ordinal', '%s', 'str', '')
+        ]
 
         atom_id_1 = next(d for d in self.__chem_comp_bond_dict if d[0] == '_chem_comp_bond.atom_id_1')
         self.__ccb_atom_id_1 = self.__chem_comp_bond_dict.index(atom_id_1)
@@ -3618,7 +4023,7 @@ class NmrDpUtility:
 
         self.__rescue_mode = True
 
-        self.__combined_mode = not 'cs' in op
+        self.__combined_mode = 'cs' not in op
 
         if self.__combined_mode:
             if self.__srcPath is None:
@@ -3881,7 +4286,7 @@ class NmrDpUtility:
 
                 input_source = self.report.input_sources[csListId]
 
-                file_type = 'nmr-star' # 'nef' in self.__op else 'nmr-star' # DAOTHER-5673
+                file_type = 'nmr-star'  # 'nef' in self.__op else 'nmr-star' # DAOTHER-5673
 
                 input_source.setItemValue('file_name', os.path.basename(csPath))
                 input_source.setItemValue('file_type', file_type)
@@ -3899,7 +4304,7 @@ class NmrDpUtility:
 
                     input_source = self.report.input_sources[file_path_list_len]
 
-                    file_type = 'nmr-star' # 'nef' if 'nef' in self.__op else 'nmr-star' # DAOTHER-5673
+                    file_type = 'nmr-star'  # 'nef' if 'nef' in self.__op else 'nmr-star' # DAOTHER-5673
 
                     input_source.setItemValue('file_name', os.path.basename(mrPath))
                     input_source.setItemValue('file_type', file_type)
@@ -3955,7 +4360,7 @@ class NmrDpUtility:
 
             for comp_id in non_std_comp_ids:
 
-                if self.__updateChemCompDict(comp_id): # matches with comp_id in CCD
+                if self.__updateChemCompDict(comp_id):  # matches with comp_id in CCD
 
                     ref_elems = set(a[self.__cca_type_symbol] for a in self.__last_chem_comp_atoms if a[self.__cca_leaving_atom_flag] != 'Y')
 
@@ -3964,7 +4369,7 @@ class NmrDpUtility:
                             self.report.setDiamagnetic(False)
                             break
 
-        except:
+        except:  # noqa: E722 pylint: disable=bare-except
             pass
 
     def __updateChemCompDict(self, comp_id):
@@ -4005,11 +4410,11 @@ class NmrDpUtility:
                 convert_codec(srcPath, srcPath_, codec, 'utf-8')
                 srcPath = srcPath_
 
-            is_valid, message = self.__nefT.validate_file(srcPath, 'A') # 'A' for NMR unified data, 'S' for assigned chemical shifts, 'R' for restraints.
+            is_valid, message = self.__nefT.validate_file(srcPath, 'A')  # 'A' for NMR unified data, 'S' for assigned chemical shifts, 'R' for restraints.
 
             self.__original_error_message.append(message)
 
-            _file_type = message['file_type'] # nef/nmr-star/unknown
+            _file_type = message['file_type']  # nef/nmr-star/unknown
 
             input_source = self.report.input_sources[0]
             input_source_dic = input_source.get()
@@ -4021,7 +4426,9 @@ class NmrDpUtility:
 
                 if _file_type != file_type:
 
-                    err = "%r was selected as %s file, but recognized as %s file. Please re-upload the file." % (file_name, self.readable_file_type[file_type], self.readable_file_type[_file_type])
+                    err = "%r was selected as %s file, but recognized as %s file. Please re-upload the file." % (file_name,
+                                                                                                                 self.readable_file_type[file_type],
+                                                                                                                 self.readable_file_type[_file_type])
 
                     if len(message['error']) > 0:
                         for err_message in message['error']:
@@ -4038,7 +4445,7 @@ class NmrDpUtility:
 
                 else:
 
-                    is_done, star_data_type, star_data = self.__nefT.read_input_file(srcPath) # NEFTranslator.validate_file() generates this object internally, but not re-used.
+                    is_done, star_data_type, star_data = self.__nefT.read_input_file(srcPath)  # NEFTranslator.validate_file() generates this object internally, but not re-used.
 
                     if len(self.__star_data_type) > 0:
                         del self.__star_data_type[-1]
@@ -4054,7 +4461,7 @@ class NmrDpUtility:
 
                 if any(err_message for err_message in message['error'] if 'The mandatory loop' in err_message):
 
-                    _, star_data_type, star_data = self.__nefT.read_input_file(srcPath) # NEFTranslator.validate_file() generates this object internally, but not re-used.
+                    _, star_data_type, star_data = self.__nefT.read_input_file(srcPath)  # NEFTranslator.validate_file() generates this object internally, but not re-used.
 
                     if len(self.__star_data_type) > 0:
                         del self.__star_data_type[-1]
@@ -4071,7 +4478,7 @@ class NmrDpUtility:
             if srcPath_ is not None:
                 try:
                     os.remove(srcPath_)
-                except:
+                except:  # noqa: E722 pylint: disable=bare-except
                     pass
 
         else:
@@ -4089,11 +4496,11 @@ class NmrDpUtility:
                     convert_codec(csPath, csPath_, codec, 'utf-8')
                     csPath = csPath_
 
-                is_valid, message = self.__nefT.validate_file(csPath, 'S') # 'A' for NMR unified data, 'S' for assigned chemical shifts, 'R' for restraints.
+                is_valid, message = self.__nefT.validate_file(csPath, 'S')  # 'A' for NMR unified data, 'S' for assigned chemical shifts, 'R' for restraints.
 
                 self.__original_error_message.append(message)
 
-                _file_type = message['file_type'] # nef/nmr-star/unknown
+                _file_type = message['file_type']  # nef/nmr-star/unknown
 
                 input_source = self.report.input_sources[csListId]
                 input_source_dic = input_source.get()
@@ -4113,7 +4520,7 @@ class NmrDpUtility:
 
                         err = "%r was selected as %s file, but recognized as %s file." % (file_name, self.readable_file_type[file_type], self.readable_file_type[_file_type])
 
-                        if _file_type == 'nef': # DAOTHER-5673
+                        if _file_type == 'nef':  # DAOTHER-5673
                             err += " Please re-upload the NEF file as an NMR combined data file."
                         else:
                             err += " Please re-upload the file."
@@ -4133,14 +4540,14 @@ class NmrDpUtility:
 
                     else:
 
-                        _is_done, star_data_type, star_data = self.__nefT.read_input_file(csPath) # NEFTranslator.validate_file() generates this object internally, but not re-used.
+                        _is_done, star_data_type, star_data = self.__nefT.read_input_file(csPath)  # NEFTranslator.validate_file() generates this object internally, but not re-used.
 
                         self.__has_legacy_sf_issue = False
 
                         if star_data_type == 'Saveframe':
                             self.__has_legacy_sf_issue = True
                             self.__fixFormatIssueOfInputSource(csListId, file_name, file_type, csPath, 'S', message)
-                            _is_done, star_data_type, star_data = self.__nefT.read_input_file(csPath) # NEFTranslator.validate_file() generates this object internally, but not re-used.
+                            _is_done, star_data_type, star_data = self.__nefT.read_input_file(csPath)  # NEFTranslator.validate_file() generates this object internally, but not re-used.
 
                         if not (self.__has_legacy_sf_issue and _is_done and star_data_type == 'Entry'):
 
@@ -4160,7 +4567,7 @@ class NmrDpUtility:
                 if csPath_ is not None:
                     try:
                         os.remove(csPath_)
-                    except:
+                    except:  # noqa: E722 pylint: disable=bare-except
                         pass
 
             mr_file_path_list = 'restraint_file_path_list'
@@ -4180,11 +4587,11 @@ class NmrDpUtility:
                         convert_codec(mrPath, mrPath_, codec, 'utf-8')
                         mrPath = mrPath_
 
-                    is_valid, message = self.__nefT.validate_file(mrPath, 'R') # 'A' for NMR unified data, 'S' for assigned chemical shifts, 'R' for restraints.
+                    is_valid, message = self.__nefT.validate_file(mrPath, 'R')  # 'A' for NMR unified data, 'S' for assigned chemical shifts, 'R' for restraints.
 
                     self.__original_error_message.append(message)
 
-                    _file_type = message['file_type'] # nef/nmr-star/unknown
+                    _file_type = message['file_type']  # nef/nmr-star/unknown
 
                     input_source = self.report.input_sources[file_path_list_len]
                     input_source_dic = input_source.get()
@@ -4204,7 +4611,7 @@ class NmrDpUtility:
 
                             err = "%r was selected as %s file, but recognized as %s file." % (file_name, self.readable_file_type[file_type], self.readable_file_type[_file_type])
 
-                            if _file_type == 'nef': # DAOTHER-5673
+                            if _file_type == 'nef':  # DAOTHER-5673
                                 err += " Please re-upload the NEF file as an NMR combined data file."
                             else:
                                 err += " Please re-upload the file."
@@ -4224,14 +4631,14 @@ class NmrDpUtility:
 
                         else:
 
-                            _is_done, star_data_type, star_data = self.__nefT.read_input_file(mrPath) # NEFTranslator.validate_file() generates this object internally, but not re-used.
+                            _is_done, star_data_type, star_data = self.__nefT.read_input_file(mrPath)  # NEFTranslator.validate_file() generates this object internally, but not re-used.
 
                             self.__has_legacy_sf_issue = False
 
                             if star_data_type == 'Saveframe':
                                 self.__has_legacy_sf_issue = True
                                 self.__fixFormatIssueOfInputSource(file_path_list_len, file_name, file_type, mrPath, 'R', message)
-                                _is_done, star_data_type, star_data = self.__nefT.read_input_file(mrPath) # NEFTranslator.validate_file() generates this object internally, but not re-used.
+                                _is_done, star_data_type, star_data = self.__nefT.read_input_file(mrPath)  # NEFTranslator.validate_file() generates this object internally, but not re-used.
 
                             if not (self.__has_legacy_sf_issue and _is_done and star_data_type == 'Entry'):
 
@@ -4256,7 +4663,7 @@ class NmrDpUtility:
                     if mrPath_ is not None:
                         try:
                             os.remove(mrPath_)
-                        except:
+                        except:  # noqa: E722 pylint: disable=bare-except
                             pass
 
             ar_file_path_list = 'atypical_restraint_file_path_list'
@@ -4279,7 +4686,7 @@ class NmrDpUtility:
                     if arPath_ is not None:
                         try:
                             os.remove(arPath_)
-                        except:
+                        except:  # noqa: E722 pylint: disable=bare-except
                             pass
 
         return is_done
@@ -4743,9 +5150,9 @@ class NmrDpUtility:
             pass
 
         if __pynmrstar_v3__:
-            msg_template = "The tag prefix was never set! Either the saveframe had no tags, you tried to read a version 2.1 file, or there is something else wrong with your file. Saveframe error occurred within:"
+            msg_template = "The tag prefix was never set! Either the saveframe had no tags, you tried to read a version 2.1 file, or there is something else wrong with your file. Saveframe error occurred within:"  # noqa: E501
         else:
-            msg_template = "The tag prefix was never set! Either the saveframe had no tags, you tried to read a version 2.1 file without setting ALLOW_V2_ENTRIES to True, or there is something else wrong with your file. Saveframe error occured:"
+            msg_template = "The tag prefix was never set! Either the saveframe had no tags, you tried to read a version 2.1 file without setting ALLOW_V2_ENTRIES to True, or there is something else wrong with your file. Saveframe error occured:"  # noqa: E501
 
         try:
 
@@ -4841,7 +5248,7 @@ class NmrDpUtility:
         except StopIteration:
             pass
 
-        msg_template = "You attempted to parse one loop but the source you provided had more than one loop. Please either parse all loops as a saveframe or only parse one loop. Loops detected:"
+        msg_template = "You attempted to parse one loop but the source you provided had more than one loop. Please either parse all loops as a saveframe or only parse one loop. Loops detected:"  # noqa: E501
 
         try:
 
@@ -5311,7 +5718,7 @@ class NmrDpUtility:
                     if os.path.exists(tmpPath):
                         os.remove(tmpPath)
 
-        except:
+        except:  # noqa: E722 pylint: disable=bare-except
             pass
 
         return is_done
@@ -5450,7 +5857,7 @@ class NmrDpUtility:
                 loop = sf_data.get_loop(lp_category)
             else:
                 loop = sf_data.get_loop_by_category(lp_category)
-        except:
+        except:  # noqa: E722 pylint: disable=bare-except
             loop = sf_data
 
         try:
@@ -5781,7 +6188,7 @@ class NmrDpUtility:
                 loop = sf_data.get_loop(lp_category)
             else:
                 loop = sf_data.get_loop_by_category(lp_category)
-        except:
+        except:  # noqa: E722 pylint: disable=bare-except
             loop = sf_data
 
         try:
@@ -6691,7 +7098,6 @@ class NmrDpUtility:
                     pos = 0
 
                     for line in ifp:
-
                         pos += 1
 
                         if line.startswith('ATOM '):
@@ -11538,7 +11944,7 @@ class NmrDpUtility:
 
                 self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'data': lp_data})
 
-            except:
+            except:  # noqa: E722 pylint: disable=bare-except
                 pass
 
         except Exception as e:
@@ -12060,7 +12466,7 @@ class NmrDpUtility:
                                     if file_type == 'nmr-star' and content_subtype == 'spectral_peak_alt':
                                         self.__testDataConsistencyInAuxLoopOfSpectralPeakAlt(file_name, file_type, sf_framecode, num_dim, lp_category, aux_data, sf_data)
 
-                                except:
+                                except:  # noqa: E722 pylint: disable=bare-except
                                     pass
 
                             except Exception as e:
@@ -12572,7 +12978,7 @@ class NmrDpUtility:
 
                             self.__sf_tag_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'data': sf_tag_data})
 
-                        except:
+                        except:  # noqa: E722 pylint: disable=bare-except
                             pass
 
                     except Exception as e:
@@ -12641,7 +13047,7 @@ class NmrDpUtility:
 
             for lp_category in self.aux_lp_categories[file_type][content_subtype]:
 
-                aux_data = next((l['data'] for l in self.__aux_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode and l['category'] == lp_category), None)
+                aux_data = next((l['data'] for l in self.__aux_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode and l['category'] == lp_category), None)  # noqa: E741
 
                 if aux_data is not None:
                     for i in aux_data:
@@ -12765,7 +13171,7 @@ class NmrDpUtility:
                 details_col = loop.tags.index('Details') if 'Details' in loop.tags and self.__leave_intl_note else -1
 
             if file_type == 'nef' or (not self.__nonblk_anomalous_cs):
-                lp_data = next(l['data'] for l in self.__lp_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode)
+                lp_data = next(l['data'] for l in self.__lp_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode)  # noqa: E741
 
             else:
                 key_items = self.key_items[file_type][content_subtype]
@@ -12774,7 +13180,7 @@ class NmrDpUtility:
                 try:
                     lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None,
                                                      excl_missing_data=self.__excl_missing_data)[0]
-                except:
+                except:  # noqa: E722 pylint: disable=bare-except
                     return False
 
             chk_row_tmp = "[Check row of {0} %s, {1} %s, {2} %s, {3} %s".format(chain_id_name, seq_id_name, comp_id_name, atom_id_name)
@@ -12782,7 +13188,7 @@ class NmrDpUtility:
 
             methyl_cs_vals = {}
 
-            for l, i in enumerate(lp_data):
+            for l, i in enumerate(lp_data):  # noqa: E741
                 chain_id = i[chain_id_name]
                 seq_id = i[seq_id_name]
                 comp_id = i[comp_id_name]
@@ -13900,12 +14306,12 @@ class NmrDpUtility:
 
                 try:
                     cs_list = sf_data.get_tag(self.cs_list_sf_tag_name[file_type])[0]
-                except:
+                except:  # noqa: E722 pylint: disable=bare-except
                     continue
 
                 try:
 
-                    cs_data = next(l['data'] for l in self.__lp_data['chem_shift'] if l['file_name'] == file_name and l['sf_framecode'] == cs_list)
+                    cs_data = next(l['data'] for l in self.__lp_data['chem_shift'] if l['file_name'] == file_name and l['sf_framecode'] == cs_list)  # noqa: E741
 
                 except StopIteration:
 
@@ -14052,7 +14458,7 @@ class NmrDpUtility:
 
                 try:
 
-                    lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode), None)
+                    lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode), None)  # noqa: E741
 
                     if lp_data is not None:
 
@@ -14301,7 +14707,7 @@ class NmrDpUtility:
 
                     try:
 
-                        cs_data = next(l['data'] for l in self.__lp_data['chem_shift'] if l['file_name'] == file_name and l['sf_framecode'] == cs_list)
+                        cs_data = next(l['data'] for l in self.__lp_data['chem_shift'] if l['file_name'] == file_name and l['sf_framecode'] == cs_list)  # noqa: E741
 
                     except StopIteration:
 
@@ -14317,7 +14723,7 @@ class NmrDpUtility:
 
                             continue
 
-                except:
+                except:  # noqa: E722 pylint: disable=bare-except
                     pass
 
                 if cs_data is None:
@@ -21182,7 +21588,7 @@ class NmrDpUtility:
 
             return True
 
-        except:
+        except:  # noqa: E722 pylint: disable=bare-except
             return False
 
     def __parseCoordFilePath(self):
@@ -21213,7 +21619,7 @@ class NmrDpUtility:
                     if self.__cR.parse(fPath):
                         return True
 
-            except:
+            except:  # noqa: E722 pylint: disable=bare-except
                 pass
 
         return False
@@ -22368,7 +22774,7 @@ class NmrDpUtility:
                                             auth_seq_id = auth_seq['test_seq_id'][auth_seq['ref_seq_id'].index(seq_id1[i])]
                                             if seq_id1[i] != auth_seq_id:
                                                 cif_seq_code += ' (%s:%s:%s in author numbering scheme)' % (auth_chain_id, auth_seq_id, cif_comp_id)
-                                        except:
+                                        except:  # noqa: E722 pylint: disable=bare-except
                                             pass
 
                                     warn = "%s is not present in the NMR data (chain_id %s)." %\
@@ -22399,7 +22805,7 @@ class NmrDpUtility:
                                         auth_seq_id = auth_seq['test_seq_id'][auth_seq['ref_seq_id'].index(seq_id1[i])]
                                         if seq_id1[i] != auth_seq_id:
                                             cif_seq_code += ', or %s:%s:%s in author numbering scheme' % (auth_chain_id, auth_seq_id, cif_comp_id)
-                                    except:
+                                    except:  # noqa: E722 pylint: disable=bare-except
                                         pass
 
                                 err = "Sequence alignment error between the coordinate (%s) and the NMR data (%s). Please verify the two sequences and re-upload the correct file(s)." %\
@@ -22605,7 +23011,7 @@ class NmrDpUtility:
                     _s1 = s1 if offset_1 == 0 else fill_blank_comp_id_with_offset(s1, offset_1)
                     _s2 = s2 if offset_2 == 0 else fill_blank_comp_id_with_offset(s2, offset_2)
 
-                    if conflict > 0 and has_large_seq_gap(_s1, _s2): # DAOTHER-7465
+                    if conflict > 0 and has_large_seq_gap(_s1, _s2):  # DAOTHER-7465
                         __s1 = fill_blank_comp_id(_s2, _s1)
                         __s2 = fill_blank_comp_id(_s1, _s2)
                         _s1 = __s1
@@ -22633,14 +23039,14 @@ class NmrDpUtility:
 
                         for i in range(length):
                             if str(myAlign[i][0]) != '.'\
-                                and i < len(s1['seq_id']): # DAOTHER-7421
+                                and i < len(s1['seq_id']):  # DAOTHER-7421
                                 seq_id1.append(s1['seq_id'][i])
                             else:
                                 seq_id1.append(None)
 
                         for i in range(length):
                             if str(myAlign[i][1]) != '.'\
-                                and i < len(s2['seq_id']): # DAOTHER-7421
+                                and i < len(s2['seq_id']):  # DAOTHER-7421
                                 seq_id2.append(s2['seq_id'][i])
                             else:
                                 seq_id2.append(None)
@@ -22772,7 +23178,7 @@ class NmrDpUtility:
                                         auth_seq_id = auth_seq['test_seq_id'][auth_seq['ref_seq_id'].index(seq_id2[i])]
                                         if seq_id2[i] != auth_seq_id:
                                             cif_seq_code += ', or %s:%s:%s in author numbering scheme' % (auth_chain_id2, auth_seq_id, cif_comp_id)
-                                    except:
+                                    except:  # noqa: E722 pylint: disable=bare-except
                                         pass
 
                                 err = "Sequence alignment error between the NMR data (%s) and the coordinate (%s). Please verify the two sequences and re-upload the correct file(s)." %\
@@ -22956,7 +23362,7 @@ class NmrDpUtility:
                 coord = self.__cR.getDictListWithFilter('atom_site',
                                                         [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                                          {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'seq_id'},
-                                                         {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'auth_seq_id'}, # non-polymer
+                                                         {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'auth_seq_id'},  # non-polymer
                                                          {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
                                                          {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
                                                          ],
@@ -23024,7 +23430,7 @@ class NmrDpUtility:
                 if ref_chain_id not in nmr2ca:
                     nmr2ca[ref_chain_id] = []
 
-                complex = {'seq_align': result} # DAOTHER-7465
+                complex = {'seq_align': result}  # DAOTHER-7465
 
                 if 'unmapped_sequence' in chain_assign:
                     complex['seq_unmap'] = [unmapped['ref_seq_id'] for unmapped in chain_assign['unmapped_sequence']]
@@ -23081,7 +23487,7 @@ class NmrDpUtility:
 
         return self.report.getTotalErrors() == __errors
 
-    def __testCoordAtomIdConsistency__(self, file_list_id, file_name, file_type, content_subtype, sf_data, list_id, sf_framecode, lp_category, cif_polymer_sequence, seq_align_dic, nmr2ca, ref_chain_id):
+    def __testCoordAtomIdConsistency__(self, file_list_id, file_name, file_type, content_subtype, sf_data, list_id, sf_framecode, lp_category, cif_polymer_sequence, seq_align_dic, nmr2ca, ref_chain_id):  # noqa: E501
         """ Perform consistency test on atom names of coordinate file.
         """
 
@@ -23092,9 +23498,9 @@ class NmrDpUtility:
         if file_type == 'nef' or (not self.__nonblk_bad_nterm):
 
             if content_subtype != 'poly_seq':
-                lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode), None)
+                lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode), None)  # noqa: E741
             else:
-                lp_data = next((l['data'] for l in self.__aux_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode and l['category'] == lp_category), None)
+                lp_data = next((l['data'] for l in self.__aux_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode and l['category'] == lp_category), None)  # noqa: E501,E741
 
         else:
 
@@ -23108,7 +23514,7 @@ class NmrDpUtility:
                     if num_dim not in range(1, self.lim_num_dim):
                         raise ValueError()
 
-                except ValueError: # raised error already at __testIndexConsistency()
+                except ValueError:  # raised error already at __testIndexConsistency()
                     return False
 
                 max_dim = num_dim + 1
@@ -23129,7 +23535,7 @@ class NmrDpUtility:
                         _d = copy.copy(d)
                         if '%s' in d['name']:
                             _d['name'] = d['name'] % dim
-                        if 'default-from' in d and '%s' in d['default-from']: # DAOTHER-7421
+                        if 'default-from' in d and '%s' in d['default-from']:  # DAOTHER-7421
                             _d['default-from'] = d['default-from'] % dim
                         data_items.append(_d)
 
@@ -23145,7 +23551,7 @@ class NmrDpUtility:
             try:
                 lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None,
                                                  excl_missing_data=self.__excl_missing_data)[0]
-            except:
+            except:  # noqa: E722 pylint: disable=bare-except
                 return False
 
         if lp_data is None:
@@ -23191,7 +23597,7 @@ class NmrDpUtility:
                     if num_dim not in range(1, self.lim_num_dim):
                         raise ValueError()
 
-                except ValueError: # raised error already at __testIndexConsistency()
+                except ValueError:  # raised error already at __testIndexConsistency()
                     return False
 
                 max_dim = num_dim + 1
@@ -23229,7 +23635,7 @@ class NmrDpUtility:
 
             details_col = loop.tags.index('Details') if 'Details' in loop.tags and self.__leave_intl_note else -1
 
-        for l, i in enumerate(lp_data):
+        for l, i in enumerate(lp_data):  # noqa: E741
 
             for j in range(num_dim):
                 chain_id = i[chain_id_names[j]]
@@ -23237,13 +23643,13 @@ class NmrDpUtility:
                 comp_id = i[comp_id_names[j]]
                 atom_id = i[atom_id_names[j]]
 
-                if content_subtype.startswith('spectral_peak') and (chain_id in self.empty_value or seq_id in self.empty_value or comp_id in self.empty_value or atom_id in self.empty_value):
+                if content_subtype.startswith('spectral_peak') and (chain_id in self.empty_value or seq_id in self.empty_value or comp_id in self.empty_value or atom_id in self.empty_value):  # noqa: E501
                     continue
 
                 if chain_id not in nmr2ca:
                     continue
 
-                ca = next((ca['seq_align'] for ca in nmr2ca[chain_id] if ('seq_unmap' not in ca or (seq_id not in ca['seq_unmap']))), None) # DAOTHER-7465
+                ca = next((ca['seq_align'] for ca in nmr2ca[chain_id] if ('seq_unmap' not in ca or (seq_id not in ca['seq_unmap']))), None)  # DAOTHER-7465
 
                 if ca is None:
                     continue
@@ -23314,7 +23720,7 @@ class NmrDpUtility:
                         else:
                             err += 'because sequence (chain_id %s) starts with Proline residue.' % ref_chain_id
 
-                        self.report.warning.appendDescription('auth_atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                        self.report.warning.appendDescription('auth_atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})  # noqa: E501
                         self.report.setWarning()
 
                         if self.__verbose:
@@ -23322,7 +23728,7 @@ class NmrDpUtility:
 
                         if file_type == 'nmr-star' and details_col != -1:
                             _details = loop.data[l][details_col]
-                            details = "%s:%s:%s:%s is not present in the coordinate. However, it is acceptable if an appropriate atom name, H1, is given because of a cyclic-peptide.\n" % (chain_id, seq_id, comp_id, atom_name)
+                            details = "%s:%s:%s:%s is not present in the coordinate. However, it is acceptable if an appropriate atom name, H1, is given because of a cyclic-peptide.\n" % (chain_id, seq_id, comp_id, atom_name)  # noqa: E501
                             if _details in self.empty_value or (details not in _details):
                                 if _details in self.empty_value:
                                     loop.data[l][details_col] = details
@@ -23330,7 +23736,7 @@ class NmrDpUtility:
                                     loop.data[l][details_col] += ('' if '\n' in _details else '\n') + details
                                 add_details = True
 
-                    elif ca['conflict'] == 0: # no conflict in sequenc alignment
+                    elif ca['conflict'] == 0:  # no conflict in sequenc alignment
 
                         if self.__get1LetterCode(comp_id) != 'X':
 
@@ -23342,7 +23748,7 @@ class NmrDpUtility:
 
                         else:
 
-                            self.report.warning.appendDescription('atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                            self.report.warning.appendDescription('atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})  # noqa: E501
                             self.report.setWarning()
 
                             if self.__verbose:
@@ -23374,7 +23780,7 @@ class NmrDpUtility:
             else:
                 self.__star_data[0] = star_data
 
-            corrections = self.__nefT.resolve_sf_names_for_cif(star_data, star_data_type) # DAOTHER-7389, issue #4
+            corrections = self.__nefT.resolve_sf_names_for_cif(star_data, star_data_type)  # DAOTHER-7389, issue #4
 
             if len(self.__sf_name_corr) == 0:
                 self.__sf_name_corr.append(corrections)
@@ -23444,7 +23850,7 @@ class NmrDpUtility:
                         if num_dim not in range(1, self.lim_num_dim):
                             raise ValueError()
 
-                    except ValueError: # raised error already at __testIndexConsistency()
+                    except ValueError:  # raised error already at __testIndexConsistency()
                         continue
 
                     max_dim = num_dim + 1
@@ -23474,8 +23880,8 @@ class NmrDpUtility:
                             else:
                                 loop = sf_data.get_loop_by_category(lp_category)
 
-                            for l in conflict_id:
-                                del loop.data[l]
+                            for lid in conflict_id:
+                                del loop.data[lid]
 
                 try:
 
@@ -23487,10 +23893,10 @@ class NmrDpUtility:
                         else:
                             loop = sf_data.get_loop_by_category(lp_category)
 
-                        for l in conflict_id:
-                            del loop.data[l]
+                        for lid in conflict_id:
+                            del loop.data[lid]
 
-                except:
+                except:  # noqa: E722 pylint: disable=bare-except
                     pass
 
         return True
@@ -23533,7 +23939,7 @@ class NmrDpUtility:
                         if num_dim not in range(1, self.lim_num_dim):
                             raise ValueError()
 
-                    except ValueError: # raised error already at __testIndexConsistency()
+                    except ValueError:  # raised error already at __testIndexConsistency()
                         pass
 
                 for loop in sf_data.loops:
@@ -23564,10 +23970,10 @@ class NmrDpUtility:
                                 else:
                                     _loop = sf_data.get_loop_by_category(lp_category)
 
-                                for l in conflict_id:
-                                    del _loop.data[l]
+                                for lid in conflict_id:
+                                    del _loop.data[lid]
 
-                        except:
+                        except:  # noqa: E722 pylint: disable=bare-except
                             pass
 
         return True
@@ -23624,7 +24030,7 @@ class NmrDpUtility:
                     if self.__check_mandatory_tag and self.__nefT.is_mandatory_tag(lp_tag, file_type):
 
                         if self.__rescue_mode:
-                            self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                            self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})  # noqa: E501
                             self.report.setError()
 
                             if self.__verbose:
@@ -23637,7 +24043,7 @@ class NmrDpUtility:
                     for tag in loop.tags:
                         new_loop.add_tag(lp_category + '.' + tag)
 
-                    for l, i in enumerate(loop.data, start=1):
+                    for l, i in enumerate(loop.data, start=1):  # noqa: E741
                         new_loop.add_data([str(l)] + i)
 
                     del sf_data[loop]
@@ -23658,7 +24064,7 @@ class NmrDpUtility:
         input_source_dic = input_source.get()
 
         file_name = input_source_dic['file_name']
-        #file_type = input_source_dic['file_type']
+        # file_type = input_source_dic['file_type']
 
         warnings = self.report.warning.getValueList('skipped_saveframe_category', file_name)
 
@@ -23727,7 +24133,7 @@ class NmrDpUtility:
         input_source_dic = input_source.get()
 
         file_name = input_source_dic['file_name']
-        #file_type = input_source_dic['file_type']
+        # file_type = input_source_dic['file_type']
 
         warnings = self.report.warning.getValueList('skipped_loop_category', file_name)
 
@@ -23882,7 +24288,7 @@ class NmrDpUtility:
         if self.__srcPath == self.__dstPath:
             return True
 
-        for sf_category in self.__sf_category_list: # DAOTHER-5896
+        for sf_category in self.__sf_category_list:  # DAOTHER-5896
 
             for sf_data in self.__star_data[0].get_saveframes_by_category(sf_category):
 
@@ -23913,13 +24319,13 @@ class NmrDpUtility:
 
             sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
-            orig_lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode), None)
+            orig_lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode), None)  # noqa: E741
 
             if orig_lp_data is None:
                 try:
                     orig_lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None,
                                                           excl_missing_data=self.__excl_missing_data)[0]
-                except:
+                except:  # noqa: E722 pylint: disable=bare-except
                     pass
 
             if orig_lp_data is not None and len(orig_lp_data) > 0:
@@ -23956,7 +24362,7 @@ class NmrDpUtility:
                     if 'Entry_ID' in orig_lp_data[0]:
                         has_entry_id = True
 
-            elif not self.__has_star_entity and not self.__update_poly_seq: # DAOTHER-6694
+            elif not self.__has_star_entity and not self.__update_poly_seq:  # DAOTHER-6694
                 return False
 
         sf_cat_name = 'nef_molecular_system' if file_type == 'nef' else 'Assembly'
@@ -23967,7 +24373,7 @@ class NmrDpUtility:
         except IndexError:
             return False
 
-        poly_seq_sf_data = pynmrstar.Saveframe.from_scratch(sf_framecode) # sf_cat_name
+        poly_seq_sf_data = pynmrstar.Saveframe.from_scratch(sf_framecode)  # sf_cat_name
 
         tagNames = None
 
@@ -24052,7 +24458,7 @@ class NmrDpUtility:
                     auth_seq_id = s['seq_id'][j]
                     auth_comp_id = s['comp_id'][j]
 
-                    seq_id = auth_seq_id #+ seq_id_offset
+                    seq_id = auth_seq_id  # + seq_id_offset
                     _seq_id_ = auth_seq_id + seq_id_offset
                     comp_id = auth_comp_id.upper()
                     """
@@ -24077,7 +24483,7 @@ class NmrDpUtility:
                                 if 'identical_chain_id' in s:
                                     for chain_id_ in s['identical_chain_id']:
                                         try:
-                                            chain_assign_ = next(chain_assign for chain_assign in chain_assign_dic['model_poly_seq_vs_nmr_poly_seq'] if chain_assign['test_chain_id'] == chain_id_)
+                                            chain_assign_ = next(chain_assign for chain_assign in chain_assign_dic['model_poly_seq_vs_nmr_poly_seq'] if chain_assign['test_chain_id'] == chain_id_)  # noqa: E501
                                             if 'unmapped_sequence' in chain_assign_:
                                                 ref_seq = next(ref_seq for ref_seq in chain_assign_['unmapped_sequence'] if ref_seq['ref_seq_id'] == seq_id)
                                                 auth_comp_id = ref_seq['ref_comp_id']
@@ -24088,9 +24494,9 @@ class NmrDpUtility:
                     """
                     if file_type == 'nef':
 
-                        row.append(self.__nefT.index_to_letter(self.__nefT.letter_to_int(chain_id) - 1 + cid_offset)) # chain_code
-                        row.append(seq_id) # sequence_code
-                        row.append(comp_id) # residue_name
+                        row.append(self.__nefT.index_to_letter(self.__nefT.letter_to_int(chain_id) - 1 + cid_offset))  # chain_code
+                        row.append(seq_id)  # sequence_code
+                        row.append(comp_id)  # residue_name
 
                         # linking
 
@@ -24110,7 +24516,7 @@ class NmrDpUtility:
                         # residue_variant
 
                         if has_res_var_dat:
-                            orig_row = None if orig_lp_data is None else next((i for i in orig_lp_data if i['chain_code'] == chain_id and i['sequence_code'] == auth_seq_id and i['residue_name'] == auth_comp_id), None)
+                            orig_row = None if orig_lp_data is None else next((i for i in orig_lp_data if i['chain_code'] == chain_id and i['sequence_code'] == auth_seq_id and i['residue_name'] == auth_comp_id), None)  # noqa: E501
                             if orig_row is not None:
                                 row.append(orig_row['residue_variant'])
                             else:
@@ -24131,11 +24537,11 @@ class NmrDpUtility:
 
                         cid = chains.index(chain_id) + 1
 
-                        row.append(cid + cid_offset) # Entity_assembly_ID
-                        row.append(seq_id) # Comp_index_ID
-                        row.append(comp_id) # Comp_ID
+                        row.append(cid + cid_offset)  # Entity_assembly_ID
+                        row.append(seq_id)  # Comp_index_ID
+                        row.append(comp_id)  # Comp_ID
 
-                        orig_row = None if orig_lp_data is None else next((i for i in orig_lp_data if i['Entity_assembly_ID'] == str(cid) and i['Comp_index_ID'] == auth_seq_id and i['Comp_ID'] == auth_comp_id), None)
+                        orig_row = None if orig_lp_data is None else next((i for i in orig_lp_data if i['Entity_assembly_ID'] == str(cid) and i['Comp_index_ID'] == auth_seq_id and i['Comp_ID'] == auth_comp_id), None)  # noqa: E501
 
                         # Auth_asym_ID
 
@@ -24252,15 +24658,15 @@ class NmrDpUtility:
                                     auth_seq_id = s['seq_id'][j]
                                     auth_comp_id = s['comp_id'][j]
 
-                                    seq_id = auth_seq_id #+ seq_id_offset
+                                    seq_id = auth_seq_id  # + seq_id_offset
                                     _seq_id_ = auth_seq_id + seq_id_offset
                                     comp_id = auth_comp_id.upper()
 
                                     if file_type == 'nef':
 
-                                        row.append(self.__nefT.index_to_letter(self.__nefT.letter_to_int(chain_id) - 1 + cid_offset)) # chain_code
-                                        row.append(seq_id) # sequence_code
-                                        row.append(comp_id) # residue_name
+                                        row.append(self.__nefT.index_to_letter(self.__nefT.letter_to_int(chain_id) - 1 + cid_offset))  # chain_code
+                                        row.append(seq_id)  # sequence_code
+                                        row.append(comp_id)  # residue_name
 
                                         # linking
 
@@ -24280,7 +24686,7 @@ class NmrDpUtility:
                                         # residue_variant
 
                                         if has_res_var_dat:
-                                            orig_row = None if orig_lp_data is None else next((i for i in orig_lp_data if i['chain_code'] == chain_id and i['sequence_code'] == auth_seq_id and i['residue_name'] == auth_comp_id), None)
+                                            orig_row = None if orig_lp_data is None else next((i for i in orig_lp_data if i['chain_code'] == chain_id and i['sequence_code'] == auth_seq_id and i['residue_name'] == auth_comp_id), None)  # noqa: E501
                                             if orig_row is not None:
                                                 row.append(orig_row['residue_variant'])
                                             else:
@@ -24301,11 +24707,11 @@ class NmrDpUtility:
 
                                         cid = chains.index(chain_id) + 1
 
-                                        row.append(cid + cid_offset) # Entity_assembly_ID
-                                        row.append(seq_id) # Comp_index_ID
-                                        row.append(comp_id) # Comp_ID
+                                        row.append(cid + cid_offset)  # Entity_assembly_ID
+                                        row.append(seq_id)  # Comp_index_ID
+                                        row.append(comp_id)  # Comp_ID
 
-                                        orig_row = None if orig_lp_data is None else next((i for i in orig_lp_data if i['Entity_assembly_ID'] == str(cid) and i['Comp_index_ID'] == auth_seq_id and i['Comp_ID'] == auth_comp_id), None)
+                                        orig_row = None if orig_lp_data is None else next((i for i in orig_lp_data if i['Entity_assembly_ID'] == str(cid) and i['Comp_index_ID'] == auth_seq_id and i['Comp_ID'] == auth_comp_id), None)  # noqa: E501
 
                                         # Auth_asym_ID
 
@@ -24461,7 +24867,7 @@ class NmrDpUtility:
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
 
-        #file_name = input_source_dic['file_name']
+        # file_name = input_source_dic['file_name']
         file_type = input_source_dic['file_type']
 
         if file_type == 'nef':
@@ -24550,7 +24956,7 @@ class NmrDpUtility:
                     try:
                         auth_seq = seq_align['test_seq_id'][seq_align['ref_seq_id'].index(star_seq)]
                         self.authSeqMap[(star_chain, star_seq)] = (seq_align['test_chain_id'], auth_seq)
-                    except:
+                    except:  # noqa: E722 pylint: disable=bare-except
                         pass
 
         if len(self.authSeqMap) == 0:
@@ -24631,23 +25037,23 @@ class NmrDpUtility:
 
             if not self.__bmrb_only:
                 struct_conn = self.__cR.getDictListWithFilter('struct_conn',
-                                                          [{'name': 'conn_type_id', 'type': 'str'}
-                                                           ],
-                                                          [{'name': 'pdbx_leaving_atom_flag', 'type': 'str', 'value': 'both'},
-                                                           {'name': 'ptnr1_label_asym_id', 'type': 'str', 'value': cif_chain_id},
-                                                           {'name': 'ptnr2_label_asym_id', 'type': 'str', 'value': cif_chain_id},
-                                                           {'name': 'ptnr1_label_seq_id', 'type': 'int', 'value': beg_cif_seq_id},
-                                                           {'name': 'ptnr2_label_seq_id', 'type': 'int', 'value': end_cif_seq_id},
-                                                           ])
+                                                              [{'name': 'conn_type_id', 'type': 'str'}
+                                                               ],
+                                                              [{'name': 'pdbx_leaving_atom_flag', 'type': 'str', 'value': 'both'},
+                                                               {'name': 'ptnr1_label_asym_id', 'type': 'str', 'value': cif_chain_id},
+                                                               {'name': 'ptnr2_label_asym_id', 'type': 'str', 'value': cif_chain_id},
+                                                               {'name': 'ptnr1_label_seq_id', 'type': 'int', 'value': beg_cif_seq_id},
+                                                               {'name': 'ptnr2_label_seq_id', 'type': 'int', 'value': end_cif_seq_id},
+                                                               ])
             else:
                 struct_conn = self.__cR.getDictListWithFilter('struct_conn',
-                                                          [{'name': 'conn_type_id', 'type': 'str'}
-                                                           ],
-                                                          [{'name': 'ptnr1_label_asym_id', 'type': 'str', 'value': cif_chain_id},
-                                                           {'name': 'ptnr2_label_asym_id', 'type': 'str', 'value': cif_chain_id},
-                                                           {'name': 'ptnr1_label_seq_id', 'type': 'int', 'value': beg_cif_seq_id},
-                                                           {'name': 'ptnr2_label_seq_id', 'type': 'int', 'value': end_cif_seq_id},
-                                                           ])
+                                                              [{'name': 'conn_type_id', 'type': 'str'}
+                                                               ],
+                                                              [{'name': 'ptnr1_label_asym_id', 'type': 'str', 'value': cif_chain_id},
+                                                               {'name': 'ptnr2_label_asym_id', 'type': 'str', 'value': cif_chain_id},
+                                                               {'name': 'ptnr1_label_seq_id', 'type': 'int', 'value': beg_cif_seq_id},
+                                                               {'name': 'ptnr2_label_seq_id', 'type': 'int', 'value': end_cif_seq_id},
+                                                               ])
 
         except Exception as e:
 
@@ -24713,7 +25119,7 @@ class NmrDpUtility:
         if not has_key_value(seq_align_dic, 'nmr_poly_seq_vs_model_poly_seq'):
             return False
 
-        result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)
+        result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)  # noqa: E501
 
         if result is not None:
 
@@ -24773,11 +25179,12 @@ class NmrDpUtility:
         if seq_key in self.__coord_tautomer:
             return self.__coord_tautomer[seq_key]
 
-        result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)
+        result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)  # noqa: E501
 
         if result is not None:
 
-            cif_seq_id = next((test_seq_id for ref_seq_id, ref_code, test_seq_id in zip(result['ref_seq_id'], result['ref_code'], result['test_seq_id']) if ref_seq_id == nmr_seq_id and ref_code == 'H'), None)
+            cif_seq_id = next((test_seq_id for ref_seq_id, ref_code, test_seq_id in zip(result['ref_seq_id'], result['ref_code'],
+                                                                                        result['test_seq_id']) if ref_seq_id == nmr_seq_id and ref_code == 'H'), None)
 
             if cif_seq_id is None:
                 self.__coord_tautomer[seq_key] = 'unknown'
@@ -24788,13 +25195,13 @@ class NmrDpUtility:
                 model_num_name = 'pdbx_PDB_model_num' if self.__cR.hasItem('atom_site', 'pdbx_PDB_model_num') else 'ndb_model'
 
                 protons = self.__cR.getDictListWithFilter('atom_site',
-                                                [{'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
-                                                 ],
-                                                [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id},
-                                                 {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
-                                                 {'name': 'label_comp_id', 'type': 'str', 'value': 'HIS'},
-                                                 {'name': 'type_symbol', 'type': 'str', 'value': 'H'},
-                                                 {'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id}])
+                                                          [{'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
+                                                           ],
+                                                          [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id},
+                                                           {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
+                                                           {'name': 'label_comp_id', 'type': 'str', 'value': 'HIS'},
+                                                           {'name': 'type_symbol', 'type': 'str', 'value': 'H'},
+                                                           {'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id}])
 
             except Exception as e:
 
@@ -24856,11 +25263,11 @@ class NmrDpUtility:
         if seq_key in self.__coord_rotamer:
             return self.__coord_rotamer[seq_key]
 
-        result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)
+        result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)  # noqa: E501
 
         if result is not None:
 
-            cif_seq_id = next((test_seq_id for ref_seq_id, ref_code, test_seq_id in zip(result['ref_seq_id'], result['ref_code'], result['test_seq_id']) if ref_seq_id == nmr_seq_id and ref_code == 'V'), None)
+            cif_seq_id = next((test_seq_id for ref_seq_id, ref_code, test_seq_id in zip(result['ref_seq_id'], result['ref_code'], result['test_seq_id']) if ref_seq_id == nmr_seq_id and ref_code == 'V'), None)  # noqa: E501
 
             if cif_seq_id is None:
                 self.__coord_rotamer[seq_key] = none
@@ -24871,15 +25278,15 @@ class NmrDpUtility:
                 model_num_name = 'pdbx_PDB_model_num' if self.__cR.hasItem('atom_site', 'pdbx_PDB_model_num') else 'ndb_model'
 
                 atoms = self.__cR.getDictListWithFilter('atom_site',
-                                                [{'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'},
-                                                 {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                 {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                 {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
-                                                 {'name': model_num_name, 'type': 'int', 'alt_name': 'model_id'},
-                                                 ],
-                                                [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id},
-                                                 {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
-                                                 {'name': 'label_comp_id', 'type': 'str', 'value': 'VAL'}])
+                                                        [{'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'},
+                                                         {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                         {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                         {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
+                                                         {'name': model_num_name, 'type': 'int', 'alt_name': 'model_id'},
+                                                         ],
+                                                        [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id},
+                                                         {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
+                                                         {'name': 'label_comp_id', 'type': 'str', 'value': 'VAL'}])
 
             except Exception as e:
 
@@ -24959,11 +25366,11 @@ class NmrDpUtility:
         if seq_key in self.__coord_rotamer:
             return self.__coord_rotamer[seq_key]
 
-        result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)
+        result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)  # noqa: E501
 
         if result is not None:
 
-            cif_seq_id = next((test_seq_id for ref_seq_id, ref_code, test_seq_id in zip(result['ref_seq_id'], result['ref_code'], result['test_seq_id']) if ref_seq_id == nmr_seq_id and ref_code == 'L'), None)
+            cif_seq_id = next((test_seq_id for ref_seq_id, ref_code, test_seq_id in zip(result['ref_seq_id'], result['ref_code'], result['test_seq_id']) if ref_seq_id == nmr_seq_id and ref_code == 'L'), None)  # noqa: E501
 
             if cif_seq_id is None:
                 self.__coord_rotamer[seq_key] = none
@@ -24974,15 +25381,15 @@ class NmrDpUtility:
                 model_num_name = 'pdbx_PDB_model_num' if self.__cR.hasItem('atom_site', 'pdbx_PDB_model_num') else 'ndb_model'
 
                 atoms = self.__cR.getDictListWithFilter('atom_site',
-                                                [{'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'},
-                                                 {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                 {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                 {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
-                                                 {'name': model_num_name, 'type': 'int', 'alt_name': 'model_id'},
-                                                 ],
-                                                [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id},
-                                                 {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
-                                                 {'name': 'label_comp_id', 'type': 'str', 'value': 'LEU'}])
+                                                        [{'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'},
+                                                         {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                         {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                         {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
+                                                         {'name': model_num_name, 'type': 'int', 'alt_name': 'model_id'},
+                                                         ],
+                                                        [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id},
+                                                         {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
+                                                         {'name': 'label_comp_id', 'type': 'str', 'value': 'LEU'}])
 
             except Exception as e:
 
@@ -25083,11 +25490,11 @@ class NmrDpUtility:
         if seq_key in self.__coord_rotamer:
             return self.__coord_rotamer[seq_key]
 
-        result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)
+        result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)  # noqa: E501
 
         if result is not None:
 
-            cif_seq_id = next((test_seq_id for ref_seq_id, ref_code, test_seq_id in zip(result['ref_seq_id'], result['ref_code'], result['test_seq_id']) if ref_seq_id == nmr_seq_id and ref_code == 'I'), None)
+            cif_seq_id = next((test_seq_id for ref_seq_id, ref_code, test_seq_id in zip(result['ref_seq_id'], result['ref_code'], result['test_seq_id']) if ref_seq_id == nmr_seq_id and ref_code == 'I'), None)  # noqa: E501
 
             if cif_seq_id is None:
                 self.__coord_rotamer[seq_key] = none
@@ -25098,15 +25505,15 @@ class NmrDpUtility:
                 model_num_name = 'pdbx_PDB_model_num' if self.__cR.hasItem('atom_site', 'pdbx_PDB_model_num') else 'ndb_model'
 
                 atoms = self.__cR.getDictListWithFilter('atom_site',
-                                                [{'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'},
-                                                 {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                 {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                 {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
-                                                 {'name': model_num_name, 'type': 'int', 'alt_name': 'model_id'},
-                                                 ],
-                                                [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id},
-                                                 {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
-                                                 {'name': 'label_comp_id', 'type': 'str', 'value': 'ILE'}])
+                                                        [{'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'},
+                                                         {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                         {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                         {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
+                                                         {'name': model_num_name, 'type': 'int', 'alt_name': 'model_id'},
+                                                         ],
+                                                        [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id},
+                                                         {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
+                                                         {'name': 'label_comp_id', 'type': 'str', 'value': 'ILE'}])
 
             except Exception as e:
 
@@ -25326,7 +25733,7 @@ class NmrDpUtility:
 
                 nmr_chain_id_1 = s1['chain_id']
 
-                result = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq'] if seq_align['ref_chain_id'] == cif_chain_id_1 and seq_align['test_chain_id'] == nmr_chain_id_1), None)
+                result = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq'] if seq_align['ref_chain_id'] == cif_chain_id_1 and seq_align['test_chain_id'] == nmr_chain_id_1), None)  # noqa: E501
 
                 if result is None:
                     continue
@@ -25348,7 +25755,7 @@ class NmrDpUtility:
 
                 nmr_chain_id_2 = s2['chain_id']
 
-                result = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq'] if seq_align['ref_chain_id'] == cif_chain_id_2 and seq_align['test_chain_id'] == nmr_chain_id_2), None)
+                result = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq'] if seq_align['ref_chain_id'] == cif_chain_id_2 and seq_align['test_chain_id'] == nmr_chain_id_2), None)  # noqa: E501
 
                 if result is None:
                     continue
@@ -25381,16 +25788,20 @@ class NmrDpUtility:
                     sf_data = self.__star_data[fileListId]
                     sf_framecode = ''
 
-                    ca_chem_shift_1, cb_chem_shift_1, ca_chem_shift_2, cb_chem_shift_2 = self.__mapCoordDisulfideBond2Nmr__(file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category,
-                                                                                                                            nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2)
+                    ca_chem_shift_1, cb_chem_shift_1, ca_chem_shift_2, cb_chem_shift_2 = self.__mapCoordDisulfideBond2Nmr__(file_name, file_type, content_subtype,
+                                                                                                                            sf_data, sf_framecode, lp_category,
+                                                                                                                            nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1,
+                                                                                                                            nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2)
 
                 elif self.__star_data_type[fileListId] == 'Saveframe':
 
                     sf_data = self.__star_data[fileListId]
                     sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
-                    ca_chem_shift_1, cb_chem_shift_1, ca_chem_shift_2, cb_chem_shift_2 = self.__mapCoordDisulfideBond2Nmr__(file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category,
-                                                                                                                            nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2)
+                    ca_chem_shift_1, cb_chem_shift_1, ca_chem_shift_2, cb_chem_shift_2 = self.__mapCoordDisulfideBond2Nmr__(file_name, file_type, content_subtype,
+                                                                                                                            sf_data, sf_framecode, lp_category,
+                                                                                                                            nmr_chain_id_1, nmr_seq_id_1,
+                                                                                                                            nmr_comp_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2)
                 else:
 
                     for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
@@ -25400,8 +25811,12 @@ class NmrDpUtility:
                         if not any(loop for loop in sf_data.loops if loop.category == lp_category):
                             continue
 
-                        ca_chem_shift_1, cb_chem_shift_1, ca_chem_shift_2, cb_chem_shift_2 = self.__mapCoordDisulfideBond2Nmr__(file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category,
-                                                                                                                                nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2)
+                        ca_chem_shift_1, cb_chem_shift_1, ca_chem_shift_2, cb_chem_shift_2 = self.__mapCoordDisulfideBond2Nmr__(file_name, file_type,
+                                                                                                                                content_subtype, sf_data,
+                                                                                                                                sf_framecode, lp_category,
+                                                                                                                                nmr_chain_id_1, nmr_seq_id_1,
+                                                                                                                                nmr_comp_id_1, nmr_chain_id_2,
+                                                                                                                                nmr_seq_id_2, nmr_comp_id_2)
 
                         if ca_chem_shift_1 is None or cb_chem_shift_1 is None or ca_chem_shift_2 is None or cb_chem_shift_2 is None:
                             pass
@@ -25457,8 +25872,11 @@ class NmrDpUtility:
 
                 if disulf['redox_state_pred_1'] != 'oxidized' and disulf['redox_state_pred_1'] != 'unknown':
 
-                    warn = "Disulfide bond (%s:%s:%s - %s:%s:%s) can not be verified with the assigned chemical shift values (%s:%s:%s:CA %s ppm, %s:%s:%s:CB %s ppm, redox_state_pred %s)." %\
-                           (nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2, nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, ca_chem_shift_1, nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, cb_chem_shift_1, disulf['redox_state_pred_1'])
+                    warn = "Disulfide bond (%s:%s:%s - %s:%s:%s) can not be verified with the assigned chemical shift values (%s:%s:%s:CA %s ppm, %s:%s:%s:CB %s ppm, redox_state_pred %s)." % \
+                           (nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, nmr_chain_id_2,  # noqa: E501
+                            nmr_seq_id_2, nmr_comp_id_2, nmr_chain_id_1, nmr_seq_id_1,
+                            nmr_comp_id_1, ca_chem_shift_1, nmr_chain_id_1, nmr_seq_id_1,
+                            nmr_comp_id_1, cb_chem_shift_1, disulf['redox_state_pred_1'])
 
                     item = 'anomalous_chemical_shift' if disulf['redox_state_pred_1'] == 'reduced' else 'unusual_chemical_shift'
 
@@ -25473,7 +25891,7 @@ class NmrDpUtility:
                 if disulf['redox_state_pred_2'] != 'oxidized' and disulf['redox_state_pred_2'] != 'unknown':
 
                     warn = "Disulfide bond (%s:%s:%s - %s:%s:%s) can not be verified with the assigned chemical shift values (%s:%s:%s:CA %s ppm, %s:%s:%s:CB %s, redox_state_pred %s)." %\
-                           (nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2, ca_chem_shift_2, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2, cb_chem_shift_2, disulf['redox_state_pred_2'])
+                           (nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2, ca_chem_shift_2, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2, cb_chem_shift_2, disulf['redox_state_pred_2'])  # noqa: E501
 
                     item = 'anomalous_chemical_shift' if disulf['redox_state_pred_2'] == 'reduced' else 'unusual_chemical_shift'
 
@@ -25515,7 +25933,7 @@ class NmrDpUtility:
 
         if not self.report.error.exists(file_name, sf_framecode):
 
-            lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode), None)
+            lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode), None)  # noqa: E741
 
             if lp_data is None:
 
@@ -25526,7 +25944,7 @@ class NmrDpUtility:
 
                     self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'data': lp_data})
 
-                except:
+                except:  # noqa: E722 pylint: disable=bare-except
                     pass
 
             if lp_data is not None:
@@ -25699,7 +26117,7 @@ class NmrDpUtility:
 
                 nmr_chain_id_1 = s1['chain_id']
 
-                result = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq'] if seq_align['ref_chain_id'] == cif_chain_id_1 and seq_align['test_chain_id'] == nmr_chain_id_1), None)
+                result = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq'] if seq_align['ref_chain_id'] == cif_chain_id_1 and seq_align['test_chain_id'] == nmr_chain_id_1), None)  # noqa: E501
 
                 if result is None:
                     continue
@@ -25721,7 +26139,7 @@ class NmrDpUtility:
 
                 nmr_chain_id_2 = s2['chain_id']
 
-                result = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq'] if seq_align['ref_chain_id'] == cif_chain_id_2 and seq_align['test_chain_id'] == nmr_chain_id_2), None)
+                result = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq'] if seq_align['ref_chain_id'] == cif_chain_id_2 and seq_align['test_chain_id'] == nmr_chain_id_2), None)  # noqa: E501
 
                 if result is None:
                     continue
@@ -25731,7 +26149,7 @@ class NmrDpUtility:
                 if nmr_seq_id_2 is None:
                     continue
 
-                nmr_comp_id_2 = next((comp_id for seq_id, comp_id in zip(s2['seq_id'], s2['comp_id']) if seq_id == nmr_seq_id_2) ,None)
+                nmr_comp_id_2 = next((comp_id for seq_id, comp_id in zip(s2['seq_id'], s2['comp_id']) if seq_id == nmr_seq_id_2), None)
 
                 if nmr_comp_id_2 is None:
                     continue
@@ -25754,16 +26172,20 @@ class NmrDpUtility:
                     sf_data = self.__star_data[fileListId]
                     sf_framecode = ''
 
-                    ca_chem_shift_1, cb_chem_shift_1, ca_chem_shift_2, cb_chem_shift_2 = self.__mapCoordOtherBond2Nmr__(file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category,
-                                                                                                                        nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2)
+                    ca_chem_shift_1, cb_chem_shift_1, ca_chem_shift_2, cb_chem_shift_2 = self.__mapCoordOtherBond2Nmr__(file_name, file_type, content_subtype,
+                                                                                                                        sf_data, sf_framecode, lp_category,
+                                                                                                                        nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1,
+                                                                                                                        nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2)
 
                 elif self.__star_data_type[fileListId] == 'Saveframe':
 
                     sf_data = self.__star_data[fileListId]
                     sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
-                    ca_chem_shift_1, cb_chem_shift_1, ca_chem_shift_2, cb_chem_shift_2 = self.__mapCoordOtherBond2Nmr__(file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category,
-                                                                                                                        nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2)
+                    ca_chem_shift_1, cb_chem_shift_1, ca_chem_shift_2, cb_chem_shift_2 = self.__mapCoordOtherBond2Nmr__(file_name, file_type, content_subtype,
+                                                                                                                        sf_data, sf_framecode, lp_category,
+                                                                                                                        nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1,
+                                                                                                                        nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2)
 
                 else:
 
@@ -25774,8 +26196,10 @@ class NmrDpUtility:
                         if not any(loop for loop in sf_data.loops if loop.category == lp_category):
                             continue
 
-                        ca_chem_shift_1, cb_chem_shift_1, ca_chem_shift_2, cb_chem_shift_2 = self.__mapCoordOtherBond2Nmr__(file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category,
-                                                                                                                            nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2)
+                        ca_chem_shift_1, cb_chem_shift_1, ca_chem_shift_2, cb_chem_shift_2 = self.__mapCoordOtherBond2Nmr__(file_name, file_type, content_subtype,
+                                                                                                                            sf_data, sf_framecode, lp_category,
+                                                                                                                            nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1,
+                                                                                                                            nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2)
 
                         if ca_chem_shift_1 is None or cb_chem_shift_1 is None or ca_chem_shift_2 is None or cb_chem_shift_2 is None:
                             pass
@@ -25832,7 +26256,12 @@ class NmrDpUtility:
                 if other['redox_state_pred_1'] != 'oxidized' and other['redox_state_pred_1'] != 'unknown':
 
                     warn = "Other bond (%s:%s:%s - %s:%s:%s) can not be verified with the assigned chemical shift values (%s:%s:%s:CA %s ppm, %s:%s:%s:CB %s ppm, redox_state_pred %s)." %\
-                           (nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2, nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, ca_chem_shift_1, nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, cb_chem_shift_1, other['redox_state_pred_1'])
+                           (nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1,
+                            nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2,
+                            nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1,
+                            ca_chem_shift_1, nmr_chain_id_1, nmr_seq_id_1,
+                            nmr_comp_id_1, cb_chem_shift_1,
+                            other['redox_state_pred_1'])
 
                     item = 'anomalous_chemical_shift' if other['redox_state_pred_1'] == 'reduced' else 'unusual_chemical_shift'
 
@@ -25847,7 +26276,7 @@ class NmrDpUtility:
                 if other['redox_state_pred_2'] != 'oxidized' and other['redox_state_pred_2'] != 'unknown':
 
                     warn = "Other bond (%s:%s:%s - %s:%s:%s) can not be verified with the assigned chemical shift values (%s:%s:%s:CA %s ppm, %s:%s:%s:CB %s ppm, redox_state_pred %s)." %\
-                           (nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2, ca_chem_shift_2, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2, cb_chem_shift_2, other['redox_state_pred_2'])
+                           (nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2, ca_chem_shift_2, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2, cb_chem_shift_2, other['redox_state_pred_2'])  # noqa: E501
 
                     item = 'anomalous_chemical_shift' if other['redox_state_pred_2'] == 'reduced' else 'unusual_chemical_shift'
 
@@ -25889,7 +26318,7 @@ class NmrDpUtility:
 
         if not self.report.error.exists(file_name, sf_framecode):
 
-            lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode), None)
+            lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode), None)  # noqa: E741
 
             if lp_data is None:
 
@@ -25900,7 +26329,7 @@ class NmrDpUtility:
 
                     self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'data': lp_data})
 
-                except:
+                except:  # noqa: E722 pylint: disable=bare-except
                     pass
 
             if lp_data is not None:
@@ -25952,7 +26381,7 @@ class NmrDpUtility:
         if seq_key in self.__coord_near_ring:
             return self.__coord_near_ring[seq_key]
 
-        result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)
+        result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)  # noqa: E501
 
         if result is not None:
 
@@ -25967,14 +26396,14 @@ class NmrDpUtility:
                 model_num_name = 'pdbx_PDB_model_num' if self.__cR.hasItem('atom_site', 'pdbx_PDB_model_num') else 'ndb_model'
 
                 _origin = self.__cR.getDictListWithFilter('atom_site',
-                                                [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                 {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                 {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
-                                                 ],
-                                                [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id},
-                                                 {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
-                                                 {'name': 'label_atom_id', 'type': 'str', 'value': nmr_atom_id},
-                                                 {'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id}])
+                                                          [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                           {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                           {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
+                                                           ],
+                                                          [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id},
+                                                           {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
+                                                           {'name': 'label_atom_id', 'type': 'str', 'value': nmr_atom_id},
+                                                           {'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id}])
 
             except Exception as e:
 
@@ -26005,19 +26434,19 @@ class NmrDpUtility:
             try:
 
                 _neighbor = self.__cR.getDictListWithFilter('atom_site',
-                                                  [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                                   {'name': 'label_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                                   {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                   {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'},
-                                                   {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                   {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                   {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
-                                                   {'name': 'type_symbol', 'type': 'str'}
-                                                   ],
-                                                  [{'name': 'Cartn_x', 'type': 'range-float', 'range': {'min_exclusive': (o[0] - cutoff), 'max_exclusive': (o[0] + cutoff)}},
-                                                   {'name': 'Cartn_y', 'type': 'range-float', 'range': {'min_exclusive': (o[1] - cutoff), 'max_exclusive': (o[1] + cutoff)}},
-                                                   {'name': 'Cartn_z', 'type': 'range-float', 'range': {'min_exclusive': (o[2] - cutoff), 'max_exclusive': (o[2] + cutoff)}},
-                                                   {'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id}])
+                                                            [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                             {'name': 'label_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                                             {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                             {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'},
+                                                             {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                             {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                             {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
+                                                             {'name': 'type_symbol', 'type': 'str'}
+                                                             ],
+                                                            [{'name': 'Cartn_x', 'type': 'range-float', 'range': {'min_exclusive': (o[0] - cutoff), 'max_exclusive': (o[0] + cutoff)}},
+                                                             {'name': 'Cartn_y', 'type': 'range-float', 'range': {'min_exclusive': (o[1] - cutoff), 'max_exclusive': (o[1] + cutoff)}},
+                                                             {'name': 'Cartn_z', 'type': 'range-float', 'range': {'min_exclusive': (o[2] - cutoff), 'max_exclusive': (o[2] + cutoff)}},
+                                                             {'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id}])
 
             except Exception as e:
 
@@ -26033,8 +26462,8 @@ class NmrDpUtility:
                 self.__coord_near_ring[seq_key] = None
                 return None
 
-            neighbor = [n for n in _neighbor if n['seq_id'] != cif_seq_id and n['type_symbol'] != 'H' and np.linalg.norm(to_np_array(n) - o) < cutoff and
-                        n['atom_id'] in self.__csStat.getAromaticAtoms(n['comp_id'])]
+            neighbor = [n for n in _neighbor if n['seq_id'] != cif_seq_id and n['type_symbol'] != 'H' and np.linalg.norm(to_np_array(n) - o) < cutoff
+                        and n['atom_id'] in self.__csStat.getAromaticAtoms(n['comp_id'])]
 
             if len(neighbor) == 0:
                 self.__coord_near_ring[seq_key] = None
@@ -26057,19 +26486,24 @@ class NmrDpUtility:
 
                 _nmr_chain_id = _s['chain_id']
 
-                result = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq'] if seq_align['ref_chain_id'] == _cif_chain_id and seq_align['test_chain_id'] == _nmr_chain_id), None)
+                result = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq'] if seq_align['ref_chain_id'] == _cif_chain_id and seq_align['test_chain_id'] == _nmr_chain_id), None)  # noqa: E501
 
                 if result is not None:
 
                     _nmr_seq_id = next((test_seq_id for ref_seq_id, test_seq_id in zip(result['ref_seq_id'], result['test_seq_id']) if ref_seq_id == n['seq_id']), None)
 
-                    atom_list.append({'chain_id': _nmr_chain_id, 'seq_id': _nmr_seq_id, 'cif_chain_id': _cif_chain_id, 'cif_seq_id': n['seq_id'], 'comp_id': n['comp_id'], 'atom_id': n['atom_id'],
+                    atom_list.append({'chain_id': _nmr_chain_id,
+                                      'seq_id': _nmr_seq_id,
+                                      'cif_chain_id': _cif_chain_id,
+                                      'cif_seq_id': n['seq_id'],
+                                      'comp_id': n['comp_id'],
+                                      'atom_id': n['atom_id'],
                                       'distance': np.linalg.norm(to_np_array(n) - o)})
 
             if len(atom_list) == 0:
                 return None
 
-            na = sorted(atom_list, key = lambda a: a['distance'])[0]
+            na = sorted(atom_list, key=lambda a: a['distance'])[0]
 
             na_atom_id = na['atom_id']
 
@@ -26177,17 +26611,17 @@ class NmrDpUtility:
             try:
 
                 _na = self.__cR.getDictListWithFilter('atom_site',
-                                                  [{'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'},
-                                                   {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                   {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                   {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
-                                                   {'name': model_num_name, 'type': 'int', 'alt_name': 'model_id'},
-                                                   ],
-                                                  [{'name': 'label_asym_id', 'type': 'str', 'value': na['cif_chain_id']},
-                                                   {'name': 'label_seq_id', 'type': 'int', 'value': na['cif_seq_id']},
-                                                   {'name': 'label_comp_id', 'type': 'str', 'value': na['comp_id']},
-                                                   {'name': 'label_atom_id', 'type': 'enum', 'enum': ring_atoms},
-                                                   ])
+                                                      [{'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'},
+                                                       {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                       {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                       {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
+                                                       {'name': model_num_name, 'type': 'int', 'alt_name': 'model_id'},
+                                                       ],
+                                                      [{'name': 'label_asym_id', 'type': 'str', 'value': na['cif_chain_id']},
+                                                       {'name': 'label_seq_id', 'type': 'int', 'value': na['cif_seq_id']},
+                                                       {'name': 'label_comp_id', 'type': 'str', 'value': na['comp_id']},
+                                                       {'name': 'label_atom_id', 'type': 'enum', 'enum': ring_atoms},
+                                                       ])
 
             except Exception as e:
 
@@ -26282,7 +26716,7 @@ class NmrDpUtility:
         if seq_key in self.__coord_near_para_ferro:
             return self.__coord_near_para_ferro[seq_key]
 
-        result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)
+        result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)  # noqa: E501
 
         if result is not None:
 
@@ -26297,14 +26731,14 @@ class NmrDpUtility:
                 model_num_name = 'pdbx_PDB_model_num' if self.__cR.hasItem('atom_site', 'pdbx_PDB_model_num') else 'ndb_model'
 
                 _origin = self.__cR.getDictListWithFilter('atom_site',
-                                                [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                 {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                 {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
-                                                 ],
-                                                [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id},
-                                                 {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
-                                                 {'name': 'label_atom_id', 'type': 'str', 'value': nmr_atom_id},
-                                                 {'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id}])
+                                                          [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                           {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                           {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
+                                                           ],
+                                                          [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id},
+                                                           {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
+                                                           {'name': 'label_atom_id', 'type': 'str', 'value': nmr_atom_id},
+                                                           {'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id}])
 
             except Exception as e:
 
@@ -26335,19 +26769,19 @@ class NmrDpUtility:
             try:
 
                 _neighbor = self.__cR.getDictListWithFilter('atom_site',
-                                                  [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                                   {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'}, # non-polymer
-                                                   {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                   {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'},
-                                                   {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                   {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                   {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
-                                                   {'name': 'type_symbol', 'type': 'str'}
-                                                   ],
-                                                  [{'name': 'Cartn_x', 'type': 'range-float', 'range': {'min_exclusive': (o[0] - cutoff), 'max_exclusive': (o[0] + cutoff)}},
-                                                   {'name': 'Cartn_y', 'type': 'range-float', 'range': {'min_exclusive': (o[1] - cutoff), 'max_exclusive': (o[1] + cutoff)}},
-                                                   {'name': 'Cartn_z', 'type': 'range-float', 'range': {'min_exclusive': (o[2] - cutoff), 'max_exclusive': (o[2] + cutoff)}},
-                                                   {'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id}])
+                                                            [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                             {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},  # non-polymer
+                                                             {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                             {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'},
+                                                             {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                             {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                             {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
+                                                             {'name': 'type_symbol', 'type': 'str'}
+                                                             ],
+                                                            [{'name': 'Cartn_x', 'type': 'range-float', 'range': {'min_exclusive': (o[0] - cutoff), 'max_exclusive': (o[0] + cutoff)}},
+                                                             {'name': 'Cartn_y', 'type': 'range-float', 'range': {'min_exclusive': (o[1] - cutoff), 'max_exclusive': (o[1] + cutoff)}},
+                                                             {'name': 'Cartn_z', 'type': 'range-float', 'range': {'min_exclusive': (o[2] - cutoff), 'max_exclusive': (o[2] + cutoff)}},
+                                                             {'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id}])
 
             except Exception as e:
 
@@ -26363,8 +26797,8 @@ class NmrDpUtility:
                 self.__coord_near_para_ferro[seq_key] = None
                 return None
 
-            neighbor = [n for n in _neighbor if n['seq_id'] != cif_seq_id and np.linalg.norm(to_np_array(n) - o) < cutoff and
-                        (n['type_symbol'] in self.paramag_elems or n['type_symbol'] in self.ferromag_elems)]
+            neighbor = [n for n in _neighbor if n['seq_id'] != cif_seq_id and np.linalg.norm(to_np_array(n) - o) < cutoff
+                        and (n['type_symbol'] in self.paramag_elems or n['type_symbol'] in self.ferromag_elems)]
 
             if len(neighbor) == 0:
                 self.__coord_near_para_ferro[seq_key] = None
@@ -26379,20 +26813,20 @@ class NmrDpUtility:
             if len(atom_list) == 0:
                 return None
 
-            p = sorted(atom_list, key = lambda a: a['distance'])[0]
+            p = sorted(atom_list, key=lambda a: a['distance'])[0]
 
             try:
 
                 _p = self.__cR.getDictListWithFilter('atom_site',
-                                                  [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                   {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                   {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
-                                                   ],
-                                                  [{'name': 'label_asym_id', 'type': 'str', 'value': p['chain_id']},
-                                                   {'name': 'auth_seq_id', 'type': 'int', 'value': p['seq_id']}, # non-polymer
-                                                   {'name': 'label_comp_id', 'type': 'str', 'value': p['comp_id']},
-                                                   {'name': 'label_atom_id', 'type': 'str', 'value': p['atom_id']},
-                                                   ])
+                                                     [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                      {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                      {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
+                                                      ],
+                                                     [{'name': 'label_asym_id', 'type': 'str', 'value': p['chain_id']},
+                                                      {'name': 'auth_seq_id', 'type': 'int', 'value': p['seq_id']},  # non-polymer
+                                                      {'name': 'label_comp_id', 'type': 'str', 'value': p['comp_id']},
+                                                      {'name': 'label_atom_id', 'type': 'str', 'value': p['atom_id']},
+                                                      ])
 
             except Exception as e:
 
@@ -26597,7 +27031,10 @@ class NmrDpUtility:
                     if self.__check_mandatory_tag and self.__nefT.is_mandatory_tag(lp_tag, file_type):
 
                         if self.__rescue_mode:
-                            self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                            self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name,
+                                                                                           'sf_framecode': sf_framecode,
+                                                                                           'category': lp_category,
+                                                                                           'description': err})
                             self.report.setError()
 
                             if self.__verbose:
@@ -26678,7 +27115,7 @@ class NmrDpUtility:
                     continue
 
                 sf_category = self.sf_categories[file_type][content_subtype]
-                #lp_category = self.lp_categories[file_type][content_subtype]
+                # lp_category = self.lp_categories[file_type][content_subtype]
 
                 tag_items = self._sf_tag_items[file_type][content_subtype]
 
@@ -26756,7 +27193,7 @@ class NmrDpUtility:
 
                 sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
-                lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode), None)
+                lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode), None)  # noqa: E741
 
                 if lp_data is None:
 
@@ -26770,7 +27207,7 @@ class NmrDpUtility:
 
                         self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'data': lp_data})
 
-                    except:
+                    except:  # noqa: E722 pylint: disable=bare-except
                         pass
 
                 if lp_data is not None:
@@ -26859,7 +27296,7 @@ class NmrDpUtility:
                                 # chi1
 
                                 if atom_ids[0] == 'N' and atom_ids[1] == 'CA' and atom_ids[2] == 'CB' and self.chi1_atom_id_4_pat.match(atom_ids[3]):
-                                    #if (atom_ids[3] == 'CG' and comp_id in ('ARG', 'ASN', 'ASP', 'GLN', 'GLU', 'HIS', 'LEU', 'LYS', 'MET', 'PHE', 'PRO', 'TRP', 'TYR')) or\
+                                    # if (atom_ids[3] == 'CG' and comp_id in ('ARG', 'ASN', 'ASP', 'GLN', 'GLU', 'HIS', 'LEU', 'LYS', 'MET', 'PHE', 'PRO', 'TRP', 'TYR')) or\
                                     #   (atom_ids[3] == 'CG1' and comp_id in ('ILE', 'VAL')) or\
                                     #   (atom_ids[3] == 'OG' and comp_id == 'SER') or\
                                     #   (atom_ids[3] == 'OG1' and comp_id == 'THR') or\
@@ -26869,7 +27306,7 @@ class NmrDpUtility:
                                 # chi2
 
                                 if atom_ids[0] == 'CA' and atom_ids[1] == 'CB' and self.chi2_atom_id_3_pat.match(atom_ids[2]) and self.chi2_atom_id_4_pat.match(atom_ids[3]):
-                                    #if (atom_ids[2] == 'CG' and atom_ids[3] == 'CD' and comp_id in ('ARG', 'GLN', 'GLU', 'LYS', 'PRO')) or\
+                                    # if (atom_ids[2] == 'CG' and atom_ids[3] == 'CD' and comp_id in ('ARG', 'GLN', 'GLU', 'LYS', 'PRO')) or\
                                     #   (atom_ids[2] == 'CG' and atom_ids[3] == 'CD1' and comp_id in ('LEU', 'PHE', 'TRP', 'TYR')) or\
                                     #   (atom_ids[2] == 'CG' and atom_ids[3] == 'ND1' and comp_id == 'HIS') or\
                                     #   (atom_ids[2] == 'CG' and atom_ids[3] == 'OD1' and comp_id in ('ASN', 'ASP')) or\
@@ -26880,7 +27317,7 @@ class NmrDpUtility:
                                 # chi3
 
                                 if atom_ids[0] == 'CB' and atom_ids[1] == 'CG' and self.chi3_atom_id_3_pat.match(atom_ids[2]) and self.chi3_atom_id_4_pat.match(atom_ids[3]):
-                                    #if (atom_ids[2] == 'CD' and atom_ids[3] == 'CE' and comp_id == 'LYS') or\
+                                    # if (atom_ids[2] == 'CD' and atom_ids[3] == 'CE' and comp_id == 'LYS') or\
                                     #   (atom_ids[2] == 'CD' and atom_ids[3] == 'NE' and comp_id == 'ARG') or\
                                     #   (atom_ids[2] == 'CD' and atom_ids[3] == 'OE1' and comp_id in ('GLN', 'GLU')) or\
                                     #   (atom_ids[2] == 'SD' and atom_ids[3] == 'CE' and comp_id == 'MET'):
@@ -26889,13 +27326,13 @@ class NmrDpUtility:
                                 # chi4
 
                                 if atom_ids[0] == 'CG' and atom_ids[1] == 'CD' and self.chi4_atom_id_3_pat.match(atom_ids[2]) and self.chi4_atom_id_4_pat.match(atom_ids[3]):
-                                    #if (atom_ids[2] == 'NE' and atom_ids[3] == 'CZ' and comp_id == 'ARG') or\
+                                    # if (atom_ids[2] == 'NE' and atom_ids[3] == 'CZ' and comp_id == 'ARG') or\
                                     #  (atom_ids[2] == 'CE' and atom_ids[3] == 'NZ' and comp_id == 'LYS'):
                                     chi4_index.append(index_id)
 
                                 # chi5
 
-                                if atom_ids == ['CD', 'NE', 'CZ', 'NH1']: # and comp_id == 'ARG':
+                                if atom_ids == ['CD', 'NE', 'CZ', 'NH1']:  # and comp_id == 'ARG':
                                     chi5_index.append(index_id)
 
                     except Exception as e:
@@ -27010,9 +27447,9 @@ class NmrDpUtility:
 
                         try:
 
-                            category = w['category'] if w['category'].startswith('_') else '_' + w['category'] # pynmrstar v2.6.5.1
+                            category = w['category'] if w['category'].startswith('_') else '_' + w['category']  # pynmrstar v2.6.5.1
 
-                            content_subtype = next(c for c in input_source_dic['content_subtype'].keys() if self.lp_categories[file_type][c] == category and self.index_tags[file_type][c] is not None)
+                            content_subtype = next(c for c in input_source_dic['content_subtype'].keys() if self.lp_categories[file_type][c] == category and self.index_tags[file_type][c] is not None)  # noqa: E501
 
                             if __pynmrstar_v3_2__:
                                 loop = sf_data.get_loop(w['category'])
@@ -27056,7 +27493,7 @@ class NmrDpUtility:
         input_source_dic = input_source.get()
 
         file_name = input_source_dic['file_name']
-        #file_type = input_source_dic['file_type']
+        # file_type = input_source_dic['file_type']
 
         warnings = self.report.warning.getValueList('missing_data', file_name)
 
@@ -27168,7 +27605,7 @@ class NmrDpUtility:
         input_source_dic = input_source.get()
 
         file_name = input_source_dic['file_name']
-        #file_type = input_source_dic['file_type']
+        # file_type = input_source_dic['file_type']
 
         warnings = self.report.warning.getValueList('unusual_data', file_name)
 
@@ -27277,7 +27714,7 @@ class NmrDpUtility:
         input_source_dic = input_source.get()
 
         file_name = input_source_dic['file_name']
-        #file_type = input_source_dic['file_type']
+        # file_type = input_source_dic['file_type']
 
         warnings = self.report.warning.getValueList('enum_mismatch', file_name)
 
@@ -27297,7 +27734,7 @@ class NmrDpUtility:
         input_source_dic = input_source.get()
 
         file_name = input_source_dic['file_name']
-        #file_type = input_source_dic['file_type']
+        # file_type = input_source_dic['file_type']
 
         warnings = self.report.warning.getValueList('enum_mismatch_ignorable', file_name)
 
@@ -27402,7 +27839,7 @@ class NmrDpUtility:
                                 undefined_enums = ['undefined', 'unknown']
 
                                 if (len(itEnum) == 2 and itEnum[1] in undefined_enums) or\
-                                   (len(itEnum) == 3 and itEnum[1] in undefined_enums and itEnum[2] in undefined_enums): # assumes 'undefined', 'unknown' enum values at the end of the array
+                                   (len(itEnum) == 3 and itEnum[1] in undefined_enums and itEnum[2] in undefined_enums):  # assumes 'undefined', 'unknown' enum values at the end of the array  # noqa: E501
                                     sf_data.tags[itCol][1] = itEnum[0]
 
                                 # specific remediation follows
@@ -27416,7 +27853,7 @@ class NmrDpUtility:
 
                                         if (file_type == 'nef' and itName == 'restraint_origin') or (file_type == 'nmr-star' and itName == 'Constraint_type'):
 
-                                            lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == w['sf_framecode']), None)
+                                            lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == w['sf_framecode']), None)  # noqa: E741,E501
 
                                             if lp_data is None:
                                                 lp_category = self.lp_categories[file_type][content_subtype]
@@ -27431,7 +27868,7 @@ class NmrDpUtility:
 
                                                     self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': w['sf_framecode'], 'data': lp_data})
 
-                                                except:
+                                                except:  # noqa: E722 pylint: disable=bare-except
                                                     pass
 
                                             if lp_data is not None:
@@ -27441,7 +27878,8 @@ class NmrDpUtility:
                                                     if mandatory_tag:
                                                         sf_data.tags[itCol][1] = 'undefined' if file_type == 'nef' else 'general distance'
 
-                                                    # 'NOE', 'NOE build-up', 'NOE not seen', 'ROE', 'ROE build-up', 'hydrogen bond', 'disulfide bond', 'paramagnetic relaxation', 'symmetry', 'general distance'
+                                                    # 'NOE', 'NOE build-up', 'NOE not seen', 'ROE', 'ROE build-up', 'hydrogen bond',
+                                                    # 'disulfide bond', 'paramagnetic relaxation', 'symmetry', 'general distance'
 
                                                     elif self.__testDistRestraintAsHydrogenBond(lp_data):
                                                         sf_data.tags[itCol][1] = 'hbond' if file_type == 'nef' else 'hydrogen bond'
@@ -27465,7 +27903,7 @@ class NmrDpUtility:
                                                     elif self.__testDihedRestraintAsBackBoneChemShifts(lp_data):
                                                         sf_data.tags[itCol][1] = 'chemical_shift' if file_type == 'nef' else 'backbone chemical shifts'
 
-                                                    #else:
+                                                    # else:
                                                     #    sf_data.tags[itCol][1] = 'J-couplings'
 
                                                     else:
@@ -27476,11 +27914,11 @@ class NmrDpUtility:
                                                     if mandatory_tag:
                                                         sf_data.tags[itCol][1] = 'undefined'
                                                     else:
-                                                        sf_data.tags[itCol][1] = 'measured' if file_type =='nef' else 'RDC'
+                                                        sf_data.tags[itCol][1] = 'measured' if file_type == 'nef' else 'RDC'
 
                                         if (file_type == 'nef' and itName == 'potential_type') or (file_type == 'nmr-star' and itName == 'Potential_type'):
 
-                                            lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == w['sf_framecode']), None)
+                                            lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == w['sf_framecode']), None)  # noqa: E741,E501
 
                                             if lp_data is None:
                                                 lp_category = self.lp_categories[file_type][content_subtype]
@@ -27495,7 +27933,7 @@ class NmrDpUtility:
 
                                                     self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': w['sf_framecode'], 'data': lp_data})
 
-                                                except:
+                                                except:  # noqa: E722 pylint: disable=bare-except
                                                     pass
 
                                             if lp_data is not None:
@@ -27896,7 +28334,7 @@ class NmrDpUtility:
                             break
 
                         if seq_id_1 == _seq_id_2 and comp_id_1 == _comp_id_2 and\
-                             seq_id_2 == _seq_id_1 and comp_id_2 == _comp_id_1:
+                           seq_id_2 == _seq_id_1 and comp_id_2 == _comp_id_1:
                             has_symmetry = True
                             break
 
@@ -28070,7 +28508,7 @@ class NmrDpUtility:
                 if self.report.error.exists(file_name, sf_framecode):
                     continue
 
-                lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode), None)
+                lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode), None)  # noqa: E741
 
                 if lp_data is None:
 
@@ -28081,7 +28519,7 @@ class NmrDpUtility:
 
                         self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'data': lp_data})
 
-                    except:
+                    except:  # noqa: E722 pylint: disable=bare-except
                         pass
 
                 if lp_data is not None:
@@ -28591,7 +29029,7 @@ class NmrDpUtility:
 
             return self.__star_data[file_list_id].get_saveframe_by_name(sf_framecode)
 
-        except KeyError: # DAOTHER-7389, issue #4
+        except KeyError:  # DAOTHER-7389, issue #4
 
             if sf_framecode in self.__sf_name_corr[file_list_id]:
 
@@ -28648,7 +29086,7 @@ class NmrDpUtility:
                         if num_dim not in range(1, self.lim_num_dim):
                             raise ValueError()
 
-                    except ValueError: # raised error already at __testIndexConsistency()
+                    except ValueError:  # raised error already at __testIndexConsistency()
                         continue
 
                     max_dim = num_dim + 1
@@ -28669,7 +29107,7 @@ class NmrDpUtility:
                             _d = copy.copy(d)
                             if '%s' in d['name']:
                                 _d['name'] = d['name'] % dim
-                            if 'default-from' in d and '%s' in d['default-from']: # DAOTHER-7421
+                            if 'default-from' in d and '%s' in d['default-from']:  # DAOTHER-7421
                                 _d['default-from'] = d['default-from'] % dim
                             data_items.append(_d)
 
@@ -28692,7 +29130,7 @@ class NmrDpUtility:
                     loop = sf_data.get_loop_by_category(lp_category)
 
                 if file_type == 'nef':
-                    key_names = [k['name'] for k in key_items if k['name'].startswith('chain_code') or k['name'].startswith('residue_name') or k['name'].startswith('atom_name') or k['name'] == 'element']
+                    key_names = [k['name'] for k in key_items if k['name'].startswith('chain_code') or k['name'].startswith('residue_name') or k['name'].startswith('atom_name') or k['name'] == 'element']  # noqa: E501
                 else:
                     key_names = [k['name'] for k in key_items if k['name'].startswith('Comp_ID') or k['name'].startswith('Atom_ID') or k['name'] == 'Atom_type']
 
@@ -28709,13 +29147,13 @@ class NmrDpUtility:
                             if val is self.empty_value:
                                 continue
 
-                            if (file_type == 'nef' and itName.startswith('atom_name')) or (file_type == 'nmr-star' and (itName.startswith('Auth_atom_ID') or itName == 'Original_PDB_atom_name')):
+                            if (file_type == 'nef' and itName.startswith('atom_name')) or (file_type == 'nmr-star' and (itName.startswith('Auth_atom_ID') or itName == 'Original_PDB_atom_name')):  # noqa: E501
                                 continue
 
                             row[itCol] = val.upper()
 
                 if file_type == 'nef':
-                    data_names = [d['name'] for d in data_items if d['name'].startswith('chain_code') or d['name'].startswith('residue_name') or d['name'].startswith('atom_name') or d['name'] == 'element']
+                    data_names = [d['name'] for d in data_items if d['name'].startswith('chain_code') or d['name'].startswith('residue_name') or d['name'].startswith('atom_name') or d['name'] == 'element']  # noqa: E501
                 else:
                     data_names = [d['name'] for d in data_items if d['name'].startswith('Comp_ID') or d['name'].startswith('Atom_ID') or d['name'] == 'Atom_type']
 
@@ -28732,7 +29170,7 @@ class NmrDpUtility:
                             if val is self.empty_value:
                                 continue
 
-                            if (file_type == 'nef' and itName.startswith('atom_name')) or (file_type == 'nmr-star' and (itName.startswith('Auth_atom_ID') or itName == 'Original_PDB_atom_name')):
+                            if (file_type == 'nef' and itName.startswith('atom_name')) or (file_type == 'nmr-star' and (itName.startswith('Auth_atom_ID') or itName == 'Original_PDB_atom_name')):  # noqa: E501
                                 continue
 
                             row[itCol] = val.upper()
@@ -28780,7 +29218,7 @@ class NmrDpUtility:
                         if num_dim not in range(1, self.lim_num_dim):
                             raise ValueError()
 
-                    except ValueError: # raised error already at __testIndexConsistency()
+                    except ValueError:  # raised error already at __testIndexConsistency()
                         continue
 
                     max_dim = num_dim + 1
@@ -28801,7 +29239,7 @@ class NmrDpUtility:
                             _d = copy.copy(d)
                             if '%s' in d['name']:
                                 _d['name'] = d['name'] % dim
-                            if 'default-from' in d and '%s' in d['default-from']: # DAOTHER-7421
+                            if 'default-from' in d and '%s' in d['default-from']:  # DAOTHER-7421
                                 _d['default-from'] = d['default-from'] % dim
                             data_items.append(_d)
 
@@ -28887,7 +29325,7 @@ class NmrDpUtility:
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
 
-        #file_name = input_source_dic['file_name']
+        # file_name = input_source_dic['file_name']
         file_type = input_source_dic['file_type']
 
         yes_value = 'true' if file_type == 'nef' else 'yes'
@@ -28905,7 +29343,7 @@ class NmrDpUtility:
 
             for sf_data in self.__star_data[0].get_saveframes_by_category(sf_category):
 
-                #sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
+                # sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
                 for loop in sf_data.loops:
 
@@ -29068,7 +29506,9 @@ class NmrDpUtility:
                             if self.__check_mandatory_tag and self.__nefT.is_mandatory_tag(sf_tag, file_type):
 
                                 if self.__rescue_mode:
-                                    self.report.warning.appendDescription('missing_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': sf_category, 'description': warn})
+                                    self.report.warning.appendDescription('missing_data',
+                                                                          {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                           'category': sf_category, 'description': warn})
                                     self.report.setWarning()
 
                                     if self.__verbose:
@@ -29179,14 +29619,14 @@ class NmrDpUtility:
                             if lp_category in self.lp_categories[file_type][content_subtype]:
                                 continue
 
-                            #elif lp_category in self.aux_lp_categories[file_type][content_subtype]:
+                            # elif lp_category in self.aux_lp_categories[file_type][content_subtype]:
 
                             if __pynmrstar_v3_2__:
                                 _loop = sf_data.get_loop(lp_category)
                             else:
                                 _loop = sf_data.get_loop_by_category(lp_category)
 
-                                #if entryIdTag in self.aux_allowed_tags[file_type][content_subtype][lp_category]:
+                                # if entryIdTag in self.aux_allowed_tags[file_type][content_subtype][lp_category]:
 
                             if entryIdTag in _loop.tags:
 
@@ -29302,7 +29742,7 @@ class NmrDpUtility:
             if self.report.error.exists(file_name, sf_framecode):
                 continue
 
-            lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode), None)
+            lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode), None)  # noqa: E741
 
             if lp_data is None:
 
@@ -29313,7 +29753,7 @@ class NmrDpUtility:
 
                     self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'data': lp_data})
 
-                except:
+                except:  # noqa: E722 pylint: disable=bare-except
                     pass
 
             if lp_data is not None:
@@ -29334,7 +29774,7 @@ class NmrDpUtility:
                     if seq_id < min_seq_ids[chain_id]:
                         min_seq_ids[chain_id] = seq_id
 
-                for l, i in enumerate(lp_data):
+                for l, i in enumerate(lp_data):  # noqa: E741
                     chain_id = i[chain_id_name]
                     seq_id = i[seq_id_name]
                     iso_number = i[iso_number_name]
@@ -29440,7 +29880,7 @@ class NmrDpUtility:
 
                 if len(ambig_set_ids) > 0:
 
-                    for l, ambig_set_id in enumerate(ambig_set_ids, start=1):
+                    for l, ambig_set_id in enumerate(ambig_set_ids, start=1):  # noqa: E741
 
                         if ambig_set_id in ambig_set_id_dic:
                             continue
@@ -29486,8 +29926,8 @@ class NmrDpUtility:
                 for tag in loop.tags:
                     new_loop.add_tag(lp_category + '.' + tag)
 
-                for l, i in enumerate(loop, start=1):
-                    new_loop.add_data([str(l)] + i)
+                for j, i in enumerate(loop, start=1):
+                    new_loop.add_data([str(j)] + i)
 
                 del sf_data[loop]
 
@@ -29541,7 +29981,7 @@ class NmrDpUtility:
             if self.report.error.exists(file_name, sf_framecode):
                 continue
 
-            lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode), None)
+            lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode), None)  # noqa: E741
 
             if lp_data is None:
 
@@ -29552,7 +29992,7 @@ class NmrDpUtility:
 
                     self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'data': lp_data})
 
-                except:
+                except:  # noqa: E722 pylint: disable=bare-except
                     pass
 
             if lp_data is not None:
@@ -29585,7 +30025,7 @@ class NmrDpUtility:
                     if self.__insert_entry_id_to_loops:
                         _loop.add_tag(aux_lp_category + '.Entry_ID')
 
-                    for l, i in enumerate(lp_data, start=1):
+                    for l, i in enumerate(lp_data, start=1):  # noqa: E741
 
                         if ambig_set_id_name in i and i[ambig_set_id_name] not in self.empty_value:
 
@@ -29674,19 +30114,23 @@ class NmrDpUtility:
 
                 if fileListId >= len(self.__star_data) or self.__star_data[fileListId] is None:
                     return False
-                """ DAOTHER-7407: utilize NMR-STAR format normalizer of NEFTranslator v3
-                if self.__star_data_type[fileListId] == 'Loop': # copied already
-                    continue
-                """
+                # """ DAOTHER-7407: utilize NMR-STAR format normalizer of NEFTranslator v3
+                # if self.__star_data_type[fileListId] == 'Loop': # copied already
+                #     continue
+                # """
                 if dstPath in self.__inputParamDict[cs_file_path_list]:
                     return False
-                """ DAOTHER-7407: utilize NMR-STAR format normalizer of NEFTranslator v3
-                if __pynmrstar_v3__:
-                    self.__star_data[fileListId].write_to_file(dstPath, skip_empty_loops=True, skip_empty_tags=False)
-                else:
-                    self.__star_data[fileListId].write_to_file(dstPath)
-                """
-                if self.__nefT.star_data_to_nmrstar(self.__star_data_type[fileListId], self.__star_data[fileListId], dstPath, fileListId, report=self.report, leave_unmatched=self.__leave_intl_note)[0]:
+                # """ DAOTHER-7407: utilize NMR-STAR format normalizer of NEFTranslator v3
+                # if __pynmrstar_v3__:
+                #     self.__star_data[fileListId].write_to_file(dstPath, skip_empty_loops=True, skip_empty_tags=False)
+                # else:
+                #     self.__star_data[fileListId].write_to_file(dstPath)
+                # """
+                if self.__nefT.star_data_to_nmrstar(self.__star_data_type[fileListId],
+                                                    self.__star_data[fileListId],
+                                                    dstPath, fileListId,
+                                                    report=self.report,
+                                                    leave_unmatched=self.__leave_intl_note)[0]:
 
                     if 'nmr-cif_file_path' in self.__outputParamDict:
                         star_to_cif = NmrStarToCif()
@@ -29719,18 +30163,18 @@ class NmrDpUtility:
 
                     if fileListId >= len(self.__star_data) or self.__star_data[fileListId] is None:
                         return False
-                    """ DAOTHER-7407: utilize NMR-STAR format normalizer of NEFTranslator v3
-                    if self.__star_data_type[fileListId] == 'Loop': # copied already
-                        continue
-                    """
+                    # """ DAOTHER-7407: utilize NMR-STAR format normalizer of NEFTranslator v3
+                    # if self.__star_data_type[fileListId] == 'Loop': # copied already
+                    #     continue
+                    # """
                     if dstPath in self.__inputParamDict[mr_file_path_list]:
                         return False
-                    """ DAOTHER-7407: utilize NMR-STAR format normalizer of NEFTranslator v3
-                    if __pynmrstar_v3__:
-                        self.__star_data[fileListId].write_to_file(dstPath, skip_empty_loops=True, skip_empty_tags=False)
-                    else:
-                        self.__star_data[fileListId].write_to_file(dstPath)
-                    """
+                    # """ DAOTHER-7407: utilize NMR-STAR format normalizer of NEFTranslator v3
+                    # if __pynmrstar_v3__:
+                    #     self.__star_data[fileListId].write_to_file(dstPath, skip_empty_loops=True, skip_empty_tags=False)
+                    # else:
+                    #     self.__star_data[fileListId].write_to_file(dstPath)
+                    # """
                     self.__nefT.star_data_to_nmrstar(self.__star_data_type[fileListId], self.__star_data[fileListId], dstPath, fileListId, self.report)
 
                     fileListId += 1
@@ -29772,7 +30216,8 @@ class NmrDpUtility:
 
         try:
 
-            is_valid, message = self.__nefT.nef_to_nmrstar(self.__dstPath, out_file_path, report=self.report, leave_unmatched=self.__leave_intl_note) # (None if self.__alt_chain else self.report))
+            is_valid, message = self.__nefT.nef_to_nmrstar(self.__dstPath, out_file_path,
+                                                           report=self.report, leave_unmatched=self.__leave_intl_note)  # (None if self.__alt_chain else self.report))
 
             if self.__release_mode and self.__tmpPath is not None:
                 os.remove(self.__tmpPath)
@@ -29859,7 +30304,7 @@ class NmrDpUtility:
 
             return True
 
-        except:
+        except:  # noqa: E722 pylint: disable=bare-except
             raise KeyError("+NmrDpUtility.__initReousrceForNef2Str() ++ Error  - Could not find 'nmr-star_file_path' or 'report_file_path' output parameter.")
 
         return False
@@ -29887,7 +30332,7 @@ class NmrDpUtility:
 
         try:
 
-            is_valid, message = self.__nefT.nmrstar_to_nef(self.__dstPath, out_file_path, report=self.report) # (None if self.__alt_chain else self.report))
+            is_valid, message = self.__nefT.nmrstar_to_nef(self.__dstPath, out_file_path, report=self.report)  # (None if self.__alt_chain else self.report))
 
             if self.__release_mode and self.__tmpPath is not None:
                 os.remove(self.__tmpPath)
@@ -29964,10 +30409,11 @@ class NmrDpUtility:
 
             return True
 
-        except:
+        except:  # noqa: E722 pylint: disable=bare-except
             raise KeyError("+NmrDpUtility.__initReousrceForStr2Nef() ++ Error  - Could not find 'nef_file_path' or 'report_file_path' output parameter.")
 
         return False
+
 
 if __name__ == '__main__':
     dp = NmrDpUtility()

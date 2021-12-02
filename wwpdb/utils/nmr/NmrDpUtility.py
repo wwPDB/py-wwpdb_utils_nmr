@@ -6701,7 +6701,7 @@ class NmrDpUtility:
 
                         s = re.split('[ ()]', l)
 
-                        _t = ""
+                        _t_lower = ""
 
                         for t in s:
 
@@ -6711,7 +6711,9 @@ class NmrDpUtility:
                             if t[0] == '#' or t[0] == '!':
                                 break
 
-                            if t.lower().startswith('assi') or (real_likes == 3 and t.lower().startswith('weight')):
+                            t_lower = t.lower()
+
+                            if t_lower.startswith('assi') or (real_likes == 3 and t_lower.startswith('weight')):
 
                                 if cs_atom_likes == 1 and resid_likes == 1 and cs_range_like:
                                     has_chem_shift = True
@@ -6725,7 +6727,7 @@ class NmrDpUtility:
                                 elif cs_atom_likes + atom_unlikes == 6 and rdc_range_like:
                                     has_rdc_restraint = True
 
-                                elif atom_likes == 3 and not (cs_range_like or dist_range_like or dihed_range_like or rdc_range_like)\
+                                elif atom_likes == 3 and not (cs_range_like or dist_range_like or dihed_range_like or rdc_range_like or has_hbond_restraint)\
                                     and names[0][0] in hbond_da_atom_types and names[1][0] == 'H' and names[2][0] in hbond_da_atom_types:
                                     has_hbond_restraint = True
 
@@ -6741,7 +6743,7 @@ class NmrDpUtility:
                                 dihed_range_like = False
                                 rdc_range_like = False
 
-                            elif _t.lower() == 'name':
+                            elif _t_lower == 'name':
                                 name = t.upper()
                                 if name in atom_like_names:
                                     if name not in names or len(names) > 1:
@@ -6751,12 +6753,12 @@ class NmrDpUtility:
                                         cs_atom_likes += 1
                                 else:
                                     atom_unlikes += 1
-                                    if name in rdc_origins:
+                                    if not has_rdc_origins and name in rdc_origins:
                                         rdc_atom_names.add(name)
                                         if len(rdc_atom_names) == 4:
                                             has_rdc_origins = True
 
-                            elif _t.lower() == 'resid':
+                            elif _t_lower == 'resid':
                                 try:
                                     v = int(t)
                                     if v not in resids:
@@ -6780,7 +6782,7 @@ class NmrDpUtility:
                                 except:
                                     pass
 
-                            _t = t
+                            _t_lower = t_lower
 
                     ifp.close()
 
@@ -6800,7 +6802,7 @@ class NmrDpUtility:
 
                         s = re.split('[ ()=]', l)
 
-                        _t = ""
+                        _t_lower = ""
 
                         for t in s:
 
@@ -6810,36 +6812,36 @@ class NmrDpUtility:
                             if t[0] == '#' or t[0] == '!':
                                 break
 
-                            t = t.lower()
+                            t_lower = t.lower()
 
-                            if t.startswith('rest'):
+                            if t_lower.startswith('rest'):
                                 has_rest = True
 
-                            elif t.startswith('plan'):
+                            elif t_lower.startswith('plan'):
                                 has_plan = True
 
                             elif has_rest and has_plan:
 
-                                if t.startswith('grou'):
+                                if t_lower.startswith('grou'):
                                     has_grou = True
 
-                                elif t.startswith('sele'):
+                                elif t_lower.startswith('sele'):
                                     has_sele = True
 
                                     atom_likes = 0
                                     names = []
 
-                                elif _t == 'name':
+                                elif _t_lower == 'name':
                                     name = t.upper()
                                     if name in atom_like_names:
                                         if name not in names or len(names) > 1:
                                             atom_likes += 1
                                             names.append(name)
 
-                                elif t.startswith('resi'):
+                                elif t_lower.startswith('resi'):
                                     has_resi = True
 
-                                elif has_grou and has_sele and has_resi and _t.startswith('weig'):
+                                elif has_grou and has_sele and has_resi and not has_plane_restraint and _t_lower.startswith('weig'):
                                     if atom_likes > 0:
                                         try:
                                             v = float(t)
@@ -6848,12 +6850,12 @@ class NmrDpUtility:
                                         except:
                                             pass
 
-                                elif t == 'end':
+                                elif t_lower == 'end':
                                     has_grou = False
                                     has_sele = False
                                     has_resi = False
 
-                            _t = t
+                            _t_lower = t_lower
 
                     ifp.close()
 
@@ -7100,15 +7102,14 @@ class NmrDpUtility:
                     for line in ifp:
                         pos += 1
 
-                        if line.startswith('ATOM '):
-                            if line.count('.') >= 3:
-                                has_coordinate = True
-                                if first_atom_pattern.match(line):
-                                    if has_first_atom:
-                                        has_ens_coord = True
-                                    has_first_atom = True
-                                if is_aux_amb: # and line.count('.') >= 3:
-                                    has_amb_coord = True
+                        if line.startswith('ATOM ') and line.count('.') >= 3:
+                            has_coordinate = True
+                            if first_atom_pattern.match(line):
+                                if has_first_atom:
+                                    has_ens_coord = True
+                                has_first_atom = True
+                            if is_aux_amb: # and line.count('.') >= 3:
+                                has_amb_coord = True
 
                         elif line.startswith('MODEL') or line.startswith('ENDMDL') or\
                              line.startswith('_atom_site.pdbx_PDB_model_num') or line.startswith('_atom_site.ndb_model'):
@@ -7383,7 +7384,7 @@ class NmrDpUtility:
                         except ValueError:
                             continue
 
-                        if s[1] not in ('#', '!'):
+                        if s[1].isalnum():
                             comp_id = s[1].upper()
                             atom_id = s[2].upper()
 
@@ -7391,16 +7392,22 @@ class NmrDpUtility:
                                 if atom_id not in atom_like_names:
                                     continue
 
+                            elif len(comp_id) > 3:
+                                continue
+
                             elif not self.__updateChemCompDict(comp_id):
                                 continue
 
-                        if s[4] not in ('#', '!'):
+                        if s[4].isalnum():
                             comp_id = s[4].upper()
                             atom_id = s[5].upper()
 
                             if comp_id in three_letter_codes:
                                 if atom_id not in atom_like_names:
                                     continue
+
+                            elif len(comp_id) > 3:
+                                continue
 
                             elif not self.__updateChemCompDict(comp_id):
                                 continue
@@ -7897,6 +7904,7 @@ class NmrDpUtility:
                         list_id += 1
 
                 if not has_poly_seq:
+
                     poly_seq_list_set.pop(content_subtype)
 
             #if self.report.isError():
@@ -17289,6 +17297,8 @@ class NmrDpUtility:
 
                 # prediction of rotameric state of VAL/LEU/ILE
 
+                ilv_comp_ids = ('VAL', 'LEU', 'ILE')
+
                 ilv_rotameric_state = []
 
                 for sc in ent['sequence_coverage']:
@@ -17303,7 +17313,7 @@ class NmrDpUtility:
 
                         for seq_id, comp_id in zip(s['seq_id'], s['comp_id']):
 
-                            if comp_id not in ('VAL', 'LEU', 'ILE'):
+                            if comp_id not in ilv_comp_ids:
                                 continue
 
                             ilv = {'chain_id': chain_id, 'seq_id': seq_id, 'comp_id': comp_id}
@@ -17576,6 +17586,8 @@ class NmrDpUtility:
 
                 # random coil index
 
+                rci_atom_ids = ('HA', 'HA1', 'HA2', 'HA3', 'H', 'HN', 'NH', 'C', 'CO', 'N', 'CA', 'CB')
+
                 rci = []
 
                 for sc in ent['sequence_coverage']:
@@ -17637,7 +17649,7 @@ class NmrDpUtility:
                                 else:
                                     atom_id_ = atom_id
 
-                                if atom_id_ not in ('HA', 'HA1', 'HA2', 'HA3', 'H', 'HN', 'NH', 'C', 'CO', 'N', 'CA', 'CB'):
+                                if atom_id_ not in rci_atom_ids:
                                     continue
 
                                 rci_assignments.append([comp_id, seq_id, atom_id, j[atom_type], j[value_name]])

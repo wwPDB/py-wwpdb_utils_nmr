@@ -7904,7 +7904,6 @@ class NmrDpUtility:
                         list_id += 1
 
                 if not has_poly_seq:
-
                     poly_seq_list_set.pop(content_subtype)
 
             #if self.report.isError():
@@ -21335,7 +21334,7 @@ class NmrDpUtility:
 
             for i in lp_data:
 
-                has_assignment = not aux_data is None
+                has_assignment = aux_data is not None
 
                 pk_id = i['ID']
 
@@ -24417,7 +24416,7 @@ class NmrDpUtility:
 
         loop = pynmrstar.Loop.from_scratch(lp_cat_name)
 
-        has_index_tag = not self.index_tags[file_type][content_subtype] is None
+        has_index_tag = self.index_tags[file_type][content_subtype] is not None
 
         if has_index_tag:
             loop.add_tag(lp_cat_name + '.' + self.index_tags[file_type][content_subtype])

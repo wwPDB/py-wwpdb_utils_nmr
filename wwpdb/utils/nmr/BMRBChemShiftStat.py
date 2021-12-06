@@ -518,12 +518,12 @@ class BMRBChemShiftStat:
         """ Load all BMRB chemical shift statistics from CSV files.
         """
 
-        file_name_list = [self.stat_dir + 'aa_filt.csv', self.stat_dir + 'aa_full.csv',
-                          self.stat_dir + 'dna_filt.csv', self.stat_dir + 'dna_full.csv',
-                          self.stat_dir + 'rna_filt.csv', self.stat_dir + 'rna_full.csv',
-                          self.stat_dir + 'others.csv']
+        csv_files = (self.stat_dir + 'aa_filt.csv', self.stat_dir + 'aa_full.csv',
+                     self.stat_dir + 'dna_filt.csv', self.stat_dir + 'dna_full.csv',
+                     self.stat_dir + 'rna_filt.csv', self.stat_dir + 'rna_full.csv',
+                     self.stat_dir + 'others.csv')
 
-        if any(not os.path.exists(file_name) for file_name in file_name_list):
+        if any(not os.path.exists(csv_file) for csv_file in csv_files):
             return False
 
         self.aa_filt = self.loadStatFromCsvFile(self.stat_dir + 'aa_filt.csv', self.aa_threshold)
@@ -1227,13 +1227,13 @@ class BMRBChemShiftStat:
         """ Load all BMRB chemical shift statistics from pickle files if possible.
         """
 
-        file_name_list = [self.stat_dir + 'aa_filt.pkl', self.stat_dir + 'aa_full.pkl',
-                          self.stat_dir + 'dna_filt.pkl', self.stat_dir + 'dna_full.pkl',
-                          self.stat_dir + 'rna_filt.pkl', self.stat_dir + 'rna_full.pkl',
-                          self.stat_dir + 'others.pkl']
+        pickle_files = (self.stat_dir + 'aa_filt.pkl', self.stat_dir + 'aa_full.pkl',
+                        self.stat_dir + 'dna_filt.pkl', self.stat_dir + 'dna_full.pkl',
+                        self.stat_dir + 'rna_filt.pkl', self.stat_dir + 'rna_full.pkl',
+                        self.stat_dir + 'others.pkl')
 
-        for file_name in file_name_list:
-            if not os.path.exists(file_name):
+        for pickle_file in pickle_files:
+            if not os.path.exists(pickle_file):
                 return False
 
         self.aa_filt = load_stat_from_pickle(self.stat_dir + 'aa_filt.pkl')

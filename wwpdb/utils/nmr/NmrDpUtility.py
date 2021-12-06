@@ -3771,11 +3771,11 @@ class NmrDpUtility:
                          }
 
         # conventional dihedral angle names in standard residues
-        self.dihed_ang_names = ['PHI', 'PSI', 'OMEGA', 'CHI1', 'CHI2', 'CHI3', 'CHI4', 'CHI5',
+        self.dihed_ang_names = ('PHI', 'PSI', 'OMEGA', 'CHI1', 'CHI2', 'CHI3', 'CHI4', 'CHI5',
                                 'ALPHA', 'BETA', 'GAMMA', 'DELTA', 'EPSILON', 'ZETA',
                                 'NU0', 'NU1', 'NU2', 'NU3', 'NU4',
                                 'TAU0', 'TAU1', 'TAU2', 'TAU3', 'TAU4',
-                                'CHI21', 'CHI22', 'CHI31', 'CHI32', 'CHI42']
+                                'CHI21', 'CHI22', 'CHI31', 'CHI32', 'CHI42')
 
         # patterns for detection of dihedral angle type
         self.dihed_atom_ids = ['N', 'CA', 'C']
@@ -27847,7 +27847,7 @@ class NmrDpUtility:
 
                             if val is itValue or val == itValue:
 
-                                undefined_enums = ['undefined', 'unknown']
+                                undefined_enums = ('undefined', 'unknown')
 
                                 if (len(itEnum) == 2 and itEnum[1] in undefined_enums) or\
                                    (len(itEnum) == 3 and itEnum[1] in undefined_enums and itEnum[2] in undefined_enums):  # assumes 'undefined', 'unknown' enum values at the end of the array  # noqa: E501

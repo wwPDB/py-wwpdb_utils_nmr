@@ -14664,7 +14664,7 @@ class NmrDpUtility:
         """ Perform consistency test on peak position and assignment of spectral peaks.
         """
 
-        #if not self.__combined_mode:
+        # if not self.__combined_mode:
         #    return False
 
         __errors = self.report.getTotalErrors()
@@ -14810,7 +14810,7 @@ class NmrDpUtility:
                         abs_pk_pos.append(False)
                         sp_widths.append(None)
 
-                aux_data = next((l['data'] for l in self.__aux_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode and l['category'] == self.aux_lp_categories[file_type][content_subtype][1]), None)
+                aux_data = next((l['data'] for l in self.__aux_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode and l['category'] == self.aux_lp_categories[file_type][content_subtype][1]), None) # noqa: E501,E741
 
                 onebond = [[False] * num_dim for i in range(num_dim)]
                 if aux_data is not None:
@@ -14847,7 +14847,7 @@ class NmrDpUtility:
 
                 try:
 
-                    lp_data = next((l['data'] for l in self.__aux_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode and l['category'] == lp_category), None)
+                    lp_data = next((l['data'] for l in self.__aux_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode and l['category'] == lp_category), None)  # noqa: E501,E741
 
                     if lp_data is not None:
 
@@ -14876,7 +14876,7 @@ class NmrDpUtility:
 
                             if cs_list_id != _cs_list_id:
 
-                                for l in self.__lp_data['chem_shift']:
+                                for l in self.__lp_data['chem_shift']:  # noqa: E741
 
                                     if l['file_name'] == file_name:
 
@@ -14917,10 +14917,10 @@ class NmrDpUtility:
                                 else:
                                     atom_id_ = atom_id
 
-                                cs = next(j for j in cs_data if j[cs_chain_id_name] == chain_id and
-                                                                j[cs_seq_id_name] == seq_id and
-                                                                j[cs_comp_id_name] == comp_id and
-                                                                j[cs_atom_id_name] == atom_id_)
+                                cs = next(j for j in cs_data if j[cs_chain_id_name] == chain_id
+                                          and j[cs_seq_id_name] == seq_id
+                                          and j[cs_comp_id_name] == comp_id
+                                          and j[cs_atom_id_name] == atom_id_)
 
                                 value = cs[cs_value_name]
                                 error = cs[cs_error_name]
@@ -14945,12 +14945,12 @@ class NmrDpUtility:
 
                                     if abs(position - value) > error:
 
-                                        err = "[Check row of %s %s] Peak position of spectral peak %s %s (%s) in %r saveframe is inconsistent with the assigned chemical shift value %s (difference %s, tolerance %s) in %r saveframe." %\
-                                              (pk_id_name, i[pk_id_name], cs_value_name, position, self.__getReducedAtomNotation(cs_chain_id_name, chain_id, cs_seq_id_name, seq_id, cs_comp_id_name, comp_id, cs_atom_id_name, atom_id), sf_framecode, value, float('{:.3f}'.format(position - value)), error, cs_list)
+                                        err = "[Check row of %s %s] Peak position of spectral peak %s %s (%s) in %r saveframe is inconsistent with the assigned chemical shift value %s (difference %s, tolerance %s) in %r saveframe." % (pk_id_name,  # noqa: E501
+                                                                                                                                                                                                                                           i[pk_id_name], cs_value_name, position, self.__getReducedAtomNotation(cs_chain_id_name, chain_id, cs_seq_id_name, seq_id, cs_comp_id_name, comp_id, cs_atom_id_name, atom_id), sf_framecode, value, float('{:.3f}'.format(position - value)), error, cs_list)  # noqa: E501
 
                                         if error >= max_cs_err:
 
-                                            self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                            self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})  # noqa: E501
                                             self.report.setError()
 
                                             if self.__verbose:
@@ -14958,7 +14958,7 @@ class NmrDpUtility:
 
                                         else:
 
-                                            self.report.warning.appendDescription('unusual_chemical_shift', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                            self.report.warning.appendDescription('unusual_chemical_shift', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})  # noqa: E501
                                             self.report.setWarning()
 
                                             if self.__verbose:
@@ -14969,7 +14969,7 @@ class NmrDpUtility:
                                 if aux_data is not None and d < num_dim and axis_code != axis_codes[d]:
 
                                     err = '[Check row of %s %s] Assignment of spectral peak %s is inconsistent with axis code %s vs %s.' %\
-                                          (pk_id_name, i[pk_id_name], self.__getReducedAtomNotation(cs_chain_id_name, chain_id, cs_seq_id_name, seq_id, cs_comp_id_name, comp_id, cs_atom_id_name, atom_id), axis_code, axis_codes[d])
+                                          (pk_id_name, i[pk_id_name], self.__getReducedAtomNotation(cs_chain_id_name, chain_id, cs_seq_id_name, seq_id, cs_comp_id_name, comp_id, cs_atom_id_name, atom_id), axis_code, axis_codes[d])  # noqa: E501
 
                                     self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                                     self.report.setError()
@@ -14980,7 +14980,7 @@ class NmrDpUtility:
                             except StopIteration:
 
                                 err = "[Check row of %s %s] Assignment of spectral peak %s was not found in assigned chemical shifts in %r saveframe." %\
-                                      (pk_id_name, i[pk_id_name], self.__getReducedAtomNotation(cs_chain_id_name, chain_id, cs_seq_id_name, seq_id, cs_comp_id_name, comp_id, cs_atom_id_name, atom_id), cs_list)
+                                      (pk_id_name, i[pk_id_name], self.__getReducedAtomNotation(cs_chain_id_name, chain_id, cs_seq_id_name, seq_id, cs_comp_id_name, comp_id, cs_atom_id_name, atom_id), cs_list)  # noqa: E501
 
                                 self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                                 self.report.setError()
@@ -15010,11 +15010,9 @@ class NmrDpUtility:
                                         if chain_id2 in self.empty_value or seq_id2 in self.empty_value or comp_id2 in self.empty_value or atom_id2 in self.empty_value or\
                                            (d < d2 and (chain_id2 != chain_id or seq_id2 != seq_id or comp_id2 != comp_id or _atom_id2 != _atom_id)):
 
-                                            err = '[Check row of %s %s] Coherence transfer type is onebond. However, assignment of spectral peak is inconsistent with the type, (%s) vs (%s).' %\
-                                                  (pk_id_name, i[pk_id_name], self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id, comp_id_names[d], comp_id, atom_id_names[d], atom_id),
-                                                   self.__getReducedAtomNotation(chain_id_names[d2], chain_id2, seq_id_names[d2], seq_id2, comp_id_names[d2], comp_id2, atom_id_names[d2], atom_id2))
-
-                                            self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                            err = '[Check row of %s %s] Coherence transfer type is onebond. However, assignment of spectral peak is inconsistent with the type, (%s) vs (%s).' % (pk_id_name, i[pk_id_name], self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id, comp_id_names[d], comp_id, atom_id_names[d], atom_id),  # noqa: E501
+                                                                                                                                                                                                  self.__getReducedAtomNotation(chain_id_names[d2], chain_id2, seq_id_names[d2], seq_id2, comp_id_names[d2], comp_id2, atom_id_names[d2], atom_id2))  # noqa: E501
+                                            self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})  # noqa: E501
                                             self.report.setError()
 
                                             if self.__verbose:
@@ -15035,13 +15033,13 @@ class NmrDpUtility:
                                         atom_id2 = j[cs_atom_id_name]
 
                                         if chain_id2 in self.empty_value or seq_id2 in self.empty_value or comp_id2 in self.empty_value or atom_id2 in self.empty_value or\
-                                           (d < d2 and (chain_id2 != chain_id or seq_id2 != seq_id or comp_id2 != comp_id)): # DAOTHER-7389, issue #2
+                                           (d < d2 and (chain_id2 != chain_id or seq_id2 != seq_id or comp_id2 != comp_id)):  # DAOTHER-7389, issue #2
 
                                             err = '[Check row of %s %s] Coherence transfer type is jcoupling. However, assignment of spectral peak is inconsistent with the type, (%s) vs (%s).' %\
-                                                  (pk_id_name, i[pk_id_name], self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id, comp_id_names[d], comp_id, atom_id_names[d], atom_id),
-                                                   self.__getReducedAtomNotation(chain_id_names[d2], chain_id2, seq_id_names[d2], seq_id2, comp_id_names[d2], comp_id2, atom_id_names[d2], atom_id2))
+                                                  (pk_id_name, i[pk_id_name], self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id, comp_id_names[d], comp_id, atom_id_names[d], atom_id),  # noqa: E501
+                                                   self.__getReducedAtomNotation(chain_id_names[d2], chain_id2, seq_id_names[d2], seq_id2, comp_id_names[d2], comp_id2, atom_id_names[d2], atom_id2))  # noqa: E501
 
-                                            self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                            self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})  # noqa: E501
                                             self.report.setError()
 
                                             if self.__verbose:
@@ -15062,13 +15060,13 @@ class NmrDpUtility:
                                         atom_id2 = j[cs_atom_id_name]
 
                                         if chain_id2 in self.empty_value or seq_id2 in self.empty_value or comp_id2 in self.empty_value or atom_id2 in self.empty_value or\
-                                           (d < d2 and (chain_id2 != chain_id or abs(seq_id2 - seq_id) > 1)): # DAOTHER-7389, issue #2
+                                           (d < d2 and (chain_id2 != chain_id or abs(seq_id2 - seq_id) > 1)):  # DAOTHER-7389, issue #2
 
-                                            err = '[Check row of %s %s] Coherence transfer type is relayed. However, assignment of spectral peak is inconsistent with the type, (%s) vs (%s).' %\
-                                                  (pk_id_name, i[pk_id_name], self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id, comp_id_names[d], comp_id, atom_id_names[d], atom_id),
-                                                   self.__getReducedAtomNotation(chain_id_names[d2], chain_id2, seq_id_names[d2], seq_id2, comp_id_names[d2], comp_id2, atom_id_names[d2], atom_id2))
+                                            err = '[Check row of %s %s] Coherence transfer type is relayed. However, assignment of spectral peak is inconsistent with the type, (%s) vs (%s).' % (pk_id_name,  # noqa: E501
+                                                                                                                                                                                                  i[pk_id_name], self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id, comp_id_names[d], comp_id, atom_id_names[d], atom_id),  # noqa: E501
+                                                                                                                                                                                                  self.__getReducedAtomNotation(chain_id_names[d2], chain_id2, seq_id_names[d2], seq_id2, comp_id_names[d2], comp_id2, atom_id_names[d2], atom_id2))  # noqa: E501
 
-                                            self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                            self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})  # noqa: E501
                                             self.report.setError()
 
                                             if self.__verbose:
@@ -15153,7 +15151,7 @@ class NmrDpUtility:
 
         try:
 
-            lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode), None)
+            lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode), None)  # noqa: E741
 
             if lp_data is not None:
 
@@ -15240,11 +15238,11 @@ class NmrDpUtility:
 
                     else:
 
-                        if self.__updateChemCompDict(comp_id_1): # matches with comp_id in CCD
+                        if self.__updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
 
-                            if not any(b for b in self.__last_chem_comp_bonds if\
-                                       ((b[self.__ccb_atom_id_1] == atom_id_1 and b[self.__ccb_atom_id_2] == atom_id_2) or\
-                                       (b[self.__ccb_atom_id_1] == atom_id_2 and b[self.__ccb_atom_id_2] == atom_id_1))):
+                            if not any(b for b in self.__last_chem_comp_bonds if
+                                       ((b[self.__ccb_atom_id_1] == atom_id_1 and b[self.__ccb_atom_id_2] == atom_id_2)
+                                        or (b[self.__ccb_atom_id_1] == atom_id_2 and b[self.__ccb_atom_id_2] == atom_id_1))):
 
                                 if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
 
@@ -15253,16 +15251,17 @@ class NmrDpUtility:
                                     warn = "%sRDC vector over multiple covalent bonds (%s:%s:%s:%s, %s:%s:%s:%s)." %\
                                            (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
 
-                                    self.report.warning.appendDescription('unusual/rare_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                    self.report.warning.appendDescription('unusual/rare_data', {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                                                'category': lp_category, 'description': warn})
                                     self.report.setWarning()
 
                                     if self.__verbose:
                                         self.__lfh.write("+NmrDpUtility.__testRDCVector() ++ Warning  - %s\n" % warn)
 
-                                else: # raised error already somewhere because of invalid atom nomenclature
+                                else:  # raised error already somewhere because of invalid atom nomenclature
                                     pass
 
-                        else: # raised warning already somewhere because of unknown comp_id
+                        else:  # raised warning already somewhere because of unknown comp_id
                             pass
 
         except Exception as e:
@@ -15341,11 +15340,11 @@ class NmrDpUtility:
 
         try:
 
-            aux_data = next((l['data'] for l in self.__aux_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode and l['category'] == lp_category), None)
+            aux_data = next((l['data'] for l in self.__aux_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode and l['category'] == lp_category), None)  # noqa: E501,E741
 
             if aux_data is not None:
 
-                for l, i in enumerate(aux_data):
+                for l, i in enumerate(aux_data):  # noqa: E741
                     chain_id_1 = i[chain_id_1_name]
                     seq_id_1 = i[seq_id_1_name]
                     comp_id_1 = i[comp_id_1_name]
@@ -15370,9 +15369,9 @@ class NmrDpUtility:
                         length_list += '%s (model_id %s), ' % (bb['distance'], bb['model_id'])
 
                     warn = "Covalent bond (%s - %s) is out of acceptable range, %s angstromes." %\
-                          (self.__getReducedAtomNotation(chain_id_1_name, chain_id_1, seq_id_1_name, seq_id_1, comp_id_1_name, comp_id_1, atom_id_1_name, atom_id_1),
-                           self.__getReducedAtomNotation(chain_id_2_name, chain_id_2, seq_id_2_name, seq_id_2, comp_id_2_name, comp_id_2, atom_id_2_name, atom_id_2),
-                           length_list[:-2])
+                        (self.__getReducedAtomNotation(chain_id_1_name, chain_id_1, seq_id_1_name, seq_id_1, comp_id_1_name, comp_id_1, atom_id_1_name, atom_id_1),
+                         self.__getReducedAtomNotation(chain_id_2_name, chain_id_2, seq_id_2_name, seq_id_2, comp_id_2_name, comp_id_2, atom_id_2_name, atom_id_2),
+                         length_list[:-2])
 
                     self.report.warning.appendDescription('anomalous_bond_length', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                     self.report.setWarning()
@@ -15418,8 +15417,8 @@ class NmrDpUtility:
         if seq_key in self.__coord_bond_length:
             return self.__coord_bond_length[seq_key]
 
-        result_1 = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == nmr_chain_id_1 and seq_align['test_chain_id'] == cif_chain_id_1), None)
-        result_2 = result_1 if intra_chain else next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == nmr_chain_id_2 and seq_align['test_chain_id'] == cif_chain_id_2), None)
+        result_1 = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == nmr_chain_id_1 and seq_align['test_chain_id'] == cif_chain_id_1), None)  # noqa: E501
+        result_2 = result_1 if intra_chain else next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == nmr_chain_id_2 and seq_align['test_chain_id'] == cif_chain_id_2), None)  # noqa: E501
 
         if result_1 is not None and result_2 is not None:
 
@@ -15440,24 +15439,24 @@ class NmrDpUtility:
                 model_num_name = 'pdbx_PDB_model_num' if self.__cR.hasItem('atom_site', 'pdbx_PDB_model_num') else 'ndb_model'
 
                 atom_site_1 = self.__cR.getDictListWithFilter('atom_site',
-                                                [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                 {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                 {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
-                                                 {'name': model_num_name, 'type': 'int', 'alt_name': 'model_id'}
-                                                 ],
-                                                [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id_1},
-                                                 {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id_1},
-                                                 {'name': 'label_atom_id', 'type': 'str', 'value': nmr_atom_id_1}])
+                                                              [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                               {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                               {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
+                                                               {'name': model_num_name, 'type': 'int', 'alt_name': 'model_id'}
+                                                               ],
+                                                              [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id_1},
+                                                               {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id_1},
+                                                               {'name': 'label_atom_id', 'type': 'str', 'value': nmr_atom_id_1}])
 
                 atom_site_2 = self.__cR.getDictListWithFilter('atom_site',
-                                                [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                 {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                 {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
-                                                 {'name': model_num_name, 'type': 'int', 'alt_name': 'model_id'}
-                                                 ],
-                                                [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id_2},
-                                                 {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id_2},
-                                                 {'name': 'label_atom_id', 'type': 'str', 'value': nmr_atom_id_2}])
+                                                              [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                               {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                               {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
+                                                               {'name': model_num_name, 'type': 'int', 'alt_name': 'model_id'}
+                                                               ],
+                                                              [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id_2},
+                                                               {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id_2},
+                                                               {'name': 'label_atom_id', 'type': 'str', 'value': nmr_atom_id_2}])
 
             except Exception as e:
 
@@ -15522,7 +15521,7 @@ class NmrDpUtility:
                 continue
 
             sf_category = self.sf_categories[file_type][content_subtype]
-            lp_category = self.aux_lp_categories[file_type][content_subtype][1] # nef: _nef_sequence, nmr-star: _Entity_deleted_atom
+            lp_category = self.aux_lp_categories[file_type][content_subtype][1]  # nef: _nef_sequence, nmr-star: _Entity_deleted_atom
 
             if lp_category not in self.__lp_category_list[fileListId]:
                 continue
@@ -15555,12 +15554,12 @@ class NmrDpUtility:
                 ref_chain_id = chain_assign['ref_chain_id']
                 test_chain_id = chain_assign['test_chain_id']
 
-                result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == ref_chain_id and seq_align['test_chain_id'] == test_chain_id), None)
+                result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == ref_chain_id and seq_align['test_chain_id'] == test_chain_id), None)  # noqa: E501
 
                 if ref_chain_id not in nmr2ca:
                     nmr2ca[ref_chain_id] = []
 
-                complex = {'seq_align': result} # DAOTHER-7465
+                complex = {'seq_align': result}  # DAOTHER-7465
 
                 if 'unmapped_sequence' in chain_assign:
                     complex['seq_unmap'] = [unmapped['ref_seq_id'] for unmapped in chain_assign['unmapped_sequence']]
@@ -15625,7 +15624,7 @@ class NmrDpUtility:
                     if chain_id not in nmr2ca:
                         continue
 
-                    ca = next((ca['seq_align'] for ca in nmr2ca[chain_id] if ('seq_unmap' not in ca or (seq_id not in ca['seq_unmap']))), None) # DAOTHER-7465
+                    ca = next((ca['seq_align'] for ca in nmr2ca[chain_id] if ('seq_unmap' not in ca or (seq_id not in ca['seq_unmap']))), None)  # DAOTHER-7465
 
                     if ca is None:
                         continue
@@ -15662,7 +15661,7 @@ class NmrDpUtility:
 
                                 warn = "Residue variant %r should start with either '-' or '+' symbol according to the NEF sepcification." % _variant_
 
-                                self.report.warning.appendDescription('atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                self.report.warning.appendDescription('atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})  # noqa: E501
                                 self.report.setWarning()
 
                                 if self.__verbose:
@@ -15702,14 +15701,14 @@ class NmrDpUtility:
 
                             if _variant_[0] == '-':
 
-                                if self.__last_comp_id_test: # matches with comp_id in CCD
+                                if self.__last_comp_id_test:  # matches with comp_id in CCD
 
                                     if not any(a for a in self.__last_chem_comp_atoms if a[self.__cca_atom_id] == atom_id_):
 
                                         warn = "Atom (%s, %s %r) did not match with chemical component dictionary (CCD)." %\
-                                            (self.__getReducedAtomNotation(chain_id_name, chain_id, seq_id_name, seq_id, comp_id_name, comp_id, atom_id_name, atom_name), variant_name, _variant_)
+                                            (self.__getReducedAtomNotation(chain_id_name, chain_id, seq_id_name, seq_id, comp_id_name, comp_id, atom_id_name, atom_name), variant_name, _variant_)  # noqa: E501
 
-                                        self.report.warning.appendDescription('atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                        self.report.warning.appendDescription('atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})  # noqa: E501
                                         self.report.setWarning()
 
                                         if self.__verbose:
@@ -15718,9 +15717,9 @@ class NmrDpUtility:
                                 if coord_atom_id_ is not None and coord_atom_id_['comp_id'] == cif_comp_id and atom_id_ in coord_atom_id_['atom_id']:
 
                                     err = "Atom (%s, %s %r) is unexpectedly incorporated in the coordinate." %\
-                                        (self.__getReducedAtomNotation(chain_id_name, chain_id, seq_id_name, seq_id, comp_id_name, comp_id, atom_id_name, atom_name), variant_name, _variant_)
+                                        (self.__getReducedAtomNotation(chain_id_name, chain_id, seq_id_name, seq_id, comp_id_name, comp_id, atom_id_name, atom_name), variant_name, _variant_)  # noqa: E501
 
-                                    self.report.error.appendDescription('invalid_atom_nomenclature', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                    self.report.error.appendDescription('invalid_atom_nomenclature', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})  # noqa: E501
                                     self.report.setError()
 
                                     if self.__verbose:
@@ -15731,9 +15730,9 @@ class NmrDpUtility:
                                 if coord_atom_id_ is not None and coord_atom_id_['comp_id'] == cif_comp_id and atom_id_ not in coord_atom_id_['atom_id']:
 
                                     err = "Atom (%s) which is a %s %r is not present in the coordinate." %\
-                                        (self.__getReducedAtomNotation(chain_id_name, chain_id, seq_id_name, seq_id, comp_id_name, comp_id, atom_id_name, atom_name), variant_name, _variant_)
+                                        (self.__getReducedAtomNotation(chain_id_name, chain_id, seq_id_name, seq_id, comp_id_name, comp_id, atom_id_name, atom_name), variant_name, _variant_)  # noqa: E501
 
-                                    self.report.error.appendDescription('atom_not_found', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                    self.report.error.appendDescription('atom_not_found', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})  # noqa: E501
                                     self.report.setError()
 
                                     if self.__verbose:
@@ -15771,14 +15770,14 @@ class NmrDpUtility:
                             atom_id_ = atom_id
                             atom_name = atom_id
 
-                            if self.__last_comp_id_test: # matches with comp_id in CCD
+                            if self.__last_comp_id_test:  # matches with comp_id in CCD
 
                                 if not any(a for a in self.__last_chem_comp_atoms if a[self.__cca_atom_id] == atom_id_):
 
                                     warn = "Atom (%s) did not match with chemical component dictionary (CCD)." %\
                                         self.__getReducedAtomNotation(chain_id_name, chain_id, seq_id_name, seq_id, comp_id_name, comp_id, atom_id_name, atom_name)
 
-                                    self.report.warning.appendDescription('atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                    self.report.warning.appendDescription('atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})  # noqa: E501
                                     self.report.setWarning()
 
                                     if self.__verbose:
@@ -15789,7 +15788,7 @@ class NmrDpUtility:
                                 err = "Atom (%s) is unexpectedly incorporated in the coordinate." %\
                                     self.__getReducedAtomNotation(chain_id_name, chain_id, seq_id_name, seq_id, comp_id_name, comp_id, atom_id_name, atom_name)
 
-                                self.report.error.appendDescription('invalid_atom_nomenclature', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                self.report.error.appendDescription('invalid_atom_nomenclature', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})  # noqa: E501
                                 self.report.setError()
 
                                 if self.__verbose:
@@ -15932,9 +15931,9 @@ class NmrDpUtility:
                     return
 
         if content_subtype != 'poly_seq':
-            lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode), None)
+            lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode), None)  # noqa: E741
         else:
-            lp_data = next((l['data'] for l in self.__aux_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode and l['category'] == lp_category), None)
+            lp_data = next((l['data'] for l in self.__aux_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode and l['category'] == lp_category), None)  # noqa: E741,E501
 
         if lp_data is None or len(lp_data) == 0:
             return
@@ -15979,7 +15978,7 @@ class NmrDpUtility:
                         sc['sequence_coverage'] = seq_align['sequence_coverage']
 
                         if seq_align['sequence_coverage'] < self.low_seq_coverage and seq_align['length'] > 1:
-                            if ('exp_type' not in ent) or (ent['exp_type'] not in ('disulfide bound', 'disulfide_bond', 'paramagnetic relaxation', 'pre', 'symmetry', 'J-couplings', 'jcoupling')):
+                            if ('exp_type' not in ent) or (ent['exp_type'] not in ('disulfide bound', 'disulfide_bond', 'paramagnetic relaxation', 'pre', 'symmetry', 'J-couplings', 'jcoupling')):  # noqa: E501
                                 low_seq_coverage += 'coverage %s for chain_id %s, length %s, ' % (seq_align['sequence_coverage'], seq_align['chain_id'], seq_align['length'])
 
                         seq_coverage.append(sc)
@@ -16143,7 +16142,7 @@ class NmrDpUtility:
                     if num_dim not in range(1, self.lim_num_dim):
                         raise ValueError()
 
-                except ValueError: # raised error already at __testIndexConsistency()
+                except ValueError:  # raised error already at __testIndexConsistency()
                     return
 
                 if content_subtype == 'spectral_peak':
@@ -16257,7 +16256,7 @@ class NmrDpUtility:
                     n15_col = -1
                     p31_col = -1
 
-                    l = 0
+                    l = 0  # noqa: E741
 
                     for data_type in count:
 
@@ -16281,7 +16280,7 @@ class NmrDpUtility:
 
                         all_c.append(atom_group)
 
-                        l += 1
+                        l += 1  # noqa: E741
 
                     s = next((s for s in polymer_sequence if s['chain_id'] == chain_id), None)
 
@@ -16398,7 +16397,7 @@ class NmrDpUtility:
                     n15_col = -1
                     p31_col = -1
 
-                    l = 0
+                    l = 0  # noqa: E741
 
                     for data_type in count:
 
@@ -16422,7 +16421,7 @@ class NmrDpUtility:
 
                         bb_c.append(atom_group)
 
-                        l += 1
+                        l += 1  # noqa: E741
 
                     if s is not None:
 
@@ -16523,7 +16522,7 @@ class NmrDpUtility:
                     n15_col = -1
                     p31_col = -1
 
-                    l = 0
+                    l = 0  # noqa: E741
 
                     for data_type in count:
 
@@ -16547,7 +16546,7 @@ class NmrDpUtility:
 
                         sc_c.append(atom_group)
 
-                        l += 1
+                        l += 1  # noqa: E741
 
                     if s is not None:
 
@@ -16646,7 +16645,7 @@ class NmrDpUtility:
                     h1_col = -1
                     c13_col = -1
 
-                    l = 0
+                    l = 0  # noqa: E741
 
                     for data_type in count:
 
@@ -16667,7 +16666,7 @@ class NmrDpUtility:
 
                         ch3_c.append(atom_group)
 
-                        l += 1
+                        l += 1  # noqa: E741
 
                     if s is not None:
 
@@ -16749,7 +16748,7 @@ class NmrDpUtility:
                     c13_col = -1
                     n15_col = -1
 
-                    l = 0
+                    l = 0  # noqa: E741
 
                     for data_type in count:
 
@@ -16770,7 +16769,7 @@ class NmrDpUtility:
 
                         aro_c.append(atom_group)
 
-                        l += 1
+                        l += 1  # noqa: E741
 
                     if s is not None:
 
@@ -17074,12 +17073,12 @@ class NmrDpUtility:
 
                             cys['in_disulfide_bond'] = False
                             if input_source_dic['disulfide_bond'] is not None:
-                                if any(b for b in input_source_dic['disulfide_bond'] if (b['chain_id_1'] == chain_id and b['seq_id_1'] == seq_id) or (b['chain_id_2'] == chain_id and b['seq_id_2'] == seq_id)):
+                                if any(b for b in input_source_dic['disulfide_bond'] if (b['chain_id_1'] == chain_id and b['seq_id_1'] == seq_id) or (b['chain_id_2'] == chain_id and b['seq_id_2'] == seq_id)):  # noqa: E501
                                     cys['in_disulfide_bond'] = True
 
                             cys['in_other_bond'] = False
                             if input_source_dic['other_bond'] is not None:
-                                if any(b for b in input_source_dic['other_bond'] if (b['chain_id_1'] == chain_id and b['seq_id_1'] == seq_id) or (b['chain_id_2'] == chain_id and b['seq_id_2'] == seq_id)):
+                                if any(b for b in input_source_dic['other_bond'] if (b['chain_id_1'] == chain_id and b['seq_id_1'] == seq_id) or (b['chain_id_2'] == chain_id and b['seq_id_2'] == seq_id)):  # noqa: E501
                                     cys['in_other_bond'] = True
 
                             cys_redox_state.append(cys)
@@ -17249,7 +17248,7 @@ class NmrDpUtility:
                                 elif bip < 0.001 and tau < 0.001:
                                     his['tautomeric_state_pred'] = 'pi-tautomer'
                                 else:
-                                    his['tautomeric_state_pred'] = 'biprotonated %s (%%), tau-tautomer %s (%%), pi-tautomer %s (%%)' % ('{:.1f}'.format(bip * 100.0), '{:.1f}'.format(tau * 100.0), '{:.1f}'.format(pi * 100.0))
+                                    his['tautomeric_state_pred'] = 'biprotonated %s (%%), tau-tautomer %s (%%), pi-tautomer %s (%%)' % ('{:.1f}'.format(bip * 100.0), '{:.1f}'.format(tau * 100.0), '{:.1f}'.format(pi * 100.0))  # noqa: E501
                             else:
                                 his['tautomeric_state_pred'] = 'unknown'
 
@@ -17356,7 +17355,7 @@ class NmrDpUtility:
                                     elif gp < 0.001 and t < 0.001:
                                         ilv['rotameric_state_pred'] = 'gauche-'
                                     else:
-                                        ilv['rotameric_state_pred'] = 'gauche+ %s (%%), trans %s (%%), gauche- %s (%%)' % ('{:.1f}'.format(gp * 100.0), '{:.1f}'.format(t * 100.0), '{:.1f}'.format(gm * 100.0))
+                                        ilv['rotameric_state_pred'] = 'gauche+ %s (%%), trans %s (%%), gauche- %s (%%)' % ('{:.1f}'.format(gp * 100.0), '{:.1f}'.format(t * 100.0), '{:.1f}'.format(gm * 100.0))  # noqa: E501
                                 else:
                                     ilv['rotameric_state_pred'] = 'unknown'
 
@@ -17447,7 +17446,7 @@ class NmrDpUtility:
                                     elif gp < 0.001 and t < 0.001:
                                         ilv['rotameric_state_pred'] = 'gauche-'
                                     else:
-                                        ilv['rotameric_state_pred'] = 'gauche+ %s (%%), trans %s (%%), gauche- %s (%%)' % ('{:.1f}'.format(gp * 100.0), '{:.1f}'.format(t * 100.0), '{:.1f}'.format(gm * 100.0))
+                                        ilv['rotameric_state_pred'] = 'gauche+ %s (%%), trans %s (%%), gauche- %s (%%)' % ('{:.1f}'.format(gp * 100.0), '{:.1f}'.format(t * 100.0), '{:.1f}'.format(gm * 100.0))  # noqa: E501
                                 else:
                                     ilv['rotameric_state_pred'] = 'unknown'
 
@@ -17528,7 +17527,7 @@ class NmrDpUtility:
                                     elif gp < 0.001 and t < 0.001:
                                         ilv['rotameric_state_pred'] = 'gauche-'
                                     else:
-                                        ilv['rotameric_state_pred'] = 'gauche+ %s (%%), trans %s (%%), gauche- %s (%%)' % ('{:.1f}'.format(gp * 100.0), '{:.1f}'.format(t * 100.0), '{:.1f}'.format(gm * 100.0))
+                                        ilv['rotameric_state_pred'] = 'gauche+ %s (%%), trans %s (%%), gauche- %s (%%)' % ('{:.1f}'.format(gp * 100.0), '{:.1f}'.format(t * 100.0), '{:.1f}'.format(gm * 100.0))  # noqa: E501
                                 else:
                                     ilv['rotameric_state_pred'] = 'unknown'
 
@@ -17792,9 +17791,9 @@ class NmrDpUtility:
 
                 if len(polymer_sequence) > 1:
                     for s, t in itertools.combinations(polymer_sequence, 2):
-                        count_on_asym_map.append({'chain_id_1': s['chain_id'], 'chain_id_2': t['chain_id'], 'seq_id_1': s['seq_id'], 'seq_id_2': t['seq_id'], 'comp_id_1': s['comp_id'], 'comp_id_2': t['comp_id'], 'struct_conf_1': self.__extractCoordStructConf(s['chain_id'], s['seq_id']), 'struct_conf_2': self.__extractCoordStructConf(t['chain_id'], t['seq_id'])})
+                        count_on_asym_map.append({'chain_id_1': s['chain_id'], 'chain_id_2': t['chain_id'], 'seq_id_1': s['seq_id'], 'seq_id_2': t['seq_id'], 'comp_id_1': s['comp_id'], 'comp_id_2': t['comp_id'], 'struct_conf_1': self.__extractCoordStructConf(s['chain_id'], s['seq_id']), 'struct_conf_2': self.__extractCoordStructConf(t['chain_id'], t['seq_id'])})  # noqa: E501
 
-            for l, i in enumerate(lp_data):
+            for l, i in enumerate(lp_data):  # noqa: E741
                 index = i[index_tag] if index_tag in i else None
                 comb_id = i[comb_id_name] if comb_id_name in i else None
 
@@ -17976,47 +17975,25 @@ class NmrDpUtility:
 
                 # detect potential type
 
-                #targe_value = i[target_value_name] if target_value_name in i else None
+                # targe_value = i[target_value_name] if target_value_name in i else None
                 lower_limit_value = i[lower_limit_name] if lower_limit_name in i else None
                 upper_limit_value = i[upper_limit_name] if upper_limit_name in i else None
                 lower_linear_limit_value = i[lower_linear_limit_name] if lower_linear_limit_name in i else None
                 upper_linear_limit_value = i[upper_linear_limit_name] if upper_linear_limit_name in i else None
 
-                if (lower_limit_value is not None) and\
-                   (upper_limit_value is not None) and\
-                   lower_linear_limit_value is None and\
-                   upper_linear_limit_value is None:
+                if (lower_limit_value is not None) and (upper_limit_value is not None) and lower_linear_limit_value is None and upper_linear_limit_value is None:
                     potential_type = 'square-well-parabolic'
-                elif (lower_limit_value is not None) and\
-                   (upper_limit_value is not None) and\
-                   (lower_linear_limit_value is not None) and\
-                   (upper_linear_limit_value is not None):
+                elif (lower_limit_value is not None) and (upper_limit_value is not None) and (lower_linear_limit_value is not None) and (upper_linear_limit_value is not None):
                     potential_type = 'square-well-parabolic-linear'
-                elif lower_limit_value is None and\
-                   (upper_limit_value is not None) and\
-                   lower_linear_limit_value is None and\
-                   upper_linear_limit_value is None:
+                elif lower_limit_value is None and (upper_limit_value is not None) and lower_linear_limit_value is None and upper_linear_limit_value is None:
                     potential_type = 'upper-bound-parabolic'
-                elif (lower_limit_value is not None) and\
-                   upper_limit_value is None and\
-                   lower_linear_limit_value is None and\
-                   upper_linear_limit_value is None:
+                elif (lower_limit_value is not None) and upper_limit_value is None and lower_linear_limit_value is None and upper_linear_limit_value is None:
                     potential_type = 'lower-bound-parabolic'
-                elif lower_limit_value is None and\
-                   (upper_limit_value is not None) and\
-                   lower_linear_limit_value is None and\
-                   (upper_linear_limit_value is not None):
+                elif lower_limit_value is None and (upper_limit_value is not None) and lower_linear_limit_value is None and (upper_linear_limit_value is not None):
                     potential_type = 'upper-bound-parabolic-linear'
-                elif (lower_limit_value is not None) and\
-                   upper_limit_value is None and\
-                   (lower_linear_limit_value is not None) and\
-                   upper_linear_limit_value is None:
+                elif (lower_limit_value is not None) and upper_limit_value is None and (lower_linear_limit_value is not None) and upper_linear_limit_value is None:
                     potential_type = 'lower-bound-parabolic-linear'
-                elif (target_value is not None) and\
-                   lower_limit_value is None and\
-                   upper_limit_value is None and\
-                   lower_linear_limit_value is None and\
-                   upper_linear_limit_value is None:
+                elif (target_value is not None) and lower_limit_value is None and upper_limit_value is None and lower_linear_limit_value is None and upper_linear_limit_value is None:
                     potential_type = 'log-harmonic'
                 else:
                     potential_type = 'undefined'
@@ -18133,7 +18110,7 @@ class NmrDpUtility:
                 for k in count.keys():
                     _count[k] = 0
 
-                for l, i in enumerate(lp_data):
+                for l, i in enumerate(lp_data):  # noqa: E741
                     chain_id_1 = i[chain_id_1_name]
                     chain_id_2 = i[chain_id_2_name]
                     seq_id_1 = i[seq_id_1_name]
@@ -18213,7 +18190,7 @@ class NmrDpUtility:
 
             if conflict_id_set is not None:
 
-                #max_inclusive = self.dist_restraint_error['max_inclusive']
+                # max_inclusive = self.dist_restraint_error['max_inclusive']
 
                 max_val = 0.0
                 min_val = 0.0
@@ -18239,7 +18216,7 @@ class NmrDpUtility:
                                 if lower_limit_name in row_1 and (row_1[lower_limit_name] is not None) and upper_limit_name in row_1 and (row_1[upper_limit_name] is not None):
                                     target_value_1 = (row_1[lower_limit_name] + row_1[upper_limit_name]) / 2.0
 
-                                elif lower_linear_limit_name in row_1 and (row_1[lower_linear_limit_name] is not None) and upper_linear_limit_name is i and (row_1[upper_linear_limit_name] is not None):
+                                elif lower_linear_limit_name in row_1 and (row_1[lower_linear_limit_name] is not None) and upper_linear_limit_name is i and (row_1[upper_linear_limit_name] is not None):  # noqa: E501
                                     target_value_1 = (row_1[lower_linear_limit_name] + row_1[upper_linear_limit_name]) / 2.0
 
                                 elif upper_linear_limit_name in row_1 and (row_1[upper_linear_limit_name] is not None):
@@ -18261,7 +18238,7 @@ class NmrDpUtility:
                                 if lower_limit_name in row_2 and (row_2[lower_limit_name] is not None) and upper_limit_name in row_2 and (row_2[upper_limit_name] is not None):
                                     target_value_2 = (row_2[lower_limit_name] + row_2[upper_limit_name]) / 2.0
 
-                                elif lower_linear_limit_name in row_2 and (row_2[lower_linear_limit_name] is not None) and upper_linear_limit_name is i and (row_2[upper_linear_limit_name] is not None):
+                                elif lower_linear_limit_name in row_2 and (row_2[lower_linear_limit_name] is not None) and upper_linear_limit_name is i and (row_2[upper_linear_limit_name] is not None):  # noqa: E501
                                     target_value_2 = (row_2[lower_linear_limit_name] + row_2[upper_linear_limit_name]) / 2.0
 
                                 elif upper_linear_limit_name in row_2 and (row_2[upper_linear_limit_name] is not None):
@@ -18356,7 +18333,7 @@ class NmrDpUtility:
                                         if lower_limit_name in row_1 and (row_1[lower_limit_name] is not None) and upper_limit_name in row_1 and (row_1[upper_limit_name] is not None):
                                             target_value_1 = (row_1[lower_limit_name] + row_1[upper_limit_name]) / 2.0
 
-                                        elif lower_linear_limit_name in row_1 and (row_1[lower_linear_limit_name] is not None) and upper_linear_limit_name is i and (row_1[upper_linear_limit_name] is not None):
+                                        elif lower_linear_limit_name in row_1 and (row_1[lower_linear_limit_name] is not None) and upper_linear_limit_name is i and (row_1[upper_linear_limit_name] is not None):  # noqa: E501
                                             target_value_1 = (row_1[lower_linear_limit_name] + row_1[upper_linear_limit_name]) / 2.0
 
                                         elif upper_linear_limit_name in row_1 and (row_1[upper_linear_limit_name] is not None):
@@ -18378,7 +18355,7 @@ class NmrDpUtility:
                                         if lower_limit_name in row_2 and (row_2[lower_limit_name] is not None) and upper_limit_name in row_2 and (row_2[upper_limit_name] is not None):
                                             target_value_2 = (row_2[lower_limit_name] + row_2[upper_limit_name]) / 2.0
 
-                                        elif lower_linear_limit_name in row_2 and (row_2[lower_linear_limit_name] is not None) and upper_linear_limit_name is i and (row_2[upper_linear_limit_name] is not None):
+                                        elif lower_linear_limit_name in row_2 and (row_2[lower_linear_limit_name] is not None) and upper_linear_limit_name is i and (row_2[upper_linear_limit_name] is not None):  # noqa: E501
                                             target_value_2 = (row_2[lower_linear_limit_name] + row_2[upper_linear_limit_name]) / 2.0
 
                                         elif upper_linear_limit_name in row_2 and (row_2[upper_linear_limit_name] is not None):
@@ -18420,7 +18397,7 @@ class NmrDpUtility:
                                         if lower_limit_name in row_1 and (row_1[lower_limit_name] is not None) and upper_limit_name in row_1 and (row_1[upper_limit_name] is not None):
                                             target_value = (row_1[lower_limit_name] + row_1[upper_limit_name]) / 2.0
 
-                                        elif lower_linear_limit_name in row_1 and (row_1[lower_linear_limit_name] is not None) and upper_linear_limit_name is i and (row_1[upper_linear_limit_name] is not None):
+                                        elif lower_linear_limit_name in row_1 and (row_1[lower_linear_limit_name] is not None) and upper_linear_limit_name is i and (row_1[upper_linear_limit_name] is not None):  # noqa: E501
                                             target_value = (row_1[lower_linear_limit_name] + row_1[upper_linear_limit_name]) / 2.0
 
                                         elif upper_linear_limit_name in row_1 and (row_1[upper_linear_limit_name] is not None):
@@ -18468,7 +18445,7 @@ class NmrDpUtility:
                                     if lower_limit_name in row_1 and (row_1[lower_limit_name] is not None) and upper_limit_name in row_1 and (row_1[upper_limit_name] is not None):
                                         target_value = (row_1[lower_limit_name] + row_1[upper_limit_name]) / 2.0
 
-                                    elif lower_linear_limit_name in row_1 and (row_1[lower_linear_limit_name] is not None) and upper_linear_limit_name is i and (row_1[upper_linear_limit_name] is not None):
+                                    elif lower_linear_limit_name in row_1 and (row_1[lower_linear_limit_name] is not None) and upper_linear_limit_name is i and (row_1[upper_linear_limit_name] is not None):  # noqa: E501
                                         target_value = (row_1[lower_linear_limit_name] + row_1[upper_linear_limit_name]) / 2.0
 
                                     elif upper_linear_limit_name in row_1 and (row_1[upper_linear_limit_name] is not None):
@@ -18579,9 +18556,9 @@ class NmrDpUtility:
 
                 if len(polymer_sequence) > 1:
                     for s, t in itertools.combinations(polymer_sequence, 2):
-                        count_on_asym_map.append({'chain_id_1': s['chain_id'], 'chain_id_2': t['chain_id'], 'seq_id_1': s['seq_id'], 'seq_id_2': t['seq_id'], 'comp_id_1': s['comp_id'], 'comp_id_2': t['comp_id'], 'struct_conf_1': self.__extractCoordStructConf(s['chain_id'], s['seq_id']), 'struct_conf_2': self.__extractCoordStructConf(t['chain_id'], t['seq_id'])})
+                        count_on_asym_map.append({'chain_id_1': s['chain_id'], 'chain_id_2': t['chain_id'], 'seq_id_1': s['seq_id'], 'seq_id_2': t['seq_id'], 'comp_id_1': s['comp_id'], 'comp_id_2': t['comp_id'], 'struct_conf_1': self.__extractCoordStructConf(s['chain_id'], s['seq_id']), 'struct_conf_2': self.__extractCoordStructConf(t['chain_id'], t['seq_id'])})  # noqa: E501
 
-            for l, i in enumerate(lp_data):
+            for l, i in enumerate(lp_data):  # noqa: E741
                 chain_id_1 = i[chain_id_1_name]
                 chain_id_2 = i[chain_id_2_name]
                 seq_id_1 = i[seq_id_1_name]
@@ -18826,8 +18803,7 @@ class NmrDpUtility:
                     hydrogen_bond_type = 'N...h_N (too far!)'
                     hydrogen_bond = True
 
-            elif atom_id_1_ == 'S' and atom_id_2_ == 'S' and\
-                 not atom_id_1.startswith('SE') and not atom_id_2.startswith('SE'):
+            elif atom_id_1_ == 'S' and atom_id_2_ == 'S' and not atom_id_1.startswith('SE') and not atom_id_2.startswith('SE'):
 
                 if 1.9 <= target_value <= 2.3:
                     disulfide_bond_type = 'S...S'
@@ -18930,9 +18906,9 @@ class NmrDpUtility:
 
             elif chain_id_1 != chain_id_2:
 
-                for l, j in enumerate(lp_data):
+                for l, j in enumerate(lp_data):  # noqa: E741
 
-                    if l == row_id:
+                    if l == row_id:  # noqa: E741
                         continue
 
                     _chain_id_1 = j[chain_id_1_name]
@@ -18950,7 +18926,7 @@ class NmrDpUtility:
                             break
 
                         if seq_id_1 == _seq_id_2 and comp_id_1 == _comp_id_2 and\
-                             seq_id_2 == _seq_id_1 and comp_id_2 == _comp_id_1:
+                           seq_id_2 == _seq_id_1 and comp_id_2 == _comp_id_1:
                             symmetry = True
                             break
 
@@ -19144,7 +19120,7 @@ class NmrDpUtility:
 
             elif (atom_id_1_ == 'N' and atom_id_2_ == 'H') or (atom_id_2_ == 'N' and atom_id_1_ == 'H'):
 
-                if  1.5 <= target_value <= 2.5:
+                if 1.5 <= target_value <= 2.5:
                     hydrogen_bond_type = 'N...H-x'
                     hydrogen_bond = True
                 elif target_value < 1.5:
@@ -19156,7 +19132,7 @@ class NmrDpUtility:
 
             elif (atom_id_1_ == 'N' and atom_id_2_ == 'N') or (atom_id_2_ == 'N' and atom_id_1_ == 'N'):
 
-                if  2.5 <= target_value <= 3.5:
+                if 2.5 <= target_value <= 3.5:
                     hydrogen_bond_type = 'N...h_N'
                     hydrogen_bond = True
                 elif target_value < 2.5:
@@ -19166,8 +19142,7 @@ class NmrDpUtility:
                     hydrogen_bond_type = 'N...h_N (too far!)'
                     hydrogen_bond = True
 
-            elif atom_id_1_ == 'S' and atom_id_2_ == 'S' and\
-                 not atom_id_1.startswith('SE') and not atom_id_2.startswith('SE'):
+            elif atom_id_1_ == 'S' and atom_id_2_ == 'S' and not atom_id_1.startswith('SE') and not atom_id_2.startswith('SE'):
 
                 if 1.9 <= target_value <= 2.3:
                     disulfide_bond_type = 'S...S'
@@ -19270,9 +19245,9 @@ class NmrDpUtility:
 
             elif chain_id_1 != chain_id_2:
 
-                for l, j in enumerate(lp_data):
+                for l, j in enumerate(lp_data):  # noqa: E741
 
-                    if l == row_id:
+                    if l == row_id:  # noqa: E741
                         continue
 
                     _chain_id_1 = j[chain_id_1_name]
@@ -19546,9 +19521,9 @@ class NmrDpUtility:
                 set_id.add(i[id_tag])
 
                 data_type, seq_id_common, comp_id_common =\
-                self.__getTypeOfDihedralRestraint(data_type,
-                                                  chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2,
-                                                  chain_id_3, seq_id_3, comp_id_3, atom_id_3, chain_id_4, seq_id_4, comp_id_4, atom_id_4)
+                    self.__getTypeOfDihedralRestraint(data_type,
+                                                      chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2,
+                                                      chain_id_3, seq_id_3, comp_id_3, atom_id_3, chain_id_4, seq_id_4, comp_id_4, atom_id_4)
 
                 if data_type in count:
                     count[data_type] += 1
@@ -19646,47 +19621,25 @@ class NmrDpUtility:
 
                 # detect potential type
 
-                #targe_value = i[target_value_name] if target_value_name in i else None
+                # targe_value = i[target_value_name] if target_value_name in i else None
                 lower_limit_value = i[lower_limit_name] if lower_limit_name in i else None
                 upper_limit_value = i[upper_limit_name] if upper_limit_name in i else None
                 lower_linear_limit_value = i[lower_linear_limit_name] if lower_linear_limit_name in i else None
                 upper_linear_limit_value = i[upper_linear_limit_name] if upper_linear_limit_name in i else None
 
-                if (lower_limit_value is not None) and\
-                   (upper_limit_value is not None) and\
-                   lower_linear_limit_value is None and\
-                   upper_linear_limit_value is None:
+                if (lower_limit_value is not None) and (upper_limit_value is not None) and lower_linear_limit_value is None and upper_linear_limit_value is None:
                     potential_type = 'square-well-parabolic'
-                elif (lower_limit_value is not None) and\
-                   (upper_limit_value is not None) and\
-                   (lower_linear_limit_value is not None) and\
-                   (upper_linear_limit_value is not None):
+                elif (lower_limit_value is not None) and (upper_limit_value is not None) and (lower_linear_limit_value is not None) and (upper_linear_limit_value is not None):
                     potential_type = 'square-well-parabolic-linear'
-                elif lower_limit_value is None and\
-                   (upper_limit_value is not None) and\
-                   lower_linear_limit_value is None and\
-                   upper_linear_limit_value is None:
+                elif lower_limit_value is None and (upper_limit_value is not None) and lower_linear_limit_value is None and upper_linear_limit_value is None:
                     potential_type = 'upper-bound-parabolic'
-                elif (lower_limit_value is not None) and\
-                   upper_limit_value is None and\
-                   lower_linear_limit_value is None and\
-                   upper_linear_limit_value is None:
+                elif (lower_limit_value is not None) and upper_limit_value is None and lower_linear_limit_value is None and upper_linear_limit_value is None:
                     potential_type = 'lower-bound-parabolic'
-                elif lower_limit_value is None and\
-                   (upper_limit_value is not None) and\
-                   lower_linear_limit_value is None and\
-                   (upper_linear_limit_value is not None):
+                elif lower_limit_value is None and (upper_limit_value is not None) and lower_linear_limit_value is None and (upper_linear_limit_value is not None):
                     potential_type = 'upper-bound-parabolic-linear'
-                elif (lower_limit_value is not None) and\
-                   upper_limit_value is None and\
-                   (lower_linear_limit_value is not None) and\
-                   upper_linear_limit_value is None:
+                elif (lower_limit_value is not None) and upper_limit_value is None and (lower_linear_limit_value is not None) and upper_linear_limit_value is None:
                     potential_type = 'lower-bound-parabolic-linear'
-                elif (target_value is not None) and\
-                   lower_limit_value is None and\
-                   upper_limit_value is None and\
-                   lower_linear_limit_value is None and\
-                   upper_linear_limit_value is None:
+                elif (target_value is not None) and lower_limit_value is None and upper_limit_value is None and lower_linear_limit_value is None and upper_linear_limit_value is None:
                     potential_type = 'parabolic'
                 else:
                     potential_type = 'undefined'
@@ -19845,7 +19798,7 @@ class NmrDpUtility:
                                 if lower_limit_name in row_1 and (row_1[lower_limit_name] is not None) and upper_limit_name in row_1 and (row_1[upper_limit_name] is not None):
                                     target_value_1 = (row_1[lower_limit_name] + row_1[upper_limit_name]) / 2.0
 
-                                elif lower_linear_limit_name in row_1 and (row_1[lower_linear_limit_name] is not None) and upper_linear_limit_name is i and (row_1[upper_linear_limit_name] is not None):
+                                elif lower_linear_limit_name in row_1 and (row_1[lower_linear_limit_name] is not None) and upper_linear_limit_name is i and (row_1[upper_linear_limit_name] is not None):  # noqa: E501
                                     target_value_1 = (row_1[lower_linear_limit_name] + row_1[upper_linear_limit_name]) / 2.0
 
                                 elif upper_linear_limit_name in row_1 and (row_1[upper_linear_limit_name] is not None):
@@ -19867,7 +19820,7 @@ class NmrDpUtility:
                                 if lower_limit_name in row_2 and (row_2[lower_limit_name] is not None) and upper_limit_name in row_2 and (row_2[upper_limit_name] is not None):
                                     target_value_2 = (row_2[lower_limit_name] + row_2[upper_limit_name]) / 2.0
 
-                                elif lower_linear_limit_name in row_2 and (row_2[lower_linear_limit_name] is not None) and upper_linear_limit_name is i and (row_2[upper_linear_limit_name] is not None):
+                                elif lower_linear_limit_name in row_2 and (row_2[lower_linear_limit_name] is not None) and upper_linear_limit_name is i and (row_2[upper_linear_limit_name] is not None):  # noqa: E501
                                     target_value_2 = (row_2[lower_linear_limit_name] + row_2[upper_linear_limit_name]) / 2.0
 
                                 elif upper_linear_limit_name in row_2 and (row_2[upper_linear_limit_name] is not None):
@@ -19996,7 +19949,7 @@ class NmrDpUtility:
                                         if lower_limit_name in row_1 and (row_1[lower_limit_name] is not None) and upper_limit_name in row_1 and (row_1[upper_limit_name] is not None):
                                             target_value_1 = (row_1[lower_limit_name] + row_1[upper_limit_name]) / 2.0
 
-                                        elif lower_linear_limit_name in row_1 and (row_1[lower_linear_limit_name] is not None) and upper_linear_limit_name is i and (row_1[upper_linear_limit_name] is not None):
+                                        elif lower_linear_limit_name in row_1 and (row_1[lower_linear_limit_name] is not None) and upper_linear_limit_name is i and (row_1[upper_linear_limit_name] is not None):  # noqa: E501
                                             target_value_1 = (row_1[lower_linear_limit_name] + row_1[upper_linear_limit_name]) / 2.0
 
                                         elif upper_linear_limit_name in row_1 and (row_1[upper_linear_limit_name] is not None):
@@ -20018,7 +19971,7 @@ class NmrDpUtility:
                                         if lower_limit_name in row_2 and (row_2[lower_limit_name] is not None) and upper_limit_name in row_2 and (row_2[upper_limit_name] is not None):
                                             target_value_2 = (row_2[lower_limit_name] + row_2[upper_limit_name]) / 2.0
 
-                                        elif lower_linear_limit_name in row_2 and (row_2[lower_linear_limit_name] is not None) and upper_linear_limit_name is i and (row_2[upper_linear_limit_name] is not None):
+                                        elif lower_linear_limit_name in row_2 and (row_2[lower_linear_limit_name] is not None) and upper_linear_limit_name is i and (row_2[upper_linear_limit_name] is not None):  # noqa: E501
                                             target_value_2 = (row_2[lower_linear_limit_name] + row_2[upper_linear_limit_name]) / 2.0
 
                                         elif upper_linear_limit_name in row_2 and (row_2[upper_linear_limit_name] is not None):
@@ -20220,7 +20173,7 @@ class NmrDpUtility:
                         # chi1
 
                         if atom_ids[0] == 'N' and atom_ids[1] == 'CA' and atom_ids[2] == 'CB' and self.chi1_atom_id_4_pat.match(atom_ids[3]):
-                            #if (atom_ids[3] == 'CG' and comp_id in ('ARG', 'ASN', 'ASP', 'GLN', 'GLU', 'HIS', 'LEU', 'LYS', 'MET', 'PHE', 'PRO', 'TRP', 'TYR')) or\
+                            # if (atom_ids[3] == 'CG' and comp_id in ('ARG', 'ASN', 'ASP', 'GLN', 'GLU', 'HIS', 'LEU', 'LYS', 'MET', 'PHE', 'PRO', 'TRP', 'TYR')) or\
                             #   (atom_ids[3] == 'CG1' and comp_id in ('ILE', 'VAL')) or\
                             #   (atom_ids[3] == 'OG' and comp_id == 'SER') or\
                             #   (atom_ids[3] == 'OG1' and comp_id == 'THR') or\
@@ -20230,7 +20183,7 @@ class NmrDpUtility:
                         # chi2
 
                         if atom_ids[0] == 'CA' and atom_ids[1] == 'CB' and self.chi2_atom_id_3_pat.match(atom_ids[2]) and self.chi2_atom_id_4_pat.match(atom_ids[3]):
-                            #if (atom_ids[2] == 'CG' and atom_ids[3] == 'CD' and comp_id in ('ARG', 'GLN', 'GLU', 'LYS', 'PRO')) or\
+                            # if (atom_ids[2] == 'CG' and atom_ids[3] == 'CD' and comp_id in ('ARG', 'GLN', 'GLU', 'LYS', 'PRO')) or\
                             #   (atom_ids[2] == 'CG' and atom_ids[3] == 'CD1' and comp_id in ('LEU', 'PHE', 'TRP', 'TYR')) or\
                             #   (atom_ids[2] == 'CG' and atom_ids[3] == 'ND1' and comp_id == 'HIS') or\
                             #   (atom_ids[2] == 'CG' and atom_ids[3] == 'OD1' and comp_id in ('ASN', 'ASP')) or\
@@ -20241,7 +20194,7 @@ class NmrDpUtility:
                         # chi3
 
                         if atom_ids[0] == 'CB' and atom_ids[1] == 'CG' and self.chi3_atom_id_3_pat.match(atom_ids[2]) and self.chi3_atom_id_4_pat.match(atom_ids[3]):
-                            #if (atom_ids[2] == 'CD' and atom_ids[3] == 'CE' and comp_id == 'LYS') or\
+                            # if (atom_ids[2] == 'CD' and atom_ids[3] == 'CE' and comp_id == 'LYS') or\
                             #   (atom_ids[2] == 'CD' and atom_ids[3] == 'NE' and comp_id == 'ARG') or\
                             #   (atom_ids[2] == 'CD' and atom_ids[3] == 'OE1' and comp_id in ('GLN', 'GLU')) or\
                             #   (atom_ids[2] == 'SD' and atom_ids[3] == 'CE' and comp_id == 'MET'):
@@ -20250,13 +20203,13 @@ class NmrDpUtility:
                         # chi4
 
                         if atom_ids[0] == 'CG' and atom_ids[1] == 'CD' and self.chi4_atom_id_3_pat.match(atom_ids[2]) and self.chi4_atom_id_4_pat.match(atom_ids[3]):
-                            #if (atom_ids[2] == 'NE' and atom_ids[3] == 'CZ' and comp_id == 'ARG') or\
+                            # if (atom_ids[2] == 'NE' and atom_ids[3] == 'CZ' and comp_id == 'ARG') or\
                             #  (atom_ids[2] == 'CE' and atom_ids[3] == 'NZ' and comp_id == 'LYS'):
                             data_type = 'chi4'
 
                         # chi5
 
-                        if atom_ids == ['CD', 'NE', 'CZ', 'NH1']: # and comp_id == 'ARG':
+                        if atom_ids == ['CD', 'NE', 'CZ', 'NH1']:  # and comp_id == 'ARG':
                             data_type = 'chi5'
 
         else:
@@ -20335,11 +20288,11 @@ class NmrDpUtility:
             item_names = self.item_names_in_rdc_loop[file_type]
             comb_id_name = item_names['combination_id']
             chain_id_1_name = item_names['chain_id_1']
-            #chain_id_2_name = item_names['chain_id_2']
+            # chain_id_2_name = item_names['chain_id_2']
             seq_id_1_name = item_names['seq_id_1']
-            #seq_id_2_name = item_names['seq_id_2']
+            # seq_id_2_name = item_names['seq_id_2']
             comp_id_1_name = item_names['comp_id_1']
-            #comp_id_2_name = item_names['comp_id_2']
+            # comp_id_2_name = item_names['comp_id_2']
             atom_id_1_name = item_names['atom_id_1']
             atom_id_2_name = item_names['atom_id_2']
             weight_name = self.weight_tags[file_type]['rdc_restraint']
@@ -20416,41 +20369,19 @@ class NmrDpUtility:
                 lower_linear_limit_value = i[lower_linear_limit_name] if lower_linear_limit_name in i else None
                 upper_linear_limit_value = i[upper_linear_limit_name] if upper_linear_limit_name in i else None
 
-                if (lower_limit_value is not None) and\
-                   (upper_limit_value is not None) and\
-                   lower_linear_limit_value is None and\
-                   upper_linear_limit_value is None:
+                if (lower_limit_value is not None) and (upper_limit_value is not None) and lower_linear_limit_value is None and upper_linear_limit_value is None:
                     potential_type = 'square-well-parabolic'
-                elif (lower_limit_value is not None) and\
-                   (upper_limit_value is not None) and\
-                   (lower_linear_limit_value is not None) and\
-                   (upper_linear_limit_value is not None):
+                elif (lower_limit_value is not None) and (upper_limit_value is not None) and (lower_linear_limit_value is not None) and (upper_linear_limit_value is not None):
                     potential_type = 'square-well-parabolic-linear'
-                elif lower_limit_value is None and\
-                   (upper_limit_value is not None) and\
-                   lower_linear_limit_value is None and\
-                   upper_linear_limit_value is None:
+                elif lower_limit_value is None and (upper_limit_value is not None) and lower_linear_limit_value is None and upper_linear_limit_value is None:
                     potential_type = 'upper-bound-parabolic'
-                elif (lower_limit_value is not None) and\
-                   upper_limit_value is None and\
-                   lower_linear_limit_value is None and\
-                   upper_linear_limit_value is None:
+                elif (lower_limit_value is not None) and upper_limit_value is None and lower_linear_limit_value is None and upper_linear_limit_value is None:
                     potential_type = 'lower-bound-parabolic'
-                elif lower_limit_value is None and\
-                   (upper_limit_value is not None) and\
-                   lower_linear_limit_value is None and\
-                   (upper_linear_limit_value is not None):
+                elif lower_limit_value is None and (upper_limit_value is not None) and lower_linear_limit_value is None and (upper_linear_limit_value is not None):
                     potential_type = 'upper-bound-parabolic-linear'
-                elif (lower_limit_value is not None) and\
-                   upper_limit_value is None and\
-                   (lower_linear_limit_value is not None) and\
-                   upper_linear_limit_value is None:
+                elif (lower_limit_value is not None) and upper_limit_value is None and (lower_linear_limit_value is not None) and upper_linear_limit_value is None:
                     potential_type = 'lower-bound-parabolic-linear'
-                elif (target_value is not None) and\
-                   lower_limit_value is None and\
-                   upper_limit_value is None and\
-                   lower_linear_limit_value is None and\
-                   upper_linear_limit_value is None:
+                elif (target_value is not None) and lower_limit_value is None and upper_limit_value is None and lower_linear_limit_value is None and upper_linear_limit_value is None:
                     potential_type = 'parabolic'
                 else:
                     potential_type = 'undefined'
@@ -20629,7 +20560,7 @@ class NmrDpUtility:
                                 if lower_limit_name in row_1 and (row_1[lower_limit_name] is not None) and upper_limit_name in row_1 and (row_1[upper_limit_name] is not None):
                                     target_value_1 = (row_1[lower_limit_name] + row_1[upper_limit_name]) / 2.0
 
-                                elif lower_linear_limit_name in row_1 and (row_1[lower_linear_limit_name] is not None) and upper_linear_limit_name is i and (row_1[upper_linear_limit_name] is not None):
+                                elif lower_linear_limit_name in row_1 and (row_1[lower_linear_limit_name] is not None) and upper_linear_limit_name is i and (row_1[upper_linear_limit_name] is not None):  # noqa: E501
                                     target_value_1 = (row_1[lower_linear_limit_name] + row_1[upper_linear_limit_name]) / 2.0
 
                                 elif upper_linear_limit_name in row_1 and (row_1[upper_linear_limit_name] is not None):
@@ -20651,7 +20582,7 @@ class NmrDpUtility:
                                 if lower_limit_name in row_2 and (row_2[lower_limit_name] is not None) and upper_limit_name in row_2 and (row_2[upper_limit_name] is not None):
                                     target_value_2 = (row_2[lower_limit_name] + row_2[upper_limit_name]) / 2.0
 
-                                elif lower_linear_limit_name in row_2 and (row_2[lower_linear_limit_name] is not None) and upper_linear_limit_name is i and (row_2[upper_linear_limit_name] is not None):
+                                elif lower_linear_limit_name in row_2 and (row_2[lower_linear_limit_name] is not None) and upper_linear_limit_name is i and (row_2[upper_linear_limit_name] is not None):  # noqa: E501
                                     target_value_2 = (row_2[lower_linear_limit_name] + row_2[upper_linear_limit_name]) / 2.0
 
                                 elif upper_linear_limit_name in row_2 and (row_2[upper_linear_limit_name] is not None):
@@ -20738,7 +20669,7 @@ class NmrDpUtility:
                                         if lower_limit_name in row_1 and (row_1[lower_limit_name] is not None) and upper_limit_name in row_1 and (row_1[upper_limit_name] is not None):
                                             target_value_1 = (row_1[lower_limit_name] + row_1[upper_limit_name]) / 2.0
 
-                                        elif lower_linear_limit_name in row_1 and (row_1[lower_linear_limit_name] is not None) and upper_linear_limit_name is i and (row_1[upper_linear_limit_name] is not None):
+                                        elif lower_linear_limit_name in row_1 and (row_1[lower_linear_limit_name] is not None) and upper_linear_limit_name is i and (row_1[upper_linear_limit_name] is not None):  # noqa: E501
                                             target_value_1 = (row_1[lower_linear_limit_name] + row_1[upper_linear_limit_name]) / 2.0
 
                                         elif upper_linear_limit_name in row_1 and (row_1[upper_linear_limit_name] is not None):
@@ -20760,7 +20691,7 @@ class NmrDpUtility:
                                         if lower_limit_name in row_2 and (row_2[lower_limit_name] is not None) and upper_limit_name in row_2 and (row_2[upper_limit_name] is not None):
                                             target_value_2 = (row_2[lower_limit_name] + row_2[upper_limit_name]) / 2.0
 
-                                        elif lower_linear_limit_name in row_2 and (row_2[lower_linear_limit_name] is not None) and upper_linear_limit_name is i and (row_2[upper_linear_limit_name] is not None):
+                                        elif lower_linear_limit_name in row_2 and (row_2[lower_linear_limit_name] is not None) and upper_linear_limit_name is i and (row_2[upper_linear_limit_name] is not None):  # noqa: E501
                                             target_value_2 = (row_2[lower_linear_limit_name] + row_2[upper_linear_limit_name]) / 2.0
 
                                         elif upper_linear_limit_name in row_2 and (row_2[upper_linear_limit_name] is not None):
@@ -20897,24 +20828,24 @@ class NmrDpUtility:
             ent['number_of_spectral_dimensions'] = num_dim
             ent['spectral_dim'] = []
 
-            aux_data = next((l['data'] for l in self.__aux_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode and l['category'] == self.aux_lp_categories[file_type][content_subtype][1]), None)
+            aux_data = next((l['data'] for l in self.__aux_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode and l['category'] == self.aux_lp_categories[file_type][content_subtype][1]), None)  # noqa: E501,E741
 
             mag_link = []
 
             if aux_data is not None:
                 for sp_dim_trans in aux_data:
                     if file_type == 'nef':
-                        if sp_dim_trans['transfer_type'] == 'onebond': # or sp_dim_trans['transfer_type'].startswith('j') or sp_dim_trans['transfer_type'].startswith('relayed'):
+                        if sp_dim_trans['transfer_type'] == 'onebond':  # or sp_dim_trans['transfer_type'].startswith('j') or sp_dim_trans['transfer_type'].startswith('relayed'):
                             dim_1 = sp_dim_trans['dimension_1']
                             dim_2 = sp_dim_trans['dimension_2']
                             mag_link.append((dim_1, dim_2))
                     else:
-                        if sp_dim_trans['Type'] == 'onebond': # or sp_dim_trans['Type'].startswith('j') or sp_dim_trans['Type'].startswith('relayed'):
+                        if sp_dim_trans['Type'] == 'onebond':  # or sp_dim_trans['Type'].startswith('j') or sp_dim_trans['Type'].startswith('relayed'):
                             dim_1 = sp_dim_trans['Spectral_dim_ID_1']
                             dim_2 = sp_dim_trans['Spectral_dim_ID_2']
                             mag_link.append((dim_1, dim_2))
 
-            aux_data = next((l['data'] for l in self.__aux_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode and l['category'] == self.aux_lp_categories[file_type][content_subtype][0]), None)
+            aux_data = next((l['data'] for l in self.__aux_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode and l['category'] == self.aux_lp_categories[file_type][content_subtype][0]), None)  # noqa: E501,E741
 
             if aux_data is not None:
                 for i in range(1, max_dim):
@@ -20992,8 +20923,10 @@ class NmrDpUtility:
                                     break
 
                         spectral_dim = {'id': i, 'atom_type': atom_type, 'atom_isotope_number': atom_isotope_number,
-                                        'sweep_width': copy.copy(sp_width), 'sweep_width_units': axis_unit, 'center_frequency_offset': None if center_point is None else float('{:.8f}'.format(center_point)),
-                                        'under_sampling_type': under_sampling_type, 'encoding_code': encoding_code, 'encoded_source_dimension_id': encoded_src_dim_id, 'magnetization_linkage_id': mag_link_id}
+                                        'sweep_width': copy.copy(sp_width), 'sweep_width_units': axis_unit,
+                                        'center_frequency_offset': None if center_point is None else float('{:.8f}'.format(center_point)),
+                                        'under_sampling_type': under_sampling_type, 'encoding_code': encoding_code,
+                                        'encoded_source_dimension_id': encoded_src_dim_id, 'magnetization_linkage_id': mag_link_id}
 
                         if axis_unit == 'Hz' and sp_freq is not None and first_point is not None and center_point is not None and sp_width is not None:
                             first_point /= sp_freq
@@ -21155,25 +21088,25 @@ class NmrDpUtility:
         seq_id_name = item_names['seq_id']
         comp_id_name = item_names['comp_id']
         atom_id_name = item_names['atom_id']
-        #value_name = item_names['value']
+        # value_name = item_names['value']
 
         try:
 
             ent['number_of_spectral_dimensions'] = num_dim
             ent['spectral_dim'] = []
 
-            aux_data = next((l['data'] for l in self.__aux_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode and l['category'] == self.aux_lp_categories[file_type][content_subtype][1]), None)
+            aux_data = next((l['data'] for l in self.__aux_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode and l['category'] == self.aux_lp_categories[file_type][content_subtype][1]), None)  # noqa: E501,E741
 
             mag_link = []
 
             if aux_data is not None:
                 for sp_dim_trans in aux_data:
-                    if sp_dim_trans['Type'] == 'onebond': # or sp_dim_trans['Type'].startswith('j') or sp_dim_trans['Type'].startswith('relayed'):
+                    if sp_dim_trans['Type'] == 'onebond':  # or sp_dim_trans['Type'].startswith('j') or sp_dim_trans['Type'].startswith('relayed'):
                         dim_1 = sp_dim_trans['Spectral_dim_ID_1']
                         dim_2 = sp_dim_trans['Spectral_dim_ID_2']
                         mag_link.append((dim_1, dim_2))
 
-            aux_data = next((l['data'] for l in self.__aux_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode and l['category'] == self.aux_lp_categories[file_type][content_subtype][0]), None)
+            aux_data = next((l['data'] for l in self.__aux_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode and l['category'] == self.aux_lp_categories[file_type][content_subtype][0]), None)  # noqa: E501,E741
 
             if aux_data is not None:
                 for i in range(1, max_dim):
@@ -21237,8 +21170,10 @@ class NmrDpUtility:
                                     break
 
                         spectral_dim = {'id': i, 'atom_type': atom_type, 'atom_isotope_number': atom_isotope_number,
-                                        'sweep_width': copy.copy(sp_width), 'sweep_width_units': axis_unit, 'center_frequency_offset': None if center_point is None else float('{:.8f}'.format(center_point)),
-                                        'under_sampling_type': under_sampling_type, 'encoding_code': encoding_code, 'encoded_source_dimension_id': encoded_src_dim_id, 'magnetization_linkage_id': mag_link_id}
+                                        'sweep_width': copy.copy(sp_width), 'sweep_width_units': axis_unit,
+                                        'center_frequency_offset': None if center_point is None else float('{:.8f}'.format(center_point)),
+                                        'under_sampling_type': under_sampling_type, 'encoding_code': encoding_code,
+                                        'encoded_source_dimension_id': encoded_src_dim_id, 'magnetization_linkage_id': mag_link_id}
 
                         if axis_unit == 'Hz' and sp_freq is not None and first_point is not None and center_point is not None and sp_width is not None:
                             first_point /= sp_freq
@@ -21325,7 +21260,7 @@ class NmrDpUtility:
 
             count = {'assigned_spectral_peaks': 0, 'unassigned_spectral_peaks': 0}
 
-            aux_data = next((l['data'] for l in self.__aux_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode and l['category'] == '_Assigned_peak_chem_shift'), None)
+            aux_data = next((l['data'] for l in self.__aux_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode and l['category'] == '_Assigned_peak_chem_shift'), None)  # noqa: E741,E501
 
             pk_id_name = 'Peak_ID'
             dim_id_name = 'Spectral_dim_ID'
@@ -21405,7 +21340,7 @@ class NmrDpUtility:
         if not has_key_value(seq_align_dic, 'nmr_poly_seq_vs_model_poly_seq'):
             return nmr_struct_conf
 
-        result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)
+        result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)  # noqa: E501
 
         if result is not None:
 
@@ -21441,7 +21376,7 @@ class NmrDpUtility:
         if not has_key_value(seq_align_dic, 'nmr_poly_seq_vs_model_poly_seq'):
             return None
 
-        result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)
+        result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)  # noqa: E501
 
         if result is not None:
 
@@ -21562,8 +21497,8 @@ class NmrDpUtility:
                         model_num_name = 'pdbx_PDB_model_num' if self.__cR.hasItem('atom_site', 'pdbx_PDB_model_num') else 'ndb_model'
 
                         model_ids = self.__cR.getDictListWithFilter('atom_site',
-                                                                [{'name': model_num_name, 'type': 'int', 'alt_name': 'model_id'}
-                                                                 ])
+                                                                    [{'name': model_num_name, 'type': 'int', 'alt_name': 'model_id'}
+                                                                     ])
 
                         if len(model_ids) > 0:
                             model_ids = set(c['model_id'] for c in model_ids)
@@ -21580,7 +21515,7 @@ class NmrDpUtility:
                             self.__lfh.write("+NmrDpUtility.__parseCoordinate() ++ Error  - %s" % str(e))
 
             if self.__total_models < 2:
-                err = "Coordinate file has %s model. Deposition of minimized average structure must be accompanied with ensemble and must be homogeneous with the ensemble." % ('no' if self.__total_models == 0 else ('only one' if self.__total_models == 1 else self.__total_models))
+                err = "Coordinate file has %s model. Deposition of minimized average structure must be accompanied with ensemble and must be homogeneous with the ensemble." % ('no' if self.__total_models == 0 else ('only one' if self.__total_models == 1 else self.__total_models))  # noqa: E501
 
                 self.report.error.appendDescription('missing_mandatory_content', {'file_name': file_name, 'description': err})
                 self.report.setError()
@@ -21647,7 +21582,7 @@ class NmrDpUtility:
         input_source = self.report.input_sources[id]
         input_source_dic = input_source.get()
 
-        #file_name = input_source_dic['file_name']
+        # file_name = input_source_dic['file_name']
         file_type = input_source_dic['file_type']
 
         # initialize loop counter
@@ -21719,7 +21654,7 @@ class NmrDpUtility:
 
             try:
                 poly_seq = self.__cR.getPolymerSequence(lp_category, key_items, withStructConf=True, alias=alias, total_models=self.__total_models)
-            except KeyError: # pdbx_PDB_ins_code throws KeyError
+            except KeyError:  # pdbx_PDB_ins_code throws KeyError
                 if content_subtype + ('_ins_alias' if alias else '_ins') in self.key_items[file_type]:
                     key_items = self.key_items[file_type][content_subtype + ('_ins_alias' if alias else '_ins')]
                     poly_seq = self.__cR.getPolymerSequence(lp_category, key_items, withStructConf=True, alias=alias, total_models=self.__total_models)
@@ -21785,7 +21720,7 @@ class NmrDpUtility:
 
                     r = next((r for r in rmsd if r['model_id'] == conformer_id), rmsd[0])
 
-                    warn = 'Coordinates (chain_id %s) are not superimposed, RMSD in estimated well-defined region is %s angstromes (representative model_id %s). Please superimpose the coordinates and re-upload the model file.' % (chain_id, r['rmsd'], r['model_id'])
+                    warn = 'Coordinates (chain_id %s) are not superimposed, RMSD in estimated well-defined region is %s angstromes (representative model_id %s). Please superimpose the coordinates and re-upload the model file.' % (chain_id, r['rmsd'], r['model_id'])  # noqa: E501
 
                     self.report.warning.appendDescription('not_superimposed_model', {'file_name': file_name, 'category': 'atom_site', 'description': warn})
                     self.report.setWarning()
@@ -21977,7 +21912,7 @@ class NmrDpUtility:
 
                 try:
                     poly_seq = self.__cR.getPolymerSequence(lp_category, key_items)
-                except KeyError: # pdbx_PDB_ins_code throws KeyError
+                except KeyError:  # pdbx_PDB_ins_code throws KeyError
                     if content_subtype + ('_ins_alias' if alias else '_ins') in self.key_items[file_type]:
                         key_items = self.key_items[file_type][content_subtype + ('_ins_alias' if alias else '_ins')]
                         poly_seq = self.__cR.getPolymerSequence(lp_category, key_items)
@@ -22040,7 +21975,7 @@ class NmrDpUtility:
         """ Extract common polymer sequence of coordinate file if required.
         """
 
-        #if self.report.isError():
+        # if self.report.isError():
         #    return False
 
         common_poly_seq = {}
@@ -22103,7 +22038,7 @@ class NmrDpUtility:
                     for seq_id, comp_id in zip(s['seq_id'], s['comp_id']):
                         common_poly_seq[chain_id].add('{:04d} {}'.format(seq_id + offset_seq_ids[chain_id], comp_id))
 
-        asm = [] # molecular assembly of a loop
+        asm = []  # molecular assembly of a loop
 
         for chain_id in sorted(common_poly_seq.keys()):
 
@@ -22137,8 +22072,8 @@ class NmrDpUtility:
         input_source = self.report.input_sources[id]
         input_source_dic = input_source.get()
 
-        #file_name = input_source_dic['file_name']
-        #file_type = input_source_dic['file_type']
+        # file_name = input_source_dic['file_name']
+        # file_type = input_source_dic['file_type']
 
         has_poly_seq = has_key_value(input_source_dic, 'polymer_sequence')
 
@@ -22163,7 +22098,7 @@ class NmrDpUtility:
                     ent['seq_id'].append(seq_id)
                     ent['comp_id'].append(comp_id)
 
-                    if self.__updateChemCompDict(comp_id): # matches with comp_id in CCD
+                    if self.__updateChemCompDict(comp_id):  # matches with comp_id in CCD
                         cc_name = self.__last_chem_comp_dict['_chem_comp.name']
                         cc_rel_status = self.__last_chem_comp_dict['_chem_comp.pdbx_release_status']
                         if cc_rel_status == 'REL':
@@ -22316,7 +22251,7 @@ class NmrDpUtility:
                 _s1 = s1 if offset_1 == 0 else fill_blank_comp_id_with_offset(s1, offset_1)
                 _s2 = s2 if offset_2 == 0 else fill_blank_comp_id_with_offset(s2, offset_2)
 
-                if conflict > 0 and has_large_seq_gap(_s1, _s2): # DAOTHER-7465
+                if conflict > 0 and has_large_seq_gap(_s1, _s2):  # DAOTHER-7465
                     __s1 = fill_blank_comp_id(_s2, _s1)
                     __s2 = fill_blank_comp_id(_s1, _s2)
                     _s1_ = __s1
@@ -22347,8 +22282,7 @@ class NmrDpUtility:
                 ref_gauge_code = get_gauge_code(_s1['seq_id'])
                 test_gauge_code = get_gauge_code(_s2['seq_id'])
 
-                if any((__s1, __s2) for (__s1, __s2, __c1, __c2) in zip(_s1['seq_id'], _s2['seq_id'], _s1['comp_id'], _s2['comp_id'])\
-                   if __c1 != '.' and __c2 != '.' and __c1 != __c2):
+                if any((__s1, __s2) for (__s1, __s2, __c1, __c2) in zip(_s1['seq_id'], _s2['seq_id'], _s1['comp_id'], _s2['comp_id']) if __c1 != '.' and __c2 != '.' and __c1 != __c2):
                     seq_id1 = []
                     seq_id2 = []
                     comp_id1 = []
@@ -22434,7 +22368,7 @@ class NmrDpUtility:
                 _s1 = s1 if offset_1 == 0 else fill_blank_comp_id_with_offset(s1, offset_1)
                 _s2 = s2 if offset_2 == 0 else fill_blank_comp_id_with_offset(s2, offset_2)
 
-                if conflict > 0 and has_large_seq_gap(_s1, _s2): # DAOTHER-7465
+                if conflict > 0 and has_large_seq_gap(_s1, _s2):  # DAOTHER-7465
                     __s1 = fill_blank_comp_id(_s2, _s1)
                     __s2 = fill_blank_comp_id(_s1, _s2)
                     _s1_ = __s1
@@ -22465,8 +22399,7 @@ class NmrDpUtility:
                 ref_gauge_code = get_gauge_code(_s1['seq_id'])
                 test_gauge_code = get_gauge_code(_s2['seq_id'])
 
-                if any((__s1, __s2) for (__s1, __s2, __c1, __c2) in zip(_s1['seq_id'], _s2['seq_id'], _s1['comp_id'], _s2['comp_id'])\
-                   if __c1 != '.' and __c2 != '.' and __c1 != __c2):
+                if any((__s1, __s2) for (__s1, __s2, __c1, __c2) in zip(_s1['seq_id'], _s2['seq_id'], _s1['comp_id'], _s2['comp_id']) if __c1 != '.' and __c2 != '.' and __c1 != __c2):
                     seq_id1 = []
                     seq_id2 = []
                     comp_id1 = []
@@ -22598,7 +22531,7 @@ class NmrDpUtility:
                     for s2 in nmr_polymer_sequence:
                         chain_id2 = s2['chain_id']
 
-                        result = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq'] if seq_align['ref_chain_id'] == chain_id and seq_align['test_chain_id'] == chain_id2), None)
+                        result = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq'] if seq_align['ref_chain_id'] == chain_id and seq_align['test_chain_id'] == chain_id2), None)  # noqa: E501
 
                         if result is not None:
                             cost[nmr_polymer_sequence.index(s2)] = result['unmapped'] + result['conflict'] - result['length']
@@ -22628,7 +22561,7 @@ class NmrDpUtility:
                         if len(_cif_chains) > 1:
                             chain_id2 = nmr_polymer_sequence[column]['chain_id']
                             concatenated_nmr_chain[chain_id2] = _cif_chains
-                            warn = 'Concatenated sequence in NMR data (chain_id %s) should be split according to the coordinates (chain_id %s) during biocuration.' % (chain_id2, _cif_chains)
+                            warn = 'Concatenated sequence in NMR data (chain_id %s) should be split according to the coordinates (chain_id %s) during biocuration.' % (chain_id2, _cif_chains)  # noqa: E501
 
                             self.report.warning.appendDescription('concatenated_sequence', {'file_name': nmr_file_name, 'description': warn})
                             self.report.setWarning()
@@ -22639,10 +22572,10 @@ class NmrDpUtility:
                     chain_id = cif_polymer_sequence[row]['chain_id']
                     chain_id2 = nmr_polymer_sequence[column]['chain_id']
 
-                    result = next(seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq'] if seq_align['ref_chain_id'] == chain_id and seq_align['test_chain_id'] == chain_id2)
-                    _result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == chain_id2 and seq_align['test_chain_id'] == chain_id), None)
+                    result = next(seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq'] if seq_align['ref_chain_id'] == chain_id and seq_align['test_chain_id'] == chain_id2)  # noqa: E501
+                    _result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == chain_id2 and seq_align['test_chain_id'] == chain_id), None)  # noqa: E501
 
-                    chain_assign = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': result['length'], 'matched': result['matched'], 'conflict': result['conflict'], 'unmapped': result['unmapped'], 'sequence_coverage': result['sequence_coverage']}
+                    chain_assign = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': result['length'], 'matched': result['matched'], 'conflict': result['conflict'], 'unmapped': result['unmapped'], 'sequence_coverage': result['sequence_coverage']}  # noqa: E501
 
                     auth_chain_id = chain_id
                     if 'auth_chain_id' in cif_polymer_sequence[row]:
@@ -22665,7 +22598,7 @@ class NmrDpUtility:
                     _s1 = s1 if offset_1 == 0 else fill_blank_comp_id_with_offset(s1, offset_1)
                     _s2 = s2 if offset_2 == 0 else fill_blank_comp_id_with_offset(s2, offset_2)
 
-                    if conflict > 0 and has_large_seq_gap(_s1, _s2): # DAOTHER-7465
+                    if conflict > 0 and has_large_seq_gap(_s1, _s2):  # DAOTHER-7465
                         __s1 = fill_blank_comp_id(_s2, _s1)
                         __s2 = fill_blank_comp_id(_s1, _s2)
                         _s1 = __s1
@@ -22760,8 +22693,8 @@ class NmrDpUtility:
 
                         unmapped = []
                         conflict = []
-                        #offset_1 = 0
-                        #offset_2 = 0
+                        # offset_1 = 0
+                        # offset_2 = 0
 
                         for i in range(length):
                             myPr = myAlign[i]
@@ -22974,7 +22907,7 @@ class NmrDpUtility:
                     for s2 in cif_polymer_sequence:
                         chain_id2 = s2['chain_id']
 
-                        result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == chain_id and seq_align['test_chain_id'] == chain_id2), None)
+                        result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == chain_id and seq_align['test_chain_id'] == chain_id2), None)  # noqa: E501
 
                         if result is not None:
                             cost[cif_polymer_sequence.index(s2)] = result['unmapped'] + result['conflict'] - result['length']
@@ -22996,10 +22929,10 @@ class NmrDpUtility:
                     chain_id = nmr_polymer_sequence[row]['chain_id']
                     chain_id2 = cif_polymer_sequence[column]['chain_id']
 
-                    result = next(seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == chain_id and seq_align['test_chain_id'] == chain_id2)
-                    _result = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq'] if seq_align['ref_chain_id'] == chain_id2 and seq_align['test_chain_id'] == chain_id), None)
+                    result = next(seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == chain_id and seq_align['test_chain_id'] == chain_id2)  # noqa: E501
+                    _result = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq'] if seq_align['ref_chain_id'] == chain_id2 and seq_align['test_chain_id'] == chain_id), None)  # noqa: E501
 
-                    chain_assign = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': result['length'], 'matched': result['matched'], 'conflict': result['conflict'], 'unmapped': result['unmapped'], 'sequence_coverage': result['sequence_coverage']}
+                    chain_assign = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': result['length'], 'matched': result['matched'], 'conflict': result['conflict'], 'unmapped': result['unmapped'], 'sequence_coverage': result['sequence_coverage']}  # noqa: E501
 
                     auth_chain_id2 = chain_id2
                     if 'auth_chain_id' in cif_polymer_sequence[column]:
@@ -23049,15 +22982,13 @@ class NmrDpUtility:
                         seq_id2 = []
 
                         for i in range(length):
-                            if str(myAlign[i][0]) != '.'\
-                                and i < len(s1['seq_id']):  # DAOTHER-7421
+                            if str(myAlign[i][0]) != '.' and i < len(s1['seq_id']):  # DAOTHER-7421
                                 seq_id1.append(s1['seq_id'][i])
                             else:
                                 seq_id1.append(None)
 
                         for i in range(length):
-                            if str(myAlign[i][1]) != '.'\
-                                and i < len(s2['seq_id']):  # DAOTHER-7421
+                            if str(myAlign[i][1]) != '.' and i < len(s2['seq_id']):  # DAOTHER-7421
                                 seq_id2.append(s2['seq_id'][i])
                             else:
                                 seq_id2.append(None)
@@ -23088,10 +23019,10 @@ class NmrDpUtility:
                             myPr = myAlign[i]
                             if aligned[i]:
                                 if str(myPr[0]) == '.':
-                                    if (seq_id2[i] is not None) and ((i > 0 and seq_id2[i - 1] is not None and seq_id2[i - 1] + 1 == seq_id2[i]) or (i + 1 < len(seq_id2) and seq_id2[i + 1] is not None and seq_id2[i + 1] - 1 == seq_id2[i])):
+                                    if (seq_id2[i] is not None) and ((i > 0 and seq_id2[i - 1] is not None and seq_id2[i - 1] + 1 == seq_id2[i]) or (i + 1 < len(seq_id2) and seq_id2[i + 1] is not None and seq_id2[i + 1] - 1 == seq_id2[i])):  # noqa: E501
                                         aligned[i] = False
                                 if str(myPr[1]) == '.':
-                                    if (seq_id1[i] is not None) and ((i > 0 and seq_id1[i - 1] is not None and seq_id1[i - 1] + 1 == seq_id1[i]) or (i + 1 < len(seq_id1) and seq_id1[i + 1] is not None and seq_id1[i + 1] - 1 == seq_id1[i])):
+                                    if (seq_id1[i] is not None) and ((i > 0 and seq_id1[i - 1] is not None and seq_id1[i - 1] + 1 == seq_id1[i]) or (i + 1 < len(seq_id1) and seq_id1[i + 1] is not None and seq_id1[i + 1] - 1 == seq_id1[i])):  # noqa: E501
                                         aligned[i] = False
 
                         if not self.__combined_mode:
@@ -23117,8 +23048,8 @@ class NmrDpUtility:
 
                         unmapped = []
                         conflict = []
-                        #offset_1 = 0
-                        #offset_2 = 0
+                        # offset_1 = 0
+                        # offset_2 = 0
 
                         for i in range(length):
                             myPr = myAlign[i]
@@ -23386,8 +23317,8 @@ class NmrDpUtility:
                     seq_ids = set((int(c['seq_id']) if c['seq_id'] is not None else c['auth_seq_id']) for c in coord if c['chain_id'] == chain_id)
                     for seq_id in seq_ids:
                         seq_key = (chain_id, seq_id)
-                        comp_id = next(c['comp_id'] for c in coord if c['chain_id'] == chain_id and ((c['seq_id'] is not None and int(c['seq_id']) == seq_id) or (c['seq_id'] is None and c['auth_seq_id'] == seq_id)))
-                        atom_ids = [c['atom_id'] for c in coord if c['chain_id'] == chain_id and ((c['seq_id'] is not None and int(c['seq_id']) == seq_id) or (c['seq_id'] is None and c['auth_seq_id'] == seq_id))]
+                        comp_id = next(c['comp_id'] for c in coord if c['chain_id'] == chain_id and ((c['seq_id'] is not None and int(c['seq_id']) == seq_id) or (c['seq_id'] is None and c['auth_seq_id'] == seq_id)))  # noqa: E501
+                        atom_ids = [c['atom_id'] for c in coord if c['chain_id'] == chain_id and ((c['seq_id'] is not None and int(c['seq_id']) == seq_id) or (c['seq_id'] is None and c['auth_seq_id'] == seq_id))]  # noqa: E501
                         self.__coord_atom_id[seq_key] = {'comp_id': comp_id, 'atom_id': atom_ids}
 
             except Exception as e:
@@ -23436,7 +23367,7 @@ class NmrDpUtility:
                 ref_chain_id = chain_assign['ref_chain_id']
                 test_chain_id = chain_assign['test_chain_id']
 
-                result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == ref_chain_id and seq_align['test_chain_id'] == test_chain_id), None)
+                result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == ref_chain_id and seq_align['test_chain_id'] == test_chain_id), None)  # noqa: E501
 
                 if ref_chain_id not in nmr2ca:
                     nmr2ca[ref_chain_id] = []
@@ -23471,14 +23402,14 @@ class NmrDpUtility:
                     sf_data = self.__star_data[fileListId]
                     sf_framecode = ''
 
-                    add_details |= self.__testCoordAtomIdConsistency__(fileListId, file_name, file_type, content_subtype, sf_data, list_id, sf_framecode, lp_category, cif_polymer_sequence, seq_align_dic, nmr2ca, ref_chain_id)
+                    add_details |= self.__testCoordAtomIdConsistency__(fileListId, file_name, file_type, content_subtype, sf_data, list_id, sf_framecode, lp_category, cif_polymer_sequence, seq_align_dic, nmr2ca, ref_chain_id)  # noqa: E501
 
                 elif self.__star_data_type[fileListId] == 'Saveframe':
 
                     sf_data = self.__star_data[fileListId]
                     sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
-                    add_details |= self.__testCoordAtomIdConsistency__(fileListId, file_name, file_type, content_subtype, sf_data, list_id, sf_framecode, lp_category, cif_polymer_sequence, seq_align_dic, nmr2ca, ref_chain_id)
+                    add_details |= self.__testCoordAtomIdConsistency__(fileListId, file_name, file_type, content_subtype, sf_data, list_id, sf_framecode, lp_category, cif_polymer_sequence, seq_align_dic, nmr2ca, ref_chain_id)  # noqa: E501
 
                 else:
 
@@ -23489,7 +23420,7 @@ class NmrDpUtility:
                         if not any(loop for loop in sf_data.loops if loop.category == lp_category):
                             continue
 
-                        add_details |= self.__testCoordAtomIdConsistency__(fileListId, file_name, file_type, content_subtype, sf_data, list_id, sf_framecode, lp_category, cif_polymer_sequence, seq_align_dic, nmr2ca, ref_chain_id)
+                        add_details |= self.__testCoordAtomIdConsistency__(fileListId, file_name, file_type, content_subtype, sf_data, list_id, sf_framecode, lp_category, cif_polymer_sequence, seq_align_dic, nmr2ca, ref_chain_id)  # noqa: E501
 
                         list_id += 1
 

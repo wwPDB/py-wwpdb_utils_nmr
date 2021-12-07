@@ -26,11 +26,9 @@ from mmcif.io.PdbxReader import PdbxReader
 # from mmcif.api.PdbxContainers import *
 
 
-class ChemCompReader(object):
-    ''' Accessor methods chemical component definition data files.
-
-        Currently supporting bond data data for the WWF format converter.
-    '''
+class ChemCompReader:
+    """ Accessor methods chemical component definition data files.
+    """
     def __init__(self, verbose=True, log=sys.stdout):
         self.__verbose = verbose
         self.__debug = False
@@ -113,41 +111,53 @@ class ChemCompReader(object):
         }
 
     def setCachePath(self, topCachePath='/data/components/ligand-dict-v4'):
+        """ Set the top file tree of chemical component dictionary.
+        """
         self.__topCachePath = topCachePath
 
     def setCompId(self, compId):
+        """ Set chemical component definition data file path of the input chemical component.
+        """
         self.__ccU = compId.upper()
         self.__filePath = os.path.join(self.__topCachePath, self.__ccU[0:1], self.__ccU, self.__ccU + '.cif')
-        if (not os.access(self.__filePath, os.R_OK)):
-            if (self.__verbose):
+        if not os.access(self.__filePath, os.R_OK):
+            if self.__verbose:
                 self.__lfh.write("+ERROR- PdbxChemCompReader.getCompId() Missing file %s\n" % self.__filePath)
             return False
         return True
 
     def setFilePath(self, filePath, compId=None):
+        """ Set data file path directory with chemical component ID.
+        """
         try:
             if compId is not None:
                 self.__ccU = str(compId).upper()
             self.__filePath = filePath
-            if (not os.access(self.__filePath, os.R_OK)):
-                if (self.__verbose):
+            if not os.access(self.__filePath, os.R_OK):
+                if self.__verbose:
                     self.__lfh.write("+ERROR- PdbxChemCompReader.getCompId() Missing file %s\n" % self.__filePath)
                 return False
             return True
         except:  # noqa: E722 pylint: disable=bare-except
-            if (self.__verbose):
+            if self.__verbose:
                 self.__lfh.write("+ERROR- PdbxChemCompReader.getCompId() Missing file %s\n" % self.__filePath)
             return False
 
     def getAtomList(self):
+        """ Get a list of list of data from the chem_comp_atom category.
+        """
         self.__getComp()
         return self.__getDataList(catName='chem_comp_atom')
 
     def getBonds(self):
+        """ Get a list of list of data from the chem_comp_bond category.
+        """
         self.__getComp()
         return self.__getDataList(catName='chem_comp_bond')
 
     def getChemCompDict(self):
+        """ Get a list of dictionaries of a chem_comp category.
+        """
         try:
             self.__getComp()
             dL = self.__getDictList(catName='chem_comp')
@@ -156,8 +166,9 @@ class ChemCompReader(object):
             return {}
 
     def __getComp(self):
-        """ Get the definition data for the input chemical component.    Data is read from chemmical
-            component definition file stored in the organization of CVS repository for chemical components.
+        """ Get the definition data for the input chemical component.
+            Data is read from chemical component definition file stored in the organization
+            of CVS repository for chemical components.
 
             Returns True for success or False otherwise.
         """
@@ -171,25 +182,25 @@ class ChemCompReader(object):
 
     def __getDataBlock(self, filePath, blockId=None):
         """ Worker method to read chemical component definition file and set the target datablock
-            corresponding to the target chemical component.   If no blockId is provided return the
-            first data block.
+            corresponding to the target chemical component.
+            If no blockId is provided return the first data block.
         """
         try:
-            ifh = open(filePath, "r")
-            myBlockList = []
-            pRd = PdbxReader(ifh)
-            pRd.read(myBlockList)
-            ifh.close()
+            with open(filePath, 'r', encoding='UTF-8') as ifh:
+                myBlockList = []
+                pRd = PdbxReader(ifh)
+                pRd.read(myBlockList)
+
             if blockId is not None:
                 for block in myBlockList:
                     if (block.getType() == 'data' and block.getName() == blockId):
-                        if (self.__debug):
+                        if self.__debug:
                             block.printIt(self.__lfh)
                         return block
             else:
                 for block in myBlockList:
-                    if (block.getType() == 'data'):
-                        if (self.__debug):
+                    if block.getType() == 'data':
+                        if self.__debug:
                             block.printIt(self.__lfh)
                         return block
 
@@ -215,7 +226,7 @@ class ChemCompReader(object):
         return ok
 
     def __getDictList(self, catName='chem_comp'):
-        """Return a list of dictionaries of the input category
+        """ Return a list of dictionaries of the input category
         """
         # Get category object - from current data block
         itTupList = self.__cDict[catName]
@@ -252,8 +263,8 @@ class ChemCompReader(object):
         return dList
 
     def __getDataList(self, catName='chem_comp_bond'):
-        """Return a list a list of data from the input category including
-           data types and default value replacement.
+        """ Return a list a list of data from the input category including
+            data types and default value replacement.
         """
         itTupList = self.__cDict[catName]
         dataList = []
@@ -287,21 +298,21 @@ class ChemCompReader(object):
 
         return dataList
 
-    def __applyType(self, ctype, default, val):
-        """Apply type conversion to the input value and assign default values to
-           missing values.
+    def __applyType(self, ctype, default, val):  # pylint: disable=no-self-use
+        """ Apply type conversion to the input value and assign default values to
+            missing values.
         """
         tval = val
-        if (val is None):
+        if val is None:
             tval = default
-        if (isinstance(tval, str) and (len(tval) < 1 or tval == '.' or tval == '?')):
+        if isinstance(tval, str) and (len(tval) < 1 or tval in ('.', '?')):
             tval = default
 
         if ctype == "int":
             return int(str(tval))
-        elif ctype == "float":
+        if ctype == "float":
             return float(str(tval))
-        elif ctype == "str":
+        if ctype == "str":
             return str(tval)
-        else:
-            return tval
+
+        return tval

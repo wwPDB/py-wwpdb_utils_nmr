@@ -32,7 +32,6 @@ import numpy as np
 
 import random
 
-
 def to_np_array(a):
     """ Return Numpy array of a given Cartesian coordinate in {'x': float, 'y': float, 'z': float} format.
     """
@@ -56,7 +55,7 @@ def M(axis, theta):
                      [2 * (bd + ac), 2 * (cd - ab), aa + dd - bb - cc]])
 
 
-class CifReader(object):
+class CifReader:
     """ Accessor methods for parsing CIF files.
     """
     def __init__(self, verbose=True, log=sys.stdout):
@@ -130,7 +129,7 @@ class CifReader(object):
             @return: target data block
         """
 
-        with open(self.__filePath, 'r') as ifh:
+        with open(self.__filePath, 'r', encoding='UTF-8') as ifh:
             myBlockList = []
             pRd = PdbxReader(ifh)
             pRd.read(myBlockList)
@@ -278,10 +277,10 @@ class CifReader(object):
             label_seq_col = -1 if 'label_seq_id' not in altDict else altDict['label_seq_id']
             auth_chain_id_col = -1 if 'auth_chain_id' not in altDict else altDict['auth_chain_id']
 
-            chains = sorted(set([row[chain_id_col] for row in rowList]))
+            chains = sorted(set(row[chain_id_col] for row in rowList))
 
             if ins_code_col == -1 or label_seq_col == -1:
-                sortedSeq = sorted(set(['{} {:04d} {}'.format(row[chain_id_col], int(row[seq_id_col]), row[comp_id_col]) for row in rowList]))
+                sortedSeq = sorted(set('{} {:04d} {}'.format(row[chain_id_col], int(row[seq_id_col]), row[comp_id_col]) for row in rowList))
 
                 keyDict = {'{} {:04d}'.format(row[chain_id_col], int(row[seq_id_col])): row[comp_id_col] for row in rowList}
 
@@ -303,7 +302,7 @@ class CifReader(object):
                     seqDict[c] = [int(s.split(' ')[1]) for s in sortedSeq]
 
             else:
-                sortedSeq = sorted(set(['{} {:04d} {} {} {}'.format(row[chain_id_col], int(row[seq_id_col]), row[ins_code_col], row[label_seq_col], row[comp_id_col]) for row in rowList]))
+                sortedSeq = sorted(set('{} {:04d} {} {} {}'.format(row[chain_id_col], int(row[seq_id_col]), row[ins_code_col], row[label_seq_col], row[comp_id_col]) for row in rowList))
 
                 keyDict = {'{} {:04d} {} {}'.format(row[chain_id_col], int(row[seq_id_col]), row[ins_code_col], row[label_seq_col]): row[comp_id_col] for row in rowList}
 
@@ -335,8 +334,6 @@ class CifReader(object):
                     c = row[chain_id_col]
                     if c not in authChainDict:
                         authChainDict[c] = row[auth_chain_id_col]
-
-            asm = []  # assembly of a loop
 
             for c in chains:
                 ent = {}  # entity
@@ -608,7 +605,7 @@ class CifReader(object):
                                 break
                         else:
                             filterItemType = filterItem['type']
-                            if filterItemType == 'str' or filterItemType == 'enum':
+                            if filterItemType in ('str', 'enum'):
                                 pass
                             elif filterItemType == 'bool':
                                 val = val.lower() in self.trueValue
@@ -637,7 +634,7 @@ class CifReader(object):
                         if val in self.emptyValue:
                             val = None
                         dataItemType = dataItem['type']
-                        if dataItemType == 'str' or dataItemType == 'enum':
+                        if dataItemType in ('str', 'enum'):
                             pass
                         elif dataItemType == 'bool':
                             val = val.lower() in self.trueValue

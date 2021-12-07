@@ -1368,6 +1368,8 @@ class NEFTranslator:
 
             seq_data = []
 
+            len_loop_data = len(loop.data)
+
             if set(tags) & set(loop.tags) == set(tags):
                 seq_data = get_lp_tag(loop, tags)
                 for i in seq_data:
@@ -1392,7 +1394,7 @@ class NEFTranslator:
                     continue
             else:
                 for l, i in enumerate(seq_data):  # noqa: E741
-                    if self.is_empty(i) and l < len(loop.data):
+                    if self.is_empty(i) and l < len_loop_data:
                         r = {}
                         for j, t in enumerate(loop.tags):
                             r[t] = loop.data[l][j]
@@ -1403,7 +1405,7 @@ class NEFTranslator:
                 try:
                     int(i[0])
                 except ValueError:
-                    if l < len(loop.data):
+                    if l < len_loop_data:
                         r = {}
                         for j, t in enumerate(loop.tags):
                             r[t] = loop.data[l][j]
@@ -1543,6 +1545,8 @@ class NEFTranslator:
 
             seq_data = []
 
+            len_loop_data = len(loop.data)
+
             if set(tags) & set(loop.tags) == set(tags):
                 seq_data = get_lp_tag(loop, tags)
                 for i in seq_data:
@@ -1593,7 +1597,7 @@ class NEFTranslator:
                     continue
             else:
                 for l, i in enumerate(seq_data):  # noqa: E741
-                    if self.is_empty(i) and l < len(loop.data):
+                    if self.is_empty(i) and l < len_loop_data:
                         r = {}
                         for j, t in enumerate(loop.tags):
                             r[t] = loop.data[l][j]
@@ -1604,7 +1608,7 @@ class NEFTranslator:
                 try:
                     int(i[0])
                 except ValueError:
-                    if l < len(loop.data):
+                    if l < len_loop_data:
                         r = {}
                         for j, t in enumerate(loop.tags):
                             r[t] = loop.data[l][j]
@@ -1745,6 +1749,8 @@ class NEFTranslator:
 
             seq_data = []
 
+            len_loop_data = len(loop.data)
+
             if set(tags) & set(loop.tags) == set(tags):
                 seq_data = get_lp_tag(loop, tags)
             elif set(tags_) & set(loop.tags) == set(tags_):  # No Entity_assembly_ID tag case
@@ -1777,7 +1783,7 @@ class NEFTranslator:
                     continue
             else:
                 for l, i in enumerate(seq_data):  # noqa: E741
-                    if self.is_empty(i) and l < len(loop.data):
+                    if self.is_empty(i) and l < len_loop_data:
                         r = {}
                         for j, t in enumerate(loop.tags):
                             r[t] = loop.data[l][j]
@@ -1788,7 +1794,7 @@ class NEFTranslator:
                 try:
                     int(i[3])
                 except ValueError:
-                    if l < len(loop.data):
+                    if l < len_loop_data:
                         r = {}
                         for j, t in enumerate(loop.tags):
                             r[t] = loop.data[l][j]
@@ -1919,6 +1925,8 @@ class NEFTranslator:
 
             pair_data = []
 
+            len_loop_data = len(loop.data)
+
             if set(tags) & set(loop.tags) == set(tags):
                 pair_data = get_lp_tag(loop, tags)
             else:
@@ -1940,7 +1948,7 @@ class NEFTranslator:
                     continue
             else:
                 for l, i in enumerate(pair_data):  # noqa: E741
-                    if self.is_empty(i) and l < len(loop.data):
+                    if self.is_empty(i) and l < len_loop_data:
                         r = {}
                         for j, t in enumerate(loop.tags):
                             r[t] = loop.data[l][j]
@@ -2020,6 +2028,8 @@ class NEFTranslator:
 
             a_type_data = []
 
+            len_loop_data = len(loop.data)
+
             if set(tags) & set(loop.tags) != set(tags):
                 missing_tags = list(set(tags) - set(loop.tags))
                 raise LookupError("Missing mandatory %s loop tag%s." % (missing_tags, 's' if len(missing_tags) > 1 else ''))
@@ -2033,7 +2043,7 @@ class NEFTranslator:
                     continue
             else:
                 for l, i in enumerate(a_type_data):  # noqa: E741
-                    if self.is_empty(i) and l < len(loop.data):
+                    if self.is_empty(i) and l < len_loop_data:
                         r = {}
                         for j, t in enumerate(loop.tags):
                             r[t] = loop.data[l][j]
@@ -2046,7 +2056,7 @@ class NEFTranslator:
                 try:
                     int(i[1])
                 except ValueError:
-                    if l < len(loop.data):
+                    if l < len_loop_data:
                         r = {}
                         for j, t in enumerate(loop.tags):
                             r[t] = loop.data[l][j]
@@ -2116,6 +2126,8 @@ class NEFTranslator:
 
             ambig_data = []
 
+            len_loop_data = len(loop.data)
+
             if set(tags) & set(loop.tags) != set(tags):
                 missing_tags = list(set(tags) - set(loop.tags))
                 raise LookupError("Missing mandatory %s loop tag%s." % (missing_tags, 's' if len(missing_tags) > 1 else ''))
@@ -2137,7 +2149,7 @@ class NEFTranslator:
                     try:
                         code = int(i[2])
                     except ValueError:
-                        if l < len(loop.data):
+                        if l < len_loop_data:
                             r = {}
                             for j, t in enumerate(loop.tags):
                                 r[t] = loop.data[l][j]
@@ -2145,7 +2157,7 @@ class NEFTranslator:
                             # raise ValueError("%s must be one of %s. #_of_row %s, data_of_row %s." % (ambig_code, list(self.bmrb_ambiguity_codes), l + 1, r))
 
                     if code not in self.bmrb_ambiguity_codes:
-                        if l < len(loop.data):
+                        if l < len_loop_data:
                             r = {}
                             for j, t in enumerate(loop.tags):
                                 r[t] = loop.data[l][j]
@@ -2153,7 +2165,7 @@ class NEFTranslator:
                             # raise ValueError("%s must be one of %s. #_of_row %s, data_of_row %s." % (ambig_code, list(self.bmrb_ambiguity_codes), l + 1, r))
 
                     if code >= 4:
-                        if i[3] in self.empty_value and l < len(loop.data):
+                        if i[3] in self.empty_value and l < len_loop_data:
                             r = {}
                             for j, t in enumerate(loop.tags):
                                 r[t] = loop.data[l][j]
@@ -2163,7 +2175,7 @@ class NEFTranslator:
                             try:
                                 int(i[3])
                             except ValueError:
-                                if l < len(loop.data):
+                                if l < len_loop_data:
                                     r = {}
                                     for j, t in enumerate(loop.tags):
                                         r[t] = loop.data[l][j]
@@ -2173,7 +2185,7 @@ class NEFTranslator:
                 if i[3] not in self.empty_value:
 
                     if i[2] in self.empty_value or i[2] not in ('4', '5', '6', '9'):
-                        if l < len(loop.data):
+                        if l < len_loop_data:
                             r = {}
                             for j, t in enumerate(loop.tags):
                                 r[t] = loop.data[l][j]
@@ -2256,13 +2268,15 @@ class NEFTranslator:
         for loop in loops:
             index_data = []
 
+            len_loop_data = len(loop.data)
+
             if set(tags) & set(loop.tags) == set(tags):
                 index_data = get_lp_tag(loop, tags)
             else:
                 raise LookupError("Missing mandatory %s loop tag." % index_id)
 
             for l, i in enumerate(index_data):  # noqa: E741
-                if self.is_empty(i) and l < len(loop.data):
+                if self.is_empty(i) and l < len_loop_data:
                     r = {}
                     for j, t in enumerate(loop.tags):
                         r[t] = loop.data[l][j]
@@ -2272,7 +2286,7 @@ class NEFTranslator:
                     try:
                         int(i[0])
                     except ValueError:
-                        if l < len(loop.data):
+                        if l < len_loop_data:
                             r = {}
                             for j, t in enumerate(loop.tags):
                                 r[t] = loop.data[l][j]

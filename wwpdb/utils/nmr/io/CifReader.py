@@ -386,7 +386,7 @@ class CifReader:
                                                                        [{'name': 'label_asym_id', 'type': 'str', 'value': c},
                                                                         {'name': 'label_atom_id', 'type': 'str', 'value': 'CA'}])
 
-                            ent['ca_rmsd'] = self.__calculateRMSD(c, seqDict[c], alias, total_models, ca_atom_sites, randomM)
+                            ent['ca_rmsd'] = self.__calculateRMSD(seqDict[c], total_models, ca_atom_sites, randomM)
 
                         elif 'ribonucleotide' in etype:
 
@@ -400,7 +400,7 @@ class CifReader:
                                                                       [{'name': 'label_asym_id', 'type': 'str', 'value': c},
                                                                        {'name': 'label_atom_id', 'type': 'str', 'value': 'P'}])
 
-                            ent['p_rmsd'] = self.__calculateRMSD(c, seqDict[c], alias, total_models, p_atom_sites, randomM)
+                            ent['p_rmsd'] = self.__calculateRMSD(seqDict[c], total_models, p_atom_sites, randomM)
 
                 if len(chains) > 1:
                     identity = []
@@ -456,7 +456,7 @@ class CifReader:
 
         return ret
 
-    def __calculateRMSD(self, chain_id, seq_ids, alias=False, total_models=1, atom_sites=None, randomM=None):  # pylint: disable=unused-argument
+    def __calculateRMSD(self, seq_ids, total_models=1, atom_sites=None, randomM=None):  # pylint: disable=unused-argument
         """ Calculate RMSD of alpha carbons/phosphates in the ensemble.
         """
 

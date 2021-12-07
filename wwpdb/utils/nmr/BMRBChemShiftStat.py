@@ -9,6 +9,7 @@
 # 20-Nov-2020  M. Yokochi - fix statics extraction for HEM, HEB, HEC from CSV (DAOTHER-6366)
 # 25-Jun-2021  M. Yokochi - add getAtomLikeNameSet() (DAOTHER-6830)
 # 13-Oct-2021  M. Yokochi - code revision according to PEP8 using Pylint (DAOTHER-7389, issue #5)
+# 03-Dec-2021  M. Yokochi - optimize loading performance of other chemical shift statistics (DAOTHER-7514)
 ##
 """ Wrapper class for retrieving BMRB chemical shift statistics.
     @author: Masashi Yokochi
@@ -79,6 +80,7 @@ class BMRBChemShiftStat:
 
         self.__std_comp_ids = set()
         self.__all_comp_ids = set()
+        self.__not_comp_ids = set()
 
         self.aa_threshold = 0.1
         self.na_threshold = 0.3
@@ -172,7 +174,7 @@ class BMRBChemShiftStat:
         if comp_id in self.__std_comp_ids:
             return True
 
-        self.loadOtherStatFromCsvFiles()
+        self.loadOtherStatFromCsvFiles(comp_id)
 
         return comp_id in self.__all_comp_ids
 
@@ -214,7 +216,7 @@ class BMRBChemShiftStat:
         if comp_id in self.__std_comp_ids:
             return True
 
-        self.loadOtherStatFromCsvFiles()
+        self.loadOtherStatFromCsvFiles(comp_id)
 
         if comp_id not in self.__all_comp_ids:
             return False
@@ -253,7 +255,7 @@ class BMRBChemShiftStat:
 
             return [i for i in self.rna_full if i['comp_id'] == comp_id]
 
-        self.loadOtherStatFromCsvFiles()
+        self.loadOtherStatFromCsvFiles(comp_id)
 
         if comp_id not in self.__all_comp_ids:
             return []
@@ -285,7 +287,7 @@ class BMRBChemShiftStat:
 
             return [i for i in self.rna_full if i['comp_id'] == comp_id]
 
-        self.loadOtherStatFromCsvFiles()
+        self.loadOtherStatFromCsvFiles(comp_id)
 
         if comp_id not in self.__all_comp_ids:
             self.__appendExtraFromCcd(comp_id)
@@ -304,7 +306,7 @@ class BMRBChemShiftStat:
         """
 
         if comp_id not in self.__std_comp_ids:
-            self.loadOtherStatFromCsvFiles()
+            self.loadOtherStatFromCsvFiles(comp_id)
 
         if comp_id not in self.__all_comp_ids:
             self.__appendExtraFromCcd(comp_id)
@@ -329,7 +331,7 @@ class BMRBChemShiftStat:
         """
 
         if comp_id not in self.__std_comp_ids:
-            self.loadOtherStatFromCsvFiles()
+            self.loadOtherStatFromCsvFiles(comp_id)
 
         if comp_id not in self.__all_comp_ids:
             self.__appendExtraFromCcd(comp_id)
@@ -363,7 +365,7 @@ class BMRBChemShiftStat:
         """
 
         if comp_id not in self.__std_comp_ids:
-            self.loadOtherStatFromCsvFiles()
+            self.loadOtherStatFromCsvFiles(comp_id)
 
         if comp_id not in self.__all_comp_ids:
             self.__appendExtraFromCcd(comp_id)
@@ -382,7 +384,7 @@ class BMRBChemShiftStat:
         """
 
         if comp_id not in self.__std_comp_ids:
-            self.loadOtherStatFromCsvFiles()
+            self.loadOtherStatFromCsvFiles(comp_id)
 
         if comp_id not in self.__all_comp_ids:
             self.__appendExtraFromCcd(comp_id)
@@ -423,7 +425,7 @@ class BMRBChemShiftStat:
         """
 
         if comp_id not in self.__std_comp_ids:
-            self.loadOtherStatFromCsvFiles()
+            self.loadOtherStatFromCsvFiles(comp_id)
 
         if comp_id not in self.__all_comp_ids:
             self.__appendExtraFromCcd(comp_id)
@@ -442,7 +444,7 @@ class BMRBChemShiftStat:
         """
 
         if comp_id not in self.__std_comp_ids:
-            self.loadOtherStatFromCsvFiles()
+            self.loadOtherStatFromCsvFiles(comp_id)
 
         if comp_id not in self.__all_comp_ids:
             self.__appendExtraFromCcd(comp_id)
@@ -487,7 +489,7 @@ class BMRBChemShiftStat:
         """
 
         if comp_id not in self.__std_comp_ids:
-            self.loadOtherStatFromCsvFiles()
+            self.loadOtherStatFromCsvFiles(comp_id)
 
         if comp_id not in self.__all_comp_ids:
             self.__appendExtraFromCcd(comp_id)
@@ -516,12 +518,12 @@ class BMRBChemShiftStat:
         """ Load all BMRB chemical shift statistics from CSV files.
         """
 
-        file_name_list = [self.stat_dir + 'aa_filt.csv', self.stat_dir + 'aa_full.csv',
-                          self.stat_dir + 'dna_filt.csv', self.stat_dir + 'dna_full.csv',
-                          self.stat_dir + 'rna_filt.csv', self.stat_dir + 'rna_full.csv',
-                          self.stat_dir + 'others.csv']
+        csv_files = (self.stat_dir + 'aa_filt.csv', self.stat_dir + 'aa_full.csv',
+                     self.stat_dir + 'dna_filt.csv', self.stat_dir + 'dna_full.csv',
+                     self.stat_dir + 'rna_filt.csv', self.stat_dir + 'rna_full.csv',
+                     self.stat_dir + 'others.csv')
 
-        if any(not os.path.exists(file_name) for file_name in file_name_list):
+        if any(not os.path.exists(csv_file) for csv_file in csv_files):
             return False
 
         self.aa_filt = self.loadStatFromCsvFile(self.stat_dir + 'aa_filt.csv', self.aa_threshold)
@@ -540,20 +542,28 @@ class BMRBChemShiftStat:
 
         return True
 
-    def loadOtherStatFromCsvFiles(self):
+    def loadOtherStatFromCsvFiles(self, comp_id_interest=None):
         """ Load all BMRB chemical shift statistics from CSV files.
         """
 
-        if len(self.others) > 0 or not self.lazy_others:
+        if not self.lazy_others:
             return True
 
-        self.others = self.loadStatFromCsvFile(self.stat_dir + 'others.csv', self.aa_threshold, self.na_threshold)
+        if comp_id_interest is None:
+            self.others = self.loadStatFromCsvFile(self.stat_dir + 'others.csv', self.aa_threshold, self.na_threshold)
+            self.__updateCompIdSet()
 
-        self.__updateCompIdSet()
+        elif comp_id_interest not in self.__all_comp_ids and comp_id_interest not in self.__not_comp_ids:
+            stat = self.loadStatFromCsvFile(self.stat_dir + 'others.csv', self.aa_threshold, self.na_threshold, comp_id_interest)
+            if len(stat) > 0:
+                self.others.extend(stat)
+                self.__updateCompIdSet()
+            else:
+                self.__not_comp_ids.add(comp_id_interest)
 
         return True
 
-    def loadStatFromCsvFile(self, file_name, primary_th, secondary_th=None):
+    def loadStatFromCsvFile(self, file_name, primary_th, secondary_th=None, comp_id_interest=None):
         """ Load BMRB chemical shift statistics from a given CSV file.
         """
 
@@ -565,6 +575,9 @@ class BMRBChemShiftStat:
             for row in reader:
 
                 comp_id = row['comp_id']
+
+                if comp_id_interest is not None and comp_id != comp_id_interest:
+                    continue
 
                 if not self.__updateChemCompDict(comp_id):
                     continue
@@ -1214,13 +1227,13 @@ class BMRBChemShiftStat:
         """ Load all BMRB chemical shift statistics from pickle files if possible.
         """
 
-        file_name_list = [self.stat_dir + 'aa_filt.pkl', self.stat_dir + 'aa_full.pkl',
-                          self.stat_dir + 'dna_filt.pkl', self.stat_dir + 'dna_full.pkl',
-                          self.stat_dir + 'rna_filt.pkl', self.stat_dir + 'rna_full.pkl',
-                          self.stat_dir + 'others.pkl']
+        pickle_files = (self.stat_dir + 'aa_filt.pkl', self.stat_dir + 'aa_full.pkl',
+                        self.stat_dir + 'dna_filt.pkl', self.stat_dir + 'dna_full.pkl',
+                        self.stat_dir + 'rna_filt.pkl', self.stat_dir + 'rna_full.pkl',
+                        self.stat_dir + 'others.pkl')
 
-        for file_name in file_name_list:
-            if not os.path.exists(file_name):
+        for pickle_file in pickle_files:
+            if not os.path.exists(pickle_file):
                 return False
 
         self.aa_filt = load_stat_from_pickle(self.stat_dir + 'aa_filt.pkl')

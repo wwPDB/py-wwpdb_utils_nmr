@@ -35,7 +35,6 @@ setup(
         'Natural Language :: English',
         'License :: OSI Approved :: Apache Software License',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
@@ -67,7 +66,7 @@ setup(
         'dev': ['check-manifest'],
         'test': ['coverage'],
     },
-    # Added for
+    python_requires='>=3.4',
     command_options={
         'build_sphinx': {
             'project': ('setup.py', thisPackage),

@@ -301,10 +301,10 @@ def fill_blank_comp_id_with_offset(s, offset):
     return {'chain_id': s['chain_id'], 'seq_id': seq_ids, 'comp_id': comp_ids}
 
 def beutify_seq_id(s1, s2):
-    """ Truncate common negative sequence IDs of s1 and s2 and make spacing between large gap.
+    """ Truncate negative sequence IDs of s1 and s2 and insert spacing between the large gap.
     """
 
-    if s1['seq_id'][0] > 0 or s1['seq_id'] != s2['seq_id']:
+    if s1['seq_id'] != s2['seq_id']:
         return s1, s2
 
     _seq_id = [seq_id for seq_id in s1['seq_id'] if seq_id > 0]

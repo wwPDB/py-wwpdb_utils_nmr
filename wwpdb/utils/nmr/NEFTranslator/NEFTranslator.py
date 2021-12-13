@@ -77,6 +77,7 @@
 # 28-Oct-2021  M. Yokochi - use simple dictionary for return messaging, instead of JSON dump/load (v3.0.2)
 # 28-Oct-2021  M. Yokochi - resolve case-insensitive saveframe name collision for CIF (v3.0.3, DAOTHER-7389, issue #4)
 # 16-Nov-2021  M. Yokochi - map alphabet code of Entity_assembly_ID to valid integer (v3.0.4, DAOTHER-7475)
+# 13-Dec-2021  M. Yokochi - fill list id (pointer-index) from saveframe counter just in case (v3.0.5, DAOTHER-7465, issue #2)
 ##
 """ Bi-directional translator between NEF and NMR-STAR
     @author: Kumaran Baskaran, Masashi Yokochi
@@ -98,7 +99,7 @@ from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommon
 from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
 from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 
-__version__ = '3.0.4'
+__version__ = '3.0.5'
 
 __pynmrstar_v3_2__ = version.parse(pynmrstar.__version__) >= version.parse("3.2.0")
 __pynmrstar_v3_1__ = version.parse(pynmrstar.__version__) >= version.parse("3.1.0")
@@ -2345,7 +2346,7 @@ class NEFTranslator:
 
     #     return self.check_data(star_data, lp_category, key_items, data_items)
     #
-    def check_data(self, star_data, lp_category, key_items, data_items, allowed_tags=None, disallowed_tags=None,
+    def check_data(self, star_data, lp_category, key_items, data_items, allowed_tags=None, disallowed_tags=None, pointer_index_hint=None,
                    test_on_index=False, enforce_non_zero=False, enforce_sign=False, enforce_range=False, enforce_enum=False,
                    excl_missing_data=False):
         """ Extract data with sanity check from any given loops in an NEF/NMR-STAR file.
@@ -2763,6 +2764,8 @@ class NEFTranslator:
                                     i[j] = ent[name] = self.letter_to_int(val, 1)
                                 elif 'default-from' in k and k['default-from'] in tags:
                                     i[j] = ent[name] = self.letter_to_int(i[tags.index(k['default-from'])], 1)
+                                elif 'default-from' in k and k['default-from'] == 'parent' and pointer_index_hint is not None:
+                                    i[j] = ent[name] = pointer_index_hint
                                 elif 'default' in k:
                                     i[j] = ent[name] = int(k['default'])
                                 elif excl_missing_data:
@@ -3017,6 +3020,8 @@ class NEFTranslator:
                                             i[j] = ent[name] = self.letter_to_int(val, 1)
                                         elif 'default-from' in d and d['default-from'] in tags:
                                             i[j] = ent[name] = self.letter_to_int(i[tags.index(d['default-from'])], 1)
+                                        elif 'default-from' in d and d['default-from'] == 'parent' and pointer_index_hint is not None:
+                                            i[j] = ent[name] = pointer_index_hint
                                         elif 'default' in d:
                                             i[j] = ent[name] = int(d['default'])
                                         elif excl_missing_data:

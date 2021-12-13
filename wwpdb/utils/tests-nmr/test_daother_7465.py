@@ -17,16 +17,20 @@ class TestNmrDpUtility(unittest.TestCase):
         here = os.path.abspath(os.path.dirname(__file__))
         self.data_dir_path = os.path.join(here, 'mock-data-daother-7465/')
         self.res_file_type = {
-            'daother-7465': 'nm-res-cns'
+            'daother-7465': 'nm-res-cns',
+            'daother-7465_2': 'nm-res-oth'
         }
         self.cs_file_path = {
-            'daother-7465': ['D_1000251112_cs-upload_P1.str.V1']
+            'daother-7465': ['D_1000251112_cs-upload_P1.str.V1'],
+            'daother-7465_2': ['D_1000261119_cs-review_P1.str']
         }
         self.mr_file_path = {
-            'daother-7465': ['D_1000251112_mr-upload_P1.cns.V1']
+            'daother-7465': ['D_1000251112_mr-upload_P1.cns.V1'],
+            'daother-7465_2': ['D_1000261119_mr-upload_P1.dat']
         }
         self.model_file_path = {
-            'daother-7465': 'D_800453_model_P1.cif.V1'
+            'daother-7465': 'D_800453_model_P1.cif.V1',
+            'daother-7465_2': 'D_800461_model_P1.cif.V1'
         }
         self.utility = NmrDpUtility()
 
@@ -74,6 +78,9 @@ class TestNmrDpUtility(unittest.TestCase):
 
     def test_nmr_cs_str_consistency_check_daother_7465(self):
         self.__test_nmr_cs_str_consistency('daother-7465')
+
+    def test_nmr_cs_str_consistency_check_daother_7465_2(self):
+        self.__test_nmr_cs_str_consistency('daother-7465_2')
 
 
 if __name__ == '__main__':

@@ -139,8 +139,9 @@
 # 16-Nov-2021  M. Yokochi - revised error message for malformed XPLOR-NIH RDC restraints (DAOTHER-7478)
 # 18-Nov-2021  M. Yokochi - detect content type of XPLOR-NIH hydrogen bond geometry restraints (DAOTHER-7478)
 # 18-Nov-2021  M. Yokochi - relax detection of distance restraints for nm-res-cya and nm-res-oth (DAOTHER-7491)
+# 13-Dec-2021  M. Yokochi - append sequence spacer between large gap to prevent failure of sequence alignment (DAOTHER-7465, issue #2)
 ##
-""" Wrapper class for data processing for NMR data.
+""" Wrapper class for NMR data processing.
     @author: Masashi Yokochi
 """
 import sys
@@ -248,7 +249,7 @@ def get_first_sf_tag(sf_data=None, tag=None):
 
 
 def has_large_seq_gap(s1, s2):
-    """ Return whether large gap in sequence id.
+    """ Return whether large gap in sequence ID.
     """
 
     seq_ids = sorted(set(s1['seq_id']) | set(s2['seq_id']))
@@ -298,6 +299,43 @@ def fill_blank_comp_id_with_offset(s, offset):
             comp_ids.append('.')
 
     return {'chain_id': s['chain_id'], 'seq_id': seq_ids, 'comp_id': comp_ids}
+
+def beutify_seq_id(s1, s2):
+    """ Truncate negative sequence IDs of s1 and s2 and insert spacing between the large gap.
+    """
+
+    if s1['seq_id'] != s2['seq_id']:
+        return s1, s2
+
+    _seq_id = [seq_id for seq_id in s1['seq_id'] if seq_id > 0]
+    _comp_id_1 = [comp_id for seq_id, comp_id in zip(s1['seq_id'], s1['comp_id']) if seq_id > 0]
+    _comp_id_2 = [comp_id for seq_id, comp_id in zip(s1['seq_id'], s2['comp_id']) if seq_id > 0]
+
+    gap_seq_id = []
+    gap_index = []
+
+    len_spacer = 5  # DAOTHER-7465, issue #2
+
+    for lp, i in enumerate(_seq_id):
+        if lp > 0 and i - _seq_id[lp - 1] > 20:
+            j = _seq_id[lp - 1]
+            for sp in range(1, len_spacer + 1):
+                gap_seq_id.append(j + sp)
+                gap_seq_id.append(i - sp)
+            gap_index.append(lp)
+
+    if len(gap_seq_id) == 0:
+        return {'chain_id': s1['chain_id'], 'seq_id': _seq_id, 'comp_id': _comp_id_1}, {'chain_id': s2['chain_id'], 'seq_id': _seq_id, 'comp_id': _comp_id_2}
+
+    _seq_id.extend(gap_seq_id)
+    _seq_id.sort()
+
+    for lp in reversed(gap_index):
+        for sp in range(1, len_spacer + 1):
+            _comp_id_1.insert(lp, '.')
+            _comp_id_2.insert(lp, '.')
+
+    return {'chain_id': s1['chain_id'], 'seq_id': _seq_id, 'comp_id': _comp_id_1}, {'chain_id': s2['chain_id'], 'seq_id': _seq_id, 'comp_id': _comp_id_2}
 
 
 def get_middle_code(ref_seq, test_seq):
@@ -1692,7 +1730,7 @@ class NmrDpUtility:
                                                       'enforce-enum': True},
                                                      {'name': 'Cis_residue', 'type': 'bool', 'mandatory': False},
                                                      {'name': 'NEF_index', 'type': 'index-int', 'mandatory': False},
-                                                     {'name': 'Assembly_ID', 'type': 'pointer-index', 'mandatory': False, 'default': '1'}
+                                                     {'name': 'Assembly_ID', 'type': 'pointer-index', 'mandatory': False, 'default': '1', 'default-from': 'parent'}
                                                      ],
                                         'entity': None,
                                         'chem_shift': [{'name': 'Atom_type', 'type': 'enum', 'mandatory': True, 'default-from': 'Atom_ID',
@@ -1714,7 +1752,7 @@ class NmrDpUtility:
                                                        {'name': 'Auth_seq_ID', 'type': 'int', 'mandatory': False},
                                                        {'name': 'Auth_comp_ID', 'type': 'str', 'mandatory': False},
                                                        {'name': 'Auth_atom_ID', 'type': 'str', 'mandatory': False},
-                                                       {'name': 'Assigned_chem_shift_list_ID', 'type': 'pointer-index', 'mandatory': True, 'default': '1'}
+                                                       {'name': 'Assigned_chem_shift_list_ID', 'type': 'pointer-index', 'mandatory': True, 'default': '1', 'default-from': 'parent'}
                                                        ],
                                         'chem_shift_ref': [{'name': 'Atom_group', 'type': 'enum', 'mandatory': True,
                                                             'enum': ('methyl carbon', 'methyl carbons', 'methyl protons', 'methylene protons', 'nitrogen', 'phosphorus', 'protons')},
@@ -1744,7 +1782,7 @@ class NmrDpUtility:
                                                            {'name': 'Ref_type', 'type': 'enum', 'mandatory': False,
                                                             'enum': ('direct', 'indirect')},
                                                            {'name': 'Solvent', 'type': 'str', 'mandatory': False},
-                                                           {'name': 'Chem_shift_reference_ID', 'type': 'pointer-index', 'mandatory': True, 'default': '1'}
+                                                           {'name': 'Chem_shift_reference_ID', 'type': 'pointer-index', 'mandatory': True, 'default': '1', 'default-from': 'parent'}
                                                            ],
                                         'dist_restraint': [{'name': 'Index_ID', 'type': 'index-int', 'mandatory': False},
                                                            # {'name': 'ID', 'type': 'positive-int', 'mandatory': True,
@@ -1815,7 +1853,7 @@ class NmrDpUtility:
                                                            {'name': 'Auth_seq_ID_2', 'type': 'int', 'mandatory': False},
                                                            {'name': 'Auth_comp_ID_2', 'type': 'str', 'mandatory': False},
                                                            {'name': 'Auth_atom_ID_2', 'type': 'str', 'mandatory': False},
-                                                           {'name': 'Gen_dist_constraint_list_ID', 'type': 'pointer-index', 'mandatory': True, 'default': '1'}
+                                                           {'name': 'Gen_dist_constraint_list_ID', 'type': 'pointer-index', 'mandatory': True, 'default': '1', 'default-from': 'parent'}
                                                            ],
                                         'dihed_restraint': [{'name': 'Index_ID', 'type': 'index-int', 'mandatory': False},
                                                             # {'name': 'ID', 'type': 'index-int', 'mandatory': True,
@@ -1882,7 +1920,7 @@ class NmrDpUtility:
                                                             {'name': 'Auth_seq_ID_4', 'type': 'int', 'mandatory': False},
                                                             {'name': 'Auth_comp_ID_4', 'type': 'str', 'mandatory': False},
                                                             {'name': 'Auth_atom_ID_4', 'type': 'str', 'mandatory': False},
-                                                            {'name': 'Torsion_angle_constraint_list_ID', 'type': 'pointer-index', 'mandatory': True, 'default': '1'}
+                                                            {'name': 'Torsion_angle_constraint_list_ID', 'type': 'pointer-index', 'mandatory': True, 'default': '1', 'default-from': 'parent'}
                                                             ],
                                         'rdc_restraint': [{'name': 'Index_ID', 'type': 'index-int', 'mandatory': False},
                                                           # {'name': 'ID', 'type': 'index-int', 'mandatory': True,
@@ -1944,7 +1982,7 @@ class NmrDpUtility:
                                                           {'name': 'Auth_seq_ID_2', 'type': 'int', 'mandatory': False},
                                                           {'name': 'Auth_comp_ID_2', 'type': 'str', 'mandatory': False},
                                                           {'name': 'Auth_atom_ID_2', 'type': 'str', 'mandatory': False},
-                                                          {'name': 'RDC_constraint_list_ID', 'type': 'pointer-index', 'mandatory': True, 'default': '1'}
+                                                          {'name': 'RDC_constraint_list_ID', 'type': 'pointer-index', 'mandatory': True, 'default': '1', 'default-from': 'parent'}
                                                           ],
                                         'spectral_peak': [{'name': 'Index_ID', 'type': 'index-int', 'mandatory': False},
                                                           # {'name': 'ID', 'type': 'positive-int', 'mandatory': True,
@@ -1957,7 +1995,7 @@ class NmrDpUtility:
                                                            'group': {'member-with': ['Volume'],
                                                                      'coexist-with': None}},
                                                           {'name': 'Height_uncertainty', 'type': 'positive-float', 'mandatory': False, 'void-zero': True},
-                                                          {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True, 'default': '1'}
+                                                          {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True, 'default': '1', 'default-from': 'parent'}
                                                           ],
                                         'spectral_peak_alt': [{'name': 'Index_ID', 'type': 'index-int', 'mandatory': False},
                                                               {'name': 'Figure_of_merit', 'type': 'range-float', 'mandatory': False,
@@ -3435,13 +3473,13 @@ class NmrDpUtility:
                                                                   {'name': 'Value_first_point', 'type': 'float', 'mandatory': False},
                                                                   {'name': 'Absolute_peak_positions', 'type': 'bool', 'mandatory': False},
                                                                   {'name': 'Acquisition', 'type': 'bool', 'mandatory': False},
-                                                                  {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True}
+                                                                  {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True, 'default-from': 'parent'}
                                                                   ],
                                                 '_Spectral_dim_transfer': [{'name': 'Indirect', 'type': 'bool', 'mandatory': False},
                                                                            {'name': 'Type', 'type': 'enum', 'mandatory': True,
                                                                             'enum': ('onebond', 'jcoupling', 'jmultibond', 'relayed', 'relayed-alternate', 'through-space'),
                                                                             'enforce-enum': True},
-                                                                           {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True}
+                                                                           {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True, 'default-from': 'parent'}
                                                                            ]
                                             },
                                             'spectral_peak_alt': {
@@ -3458,20 +3496,20 @@ class NmrDpUtility:
                                                                   {'name': 'Value_first_point', 'type': 'float', 'mandatory': False},
                                                                   {'name': 'Absolute_peak_positions', 'type': 'bool', 'mandatory': False},
                                                                   {'name': 'Acquisition', 'type': 'bool', 'mandatory': False},
-                                                                  {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True}
+                                                                  {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True, 'default-from': 'parent'}
                                                                   ],
                                                 '_Spectral_dim_transfer': [{'name': 'Indirect', 'type': 'bool', 'mandatory': False},
                                                                            {'name': 'Type', 'type': 'enum', 'mandatory': True,
                                                                             'enum': ('onebond', 'jcoupling', 'jmultibond', 'relayed', 'relayed-alternate', 'through-space'),
                                                                             'enforce-enum': True},
-                                                                           {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True}
+                                                                           {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True, 'default-from': 'parent'}
                                                                            ],
                                                 '_Peak_general_char': [{'name': 'Peak_ID', 'type': 'positive-int', 'mandatory': True},
                                                                        {'name': 'Intensity_val', 'type': 'float', 'mandatory': True},
                                                                        {'name': 'Intensity_val_err', 'type': 'positive-float', 'mandatory': False, 'void-zero': True},
                                                                        {'name': 'Measurement_method', 'type': 'enum', 'mandatory': False,
                                                                         'enum': ('absolute height', 'height', 'relative height', 'volume', 'number of contours', 'integration')},
-                                                                       {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True}
+                                                                       {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True, 'default-from': 'parent'}
                                                                        ],
                                                 '_Peak_char': [{'name': 'Peak_ID', 'type': 'positive-int', 'mandatory': True},
                                                                {'name': 'Spectral_dim_ID', 'type': 'enum-int', 'mandatory': True,
@@ -3485,7 +3523,7 @@ class NmrDpUtility:
                                                                {'name': 'Line_width_val_err', 'type': 'positive-float', 'mandatory': False, 'void-zero': True},
                                                                {'name': 'Coupling_pattern', 'type': 'enum', 'mandatory': False,
                                                                 'enum': ('d', 'dd', 'ddd', 'dm', 'dt', 'hxt', 'hpt', 'm', 'q', 'qd', 'qn', 's', 'sxt', 't', 'td', 'LR', '1JCH')},
-                                                               {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True}
+                                                               {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True, 'default-from': 'parent'}
                                                                ],
                                                 '_Assigned_peak_chem_shift': [{'name': 'Peak_ID', 'type': 'positive-int', 'mandatory': True},
                                                                               {'name': 'Spectral_dim_ID', 'type': 'enum-int', 'mandatory': True,
@@ -3510,7 +3548,7 @@ class NmrDpUtility:
                                                                               {'name': 'Auth_seq_ID', 'type': 'int', 'mandatory': False},
                                                                               {'name': 'Auth_comp_ID', 'type': 'str', 'mandatory': False},
                                                                               {'name': 'Auth_atom_ID', 'type': 'str', 'mandatory': False},
-                                                                              {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True}
+                                                                              {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True, 'default-from': 'parent'}
                                                                               ]
                                             }
                                             }
@@ -7732,13 +7770,14 @@ class NmrDpUtility:
                                             try:
 
                                                 _auth_seq_id = int(auth_seq_id)
+
                                             except ValueError:
                                                 continue
 
                                             if _auth_seq_id - _seq_id != offset:
 
                                                 if self.__check_auth_seq:
-                                                    warn = "Auth_seq_ID %r is inconsistent with %r (Auth_asym_ID %s, Auth_comp_ID %s)." % (auth_seq_id, seq_id + offset, auth_asym_id, auth_comp_id)
+                                                    warn = "Auth_seq_ID %r is inconsistent with %r (Auth_asym_ID %s, Auth_comp_ID %s)." % (auth_seq_id, _seq_id + offset, auth_asym_id, auth_comp_id)
 
                                                     self.report.warning.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                                     self.report.setWarning()
@@ -7998,7 +8037,7 @@ class NmrDpUtility:
                                         if _auth_seq_id - _seq_id != offset:
 
                                             if self.__check_auth_seq:
-                                                warn = "Auth_seq_ID %r is inconsistent with %r (Auth_asym_ID %s, Auth_comp_ID %s)." % (auth_seq_id, seq_id + offset, auth_asym_id, auth_comp_id)
+                                                warn = "Auth_seq_ID %r is inconsistent with %r (Auth_asym_ID %s, Auth_comp_ID %s)." % (auth_seq_id, _seq_id + offset, auth_asym_id, auth_comp_id)
 
                                                 self.report.warning.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                                 self.report.setWarning()
@@ -11730,29 +11769,33 @@ class NmrDpUtility:
                     sf_data = self.__star_data[fileListId]
                     sf_framecode = ''
 
-                    self.__testDataConsistencyInLoop__(fileListId, file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category)
+                    self.__testDataConsistencyInLoop__(fileListId, file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category, 1)
 
                 elif self.__star_data_type[fileListId] == 'Saveframe':
 
                     sf_data = self.__star_data[fileListId]
                     sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
-                    self.__testDataConsistencyInLoop__(fileListId, file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category)
+                    self.__testDataConsistencyInLoop__(fileListId, file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category, 1)
 
                 else:
 
+                    pointer_index_hint = 0
+
                     for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
+
+                        pointer_index_hint += 1
 
                         sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
                         if not any(loop for loop in sf_data.loops if loop.category == lp_category):
                             continue
 
-                        self.__testDataConsistencyInLoop__(fileListId, file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category)
+                        self.__testDataConsistencyInLoop__(fileListId, file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category, pointer_index_hint)
 
         return self.report.getTotalErrors() == __errors
 
-    def __testDataConsistencyInLoop__(self, file_list_id, file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category):
+    def __testDataConsistencyInLoop__(self, file_list_id, file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category, pointer_index_hint):
         """ Perform consistency test on data of interesting loops.
         """
 
@@ -11811,7 +11854,7 @@ class NmrDpUtility:
 
         try:
 
-            lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, disallowed_tags,
+            lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, disallowed_tags, pointer_index_hint=pointer_index_hint,
                                              test_on_index=True, enforce_non_zero=True, enforce_sign=True, enforce_range=True, enforce_enum=True,
                                              excl_missing_data=self.__excl_missing_data)[0]
 
@@ -11946,7 +11989,7 @@ class NmrDpUtility:
 
             try:
 
-                lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, disallowed_tags,
+                lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, disallowed_tags, pointer_index_hint=pointer_index_hint,
                                                  excl_missing_data=self.__excl_missing_data)[0]
 
                 self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'data': lp_data})
@@ -12275,7 +12318,11 @@ class NmrDpUtility:
                 sf_category = self.sf_categories[file_type][content_subtype]
                 lp_category = self.lp_categories[file_type][content_subtype]
 
+                pointer_index_hint = 0
+
                 for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
+
+                    pointer_index_hint += 1
 
                     sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
@@ -12320,7 +12367,7 @@ class NmrDpUtility:
 
                             try:
 
-                                aux_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, None,
+                                aux_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, None, pointer_index_hint=pointer_index_hint,
                                                                   test_on_index=True, enforce_non_zero=True, enforce_sign=True, enforce_range=True, enforce_enum=True,
                                                                   excl_missing_data=self.__excl_missing_data)[0]
 
@@ -12329,7 +12376,7 @@ class NmrDpUtility:
                                 if content_subtype == 'spectral_peak':
                                     self.__testDataConsistencyInAuxLoopOfSpectralPeak(file_name, file_type, sf_framecode, num_dim, lp_category, aux_data)
                                 if file_type == 'nmr-star' and content_subtype == 'spectral_peak_alt':
-                                    self.__testDataConsistencyInAuxLoopOfSpectralPeakAlt(file_name, file_type, sf_framecode, num_dim, lp_category, aux_data, sf_data)
+                                    self.__testDataConsistencyInAuxLoopOfSpectralPeakAlt(file_name, file_type, sf_framecode, num_dim, lp_category, aux_data, sf_data, pointer_index_hint)
 
                             except KeyError as e:
 
@@ -12463,7 +12510,7 @@ class NmrDpUtility:
 
                                 try:
 
-                                    aux_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, None,
+                                    aux_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, None, pointer_index_hint=pointer_index_hint,
                                                                       excl_missing_data=self.__excl_missing_data)[0]
 
                                     self.__aux_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'data': aux_data})
@@ -12471,7 +12518,7 @@ class NmrDpUtility:
                                     if content_subtype == 'spectral_peak':
                                         self.__testDataConsistencyInAuxLoopOfSpectralPeak(file_name, file_type, sf_framecode, num_dim, lp_category, aux_data)
                                     if file_type == 'nmr-star' and content_subtype == 'spectral_peak_alt':
-                                        self.__testDataConsistencyInAuxLoopOfSpectralPeakAlt(file_name, file_type, sf_framecode, num_dim, lp_category, aux_data, sf_data)
+                                        self.__testDataConsistencyInAuxLoopOfSpectralPeakAlt(file_name, file_type, sf_framecode, num_dim, lp_category, aux_data, sf_data, pointer_index_hint)
 
                                 except:  # noqa: E722 pylint: disable=bare-except
                                     pass
@@ -12682,7 +12729,7 @@ class NmrDpUtility:
                         if self.__verbose:
                             self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoopOfSpectralPeak() ++ ValueError  - %s\n" % err)
 
-    def __testDataConsistencyInAuxLoopOfSpectralPeakAlt(self, file_name, file_type, sf_framecode, num_dim, lp_category, aux_data, sf_data):
+    def __testDataConsistencyInAuxLoopOfSpectralPeakAlt(self, file_name, file_type, sf_framecode, num_dim, lp_category, aux_data, sf_data, pointer_index_hint):
         """ Perform consistency test on data of spectral peak loops.
         """
 
@@ -12768,7 +12815,7 @@ class NmrDpUtility:
                     data_items = self.aux_data_items[file_type][content_subtype][_pk_char_category]
                     allowed_tags = self.aux_allowed_tags[file_type][content_subtype][_pk_char_category]
 
-                    _pk_char_data = self.__nefT.check_data(sf_data, _pk_char_category, key_items, data_items, allowed_tags, None,
+                    _pk_char_data = self.__nefT.check_data(sf_data, _pk_char_category, key_items, data_items, allowed_tags, None, pointer_index_hint=pointer_index_hint,
                                                            excl_missing_data=self.__excl_missing_data)[0]
 
                 pk_id_name = 'Peak_ID'
@@ -13185,7 +13232,7 @@ class NmrDpUtility:
                 data_items = self.data_items[file_type][content_subtype]
 
                 try:
-                    lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None,
+                    lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None, None,
                                                      excl_missing_data=self.__excl_missing_data)[0]
                 except:  # noqa: E722 pylint: disable=bare-except
                     return False
@@ -15610,7 +15657,7 @@ class NmrDpUtility:
 
         try:
 
-            aux_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, None,
+            aux_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, None, None,
                                               excl_missing_data=self.__excl_missing_data)[0]
 
             if aux_data is not None:
@@ -22252,8 +22299,7 @@ class NmrDpUtility:
                 _s2 = s2 if offset_2 == 0 else fill_blank_comp_id_with_offset(s2, offset_2)
 
                 if conflict > 0 and has_large_seq_gap(_s1, _s2):  # DAOTHER-7465
-                    __s1 = fill_blank_comp_id(_s2, _s1)
-                    __s2 = fill_blank_comp_id(_s1, _s2)
+                    __s1, __s2 = beutify_seq_id(fill_blank_comp_id(_s2, _s1), fill_blank_comp_id(_s1, _s2))
                     _s1_ = __s1
                     _s2_ = __s2
 
@@ -22369,8 +22415,7 @@ class NmrDpUtility:
                 _s2 = s2 if offset_2 == 0 else fill_blank_comp_id_with_offset(s2, offset_2)
 
                 if conflict > 0 and has_large_seq_gap(_s1, _s2):  # DAOTHER-7465
-                    __s1 = fill_blank_comp_id(_s2, _s1)
-                    __s2 = fill_blank_comp_id(_s1, _s2)
+                    __s1, __s2 = beutify_seq_id(fill_blank_comp_id(_s2, _s1), fill_blank_comp_id(_s1, _s2))
                     _s1_ = __s1
                     _s2_ = __s2
 
@@ -22561,7 +22606,8 @@ class NmrDpUtility:
                         if len(_cif_chains) > 1:
                             chain_id2 = nmr_polymer_sequence[column]['chain_id']
                             concatenated_nmr_chain[chain_id2] = _cif_chains
-                            warn = 'Concatenated sequence in NMR data (chain_id %s) should be split according to the coordinates (chain_id %s) during biocuration.' % (chain_id2, _cif_chains)  # noqa: E501
+                            # warn = 'Concatenated sequence in NMR data (chain_id %s) should be split according to the coordinates (chain_id %s) during biocuration.' % (chain_id2, _cif_chains)  # noqa: E501
+                            warn = 'The chain ID %r of the sequences in the NMR data will be re-assigned to the chain IDs %s in the coordinates during biocuration.' % (chain_id2, _cif_chains)
 
                             self.report.warning.appendDescription('concatenated_sequence', {'file_name': nmr_file_name, 'description': warn})
                             self.report.setWarning()
@@ -22599,8 +22645,7 @@ class NmrDpUtility:
                     _s2 = s2 if offset_2 == 0 else fill_blank_comp_id_with_offset(s2, offset_2)
 
                     if conflict > 0 and has_large_seq_gap(_s1, _s2):  # DAOTHER-7465
-                        __s1 = fill_blank_comp_id(_s2, _s1)
-                        __s2 = fill_blank_comp_id(_s1, _s2)
+                        __s1, __s2 = beutify_seq_id(fill_blank_comp_id(_s2, _s1), fill_blank_comp_id(_s1, _s2))
                         _s1 = __s1
                         _s2 = __s2
 
@@ -22956,8 +23001,7 @@ class NmrDpUtility:
                     _s2 = s2 if offset_2 == 0 else fill_blank_comp_id_with_offset(s2, offset_2)
 
                     if conflict > 0 and has_large_seq_gap(_s1, _s2):  # DAOTHER-7465
-                        __s1 = fill_blank_comp_id(_s2, _s1)
-                        __s2 = fill_blank_comp_id(_s1, _s2)
+                        __s1, __s2 = beutify_seq_id(fill_blank_comp_id(_s2, _s1), fill_blank_comp_id(_s1, _s2))
                         _s1 = __s1
                         _s2 = __s2
 
@@ -23491,7 +23535,7 @@ class NmrDpUtility:
                     data_items = self.aux_data_items[file_type][content_subtype][lp_category]
 
             try:
-                lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None,
+                lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None, None,
                                                  excl_missing_data=self.__excl_missing_data)[0]
             except:  # noqa: E722 pylint: disable=bare-except
                 return False
@@ -24265,7 +24309,7 @@ class NmrDpUtility:
 
             if orig_lp_data is None:
                 try:
-                    orig_lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None,
+                    orig_lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None, None,
                                                           excl_missing_data=self.__excl_missing_data)[0]
                 except:  # noqa: E722 pylint: disable=bare-except
                     pass
@@ -25881,7 +25925,7 @@ class NmrDpUtility:
 
                 try:
 
-                    lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None,
+                    lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None, None,
                                                      excl_missing_data=self.__excl_missing_data)[0]
 
                     self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'data': lp_data})
@@ -26266,7 +26310,7 @@ class NmrDpUtility:
 
                 try:
 
-                    lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None,
+                    lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None, None,
                                                      excl_missing_data=self.__excl_missing_data)[0]
 
                     self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'data': lp_data})
@@ -27144,7 +27188,7 @@ class NmrDpUtility:
 
                     try:
 
-                        lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None,
+                        lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None, None,
                                                          excl_missing_data=self.__excl_missing_data)[0]
 
                         self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'data': lp_data})
@@ -27805,7 +27849,7 @@ class NmrDpUtility:
 
                                                 try:
 
-                                                    lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None,
+                                                    lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None, None,
                                                                                      excl_missing_data=self.__excl_missing_data)[0]
 
                                                     self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': w['sf_framecode'], 'data': lp_data})
@@ -27870,7 +27914,7 @@ class NmrDpUtility:
 
                                                 try:
 
-                                                    lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None,
+                                                    lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None, None,
                                                                                      excl_missing_data=self.__excl_missing_data)[0]
 
                                                     self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': w['sf_framecode'], 'data': lp_data})
@@ -28456,7 +28500,7 @@ class NmrDpUtility:
 
                     try:
 
-                        lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None,
+                        lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None, None,
                                                          excl_missing_data=self.__excl_missing_data)[0]
 
                         self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'data': lp_data})
@@ -29690,7 +29734,7 @@ class NmrDpUtility:
 
                 try:
 
-                    lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None,
+                    lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None, None,
                                                      excl_missing_data=self.__excl_missing_data)[0]
 
                     self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'data': lp_data})
@@ -29929,7 +29973,7 @@ class NmrDpUtility:
 
                 try:
 
-                    lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None,
+                    lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None, None,
                                                      excl_missing_data=self.__excl_missing_data)[0]
 
                     self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'data': lp_data})

@@ -247,14 +247,72 @@
           "type": "integer",
           "minimum": 1
         },
+        "domain_id": {
+          "type": "integer",
+          "minimum": 1
+        },
         "rmsd_in_well_defined_region": {
+          "type": "number"
+        },
+        "raw_rmsd_in_well_defined_region": {
           "type": "number"
         }
       },
       "additionalProperties": false,
       "required": [
         "model_id",
+        "domain_id",
         "rmsd_in_well_defined_region"
+      ]
+    },
+    "region": {
+      "description": "Template for well-defined regions in ensemble.",
+      "type": "object",
+      "properties": {
+        "domain_id": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "medoid_model_id": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "number_of_monomers": {
+          "type": "integer",
+          "minimum": 4
+        },
+        "number_of_gaps": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "percent_of_core": {
+          "type": "number",
+          "exclusiveMinimum": 0.0,
+          "maximum": 100.0
+        },
+        "mean_rmsd": {
+          "type": "number",
+          "minimum": 0.0
+        },
+        "medoid_rmsd": {
+          "type": "number",
+          "minimum": 0.0
+        },
+        "seq_id": {
+          "description": "List of sequence IDs involved in a well-defined region.",
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "domain_id",
+        "number_of_monomers",
+        "number_of_gaps",
+        "percent_of_core",
+        "mean_rmsd"
       ]
     },
     "polymer_sequence": {
@@ -351,6 +409,13 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/rmsd"
+          }
+        },
+        "well_defined_region": {
+          "description": "Information about identified well-defined region in ensemble.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/region"
           }
         }
       },

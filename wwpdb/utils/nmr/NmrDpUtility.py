@@ -140,6 +140,7 @@
 # 18-Nov-2021  M. Yokochi - detect content type of XPLOR-NIH hydrogen bond geometry restraints (DAOTHER-7478)
 # 18-Nov-2021  M. Yokochi - relax detection of distance restraints for nm-res-cya and nm-res-oth (DAOTHER-7491)
 # 13-Dec-2021  M. Yokochi - append sequence spacer between large gap to prevent failure of sequence alignment (DAOTHER-7465, issue #2)
+# 14-Dec-2021  M. Yokochi - report detailed warning message against not superimposed models and strictly overlaid models (DAOTHER-4060, 3018)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -1201,7 +1202,7 @@ class NmrDpUtility:
         self.vicinity_paramagnetic = 8.0
 
         # criterion for detection of not superimposed models
-        self.cutoff_rmsd = 3.5
+        self.cutoff_rmsd = 2.0
 
         # criterion for covalent bond length
         self.cutoff_bond_length = 3.5
@@ -21713,6 +21714,7 @@ class NmrDpUtility:
             input_source.setItemValue('polymer_sequence', poly_seq)
 
             not_superimposed_models = {}
+            strict_overlaid_models = {}
 
             for ps in poly_seq:
 
@@ -21737,17 +21739,40 @@ class NmrDpUtility:
 
                     chain_id = ps['chain_id']
 
-                    if rmsd_label in ps:
+                    if rmsd_label in ps and 'well_defined_region' in ps:
                         rmsd = ps[rmsd_label]
+                        region = ps['well_defined_region']
 
                         for r in rmsd:
                             model_id = r['model_id']
 
-                            if 'rmsd_in_well_defined_region' in r and r['rmsd_in_well_defined_region'] > self.cutoff_rmsd:
-                                if chain_id not in not_superimposed_models:
-                                    not_superimposed_models[chain_id] = [{'model_id': model_id, 'rmsd': r['rmsd_in_well_defined_region']}]
-                                else:
-                                    not_superimposed_models[chain_id].append({'model_id': model_id, 'rmsd': r['rmsd_in_well_defined_region']})
+                            if 'raw_rmsd_in_well_defined_region' in r and 'rmsd_in_well_defined_region' in r:
+
+                                if r['raw_rmsd_in_well_defined_region'] - r['rmsd_in_well_defined_region'] > self.cutoff_rmsd:
+                                    rmsd_item = {'model_id': model_id, 'raw_rmsd': r['raw_rmsd_in_well_defined_region'], 'rmsd': r['rmsd_in_well_defined_region']}
+                                    domain_id = r['domain_id']
+                                    domain = next((r for r in region if r['domain_id'] == domain_id), None)
+                                    if domain is not None:
+                                        rmsd_item['monomers'] = domain['number_of_monomers']
+                                        rmsd_item['gaps'] = domain['number_of_gaps']
+                                        rmsd_item['core'] = domain['percent_of_core']
+                                        rmsd_item['seq_id'] = domain['seq_id']
+                                        if chain_id not in not_superimposed_models:
+                                            not_superimposed_models[chain_id] = []
+                                        not_superimposed_models[chain_id].append(rmsd_item)
+
+                                if r['rmsd_in_well_defined_region'] < 0.01:
+                                    if chain_id not in strict_overlaid_models:
+                                        strict_overlaid_models[chain_id] = []
+                                    domain_id = r['domain_id']
+                                    domain = next((r for r in region if r['domain_id'] == domain_id), None)
+                                    if domain is not None and domain['mean_rmsd'] < 0.01:
+                                        region_item = {'monomers': domain['number_of_monomers'],
+                                                       'gaps': domain['number_of_gaps'],
+                                                       'core': domain['percent_of_core'],
+                                                       'mean_rmsd': domain['mean_rmsd'],
+                                                       'seq_id': domain['seq_id']}
+                                        strict_overlaid_models[chain_id] = region_item
 
             if len(not_superimposed_models) > 0:
 
@@ -21766,9 +21791,21 @@ class NmrDpUtility:
 
                     r = next((r for r in rmsd if r['model_id'] == conformer_id), rmsd[0])
 
-                    warn = 'Coordinates (chain_id %s) are not superimposed, RMSD in estimated well-defined region is %s angstromes (representative model_id %s). Please superimpose the coordinates and re-upload the model file.' % (chain_id, r['rmsd'], r['model_id'])  # noqa: E501
+                    warn = 'Coordinates (chain_id %s) are not superimposed, The raw RMSD value, %s angstromes (representative model id %s), in estimated well-defined region (seq_id %s, monomers %s, gaps %s, percent_of_core %s %%) is greater than the estimated RMSD value, %s angstromes. Please superimpose the coordinates and re-upload the model file.' % (chain_id, r['raw_rmsd'], r['model_id'], r['seq_id'], r['monomers'], r['gaps'], r['core'], r['rmsd'])  # noqa: E501
 
                     self.report.warning.appendDescription('not_superimposed_model', {'file_name': file_name, 'category': 'atom_site', 'description': warn})
+                    self.report.setWarning()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__extractCoordPolymerSequence() ++ Warning  - %s" % warn)
+
+            if len(strict_overlaid_models) > 0:
+
+                for chain_id, r in strict_overlaid_models.items():
+
+                    warn = 'Coordinates (chain_id %s) are strictly overlaid, The mean RMSD in estimated well-defined region (seq_id %s, monomers %s, gaps %s, percent_of_core %s %%) is %s angstromes. We encourage you to deposit a sufficient number of models in the ensemble.' % (chain_id, r['seq_id'], r['monomers'], r['gaps'], r['core'], r['mean_rmsd'])  # noqa: E501
+
+                    self.report.warning.appendDescription('encouragement', {'file_name': file_name, 'category': 'atom_site', 'description': warn})
                     self.report.setWarning()
 
                     if self.__verbose:
@@ -21799,7 +21836,7 @@ class NmrDpUtility:
 
             if self.__verbose:
                 self.__lfh.write("+NmrDpUtility.__extractCoordPolymerSequence() ++ ValueError  - %s" % str(e))
-
+        """
         except Exception as e:
 
             self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractCoordPolymerSequence() ++ Error  - %s" % str(e))
@@ -21807,7 +21844,7 @@ class NmrDpUtility:
 
             if self.__verbose:
                 self.__lfh.write("+NmrDpUtility.__extractCoordPolymerSequence() ++ Error  - %s" % str(e))
-
+        """
         return False
     """
     def __extractCoordNonPolymerScheme(self):

@@ -18,6 +18,7 @@
 # 08-May-2020   my  - make sure parse() is run only once (DAOTHER-5654)
 # 20-Nov-2020   my  - additional support for insertion code in getPolymerSequence() (DAOTHER-6128)
 # 29-Jun-2021   my  - add 'auth_chain_id', 'identical_auth_chain_id' in results of getPolymerSequence() if possible (DAOTHER-7108)
+# 14-Dec-2021   my  - precise RMSD calculation with domain and modoid model identification (DAOTHER-4060, 3018)
 ##
 """ A collection of classes for parsing CIF files.
 """
@@ -35,127 +36,14 @@ import random
 import itertools
 import hashlib
 from sklearn.cluster import DBSCAN
-import copy
-from rmsd.calculate_rmsd import centroid, rmsd # pylint: disable=no-name-in-module, import-error
+import collections
+from rmsd.calculate_rmsd import NAMES_ELEMENT, centroid, kabsch_rmsd, quaternion_rmsd, reorder_hungarian, reorder_brute, reorder_distance, check_reflections, rmsd # pylint: disable=no-name-in-module, import-error, unused-import
 
-ELEMENT_NAMES = {
-    1: "H",
-    2: "He",
-    3: "Li",
-    4: "Be",
-    5: "B",
-    6: "C",
-    7: "N",
-    8: "O",
-    9: "F",
-    10: "Ne",
-    11: "Na",
-    12: "Mg",
-    13: "Al",
-    14: "Si",
-    15: "P",
-    16: "S",
-    17: "Cl",
-    18: "Ar",
-    19: "K",
-    20: "Ca",
-    21: "Sc",
-    22: "Ti",
-    23: "V",
-    24: "Cr",
-    25: "Mn",
-    26: "Fe",
-    27: "Co",
-    28: "Ni",
-    29: "Cu",
-    30: "Zn",
-    31: "Ga",
-    32: "Ge",
-    33: "As",
-    34: "Se",
-    35: "Br",
-    36: "Kr",
-    37: "Rb",
-    38: "Sr",
-    39: "Y",
-    40: "Zr",
-    41: "Nb",
-    42: "Mo",
-    43: "Tc",
-    44: "Ru",
-    45: "Rh",
-    46: "Pd",
-    47: "Ag",
-    48: "Cd",
-    49: "In",
-    50: "Sn",
-    51: "Sb",
-    52: "Te",
-    53: "I",
-    54: "Xe",
-    55: "Cs",
-    56: "Ba",
-    57: "La",
-    58: "Ce",
-    59: "Pr",
-    60: "Nd",
-    61: "Pm",
-    62: "Sm",
-    63: "Eu",
-    64: "Gd",
-    65: "Tb",
-    66: "Dy",
-    67: "Ho",
-    68: "Er",
-    69: "Tm",
-    70: "Yb",
-    71: "Lu",
-    72: "Hf",
-    73: "Ta",
-    74: "W",
-    75: "Re",
-    76: "Os",
-    77: "Ir",
-    78: "Pt",
-    79: "Au",
-    80: "Hg",
-    81: "Tl",
-    82: "Pb",
-    83: "Bi",
-    84: "Po",
-    85: "At",
-    86: "Rn",
-    87: "Fr",
-    88: "Ra",
-    89: "Ac",
-    90: "Th",
-    91: "Pa",
-    92: "U",
-    93: "Np",
-    94: "Pu",
-    95: "Am",
-    96: "Cm",
-    97: "Bk",
-    98: "Cf",
-    99: "Es",
-    100: "Fm",
-    101: "Md",
-    102: "No",
-    103: "Lr",
-    104: "Rf",
-    105: "Db",
-    106: "Sg",
-    107: "Bh",
-    108: "Hs",
-    109: "Mt",
-    110: "Ds",
-    111: "Rg",
-    112: "Cn",
-    114: "Uuq",
-    116: "Uuh",
-}
-
-NAMES_ELEMENT = {value: key for key, value in ELEMENT_NAMES.items()}
+ROTATION_METHOD = kabsch_rmsd # quaternion_rmsd, or None
+REORDER_METHOD = reorder_hungarian # reorder_brute, reorder_distance, or None
+USE_REFLECTIONS = False  # scan through reflections in planes (e.g. Y transformed to -Y -> X, -Y, Z) and axis changes, (e.g. X and Z coords exchanged -> Z, Y, X). This will affect stereo-chemistry.
+USE_REFLECTIONS_KEEP_STEREO = False  # scan through reflections in planes (e.g. Y transformed to -Y -> X, -Y, Z) and axis changes, (e.g. X and Z coords exchanged -> Z, Y, X). Stereo-chemistry will be kept.
+REORDER = False
 
 def to_np_array(a):
     """ Return Numpy array of a given Cartesian coordinate in {'x': float, 'y': float, 'z': float} format.
@@ -195,7 +83,7 @@ def get_coordinates(p):
     V = np.asarray(V)
     atoms = np.asarray(atoms)
 
-    # assert V.shape[0] == atoms.size
+    assert V.shape[0] == atoms.size
 
     return atoms, V
 
@@ -205,23 +93,48 @@ def calculate_rmsd(p, q):
         @return: RMSD value
     """
 
-    _, p_all = get_coordinates(p)
-    _, q_all = get_coordinates(q)
+    p_atoms, p_coord = get_coordinates(p)
+    q_atoms, q_coord = get_coordinates(q)
 
-    # assert p_all.shape[0] == q_all.shape[0]
-    # assert np.count_nonzero(p_all_atoms != q_all_atoms) == 0
+    p_size = len(p_atoms)
+    q_size = len(q_atoms)
 
-    p_coord = copy.deepcopy(p_all)
-    q_coord = copy.deepcopy(q_all)
-    # p_atoms = copy.deepcopy(p_all_atoms)
-    # q_atoms = copy.deepcopy(q_all_atoms)
+    assert p_size > 0 and q_size > 0
+    assert p_size == q_size
+    assert p_coord.shape[0] == q_coord.shape[0]
+    assert np.count_nonzero(p_atoms != q_atoms) == 0 or REORDER
 
     p_cent = centroid(p_coord)
     q_cent = centroid(q_coord)
+
     p_coord -= p_cent
     q_coord -= q_cent
 
-    return rmsd(p_coord, q_coord)
+    result_rmsd = None
+
+    if USE_REFLECTIONS or USE_REFLECTIONS_KEEP_STEREO:
+        result_rmsd, _, _, q_review = check_reflections(p_atoms, q_atoms,
+                                                        p_coord, q_coord,
+                                                        reorder_method=REORDER_METHOD,
+                                                        rotation_method=ROTATION_METHOD,
+                                                        keep_stereo=USE_REFLECTIONS_KEEP_STEREO)
+
+    elif REORDER:
+        q_review = REORDER_METHOD(p_atoms, q_atoms, p_coord, q_coord)
+        q_coord = q_coord[q_review]
+        q_atoms = q_atoms[q_review]
+        assert np.count_nonzero(p_atoms != q_atoms) == 0
+
+    if result_rmsd is not None:
+        pass
+
+    elif ROTATION_METHOD is None:
+        result_rmsd = rmsd(p_coord, q_coord)
+
+    else:
+        result_rmsd = ROTATION_METHOD(p_coord, q_coord)
+
+    return result_rmsd
 
 
 class CifReader:
@@ -246,7 +159,7 @@ class CifReader:
         self.itemTypes = ('str', 'bool', 'int', 'float', 'range-float', 'enum')
 
         # whether to hold RMSD calculation details
-        self.__hold_rmsd_calculation = False
+        # self.__hold_rmsd_calculation = False
 
         # random rotation test for detection of non-superimposed models (DAOTHER-4060)
         self.__random_rotaion_test = False
@@ -258,8 +171,9 @@ class CifReader:
 
         self.__min_features_for_clustering = 4
         self.__max_features_for_clustering = 8
-        self.__min_min_samples_for_clustering = 4
-        self.__max_min_samples_for_clustering = 8
+        self.__min_samples_for_clustering = 2
+        self.__max_samples_for_clustering = 6
+        self.__min_sequence_for_clustering = 4
 
     def parse(self, filePath):
         """ Set file path and parse CIF file, and set internal active data block if possible.
@@ -563,7 +477,12 @@ class CifReader:
                                                                         {'name': 'label_atom_id', 'type': 'str', 'value': 'CA'},
                                                                         {'name': 'type_symbol', 'type': 'str', 'value': 'C'}])
 
-                            ent['ca_rmsd'] = self.__calculateRMSD(c, seqDict[c], total_models, ca_atom_sites, randomM)
+                            ca_rmsd, well_defined_region = self.__calculateRMSD(c, len(seqDict[c]), total_models, ca_atom_sites, randomM)
+
+                            if ca_rmsd is not None:
+                                ent['ca_rmsd'] = ca_rmsd
+                            if well_defined_region is not None:
+                                ent['well_defined_region'] = well_defined_region
 
                         elif 'ribonucleotide' in etype:
 
@@ -579,7 +498,12 @@ class CifReader:
                                                                        {'name': 'label_atom_id', 'type': 'str', 'value': 'P'},
                                                                        {'name': 'type_symbol', 'type': 'str', 'value': 'P'}])
 
-                            ent['p_rmsd'] = self.__calculateRMSD(c, seqDict[c], total_models, p_atom_sites, randomM)
+                            p_rmsd, well_defined_region = self.__calculateRMSD(c, len(seqDict[c]), total_models, p_atom_sites, randomM)
+
+                            if p_rmsd is not None:
+                                ent['p_rmsd'] = p_rmsd
+                            if well_defined_region is not None:
+                                ent['well_defined_region'] = well_defined_region
 
                 if len(chains) > 1:
                     identity = []
@@ -635,11 +559,24 @@ class CifReader:
 
         return ret
 
-    def __calculateRMSD(self, chain_id, seq_ids, total_models=1, atom_sites=None, randomM=None):  # pylint: disable=unused-argument
+    def __calculateRMSD(self, chain_id, length, total_models=1, atom_sites=None, randomM=None):  # pylint: disable=unused-argument
         """ Calculate RMSD of alpha carbons/phosphates in the ensemble.
         """
 
-        size = len([a for a in atom_sites if a['model_id'] == 1])
+        rlist = None
+        dlist = None
+
+        if atom_sites is None:
+            return rlist, dlist
+
+        _atom_site_dict = {}
+        for model_id in range(1, total_models + 1):
+            _atom_site_dict[model_id] = [a for a in atom_sites if a['model_id'] == model_id]
+
+        size = len(_atom_site_dict[1])
+
+        if size == 0:
+            return rlist, dlist
 
         matrix_size = (size, size)
 
@@ -649,7 +586,7 @@ class CifReader:
 
         for model_id in range(1, total_models + 1):
 
-            _atom_site = [a for a in atom_sites if a['model_id'] == model_id]
+            _atom_site = _atom_site_dict[model_id]
 
             if len(_atom_site) == 0:
                 continue
@@ -668,7 +605,11 @@ class CifReader:
                 else:
                     d_avr[j, i] += d
 
-        factor = 1.0 / float(_total_models)
+        if _total_models <= 1:
+            return rlist, dlist
+
+        factor = 1.0 / _total_models
+        _factor = 1.0 / (_total_models - 1)
 
         d_avr = np.multiply(d_avr, factor)
 
@@ -676,7 +617,7 @@ class CifReader:
 
         for model_id in range(1, total_models + 1):
 
-            _atom_site = [a for a in atom_sites if a['model_id'] == model_id]
+            _atom_site = _atom_site_dict[model_id]
 
             if len(_atom_site) == 0:
                 continue
@@ -694,8 +635,6 @@ class CifReader:
                 else:
                     d -= d_avr[j, i]
                     d_var[j, i] += d * d
-
-        # _factor = 1.0 / float(_total_models - 1)
 
         d_var = np.multiply(d_var, factor)
 
@@ -727,14 +666,6 @@ class CifReader:
 
         _, v = np.linalg.eig(d_ord)
 
-        np.savetxt('/home/wwpdbdev/test.csv', v, delimiter=',')
-
-        #print (v)
-
-        _seq_ids = [a['seq_id'] for a in atom_sites if a['model_id'] == 1]
-
-        # print (x)
-
         md5_set = set()
 
         min_score = 40.0
@@ -744,9 +675,12 @@ class CifReader:
 
             x = np.delete(v, np.s_[features:], 1)
 
-            for min_samples in range(self.__min_min_samples_for_clustering, self.__max_min_samples_for_clustering + 1):
+            for min_samples in range(self.__min_samples_for_clustering, self.__max_samples_for_clustering + 1):
 
-                for _epsilon in range(2, 22, 2):
+                if min_samples >= features:
+                    continue
+
+                for _epsilon in range(2, 42, 2):
 
                     epsilon = _epsilon / 100.0
 
@@ -775,27 +709,40 @@ class CifReader:
 
                     for label in set_labels:
 
-                        fraction = float(list_labels.count(label)) / size
+                        monomers = list_labels.count(label)
+                        fraction = float(monomers) / size
 
                         avr_rmsd = 0.0
 
-                        _atom_site_model_1 = [a for a in atom_sites if a['model_id'] == 1]
-                        _atom_site_p = [a for a, l in zip(_atom_site_model_1, list_labels) if l == label]
+                        _atom_site_ref = _atom_site_dict[1]
+                        _atom_site_p = [a for a, l in zip(_atom_site_ref, list_labels) if l == label]
+
+                        if label != -1:
+                            seq_id = sorted(list(set(a['seq_id'] for a in _atom_site_p)))
+                            seq_range = list(range(seq_id[0], seq_id[-1] + 1))
+                            gaps = len(seq_range) - len(seq_id)
+
+                            if gaps > monomers:
+                                score = 0.0
+                                break
 
                         for model_id in range(2, total_models + 1):
 
-                            _atom_site_model_n = [a for a in atom_sites if a['model_id'] == model_id]
+                            _atom_site_test = _atom_site_dict[model_id]
 
-                            if len(_atom_site_model_n) == 0:
+                            if len(_atom_site_test) == 0:
                                 continue
 
-                            _atom_site_q = [a for a, l in zip(_atom_site_model_n, list_labels) if l == label]
+                            _atom_site_q = [a for a, l in zip(_atom_site_test, list_labels) if l == label]
 
                             avr_rmsd += calculate_rmsd(_atom_site_p, _atom_site_q)
 
-                        avr_rmsd *= factor
+                        avr_rmsd *= _factor
 
                         score += avr_rmsd * fraction
+
+                    if score == 0.0:
+                        continue
 
                     result['score'] = score
 
@@ -803,48 +750,200 @@ class CifReader:
                         min_score = score
                         min_result = result
 
+        if min_result is None:
+            return rlist, dlist
+
         x = np.delete(v, np.s_[min_result['features']:], 1)
 
         db = DBSCAN(eps=min_result['epsilon'], min_samples=min_result['min_samples']).fit(x)
         labels = db.labels_
 
-        n_clusters = len(set(labels)) - (1 if -1 in labels else 0)
-        print('number_of_clusters: %s' % n_clusters)
+        list_labels = list(labels)
+        domains = collections.Counter(list_labels).most_common()
 
+        if domains[0][0] == -1:
+            return rlist, dlist
+
+        eff_labels = [label for label, count in domains if label != -1 and count >= self.__min_sequence_for_clustering]
+        eff_domain_id = {}
+
+        _seq_ids = [a['seq_id'] for a in _atom_site_dict[1]]
+
+        n_clusters = len(set(labels)) - (1 if -1 in labels else 0)
+        if self.__verbose:
+            self.__lfh.write('feature: %s, min_sample: %s, epsilon: %s, clusters: %s (effective domains: %s), score: %s\n' %\
+                        (min_result['features'], min_result['min_samples'], min_result['epsilon'], n_clusters, len(eff_labels), min_score))
+
+        domain_id = 1
         for label, seq_id in zip(labels, _seq_ids):
-            print('label: %s, chain_id: %s, seq_id:%s' % (label, chain_id, seq_id))
+            if label not in eff_labels:
+                if self.__verbose:
+                    self.__lfh.write('chain_id: %s, seq_id: %s, domain_id: %s\n' % (chain_id, seq_id, -1))
+            else:
+                _label = int(label)
+                if _label not in eff_domain_id:
+                    eff_domain_id[_label] = domain_id
+                    domain_id += 1
+                if self.__verbose:
+                    self.__lfh.write('chain_id: %s, seq_id: %s, domain_id: %s\n' % (chain_id, seq_id, eff_domain_id[_label]))
 
         rlist = []
 
-        for model_id in range(1, _total_models + 1):
+        for ref_model_id in range(1, _total_models + 1):
 
-            item = {'model_id': model_id}
+            item = {'model_id': ref_model_id}
+            _atom_site_ref = _atom_site_dict[ref_model_id]
+
+            min_label = -1
+            min_core_rmsd = 40.0
+            min_align_rmsd = 40.0
+
+            for label, count in domains:
+
+                if label not in eff_labels:
+                    break
+
+                _label = int(label)
+
+                _atom_site_p = [a for a, l in zip(_atom_site_ref, list_labels) if l == label]
+
+                core_rmsd = 0.0
+                align_rmsd = 0.0
+
+                for test_model_id in range(1, _total_models + 1):
+
+                    if ref_model_id == test_model_id:
+                        continue
+
+                    _atom_site_test = _atom_site_dict[test_model_id]
+                    _atom_site_q = [a for a, l in zip(_atom_site_test, list_labels) if l == label]
+
+                    for idx in range(count):
+
+                        ref_atom = _atom_site_p[idx]
+                        test_atom = _atom_site_q[idx]
+
+                        ref_v = to_np_array(ref_atom)
+                        if self.__random_rotaion_test:
+                            ref_v = np.dot(randomM[ref_model_id], ref_v)
+
+                        test_v = to_np_array(test_atom)
+                        if self.__random_rotaion_test:
+                            test_v = np.dot(randomM[test_model_id], test_v)
+                        d = test_v - ref_v
+                        core_rmsd += np.dot(d, d)
+
+                    align_rmsd += calculate_rmsd(_atom_site_p, _atom_site_q)
+
+                core_rmsd = math.sqrt(core_rmsd / count * _factor)
+                align_rmsd *= _factor
+
+                if core_rmsd < min_core_rmsd:
+                    min_label = _label
+                    min_core_rmsd = core_rmsd
+                    min_align_rmsd = align_rmsd
+
+            if min_label != -1:
+                item['domain_id'] = eff_domain_id[min_label]
+                item['raw_rmsd_in_well_defined_region'] = float('{:.2f}'.format(min_core_rmsd))
+                item['rmsd_in_well_defined_region'] = float('{:.2f}'.format(min_align_rmsd))
+                rlist.append(item)
+
+        dlist = []
+
+        for label in eff_labels:
+
+            _label = int(label)
+            count = list_labels.count(label)
+
+            item = {'domain_id': eff_domain_id[_label], 'number_of_monomers': count}
+            item['seq_id'] = sorted(list(set(a['seq_id'] for a, l in zip(_atom_site_ref, list_labels) if l == label)))
+            seq_range = list(range(item['seq_id'][0], item['seq_id'][-1] + 1))
+            item['number_of_gaps'] = len(seq_range) - len(item['seq_id'])
+            item['percent_of_core'] = float('{:.1f}'.format(float(count) / length * 100.0))
+
+            r = np.zeros((_total_models, _total_models), dtype=float)
+
+            mean_rmsd = 0.0
+            combinations = 0
+
+            for ref_model_id in range(1, _total_models):
+
+                _atom_site_ref = _atom_site_dict[ref_model_id]
+                _atom_site_p = [a for a, l in zip(_atom_site_ref, list_labels) if l == label]
+
+                for test_model_id in range(2, _total_models + 1):
+
+                    if ref_model_id >= test_model_id:
+                        continue
+
+                    _atom_site_test = _atom_site_dict[test_model_id]
+                    _atom_site_q = [a for a, l in zip(_atom_site_test, list_labels) if l == label]
+
+                    _rmsd = calculate_rmsd(_atom_site_p, _atom_site_q)
+
+                    r[ref_model_id - 1, test_model_id - 1] = _rmsd
+                    r[test_model_id - 1, ref_model_id - 1] = _rmsd
+
+                    mean_rmsd += _rmsd
+                    combinations += 1
+
+            mean_rmsd /= combinations
+
+            item['mean_rmsd'] = float('{:.2f}'.format(mean_rmsd))
+
+            _, v = np.linalg.eig(r)
+            x = np.delete(np.abs(v), np.s_[1:], 1)
+            item['medoid_model_id'] = int(np.argmin(x, axis=0)[0]) + 1
+
+            ref_model_id = item['medoid_model_id']
+
+            _atom_site_ref = _atom_site_dict[ref_model_id]
+            _atom_site_p = [a for a, l in zip(_atom_site_ref, list_labels) if l == label]
+
+            _rmsd = 0.0
+
+            for test_model_id in range(1, _total_models + 1):
+
+                if ref_model_id == test_model_id:
+                    continue
+
+                _atom_site_test = _atom_site_dict[test_model_id]
+                _atom_site_q = [a for a, l in zip(_atom_site_test, list_labels) if l == label]
+
+                _rmsd += calculate_rmsd(_atom_site_p, _atom_site_q)
+
+            item['medoid_rmsd'] = float('{:.2f}'.format(_rmsd * _factor))
+
+            dlist.append(item)
+        """
+        for ref_model_id in range(1, _total_models + 1):
+
+            item = {'model_id': ref_model_id}
 
             ret = [None] * len(seq_ids)
 
-            if _total_models > 1 and atom_sites is not None:
+            for seq_id in seq_ids:
 
-                for seq_id in seq_ids:
+                _atom_site = [a for a in atom_sites if a['seq_id'] == seq_id]
 
-                    _atom_site = [a for a in atom_sites if a['seq_id'] == seq_id]
-
-                    if len(_atom_site) == _total_models:
-                        try:
-                            ref_atom = next(ref_atom for ref_atom in _atom_site if ref_atom['model_id'] == model_id)
-                            ref_v = to_np_array(ref_atom)
+                if len(_atom_site) == _total_models:
+                    try:
+                        ref_atom = next(ref_atom for ref_atom in _atom_site if ref_atom['model_id'] == ref_model_id)
+                        ref_v = to_np_array(ref_atom)
+                        if self.__random_rotaion_test:
+                            ref_v = np.dot(randomM[ref_model_id], ref_v)
+                        rmsd2 = 0.0
+                        for atom in [atom for atom in _atom_site if atom['model_id'] != ref_model_id]:
+                            v = to_np_array(atom)
                             if self.__random_rotaion_test:
-                                ref_v = np.dot(randomM[model_id], ref_v)
-                            rmsd2 = 0.0
-                            for atom in [atom for atom in _atom_site if atom['model_id'] != model_id]:
-                                v = to_np_array(atom)
-                                if self.__random_rotaion_test:
-                                    v = np.dot(randomM[atom['model_id']], v)
-                                d = v - ref_v
-                                rmsd2 += np.dot(d, d)
-                        except StopIteration:
-                            continue
+                                v = np.dot(randomM[atom['model_id']], v)
+                            d = v - ref_v
+                            rmsd2 += np.dot(d, d)
+                    except StopIteration:
+                        continue
 
-                        ret[seq_ids.index(seq_id)] = float('{:.2f}'.format(math.sqrt(rmsd2 / (_total_models - 1))))
+                    ret[seq_ids.index(seq_id)] = float('{:.2f}'.format(math.sqrt(rmsd2 / (_total_models - 1))))
 
             if self.__hold_rmsd_calculation:
                 item['rmsd'] = ret
@@ -872,12 +971,12 @@ class CifReader:
 
             if 'rmsd_in_well_defined_region' in item:
                 rlist.append(item)
-
-        return rlist
-
-    def __calculateFilteredRMSD(self, ret, mean_rmsd, stddev_rmsd, item):
-        """ Calculate filtered RMSD.
         """
+        return rlist, dlist
+    """
+    def __calculateFilteredRMSD(self, ret, mean_rmsd, stddev_rmsd, item):
+        "" Calculate filtered RMSD.
+        ""
 
         _ret = [r for r in ret if r < mean_rmsd + stddev_rmsd]
 
@@ -898,7 +997,7 @@ class CifReader:
                 model = np.polyfit(item['filtered_stddev_rmsd'], item['filtered_mean_rmsd'], 2)
                 for y in [1.0]:
                     item['rmsd_in_well_defined_region'] = float('{:.2f}'.format(model[2] + model[1] * y + model[0] * (y ** 2)))
-
+    """
     def getDictListWithFilter(self, catName, dataItems, filterItems=None):
         """ Return a list of dictionaries of a given category with filter.
         """

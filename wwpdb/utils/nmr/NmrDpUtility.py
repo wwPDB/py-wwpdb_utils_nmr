@@ -142,7 +142,7 @@
 # 13-Dec-2021  M. Yokochi - append sequence spacer between large gap to prevent failure of sequence alignment (DAOTHER-7465, issue #2)
 # 14-Dec-2021  M. Yokochi - report detailed warning message against not superimposed models and strictly overlaid models (DAOTHER-4060, 3018)
 ##
-""" Wrapper class for data processing for NMR data.
+""" Wrapper class for NMR data processing.
     @author: Masashi Yokochi
 """
 import sys
@@ -7771,13 +7771,14 @@ class NmrDpUtility:
                                             try:
 
                                                 _auth_seq_id = int(auth_seq_id)
+
                                             except ValueError:
                                                 continue
 
                                             if _auth_seq_id - _seq_id != offset:
 
                                                 if self.__check_auth_seq:
-                                                    warn = "Auth_seq_ID %r is inconsistent with %r (Auth_asym_ID %s, Auth_comp_ID %s)." % (auth_seq_id, seq_id + offset, auth_asym_id, auth_comp_id)
+                                                    warn = "Auth_seq_ID %r is inconsistent with %r (Auth_asym_ID %s, Auth_comp_ID %s)." % (auth_seq_id, _seq_id + offset, auth_asym_id, auth_comp_id)
 
                                                     self.report.warning.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                                     self.report.setWarning()
@@ -8037,7 +8038,7 @@ class NmrDpUtility:
                                         if _auth_seq_id - _seq_id != offset:
 
                                             if self.__check_auth_seq:
-                                                warn = "Auth_seq_ID %r is inconsistent with %r (Auth_asym_ID %s, Auth_comp_ID %s)." % (auth_seq_id, seq_id + offset, auth_asym_id, auth_comp_id)
+                                                warn = "Auth_seq_ID %r is inconsistent with %r (Auth_asym_ID %s, Auth_comp_ID %s)." % (auth_seq_id, _seq_id + offset, auth_asym_id, auth_comp_id)
 
                                                 self.report.warning.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                                 self.report.setWarning()
@@ -22642,7 +22643,8 @@ class NmrDpUtility:
                         if len(_cif_chains) > 1:
                             chain_id2 = nmr_polymer_sequence[column]['chain_id']
                             concatenated_nmr_chain[chain_id2] = _cif_chains
-                            warn = 'Concatenated sequence in NMR data (chain_id %s) should be split according to the coordinates (chain_id %s) during biocuration.' % (chain_id2, _cif_chains)  # noqa: E501
+                            # warn = 'Concatenated sequence in NMR data (chain_id %s) should be split according to the coordinates (chain_id %s) during biocuration.' % (chain_id2, _cif_chains)  # noqa: E501
+                            warn = 'The chain ID %r of the sequences in the NMR data will be re-assigned to the chain IDs %s in the coordinates during biocuration.' % (chain_id2, _cif_chains)
 
                             self.report.warning.appendDescription('concatenated_sequence', {'file_name': nmr_file_name, 'description': warn})
                             self.report.setWarning()

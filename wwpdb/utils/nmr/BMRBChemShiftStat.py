@@ -1221,7 +1221,7 @@ class BMRBChemShiftStat:
 
         self.loadOtherStatFromCsvFiles()
 
-        write_stat_as_pickle(self.others, self.stat_dir + 'others.pkl')
+        write_stat_as_pickle(sorted(self.others, key=lambda k: k['comp_id']), self.stat_dir + 'others.pkl')
 
     def loadStatFromPickleFiles(self):
         """ Load all BMRB chemical shift statistics from pickle files if possible.

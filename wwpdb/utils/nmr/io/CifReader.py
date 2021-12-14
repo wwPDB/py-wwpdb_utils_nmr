@@ -173,7 +173,7 @@ class CifReader:
         self.__max_features_for_clustering = 8
         self.__min_samples_for_clustering = 2
         self.__max_samples_for_clustering = 6
-        self.__min_sequence_for_clustering = 4
+        self.__min_sequence_for_domain = 8
 
     def parse(self, filePath):
         """ Set file path and parse CIF file, and set internal active data block if possible.
@@ -764,7 +764,7 @@ class CifReader:
         if domains[0][0] == -1:
             return rlist, dlist
 
-        eff_labels = [label for label, count in domains if label != -1 and count >= self.__min_sequence_for_clustering]
+        eff_labels = [label for label, count in domains if label != -1 and count >= self.__min_sequence_for_domain]
         eff_domain_id = {}
 
         _seq_ids = [a['seq_id'] for a in _atom_site_dict[1]]

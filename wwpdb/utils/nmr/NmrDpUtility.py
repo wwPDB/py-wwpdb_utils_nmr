@@ -17761,10 +17761,19 @@ class NmrDpUtility:
 
                                 cif_ps = self.report.getModelPolymerSequenceWithNmrChainId(chain_id)
 
-                                if cif_ps is not None and 'ca_rmsd' in cif_ps and len(cif_ps['ca_rmsd']) > 0 and 'rmsd_in_well_defined_region' in cif_ps['ca_rmsd'][0]:
-                                    rmsd = cif_ps['ca_rmsd'][0]['rmsd_in_well_defined_region']
-                                    result['rmsd_in_well_defined_region'] = rmsd
+                                if cif_ps is not None and 'ca_rmsd' in cif_ps:
 
+                                    if len(cif_ps['ca_rmsd']) > 0 and 'rmsd_in_well_defined_region' in cif_ps['ca_rmsd'][0]:
+                                        rmsd = cif_ps['ca_rmsd'][0]['rmsd_in_well_defined_region']
+                                        result['rmsd_in_well_defined_region'] = rmsd
+                                    """
+                                    if 'well_defined_region' in cif_ps:
+                                        region = cif_ps['well_defined_region']
+                                        _region = []
+                                        for r in region:
+                                            _region.append({'domain_id': r['domain_id'], 'seq_id': r['seq_id'], 'mean_rmsd': r['mean_rmsd'], 'medoid_rmsd': r['medoid_rmsd']})
+                                        result['well_defined_region'] = _region
+                                    """
                                 rci.append(result)
 
                 if len(rci) > 0:

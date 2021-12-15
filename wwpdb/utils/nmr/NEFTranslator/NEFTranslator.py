@@ -77,7 +77,8 @@
 # 28-Oct-2021  M. Yokochi - use simple dictionary for return messaging, instead of JSON dump/load (v3.0.2)
 # 28-Oct-2021  M. Yokochi - resolve case-insensitive saveframe name collision for CIF (v3.0.3, DAOTHER-7389, issue #4)
 # 16-Nov-2021  M. Yokochi - map alphabet code of Entity_assembly_ID to valid integer (v3.0.4, DAOTHER-7475)
-# 13-Dec-2021  M. Yokochi - fill list id (e.g. Assigned_chem_shift_list_ID) using a given saveframe counter (pointer_index_hint) just in case (v3.0.5, DAOTHER-7465, issue #2)
+# 13-Dec-2021  M. Yokochi - fill list id (e.g. Assigned_chem_shift_list_ID) using a given saveframe counter (parent_pointer) just in case (v3.0.5, DAOTHER-7465, issue #2)
+# 15-Dec-2021  M. Yokochi - fix TypeError: unsupported operand type(s) for -: 'NoneType' and 'set' (v3.0.6, DAOTHER-7545)
 ##
 """ Bi-directional translator between NEF and NMR-STAR
     @author: Kumaran Baskaran, Masashi Yokochi
@@ -99,7 +100,7 @@ from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommon
 from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
 from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 
-__version__ = '3.0.5'
+__version__ = '3.0.6'
 
 __pynmrstar_v3_2__ = version.parse(pynmrstar.__version__) >= version.parse("3.2.0")
 __pynmrstar_v3_1__ = version.parse(pynmrstar.__version__) >= version.parse("3.1.0")
@@ -2346,8 +2347,8 @@ class NEFTranslator:
 
     #     return self.check_data(star_data, lp_category, key_items, data_items)
     #
-    def check_data(self, star_data, lp_category, key_items, data_items, allowed_tags=None, disallowed_tags=None, pointer_index_hint=None,
-                   test_on_index=False, enforce_non_zero=False, enforce_sign=False, enforce_range=False, enforce_enum=False,
+    def check_data(self, star_data, lp_category, key_items, data_items, allowed_tags=None, disallowed_tags=None, parent_pointer=None,
+                   test_on_index=False, enforce_non_zero=False, enforce_sign=False, enforce_range=False, enforce_enum=False, enforce_allowed_tags=False,
                    excl_missing_data=False):
         """ Extract data with sanity check from any given loops in an NEF/NMR-STAR file.
             @author: Masashi Yokochi
@@ -2481,6 +2482,11 @@ class NEFTranslator:
                     disallow_tags = list(set(loop.tags) & set(disallowed_tags))
                     raise LookupError("Disallowed %s loop tag%s exist%s." % (disallow_tags, 's' if len(disallow_tags) > 1 else '', '' if len(disallow_tags) > 1 else 's'))
 
+            if enforce_allowed_tags and allowed_tags is not None:
+                extra_tags = (set(loop.tags) | set(allowed_tags)) - set(allowed_tags)
+                if len(extra_tags) > 0:
+                    raise LookupError("Unauthorized items %s must not exists." % extra_tags)
+
             for d in data_items:
                 if 'group-mandatory' in d and d['group-mandatory']:
                     name = d['name']
@@ -2489,7 +2495,9 @@ class NEFTranslator:
                         if group['coexist-with'] is not None:
                             for cw in group['coexist-with']:
                                 if cw not in loop.tags:
-                                    missing_tags = list(set(group['coexist-with']).add(name) - set(loop.tags))
+                                    set_cw = set(group['coexist-with'])
+                                    set_cw.add(name)
+                                    missing_tags = list(set_cw - set(loop.tags))
                                     raise LookupError("Missing mandatory %s loop tag%s." % (missing_tags, 's' if len(missing_tags) > 1 else ''))
 
                     elif group['member-with'] is not None:
@@ -2499,7 +2507,9 @@ class NEFTranslator:
                                 has_member = True
                                 break
                         if not has_member:
-                            missing_tags = list(set(group['member-with']).add(name) - set(loop.tags))
+                            set_mw = set(group['member-with'])
+                            set_mw.add(name)
+                            missing_tags = list(set_mw - set(loop.tags))
                             raise LookupError("Missing mandatory %s loop tag%s." % (missing_tags, 's' if len(missing_tags) > 1 else ''))
 
             tags = [k['name'] for k in key_items]
@@ -2764,8 +2774,8 @@ class NEFTranslator:
                                     i[j] = ent[name] = self.letter_to_int(val, 1)
                                 elif 'default-from' in k and k['default-from'] in tags:
                                     i[j] = ent[name] = self.letter_to_int(i[tags.index(k['default-from'])], 1)
-                                elif 'default-from' in k and k['default-from'] == 'parent' and pointer_index_hint is not None:
-                                    i[j] = ent[name] = pointer_index_hint
+                                elif 'default-from' in k and k['default-from'] == 'parent' and parent_pointer is not None:
+                                    i[j] = ent[name] = parent_pointer
                                 elif 'default' in k:
                                     i[j] = ent[name] = int(k['default'])
                                 elif excl_missing_data:
@@ -3020,8 +3030,8 @@ class NEFTranslator:
                                             i[j] = ent[name] = self.letter_to_int(val, 1)
                                         elif 'default-from' in d and d['default-from'] in tags:
                                             i[j] = ent[name] = self.letter_to_int(i[tags.index(d['default-from'])], 1)
-                                        elif 'default-from' in d and d['default-from'] == 'parent' and pointer_index_hint is not None:
-                                            i[j] = ent[name] = pointer_index_hint
+                                        elif 'default-from' in d and d['default-from'] == 'parent' and parent_pointer is not None:
+                                            i[j] = ent[name] = parent_pointer
                                         elif 'default' in d:
                                             i[j] = ent[name] = int(d['default'])
                                         elif excl_missing_data:
@@ -3612,7 +3622,9 @@ class NEFTranslator:
                     if group['coexist-with'] is not None:
                         for cw in group['coexist-with']:
                             if cw not in sf_tags.keys():
-                                missing_tags = list(set(group['coexist-with']).add(name) - set(sf_tags.keys()))
+                                set_cw = set(group['coexist-with'])
+                                set_cw.add(name)
+                                missing_tags = list(set_cw - set(sf_tags.keys()))
                                 raise LookupError("Missing mandatory %s saveframe tag%s." % (missing_tags, 's' if len(missing_tags) > 1 else ''))
 
                 elif group['member-with'] is not None:
@@ -3622,7 +3634,9 @@ class NEFTranslator:
                             has_member = True
                             break
                     if not has_member:
-                        missing_tags = list(set(group['member-with']).add(name) - set(sf_tags.keys()))
+                        set_mw = set(group['member-with'])
+                        set_mw.add(name)
+                        missing_tags = list(set_mw - set(sf_tags.keys()))
                         raise LookupError("Missing mandatory %s saveframe tag%s." % (missing_tags, 's' if len(missing_tags) > 1 else ''))
 
         for name, val in sf_tags.items():

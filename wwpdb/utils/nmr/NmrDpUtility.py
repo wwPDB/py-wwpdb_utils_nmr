@@ -141,6 +141,7 @@
 # 18-Nov-2021  M. Yokochi - relax detection of distance restraints for nm-res-cya and nm-res-oth (DAOTHER-7491)
 # 13-Dec-2021  M. Yokochi - append sequence spacer between large gap to prevent failure of sequence alignment (DAOTHER-7465, issue #2)
 # 14-Dec-2021  M. Yokochi - report detailed warning message against not superimposed models and exactly overlaid models (DAOTHER-4060, 7544)
+# 15-Dec-2021  M. Yokochi - fix server crash while uploading NMR restraint file in NMR-STAR format (DAOTHER-7545)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -1795,8 +1796,7 @@ class NmrDpUtility:
                                                             'enforce-enum': True},
                                                            {'name': 'Target_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True, 'void-zero': True,
                                                             'range': self.dist_restraint_range,
-                                                            'group': {'member-with': ['Distance_val',
-                                                                                      'Lower_linear_limit',
+                                                            'group': {'member-with': ['Lower_linear_limit',
                                                                                       'Upper_linear_limit',
                                                                                       'Distance_lower_bound_val',
                                                                                       'Distance_upper_bound_val'],
@@ -1807,8 +1807,7 @@ class NmrDpUtility:
                                                             'range': self.dist_restraint_error},
                                                            {'name': 'Lower_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True, 'void-zero': True,
                                                             'range': self.dist_restraint_range,
-                                                            'group': {'member-with': ['Distance_val',
-                                                                                      'Target_val',
+                                                            'group': {'member-with': ['Target_val',
                                                                                       'Upper_linear_limit',
                                                                                       'Distance_lower_bound_val',
                                                                                       'Distance_upper_bound_val'],
@@ -1817,8 +1816,7 @@ class NmrDpUtility:
                                                                       'larger-than': ['Distance_lower_bound_val', 'Distance_upper_bound_val', 'Upper_linear_limit']}},
                                                            {'name': 'Upper_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True, 'void-zero': True,
                                                             'range': self.dist_restraint_range,
-                                                            'group': {'member-with': ['Distance_val',
-                                                                                      'Target_val',
+                                                            'group': {'member-with': ['Target_val',
                                                                                       'Lower_linear_limit',
                                                                                       'Distance_lower_bound_val',
                                                                                       'Distance_upper_bound_val'],
@@ -1827,22 +1825,18 @@ class NmrDpUtility:
                                                                       'larger-than': None}},
                                                            {'name': 'Distance_lower_bound_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True, 'void-zero': True,
                                                             'range': self.dist_restraint_range,
-                                                            'group': {'member-with': ['Distance_val', 'Target_val', 'Lower_linear_limit', 'Upper_linear_limit', 'Distance_upper_bound_val'],
+                                                            'group': {'member-with': ['Target_val', 'Lower_linear_limit', 'Upper_linear_limit', 'Distance_upper_bound_val'],
                                                                       'coexist-with': None,  # ['Distance_upper_bound_val'],
                                                                       'smaller-than': ['Lower_linear_limit'],
                                                                       'larger-than': ['Distance_upper_bound_val', 'Upper_linear_limit']}},
                                                            {'name': 'Distance_upper_bound_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True, 'void-zero': True,
                                                             'range': self.dist_restraint_range,
-                                                            'group': {'member-with': ['Distance_val', 'Target_val', 'Lower_linear_limit', 'Upper_linear_limit', 'Distance_lower_bound_val'],
+                                                            'group': {'member-with': ['Target_val', 'Lower_linear_limit', 'Upper_linear_limit', 'Distance_lower_bound_val'],
                                                                       'coexist-with': None,  # ['Distance_lower_bound_val'],
                                                                       'smaller-than': ['Lower_linear_limit', 'Distance_lower_bound_val'],
                                                                       'larger-than': ['Upper_linear_limit']}},
-                                                           {'name': 'Distance_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
-                                                                    'range': self.dist_restraint_range,
-                                                                    'group': {'member-with': None,
-                                                                              'coexist-with': None,
-                                                                              'smaller-than': None,
-                                                                              'larger-than': None}},
+                                                           {'name': 'Distance_val', 'type': 'range-float', 'mandatory': False,
+                                                                    'range': self.dist_restraint_range},
                                                            {'name': 'Weight', 'type': 'range-float', 'mandatory': False,
                                                             'range': self.weight_range},
                                                            # 'enforce-non-zero': True},
@@ -1933,7 +1927,7 @@ class NmrDpUtility:
                                                           # 'enforce-non-zero': True},
                                                           {'name': 'Target_value', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                            'range': self.rdc_restraint_range,
-                                                           'group': {'member-with': ['RDC_val', 'RDC_lower_linear_limit', 'RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
+                                                           'group': {'member-with': ['RDC_lower_linear_limit', 'RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
                                                                      'coexist-with': None,
                                                                      'smaller-than': ['RDC_lower_linear_limit', 'RDC_lower_bound'],
                                                                      'larger-than': ['RDC_upper_bound', 'RDC_upper_linear_limit']}},
@@ -1941,34 +1935,30 @@ class NmrDpUtility:
                                                            'range': self.rdc_restraint_error},
                                                           {'name': 'RDC_lower_bound', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                            'range': self.rdc_restraint_range,
-                                                           'group': {'member-with': ['RDC_val', 'Target_value', 'RDC_lower_linear_limit', 'RDC_upper_linear_limit', 'RDC_upper_bound'],
+                                                           'group': {'member-with': ['Target_value', 'RDC_lower_linear_limit', 'RDC_upper_linear_limit', 'RDC_upper_bound'],
                                                                      'coexist-with': None,  # ['RDC_upper_bound'],
                                                                      'smaller-than': ['RDC_lower_linear_limit'],
                                                                      'larger-than': ['RDC_upper_bound', 'RDC_upper_linear_limit']}},
                                                           {'name': 'RDC_upper_bound', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                            'range': self.rdc_restraint_range,
-                                                           'group': {'member-with': ['RDC_val', 'Target_value', 'RDC_lower_linear_limit', 'RDC_upper_linear_limit', 'RDC_lower_bound'],
+                                                           'group': {'member-with': ['Target_value', 'RDC_lower_linear_limit', 'RDC_upper_linear_limit', 'RDC_lower_bound'],
                                                                      'coexist-with': None,  # ['RDC_lower_bound'],
                                                                      'smaller-than': ['RDC_lower_linear_limit', 'RDC_lower_bound'],
                                                                      'larger-than': ['RDC_upper_linear_limit']}},
                                                           {'name': 'RDC_lower_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                            'range': self.rdc_restraint_range,
-                                                           'group': {'member-with': ['RDC_val', 'Target_value', 'RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
+                                                           'group': {'member-with': ['Target_value', 'RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
                                                                      'coexist-with': None,  # ['RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
                                                                      'smaller-than': None,
                                                                      'larger-than': ['RDC_lower_bound', 'RDC_upper_bound', 'RDC_upper_linear_limit']}},
                                                           {'name': 'RDC_upper_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                            'range': self.rdc_restraint_range,
-                                                           'group': {'member-with': ['RDC_val', 'Target_value', 'RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
+                                                           'group': {'member-with': ['Target_value', 'RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
                                                                      'coexist-with': None,  # ['RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
                                                                      'smaller-than': ['RDC_lower_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
                                                                      'larger-than': None}},
-                                                          {'name': 'RDC_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
-                                                           'range': self.rdc_restraint_range,
-                                                           'group': {'member-with': None,
-                                                                     'coexist-with': None,
-                                                                     'smaller-than': None,
-                                                                     'larger-than': None}},
+                                                          {'name': 'RDC_val', 'type': 'range-float', 'mandatory': False,
+                                                           'range': self.rdc_restraint_range},
                                                           {'name': 'RDC_val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
                                                            'range': self.rdc_restraint_error},
                                                           {'name': 'RDC_val_scale_factor', 'type': 'range-float', 'mandatory': False,
@@ -2112,8 +2102,7 @@ class NmrDpUtility:
                                            },
                                    'nmr-star': {'dist_restraint': [{'name': 'Target_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                                     'range': self.dist_restraint_range,
-                                                                    'group': {'member-with': ['Distance_val',
-                                                                                              'Lower_linear_limit',
+                                                                    'group': {'member-with': ['Lower_linear_limit',
                                                                                               'Upper_linear_limit',
                                                                                               'Distance_lower_bound_val',
                                                                                               'Distance_upper_bound_val'],
@@ -2124,8 +2113,7 @@ class NmrDpUtility:
                                                                     'range': self.dist_restraint_error},
                                                                    {'name': 'Lower_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                                     'range': self.dist_restraint_range,
-                                                                    'group': {'member-with': ['Distance_val',
-                                                                                              'Target_val',
+                                                                    'group': {'member-with': ['Target_val',
                                                                                               'Upper_linear_limit',
                                                                                               'Distance_lower_bound_val',
                                                                                               'Distance_upper_bound_val'],
@@ -2134,8 +2122,7 @@ class NmrDpUtility:
                                                                               'larger-than': ['Distance_lower_bound_val', 'Distance_upper_bound_val', 'Upper_linear_limit']}},
                                                                    {'name': 'Upper_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                                     'range': self.dist_restraint_range,
-                                                                    'group': {'member-with': ['Distance_val',
-                                                                                              'Target_val',
+                                                                    'group': {'member-with': ['Target_val',
                                                                                               'Lower_linear_limit',
                                                                                               'Distance_lower_bound_val',
                                                                                               'Distance_upper_bound_val'],
@@ -2144,8 +2131,7 @@ class NmrDpUtility:
                                                                               'larger-than': None}},
                                                                    {'name': 'Distance_lower_bound_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                                     'range': self.dist_restraint_range,
-                                                                    'group': {'member-with': ['Distance_val',
-                                                                                              'Target_val',
+                                                                    'group': {'member-with': ['Target_val',
                                                                                               'Lower_linear_limit',
                                                                                               'Upper_linear_limit',
                                                                                               'Distance_upper_bound_val'],
@@ -2154,20 +2140,15 @@ class NmrDpUtility:
                                                                               'larger-than': ['Distance_upper_bound_val', 'Upper_linear_limit']}},
                                                                    {'name': 'Distance_upper_bound_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                                     'range': self.dist_restraint_range,
-                                                                    'group': {'member-with': ['Distance_val',
-                                                                                              'Target_val',
+                                                                    'group': {'member-with': ['Target_val',
                                                                                               'Lower_linear_limit',
                                                                                               'Upper_linear_limit',
                                                                                               'Distance_lower_bound_val'],
                                                                               'coexist-with': None,  # ['Distance_lower_bound_val'],
                                                                               'smaller-than': ['Lower_linear_limit', 'Distance_lower_bound_val'],
                                                                               'larger-than': ['Upper_linear_limit']}},
-                                                                   {'name': 'Distance_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
-                                                                    'range': self.dist_restraint_range,
-                                                                    'group': {'member-with': None,
-                                                                              'coexist-with': None,
-                                                                              'smaller-than': None,
-                                                                              'larger-than': None}}
+                                                                   {'name': 'Distance_val', 'type': 'range-float', 'mandatory': False,
+                                                                    'range': self.dist_restraint_range}
                                                                    ],
                                                 'dihed_restraint': [{'name': 'Angle_lower_bound_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                                      'range': self.dihed_restraint_range,
@@ -2219,8 +2200,7 @@ class NmrDpUtility:
                                                                     ],
                                                 'rdc_restraint': [{'name': 'Target_value', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                                    'range': self.rdc_restraint_range,
-                                                                   'group': {'member-with': ['RDC_val',
-                                                                                             'RDC_lower_linear_limit',
+                                                                   'group': {'member-with': ['RDC_lower_linear_limit',
                                                                                              'RDC_upper_linear_limit',
                                                                                              'RDC_lower_bound',
                                                                                              'RDC_upper_bound'],
@@ -2231,8 +2211,7 @@ class NmrDpUtility:
                                                                    'range': self.rdc_restraint_error},
                                                                   {'name': 'RDC_lower_bound', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                                    'range': self.rdc_restraint_range,
-                                                                   'group': {'member-with': ['RDC_val',
-                                                                                             'Target_value',
+                                                                   'group': {'member-with': ['Target_value',
                                                                                              'RDC_lower_linear_limit',
                                                                                              'RDC_upper_linear_limit',
                                                                                              'RDC_upper_bound'],
@@ -2241,8 +2220,7 @@ class NmrDpUtility:
                                                                              'larger-than': ['RDC_upper_boud', 'RDC_upper_linear_limit']}},
                                                                   {'name': 'RDC_upper_bound', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                                    'range': self.rdc_restraint_range,
-                                                                   'group': {'member-with': ['RDC_val',
-                                                                                             'Target_value',
+                                                                   'group': {'member-with': ['Target_value',
                                                                                              'RDC_lower_linear_limit',
                                                                                              'RDC_upper_linear_limit',
                                                                                              'RDC_lower_bound'],
@@ -2251,22 +2229,18 @@ class NmrDpUtility:
                                                                              'larger-than': ['RDC_upper_linear_limit']}},
                                                                   {'name': 'RDC_lower_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                                    'range': self.rdc_restraint_range,
-                                                                   'group': {'member-with': ['RDC_val', 'Target_value', 'RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
+                                                                   'group': {'member-with': ['Target_value', 'RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
                                                                              'coexist-with': None,  # ['RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
                                                                              'smaller-than': None,
                                                                              'larger-than': ['RDC_lower_bound', 'RDC_upper_bound', 'RDC_upper_linear_limit']}},
                                                                   {'name': 'RDC_upper_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                                    'range': self.rdc_restraint_range,
-                                                                   'group': {'member-with': ['RDC_val', 'Target_value', 'RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
+                                                                   'group': {'member-with': ['Target_value', 'RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
                                                                              'coexist-with': None,  # ['RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
                                                                              'smaller-than': None,
                                                                              'larger-than': ['RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound']}},
-                                                                  {'name': 'RDC_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
-                                                                   'range': self.rdc_restraint_range,
-                                                                   'group': {'member-with': None,
-                                                                             'coexist-with': None,
-                                                                             'smaller-than': None,
-                                                                             'larger-than': None}},
+                                                                  {'name': 'RDC_val', 'type': 'range-float', 'mandatory': False,
+                                                                   'range': self.rdc_restraint_range},
                                                                   {'name': 'RDC_val_err', 'type': 'range-float', 'mandatory': False,
                                                                    'range': self.rdc_restraint_error}
                                                                   ],
@@ -2410,7 +2384,7 @@ class NmrDpUtility:
                                                        'Auth_entity_assembly_ID', 'Auth_asym_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_variant_ID',
                                                        'Sequence_linking', 'Cis_residue', 'NEF_index', 'Sf_ID', 'Entry_ID', 'Assembly_ID'],
                                           'entity': None,
-                                          'chem_shift': ['ID', 'Assembly_atom_ID', 'Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID',
+                                          'chem_shift': ['ID', 'Assembly_atom_ID', 'Entity_assembly_ID', 'Entity_assembly_asym_ID', 'Entity_ID', 'Comp_index_ID',
                                                          'Seq_ID', 'Comp_ID', 'Atom_ID', 'Atom_type', 'Atom_isotope_number',
                                                          'Val', 'Val_err', 'Assign_fig_of_merit', 'Ambiguity_code', 'Ambiguity_set_ID', 'Occupancy', 'Resonance_ID',
                                                          'Auth_entity_assembly_ID', 'Auth_asym_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_atom_ID',
@@ -6522,7 +6496,7 @@ class NmrDpUtility:
                         if self.__verbose:
                             self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Error  - %s\n" % err)
 
-                elif lp_counts['chem_shift'] == 0 and lp_counts['dist_restraint'] > 0:
+                elif lp_counts['chem_shift'] == 0 and lp_counts['dist_restraint'] > 0 and content_type != 'nmr-restraints':
                     err = "A saveframe with a category %r is missing. Please re-upload the %s file." % (lp_category, file_type.upper())
 
                     self.report.error.appendDescription('missing_mandatory_content', {'file_name': file_name, 'description': err})
@@ -8726,6 +8700,9 @@ class NmrDpUtility:
             polymer_sequence_in_loop = input_source_dic['polymer_sequence_in_loop']
 
             content_subtype = 'chem_shift'
+
+            if content_subtype not in polymer_sequence_in_loop: # STAR formatted MR has no chem shift
+                continue
 
             #for content_subtype in polymer_sequence_in_loop.keys():
 
@@ -11616,7 +11593,7 @@ class NmrDpUtility:
             file_name = input_source_dic['file_name']
             file_type = input_source_dic['file_type']
 
-            if input_source_dic['content_subtype'] is None:
+            if input_source_dic['content_type'] == 'nmr-restraints' or input_source_dic['content_subtype'] is None:
                 continue
 
             for content_subtype in input_source_dic['content_subtype'].keys():
@@ -11781,22 +11758,22 @@ class NmrDpUtility:
 
                 else:
 
-                    pointer_index_hint = 0
+                    parent_pointer = 0
 
                     for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
-                        pointer_index_hint += 1
+                        parent_pointer += 1
 
                         sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
                         if not any(loop for loop in sf_data.loops if loop.category == lp_category):
                             continue
 
-                        self.__testDataConsistencyInLoop__(fileListId, file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category, pointer_index_hint)
+                        self.__testDataConsistencyInLoop__(fileListId, file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category, parent_pointer)
 
         return self.report.getTotalErrors() == __errors
 
-    def __testDataConsistencyInLoop__(self, file_list_id, file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category, pointer_index_hint):
+    def __testDataConsistencyInLoop__(self, file_list_id, file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category, parent_pointer):
         """ Perform consistency test on data of interesting loops.
         """
 
@@ -11855,8 +11832,9 @@ class NmrDpUtility:
 
         try:
 
-            lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, disallowed_tags, pointer_index_hint=pointer_index_hint,
+            lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, disallowed_tags, parent_pointer=parent_pointer,
                                              test_on_index=True, enforce_non_zero=True, enforce_sign=True, enforce_range=True, enforce_enum=True,
+                                             enforce_allowed_tags=(file_type == 'nmr-star'),
                                              excl_missing_data=self.__excl_missing_data)[0]
 
             self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'data': lp_data})
@@ -11871,7 +11849,9 @@ class NmrDpUtility:
 
         except LookupError as e:
 
-            self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
+            item = 'format_issue' if 'Unauthorized item' in str(e) else 'missing_mandatory_item'
+
+            self.report.error.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
             self.report.setError()
 
             if self.__verbose:
@@ -11990,7 +11970,8 @@ class NmrDpUtility:
 
             try:
 
-                lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, disallowed_tags, pointer_index_hint=pointer_index_hint,
+                lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, disallowed_tags, parent_pointer=parent_pointer,
+                                                 enforce_allowed_tags=(file_type == 'nmr-star'),
                                                  excl_missing_data=self.__excl_missing_data)[0]
 
                 self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'data': lp_data})
@@ -12042,7 +12023,7 @@ class NmrDpUtility:
 
                     if self.__star_data_type[fileListId] == 'Loop':
 
-                        sf_data = self.__star_data_type[fileListId]
+                        sf_data = self.__star_data[fileListId]
                         sf_framecode = ''
 
                         self.__detectConflictDataInLoop__(file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category)
@@ -12319,11 +12300,11 @@ class NmrDpUtility:
                 sf_category = self.sf_categories[file_type][content_subtype]
                 lp_category = self.lp_categories[file_type][content_subtype]
 
-                pointer_index_hint = 0
+                parent_pointer = 0
 
                 for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
-                    pointer_index_hint += 1
+                    parent_pointer += 1
 
                     sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
@@ -12368,8 +12349,9 @@ class NmrDpUtility:
 
                             try:
 
-                                aux_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, None, pointer_index_hint=pointer_index_hint,
+                                aux_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, None, parent_pointer=parent_pointer,
                                                                   test_on_index=True, enforce_non_zero=True, enforce_sign=True, enforce_range=True, enforce_enum=True,
+                                                                  enforce_allowed_tags=(file_type == 'nmr-star'),
                                                                   excl_missing_data=self.__excl_missing_data)[0]
 
                                 self.__aux_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'data': aux_data})
@@ -12377,7 +12359,7 @@ class NmrDpUtility:
                                 if content_subtype == 'spectral_peak':
                                     self.__testDataConsistencyInAuxLoopOfSpectralPeak(file_name, file_type, sf_framecode, num_dim, lp_category, aux_data)
                                 if file_type == 'nmr-star' and content_subtype == 'spectral_peak_alt':
-                                    self.__testDataConsistencyInAuxLoopOfSpectralPeakAlt(file_name, file_type, sf_framecode, num_dim, lp_category, aux_data, sf_data, pointer_index_hint)
+                                    self.__testDataConsistencyInAuxLoopOfSpectralPeakAlt(file_name, file_type, sf_framecode, num_dim, lp_category, aux_data, sf_data, parent_pointer)
 
                             except KeyError as e:
 
@@ -12389,7 +12371,9 @@ class NmrDpUtility:
 
                             except LookupError as e:
 
-                                self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
+                                item = 'format_issue' if 'Unauthorized item' in str(e) else 'missing_mandatory_item'
+
+                                self.report.error.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
                                 self.report.setError()
 
                                 if self.__verbose:
@@ -12511,7 +12495,8 @@ class NmrDpUtility:
 
                                 try:
 
-                                    aux_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, None, pointer_index_hint=pointer_index_hint,
+                                    aux_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, None, parent_pointer=parent_pointer,
+                                                                      enforce_allowed_tags=(file_type == 'nmr-star'),
                                                                       excl_missing_data=self.__excl_missing_data)[0]
 
                                     self.__aux_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'data': aux_data})
@@ -12519,7 +12504,7 @@ class NmrDpUtility:
                                     if content_subtype == 'spectral_peak':
                                         self.__testDataConsistencyInAuxLoopOfSpectralPeak(file_name, file_type, sf_framecode, num_dim, lp_category, aux_data)
                                     if file_type == 'nmr-star' and content_subtype == 'spectral_peak_alt':
-                                        self.__testDataConsistencyInAuxLoopOfSpectralPeakAlt(file_name, file_type, sf_framecode, num_dim, lp_category, aux_data, sf_data, pointer_index_hint)
+                                        self.__testDataConsistencyInAuxLoopOfSpectralPeakAlt(file_name, file_type, sf_framecode, num_dim, lp_category, aux_data, sf_data, parent_pointer)
 
                                 except:  # noqa: E722 pylint: disable=bare-except
                                     pass
@@ -12730,7 +12715,7 @@ class NmrDpUtility:
                         if self.__verbose:
                             self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoopOfSpectralPeak() ++ ValueError  - %s\n" % err)
 
-    def __testDataConsistencyInAuxLoopOfSpectralPeakAlt(self, file_name, file_type, sf_framecode, num_dim, lp_category, aux_data, sf_data, pointer_index_hint):
+    def __testDataConsistencyInAuxLoopOfSpectralPeakAlt(self, file_name, file_type, sf_framecode, num_dim, lp_category, aux_data, sf_data, parent_pointer):
         """ Perform consistency test on data of spectral peak loops.
         """
 
@@ -12816,7 +12801,8 @@ class NmrDpUtility:
                     data_items = self.aux_data_items[file_type][content_subtype][_pk_char_category]
                     allowed_tags = self.aux_allowed_tags[file_type][content_subtype][_pk_char_category]
 
-                    _pk_char_data = self.__nefT.check_data(sf_data, _pk_char_category, key_items, data_items, allowed_tags, None, pointer_index_hint=pointer_index_hint,
+                    _pk_char_data = self.__nefT.check_data(sf_data, _pk_char_category, key_items, data_items, allowed_tags, None, parent_pointer=parent_pointer,
+                                                           enforce_allowed_tags=(file_type == 'nmr-star'),
                                                            excl_missing_data=self.__excl_missing_data)[0]
 
                 pk_id_name = 'Peak_ID'
@@ -12856,6 +12842,16 @@ class NmrDpUtility:
 
                             if self.__verbose:
                                 self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoopOfSpectralPeakAlt() ++ ValueError  - %s\n" % err)
+
+            except LookupError as e:
+
+                item = 'format_issue' if 'Unauthorized item' in str(e) else 'missing_mandatory_item'
+
+                self.report.error.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoopOfSpectralPeakAlt() ++ LookupError  - %s" % str(e))
 
             except ValueError as e:
 
@@ -13234,6 +13230,7 @@ class NmrDpUtility:
 
                 try:
                     lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None, None,
+                                                     enforce_allowed_tags=(file_type == 'nmr-star'),
                                                      excl_missing_data=self.__excl_missing_data)[0]
                 except:  # noqa: E722 pylint: disable=bare-except
                     return False
@@ -15659,6 +15656,7 @@ class NmrDpUtility:
         try:
 
             aux_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, None, None,
+                                              enforce_allowed_tags=(file_type == 'nmr-star'),
                                               excl_missing_data=self.__excl_missing_data)[0]
 
             if aux_data is not None:
@@ -15842,6 +15840,16 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write("+NmrDpUtility.__testResidueVariant() ++ Error  - %s\n" % err)
 
+        except LookupError as e:
+
+            item = 'format_issue' if 'Unauthorized item' in str(e) else 'missing_mandatory_item'
+
+            self.report.error.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__testResidueVariant() ++ LookupError  - %s" % str(e))
+
         except ValueError as e:
 
             self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
@@ -15992,19 +16000,25 @@ class NmrDpUtility:
 
         if content_subtype in ('dist_restraint', 'dihed_restraint', 'rdc_restraint'):
 
-            type = sf_data.get_tag('restraint_origin' if file_type == 'nef' else 'Constraint_type')
-            if len(type) > 0 and type[0] not in self.empty_value:
-                ent['exp_type'] = type[0]
-            else:
+            if len(sf_framecode) == 0:
                 ent['exp_type'] = 'Unknown'
+            else:
+                type = sf_data.get_tag('restraint_origin' if file_type == 'nef' else 'Constraint_type')
+                if len(type) > 0 and type[0] not in self.empty_value:
+                    ent['exp_type'] = type[0]
+                else:
+                    ent['exp_type'] = 'Unknown'
 
         elif content_subtype.startswith('spectral_peak'):
 
-            type = sf_data.get_tag('experiment_type' if file_type == 'nef' else 'Experiment_type')
-            if len(type) > 0 and type[0] not in self.empty_value:
-                ent['exp_type'] = type[0]
-            else:
+            if len(sf_framecode) == 0:
                 ent['exp_type'] = 'Unknown'
+            else:
+                type = sf_data.get_tag('experiment_type' if file_type == 'nef' else 'Experiment_type')
+                if len(type) > 0 and type[0] not in self.empty_value:
+                    ent['exp_type'] = type[0]
+                else:
+                    ent['exp_type'] = 'Unknown'
 
         if content_subtype in ('chem_shift', 'dist_restraint', 'dihed_restraint', 'rdc_restraint', 'spectral_peak', 'spectral_peak_alt'):
 
@@ -23582,6 +23596,7 @@ class NmrDpUtility:
 
             try:
                 lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None, None,
+                                                 enforce_allowed_tags=(file_type == 'nmr-star'),
                                                  excl_missing_data=self.__excl_missing_data)[0]
             except:  # noqa: E722 pylint: disable=bare-except
                 return False
@@ -24356,6 +24371,7 @@ class NmrDpUtility:
             if orig_lp_data is None:
                 try:
                     orig_lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None, None,
+                                                          enforce_allowed_tags=(file_type == 'nmr-star'),
                                                           excl_missing_data=self.__excl_missing_data)[0]
                 except:  # noqa: E722 pylint: disable=bare-except
                     pass
@@ -25972,6 +25988,7 @@ class NmrDpUtility:
                 try:
 
                     lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None, None,
+                                                     enforce_allowed_tags=(file_type == 'nmr-star'),
                                                      excl_missing_data=self.__excl_missing_data)[0]
 
                     self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'data': lp_data})
@@ -26357,6 +26374,7 @@ class NmrDpUtility:
                 try:
 
                     lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None, None,
+                                                     enforce_allowed_tags=(file_type == 'nmr-star'),
                                                      excl_missing_data=self.__excl_missing_data)[0]
 
                     self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'data': lp_data})
@@ -27235,6 +27253,7 @@ class NmrDpUtility:
                     try:
 
                         lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None, None,
+                                                         enforce_allowed_tags=(file_type == 'nmr-star'),
                                                          excl_missing_data=self.__excl_missing_data)[0]
 
                         self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'data': lp_data})
@@ -27896,6 +27915,7 @@ class NmrDpUtility:
                                                 try:
 
                                                     lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None, None,
+                                                                                     enforce_allowed_tags=(file_type == 'nmr-star'),
                                                                                      excl_missing_data=self.__excl_missing_data)[0]
 
                                                     self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': w['sf_framecode'], 'data': lp_data})
@@ -27961,6 +27981,7 @@ class NmrDpUtility:
                                                 try:
 
                                                     lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None, None,
+                                                                                     enforce_allowed_tags=(file_type == 'nmr-star'),
                                                                                      excl_missing_data=self.__excl_missing_data)[0]
 
                                                     self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': w['sf_framecode'], 'data': lp_data})
@@ -28547,6 +28568,7 @@ class NmrDpUtility:
                     try:
 
                         lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None, None,
+                                                         enforce_allowed_tags=(file_type == 'nmr-star'),
                                                          excl_missing_data=self.__excl_missing_data)[0]
 
                         self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'data': lp_data})
@@ -29781,6 +29803,7 @@ class NmrDpUtility:
                 try:
 
                     lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None, None,
+                                                     enforce_allowed_tags=(file_type == 'nmr-star'),
                                                      excl_missing_data=self.__excl_missing_data)[0]
 
                     self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'data': lp_data})
@@ -30020,6 +30043,7 @@ class NmrDpUtility:
                 try:
 
                     lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None, None,
+                                                     enforce_allowed_tags=(file_type == 'nmr-star'),
                                                      excl_missing_data=self.__excl_missing_data)[0]
 
                     self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'data': lp_data})

@@ -39,7 +39,7 @@ from sklearn.cluster import DBSCAN
 import collections
 from rmsd.calculate_rmsd import NAMES_ELEMENT, centroid, kabsch_rmsd, quaternion_rmsd, reorder_hungarian, reorder_brute, reorder_distance, check_reflections, rmsd # pylint: disable=no-name-in-module, import-error, unused-import
 
-ROTATION_METHOD = kabsch_rmsd # quaternion_rmsd, or None
+ROTATION_METHOD = quaternion_rmsd # kabsch_rmsd # quaternion_rmsd, or None
 REORDER_METHOD = reorder_hungarian # reorder_brute, reorder_distance, or None
 USE_REFLECTIONS = False  # scan through reflections in planes (e.g. Y transformed to -Y -> X, -Y, Z) and axis changes, (e.g. X and Z coords exchanged -> Z, Y, X). This will affect stereo-chemistry.
 USE_REFLECTIONS_KEEP_STEREO = False  # scan through reflections in planes (e.g. Y transformed to -Y -> X, -Y, Z) and axis changes, (e.g. X and Z coords exchanged -> Z, Y, X). Stereo-chemistry will be kept.

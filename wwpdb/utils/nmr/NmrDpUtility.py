@@ -21813,7 +21813,7 @@ class NmrDpUtility:
 
                 for chain_id, r in strict_overlaid_models.items():
 
-                    warn = 'Coordinates (chain_id %s) are strictly overlaid, The mean RMSD in estimated well-defined region (range_of_seq_id %s, number_of_monomers %s, number_of_gaps %s, percent_of_core %s %%) is %s angstromes. We encourage you to deposit a sufficient number of models in the ensemble.' % (chain_id, r['range'], r['monomers'], r['gaps'], r['core'], r['mean_rmsd'])  # noqa: E501
+                    warn = 'Coordinates (chain_id %s) are strictly overlaid, The mean RMSD in estimated well-defined region (range_of_seq_id %s, number_of_monomers %s, number_of_gaps %s, percent_of_core %s %%) is %s angstromes. We encourage you to deposit a appropriate ensemble of coordinate models.' % (chain_id, r['range'], r['monomers'], r['gaps'], r['core'], r['mean_rmsd'])  # noqa: E501
 
                     self.report.warning.appendDescription('encouragement', {'file_name': file_name, 'category': 'atom_site', 'description': warn})
                     self.report.setWarning()

@@ -39,8 +39,8 @@ from sklearn.cluster import DBSCAN
 import collections
 from rmsd.calculate_rmsd import NAMES_ELEMENT, centroid, kabsch_rmsd, quaternion_rmsd, reorder_hungarian, reorder_brute, reorder_distance, check_reflections, rmsd # pylint: disable=no-name-in-module, import-error, unused-import
 
-ROTATION_METHOD = quaternion_rmsd # kabsch_rmsd # quaternion_rmsd, or None
-REORDER_METHOD = reorder_hungarian # reorder_brute, reorder_distance, or None
+ROTATION_METHOD = quaternion_rmsd # must be one of kabsch_rmsd, quaternion_rmsd, None
+REORDER_METHOD = reorder_hungarian # must be one of reorder_hungarian, reorder_brute, reorder_distance, None
 USE_REFLECTIONS = False  # scan through reflections in planes (e.g. Y transformed to -Y -> X, -Y, Z) and axis changes, (e.g. X and Z coords exchanged -> Z, Y, X). This will affect stereo-chemistry.
 USE_REFLECTIONS_KEEP_STEREO = False  # scan through reflections in planes (e.g. Y transformed to -Y -> X, -Y, Z) and axis changes, (e.g. X and Z coords exchanged -> Z, Y, X). Stereo-chemistry will be kept.
 REORDER = False
@@ -873,8 +873,7 @@ class CifReader:
 
             r = np.zeros((_total_models, _total_models), dtype=float)
 
-            mean_rmsd = 0.0
-            combinations = 0
+            _rmsd = []
 
             for ref_model_id in range(1, _total_models):
 
@@ -889,23 +888,20 @@ class CifReader:
                     _atom_site_test = _atom_site_dict[test_model_id]
                     _atom_site_q = [a for a, l in zip(_atom_site_test, list_labels) if l == label]
 
-                    _rmsd = calculate_rmsd(_atom_site_p, _atom_site_q)
+                    _rmsd_ = calculate_rmsd(_atom_site_p, _atom_site_q)
 
-                    r[ref_model_id - 1, test_model_id - 1] = _rmsd
-                    r[test_model_id - 1, ref_model_id - 1] = _rmsd
+                    r[ref_model_id - 1, test_model_id - 1] = _rmsd_
+                    r[test_model_id - 1, ref_model_id - 1] = _rmsd_
 
-                    mean_rmsd += _rmsd
-                    combinations += 1
+                    _rmsd.append(_rmsd_)
 
-            mean_rmsd /= combinations
-
-            item['mean_rmsd'] = float('{:.2f}'.format(mean_rmsd))
+            item['mean_rmsd'] = float('{:.2f}'.format(np.mean(np.array(_rmsd))))
 
             _, v = np.linalg.eig(r)
             x = np.delete(np.abs(v), np.s_[1:], 1)
-            item['medoid_model_id'] = int(np.argmin(x, axis=0)[0]) + 1
+            ref_model_id = int(np.argmin(x, axis=0)[0]) + 1
 
-            ref_model_id = item['medoid_model_id']
+            item['medoid_model_id'] = ref_model_id
 
             _atom_site_ref = _atom_site_dict[ref_model_id]
             _atom_site_p = [a for a, l in zip(_atom_site_ref, list_labels) if l == label]

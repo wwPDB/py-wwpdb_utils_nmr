@@ -18,7 +18,7 @@
 # 08-May-2020   my  - make sure parse() is run only once (DAOTHER-5654)
 # 20-Nov-2020   my  - additional support for insertion code in getPolymerSequence() (DAOTHER-6128)
 # 29-Jun-2021   my  - add 'auth_chain_id', 'identical_auth_chain_id' in results of getPolymerSequence() if possible (DAOTHER-7108)
-# 14-Dec-2021   my  - precise RMSD calculation with domain and modoid model identification (DAOTHER-4060, 3018)
+# 14-Dec-2021   my  - precise RMSD calculation with domain and modoid model identification (DAOTHER-4060, 7544)
 ##
 """ A collection of classes for parsing CIF files.
 """

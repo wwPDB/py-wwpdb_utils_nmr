@@ -140,7 +140,7 @@
 # 18-Nov-2021  M. Yokochi - detect content type of XPLOR-NIH hydrogen bond geometry restraints (DAOTHER-7478)
 # 18-Nov-2021  M. Yokochi - relax detection of distance restraints for nm-res-cya and nm-res-oth (DAOTHER-7491)
 # 13-Dec-2021  M. Yokochi - append sequence spacer between large gap to prevent failure of sequence alignment (DAOTHER-7465, issue #2)
-# 14-Dec-2021  M. Yokochi - report detailed warning message against not superimposed models and strictly overlaid models (DAOTHER-4060, 3018)
+# 14-Dec-2021  M. Yokochi - report detailed warning message against not superimposed models and exactly overlaid models (DAOTHER-4060, 7544)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -21724,7 +21724,7 @@ class NmrDpUtility:
             input_source.setItemValue('polymer_sequence', poly_seq)
 
             not_superimposed_models = {}
-            strict_overlaid_models = {}
+            exactly_overlaid_models = {}
 
             for ps in poly_seq:
 
@@ -21772,8 +21772,8 @@ class NmrDpUtility:
                                         not_superimposed_models[chain_id].append(rmsd_item)
 
                                 if r['rmsd_in_well_defined_region'] < 0.01:
-                                    if chain_id not in strict_overlaid_models:
-                                        strict_overlaid_models[chain_id] = []
+                                    if chain_id not in exactly_overlaid_models:
+                                        exactly_overlaid_models[chain_id] = []
                                     domain_id = r['domain_id']
                                     domain = next((r for r in region if r['domain_id'] == domain_id), None)
                                     if domain is not None and domain['mean_rmsd'] < 0.01:
@@ -21782,7 +21782,7 @@ class NmrDpUtility:
                                                        'core': domain['percent_of_core'],
                                                        'mean_rmsd': domain['mean_rmsd'],
                                                        'range': domain['range_of_seq_id']}
-                                        strict_overlaid_models[chain_id] = region_item
+                                        exactly_overlaid_models[chain_id] = region_item
 
             if len(not_superimposed_models) > 0:
 
@@ -21809,11 +21809,11 @@ class NmrDpUtility:
                     if self.__verbose:
                         self.__lfh.write("+NmrDpUtility.__extractCoordPolymerSequence() ++ Warning  - %s" % warn)
 
-            if len(strict_overlaid_models) > 0:
+            if len(exactly_overlaid_models) > 0:
 
-                for chain_id, r in strict_overlaid_models.items():
+                for chain_id, r in exactly_overlaid_models.items():
 
-                    warn = 'Coordinates (chain_id %s) are strictly overlaid, The mean RMSD in estimated well-defined region (range_of_seq_id %s, number_of_monomers %s, number_of_gaps %s, percent_of_core %s %%) is %s angstromes. We encourage you to deposit a appropriate ensemble of coordinate models.' % (chain_id, r['range'], r['monomers'], r['gaps'], r['core'], r['mean_rmsd'])  # noqa: E501
+                    warn = 'Coordinates (chain_id %s) are exactly overlaid, The mean RMSD in estimated well-defined region (range_of_seq_id %s, number_of_monomers %s, number_of_gaps %s, percent_of_core %s %%) is %s angstromes. We encourage you to deposit a appropriate ensemble of coordinate models.' % (chain_id, r['range'], r['monomers'], r['gaps'], r['core'], r['mean_rmsd'])  # noqa: E501
 
                     self.report.warning.appendDescription('encouragement', {'file_name': file_name, 'category': 'atom_site', 'description': warn})
                     self.report.setWarning()

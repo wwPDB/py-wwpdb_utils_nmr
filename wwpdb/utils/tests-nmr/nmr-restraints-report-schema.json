@@ -298,6 +298,10 @@
           "type": "number",
           "minimum": 0.0
         },
+        "range_of_seq_id": {
+          "type": "string",
+          "minLength": 1
+        },
         "seq_id": {
           "description": "List of sequence IDs involved in a well-defined region.",
           "type": "array",

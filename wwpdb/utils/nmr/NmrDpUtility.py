@@ -306,12 +306,15 @@ def beutify_seq_id(s1, s2):
     """ Truncate negative sequence IDs of s1 and s2 and insert spacing between the large gap.
     """
 
-    if s1['seq_id'] != s2['seq_id']:
-        return s1, s2
+    _s1 = fill_blank_comp_id(s2, s1)
+    _s2 = fill_blank_comp_id(s1, s2)
 
-    _seq_id = [seq_id for seq_id in s1['seq_id'] if seq_id > 0]
-    _comp_id_1 = [comp_id for seq_id, comp_id in zip(s1['seq_id'], s1['comp_id']) if seq_id > 0]
-    _comp_id_2 = [comp_id for seq_id, comp_id in zip(s1['seq_id'], s2['comp_id']) if seq_id > 0]
+    if _s1['seq_id'] != _s2['seq_id']:
+        return _s1, _s2
+
+    _seq_id = [seq_id for seq_id in _s1['seq_id'] if seq_id > 0]
+    _comp_id_1 = [comp_id for seq_id, comp_id in zip(_s1['seq_id'], _s1['comp_id']) if seq_id > 0]
+    _comp_id_2 = [comp_id for seq_id, comp_id in zip(_s1['seq_id'], _s2['comp_id']) if seq_id > 0]
 
     gap_seq_id = []
     gap_index = []
@@ -327,7 +330,7 @@ def beutify_seq_id(s1, s2):
             gap_index.append(lp)
 
     if len(gap_seq_id) == 0:
-        return {'chain_id': s1['chain_id'], 'seq_id': _seq_id, 'comp_id': _comp_id_1}, {'chain_id': s2['chain_id'], 'seq_id': _seq_id, 'comp_id': _comp_id_2}
+        return {'chain_id': _s1['chain_id'], 'seq_id': _seq_id, 'comp_id': _comp_id_1}, {'chain_id': _s2['chain_id'], 'seq_id': _seq_id, 'comp_id': _comp_id_2}
 
     _seq_id.extend(gap_seq_id)
     _seq_id.sort()
@@ -337,7 +340,7 @@ def beutify_seq_id(s1, s2):
             _comp_id_1.insert(lp, '.')
             _comp_id_2.insert(lp, '.')
 
-    return {'chain_id': s1['chain_id'], 'seq_id': _seq_id, 'comp_id': _comp_id_1}, {'chain_id': s2['chain_id'], 'seq_id': _seq_id, 'comp_id': _comp_id_2}
+    return {'chain_id': _s1['chain_id'], 'seq_id': _seq_id, 'comp_id': _comp_id_1}, {'chain_id': _s2['chain_id'], 'seq_id': _seq_id, 'comp_id': _comp_id_2}
 
 
 def get_middle_code(ref_seq, test_seq):
@@ -2384,7 +2387,7 @@ class NmrDpUtility:
                                                        'Auth_entity_assembly_ID', 'Auth_asym_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_variant_ID',
                                                        'Sequence_linking', 'Cis_residue', 'NEF_index', 'Sf_ID', 'Entry_ID', 'Assembly_ID'],
                                           'entity': None,
-                                          'chem_shift': ['ID', 'Assembly_atom_ID', 'Entity_assembly_ID', 'Entity_assembly_asym_ID', 'Entity_ID', 'Comp_index_ID',
+                                          'chem_shift': ['ID', 'Assembly_atom_ID', 'Entity_assembly_ID', 'Entity_assembly_asym_ID', 'Entity_ID', 'Comp_index_ID',  # DAOTHER-7545 'Entity_assembly_asym_ID' is not authorized data item acoording to NMR-STAR dictionary, but it is still used conventionally
                                                          'Seq_ID', 'Comp_ID', 'Atom_ID', 'Atom_type', 'Atom_isotope_number',
                                                          'Val', 'Val_err', 'Assign_fig_of_merit', 'Ambiguity_code', 'Ambiguity_set_ID', 'Occupancy', 'Resonance_ID',
                                                          'Auth_entity_assembly_ID', 'Auth_asym_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_atom_ID',
@@ -6408,7 +6411,7 @@ class NmrDpUtility:
 
             self.__sf_category_list, self.__lp_category_list = self.__nefT.get_data_content(self.__star_data[fileListId], self.__star_data_type[fileListId])
 
-            is_valid, messages, corrections = self.__nefT.resolve_sf_names_for_cif(self.__star_data[fileListId], self.__star_data_type[fileListId]) # DAOTHER-7389, issue #4
+            is_valid, messages, corrections = self.__nefT.resolve_sf_names_for_cif(self.__star_data[fileListId], self.__star_data_type[fileListId])  # DAOTHER-7389, issue #4
             self.__sf_name_corr.append(corrections)
 
             if not is_valid:
@@ -6422,7 +6425,7 @@ class NmrDpUtility:
 
             tags_with_null_str = []
 
-            for sf_category in self.__sf_category_list: # DAOTHER-5896
+            for sf_category in self.__sf_category_list:  # DAOTHER-5896
 
                 for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
@@ -6478,7 +6481,7 @@ class NmrDpUtility:
 
                 if not self.__has_star_entity and self.__combined_mode:
 
-                    if self.__resolve_conflict and self.__update_poly_seq: # DAOTHER-6694
+                    if self.__resolve_conflict and self.__update_poly_seq:  # DAOTHER-6694
                         warn = "A saveframe with a category %r is missing in the NMR data." % lp_category
 
                         self.report.warning.appendDescription('missing_saveframe', {'file_name': file_name, 'description': warn})
@@ -6660,7 +6663,7 @@ class NmrDpUtility:
                 mr_format_name = 'other format'
 
             atom_like_names = self.__csStat.getAtomLikeNameSet(minimum_len=(2 if file_type == 'nm-res-oth' or is_aux_amb else 1))
-            cs_atom_like_names = list(filter(self.__isHalfSpin, atom_like_names)) # DAOTHER-7491
+            cs_atom_like_names = list(filter(self.__isHalfSpin, atom_like_names))  # DAOTHER-7491
 
             has_chem_shift = False
             has_dist_restraint = False
@@ -7101,7 +7104,7 @@ class NmrDpUtility:
                     residue_pointers = []
 
                 atom_like_names_oth = self.__csStat.getAtomLikeNameSet(1)
-                cs_atom_like_names_oth = list(filter(self.__isHalfSpin, atom_like_names_oth)) # DAOTHER-7491
+                cs_atom_like_names_oth = list(filter(self.__isHalfSpin, atom_like_names_oth))  # DAOTHER-7491
 
                 one_letter_codes = self.monDict3.values()
                 three_letter_codes = self.monDict3.keys()
@@ -7372,7 +7375,7 @@ class NmrDpUtility:
                     if has_amb_coord and (not has_first_atom or has_ens_coord):
                         has_amb_coord = False
 
-            if file_type in ('nm-res-cya', 'nm-res-oth') and not has_dist_restraint: # DAOTHER-7491
+            if file_type in ('nm-res-cya', 'nm-res-oth') and not has_dist_restraint:  # DAOTHER-7491
 
                 with open(file_path, 'r', encoding='UTF-8') as ifp:
 
@@ -7633,7 +7636,7 @@ class NmrDpUtility:
 
         file_type = input_source_dic['file_type']
 
-        if file_type == 'nef': # DAOTHER-7389, issue #3, allow empty for 'chem_shift'
+        if file_type == 'nef':  # DAOTHER-7389, issue #3, allow empty for 'chem_shift'
             return self.__nefT.get_nef_seq(sf_data, lp_category=self.lp_categories[file_type][content_subtype],
                                            allow_empty=(content_subtype in ('chem_shift', 'spectral_peak')), allow_gap=(content_subtype not in ('poly_seq', 'entity')))
 
@@ -8701,7 +8704,7 @@ class NmrDpUtility:
 
             content_subtype = 'chem_shift'
 
-            if content_subtype not in polymer_sequence_in_loop: # STAR formatted MR has no chem shift
+            if content_subtype not in polymer_sequence_in_loop:  # DAOTHER-7545 NMR-STAR formatted MR has no chem shift
                 continue
 
             #for content_subtype in polymer_sequence_in_loop.keys():
@@ -10715,10 +10718,10 @@ class NmrDpUtility:
 
         try:
 
-            if file_type == 'nef': # DAOTHER-7389, issue #3, allow empty for 'chem_shift'
+            if file_type == 'nef':  # DAOTHER-7389, issue #3, allow empty for 'chem_shift'
                 pairs = self.__nefT.get_nef_comp_atom_pair(sf_data, lp_category,
                                                            allow_empty=(content_subtype in ('chem_shift', 'spectral_peak')))[0]
-            else: # DAOTHER-7389, issue #3, allow empty for 'chem_shift'
+            else:  # DAOTHER-7389, issue #3, allow empty for 'chem_shift'
                 pairs = self.__nefT.get_star_comp_atom_pair(sf_data, lp_category,
                                                             allow_empty=(content_subtype in ('chem_shift', 'spectral_peak')))[0]
 
@@ -11811,7 +11814,7 @@ class NmrDpUtility:
                     _d = copy.copy(d)
                     if '%s' in d['name']:
                         _d['name'] = d['name'] % dim
-                    if 'default-from' in d and '%s' in d['default-from']: # DAOTHER-7421
+                    if 'default-from' in d and '%s' in d['default-from']:  # DAOTHER-7421
                         _d['default-from'] = d['default-from'] % dim
                     data_items.append(_d)
 
@@ -12624,7 +12627,7 @@ class NmrDpUtility:
 
                             last_point = first_point - sp_width
 
-                            min_point = last_point - (sp_width * (1.0 if self.__bmrb_only else 3.0) if abs[i - 1] else 0.0) # DAOTHER-7389, issue #1, relax expected range of peak position by three times of spectral width if absolute_peak_positios are true
+                            min_point = last_point - (sp_width * (1.0 if self.__bmrb_only else 3.0) if abs[i - 1] else 0.0)  # DAOTHER-7389, issue #1, relax expected range of peak position by three times of spectral width if absolute_peak_positios are true
                             max_point = first_point + (sp_width * (1.0 if self.__bmrb_only else 3.0) if abs[i - 1] else 0.0)
 
                             min_limit = min_point
@@ -12768,7 +12771,7 @@ class NmrDpUtility:
 
                             last_point = first_point - sp_width
 
-                            min_point = last_point - (sp_width * (1.0 if self.__bmrb_only else 3.0) if abs[i - 1] else 0.0) # DAOTHER-7389, issue #1, relax expected range of peak position by three times of spectral width if absolute_peak_positios are true
+                            min_point = last_point - (sp_width * (1.0 if self.__bmrb_only else 3.0) if abs[i - 1] else 0.0)  # DAOTHER-7389, issue #1, relax expected range of peak position by three times of spectral width if absolute_peak_positios are true
                             max_point = first_point + (sp_width * (1.0 if self.__bmrb_only else 3.0) if abs[i - 1] else 0.0)
 
                             min_limit = min_point
@@ -14662,7 +14665,7 @@ class NmrDpUtility:
                                             atom_id2 = i[atom_id_names[d2]]
 
                                             if chain_id2 in self.empty_value or seq_id2 in self.empty_value or comp_id2 in self.empty_value or atom_id2 in self.empty_value or\
-                                               (d < d2 and (chain_id2 != chain_id or seq_id2 != seq_id or comp_id2 != comp_id)): # DAOTHER-7389, issue #2
+                                               (d < d2 and (chain_id2 != chain_id or seq_id2 != seq_id or comp_id2 != comp_id)):  # DAOTHER-7389, issue #2
 
                                                 err = '[Check row of %s %s] Coherence transfer type is jcoupling. However, assignment of spectral peak is inconsistent with the type, (%s) vs (%s).' %\
                                                       (index_tag, i[index_tag], self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id, comp_id_names[d], comp_id, atom_id_names[d], atom_id),
@@ -14683,7 +14686,7 @@ class NmrDpUtility:
                                             atom_id2 = i[atom_id_names[d2]]
 
                                             if chain_id2 in self.empty_value or seq_id2 in self.empty_value or comp_id2 in self.empty_value or atom_id2 in self.empty_value or\
-                                               (d < d2 and (chain_id2 != chain_id or abs(seq_id2 - seq_id) > 1)): # DAOTHER-7389, issue #2
+                                               (d < d2 and (chain_id2 != chain_id or abs(seq_id2 - seq_id) > 1)):  # DAOTHER-7389, issue #2
 
                                                 err = '[Check row of %s %s] Coherence transfer type is relayed. However, assignment of spectral peak is inconsistent with the type, (%s) vs (%s).' %\
                                                       (index_tag, i[index_tag], self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id, comp_id_names[d], comp_id, atom_id_names[d], atom_id),
@@ -22359,7 +22362,7 @@ class NmrDpUtility:
                 _s2 = s2 if offset_2 == 0 else fill_blank_comp_id_with_offset(s2, offset_2)
 
                 if conflict > 0 and has_large_seq_gap(_s1, _s2):  # DAOTHER-7465
-                    __s1, __s2 = beutify_seq_id(fill_blank_comp_id(_s2, _s1), fill_blank_comp_id(_s1, _s2))
+                    __s1, __s2 = beutify_seq_id(_s1, _s2)
                     _s1_ = __s1
                     _s2_ = __s2
 
@@ -22475,7 +22478,7 @@ class NmrDpUtility:
                 _s2 = s2 if offset_2 == 0 else fill_blank_comp_id_with_offset(s2, offset_2)
 
                 if conflict > 0 and has_large_seq_gap(_s1, _s2):  # DAOTHER-7465
-                    __s1, __s2 = beutify_seq_id(fill_blank_comp_id(_s2, _s1), fill_blank_comp_id(_s1, _s2))
+                    __s1, __s2 = beutify_seq_id(_s1, _s2)
                     _s1_ = __s1
                     _s2_ = __s2
 
@@ -22705,7 +22708,7 @@ class NmrDpUtility:
                     _s2 = s2 if offset_2 == 0 else fill_blank_comp_id_with_offset(s2, offset_2)
 
                     if conflict > 0 and has_large_seq_gap(_s1, _s2):  # DAOTHER-7465
-                        __s1, __s2 = beutify_seq_id(fill_blank_comp_id(_s2, _s1), fill_blank_comp_id(_s1, _s2))
+                        __s1, __s2 = beutify_seq_id(_s1, _s2)
                         _s1 = __s1
                         _s2 = __s2
 
@@ -23061,7 +23064,7 @@ class NmrDpUtility:
                     _s2 = s2 if offset_2 == 0 else fill_blank_comp_id_with_offset(s2, offset_2)
 
                     if conflict > 0 and has_large_seq_gap(_s1, _s2):  # DAOTHER-7465
-                        __s1, __s2 = beutify_seq_id(fill_blank_comp_id(_s2, _s1), fill_blank_comp_id(_s1, _s2))
+                        __s1, __s2 = beutify_seq_id(_s1, _s2)
                         _s1 = __s1
                         _s2 = __s2
 

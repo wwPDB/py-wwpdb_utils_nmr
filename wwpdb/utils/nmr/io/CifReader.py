@@ -29,15 +29,7 @@ import math
 from mmcif.io.PdbxReader import PdbxReader
 
 import numpy as np
-
 import random
-
-
-def to_np_array(a):
-    """ Return Numpy array of a given Cartesian coordinate in {'x': float, 'y': float, 'z': float} format.
-    """
-
-    return np.asarray([a['x'], a['y'], a['z']])
 
 
 def M(axis, theta):
@@ -54,6 +46,13 @@ def M(axis, theta):
     return np.array([[aa + bb - cc - dd, 2 * (bc + ad), 2 * (bd - ac)],
                      [2 * (bc - ad), aa + cc - bb - dd, 2 * (cd + ab)],
                      [2 * (bd + ac), 2 * (cd - ab), aa + dd - bb - cc]])
+
+
+def to_np_array(a):
+    """ Return Numpy array of a given Cartesian coordinate in {'x': float, 'y': float, 'z': float} format.
+    """
+
+    return np.asarray([a['x'], a['y'], a['z']])
 
 
 class CifReader:

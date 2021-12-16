@@ -6782,7 +6782,7 @@ class NmrDpUtility:
                                     if v not in resids:
                                         resid_likes += 1
                                         resids.append(v)
-                                except:
+                                except:  # noqa: E722 pylint: disable=bare-except
                                     pass
 
                             elif '.' in t:
@@ -6797,7 +6797,7 @@ class NmrDpUtility:
                                     if rdc_range_min < v < rdc_range_max:
                                         rdc_range_like = True
                                     real_likes += 1
-                                except:
+                                except:  # noqa: E722 pylint: disable=bare-except
                                     pass
 
                             _t_lower = t_lower
@@ -6865,7 +6865,7 @@ class NmrDpUtility:
                                             v = float(t)
                                             if self.weight_range['min_inclusive'] <= v <= self.weight_range['max_inclusive']:
                                                 has_plane_restraint = True
-                                        except:
+                                        except:  # noqa: E722 pylint: disable=bare-except
                                             pass
 
                                 elif t_lower == 'end':
@@ -6916,7 +6916,7 @@ class NmrDpUtility:
                         elif pos == 2 and has_amb_inpcrd:
                             try:
                                 int(line.lstrip().split()[0])
-                            except:
+                            except:  # noqa: E722 pylint: disable=bare-except
                                 has_amb_inpcrd = False
 
                         elif pos == 3 and has_amb_inpcrd:
@@ -7043,7 +7043,7 @@ class NmrDpUtility:
                                     try:
                                         iat = int(t[5:])
                                         names.insert(0, [iat])
-                                    except:
+                                    except:  # noqa: E722 pylint: disable=bare-except
                                         pass
 
                                     in_iat = False
@@ -7054,7 +7054,7 @@ class NmrDpUtility:
                                         iat = int(t)
                                         g = names[0]
                                         g.append(iat)
-                                    except:
+                                    except:  # noqa: E722 pylint: disable=bare-except
                                         pass
 
                                 elif t.startswith('igr2'):
@@ -7062,7 +7062,7 @@ class NmrDpUtility:
                                     try:
                                         iat = int(t[5:])
                                         names.insert(1, [iat])
-                                    except:
+                                    except:  # noqa: E722 pylint: disable=bare-except
                                         pass
 
                                     in_iat = False
@@ -7073,7 +7073,7 @@ class NmrDpUtility:
                                         iat = int(t)
                                         g = names[1]
                                         g.append(iat)
-                                    except:
+                                    except:  # noqa: E722 pylint: disable=bare-except
                                         pass
 
                                 elif '=' in t:
@@ -7143,7 +7143,7 @@ class NmrDpUtility:
                             elif pos == 2 and has_amb_inpcrd:
                                 try:
                                     int(line.lstrip().split()[0])
-                                except:
+                                except:  # noqa: E722 pylint: disable=bare-except
                                     has_amb_inpcrd = False
 
                             elif pos == 3 and has_amb_inpcrd:
@@ -7281,7 +7281,7 @@ class NmrDpUtility:
                                         dist_range_like = True
                                     if dihed_range_min <= v <= dihed_range_max:
                                         dihed_range_like = True
-                                except:
+                                except:  # noqa: E722 pylint: disable=bare-except
                                     pass
 
                             elif name in three_letter_codes:
@@ -7350,7 +7350,7 @@ class NmrDpUtility:
                                             dist_range_like = True
                                         if dihed_range_min <= v <= dihed_range_max:
                                             dihed_range_like = True
-                                    except:
+                                    except:  # noqa: E722 pylint: disable=bare-except
                                         pass
 
                                 elif name in three_letter_codes:

@@ -2485,7 +2485,7 @@ class NEFTranslator:
             if enforce_allowed_tags and allowed_tags is not None:
                 extra_tags = (set(loop.tags) | set(allowed_tags)) - set(allowed_tags)
                 if len(extra_tags) > 0:
-                    raise LookupError("Unauthorized items %s must not exists." % extra_tags)
+                    raise LookupError("Unauthorized items %s must not exists." % extra_tags)  # DAOTHER-7545 only for NMR-STAR
 
             for d in data_items:
                 if 'group-mandatory' in d and d['group-mandatory']:

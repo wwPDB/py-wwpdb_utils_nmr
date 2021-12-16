@@ -35,10 +35,10 @@ import itertools
 import hashlib
 from sklearn.cluster import DBSCAN
 import collections
-from rmsd.calculate_rmsd import NAMES_ELEMENT, centroid, kabsch_rmsd, quaternion_rmsd, reorder_hungarian, reorder_brute, reorder_distance, check_reflections, rmsd # pylint: disable=no-name-in-module, import-error, unused-import
+from rmsd.calculate_rmsd import NAMES_ELEMENT, centroid, kabsch_rmsd, quaternion_rmsd, reorder_hungarian, reorder_brute, reorder_distance, check_reflections, rmsd  # noqa: F401 pylint: disable=no-name-in-module, import-error, unused-import
 
-ROTATION_METHOD = quaternion_rmsd # must be one of kabsch_rmsd, quaternion_rmsd, None
-REORDER_METHOD = reorder_hungarian # must be one of reorder_hungarian, reorder_brute, reorder_distance, None
+ROTATION_METHOD = quaternion_rmsd  # must be one of kabsch_rmsd, quaternion_rmsd, None
+REORDER_METHOD = reorder_hungarian  # must be one of reorder_hungarian, reorder_brute, reorder_distance, None
 USE_REFLECTIONS = False  # scan through reflections in planes (e.g. Y transformed to -Y -> X, -Y, Z) and axis changes, (e.g. X and Z coords exchanged -> Z, Y, X). This will affect stereo-chemistry.
 USE_REFLECTIONS_KEEP_STEREO = False  # scan through reflections in planes (e.g. Y transformed to -Y -> X, -Y, Z) and axis changes, (e.g. X and Z coords exchanged -> Z, Y, X). Stereo-chemistry will be kept.
 REORDER = False
@@ -171,7 +171,7 @@ class CifReader:
         self.__max_samples_for_clustering = 6
         self.__min_sequence_for_domain = 8
 
-        assert self.__min_sequence_for_domain > 6 # must be greater than 6 to prevent the 6xHIS tag from being recognized as a well-defined region
+        assert self.__min_sequence_for_domain > 6  # must be greater than 6 to prevent the 6xHIS tag from being recognized as a well-defined region
 
     def parse(self, filePath):
         """ Set file path and parse CIF file, and set internal active data block if possible.
@@ -654,9 +654,9 @@ class CifReader:
         for i, j in itertools.combinations(range(size), 2):
 
             if i < j:
-                q = 1.0 - math.sqrt(d_var[i, j] / max_d_var) # (math.tanh(med_d_var - d_var[i, j]) + 1.0) / 2.0
+                q = 1.0 - math.sqrt(d_var[i, j] / max_d_var)  # (math.tanh(med_d_var - d_var[i, j]) + 1.0) / 2.0
             else:
-                q = 1.0 - math.sqrt(d_var[j, i] / max_d_var) # (math.tanh(med_d_var - d_var[j, i]) + 1.0) / 2.0
+                q = 1.0 - math.sqrt(d_var[j, i] / max_d_var)  # (math.tanh(med_d_var - d_var[j, i]) + 1.0) / 2.0
 
             d_ord[i, j] = q
             d_ord[j, i] = q
@@ -767,8 +767,8 @@ class CifReader:
 
         n_clusters = len(set(labels)) - (1 if -1 in labels else 0)
         if self.__verbose:
-            self.__lfh.write('feature: %s, min_sample: %s, epsilon: %s, clusters: %s (effective domains: %s), score: %s\n' %\
-                        (min_result['features'], min_result['min_samples'], min_result['epsilon'], n_clusters, len(eff_labels), min_score))
+            self.__lfh.write('feature: %s, min_sample: %s, epsilon: %s, clusters: %s (effective domains: %s), score: %s\n'
+                             % (min_result['features'], min_result['min_samples'], min_result['epsilon'], n_clusters, len(eff_labels), min_score))
 
         domain_id = 1
         for label, seq_id in zip(labels, _seq_ids):

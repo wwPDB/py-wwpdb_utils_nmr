@@ -44,7 +44,6 @@ setup(
     install_requires=['wwpdb.utils.config ~= 0.24', 'wwpdb.utils.align',
                       "pynmrstar ~= 2.6; python_version < '3'",
                       "pynmrstar; python_version >= '3'",
-                      'pytz',
                       "munkres==1.0.12; python_version == '2.7'",
                       "munkres; python_version >= '3'",
                       'mmcif', 'numpy',

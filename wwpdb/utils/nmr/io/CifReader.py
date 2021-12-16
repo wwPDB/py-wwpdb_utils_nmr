@@ -32,6 +32,7 @@ import numpy as np
 
 import random
 
+
 def to_np_array(a):
     """ Return Numpy array of a given Cartesian coordinate in {'x': float, 'y': float, 'z': float} format.
     """

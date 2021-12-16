@@ -30,9 +30,7 @@ import math
 from mmcif.io.PdbxReader import PdbxReader
 
 import numpy as np
-
 import random
-
 import itertools
 import hashlib
 from sklearn.cluster import DBSCAN
@@ -44,6 +42,7 @@ REORDER_METHOD = reorder_hungarian # must be one of reorder_hungarian, reorder_b
 USE_REFLECTIONS = False  # scan through reflections in planes (e.g. Y transformed to -Y -> X, -Y, Z) and axis changes, (e.g. X and Z coords exchanged -> Z, Y, X). This will affect stereo-chemistry.
 USE_REFLECTIONS_KEEP_STEREO = False  # scan through reflections in planes (e.g. Y transformed to -Y -> X, -Y, Z) and axis changes, (e.g. X and Z coords exchanged -> Z, Y, X). Stereo-chemistry will be kept.
 REORDER = False
+
 
 def to_np_array(a):
     """ Return Numpy array of a given Cartesian coordinate in {'x': float, 'y': float, 'z': float} format.

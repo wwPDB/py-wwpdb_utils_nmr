@@ -65,7 +65,7 @@ class ChemCompReader:
                 ('_chem_comp.pdbx_subcomponent_list', '%s', 'str', ''),
                 ('_chem_comp.pdbx_processing_site', '%s', 'str', '')
             ],
-            'chem_comp_atom' : [
+            'chem_comp_atom': [
                 ('_chem_comp_atom.comp_id', '%s', 'str', ''),
                 ('_chem_comp_atom.atom_id', '%s', 'str', ''),
                 ('_chem_comp_atom.alt_atom_id', '%s', 'str', ''),
@@ -85,7 +85,7 @@ class ChemCompReader:
                 ('_chem_comp_atom.pdbx_component_comp_id', '%s', 'str', ''),
                 ('_chem_comp_atom.pdbx_ordinal', '%s', 'str', '')
             ],
-            'chem_comp_bond' : [
+            'chem_comp_bond': [
                 ('_chem_comp_bond.comp_id', '%s', 'str', ''),
                 ('_chem_comp_bond.atom_id_1', '%s', 'str', ''),
                 ('_chem_comp_bond.atom_id_2', '%s', 'str', ''),
@@ -94,14 +94,14 @@ class ChemCompReader:
                 ('_chem_comp_bond.pdbx_stereo_config', '%s', 'str', ''),
                 ('_chem_comp_bond.pdbx_ordinal', '%s', 'str', '')
             ],
-            'chem_comp_descriptor' : [
+            'chem_comp_descriptor': [
                 ('_pdbx_chem_comp_descriptor.comp_id', '%s', 'str', ''),
                 ('_pdbx_chem_comp_descriptor.type', '%s', 'str', ''),
                 ('_pdbx_chem_comp_descriptor.program', '%s', 'str', ''),
                 ('_pdbx_chem_comp_descriptor.program_version', '%s', 'str', ''),
                 ('_pdbx_chem_comp_descriptor.descriptor', '%s', 'str', '')
             ],
-            'chem_comp_identifier' : [
+            'chem_comp_identifier': [
                 ('_pdbx_chem_comp_identifier.comp_id', '%s', 'str', ''),
                 ('_pdbx_chem_comp_identifier.type', '%s', 'str', ''),
                 ('_pdbx_chem_comp_identifier.program', '%s', 'str', ''),

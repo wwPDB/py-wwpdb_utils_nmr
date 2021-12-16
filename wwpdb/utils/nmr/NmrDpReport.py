@@ -55,7 +55,7 @@
 # 16-Nov-2021  M. Yokochi - revised error message for malformed XPLOR-NIH RDC restraints (DAOTHER-7478)
 # 18-Nov-2021  M. Yokochi - detect content type of XPLOR-NIH hydrogen bond geometry restraints (DAOTHER-7478)
 ##
-""" Wrapper class for data processing report of NMR data.
+""" Wrapper class for NMR data processing report.
     @author: Masashi Yokochi
 """
 import logging
@@ -1878,11 +1878,13 @@ class NmrDpReportError:
                 if item in self.group_items and 'file_name' in value and 'row_location' not in value and 'row_locations' not in value:
 
                     if 'sf_framecode' in value:
-                        v = next((v for v in self.__contents[item] if 'file_name' in v and v['file_name'] == value['file_name']
+                        v = next((v for v in self.__contents[item]
+                                  if 'file_name' in v and v['file_name'] == value['file_name']
                                   and 'sf_framecode' in v and v['sf_framecode'] == value['sf_framecode']
                                   and 'row_location' not in v and 'row_locations' not in v), None)
                     else:
-                        v = next((v for v in self.__contents[item] if 'file_name' in v and v['file_name'] == value['file_name']
+                        v = next((v for v in self.__contents[item]
+                                  if 'file_name' in v and v['file_name'] == value['file_name']
                                   and 'sf_framecode' not in v
                                   and 'row_location' not in v and 'row_locations' not in v), None)
 
@@ -2123,11 +2125,13 @@ class NmrDpReportWarning:
                 if item in self.group_items and 'file_name' in value and 'row_location' not in value and 'row_locations' not in value:
 
                     if 'sf_framecode' in value:
-                        v = next((v for v in self.__contents[item] if 'file_name' in v and v['file_name'] == value['file_name']
+                        v = next((v for v in self.__contents[item]
+                                  if 'file_name' in v and v['file_name'] == value['file_name']
                                   and 'sf_framecode' in v and v['sf_framecode'] == value['sf_framecode']
                                   and 'row_location' not in v and 'row_locations' not in v), None)
                     else:
-                        v = next((v for v in self.__contents[item] if 'file_name' in v and v['file_name'] == value['file_name']
+                        v = next((v for v in self.__contents[item]
+                                  if 'file_name' in v and v['file_name'] == value['file_name']
                                   and 'sf_framecode' not in v
                                   and 'row_location' not in v and 'row_locations' not in v), None)
 

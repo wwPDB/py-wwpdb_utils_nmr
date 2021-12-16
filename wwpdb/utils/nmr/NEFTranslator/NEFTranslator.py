@@ -369,8 +369,8 @@ class NEFTranslator:
                                  "HG22", "HG23", "HXT"],
                          "TRP": ["N", "CA", "C", "O", "CB", "CG", "CD1", "CD2", "NE1", "CE2", "CE3", "CZ2", "CZ3", "CH2",
                                  "OXT", "H", "H2", "HA", "HB2", "HB3", "HD1", "HE1", "HE3", "HZ2", "HZ3", "HH2", "HXT"],
-                         "TYR": ["N", "CA", "C", "O", "CB", "CG", "CD1", "CD2", "CE1", "CE2", "CZ", "OH", "OXT", "H", "H2", "HA"
-                                 , "HB2", "HB3", "HD1", "HD2", "HE1", "HE2", "HH", "HXT"],
+                         "TYR": ["N", "CA", "C", "O", "CB", "CG", "CD1", "CD2", "CE1", "CE2", "CZ", "OH", "OXT", "H", "H2", "HA",
+                                 "HB2", "HB3", "HD1", "HD2", "HE1", "HE2", "HH", "HXT"],
                          "VAL": ["N", "CA", "C", "O", "CB", "CG1", "CG2", "OXT", "H", "H2", "HA", "HB", "HG11", "HG12",
                                  "HG13", "HG21", "HG22", "HG23", "HXT"],
                          "DA": ["OP3", "P", "OP1", "OP2", "O5'", "C5'", "C4'", "O4'", "C3'", "O3'", "C2'", "C1'", "N9",
@@ -4182,8 +4182,8 @@ class NEFTranslator:
             return self.get_star_atom(comp_id, 'H' + atom_id[2:] + '%', details, leave_unmatched)
 
         if atom_id.startswith('QR'):
-            qr_atoms = sorted(set(atom_id[:-1] + '%' for atom_id in self.__csStat.getAromaticAtoms(comp_id) if atom_id[0] == 'H'
-                                  and self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 3))
+            qr_atoms = sorted(set(atom_id[:-1] + '%' for atom_id in self.__csStat.getAromaticAtoms(comp_id)
+                                  if atom_id[0] == 'H' and self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 3))
             if len(qr_atoms) == 0:
                 return [], None, None
             atom_list = []
@@ -4252,8 +4252,8 @@ class NEFTranslator:
 
                 pattern = re.compile(r'%s\S\d+' % (atom_type))
 
-                alist2 = [i for i in atoms if re.search(pattern, i)
-                          and i[len_atom_type].isdigit()]  # bmrb_id: 15879, pdb_id: 2k6r, comp_id: DNS
+                alist2 = [i for i in atoms
+                          if re.search(pattern, i) and i[len_atom_type].isdigit()]  # bmrb_id: 15879, pdb_id: 2k6r, comp_id: DNS
 
                 xid = sorted(set(int(i[len_atom_type]) for i in alist2))
 
@@ -4402,8 +4402,8 @@ class NEFTranslator:
                     elif atom_id.startswith('QQ'):
                         _atom_id = 'H' + atom_id[2:] + '%'
                     elif atom_id.startswith('QR'):
-                        qr_atoms = sorted(set(atom_id[:-1] + '%' for atom_id in self.__csStat.getAromaticAtoms(comp_id) if atom_id[0] == 'H'
-                                              and self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 3))
+                        qr_atoms = sorted(set(atom_id[:-1] + '%' for atom_id in self.__csStat.getAromaticAtoms(comp_id)
+                                              if atom_id[0] == 'H' and self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 3))
                         if len(qr_atoms) > 0:
                             for qr_atom in qr_atoms:
                                 _a = copy.copy(a)
@@ -5628,7 +5628,8 @@ class NEFTranslator:
         for nef_chain in self.authChainId:
 
             mapped_seq_id = [s for c, s in self.authSeqMap.keys() if c == nef_chain]
-            unmapped_seq_id = sorted(set(int(i[seq_index]) for i in loop_data if i[chain_index] == nef_chain
+            unmapped_seq_id = sorted(set(int(i[seq_index]) for i in loop_data
+                                         if i[chain_index] == nef_chain
                                          and i[seq_index] not in self.empty_value
                                          and self.int_pattern.match(i[seq_index]) is not None
                                          and int(i[seq_index]) not in mapped_seq_id))
@@ -5736,9 +5737,11 @@ class NEFTranslator:
             _cif_chain = None if star_chain not in self.star2cif_chain_mapping else self.star2cif_chain_mapping[star_chain]
 
             mapped_seq_id = [s for c, s in self.authSeqMap.keys() if c == _star_chain]
-            unmapped_seq_id = set(int(i[seq_index]) for i in loop_data if i[chain_index] == star_chain
+            unmapped_seq_id = set(int(i[seq_index]) for i in loop_data
+                                  if i[chain_index] == star_chain
                                   and i[seq_index] not in self.empty_value
-                                  and self.int_pattern.match(i[seq_index]) is not None and int(i[seq_index]) not in mapped_seq_id)
+                                  and self.int_pattern.match(i[seq_index]) is not None
+                                  and int(i[seq_index]) not in mapped_seq_id)
 
             if len(unmapped_seq_id) > 0:
                 mapped_seq_id.extend(unmapped_seq_id)
@@ -5859,7 +5862,8 @@ class NEFTranslator:
         for in_star_chain in self.authChainId:
 
             mapped_seq_id = [s for c, s in self.authSeqMap.keys() if c == in_star_chain]
-            unmapped_seq_id = sorted(set(int(i[seq_index]) for i in loop_data if i[chain_index] == in_star_chain
+            unmapped_seq_id = sorted(set(int(i[seq_index]) for i in loop_data
+                                         if i[chain_index] == in_star_chain
                                          and i[seq_index] not in self.empty_value
                                          and self.int_pattern.match(i[seq_index]) is not None
                                          and int(i[seq_index]) not in mapped_seq_id))
@@ -5880,7 +5884,8 @@ class NEFTranslator:
                     cif_chain = in_star_chain
                     _cif_seq = _in_star_seq
 
-                in_row = [i for i in loop_data if (i[chain_index] == in_star_chain or i[chain_index] in self.empty_value)
+                in_row = [i for i in loop_data
+                          if (i[chain_index] == in_star_chain or i[chain_index] in self.empty_value)
                           and i[seq_index] == in_star_seq
                           and i[value_index] not in self.empty_value]
 
@@ -7141,7 +7146,8 @@ class NEFTranslator:
         except ValueError:
             index_index = -1
 
-        key_indices = [star_tags.index(j) for j in [k for k in star_tags if k.startswith('_Peak_row_format.Entity_assembly_ID')
+        key_indices = [star_tags.index(j) for j in [k for k in star_tags
+                                                    if k.startswith('_Peak_row_format.Entity_assembly_ID')
                                                     or k.startswith('_Peak_row_format.Comp_index_ID')
                                                     or k.startswith('_Peak_row_format.Atom_ID')]]
 
@@ -7356,7 +7362,8 @@ class NEFTranslator:
         except ValueError:
             index_index = -1
 
-        key_indices = [nef_tags.index(j) for j in [k for k in nef_tags if k.startswith('_nef_peak.chain_code')
+        key_indices = [nef_tags.index(j) for j in [k for k in nef_tags
+                                                   if k.startswith('_nef_peak.chain_code')
                                                    or k.startswith('_nef_peak.sequence_code')
                                                    or k.startswith('_nef_peak.atom_name')]]
 
@@ -7491,7 +7498,8 @@ class NEFTranslator:
         except ValueError:
             index_index = -1
 
-        key_indices = [star_tags.index(j) for j in [k for k in star_tags if k.startswith('_Peak_row_format.Entity_assembly_ID')
+        key_indices = [star_tags.index(j) for j in [k for k in star_tags
+                                                    if k.startswith('_Peak_row_format.Entity_assembly_ID')
                                                     or k.startswith('_Peak_row_format.Comp_index_ID')
                                                     or k.startswith('_Peak_row_format.Atom_ID')]]
 

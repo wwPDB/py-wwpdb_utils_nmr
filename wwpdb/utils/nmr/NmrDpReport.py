@@ -1639,7 +1639,10 @@ class NmrDpReport:
 
                 for _c in _value_list:
 
-                    if value_list is None or not any(c for c in value_list if 'sf_framecode' in c and 'sf_framecode' in _c and c['sf_framecode'] == _c['sf_framecode'] and c['description'] == _c['description']):  # noqa: E501
+                    if value_list is None or not any(c for c in value_list
+                                                     if 'sf_framecode' in c and 'sf_framecode' in _c
+                                                     and c['sf_framecode'] == _c['sf_framecode']
+                                                     and c['description'] == _c['description']):
                         tlist.append(_c)
 
                 for c in tlist:

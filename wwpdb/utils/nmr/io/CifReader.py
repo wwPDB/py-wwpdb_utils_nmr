@@ -615,7 +615,10 @@ class CifReader:
                                 val = float(val)
                             if filterItemType == 'range-float':
                                 _range = filterItem['range']
-                                if ('min_exclusive' in _range and val <= _range['min_exclusive']) or ('min_inclusive' in _range and val < _range['min_inclusive']) or ('max_inclusive' in _range and val > _range['max_inclusive']) or ('max_exclusive' in _range and val >= _range['max_exclusive']):  # noqa: E501
+                                if ('min_exclusive' in _range and val <= _range['min_exclusive'])\
+                                   or ('min_inclusive' in _range and val < _range['min_inclusive'])\
+                                   or ('max_inclusive' in _range and val > _range['max_inclusive'])\
+                                   or ('max_exclusive' in _range and val >= _range['max_exclusive']):
                                     keep = False
                                     break
                             elif filterItemType == 'enum':

@@ -1433,7 +1433,8 @@ class NEFTranslator:
                     chk_key = '{} {:04d}'.format(i[2], int(i[0]))
                     if chk_dict[chk_key] != i[1]:
                         # raise KeyError("Sequence must be unique. %s %s, %s %s, %s %s vs %s." % (chain_id, i[2], seq_id, i[0], comp_id, i[1], chk_dict[chk_key]))
-                        raise KeyError("%s loop contains different %s (%s and %s) with the same %s %s, %s %s." % (lp_category[1:], comp_id, i[1], chk_dict[chk_key], chain_id, i[2], seq_id, i[0]))  # noqa: E501
+                        raise KeyError("%s loop contains different %s (%s and %s) with the same %s %s, %s %s."
+                                       % (lp_category[1:], comp_id, i[1], chk_dict[chk_key], chain_id, i[2], seq_id, i[0]))
 
                 if len(sorted_seq[0].split(' ')[-1]) > 1:
                     if len(chains) > 1:
@@ -1636,7 +1637,8 @@ class NEFTranslator:
                     chk_key = '{} {:04d}'.format(i[2], int(i[0]))
                     if chk_dict[chk_key] != i[1]:
                         # raise KeyError("Sequence must be unique. %s %s, %s %s, %s %s vs %s." % (chain_id, i[2], seq_id, i[0], comp_id, i[1], chk_dict[chk_key]))
-                        raise KeyError("%s loop contains different %s (%s and %s) with the same %s %s, %s %s." % (lp_category[1:], comp_id, i[1], chk_dict[chk_key], chain_id, i[2], seq_id, i[0]))  # noqa: E501
+                        raise KeyError("%s loop contains different %s (%s and %s) with the same %s %s, %s %s."
+                                       % (lp_category[1:], comp_id, i[1], chk_dict[chk_key], chain_id, i[2], seq_id, i[0]))
 
                 if len(sorted_seq[0].split(' ')[-1]) > 1:
                     if len(chains) > 1:
@@ -2755,7 +2757,8 @@ class NEFTranslator:
                                     continue
                                 else:
                                     raise ValueError("%s%s %r must be %s." % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
-                            if (type == 'index-int' and ent[name] <= 0) or (type == 'positive-int' and (ent[name] < 0 or (ent[name] == 0 and 'enforce-non-zero' in k and k['enforce-non-zero']))):  # noqa: E501
+                            if (type == 'index-int' and ent[name] <= 0)\
+                               or (type == 'positive-int' and (ent[name] < 0 or (ent[name] == 0 and 'enforce-non-zero' in k and k['enforce-non-zero']))):
                                 raise ValueError("%s%s %r must be %s." % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
                             if ent[name] == 0 and enforce_non_zero:
                                 if 'void-zero' in k:
@@ -2763,7 +2766,8 @@ class NEFTranslator:
                                         loop.data[l][loop.tags.index(name)] = None
                                     ent[name] = None
                                 else:
-                                    user_warn_msg += "[Zero value error] %s%s %r should not be zero, as defined by %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type])  # noqa: E501
+                                    user_warn_msg += "[Zero value error] %s%s %r should not be zero, as defined by %s.\n"\
+                                        % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type])
                             if type == 'positive-int-as-str':
                                 i[j] = ent[name] = str(ent[name])
                         elif type == 'pointer-index':
@@ -2831,7 +2835,8 @@ class NEFTranslator:
                                         loop.data[l][loop.tags.index(name)] = None
                                     ent[name] = None
                                 else:
-                                    user_warn_msg += "[Zero value error] %s%s %r should not be zero, as defined by %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type])  # noqa: E501
+                                    user_warn_msg += "[Zero value error] %s%s %r should not be zero, as defined by %s.\n"\
+                                        % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type])
                         elif type == 'range-float':
                             try:
                                 _range = k['range']
@@ -2852,15 +2857,19 @@ class NEFTranslator:
                                     ent[name] = None
                                     continue
                                 user_warn_msg += "[Range value error] %s%s %r must be %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type])
-                            if ('min_exclusive' in _range and _range['min_exclusive'] == 0.0 and ent[name] <= 0.0) or ('min_inclusive' in _range and _range['min_inclusive'] == 0.0 and ent[name] < 0):  # noqa: E501
+                            if ('min_exclusive' in _range and _range['min_exclusive'] == 0.0 and ent[name] <= 0.0)\
+                               or ('min_inclusive' in _range and _range['min_inclusive'] == 0.0 and ent[name] < 0):
                                 if ent[name] < 0.0:
-                                    if ('max_inclusive' in _range and abs(ent[name]) > _range['max_inclusive']) or ('max_exclusive' in _range and abs(ent[name]) >= _range['max_exclusive']) or ('enforce-sign' in k and k['enforce-sign']):  # noqa: E501
+                                    if ('max_inclusive' in _range and abs(ent[name]) > _range['max_inclusive'])\
+                                       or ('max_exclusive' in _range and abs(ent[name]) >= _range['max_exclusive'])\
+                                       or ('enforce-sign' in k and k['enforce-sign']):
                                         if not enforce_range:
                                             ent[name] = None
                                         else:
                                             user_warn_msg += "[Range value error] %s%s %r must be within range %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, _range)
                                     elif enforce_sign:
-                                        user_warn_msg += "[Negative value error] %s%s %r should not have negative value for %s, %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type], _range)  # noqa: E501
+                                        user_warn_msg += "[Negative value error] %s%s %r should not have negative value for %s, %s.\n"\
+                                            % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type], _range)
                                 elif ent[name] == 0.0 and 'enforce-non-zero' in k and k['enforce-non-zero']:
                                     if not enforce_range:
                                         ent[name] = None
@@ -2872,8 +2881,12 @@ class NEFTranslator:
                                             loop.data[l][loop.tags.index(name)] = None
                                         ent[name] = None
                                     else:
-                                        user_warn_msg += "[Zero value error] %s%s %r should not be zero, as defined by %s, %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type], _range)  # noqa: E501
-                            elif ('min_exclusive' in _range and ent[name] <= _range['min_exclusive']) or ('min_inclusive' in _range and ent[name] < _range['min_inclusive']) or ('max_inclusive' in _range and ent[name] > _range['max_inclusive']) or ('max_exclusive' in _range and ent[name] >= _range['max_exclusive']):  # noqa: E501
+                                        user_warn_msg += "[Zero value error] %s%s %r should not be zero, as defined by %s, %s.\n"\
+                                            % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type], _range)
+                            elif ('min_exclusive' in _range and ent[name] <= _range['min_exclusive']) or\
+                                 ('min_inclusive' in _range and ent[name] < _range['min_inclusive']) or\
+                                 ('max_inclusive' in _range and ent[name] > _range['max_inclusive']) or\
+                                 ('max_exclusive' in _range and ent[name] >= _range['max_exclusive']):
                                 if 'void-zero' in k and ent[name] == 0.0:
                                     if self.replace_zero_by_null_in_case:
                                         loop.data[l][loop.tags.index(name)] = None
@@ -3011,7 +3024,8 @@ class NEFTranslator:
                                             continue
                                         else:
                                             raise ValueError("%s%s %r must be %s." % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
-                                    if (type == 'index-int' and ent[name] <= 0) or (type == 'positive-int' and (ent[name] < 0 or (ent[name] == 0 and 'enforce-non-zero' in d and d['enforce-non-zero']))):  # noqa: E501
+                                    if (type == 'index-int' and ent[name] <= 0)\
+                                       or (type == 'positive-int' and (ent[name] < 0 or (ent[name] == 0 and 'enforce-non-zero' in d and d['enforce-non-zero']))):
                                         raise ValueError("%s%s %r must be %s." % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
                                     if ent[name] == 0 and enforce_non_zero:
                                         if 'void-zero' in d:
@@ -3019,7 +3033,8 @@ class NEFTranslator:
                                                 loop.data[l][loop.tags.index(name)] = None
                                             ent[name] = None
                                         else:
-                                            user_warn_msg += "[Zero value error] %s%s %r should not be zero, as defined by %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type])  # noqa: E501
+                                            user_warn_msg += "[Zero value error] %s%s %r should not be zero, as defined by %s.\n"\
+                                                % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type])
                                     if type == 'positive-int-as-str':
                                         i[j] = ent[name] = str(ent[name])
                                 elif type == 'pointer-index':
@@ -3087,7 +3102,8 @@ class NEFTranslator:
                                                 loop.data[l][loop.tags.index(name)] = None
                                             ent[name] = None
                                         else:
-                                            user_warn_msg += "[Zero value error] %s%s %r should not be zero, as defined by %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type])  # noqa: E501
+                                            user_warn_msg += "[Zero value error] %s%s %r should not be zero, as defined by %s.\n"\
+                                                % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type])
                                 elif type == 'range-float':
                                     try:
                                         _range = d['range']
@@ -3108,15 +3124,19 @@ class NEFTranslator:
                                             clear_bad_pattern = True
                                             continue
                                         user_warn_msg += "[Range value error] %s%s %r must be %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type])
-                                    if ('min_exclusive' in _range and _range['min_exclusive'] == 0.0 and ent[name] <= 0.0) or ('min_inclusive' in _range and _range['min_inclusive'] == 0.0 and ent[name] < 0):  # noqa: E501
+                                    if ('min_exclusive' in _range and _range['min_exclusive'] == 0.0 and ent[name] <= 0.0)\
+                                       or ('min_inclusive' in _range and _range['min_inclusive'] == 0.0 and ent[name] < 0):
                                         if ent[name] < 0.0:
-                                            if ('max_inclusive' in _range and abs(ent[name]) > _range['max_inclusive']) or ('max_exclusive' in _range and abs(ent[name]) >= _range['max_exclusive']) or ('enforce-sign' in d and d['enforce-sign']):  # noqa: E501
+                                            if ('max_inclusive' in _range and abs(ent[name]) > _range['max_inclusive'])\
+                                               or ('max_exclusive' in _range and abs(ent[name]) >= _range['max_exclusive'])\
+                                               or ('enforce-sign' in d and d['enforce-sign']):
                                                 if not enforce_range:
                                                     ent[name] = None
                                                 else:
                                                     user_warn_msg += "[Range value error] %s%s %r must be within range %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, _range)
                                             elif enforce_sign:
-                                                user_warn_msg += "[Negative value error] %s%s %r should not have negative value for %s, %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type], _range)  # noqa: E501
+                                                user_warn_msg += "[Negative value error] %s%s %r should not have negative value for %s, %s.\n"\
+                                                    % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type], _range)
                                         elif ent[name] == 0.0 and 'enforce-non-zero' in d and d['enforce-non-zero']:
                                             if not enforce_range:
                                                 ent[name] = None
@@ -3137,7 +3157,10 @@ class NEFTranslator:
                                         elif 'clear-bad-pattern' in d and d['clear-bad-pattern']:
                                             clear_bad_pattern = True
                                             continue
-                                    elif ('min_exclusive' in _range and ent[name] <= _range['min_exclusive']) or ('min_inclusive' in _range and ent[name] < _range['min_inclusive']) or ('max_inclusive' in _range and ent[name] > _range['max_inclusive']) or ('max_exclusive' in _range and ent[name] >= _range['max_exclusive']):  # noqa: E501
+                                    elif ('min_exclusive' in _range and ent[name] <= _range['min_exclusive']) or\
+                                         ('min_inclusive' in _range and ent[name] < _range['min_inclusive']) or\
+                                         ('max_inclusive' in _range and ent[name] > _range['max_inclusive']) or\
+                                         ('max_exclusive' in _range and ent[name] >= _range['max_exclusive']):
                                         if 'void-zero' in d and ent[name] == 0.0:
                                             if self.replace_zero_by_null_in_case:
                                                 loop.data[l][loop.tags.index(name)] = None
@@ -3725,9 +3748,12 @@ class NEFTranslator:
                                 ent[name] = None
                                 continue
                             user_warn_msg += "[Range value error] %s %r must be %s.\n" % (name, val, self.readable_item_type[type])
-                        if ('min_exclusive' in _range and _range['min_exclusive'] == 0.0 and ent[name] <= 0.0) or ('min_inclusive' in _range and _range['min_inclusive'] == 0.0 and ent[name] < 0):  # noqa: E501
+                        if ('min_exclusive' in _range and _range['min_exclusive'] == 0.0 and ent[name] <= 0.0)\
+                           or ('min_inclusive' in _range and _range['min_inclusive'] == 0.0 and ent[name] < 0):
                             if ent[name] < 0.0:
-                                if ('max_inclusive' in _range and abs(ent[name]) > _range['max_inclusive']) or ('max_exclusive' in _range and abs(ent[name]) >= _range['max_exclusive']) or ('enforce-sign' in t and t['enforce-sign']):  # noqa: E501
+                                if ('max_inclusive' in _range and abs(ent[name]) > _range['max_inclusive'])\
+                                   or ('max_exclusive' in _range and abs(ent[name]) >= _range['max_exclusive'])\
+                                   or ('enforce-sign' in t and t['enforce-sign']):
                                     if not enforce_range:
                                         ent[name] = None
                                     else:
@@ -3746,7 +3772,10 @@ class NEFTranslator:
                                     ent[name] = None
                                 else:
                                     user_warn_msg += "[Zero value error] %s %r should not be zero, as defined by %s, %s.\n" % (name, val, self.readable_item_type[type], _range)
-                        elif ('min_exclusive' in _range and ent[name] <= _range['min_exclusive']) or ('min_inclusive' in _range and ent[name] < _range['min_inclusive']) or ('max_inclusive' in _range and ent[name] > _range['max_inclusive']) or ('max_exclusive' in _range and ent[name] >= _range['max_exclusive']):  # noqa: E501
+                        elif ('min_exclusive' in _range and ent[name] <= _range['min_exclusive']) or\
+                             ('min_inclusive' in _range and ent[name] < _range['min_inclusive']) or\
+                             ('max_inclusive' in _range and ent[name] > _range['max_inclusive']) or\
+                             ('max_exclusive' in _range and ent[name] >= _range['max_exclusive']):
                             if 'void-zero' in t and ent[name] == 0.0:
                                 if self.replace_zero_by_null_in_case:
                                     star_data.tags[sf_tags.keys().index(name)][1] = None
@@ -3767,11 +3796,13 @@ class NEFTranslator:
                                     itName = '_' + category + '.' + t['name']
                                     if val == '?' and enforce_enum:
                                         if self.is_mandatory_tag(itName, file_type):
-                                            user_warn_msg += "[Enumeration error] The mandatory type %s %r is missing and the type must be one of %s. %r will be given unless you would like to fix the type and re-upload the %s file.\n" % (itName, val, enum, t['enum-alt'][val], file_type.upper())  # noqa: E501
+                                            user_warn_msg += "[Enumeration error] The mandatory type %s %r is missing and the type must be one of %s. %r will be given unless you would like to fix the type and re-upload the %s file.\n"\
+                                                % (itName, val, enum, t['enum-alt'][val], file_type.upper())
                                             val = t['enum-alt'][val]
                                             star_data.tags[itCol][1] = val
                                         else:
-                                            user_warn_msg += "[Enumeration error] %s %r should be one of %s. The type may be filled with either 'undefined' or estimated value unless you would like to fix the type and re-upload the %s file.\n" % (name, val, enum, file_type.upper())  # noqa: E501
+                                            user_warn_msg += "[Enumeration error] %s %r should be one of %s. The type may be filled with either 'undefined' or estimated value unless you would like to fix the type and re-upload the %s file.\n"\
+                                                % (name, val, enum, file_type.upper())
                                     else:
                                         val = t['enum-alt'][val]
                                         star_data.tags[itCol][1] = val
@@ -4337,8 +4368,9 @@ class NEFTranslator:
                 if ((comp_code != 'X' and nef_atom[-1] == '%') or nef_atom[-1] == '*') and (nef_atom[:-1] + '1' not in methyl_atoms) and\
                    len(nef_atom) > 2 and (nef_atom[-2].lower() == 'x' or nef_atom[-2].lower() == 'y'):
                     return self.get_star_atom(comp_id, nef_atom[:-2] + ('1' if nef_atom[-2].lower() == 'x' else '2') + '%',
-                                              ('%s converted to %s%%.' % (nef_atom, nef_atom[:-2]
-                                                                          + ('1' if nef_atom[-2].lower() == 'x' else '2'))) if leave_unmatched else None, leave_unmatched)
+                                              ('%s converted to %s%%.'
+                                               % (nef_atom, nef_atom[:-2] + ('1' if nef_atom[-2].lower() == 'x' else '2'))) if leave_unmatched else None,
+                                              leave_unmatched)
 
             if nef_atom in atoms:
                 atom_list.append(nef_atom)
@@ -4528,8 +4560,10 @@ class NEFTranslator:
 
                             else:
 
-                                has_methyl_proton = len([_a['atom_id'] for _a in star_atom_list if _a['atom_id'] in methyl_h_list and (_a['value'] is None or _a['value'] == _value)]) == 3
-                                has_methyl_proton_2 = methyl_h_list_2 is not None and len([_a['atom_id'] for _a in star_atom_list if _a['atom_id'] in methyl_h_list_2 and (_a['value'] is None or _a['value'] == _value)]) == 3  # noqa: E501
+                                has_methyl_proton = len([_a['atom_id'] for _a in star_atom_list
+                                                         if _a['atom_id'] in methyl_h_list and (_a['value'] is None or _a['value'] == _value)]) == 3
+                                has_methyl_proton_2 = methyl_h_list_2 is not None and len([_a['atom_id'] for _a in star_atom_list
+                                                                                           if _a['atom_id'] in methyl_h_list_2 and (_a['value'] is None or _a['value'] == _value)]) == 3  # noqa: E501
 
                                 nef_atom_prefix = 'x'
                                 nef_atom_prefix_2 = 'y'
@@ -4627,7 +4661,8 @@ class NEFTranslator:
 
                                 else:
 
-                                    nef_atom_prefix = 'x' if (atom_id == geminal_h_list[0] and geminal_h_list[0] < geminal_h_list[1]) or (atom_id == geminal_h_list[1] and geminal_h_list[1] < geminal_h_list[0]) else 'y'  # noqa: E501
+                                    nef_atom_prefix = 'x' if (atom_id == geminal_h_list[0] and geminal_h_list[0] < geminal_h_list[1]) or\
+                                                             (atom_id == geminal_h_list[1] and geminal_h_list[1] < geminal_h_list[0]) else 'y'
                                     nef_atom = atom_id[:-1] + nef_atom_prefix
 
                                     atom_list.append(nef_atom)
@@ -4776,12 +4811,8 @@ class NEFTranslator:
         try:
 
             ccb = next(b for b in self.__last_chem_comp_bonds
-                       if (b[self.__ccb_atom_id_1] == atom_id
-                           and (atom_id[0] == 'H'
-                                or b[self.__ccb_atom_id_2][0] == 'H'))
-                       or (b[self.__ccb_atom_id_2] == atom_id
-                           and (atom_id[0] == 'H'
-                                or b[self.__ccb_atom_id_1][0] == 'H')))
+                       if (b[self.__ccb_atom_id_1] == atom_id and (atom_id[0] == 'H' or b[self.__ccb_atom_id_2][0] == 'H'))
+                       or (b[self.__ccb_atom_id_2] == atom_id and (atom_id[0] == 'H' or b[self.__ccb_atom_id_1][0] == 'H')))
 
             hvy_col = self.__ccb_atom_id_1 if ccb[self.__ccb_atom_id_2 if atom_id[0] == 'H' else self.__ccb_atom_id_1] == atom_id else self.__ccb_atom_id_2
             pro_col = self.__ccb_atom_id_2 if self.__ccb_atom_id_1 == hvy_col else self.__ccb_atom_id_1
@@ -4814,10 +4845,8 @@ class NEFTranslator:
         try:
 
             ccb = next(b for b in self.__last_chem_comp_bonds
-                       if (b[self.__ccb_atom_id_2] == atom_id
-                           and b[self.__ccb_atom_id_1][0] != 'H')
-                       or (b[self.__ccb_atom_id_1] == atom_id
-                           and b[self.__ccb_atom_id_2][0] != 'H'))
+                       if (b[self.__ccb_atom_id_2] == atom_id and b[self.__ccb_atom_id_1][0] != 'H')
+                       or (b[self.__ccb_atom_id_1] == atom_id and b[self.__ccb_atom_id_2][0] != 'H'))
 
             hvy_conn = ccb[self.__ccb_atom_id_1 if ccb[self.__ccb_atom_id_2] == atom_id else self.__ccb_atom_id_2]
 
@@ -5106,7 +5135,8 @@ class NEFTranslator:
                         if data not in self.empty_value or entity_del_atom_loop is None:
                             out[data_index] = data
                         else:
-                            star_atom_list = [{'atom_id': k[aux_atom_index], 'ambig_code': None, 'value': None} for k in entity_del_atom_loop if k[aux_chain_index] == star_chain and k[aux_seq_index] == star_seq]  # noqa: E501
+                            star_atom_list = [{'atom_id': k[aux_atom_index], 'ambig_code': None, 'value': None} for k in entity_del_atom_loop
+                                              if k[aux_chain_index] == star_chain and k[aux_seq_index] == star_seq]
                             if len(star_atom_list) == 0:
                                 out[data_index] = data
                             else:
@@ -5399,7 +5429,9 @@ class NEFTranslator:
                     elif (k in self.non_metal_elems and (l in self.paramag_elems or l in self.ferromag_elems)) or\
                          (l in self.non_metal_elems and (k in self.paramag_elems or k in self.ferromag_elems)):
                         buf[star_type_index] = 'metal coordination'
-                    elif ((k == 'C' and l == 'N') or (l == 'C' and k == 'N')) and i[nef_tags.index(chain_tag_1)] == i[nef_tags.index(chain_tag_2)] and i[nef_tags.index(seq_tag_1)] != i[nef_tags.index(seq_tag_2)]:  # noqa: E501
+                    elif ((k == 'C' and l == 'N') or (l == 'C' and k == 'N'))\
+                            and i[nef_tags.index(chain_tag_1)] == i[nef_tags.index(chain_tag_2)]\
+                            and i[nef_tags.index(seq_tag_1)] != i[nef_tags.index(seq_tag_2)]:
                         buf[star_type_index] = 'peptide'
                     buf[star_value_order_index] = 'sing'
 
@@ -5562,7 +5594,9 @@ class NEFTranslator:
                     elif (k in self.non_metal_elems and (l in self.paramag_elems or l in self.ferromag_elems)) or\
                          (l in self.non_metal_elems and (k in self.paramag_elems or k in self.ferromag_elems)):
                         buf[star_type_index] = 'metal coordination'
-                    elif ((k == 'C' and l == 'N') or (l == 'C' and k == 'N')) and i[in_star_tags.index(chain_tag_1)] == i[in_star_tags.index(chain_tag_2)] and i[in_star_tags.index(seq_tag_1)] != i[in_star_tags.index(seq_tag_2)]:  # noqa: E501
+                    elif ((k == 'C' and l == 'N') or (l == 'C' and k == 'N'))\
+                            and i[in_star_tags.index(chain_tag_1)] == i[in_star_tags.index(chain_tag_2)]\
+                            and i[in_star_tags.index(seq_tag_1)] != i[in_star_tags.index(seq_tag_2)]:
                         buf[star_type_index] = 'peptide'
                     buf[star_value_order_index] = 'sing'
 

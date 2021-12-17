@@ -2700,7 +2700,7 @@ class NEFTranslator:
                         if type == 'bool':
                             try:
                                 ent[name] = val.lower() in self.true_value
-                            except:  # noqa: E722 pylint: disable=bare-except
+                            except ValueError:
                                 if excl_missing_data:
                                     missing_mandatory_data = True
                                     continue
@@ -2714,7 +2714,7 @@ class NEFTranslator:
                         elif type == 'int':
                             try:
                                 ent[name] = int(val)
-                            except:  # noqa: E722 pylint: disable=bare-except
+                            except ValueError:
                                 if 'default-from' in k and k['default-from'] == 'self':
                                     i[j] = ent[name] = self.letter_to_int(val)
                                 elif 'default-from' in k and k['default-from'] in tags:
@@ -2735,7 +2735,7 @@ class NEFTranslator:
                         elif type in ('index-int', 'positive-int', 'positive-int-as-str'):
                             try:
                                 ent[name] = int(val)
-                            except:  # noqa: E722 pylint: disable=bare-except
+                            except ValueError:
                                 if 'default-from' in k and k['default-from'] == 'self':
                                     i[j] = ent[name] = self.letter_to_int(val, 1)
                                 elif 'default-from' in k and k['default-from'] in tags:
@@ -2769,7 +2769,7 @@ class NEFTranslator:
                         elif type == 'pointer-index':
                             try:
                                 ent[name] = int(val)
-                            except:  # noqa: E722 pylint: disable=bare-except
+                            except ValueError:
                                 if 'default-from' in k and k['default-from'] == 'self':
                                     i[j] = ent[name] = self.letter_to_int(val, 1)
                                 elif 'default-from' in k and k['default-from'] in tags:
@@ -2798,7 +2798,7 @@ class NEFTranslator:
                         elif type == 'float':
                             try:
                                 ent[name] = float(val)
-                            except:  # noqa: E722 pylint: disable=bare-except
+                            except ValueError:
                                 if excl_missing_data:
                                     missing_mandatory_data = True
                                     continue
@@ -2812,7 +2812,7 @@ class NEFTranslator:
                         elif type == 'positive-float':
                             try:
                                 ent[name] = float(val)
-                            except:  # noqa: E722 pylint: disable=bare-except
+                            except ValueError:
                                 if excl_missing_data:
                                     missing_mandatory_data = True
                                     continue
@@ -2838,7 +2838,7 @@ class NEFTranslator:
                                 ent[name] = float(val)
                             except KeyError:
                                 raise ValueError('Range of key item %s is not defined' % name)
-                            except:  # noqa: E722 pylint: disable=bare-except
+                            except ValueError:
                                 if excl_missing_data:
                                     missing_mandatory_data = True
                                     continue
@@ -2916,7 +2916,7 @@ class NEFTranslator:
                                 ent[name] = int(val)
                             except KeyError:
                                 raise ValueError('Enumeration of key item %s is not defined' % name)
-                            except:  # noqa: E722 pylint: disable=bare-except
+                            except ValueError:
                                 if excl_missing_data:
                                     missing_mandatory_data = True
                                     continue
@@ -2955,8 +2955,8 @@ class NEFTranslator:
                                     ent[name] = None
                                 elif type == 'bool':
                                     try:
-                                        ent[name] = val in self.true_value
-                                    except:  # noqa: E722 pylint: disable=bare-except
+                                        ent[name] = val.lower() in self.true_value
+                                    except ValueError:
                                         if excl_missing_data:
                                             ent[name] = None
                                             continue
@@ -2970,7 +2970,7 @@ class NEFTranslator:
                                 elif type == 'int':
                                     try:
                                         ent[name] = int(val)
-                                    except:  # noqa: E722 pylint: disable=bare-except
+                                    except ValueError:
                                         if 'default-from' in d and d['default-from'] == 'self':
                                             i[j] = ent[name] = self.letter_to_int(val)
                                         elif 'default-from' in d and d['default-from'] in tags:
@@ -2991,7 +2991,7 @@ class NEFTranslator:
                                 elif type in ('index-int', 'positive-int', 'positive-int-as-str'):
                                     try:
                                         ent[name] = int(val)
-                                    except:  # noqa: E722 pylint: disable=bare-except
+                                    except ValueError:
                                         if 'default-from' in d and d['default-from'] == 'self':
                                             i[j] = ent[name] = self.letter_to_int(val, 1)
                                         elif 'default-from' in d and d['default-from'] in tags:
@@ -3025,7 +3025,7 @@ class NEFTranslator:
                                 elif type == 'pointer-index':
                                     try:
                                         ent[name] = int(val)
-                                    except:  # noqa: E722 pylint: disable=bare-except
+                                    except ValueError:
                                         if 'default-from' in d and d['default-from'] == 'self':
                                             i[j] = ent[name] = self.letter_to_int(val, 1)
                                         elif 'default-from' in d and d['default-from'] in tags:
@@ -3054,7 +3054,7 @@ class NEFTranslator:
                                 elif type == 'float':
                                     try:
                                         ent[name] = float(val)
-                                    except:  # noqa: E722 pylint: disable=bare-except
+                                    except ValueError:
                                         if excl_missing_data:
                                             ent[name] = None
                                             continue
@@ -3068,7 +3068,7 @@ class NEFTranslator:
                                 elif type == 'positive-float':
                                     try:
                                         ent[name] = float(val)
-                                    except:  # noqa: E722 pylint: disable=bare-except
+                                    except ValueError:
                                         if excl_missing_data:
                                             ent[name] = None
                                             continue
@@ -3094,7 +3094,7 @@ class NEFTranslator:
                                         ent[name] = float(val)
                                     except KeyError:
                                         raise ValueError('Range of data item %s is not defined' % name)
-                                    except:  # noqa: E722 pylint: disable=bare-except
+                                    except ValueError:
                                         if excl_missing_data:
                                             ent[name] = None
                                             continue
@@ -3192,7 +3192,7 @@ class NEFTranslator:
                                         ent[name] = int(val)
                                     except KeyError:
                                         raise ValueError('Enumeration of data item %s is not defined' % name)
-                                    except:  # noqa: E722 pylint: disable=bare-except
+                                    except ValueError:
                                         if excl_missing_data:
                                             ent[name] = None
                                             continue
@@ -3655,13 +3655,13 @@ class NEFTranslator:
                         ent[name] = None
                     elif type == 'bool':
                         try:
-                            ent[name] = val in self.true_value
-                        except:  # noqa: E722 pylint: disable=bare-except
+                            ent[name] = val.lower() in self.true_value
+                        except ValueError:
                             raise ValueError("%s %r must be %s." % (name, val, self.readable_item_type[type]))
                     elif type == 'int':
                         try:
                             ent[name] = int(val)
-                        except:  # noqa: E722 pylint: disable=bare-except
+                        except ValueError:
                             if 'default-from' in t and t['default-from'] == 'self':
                                 ent[name] = self.letter_to_int(val)
                             elif 'default-from' in t and t['default-from'] in sf_tags.keys():
@@ -3673,7 +3673,7 @@ class NEFTranslator:
                     elif type in ('positive-int', 'positive-int-as-str'):
                         try:
                             ent[name] = int(val)
-                        except:  # noqa: E722 pylint: disable=bare-except
+                        except ValueError:
                             if 'default-from' in t and t['default-from'] == 'self':
                                 ent[name] = self.letter_to_int(val, 1)
                             elif 'default-from' in t and t['default-from'] in sf_tags.keys():
@@ -3698,12 +3698,12 @@ class NEFTranslator:
                     elif type == 'float':
                         try:
                             ent[name] = float(val)
-                        except:  # noqa: E722 pylint: disable=bare-except
+                        except ValueError:
                             raise ValueError("%s %r must be %s." % (name, val, self.readable_item_type[type]))
                     elif type == 'positive-float':
                         try:
                             ent[name] = float(val)
-                        except:  # noqa: E722 pylint: disable=bare-except
+                        except ValueError:
                             raise ValueError("%s %r must be %s." % (name, val, self.readable_item_type[type]))
                         if ent[name] < 0.0 or (ent[name] == 0.0 and 'enforce-non-zero' in t and t['enforce-non-zero']):
                             raise ValueError("%s %r must be %s." % (name, val, self.readable_item_type[type]))
@@ -3720,7 +3720,7 @@ class NEFTranslator:
                             ent[name] = float(val)
                         except KeyError:
                             raise ValueError('Range of tag item %s is not defined.' % name)
-                        except:  # noqa: E722 pylint: disable=bare-except
+                        except ValueError:
                             if not enforce_range:
                                 ent[name] = None
                                 continue
@@ -3793,7 +3793,7 @@ class NEFTranslator:
                             ent[name] = int(val)
                         except KeyError:
                             raise ValueError('Enumeration of tag item %s is not defined.' % name)
-                        except:  # noqa: E722 pylint: disable=bare-except
+                        except ValueError:
                             raise ValueError("%s %r must be %s." % (name, val, self.readable_item_type[type]))
                     else:
                         ent[name] = val

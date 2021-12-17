@@ -140,6 +140,7 @@
 # 18-Nov-2021  M. Yokochi - detect content type of XPLOR-NIH hydrogen bond geometry restraints (DAOTHER-7478)
 # 18-Nov-2021  M. Yokochi - relax detection of distance restraints for nm-res-cya and nm-res-oth (DAOTHER-7491)
 # 13-Dec-2021  M. Yokochi - append sequence spacer between large gap to prevent failure of sequence alignment (DAOTHER-7465, issue #2)
+# 15-Dec-2021  M. Yokochi - fix server crash while uploading NMR restraint file in NMR-STAR format (DAOTHER-7545)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -300,16 +301,20 @@ def fill_blank_comp_id_with_offset(s, offset):
 
     return {'chain_id': s['chain_id'], 'seq_id': seq_ids, 'comp_id': comp_ids}
 
-def beutify_seq_id(s1, s2):
+
+def beautify_seq_id(s1, s2):
     """ Truncate negative sequence IDs of s1 and s2 and insert spacing between the large gap.
     """
 
-    if s1['seq_id'] != s2['seq_id']:
-        return s1, s2
+    _s1 = fill_blank_comp_id(s2, s1)  # pylint: disable=arguments-out-of-order
+    _s2 = fill_blank_comp_id(s1, s2)  # pylint: disable=arguments-out-of-order
 
-    _seq_id = [seq_id for seq_id in s1['seq_id'] if seq_id > 0]
-    _comp_id_1 = [comp_id for seq_id, comp_id in zip(s1['seq_id'], s1['comp_id']) if seq_id > 0]
-    _comp_id_2 = [comp_id for seq_id, comp_id in zip(s1['seq_id'], s2['comp_id']) if seq_id > 0]
+    if _s1['seq_id'] != _s2['seq_id']:
+        return _s1, _s2
+
+    _seq_id = [seq_id for seq_id in _s1['seq_id'] if seq_id > 0]
+    _comp_id_1 = [comp_id for seq_id, comp_id in zip(_s1['seq_id'], _s1['comp_id']) if seq_id > 0]
+    _comp_id_2 = [comp_id for seq_id, comp_id in zip(_s1['seq_id'], _s2['comp_id']) if seq_id > 0]
 
     gap_seq_id = []
     gap_index = []
@@ -325,7 +330,7 @@ def beutify_seq_id(s1, s2):
             gap_index.append(lp)
 
     if len(gap_seq_id) == 0:
-        return {'chain_id': s1['chain_id'], 'seq_id': _seq_id, 'comp_id': _comp_id_1}, {'chain_id': s2['chain_id'], 'seq_id': _seq_id, 'comp_id': _comp_id_2}
+        return {'chain_id': _s1['chain_id'], 'seq_id': _seq_id, 'comp_id': _comp_id_1}, {'chain_id': _s2['chain_id'], 'seq_id': _seq_id, 'comp_id': _comp_id_2}
 
     _seq_id.extend(gap_seq_id)
     _seq_id.sort()
@@ -335,7 +340,7 @@ def beutify_seq_id(s1, s2):
             _comp_id_1.insert(lp, '.')
             _comp_id_2.insert(lp, '.')
 
-    return {'chain_id': s1['chain_id'], 'seq_id': _seq_id, 'comp_id': _comp_id_1}, {'chain_id': s2['chain_id'], 'seq_id': _seq_id, 'comp_id': _comp_id_2}
+    return {'chain_id': _s1['chain_id'], 'seq_id': _seq_id, 'comp_id': _comp_id_1}, {'chain_id': _s2['chain_id'], 'seq_id': _seq_id, 'comp_id': _comp_id_2}
 
 
 def get_middle_code(ref_seq, test_seq):
@@ -1794,8 +1799,7 @@ class NmrDpUtility:
                                                             'enforce-enum': True},
                                                            {'name': 'Target_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True, 'void-zero': True,
                                                             'range': self.dist_restraint_range,
-                                                            'group': {'member-with': ['Distance_val',
-                                                                                      'Lower_linear_limit',
+                                                            'group': {'member-with': ['Lower_linear_limit',
                                                                                       'Upper_linear_limit',
                                                                                       'Distance_lower_bound_val',
                                                                                       'Distance_upper_bound_val'],
@@ -1806,8 +1810,7 @@ class NmrDpUtility:
                                                             'range': self.dist_restraint_error},
                                                            {'name': 'Lower_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True, 'void-zero': True,
                                                             'range': self.dist_restraint_range,
-                                                            'group': {'member-with': ['Distance_val',
-                                                                                      'Target_val',
+                                                            'group': {'member-with': ['Target_val',
                                                                                       'Upper_linear_limit',
                                                                                       'Distance_lower_bound_val',
                                                                                       'Distance_upper_bound_val'],
@@ -1816,8 +1819,7 @@ class NmrDpUtility:
                                                                       'larger-than': ['Distance_lower_bound_val', 'Distance_upper_bound_val', 'Upper_linear_limit']}},
                                                            {'name': 'Upper_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True, 'void-zero': True,
                                                             'range': self.dist_restraint_range,
-                                                            'group': {'member-with': ['Distance_val',
-                                                                                      'Target_val',
+                                                            'group': {'member-with': ['Target_val',
                                                                                       'Lower_linear_limit',
                                                                                       'Distance_lower_bound_val',
                                                                                       'Distance_upper_bound_val'],
@@ -1826,22 +1828,18 @@ class NmrDpUtility:
                                                                       'larger-than': None}},
                                                            {'name': 'Distance_lower_bound_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True, 'void-zero': True,
                                                             'range': self.dist_restraint_range,
-                                                            'group': {'member-with': ['Distance_val', 'Target_val', 'Lower_linear_limit', 'Upper_linear_limit', 'Distance_upper_bound_val'],
+                                                            'group': {'member-with': ['Target_val', 'Lower_linear_limit', 'Upper_linear_limit', 'Distance_upper_bound_val'],
                                                                       'coexist-with': None,  # ['Distance_upper_bound_val'],
                                                                       'smaller-than': ['Lower_linear_limit'],
                                                                       'larger-than': ['Distance_upper_bound_val', 'Upper_linear_limit']}},
                                                            {'name': 'Distance_upper_bound_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True, 'void-zero': True,
                                                             'range': self.dist_restraint_range,
-                                                            'group': {'member-with': ['Distance_val', 'Target_val', 'Lower_linear_limit', 'Upper_linear_limit', 'Distance_lower_bound_val'],
+                                                            'group': {'member-with': ['Target_val', 'Lower_linear_limit', 'Upper_linear_limit', 'Distance_lower_bound_val'],
                                                                       'coexist-with': None,  # ['Distance_lower_bound_val'],
                                                                       'smaller-than': ['Lower_linear_limit', 'Distance_lower_bound_val'],
                                                                       'larger-than': ['Upper_linear_limit']}},
-                                                           {'name': 'Distance_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
-                                                                    'range': self.dist_restraint_range,
-                                                                    'group': {'member-with': None,
-                                                                              'coexist-with': None,
-                                                                              'smaller-than': None,
-                                                                              'larger-than': None}},
+                                                           {'name': 'Distance_val', 'type': 'range-float', 'mandatory': False,
+                                                                    'range': self.dist_restraint_range},
                                                            {'name': 'Weight', 'type': 'range-float', 'mandatory': False,
                                                             'range': self.weight_range},
                                                            # 'enforce-non-zero': True},
@@ -1932,7 +1930,7 @@ class NmrDpUtility:
                                                           # 'enforce-non-zero': True},
                                                           {'name': 'Target_value', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                            'range': self.rdc_restraint_range,
-                                                           'group': {'member-with': ['RDC_val', 'RDC_lower_linear_limit', 'RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
+                                                           'group': {'member-with': ['RDC_lower_linear_limit', 'RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
                                                                      'coexist-with': None,
                                                                      'smaller-than': ['RDC_lower_linear_limit', 'RDC_lower_bound'],
                                                                      'larger-than': ['RDC_upper_bound', 'RDC_upper_linear_limit']}},
@@ -1940,34 +1938,30 @@ class NmrDpUtility:
                                                            'range': self.rdc_restraint_error},
                                                           {'name': 'RDC_lower_bound', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                            'range': self.rdc_restraint_range,
-                                                           'group': {'member-with': ['RDC_val', 'Target_value', 'RDC_lower_linear_limit', 'RDC_upper_linear_limit', 'RDC_upper_bound'],
+                                                           'group': {'member-with': ['Target_value', 'RDC_lower_linear_limit', 'RDC_upper_linear_limit', 'RDC_upper_bound'],
                                                                      'coexist-with': None,  # ['RDC_upper_bound'],
                                                                      'smaller-than': ['RDC_lower_linear_limit'],
                                                                      'larger-than': ['RDC_upper_bound', 'RDC_upper_linear_limit']}},
                                                           {'name': 'RDC_upper_bound', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                            'range': self.rdc_restraint_range,
-                                                           'group': {'member-with': ['RDC_val', 'Target_value', 'RDC_lower_linear_limit', 'RDC_upper_linear_limit', 'RDC_lower_bound'],
+                                                           'group': {'member-with': ['Target_value', 'RDC_lower_linear_limit', 'RDC_upper_linear_limit', 'RDC_lower_bound'],
                                                                      'coexist-with': None,  # ['RDC_lower_bound'],
                                                                      'smaller-than': ['RDC_lower_linear_limit', 'RDC_lower_bound'],
                                                                      'larger-than': ['RDC_upper_linear_limit']}},
                                                           {'name': 'RDC_lower_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                            'range': self.rdc_restraint_range,
-                                                           'group': {'member-with': ['RDC_val', 'Target_value', 'RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
+                                                           'group': {'member-with': ['Target_value', 'RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
                                                                      'coexist-with': None,  # ['RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
                                                                      'smaller-than': None,
                                                                      'larger-than': ['RDC_lower_bound', 'RDC_upper_bound', 'RDC_upper_linear_limit']}},
                                                           {'name': 'RDC_upper_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                            'range': self.rdc_restraint_range,
-                                                           'group': {'member-with': ['RDC_val', 'Target_value', 'RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
+                                                           'group': {'member-with': ['Target_value', 'RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
                                                                      'coexist-with': None,  # ['RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
                                                                      'smaller-than': ['RDC_lower_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
                                                                      'larger-than': None}},
-                                                          {'name': 'RDC_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
-                                                           'range': self.rdc_restraint_range,
-                                                           'group': {'member-with': None,
-                                                                     'coexist-with': None,
-                                                                     'smaller-than': None,
-                                                                     'larger-than': None}},
+                                                          {'name': 'RDC_val', 'type': 'range-float', 'mandatory': False,
+                                                           'range': self.rdc_restraint_range},
                                                           {'name': 'RDC_val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
                                                            'range': self.rdc_restraint_error},
                                                           {'name': 'RDC_val_scale_factor', 'type': 'range-float', 'mandatory': False,
@@ -2111,8 +2105,7 @@ class NmrDpUtility:
                                            },
                                    'nmr-star': {'dist_restraint': [{'name': 'Target_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                                     'range': self.dist_restraint_range,
-                                                                    'group': {'member-with': ['Distance_val',
-                                                                                              'Lower_linear_limit',
+                                                                    'group': {'member-with': ['Lower_linear_limit',
                                                                                               'Upper_linear_limit',
                                                                                               'Distance_lower_bound_val',
                                                                                               'Distance_upper_bound_val'],
@@ -2123,8 +2116,7 @@ class NmrDpUtility:
                                                                     'range': self.dist_restraint_error},
                                                                    {'name': 'Lower_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                                     'range': self.dist_restraint_range,
-                                                                    'group': {'member-with': ['Distance_val',
-                                                                                              'Target_val',
+                                                                    'group': {'member-with': ['Target_val',
                                                                                               'Upper_linear_limit',
                                                                                               'Distance_lower_bound_val',
                                                                                               'Distance_upper_bound_val'],
@@ -2133,8 +2125,7 @@ class NmrDpUtility:
                                                                               'larger-than': ['Distance_lower_bound_val', 'Distance_upper_bound_val', 'Upper_linear_limit']}},
                                                                    {'name': 'Upper_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                                     'range': self.dist_restraint_range,
-                                                                    'group': {'member-with': ['Distance_val',
-                                                                                              'Target_val',
+                                                                    'group': {'member-with': ['Target_val',
                                                                                               'Lower_linear_limit',
                                                                                               'Distance_lower_bound_val',
                                                                                               'Distance_upper_bound_val'],
@@ -2143,8 +2134,7 @@ class NmrDpUtility:
                                                                               'larger-than': None}},
                                                                    {'name': 'Distance_lower_bound_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                                     'range': self.dist_restraint_range,
-                                                                    'group': {'member-with': ['Distance_val',
-                                                                                              'Target_val',
+                                                                    'group': {'member-with': ['Target_val',
                                                                                               'Lower_linear_limit',
                                                                                               'Upper_linear_limit',
                                                                                               'Distance_upper_bound_val'],
@@ -2153,20 +2143,15 @@ class NmrDpUtility:
                                                                               'larger-than': ['Distance_upper_bound_val', 'Upper_linear_limit']}},
                                                                    {'name': 'Distance_upper_bound_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                                     'range': self.dist_restraint_range,
-                                                                    'group': {'member-with': ['Distance_val',
-                                                                                              'Target_val',
+                                                                    'group': {'member-with': ['Target_val',
                                                                                               'Lower_linear_limit',
                                                                                               'Upper_linear_limit',
                                                                                               'Distance_lower_bound_val'],
                                                                               'coexist-with': None,  # ['Distance_lower_bound_val'],
                                                                               'smaller-than': ['Lower_linear_limit', 'Distance_lower_bound_val'],
                                                                               'larger-than': ['Upper_linear_limit']}},
-                                                                   {'name': 'Distance_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
-                                                                    'range': self.dist_restraint_range,
-                                                                    'group': {'member-with': None,
-                                                                              'coexist-with': None,
-                                                                              'smaller-than': None,
-                                                                              'larger-than': None}}
+                                                                   {'name': 'Distance_val', 'type': 'range-float', 'mandatory': False,
+                                                                    'range': self.dist_restraint_range}
                                                                    ],
                                                 'dihed_restraint': [{'name': 'Angle_lower_bound_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                                      'range': self.dihed_restraint_range,
@@ -2218,8 +2203,7 @@ class NmrDpUtility:
                                                                     ],
                                                 'rdc_restraint': [{'name': 'Target_value', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                                    'range': self.rdc_restraint_range,
-                                                                   'group': {'member-with': ['RDC_val',
-                                                                                             'RDC_lower_linear_limit',
+                                                                   'group': {'member-with': ['RDC_lower_linear_limit',
                                                                                              'RDC_upper_linear_limit',
                                                                                              'RDC_lower_bound',
                                                                                              'RDC_upper_bound'],
@@ -2230,8 +2214,7 @@ class NmrDpUtility:
                                                                    'range': self.rdc_restraint_error},
                                                                   {'name': 'RDC_lower_bound', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                                    'range': self.rdc_restraint_range,
-                                                                   'group': {'member-with': ['RDC_val',
-                                                                                             'Target_value',
+                                                                   'group': {'member-with': ['Target_value',
                                                                                              'RDC_lower_linear_limit',
                                                                                              'RDC_upper_linear_limit',
                                                                                              'RDC_upper_bound'],
@@ -2240,8 +2223,7 @@ class NmrDpUtility:
                                                                              'larger-than': ['RDC_upper_boud', 'RDC_upper_linear_limit']}},
                                                                   {'name': 'RDC_upper_bound', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                                    'range': self.rdc_restraint_range,
-                                                                   'group': {'member-with': ['RDC_val',
-                                                                                             'Target_value',
+                                                                   'group': {'member-with': ['Target_value',
                                                                                              'RDC_lower_linear_limit',
                                                                                              'RDC_upper_linear_limit',
                                                                                              'RDC_lower_bound'],
@@ -2250,22 +2232,18 @@ class NmrDpUtility:
                                                                              'larger-than': ['RDC_upper_linear_limit']}},
                                                                   {'name': 'RDC_lower_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                                    'range': self.rdc_restraint_range,
-                                                                   'group': {'member-with': ['RDC_val', 'Target_value', 'RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
+                                                                   'group': {'member-with': ['Target_value', 'RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
                                                                              'coexist-with': None,  # ['RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
                                                                              'smaller-than': None,
                                                                              'larger-than': ['RDC_lower_bound', 'RDC_upper_bound', 'RDC_upper_linear_limit']}},
                                                                   {'name': 'RDC_upper_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                                    'range': self.rdc_restraint_range,
-                                                                   'group': {'member-with': ['RDC_val', 'Target_value', 'RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
+                                                                   'group': {'member-with': ['Target_value', 'RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
                                                                              'coexist-with': None,  # ['RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
                                                                              'smaller-than': None,
                                                                              'larger-than': ['RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound']}},
-                                                                  {'name': 'RDC_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
-                                                                   'range': self.rdc_restraint_range,
-                                                                   'group': {'member-with': None,
-                                                                             'coexist-with': None,
-                                                                             'smaller-than': None,
-                                                                             'larger-than': None}},
+                                                                  {'name': 'RDC_val', 'type': 'range-float', 'mandatory': False,
+                                                                   'range': self.rdc_restraint_range},
                                                                   {'name': 'RDC_val_err', 'type': 'range-float', 'mandatory': False,
                                                                    'range': self.rdc_restraint_error}
                                                                   ],
@@ -2409,7 +2387,8 @@ class NmrDpUtility:
                                                        'Auth_entity_assembly_ID', 'Auth_asym_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_variant_ID',
                                                        'Sequence_linking', 'Cis_residue', 'NEF_index', 'Sf_ID', 'Entry_ID', 'Assembly_ID'],
                                           'entity': None,
-                                          'chem_shift': ['ID', 'Assembly_atom_ID', 'Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID',
+                                          # DAOTHER-7545 'Entity_assembly_asym_ID' is not authorized data item acoording to NMR-STAR dictionary, but it is still used conventionally
+                                          'chem_shift': ['ID', 'Assembly_atom_ID', 'Entity_assembly_ID', 'Entity_assembly_asym_ID', 'Entity_ID', 'Comp_index_ID',
                                                          'Seq_ID', 'Comp_ID', 'Atom_ID', 'Atom_type', 'Atom_isotope_number',
                                                          'Val', 'Val_err', 'Assign_fig_of_merit', 'Ambiguity_code', 'Ambiguity_set_ID', 'Occupancy', 'Resonance_ID',
                                                          'Auth_entity_assembly_ID', 'Auth_asym_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_atom_ID',
@@ -2419,8 +2398,8 @@ class NmrDpUtility:
                                           'chem_shift_ref': ['Atom_type', 'Atom_isotope_number', 'Mol_common_name', 'Atom_group',
                                                              'Concentration_val', 'Concentration_units', 'Solvent', 'Rank',
                                                              'Chem_shift_units', 'Chem_shift_val', 'Ref_method', 'Ref_type', 'Indirect_shift_ratio',
-                                                             'External_ref_loc', 'External_ref_sample_geometry', 'External_ref_axis', 'Indirect_shift_ratio_cit_ID'
-                                                             , 'Indirect_shift_ratio_cit_label', 'Ref_correction_type', 'Correction_val', 'Correction_val_cit_ID',
+                                                             'External_ref_loc', 'External_ref_sample_geometry', 'External_ref_axis', 'Indirect_shift_ratio_cit_ID',
+                                                             'Indirect_shift_ratio_cit_label', 'Ref_correction_type', 'Correction_val', 'Correction_val_cit_ID',
                                                              'Correction_val_cit_label', 'Sf_ID', 'Entry_ID', 'Chem_shift_reference_ID'],
                                           'dist_restraint': ['Index_ID', 'ID', 'Combination_ID', 'Member_ID', 'Member_logic_code',
                                                              'Assembly_atom_ID_1', 'Entity_assembly_ID_1', 'Entity_ID_1', 'Comp_index_ID_1', 'Seq_ID_1',
@@ -2432,8 +2411,8 @@ class NmrDpUtility:
                                                              'Distance_lower_bound_val', 'Distance_upper_bound_val', 'Contribution_fractional_val', 'Weight',
                                                              'Spectral_peak_ID', 'Spectral_peak_list_ID',
                                                              'PDB_record_ID_1', 'PDB_model_num_1', 'PDB_strand_ID_1', 'PDB_ins_code_1', 'PDB_residue_no_1',
-                                                             'PDB_residue_name_1', 'PDB_atom_name_1', 'PDB_record_ID_2', 'PDB_model_num_2', 'PDB_strand_ID_2'
-                                                             , 'PDB_ins_code_2', 'PDB_residue_no_2', 'PDB_residue_name_2', 'PDB_atom_name_2',
+                                                             'PDB_residue_name_1', 'PDB_atom_name_1', 'PDB_record_ID_2', 'PDB_model_num_2', 'PDB_strand_ID_2',
+                                                             'PDB_ins_code_2', 'PDB_residue_no_2', 'PDB_residue_name_2', 'PDB_atom_name_2',
                                                              'Auth_entity_assembly_ID_1', 'Auth_asym_ID_1', 'Auth_chain_ID_1', 'Auth_seq_ID_1', 'Auth_comp_ID_1',
                                                              'Auth_atom_ID_1', 'Auth_alt_ID_1', 'Auth_atom_name_1',
                                                              'Auth_entity_assembly_ID_2', 'Auth_asym_ID_2', 'Auth_chain_ID_2', 'Auth_seq_ID_2', 'Auth_comp_ID_2',
@@ -2479,8 +2458,8 @@ class NmrDpUtility:
                                                             'RDC_val_scale_factor', 'RDC_bond_length', 'RDC_distant_dependent', 'Source_experiment_ID',
                                                             'PDB_record_ID_1', 'PDB_model_num_1', 'PDB_strand_ID_1', 'PDB_ins_code_1', 'PDB_residue_no_1',
                                                             'PDB_residue_name_1', 'PDB_atom_name_1',
-                                                            'PDB_record_ID_2', 'PDB_model_num_2', 'PDB_strand_ID_2', 'PDB_ins_code_2', 'PDB_residue_no_2'
-                                                            , 'PDB_residue_name_2', 'PDB_atom_name_2',
+                                                            'PDB_record_ID_2', 'PDB_model_num_2', 'PDB_strand_ID_2', 'PDB_ins_code_2', 'PDB_residue_no_2',
+                                                            'PDB_residue_name_2', 'PDB_atom_name_2',
                                                             'Auth_entity_assembly_ID_1', 'Auth_asym_ID_1', 'Auth_chain_ID_1', 'Auth_seq_ID_1', 'Auth_comp_ID_1',
                                                             'Auth_atom_ID_1', 'Auth_alt_ID_1', 'Auth_atom_name_1',
                                                             'Auth_entity_assembly_ID_2', 'Auth_asym_ID_2', 'Auth_chain_ID_2', 'Auth_seq_ID_2', 'Auth_comp_ID_2',
@@ -2502,8 +2481,8 @@ class NmrDpUtility:
                                                             'Position_13', 'Position_uncertainty_13', 'Line_width_13', 'Line_width_uncertainty_13',
                                                             'Position_14', 'Position_uncertainty_14', 'Line_width_14', 'Line_width_uncertainty_14',
                                                             'Position_15', 'Position_uncertainty_15', 'Line_width_15', 'Line_width_uncertainty_15',
-                                                            'Entity_assembly_ID_1', 'Entity_ID_1', 'Comp_index_ID_1', 'Seq_ID_1', 'Comp_ID_1'
-                                                            , 'Atom_ID_1', 'Ambiguity_code_1', 'Ambiguity_set_ID_1',
+                                                            'Entity_assembly_ID_1', 'Entity_ID_1', 'Comp_index_ID_1', 'Seq_ID_1', 'Comp_ID_1',
+                                                            'Atom_ID_1', 'Ambiguity_code_1', 'Ambiguity_set_ID_1',
                                                             'Entity_assembly_ID_2', 'Entity_ID_2', 'Comp_index_ID_2', 'Seq_ID_2', 'Comp_ID_2',
                                                             'Atom_ID_2', 'Ambiguity_code_2', 'Ambiguity_set_ID_2',
                                                             'Entity_assembly_ID_3', 'Entity_ID_3', 'Comp_index_ID_3', 'Seq_ID_3', 'Comp_ID_3',
@@ -3244,8 +3223,8 @@ class NmrDpUtility:
                                                                  '_Force_constant', '_Angular_order_parameter_list', '_Angular_order_param',
                                                                  '_Tertiary_struct_element_list', '_Tertiary_struct_element_sel', '_Tertiary_struct',
                                                                  '_Structure_annotation', '_Struct_anno_software', '_Struct_classification', '_Struct_anno_char',
-                                                                 '_Secondary_struct_list', '_Secondary_struct_sel', '_Secondary_struct', '_Bond_annotation_list'
-                                                                 , '_Bond_annotation', '_Bond_observed_conformer',
+                                                                 '_Secondary_struct_list', '_Secondary_struct_sel', '_Secondary_struct', '_Bond_annotation_list',
+                                                                 '_Bond_annotation', '_Bond_observed_conformer',
                                                                  '_Structure_interaction_list', '_Structure_interaction', '_Observed_conformer',
                                                                  '_Other_struct_feature_list', '_Other_struct_feature', '_Tensor_list',
                                                                  '_Interatomic_distance_list', '_Interatomic_dist',
@@ -3578,15 +3557,15 @@ class NmrDpUtility:
                                          },
                                  'nmr-star': {'entry_info': None,
                                               'poly_seq': {
-                                                  '_Bond': ['ID', 'Type', 'Value_order', 'Assembly_atom_ID_1', 'Entity_assembly_ID_1'
-                                                            , 'Entity_assembly_name_1', 'Entity_ID_1', 'Comp_ID_1', 'Comp_index_ID_1',
+                                                  '_Bond': ['ID', 'Type', 'Value_order', 'Assembly_atom_ID_1', 'Entity_assembly_ID_1',
+                                                            'Entity_assembly_name_1', 'Entity_ID_1', 'Comp_ID_1', 'Comp_index_ID_1',
                                                             'Seq_ID_1', 'Atom_ID_1',
                                                             'Assembly_atom_ID_2', 'Entity_assembly_ID_2', 'Entity_assembly_name_2',
                                                             'Entity_ID_2', 'Comp_ID_2', 'Comp_index_ID_2', 'Seq_ID_2', 'Atom_ID_2',
                                                             'Auth_entity_assembly_ID_1', 'Auth_entity_assembly_name_1', 'Auth_asym_ID_1',
                                                             'Auth_seq_ID_1', 'Auth_comp_ID_1', 'Auth_atom_ID_1',
-                                                            'Auth_entity_assembly_ID_2', 'Auth_entity_assembly_name_2', 'Auth_asym_ID_2'
-                                                            , 'Auth_seq_ID_2', 'Auth_comp_ID_2', 'Auth_atom_ID_2', 'Sf_ID', 'Entry_ID', 'Assembly_ID'],
+                                                            'Auth_entity_assembly_ID_2', 'Auth_entity_assembly_name_2', 'Auth_asym_ID_2',
+                                                            'Auth_seq_ID_2', 'Auth_comp_ID_2', 'Auth_atom_ID_2', 'Sf_ID', 'Entry_ID', 'Assembly_ID'],
                                                   '_Entity_deleted_atom': ['ID', 'Entity_atom_list_ID', 'Entity_assembly_ID', 'Entity_ID',
                                                                            'Comp_ID', 'Comp_index_ID', 'Seq_ID', 'Atom_ID', 'Auth_entity_assembly_ID',
                                                                            'Auth_seq_ID', 'Auth_comp_ID', 'Auth_atom_ID', 'Sf_ID', 'Entry_ID', 'Assembly_ID']
@@ -5332,7 +5311,7 @@ class NmrDpUtility:
                                         if lp_category == _lp_category:
                                             target['loop_location'] = lp_loc
                                             content_subtype = next((k for k, v in self.lp_categories[file_type].items() if v == target['lp_category']), None)
-                                            if not content_subtype is None:
+                                            if content_subtype is not None:
                                                 target['sf_category'] = self.sf_categories[file_type][content_subtype]
                                                 target['sf_tag_prefix'] = self.sf_tag_prefixes[file_type][content_subtype]
                                                 target['sf_framecode'] = target['sf_category'] + '_1'
@@ -5640,7 +5619,7 @@ class NmrDpUtility:
 
         is_valid, message = self.__nefT.validate_file(_srcPath, fileSubType)
 
-        _file_type = message['file_type'] # nef/nmr-star/unknown
+        _file_type = message['file_type']  # nef/nmr-star/unknown
 
         if not self.__combined_mode:
 
@@ -5683,7 +5662,7 @@ class NmrDpUtility:
 
             else:
 
-                is_done, star_data_type, star_data = self.__nefT.read_input_file(_srcPath) # NEFTranslator.validate_file() generates this object internally, but not re-used.
+                is_done, star_data_type, star_data = self.__nefT.read_input_file(_srcPath)  # NEFTranslator.validate_file() generates this object internally, but not re-used.
 
                 rescued = self.__has_legacy_sf_issue and is_done and star_data_type == 'Entry'
 
@@ -5802,7 +5781,7 @@ class NmrDpUtility:
 
                             tagNames = [t[0] for t in sf_data.tags]
 
-                            sf_framecode= sf_data.name
+                            sf_framecode = sf_data.name
 
                             sf_data.tags[tagNames.index('sf_framecode')][1] = sf_framecode
 
@@ -6083,7 +6062,7 @@ class NmrDpUtility:
                     if num_dim not in range(1, self.lim_num_dim):
                         raise ValueError()
 
-                except ValueError: # raised error already at __testIndexConsistency()
+                except ValueError:  # raised error already at __testIndexConsistency()
                     return
 
                 max_dim = num_dim + 1
@@ -6145,7 +6124,7 @@ class NmrDpUtility:
 
                             tagNames = [t[0] for t in sf_data.tags]
 
-                            sf_framecode= sf_data.name
+                            sf_framecode = sf_data.name
 
                             sf_data.tags[tagNames.index('Sf_framecode')][1] = sf_data.name
 
@@ -6179,7 +6158,7 @@ class NmrDpUtility:
             lp_category = self.lp_categories[file_type][content_subtype]
 
             if content_subtype.startswith('spectral_peak'):
-                lp_category = self.aux_lp_categories[file_type][content_subtype][0] # _Spectral_dim
+                lp_category = self.aux_lp_categories[file_type][content_subtype][0]  # _Spectral_dim
 
             if sf_category is None or lp_category is None:
                 continue
@@ -6416,7 +6395,7 @@ class NmrDpUtility:
         """ Detect content subtype of NMR data file in any STAR format.
         """
 
-        #if self.report.isError():
+        # if self.report.isError():
         #    return False
 
         if len(self.__star_data) != self.__file_path_list_len:
@@ -6433,7 +6412,7 @@ class NmrDpUtility:
 
             self.__sf_category_list, self.__lp_category_list = self.__nefT.get_data_content(self.__star_data[fileListId], self.__star_data_type[fileListId])
 
-            is_valid, messages, corrections = self.__nefT.resolve_sf_names_for_cif(self.__star_data[fileListId], self.__star_data_type[fileListId]) # DAOTHER-7389, issue #4
+            is_valid, messages, corrections = self.__nefT.resolve_sf_names_for_cif(self.__star_data[fileListId], self.__star_data_type[fileListId])  # DAOTHER-7389, issue #4
             self.__sf_name_corr.append(corrections)
 
             if not is_valid:
@@ -6447,7 +6426,7 @@ class NmrDpUtility:
 
             tags_with_null_str = []
 
-            for sf_category in self.__sf_category_list: # DAOTHER-5896
+            for sf_category in self.__sf_category_list:  # DAOTHER-5896
 
                 for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
@@ -6503,7 +6482,7 @@ class NmrDpUtility:
 
                 if not self.__has_star_entity and self.__combined_mode:
 
-                    if self.__resolve_conflict and self.__update_poly_seq: # DAOTHER-6694
+                    if self.__resolve_conflict and self.__update_poly_seq:  # DAOTHER-6694
                         warn = "A saveframe with a category %r is missing in the NMR data." % lp_category
 
                         self.report.warning.appendDescription('missing_saveframe', {'file_name': file_name, 'description': warn})
@@ -6521,7 +6500,7 @@ class NmrDpUtility:
                         if self.__verbose:
                             self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Error  - %s\n" % err)
 
-                elif lp_counts['chem_shift'] == 0 and lp_counts['dist_restraint'] > 0:
+                elif lp_counts['chem_shift'] == 0 and lp_counts['dist_restraint'] > 0 and content_type != 'nmr-restraints':
                     err = "A saveframe with a category %r is missing. Please re-upload the %s file." % (lp_category, file_type.upper())
 
                     self.report.error.appendDescription('missing_mandatory_content', {'file_name': file_name, 'description': err})
@@ -6685,7 +6664,7 @@ class NmrDpUtility:
                 mr_format_name = 'other format'
 
             atom_like_names = self.__csStat.getAtomLikeNameSet(minimum_len=(2 if file_type == 'nm-res-oth' or is_aux_amb else 1))
-            cs_atom_like_names = list(filter(self.__isHalfSpin, atom_like_names)) # DAOTHER-7491
+            cs_atom_like_names = list(filter(self.__isHalfSpin, atom_like_names))  # DAOTHER-7491
 
             has_chem_shift = False
             has_dist_restraint = False
@@ -6731,8 +6710,9 @@ class NmrDpUtility:
                                     has_ens_coord = True
                                 has_first_atom = True
 
-                        elif line.startswith('MODEL') or line.startswith('ENDMDL') or\
-                             line.startswith('_atom_site.pdbx_PDB_model_num') or line.startswith('_atom_site.ndb_model'):
+                        elif line.startswith('MODEL') or line.startswith('ENDMDL')\
+                                or line.startswith('_atom_site.pdbx_PDB_model_num')\
+                                or line.startswith('_atom_site.ndb_model'):
                             has_ens_coord = True
 
                         l = " ".join(line.split())
@@ -6766,7 +6746,7 @@ class NmrDpUtility:
                                     has_rdc_restraint = True
 
                                 elif atom_likes == 3 and not (cs_range_like or dist_range_like or dihed_range_like or rdc_range_like or has_hbond_restraint)\
-                                    and names[0][0] in hbond_da_atom_types and names[1][0] == 'H' and names[2][0] in hbond_da_atom_types:
+                                        and names[0][0] in hbond_da_atom_types and names[1][0] == 'H' and names[2][0] in hbond_da_atom_types:
                                     has_hbond_restraint = True
 
                                 atom_likes = 0
@@ -6802,7 +6782,7 @@ class NmrDpUtility:
                                     if v not in resids:
                                         resid_likes += 1
                                         resids.append(v)
-                                except:
+                                except ValueError:
                                     pass
 
                             elif '.' in t:
@@ -6817,7 +6797,7 @@ class NmrDpUtility:
                                     if rdc_range_min < v < rdc_range_max:
                                         rdc_range_like = True
                                     real_likes += 1
-                                except:
+                                except ValueError:
                                     pass
 
                             _t_lower = t_lower
@@ -6885,7 +6865,7 @@ class NmrDpUtility:
                                             v = float(t)
                                             if self.weight_range['min_inclusive'] <= v <= self.weight_range['max_inclusive']:
                                                 has_plane_restraint = True
-                                        except:
+                                        except ValueError:
                                             pass
 
                                 elif t_lower == 'end':
@@ -6923,8 +6903,9 @@ class NmrDpUtility:
                                     has_ens_coord = True
                                 has_first_atom = True
 
-                        elif line.startswith('MODEL') or line.startswith('ENDMDL') or\
-                             line.startswith('_atom_site.pdbx_PDB_model_num') or line.startswith('_atom_site.ndb_model'):
+                        elif line.startswith('MODEL') or line.startswith('ENDMDL')\
+                                or line.startswith('_atom_site.pdbx_PDB_model_num')\
+                                or line.startswith('_atom_site.ndb_model'):
                             has_ens_coord = True
 
                         pos += 1
@@ -6935,7 +6916,7 @@ class NmrDpUtility:
                         elif pos == 2 and has_amb_inpcrd:
                             try:
                                 int(line.lstrip().split()[0])
-                            except:
+                            except ValueError:
                                 has_amb_inpcrd = False
 
                         elif pos == 3 and has_amb_inpcrd:
@@ -7062,7 +7043,7 @@ class NmrDpUtility:
                                     try:
                                         iat = int(t[5:])
                                         names.insert(0, [iat])
-                                    except:
+                                    except ValueError:
                                         pass
 
                                     in_iat = False
@@ -7073,7 +7054,7 @@ class NmrDpUtility:
                                         iat = int(t)
                                         g = names[0]
                                         g.append(iat)
-                                    except:
+                                    except ValueError:
                                         pass
 
                                 elif t.startswith('igr2'):
@@ -7081,7 +7062,7 @@ class NmrDpUtility:
                                     try:
                                         iat = int(t[5:])
                                         names.insert(1, [iat])
-                                    except:
+                                    except ValueError:
                                         pass
 
                                     in_iat = False
@@ -7092,7 +7073,7 @@ class NmrDpUtility:
                                         iat = int(t)
                                         g = names[1]
                                         g.append(iat)
-                                    except:
+                                    except ValueError:
                                         pass
 
                                 elif '=' in t:
@@ -7126,7 +7107,7 @@ class NmrDpUtility:
                     residue_pointers = []
 
                 atom_like_names_oth = self.__csStat.getAtomLikeNameSet(1)
-                cs_atom_like_names_oth = list(filter(self.__isHalfSpin, atom_like_names_oth)) # DAOTHER-7491
+                cs_atom_like_names_oth = list(filter(self.__isHalfSpin, atom_like_names_oth))  # DAOTHER-7491
 
                 one_letter_codes = self.monDict3.values()
                 three_letter_codes = self.monDict3.keys()
@@ -7146,11 +7127,12 @@ class NmrDpUtility:
                                 if has_first_atom:
                                     has_ens_coord = True
                                 has_first_atom = True
-                            if is_aux_amb: # and line.count('.') >= 3:
+                            if is_aux_amb:  # and line.count('.') >= 3:
                                 has_amb_coord = True
 
-                        elif line.startswith('MODEL') or line.startswith('ENDMDL') or\
-                             line.startswith('_atom_site.pdbx_PDB_model_num') or line.startswith('_atom_site.ndb_model'):
+                        elif line.startswith('MODEL') or line.startswith('ENDMDL')\
+                                or line.startswith('_atom_site.pdbx_PDB_model_num')\
+                                or line.startswith('_atom_site.ndb_model'):
                             has_ens_coord = True
 
                         elif is_aux_amb:
@@ -7161,7 +7143,7 @@ class NmrDpUtility:
                             elif pos == 2 and has_amb_inpcrd:
                                 try:
                                     int(line.lstrip().split()[0])
-                                except:
+                                except ValueError:
                                     has_amb_inpcrd = False
 
                             elif pos == 3 and has_amb_inpcrd:
@@ -7299,7 +7281,7 @@ class NmrDpUtility:
                                         dist_range_like = True
                                     if dihed_range_min <= v <= dihed_range_max:
                                         dihed_range_like = True
-                                except:
+                                except ValueError:
                                     pass
 
                             elif name in three_letter_codes:
@@ -7368,7 +7350,7 @@ class NmrDpUtility:
                                             dist_range_like = True
                                         if dihed_range_min <= v <= dihed_range_max:
                                             dihed_range_like = True
-                                    except:
+                                    except ValueError:
                                         pass
 
                                 elif name in three_letter_codes:
@@ -7397,7 +7379,7 @@ class NmrDpUtility:
                     if has_amb_coord and (not has_first_atom or has_ens_coord):
                         has_amb_coord = False
 
-            if file_type in ('nm-res-cya', 'nm-res-oth') and not has_dist_restraint: # DAOTHER-7491
+            if file_type in ('nm-res-cya', 'nm-res-oth') and not has_dist_restraint:  # DAOTHER-7491
 
                 with open(file_path, 'r', encoding='UTF-8') as ifp:
 
@@ -7476,7 +7458,8 @@ class NmrDpUtility:
 
                     hint = 'assign ( resid # and name OO ) ( resid # and name X ) ( resid # and name Y ) ( resid # and name Z ) ( segid $ and resid # and name $ ) ( segid $ and resid # and name $ ) #.# #.#'
 
-                    err = "NMR restraint file (%s) seems to be a malformed XPLOR-NIH RDC restraint file. Tips for XPLOR-NIH RDC restraints: %r pattern must be present in the file. Did you accidentally select the wrong format? Please re-upload the NMR restraint file." % (mr_format_name, hint)
+                    err = "NMR restraint file (%s) seems to be a malformed XPLOR-NIH RDC restraint file. Tips for XPLOR-NIH RDC restraints: %r pattern must be present in the file. Did you accidentally select the wrong format? Please re-upload the NMR restraint file."\
+                        % (mr_format_name, hint)
 
                     self.report.error.appendDescription('content_mismatch', {'file_name': file_name, 'description': err})
                     self.report.setError()
@@ -7591,8 +7574,8 @@ class NmrDpUtility:
 
                     self.__suspended_errors_for_polypeptide.append({'content_mismatch': {'file_name': file_name, 'description': err}})
 
-                    #self.report.error.appendDescription('content_mismatch', {'file_name': file_name, 'description': err})
-                    #self.report.setError()
+                    # self.report.error.appendDescription('content_mismatch', {'file_name': file_name, 'description': err})
+                    # self.report.setError()
 
                     if self.__verbose:
                         self.__lfh.write("+NmrDpUtility.__detectContentSubTypeOfLegacyMR() ++ Error  - %s\n" % err)
@@ -7613,8 +7596,8 @@ class NmrDpUtility:
 
                     self.__suspended_errors_for_polypeptide.append({'content_mismatch': {'file_name': file_name, 'description': err}})
 
-                    #self.report.error.appendDescription('content_mismatch', {'file_name': file_name, 'description': err})
-                    #self.report.setError()
+                    # self.report.error.appendDescription('content_mismatch', {'file_name': file_name, 'description': err})
+                    # self.report.setError()
 
                     if self.__verbose:
                         self.__lfh.write("+NmrDpUtility.__detectContentSubTypeOfLegacyMR() ++ Error  - %s\n" % err)
@@ -7658,13 +7641,13 @@ class NmrDpUtility:
 
         file_type = input_source_dic['file_type']
 
-        if file_type == 'nef': # DAOTHER-7389, issue #3, allow empty for 'chem_shift'
+        if file_type == 'nef':  # DAOTHER-7389, issue #3, allow empty for 'chem_shift'
             return self.__nefT.get_nef_seq(sf_data, lp_category=self.lp_categories[file_type][content_subtype],
                                            allow_empty=(content_subtype in ('chem_shift', 'spectral_peak')), allow_gap=(content_subtype not in ('poly_seq', 'entity')))
 
         if content_subtype == 'spectral_peak_alt':
             return self.__nefT.get_star_seq(sf_data, lp_category='_Assigned_peak_chem_shift',
-                                        allow_empty=True, allow_gap=True)
+                                            allow_empty=True, allow_gap=True)
 
         # DAOTHER-7389, issue #3, allow empty for 'chem_shift'
         return self.__nefT.get_star_seq(sf_data, lp_category=self.lp_categories[file_type][content_subtype],
@@ -7674,7 +7657,7 @@ class NmrDpUtility:
         """ Extract reference polymer sequence.
         """
 
-        #if self.report.isError():
+        # if self.report.isError():
         #    return False
 
         is_done = True
@@ -7879,7 +7862,7 @@ class NmrDpUtility:
         """ Extract polymer sequence in interesting loops.
         """
 
-        #if self.report.isError():
+        # if self.report.isError():
         #    return False
 
         is_done = True
@@ -7945,7 +7928,7 @@ class NmrDpUtility:
                 if not has_poly_seq:
                     poly_seq_list_set.pop(content_subtype)
 
-            #if self.report.isError():
+            # if self.report.isError():
             #    is_done = False
 
             if len(poly_seq_list_set) > 0:
@@ -8144,7 +8127,7 @@ class NmrDpUtility:
             input_source = self.report.input_sources[fileListId]
             input_source_dic = input_source.get()
 
-            #file_type = input_source_dic['file_type']
+            # file_type = input_source_dic['file_type']
 
             has_poly_seq = has_key_value(input_source_dic, 'polymer_sequence')
             has_poly_seq_in_loop = has_key_value(input_source_dic, 'polymer_sequence_in_loop')
@@ -8168,7 +8151,7 @@ class NmrDpUtility:
                 if has_poly_seq and ((poly_seq not in subtype_pair) or subtype_pair == (poly_seq, poly_seq)):
                     continue
 
-                subtype1 = subtype_pair[0] # poly_seq will appear only on subtype1
+                subtype1 = subtype_pair[0]  # poly_seq will appear only on subtype1
                 subtype2 = subtype_pair[1]
 
                 if subtype1 is None or subtype2 is None:
@@ -8191,7 +8174,7 @@ class NmrDpUtility:
 
                     for ps_in_loop in polymer_sequence_in_loop[subtype2]:
                         ps2 = ps_in_loop['polymer_sequence']
-                        #sf_framecode2 = ps_in_loop['sf_framecode']
+                        # sf_framecode2 = ps_in_loop['sf_framecode']
 
                         for s2 in ps2:
 
@@ -8224,11 +8207,11 @@ class NmrDpUtility:
 
                     for ps_in_loop in polymer_sequence_in_loop[subtype1]:
                         ps1 = ps_in_loop['polymer_sequence']
-                        #sf_framecode1 = ps_in_loop['sf_framecode']
+                        # sf_framecode1 = ps_in_loop['sf_framecode']
 
                         for ps_in_loop2 in polymer_sequence_in_loop[subtype2]:
                             ps2 = ps_in_loop2['polymer_sequence']
-                            #sf_framecode2 = ps_in_loop2['sf_framecode']
+                            # sf_framecode2 = ps_in_loop2['sf_framecode']
 
                             # suppress redundant tests inside the same subtype
                             if subtype1 == subtype2 and ps_in_loop['list_id'] >= ps_in_loop2['list_id']:
@@ -8277,7 +8260,7 @@ class NmrDpUtility:
         """ Perform sequence consistency test among extracted polymer sequences.
         """
 
-        #if self.report.isError():
+        # if self.report.isError():
         #    return False
 
         if self.__valid_seq:
@@ -8315,17 +8298,17 @@ class NmrDpUtility:
                 if has_poly_seq and ((poly_seq not in subtype_pair) or subtype_pair == (poly_seq, poly_seq)):
                     continue
 
-                subtype1 = subtype_pair[0] # poly_seq will appear only on subtype1
+                subtype1 = subtype_pair[0]  # poly_seq will appear only on subtype1
                 subtype2 = subtype_pair[1]
 
                 if subtype1 is None or subtype2 is None:
                     continue
 
-                #lp_category1 = self.lp_categories[file_type][subtype1]
+                # lp_category1 = self.lp_categories[file_type][subtype1]
                 lp_category2 = self.lp_categories[file_type][subtype2]
 
                 if file_type == 'nmr-star':
-                    #if subtype1 == 'spectral_peak_alt':
+                    # if subtype1 == 'spectral_peak_alt':
                     #    lp_category1 = '_Assigned_peak_chem_shift'
                     if subtype2 == 'spectral_peak_alt':
                         lp_category2 = '_Assigned_peak_chem_shift'
@@ -8546,7 +8529,7 @@ class NmrDpUtility:
             comp_id = comp_id.split('_')[0]
 
         elif self.__get1LetterCode(comp_id) == 'X' and self.__updateChemCompDict(comp_id):
-            if '_chem_comp.mon_nstd_parent_comp_id' in self.__last_chem_comp_dict: # matches with comp_id in CCD
+            if '_chem_comp.mon_nstd_parent_comp_id' in self.__last_chem_comp_dict:  # matches with comp_id in CCD
                 if self.__last_chem_comp_dict['_chem_comp.mon_nstd_parent_comp_id'] not in self.empty_value:
                     comp_id = self.__last_chem_comp_dict['_chem_comp.mon_nstd_parent_comp_id']
                     if comp_id in ('A', 'C', 'G', 'T', 'I', 'U') and len(ref_comp_id) == 2 and ref_comp_id.startswith('D'):
@@ -8558,7 +8541,7 @@ class NmrDpUtility:
             ref_comp_id = ref_comp_id.split('_')[0]
 
         elif self.__get1LetterCode(ref_comp_id) == 'X' and self.__updateChemCompDict(ref_comp_id):
-            if '_chem_comp.mon_nstd_parent_comp_id' in self.__last_chem_comp_dict: # matches with comp_id in CCD
+            if '_chem_comp.mon_nstd_parent_comp_id' in self.__last_chem_comp_dict:  # matches with comp_id in CCD
                 if self.__last_chem_comp_dict['_chem_comp.mon_nstd_parent_comp_id'] not in self.empty_value:
                     ref_comp_id = self.__last_chem_comp_dict['_chem_comp.mon_nstd_parent_comp_id']
                     if ref_comp_id in ('A', 'C', 'G', 'T', 'I', 'U') and len(comp_id) == 2 and comp_id.startswith('D'):
@@ -8630,7 +8613,7 @@ class NmrDpUtility:
                 if num_dim not in range(1, self.lim_num_dim):
                     raise ValueError()
 
-            except ValueError: # raised error already at __testIndexConsistency()
+            except ValueError:  # raised error already at __testIndexConsistency()
                 return
 
             max_dim = num_dim + 1
@@ -8698,19 +8681,19 @@ class NmrDpUtility:
         """ Extract common polymer sequence if required.
         """
 
-        #if self.report.isError():
+        # if self.report.isError():
         #    return False
 
         common_poly_seq = {}
 
-        #primary_ps_list = []
+        # primary_ps_list = []
 
         for fileListId in range(self.__file_path_list_len):
 
             input_source = self.report.input_sources[fileListId]
             input_source_dic = input_source.get()
 
-            #file_type = input_source_dic['file_type']
+            # file_type = input_source_dic['file_type']
 
             has_poly_seq = has_key_value(input_source_dic, 'polymer_sequence')
             has_poly_seq_in_loop = has_key_value(input_source_dic, 'polymer_sequence_in_loop')
@@ -8726,7 +8709,10 @@ class NmrDpUtility:
 
             content_subtype = 'chem_shift'
 
-            #for content_subtype in polymer_sequence_in_loop.keys():
+            if content_subtype not in polymer_sequence_in_loop:  # DAOTHER-7545 NMR-STAR formatted MR has no chem shift
+                continue
+
+            # for content_subtype in polymer_sequence_in_loop.keys():
 
             for ps_in_loop in polymer_sequence_in_loop[content_subtype]:
                 ps = ps_in_loop['polymer_sequence']
@@ -8780,7 +8766,7 @@ class NmrDpUtility:
             chains = common_poly_seq.keys()
             offset_seq_ids = {c: 0 for c in chains}
 
-            #for content_subtype in polymer_sequence_in_loop.keys():
+            # for content_subtype in polymer_sequence_in_loop.keys():
 
             for ps_in_loop in polymer_sequence_in_loop[content_subtype]:
                 ps = ps_in_loop['polymer_sequence']
@@ -8795,7 +8781,7 @@ class NmrDpUtility:
                     for seq_id, comp_id in zip(s['seq_id'], s['comp_id']):
                         common_poly_seq[chain_id].add('{:04d} {}'.format(seq_id + offset_seq_ids[chain_id], comp_id))
 
-        asm = [] # molecular assembly of a loop
+        asm = []  # molecular assembly of a loop
 
         for chain_id in sorted(common_poly_seq.keys()):
 
@@ -8878,7 +8864,7 @@ class NmrDpUtility:
 
             dat = get_lp_tag(loop, tags)
 
-            asm = [] # molecular assembly of a loop
+            asm = []  # molecular assembly of a loop
 
             chain_ids = set()
             entity_sfs = {}
@@ -8890,7 +8876,7 @@ class NmrDpUtility:
 
                 try:
                     chain_id = str(c[0])
-                    entity_sf = c[1] if len(c) < 4 else (c[3][1:] if c[3][0] == '$' else c[3]) # Entity_assemble_name or Entity_label
+                    entity_sf = c[1] if len(c) < 4 else (c[3][1:] if c[3][0] == '$' else c[3])  # Entity_assemble_name or Entity_label
                     entity_id = int(c[2])
 
                     if chain_id in chain_ids:
@@ -8953,7 +8939,7 @@ class NmrDpUtility:
 
                 sorted_seq = sorted(seq)
 
-                asm.append({'chain_id': chain_id, 'seq_id': [int(i.split(' ')[0]) for i in sorted_seq], 'comp_id':  [i.split(' ')[-1] for i in sorted_seq]})
+                asm.append({'chain_id': chain_id, 'seq_id': [int(i.split(' ')[0]) for i in sorted_seq], 'comp_id': [i.split(' ')[-1] for i in sorted_seq]})
 
             if len(asm) > 0:
                 input_source.setItemValue('polymer_sequence', asm)
@@ -8995,7 +8981,7 @@ class NmrDpUtility:
             except AttributeError:
                 return False
 
-        asm = [] # molecular assembly of a loop
+        asm = []  # molecular assembly of a loop
 
         chain_ids = set()
         seq = {}
@@ -9015,7 +9001,7 @@ class NmrDpUtility:
                 for i in dat:
                     if i[2] in self.empty_value:
                         i[2] = '1'
-            elif set(tags_) & set(loop.tags) == set(tags_): # No Entity_ID tag case
+            elif set(tags_) & set(loop.tags) == set(tags_):  # No Entity_ID tag case
                 dat = get_lp_tag(loop, tags_)
                 for i in dat:
                     i.append('1')
@@ -9039,7 +9025,7 @@ class NmrDpUtility:
 
             sorted_seq = sorted(seq[chain_id])
 
-            asm.append({'chain_id': chain_id, 'seq_id': [int(i.split(' ')[0]) for i in sorted_seq], 'comp_id':  [i.split(' ')[-1] for i in sorted_seq]})
+            asm.append({'chain_id': chain_id, 'seq_id': [int(i.split(' ')[0]) for i in sorted_seq], 'comp_id': [i.split(' ')[-1] for i in sorted_seq]})
 
         if len(asm) > 0:
             input_source.setItemValue('polymer_sequence', asm)
@@ -9094,7 +9080,7 @@ class NmrDpUtility:
                 for i in dat:
                     if i[2] in self.empty_value:
                         i[2] = '1'
-            elif set(tags_) & set(loop.tags) == set(tags_): # No Entity_ID tag case
+            elif set(tags_) & set(loop.tags) == set(tags_):  # No Entity_ID tag case
                 dat = get_lp_tag(loop, tags_)
                 for i in dat:
                     i.append('1')
@@ -9118,7 +9104,7 @@ class NmrDpUtility:
 
             sorted_seq = sorted(seq[chain_id])
 
-            return {'chain_id': chain_id, 'seq_id': [int(i.split(' ')[0]) for i in sorted_seq], 'comp_id':  [i.split(' ')[-1] for i in sorted_seq]}
+            return {'chain_id': chain_id, 'seq_id': [int(i.split(' ')[0]) for i in sorted_seq], 'comp_id': [i.split(' ')[-1] for i in sorted_seq]}
 
         return None
 
@@ -9126,7 +9112,7 @@ class NmrDpUtility:
         """ Extract non-standard residue.
         """
 
-        #if self.report.isError():
+        # if self.report.isError():
         #    return False
 
         for fileListId in range(self.__file_path_list_len):
@@ -9198,7 +9184,7 @@ class NmrDpUtility:
                     ent['seq_id'].append(seq_id)
                     ent['comp_id'].append(comp_id)
 
-                    if self.__updateChemCompDict(comp_id): # matches with comp_id in CCD
+                    if self.__updateChemCompDict(comp_id):  # matches with comp_id in CCD
                         cc_name = self.__last_chem_comp_dict['_chem_comp.name']
                         cc_rel_status = self.__last_chem_comp_dict['_chem_comp.pdbx_release_status']
                         if cc_rel_status == 'REL':
@@ -9229,7 +9215,7 @@ class NmrDpUtility:
         """ Append polymer sequence alignment of interesting loops.
         """
 
-        #if self.report.isError():
+        # if self.report.isError():
         #    return False
 
         is_done = True
@@ -9251,7 +9237,7 @@ class NmrDpUtility:
             input_source = self.report.input_sources[fileListId]
             input_source_dic = input_source.get()
 
-            #file_name = input_source_dic['file_name']
+            # file_name = input_source_dic['file_name']
             file_type = input_source_dic['file_type']
 
             has_poly_seq = has_key_value(input_source_dic, 'polymer_sequence')
@@ -9407,7 +9393,7 @@ class NmrDpUtility:
                                 offset_2 = __offset_2
                                 s1 = __s1
 
-                                #s2['chain_id'] = __chain_id
+                                # s2['chain_id'] = __chain_id
 
                                 update_poly_seq = True
 
@@ -9438,10 +9424,10 @@ class NmrDpUtility:
                             if conflict > 0 and _s1['seq_id'][0] < 0 and _s2['seq_id'][0] < 0:  # pylint: disable=chained-comparison
                                 continue
 
-                            if self.__tolerant_seq_align: # and not alt_chain:
-                                seq_mismatch = any((__s1, __s2) for (__s1, __s2, __c1, __c2) in zip(_s1['seq_id'], _s2['seq_id'], _s1['comp_id'], _s2['comp_id'])\
+                            if self.__tolerant_seq_align:  # and not alt_chain:
+                                seq_mismatch = any((__s1, __s2) for (__s1, __s2, __c1, __c2) in zip(_s1['seq_id'], _s2['seq_id'], _s1['comp_id'], _s2['comp_id'])
                                                    if __s1 != '.' and __s2 != '.' and __s1 != __s2 and __c1 != '.' and __c2 != '.' and __c1 == __c2)
-                                comp_mismatch = any((__s1, __s2) for (__s1, __s2, __c1, __c2) in zip(_s1['seq_id'], _s2['seq_id'], _s1['comp_id'], _s2['comp_id'])\
+                                comp_mismatch = any((__s1, __s2) for (__s1, __s2, __c1, __c2) in zip(_s1['seq_id'], _s2['seq_id'], _s1['comp_id'], _s2['comp_id'])
                                                     if __c1 != '.' and __c2 != '.' and __c1 != __c2)
 
                                 if 0 < _matched < 4 and unmapped // _matched > 20 and seq_mismatch and len(polymer_sequence) > 1:
@@ -9468,7 +9454,7 @@ class NmrDpUtility:
 
                             self.__alt_chain |= alt_chain
 
-                            if self.__tolerant_seq_align and (seq_mismatch or comp_mismatch): # and not alt_chain:
+                            if self.__tolerant_seq_align and (seq_mismatch or comp_mismatch):  # and not alt_chain:
                                 if sf_framecode2 not in map_seq_ids:
                                     map_seq_ids[sf_framecode2] = set()
                                 map_seq_ids[sf_framecode2].add(chain_id)
@@ -9487,7 +9473,7 @@ class NmrDpUtility:
                                         test_code = _seq_align['test_code']
                                         test_gauge_code = _seq_align['test_gauge_code']
                                     else:
-                                        #if _s1['seq_id'][0] < 0:
+                                        # if _s1['seq_id'][0] < 0:
                                         #    continue
                                         chain_id2 = chain_id
                                         if sf_framecode2 in map_chain_ids and chain_id in map_chain_ids[sf_framecode2].values():
@@ -9567,7 +9553,7 @@ class NmrDpUtility:
                                         comp_mismatch = any((__s1, __s2) for (__s1, __s2, __c1, __c2) in zip(_s1['seq_id'], _s2_['seq_id'], _s1['comp_id'], _s2_['comp_id'])\
                                                             if __c1 != '.' and __c2 != '.' and __c1 != __c2)
 
-                                        if seq_mismatch and comp_mismatch: # and not alt_chain:
+                                        if seq_mismatch and comp_mismatch:  # and not alt_chain:
 
                                             if _s2_['seq_id'] == list(range(_s2_['seq_id'][0], _s2_['seq_id'][-1] + 1)):
                                                 seq_id_conv_dict = {str(__s2): str(__s1) for __s1, __s2 in zip(_s1['seq_id'], _s2_['seq_id']) if __s2 != '.'}
@@ -9601,7 +9587,7 @@ class NmrDpUtility:
 
                             seq_align_set.append(seq_align)
 
-                            if not self.__combined_mode and input_source_dic['non_standard_residue'] is None: # no polymer sequence
+                            if not self.__combined_mode and input_source_dic['non_standard_residue'] is None:  # no polymer sequence
                                 has_non_std_comp_id = False
                                 for j, rc in enumerate(ref_code):
                                     if rc == 'X' and j < len(test_code) and test_code[j] == 'X':
@@ -9623,7 +9609,7 @@ class NmrDpUtility:
                                             ent['seq_id'].append(_seq_id)
                                             ent['comp_id'].append(_comp_id)
 
-                                            if self.__updateChemCompDict(_comp_id): # matches with comp_id in CCD
+                                            if self.__updateChemCompDict(_comp_id):  # matches with comp_id in CCD
                                                 cc_name = self.__last_chem_comp_dict['_chem_comp.name']
                                                 cc_rel_status = self.__last_chem_comp_dict['_chem_comp.pdbx_release_status']
                                                 if cc_rel_status == 'REL':
@@ -9768,7 +9754,7 @@ class NmrDpUtility:
                                 offset_2 = __offset_2
                                 s1 = __s1
 
-                                #s2['chain_id'] = __chain_id
+                                # s2['chain_id'] = __chain_id
 
                                 update_poly_seq = True
                             """
@@ -9798,10 +9784,10 @@ class NmrDpUtility:
                             if conflict > 0 and _s1['seq_id'][0] < 0 and _s2['seq_id'][0] < 0:  # pylint: disable=chained-comparison
                                 continue
 
-                            if self.__tolerant_seq_align: # and not alt_chain:
-                                seq_mismatch = any((__s1, __s2) for (__s1, __s2, __c1, __c2) in zip(_s1['seq_id'], _s2['seq_id'], _s1['comp_id'], _s2['comp_id'])\
+                            if self.__tolerant_seq_align:  # and not alt_chain:
+                                seq_mismatch = any((__s1, __s2) for (__s1, __s2, __c1, __c2) in zip(_s1['seq_id'], _s2['seq_id'], _s1['comp_id'], _s2['comp_id'])
                                                    if __s1 != '.' and __s2 != '.' and __s1 != __s2 and __c1 != '.' and __c2 != '.' and __c1 == __c2)
-                                comp_mismatch = any((__s1, __s2) for (__s1, __s2, __c1, __c2) in zip(_s1['seq_id'], _s2['seq_id'], _s1['comp_id'], _s2['comp_id'])\
+                                comp_mismatch = any((__s1, __s2) for (__s1, __s2, __c1, __c2) in zip(_s1['seq_id'], _s2['seq_id'], _s1['comp_id'], _s2['comp_id'])
                                                     if __c1 != '.' and __c2 != '.' and __c1 != __c2)
 
                                 if 0 < _matched < 4 and unmapped // _matched > 20 and seq_mismatch and len(polymer_sequence) > 1:
@@ -9828,13 +9814,13 @@ class NmrDpUtility:
 
                             self.__alt_chain |= not alt_chain
                             """
-                            if self.__tolerant_seq_align: # and not alt_chain:
+                            if self.__tolerant_seq_align:  # and not alt_chain:
                                 seq_mismatch = any((__s1, __s2) for (__s1, __s2, __c1, __c2) in zip(_s1['seq_id'], _s2['seq_id'], _s1['comp_id'], _s2['comp_id'])\
                                                    if __s1 != '.' and __s2 != '.' and __s1 != __s2 and __c1 != '.' and __c2 != '.' and __c1 == __c2)
                                 comp_mismatch = any((__s1, __s2) for (__s1, __s2, __c1, __c2) in zip(_s1['seq_id'], _s2['seq_id'], _s1['comp_id'], _s2['comp_id'])\
                                                     if __c1 != '.' and __c2 != '.' and __c1 != __c2)
 
-                            if self.__tolerant_seq_align and (seq_mismatch or comp_mismatch): # and not alt_chain:
+                            if self.__tolerant_seq_align and (seq_mismatch or comp_mismatch):  # and not alt_chain:
                                 if sf_framecode2 not in map_seq_ids:
                                     map_seq_ids[sf_framecode2] = set()
                                 map_seq_ids[sf_framecode2].add(chain_id)
@@ -9853,7 +9839,7 @@ class NmrDpUtility:
                                         test_code = _seq_align['test_code']
                                         test_gauge_code = _seq_align['test_gauge_code']
                                     else:
-                                        #if _s1['seq_id'][0] < 0:
+                                        # if _s1['seq_id'][0] < 0:
                                         #    continue
                                         chain_id2 = chain_id
                                         if sf_framecode2 in map_chain_ids and chain_id in map_chain_ids[sf_framecode2].values():
@@ -9915,7 +9901,7 @@ class NmrDpUtility:
 
                             seq_align_set.append(seq_align)
 
-                            if not self.__combined_mode and input_source_dic['non_standard_residue'] is None: # no polymer sequence
+                            if not self.__combined_mode and input_source_dic['non_standard_residue'] is None:  # no polymer sequence
                                 has_non_std_comp_id = False
                                 for j, rc in enumerate(ref_code):
                                     if rc == 'X' and j < len(test_code) and test_code[j] == 'X':
@@ -9937,7 +9923,7 @@ class NmrDpUtility:
                                             ent['seq_id'].append(_seq_id)
                                             ent['comp_id'].append(_comp_id)
 
-                                            if self.__updateChemCompDict(_comp_id): # matches with comp_id in CCD
+                                            if self.__updateChemCompDict(_comp_id):  # matches with comp_id in CCD
                                                 cc_name = self.__last_chem_comp_dict['_chem_comp.name']
                                                 cc_rel_status = self.__last_chem_comp_dict['_chem_comp.pdbx_release_status']
                                                 if cc_rel_status == 'REL':
@@ -10041,7 +10027,7 @@ class NmrDpUtility:
 
                                         for s2 in ps2:
 
-                                            #if chain_id != dst_chain:
+                                            # if chain_id != dst_chain:
                                             #    continue
 
                                             _s2 = fill_blank_comp_id_with_offset(s2, 0)
@@ -10109,9 +10095,9 @@ class NmrDpUtility:
                                         continue
 
                                     if self.__tolerant_seq_align:
-                                        seq_mismatch = any((__s1, __s2) for (__s1, __s2, __c1, __c2) in zip(_s1['seq_id'], _s2['seq_id'], _s1['comp_id'], _s2['comp_id'])\
+                                        seq_mismatch = any((__s1, __s2) for (__s1, __s2, __c1, __c2) in zip(_s1['seq_id'], _s2['seq_id'], _s1['comp_id'], _s2['comp_id'])
                                                            if __s1 != '.' and __s2 != '.' and __s1 != __s2 and __c1 != '.' and __c2 != '.' and __c1 == __c2)
-                                        comp_mismatch = any((__s1, __s2) for (__s1, __s2, __c1, __c2) in zip(_s1['seq_id'], _s2['seq_id'], _s1['comp_id'], _s2['comp_id'])\
+                                        comp_mismatch = any((__s1, __s2) for (__s1, __s2, __c1, __c2) in zip(_s1['seq_id'], _s2['seq_id'], _s1['comp_id'], _s2['comp_id'])
                                                             if __c1 != '.' and __c2 != '.' and __c1 != __c2)
 
                                         if 0 < _matched < 4 and unmapped // _matched > 20 and seq_mismatch and len(polymer_sequence) > 1:
@@ -10143,7 +10129,7 @@ class NmrDpUtility:
                                                 test_code = _seq_align['test_code']
                                                 test_gauge_code = _seq_align['test_gauge_code']
                                             else:
-                                                #if _s1['seq_id'][0] < 0:
+                                                # if _s1['seq_id'][0] < 0:
                                                 #    continue
                                                 chain_id2 = chain_id
                                                 if chain_id in mapping.values():
@@ -10191,7 +10177,7 @@ class NmrDpUtility:
 
                                     matched = mid_code.count('|')
 
-                                    _seq_align = next((_seq_align for _seq_align in seq_align_set\
+                                    _seq_align = next((_seq_align for _seq_align in seq_align_set
                                                        if _seq_align['list_id'] == ps_in_loop['list_id'] and _seq_align['sf_framecode'] == sf_framecode2 and _seq_align['chain_id'] == chain_id), None)
 
                                     if _seq_align is not None:
@@ -10387,7 +10373,7 @@ class NmrDpUtility:
                 if num_dim not in range(1, self.lim_num_dim):
                     raise ValueError()
 
-            except ValueError: # raised error already at __testIndexConsistency()
+            except ValueError:  # raised error already at __testIndexConsistency()
                 return
 
             max_dim = num_dim + 1
@@ -10504,7 +10490,7 @@ class NmrDpUtility:
                 if num_dim not in range(1, self.lim_num_dim):
                     raise ValueError()
 
-            except ValueError: # raised error already at __testIndexConsistency()
+            except ValueError:  # raised error already at __testIndexConsistency()
                 return
 
             max_dim = num_dim + 1
@@ -10607,7 +10593,7 @@ class NmrDpUtility:
         """ Validate atom nomenclature using NEFTranslator and CCD.
         """
 
-        #if self.report.isError():
+        # if self.report.isError():
         #    return False
 
         for fileListId in range(self.__file_path_list_len):
@@ -10684,10 +10670,10 @@ class NmrDpUtility:
         """ Return whether a given atom_id uses NMR conventional atom name.
         """
 
-        return (atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or\
-                atom_id.startswith('Q') or atom_id.startswith('M') or\
-                atom_id.endswith('%') or atom_id.endswith('%') or\
-                self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0
+        return (atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0])\
+            or atom_id.startswith('Q') or atom_id.startswith('M')\
+            or atom_id.endswith('%') or atom_id.endswith('%')\
+            or self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0
 
     def __getRepresentativeAtomId(self, file_type, comp_id, atom_id):
         """ Return a representative atom ID in IUPAC atom nomenclature for a given atom_id.
@@ -10737,10 +10723,10 @@ class NmrDpUtility:
 
         try:
 
-            if file_type == 'nef': # DAOTHER-7389, issue #3, allow empty for 'chem_shift'
+            if file_type == 'nef':  # DAOTHER-7389, issue #3, allow empty for 'chem_shift'
                 pairs = self.__nefT.get_nef_comp_atom_pair(sf_data, lp_category,
                                                            allow_empty=(content_subtype in ('chem_shift', 'spectral_peak')))[0]
-            else: # DAOTHER-7389, issue #3, allow empty for 'chem_shift'
+            else:  # DAOTHER-7389, issue #3, allow empty for 'chem_shift'
                 pairs = self.__nefT.get_star_comp_atom_pair(sf_data, lp_category,
                                                             allow_empty=(content_subtype in ('chem_shift', 'spectral_peak')))[0]
 
@@ -10835,9 +10821,9 @@ class NmrDpUtility:
                 # non-standard residue
                 else:
 
-                    if self.__updateChemCompDict(comp_id): # matches with comp_id in CCD
+                    if self.__updateChemCompDict(comp_id):  # matches with comp_id in CCD
 
-                        ref_atom_ids = [a[self.__cca_atom_id] for a in self.__last_chem_comp_atoms] # if a[self.__cca_leaving_atom_flag] != 'Y']
+                        ref_atom_ids = [a[self.__cca_atom_id] for a in self.__last_chem_comp_atoms]  # if a[self.__cca_leaving_atom_flag] != 'Y']
                         unk_atom_ids = []
 
                         for atom_id in atom_ids:
@@ -11113,7 +11099,7 @@ class NmrDpUtility:
             input_source = self.report.input_sources[fileListId]
             input_source_dic = input_source.get()
 
-            #file_name = input_source_dic['file_name']
+            # file_name = input_source_dic['file_name']
             file_type = input_source_dic['file_type']
 
             if input_source_dic['content_subtype'] is None:
@@ -11136,14 +11122,14 @@ class NmrDpUtility:
                 if self.__star_data_type[fileListId] == 'Loop':
 
                     sf_data = self.__star_data[fileListId]
-                    #sf_framecode = ''
+                    # sf_framecode = ''
 
                     self.__fixAtomNomenclature__(fileListId, file_type, content_subtype, sf_data, lp_category, comp_id, atom_id_conv_dict)
 
                 elif self.__star_data_type[fileListId] == 'Saveframe':
 
                     sf_data = self.__star_data[fileListId]
-                    #sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
+                    # sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
                     self.__fixAtomNomenclature__(fileListId, file_type, content_subtype, sf_data, lp_category, comp_id, atom_id_conv_dict)
 
@@ -11151,7 +11137,7 @@ class NmrDpUtility:
 
                     for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
-                        #sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
+                        # sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
                         if not any(loop for loop in sf_data.loops if loop.category == lp_category):
                             continue
@@ -11183,7 +11169,7 @@ class NmrDpUtility:
                 if num_dim not in range(1, self.lim_num_dim):
                     raise ValueError()
 
-            except ValueError: # raised error already at __testIndexConsistency()
+            except ValueError:  # raised error already at __testIndexConsistency()
                 return
 
             max_dim = num_dim + 1
@@ -11242,7 +11228,7 @@ class NmrDpUtility:
         """ Validate atom type, isotope number on assigned chemical shifts.
         """
 
-        #if self.report.isError():
+        # if self.report.isError():
         #    return False
 
         for fileListId in range(self.__file_path_list_len):
@@ -11414,7 +11400,7 @@ class NmrDpUtility:
         """ Validate ambiguity code on assigned chemical shifts.
         """
 
-        #if self.report.isError():
+        # if self.report.isError():
         #    return False
 
         for fileListId in range(self.__file_path_list_len):
@@ -11604,7 +11590,7 @@ class NmrDpUtility:
         """ Perform consistency test on index of interesting loops.
         """
 
-        #if self.report.isError():
+        # if self.report.isError():
         #    return False
 
         for fileListId in range(self.__file_path_list_len):
@@ -11615,7 +11601,7 @@ class NmrDpUtility:
             file_name = input_source_dic['file_name']
             file_type = input_source_dic['file_type']
 
-            if input_source_dic['content_subtype'] is None:
+            if input_source_dic['content_type'] == 'nmr-restraints' or input_source_dic['content_subtype'] is None:
                 continue
 
             for content_subtype in input_source_dic['content_subtype'].keys():
@@ -11780,22 +11766,22 @@ class NmrDpUtility:
 
                 else:
 
-                    pointer_index_hint = 0
+                    parent_pointer = 0
 
                     for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
-                        pointer_index_hint += 1
+                        parent_pointer += 1
 
                         sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
                         if not any(loop for loop in sf_data.loops if loop.category == lp_category):
                             continue
 
-                        self.__testDataConsistencyInLoop__(fileListId, file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category, pointer_index_hint)
+                        self.__testDataConsistencyInLoop__(fileListId, file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category, parent_pointer)
 
         return self.report.getTotalErrors() == __errors
 
-    def __testDataConsistencyInLoop__(self, file_list_id, file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category, pointer_index_hint):
+    def __testDataConsistencyInLoop__(self, file_list_id, file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category, parent_pointer):
         """ Perform consistency test on data of interesting loops.
         """
 
@@ -11812,7 +11798,7 @@ class NmrDpUtility:
                 if num_dim not in range(1, self.lim_num_dim):
                     raise ValueError()
 
-            except ValueError: # raised error already at __testIndexConsistency()
+            except ValueError:  # raised error already at __testIndexConsistency()
                 return
 
             max_dim = num_dim + 1
@@ -11833,7 +11819,7 @@ class NmrDpUtility:
                     _d = copy.copy(d)
                     if '%s' in d['name']:
                         _d['name'] = d['name'] % dim
-                    if 'default-from' in d and '%s' in d['default-from']: # DAOTHER-7421
+                    if 'default-from' in d and '%s' in d['default-from']:  # DAOTHER-7421
                         _d['default-from'] = d['default-from'] % dim
                     data_items.append(_d)
 
@@ -11854,8 +11840,9 @@ class NmrDpUtility:
 
         try:
 
-            lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, disallowed_tags, pointer_index_hint=pointer_index_hint,
+            lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, disallowed_tags, parent_pointer=parent_pointer,
                                              test_on_index=True, enforce_non_zero=True, enforce_sign=True, enforce_range=True, enforce_enum=True,
+                                             enforce_allowed_tags=(file_type == 'nmr-star'),
                                              excl_missing_data=self.__excl_missing_data)[0]
 
             self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'data': lp_data})
@@ -11870,7 +11857,9 @@ class NmrDpUtility:
 
         except LookupError as e:
 
-            self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
+            item = 'format_issue' if 'Unauthorized item' in str(e) else 'missing_mandatory_item'
+
+            self.report.error.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
             self.report.setError()
 
             if self.__verbose:
@@ -11989,7 +11978,8 @@ class NmrDpUtility:
 
             try:
 
-                lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, disallowed_tags, pointer_index_hint=pointer_index_hint,
+                lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, disallowed_tags, parent_pointer=parent_pointer,
+                                                 enforce_allowed_tags=(file_type == 'nmr-star'),
                                                  excl_missing_data=self.__excl_missing_data)[0]
 
                 self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'data': lp_data})
@@ -12041,7 +12031,7 @@ class NmrDpUtility:
 
                     if self.__star_data_type[fileListId] == 'Loop':
 
-                        sf_data = self.__star_data_type[fileListId]
+                        sf_data = self.__star_data[fileListId]
                         sf_framecode = ''
 
                         self.__detectConflictDataInLoop__(file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category)
@@ -12168,11 +12158,13 @@ class NmrDpUtility:
                             r = abs(val_1 - val_2) / abs(val_1 + val_2)
 
                             if r >= self.r_conflicted_dist_restraint:
-                                discrepancy += '%s |%s-%s|/|%s+%s| = %s %% is out of acceptable range, %s %%, ' % (dname, _val_1, _val_2, _val_1, _val_2, '{:.1f}'.format(r * 100.0), int(self.r_conflicted_dist_restraint * 100))
+                                discrepancy += '%s |%s-%s|/|%s+%s| = %s %% is out of acceptable range, %s %%, '\
+                                    % (dname, _val_1, _val_2, _val_1, _val_2, '{:.1f}'.format(r * 100.0), int(self.r_conflicted_dist_restraint * 100))
                                 conflict = True
 
                             elif r >= self.r_inconsistent_dist_restraint:
-                                discrepancy += '%s |%s-%s|/|%s+%s| = %s %% is out of typical range, %s %%, ' % (dname, _val_1, _val_2, _val_1, _val_2, '{:.1f}'.format(r * 100.0), int(self.r_inconsistent_dist_restraint * 100))
+                                discrepancy += '%s |%s-%s|/|%s+%s| = %s %% is out of typical range, %s %%, '\
+                                    % (dname, _val_1, _val_2, _val_1, _val_2, '{:.1f}'.format(r * 100.0), int(self.r_inconsistent_dist_restraint * 100))
                                 inconsist = True
 
                         else:
@@ -12213,11 +12205,13 @@ class NmrDpUtility:
                                     continue
 
                             if r > max_inclusive:
-                                discrepancy += '%s |%s-%s| = %s is out of acceptable range, %s %s, ' % (dname, _val_1, _val_2, '{:.1f}'.format(r), max_inclusive, 'degrees' if content_subtype == 'dihed_restraint' else 'Hz')
+                                discrepancy += '%s |%s-%s| = %s is out of acceptable range, %s %s, '\
+                                    % (dname, _val_1, _val_2, '{:.1f}'.format(r), max_inclusive, 'degrees' if content_subtype == 'dihed_restraint' else 'Hz')
                                 conflict = True
 
                             elif r > max_inclusive * self.inconsist_over_conflicted:
-                                discrepancy += '%s |%s-%s| = %s is out of typical range, %s %s, ' % (dname, _val_1, _val_2, '{:.1f}'.format(r), max_inclusive * self.inconsist_over_conflicted, 'degrees' if content_subtype == 'dihed_restraint' else 'Hz')
+                                discrepancy += '%s |%s-%s| = %s is out of typical range, %s %s, '\
+                                    % (dname, _val_1, _val_2, '{:.1f}'.format(r), max_inclusive * self.inconsist_over_conflicted, 'degrees' if content_subtype == 'dihed_restraint' else 'Hz')
                                 inconsist = True
 
                     if conflict:
@@ -12226,13 +12220,13 @@ class NmrDpUtility:
                         msg += self.__getResucedAtomNotations(key_items, row_1)
 
                         if index_tag in row_1:
-                            warn = '[Check rows of %s %s vs %s, %s %s vs %s] ' %\
-                                   (index_tag, row_1[index_tag], row_2[index_tag],
-                                    id_tag, row_1[id_tag], row_2[id_tag])
+                            warn = '[Check rows of %s %s vs %s, %s %s vs %s] '\
+                                % (index_tag, row_1[index_tag], row_2[index_tag],
+                                   id_tag, row_1[id_tag], row_2[id_tag])
                         else:
-                            warn = '[Check rows of %s %s vs %s, %s %s vs %s] ' %\
-                                   (index_tag, id_set[i] + 1, id_set[j] + 1,
-                                    id_tag, row_1[id_tag], row_2[id_tag])
+                            warn = '[Check rows of %s %s vs %s, %s %s vs %s] '\
+                                % (index_tag, id_set[i] + 1, id_set[j] + 1,
+                                   id_tag, row_1[id_tag], row_2[id_tag])
                         warn += 'Found conflict on restraints (%s) for the same %s (%s).' % (discrepancy[:-2], data_unit_name, msg)
 
                         self.report.warning.appendDescription('conflicted_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn, 'sigma': float('{:.2f}'.format(r / max_inclusive))})
@@ -12247,13 +12241,13 @@ class NmrDpUtility:
                         msg += self.__getResucedAtomNotations(key_items, row_1)
 
                         if index_tag in row_1:
-                            warn = '[Check rows of %s %s vs %s, %s %s vs %s] ' %\
-                                   (index_tag, row_1[index_tag], row_2[index_tag],
-                                    id_tag, row_1[id_tag], row_2[id_tag])
+                            warn = '[Check rows of %s %s vs %s, %s %s vs %s] '\
+                                % (index_tag, row_1[index_tag], row_2[index_tag],
+                                   id_tag, row_1[id_tag], row_2[id_tag])
                         else:
-                            warn = '[Check rows of %s %s vs %s, %s %s vs %s] ' %\
-                                   (index_tag, id_set[i] + 1, id_set[j] + 1,
-                                    id_tag, row_1[id_tag], row_2[id_tag])
+                            warn = '[Check rows of %s %s vs %s, %s %s vs %s] '\
+                                % (index_tag, id_set[i] + 1, id_set[j] + 1,
+                                   id_tag, row_1[id_tag], row_2[id_tag])
                         warn += 'Found discrepancy in restraints (%s) for the same %s (%s).' % (discrepancy[:-2], data_unit_name, msg)
 
                         self.report.warning.appendDescription('inconsistent_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn, 'sigma': float('{:.2f}'.format(r / max_inclusive))})
@@ -12291,7 +12285,7 @@ class NmrDpUtility:
         """ Perform consistency test on data of auxiliary loops.
         """
 
-        #if not self.__combined_mode:
+        # if not self.__combined_mode:
         #    return True
 
         __errors = self.report.getTotalErrors()
@@ -12318,11 +12312,11 @@ class NmrDpUtility:
                 sf_category = self.sf_categories[file_type][content_subtype]
                 lp_category = self.lp_categories[file_type][content_subtype]
 
-                pointer_index_hint = 0
+                parent_pointer = 0
 
                 for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
-                    pointer_index_hint += 1
+                    parent_pointer += 1
 
                     sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
@@ -12367,8 +12361,9 @@ class NmrDpUtility:
 
                             try:
 
-                                aux_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, None, pointer_index_hint=pointer_index_hint,
+                                aux_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, None, parent_pointer=parent_pointer,
                                                                   test_on_index=True, enforce_non_zero=True, enforce_sign=True, enforce_range=True, enforce_enum=True,
+                                                                  enforce_allowed_tags=(file_type == 'nmr-star'),
                                                                   excl_missing_data=self.__excl_missing_data)[0]
 
                                 self.__aux_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'data': aux_data})
@@ -12376,7 +12371,7 @@ class NmrDpUtility:
                                 if content_subtype == 'spectral_peak':
                                     self.__testDataConsistencyInAuxLoopOfSpectralPeak(file_name, file_type, sf_framecode, num_dim, lp_category, aux_data)
                                 if file_type == 'nmr-star' and content_subtype == 'spectral_peak_alt':
-                                    self.__testDataConsistencyInAuxLoopOfSpectralPeakAlt(file_name, file_type, sf_framecode, num_dim, lp_category, aux_data, sf_data, pointer_index_hint)
+                                    self.__testDataConsistencyInAuxLoopOfSpectralPeakAlt(file_name, file_type, sf_framecode, num_dim, lp_category, aux_data, sf_data, parent_pointer)
 
                             except KeyError as e:
 
@@ -12388,7 +12383,9 @@ class NmrDpUtility:
 
                             except LookupError as e:
 
-                                self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
+                                item = 'format_issue' if 'Unauthorized item' in str(e) else 'missing_mandatory_item'
+
+                                self.report.error.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
                                 self.report.setError()
 
                                 if self.__verbose:
@@ -12510,7 +12507,8 @@ class NmrDpUtility:
 
                                 try:
 
-                                    aux_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, None, pointer_index_hint=pointer_index_hint,
+                                    aux_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, None, parent_pointer=parent_pointer,
+                                                                      enforce_allowed_tags=(file_type == 'nmr-star'),
                                                                       excl_missing_data=self.__excl_missing_data)[0]
 
                                     self.__aux_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'data': aux_data})
@@ -12518,7 +12516,7 @@ class NmrDpUtility:
                                     if content_subtype == 'spectral_peak':
                                         self.__testDataConsistencyInAuxLoopOfSpectralPeak(file_name, file_type, sf_framecode, num_dim, lp_category, aux_data)
                                     if file_type == 'nmr-star' and content_subtype == 'spectral_peak_alt':
-                                        self.__testDataConsistencyInAuxLoopOfSpectralPeakAlt(file_name, file_type, sf_framecode, num_dim, lp_category, aux_data, sf_data, pointer_index_hint)
+                                        self.__testDataConsistencyInAuxLoopOfSpectralPeakAlt(file_name, file_type, sf_framecode, num_dim, lp_category, aux_data, sf_data, parent_pointer)
 
                                 except:  # noqa: E722 pylint: disable=bare-except
                                     pass
@@ -12638,7 +12636,7 @@ class NmrDpUtility:
 
                             last_point = first_point - sp_width
 
-                            min_point = last_point - (sp_width * (1.0 if self.__bmrb_only else 3.0) if abs[i - 1] else 0.0) # DAOTHER-7389, issue #1, relax expected range of peak position by three times of spectral width if absolute_peak_positios are true
+                            min_point = last_point - (sp_width * (1.0 if self.__bmrb_only else 3.0) if abs[i - 1] else 0.0)  # DAOTHER-7389, issue #1, relax expected range of peak position by three times of spectral width if absolute_peak_positios are true
                             max_point = first_point + (sp_width * (1.0 if self.__bmrb_only else 3.0) if abs[i - 1] else 0.0)
 
                             min_limit = min_point
@@ -12686,7 +12684,8 @@ class NmrDpUtility:
 
                             if position < min_points[j] or position > max_points[j]:
 
-                                err = '[Check row of %s %s] %s %s is not within expected range (min_position %s, max_position %s, absolute_peak_positions %s). Please check for reference frequency and spectral width.' % (index_tag, i[index_tag], position_names[j], position, min_points[j], max_points[j], abs[j])
+                                err = '[Check row of %s %s] %s %s is not within expected range (min_position %s, max_position %s, absolute_peak_positions %s). Please check for reference frequency and spectral width.'\
+                                    % (index_tag, i[index_tag], position_names[j], position, min_points[j], max_points[j], abs[j])
 
                                 self.report.warning.appendDescription('anomalous_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                                 self.report.setWarning()
@@ -12699,7 +12698,8 @@ class NmrDpUtility:
 
                             if position < min_limits[j] or position > max_limits[j]:
 
-                                err = '[Check row of %s %s] %s %s is not within expected range (min_position %s, max_position %s, absolute_peak_positions %s), which exceeds limit of current probe design (%s kHz). Please check for reference frequency and spectral width.' % (index_tag, i[index_tag], position_names[j], position, min_limits[j], max_limits[j], abs[j], self.hard_probe_limit / 1000.0)
+                                err = '[Check row of %s %s] %s %s is not within expected range (min_position %s, max_position %s, absolute_peak_positions %s), which exceeds limit of current probe design (%s kHz). Please check for reference frequency and spectral width.'\
+                                    % (index_tag, i[index_tag], position_names[j], position, min_limits[j], max_limits[j], abs[j], self.hard_probe_limit / 1000.0)
 
                                 self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                                 self.report.setError()
@@ -12729,7 +12729,7 @@ class NmrDpUtility:
                         if self.__verbose:
                             self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoopOfSpectralPeak() ++ ValueError  - %s\n" % err)
 
-    def __testDataConsistencyInAuxLoopOfSpectralPeakAlt(self, file_name, file_type, sf_framecode, num_dim, lp_category, aux_data, sf_data, pointer_index_hint):
+    def __testDataConsistencyInAuxLoopOfSpectralPeakAlt(self, file_name, file_type, sf_framecode, num_dim, lp_category, aux_data, sf_data, parent_pointer):
         """ Perform consistency test on data of spectral peak loops.
         """
 
@@ -12782,7 +12782,7 @@ class NmrDpUtility:
 
                             last_point = first_point - sp_width
 
-                            min_point = last_point - (sp_width * (1.0 if self.__bmrb_only else 3.0) if abs[i - 1] else 0.0) # DAOTHER-7389, issue #1, relax expected range of peak position by three times of spectral width if absolute_peak_positios are true
+                            min_point = last_point - (sp_width * (1.0 if self.__bmrb_only else 3.0) if abs[i - 1] else 0.0)  # DAOTHER-7389, issue #1, relax expected range of peak position by three times of spectral width if absolute_peak_positios are true
                             max_point = first_point + (sp_width * (1.0 if self.__bmrb_only else 3.0) if abs[i - 1] else 0.0)
 
                             min_limit = min_point
@@ -12815,7 +12815,8 @@ class NmrDpUtility:
                     data_items = self.aux_data_items[file_type][content_subtype][_pk_char_category]
                     allowed_tags = self.aux_allowed_tags[file_type][content_subtype][_pk_char_category]
 
-                    _pk_char_data = self.__nefT.check_data(sf_data, _pk_char_category, key_items, data_items, allowed_tags, None, pointer_index_hint=pointer_index_hint,
+                    _pk_char_data = self.__nefT.check_data(sf_data, _pk_char_category, key_items, data_items, allowed_tags, None, parent_pointer=parent_pointer,
+                                                           enforce_allowed_tags=(file_type == 'nmr-star'),
                                                            excl_missing_data=self.__excl_missing_data)[0]
 
                 pk_id_name = 'Peak_ID'
@@ -12835,7 +12836,8 @@ class NmrDpUtility:
 
                         if position < min_points[j] or position > max_points[j]:
 
-                            err = '[Check row of %s %s] %s %s is not within expected range (min_position %s, max_position %s, absolute_peak_positions %s). Please check for reference frequency and spectral width.' % (pk_id_name, i[pk_id_name], position_name, position, min_points[j], max_points[j], abs[j])
+                            err = '[Check row of %s %s] %s %s is not within expected range (min_position %s, max_position %s, absolute_peak_positions %s). Please check for reference frequency and spectral width.'\
+                                % (pk_id_name, i[pk_id_name], position_name, position, min_points[j], max_points[j], abs[j])
 
                             self.report.warning.appendDescription('anomalous_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                             self.report.setWarning()
@@ -12848,13 +12850,24 @@ class NmrDpUtility:
 
                         if position < min_limits[j] or position > max_limits[j]:
 
-                            err = '[Check row of %s %s] %s %s is not within expected range (min_position %s, max_position %s, absolute_peak_positions %s), which exceeds limit of current probe design (%s kHz). Please check for reference frequency and spectral width.' % (pk_id_name, i[pk_id_name], position_name, position, min_limits[j], max_limits[j], abs[j], self.hard_probe_limit / 1000.0)
+                            err = '[Check row of %s %s] %s %s is not within expected range (min_position %s, max_position %s, absolute_peak_positions %s), which exceeds limit of current probe design (%s kHz). Please check for reference frequency and spectral width.'\
+                                % (pk_id_name, i[pk_id_name], position_name, position, min_limits[j], max_limits[j], abs[j], self.hard_probe_limit / 1000.0)
 
                             self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                             self.report.setError()
 
                             if self.__verbose:
                                 self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoopOfSpectralPeakAlt() ++ ValueError  - %s\n" % err)
+
+            except LookupError as e:
+
+                item = 'format_issue' if 'Unauthorized item' in str(e) else 'missing_mandatory_item'
+
+                self.report.error.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoopOfSpectralPeakAlt() ++ LookupError  - %s" % str(e))
 
             except ValueError as e:
 
@@ -12986,7 +12999,7 @@ class NmrDpUtility:
 
                                 if zero or nega or rang:
                                     item = 'unusual_data'
-                                else: # enum
+                                else:  # enum
 
                                     if warn.startswith('The mandatory type'):
                                         try:
@@ -13003,7 +13016,7 @@ class NmrDpUtility:
 
                                         if any(i for i in self._sf_tag_items[file_type][content_subtype] if i == g[0]):
                                             if not self.__nefT.is_mandatory_tag('_' + sf_category + '.' + g[0], file_type):
-                                                ignorable = True # author provides the meta data through DepUI after upload
+                                                ignorable = True  # author provides the meta data through DepUI after upload
 
                                     item = 'enum_mismatch_ignorable' if ignorable else 'enum_mismatch'
 
@@ -13204,11 +13217,11 @@ class NmrDpUtility:
         comp_id_name = item_names['comp_id']
         atom_id_name = item_names['atom_id']
         value_name = item_names['value']
-        ambig_code_name = 'Ambiguity_code' # NMR-STAR specific
+        ambig_code_name = 'Ambiguity_code'  # NMR-STAR specific
 
         full_value_name = lp_category + '.' + value_name
 
-        #index_tag = self.index_tags[file_type][content_subtype]
+        # index_tag = self.index_tags[file_type][content_subtype]
         max_cs_err = self.chem_shift_error['max_inclusive']
 
         add_details = False
@@ -13233,6 +13246,7 @@ class NmrDpUtility:
 
                 try:
                     lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None, None,
+                                                     enforce_allowed_tags=(file_type == 'nmr-star'),
                                                      excl_missing_data=self.__excl_missing_data)[0]
                 except:  # noqa: E722 pylint: disable=bare-except
                     return False
@@ -13312,7 +13326,7 @@ class NmrDpUtility:
 
                                 if max_len == min_len or len(atom_id) == max_len:
                                     _atom_id = atom_id[:-1]
-                                else: # For example, HEM HM[A-D]
+                                else:  # For example, HEM HM[A-D]
                                     _atom_id = atom_id
 
                                 methyl_cs_key = "%s %04d %s" % (chain_id, seq_id, _atom_id)
@@ -13322,8 +13336,8 @@ class NmrDpUtility:
 
                                 elif value != methyl_cs_vals[methyl_cs_key]:
 
-                                    err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] Chemical shift values in the same methyl group (%s %s vs %s) are inconsistent.' %\
-                                          (full_value_name, value, methyl_cs_vals[methyl_cs_key])
+                                    err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] Chemical shift values in the same methyl group (%s %s vs %s) are inconsistent.'\
+                                        % (full_value_name, value, methyl_cs_vals[methyl_cs_key])
 
                                     self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                                     self.report.setError()
@@ -13335,8 +13349,8 @@ class NmrDpUtility:
 
                             if std_value is None or std_value <= 0.0:
 
-                                warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] Insufficient chemical shift statistics on comp_id %s, atom_id %s is available to verify %s %s (avg %s).' %\
-                                       (comp_id, atom_name, full_value_name, value, avg_value)
+                                warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] Insufficient chemical shift statistics on comp_id %s, atom_id %s is available to verify %s %s (avg %s).'\
+                                    % (comp_id, atom_name, full_value_name, value, avg_value)
 
                                 self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                 self.report.setWarning()
@@ -13348,8 +13362,8 @@ class NmrDpUtility:
 
                             if avg_value is None:
 
-                                warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] Insufficient chemical shift statistics on comp_id %s, atom_id %s is available to verify %s %s.' %\
-                                       (comp_id, atom_name, full_value_name, value)
+                                warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] Insufficient chemical shift statistics on comp_id %s, atom_id %s is available to verify %s %s.'\
+                                    % (comp_id, atom_name, full_value_name, value)
 
                                 self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                 self.report.setWarning()
@@ -13372,16 +13386,18 @@ class NmrDpUtility:
 
                                     if na is None and pa is None:
 
-                                        err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
-                                              '] %s %s (%s:%s:%s, atom_id %s) is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic/ferromagnetic atom were found in the vicinity. Please check for folded/aliased signals.' %\
-                                              (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
+                                        err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name)\
+                                            + '] %s %s (%s:%s:%s, atom_id %s) is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic/ferromagnetic atom were found in the vicinity. Please check for folded/aliased signals.'\
+                                            % (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
 
-                                        err_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma), which is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). Neither aromatic ring nor paramagnetic/ferromagnetic atom were found in the vicinity. Please check for folded/aliased signals.' %\
-                                              (chain_id, seq_id, comp_id, atom_name, value, sigma, avg_value + 5.0 * std_value, avg_value - 5.0 * std_value, avg_value, std_value, min_value, max_value)
+                                        err_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma), which is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). Neither aromatic ring nor paramagnetic/ferromagnetic atom were found in the vicinity. Please check for folded/aliased signals.'\
+                                            % (chain_id, seq_id, comp_id, atom_name, value, sigma, avg_value + 5.0 * std_value, avg_value - 5.0 * std_value, avg_value, std_value, min_value, max_value)
 
                                         if self.__nonblk_anomalous_cs:
 
-                                            self.report.warning.appendDescription('anomalous_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err, 'value': value, 'z_score': z_score, 'description_alt': err_alt, 'sigma': sigma})
+                                            self.report.warning.appendDescription('anomalous_data',
+                                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err,
+                                                                                   'value': value, 'z_score': z_score, 'description_alt': err_alt, 'sigma': sigma})
                                             self.report.setWarning()
 
                                             if self.__verbose:
@@ -13389,7 +13405,8 @@ class NmrDpUtility:
 
                                             if file_type == 'nmr-star' and details_col != -1:
                                                 _details = loop.data[l][details_col]
-                                                details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic/ferromagnetic atom were found in the vicinity. Please check for folded/aliased signals.\n' % (full_value_name, value, avg_value, std_value, min_value, max_value, z_score)
+                                                details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic/ferromagnetic atom were found in the vicinity. Please check for folded/aliased signals.\n'\
+                                                    % (full_value_name, value, avg_value, std_value, min_value, max_value, z_score)
                                                 if _details in self.empty_value or (details not in _details):
                                                     if _details in self.empty_value:
                                                         loop.data[l][details_col] = details
@@ -13399,7 +13416,9 @@ class NmrDpUtility:
 
                                         else:
 
-                                            self.report.error.appendDescription('anomalous_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err, 'value': value, 'z_score': z_score, 'description_alt': err_alt, 'sigma': sigma})
+                                            self.report.error.appendDescription('anomalous_data',
+                                                                                {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err,
+                                                                                 'value': value, 'z_score': z_score, 'description_alt': err_alt, 'sigma': sigma})
                                             self.report.setError()
 
                                             if self.__verbose:
@@ -13407,18 +13426,20 @@ class NmrDpUtility:
 
                                     elif pa is None:
 
-                                        warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
-                                               '] %s %s (%s:%s:%s:%s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring (%s:%s:%s:%s) is located at a distance of %s angstroms, and has an elevation angle of %s degrees with the ring plane.' %\
-                                               (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
-                                                na['chain_id'], na['seq_id'], na['comp_id'], na['ring_atoms'], na['ring_distance'], na['ring_angle'])
+                                        warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name)\
+                                            + '] %s %s (%s:%s:%s:%s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring (%s:%s:%s:%s) is located at a distance of %s angstroms, and has an elevation angle of %s degrees with the ring plane.'\
+                                            % (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
+                                               na['chain_id'], na['seq_id'], na['comp_id'], na['ring_atoms'], na['ring_distance'], na['ring_angle'])
 
-                                        warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma), which is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). The nearest aromatic ring (%s:%s:%s:%s) is located at a distance of %s angstroms, and has an elevation angle of %s degrees with the ring plane.' %\
-                                               (chain_id, seq_id, comp_id, atom_name, value, sigma, avg_value + 5.0 * std_value, avg_value - 5.0 * std_value, avg_value, std_value, min_value, max_value,
-                                                na['chain_id'], na['seq_id'], na['comp_id'], na['ring_atoms'], na['ring_distance'], na['ring_angle'])
+                                        warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma), which is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). The nearest aromatic ring (%s:%s:%s:%s) is located at a distance of %s angstroms, and has an elevation angle of %s degrees with the ring plane.'\
+                                            % (chain_id, seq_id, comp_id, atom_name, value, sigma, avg_value + 5.0 * std_value, avg_value - 5.0 * std_value, avg_value, std_value, min_value, max_value,
+                                               na['chain_id'], na['seq_id'], na['comp_id'], na['ring_atoms'], na['ring_distance'], na['ring_angle'])
 
                                         if na['ring_angle'] - self.magic_angle * z_score > 0.0 or self.__nonblk_anomalous_cs:
 
-                                            self.report.warning.appendDescription('anomalous_data' if na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic else 'unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn, 'value': value, 'z_score': z_score, 'description_alt': warn_alt, 'sigma': sigma})
+                                            self.report.warning.appendDescription('anomalous_data' if na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic else 'unusual_data',
+                                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn,
+                                                                                   'value': value, 'z_score': z_score, 'description_alt': warn_alt, 'sigma': sigma})
                                             self.report.setWarning()
 
                                             if self.__verbose:
@@ -13426,7 +13447,8 @@ class NmrDpUtility:
 
                                             if file_type == 'nmr-star' and details_col != -1 and (na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic):
                                                 _details = loop.data[l][details_col]
-                                                details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring %s:%s:%s is located at a distance of %s angstroms, and has an elevation angle of %s degrees with the ring plane.\n' % (full_value_name, value, avg_value, std_value, min_value, max_value, z_score, na['chain_id'], na['seq_id'], na['comp_id'], na['ring_distance'], na['ring_angle'])
+                                                details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring %s:%s:%s is located at a distance of %s angstroms, and has an elevation angle of %s degrees with the ring plane.\n'\
+                                                    % (full_value_name, value, avg_value, std_value, min_value, max_value, z_score, na['chain_id'], na['seq_id'], na['comp_id'], na['ring_distance'], na['ring_angle'])
                                                 if _details in self.empty_value or (details not in _details):
                                                     if _details in self.empty_value:
                                                         loop.data[l][details_col] = details
@@ -13436,7 +13458,9 @@ class NmrDpUtility:
 
                                         else:
 
-                                            self.report.error.appendDescription('anomalous_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn, 'value': value, 'z_score': z_score, 'description_alt': warn_alt, 'sigma': sigma})
+                                            self.report.error.appendDescription('anomalous_data',
+                                                                                {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn,
+                                                                                 'value': value, 'z_score': z_score, 'description_alt': warn_alt, 'sigma': sigma})
                                             self.report.setError()
 
                                             if self.__verbose:
@@ -13444,16 +13468,18 @@ class NmrDpUtility:
 
                                     else:
 
-                                        warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
-                                               '] %s %s (%s:%s:%s, atom_id %s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic/ferromagnetic atom (%s:%s:%s:%s) is located at a distance of %s angstroms.' %\
-                                               (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
-                                                pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
+                                        warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name)\
+                                            + '] %s %s (%s:%s:%s, atom_id %s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic/ferromagnetic atom (%s:%s:%s:%s) is located at a distance of %s angstroms.'\
+                                            % (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
+                                               pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
 
-                                        warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma), which is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). The nearest paramagnetic/ferromagnetic atom (%s:%s:%s:%s) is located at a distance of %s angstroms.' %\
-                                               (chain_id, seq_id, comp_id, atom_name, value, sigma, avg_value + 5.0 * std_value, avg_value - 5.0 * std_value, avg_value, std_value, min_value, max_value,
-                                                pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
+                                        warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma), which is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). The nearest paramagnetic/ferromagnetic atom (%s:%s:%s:%s) is located at a distance of %s angstroms.'\
+                                            % (chain_id, seq_id, comp_id, atom_name, value, sigma, avg_value + 5.0 * std_value, avg_value - 5.0 * std_value, avg_value, std_value, min_value, max_value,
+                                               pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
 
-                                        self.report.warning.appendDescription('anomalous_data' if pa['distance'] > self.vicinity_paramagnetic else 'unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn, 'value': value, 'z_score': z_score, 'description_alt': warn_alt, 'sigma': sigma})
+                                        self.report.warning.appendDescription('anomalous_data' if pa['distance'] > self.vicinity_paramagnetic else 'unusual_data',
+                                                                              {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn,
+                                                                               'value': value, 'z_score': z_score, 'description_alt': warn_alt, 'sigma': sigma})
                                         self.report.setWarning()
 
                                         if self.__verbose:
@@ -13461,7 +13487,8 @@ class NmrDpUtility:
 
                                         if file_type == 'nmr-star' and details_col != -1 and pa['distance'] > self.vicinity_paramagnetic:
                                             _details = loop.data[l][details_col]
-                                            details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic/ferromagnetic atom %s:%s:%s is located at a distance of %s angstroms.\n' % (full_value_name, value, avg_value, std_value, min_value, max_value, z_score, pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['distance'])
+                                            details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic/ferromagnetic atom %s:%s:%s is located at a distance of %s angstroms.\n'\
+                                                % (full_value_name, value, avg_value, std_value, min_value, max_value, z_score, pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['distance'])
                                             if _details in self.empty_value or (details not in _details):
                                                 if _details in self.empty_value:
                                                     loop.data[l][details_col] = details
@@ -13476,14 +13503,16 @@ class NmrDpUtility:
 
                                     if na is None and pa is None:
 
-                                        warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
-                                               '] %s %s (%s:%s:%s:%s) must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic/ferromagnetic atom were found in the vicinity.' %\
-                                               (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
+                                        warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name)\
+                                            + '] %s %s (%s:%s:%s:%s) must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic/ferromagnetic atom were found in the vicinity.'\
+                                            % (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
 
-                                        warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma), which is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). Neither aromatic ring nor paramagnetic/ferromagnetic atom were found in the vicinity.' %\
-                                               (chain_id, seq_id, comp_id, atom_name, value, sigma, avg_value + 5.0 * std_value, avg_value - 5.0 * std_value, avg_value, std_value, min_value, max_value)
+                                        warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma), which is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). Neither aromatic ring nor paramagnetic/ferromagnetic atom were found in the vicinity.'\
+                                            % (chain_id, seq_id, comp_id, atom_name, value, sigma, avg_value + 5.0 * std_value, avg_value - 5.0 * std_value, avg_value, std_value, min_value, max_value)
 
-                                        self.report.warning.appendDescription('anomalous_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn, 'value': value, 'z_score': z_score, 'description_alt': warn_alt, 'sigma': sigma})
+                                        self.report.warning.appendDescription('anomalous_data',
+                                                                              {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn,
+                                                                               'value': value, 'z_score': z_score, 'description_alt': warn_alt, 'sigma': sigma})
                                         self.report.setWarning()
 
                                         if self.__verbose:
@@ -13493,16 +13522,18 @@ class NmrDpUtility:
 
                                         if na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic:
 
-                                            warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
-                                                   '] %s %s (%s:%s:%s:%s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring (%s:%s:%s:%s) is located at a distance of %s angstroms, and has an elevation angle of %s degrees with the ring plane.' %\
-                                                   (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
-                                                    na['chain_id'], na['seq_id'], na['comp_id'], na['ring_atoms'], na['ring_distance'], na['ring_angle'])
+                                            warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name)\
+                                                + '] %s %s (%s:%s:%s:%s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring (%s:%s:%s:%s) is located at a distance of %s angstroms, and has an elevation angle of %s degrees with the ring plane.'\
+                                                % (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
+                                                   na['chain_id'], na['seq_id'], na['comp_id'], na['ring_atoms'], na['ring_distance'], na['ring_angle'])
 
-                                            warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma), which is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). The nearest aromatic ring (%s:%s:%s:%s) is located at a distance of %s angstroms, and has an elevation angle of %s degrees with the ring plane.' %\
-                                                   (chain_id, seq_id, comp_id, atom_name, value, sigma, avg_value + 5.0 * std_value, avg_value - 5.0 * std_value, avg_value, std_value, min_value, max_value,
-                                                    na['chain_id'], na['seq_id'], na['comp_id'], na['ring_atoms'], na['ring_distance'], na['ring_angle'])
+                                            warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma), which is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). The nearest aromatic ring (%s:%s:%s:%s) is located at a distance of %s angstroms, and has an elevation angle of %s degrees with the ring plane.'\
+                                                % (chain_id, seq_id, comp_id, atom_name, value, sigma, avg_value + 5.0 * std_value, avg_value - 5.0 * std_value, avg_value, std_value, min_value, max_value,
+                                                   na['chain_id'], na['seq_id'], na['comp_id'], na['ring_atoms'], na['ring_distance'], na['ring_angle'])
 
-                                            self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn, 'value': value, 'z_score': z_score, 'description_alt': warn_alt, 'sigma': sigma})
+                                            self.report.warning.appendDescription('unusual_data',
+                                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn,
+                                                                                   'value': value, 'z_score': z_score, 'description_alt': warn_alt, 'sigma': sigma})
                                             self.report.setWarning()
 
                                             if self.__verbose:
@@ -13512,16 +13543,18 @@ class NmrDpUtility:
 
                                         if pa['distance'] > self.vicinity_paramagnetic:
 
-                                            warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
-                                                   '] %s %s (%s:%s:%s:%s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic/ferromagnetic atom (%s:%s:%s:%s) is located at a distance of %s angstroms.' %\
-                                                   (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
-                                                    pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
+                                            warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name)\
+                                                + '] %s %s (%s:%s:%s:%s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic/ferromagnetic atom (%s:%s:%s:%s) is located at a distance of %s angstroms.'\
+                                                % (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
+                                                   pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
 
-                                            warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma), which is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). The nearest paramagnetic/ferromagnetic atom (%s:%s:%s:%s) is located at a distance of %s angstroms.' %\
-                                                   (chain_id, seq_id, comp_id, atom_name, value, sigma, avg_value + 5.0 * std_value, avg_value - 5.0 * std_value, avg_value, std_value, min_value, max_value,
-                                                    pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
+                                            warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma), which is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). The nearest paramagnetic/ferromagnetic atom (%s:%s:%s:%s) is located at a distance of %s angstroms.'\
+                                                % (chain_id, seq_id, comp_id, atom_name, value, sigma, avg_value + 5.0 * std_value, avg_value - 5.0 * std_value, avg_value, std_value, min_value, max_value,
+                                                   pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
 
-                                            self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn, 'value': value, 'z_score': z_score, 'description_alt': warn_alt, 'sigma': sigma})
+                                            self.report.warning.appendDescription('unusual_data',
+                                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn,
+                                                                                   'value': value, 'z_score': z_score, 'description_alt': warn_alt, 'sigma': sigma})
                                             self.report.setWarning()
 
                                             if self.__verbose:
@@ -13532,20 +13565,20 @@ class NmrDpUtility:
                                     na = self.__getNearestAromaticRing(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
                                     pa = self.__getNearestParaFerroMagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
 
-                                    warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
-                                           '] %s %s (%s:%s:%s:%s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
-                                           (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
+                                    warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name)\
+                                        + '] %s %s (%s:%s:%s:%s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f).'\
+                                        % (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
 
-                                    warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma), which is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s).' %\
-                                           (chain_id, seq_id, comp_id, atom_name, value, sigma, avg_value + 5.0 * std_value, avg_value - 5.0 * std_value, avg_value, std_value, min_value, max_value)
+                                    warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma), which is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s).'\
+                                        % (chain_id, seq_id, comp_id, atom_name, value, sigma, avg_value + 5.0 * std_value, avg_value - 5.0 * std_value, avg_value, std_value, min_value, max_value)
 
                                     if na is not None:
 
                                         if na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic:
-                                            warn += ' The nearest aromatic ring (%s:%s:%s:%s) is located at a distance of %s angstroms, and has an elevation angle of %s degrees with the ring plane.' %\
-                                                    (na['chain_id'], na['seq_id'], na['comp_id'], na['ring_atoms'], na['ring_distance'], na['ring_angle'])
-                                            warn_alt += ' The nearest aromatic ring (%s:%s:%s:%s) is located at a distance of %s angstroms, and has an elevation angle of %s degrees with the ring plane.' %\
-                                                    (na['chain_id'], na['seq_id'], na['comp_id'], na['ring_atoms'], na['ring_distance'], na['ring_angle'])
+                                            warn += ' The nearest aromatic ring (%s:%s:%s:%s) is located at a distance of %s angstroms, and has an elevation angle of %s degrees with the ring plane.'\
+                                                % (na['chain_id'], na['seq_id'], na['comp_id'], na['ring_atoms'], na['ring_distance'], na['ring_angle'])
+                                            warn_alt += ' The nearest aromatic ring (%s:%s:%s:%s) is located at a distance of %s angstroms, and has an elevation angle of %s degrees with the ring plane.'\
+                                                % (na['chain_id'], na['seq_id'], na['comp_id'], na['ring_atoms'], na['ring_distance'], na['ring_angle'])
                                         else:
                                             warn = None
                                             warn_alt = None
@@ -13553,10 +13586,10 @@ class NmrDpUtility:
                                     elif pa is not None:
 
                                         if pa['distance'] > self.vicinity_paramagnetic:
-                                            warn += ' The nearest paramagnetic/ferromagnetic atom (%s:%s:%s:%s) is located at a distance of %s angstroms.' %\
-                                                    (pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
-                                            warn_alt += ' The nearest paramagnetic/ferromagnetic atom (%s:%s:%s:%s) is located at a distance of %s angstroms.' %\
-                                                    (pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
+                                            warn += ' The nearest paramagnetic/ferromagnetic atom (%s:%s:%s:%s) is located at a distance of %s angstroms.'\
+                                                % (pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
+                                            warn_alt += ' The nearest paramagnetic/ferromagnetic atom (%s:%s:%s:%s) is located at a distance of %s angstroms.'\
+                                                % (pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
                                         else:
                                             warn = None
                                             warn_alt = None
@@ -13566,7 +13599,9 @@ class NmrDpUtility:
                                         warn_alt += ' Neither aromatic ring nor paramagnetic/ferromagnetic atom were found in the vicinity.'
 
                                     if warn is not None:
-                                        self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn, 'value': value, 'z_score': z_score, 'description_alt': warn_alt, 'sigma': sigma})
+                                        self.report.warning.appendDescription('unusual_data',
+                                                                              {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn,
+                                                                               'value': value, 'z_score': z_score, 'description_alt': warn_alt, 'sigma': sigma})
                                         self.report.setWarning()
 
                                         if self.__verbose:
@@ -13574,8 +13609,8 @@ class NmrDpUtility:
 
                                 elif not cs_stat['primary'] and cs_stat['norm_freq'] < 0.03:
 
-                                    warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s is an unusual/rare assignment. Occurrence of %s in %s is %s %% in BMRB archive.' %\
-                                           (full_value_name, value, atom_id, comp_id, cs_stat['norm_freq'] * 100.0)
+                                    warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s is an unusual/rare assignment. Occurrence of %s in %s is %s %% in BMRB archive.'\
+                                        % (full_value_name, value, atom_id, comp_id, cs_stat['norm_freq'] * 100.0)
 
                                     self.report.warning.appendDescription('unusual/rare_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                     self.report.setWarning()
@@ -13593,16 +13628,18 @@ class NmrDpUtility:
 
                                     if na is None and pa is None:
 
-                                        err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
-                                              '] %s %s (%s:%s:%s:%s) is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic/ferromagnetic atom were found in the vicinity. Please check for folded/aliased signals.' %\
-                                              (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
+                                        err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name)\
+                                            + '] %s %s (%s:%s:%s:%s) is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic/ferromagnetic atom were found in the vicinity. Please check for folded/aliased signals.'\
+                                            % (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
 
-                                        err_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma), which is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). Neither aromatic ring nor paramagnetic/ferromagnetic atom were found in the vicinity. Please check for folded/aliased signals.' %\
-                                              (chain_id, seq_id, comp_id, atom_name, value, sigma, avg_value + 5.0 * std_value, avg_value - 5.0 * std_value, avg_value, std_value, min_value, max_value)
+                                        err_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma), which is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). Neither aromatic ring nor paramagnetic/ferromagnetic atom were found in the vicinity. Please check for folded/aliased signals.'\
+                                            % (chain_id, seq_id, comp_id, atom_name, value, sigma, avg_value + 5.0 * std_value, avg_value - 5.0 * std_value, avg_value, std_value, min_value, max_value)
 
                                         if self.__nonblk_anomalous_cs:
 
-                                            self.report.warning.appendDescription('anomalous_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err, 'value': value, 'z_score': z_score, 'description_alt': err_alt, 'sigma': sigma})
+                                            self.report.warning.appendDescription('anomalous_data',
+                                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err,
+                                                                                   'value': value, 'z_score': z_score, 'description_alt': err_alt, 'sigma': sigma})
                                             self.report.setWarning()
 
                                             if self.__verbose:
@@ -13610,7 +13647,8 @@ class NmrDpUtility:
 
                                             if file_type == 'nmr-star' and details_col != -1:
                                                 _details = loop.data[l][details_col]
-                                                details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic/ferromagnetic atom were found in the vicinity. Please check for folded/aliased signals.\n' % (full_value_name, value, avg_value, std_value, min_value, max_value, z_score)
+                                                details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic/ferromagnetic atom were found in the vicinity. Please check for folded/aliased signals.\n'\
+                                                    % (full_value_name, value, avg_value, std_value, min_value, max_value, z_score)
                                                 if _details in self.empty_value or (details not in _details):
                                                     if _details in self.empty_value:
                                                         loop.data[l][details_col] = details
@@ -13620,7 +13658,9 @@ class NmrDpUtility:
 
                                         else:
 
-                                            self.report.error.appendDescription('anomalous_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err, 'value': value, 'z_score': z_score, 'description_alt': err_alt, 'sigma': sigma})
+                                            self.report.error.appendDescription('anomalous_data',
+                                                                                {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err,
+                                                                                 'value': value, 'z_score': z_score, 'description_alt': err_alt, 'sigma': sigma})
                                             self.report.setError()
 
                                             if self.__verbose:
@@ -13628,20 +13668,22 @@ class NmrDpUtility:
 
                                     elif pa is None:
 
-                                        warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
-                                               '] %s %s (%s:%s:%s:%s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring (%s:%s:%s:%s) is located at a distance of %s angstroms, and has an elevation angle of %s degrees with the ring plane.' %\
-                                               (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
-                                                na['chain_id'], na['seq_id'], na['comp_id'], na['ring_atoms'], na['ring_distance'], na['ring_angle'])
+                                        warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name)\
+                                            + '] %s %s (%s:%s:%s:%s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring (%s:%s:%s:%s) is located at a distance of %s angstroms, and has an elevation angle of %s degrees with the ring plane.'\
+                                            % (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
+                                               na['chain_id'], na['seq_id'], na['comp_id'], na['ring_atoms'], na['ring_distance'], na['ring_angle'])
 
-                                        warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma), which is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). The nearest aromatic ring (%s:%s:%s:%s) is located at a distance of %s angstroms, and has an elevation angle of %s degrees with the ring plane.' %\
-                                               (chain_id, seq_id, comp_id, atom_name, value, sigma, avg_value + 5.0 * std_value, avg_value - 5.0 * std_value, avg_value, std_value, min_value, max_value,
-                                                na['chain_id'], na['seq_id'], na['comp_id'], na['ring_atoms'], na['ring_distance'], na['ring_angle'])
+                                        warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma), which is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). The nearest aromatic ring (%s:%s:%s:%s) is located at a distance of %s angstroms, and has an elevation angle of %s degrees with the ring plane.'\
+                                            % (chain_id, seq_id, comp_id, atom_name, value, sigma, avg_value + 5.0 * std_value, avg_value - 5.0 * std_value, avg_value, std_value, min_value, max_value,
+                                               na['chain_id'], na['seq_id'], na['comp_id'], na['ring_atoms'], na['ring_distance'], na['ring_angle'])
 
                                         if na['ring_angle'] - self.magic_angle * z_score > 0.0 or self.__nonblk_anomalous_cs:
 
                                             if na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic:
 
-                                                self.report.warning.appendDescription('anomalous_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn, 'value': value, 'z_score': z_score, 'description_alt': warn_alt, 'sigma': sigma})
+                                                self.report.warning.appendDescription('anomalous_data',
+                                                                                      {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn,
+                                                                                       'value': value, 'z_score': z_score, 'description_alt': warn_alt, 'sigma': sigma})
                                                 self.report.setWarning()
 
                                                 if self.__verbose:
@@ -13649,7 +13691,8 @@ class NmrDpUtility:
 
                                                 if file_type == 'nmr-star' and details_col != -1:
                                                     _details = loop.data[l][details_col]
-                                                    details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring %s:%s:%s is located at a distance of %s angstroms, and has an elevation angle of %s degrees with the ring plane.\n' % (full_value_name, value, avg_value, std_value, min_value, max_value, z_score, na['chain_id'], na['seq_id'], na['comp_id'], na['ring_distance'], na['ring_angle'])
+                                                    details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring %s:%s:%s is located at a distance of %s angstroms, and has an elevation angle of %s degrees with the ring plane.\n'\
+                                                        % (full_value_name, value, avg_value, std_value, min_value, max_value, z_score, na['chain_id'], na['seq_id'], na['comp_id'], na['ring_distance'], na['ring_angle'])
                                                     if _details in self.empty_value or (details not in _details):
                                                         if _details in self.empty_value:
                                                             loop.data[l][details_col] = details
@@ -13659,7 +13702,9 @@ class NmrDpUtility:
 
                                         else:
 
-                                            self.report.error.appendDescription('anomalous_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn, 'value': value, 'z_score': z_score, 'description_alt': warn_alt, 'sigma': sigma})
+                                            self.report.error.appendDescription('anomalous_data',
+                                                                                {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn,
+                                                                                 'value': value, 'z_score': z_score, 'description_alt': warn_alt, 'sigma': sigma})
                                             self.report.setError()
 
                                             if self.__verbose:
@@ -13669,16 +13714,18 @@ class NmrDpUtility:
 
                                         if pa['distance'] > self.vicinity_paramagnetic:
 
-                                            warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
-                                                   '] %s %s (%s:%s:%s:%s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic/ferromagnetic atom (%s:%s:%s:%s) is located at a distance of %s angstroms.' %\
-                                                   (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
-                                                    pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
+                                            warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name)\
+                                                + '] %s %s (%s:%s:%s:%s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic/ferromagnetic atom (%s:%s:%s:%s) is located at a distance of %s angstroms.'\
+                                                % (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
+                                                   pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
 
-                                            warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma), which is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). The nearest paramagnetic/ferromagnetic atom (%s:%s:%s:%s) is located at a distance of %s angstroms.' %\
-                                                   (chain_id, seq_id, comp_id, atom_name, value, sigma, avg_value + 5.0 * std_value, avg_value - 5.0 * std_value, avg_value, std_value, min_value, max_value,
-                                                    pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
+                                            warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma), which is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). The nearest paramagnetic/ferromagnetic atom (%s:%s:%s:%s) is located at a distance of %s angstroms.'\
+                                                % (chain_id, seq_id, comp_id, atom_name, value, sigma, avg_value + 5.0 * std_value, avg_value - 5.0 * std_value, avg_value, std_value, min_value, max_value,
+                                                   pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
 
-                                            self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn, 'value': value, 'z_score': z_score, 'description_alt': warn_alt, 'sigma': sigma})
+                                            self.report.warning.appendDescription('unusual_data',
+                                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn,
+                                                                                   'value': value, 'z_score': z_score, 'description_alt': warn_alt, 'sigma': sigma})
                                             self.report.setWarning()
 
                                             if self.__verbose:
@@ -13686,7 +13733,8 @@ class NmrDpUtility:
 
                                             if file_type == 'nmr-star' and details_col != -1:
                                                 _details = loop.data[l][details_col]
-                                                details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic/ferromagnetic atom %s:%s:%s is located at a distance of %s angstroms.\n' % (full_value_name, value, avg_value, std_value, min_value, max_value, z_score, pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['distance'])
+                                                details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic/ferromagnetic atom %s:%s:%s is located at a distance of %s angstroms.\n'\
+                                                    % (full_value_name, value, avg_value, std_value, min_value, max_value, z_score, pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['distance'])
                                                 if _details in self.empty_value or (details not in _details):
                                                     if _details in self.empty_value:
                                                         loop.data[l][details_col] = details
@@ -13701,14 +13749,16 @@ class NmrDpUtility:
 
                                     if na is None and pa is None:
 
-                                        warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
-                                               '] %s %s (%s:%s:%s:%s) must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic/ferromagnetic atom were found in the vicinity.' %\
-                                               (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
+                                        warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name)\
+                                            + '] %s %s (%s:%s:%s:%s) must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic/ferromagnetic atom were found in the vicinity.'\
+                                            % (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
 
-                                        warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma), which is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). Neither aromatic ring nor paramagnetic/ferromagnetic atom were found in the vicinity.' %\
-                                               (chain_id, seq_id, comp_id, atom_name, value, sigma, avg_value + 5.0 * std_value, avg_value - 5.0 * std_value, avg_value, std_value, min_value, max_value)
+                                        warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma), which is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). Neither aromatic ring nor paramagnetic/ferromagnetic atom were found in the vicinity.'\
+                                            % (chain_id, seq_id, comp_id, atom_name, value, sigma, avg_value + 5.0 * std_value, avg_value - 5.0 * std_value, avg_value, std_value, min_value, max_value)
 
-                                        self.report.warning.appendDescription('anomalous_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn, 'value': value, 'z_score': z_score, 'description_alt': warn_alt, 'sigma': sigma})
+                                        self.report.warning.appendDescription('anomalous_data',
+                                                                              {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn,
+                                                                               'value': value, 'z_score': z_score, 'description_alt': warn_alt, 'sigma': sigma})
                                         self.report.setWarning()
 
                                         if self.__verbose:
@@ -13718,16 +13768,18 @@ class NmrDpUtility:
 
                                         if na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic:
 
-                                            warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
-                                                   '] %s %s (%s:%s:%s:%s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring (%s:%s:%s:%s) is located at a distance of %s angstroms, and has an elevation angle of %s degrees with the ring plane.' %\
-                                                   (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
-                                                    na['chain_id'], na['seq_id'], na['comp_id'], na['ring_atoms'], na['ring_distance'], na['ring_angle'])
+                                            warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name)\
+                                                + '] %s %s (%s:%s:%s:%s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring (%s:%s:%s:%s) is located at a distance of %s angstroms, and has an elevation angle of %s degrees with the ring plane.'\
+                                                % (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
+                                                   na['chain_id'], na['seq_id'], na['comp_id'], na['ring_atoms'], na['ring_distance'], na['ring_angle'])
 
-                                            warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma), which is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). The nearest aromatic ring (%s:%s:%s:%s) is located at a distance of %s angstroms, and has an elevation angle of %s degrees with the ring plane.' %\
-                                                   (chain_id, seq_id, comp_id, atom_name, value, sigma, avg_value + 5.0 * std_value, avg_value - 5.0 * std_value, avg_value, std_value, min_value, max_value,
-                                                    na['chain_id'], na['seq_id'], na['comp_id'], na['ring_atoms'], na['ring_distance'], na['ring_angle'])
+                                            warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma), which is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). The nearest aromatic ring (%s:%s:%s:%s) is located at a distance of %s angstroms, and has an elevation angle of %s degrees with the ring plane.'\
+                                                % (chain_id, seq_id, comp_id, atom_name, value, sigma, avg_value + 5.0 * std_value, avg_value - 5.0 * std_value, avg_value, std_value, min_value, max_value,
+                                                   na['chain_id'], na['seq_id'], na['comp_id'], na['ring_atoms'], na['ring_distance'], na['ring_angle'])
 
-                                            self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn, 'value': value, 'z_score': z_score, 'description_alt': warn_alt, 'sigma': sigma})
+                                            self.report.warning.appendDescription('unusual_data',
+                                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn,
+                                                                                   'value': value, 'z_score': z_score, 'description_alt': warn_alt, 'sigma': sigma})
                                             self.report.setWarning()
 
                                             if self.__verbose:
@@ -13737,16 +13789,18 @@ class NmrDpUtility:
 
                                         if pa['distance'] > self.vicinity_paramagnetic:
 
-                                            warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
-                                                   '] %s %s (%s:%s:%s:%s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic/ferromagnetic atom (%s:%s:%s:%s) is located at a distance of %s angstroms.' %\
-                                                   (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
-                                                    pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
+                                            warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name)\
+                                                + '] %s %s (%s:%s:%s:%s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic/ferromagnetic atom (%s:%s:%s:%s) is located at a distance of %s angstroms.'\
+                                                % (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
+                                                   pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
 
-                                            warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma), which is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). The nearest paramagnetic/ferromagnetic atom (%s:%s:%s:%s) is located at a distance of %s angstroms.' %\
-                                                   (chain_id, seq_id, comp_id, atom_name, value, sigma, avg_value + 5.0 * std_value, avg_value - 5.0 * std_value, avg_value, std_value, min_value, max_value,
-                                                    pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
+                                            warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma), which is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). The nearest paramagnetic/ferromagnetic atom (%s:%s:%s:%s) is located at a distance of %s angstroms.'\
+                                                % (chain_id, seq_id, comp_id, atom_name, value, sigma, avg_value + 5.0 * std_value, avg_value - 5.0 * std_value, avg_value, std_value, min_value, max_value,
+                                                   pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
 
-                                            self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn, 'value': value, 'z_score': z_score, 'description_alt': warn_alt, 'sigma': sigma})
+                                            self.report.warning.appendDescription('unusual_data',
+                                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn,
+                                                                                   'value': value, 'z_score': z_score, 'description_alt': warn_alt, 'sigma': sigma})
                                             self.report.setWarning()
 
                                             if self.__verbose:
@@ -13775,8 +13829,8 @@ class NmrDpUtility:
 
                                 elif value != methyl_cs_vals[methyl_cs_key]:
 
-                                    err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] Chemical shift values in the same methyl group (%s %s vs %s) are inconsistent.' %\
-                                          (full_value_name, value, methyl_cs_vals[methyl_cs_key])
+                                    err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] Chemical shift values in the same methyl group (%s %s vs %s) are inconsistent.'\
+                                        % (full_value_name, value, methyl_cs_vals[methyl_cs_key])
 
                                     self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                                     self.report.setError()
@@ -13788,8 +13842,8 @@ class NmrDpUtility:
 
                             if std_value is None or std_value <= 0.0:
 
-                                warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] Insufficient chemical shift statistics on comp_id %s, atom_id %s is available to verify %s %s (avg %s).' %\
-                                       (comp_id, atom_name, full_value_name, value, avg_value)
+                                warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] Insufficient chemical shift statistics on comp_id %s, atom_id %s is available to verify %s %s (avg %s).'\
+                                    % (comp_id, atom_name, full_value_name, value, avg_value)
 
                                 self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                 self.report.setWarning()
@@ -13801,8 +13855,8 @@ class NmrDpUtility:
 
                             if avg_value is None:
 
-                                warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] Insufficient chemical shift statistics on comp_id %s, atom_id %s is available to verify %s %s.' %\
-                                       (comp_id, atom_name, full_value_name, value)
+                                warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] Insufficient chemical shift statistics on comp_id %s, atom_id %s is available to verify %s %s.'\
+                                    % (comp_id, atom_name, full_value_name, value)
 
                                 self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                 self.report.setWarning()
@@ -13823,16 +13877,18 @@ class NmrDpUtility:
 
                                 if na is None and pa is None:
 
-                                    err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
-                                          '] %s %s (%s:%s:%s:%s) is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic/ferromagnetic atom were found in the vicinity. Please check for folded/aliased signals.' %\
-                                          (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
+                                    err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name)\
+                                        + '] %s %s (%s:%s:%s:%s) is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic/ferromagnetic atom were found in the vicinity. Please check for folded/aliased signals.'\
+                                        % (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
 
-                                    err_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma), which is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). Neither aromatic ring nor paramagnetic/ferromagnetic atom were found in the vicinity. Please check for folded/aliased signals.' %\
-                                          (chain_id, seq_id, comp_id, atom_name, value, sigma, avg_value + 5.0 * std_value, avg_value - 5.0 * std_value, avg_value, std_value, min_value, max_value)
+                                    err_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma), which is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). Neither aromatic ring nor paramagnetic/ferromagnetic atom were found in the vicinity. Please check for folded/aliased signals.'\
+                                        % (chain_id, seq_id, comp_id, atom_name, value, sigma, avg_value + 5.0 * std_value, avg_value - 5.0 * std_value, avg_value, std_value, min_value, max_value)
 
                                     if self.__nonblk_anomalous_cs:
 
-                                        self.report.warning.appendDescription('anomalous_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err, 'value': value, 'z_score': z_score, 'description_alt': err_alt, 'sigma': sigma})
+                                        self.report.warning.appendDescription('anomalous_data',
+                                                                              {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err,
+                                                                               'value': value, 'z_score': z_score, 'description_alt': err_alt, 'sigma': sigma})
                                         self.report.setWarning()
 
                                         if self.__verbose:
@@ -13840,7 +13896,8 @@ class NmrDpUtility:
 
                                         if file_type == 'nmr-star' and details_col != -1:
                                             _details = loop.data[l][details_col]
-                                            details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic/ferromagnetic atom were found in the vicinity. Please check for folded/aliased signals.\n' % (full_value_name, value, avg_value, std_value, min_value, max_value, z_score)
+                                            details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic/ferromagnetic atom were found in the vicinity. Please check for folded/aliased signals.\n'\
+                                                % (full_value_name, value, avg_value, std_value, min_value, max_value, z_score)
                                             if _details in self.empty_value or (details not in _details):
                                                 if _details in self.empty_value:
                                                     loop.data[l][details_col] = details
@@ -13850,7 +13907,9 @@ class NmrDpUtility:
 
                                     else:
 
-                                        self.report.error.appendDescription('anomalous_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err, 'value': value, 'z_score': z_score, 'description_alt': err_alt, 'sigma': sigma})
+                                        self.report.error.appendDescription('anomalous_data',
+                                                                            {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err,
+                                                                             'value': value, 'z_score': z_score, 'description_alt': err_alt, 'sigma': sigma})
                                         self.report.setError()
 
                                         if self.__verbose:
@@ -13858,18 +13917,20 @@ class NmrDpUtility:
 
                                 elif pa is None:
 
-                                    warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
-                                           '] %s %s (%s:%s:%s:%s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring (%s:%s:%s:%s) is located at a distance of %s angstroms, and has an elevation angle of %s degrees with the ring plane.' %\
-                                           (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
-                                            na['chain_id'], na['seq_id'], na['comp_id'], na['ring_atoms'], na['ring_distance'], na['ring_angle'])
+                                    warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name)\
+                                        + '] %s %s (%s:%s:%s:%s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring (%s:%s:%s:%s) is located at a distance of %s angstroms, and has an elevation angle of %s degrees with the ring plane.'\
+                                        % (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
+                                           na['chain_id'], na['seq_id'], na['comp_id'], na['ring_atoms'], na['ring_distance'], na['ring_angle'])
 
-                                    warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma), which is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). The nearest aromatic ring (%s:%s:%s:%s) is located at a distance of %s angstroms, and has an elevation angle of %s degrees with the ring plane.' %\
-                                           (chain_id, seq_id, comp_id, atom_name, value, sigma, avg_value + 5.0 * std_value, avg_value - 5.0 * std_value, avg_value, std_value, min_value, max_value,
-                                            na['chain_id'], na['seq_id'], na['comp_id'], na['ring_atoms'], na['ring_distance'], na['ring_angle'])
+                                    warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma), which is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). The nearest aromatic ring (%s:%s:%s:%s) is located at a distance of %s angstroms, and has an elevation angle of %s degrees with the ring plane.'\
+                                        % (chain_id, seq_id, comp_id, atom_name, value, sigma, avg_value + 5.0 * std_value, avg_value - 5.0 * std_value, avg_value, std_value, min_value, max_value,
+                                           na['chain_id'], na['seq_id'], na['comp_id'], na['ring_atoms'], na['ring_distance'], na['ring_angle'])
 
                                     if na['ring_angle'] - self.magic_angle * z_score > 0.0 or self.__nonblk_anomalous_cs:
 
-                                        self.report.warning.appendDescription('anomalous_data' if na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic else 'unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn, 'value': value, 'z_score': z_score, 'description_alt': warn_alt, 'sigma': sigma})
+                                        self.report.warning.appendDescription('anomalous_data' if na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic else 'unusual_data',
+                                                                              {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn,
+                                                                               'value': value, 'z_score': z_score, 'description_alt': warn_alt, 'sigma': sigma})
                                         self.report.setWarning()
 
                                         if self.__verbose:
@@ -13877,7 +13938,8 @@ class NmrDpUtility:
 
                                         if file_type == 'nmr-star' and details_col != -1 and (na['ring_angle'] - self.magic_angle * z_score > 0.0 or self.__nonblk_anomalous_cs):
                                             _details = loop.data[l][details_col]
-                                            details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring %s:%s:%s is located at a distance of %s angstroms, and has an elevation angle of %s degrees with the ring plane.\n' % (full_value_name, value, avg_value, std_value, min_value, max_value, z_score, na['chain_id'], na['seq_id'], na['comp_id'], na['ring_distance'], na['ring_angle'])
+                                            details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring %s:%s:%s is located at a distance of %s angstroms, and has an elevation angle of %s degrees with the ring plane.\n'\
+                                                % (full_value_name, value, avg_value, std_value, min_value, max_value, z_score, na['chain_id'], na['seq_id'], na['comp_id'], na['ring_distance'], na['ring_angle'])
                                             if _details in self.empty_value or (details not in _details):
                                                 if _details in self.empty_value:
                                                     loop.data[l][details_col] = details
@@ -13887,7 +13949,9 @@ class NmrDpUtility:
 
                                     else:
 
-                                        self.report.error.appendDescription('anomalous_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn, 'value': value, 'z_score': z_score, 'description_alt': warn_alt, 'sigma': sigma})
+                                        self.report.error.appendDescription('anomalous_data',
+                                                                            {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn,
+                                                                             'value': value, 'z_score': z_score, 'description_alt': warn_alt, 'sigma': sigma})
                                         self.report.setError()
 
                                         if self.__verbose:
@@ -13895,16 +13959,18 @@ class NmrDpUtility:
 
                                 else:
 
-                                    warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
-                                           '] %s %s (%s:%s:%s:%s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic/ferromagnetic atom (%s:%s:%s:%s) is located at a distance of %s angstroms.' %\
-                                           (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
-                                            pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
+                                    warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name)\
+                                        + '] %s %s (%s:%s:%s:%s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic/ferromagnetic atom (%s:%s:%s:%s) is located at a distance of %s angstroms.'\
+                                        % (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
+                                           pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
 
-                                    warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma), which is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). The nearest paramagnetic/ferromagnetic atom (%s:%s:%s:%s) is located at a distance of %s angstroms.' %\
-                                           (chain_id, seq_id, comp_id, atom_name, value, sigma, avg_value + 5.0 * std_value, avg_value - 5.0 * std_value, avg_value, std_value, min_value, max_value,
-                                            pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
+                                    warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma), which is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). The nearest paramagnetic/ferromagnetic atom (%s:%s:%s:%s) is located at a distance of %s angstroms.'\
+                                        % (chain_id, seq_id, comp_id, atom_name, value, sigma, avg_value + 5.0 * std_value, avg_value - 5.0 * std_value, avg_value, std_value, min_value, max_value,
+                                           pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
 
-                                    self.report.warning.appendDescription('anomalous_data' if pa['distance'] > self.vicinity_paramagnetic else 'unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn, 'value': value, 'z_score': z_score, 'description_alt': warn_alt, 'sigma': sigma})
+                                    self.report.warning.appendDescription('anomalous_data' if pa['distance'] > self.vicinity_paramagnetic else 'unusual_data',
+                                                                          {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn,
+                                                                           'value': value, 'z_score': z_score, 'description_alt': warn_alt, 'sigma': sigma})
                                     self.report.setWarning()
 
                                     if self.__verbose:
@@ -13912,7 +13978,8 @@ class NmrDpUtility:
 
                                     if file_type == 'nmr-star' and details_col != -1 and pa['distance'] > self.vicinity_paramagnetic:
                                         _details = loop.data[l][details_col]
-                                        details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic/ferromagnetic atom %s:%s:%s is located at a distance of %s angstroms.\n' % (full_value_name, value, avg_value, std_value, min_value, max_value, z_score, pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['distance'])
+                                        details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic/ferromagnetic atom %s:%s:%s is located at a distance of %s angstroms.\n'\
+                                            % (full_value_name, value, avg_value, std_value, min_value, max_value, z_score, pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['distance'])
                                         if _details in self.empty_value or (details not in _details):
                                             if _details in self.empty_value:
                                                 loop.data[l][details_col] = details
@@ -13920,21 +13987,23 @@ class NmrDpUtility:
                                                 loop.data[l][details_col] += ('' if '\n' in _details else '\n') + details
                                             add_details = True
 
-                            elif sigma > self.cs_unusual_error_scaled_by_sigma: # Set 5.0 to be consistent with validation report
+                            elif sigma > self.cs_unusual_error_scaled_by_sigma:  # Set 5.0 to be consistent with validation report
 
                                 na = self.__getNearestAromaticRing(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
                                 pa = self.__getNearestParaFerroMagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
 
                                 if na is None and pa is None:
 
-                                    warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
-                                           '] %s %s (%s:%s:%s:%s) must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic/ferromagnetic atom were found in the vicinity.' %\
-                                           (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
+                                    warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name)\
+                                        + '] %s %s (%s:%s:%s:%s) must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic/ferromagnetic atom were found in the vicinity.'\
+                                        % (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
 
-                                    warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma), which is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). Neither aromatic ring nor paramagnetic/ferromagnetic atom were found in the vicinity.' %\
-                                           (chain_id, seq_id, comp_id, atom_name, value, sigma, avg_value + 5.0 * std_value, avg_value - 5.0 * std_value, avg_value, std_value, min_value, max_value)
+                                    warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma), which is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). Neither aromatic ring nor paramagnetic/ferromagnetic atom were found in the vicinity.'\
+                                        % (chain_id, seq_id, comp_id, atom_name, value, sigma, avg_value + 5.0 * std_value, avg_value - 5.0 * std_value, avg_value, std_value, min_value, max_value)
 
-                                    self.report.warning.appendDescription('anomalous_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn, 'value': value, 'z_score': z_score, 'description_alt': warn_alt, 'sigma': sigma})
+                                    self.report.warning.appendDescription('anomalous_data',
+                                                                          {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn,
+                                                                           'value': value, 'z_score': z_score, 'description_alt': warn_alt, 'sigma': sigma})
                                     self.report.setWarning()
 
                                     if self.__verbose:
@@ -13944,16 +14013,17 @@ class NmrDpUtility:
 
                                     if na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic:
 
-                                        warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
-                                               '] %s %s (%s:%s:%s:%s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring (%s:%s:%s:%s) is located at a distance of %s angstroms, and has an elevation angle of %s degrees with the ring plane.' %\
-                                               (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
-                                                na['chain_id'], na['seq_id'], na['comp_id'], na['ring_atoms'], na['ring_distance'], na['ring_angle'])
+                                        warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name)\
+                                            + '] %s %s (%s:%s:%s:%s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring (%s:%s:%s:%s) is located at a distance of %s angstroms, and has an elevation angle of %s degrees with the ring plane.'\
+                                            % (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
+                                               na['chain_id'], na['seq_id'], na['comp_id'], na['ring_atoms'], na['ring_distance'], na['ring_angle'])
 
-                                        warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma), which is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). The nearest aromatic ring (%s:%s:%s:%s) is located at a distance of %s angstroms, and has an elevation angle of %s degrees with the ring plane.' %\
-                                               (chain_id, seq_id, comp_id, atom_name, value, sigma, avg_value + 5.0 * std_value, avg_value - 5.0 * std_value, avg_value, std_value, min_value, max_value,
-                                                na['chain_id'], na['seq_id'], na['comp_id'], na['ring_atoms'], na['ring_distance'], na['ring_angle'])
+                                        warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma), which is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). The nearest aromatic ring (%s:%s:%s:%s) is located at a distance of %s angstroms, and has an elevation angle of %s degrees with the ring plane.'\
+                                            % (chain_id, seq_id, comp_id, atom_name, value, sigma, avg_value + 5.0 * std_value, avg_value - 5.0 * std_value, avg_value, std_value, min_value, max_value,
+                                               na['chain_id'], na['seq_id'], na['comp_id'], na['ring_atoms'], na['ring_distance'], na['ring_angle'])
 
-                                        self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn, 'value': value, 'z_score': z_score, 'description_alt': warn_alt, 'sigma': sigma})
+                                        self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn,
+                                                                                               'value': value, 'z_score': z_score, 'description_alt': warn_alt, 'sigma': sigma})
                                         self.report.setWarning()
 
                                         if self.__verbose:
@@ -13963,16 +14033,17 @@ class NmrDpUtility:
 
                                     if pa['distance'] > self.vicinity_paramagnetic:
 
-                                        warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
-                                               '] %s %s (%s:%s:%s:%s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic/ferromagnetic atom (%s:%s:%s:%s) is located at a distance of %s angstroms.' %\
-                                               (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
-                                                pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
+                                        warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name)\
+                                            + '] %s %s (%s:%s:%s:%s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic/ferromagnetic atom (%s:%s:%s:%s) is located at a distance of %s angstroms.'\
+                                            % (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
+                                               pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
 
-                                        warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma), which is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). The nearest paramagnetic/ferromagnetic atom (%s:%s:%s:%s) is located at a distance of %s angstroms.' %\
-                                               (chain_id, seq_id, comp_id, atom_name, value, sigma, avg_value + 5.0 * std_value, avg_value - 5.0 * std_value, avg_value, std_value, min_value, max_value,
-                                                pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
+                                        warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma), which is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). The nearest paramagnetic/ferromagnetic atom (%s:%s:%s:%s) is located at a distance of %s angstroms.'\
+                                            % (chain_id, seq_id, comp_id, atom_name, value, sigma, avg_value + 5.0 * std_value, avg_value - 5.0 * std_value, avg_value, std_value, min_value, max_value,
+                                               pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
 
-                                        self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn, 'value': value, 'z_score': z_score, 'description_alt': warn_alt, 'sigma': sigma})
+                                        self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn,
+                                                                                               'value': value, 'z_score': z_score, 'description_alt': warn_alt, 'sigma': sigma})
                                         self.report.setWarning()
 
                                         if self.__verbose:
@@ -13983,20 +14054,20 @@ class NmrDpUtility:
                                 na = self.__getNearestAromaticRing(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
                                 pa = self.__getNearestParaFerroMagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
 
-                                warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
-                                       '] %s %s (%s:%s:%s:%s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
-                                       (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
+                                warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name)\
+                                    + '] %s %s (%s:%s:%s:%s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f).'\
+                                    % (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
 
-                                warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma), which is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s).' %\
-                                       (chain_id, seq_id, comp_id, atom_name, value, sigma, avg_value + 5.0 * std_value, avg_value - 5.0 * std_value, avg_value, std_value, min_value, max_value)
+                                warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma), which is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s).'\
+                                    % (chain_id, seq_id, comp_id, atom_name, value, sigma, avg_value + 5.0 * std_value, avg_value - 5.0 * std_value, avg_value, std_value, min_value, max_value)
 
                                 if na is not None:
 
                                     if na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic:
-                                        warn += ' The nearest aromatic ring (%s:%s:%s:%s) is located at a distance of %s angstroms, and has an elevation angle of %s degrees with the ring plane.' %\
-                                                (na['chain_id'], na['seq_id'], na['comp_id'], na['ring_atoms'], na['ring_distance'], na['ring_angle'])
-                                        warn_alt += ' The nearest aromatic ring (%s:%s:%s:%s) is located at a distance of %s angstroms, and has an elevation angle of %s degrees with the ring plane.' %\
-                                                (na['chain_id'], na['seq_id'], na['comp_id'], na['ring_atoms'], na['ring_distance'], na['ring_angle'])
+                                        warn += ' The nearest aromatic ring (%s:%s:%s:%s) is located at a distance of %s angstroms, and has an elevation angle of %s degrees with the ring plane.'\
+                                            % (na['chain_id'], na['seq_id'], na['comp_id'], na['ring_atoms'], na['ring_distance'], na['ring_angle'])
+                                        warn_alt += ' The nearest aromatic ring (%s:%s:%s:%s) is located at a distance of %s angstroms, and has an elevation angle of %s degrees with the ring plane.'\
+                                            % (na['chain_id'], na['seq_id'], na['comp_id'], na['ring_atoms'], na['ring_distance'], na['ring_angle'])
                                     else:
                                         warn = None
                                         warn_alt = None
@@ -14004,10 +14075,10 @@ class NmrDpUtility:
                                 elif pa is not None:
 
                                     if pa['distance'] > self.vicinity_paramagnetic:
-                                        warn += ' The nearest paramagnetic/ferromagnetic atom (%s:%s:%s:%s) is located at a distance of %s angstroms.' %\
-                                                (pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
-                                        warn_alt += ' The nearest paramagnetic/ferromagnetic atom (%s:%s:%s:%s) is located at a distance of %s angstroms.' %\
-                                                (pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
+                                        warn += ' The nearest paramagnetic/ferromagnetic atom (%s:%s:%s:%s) is located at a distance of %s angstroms.'\
+                                            % (pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
+                                        warn_alt += ' The nearest paramagnetic/ferromagnetic atom (%s:%s:%s:%s) is located at a distance of %s angstroms.'\
+                                            % (pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
                                     else:
                                         warn = None
                                         warn_alt = None
@@ -14017,7 +14088,9 @@ class NmrDpUtility:
                                     warn_alt += ' Neither aromatic ring nor paramagnetic/ferromagnetic atom were found in the vicinity.'
 
                                 if warn is not None:
-                                    self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn, 'value': value, 'z_score': z_score, 'description_alt': warn_alt, 'sigma': sigma})
+                                    self.report.warning.appendDescription('unusual_data',
+                                                                          {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn,
+                                                                           'value': value, 'z_score': z_score, 'description_alt': warn_alt, 'sigma': sigma})
                                     self.report.setWarning()
 
                                     if self.__verbose:
@@ -14025,8 +14098,8 @@ class NmrDpUtility:
                                 """
                             elif not cs_stat['primary'] and cs_stat['norm_freq'] < 0.03:
 
-                                warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s is an unusual/rare assignment. Occurrence of %s in %s is %s %% in BMRB archive.' %\
-                                       (full_value_name, value, atom_id, comp_id, '{:.1f}'.format(cs_stat['norm_freq'] * 100.0))
+                                warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s is an unusual/rare assignment. Occurrence of %s in %s is %s %% in BMRB archive.'\
+                                    % (full_value_name, value, atom_id, comp_id, '{:.1f}'.format(cs_stat['norm_freq'] * 100.0))
 
                                 self.report.warning.appendDescription('unusual/rare_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                 self.report.setWarning()
@@ -14038,8 +14111,8 @@ class NmrDpUtility:
 
                 if not has_cs_stat:
 
-                    warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] No chemical shift statistics is available to verify %s %s.' %\
-                           (full_value_name, value)
+                    warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] No chemical shift statistics is available to verify %s %s.'\
+                        % (full_value_name, value)
 
                     self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                     self.report.setWarning()
@@ -14073,7 +14146,11 @@ class NmrDpUtility:
 
                                 try:
 
-                                    j = next(j for j in lp_data if j[chain_id_name] == chain_id and j[seq_id_name] == seq_id and j[comp_id_name] == comp_id and j[atom_id_name] == _atom_id2)
+                                    j = next(j for j in lp_data
+                                             if j[chain_id_name] == chain_id
+                                             and j[seq_id_name] == seq_id
+                                             and j[comp_id_name] == comp_id
+                                             and j[atom_id_name] == _atom_id2)
 
                                     loop.data[lp_data.index(j)][loop.tags.index(ambig_code_name)] = 1
 
@@ -14082,8 +14159,8 @@ class NmrDpUtility:
 
                             elif allowed_ambig_code > 0:
 
-                                err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + "] Invalid %s %r (allowed ambig_code %s) in a loop %s." %\
-                                      (ambig_code_name, ambig_code, [1, allowed_ambig_code, 4, 5, 6, 9], lp_category)
+                                err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + "] Invalid %s %r (allowed ambig_code %s) in a loop %s."\
+                                    % (ambig_code_name, ambig_code, [1, allowed_ambig_code, 4, 5, 6, 9], lp_category)
 
                                 self.report.error.appendDescription('invalid_ambiguity_code', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                                 self.report.setError()
@@ -14093,15 +14170,19 @@ class NmrDpUtility:
 
                         try:
 
-                            j = next(j for j in lp_data if j[chain_id_name] == chain_id and j[seq_id_name] == seq_id and j[comp_id_name] == comp_id and j[atom_id_name] == _atom_id2)
+                            j = next(j for j in lp_data
+                                     if j[chain_id_name] == chain_id
+                                     and j[seq_id_name] == seq_id
+                                     and j[comp_id_name] == comp_id
+                                     and j[atom_id_name] == _atom_id2)
 
                             ambig_code2 = j[ambig_code_name]
 
                             if ambig_code2 != ambig_code:
                                 loop.data[lp_data.index(j)][loop.tags.index(ambig_code_name)] = ambig_code
 
-                                warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + "] %s %r indicates %s. However, %s %s of %s %s is inconsistent." %\
-                                       (ambig_code_name, ambig_code, ambig_code_desc, ambig_code_name, ambig_code2, atom_id_name, _atom_id2)
+                                warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + "] %s %r indicates %s. However, %s %s of %s %s is inconsistent."\
+                                    % (ambig_code_name, ambig_code, ambig_code_desc, ambig_code_name, ambig_code2, atom_id_name, _atom_id2)
 
                                 self.report.warning.appendDescription('ambiguity_code_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                 self.report.setWarning()
@@ -14111,8 +14192,8 @@ class NmrDpUtility:
 
                         except StopIteration:
                             """
-                            warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + "] %s %r indicates %s. However, row of %s %s of the same residue was not found." %\
-                                   (ambig_code_name, ambig_code, ambig_code_desc, atom_id_name, _atom_id2)
+                            warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + "] %s %r indicates %s. However, row of %s %s of the same residue was not found."\
+                                % (ambig_code_name, ambig_code, ambig_code_desc, atom_id_name, _atom_id2)
 
                             self.report.warning.appendDescription('bad_ambiguity_code', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                             self.report.setWarning()
@@ -14127,8 +14208,8 @@ class NmrDpUtility:
 
                         if ambig_set_id_name not in i:
 
-                            err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + "] %s %r requires %r loop tag." %\
-                                  (ambig_code_name, ambig_code, ambig_set_id_name)
+                            err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + "] %s %r requires %r loop tag."\
+                                % (ambig_code_name, ambig_code, ambig_set_id_name)
 
                             self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                             self.report.setError()
@@ -14142,8 +14223,8 @@ class NmrDpUtility:
 
                             if ambig_set_id in self.empty_value:
 
-                                warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + '] %s %r requires %s value.' %\
-                                       (ambig_code_name, ambig_code, ambig_set_id_name)
+                                warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + '] %s %r requires %s value.'\
+                                    % (ambig_code_name, ambig_code, ambig_set_id_name)
 
                                 self.report.warning.appendDescription('missing_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                 self.report.setWarning()
@@ -14157,8 +14238,8 @@ class NmrDpUtility:
 
                                 if len(ambig_set) == 0:
 
-                                    err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + '] %s %r requires other rows sharing %s %s.' %\
-                                          (ambig_code_name, ambig_code, ambig_set_id_name, ambig_set_id)
+                                    err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + '] %s %r requires other rows sharing %s %s.'\
+                                        % (ambig_code_name, ambig_code, ambig_set_id_name, ambig_set_id)
 
                                     self.report.error.appendDescription('missing_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                                     self.report.setError()
@@ -14182,9 +14263,9 @@ class NmrDpUtility:
 
                                         if (chain_id2 != chain_id or seq_id2 != seq_id or comp_id2 != comp_id) and _atom_id < _atom_id2:
 
-                                            err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) +\
-                                                  ", %s %r, %s %s] It indicates intra-residue ambiguities. However, row of " % (ambig_code_name, ambig_code, ambig_set_id_name, ambig_set_id) +\
-                                                  row_tmp % (chain_id2, seq_id2, comp_id2, atom_id2) + ' exists.'
+                                            err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id)\
+                                                + ", %s %r, %s %s] It indicates intra-residue ambiguities. However, row of " % (ambig_code_name, ambig_code, ambig_set_id_name, ambig_set_id)\
+                                                + row_tmp % (chain_id2, seq_id2, comp_id2, atom_id2) + ' exists.'
 
                                             self.report.error.appendDescription('invalid_ambiguity_code', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                                             self.report.setError()
@@ -14208,9 +14289,9 @@ class NmrDpUtility:
 
                                         if ((chain_id2 != chain_id and chain_id < chain_id2) or (seq_id2 == seq_id and _atom_id < _atom_id2)):
 
-                                            err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) +\
-                                                  ", %s %r, %s %s] It indicates inter-residue ambiguities. However, row of " % (ambig_code_name, ambig_code, ambig_set_id_name, ambig_set_id) +\
-                                                  row_tmp % (chain_id2, seq_id2, comp_id2, atom_id2) + ' exists.'
+                                            err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id)\
+                                                + ", %s %r, %s %s] It indicates inter-residue ambiguities. However, row of " % (ambig_code_name, ambig_code, ambig_set_id_name, ambig_set_id)\
+                                                + row_tmp % (chain_id2, seq_id2, comp_id2, atom_id2) + ' exists.'
 
                                             self.report.error.appendDescription('invalid_ambiguity_code', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                                             self.report.setError()
@@ -14235,9 +14316,9 @@ class NmrDpUtility:
 
                                         if chain_id2 == chain_id and (seq_id < seq_id2 or (seq_id == seq_id2 and _atom_id < _atom_id2)):
 
-                                            err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) +\
-                                                  ", %s %r, %s %s] It indicates inter-molecular ambiguities. However, row of " % (ambig_code_name, ambig_code, ambig_set_id_name, ambig_set_id) +\
-                                                  row_tmp % (chain_id2, seq_id2, comp_id2, atom_id2) + ' exists.'
+                                            err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id)\
+                                                + ", %s %r, %s %s] It indicates inter-molecular ambiguities. However, row of " % (ambig_code_name, ambig_code, ambig_set_id_name, ambig_set_id)\
+                                                + row_tmp % (chain_id2, seq_id2, comp_id2, atom_id2) + ' exists.'
 
                                             self.report.error.appendDescription('invalid_ambiguity_code', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                                             self.report.setError()
@@ -14259,9 +14340,9 @@ class NmrDpUtility:
 
                                     if _atom_id[0] != _atom_id2[0] and _atom_id < _atom_id2:
 
-                                        err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) +\
-                                              ", %s %r, %s %s] However, observation nucleus of " % (ambig_code_name, ambig_code, ambig_set_id_name, ambig_set_id) +\
-                                              row_tmp % (chain_id2, seq_id2, comp_id2, atom_id2) + ' sharing the same %s differs.' % ambig_set_id_name
+                                        err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id)\
+                                            + ", %s %r, %s %s] However, observation nucleus of " % (ambig_code_name, ambig_code, ambig_set_id_name, ambig_set_id)\
+                                            + row_tmp % (chain_id2, seq_id2, comp_id2, atom_id2) + ' sharing the same %s differs.' % ambig_set_id_name
 
                                         self.report.error.appendDescription('invalid_ambiguity_code', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                                         self.report.setError()
@@ -14271,10 +14352,10 @@ class NmrDpUtility:
 
                                     elif abs(value2 - value) > max_cs_err and value < value2:
 
-                                        err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) +\
-                                              ", %s %s, %s %r, %s %s] However, %s %s of " % (value_name, value, ambig_code_name, ambig_code, ambig_set_id_name, ambig_set_id, value_name, value2) +\
-                                              row_tmp % (chain_id2, seq_id2, comp_id2, atom_id2) +\
-                                              'differs by %s (tolerance %s).' % (value2 - value, max_cs_err)
+                                        err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id)\
+                                            + ", %s %s, %s %r, %s %s] However, %s %s of " % (value_name, value, ambig_code_name, ambig_code, ambig_set_id_name, ambig_set_id, value_name, value2)\
+                                            + row_tmp % (chain_id2, seq_id2, comp_id2, atom_id2)\
+                                            + 'differs by %s (tolerance %s).' % (value2 - value, max_cs_err)
 
                                         self.report.error.appendDescription('invalid_ambiguity_code', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                                         self.report.setError()
@@ -14284,8 +14365,8 @@ class NmrDpUtility:
 
                     else:
 
-                        err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + "] Invalid ambiguity code %r (allowed ambig_code %s) in a loop." %\
-                              (ambig_code, self.bmrb_ambiguity_codes)
+                        err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + "] Invalid ambiguity code %r (allowed ambig_code %s) in a loop."\
+                            % (ambig_code, self.bmrb_ambiguity_codes)
 
                         self.report.error.appendDescription('invalid_ambiguity_code', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                         self.report.setError()
@@ -14317,7 +14398,7 @@ class NmrDpUtility:
         """ Perform consistency test on peak position and assignment of spectral peaks.
         """
 
-        #if not self.__combined_mode:
+        # if not self.__combined_mode:
         #    return False
 
         __errors = self.report.getTotalErrors()
@@ -14394,7 +14475,7 @@ class NmrDpUtility:
                     if num_dim not in range(1, self.lim_num_dim):
                         raise ValueError()
 
-                except ValueError: # raised error already at __testIndexConsistency()
+                except ValueError:  # raised error already at __testIndexConsistency()
                     return False
 
                 max_dim = num_dim + 1
@@ -14558,10 +14639,11 @@ class NmrDpUtility:
                                     else:
                                         atom_id_ = atom_id
 
-                                    cs = next(j for j in cs_data if j[cs_chain_id_name] == chain_id and
-                                                                    j[cs_seq_id_name] == seq_id and
-                                                                    j[cs_comp_id_name] == comp_id and
-                                                                    j[cs_atom_id_name] == atom_id_)
+                                    cs = next(j for j in cs_data
+                                              if j[cs_chain_id_name] == chain_id
+                                              and j[cs_seq_id_name] == seq_id
+                                              and j[cs_comp_id_name] == comp_id
+                                              and j[cs_atom_id_name] == atom_id_)
 
                                     value = cs[cs_value_name]
                                     error = cs[cs_error_name]
@@ -14586,8 +14668,10 @@ class NmrDpUtility:
 
                                         if abs(position - value) > error:
 
-                                            err = "[Check row of %s %s] Peak position of spectral peak %s %s (%s) in %r saveframe is inconsistent with the assigned chemical shift value %s (difference %s, tolerance %s) in %r saveframe." %\
-                                                  (index_tag, i[index_tag], position_names[d], position, self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id, comp_id_names[d], comp_id, atom_id_names[d], atom_id), sf_framecode, value, float('{:.3f}'.format(position - value)), error, cs_list)
+                                            err = "[Check row of %s %s] Peak position of spectral peak %s %s (%s) in %r saveframe is inconsistent with the assigned chemical shift value %s (difference %s, tolerance %s) in %r saveframe."\
+                                                % (index_tag, i[index_tag], position_names[d], position,
+                                                   self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id, comp_id_names[d], comp_id, atom_id_names[d], atom_id),
+                                                   sf_framecode, value, float('{:.3f}'.format(position - value)), error, cs_list)
 
                                             if error >= max_cs_err:
 
@@ -14609,8 +14693,10 @@ class NmrDpUtility:
 
                                     if axis_codes[d] is not None and axis_code != axis_codes[d]:
 
-                                        err = '[Check row of %s %s] Assignment of spectral peak %s is inconsistent with axis code %s vs %s.' %\
-                                              (index_tag, i[index_tag], self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id, comp_id_names[d], comp_id, atom_id_names[d], atom_id), axis_code, axis_codes[d])
+                                        err = '[Check row of %s %s] Assignment of spectral peak %s is inconsistent with axis code %s vs %s.'\
+                                            % (index_tag, i[index_tag],
+                                               self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id, comp_id_names[d], comp_id, atom_id_names[d], atom_id),
+                                               axis_code, axis_codes[d])
 
                                         self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                                         self.report.setError()
@@ -14620,8 +14706,10 @@ class NmrDpUtility:
 
                                 except StopIteration:
 
-                                    err = "[Check row of %s %s] Assignment of spectral peak %s was not found in assigned chemical shifts in %r saveframe." %\
-                                          (index_tag, i[index_tag], self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id, comp_id_names[d], comp_id, atom_id_names[d], atom_id), cs_list)
+                                    err = "[Check row of %s %s] Assignment of spectral peak %s was not found in assigned chemical shifts in %r saveframe."\
+                                        % (index_tag, i[index_tag],
+                                           self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id, comp_id_names[d], comp_id, atom_id_names[d], atom_id),
+                                           cs_list)
 
                                     self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                                     self.report.setError()
@@ -14645,8 +14733,9 @@ class NmrDpUtility:
                                             if chain_id2 in self.empty_value or seq_id2 in self.empty_value or comp_id2 in self.empty_value or atom_id2 in self.empty_value or\
                                                (d < d2 and (chain_id2 != chain_id or seq_id2 != seq_id or comp_id2 != comp_id or _atom_id2 != _atom_id)):
 
-                                                err = '[Check row of %s %s] Coherence transfer type is onebond. However, assignment of spectral peak is inconsistent with the type, (%s) vs (%s).' %\
-                                                      (index_tag, i[index_tag], self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id, comp_id_names[d], comp_id, atom_id_names[d], atom_id),
+                                                err = '[Check row of %s %s] Coherence transfer type is onebond. However, assignment of spectral peak is inconsistent with the type, (%s) vs (%s).'\
+                                                    % (index_tag, i[index_tag],
+                                                       self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id, comp_id_names[d], comp_id, atom_id_names[d], atom_id),
                                                        self.__getReducedAtomNotation(chain_id_names[d2], chain_id2, seq_id_names[d2], seq_id2, comp_id_names[d2], comp_id2, atom_id_names[d2], atom_id2))
 
                                                 self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
@@ -14664,10 +14753,11 @@ class NmrDpUtility:
                                             atom_id2 = i[atom_id_names[d2]]
 
                                             if chain_id2 in self.empty_value or seq_id2 in self.empty_value or comp_id2 in self.empty_value or atom_id2 in self.empty_value or\
-                                               (d < d2 and (chain_id2 != chain_id or seq_id2 != seq_id or comp_id2 != comp_id)): # DAOTHER-7389, issue #2
+                                               (d < d2 and (chain_id2 != chain_id or seq_id2 != seq_id or comp_id2 != comp_id)):  # DAOTHER-7389, issue #2
 
-                                                err = '[Check row of %s %s] Coherence transfer type is jcoupling. However, assignment of spectral peak is inconsistent with the type, (%s) vs (%s).' %\
-                                                      (index_tag, i[index_tag], self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id, comp_id_names[d], comp_id, atom_id_names[d], atom_id),
+                                                err = '[Check row of %s %s] Coherence transfer type is jcoupling. However, assignment of spectral peak is inconsistent with the type, (%s) vs (%s).'\
+                                                    % (index_tag, i[index_tag],
+                                                       self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id, comp_id_names[d], comp_id, atom_id_names[d], atom_id),
                                                        self.__getReducedAtomNotation(chain_id_names[d2], chain_id2, seq_id_names[d2], seq_id2, comp_id_names[d2], comp_id2, atom_id_names[d2], atom_id2))
 
                                                 self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
@@ -14685,10 +14775,11 @@ class NmrDpUtility:
                                             atom_id2 = i[atom_id_names[d2]]
 
                                             if chain_id2 in self.empty_value or seq_id2 in self.empty_value or comp_id2 in self.empty_value or atom_id2 in self.empty_value or\
-                                               (d < d2 and (chain_id2 != chain_id or abs(seq_id2 - seq_id) > 1)): # DAOTHER-7389, issue #2
+                                               (d < d2 and (chain_id2 != chain_id or abs(seq_id2 - seq_id) > 1)):  # DAOTHER-7389, issue #2
 
-                                                err = '[Check row of %s %s] Coherence transfer type is relayed. However, assignment of spectral peak is inconsistent with the type, (%s) vs (%s).' %\
-                                                      (index_tag, i[index_tag], self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id, comp_id_names[d], comp_id, atom_id_names[d], atom_id),
+                                                err = '[Check row of %s %s] Coherence transfer type is relayed. However, assignment of spectral peak is inconsistent with the type, (%s) vs (%s).'\
+                                                    % (index_tag, i[index_tag],
+                                                       self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id, comp_id_names[d], comp_id, atom_id_names[d], atom_id),
                                                        self.__getReducedAtomNotation(chain_id_names[d2], chain_id2, seq_id_names[d2], seq_id2, comp_id_names[d2], comp_id2, atom_id_names[d2], atom_id2))
 
                                                 self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
@@ -14807,7 +14898,7 @@ class NmrDpUtility:
                     if num_dim not in range(1, self.lim_num_dim):
                         raise ValueError()
 
-                except ValueError: # raised error already at __testIndexConsistency()
+                except ValueError:  # raised error already at __testIndexConsistency()
                     return False
 
                 max_dim = num_dim + 1
@@ -14857,7 +14948,7 @@ class NmrDpUtility:
                         abs_pk_pos.append(False)
                         sp_widths.append(None)
 
-                aux_data = next((l['data'] for l in self.__aux_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode and l['category'] == self.aux_lp_categories[file_type][content_subtype][1]), None) # noqa: E501,E741
+                aux_data = next((l['data'] for l in self.__aux_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode and l['category'] == self.aux_lp_categories[file_type][content_subtype][1]), None)  # noqa: E501,E741
 
                 onebond = [[False] * num_dim for i in range(num_dim)]
                 if aux_data is not None:
@@ -14964,7 +15055,8 @@ class NmrDpUtility:
                                 else:
                                     atom_id_ = atom_id
 
-                                cs = next(j for j in cs_data if j[cs_chain_id_name] == chain_id
+                                cs = next(j for j in cs_data
+                                          if j[cs_chain_id_name] == chain_id
                                           and j[cs_seq_id_name] == seq_id
                                           and j[cs_comp_id_name] == comp_id
                                           and j[cs_atom_id_name] == atom_id_)
@@ -14992,8 +15084,10 @@ class NmrDpUtility:
 
                                     if abs(position - value) > error:
 
-                                        err = "[Check row of %s %s] Peak position of spectral peak %s %s (%s) in %r saveframe is inconsistent with the assigned chemical shift value %s (difference %s, tolerance %s) in %r saveframe." % (pk_id_name,  # noqa: E501
-                                                                                                                                                                                                                                           i[pk_id_name], cs_value_name, position, self.__getReducedAtomNotation(cs_chain_id_name, chain_id, cs_seq_id_name, seq_id, cs_comp_id_name, comp_id, cs_atom_id_name, atom_id), sf_framecode, value, float('{:.3f}'.format(position - value)), error, cs_list)  # noqa: E501
+                                        err = "[Check row of %s %s] Peak position of spectral peak %s %s (%s) in %r saveframe is inconsistent with the assigned chemical shift value %s (difference %s, tolerance %s) in %r saveframe."\
+                                            % (pk_id_name, i[pk_id_name], cs_value_name, position,
+                                               self.__getReducedAtomNotation(cs_chain_id_name, chain_id, cs_seq_id_name, seq_id, cs_comp_id_name, comp_id, cs_atom_id_name, atom_id),
+                                               sf_framecode, value, float('{:.3f}'.format(position - value)), error, cs_list)
 
                                         if error >= max_cs_err:
 
@@ -15015,8 +15109,10 @@ class NmrDpUtility:
 
                                 if aux_data is not None and d < num_dim and axis_code != axis_codes[d]:
 
-                                    err = '[Check row of %s %s] Assignment of spectral peak %s is inconsistent with axis code %s vs %s.' %\
-                                          (pk_id_name, i[pk_id_name], self.__getReducedAtomNotation(cs_chain_id_name, chain_id, cs_seq_id_name, seq_id, cs_comp_id_name, comp_id, cs_atom_id_name, atom_id), axis_code, axis_codes[d])  # noqa: E501
+                                    err = '[Check row of %s %s] Assignment of spectral peak %s is inconsistent with axis code %s vs %s.'\
+                                        % (pk_id_name, i[pk_id_name],
+                                           self.__getReducedAtomNotation(cs_chain_id_name, chain_id, cs_seq_id_name, seq_id, cs_comp_id_name, comp_id, cs_atom_id_name, atom_id),
+                                           axis_code, axis_codes[d])
 
                                     self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                                     self.report.setError()
@@ -15026,8 +15122,10 @@ class NmrDpUtility:
 
                             except StopIteration:
 
-                                err = "[Check row of %s %s] Assignment of spectral peak %s was not found in assigned chemical shifts in %r saveframe." %\
-                                      (pk_id_name, i[pk_id_name], self.__getReducedAtomNotation(cs_chain_id_name, chain_id, cs_seq_id_name, seq_id, cs_comp_id_name, comp_id, cs_atom_id_name, atom_id), cs_list)  # noqa: E501
+                                err = "[Check row of %s %s] Assignment of spectral peak %s was not found in assigned chemical shifts in %r saveframe."\
+                                    % (pk_id_name, i[pk_id_name],
+                                       self.__getReducedAtomNotation(cs_chain_id_name, chain_id, cs_seq_id_name, seq_id, cs_comp_id_name, comp_id, cs_atom_id_name, atom_id),
+                                       cs_list)
 
                                 self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                                 self.report.setError()
@@ -15040,7 +15138,10 @@ class NmrDpUtility:
                                     if onebond[d][d2]:
 
                                         try:
-                                            j = next(j for j in lp_data if j[pk_id_name] == pk_id and j[dim_id_name] - 1 == d2 and j[set_id_name] is set_id)
+                                            j = next(j for j in lp_data
+                                                     if j[pk_id_name] == pk_id
+                                                     and j[dim_id_name] - 1 == d2
+                                                     and j[set_id_name] is set_id)
                                         except StopIteration:
                                             continue
 
@@ -15057,8 +15158,10 @@ class NmrDpUtility:
                                         if chain_id2 in self.empty_value or seq_id2 in self.empty_value or comp_id2 in self.empty_value or atom_id2 in self.empty_value or\
                                            (d < d2 and (chain_id2 != chain_id or seq_id2 != seq_id or comp_id2 != comp_id or _atom_id2 != _atom_id)):
 
-                                            err = '[Check row of %s %s] Coherence transfer type is onebond. However, assignment of spectral peak is inconsistent with the type, (%s) vs (%s).' % (pk_id_name, i[pk_id_name], self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id, comp_id_names[d], comp_id, atom_id_names[d], atom_id),  # noqa: E501
-                                                                                                                                                                                                  self.__getReducedAtomNotation(chain_id_names[d2], chain_id2, seq_id_names[d2], seq_id2, comp_id_names[d2], comp_id2, atom_id_names[d2], atom_id2))  # noqa: E501
+                                            err = '[Check row of %s %s] Coherence transfer type is onebond. However, assignment of spectral peak is inconsistent with the type, (%s) vs (%s).'\
+                                                % (pk_id_name, i[pk_id_name],
+                                                   self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id, comp_id_names[d], comp_id, atom_id_names[d], atom_id),  # noqa: E501
+                                                   self.__getReducedAtomNotation(chain_id_names[d2], chain_id2, seq_id_names[d2], seq_id2, comp_id_names[d2], comp_id2, atom_id_names[d2], atom_id2))  # noqa: E501
                                             self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})  # noqa: E501
                                             self.report.setError()
 
@@ -15070,7 +15173,10 @@ class NmrDpUtility:
                                     if jcoupling[d][d2]:
 
                                         try:
-                                            j = next(j for j in lp_data if j[pk_id_name] == pk_id and j[dim_id_name] - 1 == d2 and j[set_id_name] is set_id)
+                                            j = next(j for j in lp_data
+                                                     if j[pk_id_name] == pk_id
+                                                     and j[dim_id_name] - 1 == d2
+                                                     and j[set_id_name] is set_id)
                                         except StopIteration:
                                             continue
 
@@ -15082,8 +15188,9 @@ class NmrDpUtility:
                                         if chain_id2 in self.empty_value or seq_id2 in self.empty_value or comp_id2 in self.empty_value or atom_id2 in self.empty_value or\
                                            (d < d2 and (chain_id2 != chain_id or seq_id2 != seq_id or comp_id2 != comp_id)):  # DAOTHER-7389, issue #2
 
-                                            err = '[Check row of %s %s] Coherence transfer type is jcoupling. However, assignment of spectral peak is inconsistent with the type, (%s) vs (%s).' %\
-                                                  (pk_id_name, i[pk_id_name], self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id, comp_id_names[d], comp_id, atom_id_names[d], atom_id),  # noqa: E501
+                                            err = '[Check row of %s %s] Coherence transfer type is jcoupling. However, assignment of spectral peak is inconsistent with the type, (%s) vs (%s).'\
+                                                % (pk_id_name, i[pk_id_name],
+                                                   self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id, comp_id_names[d], comp_id, atom_id_names[d], atom_id),  # noqa: E501
                                                    self.__getReducedAtomNotation(chain_id_names[d2], chain_id2, seq_id_names[d2], seq_id2, comp_id_names[d2], comp_id2, atom_id_names[d2], atom_id2))  # noqa: E501
 
                                             self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})  # noqa: E501
@@ -15097,7 +15204,10 @@ class NmrDpUtility:
                                     if relayed[d][d2]:
 
                                         try:
-                                            j = next(j for j in lp_data if j[pk_id_name] == pk_id and j[dim_id_name] - 1 == d2 and j[set_id_name] is set_id)
+                                            j = next(j for j in lp_data
+                                                     if j[pk_id_name] == pk_id
+                                                     and j[dim_id_name] - 1 == d2
+                                                     and j[set_id_name] is set_id)
                                         except StopIteration:
                                             continue
 
@@ -15109,9 +15219,10 @@ class NmrDpUtility:
                                         if chain_id2 in self.empty_value or seq_id2 in self.empty_value or comp_id2 in self.empty_value or atom_id2 in self.empty_value or\
                                            (d < d2 and (chain_id2 != chain_id or abs(seq_id2 - seq_id) > 1)):  # DAOTHER-7389, issue #2
 
-                                            err = '[Check row of %s %s] Coherence transfer type is relayed. However, assignment of spectral peak is inconsistent with the type, (%s) vs (%s).' % (pk_id_name,  # noqa: E501
-                                                                                                                                                                                                  i[pk_id_name], self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id, comp_id_names[d], comp_id, atom_id_names[d], atom_id),  # noqa: E501
-                                                                                                                                                                                                  self.__getReducedAtomNotation(chain_id_names[d2], chain_id2, seq_id_names[d2], seq_id2, comp_id_names[d2], comp_id2, atom_id_names[d2], atom_id2))  # noqa: E501
+                                            err = '[Check row of %s %s] Coherence transfer type is relayed. However, assignment of spectral peak is inconsistent with the type, (%s) vs (%s).'\
+                                                % (pk_id_name, i[pk_id_name],
+                                                   self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id, comp_id_names[d], comp_id, atom_id_names[d], atom_id),  # noqa: E501
+                                                   self.__getReducedAtomNotation(chain_id_names[d2], chain_id2, seq_id_names[d2], seq_id2, comp_id_names[d2], comp_id2, atom_id_names[d2], atom_id2))  # noqa: E501
 
                                             self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})  # noqa: E501
                                             self.report.setError()
@@ -15216,8 +15327,8 @@ class NmrDpUtility:
 
                         idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
 
-                        err = "%sNon-magnetic susceptible spin appears in RDC vector (%s:%s:%s:%s, %s:%s:%s:%s)." %\
-                              (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
+                        err = "%sNon-magnetic susceptible spin appears in RDC vector (%s:%s:%s:%s, %s:%s:%s:%s)."\
+                            % (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
 
                         self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                         self.report.setError()
@@ -15229,8 +15340,8 @@ class NmrDpUtility:
 
                         idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
 
-                        err = "%sInvalid inter-chain RDC vector (%s:%s:%s:%s, %s:%s:%s:%s) in a loop %s." %\
-                              (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2, lp_category)
+                        err = "%sInvalid inter-chain RDC vector (%s:%s:%s:%s, %s:%s:%s:%s) in a loop %s."\
+                            % (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2, lp_category)
 
                         self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                         self.report.setError()
@@ -15242,8 +15353,8 @@ class NmrDpUtility:
 
                         idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
 
-                        err = "%sInvalid inter-residue RDC vector (%s:%s:%s:%s, %s:%s:%s:%s) in a loop %s." %\
-                              (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2, lp_category)
+                        err = "%sInvalid inter-residue RDC vector (%s:%s:%s:%s, %s:%s:%s:%s) in a loop %s."\
+                            % (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2, lp_category)
 
                         self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                         self.report.setError()
@@ -15261,8 +15372,8 @@ class NmrDpUtility:
 
                             idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
 
-                            err = "%sInvalid inter-residue RDC vector (%s:%s:%s:%s, %s:%s:%s:%s) in a loop %s." %\
-                                  (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2, lp_category)
+                            err = "%sInvalid inter-residue RDC vector (%s:%s:%s:%s, %s:%s:%s:%s) in a loop %s."\
+                                % (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2, lp_category)
 
                             self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                             self.report.setError()
@@ -15274,8 +15385,8 @@ class NmrDpUtility:
 
                         idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
 
-                        err = "%sZero RDC vector (%s:%s:%s:%s, %s:%s:%s:%s)." %\
-                              (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
+                        err = "%sZero RDC vector (%s:%s:%s:%s, %s:%s:%s:%s)."\
+                            % (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
 
                         self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                         self.report.setError()
@@ -15287,16 +15398,16 @@ class NmrDpUtility:
 
                         if self.__updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
 
-                            if not any(b for b in self.__last_chem_comp_bonds if
-                                       ((b[self.__ccb_atom_id_1] == atom_id_1 and b[self.__ccb_atom_id_2] == atom_id_2)
-                                        or (b[self.__ccb_atom_id_1] == atom_id_2 and b[self.__ccb_atom_id_2] == atom_id_1))):
+                            if not any(b for b in self.__last_chem_comp_bonds
+                                       if ((b[self.__ccb_atom_id_1] == atom_id_1 and b[self.__ccb_atom_id_2] == atom_id_2)
+                                           or (b[self.__ccb_atom_id_1] == atom_id_2 and b[self.__ccb_atom_id_2] == atom_id_1))):
 
                                 if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
 
                                     idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
 
-                                    warn = "%sRDC vector over multiple covalent bonds (%s:%s:%s:%s, %s:%s:%s:%s)." %\
-                                           (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
+                                    warn = "%sRDC vector over multiple covalent bonds (%s:%s:%s:%s, %s:%s:%s:%s)."\
+                                        % (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
 
                                     self.report.warning.appendDescription('unusual/rare_data', {'file_name': file_name, 'sf_framecode': sf_framecode,
                                                                                                 'category': lp_category, 'description': warn})
@@ -15415,10 +15526,10 @@ class NmrDpUtility:
                     for bb in broken_bond:
                         length_list += '%s (model_id %s), ' % (bb['distance'], bb['model_id'])
 
-                    warn = "Covalent bond (%s - %s) is out of acceptable range, %s angstromes." %\
-                        (self.__getReducedAtomNotation(chain_id_1_name, chain_id_1, seq_id_1_name, seq_id_1, comp_id_1_name, comp_id_1, atom_id_1_name, atom_id_1),
-                         self.__getReducedAtomNotation(chain_id_2_name, chain_id_2, seq_id_2_name, seq_id_2, comp_id_2_name, comp_id_2, atom_id_2_name, atom_id_2),
-                         length_list[:-2])
+                    warn = "Covalent bond (%s - %s) is out of acceptable range, %s angstromes."\
+                        % (self.__getReducedAtomNotation(chain_id_1_name, chain_id_1, seq_id_1_name, seq_id_1, comp_id_1_name, comp_id_1, atom_id_1_name, atom_id_1),
+                           self.__getReducedAtomNotation(chain_id_2_name, chain_id_2, seq_id_2_name, seq_id_2, comp_id_2_name, comp_id_2, atom_id_2_name, atom_id_2),
+                           length_list[:-2])
 
                     self.report.warning.appendDescription('anomalous_bond_length', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                     self.report.setWarning()
@@ -15658,6 +15769,7 @@ class NmrDpUtility:
         try:
 
             aux_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, None, None,
+                                              enforce_allowed_tags=(file_type == 'nmr-star'),
                                               excl_missing_data=self.__excl_missing_data)[0]
 
             if aux_data is not None:
@@ -15752,8 +15864,9 @@ class NmrDpUtility:
 
                                     if not any(a for a in self.__last_chem_comp_atoms if a[self.__cca_atom_id] == atom_id_):
 
-                                        warn = "Atom (%s, %s %r) did not match with chemical component dictionary (CCD)." %\
-                                            (self.__getReducedAtomNotation(chain_id_name, chain_id, seq_id_name, seq_id, comp_id_name, comp_id, atom_id_name, atom_name), variant_name, _variant_)  # noqa: E501
+                                        warn = "Atom (%s, %s %r) did not match with chemical component dictionary (CCD)."\
+                                            % (self.__getReducedAtomNotation(chain_id_name, chain_id, seq_id_name, seq_id, comp_id_name, comp_id, atom_id_name, atom_name),
+                                               variant_name, _variant_)
 
                                         self.report.warning.appendDescription('atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})  # noqa: E501
                                         self.report.setWarning()
@@ -15763,8 +15876,9 @@ class NmrDpUtility:
 
                                 if coord_atom_id_ is not None and coord_atom_id_['comp_id'] == cif_comp_id and atom_id_ in coord_atom_id_['atom_id']:
 
-                                    err = "Atom (%s, %s %r) is unexpectedly incorporated in the coordinate." %\
-                                        (self.__getReducedAtomNotation(chain_id_name, chain_id, seq_id_name, seq_id, comp_id_name, comp_id, atom_id_name, atom_name), variant_name, _variant_)  # noqa: E501
+                                    err = "Atom (%s, %s %r) is unexpectedly incorporated in the coordinate."\
+                                        % (self.__getReducedAtomNotation(chain_id_name, chain_id, seq_id_name, seq_id, comp_id_name, comp_id, atom_id_name, atom_name),
+                                           variant_name, _variant_)
 
                                     self.report.error.appendDescription('invalid_atom_nomenclature', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})  # noqa: E501
                                     self.report.setError()
@@ -15776,8 +15890,9 @@ class NmrDpUtility:
 
                                 if coord_atom_id_ is not None and coord_atom_id_['comp_id'] == cif_comp_id and atom_id_ not in coord_atom_id_['atom_id']:
 
-                                    err = "Atom (%s) which is a %s %r is not present in the coordinate." %\
-                                        (self.__getReducedAtomNotation(chain_id_name, chain_id, seq_id_name, seq_id, comp_id_name, comp_id, atom_id_name, atom_name), variant_name, _variant_)  # noqa: E501
+                                    err = "Atom (%s) which is a %s %r is not present in the coordinate."\
+                                        % (self.__getReducedAtomNotation(chain_id_name, chain_id, seq_id_name, seq_id, comp_id_name, comp_id, atom_id_name, atom_name),
+                                           variant_name, _variant_)
 
                                     self.report.error.appendDescription('atom_not_found', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})  # noqa: E501
                                     self.report.setError()
@@ -15821,8 +15936,8 @@ class NmrDpUtility:
 
                                 if not any(a for a in self.__last_chem_comp_atoms if a[self.__cca_atom_id] == atom_id_):
 
-                                    warn = "Atom (%s) did not match with chemical component dictionary (CCD)." %\
-                                        self.__getReducedAtomNotation(chain_id_name, chain_id, seq_id_name, seq_id, comp_id_name, comp_id, atom_id_name, atom_name)
+                                    warn = "Atom (%s) did not match with chemical component dictionary (CCD)."\
+                                        % self.__getReducedAtomNotation(chain_id_name, chain_id, seq_id_name, seq_id, comp_id_name, comp_id, atom_id_name, atom_name)
 
                                     self.report.warning.appendDescription('atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})  # noqa: E501
                                     self.report.setWarning()
@@ -15832,14 +15947,24 @@ class NmrDpUtility:
 
                             if coord_atom_id_ is not None and coord_atom_id_['comp_id'] == cif_comp_id and atom_id_ in coord_atom_id_['atom_id']:
 
-                                err = "Atom (%s) is unexpectedly incorporated in the coordinate." %\
-                                    self.__getReducedAtomNotation(chain_id_name, chain_id, seq_id_name, seq_id, comp_id_name, comp_id, atom_id_name, atom_name)
+                                err = "Atom (%s) is unexpectedly incorporated in the coordinate."\
+                                    % self.__getReducedAtomNotation(chain_id_name, chain_id, seq_id_name, seq_id, comp_id_name, comp_id, atom_id_name, atom_name)
 
                                 self.report.error.appendDescription('invalid_atom_nomenclature', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})  # noqa: E501
                                 self.report.setError()
 
                                 if self.__verbose:
                                     self.__lfh.write("+NmrDpUtility.__testResidueVariant() ++ Error  - %s\n" % err)
+
+        except LookupError as e:
+
+            item = 'format_issue' if 'Unauthorized item' in str(e) else 'missing_mandatory_item'
+
+            self.report.error.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__testResidueVariant() ++ LookupError  - %s" % str(e))
 
         except ValueError as e:
 
@@ -15991,19 +16116,25 @@ class NmrDpUtility:
 
         if content_subtype in ('dist_restraint', 'dihed_restraint', 'rdc_restraint'):
 
-            type = sf_data.get_tag('restraint_origin' if file_type == 'nef' else 'Constraint_type')
-            if len(type) > 0 and type[0] not in self.empty_value:
-                ent['exp_type'] = type[0]
-            else:
+            if len(sf_framecode) == 0:
                 ent['exp_type'] = 'Unknown'
+            else:
+                type = sf_data.get_tag('restraint_origin' if file_type == 'nef' else 'Constraint_type')
+                if len(type) > 0 and type[0] not in self.empty_value:
+                    ent['exp_type'] = type[0]
+                else:
+                    ent['exp_type'] = 'Unknown'
 
         elif content_subtype.startswith('spectral_peak'):
 
-            type = sf_data.get_tag('experiment_type' if file_type == 'nef' else 'Experiment_type')
-            if len(type) > 0 and type[0] not in self.empty_value:
-                ent['exp_type'] = type[0]
-            else:
+            if len(sf_framecode) == 0:
                 ent['exp_type'] = 'Unknown'
+            else:
+                type = sf_data.get_tag('experiment_type' if file_type == 'nef' else 'Experiment_type')
+                if len(type) > 0 and type[0] not in self.empty_value:
+                    ent['exp_type'] = type[0]
+                else:
+                    ent['exp_type'] = 'Unknown'
 
         if content_subtype in ('chem_shift', 'dist_restraint', 'dihed_restraint', 'rdc_restraint', 'spectral_peak', 'spectral_peak_alt'):
 
@@ -17221,8 +17352,8 @@ class NmrDpUtility:
                                         if cg_chem_shift is not None:
                                             shifts += 'CG %s ppm, ' % cg_chem_shift
 
-                                        warn = "%s-peptide bond of %s:%s:%s can not be verified with the assigned chemical shift values (%scis_trans_pred %s)." %\
-                                               ('cis' if pro['in_cis_peptide_bond'] else 'trans', chain_id, seq_id, comp_id, shifts, pro['cis_trans_pred'])
+                                        warn = "%s-peptide bond of %s:%s:%s can not be verified with the assigned chemical shift values (%scis_trans_pred %s)."\
+                                            % ('cis' if pro['in_cis_peptide_bond'] else 'trans', chain_id, seq_id, comp_id, shifts, pro['cis_trans_pred'])
 
                                         self.report.warning.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
                                         self.report.setWarning()
@@ -17295,7 +17426,8 @@ class NmrDpUtility:
                                 elif bip < 0.001 and tau < 0.001:
                                     his['tautomeric_state_pred'] = 'pi-tautomer'
                                 else:
-                                    his['tautomeric_state_pred'] = 'biprotonated %s (%%), tau-tautomer %s (%%), pi-tautomer %s (%%)' % ('{:.1f}'.format(bip * 100.0), '{:.1f}'.format(tau * 100.0), '{:.1f}'.format(pi * 100.0))  # noqa: E501
+                                    his['tautomeric_state_pred'] = 'biprotonated %s (%%), tau-tautomer %s (%%), pi-tautomer %s (%%)'\
+                                        % ('{:.1f}'.format(bip * 100.0), '{:.1f}'.format(tau * 100.0), '{:.1f}'.format(pi * 100.0))
                             else:
                                 his['tautomeric_state_pred'] = 'unknown'
 
@@ -17326,8 +17458,8 @@ class NmrDpUtility:
                                     if ne2_chem_shift is not None:
                                         shifts += 'NE2 %s ppm, ' % ne2_chem_shift
 
-                                    warn = "Tautomeric state %s of %s:%s:%s can not be verified with the assigned chemical shift values (%stautomeric_state_pred %s)." %\
-                                           (his['tautomeric_state'], chain_id, seq_id, comp_id, shifts, his['tautomeric_state_pred'])
+                                    warn = "Tautomeric state %s of %s:%s:%s can not be verified with the assigned chemical shift values (%stautomeric_state_pred %s)."\
+                                        % (his['tautomeric_state'], chain_id, seq_id, comp_id, shifts, his['tautomeric_state_pred'])
 
                                     self.report.warning.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
                                     self.report.setWarning()
@@ -17402,7 +17534,8 @@ class NmrDpUtility:
                                     elif gp < 0.001 and t < 0.001:
                                         ilv['rotameric_state_pred'] = 'gauche-'
                                     else:
-                                        ilv['rotameric_state_pred'] = 'gauche+ %s (%%), trans %s (%%), gauche- %s (%%)' % ('{:.1f}'.format(gp * 100.0), '{:.1f}'.format(t * 100.0), '{:.1f}'.format(gm * 100.0))  # noqa: E501
+                                        ilv['rotameric_state_pred'] = 'gauche+ %s (%%), trans %s (%%), gauche- %s (%%)'\
+                                            % ('{:.1f}'.format(gp * 100.0), '{:.1f}'.format(t * 100.0), '{:.1f}'.format(gm * 100.0))
                                 else:
                                     ilv['rotameric_state_pred'] = 'unknown'
 
@@ -17445,8 +17578,8 @@ class NmrDpUtility:
                                         if cg2_chem_shift is not None:
                                             shifts += 'CG2 %s ppm, ' % cg2_chem_shift
 
-                                        warn = "Rotameric state %s of %s:%s:%s can not be verified with the assigned chemical shift values (%srotameric_state_pred %s)." %\
-                                               (_rotameric_state, chain_id, seq_id, comp_id, shifts, ilv['rotameric_state_pred'])
+                                        warn = "Rotameric state %s of %s:%s:%s can not be verified with the assigned chemical shift values (%srotameric_state_pred %s)."\
+                                            % (_rotameric_state, chain_id, seq_id, comp_id, shifts, ilv['rotameric_state_pred'])
 
                                         self.report.warning.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
                                         self.report.setWarning()
@@ -17493,7 +17626,8 @@ class NmrDpUtility:
                                     elif gp < 0.001 and t < 0.001:
                                         ilv['rotameric_state_pred'] = 'gauche-'
                                     else:
-                                        ilv['rotameric_state_pred'] = 'gauche+ %s (%%), trans %s (%%), gauche- %s (%%)' % ('{:.1f}'.format(gp * 100.0), '{:.1f}'.format(t * 100.0), '{:.1f}'.format(gm * 100.0))  # noqa: E501
+                                        ilv['rotameric_state_pred'] = 'gauche+ %s (%%), trans %s (%%), gauche- %s (%%)'\
+                                            % ('{:.1f}'.format(gp * 100.0), '{:.1f}'.format(t * 100.0), '{:.1f}'.format(gm * 100.0))
                                 else:
                                     ilv['rotameric_state_pred'] = 'unknown'
 
@@ -17536,8 +17670,8 @@ class NmrDpUtility:
                                         if cd2_chem_shift is not None:
                                             shifts += 'CD2 %s ppm, ' % cd2_chem_shift
 
-                                        warn = "Rotameric state %s of %s:%s:%s can not be verified with the assigned chemical shift values (%srotameric_state_pred %s)." %\
-                                               (_rotameric_state, chain_id, seq_id, comp_id, shifts, ilv['rotameric_state_pred'])
+                                        warn = "Rotameric state %s of %s:%s:%s can not be verified with the assigned chemical shift values (%srotameric_state_pred %s)."\
+                                            % (_rotameric_state, chain_id, seq_id, comp_id, shifts, ilv['rotameric_state_pred'])
 
                                         self.report.warning.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
                                         self.report.setWarning()
@@ -17574,7 +17708,8 @@ class NmrDpUtility:
                                     elif gp < 0.001 and t < 0.001:
                                         ilv['rotameric_state_pred'] = 'gauche-'
                                     else:
-                                        ilv['rotameric_state_pred'] = 'gauche+ %s (%%), trans %s (%%), gauche- %s (%%)' % ('{:.1f}'.format(gp * 100.0), '{:.1f}'.format(t * 100.0), '{:.1f}'.format(gm * 100.0))  # noqa: E501
+                                        ilv['rotameric_state_pred'] = 'gauche+ %s (%%), trans %s (%%), gauche- %s (%%)'\
+                                            % ('{:.1f}'.format(gp * 100.0), '{:.1f}'.format(t * 100.0), '{:.1f}'.format(gm * 100.0))  # noqa: E501
                                 else:
                                     ilv['rotameric_state_pred'] = 'unknown'
 
@@ -17615,8 +17750,8 @@ class NmrDpUtility:
                                         if cd1_chem_shift is not None:
                                             shifts += 'CD1 %s ppm, ' % cd1_chem_shift
 
-                                        warn = "Rotameric state %s of %s:%s:%s can not be verified with the assigned chemical shift values (%srotameric_state_pred %s)." %\
-                                               (_rotameric_state, chain_id, seq_id, comp_id, shifts, ilv['rotameric_state_pred'])
+                                        warn = "Rotameric state %s of %s:%s:%s can not be verified with the assigned chemical shift values (%srotameric_state_pred %s)."\
+                                            % (_rotameric_state, chain_id, seq_id, comp_id, shifts, ilv['rotameric_state_pred'])
 
                                         self.report.warning.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
                                         self.report.setWarning()
@@ -17838,7 +17973,11 @@ class NmrDpUtility:
 
                 if len(polymer_sequence) > 1:
                     for s, t in itertools.combinations(polymer_sequence, 2):
-                        count_on_asym_map.append({'chain_id_1': s['chain_id'], 'chain_id_2': t['chain_id'], 'seq_id_1': s['seq_id'], 'seq_id_2': t['seq_id'], 'comp_id_1': s['comp_id'], 'comp_id_2': t['comp_id'], 'struct_conf_1': self.__extractCoordStructConf(s['chain_id'], s['seq_id']), 'struct_conf_2': self.__extractCoordStructConf(t['chain_id'], t['seq_id'])})  # noqa: E501
+                        count_on_asym_map.append({'chain_id_1': s['chain_id'], 'chain_id_2': t['chain_id'],
+                                                  'seq_id_1': s['seq_id'], 'seq_id_2': t['seq_id'],
+                                                  'comp_id_1': s['comp_id'], 'comp_id_2': t['comp_id'],
+                                                  'struct_conf_1': self.__extractCoordStructConf(s['chain_id'], s['seq_id']),
+                                                  'struct_conf_2': self.__extractCoordStructConf(t['chain_id'], t['seq_id'])})
 
             for l, i in enumerate(lp_data):  # noqa: E741
                 index = i[index_tag] if index_tag in i else None
@@ -17910,8 +18049,8 @@ class NmrDpUtility:
                     if upper_linear_limit_name in i and i[upper_linear_limit_name] is not None:
                         values += '%s %s, ' % (upper_linear_limit_name, i[upper_linear_limit_name])
 
-                    warn = "Hydrogen bond constraint (%s:%s:%s:%s, %s:%s:%s:%s) is too %s (%s)." %\
-                           (chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2, 'close' if 'close' in data_type else 'far', values[:-2])
+                    warn = "Hydrogen bond constraint (%s:%s:%s:%s, %s:%s:%s:%s) is too %s (%s)."\
+                        % (chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2, 'close' if 'close' in data_type else 'far', values[:-2])
 
                     self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
                     self.report.setWarning()
@@ -17933,8 +18072,8 @@ class NmrDpUtility:
                     if upper_linear_limit_name in i and i[upper_linear_limit_name] is not None:
                         values += '%s %s, ' % (upper_linear_limit_name, i[upper_linear_limit_name])
 
-                    warn = "Disulfide bond constraint (%s:%s:%s:%s, %s:%s:%s:%s) is too %s (%s)." %\
-                           (chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2, 'close' if 'close' in data_type else 'far', values[:-2])
+                    warn = "Disulfide bond constraint (%s:%s:%s:%s, %s:%s:%s:%s) is too %s (%s)."\
+                        % (chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2, 'close' if 'close' in data_type else 'far', values[:-2])
 
                     self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
                     self.report.setWarning()
@@ -17956,8 +18095,8 @@ class NmrDpUtility:
                     if upper_linear_limit_name in i and i[upper_linear_limit_name] is not None:
                         values += '%s %s, ' % (upper_linear_limit_name, i[upper_linear_limit_name])
 
-                    warn = "Diselenide bond constraint (%s:%s:%s:%s, %s:%s:%s:%s) is too %s (%s)." %\
-                           (chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2, 'close' if 'close' in data_type else 'far', values[:-2])
+                    warn = "Diselenide bond constraint (%s:%s:%s:%s, %s:%s:%s:%s) is too %s (%s)."\
+                        % (chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2, 'close' if 'close' in data_type else 'far', values[:-2])
 
                     self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
                     self.report.setWarning()
@@ -17979,8 +18118,8 @@ class NmrDpUtility:
                     if upper_linear_limit_name in i and i[upper_linear_limit_name] is not None:
                         values += '%s %s, ' % (upper_linear_limit_name, i[upper_linear_limit_name])
 
-                    warn = "Other bond constraint (%s:%s:%s:%s, %s:%s:%s:%s) is too %s (%s)." %\
-                           (chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2, 'close' if 'close' in data_type else 'far', values[:-2])
+                    warn = "Other bond constraint (%s:%s:%s:%s, %s:%s:%s:%s) is too %s (%s)."\
+                        % (chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2, 'close' if 'close' in data_type else 'far', values[:-2])
 
                     self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
                     self.report.setWarning()
@@ -18603,7 +18742,11 @@ class NmrDpUtility:
 
                 if len(polymer_sequence) > 1:
                     for s, t in itertools.combinations(polymer_sequence, 2):
-                        count_on_asym_map.append({'chain_id_1': s['chain_id'], 'chain_id_2': t['chain_id'], 'seq_id_1': s['seq_id'], 'seq_id_2': t['seq_id'], 'comp_id_1': s['comp_id'], 'comp_id_2': t['comp_id'], 'struct_conf_1': self.__extractCoordStructConf(s['chain_id'], s['seq_id']), 'struct_conf_2': self.__extractCoordStructConf(t['chain_id'], t['seq_id'])})  # noqa: E501
+                        count_on_asym_map.append({'chain_id_1': s['chain_id'], 'chain_id_2': t['chain_id'],
+                                                  'seq_id_1': s['seq_id'], 'seq_id_2': t['seq_id'],
+                                                  'comp_id_1': s['comp_id'], 'comp_id_2': t['comp_id'],
+                                                  'struct_conf_1': self.__extractCoordStructConf(s['chain_id'], s['seq_id']),
+                                                  'struct_conf_2': self.__extractCoordStructConf(t['chain_id'], t['seq_id'])})
 
             for l, i in enumerate(lp_data):  # noqa: E741
                 chain_id_1 = i[chain_id_1_name]
@@ -18630,8 +18773,8 @@ class NmrDpUtility:
 
                 if 'hydrogen_bonds' in data_type and ('too close!' in data_type or 'too far!' in data_type):
 
-                    warn = "Hydrogen bond constraint (%s:%s:%s:%s, %s:%s:%s:%s) is too %s (%s angstromes)." %\
-                           (chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2, 'close' if 'close' in data_type else 'far', distance)
+                    warn = "Hydrogen bond constraint (%s:%s:%s:%s, %s:%s:%s:%s) is too %s (%s angstromes)."\
+                        % (chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2, 'close' if 'close' in data_type else 'far', distance)
 
                     self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                     self.report.setWarning()
@@ -18641,8 +18784,8 @@ class NmrDpUtility:
 
                 elif 'disulfide_bonds' in data_type and ('too close!' in data_type or 'too far!' in data_type):
 
-                    warn = "Disulfide bond constraint (%s:%s:%s:%s, %s:%s:%s:%s) is too %s (%s angstromes)." %\
-                           (chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2, 'close' if 'close' in data_type else 'far', distance)
+                    warn = "Disulfide bond constraint (%s:%s:%s:%s, %s:%s:%s:%s) is too %s (%s angstromes)."\
+                        % (chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2, 'close' if 'close' in data_type else 'far', distance)
 
                     self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                     self.report.setWarning()
@@ -18652,8 +18795,8 @@ class NmrDpUtility:
 
                 elif 'diselenide_bonds' in data_type and ('too close!' in data_type or 'too far!' in data_type):
 
-                    warn = "Diselenide bond constraint (%s:%s:%s:%s, %s:%s:%s:%s) is too %s (%s angstromes)." %\
-                           (chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2, 'close' if 'close' in data_type else 'far', distance)
+                    warn = "Diselenide bond constraint (%s:%s:%s:%s, %s:%s:%s:%s) is too %s (%s angstromes)."\
+                        % (chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2, 'close' if 'close' in data_type else 'far', distance)
 
                     self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                     self.report.setWarning()
@@ -18663,8 +18806,8 @@ class NmrDpUtility:
 
                 elif 'other_bonds' in data_type and ('too close!' in data_type or 'too far!' in data_type):
 
-                    warn = "Other bond constraint (%s:%s:%s:%s, %s:%s:%s:%s) is too %s (%s angstromes)." %\
-                           (chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2, 'close' if 'close' in data_type else 'far', distance)
+                    warn = "Other bond constraint (%s:%s:%s:%s, %s:%s:%s:%s) is too %s (%s angstromes)."\
+                        % (chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2, 'close' if 'close' in data_type else 'far', distance)
 
                     self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                     self.report.setWarning()
@@ -21562,7 +21705,8 @@ class NmrDpUtility:
                             self.__lfh.write("+NmrDpUtility.__parseCoordinate() ++ Error  - %s" % str(e))
 
             if self.__total_models < 2:
-                err = "Coordinate file has %s model. Deposition of minimized average structure must be accompanied with ensemble and must be homogeneous with the ensemble." % ('no' if self.__total_models == 0 else ('only one' if self.__total_models == 1 else self.__total_models))  # noqa: E501
+                err = "Coordinate file has %s model. Deposition of minimized average structure must be accompanied with ensemble and must be homogeneous with the ensemble."\
+                    % ('no' if self.__total_models == 0 else ('only one' if self.__total_models == 1 else self.__total_models))
 
                 self.report.error.appendDescription('missing_mandatory_content', {'file_name': file_name, 'description': err})
                 self.report.setError()
@@ -21767,7 +21911,8 @@ class NmrDpUtility:
 
                     r = next((r for r in rmsd if r['model_id'] == conformer_id), rmsd[0])
 
-                    warn = 'Coordinates (chain_id %s) are not superimposed, RMSD in estimated well-defined region is %s angstromes (representative model_id %s). Please superimpose the coordinates and re-upload the model file.' % (chain_id, r['rmsd'], r['model_id'])  # noqa: E501
+                    warn = 'Coordinates (chain_id %s) are not superimposed, RMSD in estimated well-defined region is %s angstromes (representative model_id %s). Please superimpose the coordinates and re-upload the model file.'\
+                        % (chain_id, r['rmsd'], r['model_id'])
 
                     self.report.warning.appendDescription('not_superimposed_model', {'file_name': file_name, 'category': 'atom_site', 'description': warn})
                     self.report.setWarning()
@@ -21847,7 +21992,7 @@ class NmrDpUtility:
 
             try:
                 non_poly = self.__cR.getPolymerSequence(lp_category, key_items)
-            except KeyError: # pdbx_PDB_ins_code throws KeyError
+            except KeyError:  # pdbx_PDB_ins_code throws KeyError
                 if content_subtype + ('_ins_alias' if alias else '_ins') in self.key_items[file_type]:
                     key_items = self.key_items[file_type][content_subtype + ('_ins_alias' if alias else '_ins')]
                     non_poly = self.__cR.getPolymerSequence(lp_category, key_items)
@@ -22299,7 +22444,7 @@ class NmrDpUtility:
                 _s2 = s2 if offset_2 == 0 else fill_blank_comp_id_with_offset(s2, offset_2)
 
                 if conflict > 0 and has_large_seq_gap(_s1, _s2):  # DAOTHER-7465
-                    __s1, __s2 = beutify_seq_id(fill_blank_comp_id(_s2, _s1), fill_blank_comp_id(_s1, _s2))
+                    __s1, __s2 = beautify_seq_id(_s1, _s2)
                     _s1_ = __s1
                     _s2_ = __s2
 
@@ -22415,7 +22560,7 @@ class NmrDpUtility:
                 _s2 = s2 if offset_2 == 0 else fill_blank_comp_id_with_offset(s2, offset_2)
 
                 if conflict > 0 and has_large_seq_gap(_s1, _s2):  # DAOTHER-7465
-                    __s1, __s2 = beutify_seq_id(fill_blank_comp_id(_s2, _s1), fill_blank_comp_id(_s1, _s2))
+                    __s1, __s2 = beautify_seq_id(_s1, _s2)
                     _s1_ = __s1
                     _s2_ = __s2
 
@@ -22645,7 +22790,7 @@ class NmrDpUtility:
                     _s2 = s2 if offset_2 == 0 else fill_blank_comp_id_with_offset(s2, offset_2)
 
                     if conflict > 0 and has_large_seq_gap(_s1, _s2):  # DAOTHER-7465
-                        __s1, __s2 = beutify_seq_id(fill_blank_comp_id(_s2, _s1), fill_blank_comp_id(_s1, _s2))
+                        __s1, __s2 = beautify_seq_id(_s1, _s2)
                         _s1 = __s1
                         _s2 = __s2
 
@@ -22766,8 +22911,8 @@ class NmrDpUtility:
                                         except:  # noqa: E722 pylint: disable=bare-except
                                             pass
 
-                                    warn = "%s is not present in the NMR data (chain_id %s)." %\
-                                           (cif_seq_code, chain_id2)
+                                    warn = "%s is not present in the NMR data (chain_id %s)."\
+                                        % (cif_seq_code, chain_id2)
 
                                     self.report.warning.appendDescription('sequence_mismatch', {'file_name': cif_file_name, 'description': warn})
                                     self.report.setWarning()
@@ -22797,8 +22942,8 @@ class NmrDpUtility:
                                     except:  # noqa: E722 pylint: disable=bare-except
                                         pass
 
-                                err = "Sequence alignment error between the coordinate (%s) and the NMR data (%s). Please verify the two sequences and re-upload the correct file(s)." %\
-                                      (cif_seq_code, nmr_seq_code)
+                                err = "Sequence alignment error between the coordinate (%s) and the NMR data (%s). Please verify the two sequences and re-upload the correct file(s)."\
+                                    % (cif_seq_code, nmr_seq_code)
 
                                 if self.__tolerant_seq_align and self.__equalsRepresentativeCompId(nmr_comp_id, cif_comp_id):
                                     self.report.warning.appendDescription('sequence_mismatch', {'file_name': cif_file_name, 'description': err})
@@ -23001,7 +23146,7 @@ class NmrDpUtility:
                     _s2 = s2 if offset_2 == 0 else fill_blank_comp_id_with_offset(s2, offset_2)
 
                     if conflict > 0 and has_large_seq_gap(_s1, _s2):  # DAOTHER-7465
-                        __s1, __s2 = beutify_seq_id(fill_blank_comp_id(_s2, _s1), fill_blank_comp_id(_s1, _s2))
+                        __s1, __s2 = beautify_seq_id(_s1, _s2)
                         _s1 = __s1
                         _s2 = __s2
 
@@ -23110,8 +23255,8 @@ class NmrDpUtility:
                                 if not aligned[i]:
 
                                     if self.__combined_mode or chain_id not in concatenated_nmr_chain or chain_id2 not in concatenated_nmr_chain[chain_id]:
-                                        warn = "%s:%s:%s is not present in the coordinate (chain_id %s). Please update the sequence in the Macromolecules page." %\
-                                               (chain_id, seq_id1[i], nmr_comp_id, chain_id2)
+                                        warn = "%s:%s:%s is not present in the coordinate (chain_id %s). Please update the sequence in the Macromolecules page."\
+                                            % (chain_id, seq_id1[i], nmr_comp_id, chain_id2)
 
                                         self.report.warning.appendDescription('sequence_mismatch', {'file_name': nmr_file_name, 'description': warn})
                                         self.report.setWarning()
@@ -23167,8 +23312,8 @@ class NmrDpUtility:
                                     except:  # noqa: E722 pylint: disable=bare-except
                                         pass
 
-                                err = "Sequence alignment error between the NMR data (%s) and the coordinate (%s). Please verify the two sequences and re-upload the correct file(s)." %\
-                                      (nmr_seq_code, cif_seq_code)
+                                err = "Sequence alignment error between the NMR data (%s) and the coordinate (%s). Please verify the two sequences and re-upload the correct file(s)."\
+                                    % (nmr_seq_code, cif_seq_code)
 
                                 if self.__tolerant_seq_align and self.__equalsRepresentativeCompId(cif_comp_id, nmr_comp_id):
                                     self.report.warning.appendDescription('sequence_mismatch', {'file_name': nmr_file_name, 'description': err})
@@ -23536,6 +23681,7 @@ class NmrDpUtility:
 
             try:
                 lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None, None,
+                                                 enforce_allowed_tags=(file_type == 'nmr-star'),
                                                  excl_missing_data=self.__excl_missing_data)[0]
             except:  # noqa: E722 pylint: disable=bare-except
                 return False
@@ -23692,8 +23838,8 @@ class NmrDpUtility:
                     if index_tag is not None:
                         idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
 
-                    err = "%sAtom (%s) is not present in the coordinate." %\
-                          (idx_msg, self.__getReducedAtomNotation(chain_id_names[j], chain_id, seq_id_names[j], seq_id, comp_id_names[j], comp_id, atom_id_names[j], atom_name))
+                    err = "%sAtom (%s) is not present in the coordinate."\
+                        % (idx_msg, self.__getReducedAtomNotation(chain_id_names[j], chain_id, seq_id_names[j], seq_id, comp_id_names[j], comp_id, atom_id_names[j], atom_name))
 
                     cyclic = self.__isCyclicPolymer(ref_chain_id)
 
@@ -23714,7 +23860,8 @@ class NmrDpUtility:
 
                         if file_type == 'nmr-star' and details_col != -1:
                             _details = loop.data[l][details_col]
-                            details = "%s:%s:%s:%s is not present in the coordinate. However, it is acceptable if an appropriate atom name, H1, is given because of a cyclic-peptide.\n" % (chain_id, seq_id, comp_id, atom_name)  # noqa: E501
+                            details = "%s:%s:%s:%s is not present in the coordinate. However, it is acceptable if an appropriate atom name, H1, is given because of a cyclic-peptide.\n"\
+                                % (chain_id, seq_id, comp_id, atom_name)
                             if _details in self.empty_value or (details not in _details):
                                 if _details in self.empty_value:
                                     loop.data[l][details_col] = details
@@ -24310,6 +24457,7 @@ class NmrDpUtility:
             if orig_lp_data is None:
                 try:
                     orig_lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None, None,
+                                                          enforce_allowed_tags=(file_type == 'nmr-star'),
                                                           excl_missing_data=self.__excl_missing_data)[0]
                 except:  # noqa: E722 pylint: disable=bare-except
                     pass
@@ -25165,7 +25313,8 @@ class NmrDpUtility:
         if seq_key in self.__coord_tautomer:
             return self.__coord_tautomer[seq_key]
 
-        result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)  # noqa: E501
+        result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq']
+                       if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)
 
         if result is not None:
 
@@ -25249,7 +25398,8 @@ class NmrDpUtility:
         if seq_key in self.__coord_rotamer:
             return self.__coord_rotamer[seq_key]
 
-        result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)  # noqa: E501
+        result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq']
+                       if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)
 
         if result is not None:
 
@@ -25352,7 +25502,8 @@ class NmrDpUtility:
         if seq_key in self.__coord_rotamer:
             return self.__coord_rotamer[seq_key]
 
-        result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)  # noqa: E501
+        result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq']
+                       if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)
 
         if result is not None:
 
@@ -25476,7 +25627,8 @@ class NmrDpUtility:
         if seq_key in self.__coord_rotamer:
             return self.__coord_rotamer[seq_key]
 
-        result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)  # noqa: E501
+        result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq']
+                       if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)
 
         if result is not None:
 
@@ -25719,7 +25871,8 @@ class NmrDpUtility:
 
                 nmr_chain_id_1 = s1['chain_id']
 
-                result = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq'] if seq_align['ref_chain_id'] == cif_chain_id_1 and seq_align['test_chain_id'] == nmr_chain_id_1), None)  # noqa: E501
+                result = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq']
+                               if seq_align['ref_chain_id'] == cif_chain_id_1 and seq_align['test_chain_id'] == nmr_chain_id_1), None)
 
                 if result is None:
                     continue
@@ -25741,7 +25894,8 @@ class NmrDpUtility:
 
                 nmr_chain_id_2 = s2['chain_id']
 
-                result = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq'] if seq_align['ref_chain_id'] == cif_chain_id_2 and seq_align['test_chain_id'] == nmr_chain_id_2), None)  # noqa: E501
+                result = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq']
+                               if seq_align['ref_chain_id'] == cif_chain_id_2 and seq_align['test_chain_id'] == nmr_chain_id_2), None)
 
                 if result is None:
                     continue
@@ -25859,10 +26013,11 @@ class NmrDpUtility:
                 if disulf['redox_state_pred_1'] != 'oxidized' and disulf['redox_state_pred_1'] != 'unknown':
 
                     warn = "Disulfide bond (%s:%s:%s - %s:%s:%s) can not be verified with the assigned chemical shift values (%s:%s:%s:CA %s ppm, %s:%s:%s:CB %s ppm, redox_state_pred %s)." % \
-                           (nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, nmr_chain_id_2,  # noqa: E501
-                            nmr_seq_id_2, nmr_comp_id_2, nmr_chain_id_1, nmr_seq_id_1,
-                            nmr_comp_id_1, ca_chem_shift_1, nmr_chain_id_1, nmr_seq_id_1,
-                            nmr_comp_id_1, cb_chem_shift_1, disulf['redox_state_pred_1'])
+                           (nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1,
+                            nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2,
+                            nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, ca_chem_shift_1,
+                            nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, cb_chem_shift_1,
+                            disulf['redox_state_pred_1'])
 
                     item = 'anomalous_chemical_shift' if disulf['redox_state_pred_1'] == 'reduced' else 'unusual_chemical_shift'
 
@@ -25876,8 +26031,12 @@ class NmrDpUtility:
 
                 if disulf['redox_state_pred_2'] != 'oxidized' and disulf['redox_state_pred_2'] != 'unknown':
 
-                    warn = "Disulfide bond (%s:%s:%s - %s:%s:%s) can not be verified with the assigned chemical shift values (%s:%s:%s:CA %s ppm, %s:%s:%s:CB %s, redox_state_pred %s)." %\
-                           (nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2, ca_chem_shift_2, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2, cb_chem_shift_2, disulf['redox_state_pred_2'])  # noqa: E501
+                    warn = "Disulfide bond (%s:%s:%s - %s:%s:%s) can not be verified with the assigned chemical shift values (%s:%s:%s:CA %s ppm, %s:%s:%s:CB %s, redox_state_pred %s)."\
+                        % (nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1,
+                           nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2,
+                           nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2, ca_chem_shift_2,
+                           nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2, cb_chem_shift_2,
+                           disulf['redox_state_pred_2'])
 
                     item = 'anomalous_chemical_shift' if disulf['redox_state_pred_2'] == 'reduced' else 'unusual_chemical_shift'
 
@@ -25926,6 +26085,7 @@ class NmrDpUtility:
                 try:
 
                     lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None, None,
+                                                     enforce_allowed_tags=(file_type == 'nmr-star'),
                                                      excl_missing_data=self.__excl_missing_data)[0]
 
                     self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'data': lp_data})
@@ -26241,13 +26401,13 @@ class NmrDpUtility:
 
                 if other['redox_state_pred_1'] != 'oxidized' and other['redox_state_pred_1'] != 'unknown':
 
-                    warn = "Other bond (%s:%s:%s - %s:%s:%s) can not be verified with the assigned chemical shift values (%s:%s:%s:CA %s ppm, %s:%s:%s:CB %s ppm, redox_state_pred %s)." %\
-                           (nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1,
-                            nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2,
-                            nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1,
-                            ca_chem_shift_1, nmr_chain_id_1, nmr_seq_id_1,
-                            nmr_comp_id_1, cb_chem_shift_1,
-                            other['redox_state_pred_1'])
+                    warn = "Other bond (%s:%s:%s - %s:%s:%s) can not be verified with the assigned chemical shift values (%s:%s:%s:CA %s ppm, %s:%s:%s:CB %s ppm, redox_state_pred %s)."\
+                        % (nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1,
+                           nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2,
+                           nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1,
+                           ca_chem_shift_1, nmr_chain_id_1, nmr_seq_id_1,
+                           nmr_comp_id_1, cb_chem_shift_1,
+                           other['redox_state_pred_1'])
 
                     item = 'anomalous_chemical_shift' if other['redox_state_pred_1'] == 'reduced' else 'unusual_chemical_shift'
 
@@ -26261,8 +26421,11 @@ class NmrDpUtility:
 
                 if other['redox_state_pred_2'] != 'oxidized' and other['redox_state_pred_2'] != 'unknown':
 
-                    warn = "Other bond (%s:%s:%s - %s:%s:%s) can not be verified with the assigned chemical shift values (%s:%s:%s:CA %s ppm, %s:%s:%s:CB %s ppm, redox_state_pred %s)." %\
-                           (nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2, ca_chem_shift_2, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2, cb_chem_shift_2, other['redox_state_pred_2'])  # noqa: E501
+                    warn = "Other bond (%s:%s:%s - %s:%s:%s) can not be verified with the assigned chemical shift values (%s:%s:%s:CA %s ppm, %s:%s:%s:CB %s ppm, redox_state_pred %s)."\
+                        % (nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2,
+                           nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2, ca_chem_shift_2,
+                           nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2, cb_chem_shift_2,
+                           other['redox_state_pred_2'])
 
                     item = 'anomalous_chemical_shift' if other['redox_state_pred_2'] == 'reduced' else 'unusual_chemical_shift'
 
@@ -26311,6 +26474,7 @@ class NmrDpUtility:
                 try:
 
                     lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None, None,
+                                                     enforce_allowed_tags=(file_type == 'nmr-star'),
                                                      excl_missing_data=self.__excl_missing_data)[0]
 
                     self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'data': lp_data})
@@ -26448,7 +26612,10 @@ class NmrDpUtility:
                 self.__coord_near_ring[seq_key] = None
                 return None
 
-            neighbor = [n for n in _neighbor if n['seq_id'] != cif_seq_id and n['type_symbol'] != 'H' and np.linalg.norm(to_np_array(n) - o) < cutoff
+            neighbor = [n for n in _neighbor
+                        if n['seq_id'] != cif_seq_id
+                        and n['type_symbol'] != 'H'
+                        and np.linalg.norm(to_np_array(n) - o) < cutoff
                         and n['atom_id'] in self.__csStat.getAromaticAtoms(n['comp_id'])]
 
             if len(neighbor) == 0:
@@ -26783,8 +26950,11 @@ class NmrDpUtility:
                 self.__coord_near_para_ferro[seq_key] = None
                 return None
 
-            neighbor = [n for n in _neighbor if n['seq_id'] != cif_seq_id and np.linalg.norm(to_np_array(n) - o) < cutoff
-                        and (n['type_symbol'] in self.paramag_elems or n['type_symbol'] in self.ferromag_elems)]
+            neighbor = [n for n in _neighbor
+                        if n['seq_id'] != cif_seq_id
+                        and np.linalg.norm(to_np_array(n) - o) < cutoff
+                        and (n['type_symbol'] in self.paramag_elems
+                             or n['type_symbol'] in self.ferromag_elems)]
 
             if len(neighbor) == 0:
                 self.__coord_near_para_ferro[seq_key] = None
@@ -27189,6 +27359,7 @@ class NmrDpUtility:
                     try:
 
                         lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None, None,
+                                                         enforce_allowed_tags=(file_type == 'nmr-star'),
                                                          excl_missing_data=self.__excl_missing_data)[0]
 
                         self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'data': lp_data})
@@ -27331,8 +27502,9 @@ class NmrDpUtility:
 
                         continue
 
-                    if len(phi_index) + len(psi_index) + len(omega_index) +\
-                       len(chi1_index) + len(chi2_index) + len(chi3_index) + len(chi4_index) + len(chi5_index) > 0:
+                    if len(phi_index) + len(psi_index) + len(omega_index)\
+                            + len(chi1_index) + len(chi2_index) + len(chi3_index)\
+                            + len(chi4_index) + len(chi5_index) > 0:
 
                         try:
                             if __pynmrstar_v3_2__:
@@ -27850,6 +28022,7 @@ class NmrDpUtility:
                                                 try:
 
                                                     lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None, None,
+                                                                                     enforce_allowed_tags=(file_type == 'nmr-star'),
                                                                                      excl_missing_data=self.__excl_missing_data)[0]
 
                                                     self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': w['sf_framecode'], 'data': lp_data})
@@ -27915,6 +28088,7 @@ class NmrDpUtility:
                                                 try:
 
                                                     lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None, None,
+                                                                                     enforce_allowed_tags=(file_type == 'nmr-star'),
                                                                                      excl_missing_data=self.__excl_missing_data)[0]
 
                                                     self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': w['sf_framecode'], 'data': lp_data})
@@ -28501,6 +28675,7 @@ class NmrDpUtility:
                     try:
 
                         lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None, None,
+                                                         enforce_allowed_tags=(file_type == 'nmr-star'),
                                                          excl_missing_data=self.__excl_missing_data)[0]
 
                         self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'data': lp_data})
@@ -29735,6 +29910,7 @@ class NmrDpUtility:
                 try:
 
                     lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None, None,
+                                                     enforce_allowed_tags=(file_type == 'nmr-star'),
                                                      excl_missing_data=self.__excl_missing_data)[0]
 
                     self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'data': lp_data})
@@ -29974,6 +30150,7 @@ class NmrDpUtility:
                 try:
 
                     lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None, None,
+                                                     enforce_allowed_tags=(file_type == 'nmr-star'),
                                                      excl_missing_data=self.__excl_missing_data)[0]
 
                     self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'data': lp_data})
@@ -30101,7 +30278,7 @@ class NmrDpUtility:
                 if fileListId >= len(self.__star_data) or self.__star_data[fileListId] is None:
                     return False
                 # """ DAOTHER-7407: utilize NMR-STAR format normalizer of NEFTranslator v3
-                # if self.__star_data_type[fileListId] == 'Loop': # copied already
+                # if self.__star_data_type[fileListId] == 'Loop':  # copied already
                 #     continue
                 # """
                 if dstPath in self.__inputParamDict[cs_file_path_list]:
@@ -30150,7 +30327,7 @@ class NmrDpUtility:
                     if fileListId >= len(self.__star_data) or self.__star_data[fileListId] is None:
                         return False
                     # """ DAOTHER-7407: utilize NMR-STAR format normalizer of NEFTranslator v3
-                    # if self.__star_data_type[fileListId] == 'Loop': # copied already
+                    # if self.__star_data_type[fileListId] == 'Loop':  # copied already
                     #     continue
                     # """
                     if dstPath in self.__inputParamDict[mr_file_path_list]:

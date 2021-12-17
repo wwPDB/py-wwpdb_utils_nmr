@@ -395,28 +395,28 @@ class BMRBChemShiftStat:
         cs_stat = self.__get(comp_id)
 
         if comp_id in self.__aa_comp_ids:
-            return [i['atom_id'] for i in cs_stat if i['atom_id'] in ('C', 'CA', 'CB', 'H', 'HA', 'HA2', 'HA3', 'N')
-                    and (not excl_minor_atom or (excl_minor_atom and i['primary']))]
+            return [i['atom_id'] for i in cs_stat
+                    if i['atom_id'] in ('C', 'CA', 'CB', 'H', 'HA', 'HA2', 'HA3', 'N') and (not excl_minor_atom or (excl_minor_atom and i['primary']))]
 
         if comp_id in self.__dna_comp_ids:
-            return [i['atom_id'] for i in cs_stat if i['atom_id'] in ("C1'", "C2'", "C3'", "C4'", "C5'", "H1'", "H2'", "H2''", "H3'", "H4'", "H5'", "H5''", 'P')
-                    and (not excl_minor_atom or (excl_minor_atom and i['primary']))]
+            return [i['atom_id'] for i in cs_stat
+                    if i['atom_id'] in ("C1'", "C2'", "C3'", "C4'", "C5'", "H1'", "H2'", "H2''", "H3'", "H4'", "H5'", "H5''", 'P') and (not excl_minor_atom or (excl_minor_atom and i['primary']))]
 
         if comp_id in self.__rna_comp_ids:
-            return [i['atom_id'] for i in cs_stat if i['atom_id'] in ("C1'", "C2'", "C3'", "C4'", "C5'", "H1'", "H2'", "H3'", "H4'", "H5'", "H5''", "HO2'", 'P')
-                    and (not excl_minor_atom or (excl_minor_atom and i['primary']))]
+            return [i['atom_id'] for i in cs_stat
+                    if i['atom_id'] in ("C1'", "C2'", "C3'", "C4'", "C5'", "H1'", "H2'", "H3'", "H4'", "H5'", "H5''", "HO2'", 'P') and (not excl_minor_atom or (excl_minor_atom and i['primary']))]
 
         if polypeptide_like:
-            return [i['atom_id'] for i in cs_stat if i['atom_id'] in ('C', 'CA', 'CB', 'H', 'HA', 'HA2', 'HA3', 'N')
-                    and (not excl_minor_atom or (excl_minor_atom and i['primary']))]
+            return [i['atom_id'] for i in cs_stat
+                    if i['atom_id'] in ('C', 'CA', 'CB', 'H', 'HA', 'HA2', 'HA3', 'N') and (not excl_minor_atom or (excl_minor_atom and i['primary']))]
 
         if polynucleotide_like:
-            return [i['atom_id'] for i in cs_stat if i['atom_id'] in ("C1'", "C2'", "C3'", "C4'", "C5'", "H1'", "H2'", "H2''", "H3'", "H4'", "H5'", "H5''", 'P')
-                    and (not excl_minor_atom or 'secondary' not in i or (excl_minor_atom and i['secondary']))]
+            return [i['atom_id'] for i in cs_stat
+                    if i['atom_id'] in ("C1'", "C2'", "C3'", "C4'", "C5'", "H1'", "H2'", "H2''", "H3'", "H4'", "H5'", "H5''", 'P') and (not excl_minor_atom or 'secondary' not in i or (excl_minor_atom and i['secondary']))]
 
         if carbohydrates_like:
-            return [i['atom_id'] for i in cs_stat if i['atom_id'] in ('C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'H61', 'H62')
-                    and (not excl_minor_atom or 'secondary' not in i or (excl_minor_atom and i['secondary']))]
+            return [i['atom_id'] for i in cs_stat
+                    if i['atom_id'] in ('C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'H61', 'H62') and (not excl_minor_atom or 'secondary' not in i or (excl_minor_atom and i['secondary']))]
 
         return []
 
@@ -433,11 +433,11 @@ class BMRBChemShiftStat:
         cs_stat = self.__get(comp_id)
 
         if comp_id in self.__std_comp_ids or primary:
-            return [i['atom_id'] for i in cs_stat if 'aroma' in i['desc']
-                    and (not excl_minor_atom or (excl_minor_atom and i['primary']))]
+            return [i['atom_id'] for i in cs_stat
+                    if 'aroma' in i['desc'] and (not excl_minor_atom or (excl_minor_atom and i['primary']))]
 
-        return [i['atom_id'] for i in cs_stat if 'aroma' in i['desc']
-                and (not excl_minor_atom or 'secondary' not in i or (excl_minor_atom and i['secondary']))]
+        return [i['atom_id'] for i in cs_stat
+                if 'aroma' in i['desc'] and (not excl_minor_atom or 'secondary' not in i or (excl_minor_atom and i['secondary']))]
 
     def getMethylAtoms(self, comp_id, excl_minor_atom=False, primary=False):
         """ Return atoms in methyl group of a given comp_id.
@@ -452,11 +452,11 @@ class BMRBChemShiftStat:
         cs_stat = self.__get(comp_id)
 
         if comp_id in self.__std_comp_ids or primary:
-            return [i['atom_id'] for i in cs_stat if 'methyl' in i['desc']
-                    and (not excl_minor_atom or (excl_minor_atom and i['primary']))]
+            return [i['atom_id'] for i in cs_stat
+                    if 'methyl' in i['desc'] and (not excl_minor_atom or (excl_minor_atom and i['primary']))]
 
-        return [i['atom_id'] for i in cs_stat if 'methyl' in i['desc']
-                and (not excl_minor_atom or 'secondary' not in i or (excl_minor_atom and i['secondary']))]
+        return [i['atom_id'] for i in cs_stat
+                if 'methyl' in i['desc'] and (not excl_minor_atom or 'secondary' not in i or (excl_minor_atom and i['secondary']))]
 
     def getRepresentativeMethylProtons(self, comp_id, excl_minor_atom=False, primary=False):
         """ Return representative protons in methyl group of a given comp_id.
@@ -508,11 +508,11 @@ class BMRBChemShiftStat:
         cs_stat = self.__get(comp_id)
 
         if comp_id in self.__std_comp_ids or polypeptide_like:
-            return [i['atom_id'] for i in cs_stat if i['atom_id'] not in bb_atoms
-                    and (not excl_minor_atom or (excl_minor_atom and i['primary']))]
+            return [i['atom_id'] for i in cs_stat
+                    if i['atom_id'] not in bb_atoms and (not excl_minor_atom or (excl_minor_atom and i['primary']))]
 
-        return [i['atom_id'] for i in cs_stat if i['atom_id'] not in bb_atoms
-                and (not excl_minor_atom or 'secondary' not in i or (excl_minor_atom and i['secondary']))]
+        return [i['atom_id'] for i in cs_stat
+                if i['atom_id'] not in bb_atoms and (not excl_minor_atom or 'secondary' not in i or (excl_minor_atom and i['secondary']))]
 
     def loadStatFromCsvFiles(self):
         """ Load all BMRB chemical shift statistics from CSV files.

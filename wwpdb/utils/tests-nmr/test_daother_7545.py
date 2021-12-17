@@ -6,12 +6,10 @@
 ##
 import unittest
 import os
-import sys
 import json
 
 from wwpdb.utils.nmr.NmrDpUtility import NmrDpUtility
-from wwpdb.utils.nmr.NmrDpReport import NmrDpReport, NmrDpReportInputSource, NmrDpReportSequenceAlignment, NmrDpReportError, NmrDpReportWarning
-from testfixtures import LogCapture
+
 
 class TestNmrDpUtility(unittest.TestCase):
 
@@ -19,16 +17,15 @@ class TestNmrDpUtility(unittest.TestCase):
         here = os.path.abspath(os.path.dirname(__file__))
         self.data_dir_path = os.path.join(here, 'mock-data-daother-7545/')
         self.cs_file_path = {
-                             'daother-7545': ['D_1300025537_cs-upload_P1.str.V1']
-                            }
+            'daother-7545': ['D_1300025537_cs-upload_P1.str.V1']
+        }
         self.mr_file_path = {
-                             'daother-7545': ['D_1300025537_mr-upload_P1.dat.V2']
-                            }
+            'daother-7545': ['D_1300025537_mr-upload_P1.dat.V2']
+        }
         self.model_file_path = {
-                                'daother-7545': 'D_1300025537_model-upload_P1.cif.V1'
-                               }
+            'daother-7545': 'D_1300025537_model-upload_P1.cif.V1'
+        }
         self.utility = NmrDpUtility()
-        pass
 
     def tearDown(self):
         pass
@@ -70,9 +67,9 @@ class TestNmrDpUtility(unittest.TestCase):
 
         self.assertNotEqual(report['information']['status'], 'Error')
 
-
     def test_nmr_str_consistency_check(self):
         self.__test_nmr_str_consistency('daother-7545')
+
 
 if __name__ == '__main__':
     unittest.main()

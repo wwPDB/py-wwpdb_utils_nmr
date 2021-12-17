@@ -8694,6 +8694,7 @@ class NmrDpUtility:
             input_source_dic = input_source.get()
 
             # file_type = input_source_dic['file_type']
+            content_type = input_source_dic['content_type']
 
             has_poly_seq = has_key_value(input_source_dic, 'polymer_sequence')
             has_poly_seq_in_loop = has_key_value(input_source_dic, 'polymer_sequence_in_loop')
@@ -8709,8 +8710,16 @@ class NmrDpUtility:
 
             content_subtype = 'chem_shift'
 
-            if content_subtype not in polymer_sequence_in_loop:  # DAOTHER-7545 NMR-STAR formatted MR has no chem shift
-                continue
+            if content_subtype not in polymer_sequence_in_loop and content_type == 'nmr-restraints':  # DAOTHER-7545 NMR-STAR formatted MR has no chem_shift
+
+                if 'dist_restraint' in polymer_sequence_in_loop:
+                    content_subtype = 'dist_restraint'
+                elif 'dihed_restraint' in polymer_sequence_in_loop:
+                    content_subtype = 'dihed_restraint'
+                elif 'rdc_restraint' in polymer_sequence_in_loop:
+                    content_subtype = 'rdc_restraint'
+                else:
+                    continue
 
             # for content_subtype in polymer_sequence_in_loop.keys():
 

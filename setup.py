@@ -48,7 +48,7 @@ setup(
                       "munkres; python_version >= '3'",
                       'mmcif', 'numpy',
                       "packaging"],
-    packages=find_packages(exclude=['wwpdb.utils.tests-nmr', 'mock-data']),
+    packages=find_packages(exclude=['wwpdb.utils.tests-nmr', 'wwpdb.utils.tests-nmr-tox', 'mock-data']),
     # Enables Manifest to be used
     include_package_data=True,
     package_data={

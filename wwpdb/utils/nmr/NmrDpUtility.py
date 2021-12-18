@@ -9888,27 +9888,27 @@ class NmrDpUtility:
                                 # s2['chain_id'] = __chain_id
 
                                 update_poly_seq = True
-                            """
-                            if conflict == 0 and self.__alt_chain and not alt_chain and chain_id != s2['chain_id'] and\
-                               (sf_framecode2 not in dst_chain_ids or chain_id not in dst_chain_ids[sf_framecode2]) and\
-                               (sf_framecode2 not in map_chain_ids or s2['chain_id'] not in map_chain_ids[sf_framecode2]) and\
-                               unmapped != offset_1 + 1 and unmapped != offset_2 + 1:
+                            # """
+                            # if conflict == 0 and self.__alt_chain and not alt_chain and chain_id != s2['chain_id'] and\
+                            #    (sf_framecode2 not in dst_chain_ids or chain_id not in dst_chain_ids[sf_framecode2]) and\
+                            #    (sf_framecode2 not in map_chain_ids or s2['chain_id'] not in map_chain_ids[sf_framecode2]) and\
+                            #    unmapped != offset_1 + 1 and unmapped != offset_2 + 1:
 
-                                if sf_framecode2 not in dst_chain_ids:
-                                    dst_chain_ids[sf_framecode2] = set()
+                            #     if sf_framecode2 not in dst_chain_ids:
+                            #         dst_chain_ids[sf_framecode2] = set()
 
-                                dst_chain_ids[sf_framecode2].add(chain_id)
+                            #     dst_chain_ids[sf_framecode2].add(chain_id)
 
-                                if sf_framecode2 not in map_chain_ids:
-                                    map_chain_ids[sf_framecode2] = {}
+                            #     if sf_framecode2 not in map_chain_ids:
+                            #         map_chain_ids[sf_framecode2] = {}
 
-                                map_chain_ids[sf_framecode2][s2['chain_id']] = chain_id
+                            #     map_chain_ids[sf_framecode2][s2['chain_id']] = chain_id
 
-                                if sf_framecode2 == self.__target_framecode:
-                                    print('#4 %s -> %s, %s %s %s %s %s %s' % (s2['chain_id'], chain_id, length, _matched, unmapped, conflict, offset_1, offset_2))
+                            #     if sf_framecode2 == self.__target_framecode:
+                            #         print('#4 %s -> %s, %s %s %s %s %s %s' % (s2['chain_id'], chain_id, length, _matched, unmapped, conflict, offset_1, offset_2))
 
-                                alt_chain = True
-                            """
+                            #     alt_chain = True
+                            # """
                             _s1 = s1 if offset_1 == 0 else fill_blank_comp_id_with_offset(s1, offset_1)
                             _s2 = s2 if offset_2 == 0 else fill_blank_comp_id_with_offset(s2, offset_2)
 
@@ -9944,80 +9944,80 @@ class NmrDpUtility:
                             test_gauge_code = get_gauge_code(_s2['seq_id'])
 
                             self.__alt_chain |= not alt_chain
-                            """
-                            if self.__tolerant_seq_align:  # and not alt_chain:
-                                seq_mismatch = any((__s1, __s2) for (__s1, __s2, __c1, __c2) in zip(_s1['seq_id'], _s2['seq_id'], _s1['comp_id'], _s2['comp_id'])\
-                                                   if __s1 != '.' and __s2 != '.' and __s1 != __s2 and __c1 != '.' and __c2 != '.' and __c1 == __c2)
-                                comp_mismatch = any((__s1, __s2) for (__s1, __s2, __c1, __c2) in zip(_s1['seq_id'], _s2['seq_id'], _s1['comp_id'], _s2['comp_id'])\
-                                                    if __c1 != '.' and __c2 != '.' and __c1 != __c2)
+                            # """
+                            # if self.__tolerant_seq_align:  # and not alt_chain:
+                            #     seq_mismatch = any((__s1, __s2) for (__s1, __s2, __c1, __c2) in zip(_s1['seq_id'], _s2['seq_id'], _s1['comp_id'], _s2['comp_id'])\
+                            #                        if __s1 != '.' and __s2 != '.' and __s1 != __s2 and __c1 != '.' and __c2 != '.' and __c1 == __c2)
+                            #     comp_mismatch = any((__s1, __s2) for (__s1, __s2, __c1, __c2) in zip(_s1['seq_id'], _s2['seq_id'], _s1['comp_id'], _s2['comp_id'])\
+                            #                         if __c1 != '.' and __c2 != '.' and __c1 != __c2)
 
-                            if self.__tolerant_seq_align and (seq_mismatch or comp_mismatch):  # and not alt_chain:
-                                if sf_framecode2 not in map_seq_ids:
-                                    map_seq_ids[sf_framecode2] = set()
-                                map_seq_ids[sf_framecode2].add(chain_id)
-                                if _s2['seq_id'] == list(range(_s2['seq_id'][0], _s2['seq_id'][-1] + 1)):
-                                    seq_id_conv_dict = {str(__s2): str(__s1) for __s1, __s2 in zip(_s1['seq_id'], _s2['seq_id']) if __s2 != '.'}
-                                    if comp_mismatch:
-                                        _seq_align = self.__getSeqAlignCode(fileListId, file_type, content_subtype, sf_framecode2,
-                                                                            chain_id, _s1, _s2, myAlign, None if sf_framecode2 not in map_chain_ids else map_chain_ids[sf_framecode2],
-                                                                            ref_gauge_code, ref_code, mid_code, test_code, test_gauge_code)
-                                        _s2['seq_id'] = _seq_align['test_seq_id']
-                                        if _s1['seq_id'][0] < 0 and _s2['seq_id'][0] < 0:
-                                            continue
-                                        ref_gauge_code = _seq_align['ref_gauge_code']
-                                        ref_code = _seq_align['ref_code']
-                                        mid_code = _seq_align['mid_code']
-                                        test_code = _seq_align['test_code']
-                                        test_gauge_code = _seq_align['test_gauge_code']
-                                    else:
-                                        # if _s1['seq_id'][0] < 0:
-                                        #    continue
-                                        chain_id2 = chain_id
-                                        if sf_framecode2 in map_chain_ids and chain_id in map_chain_ids[sf_framecode2].values():
-                                            chain_id2 = next(k for k, v in map_chain_ids[sf_framecode2].items() if v == chain_id)
+                            # if self.__tolerant_seq_align and (seq_mismatch or comp_mismatch):  # and not alt_chain:
+                            #     if sf_framecode2 not in map_seq_ids:
+                            #         map_seq_ids[sf_framecode2] = set()
+                            #     map_seq_ids[sf_framecode2].add(chain_id)
+                            #     if _s2['seq_id'] == list(range(_s2['seq_id'][0], _s2['seq_id'][-1] + 1)):
+                            #         seq_id_conv_dict = {str(__s2): str(__s1) for __s1, __s2 in zip(_s1['seq_id'], _s2['seq_id']) if __s2 != '.'}
+                            #         if comp_mismatch:
+                            #             _seq_align = self.__getSeqAlignCode(fileListId, file_type, content_subtype, sf_framecode2,
+                            #                                                 chain_id, _s1, _s2, myAlign, None if sf_framecode2 not in map_chain_ids else map_chain_ids[sf_framecode2],
+                            #                                                 ref_gauge_code, ref_code, mid_code, test_code, test_gauge_code)
+                            #             _s2['seq_id'] = _seq_align['test_seq_id']
+                            #             if _s1['seq_id'][0] < 0 and _s2['seq_id'][0] < 0:
+                            #                 continue
+                            #             ref_gauge_code = _seq_align['ref_gauge_code']
+                            #             ref_code = _seq_align['ref_code']
+                            #             mid_code = _seq_align['mid_code']
+                            #             test_code = _seq_align['test_code']
+                            #             test_gauge_code = _seq_align['test_gauge_code']
+                            #         else:
+                            #             # if _s1['seq_id'][0] < 0:
+                            #             #    continue
+                            #             chain_id2 = chain_id
+                            #             if sf_framecode2 in map_chain_ids and chain_id in map_chain_ids[sf_framecode2].values():
+                            #                 chain_id2 = next(k for k, v in map_chain_ids[sf_framecode2].items() if v == chain_id)
 
-                                        if sf_framecode2 == self.__target_framecode:
-                                            print('#b %s %s %s %s %s' % (chain_id2, _matched, offset_1, offset_2, seq_id_conv_dict))
+                            #             if sf_framecode2 == self.__target_framecode:
+                            #                 print('#b %s %s %s %s %s' % (chain_id2, _matched, offset_1, offset_2, seq_id_conv_dict))
 
-                                        if sf_framecode2 not in proc_chain_ids:
-                                            proc_chain_ids[sf_framecode2] = set()
+                            #             if sf_framecode2 not in proc_chain_ids:
+                            #                 proc_chain_ids[sf_framecode2] = set()
 
-                                        if chain_id2 not in proc_chain_ids[sf_framecode2]:
-                                            self.__fixSeqIdInLoop(fileListId, file_type, content_subtype, sf_framecode2, chain_id2, seq_id_conv_dict)
-                                            proc_chain_ids[sf_framecode2].add(chain_id2)
+                            #             if chain_id2 not in proc_chain_ids[sf_framecode2]:
+                            #                 self.__fixSeqIdInLoop(fileListId, file_type, content_subtype, sf_framecode2, chain_id2, seq_id_conv_dict)
+                            #                 proc_chain_ids[sf_framecode2].add(chain_id2)
 
-                                            if 'identical_chain_id' in s2:
-                                                for chain_id2_ in s2['identical_chain_id']:
-                                                    if chain_id2_ not in proc_chain_ids[sf_framecode2]:
-                                                        self.__fixSeqIdInLoop(fileListId, file_type, content_subtype, sf_framecode2, chain_id2_, seq_id_conv_dict)
-                                                        proc_chain_ids[sf_framecode2].add(chain_id2_)
+                            #                 if 'identical_chain_id' in s2:
+                            #                     for chain_id2_ in s2['identical_chain_id']:
+                            #                         if chain_id2_ not in proc_chain_ids[sf_framecode2]:
+                            #                             self.__fixSeqIdInLoop(fileListId, file_type, content_subtype, sf_framecode2, chain_id2_, seq_id_conv_dict)
+                            #                             proc_chain_ids[sf_framecode2].add(chain_id2_)
 
-                                        _s2['seq_id'] = _s1['seq_id']
-                                        mid_code = get_middle_code(ref_code, test_code)
-                                        test_gauge_code = ref_gauge_code
-                                else:
-                                    if seq_mismatch:
-                                        _seq_align = self.__getSeqAlignCode(fileListId, file_type, content_subtype, sf_framecode2,
-                                                                            chain_id, _s1, _s2, myAlign, None if sf_framecode2 not in map_chain_ids else map_chain_ids[sf_framecode2],
-                                                                            ref_gauge_code, ref_code, mid_code, test_code, test_gauge_code)
-                                        _s2['seq_id'] = _seq_align['test_seq_id']
-                                        if _s1['seq_id'][0] < 0 and _s2['seq_id'][0] < 0:
-                                            continue
-                                        ref_gauge_code = _seq_align['ref_gauge_code']
-                                        ref_code = _seq_align['ref_code']
-                                        mid_code = _seq_align['mid_code']
-                                        test_code = _seq_align['test_code']
-                                        test_gauge_code = _seq_align['test_gauge_code']
-                                    else:
-                                        _s2 = fill_blank_comp_id(_s1, _s2)
-                                        if _s1['seq_id'][0] < 0 and _s2['seq_id'][0] < 0:
-                                            continue
-                                        test_code = self.__get1LetterCodeSequence(_s2['comp_id'])
-                                        mid_code = get_middle_code(ref_code, test_code)
-                                        test_gauge_code = ref_gauge_code
+                            #             _s2['seq_id'] = _s1['seq_id']
+                            #             mid_code = get_middle_code(ref_code, test_code)
+                            #             test_gauge_code = ref_gauge_code
+                            #     else:
+                            #         if seq_mismatch:
+                            #             _seq_align = self.__getSeqAlignCode(fileListId, file_type, content_subtype, sf_framecode2,
+                            #                                                 chain_id, _s1, _s2, myAlign, None if sf_framecode2 not in map_chain_ids else map_chain_ids[sf_framecode2],
+                            #                                                 ref_gauge_code, ref_code, mid_code, test_code, test_gauge_code)
+                            #             _s2['seq_id'] = _seq_align['test_seq_id']
+                            #             if _s1['seq_id'][0] < 0 and _s2['seq_id'][0] < 0:
+                            #                 continue
+                            #             ref_gauge_code = _seq_align['ref_gauge_code']
+                            #             ref_code = _seq_align['ref_code']
+                            #             mid_code = _seq_align['mid_code']
+                            #             test_code = _seq_align['test_code']
+                            #             test_gauge_code = _seq_align['test_gauge_code']
+                            #         else:
+                            #             _s2 = fill_blank_comp_id(_s1, _s2)
+                            #             if _s1['seq_id'][0] < 0 and _s2['seq_id'][0] < 0:
+                            #                 continue
+                            #             test_code = self.__get1LetterCodeSequence(_s2['comp_id'])
+                            #             mid_code = get_middle_code(ref_code, test_code)
+                            #             test_gauge_code = ref_gauge_code
 
-                                update_poly_seq = True
-                            """
+                            #     update_poly_seq = True
+                            # """
                             matched = mid_code.count('|')
 
                             seq_align = {'list_id': ps_in_loop['list_id'],
@@ -10110,43 +10110,43 @@ class NmrDpUtility:
 
                                 if circular:
                                     mapping[src_chain] = dst_chain
-                                    """
-                                    for s1 in polymer_sequence:
-                                        chain_id = s1['chain_id']
+                                    # """
+                                    # for s1 in polymer_sequence:
+                                    #     chain_id = s1['chain_id']
 
-                                        if chain_id != dst_chain:
-                                            continue
+                                    #     if chain_id != dst_chain:
+                                    #         continue
 
-                                        for s2 in ps2:
+                                    #     for s2 in ps2:
 
-                                            if chain_id != src_chain:
-                                                continue
+                                    #         if chain_id != src_chain:
+                                    #             continue
 
-                                            _s2 = fill_blank_comp_id_with_offset(s2, 0)
+                                    #         _s2 = fill_blank_comp_id_with_offset(s2, 0)
 
-                                            if len(_s2['seq_id']) > len(s2['seq_id']) and len(_s2['seq_id']) < len(s1['seq_id']):
-                                                s2 = _s2
+                                    #         if len(_s2['seq_id']) > len(s2['seq_id']) and len(_s2['seq_id']) < len(s1['seq_id']):
+                                    #             s2 = _s2
 
-                                            self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + chain_id)
-                                            self.__pA.addTestSequence(s2['comp_id'], chain_id)
-                                            self.__pA.doAlign()
+                                    #         self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + chain_id)
+                                    #         self.__pA.addTestSequence(s2['comp_id'], chain_id)
+                                    #         self.__pA.doAlign()
 
-                                            myAlign = self.__pA.getAlignment(chain_id)
+                                    #         myAlign = self.__pA.getAlignment(chain_id)
 
-                                            length = len(myAlign)
+                                    #         length = len(myAlign)
 
-                                            if length == 0:
-                                                break
+                                    #         if length == 0:
+                                    #             break
 
-                                            _matched, unmapped, conflict, offset_1, offset_2 = score_of_seq_align(myAlign)
+                                    #         _matched, unmapped, conflict, offset_1, offset_2 = score_of_seq_align(myAlign)
 
-                                            if length == unmapped + conflict or _matched <= conflict:
-                                                break
+                                    #         if length == unmapped + conflict or _matched <= conflict:
+                                    #             break
 
-                                            mapping[src_chain] = dst_chain
+                                    #         mapping[src_chain] = dst_chain
 
-                                            break
-                                    """
+                                    #         break
+                                    # """
 
                                 else:
 
@@ -11132,14 +11132,15 @@ class NmrDpUtility:
                                         self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ Warning  - %s\n" % warn)
 
                 except LookupError:
-                    """
-                    self.report.error.appendDescription('missing_mandatory_item',
-                                                        {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
-                    self.report.setError()
+                    # """
+                    # self.report.error.appendDescription('missing_mandatory_item',
+                    #                                     {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
+                    # self.report.setError()
 
-                    if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__extractPolymerSequence() ++ LookupError  - %s" % str(e))
-                    """
+                    # if self.__verbose:
+                    #     self.__lfh.write("+NmrDpUtility.__extractPolymerSequence() ++ LookupError  - %s" % str(e))
+                    # """
+                    pass
                 except ValueError as e:
 
                     self.report.error.appendDescription('invalid_data',
@@ -12162,18 +12163,18 @@ class NmrDpUtility:
 
             if self.__verbose:
                 self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ Error  - %s" % str(e))
-        """
-        if (lp_data is not None) and len(lp_data) == 0 and self.__check_empty_loop:
+        # """
+        # if (lp_data is not None) and len(lp_data) == 0 and self.__check_empty_loop:
 
-            warn = "Unexpectedly, a loop has no rows."
+        #     warn = "Unexpectedly, a loop has no rows."
 
-            self.report.warning.appendDescription('missing_content',
-                                                  {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
-            self.report.setWarning()
+        #     self.report.warning.appendDescription('missing_content',
+        #                                           {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+        #     self.report.setWarning()
 
-            if self.__verbose:
-                self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ Warning  - %s\n" % warn)
-        """
+        #     if self.__verbose:
+        #         self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ Warning  - %s\n" % warn)
+        # """
     def __detectConflictDataInLoop(self):
         """ Detect redundant/inconsistent data of interesting loops.
         """
@@ -12742,17 +12743,17 @@ class NmrDpUtility:
 
                                 if self.__verbose:
                                     self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ Warning  - %s\n" % warn)
-                                """
-                                err = "%r loop exists unexpectedly."\
-                                    % lp_category
+                                # """
+                                # err = "%r loop exists unexpectedly."\
+                                #     % lp_category
 
-                                self.report.error.appendDescription('format_issue',
-                                                                    {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': err})
-                                self.report.setError()
+                                # self.report.error.appendDescription('format_issue',
+                                #                                     {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': err})
+                                # self.report.setError()
 
-                                if self.__verbose:
-                                    self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ Error  - %s\n" % err)
-                                """
+                                # if self.__verbose:
+                                #     self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ Error  - %s\n" % err)
+                                # """
         return self.report.getTotalErrors() == __errors
 
     def __testDataConsistencyInAuxLoopOfSpectralPeak(self, file_name, file_type, sf_framecode, num_dim, lp_category, aux_data):
@@ -14296,55 +14297,55 @@ class NmrDpUtility:
 
                                         if self.__verbose:
                                             self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
-                                """ Can skip this to be consistent with validation report
-                            elif sigma > self.cs_unusual_error_scaled_by_sigma:
+                            #     """ Can skip this to be consistent with validation report
+                            # elif sigma > self.cs_unusual_error_scaled_by_sigma:
 
-                                na = self.__getNearestAromaticRing(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
-                                pa = self.__getNearestParaFerroMagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
+                            #     na = self.__getNearestAromaticRing(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
+                            #     pa = self.__getNearestParaFerroMagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
 
-                                warn = chk_row_tmp\
-                                    % (chain_id, seq_id, comp_id, atom_name)\
-                                    + '] %s %s (%s:%s:%s:%s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f).'\
-                                    % (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
+                            #     warn = chk_row_tmp\
+                            #         % (chain_id, seq_id, comp_id, atom_name)\
+                            #         + '] %s %s (%s:%s:%s:%s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f).'\
+                            #         % (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
 
-                                warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma), which is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s).'\
-                                    % (chain_id, seq_id, comp_id, atom_name, value, sigma, avg_value + 5.0 * std_value, avg_value - 5.0 * std_value, avg_value, std_value, min_value, max_value)
+                            #     warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma), which is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s).'\
+                            #         % (chain_id, seq_id, comp_id, atom_name, value, sigma, avg_value + 5.0 * std_value, avg_value - 5.0 * std_value, avg_value, std_value, min_value, max_value)
 
-                                if na is not None:
+                            #     if na is not None:
 
-                                    if na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic:
-                                        warn += ' The nearest aromatic ring (%s:%s:%s:%s) is located at a distance of %s angstroms, and has an elevation angle of %s degrees with the ring plane.'\
-                                            % (na['chain_id'], na['seq_id'], na['comp_id'], na['ring_atoms'], na['ring_distance'], na['ring_angle'])
-                                        warn_alt += ' The nearest aromatic ring (%s:%s:%s:%s) is located at a distance of %s angstroms, and has an elevation angle of %s degrees with the ring plane.'\
-                                            % (na['chain_id'], na['seq_id'], na['comp_id'], na['ring_atoms'], na['ring_distance'], na['ring_angle'])
-                                    else:
-                                        warn = None
-                                        warn_alt = None
+                            #         if na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic:
+                            #             warn += ' The nearest aromatic ring (%s:%s:%s:%s) is located at a distance of %s angstroms, and has an elevation angle of %s degrees with the ring plane.'\
+                            #                 % (na['chain_id'], na['seq_id'], na['comp_id'], na['ring_atoms'], na['ring_distance'], na['ring_angle'])
+                            #             warn_alt += ' The nearest aromatic ring (%s:%s:%s:%s) is located at a distance of %s angstroms, and has an elevation angle of %s degrees with the ring plane.'\
+                            #                 % (na['chain_id'], na['seq_id'], na['comp_id'], na['ring_atoms'], na['ring_distance'], na['ring_angle'])
+                            #         else:
+                            #             warn = None
+                            #             warn_alt = None
 
-                                elif pa is not None:
+                            #     elif pa is not None:
 
-                                    if pa['distance'] > self.vicinity_paramagnetic:
-                                        warn += ' The nearest paramagnetic/ferromagnetic atom (%s:%s:%s:%s) is located at a distance of %s angstroms.'\
-                                            % (pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
-                                        warn_alt += ' The nearest paramagnetic/ferromagnetic atom (%s:%s:%s:%s) is located at a distance of %s angstroms.'\
-                                            % (pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
-                                    else:
-                                        warn = None
-                                        warn_alt = None
+                            #         if pa['distance'] > self.vicinity_paramagnetic:
+                            #             warn += ' The nearest paramagnetic/ferromagnetic atom (%s:%s:%s:%s) is located at a distance of %s angstroms.'\
+                            #                 % (pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
+                            #             warn_alt += ' The nearest paramagnetic/ferromagnetic atom (%s:%s:%s:%s) is located at a distance of %s angstroms.'\
+                            #                 % (pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
+                            #         else:
+                            #             warn = None
+                            #             warn_alt = None
 
-                                else:
-                                    warn += ' Neither aromatic ring nor paramagnetic/ferromagnetic atom were found in the vicinity.'
-                                    warn_alt += ' Neither aromatic ring nor paramagnetic/ferromagnetic atom were found in the vicinity.'
+                            #     else:
+                            #         warn += ' Neither aromatic ring nor paramagnetic/ferromagnetic atom were found in the vicinity.'
+                            #         warn_alt += ' Neither aromatic ring nor paramagnetic/ferromagnetic atom were found in the vicinity.'
 
-                                if warn is not None:
-                                    self.report.warning.appendDescription('unusual_data',
-                                                                          {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn,
-                                                                           'value': value, 'z_score': z_score, 'description_alt': warn_alt, 'sigma': sigma})
-                                    self.report.setWarning()
+                            #     if warn is not None:
+                            #         self.report.warning.appendDescription('unusual_data',
+                            #                                               {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn,
+                            #                                                'value': value, 'z_score': z_score, 'description_alt': warn_alt, 'sigma': sigma})
+                            #         self.report.setWarning()
 
-                                    if self.__verbose:
-                                        self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
-                                """
+                            #         if self.__verbose:
+                            #             self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
+                            #     """
                             elif not cs_stat['primary'] and cs_stat['norm_freq'] < 0.03:
 
                                 warn = chk_row_tmp\
@@ -14452,19 +14453,20 @@ class NmrDpUtility:
                                     self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
 
                         except StopIteration:
-                            """
-                            warn = chk_row_tmp\
-                                % (chain_id, seq_id, comp_id, atom_id)\
-                                + "] %s %r indicates %s. However, row of %s %s of the same residue was not found."\
-                                % (ambig_code_name, ambig_code, ambig_code_desc, atom_id_name, _atom_id2)
+                            # """
+                            # warn = chk_row_tmp\
+                            #     % (chain_id, seq_id, comp_id, atom_id)\
+                            #     + "] %s %r indicates %s. However, row of %s %s of the same residue was not found."\
+                            #     % (ambig_code_name, ambig_code, ambig_code_desc, atom_id_name, _atom_id2)
 
-                            self.report.warning.appendDescription('bad_ambiguity_code',
-                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
-                            self.report.setWarning()
+                            # self.report.warning.appendDescription('bad_ambiguity_code',
+                            #                                       {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                            # self.report.setWarning()
 
-                            if self.__verbose:
-                                self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
-                            """
+                            # if self.__verbose:
+                            #     self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
+                            # """
+                            pass
 
                     elif ambig_code in (4, 5, 6, 9):
 
@@ -17499,18 +17501,18 @@ class NmrDpUtility:
                     transposed[k].append(count_of_val[k])
 
             if len(range_of_vals) > 1:
-                """
-                has_value = False
-                for j in range(1, len(range_of_vals) - 1):
-                    for k in count.keys():
-                        if transposed[k][j] > 0:
-                            has_value = True
-                            break
-                    if has_value:
-                        break
+                # """
+                # has_value = False
+                # for j in range(1, len(range_of_vals) - 1):
+                #     for k in count.keys():
+                #         if transposed[k][j] > 0:
+                #             has_value = True
+                #             break
+                #     if has_value:
+                #         break
 
-                if has_value:
-                """
+                # if has_value:
+                # """
                 ent['histogram'] = {'range_of_values': range_of_vals, 'number_of_values': transposed, 'annotations': cs_ann}
 
             if 'sequence_coverage' in ent:
@@ -18699,18 +18701,18 @@ class NmrDpUtility:
                     transposed[k].append(count_of_val[k])
 
             if len(range_of_vals) > 1:
-                """
-                has_value = False
-                for j in range(1, len(range_of_vals) - 1):
-                    for k in count.keys():
-                        if transposed[k][j] > 0:
-                            has_value = True
-                            break
-                    if has_value:
-                        break
+                # """
+                # has_value = False
+                # for j in range(1, len(range_of_vals) - 1):
+                #     for k in count.keys():
+                #         if transposed[k][j] > 0:
+                #             has_value = True
+                #             break
+                #     if has_value:
+                #         break
 
-                if has_value:
-                """
+                # if has_value:
+                # """
                 ent['histogram'] = {'range_of_values': range_of_vals, 'number_of_values': transposed}
 
             if conflict_id_set is not None:
@@ -19020,18 +19022,18 @@ class NmrDpUtility:
                             transposed[k].append(count_of_val[k])
 
                     if len(range_of_vals) > 1:
-                        """
-                        has_value = False
-                        for j in range(1, len(range_of_vals) - 1):
-                            for k in count.keys():
-                                if transposed[k][j] > 0:
-                                    has_value = True
-                                    break
-                            if has_value:
-                                break
+                        # """
+                        # has_value = False
+                        # for j in range(1, len(range_of_vals) - 1):
+                        #     for k in count.keys():
+                        #         if transposed[k][j] > 0:
+                        #             has_value = True
+                        #             break
+                        #     if has_value:
+                        #         break
 
-                        if has_value:
-                        """
+                        # if has_value:
+                        # """
                         ent['histogram_of_discrepancy'] = {'range_of_values': range_of_vals, 'number_of_values': transposed, 'annotations': dist_ann}
 
         except Exception as e:
@@ -20608,18 +20610,18 @@ class NmrDpUtility:
                             transposed[k].append(count_of_val[k])
 
                     if len(range_of_vals) > 1:
-                        """
-                        has_value = False
-                        for j in range(1, len(range_of_vals) - 1):
-                            for k in count.keys():
-                                if transposed[k][j] > 0:
-                                    has_value = True
-                                    break
-                            if has_value:
-                                break
+                        # """
+                        # has_value = False
+                        # for j in range(1, len(range_of_vals) - 1):
+                        #     for k in count.keys():
+                        #         if transposed[k][j] > 0:
+                        #             has_value = True
+                        #             break
+                        #     if has_value:
+                        #         break
 
-                        if has_value:
-                        """
+                        # if has_value:
+                        # """
                         ent['histogram_of_discrepancy'] = {'range_of_values': range_of_vals, 'number_of_values': transposed, 'annotations': dihed_ann}
 
         except Exception as e:
@@ -21051,18 +21053,18 @@ class NmrDpUtility:
                     transposed[k].append(count_of_val[k])
 
             if len(range_of_vals) > 1:
-                """
-                has_value = False
-                for j in range(1, len(range_of_vals) - 1):
-                    for k in count.keys():
-                        if transposed[k][j] > 0:
-                            has_value = True
-                            break
-                    if has_value:
-                        break
+                # """
+                # has_value = False
+                # for j in range(1, len(range_of_vals) - 1):
+                #     for k in count.keys():
+                #         if transposed[k][j] > 0:
+                #             has_value = True
+                #             break
+                #     if has_value:
+                #         break
 
-                if has_value:
-                """
+                # if has_value:
+                # """
                 ent['histogram'] = {'range_of_values': range_of_vals, 'number_of_values': transposed}
 
             if conflict_id_set is not None:
@@ -21286,18 +21288,18 @@ class NmrDpUtility:
                             transposed[k].append(count_of_val[k])
 
                     if len(range_of_vals) > 1:
-                        """
-                        has_value = False
-                        for j in range(1, len(range_of_vals) - 1):
-                            for k in count.keys():
-                                if transposed[k][j] > 0:
-                                    has_value = True
-                                    break
-                            if has_value:
-                                break
+                        # """
+                        # has_value = False
+                        # for j in range(1, len(range_of_vals) - 1):
+                        #     for k in count.keys():
+                        #         if transposed[k][j] > 0:
+                        #             has_value = True
+                        #             break
+                        #     if has_value:
+                        #         break
 
-                        if has_value:
-                        """
+                        # if has_value:
+                        # """
                         ent['histogram_of_discrepancy'] = {'range_of_values': range_of_vals, 'number_of_values': transposed, 'annotations': rdc_ann}
 
         except Exception as e:

@@ -17,6 +17,16 @@
 ##
 import unittest
 import os
+import sys
+
+if __package__ is None or __package__ == "":
+    from os import path
+
+    sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
+    from commonsetup import TESTOUTPUT  # noqa:  F401 pylint: disable=import-error,unused-import
+else:
+    from .commonsetup import TESTOUTPUT  # noqa: F401
+
 import pynmrstar
 from packaging import version
 
@@ -30,7 +40,7 @@ __pynmrstar_v3__ = version.parse(pynmrstar.__version__) >= version.parse("3.0.0"
 class TestNEFTranslator(unittest.TestCase):
     def setUp(self):
         here = os.path.abspath(os.path.dirname(__file__))
-        self.data_dir_path = os.path.join(here, "mock-data/")
+        self.data_dir_path = os.path.join(here, os.pardir, "tests-nmr", "mock-data")
         self.neft = NEFTranslator()
         self.neft.insert_original_pdb_cs_items = False
         self.neft.authChainId = ["A", "B", "C"]
@@ -267,16 +277,16 @@ class TestNEFTranslator(unittest.TestCase):
         pass
 
     def test_read_input_file(self):
-        read_out = self.neft.read_input_file(self.data_dir_path + "2mtv.nef")
+        read_out = self.neft.read_input_file(os.path.join(self.data_dir_path, "2mtv.nef"))
         self.assertEqual(read_out[0], True)
         self.assertEqual(read_out[1], "Entry")
-        read_out = self.neft.read_input_file(self.data_dir_path + "saveframeonly.nef")
+        read_out = self.neft.read_input_file(os.path.join(self.data_dir_path, "saveframeonly.nef"))
         self.assertEqual(read_out[0], True)
         self.assertEqual(read_out[1], "Saveframe")
-        read_out = self.neft.read_input_file(self.data_dir_path + "loopOnly1.nef")
+        read_out = self.neft.read_input_file(os.path.join(self.data_dir_path, "loopOnly1.nef"))
         self.assertEqual(read_out[0], True)
         self.assertEqual(read_out[1], "Loop")
-        read_out = self.neft.read_input_file(self.data_dir_path + "nonsense.nef")
+        read_out = self.neft.read_input_file(os.path.join(self.data_dir_path, "nonsense.nef"))
         self.assertEqual(read_out[0], False)
         if __pynmrstar_v3_2__:
             self.assertEqual(read_out[1], 'Invalid file. NMR-STAR files must start with \'data_\' followed by the data name. Did you accidentally select the wrong file? Your file started with \'A\'. Error detected on line 2.')  # noqa: E501
@@ -309,38 +319,38 @@ class TestNEFTranslator(unittest.TestCase):
     # """
 
     def test_validate_file(self):
-        self.assertEqual(self.neft.validate_file(self.data_dir_path + "xxx.xx", "A")[0], False)  # File not found
-        self.assertEqual(self.neft.validate_file(self.data_dir_path + "2l9r.nef", "A")[0], True)
-        self.assertEqual(self.neft.validate_file(self.data_dir_path + "2l9r.nef", "S")[0], True)
-        self.assertEqual(self.neft.validate_file(self.data_dir_path + "2l9r.nef", "R")[0], True)
-        self.assertEqual(self.neft.validate_file(self.data_dir_path + "2l9r.nef", "X")[0], False)
-        self.assertEqual(self.neft.validate_file(self.data_dir_path + "2l9r.str", "A")[0], True)
-        self.assertEqual(self.neft.validate_file(self.data_dir_path + "2l9r.str", "S")[0], True)
-        self.assertEqual(self.neft.validate_file(self.data_dir_path + "2l9r.str", "R")[0], True)
-        self.assertEqual(self.neft.validate_file(self.data_dir_path + "2l9r.str", "X")[0], False)
-        self.assertEqual(self.neft.validate_file(self.data_dir_path + "nocs.nef", "A")[0], False)
-        self.assertEqual(self.neft.validate_file(self.data_dir_path + "nocs.nef", "S")[0], False)
-        self.assertEqual(self.neft.validate_file(self.data_dir_path + "nocs.nef", "R")[0], True)
-        self.assertEqual(self.neft.validate_file(self.data_dir_path + "norest.nef", "A")[0], False)
-        self.assertEqual(self.neft.validate_file(self.data_dir_path + "norest.nef", "S")[0], True)
-        self.assertEqual(self.neft.validate_file(self.data_dir_path + "norest.nef", "R")[0], False)
-        self.assertEqual(self.neft.validate_file(self.data_dir_path + "norestcs.nef", "A")[0], False)
-        self.assertEqual(self.neft.validate_file(self.data_dir_path + "norestcs.nef", "S")[0], False)
-        self.assertEqual(self.neft.validate_file(self.data_dir_path + "norestcs.nef", "R")[0], False)
-        self.assertEqual(self.neft.validate_file(self.data_dir_path + "nocs.str", "A")[0], False)
-        self.assertEqual(self.neft.validate_file(self.data_dir_path + "nocs.str", "S")[0], False)
-        self.assertEqual(self.neft.validate_file(self.data_dir_path + "nocs.str", "R")[0], True)
-        self.assertEqual(self.neft.validate_file(self.data_dir_path + "norest.str", "A")[0], False)
-        self.assertEqual(self.neft.validate_file(self.data_dir_path + "norest.str", "S")[0], True)
-        self.assertEqual(self.neft.validate_file(self.data_dir_path + "norest.str", "R")[0], False)
-        self.assertEqual(self.neft.validate_file(self.data_dir_path + "norestcs.str", "A")[0], False)
-        self.assertEqual(self.neft.validate_file(self.data_dir_path + "norestcs.str", "S")[0], False)
-        self.assertEqual(self.neft.validate_file(self.data_dir_path + "norestcs.str", "R")[0], False)
-        self.assertEqual(self.neft.validate_file(self.data_dir_path + "nodat.str", "R")[0], False)
-        self.assertEqual(self.neft.validate_file(self.data_dir_path + "nodat.nef", "R")[0], False)
-        self.assertEqual(self.neft.validate_file(self.data_dir_path + "saveframeonly.nef", "S")[0], True)
-        self.assertEqual(self.neft.validate_file(self.data_dir_path + "loopOnly1.nef", "S")[0], True)
-        self.assertEqual(self.neft.validate_file(self.data_dir_path + "nonsense.nef", "R")[0], False)
+        self.assertEqual(self.neft.validate_file(os.path.join(self.data_dir_path, "xxx.xx"), "A")[0], False)  # File not found
+        self.assertEqual(self.neft.validate_file(os.path.join(self.data_dir_path, "2l9r.nef"), "A")[0], True)
+        self.assertEqual(self.neft.validate_file(os.path.join(self.data_dir_path, "2l9r.nef"), "S")[0], True)
+        self.assertEqual(self.neft.validate_file(os.path.join(self.data_dir_path, "2l9r.nef"), "R")[0], True)
+        self.assertEqual(self.neft.validate_file(os.path.join(self.data_dir_path, "2l9r.nef"), "X")[0], False)
+        self.assertEqual(self.neft.validate_file(os.path.join(self.data_dir_path, "2l9r.str"), "A")[0], True)
+        self.assertEqual(self.neft.validate_file(os.path.join(self.data_dir_path, "2l9r.str"), "S")[0], True)
+        self.assertEqual(self.neft.validate_file(os.path.join(self.data_dir_path, "2l9r.str"), "R")[0], True)
+        self.assertEqual(self.neft.validate_file(os.path.join(self.data_dir_path, "2l9r.str"), "X")[0], False)
+        self.assertEqual(self.neft.validate_file(os.path.join(self.data_dir_path, "nocs.nef"), "A")[0], False)
+        self.assertEqual(self.neft.validate_file(os.path.join(self.data_dir_path, "nocs.nef"), "S")[0], False)
+        self.assertEqual(self.neft.validate_file(os.path.join(self.data_dir_path, "nocs.nef"), "R")[0], True)
+        self.assertEqual(self.neft.validate_file(os.path.join(self.data_dir_path, "norest.nef"), "A")[0], False)
+        self.assertEqual(self.neft.validate_file(os.path.join(self.data_dir_path, "norest.nef"), "S")[0], True)
+        self.assertEqual(self.neft.validate_file(os.path.join(self.data_dir_path, "norest.nef"), "R")[0], False)
+        self.assertEqual(self.neft.validate_file(os.path.join(self.data_dir_path, "norestcs.nef"), "A")[0], False)
+        self.assertEqual(self.neft.validate_file(os.path.join(self.data_dir_path, "norestcs.nef"), "S")[0], False)
+        self.assertEqual(self.neft.validate_file(os.path.join(self.data_dir_path, "norestcs.nef"), "R")[0], False)
+        self.assertEqual(self.neft.validate_file(os.path.join(self.data_dir_path, "nocs.str"), "A")[0], False)
+        self.assertEqual(self.neft.validate_file(os.path.join(self.data_dir_path, "nocs.str"), "S")[0], False)
+        self.assertEqual(self.neft.validate_file(os.path.join(self.data_dir_path, "nocs.str"), "R")[0], True)
+        self.assertEqual(self.neft.validate_file(os.path.join(self.data_dir_path, "norest.str"), "A")[0], False)
+        self.assertEqual(self.neft.validate_file(os.path.join(self.data_dir_path, "norest.str"), "S")[0], True)
+        self.assertEqual(self.neft.validate_file(os.path.join(self.data_dir_path, "norest.str"), "R")[0], False)
+        self.assertEqual(self.neft.validate_file(os.path.join(self.data_dir_path, "norestcs.str"), "A")[0], False)
+        self.assertEqual(self.neft.validate_file(os.path.join(self.data_dir_path, "norestcs.str"), "S")[0], False)
+        self.assertEqual(self.neft.validate_file(os.path.join(self.data_dir_path, "norestcs.str"), "R")[0], False)
+        self.assertEqual(self.neft.validate_file(os.path.join(self.data_dir_path, "nodat.str"), "R")[0], False)
+        self.assertEqual(self.neft.validate_file(os.path.join(self.data_dir_path, "nodat.nef"), "R")[0], False)
+        self.assertEqual(self.neft.validate_file(os.path.join(self.data_dir_path, "saveframeonly.nef"), "S")[0], True)
+        self.assertEqual(self.neft.validate_file(os.path.join(self.data_dir_path, "loopOnly1.nef"), "S")[0], True)
+        self.assertEqual(self.neft.validate_file(os.path.join(self.data_dir_path, "nonsense.nef"), "R")[0], False)
     #
     # def test_is_empty_loop(self):
     #     dat = pynmrstar.Entry.from_file(self.data_dir_path + "nodat.nef")
@@ -352,7 +362,7 @@ class TestNEFTranslator(unittest.TestCase):
     #
 
     def test_get_data_content(self):
-        (isValid, content, data) = self.neft.read_input_file(self.data_dir_path + "2mqq.nef")
+        (isValid, content, data) = self.neft.read_input_file(os.path.join(self.data_dir_path, "2mqq.nef"))
         self.assertTrue(isValid)
         datacontent = self.neft.get_data_content(data, content)
         self.assertEqual(
@@ -381,7 +391,7 @@ class TestNEFTranslator(unittest.TestCase):
                 "_nef_dihedral_restraint",
             ],
         )
-        (isValid, content, data) = self.neft.read_input_file(self.data_dir_path + "2mqq.str")
+        (isValid, content, data) = self.neft.read_input_file(os.path.join(self.data_dir_path, "2mqq.str"))
         self.assertTrue(isValid)
         datacontent = self.neft.get_data_content(data, content)
         self.assertEqual(
@@ -412,13 +422,13 @@ class TestNEFTranslator(unittest.TestCase):
         )
 
     def test_get_seq_from_cs_loop(self):
-        (isValid, msg) = self.neft.get_seq_from_cs_loop(self.data_dir_path + "2mqq.nef")
+        (isValid, msg) = self.neft.get_seq_from_cs_loop(os.path.join(self.data_dir_path, "2mqq.nef"))
         self.assertTrue(isValid)
         self.assertEqual(msg["file_type"], "nef")
         self.assertEqual(len(msg["data"][0][0]["seq_id"]), 214)
         self.assertEqual(len(msg["data"][1][0]["seq_id"]), 5)
         self.assertEqual(len(msg["data"][2][0]["seq_id"]), 5)
-        (isValid, msg) = self.neft.get_seq_from_cs_loop(self.data_dir_path + "2mqq.str")
+        (isValid, msg) = self.neft.get_seq_from_cs_loop(os.path.join(self.data_dir_path, "2mqq.str"))
         self.assertTrue(isValid)
         self.assertEqual(msg["file_type"], "nmr-star")
         self.assertEqual(len(msg["data"][0][0]["seq_id"]), 214)
@@ -426,7 +436,7 @@ class TestNEFTranslator(unittest.TestCase):
         self.assertEqual(len(msg["data"][2][0]["seq_id"]), 5)
 
     def test_get_nef_seq(self):
-        dat = pynmrstar.Entry.from_file(self.data_dir_path + "2mqq.nef")
+        dat = pynmrstar.Entry.from_file(os.path.join(self.data_dir_path, "2mqq.nef"))
         self.assertEqual(
             self.neft.get_nef_seq(dat),
             [
@@ -1101,7 +1111,7 @@ class TestNEFTranslator(unittest.TestCase):
                 ]
             ],
         )
-        dat = self.neft.read_input_file(self.data_dir_path + "saveframeonly.nef")[2]
+        dat = self.neft.read_input_file(os.path.join(self.data_dir_path, "saveframeonly.nef"))[2]
         self.assertEqual(
             self.neft.get_nef_seq(dat),
             [
@@ -1175,7 +1185,7 @@ class TestNEFTranslator(unittest.TestCase):
                 ]
             ],
         )
-        dat = self.neft.read_input_file(self.data_dir_path + "loopOnly1.nef")[2]
+        dat = self.neft.read_input_file(os.path.join(self.data_dir_path, "loopOnly1.nef"))[2]
         self.assertEqual(
             self.neft.get_nef_seq(dat),
             [
@@ -1299,7 +1309,7 @@ class TestNEFTranslator(unittest.TestCase):
                 ]
             ],
         )
-        entry = pynmrstar.Entry.from_file(self.data_dir_path + "2l9r.nef")
+        entry = pynmrstar.Entry.from_file(os.path.join(self.data_dir_path, "2l9r.nef"))
         # extract polymer sequence from nef_molecular_system category
         self.assertEqual(
             self.neft.get_nef_seq(entry["nef_molecular_system"], lp_category="nef_sequence"),
@@ -1535,7 +1545,7 @@ class TestNEFTranslator(unittest.TestCase):
         )
 
     def test_get_star_seq(self):
-        dat = pynmrstar.Entry.from_file(self.data_dir_path + "2mqq.str")
+        dat = pynmrstar.Entry.from_file(os.path.join(self.data_dir_path, "2mqq.str"))
         self.assertEqual(
             self.neft.get_star_seq(dat),
             [
@@ -2210,7 +2220,7 @@ class TestNEFTranslator(unittest.TestCase):
                 ]
             ],
         )
-        entry = pynmrstar.Entry.from_file(self.data_dir_path + "2l9r.str")
+        entry = pynmrstar.Entry.from_file(os.path.join(self.data_dir_path, "2l9r.str"))
         # extract polymer sequence from assembly category
         self.assertEqual(
             self.neft.get_star_seq(entry["nef_molecular_system"], lp_category="Chem_comp_assembly"),
@@ -2446,7 +2456,7 @@ class TestNEFTranslator(unittest.TestCase):
         )
 
     def test_get_star_auth_seq(self):
-        entry = pynmrstar.Entry.from_file(self.data_dir_path + "2l9r.str")
+        entry = pynmrstar.Entry.from_file(os.path.join(self.data_dir_path, "2l9r.str"))
         # extract polymer sequence from assembly category
         self.assertEqual(
             self.neft.get_star_auth_seq(entry["nef_molecular_system"], lp_category="Chem_comp_assembly"),
@@ -2534,7 +2544,7 @@ class TestNEFTranslator(unittest.TestCase):
         )
 
     def test_get_nef_comp_atom_pair(self):
-        entry = pynmrstar.Entry.from_file(self.data_dir_path + "2l9r.nef")
+        entry = pynmrstar.Entry.from_file(os.path.join(self.data_dir_path, "2l9r.nef"))
         # extract comp/atom pair from the first cs loop in nef_chemical_shift_list category
         cs_loops = entry.get_saveframes_by_category("nef_chemical_shift_list")
         self.assertEqual(len(cs_loops), 1)  # assert single cs loop
@@ -2595,7 +2605,7 @@ class TestNEFTranslator(unittest.TestCase):
         )
 
     def test_get_star_comp_atom_pair(self):
-        entry = pynmrstar.Entry.from_file(self.data_dir_path + "2l9r.str")
+        entry = pynmrstar.Entry.from_file(os.path.join(self.data_dir_path, "2l9r.str"))
         # extract polymer sequence from the first cs loop in nef_chemical_shift_list category
         cs_loops = entry.get_saveframes_by_category("assigned_chemical_shifts")
         self.assertEqual(len(cs_loops), 1)  # assert single cs loop
@@ -2629,7 +2639,7 @@ class TestNEFTranslator(unittest.TestCase):
         )
 
     def test_get_nef_atom_type_from_cs_loop(self):
-        entry = pynmrstar.Entry.from_file(self.data_dir_path + "2l9r.nef")
+        entry = pynmrstar.Entry.from_file(os.path.join(self.data_dir_path, "2l9r.nef"))
         # extract comp/atom pair from the first cs loop in nef_chemical_shift_list category
         cs_loops = entry.get_saveframes_by_category("nef_chemical_shift_list")
         self.assertEqual(len(cs_loops), 1)  # assert single cs loop
@@ -2695,7 +2705,7 @@ class TestNEFTranslator(unittest.TestCase):
         )
 
     def test_get_star_atom_type_from_cs_loop(self):
-        entry = pynmrstar.Entry.from_file(self.data_dir_path + "2l9r.str")
+        entry = pynmrstar.Entry.from_file(os.path.join(self.data_dir_path, "2l9r.str"))
         # extract polymer sequence from the first cs loop in nef_chemical_shift_list category
         cs_loops = entry.get_saveframes_by_category("assigned_chemical_shifts")
         self.assertEqual(len(cs_loops), 1)  # assert single cs loop
@@ -2755,7 +2765,7 @@ class TestNEFTranslator(unittest.TestCase):
         )
 
     def test_get_star_ambig_code_from_cs_loop(self):
-        entry = pynmrstar.Entry.from_file(self.data_dir_path + "2l9r.str")
+        entry = pynmrstar.Entry.from_file(os.path.join(self.data_dir_path, "2l9r.str"))
         # extract polymer sequence from the first cs loop in nef_chemical_shift_list category
         cs_loops = entry.get_saveframes_by_category("assigned_chemical_shifts")
         self.assertEqual(len(cs_loops), 1)  # assert single cs loop
@@ -2805,11 +2815,11 @@ class TestNEFTranslator(unittest.TestCase):
         )
 
     def test_get_nef_index(self):
-        dat = pynmrstar.Entry.from_file(self.data_dir_path + "2l9r.nef")
+        dat = pynmrstar.Entry.from_file(os.path.join(self.data_dir_path, "2l9r.nef"))
         self.assertEqual(self.neft.get_nef_index(dat), [[i for i in range(1, 70)]])
 
     def test_get_star_index(self):
-        dat = pynmrstar.Entry.from_file(self.data_dir_path + "2l9r.str")
+        dat = pynmrstar.Entry.from_file(os.path.join(self.data_dir_path, "2l9r.str"))
         self.assertEqual(self.neft.get_star_index(dat), [[i for i in range(1, 70)]])
     #
     # def test_check_nef_data(self):
@@ -2826,11 +2836,11 @@ class TestNEFTranslator(unittest.TestCase):
         self.assertEqual(self.neft.validate_comp_atom("AXA", "HB"), False)
 
     def test_validate_atom(self):
-        dat = pynmrstar.Entry.from_file(self.data_dir_path + "2mqq.nef")
+        dat = pynmrstar.Entry.from_file(os.path.join(self.data_dir_path, "2mqq.nef"))
         self.assertEqual(len(self.neft.validate_atom(dat, "nef_chemical_shift", "residue_name", "atom_name")), 567)
         self.assertEqual(len(self.neft.validate_atom(dat, "nef_distance_restraint", "residue_name_1", "atom_name_1")), 2960)
         self.assertEqual(len(self.neft.validate_atom(dat, "nef_distance_restraint", "residue_name_2", "atom_name_2")), 3147)
-        dat = pynmrstar.Entry.from_file(self.data_dir_path + "2mqq.str")
+        dat = pynmrstar.Entry.from_file(os.path.join(self.data_dir_path, "2mqq.str"))
         self.assertEqual(len(self.neft.validate_atom(dat)), 0)
         self.assertEqual(len(self.neft.validate_atom(dat, "Gen_dist_constraint", "Comp_ID_1", "Atom_ID_1")), 0)
         self.assertEqual(len(self.neft.validate_atom(dat, "Gen_dist_constraint", "Comp_ID_2", "Atom_ID_2")), 0)
@@ -3376,23 +3386,25 @@ class TestNEFTranslator(unittest.TestCase):
         self.assertEqual(self.neft.nef2star_dist_row(intag, outtag, indat), outdat)
 
     def test_nef_nmrstar(self):
-        self.neft.nef_to_nmrstar(self.data_dir_path + "2mqq.nef", star_file=self.data_dir_path + "test_out.str")
-        self.assertTrue(self.neft.validate_file(self.data_dir_path + "test_out.str", "A")[0])
-        self.assertTrue(self.neft.validate_file(self.data_dir_path + "test_out.str")[0])
+        strOut = os.path.join(TESTOUTPUT, "test_out.str")
+        self.neft.nef_to_nmrstar(os.path.join(self.data_dir_path, "2mqq.nef"), star_file=strOut)
+        self.assertTrue(self.neft.validate_file(strOut, "A")[0])
+        self.assertTrue(self.neft.validate_file(strOut)[0])
 
     def test_nmrstar_nef(self):
-        self.neft.nmrstar_to_nef(self.data_dir_path + "2la6-clean.str", nef_file=self.data_dir_path + "2la6-clean-nef2star.nef")
-        self.assertTrue(self.neft.validate_file(self.data_dir_path + "2la6-clean-nef2star.nef", "A")[0])
-        self.assertTrue(self.neft.validate_file(self.data_dir_path + "2la6-clean-nef2star.nef")[0])
+        nefOut = os.path.join(TESTOUTPUT, "2la6-clean-nef2star.nef")
+        self.neft.nmrstar_to_nef(os.path.join(self.data_dir_path, "2la6-clean.str"), nef_file=nefOut)
+        self.assertTrue(self.neft.validate_file(nefOut, "A")[0])
+        self.assertTrue(self.neft.validate_file(nefOut)[0])
 
     def test_check_mandatory_tags(self):
-        missing_sf_tags, missing_lp_tags = self.neft.check_mandatory_tags(self.data_dir_path + "mth1743-test-20190919.nef", "nef")
+        missing_sf_tags, missing_lp_tags = self.neft.check_mandatory_tags(os.path.join(self.data_dir_path, "mth1743-test-20190919.nef"), "nef")
         self.assertEqual(missing_sf_tags, ["_nef_distance_restraint_list.potential_type", "_nef_dihedral_restraint_list.potential_type"])
         self.assertEqual(missing_lp_tags, ["_nef_sequence.index", "_nef_distance_restraint.index", "_nef_distance_restraint.weight", "_nef_dihedral_restraint.index"])
-        missing_sf_tags, missing_lp_tags = self.neft.check_mandatory_tags(self.data_dir_path + "saveframeonly.nef", "nef")
+        missing_sf_tags, missing_lp_tags = self.neft.check_mandatory_tags(os.path.join(self.data_dir_path, "saveframeonly.nef"), "nef")
         self.assertEqual(missing_sf_tags, [])
         self.assertEqual(missing_lp_tags, [])
-        missing_sf_tags, missing_lp_tags = self.neft.check_mandatory_tags(self.data_dir_path + "loopOnly1.nef", "nef")
+        missing_sf_tags, missing_lp_tags = self.neft.check_mandatory_tags(os.path.join(self.data_dir_path, "loopOnly1.nef"), "nef")
         self.assertEqual(missing_sf_tags, [])
         self.assertEqual(missing_lp_tags, [])
 

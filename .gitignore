@@ -108,3 +108,6 @@ venv.bak/
 # Test output
 wwpdb/utils/tests-nmr/test-output/
 wwpdb/utils/tests-nmr-tox/test-output/
+
+# emacs
+*~

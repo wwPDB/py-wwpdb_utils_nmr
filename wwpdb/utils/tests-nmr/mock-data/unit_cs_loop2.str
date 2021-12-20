@@ -1,6 +1,6 @@
 data_unit_cs_loop2
 
-save__nef_chemical_shift
+save_nef_chemical_shift
    _Assigned_chem_shift_list.Sf_category  nef_chemical_shift
 
    loop_

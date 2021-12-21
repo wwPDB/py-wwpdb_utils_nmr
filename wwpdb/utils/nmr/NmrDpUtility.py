@@ -6722,7 +6722,7 @@ class NmrDpUtility:
             file_type = input_source_dic['file_type']
             if 'original_file_name' in input_source_dic:
                 original_file_name = input_source_dic['original_file_name']
-                if file_name != original_file_name:
+                if file_name != original_file_name and original_file_name is not None:
                     file_name = '%s (%s)' % (original_file_name, file_name)
 
             is_aux_amb = file_type == 'nm-aux-amb'

@@ -1207,7 +1207,10 @@ class NmrDpUtility:
         self.vicinity_paramagnetic = 8.0
 
         # criterion for detection of not superimposed models
-        self.cutoff_rmsd = 2.0
+        self.rmsd_not_superimposed = 2.0
+
+        # criterion for detection of exactly overlaid models.
+        self.rmsd_overlaid_exactly = 0.01
 
         # criterion for covalent bond length
         self.cutoff_bond_length = 3.5
@@ -4154,9 +4157,13 @@ class NmrDpUtility:
         elif self.__release_mode:
             self.__trust_pdbx_nmr_ens = True
 
-        if 'cutoff_rmsd' in self.__inputParamDict and self.__inputParamDict['cutoff_rmsd'] is not None:
-            if isinstance(self.__inputParamDict['cutoff_rmsd'], float):
-                self.cutoff_rmsd = self.__inputParamDict['cutoff_rmsd']
+        if 'rmsd_not_superimposed' in self.__inputParamDict and self.__inputParamDict['rmsd_not_superimposed'] is not None:
+            if isinstance(self.__inputParamDict['rmsd_not_superimposed'], float):
+                self.rmsd_not_superimposed = self.__inputParamDict['rmsd_not_superimposed']
+
+        if 'rmsd_exactly_overlaid' in self.__inputParamDict and self.__inputParamDict['rmsd_exactly_overlaid'] is not None:
+            if isinstance(self.__inputParamDict['rmsd_exactly_overlaid'], float):
+                self.rmsd_exactly_overlaid = self.__inputParamDict['rmsd_exactly_overlaid']
 
         if 'entry_id' in self.__outputParamDict and self.__outputParamDict['entry_id'] is not None:
             self.__entry_id = self.__outputParamDict['entry_id']
@@ -22255,7 +22262,7 @@ class NmrDpUtility:
 
                             if 'raw_rmsd_in_well_defined_region' in r and 'rmsd_in_well_defined_region' in r:
 
-                                if r['raw_rmsd_in_well_defined_region'] - r['rmsd_in_well_defined_region'] > self.cutoff_rmsd:
+                                if r['raw_rmsd_in_well_defined_region'] - r['rmsd_in_well_defined_region'] > self.rmsd_not_superimposed:
                                     rmsd_item = {'model_id': model_id, 'raw_rmsd': r['raw_rmsd_in_well_defined_region'], 'rmsd': r['rmsd_in_well_defined_region']}
                                     domain_id = r['domain_id']
                                     domain = next((r for r in region if r['domain_id'] == domain_id), None)
@@ -22268,12 +22275,12 @@ class NmrDpUtility:
                                             not_superimposed_models[chain_id] = []
                                         not_superimposed_models[chain_id].append(rmsd_item)
 
-                                if r['rmsd_in_well_defined_region'] < 0.01:
+                                if r['rmsd_in_well_defined_region'] < self.rmsd_overlaid_exactly:
                                     if chain_id not in exactly_overlaid_models:
                                         exactly_overlaid_models[chain_id] = []
                                     domain_id = r['domain_id']
                                     domain = next((r for r in region if r['domain_id'] == domain_id), None)
-                                    if domain is not None and domain['mean_rmsd'] < 0.01:
+                                    if domain is not None and domain['mean_rmsd'] < self.rmsd_overlaid_exactly:
                                         region_item = {'monomers': domain['number_of_monomers'],
                                                        'gaps': domain['number_of_gaps'],
                                                        'core': domain['percent_of_core'],
@@ -22298,7 +22305,7 @@ class NmrDpUtility:
 
                     r = next((r for r in rmsd if r['model_id'] == conformer_id), rmsd[0])
 
-                    warn = 'Coordinates (chain_id %s) are not superimposed, The raw RMSD value, %s angstromes (representative model id %s), in estimated well-defined region (range_of_seq_id %s, number_of_monomers %s, number_of_gaps %s, percent_of_core %s %%) is greater than the estimated RMSD value, %s angstromes. Please superimpose the coordinates and re-upload the model file.'\
+                    warn = 'The coordinates (chain_id %s) are not superimposed, The raw RMSD value, %s angstromes (representative model id %s), in estimated well-defined region (range_of_seq_id %s, number_of_monomers %s, number_of_gaps %s, percent_of_core %s %%) is greater than the estimated RMSD value, %s angstromes. Please superimpose the coordinates and re-upload the model file.'\
                         % (chain_id, r['raw_rmsd'], r['model_id'], r['range'], r['monomers'], r['gaps'], r['core'], r['rmsd'])
 
                     self.report.warning.appendDescription('not_superimposed_model',
@@ -22312,7 +22319,8 @@ class NmrDpUtility:
 
                 for chain_id, r in exactly_overlaid_models.items():
 
-                    warn = 'Coordinates (chain_id %s) are exactly overlaid, The mean RMSD in estimated well-defined region (range_of_seq_id %s, number_of_monomers %s, number_of_gaps %s, percent_of_core %s %%) is %s angstromes. We encourage you to deposit a appropriate ensemble of coordinate models.' % (chain_id, r['range'], r['monomers'], r['gaps'], r['core'], r['mean_rmsd'])  # noqa: E501
+                    warn = 'The coordinates (chain_id %s) are overlaid exactly. Please check there has not been an error during the creation of your model file. You are receiving this message because the mean RMSD in estimated well-defined region (range_of_seq_id %s, number_of_monomers %s, number_of_gaps %s, percent_of_core %s %%) is %s angstromes. We require you to deposit an appropriate ensemble of coordinate models.'\
+                        % (chain_id, r['range'], r['monomers'], r['gaps'], r['core'], r['mean_rmsd'])  # noqa: E501
 
                     self.report.warning.appendDescription('encouragement', {'file_name': file_name, 'category': 'atom_site', 'description': warn})
                     self.report.setWarning()

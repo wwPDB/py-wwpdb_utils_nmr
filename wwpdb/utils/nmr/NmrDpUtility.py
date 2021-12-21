@@ -22322,7 +22322,8 @@ class NmrDpUtility:
                     warn = 'The coordinates (chain_id %s) are overlaid exactly. Please check there has not been an error during the creation of your model file. You are receiving this message because the mean RMSD in estimated well-defined region (range_of_seq_id %s, number_of_monomers %s, number_of_gaps %s, percent_of_core %s %%) is %s angstromes. We require you to deposit an appropriate ensemble of coordinate models.'\
                         % (chain_id, r['range'], r['monomers'], r['gaps'], r['core'], r['mean_rmsd'])  # noqa: E501
 
-                    self.report.warning.appendDescription('encouragement', {'file_name': file_name, 'category': 'atom_site', 'description': warn})
+                    self.report.warning.appendDescription('exactly_overlaid_model',
+                                                          {'file_name': file_name, 'category': 'atom_site', 'description': warn})
                     self.report.setWarning()
 
                     if self.__verbose:

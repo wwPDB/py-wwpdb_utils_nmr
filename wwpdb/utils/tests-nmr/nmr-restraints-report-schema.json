@@ -265,7 +265,7 @@
         "rmsd_in_well_defined_region"
       ]
     },
-    "region": {
+    "well_defined_region": {
       "description": "Template for well-defined regions in ensemble.",
       "type": "object",
       "properties": {
@@ -419,7 +419,7 @@
           "description": "Information about identified well-defined region in ensemble.",
           "type": "array",
           "items": {
-            "$ref": "#/definitions/region"
+            "$ref": "#/definitions/well_defined_region"
           }
         }
       },
@@ -3587,6 +3587,9 @@
           "$ref": "#/definitions/common_message"
         },
         "not_superimposed_model": {
+          "$ref": "#/definitions/common_message"
+        },
+        "exactly_overlaid_model": {
           "$ref": "#/definitions/common_message"
         },
         "total": {

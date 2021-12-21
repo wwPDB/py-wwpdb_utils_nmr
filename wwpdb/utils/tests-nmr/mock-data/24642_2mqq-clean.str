@@ -34,7 +34,7 @@ save_
 #  Molecular system (assembly) description  #
 #############################################
 
-save__nef_molecular_system
+save_nef_molecular_system
    _Assembly.Sf_category   assembly
    _Assembly.Sf_framecode  nef_molecular_system
    _Assembly.Entry_ID      NEED_ACC_NO

@@ -3104,12 +3104,14 @@ class NmrDpUtility:
                                                                'Sample_ID', 'Sample_label', 'Sample_condition_list_ID', 'Sample_condition_list_label',
                                                                'Experiment_ID', 'Experiment_name', 'Experiment_class', 'Experiment_type',
                                                                'Number_of_spectral_dimensions', 'Chemical_shift_list', 'Assigned_chem_shift_list_ID',
-                                                               'Assigned_chem_shift_list_label', 'Details', 'Text_data_format', 'Text_data'],
+                                                               'Assigned_chem_shift_list_label', 'Details', 'Text_data_format', 'Text_data',
+                                                               'Chem_shift_reference_ID', 'Chem_shift_reference_label'],
                                              'spectral_peak_alt': ['Sf_category', 'Sf_framecode', 'Entry_ID', 'Sf_ID', 'ID', 'Name', 'Data_file_name',
                                                                    'Sample_ID', 'Sample_label', 'Sample_condition_list_ID', 'Sample_condition_list_label',
                                                                    'Experiment_ID', 'Experiment_name', 'Experiment_class', 'Experiment_type',
                                                                    'Number_of_spectral_dimensions', 'Chemical_shift_list', 'Assigned_chem_shift_list_ID',
-                                                                   'Assigned_chem_shift_list_label', 'Details', 'Text_data_format', 'Text_data']
+                                                                   'Assigned_chem_shift_list_label', 'Details', 'Text_data_format', 'Text_data',
+                                                                   'Chem_shift_reference_ID', 'Chem_shift_reference_label']
                                              }
                                 }
 

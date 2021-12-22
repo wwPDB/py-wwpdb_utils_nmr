@@ -285,7 +285,7 @@ class NEFTranslator:
 
         # supported version
         self.nef_version = '1.1'
-        self.star_version = '3.2.1.18'
+        self.star_version = '3.2.6.0'
 
         # format name
         self.nef_format_name = 'nmr_exchange_format'

@@ -285,7 +285,7 @@ class NEFTranslator:
 
         # supported version
         self.nef_version = '1.1'
-        self.star_version = '3.2.1.18'
+        self.star_version = '3.2.6.0'
 
         # format name
         self.nef_format_name = 'nmr_exchange_format'
@@ -3796,13 +3796,11 @@ class NEFTranslator:
                                     itName = '_' + category + '.' + t['name']
                                     if val == '?' and enforce_enum:
                                         if self.is_mandatory_tag(itName, file_type):
-                                            user_warn_msg += "[Enumeration error] The mandatory type %s %r is missing and the type must be one of %s. %r will be given unless you would like to fix the type and re-upload the %s file.\n"\
-                                                % (itName, val, enum, t['enum-alt'][val], file_type.upper())
+                                            user_warn_msg += "[Enumeration error] The mandatory type %s %r is missing and the type must be one of %s. %r will be given unless you would like to fix the type and re-upload the %s file.\n" % (itName, val, enum, t['enum-alt'][val], file_type.upper())  # noqa: E501
                                             val = t['enum-alt'][val]
                                             star_data.tags[itCol][1] = val
                                         else:
-                                            user_warn_msg += "[Enumeration error] %s %r should be one of %s. The type may be filled with either 'undefined' or estimated value unless you would like to fix the type and re-upload the %s file.\n"\
-                                                % (name, val, enum, file_type.upper())
+                                            user_warn_msg += "[Enumeration error] %s %r should be one of %s. The type may be filled with either 'undefined' or estimated value unless you would like to fix the type and re-upload the %s file.\n" % (name, val, enum, file_type.upper())  # noqa: E501
                                     else:
                                         val = t['enum-alt'][val]
                                         star_data.tags[itCol][1] = val

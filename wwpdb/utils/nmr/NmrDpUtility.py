@@ -141,6 +141,7 @@
 # 18-Nov-2021  M. Yokochi - relax detection of distance restraints for nm-res-cya and nm-res-oth (DAOTHER-7491)
 # 13-Dec-2021  M. Yokochi - append sequence spacer between large gap to prevent failure of sequence alignment (DAOTHER-7465, issue #2)
 # 15-Dec-2021  M. Yokochi - fix server crash while uploading NMR restraint file in NMR-STAR format (DAOTHER-7545)
+# 21-Dec-2021  M. Yokochi - fix wrong missing_mandatory_content error when uploading NMR restraint files in NMR-STAR format (DAOTHER-7545, issue #2)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -4430,7 +4431,7 @@ class NmrDpUtility:
                 convert_codec(srcPath, srcPath_, codec, 'utf-8')
                 srcPath = srcPath_
 
-            is_valid, message = self.__nefT.validate_file(srcPath, 'A')  # 'A' for NMR unified data, 'S' for assigned chemical shifts, 'R' for restraints.
+            is_valid, message = self.__nefT.validate_file(srcPath, 'A')  # 'A' for NMR unified data
 
             self.__original_error_message.append(message)
 
@@ -4516,7 +4517,7 @@ class NmrDpUtility:
                     convert_codec(csPath, csPath_, codec, 'utf-8')
                     csPath = csPath_
 
-                is_valid, message = self.__nefT.validate_file(csPath, 'S')  # 'A' for NMR unified data, 'S' for assigned chemical shifts, 'R' for restraints.
+                is_valid, message = self.__nefT.validate_file(csPath, 'S')  # 'S' for assigned chemical shifts
 
                 self.__original_error_message.append(message)
 
@@ -4596,7 +4597,7 @@ class NmrDpUtility:
 
             if mr_file_path_list in self.__inputParamDict:
 
-                file_path_list_len = self.__cs_file_path_list_len
+                has_dist_restraint = False
 
                 for mrPath in self.__inputParamDict[mr_file_path_list]:
 
@@ -4609,7 +4610,33 @@ class NmrDpUtility:
                         convert_codec(mrPath, mrPath_, codec, 'utf-8')
                         mrPath = mrPath_
 
-                    is_valid, message = self.__nefT.validate_file(mrPath, 'R')  # 'A' for NMR unified data, 'S' for assigned chemical shifts, 'R' for restraints.
+                    is_valid, message = self.__nefT.validate_file(mrPath, 'R')  # 'R' for restraints
+
+                    if is_valid:
+                        has_dist_restraint = True
+
+                    if mrPath_ is not None:
+                        try:
+                            os.remove(mrPath_)
+                        except:  # noqa: E722 pylint: disable=bare-except
+                            pass
+
+                file_path_list_len = self.__cs_file_path_list_len
+
+                file_subtype = 'O' if has_dist_restraint else 'R'  # 'R' for restraints, 'O' for other conventional restraints
+
+                for mrPath in self.__inputParamDict[mr_file_path_list]:
+
+                    codec = detect_bom(mrPath, 'utf-8')
+
+                    mrPath_ = None
+
+                    if codec != 'utf-8':
+                        mrPath_ = mrPath + '~'
+                        convert_codec(mrPath, mrPath_, codec, 'utf-8')
+                        mrPath = mrPath_
+
+                    is_valid, message = self.__nefT.validate_file(mrPath, file_subtype)
 
                     self.__original_error_message.append(message)
 
@@ -4661,7 +4688,7 @@ class NmrDpUtility:
 
                             if star_data_type == 'Saveframe':
                                 self.__has_legacy_sf_issue = True
-                                self.__fixFormatIssueOfInputSource(file_path_list_len, file_name, file_type, mrPath, 'R', message)
+                                self.__fixFormatIssueOfInputSource(file_path_list_len, file_name, file_type, mrPath, file_subtype, message)
                                 _is_done, star_data_type, star_data = self.__nefT.read_input_file(mrPath)  # NEFTranslator.validate_file() generates this object internally, but not re-used.
 
                             if not (self.__has_legacy_sf_issue and _is_done and star_data_type == 'Entry'):
@@ -4679,7 +4706,7 @@ class NmrDpUtility:
                             if not _is_done:
                                 is_done = False
 
-                    elif not self.__fixFormatIssueOfInputSource(file_path_list_len, file_name, file_type, mrPath, 'R', message):
+                    elif not self.__fixFormatIssueOfInputSource(file_path_list_len, file_name, file_type, mrPath, file_subtype, message):
                         is_done = False
 
                     file_path_list_len += 1
@@ -4719,7 +4746,7 @@ class NmrDpUtility:
         """ Fix format issue of NMR data.
         """
 
-        if not self.__fix_format_issue or srcPath is None or fileSubType not in ('A', 'S', 'R') or message is None:
+        if not self.__fix_format_issue or srcPath is None or fileSubType not in ('A', 'S', 'R', 'O') or message is None:
 
             if message is not None:
 
@@ -4752,7 +4779,7 @@ class NmrDpUtility:
                 if self.__verbose:
                     self.__lfh.write("+NmrDpUtility.__fixFormatIssueOfInputSource() ++ Error  - %s\n" % err)
 
-            if not self.__has_legacy_sf_issue and fileSubType in ('S', 'R'):
+            if not self.__has_legacy_sf_issue and fileSubType in ('S', 'R', 'O'):
                 return False
 
         if self.__has_legacy_sf_issue:

@@ -79,6 +79,7 @@
 # 16-Nov-2021  M. Yokochi - map alphabet code of Entity_assembly_ID to valid integer (v3.0.4, DAOTHER-7475)
 # 13-Dec-2021  M. Yokochi - fill list id (e.g. Assigned_chem_shift_list_ID) using a given saveframe counter (parent_pointer) just in case (v3.0.5, DAOTHER-7465, issue #2)
 # 15-Dec-2021  M. Yokochi - fix TypeError: unsupported operand type(s) for -: 'NoneType' and 'set' (v3.0.6, DAOTHER-7545)
+# 22-Dec-2021  M. Yokochi - extend validate_file() for uploading NMR restraint files in NMR-STAR format (v3.0.7, DAOTHER-7545, issue #2)
 ##
 """ Bi-directional translator between NEF and NMR-STAR
     @author: Kumaran Baskaran, Masashi Yokochi
@@ -100,7 +101,7 @@ from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommon
 from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
 from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 
-__version__ = '3.0.6'
+__version__ = '3.0.7'
 
 __pynmrstar_v3_2__ = version.parse(pynmrstar.__version__) >= version.parse("3.2.0")
 __pynmrstar_v3_1__ = version.parse(pynmrstar.__version__) >= version.parse("3.1.0")
@@ -954,7 +955,7 @@ class NEFTranslator:
     def validate_file(self, in_file, file_subtype='A'):
         """ Validate input NEF/NMR-STAR file.
             @param infile: input NEF/NMR-STAR file path
-            @param file_subtype: should be 'A' or 'S' or 'R' where A for All in one file, S for chemical Shifts file, R for Restraints file
+            @param file_subtype: should be 'A', 'S', 'R', or 'O' where A for All in one file, S for chemical Shifts file, R for Restraints file, O for Other conventional restraint file
             @return: status, message
         """
 
@@ -984,6 +985,7 @@ class NEFTranslator:
                 minimal_lp_category_star_a = ['_Atom_chem_shift', '_Gen_dist_constraint']
                 minimal_lp_category_star_s = ['_Atom_chem_shift']
                 minimal_lp_category_star_r = ['_Gen_dist_constraint']
+                maximum_lp_category_star_o = ['_Gen_dist_constraint', '_Torsion_angle_constraint', '_RDC_constraint']
 
                 minimal_sf_category_nef_a = ['nef_chemical_shift_list', 'nef_distance_restraint_list']
                 minimal_sf_category_nef_s = ['nef_chemical_shift_list']
@@ -992,6 +994,7 @@ class NEFTranslator:
                 minimal_sf_category_star_a = ['assigned_chemical_shifts', 'general_distance_constraints']
                 minimal_sf_category_star_s = ['assigned_chemical_shifts']
                 minimal_sf_category_star_r = ['general_distance_constraints']
+                maximum_sf_category_star_o = ['general_distance_constraints', 'torsion_angle_constraints', 'RDC_constraints']
 
                 sf_list, lp_list = self.get_data_content(star_data, data_type)
 
@@ -1188,9 +1191,17 @@ class NEFTranslator:
                                             else:
                                                 error.append(warn_template_for_empty_mandatory_loop_of_sf % (lp_category, sf_framecodes, file_type.upper()))
 
+                    elif file_subtype == 'O':
+                        is_valid = False
+                        for lp_category, sf_category in zip(maximum_lp_category_star_o, maximum_sf_category_star_o):
+                            if lp_category in lp_list and not is_empty_loop(star_data, lp_category, data_type):
+                                is_valid = True
+                        if not is_valid:
+                            error.append("One of the mandatory loops %s is missing. Please re-upload the %s file." % (maximum_lp_category_star_o, file_type.upper()))
+
                     else:
                         is_valid = False
-                        error.append('file_subtype flag should be A/S/R')
+                        error.append('file_subtype flag should be A/S/R/O')
 
             else:
                 is_valid = False

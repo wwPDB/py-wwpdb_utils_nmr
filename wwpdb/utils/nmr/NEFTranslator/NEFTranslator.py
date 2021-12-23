@@ -985,7 +985,7 @@ class NEFTranslator:
                 minimal_lp_category_star_a = ['_Atom_chem_shift', '_Gen_dist_constraint']
                 minimal_lp_category_star_s = ['_Atom_chem_shift']
                 minimal_lp_category_star_r = ['_Gen_dist_constraint']
-                maximum_lp_category_star_o = ['_Gen_dist_constraint', '_Torsion_angle_constraint', '_RDC_constraint']
+                allowed_lp_category_star_o = ['_Gen_dist_constraint', '_Torsion_angle_constraint', '_RDC_constraint']
 
                 minimal_sf_category_nef_a = ['nef_chemical_shift_list', 'nef_distance_restraint_list']
                 minimal_sf_category_nef_s = ['nef_chemical_shift_list']
@@ -994,7 +994,7 @@ class NEFTranslator:
                 minimal_sf_category_star_a = ['assigned_chemical_shifts', 'general_distance_constraints']
                 minimal_sf_category_star_s = ['assigned_chemical_shifts']
                 minimal_sf_category_star_r = ['general_distance_constraints']
-                maximum_sf_category_star_o = ['general_distance_constraints', 'torsion_angle_constraints', 'RDC_constraints']
+                allowed_sf_category_star_o = ['general_distance_constraints', 'torsion_angle_constraints', 'RDC_constraints']
 
                 sf_list, lp_list = self.get_data_content(star_data, data_type)
 
@@ -1191,13 +1191,26 @@ class NEFTranslator:
                                             else:
                                                 error.append(warn_template_for_empty_mandatory_loop_of_sf % (lp_category, sf_framecodes, file_type.upper()))
 
-                    elif file_subtype == 'O':
+                    elif file_subtype == 'O':  # DAOTHER-7545, issue #2
                         is_valid = False
-                        for lp_category, sf_category in zip(maximum_lp_category_star_o, maximum_sf_category_star_o):
+                        for lp_category in allowed_lp_category_star_o:
                             if lp_category in lp_list and not is_empty_loop(star_data, lp_category, data_type):
                                 is_valid = True
                         if not is_valid:
-                            error.append("One of the mandatory loops %s is missing. Please re-upload the %s file." % (maximum_lp_category_star_o, file_type.upper()))
+                            error.append("One of the mandatory loops %s is missing. Please re-upload the %s file." % (allowed_lp_category_star_o, file_type.upper()))
+                        else:
+                            for lp_category, sf_category in zip(allowed_lp_category_star_o, allowed_sf_category_star_o):
+                                if lp_category in lp_list:
+                                    if is_empty_loop(star_data, lp_category, data_type):
+                                        is_valid = False
+                                        if data_type == 'Loop':
+                                            error.append(warn_template_for_empty_mandatory_loop % (lp_category, file_type.upper()))
+                                        else:
+                                            sf_framecodes = get_sf_tag_values_with_empty_loop(star_data, lp_category, sf_category)
+                                            if len(sf_framecodes) == 1:
+                                                error.append(warn_template_for_empty_mandatory_loop_of_sf % (lp_category, sf_framecodes[0], file_type.upper()))
+                                            else:
+                                                error.append(warn_template_for_empty_mandatory_loop_of_sf % (lp_category, sf_framecodes, file_type.upper()))
 
                     else:
                         is_valid = False

@@ -4623,7 +4623,7 @@ class NmrDpUtility:
 
                 file_path_list_len = self.__cs_file_path_list_len
 
-                file_subtype = 'O' if has_dist_restraint else 'R'  # 'R' for restraints, 'O' for other conventional restraints
+                file_subtype = 'O' if has_dist_restraint else 'R'  # DAOTHER-7545, issue #2, 'R' for restraints, 'O' for other conventional restraints
 
                 for mrPath in self.__inputParamDict[mr_file_path_list]:
 

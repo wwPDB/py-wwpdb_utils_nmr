@@ -84,7 +84,7 @@ class CifReader:
 
         if self.__random_rotaion_test:
             self.__lfh.write("+WARNING- CifReader.__init__() Enabled random rotation test\n")
-            self.__lfh.write("+WARNING- CifReader.__init__() Single model rotation test: %s\n" % self.__single_model_rotation_test)
+            self.__lfh.write(f"+WARNING- CifReader.__init__() Single model rotation test: {self.__single_moel_rotaion_test}\n")
 
     def parse(self, filePath):
         """ Set file path and parse CIF file, and set internal active data block if possible.
@@ -100,12 +100,12 @@ class CifReader:
         try:
             if not os.access(self.__filePath, os.R_OK):
                 if self.__verbose:
-                    self.__lfh.write("+ERROR- CifReader.setFilePath() Missing file %s\n" % self.__filePath)
+                    self.__lfh.write(f"+ERROR- CifReader.setFilePath() Missing file {self.__filePath}\n")
                 return False
             return self.__parse()
         except:  # noqa: E722 pylint: disable=bare-except
             if self.__verbose:
-                self.__lfh.write("+ERROR- CifReader.setFilePath() Missing file %s\n" % self.__filePath)
+                self.__lfh.write(f"+ERROR- CifReader.setFilePath() Missing file {self.__filePath}\n")
             return False
 
     def __parse(self):
@@ -251,7 +251,7 @@ class CifReader:
                     altDict[next(k['alt_name'] for k in keyItems if k['name'] == itName)] = idxIt
 
             if set(keyNames) & set(itDict.keys()) != set(keyNames):
-                raise LookupError("Missing one of data items %s." % keyNames)
+                raise LookupError(f"Missing one of data items {keyNames}.")
 
             # get row list
             rowList = catObj.getRowList()
@@ -261,7 +261,7 @@ class CifReader:
                     itCol = itDict[keyNames[j]]
                     if itCol < len(row) and row[itCol] in self.emptyValue:
                         if 'default' not in keyItems[j] and keyItems[j]['default'] not in self.emptyValue:
-                            raise ValueError("%s must not be empty." % keyNames[j])
+                            raise ValueError(f"{keyNames[j]} must not be empty.")
 
             compDict = {}
             seqDict = {}
@@ -280,17 +280,16 @@ class CifReader:
             chains = sorted(set(row[chain_id_col] for row in rowList))
 
             if ins_code_col == -1 or label_seq_col == -1:
-                sortedSeq = sorted(set('{} {:04d} {}'.format(row[chain_id_col], int(row[seq_id_col]), row[comp_id_col]) for row in rowList))
+                sortedSeq = sorted(set(f'{row[chain_id_col]} {int(row[seq_id_col]):04d} {row[comp_id_col]}' for row in rowList))
 
-                keyDict = {'{} {:04d}'.format(row[chain_id_col], int(row[seq_id_col])): row[comp_id_col] for row in rowList}
+                keyDict = {f'{row[chain_id_col]} {int(row[seq_id_col]):04d}': row[comp_id_col] for row in rowList}
 
                 for row in rowList:
-                    key = '{} {:04d}'.format(row[chain_id_col], int(row[seq_id_col]))
+                    key = f'{row[chain_id_col]} {int(row[seq_id_col]):04d}'
                     if keyDict[key] != row[comp_id_col]:
-                        raise KeyError("Sequence must be unique. %s %s, %s %s, %s %s vs %s." %
-                                       (itNameList[chain_id_col], row[chain_id_col],
-                                        itNameList[seq_id_col], row[seq_id_col],
-                                        itNameList[comp_id_col], row[comp_id_col], keyDict[key]))
+                        raise KeyError(f"Sequence must be unique. {itNameList[chain_id_col]} {row[chain_id_col]}, "
+                                       f"{itNameList[seq_id_col]} {row[seq_id_col]}, "
+                                       f"{itNameList[comp_id_col]} {row[comp_id_col]} vs {keyDict[key]}.")
 
                 if len(chains) > 1:
                     for c in chains:
@@ -302,19 +301,18 @@ class CifReader:
                     seqDict[c] = [int(s.split(' ')[1]) for s in sortedSeq]
 
             else:
-                sortedSeq = sorted(set('{} {:04d} {} {} {}'.format(row[chain_id_col], int(row[seq_id_col]), row[ins_code_col], row[label_seq_col], row[comp_id_col]) for row in rowList))
+                sortedSeq = sorted(set(f'{row[chain_id_col]} {int(row[seq_id_col]):04d} {row[ins_code_col]} {row[label_seq_col]} {row[comp_id_col]}' for row in rowList))
 
-                keyDict = {'{} {:04d} {} {}'.format(row[chain_id_col], int(row[seq_id_col]), row[ins_code_col], row[label_seq_col]): row[comp_id_col] for row in rowList}
+                keyDict = {f'{row[chain_id_col]} {int(row[seq_id_col]):04d} {row[ins_code_col]} {row[label_seq_col]}': row[comp_id_col] for row in rowList}
 
                 for row in rowList:
-                    key = '{} {:04d} {} {}'.format(row[chain_id_col], int(row[seq_id_col]), row[ins_code_col], row[label_seq_col])
+                    key = f'{row[chain_id_col]} {int(row[seq_id_col]):04d} {row[ins_code_col]} {row[label_seq_col]}'
                     if keyDict[key] != row[comp_id_col]:
-                        raise KeyError("Sequence must be unique. %s %s, %s %s, %s %s, %s %s, %s %s vs %s." %
-                                       (itNameList[chain_id_col], row[chain_id_col],
-                                        itNameList[seq_id_col], row[seq_id_col],
-                                        itNameList[ins_code_col], row[ins_code_col],
-                                        itNameList[label_seq_col], row[label_seq_col],
-                                        itNameList[comp_id_col], row[comp_id_col], keyDict[key]))
+                        raise KeyError(f"Sequence must be unique. {itNameList[chain_id_col]} {row[chain_id_col]}, "
+                                       f"{itNameList[seq_id_col]} {row[seq_id_col]}, "
+                                       f"{itNameList[ins_code_col]} {row[ins_code_col]}, "
+                                       f"{itNameList[label_seq_col]} {row[label_seq_col]}, "
+                                       f"{itNameList[comp_id_col]} {row[comp_id_col]} vs {keyDict[key]}.")
 
                 if len(chains) > 1:
                     for c in chains:
@@ -490,7 +488,7 @@ class CifReader:
                         except StopIteration:
                             continue
 
-                        ret[seq_ids.index(seq_id)] = float('{:.2f}'.format(math.sqrt(rmsd2 / (total_models - 1))))
+                        ret[seq_ids.index(seq_id)] = float(f'{math.sqrt(rmsd2 / (total_models - 1)):.2f}')
 
             if self.__hold_rmsd_calculation:
                 item['rmsd'] = ret
@@ -504,9 +502,9 @@ class CifReader:
                 _stddev_rmsd = math.sqrt(sum([(r - _mean_rmsd) ** 2 for r in _ret]) / (_len_rmsd - 1))
 
                 item['filtered_total_count'] = [_len_rmsd]
-                item['filtered_mean_rmsd'] = [float('{:.2f}'.format(_mean_rmsd))]
+                item['filtered_mean_rmsd'] = [float(f'{_mean_rmsd:.2f}')]
                 item['filtered_max_rmsd'] = [max(_ret)]
-                item['filtered_stddev_rmsd'] = [float('{:.2f}'.format(_stddev_rmsd))]
+                item['filtered_stddev_rmsd'] = [float(f'{_stddev_rmsd:.2f}')]
 
                 self.__calculateFilteredRMSD(_ret, _mean_rmsd, _stddev_rmsd, item)
 
@@ -534,16 +532,16 @@ class CifReader:
             _stddev_rmsd = math.sqrt(sum([(r - _mean_rmsd) ** 2 for r in _ret]) / (_len_rmsd - 1))
 
             item['filtered_total_count'].append(_len_rmsd)
-            item['filtered_mean_rmsd'].append(float('{:.2f}'.format(_mean_rmsd)))
+            item['filtered_mean_rmsd'].append(float(f'{_mean_rmsd:.2f}'))
             item['filtered_max_rmsd'].append(max(_ret))
-            item['filtered_stddev_rmsd'].append(float('{:.2f}'.format(_stddev_rmsd)))
+            item['filtered_stddev_rmsd'].append(float(f'{_stddev_rmsd:.2f}'))
 
             if mean_rmsd - _mean_rmsd > 0.2 or stddev_rmsd - _stddev_rmsd > 0.2:
                 self.__calculateFilteredRMSD(_ret, _mean_rmsd, _stddev_rmsd, item)
             elif len(item['filtered_stddev_rmsd']) > 2:
                 model = np.polyfit(item['filtered_stddev_rmsd'], item['filtered_mean_rmsd'], 2)
                 for y in [1.0]:
-                    item['rmsd_in_well_defined_region'] = float('{:.2f}'.format(model[2] + model[1] * y + model[0] * (y ** 2)))
+                    item['rmsd_in_well_defined_region'] = float(f'{model[2] + model[1] * y + model[0] * (y ** 2):.2f}')
 
     def getDictListWithFilter(self, catName, dataItems, filterItems=None):
         """ Return a list of dictionaries of a given category with filter.
@@ -553,14 +551,14 @@ class CifReader:
 
         for d in dataItems:
             if not d['type'] in self.itemTypes:
-                raise TypeError("Type %s of data item %s must be one of %s." % (d['type'], d['name'], self.itemTypes))
+                raise TypeError(f"Type {d['type']} of data item {d['name']} must be one of {self.itemTypes}.")
 
         if filterItems is not None:
             filterNames = [f['name'] for f in filterItems]
 
             for f in filterItems:
                 if not f['type'] in self.itemTypes:
-                    raise TypeError("Type %s of filter item %s must be one of %s." % (f['type'], f['name'], self.itemTypes))
+                    raise TypeError(f"Type {f['type']} of filter item {f['name']} must be one of {self.itemTypes}.")
 
         dList = []
 
@@ -586,10 +584,10 @@ class CifReader:
                     fcolDict[itName] = idxIt
 
             if set(dataNames) & set(itNameList) != set(dataNames):
-                raise LookupError("Missing one of data items %s." % dataNames)
+                raise LookupError(f"Missing one of data items {dataNames}.")
 
             if filterItems is not None and set(filterNames) & set(itNameList) != set(filterNames):
-                raise LookupError("Missing one of filter items %s." % filterNames)
+                raise LookupError(f"Missing one of filter items {filterNames}.")
 
             # get row list
             rowList = catObj.getRowList()

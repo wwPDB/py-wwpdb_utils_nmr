@@ -7005,9 +7005,9 @@ class RCI:
                         #
                         if dyna_corr_residue_number in ret['seq_id']:
                             row_idx = ret['seq_id'].index(dyna_corr_residue_number)
-                            ret['rci'][row_idx] = float('{:.3f}'.format(dyna_corr_value))
-                            ret['nmr_rmsd'][row_idx] = float('{:.3f}'.format(dyna_corr_value * 16.44))
-                            ret['s2'][row_idx] = float('{:.3f}'.format(1 - (0.4 * log(1 + (dyna_corr_value * 17.7)))))
+                            ret['rci'][row_idx] = float(f'{dyna_corr_value:.3f}')
+                            ret['nmr_rmsd'][row_idx] = float(f'{dyna_corr_value * 16.44:.3f}')
+                            ret['s2'][row_idx] = float(f'{1 - (0.4 * log(1 + (dyna_corr_value * 17.7))):.3f}')
 
             else:
                 for corr_element in correlation_sorted:
@@ -7023,9 +7023,9 @@ class RCI:
                         #
                         if dyna_corr_residue_number in ret['seq_id']:
                             row_idx = ret['seq_id'].index(dyna_corr_residue_number)
-                            ret['rci'][row_idx] = float('{:.3f}'.format(dyna_corr_value))
-                            ret['nmr_rmsd'][row_idx] = float('{:.3f}'.format(dyna_corr_value * 16.44))
-                            ret['s2'][row_idx] = float('{:.3f}'.format(1 - (0.4 * log(1 + (dyna_corr_value * 17.7)))))
+                            ret['rci'][row_idx] = float(f'{dyna_corr_value:.3f}')
+                            ret['nmr_rmsd'][row_idx] = float(f'{dyna_corr_value * 16.44:.3f}')
+                            ret['s2'][row_idx] = float(f'{1 - (0.4 * log(1 + (dyna_corr_value * 17.7))):.3f}')
 
         return ret
 

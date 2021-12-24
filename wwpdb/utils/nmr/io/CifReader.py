@@ -84,7 +84,7 @@ class CifReader:
 
         if self.__random_rotaion_test:
             self.__lfh.write("+WARNING- CifReader.__init__() Enabled random rotation test\n")
-            self.__lfh.write(f"+WARNING- CifReader.__init__() Single model rotation test: {self.__single_moel_rotaion_test}\n")
+            self.__lfh.write(f"+WARNING- CifReader.__init__() Single model rotation test: {self.__single_model_rotation_test}\n")
 
     def parse(self, filePath):
         """ Set file path and parse CIF file, and set internal active data block if possible.

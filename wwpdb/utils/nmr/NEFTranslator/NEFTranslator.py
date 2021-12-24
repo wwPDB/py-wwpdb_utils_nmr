@@ -4507,16 +4507,16 @@ class NEFTranslator:
 
                 if comp_code != 'X' and not nef_atom.endswith('%') and comp_code != 'X' and not nef_atom.endswith('*') and nef_atom + '1' in methyl_atoms:
                     return self.get_star_atom(comp_id, nef_atom + '%',
-                                              f'{nef_atom} converted to {nef_atom}%%.' if leave_unmatched else None, leave_unmatched)
+                                              f'{nef_atom} converted to {nef_atom}%.' if leave_unmatched else None, leave_unmatched)
 
                 if nef_atom[-1].lower() == 'x' or nef_atom[-1].lower() == 'y' and nef_atom[:-1] + '1' in methyl_atoms:
                     return self.get_star_atom(comp_id, nef_atom[:-1] + '%',
-                                              f'{nef_atom} converted to {nef_atom[:-1]}%%.' if leave_unmatched else None, leave_unmatched)
+                                              f'{nef_atom} converted to {nef_atom[:-1]}%.' if leave_unmatched else None, leave_unmatched)
 
                 if ((comp_code != 'X' and nef_atom[-1] == '%') or nef_atom[-1] == '*') and (nef_atom[:-1] + '1' not in methyl_atoms) and\
                    len(nef_atom) > 2 and (nef_atom[-2].lower() == 'x' or nef_atom[-2].lower() == 'y'):
                     return self.get_star_atom(comp_id, nef_atom[:-2] + ('1' if nef_atom[-2].lower() == 'x' else '2') + '%',
-                                              f"{nef_atom} converted to {nef_atom[:-2] + ('1' if nef_atom[-2].lower() == 'x' else '2')}%%." if leave_unmatched else None,
+                                              f"{nef_atom} converted to {nef_atom[:-2] + ('1' if nef_atom[-2].lower() == 'x' else '2')}%." if leave_unmatched else None,
                                               leave_unmatched)
 
             if nef_atom in atoms:

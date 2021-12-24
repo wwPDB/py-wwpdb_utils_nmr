@@ -17,13 +17,19 @@ class TestNmrDpUtility(unittest.TestCase):
         here = os.path.abspath(os.path.dirname(__file__))
         self.data_dir_path = os.path.join(here, 'mock-data-daother-7545/')
         self.cs_file_path = {
-            'daother-7545': ['D_1300025537_cs-upload_P1.str.V1']
+            'daother-7545': ['D_1300025537_cs-upload_P1.str.V1'],
+            'daother-7545_dihed_plus': ['D_1300025537_cs-upload_P1.str.V1'],
+            'daother-7545_dihed_only': ['D_1300025537_cs-upload_P1.str.V1']
         }
         self.mr_file_path = {
-            'daother-7545': ['D_1300025537_mr-upload_P1.dat.V2']
+            'daother-7545': ['D_1300025537_mr-upload_P1.dat.V2'],
+            'daother-7545_dihed_plus': ['D_1300025537_mr-upload_P1.dat.V2', 'Torsion_angles.txt'],
+            'daother-7545_dihed_only': ['Torsion_angles.txt']
         }
         self.model_file_path = {
-            'daother-7545': 'D_1300025537_model-upload_P1.cif.V1'
+            'daother-7545': 'D_1300025537_model-upload_P1.cif.V1',
+            'daother-7545_dihed_plus': 'D_1300025537_model-upload_P1.cif.V1',
+            'daother-7545_dihed_only': 'D_1300025537_model-upload_P1.cif.V1'
         }
         self.utility = NmrDpUtility()
 
@@ -65,10 +71,19 @@ class TestNmrDpUtility(unittest.TestCase):
             error_type = {str(k): len(v) for k, v in report['error'].items() if str(k) != 'total'}
             print('%s: %s, %s' % (cs_type, report['information']['status'], error_type))
 
-        self.assertNotEqual(report['information']['status'], 'Error')
+        if 'only' in cs_type:
+            self.assertEqual(report['information']['status'], 'Error')
+        else:
+            self.assertNotEqual(report['information']['status'], 'Error')
 
     def test_nmr_str_consistency_check(self):
         self.__test_nmr_str_consistency('daother-7545')
+
+    def test_nmr_str_consistency_check_dihed_plus(self):
+        self.__test_nmr_str_consistency('daother-7545_dihed_plus')
+
+    def test_nmr_str_consistency_check_dihed_only(self):
+        self.__test_nmr_str_consistency('daother-7545_dihed_only')
 
 
 if __name__ == '__main__':

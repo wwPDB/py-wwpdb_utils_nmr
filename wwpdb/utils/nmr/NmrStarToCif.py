@@ -174,7 +174,7 @@ class NmrStarToCif:
             return True
 
         except Exception as e:
-            self.__lfh.write('+ERROR- NmrStarToCif.clean() %s\n' % e)
+            self.__lfh.write(f"+ERROR- NmrStarToCif.clean() {str(e)}\n")
 
         return False
 
@@ -196,7 +196,7 @@ class NmrStarToCif:
             if containerList is not None and len(containerList) > 1:
 
                 if self.__verbose:
-                    self.__lfh.write('Input container list is %r\n' % ([(c.getName(), c.getType()) for c in containerList]))
+                    self.__lfh.write(f"Input container list is {[(c.getName(), c.getType()) for c in containerList]!r}\n")
 
                 for c in containerList:
                     c.setType('data')
@@ -467,7 +467,7 @@ class NmrStarToCif:
                                         extended_data_list.append(dst)
 
                                     if has_auth_value:
-                                        cifObj.ExtendCategory(k, lp_category, extended_items, extended_data_list, items.index('Auth_atom_ID_%s' % (max_dim - 1)) + 1)
+                                        cifObj.ExtendCategory(k, lp_category, extended_items, extended_data_list, items.index(f"Auth_atom_ID_{max_dim - 1}") + 1)
 
                                 if overwrite_auth_atom_id and has_auth_value:
                                     cifObj.CopyValueInRow(k, lp_category, _atom_id_tags, _auth_atom_id_tags)
@@ -477,6 +477,6 @@ class NmrStarToCif:
                 return True
 
         except Exception as e:
-            self.__lfh.write('+ERROR- NmrStarToCif.convert() %s\n' % e)
+            self.__lfh.write(f"+ERROR- NmrStarToCif.convert() {str(e)}\n")
 
         return False

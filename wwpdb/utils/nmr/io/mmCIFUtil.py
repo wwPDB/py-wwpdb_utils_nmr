@@ -53,7 +53,7 @@ class mmCIFUtil:
                 #
             #
         except Exception as e:
-            self.__lfh.write("Read %s failed %s.\n" % (self.__filePath, str(e)))
+            self.__lfh.write(f"Read {self.__filePath} failed {str(e)}.\n")
 
     def GetBlockIDList(self):
         """ Return list of block ID

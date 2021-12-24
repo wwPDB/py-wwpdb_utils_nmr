@@ -35,12 +35,20 @@ import itertools
 import hashlib
 from sklearn.cluster import DBSCAN
 import collections
-from rmsd.calculate_rmsd import NAMES_ELEMENT, centroid, kabsch_rmsd, quaternion_rmsd, reorder_hungarian, reorder_brute, reorder_distance, check_reflections, rmsd  # noqa: F401 pylint: disable=no-name-in-module, import-error, unused-import
+from rmsd.calculate_rmsd import (NAMES_ELEMENT, centroid, check_reflections, rmsd,  # noqa: F401 pylint: disable=no-name-in-module, import-error, unused-import
+                                 kabsch_rmsd, quaternion_rmsd,
+                                 reorder_hungarian, reorder_brute, reorder_distance)
 
-ROTATION_METHOD = quaternion_rmsd  # must be one of kabsch_rmsd, quaternion_rmsd, None
-REORDER_METHOD = reorder_hungarian  # must be one of reorder_hungarian, reorder_brute, reorder_distance, None
-USE_REFLECTIONS = False  # scan through reflections in planes (e.g. Y transformed to -Y -> X, -Y, Z) and axis changes, (e.g. X and Z coords exchanged -> Z, Y, X). This will affect stereo-chemistry.
-USE_REFLECTIONS_KEEP_STEREO = False  # scan through reflections in planes (e.g. Y transformed to -Y -> X, -Y, Z) and axis changes, (e.g. X and Z coords exchanged -> Z, Y, X). Stereo-chemistry will be kept.
+# must be one of kabsch_rmsd, quaternion_rmsd, None
+ROTATION_METHOD = quaternion_rmsd
+# must be one of reorder_hungarian, reorder_brute, reorder_distance, None
+REORDER_METHOD = reorder_hungarian
+# scan through reflections in planes (e.g. Y transformed to -Y -> X, -Y, Z) and axis changes,
+# (e.g. X and Z coords exchanged -> Z, Y, X). This will affect stereo-chemistry.
+USE_REFLECTIONS = False
+# scan through reflections in planes (e.g. Y transformed to -Y -> X, -Y, Z) and axis changes,
+# (e.g. X and Z coords exchanged -> Z, Y, X). Stereo-chemistry will be kept.
+USE_REFLECTIONS_KEEP_STEREO = False
 REORDER = False
 
 
@@ -158,12 +166,12 @@ class CifReader:
         self.itemTypes = ('str', 'bool', 'int', 'float', 'range-float', 'enum')
 
         # random rotation test for detection of non-superimposed models (DAOTHER-4060)
-        self.__random_rotaion_test = False
+        self.__random_rotaion_test = True
         self.__single_model_rotation_test = True
 
         if self.__random_rotaion_test:
             self.__lfh.write("+WARNING- CifReader.__init__() Enabled random rotation test\n")
-            self.__lfh.write("+WARNING- CifReader.__init__() Single model rotation test: %s\n" % self.__single_model_rotation_test)
+            self.__lfh.write(f"+WARNING- CifReader.__init__() Single model rotation test: {self.__single_model_rotation_test}\n")
 
         self.__min_features_for_clustering = 4
         self.__max_features_for_clustering = 8
@@ -187,12 +195,12 @@ class CifReader:
         try:
             if not os.access(self.__filePath, os.R_OK):
                 if self.__verbose:
-                    self.__lfh.write("+ERROR- CifReader.setFilePath() Missing file %s\n" % self.__filePath)
+                    self.__lfh.write(f"+ERROR- CifReader.setFilePath() Missing file {self.__filePath}\n")
                 return False
             return self.__parse()
         except:  # noqa: E722 pylint: disable=bare-except
             if self.__verbose:
-                self.__lfh.write("+ERROR- CifReader.setFilePath() Missing file %s\n" % self.__filePath)
+                self.__lfh.write(f"+ERROR- CifReader.setFilePath() Missing file {self.__filePath}\n")
             return False
 
     def __parse(self):
@@ -338,7 +346,7 @@ class CifReader:
                     altDict[next(k['alt_name'] for k in keyItems if k['name'] == itName)] = idxIt
 
             if set(keyNames) & set(itDict.keys()) != set(keyNames):
-                raise LookupError("Missing one of data items %s." % keyNames)
+                raise LookupError(f"Missing one of data items {keyNames}.")
 
             # get row list
             rowList = catObj.getRowList()
@@ -348,7 +356,7 @@ class CifReader:
                     itCol = itDict[keyNames[j]]
                     if itCol < len(row) and row[itCol] in self.emptyValue:
                         if 'default' not in keyItems[j] and keyItems[j]['default'] not in self.emptyValue:
-                            raise ValueError("%s must not be empty." % keyNames[j])
+                            raise ValueError(f"{keyNames[j]} must not be empty.")
 
             compDict = {}
             seqDict = {}
@@ -367,17 +375,16 @@ class CifReader:
             chains = sorted(set(row[chain_id_col] for row in rowList))
 
             if ins_code_col == -1 or label_seq_col == -1:
-                sortedSeq = sorted(set('{} {:04d} {}'.format(row[chain_id_col], int(row[seq_id_col]), row[comp_id_col]) for row in rowList))
+                sortedSeq = sorted(set(f'{row[chain_id_col]} {int(row[seq_id_col]):04d} {row[comp_id_col]}' for row in rowList))
 
-                keyDict = {'{} {:04d}'.format(row[chain_id_col], int(row[seq_id_col])): row[comp_id_col] for row in rowList}
+                keyDict = {f'{row[chain_id_col]} {int(row[seq_id_col]):04d}': row[comp_id_col] for row in rowList}
 
                 for row in rowList:
-                    key = '{} {:04d}'.format(row[chain_id_col], int(row[seq_id_col]))
+                    key = f'{row[chain_id_col]} {int(row[seq_id_col]):04d}'
                     if keyDict[key] != row[comp_id_col]:
-                        raise KeyError("Sequence must be unique. %s %s, %s %s, %s %s vs %s." %
-                                       (itNameList[chain_id_col], row[chain_id_col],
-                                        itNameList[seq_id_col], row[seq_id_col],
-                                        itNameList[comp_id_col], row[comp_id_col], keyDict[key]))
+                        raise KeyError(f"Sequence must be unique. {itNameList[chain_id_col]} {row[chain_id_col]}, "
+                                       f"{itNameList[seq_id_col]} {row[seq_id_col]}, "
+                                       f"{itNameList[comp_id_col]} {row[comp_id_col]} vs {keyDict[key]}.")
 
                 if len(chains) > 1:
                     for c in chains:
@@ -389,19 +396,18 @@ class CifReader:
                     seqDict[c] = [int(s.split(' ')[1]) for s in sortedSeq]
 
             else:
-                sortedSeq = sorted(set('{} {:04d} {} {} {}'.format(row[chain_id_col], int(row[seq_id_col]), row[ins_code_col], row[label_seq_col], row[comp_id_col]) for row in rowList))
+                sortedSeq = sorted(set(f'{row[chain_id_col]} {int(row[seq_id_col]):04d} {row[ins_code_col]} {row[label_seq_col]} {row[comp_id_col]}' for row in rowList))
 
-                keyDict = {'{} {:04d} {} {}'.format(row[chain_id_col], int(row[seq_id_col]), row[ins_code_col], row[label_seq_col]): row[comp_id_col] for row in rowList}
+                keyDict = {f'{row[chain_id_col]} {int(row[seq_id_col]):04d} {row[ins_code_col]} {row[label_seq_col]}': row[comp_id_col] for row in rowList}
 
                 for row in rowList:
-                    key = '{} {:04d} {} {}'.format(row[chain_id_col], int(row[seq_id_col]), row[ins_code_col], row[label_seq_col])
+                    key = f'{row[chain_id_col]} {int(row[seq_id_col]):04d} {row[ins_code_col]} {row[label_seq_col]}'
                     if keyDict[key] != row[comp_id_col]:
-                        raise KeyError("Sequence must be unique. %s %s, %s %s, %s %s, %s %s, %s %s vs %s." %
-                                       (itNameList[chain_id_col], row[chain_id_col],
-                                        itNameList[seq_id_col], row[seq_id_col],
-                                        itNameList[ins_code_col], row[ins_code_col],
-                                        itNameList[label_seq_col], row[label_seq_col],
-                                        itNameList[comp_id_col], row[comp_id_col], keyDict[key]))
+                        raise KeyError(f"Sequence must be unique. {itNameList[chain_id_col]} {row[chain_id_col]}, "
+                                       f"{itNameList[seq_id_col]} {row[seq_id_col]}, "
+                                       f"{itNameList[ins_code_col]} {row[ins_code_col]}, "
+                                       f"{itNameList[label_seq_col]} {row[label_seq_col]}, "
+                                       f"{itNameList[comp_id_col]} {row[comp_id_col]} vs {keyDict[key]}.")
 
                 if len(chains) > 1:
                     for c in chains:
@@ -767,21 +773,22 @@ class CifReader:
 
         n_clusters = len(set(labels)) - (1 if -1 in labels else 0)
         if self.__verbose:
-            self.__lfh.write('feature: %s, min_sample: %s, epsilon: %s, clusters: %s (effective domains: %s), score: %s\n'
-                             % (min_result['features'], min_result['min_samples'], min_result['epsilon'], n_clusters, len(eff_labels), min_score))
+            self.__lfh.write(f"feature: {min_result['features']}, "
+                             f"min_sample: {min_result['min_samples']}, epsilon: {min_result['epsilon']}, "
+                             f"clusters: {n_clusters} (effective domains: {len(eff_labels)}), score: {min_score}\n")
 
         domain_id = 1
         for label, seq_id in zip(labels, _seq_ids):
             if label not in eff_labels:
                 if self.__verbose:
-                    self.__lfh.write('chain_id: %s, seq_id: %s, domain_id: %s\n' % (chain_id, seq_id, -1))
+                    self.__lfh.write(f"chain_id: {chain_id}, seq_id: {seq_id}, domain_id: -1\n")
             else:
                 _label = int(label)
                 if _label not in eff_domain_id:
                     eff_domain_id[_label] = domain_id
                     domain_id += 1
                 if self.__verbose:
-                    self.__lfh.write('chain_id: %s, seq_id: %s, domain_id: %s\n' % (chain_id, seq_id, eff_domain_id[_label]))
+                    self.__lfh.write(f"chain_id: {chain_id}, seq_id: {seq_id}, domain_id: {eff_domain_id[_label]}\n")
 
         rlist = []
 
@@ -860,15 +867,15 @@ class CifReader:
             gaps = seq_ids[-1] + 1 - seq_ids[0] - len(seq_ids)
             item['number_of_gaps'] = gaps
             if gaps == 0:
-                item['range_of_seq_id'] = '[%s-%s]' % (seq_ids[0], seq_ids[-1])
+                item['range_of_seq_id'] = f"[{seq_ids[0]}-{seq_ids[-1]}]"
             else:
-                seq_range = '[%s-' % seq_ids[0]
+                seq_range = f"[{seq_ids[0]}-"
                 for idx, seq_id in enumerate(seq_ids):
                     if idx > 0 and seq_id != seq_ids[idx - 1] + 1:
-                        seq_range += '%s],[%s-' % (seq_ids[idx - 1], seq_id)
-                seq_range += '%s]' % seq_ids[-1]
+                        seq_range += f"{seq_ids[idx - 1]}],[{seq_id}-"
+                seq_range += f"{seq_ids[-1]}]"
                 item['range_of_seq_id'] = seq_range
-            item['percent_of_core'] = float('{:.1f}'.format(float(count) / length * 100.0))
+            item['percent_of_core'] = float(f"{float(count) / length * 100.0:.1f}")
 
             r = np.zeros((_total_models, _total_models), dtype=float)
 
@@ -931,14 +938,14 @@ class CifReader:
 
         for d in dataItems:
             if not d['type'] in self.itemTypes:
-                raise TypeError("Type %s of data item %s must be one of %s." % (d['type'], d['name'], self.itemTypes))
+                raise TypeError(f"Type {d['type']} of data item {d['name']} must be one of {self.itemTypes}.")
 
         if filterItems is not None:
             filterNames = [f['name'] for f in filterItems]
 
             for f in filterItems:
                 if not f['type'] in self.itemTypes:
-                    raise TypeError("Type %s of filter item %s must be one of %s." % (f['type'], f['name'], self.itemTypes))
+                    raise TypeError(f"Type {f['type']} of filter item {f['name']} must be one of {self.itemTypes}.")
 
         dList = []
 
@@ -964,10 +971,10 @@ class CifReader:
                     fcolDict[itName] = idxIt
 
             if set(dataNames) & set(itNameList) != set(dataNames):
-                raise LookupError("Missing one of data items %s." % dataNames)
+                raise LookupError(f"Missing one of data items {dataNames}.")
 
             if filterItems is not None and set(filterNames) & set(itNameList) != set(filterNames):
-                raise LookupError("Missing one of filter items %s." % filterNames)
+                raise LookupError(f"Missing one of filter items {filterNames}.")
 
             # get row list
             rowList = catObj.getRowList()

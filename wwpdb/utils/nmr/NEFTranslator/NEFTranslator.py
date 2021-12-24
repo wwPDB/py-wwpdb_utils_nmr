@@ -79,6 +79,7 @@
 # 16-Nov-2021  M. Yokochi - map alphabet code of Entity_assembly_ID to valid integer (v3.0.4, DAOTHER-7475)
 # 13-Dec-2021  M. Yokochi - fill list id (e.g. Assigned_chem_shift_list_ID) using a given saveframe counter (parent_pointer) just in case (v3.0.5, DAOTHER-7465, issue #2)
 # 15-Dec-2021  M. Yokochi - fix TypeError: unsupported operand type(s) for -: 'NoneType' and 'set' (v3.0.6, DAOTHER-7545)
+# 22-Dec-2021  M. Yokochi - extend validate_file() for uploading NMR restraint files in NMR-STAR format (v3.0.7, DAOTHER-7545, issue #2)
 ##
 """ Bi-directional translator between NEF and NMR-STAR
     @author: Kumaran Baskaran, Masashi Yokochi
@@ -100,7 +101,7 @@ from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommon
 from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
 from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 
-__version__ = '3.0.6'
+__version__ = '3.0.7'
 
 __pynmrstar_v3_2__ = version.parse(pynmrstar.__version__) >= version.parse("3.2.0")
 __pynmrstar_v3_1__ = version.parse(pynmrstar.__version__) >= version.parse("3.1.0")
@@ -374,9 +375,11 @@ class NEFTranslator:
                          "VAL": ["N", "CA", "C", "O", "CB", "CG1", "CG2", "OXT", "H", "H2", "HA", "HB", "HG11", "HG12",
                                  "HG13", "HG21", "HG22", "HG23", "HXT"],
                          "DA": ["OP3", "P", "OP1", "OP2", "O5'", "C5'", "C4'", "O4'", "C3'", "O3'", "C2'", "C1'", "N9",
-                                "C8", "N7", "C5", "C6", "N6", "N1", "C2", "N3", "C4", "HOP3", "HOP2", "H5'", "H5''", "H4'", "H3'", "HO3'", "H2'", "H2''", "H1'", "H8", "H61", "H62", "H2"],
+                                "C8", "N7", "C5", "C6", "N6", "N1", "C2", "N3", "C4",
+                                "HOP3", "HOP2", "H5'", "H5''", "H4'", "H3'", "HO3'", "H2'", "H2''", "H1'", "H8", "H61", "H62", "H2"],
                          "DC": ["OP3", "P", "OP1", "OP2", "O5'", "C5'", "C4'", "O4'", "C3'", "O3'", "C2'", "C1'", "N1",
-                                "C2", "O2", "N3", "C4", "N4", "C5", "C6", "HOP3", "HOP2", "H5'", "H5''", "H4'", "H3'", "HO3'", "H2'", "H2''", "H1'", "H41", "H42", "H5", "H6"],
+                                "C2", "O2", "N3", "C4", "N4", "C5", "C6",
+                                "HOP3", "HOP2", "H5'", "H5''", "H4'", "H3'", "HO3'", "H2'", "H2''", "H1'", "H41", "H42", "H5", "H6"],
                          "DG": ["OP3", "P", "OP1", "OP2", "O5'", "C5'", "C4'", "O4'", "C3'", "O3'", "C2'", "C1'", "N9",
                                 "C8", "N7", "C5", "C6", "O6", "N1", "C2", "N2", "N3", "C4", "HOP3", "HOP2", "H5'", "H5''",
                                 "H4'", "H3'", "HO3'", "H2'", "H2''", "H1'", "H8", "H1", "H21", "H22"],
@@ -536,16 +539,16 @@ class NEFTranslator:
         # readable item type
         self.readable_item_type = {'str': 'a string',
                                    'bool': 'a boolean value',
-                                   'int': 'a integer',
-                                   'index-int': 'a unique positive integer',
+                                   'int': 'an integer',
+                                   'index-int': 'an unique positive integer',
                                    'positive-int': 'a positive integer',
                                    'positive-int-as-str': 'a positive integer',
-                                   'pointer-index': 'a integer acting as a pointer to the parent item',
+                                   'pointer-index': 'an integer acting as a pointer to the parent item',
                                    'float': 'a floating point number',
                                    'positive-float': 'a positive floating point number',
                                    'range-float': 'a floating point number in a specific range',
-                                   'enum': 'a enumeration value',
-                                   'enum-int': 'a enumeration value restricted to integers'}
+                                   'enum': 'an enumeration value',
+                                   'enum-int': 'an enumeration value restricted to integers'}
 
         # alternative dictionary of constraint type
         self.dist_alt_constraint_type = {'nef': {'NOE': 'noe',
@@ -849,7 +852,7 @@ class NEFTranslator:
                         if 'internaluseyoushouldntseethis_frame' not in str(e3):
                             msg = str(e3)
                         else:
-                            msg = str(e1)  # '%s contains no valid saveframe or loop. PyNMRSTAR ++ Error  - %s' % (os.path.basename(in_file), str(e))
+                            msg = str(e1)
 
         #
         # except Exception as e:
@@ -954,7 +957,8 @@ class NEFTranslator:
     def validate_file(self, in_file, file_subtype='A'):
         """ Validate input NEF/NMR-STAR file.
             @param infile: input NEF/NMR-STAR file path
-            @param file_subtype: should be 'A' or 'S' or 'R' where A for All in one file, S for chemical Shifts file, R for Restraints file
+            @param file_subtype: should be 'A', 'S', 'R', or 'O'
+                , where A for All in one file, S for chemical Shifts file, R for Restraints file, O for Other conventional restraint file
             @return: status, message
         """
 
@@ -984,6 +988,7 @@ class NEFTranslator:
                 minimal_lp_category_star_a = ['_Atom_chem_shift', '_Gen_dist_constraint']
                 minimal_lp_category_star_s = ['_Atom_chem_shift']
                 minimal_lp_category_star_r = ['_Gen_dist_constraint']
+                allowed_lp_category_star_o = ['_Gen_dist_constraint', '_Torsion_angle_constraint', '_RDC_constraint']
 
                 minimal_sf_category_nef_a = ['nef_chemical_shift_list', 'nef_distance_restraint_list']
                 minimal_sf_category_nef_s = ['nef_chemical_shift_list']
@@ -992,27 +997,30 @@ class NEFTranslator:
                 minimal_sf_category_star_a = ['assigned_chemical_shifts', 'general_distance_constraints']
                 minimal_sf_category_star_s = ['assigned_chemical_shifts']
                 minimal_sf_category_star_r = ['general_distance_constraints']
+                allowed_sf_category_star_o = ['general_distance_constraints', 'torsion_angle_constraints', 'RDC_constraints']
 
                 sf_list, lp_list = self.get_data_content(star_data, data_type)
 
-                info.append('{} saveframes and {} loops found'.format(len(sf_list), len(lp_list)))
+                info.append(f'{len(sf_list)} saveframes and {len(lp_list)} loops found')
 
                 nef_sf_list = [i for i in sf_list if i is not None and 'nef' in i]
                 nef_lp_list = [i for i in lp_list if i is not None and 'nef' in i]
 
-                info.append('{} saveframes and {} loops found with NEF prefix'.format(len(nef_sf_list), len(nef_lp_list)))
+                info.append(f'{len(nef_sf_list)} saveframes and {len(nef_lp_list)} loops found with NEF prefix')
 
                 if len(nef_sf_list) > 0 or len(nef_lp_list) > 0:
 
                     is_nef_file = True
-                    info.append('{} is a NEF file'.format(in_file))
+                    info.append(f'{in_file} is a NEF file')
                     file_type = 'nef'
 
                 else:
 
                     is_nef_file = False
-                    info.append('{} is an NMR-STAR file'.format(in_file))
+                    info.append(f'{in_file} is an NMR-STAR file')
                     file_type = 'nmr-star'
+
+                _file_type = file_type.upper()
 
                 if is_nef_file:
                     if file_subtype == 'A':
@@ -1021,27 +1029,34 @@ class NEFTranslator:
                             content_subtype = 'assigned chemical shifts' if 'shift' in lp_category else 'distance restraints'
                             if lp_category not in lp_list:
                                 is_valid = False
-                                error.append(err_template_for_missing_mandatory_loop % (lp_category, content_subtype, file_type.upper()))
+                                error.append(err_template_for_missing_mandatory_loop
+                                             % (lp_category, content_subtype, _file_type))
                             else:
                                 if is_empty_loop(star_data, lp_category, data_type):
                                     is_valid = False
                                     if data_type == 'Loop':
                                         if count_non_empty_loops(star_data, lp_category, data_type) == 0:
-                                            error.append(err_template_for_empty_mandatory_loop % (lp_category, content_subtype, file_type.upper()))
+                                            error.append(err_template_for_empty_mandatory_loop
+                                                         % (lp_category, content_subtype, _file_type))
                                         else:
-                                            error.append(warn_template_for_empty_mandatory_loop % (lp_category, file_type.upper()))
+                                            error.append(warn_template_for_empty_mandatory_loop
+                                                         % (lp_category, _file_type))
                                     else:
                                         sf_framecodes = get_sf_tag_values_with_empty_loop(star_data, lp_category, sf_category)
                                         if count_non_empty_loops(star_data, lp_category, data_type) == 0:
                                             if len(sf_framecodes) == 1:
-                                                error.append(err_template_for_empty_mandatory_loop_of_sf % (lp_category, sf_framecodes[0], content_subtype, file_type.upper()))
+                                                error.append(err_template_for_empty_mandatory_loop_of_sf
+                                                             % (lp_category, sf_framecodes[0], content_subtype, _file_type))
                                             else:
-                                                error.append(err_template_for_empty_mandatory_loop_of_sf % (lp_category, sf_framecodes, content_subtype, file_type.upper()))
+                                                error.append(err_template_for_empty_mandatory_loop_of_sf
+                                                             % (lp_category, sf_framecodes, content_subtype, _file_type))
                                         else:
                                             if len(sf_framecodes) == 1:
-                                                error.append(warn_template_for_empty_mandatory_loop_of_sf % (lp_category, sf_framecodes[0], file_type.upper()))
+                                                error.append(warn_template_for_empty_mandatory_loop_of_sf
+                                                             % (lp_category, sf_framecodes[0], _file_type))
                                             else:
-                                                error.append(warn_template_for_empty_mandatory_loop_of_sf % (lp_category, sf_framecodes, file_type.upper()))
+                                                error.append(warn_template_for_empty_mandatory_loop_of_sf
+                                                             % (lp_category, sf_framecodes, _file_type))
 
                     elif file_subtype == 'S':
                         content_subtype = 'assigned chemical shifts'
@@ -1049,27 +1064,34 @@ class NEFTranslator:
                         for lp_category, sf_category in zip(minimal_lp_category_nef_s, minimal_sf_category_nef_s):
                             if lp_category not in lp_list:
                                 is_valid = False
-                                error.append(err_template_for_missing_mandatory_loop % (lp_category, content_subtype, file_type.upper()))
+                                error.append(err_template_for_missing_mandatory_loop
+                                             % (lp_category, content_subtype, _file_type))
                             else:
                                 if is_empty_loop(star_data, lp_category, data_type):
                                     is_valid = False
                                     if data_type == 'Loop':
                                         if count_non_empty_loops(star_data, lp_category, data_type) == 0:
-                                            error.append(err_template_for_empty_mandatory_loop % (lp_category, content_subtype, file_type.upper()))
+                                            error.append(err_template_for_empty_mandatory_loop
+                                                         % (lp_category, content_subtype, _file_type))
                                         else:
-                                            error.append(warn_template_for_empty_mandatory_loop % (lp_category, file_type.upper()))
+                                            error.append(warn_template_for_empty_mandatory_loop
+                                                         % (lp_category, _file_type))
                                     else:
                                         sf_framecodes = get_sf_tag_values_with_empty_loop(star_data, lp_category, sf_category)
                                         if count_non_empty_loops(star_data, lp_category, data_type) == 0:
                                             if len(sf_framecodes) == 1:
-                                                error.append(err_template_for_empty_mandatory_loop_of_sf % (lp_category, sf_framecodes[0], content_subtype, file_type.upper()))
+                                                error.append(err_template_for_empty_mandatory_loop_of_sf
+                                                             % (lp_category, sf_framecodes[0], content_subtype, _file_type))
                                             else:
-                                                error.append(err_template_for_empty_mandatory_loop_of_sf % (lp_category, sf_framecodes, content_subtype, file_type.upper()))
+                                                error.append(err_template_for_empty_mandatory_loop_of_sf
+                                                             % (lp_category, sf_framecodes, content_subtype, _file_type))
                                         else:
                                             if len(sf_framecodes) == 1:
-                                                error.append(warn_template_for_empty_mandatory_loop_of_sf % (lp_category, sf_framecodes[0], file_type.upper()))
+                                                error.append(warn_template_for_empty_mandatory_loop_of_sf
+                                                             % (lp_category, sf_framecodes[0], _file_type))
                                             else:
-                                                error.append(warn_template_for_empty_mandatory_loop_of_sf % (lp_category, sf_framecodes, file_type.upper()))
+                                                error.append(warn_template_for_empty_mandatory_loop_of_sf
+                                                             % (lp_category, sf_framecodes, _file_type))
 
                     elif file_subtype == 'R':
                         content_subtype = 'distance restraints'
@@ -1077,27 +1099,34 @@ class NEFTranslator:
                         for lp_category, sf_category in zip(minimal_lp_category_nef_r, minimal_sf_category_nef_r):
                             if lp_category not in lp_list:
                                 is_valid = False
-                                error.append(err_template_for_missing_mandatory_loop % (lp_category, content_subtype, file_type.upper()))
+                                error.append(err_template_for_missing_mandatory_loop
+                                             % (lp_category, content_subtype, _file_type))
                             else:
                                 if is_empty_loop(star_data, lp_category, data_type):
                                     is_valid = False
                                     if data_type == 'Loop':
                                         if count_non_empty_loops(star_data, lp_category, data_type) == 0:
-                                            error.append(err_template_for_empty_mandatory_loop % (lp_category, content_subtype, file_type.upper()))
+                                            error.append(err_template_for_empty_mandatory_loop
+                                                         % (lp_category, content_subtype, _file_type))
                                         else:
-                                            error.append(warn_template_for_empty_mandatory_loop % (lp_category, file_type.upper()))
+                                            error.append(warn_template_for_empty_mandatory_loop
+                                                         % (lp_category, _file_type))
                                     else:
                                         sf_framecodes = get_sf_tag_values_with_empty_loop(star_data, lp_category, sf_category)
                                         if count_non_empty_loops(star_data, lp_category, data_type) == 0:
                                             if len(sf_framecodes) == 1:
-                                                error.append(err_template_for_empty_mandatory_loop_of_sf % (lp_category, sf_framecodes[0], content_subtype, file_type.upper()))
+                                                error.append(err_template_for_empty_mandatory_loop_of_sf
+                                                             % (lp_category, sf_framecodes[0], content_subtype, _file_type))
                                             else:
-                                                error.append(err_template_for_empty_mandatory_loop_of_sf % (lp_category, sf_framecodes, content_subtype, file_type.upper()))
+                                                error.append(err_template_for_empty_mandatory_loop_of_sf
+                                                             % (lp_category, sf_framecodes, content_subtype, _file_type))
                                         else:
                                             if len(sf_framecodes) == 1:
-                                                error.append(warn_template_for_empty_mandatory_loop_of_sf % (lp_category, sf_framecodes[0], file_type.upper()))
+                                                error.append(warn_template_for_empty_mandatory_loop_of_sf
+                                                             % (lp_category, sf_framecodes[0], _file_type))
                                             else:
-                                                error.append(warn_template_for_empty_mandatory_loop_of_sf % (lp_category, sf_framecodes, file_type.upper()))
+                                                error.append(warn_template_for_empty_mandatory_loop_of_sf
+                                                             % (lp_category, sf_framecodes, _file_type))
 
                     else:
                         is_valid = False
@@ -1110,27 +1139,34 @@ class NEFTranslator:
                             content_subtype = 'assigned chemical shifts' if 'shift' in lp_category else 'distance restraints'
                             if lp_category not in lp_list:
                                 is_valid = False
-                                error.append(err_template_for_missing_mandatory_loop % (lp_category, content_subtype, file_type.upper()))
+                                error.append(err_template_for_missing_mandatory_loop
+                                             % (lp_category, content_subtype, _file_type))
                             else:
                                 if is_empty_loop(star_data, lp_category, data_type):
                                     is_valid = False
                                     if data_type == 'Loop':
                                         if count_non_empty_loops(star_data, lp_category, data_type) == 0:
-                                            error.append(err_template_for_empty_mandatory_loop % (lp_category, content_subtype, file_type.upper()))
+                                            error.append(err_template_for_empty_mandatory_loop
+                                                         % (lp_category, content_subtype, _file_type))
                                         else:
-                                            error.append(warn_template_for_empty_mandatory_loop % (lp_category, file_type.upper()))
+                                            error.append(warn_template_for_empty_mandatory_loop
+                                                         % (lp_category, _file_type))
                                     else:
                                         sf_framecodes = get_sf_tag_values_with_empty_loop(star_data, lp_category, sf_category)
                                         if count_non_empty_loops(star_data, lp_category, data_type) == 0:
                                             if len(sf_framecodes) == 1:
-                                                error.append(err_template_for_empty_mandatory_loop_of_sf % (lp_category, sf_framecodes[0], content_subtype, file_type.upper()))
+                                                error.append(err_template_for_empty_mandatory_loop_of_sf
+                                                             % (lp_category, sf_framecodes[0], content_subtype, _file_type))
                                             else:
-                                                error.append(err_template_for_empty_mandatory_loop_of_sf % (lp_category, sf_framecodes, content_subtype, file_type.upper()))
+                                                error.append(err_template_for_empty_mandatory_loop_of_sf
+                                                             % (lp_category, sf_framecodes, content_subtype, _file_type))
                                         else:
                                             if len(sf_framecodes) == 1:
-                                                error.append(warn_template_for_empty_mandatory_loop_of_sf % (lp_category, sf_framecodes[0], file_type.upper()))
+                                                error.append(warn_template_for_empty_mandatory_loop_of_sf
+                                                             % (lp_category, sf_framecodes[0], _file_type))
                                             else:
-                                                error.append(warn_template_for_empty_mandatory_loop_of_sf % (lp_category, sf_framecodes, file_type.upper()))
+                                                error.append(warn_template_for_empty_mandatory_loop_of_sf
+                                                             % (lp_category, sf_framecodes, _file_type))
 
                     elif file_subtype == 'S':
                         content_subtype = 'assigned chemical shifts'
@@ -1138,27 +1174,34 @@ class NEFTranslator:
                         for lp_category, sf_category in zip(minimal_lp_category_star_s, minimal_sf_category_star_s):
                             if lp_category not in lp_list:
                                 is_valid = False
-                                error.append(err_template_for_missing_mandatory_loop % (lp_category, content_subtype, file_type.upper()))
+                                error.append(err_template_for_missing_mandatory_loop
+                                             % (lp_category, content_subtype, _file_type))
                             else:
                                 if is_empty_loop(star_data, lp_category, data_type):
                                     is_valid = False
                                     if data_type == 'Loop':
                                         if count_non_empty_loops(star_data, lp_category, data_type) == 0:
-                                            error.append(err_template_for_empty_mandatory_loop % (lp_category, content_subtype, file_type.upper()))
+                                            error.append(err_template_for_empty_mandatory_loop
+                                                         % (lp_category, content_subtype, _file_type))
                                         else:
-                                            error.append(warn_template_for_empty_mandatory_loop % (lp_category, file_type.upper()))
+                                            error.append(warn_template_for_empty_mandatory_loop
+                                                         % (lp_category, _file_type))
                                     else:
                                         sf_framecodes = get_sf_tag_values_with_empty_loop(star_data, lp_category, sf_category)
                                         if count_non_empty_loops(star_data, lp_category, data_type) == 0:
                                             if len(sf_framecodes) == 1:
-                                                error.append(err_template_for_empty_mandatory_loop_of_sf % (lp_category, sf_framecodes[0], content_subtype, file_type.upper()))
+                                                error.append(err_template_for_empty_mandatory_loop_of_sf
+                                                             % (lp_category, sf_framecodes[0], content_subtype, _file_type))
                                             else:
-                                                error.append(err_template_for_empty_mandatory_loop_of_sf % (lp_category, sf_framecodes, content_subtype, file_type.upper()))
+                                                error.append(err_template_for_empty_mandatory_loop_of_sf
+                                                             % (lp_category, sf_framecodes, content_subtype, _file_type))
                                         else:
                                             if len(sf_framecodes) == 1:
-                                                error.append(warn_template_for_empty_mandatory_loop_of_sf % (lp_category, sf_framecodes[0], file_type.upper()))
+                                                error.append(warn_template_for_empty_mandatory_loop_of_sf
+                                                             % (lp_category, sf_framecodes[0], _file_type))
                                             else:
-                                                error.append(warn_template_for_empty_mandatory_loop_of_sf % (lp_category, sf_framecodes, file_type.upper()))
+                                                error.append(warn_template_for_empty_mandatory_loop_of_sf
+                                                             % (lp_category, sf_framecodes, _file_type))
 
                     elif file_subtype == 'R':
                         content_subtype = 'distance restraints'
@@ -1166,31 +1209,63 @@ class NEFTranslator:
                         for lp_category, sf_category in zip(minimal_lp_category_star_r, minimal_sf_category_star_r):
                             if lp_category not in lp_list:
                                 is_valid = False
-                                error.append(err_template_for_missing_mandatory_loop % (lp_category, content_subtype, file_type.upper()))
+                                error.append(err_template_for_missing_mandatory_loop
+                                             % (lp_category, content_subtype, _file_type))
                             else:
                                 if is_empty_loop(star_data, lp_category, data_type):
                                     is_valid = False
                                     if data_type == 'Loop':
                                         if count_non_empty_loops(star_data, lp_category, data_type) == 0:
-                                            error.append(err_template_for_empty_mandatory_loop % (lp_category, content_subtype, file_type.upper()))
+                                            error.append(err_template_for_empty_mandatory_loop
+                                                         % (lp_category, content_subtype, _file_type))
                                         else:
-                                            error.append(warn_template_for_empty_mandatory_loop % (lp_category, file_type.upper()))
+                                            error.append(warn_template_for_empty_mandatory_loop
+                                                         % (lp_category, _file_type))
                                     else:
                                         sf_framecodes = get_sf_tag_values_with_empty_loop(star_data, lp_category, sf_category)
                                         if count_non_empty_loops(star_data, lp_category, data_type) == 0:
                                             if len(sf_framecodes) == 1:
-                                                error.append(err_template_for_empty_mandatory_loop_of_sf % (lp_category, sf_framecodes[0], content_subtype, file_type.upper()))
+                                                error.append(err_template_for_empty_mandatory_loop_of_sf
+                                                             % (lp_category, sf_framecodes[0], content_subtype, _file_type))
                                             else:
-                                                error.append(err_template_for_empty_mandatory_loop_of_sf % (lp_category, sf_framecodes, content_subtype, file_type.upper()))
+                                                error.append(err_template_for_empty_mandatory_loop_of_sf
+                                                             % (lp_category, sf_framecodes, content_subtype, _file_type))
                                         else:
                                             if len(sf_framecodes) == 1:
-                                                error.append(warn_template_for_empty_mandatory_loop_of_sf % (lp_category, sf_framecodes[0], file_type.upper()))
+                                                error.append(warn_template_for_empty_mandatory_loop_of_sf
+                                                             % (lp_category, sf_framecodes[0], _file_type))
                                             else:
-                                                error.append(warn_template_for_empty_mandatory_loop_of_sf % (lp_category, sf_framecodes, file_type.upper()))
+                                                error.append(warn_template_for_empty_mandatory_loop_of_sf
+                                                             % (lp_category, sf_framecodes, _file_type))
+
+                    elif file_subtype == 'O':  # DAOTHER-7545, issue #2
+                        is_valid = False
+                        for lp_category in allowed_lp_category_star_o:
+                            if lp_category in lp_list and not is_empty_loop(star_data, lp_category, data_type):
+                                is_valid = True
+                        if not is_valid:
+                            error.append(f"One of the mandatory loops {allowed_lp_category_star_o} is missing. "
+                                         f"Please re-upload the {_file_type} file.")
+                        else:
+                            for lp_category, sf_category in zip(allowed_lp_category_star_o, allowed_sf_category_star_o):
+                                if lp_category in lp_list:
+                                    if is_empty_loop(star_data, lp_category, data_type):
+                                        is_valid = False
+                                        if data_type == 'Loop':
+                                            error.append(warn_template_for_empty_mandatory_loop
+                                                         % (lp_category, _file_type))
+                                        else:
+                                            sf_framecodes = get_sf_tag_values_with_empty_loop(star_data, lp_category, sf_category)
+                                            if len(sf_framecodes) == 1:
+                                                error.append(warn_template_for_empty_mandatory_loop_of_sf
+                                                             % (lp_category, sf_framecodes[0], _file_type))
+                                            else:
+                                                error.append(warn_template_for_empty_mandatory_loop_of_sf
+                                                             % (lp_category, sf_framecodes, _file_type))
 
                     else:
                         is_valid = False
-                        error.append('file_subtype flag should be A/S/R')
+                        error.append('file_subtype flag should be A/S/R/O')
 
             else:
                 is_valid = False
@@ -1248,7 +1323,7 @@ class NEFTranslator:
                 idx = 1
                 for sf in star_data.frame_list:
                     if sf.name.lower() == dup_name:
-                        sf.name = '%s_%s' % (sf.name, idx)
+                        sf.name = f'{sf.name}_{idx}'
                         idx += 1
 
         resolved_names = [sf.name for sf in star_data.frame_list]
@@ -1258,7 +1333,8 @@ class NEFTranslator:
 
         for original, resolved in zip(original_names, resolved_names):
             if original != resolved:
-                messages.append("The saveframe name %r has been renamed to %r in order to prevent case-insensitive name collisions occurring in CIF format." % (original, resolved))
+                messages.append(f"The saveframe name {original!r} has been renamed to {resolved!r} "
+                                "in order to prevent case-insensitive name collisions occurring in CIF format.")
                 corrections[original] = resolved
 
         return len(messages) == 0, messages, corrections
@@ -1387,7 +1463,7 @@ class NEFTranslator:
 
                 if not _tags_exist:
                     missing_tags = list(set(tags) - set(loop.tags))
-                    raise LookupError("Missing mandatory %s loop tag%s." % (missing_tags, 's' if len(missing_tags) > 1 else ''))
+                    raise LookupError(f"Missing mandatory {missing_tags} loop tag(s).")
 
             if allow_empty:
                 # seq_data = list(filter(self.is_data, seq_data))
@@ -1400,8 +1476,8 @@ class NEFTranslator:
                         r = {}
                         for j, t in enumerate(loop.tags):
                             r[t] = loop.data[l][j]
-                        user_warn_msg += '[Invalid data] Sequence must not be empty. #_of_row %s, data_of_row %s.\n' % (l + 1, r)
-                        # raise ValueError("Sequence must not be empty. #_of_row %s, data_of_row %s." % (l + 1, r))
+                        user_warn_msg += '[Invalid data] Sequence must not be empty. '\
+                            f'#_of_row {l + 1}, data_of_row {r}.\n'
 
             for l, i in enumerate(seq_data):  # noqa: E741
                 try:
@@ -1411,8 +1487,8 @@ class NEFTranslator:
                         r = {}
                         for j, t in enumerate(loop.tags):
                             r[t] = loop.data[l][j]
-                        user_warn_msg += '[Invalid data] %s must be int. #_of_row %s, data_of_row %s.\n' % (seq_id, l + 1, r)
-                        # raise ValueError("%s must be int. #_of_row %s, data_of_row %s." % (seq_id, l + 1, r))
+                        user_warn_msg += f'[Invalid data] {seq_id} must be an integer. '\
+                            f'#_of_row {l + 1}, data_of_row {r}.\n'
 
             if len(user_warn_msg) > 0:
                 raise UserWarning(user_warn_msg)
@@ -1425,16 +1501,15 @@ class NEFTranslator:
                     min_seq_id = min([int(i[0]) for i in seq_data if i[2] == c])
                     if min_seq_id < 0:
                         offset_seq_ids[c] = min_seq_id * -1
-                sorted_seq = sorted(set('{} {:04d} {}'.format(i[2], int(i[0]) + offset_seq_ids[i[2]], i[1]) for i in seq_data))
+                sorted_seq = sorted(set(f'{i[2]} {int(i[0]) + offset_seq_ids[i[2]]:04d} {i[1]}' for i in seq_data))
 
-                chk_dict = {'{} {:04d}'.format(i[2], int(i[0])): i[1] for i in seq_data}
+                chk_dict = {f'{i[2]} {int(i[0]):04d}': i[1] for i in seq_data}
 
                 for i in seq_data:
-                    chk_key = '{} {:04d}'.format(i[2], int(i[0]))
+                    chk_key = f'{i[2]} {int(i[0]):04d}'
                     if chk_dict[chk_key] != i[1]:
-                        # raise KeyError("Sequence must be unique. %s %s, %s %s, %s %s vs %s." % (chain_id, i[2], seq_id, i[0], comp_id, i[1], chk_dict[chk_key]))
-                        raise KeyError("%s loop contains different %s (%s and %s) with the same %s %s, %s %s."
-                                       % (lp_category[1:], comp_id, i[1], chk_dict[chk_key], chain_id, i[2], seq_id, i[0]))
+                        raise KeyError(f"{lp_category[1:]} loop contains different {comp_id} ({i[1]} and {chk_dict[chk_key]}) "
+                                       f"with the same {chain_id} {i[2]}, {seq_id} {i[0]}.")
 
                 if len(sorted_seq[0].split(' ')[-1]) > 1:
                     if len(chains) > 1:
@@ -1495,9 +1570,13 @@ class NEFTranslator:
                                 common_seq_id = set(seq_dict[_c]) & set(seq_dict[c])
                                 if len(common_seq_id) == 0:
                                     continue
-                                if any(s for s in common_seq_id if s in seq_dict[_c] and s in seq_dict[c] and cmp_dict[_c][seq_dict[_c].index(s)] != cmp_dict[c][seq_dict[c].index(s)]):
+                                if any(s for s in common_seq_id
+                                       if s in seq_dict[_c] and s in seq_dict[c]
+                                       and cmp_dict[_c][seq_dict[_c].index(s)] != cmp_dict[c][seq_dict[c].index(s)]):
                                     continue
-                                if not any(s for s in common_seq_id if s in seq_dict[_c] and s in seq_dict[c] and cmp_dict[_c][seq_dict[_c].index(s)] == cmp_dict[c][seq_dict[c].index(s)]):
+                                if not any(s for s in common_seq_id
+                                           if s in seq_dict[_c] and s in seq_dict[c]
+                                           and cmp_dict[_c][seq_dict[_c].index(s)] == cmp_dict[c][seq_dict[c].index(s)]):
                                     continue
                                 identity.append(_c)
                         if len(identity) > 0:
@@ -1508,7 +1587,6 @@ class NEFTranslator:
                 data.append(asm)
 
             except ValueError:
-                # raise ValueError("%s must be int." % seq_id)
                 pass
 
         if len(data) == 0:
@@ -1591,7 +1669,7 @@ class NEFTranslator:
 
                 if not _tags_exist:
                     missing_tags = list(set(tags) - set(loop.tags))
-                    raise LookupError("Missing mandatory %s loop tag%s." % (missing_tags, 's' if len(missing_tags) > 1 else ''))
+                    raise LookupError(f"Missing mandatory {missing_tags} loop tag(s).")
 
             if allow_empty:
                 # seq_data = list(filter(self.is_data, seq_data))
@@ -1604,8 +1682,8 @@ class NEFTranslator:
                         r = {}
                         for j, t in enumerate(loop.tags):
                             r[t] = loop.data[l][j]
-                        user_warn_msg += '[Invalid data] Sequence must not be empty. #_of_row %s, data_of_row %s.\n' % (l + 1, r)
-                        # raise ValueError("Sequence must not be empty. #_of_row %s, data_of_row %s." % (l + 1, r))
+                        user_warn_msg += '[Invalid data] Sequence must not be empty. '\
+                            f'#_of_row {l + 1}, data_of_row {r}.\n'
 
             for l, i in enumerate(seq_data):  # noqa: E741
                 try:
@@ -1615,8 +1693,8 @@ class NEFTranslator:
                         r = {}
                         for j, t in enumerate(loop.tags):
                             r[t] = loop.data[l][j]
-                        user_warn_msg += '[Invalid data] %s must be int. #_of_row %s, data_of_row %s.\n' % (seq_id, l + 1, r)
-                        # raise ValueError("%s must be int. #_of_row %s, data_of_row %s." % (seq_id, l + 1, r))
+                        user_warn_msg += f'[Invalid data] {seq_id} must be an integer. '\
+                            f'#_of_row {l + 1}, data_of_row {r}.\n'
 
             if len(user_warn_msg) > 0:
                 raise UserWarning(user_warn_msg)
@@ -1629,16 +1707,15 @@ class NEFTranslator:
                     min_seq_id = min([int(i[0]) for i in seq_data if i[2] == c])
                     if min_seq_id < 0:
                         offset_seq_ids[c] = min_seq_id * -1
-                sorted_seq = sorted(set('{} {:04d} {}'.format(i[2], int(i[0]) + offset_seq_ids[i[2]], i[1]) for i in seq_data))
+                sorted_seq = sorted(set(f'{i[2]} {int(i[0]) + offset_seq_ids[i[2]]:04d} {i[1]}' for i in seq_data))
 
-                chk_dict = {'{} {:04d}'.format(i[2], int(i[0])): i[1] for i in seq_data}
+                chk_dict = {f'{i[2]} {int(i[0]):04d}': i[1] for i in seq_data}
 
                 for i in seq_data:
-                    chk_key = '{} {:04d}'.format(i[2], int(i[0]))
+                    chk_key = f'{i[2]} {int(i[0]):04d}'
                     if chk_dict[chk_key] != i[1]:
-                        # raise KeyError("Sequence must be unique. %s %s, %s %s, %s %s vs %s." % (chain_id, i[2], seq_id, i[0], comp_id, i[1], chk_dict[chk_key]))
-                        raise KeyError("%s loop contains different %s (%s and %s) with the same %s %s, %s %s."
-                                       % (lp_category[1:], comp_id, i[1], chk_dict[chk_key], chain_id, i[2], seq_id, i[0]))
+                        raise KeyError(f"{lp_category[1:]} loop contains different {comp_id} ({i[1]} and {chk_dict[chk_key]}) "
+                                       f"with the same {chain_id} {i[2]}, {seq_id} {i[0]}.")
 
                 if len(sorted_seq[0].split(' ')[-1]) > 1:
                     if len(chains) > 1:
@@ -1699,9 +1776,13 @@ class NEFTranslator:
                                 common_seq_id = set(seq_dict[_c]) & set(seq_dict[c])
                                 if len(common_seq_id) == 0:
                                     continue
-                                if any(s for s in common_seq_id if s in seq_dict[_c] and s in seq_dict[c] and cmp_dict[_c][seq_dict[_c].index(s)] != cmp_dict[c][seq_dict[c].index(s)]):
+                                if any(s for s in common_seq_id
+                                       if s in seq_dict[_c] and s in seq_dict[c]
+                                       and cmp_dict[_c][seq_dict[_c].index(s)] != cmp_dict[c][seq_dict[c].index(s)]):
                                     continue
-                                if not any(s for s in common_seq_id if s in seq_dict[_c] and s in seq_dict[c] and cmp_dict[_c][seq_dict[_c].index(s)] == cmp_dict[c][seq_dict[c].index(s)]):
+                                if not any(s for s in common_seq_id
+                                           if s in seq_dict[_c] and s in seq_dict[c]
+                                           and cmp_dict[_c][seq_dict[_c].index(s)] == cmp_dict[c][seq_dict[c].index(s)]):
                                     continue
                                 identity.append(_c)
                         if len(identity) > 0:
@@ -1712,7 +1793,6 @@ class NEFTranslator:
                 data.append(asm)
 
             except ValueError:
-                # raise ValueError("%s must be int." % seq_id)
                 pass
 
         if len(data) == 0:
@@ -1764,7 +1844,8 @@ class NEFTranslator:
             else:
                 _tags_exist = False
                 for j in range(1, self.lim_num_dim):
-                    _tags = [aseq_id + '_' + str(j), acomp_id + '_' + str(j), asym_id + '_' + str(j), seq_id + '_' + str(j), chain_id + '_' + str(j)]
+                    _tags = [aseq_id + '_' + str(j), acomp_id + '_' + str(j), asym_id + '_' + str(j),
+                             seq_id + '_' + str(j), chain_id + '_' + str(j)]
                     _tags_ = [aseq_id + '_' + str(j), acomp_id + '_' + str(j), asym_id + '_' + str(j), seq_id + '_' + str(j)]
                     if set(_tags) & set(loop.tags) == set(_tags):
                         _tags_exist = True
@@ -1778,7 +1859,7 @@ class NEFTranslator:
 
                 if not _tags_exist:
                     missing_tags = list(set(tags) - set(loop.tags))
-                    raise LookupError("Missing mandatory %s loop tag%s." % (missing_tags, 's' if len(missing_tags) > 1 else ''))
+                    raise LookupError(f"Missing mandatory {missing_tags} loop tag(s).")
 
             if allow_empty:
                 # seq_data = list(filter(self.is_data, seq_data))
@@ -1791,8 +1872,8 @@ class NEFTranslator:
                         r = {}
                         for j, t in enumerate(loop.tags):
                             r[t] = loop.data[l][j]
-                        user_warn_msg += '[Invalid data] Author sequence must not be empty. #_of_row %s, data_of_row %s.\n' % (l + 1, r)
-                        # raise ValueError("Author sequence must not be empty. #_of_row %s, data_of_row %s." % (l + 1, r))
+                        user_warn_msg += '[Invalid data] Author sequence must not be empty. '\
+                            f'#_of_row {l + 1}, data_of_row {r}.\n'
 
             for l, i in enumerate(seq_data):  # noqa: E741
                 try:
@@ -1802,8 +1883,8 @@ class NEFTranslator:
                         r = {}
                         for j, t in enumerate(loop.tags):
                             r[t] = loop.data[l][j]
-                        user_warn_msg += '[Invalid data] %s must be int. #_of_row %s, data_of_row %s.\n' % (seq_id, l + 1, r)
-                        # raise ValueError("%s must be int. #_of_row %s, data_of_row %s." % (seq_id, l + 1, r))
+                        user_warn_msg += f'[Invalid data] {seq_id} must be an integer. '\
+                            f'#_of_row {l + 1}, data_of_row {r}.\n'
 
             if len(user_warn_msg) > 0:
                 raise UserWarning(user_warn_msg)
@@ -1816,15 +1897,16 @@ class NEFTranslator:
                     min_seq_id = min([int(i[3]) for i in seq_data if i[4] == c])
                     if min_seq_id < 0:
                         offset_seq_ids[c] = min_seq_id * -1
-                sorted_seq = sorted(set('{}:{:04d}:{}:{: >4}:{}'.format(i[4], int(i[3]) + offset_seq_ids[i[4]], i[2], i[0], i[1]) for i in seq_data))
+                sorted_seq = sorted(set(f'{i[4]}:{int(i[3]) + offset_seq_ids[i[4]]:04d}:{i[2]}:{i[0]: >4}:{i[1]}' for i in seq_data))
 
-                chk_dict = {'{}:{:04d}:{}:{: >4}'.format(i[4], int(i[3]), i[2], i[0]): i[1] for i in seq_data}
+                chk_dict = {f'{i[4]}:{int(i[3]):04d}:{i[2]}:{i[0]: >4}': i[1] for i in seq_data}
 
                 for i in seq_data:
-                    chk_key = '{}:{:04d}:{}:{: >4}'.format(i[4], int(i[3]), i[2], i[0])
+                    chk_key = f'{i[4]}:{int(i[3]):04d}:{i[2]}:{i[0]: >4}'
                     if chk_dict[chk_key] != i[1]:
-                        raise KeyError("Author sequence must be unique. %s %s, %s %s, %s %s, %s %s, %s %s vs %s." %
-                                       (chain_id, i[4], seq_id, i[3], asym_id, i[2], aseq_id, i[0], acomp_id, i[1], chk_dict[chk_key]))
+                        raise KeyError(f"Author sequence must be unique. {chain_id} {i[4]}, {seq_id} {i[3]}, "
+                                       f"{asym_id} {i[2]}, {aseq_id} {i[0]}, "
+                                       f"{acomp_id} {i[1]} vs {chk_dict[chk_key]}.")
 
                 if len(sorted_seq[0].split(':')[-1]) > 1:
                     if len(chains) > 1:
@@ -1869,7 +1951,6 @@ class NEFTranslator:
                 data.append(asm)
 
             except ValueError:
-                # raise ValueError("%s must be int." % seq_id)
                 pass
 
         if len(data) == 0:
@@ -1943,7 +2024,7 @@ class NEFTranslator:
 
                 if not _tags_exist:
                     missing_tags = list(set(tags) - set(loop.tags))
-                    raise LookupError("Missing mandatory %s loop tag%s." % (missing_tags, 's' if len(missing_tags) > 1 else ''))
+                    raise LookupError(f"Missing mandatory {missing_tags} loop tag(s).")
 
             if allow_empty:
                 # pair_data = list(filter(self.is_data, pair_data))
@@ -1956,16 +2037,14 @@ class NEFTranslator:
                         r = {}
                         for j, t in enumerate(loop.tags):
                             r[t] = loop.data[l][j]
-                        user_warn_msg += '[Invalid data] %s and %s must not be empty. #_of_row %s, data_of_row %s.\n' %\
-                                         (comp_id, atom_id, l + 1, r)
-                        # raise ValueError("%s and %s must not be empty. #_of_row %s, data_of_row %s." %\
-                        #                 (comp_id, atom_id, l + 1, r))
+                        user_warn_msg += f'[Invalid data] {comp_id} and {atom_id} must not be empty. '\
+                            f'#_of_row {l + 1}, data_of_row {r}.\n'
 
             if len(user_warn_msg) > 0:
                 raise UserWarning(user_warn_msg)
 
             comps = sorted(set(i[0].upper() for i in pair_data if i[0] not in self.empty_value))
-            sorted_comp_atom = sorted(set('{} {}'.format(i[0].upper(), i[1]) for i in pair_data))
+            sorted_comp_atom = sorted(set(f'{i[0].upper()} {i[1]}' for i in pair_data))
 
             for c in comps:
                 atm_dict[c] = [i.split(' ')[1] for i in sorted_comp_atom if i.split(' ')[0] == c]
@@ -1987,7 +2066,8 @@ class NEFTranslator:
 
         return data
 
-    def get_nef_atom_type_from_cs_loop(self, star_data, lp_category='nef_chemical_shift', atom_type='element', isotope_number='isotope_number', atom_id='atom_name',
+    def get_nef_atom_type_from_cs_loop(self, star_data, lp_category='nef_chemical_shift',
+                                       atom_type='element', isotope_number='isotope_number', atom_id='atom_name',
                                        allow_empty=False):
         """ Wrapper function of get_atom_type_from_cs_loop() for an NEF file.
             @author: Masashi Yokochi
@@ -1995,7 +2075,8 @@ class NEFTranslator:
 
         return self.get_atom_type_from_cs_loop(star_data, lp_category, atom_type, isotope_number, atom_id, allow_empty)
 
-    def get_star_atom_type_from_cs_loop(self, star_data, lp_category='Atom_chem_shift', atom_type='Atom_type', isotope_number='Atom_isotope_number', atom_id='Atom_ID',
+    def get_star_atom_type_from_cs_loop(self, star_data, lp_category='Atom_chem_shift',
+                                        atom_type='Atom_type', isotope_number='Atom_isotope_number', atom_id='Atom_ID',
                                         allow_empty=False):
         """ Wrapper function of get_atom_type_from_cs_loop() for an NMR-SAR file.
             @author: Masashi Yokochi
@@ -2036,7 +2117,7 @@ class NEFTranslator:
 
             if set(tags) & set(loop.tags) != set(tags):
                 missing_tags = list(set(tags) - set(loop.tags))
-                raise LookupError("Missing mandatory %s loop tag%s." % (missing_tags, 's' if len(missing_tags) > 1 else ''))
+                raise LookupError(f"Missing mandatory {missing_tags} loop tag(s).")
 
             a_type_data = get_lp_tag(loop, tags)
 
@@ -2051,10 +2132,8 @@ class NEFTranslator:
                         r = {}
                         for j, t in enumerate(loop.tags):
                             r[t] = loop.data[l][j]
-                        user_warn_msg += '[Invalid data] %s, %s, and %s must not be empty. #_of_row %s, data_of_row %s.\n' %\
-                                         (atom_type, isotope_number, atom_id, l + 1, r)
-                        # raise ValueError("%s, %s, and %s must not be empty. #_of_row %s, data_of_row %s." %\
-                        #                 (atom_type, isotope_number, atom_id, l + 1, r))
+                        user_warn_msg += f'[Invalid data] {atom_type}, {isotope_number}, and {atom_id} must not be empty. '\
+                            f'#_of_row {l + 1}, data_of_row {r}.\n'
 
             for l, i in enumerate(a_type_data):  # noqa: E741
                 try:
@@ -2064,8 +2143,8 @@ class NEFTranslator:
                         r = {}
                         for j, t in enumerate(loop.tags):
                             r[t] = loop.data[l][j]
-                        user_warn_msg += '[Invalid data] %s must be int. #_of_row %s, data_of_row %s.\n' % (isotope_number, l + 1, r)
-                        # raise ValueError("%s must be int. #_of_row %s, data_of_row %s." % (isotope_number, l + 1, r))
+                        user_warn_msg += f'[Invalid data] {isotope_number} must be an integer. '\
+                            f'#_of_row {l + 1}, data_of_row {r}.\n'
 
             if len(user_warn_msg) > 0:
                 raise UserWarning(user_warn_msg)
@@ -2073,8 +2152,9 @@ class NEFTranslator:
             try:
 
                 a_types = sorted(set(i[0] for i in a_type_data))
-                sorted_ist = sorted(set('{} {}'.format(i[0], i[1]) for i in a_type_data))
-                sorted_atm = sorted(set('{} {}'.format(i[0], i[2]) for i in a_type_data if not (i[2] in self.empty_value or self.bad_pattern.match(i[2]))))  # DAOTHER-7389, issue #3
+                sorted_ist = sorted(set(f'{i[0]} {i[1]}' for i in a_type_data))
+                sorted_atm = sorted(set(f'{i[0]} {i[2]}' for i in a_type_data
+                                        if not (i[2] in self.empty_value or self.bad_pattern.match(i[2]))))  # DAOTHER-7389, issue #3
 
                 for t in a_types:
                     ist_dict[t] = [int(i.split(' ')[1]) for i in sorted_ist if i.split(' ')[0] == t]
@@ -2094,7 +2174,6 @@ class NEFTranslator:
                 data.append(asm)
 
             except ValueError:
-                # raise ValueError("%s must be int." % isotope_number)
                 pass
 
         if len(data) == 0:
@@ -2102,7 +2181,8 @@ class NEFTranslator:
 
         return data
 
-    def get_star_ambig_code_from_cs_loop(self, star_data, lp_category='Atom_chem_shift', comp_id='Comp_ID', atom_id='Atom_ID', ambig_code='Ambiguity_code', ambig_set_id='Ambiguity_set_ID'):
+    def get_star_ambig_code_from_cs_loop(self, star_data, lp_category='Atom_chem_shift', comp_id='Comp_ID', atom_id='Atom_ID',
+                                         ambig_code='Ambiguity_code', ambig_set_id='Ambiguity_set_ID'):
         """ Extract unique pairs of comp_id, atom_id, and ambiguity code from assigned chemical shifts in an NMR-SAR file.
             @author: Masashi Yokochi
             @return: list of unique pairs of comp_id, atom_id, and ambiguity code for each CS loop
@@ -2134,7 +2214,7 @@ class NEFTranslator:
 
             if set(tags) & set(loop.tags) != set(tags):
                 missing_tags = list(set(tags) - set(loop.tags))
-                raise LookupError("Missing mandatory %s loop tag%s." % (missing_tags, 's' if len(missing_tags) > 1 else ''))
+                raise LookupError(f"Missing mandatory {missing_tags} loop tag(s).")
 
             ambig_data = get_lp_tag(loop, tags)
 
@@ -2145,9 +2225,9 @@ class NEFTranslator:
             for l, i in enumerate(ambig_data):  # noqa: E741
                 # already checked elsewhere
                 # if i[0] in self.empty_value:
-                #   raise ValueError("%s must not be empty." % comp_id)
+                #   raise ValueError(f"{comp_id} must not be empty.")
                 # if i[1] in self.empty_value:
-                #    raise ValueError("%s must not be empty." % atom_id)
+                #    raise ValueError(f"{comp_id} must not be empty.")
                 if i[2] not in self.empty_value:
 
                     try:
@@ -2157,24 +2237,24 @@ class NEFTranslator:
                             r = {}
                             for j, t in enumerate(loop.tags):
                                 r[t] = loop.data[l][j]
-                            user_warn_msg += '[Invalid data] %s must be one of %s. #_of_row %s, data_of_row %s.\n' % (ambig_code, list(self.bmrb_ambiguity_codes), l + 1, r)
-                            # raise ValueError("%s must be one of %s. #_of_row %s, data_of_row %s." % (ambig_code, list(self.bmrb_ambiguity_codes), l + 1, r))
+                            user_warn_msg += f'[Invalid data] {ambig_code} must be one of {self.bmrb_ambiguity_codes}. '\
+                                f'#_of_row {l + 1}, data_of_row {r}.\n'
 
                     if code not in self.bmrb_ambiguity_codes:
                         if l < len_loop_data:
                             r = {}
                             for j, t in enumerate(loop.tags):
                                 r[t] = loop.data[l][j]
-                            user_warn_msg += '[Invalid data] %s must be one of %s. #_of_row %s, data_of_row %s.\n' % (ambig_code, list(self.bmrb_ambiguity_codes), l + 1, r)
-                            # raise ValueError("%s must be one of %s. #_of_row %s, data_of_row %s." % (ambig_code, list(self.bmrb_ambiguity_codes), l + 1, r))
+                            user_warn_msg += f'[Invalid data] {ambig_code} must be one of {self.bmrb_ambiguity_codes}. '\
+                                f'#_of_row {l + 1}, data_of_row {r}.\n'
 
                     if code >= 4:
                         if i[3] in self.empty_value and l < len_loop_data:
                             r = {}
                             for j, t in enumerate(loop.tags):
                                 r[t] = loop.data[l][j]
-                            user_warn_msg += '[Invalid data] %s must not be empty for %s %s. #_of_row %s, data_of_row %s.\n' % (ambig_set_id, ambig_code, code, l + 1, r)
-                            # raise ValueError("%s must not be empty for %s %s. #_of_row %s, data_of_row %s." % (ambig_set_id, ambig_code, code, l + 1, r))
+                            user_warn_msg += f'[Invalid data] {ambig_set_id} must not be empty for {ambig_code} {code}. '\
+                                f'#_of_row {l + 1}, data_of_row {r}.\n'
                         else:
                             try:
                                 int(i[3])
@@ -2183,8 +2263,8 @@ class NEFTranslator:
                                     r = {}
                                     for j, t in enumerate(loop.tags):
                                         r[t] = loop.data[l][j]
-                                    user_warn_msg += '[Invalid data] %s must be int. #_of_row %s, data_of_row %s.\n' % (ambig_set_id, l + 1, r)
-                                    # raise ValueError("%s must be int. #_of_row %s, data_of_row %s." % (ambig_set_id, l + 1, r))
+                                    user_warn_msg += f'[Invalid data] {ambig_set_id} must be an integer. '\
+                                        f'#_of_row {l + 1}, data_of_row {r}.\n'
 
                 if i[3] not in self.empty_value:
 
@@ -2193,8 +2273,8 @@ class NEFTranslator:
                             r = {}
                             for j, t in enumerate(loop.tags):
                                 r[t] = loop.data[l][j]
-                            user_warn_msg += '[Invalid data] %s must be empty for %s %s. #_of_row %s, data_of_row %s.\n' % (ambig_set_id, ambig_code, i[2], l + 1, r)
-                            # raise ValueError("%s must be empty for %s %s. #_of_row %s, data_of_row %s." % (ambig_set_id, ambig_code, i[2], l + 1, r))
+                            user_warn_msg += f'[Invalid data] {ambig_set_id} must be empty for {ambig_code} {i[2]}. '\
+                                f'#_of_row {l + 1}, data_of_row {r}.\n'
 
             if len(user_warn_msg) > 0:
                 raise UserWarning(user_warn_msg)
@@ -2206,8 +2286,8 @@ class NEFTranslator:
             if len(_ambig_data) == 0:
                 continue
 
-            ambigs = sorted(set('{}:{}'.format(i[0].upper(), i[2]) for i in _ambig_data))
-            sorted_atm = sorted(set('{}:{} {}'.format(i[0].upper(), i[2], i[1]) for i in _ambig_data))
+            ambigs = sorted(set(f'{i[0].upper()}:{i[2]}' for i in _ambig_data))
+            sorted_atm = sorted(set(f'{i[0].upper()}:{i[2]} {i[1]}' for i in _ambig_data))
 
             for a in ambigs:
                 atm_dict[a] = [i.split(' ')[1] for i in sorted_atm if i.split(' ')[0] == a]
@@ -2277,15 +2357,15 @@ class NEFTranslator:
             if set(tags) & set(loop.tags) == set(tags):
                 index_data = get_lp_tag(loop, tags)
             else:
-                raise LookupError("Missing mandatory %s loop tag." % index_id)
+                raise LookupError(f"Missing mandatory {index_id} loop tag.")
 
             for l, i in enumerate(index_data):  # noqa: E741
                 if self.is_empty(i) and l < len_loop_data:
                     r = {}
                     for j, t in enumerate(loop.tags):
                         r[t] = loop.data[l][j]
-                    user_warn_msg += '[Invalid data] %s must not be empty. #_of_row %s, data_of_row %s.\n' % (index_id, l + 1, r)
-                    # raise ValueError("%s must not be empty. #_of_row %s, data_of_row %s." % (index_id, l + 1, r))
+                    user_warn_msg += f'[Invalid data] {index_id} must not be empty. '\
+                        f'#_of_row {l + 1}, data_of_row {r}.\n'
                 else:
                     try:
                         int(i[0])
@@ -2294,8 +2374,8 @@ class NEFTranslator:
                             r = {}
                             for j, t in enumerate(loop.tags):
                                 r[t] = loop.data[l][j]
-                            user_warn_msg += '[Invalid data] %s must be int. #_of_row %s, data_of_row %s.\n' % (index_id, l + 1, r)
-                            # raise ValueError("%s must be int. #_of_row %s, data_of_row %s." % (index_id, l + 1, r))
+                            user_warn_msg += f'[Invalid data] {index_id} must be an integer. '\
+                                f'#_of_row {l + 1}, data_of_row {r}.\n'
 
             if len(user_warn_msg) > 0:
                 raise UserWarning(user_warn_msg)
@@ -2310,12 +2390,11 @@ class NEFTranslator:
                 dup_idxs = [i for i in set(idxs) if idxs.count(i) > 1]
 
                 if len(dup_idxs) > 0:
-                    raise KeyError("%s must be unique in loop. %s are duplicated." % (index_id, dup_idxs))
+                    raise KeyError(f"{index_id} must be unique in loop. {dup_idxs} are duplicated.")
 
                 data.append(idxs)
 
             except ValueError:
-                # raise ValueError("%s must be int." % index_id)
                 pass
 
         if len(data) == 0:
@@ -2349,9 +2428,10 @@ class NEFTranslator:
 
     #     return self.check_data(star_data, lp_category, key_items, data_items)
     #
-    def check_data(self, star_data, lp_category, key_items, data_items, allowed_tags=None, disallowed_tags=None, parent_pointer=None,
-                   test_on_index=False, enforce_non_zero=False, enforce_sign=False, enforce_range=False, enforce_enum=False, enforce_allowed_tags=False,
-                   excl_missing_data=False):
+    def check_data(self, star_data, lp_category, key_items, data_items,
+                   allowed_tags=None, disallowed_tags=None, parent_pointer=None,
+                   test_on_index=False, enforce_non_zero=False, enforce_sign=False, enforce_range=False,
+                   enforce_enum=False, enforce_allowed_tags=False, excl_missing_data=False):
         """ Extract data with sanity check from any given loops in an NEF/NMR-STAR file.
             @author: Masashi Yokochi
             @return: list of extracted data for each loop
@@ -2372,7 +2452,8 @@ class NEFTranslator:
 
         data = []  # data of all loops
 
-        item_types = ('str', 'bool', 'int', 'index-int', 'positive-int', 'positive-int-as-str', 'pointer-index', 'float', 'positive-float', 'range-float', 'enum', 'enum-int')
+        item_types = ('str', 'bool', 'int', 'index-int', 'positive-int', 'positive-int-as-str', 'pointer-index',
+                      'float', 'positive-float', 'range-float', 'enum', 'enum-int')
 
         key_names = [k['name'] for k in key_items]
         data_names = [d['name'] for d in data_items]
@@ -2383,19 +2464,19 @@ class NEFTranslator:
 
         for k in key_items:
             if k['type'] not in item_types:
-                raise TypeError("Type %s of data item %s must be one of %s." % (k['type'], k['name'], item_types))
+                raise TypeError(f"Type {k['type']} of data item {k['name']} must be one of {item_types}.")
 
         for d in data_items:
             if d['type'] not in item_types:
-                raise TypeError("Type %s of data item %s must be one of %s." % (d['type'], d['name'], item_types))
+                raise TypeError(f"Type {d['type']} of data item {d['name']} must be one of {item_types}.")
 
         if allowed_tags is not None:
 
             if len(key_names) > 0 and (set(key_names) | set(allowed_tags)) != set(allowed_tags):
-                raise LookupError("Key items %s must not exists." % ((set(key_names) | set(allowed_tags)) - set(allowed_tags)))
+                raise LookupError(f"Key items {((set(key_names) | set(allowed_tags)) - set(allowed_tags))} must not exists.")
 
             if len(data_names) > 0 and (set(data_names) | set(allowed_tags)) != set(allowed_tags):
-                raise LookupError("Data items %s must not exists." % ((set(data_names) | set(allowed_tags)) - set(allowed_tags)))
+                raise LookupError(f"Data items {((set(data_names) | set(allowed_tags)) - set(allowed_tags))} must not exists.")
 
             for d in data_items:
                 if 'group-mandatory' in d and d['group-mandatory']:
@@ -2403,11 +2484,11 @@ class NEFTranslator:
                     if group['member-with'] is not None:
                         for mw in group['member-with']:
                             if mw not in allowed_tags:
-                                raise ValueError("Member data item %s of %s must exists in allowed tags." % (mw, d['name']))
+                                raise ValueError(f"Member data item {mw} of {d['name']} must exists in allowed tags.")
                     if group['coexist-with'] is not None:
                         for cw in group['coexist-with']:
                             if cw not in allowed_tags:
-                                raise ValueError("Coexisting data item %s of %s must exists in allowed tags." % (cw, d['name']))
+                                raise ValueError(f"Coexisting data item {cw} of {d['name']} must exists in allowed tags.")
 
         for loop in loops:
             tag_data = []
@@ -2427,7 +2508,7 @@ class NEFTranslator:
                                 row.append(k['default'])
                             loop.add_tag(k['name'])
                         else:
-                            raise LookupError("Missing mandatory %s loop tag%s." % (missing_tags, 's' if len(missing_tags) > 1 else ''))
+                            raise LookupError(f"Missing mandatory {missing_tags} loop tag(s).")
 
             if len(mand_data_names) > 0 and set(mand_data_names) & set(loop.tags) != set(mand_data_names):
                 missing_tags = list(set(mand_data_names) - set(loop.tags))
@@ -2444,7 +2525,7 @@ class NEFTranslator:
                                 row.append(k['default'])
                             loop.add_tag(k['name'])
                         else:
-                            raise LookupError("Missing mandatory %s loop tag%s." % (missing_tags, 's' if len(missing_tags) > 1 else ''))
+                            raise LookupError(f"Missing mandatory {missing_tags} loop tag(s).")
 
             if len(_mand_data_names) > 0 and set(_mand_data_names) & set(loop.tags) != set(_mand_data_names):
                 missing_tags = list(set(_mand_data_names) - set(loop.tags))
@@ -2482,12 +2563,12 @@ class NEFTranslator:
             if disallowed_tags is not None:
                 if len(set(loop.tags) & set(disallowed_tags)) > 0:
                     disallow_tags = list(set(loop.tags) & set(disallowed_tags))
-                    raise LookupError("Disallowed %s loop tag%s exist%s." % (disallow_tags, 's' if len(disallow_tags) > 1 else '', '' if len(disallow_tags) > 1 else 's'))
+                    raise LookupError(f"Disallowed {disallow_tags} loop tag(s) exists.")
 
             if enforce_allowed_tags and allowed_tags is not None:
                 extra_tags = (set(loop.tags) | set(allowed_tags)) - set(allowed_tags)
                 if len(extra_tags) > 0:
-                    raise LookupError("Unauthorized items %s must not exists." % extra_tags)  # DAOTHER-7545 only for NMR-STAR
+                    raise LookupError(f"Unauthorized {extra_tags} loop tag(s) must not exists.")  # DAOTHER-7545 only for NMR-STAR
 
             for d in data_items:
                 if 'group-mandatory' in d and d['group-mandatory']:
@@ -2500,7 +2581,7 @@ class NEFTranslator:
                                     set_cw = set(group['coexist-with'])
                                     set_cw.add(name)
                                     missing_tags = list(set_cw - set(loop.tags))
-                                    raise LookupError("Missing mandatory %s loop tag%s." % (missing_tags, 's' if len(missing_tags) > 1 else ''))
+                                    raise LookupError(f"Missing mandatory {missing_tags} loop tag(s).")
 
                     elif group['member-with'] is not None:
                         has_member = False
@@ -2512,7 +2593,7 @@ class NEFTranslator:
                             set_mw = set(group['member-with'])
                             set_mw.add(name)
                             missing_tags = list(set_mw - set(loop.tags))
-                            raise LookupError("Missing mandatory %s loop tag%s." % (missing_tags, 's' if len(missing_tags) > 1 else ''))
+                            raise LookupError(f"Missing mandatory {missing_tags} loop tag(s).")
 
             tags = [k['name'] for k in key_items]
             for data_name in set(data_names) & set(loop.tags):
@@ -2555,13 +2636,14 @@ class NEFTranslator:
                         dup_idxs = [i for i in set(idxs) if idxs.count(i) > 1]
 
                         if len(dup_idxs) > 0:
-                            raise KeyError("%s must be unique in loop. %s are duplicated." % (tags[_j], dup_idxs))
+                            raise KeyError(f"{tags[_j]} must be unique in loop. {dup_idxs} are duplicated.")
 
                     except ValueError:
                         r = {}
                         for j, t in enumerate(loop.tags):
                             r[t] = loop.data[l][j]
-                        raise ValueError("%s must be int. #_of_row %s, data_of_row %s." % (tags[_j], l + 1, r))
+                        raise ValueError(f"{tags[_j]} must be an integer. "
+                                         f"#_of_row {l + 1}, data_of_row {r}.")
 
             if not excl_missing_data:
                 for l, i in enumerate(tag_data):  # noqa: E741
@@ -2574,14 +2656,17 @@ class NEFTranslator:
                                     r = {}
                                     for _j, _t in enumerate(loop.tags):  # noqa: E741
                                         r[_t] = loop.data[l][_j]
-                                    raise ValueError("%s must not be empty. #_of_row %s, data_of_row %s." % (name, l + 1, r))
+                                    raise ValueError(f"{name} must not be empty. "
+                                                     f"#_of_row {l + 1}, data_of_row {r}.")
 
                             for d in data_items:
-                                if d['name'] == name and d['mandatory'] and 'default' not in d and not ('remove-bad-pattern' in d and d['detele-bad-pattern']):
+                                if d['name'] == name and d['mandatory'] and 'default' not in d\
+                                        and not ('remove-bad-pattern' in d and d['detele-bad-pattern']):
                                     r = {}
                                     for _j, _t in enumerate(loop.tags):
                                         r[_t] = loop.data[l][_j]
-                                    raise ValueError("%s must not be empty. #_of_row %s, data_of_row %s." % (name, l + 1, r))
+                                    raise ValueError(f"{name} must not be empty. "
+                                                     f"#_of_row {l + 1}, data_of_row {r}.")
 
             if test_on_index and key_len > 0:
                 keys = set()
@@ -2611,7 +2696,7 @@ class NEFTranslator:
                         else:
                             msg = ''
                             for j in range(key_len):
-                                msg += key_names[j] + ' %s, ' % i[j]
+                                msg += key_names[j] + ' ' + i[j] + ', '
 
                             idx_msg = ''
 
@@ -2632,7 +2717,8 @@ class NEFTranslator:
 
                                 idx_msg = '[Check rows of ' + idx_msg[:-2] + '] '
 
-                            user_warn_msg += '[Multiple data] %sDuplicated rows having the following values %s exist in a loop.\n' % (idx_msg, msg.rstrip().rstrip(','))
+                            user_warn_msg += "[Multiple data] "\
+                                f"{idx_msg}Duplicated rows having the following values {msg.rstrip().rstrip(',')} exist in a loop.\n"
 
                     else:
                         keys.add(key)
@@ -2653,10 +2739,10 @@ class NEFTranslator:
 
                             msg = ''
                             for j in range(key_len):
-                                msg += key_names[j] + ' %s, ' % i[j]
+                                msg += key_names[j] + ' ' + i[j] + ', '
                             for j in relax_key_ids:
                                 if i[j] not in self.empty_value:
-                                    msg += tags[j] + ' %s, ' % i[j]
+                                    msg += tags[j] + ' ' + i[j] + ', '
 
                             idx_msg = ''
 
@@ -2679,7 +2765,8 @@ class NEFTranslator:
 
                                 idx_msg = '[Check rows of ' + idx_msg[:-2] + '] '
 
-                            user_warn_msg += '[Multiple data] %sDuplicated rows having the following values %s exist in a loop.\n' % (idx_msg, msg.rstrip().rstrip(','))
+                            user_warn_msg += "[Multiple data] "\
+                                f"{idx_msg}Duplicated rows having the following values {msg.rstrip().rstrip(',')} exist in a loop.\n"
 
                         else:
                             keys.add(key)
@@ -2712,7 +2799,8 @@ class NEFTranslator:
                                 if 'clear-bad-pattern' in k and k['clear-bad-pattern']:
                                     clear_bad_pattern = True
                                     continue
-                                raise ValueError("%s%s %r must be %s." % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
+                                raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
+                                                 + f"{name} {val!r} must be {self.readable_item_type[type]}.")
                         elif type == 'int':
                             try:
                                 ent[name] = int(val)
@@ -2733,7 +2821,8 @@ class NEFTranslator:
                                     clear_bad_pattern = True
                                     continue
                                 else:
-                                    raise ValueError("%s%s %r must be %s." % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
+                                    raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
+                                                     + f"{name} {val!r} must be {self.readable_item_type[type]}.")
                         elif type in ('index-int', 'positive-int', 'positive-int-as-str'):
                             try:
                                 ent[name] = int(val)
@@ -2756,18 +2845,21 @@ class NEFTranslator:
                                     clear_bad_pattern = True
                                     continue
                                 else:
-                                    raise ValueError("%s%s %r must be %s." % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
+                                    raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
+                                                     + f"{name} {val!r} must be {self.readable_item_type[type]}.")
                             if (type == 'index-int' and ent[name] <= 0)\
                                or (type == 'positive-int' and (ent[name] < 0 or (ent[name] == 0 and 'enforce-non-zero' in k and k['enforce-non-zero']))):
-                                raise ValueError("%s%s %r must be %s." % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
+                                raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
+                                                 + f"{name} {val!r} must be {self.readable_item_type[type]}.")
                             if ent[name] == 0 and enforce_non_zero:
                                 if 'void-zero' in k:
                                     if self.replace_zero_by_null_in_case:
                                         loop.data[l][loop.tags.index(name)] = None
                                     ent[name] = None
                                 else:
-                                    user_warn_msg += "[Zero value error] %s%s %r should not be zero, as defined by %s.\n"\
-                                        % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type])
+                                    user_warn_msg += f"[Zero value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
+                                        f"{name} {val!r} should not be zero, "\
+                                        f"as defined by {self.readable_item_type[type]}.\n"
                             if type == 'positive-int-as-str':
                                 i[j] = ent[name] = str(ent[name])
                         elif type == 'pointer-index':
@@ -2792,13 +2884,16 @@ class NEFTranslator:
                                     clear_bad_pattern = True
                                     continue
                                 else:
-                                    raise ValueError("%s%s %r must be %s." % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
+                                    raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
+                                                     + f"{name} {val!r} must be {self.readable_item_type[type]}.")
                             if ent[name] <= 0:
-                                raise ValueError("%s%s %r must be %s." % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
+                                raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
+                                                 + f"{name} {val!r} must be {self.readable_item_type[type]}.")
                             if static_val[name] is None:
                                 static_val[name] = val
                             elif val != static_val[name] and test_on_index:
-                                raise ValueError("%s%s %s vs %s must be %s." % (get_idx_msg(idx_tag_ids, tags, ent), name, val, static_val[name], type))
+                                raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
+                                                 + f"{name} {val} vs {static_val[name]} must be {self.readable_item_type[type]}.")
                         elif type == 'float':
                             try:
                                 ent[name] = float(val)
@@ -2812,7 +2907,8 @@ class NEFTranslator:
                                 if 'clear-bad-pattern' in k and k['clear-bad-pattern']:
                                     clear_bad_pattern = True
                                     continue
-                                raise ValueError("%s%s %r must be %s." % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
+                                raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
+                                                 + f"{name} {val!r} must be {self.readable_item_type[type]}.")
                         elif type == 'positive-float':
                             try:
                                 ent[name] = float(val)
@@ -2826,23 +2922,26 @@ class NEFTranslator:
                                 if 'clear-bad-pattern' in k and k['clear-bad-pattern']:
                                     clear_bad_pattern = True
                                     continue
-                                raise ValueError("%s%s %r must be %s." % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
+                                raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
+                                                 + f"{name} {val!r} must be {self.readable_item_type[type]}.")
                             if ent[name] < 0.0 or (ent[name] == 0.0 and 'enforce-non-zero' in k and k['enforce-non-zero']):
-                                raise ValueError("%s%s %r must be %s." % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
+                                raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
+                                                 + f"{name} {val!r} must be {self.readable_item_type[type]}.")
                             if ent[name] == 0.0 and enforce_non_zero:
                                 if 'void-zero' in k:
                                     if self.replace_zero_by_null_in_case:
                                         loop.data[l][loop.tags.index(name)] = None
                                     ent[name] = None
                                 else:
-                                    user_warn_msg += "[Zero value error] %s%s %r should not be zero, as defined by %s.\n"\
-                                        % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type])
+                                    user_warn_msg += f"[Zero value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
+                                        f"{name} {val!r} should not be zero, "\
+                                        f"as defined by {self.readable_item_type[type]}.\n"
                         elif type == 'range-float':
                             try:
                                 _range = k['range']
                                 ent[name] = float(val)
                             except KeyError:
-                                raise ValueError('Range of key item %s is not defined' % name)
+                                raise ValueError(f'Range of key item {name} is not defined')
                             except ValueError:
                                 if excl_missing_data:
                                     missing_mandatory_data = True
@@ -2856,7 +2955,8 @@ class NEFTranslator:
                                 if not enforce_range:
                                     ent[name] = None
                                     continue
-                                user_warn_msg += "[Range value error] %s%s %r must be %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type])
+                                user_warn_msg += f"[Range value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
+                                    f"{name} {val!r} must be {self.readable_item_type[type]}.\n"
                             if ('min_exclusive' in _range and _range['min_exclusive'] == 0.0 and ent[name] <= 0.0)\
                                or ('min_inclusive' in _range and _range['min_inclusive'] == 0.0 and ent[name] < 0):
                                 if ent[name] < 0.0:
@@ -2866,23 +2966,27 @@ class NEFTranslator:
                                         if not enforce_range:
                                             ent[name] = None
                                         else:
-                                            user_warn_msg += "[Range value error] %s%s %r must be within range %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, _range)
+                                            user_warn_msg += f"[Range value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
+                                                f"{name} {val!r} must be within range {_range}.\n"
                                     elif enforce_sign:
-                                        user_warn_msg += "[Negative value error] %s%s %r should not have negative value for %s, %s.\n"\
-                                            % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type], _range)
+                                        user_warn_msg += f"[Negative value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
+                                            f"{name} {val!r} should not have "\
+                                            f"negative value for {self.readable_item_type[type]}, {_range}.\n"
                                 elif ent[name] == 0.0 and 'enforce-non-zero' in k and k['enforce-non-zero']:
                                     if not enforce_range:
                                         ent[name] = None
                                     else:
-                                        user_warn_msg += "[Range value error] %s%s %r must be within range %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, _range)
+                                        user_warn_msg += f"[Range value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
+                                            f"{name} {val!r} must be within range {_range}.\n"
                                 elif ent[name] == 0.0 and enforce_non_zero:
                                     if 'void-zero' in k:
                                         if self.replace_zero_by_null_in_case:
                                             loop.data[l][loop.tags.index(name)] = None
                                         ent[name] = None
                                     else:
-                                        user_warn_msg += "[Zero value error] %s%s %r should not be zero, as defined by %s, %s.\n"\
-                                            % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type], _range)
+                                        user_warn_msg += f"[Zero value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
+                                            f"{name} {val!r} should not be zero, "\
+                                            f"as defined by {self.readable_item_type[type]}, {_range}.\n"
                             elif ('min_exclusive' in _range and ent[name] <= _range['min_exclusive']) or\
                                  ('min_inclusive' in _range and ent[name] < _range['min_inclusive']) or\
                                  ('max_inclusive' in _range and ent[name] > _range['max_inclusive']) or\
@@ -2894,7 +2998,8 @@ class NEFTranslator:
                                 elif not enforce_range:
                                     ent[name] = None
                                 else:
-                                    user_warn_msg += "[Range value error] %s%s %r must be within range %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, _range)
+                                    user_warn_msg += f"[Range value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
+                                        f"{name} {val!r} must be within range {_range}.\n"
                         elif type == 'enum':
                             try:
                                 enum = k['enum']
@@ -2912,23 +3017,27 @@ class NEFTranslator:
                                         if 'clear-bad-pattern' in k and k['clear-bad-pattern']:
                                             clear_bad_pattern = True
                                             continue
-                                        raise ValueError("%s%s %r must be one of %s." % (get_idx_msg(idx_tag_ids, tags, ent), name, val, enum))
+                                        raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
+                                                         + f"{name} {val!r} must be one of {enum}.")
                                     elif enforce_enum:
-                                        user_warn_msg += "[Enumeration error] %s%s %r should be one of %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, enum)
+                                        user_warn_msg += f"[Enumeration error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
+                                            f"{name} {val!r} should be one of {enum}.\n"
                                 ent[name] = val
                             except KeyError:
-                                raise ValueError('Enumeration of key item %s is not defined' % name)
+                                raise ValueError(f'Enumeration of key item {name} is not defined')
                         elif type == 'enum-int':
                             try:
                                 enum = k['enum']
                                 if int(val) not in enum:
                                     if 'enforce-enum' in k and k['enforce-enum']:
-                                        raise ValueError("%s%s %r must be one of %s." % (get_idx_msg(idx_tag_ids, tags, ent), name, val, enum))
+                                        raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
+                                                         + f"{name} {val!r} must be one of {enum}.")
                                     if enforce_enum:
-                                        user_warn_msg += "[Enumeration error] %s%s %r should be one of %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, enum)
+                                        user_warn_msg += f"[Enumeration error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
+                                            f"{name} {val!r} should be one of {enum}.\n"
                                 ent[name] = int(val)
                             except KeyError:
-                                raise ValueError('Enumeration of key item %s is not defined' % name)
+                                raise ValueError(f'Enumeration of key item {name} is not defined')
                             except ValueError:
                                 if excl_missing_data:
                                     missing_mandatory_data = True
@@ -2939,7 +3048,8 @@ class NEFTranslator:
                                 if 'clear-bad-pattern' in k and k['clear-bad-pattern']:
                                     clear_bad_pattern = True
                                     continue
-                                raise ValueError("%s%s %r must be %s." % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
+                                raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
+                                                 + f"{name} {val!r} must be {self.readable_item_type[type]}.")
                         else:
                             if val in self.empty_value:
                                 missing_mandatory_data = True
@@ -2979,7 +3089,8 @@ class NEFTranslator:
                                         if 'clear-bad-pattern' in d and d['clear-bad-pattern']:
                                             clear_bad_pattern = True
                                             continue
-                                        raise ValueError("%s%s %r must be %s." % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
+                                        raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
+                                                         + f"{name} {val!r} must be {self.readable_item_type[type]}.")
                                 elif type == 'int':
                                     try:
                                         ent[name] = int(val)
@@ -3000,7 +3111,8 @@ class NEFTranslator:
                                             clear_bad_pattern = True
                                             continue
                                         else:
-                                            raise ValueError("%s%s %r must be %s." % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
+                                            raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
+                                                             + f"{name} {val!r} must be {self.readable_item_type[type]}.")
                                 elif type in ('index-int', 'positive-int', 'positive-int-as-str'):
                                     try:
                                         ent[name] = int(val)
@@ -3023,18 +3135,21 @@ class NEFTranslator:
                                             clear_bad_pattern = True
                                             continue
                                         else:
-                                            raise ValueError("%s%s %r must be %s." % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
+                                            raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
+                                                             + f"{name} {val!r} must be {self.readable_item_type[type]}.")
                                     if (type == 'index-int' and ent[name] <= 0)\
                                        or (type == 'positive-int' and (ent[name] < 0 or (ent[name] == 0 and 'enforce-non-zero' in d and d['enforce-non-zero']))):
-                                        raise ValueError("%s%s %r must be %s." % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
+                                        raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
+                                                         + f"{name} {val!r} must be {self.readable_item_type[type]}.")
                                     if ent[name] == 0 and enforce_non_zero:
                                         if 'void-zero' in d:
                                             if self.replace_zero_by_null_in_case:
                                                 loop.data[l][loop.tags.index(name)] = None
                                             ent[name] = None
                                         else:
-                                            user_warn_msg += "[Zero value error] %s%s %r should not be zero, as defined by %s.\n"\
-                                                % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type])
+                                            user_warn_msg += f"[Zero value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
+                                                f"{name} {val!r} should not be zero, "\
+                                                f"as defined by {self.readable_item_type[type]}.\n"
                                     if type == 'positive-int-as-str':
                                         i[j] = ent[name] = str(ent[name])
                                 elif type == 'pointer-index':
@@ -3059,13 +3174,16 @@ class NEFTranslator:
                                             clear_bad_pattern = True
                                             continue
                                         else:
-                                            raise ValueError("%s%s %r must be %s." % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
+                                            raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
+                                                             + f"{name} {val!r} must be {self.readable_item_type[type]}.")
                                     if ent[name] <= 0:
-                                        raise ValueError("%s%s %r must be %s." % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
+                                        raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
+                                                         + f"{name} {val!r} must be {self.readable_item_type[type]}.")
                                     if static_val[name] is None:
                                         static_val[name] = val
                                     elif val != static_val[name] and test_on_index:
-                                        raise ValueError("%s%s %s vs %s must be %s." % (get_idx_msg(idx_tag_ids, tags, ent), name, val, static_val[name], type))
+                                        raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
+                                                         + f"{name} {val} vs {static_val[name]} must be {self.readable_item_type[type]}.")
                                 elif type == 'float':
                                     try:
                                         ent[name] = float(val)
@@ -3079,7 +3197,8 @@ class NEFTranslator:
                                         if 'clear-bad-pattern' in d and d['clear-bad-pattern']:
                                             clear_bad_pattern = True
                                             continue
-                                        raise ValueError("%s%s %r must be %s." % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
+                                        raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
+                                                         + f"{name} {val!r} must be {self.readable_item_type[type]}.")
                                 elif type == 'positive-float':
                                     try:
                                         ent[name] = float(val)
@@ -3093,23 +3212,26 @@ class NEFTranslator:
                                         if 'clear-bad-pattern' in d and d['clear-bad-pattern']:
                                             clear_bad_pattern = True
                                             continue
-                                        raise ValueError("%s%s %r must be %s." % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
+                                        raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
+                                                         + f"{name} {val!r} must be {self.readable_item_type[type]}.")
                                     if ent[name] < 0.0 or (ent[name] == 0.0 and 'enforce-non-zero' in d and d['enforce-non-zero']):
-                                        raise ValueError("%s%s %r must be %s." % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
+                                        raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
+                                                         + f"{name} {val!r} must be {self.readable_item_type[type]}.")
                                     if ent[name] == 0.0 and enforce_non_zero:
                                         if 'void-zero' in d:
                                             if self.replace_zero_by_null_in_case:
                                                 loop.data[l][loop.tags.index(name)] = None
                                             ent[name] = None
                                         else:
-                                            user_warn_msg += "[Zero value error] %s%s %r should not be zero, as defined by %s.\n"\
-                                                % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type])
+                                            user_warn_msg += f"[Zero value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
+                                                f"{name} {val!r} should not be zero, "\
+                                                f"as defined by {self.readable_item_type[type]}.\n"
                                 elif type == 'range-float':
                                     try:
                                         _range = d['range']
                                         ent[name] = float(val)
                                     except KeyError:
-                                        raise ValueError('Range of data item %s is not defined' % name)
+                                        raise ValueError(f'Range of data item {name} is not defined')
                                     except ValueError:
                                         if excl_missing_data:
                                             ent[name] = None
@@ -3123,7 +3245,8 @@ class NEFTranslator:
                                         if 'clear-bad-pattern' in d and d['clear-bad-pattern']:
                                             clear_bad_pattern = True
                                             continue
-                                        user_warn_msg += "[Range value error] %s%s %r must be %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type])
+                                        user_warn_msg += f"[Range value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
+                                            f"{name} {val!r} must be {self.readable_item_type[type]}.\n"
                                     if ('min_exclusive' in _range and _range['min_exclusive'] == 0.0 and ent[name] <= 0.0)\
                                        or ('min_inclusive' in _range and _range['min_inclusive'] == 0.0 and ent[name] < 0):
                                         if ent[name] < 0.0:
@@ -3133,24 +3256,27 @@ class NEFTranslator:
                                                 if not enforce_range:
                                                     ent[name] = None
                                                 else:
-                                                    user_warn_msg += "[Range value error] %s%s %r must be within range %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, _range)
+                                                    user_warn_msg += f"[Range value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
+                                                        f"{name} {val!r} must be within range {_range}.\n"
                                             elif enforce_sign:
-                                                user_warn_msg += "[Negative value error] %s%s %r should not have negative value for %s, %s.\n"\
-                                                    % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type], _range)
+                                                user_warn_msg += f"[Negative value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
+                                                    f"{name} {val!r} should not have "\
+                                                    f"negative value for {self.readable_item_type[type]}, {_range}.\n"
                                         elif ent[name] == 0.0 and 'enforce-non-zero' in d and d['enforce-non-zero']:
                                             if not enforce_range:
                                                 ent[name] = None
                                             else:
-                                                user_warn_msg += "[Range value error] %s%s %r must be within range %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, _range)
+                                                user_warn_msg += f"[Range value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
+                                                    f"{name} {val!r} must be within range {_range}.\n"
                                         elif ent[name] == 0.0 and enforce_non_zero:
                                             if 'void-zero' in d:
                                                 if self.replace_zero_by_null_in_case:
                                                     loop.data[l][loop.tags.index(name)] = None
                                                 ent[name] = None
                                             else:
-                                                user_warn_msg += "[Zero value error] %s%s %r should not be zero, as defined by %s, %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent),
-                                                                                                                                             name, val,
-                                                                                                                                             self.readable_item_type[type], _range)
+                                                user_warn_msg += f"[Zero value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
+                                                    f"{name} {val!r} should not be zero, "\
+                                                    f"as defined by {self.readable_item_type[type]}, {_range}.\n"
                                         elif 'remove-bad-pattern' in d and d['remove-bad-pattern']:
                                             remove_bad_pattern = True
                                             continue
@@ -3174,7 +3300,8 @@ class NEFTranslator:
                                             clear_bad_pattern = True
                                             continue
                                         else:
-                                            user_warn_msg += "[Range value error] %s%s %r must be within range %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, _range)
+                                            user_warn_msg += f"[Range value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
+                                                f"{name} {val!r} must be within range {_range}.\n"
                                 elif type == 'enum':
                                     try:
                                         enum = d['enum']
@@ -3186,9 +3313,11 @@ class NEFTranslator:
                                                 if excl_missing_data:
                                                     ent[name] = None
                                                     continue
-                                                raise ValueError("%s%s %r must be one of %s." % (get_idx_msg(idx_tag_ids, tags, ent), name, val, enum))
+                                                raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
+                                                                 + f"{name} {val!r} must be one of {enum}.")
                                             elif enforce_enum:
-                                                user_warn_msg += "[Enumeration error] %s%s %r should be one of %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, enum)
+                                                user_warn_msg += f"[Enumeration error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
+                                                    f"{name} {val!r} should be one of {enum}.\n"
                                             elif 'remove-bad-pattern' in d and d['remove-bad-pattern']:
                                                 remove_bad_pattern = True
                                                 continue
@@ -3197,15 +3326,17 @@ class NEFTranslator:
                                                 continue
                                         ent[name] = val
                                     except KeyError:
-                                        raise ValueError('Enumeration of data item %s is not defined' % name)
+                                        raise ValueError(f'Enumeration of data item {name} is not defined')
                                 elif type == 'enum-int':
                                     try:
                                         enum = d['enum']
                                         if int(val) not in enum:
                                             if 'enforce-enum' in d and d['enforce-enum']:
-                                                raise ValueError("%s%s %r must be one of %s." % (get_idx_msg(idx_tag_ids, tags, ent), name, val, enum))
+                                                raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
+                                                                 + f"{name} {val!r} must be one of {enum}.")
                                             if enforce_enum:
-                                                user_warn_msg += "[Enumeration error] %s%s %r should be one of %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, enum)
+                                                user_warn_msg += f"[Enumeration error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
+                                                    f"{name} {val!r} should be one of {enum}.\n"
                                             elif 'remove-bad-pattern' in d and d['remove-bad-pattern']:
                                                 remove_bad_pattern = True
                                                 continue
@@ -3214,12 +3345,13 @@ class NEFTranslator:
                                                 continue
                                         ent[name] = int(val)
                                     except KeyError:
-                                        raise ValueError('Enumeration of data item %s is not defined' % name)
+                                        raise ValueError(f'Enumeration of data item {name} is not defined')
                                     except ValueError:
                                         if excl_missing_data:
                                             ent[name] = None
                                             continue
-                                        raise ValueError("%s%s %r must be %s." % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
+                                        raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
+                                                         + f"{name} {val!r} must be {self.readable_item_type[type]}.")
                                 else:
                                     if ('remove-bad-pattern' in d and d['remove-bad-pattern']) or ('clear-bad-pattern' in d and d['clear-bad-pattern']):
                                         if self.bad_pattern.match(val):
@@ -3242,7 +3374,8 @@ class NEFTranslator:
                             if group['coexist-with'] is not None:
                                 for cw in group['coexist-with']:
                                     if cw not in ent or ent[cw] is None:
-                                        raise ValueError("%sOne of data item %s must not be empty for a row having %s %r." % (get_idx_msg(idx_tag_ids, tags, ent), cw, name, ent[name]))
+                                        raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
+                                                         + f"One of data item {cw} must not be empty for a row having {name} {ent[name]!r}.")
 
                             if 'smaller-than' in group and group['smaller-than'] is not None:
                                 for st in group['smaller-than']:
@@ -3251,7 +3384,8 @@ class NEFTranslator:
                                             if 'circular-shift' in group:
                                                 ent[st] -= abs(group['circular-shift'])
                                             if ent[name] < ent[st]:
-                                                raise ValueError("%sData item %s %r must be larger than %s %r." % (get_idx_msg(idx_tag_ids, tags, ent), name, ent[name], st, ent[st]))
+                                                raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
+                                                                 + f"Data item {name} {ent[name]!r} must be larger than {st} {ent[st]!r}.")
 
                             if 'larger-than' in group and group['larger-than'] is not None:
                                 for lt in group['larger-than']:
@@ -3260,13 +3394,15 @@ class NEFTranslator:
                                             if 'circular-shift' in group:
                                                 ent[lt] += abs(group['circular-shift'])
                                             if ent[name] > ent[lt]:
-                                                raise ValueError("%sData item %s %r must be smaller than %s %r." % (get_idx_msg(idx_tag_ids, tags, ent), name, ent[name], lt, ent[lt]))
+                                                raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
+                                                                 + f"Data item {name} {ent[name]!r} must be smaller than {lt} {ent[lt]!r}.")
 
                             if 'not-equal-to' in group and group['not-equal-to'] is not None:
                                 for ne in group['not-equal-to']:
                                     if ne in ent and ent[ne] is not None:
                                         if ent[name] == ent[ne]:
-                                            raise ValueError("%sData item %s %r must not be equal to %s %r." % (get_idx_msg(idx_tag_ids, tags, ent), name, ent[name], ne, ent[ne]))
+                                            raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
+                                                             + f"Data item {name} {ent[name]!r} must not be equal to {ne} {ent[ne]!r}.")
 
                         elif group['member-with'] is not None:
                             has_member = False
@@ -3277,7 +3413,8 @@ class NEFTranslator:
                             if not has_member:
                                 member = set(group['member-with'])
                                 member.add(name)
-                                raise ValueError("%sOne of data items %s must not be empty." % (get_idx_msg(idx_tag_ids, tags, ent), member))
+                                raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
+                                                 + f"One of data items {member} must not be empty.")
 
                 if missing_mandatory_data:
                     continue
@@ -3286,14 +3423,16 @@ class NEFTranslator:
                     r = {}
                     for j, t in enumerate(loop.tags):
                         r[t] = loop.data[l][j]
-                    user_warn_msg += '[Remove bad pattern] Found bad pattern. #_of_row %s, data_of_row %s.\n' % (l + 1, r)
+                    user_warn_msg += f'[Remove bad pattern] Found bad pattern. '\
+                        f'#_of_row {l + 1}, data_of_row {r}.\n'
                     continue  # should be removed from loop later
 
                 if clear_bad_pattern:
                     r = {}
                     for j, t in enumerate(loop.tags):
                         r[t] = loop.data[l][j]
-                    user_warn_msg += '[Clear bad pattern] Found bad pattern. #_of_row %s, data_of_row %s.\n' % (l + 1, r)
+                    user_warn_msg += f'[Clear bad pattern] Found bad pattern. '\
+                        f'#_of_row {l + 1}, data_of_row {r}.\n'
                     for k in key_items:
                         if k in loop.tags and 'clear-bad-pattern' in k and k['clear-bad-pattern']:
                             i[loop.tags.index(k)] = '?'
@@ -3390,7 +3529,7 @@ class NEFTranslator:
                                 row.append(k['default'])
                             loop.add_tag(k['name'])
                         else:
-                            raise LookupError("Missing mandatory %s loop tag%s." % (missing_tags, 's' if len(missing_tags) > 1 else ''))
+                            raise LookupError(f"Missing mandatory {missing_tags} loop tag(s).")
 
             keys = set()
             dup_ids = set()
@@ -3440,7 +3579,7 @@ class NEFTranslator:
 
             if len(key_names) > 0 and set(key_names) & set(loop.tags) != set(key_names):
                 missing_tags = list(set(key_names) - set(loop.tags))
-                raise LookupError("Missing mandatory %s loop tag%s." % (missing_tags, 's' if len(missing_tags) > 1 else ''))
+                raise LookupError(f"Missing mandatory {missing_tags} loop tag(s).")
 
             tag_data = get_lp_tag(loop, key_names)
 
@@ -3529,7 +3668,7 @@ class NEFTranslator:
                                 row.append(k['default'])
                             loop.add_tag(k['name'])
                         else:
-                            raise LookupError("Missing mandatory %s loop tag%s." % (missing_tags, 's' if len(missing_tags) > 1 else ''))
+                            raise LookupError(f"Missing mandatory {missing_tags} loop tag(s).")
 
             atom_keys = self.get_atom_keys(loop.get_tag_names(), file_type)
 
@@ -3605,19 +3744,20 @@ class NEFTranslator:
 
         user_warn_msg = ''
 
-        item_types = ('str', 'bool', 'int', 'positive-int', 'positive-int-as-str', 'float', 'positive-float', 'range-float', 'enum', 'enum-int')
+        item_types = ('str', 'bool', 'int', 'positive-int', 'positive-int-as-str',
+                      'float', 'positive-float', 'range-float', 'enum', 'enum-int')
 
         tag_names = [t['name'] for t in tag_items]
         mand_tag_names = [t['name'] for t in tag_items if t['mandatory']]
 
         for t in tag_items:
             if t['type'] not in item_types:
-                raise TypeError("Type %s of tag item %s must be one of %s." % (t['type'], t['name'], item_types))
+                raise TypeError(f"Type {t['type']} of tag item {t['name']} must be one of {item_types}.")
 
         if allowed_tags is not None:
 
             if (set(tag_names) | set(allowed_tags)) != set(allowed_tags):
-                raise LookupError("Tag items %s must not exists." % ((set(tag_names) | set(allowed_tags)) - set(allowed_tags)))
+                raise LookupError(f"Tag items {((set(tag_names) | set(allowed_tags)) - set(allowed_tags))} must not exists.")
 
             for t in tag_items:
                 if 'group-mandatory' in t and t['group-mandatory']:
@@ -3625,17 +3765,17 @@ class NEFTranslator:
                     if group['member-with'] is not None:
                         for mw in group['member-with']:
                             if mw not in allowed_tags:
-                                raise ValueError("Member tag item %s of %s must exists in allowed tags." % (mw, t['name']))
+                                raise ValueError(f"Member tag item {mw} of {t['name']} must exists in allowed tags.")
                     if group['coexist-with'] is not None:
                         for cw in group['coexist-with']:
                             if cw not in allowed_tags:
-                                raise ValueError("Coexisting tag item %s of %s must exists in allowed tags." % (cw, t['name']))
+                                raise ValueError(f"Coexisting tag item {cw} of {t['name']} must exists in allowed tags.")
 
         sf_tags = {i[0]: i[1] for i in star_data.tags}
 
         if len(mand_tag_names) > 0 and set(mand_tag_names) & set(sf_tags.keys()) != set(mand_tag_names):
             missing_tags = list(set(mand_tag_names) - set(sf_tags.keys()))
-            raise LookupError("Missing mandatory %s saveframe tag%s." % (missing_tags, 's' if len(missing_tags) > 1 else ''))
+            raise LookupError(f"Missing mandatory {missing_tags} saveframe tag(s).")
 
         for t in tag_items:
             if 'group-mandatory' in t and t['group-mandatory']:
@@ -3648,7 +3788,7 @@ class NEFTranslator:
                                 set_cw = set(group['coexist-with'])
                                 set_cw.add(name)
                                 missing_tags = list(set_cw - set(sf_tags.keys()))
-                                raise LookupError("Missing mandatory %s saveframe tag%s." % (missing_tags, 's' if len(missing_tags) > 1 else ''))
+                                raise LookupError(f"Missing mandatory {missing_tags} saveframe tag(s).")
 
                 elif group['member-with'] is not None:
                     has_member = False
@@ -3660,13 +3800,13 @@ class NEFTranslator:
                         set_mw = set(group['member-with'])
                         set_mw.add(name)
                         missing_tags = list(set_mw - set(sf_tags.keys()))
-                        raise LookupError("Missing mandatory %s saveframe tag%s." % (missing_tags, 's' if len(missing_tags) > 1 else ''))
+                        raise LookupError(f"Missing mandatory {missing_tags} saveframe tag(s).")
 
         for name, val in sf_tags.items():
             if val in self.empty_value:
                 for t in tag_items:
                     if t['name'] == name and t['mandatory'] and 'default' not in t:
-                        raise ValueError("%s must not be empty." % name)
+                        raise ValueError(f"{name} must not be empty.")
 
         ent = {}  # entity
 
@@ -3680,7 +3820,7 @@ class NEFTranslator:
                         try:
                             ent[name] = val.lower() in self.true_value
                         except ValueError:
-                            raise ValueError("%s %r must be %s." % (name, val, self.readable_item_type[type]))
+                            raise ValueError(f"{name} {val!r} must be {self.readable_item_type[type]}.")
                     elif type == 'int':
                         try:
                             ent[name] = int(val)
@@ -3692,7 +3832,7 @@ class NEFTranslator:
                             elif 'default' in t:
                                 ent[name] = int(t['default'])
                             else:
-                                raise ValueError("%s %r must be %s." % (name, val, self.readable_item_type[type]))
+                                raise ValueError(f"{name} {val!r} must be {self.readable_item_type[type]}.")
                     elif type in ('positive-int', 'positive-int-as-str'):
                         try:
                             ent[name] = int(val)
@@ -3706,48 +3846,50 @@ class NEFTranslator:
                             elif 'default' in t:
                                 ent[name] = int(t['default'])
                             else:
-                                raise ValueError("%s %r must be %s." % (name, val, self.readable_item_type[type]))
+                                raise ValueError(f"{name} {val!r} must be {self.readable_item_type[type]}.")
                         if ent[name] < 0 or (ent[name] == 0 and 'enforce-non-zero' in t and t['enforce-non-zero']):
-                            raise ValueError("%s %r must be %s." % (name, val, self.readable_item_type[type]))
+                            raise ValueError(f"{name} {val!r} must be {self.readable_item_type[type]}.")
                         if ent[name] == 0 and enforce_non_zero:
                             if 'void-zero' in t:
                                 if self.replace_zero_by_null_in_case:
                                     star_data.tags[sf_tags.keys().index(name)][1] = None
                                 ent[name] = None
                             else:
-                                user_warn_msg += "[Zero value error] %s %r should not be zero, as defined by %s.\n" % (name, val, self.readable_item_type[type])
+                                user_warn_msg += f"[Zero value error] {name} {val!r} should not be zero, "\
+                                    f"as defined by {self.readable_item_type[type]}.\n"
                         if type == 'positive-int-as-str':
                             ent[name] = str(ent[name])
                     elif type == 'float':
                         try:
                             ent[name] = float(val)
                         except ValueError:
-                            raise ValueError("%s %r must be %s." % (name, val, self.readable_item_type[type]))
+                            raise ValueError(f"{name} {val!r} must be {self.readable_item_type[type]}.")
                     elif type == 'positive-float':
                         try:
                             ent[name] = float(val)
                         except ValueError:
-                            raise ValueError("%s %r must be %s." % (name, val, self.readable_item_type[type]))
+                            raise ValueError(f"{name} {val!r} must be {self.readable_item_type[type]}.")
                         if ent[name] < 0.0 or (ent[name] == 0.0 and 'enforce-non-zero' in t and t['enforce-non-zero']):
-                            raise ValueError("%s %r must be %s." % (name, val, self.readable_item_type[type]))
+                            raise ValueError(f"{name} {val!r} must be {self.readable_item_type[type]}.")
                         if ent[name] == 0.0 and enforce_non_zero:
                             if 'void-zero' in t:
                                 if self.replace_zero_by_null_in_case:
                                     star_data.tags[sf_tags.keys().index(name)][1] = None
                                 ent[name] = None
                             else:
-                                user_warn_msg += "[Zero value error] %s %r should not be zero, as defined by %s.\n" % (name, val, self.readable_item_type[type])
+                                user_warn_msg += f"[Zero value error] {name} {val!r} should not be zero, "\
+                                    f"as defined by {self.readable_item_type[type]}.\n"
                     elif type == 'range-float':
                         try:
                             _range = t['range']
                             ent[name] = float(val)
                         except KeyError:
-                            raise ValueError('Range of tag item %s is not defined.' % name)
+                            raise ValueError(f'Range of tag item {name} is not defined.')
                         except ValueError:
                             if not enforce_range:
                                 ent[name] = None
                                 continue
-                            user_warn_msg += "[Range value error] %s %r must be %s.\n" % (name, val, self.readable_item_type[type])
+                            user_warn_msg += f"[Range value error] {name} {val!r} must be {self.readable_item_type[type]}.\n"
                         if ('min_exclusive' in _range and _range['min_exclusive'] == 0.0 and ent[name] <= 0.0)\
                            or ('min_inclusive' in _range and _range['min_inclusive'] == 0.0 and ent[name] < 0):
                             if ent[name] < 0.0:
@@ -3757,21 +3899,23 @@ class NEFTranslator:
                                     if not enforce_range:
                                         ent[name] = None
                                     else:
-                                        user_warn_msg += "[Range value error] %s %r must be within range %s.\n" % (name, val, _range)
+                                        user_warn_msg += f"[Range value error] {name} {val!r} must be within range {_range}.\n"
                                 elif enforce_sign:
-                                    user_warn_msg += "[Negative value error] %s %r should not have negative value for %s, %s.\n" % (name, val, self.readable_item_type[type], _range)
+                                    user_warn_msg += f"[Negative value error] {name} {val!r} should not have "\
+                                        f"negative value for {self.readable_item_type[type]}, {_range}.\n"
                             elif ent[name] == 0.0 and 'enforce-non-zero' in t and t['enforce-non-zero']:
                                 if not enforce_range:
                                     ent[name] = None
                                 else:
-                                    user_warn_msg += "[Range value error] %s %r must be within range %s.\n" % (name, val, _range)
+                                    user_warn_msg += f"[Range value error] {name} {val!r} must be within range {_range}.\n"
                             elif ent[name] == 0.0 and enforce_non_zero:
                                 if 'void-zero' in t:
                                     if self.replace_zero_by_null_in_case:
                                         star_data.tags[sf_tags.keys().index(name)][1] = None
                                     ent[name] = None
                                 else:
-                                    user_warn_msg += "[Zero value error] %s %r should not be zero, as defined by %s, %s.\n" % (name, val, self.readable_item_type[type], _range)
+                                    user_warn_msg += f"[Zero value error] {name} {val!r} should not be zero, "\
+                                        f"as defined by {self.readable_item_type[type]}, {_range}.\n"
                         elif ('min_exclusive' in _range and ent[name] <= _range['min_exclusive']) or\
                              ('min_inclusive' in _range and ent[name] < _range['min_inclusive']) or\
                              ('max_inclusive' in _range and ent[name] > _range['max_inclusive']) or\
@@ -3783,7 +3927,7 @@ class NEFTranslator:
                             elif not enforce_range:
                                 ent[name] = None
                             else:
-                                user_warn_msg += "[Range value error] %s %r must be within range %s.\n" % (name, val, _range)
+                                user_warn_msg += f"[Range value error] {name} {val} must be within range {_range}.\n"
                     elif type == 'enum':
                         if val in self.empty_value:
                             val = '?'  # '.' raises internal error in NmrDpUtility
@@ -3796,34 +3940,38 @@ class NEFTranslator:
                                     itName = '_' + category + '.' + t['name']
                                     if val == '?' and enforce_enum:
                                         if self.is_mandatory_tag(itName, file_type):
-                                            user_warn_msg += "[Enumeration error] The mandatory type %s %r is missing and the type must be one of %s. %r will be given unless you would like to fix the type and re-upload the %s file.\n" % (itName, val, enum, t['enum-alt'][val], file_type.upper())  # noqa: E501
+                                            user_warn_msg += f"[Enumeration error] The mandatory type {itName} {val!r} is missing "\
+                                                f"and the type must be one of {enum}. {t['enum-alt'][val]} will be given "\
+                                                f"unless you would like to fix the type and re-upload the {file_type.upper()} file.\n"
                                             val = t['enum-alt'][val]
                                             star_data.tags[itCol][1] = val
                                         else:
-                                            user_warn_msg += "[Enumeration error] %s %r should be one of %s. The type may be filled with either 'undefined' or estimated value unless you would like to fix the type and re-upload the %s file.\n" % (name, val, enum, file_type.upper())  # noqa: E501
+                                            user_warn_msg += f"[Enumeration error] {name} {val!r} should be one of {enum}. "\
+                                                "The type may be filled with either 'undefined' or estimated value "\
+                                                f"unless you would like to fix the type and re-upload the {file_type.upper()} file.\n"
                                     else:
                                         val = t['enum-alt'][val]
                                         star_data.tags[itCol][1] = val
                                 elif 'enforce-enum' in t and t['enforce-enum']:
-                                    raise ValueError("%s %r must be one of %s." % (name, val, enum))
+                                    raise ValueError(f"{name} {val!r} must be one of {enum}.")
                                 elif enforce_enum:
-                                    user_warn_msg += "[Enumeration error] %s %r should be one of %s.\n" % (name, val, enum)
+                                    user_warn_msg += f"[Enumeration error] {name} {val!r} should be one of {enum}.\n"
                             ent[name] = None if val in self.empty_value else val
                         except KeyError:
-                            raise ValueError('Enumeration of tag item %s is not defined.' % name)
+                            raise ValueError(f'Enumeration of tag item {name} is not defined.')
                     elif type == 'enum-int':
                         try:
                             enum = t['enum']
                             if int(val) not in enum:
                                 if 'enforce-enum' in t and t['enforce-enum']:
-                                    raise ValueError("%s %r must be one of %s." % (name, val, enum))
+                                    raise ValueError(f"{name} {val!r} must be one of {enum}.")
                                 if enforce_enum:
-                                    user_warn_msg += "[Enumeration error] %s %r should be one of %s.\n" % (name, val, enum)
+                                    user_warn_msg += f"[Enumeration error] {name} {val!r} should be one of {enum}.\n"
                             ent[name] = int(val)
                         except KeyError:
-                            raise ValueError('Enumeration of tag item %s is not defined.' % name)
+                            raise ValueError(f'Enumeration of tag item {name} is not defined.')
                         except ValueError:
-                            raise ValueError("%s %r must be %s." % (name, val, self.readable_item_type[type]))
+                            raise ValueError(f"{name} {val!r} must be {self.readable_item_type[type]}.")
                     else:
                         ent[name] = val
 
@@ -3835,7 +3983,7 @@ class NEFTranslator:
                         if group['coexist-with'] is not None:
                             for cw in group['coexist-with']:
                                 if cw not in ent or ent[cw] is None:
-                                    raise ValueError("One of tag item %s must not be empty due to %s %r." % (cw, name, ent[name]))
+                                    raise ValueError(f"One of tag item {cw} must not be empty due to {name} {ent[name]!r}.")
 
                         if 'smaller-than' in group and group['smaller-than'] is not None:
                             for st in group['smaller-than']:
@@ -3844,7 +3992,7 @@ class NEFTranslator:
                                         if 'circular-shift' in group:
                                             ent[st] -= abs(group['circular-shift'])
                                         if ent[name] < ent[st]:
-                                            raise ValueError("Tag item %s %r must be larger than %s %r." % (name, ent[name], st, ent[st]))
+                                            raise ValueError(f"Tag item {name} {ent[name]!r} must be larger than {st} {ent[st]!r}.")
 
                         if 'larger-than' in group and group['larger-than'] is not None:
                             for lt in group['larger-than']:
@@ -3853,13 +4001,13 @@ class NEFTranslator:
                                         if 'circular-shift' in group:
                                             ent[lt] += abs(group['circular-shift'])
                                         if ent[name] > ent[lt]:
-                                            raise ValueError("Tag item %s %r must be smaller than %s %r." % (name, ent[name], lt, ent[lt]))
+                                            raise ValueError(f"Tag item {name} {ent[name]!r} must be smaller than {lt} {ent[lt]!r}.")
 
                         if 'not-equal-to' in group and group['not-equal-to'] is not None:
                             for ne in group['not-equal-to']:
                                 if ne in ent and ent[ne] is not None:
                                     if ent[name] == ent[ne]:
-                                        raise ValueError("Tag item %s %r must not be equal to %s %r." % (name, ent[name], ne, ent[ne]))
+                                        raise ValueError(f"Tag item {name} {ent[name]!r} must not be equal to {ne} {ent[ne]!r}.")
 
                     elif group['member-with'] is not None:
                         has_member = False
@@ -3870,7 +4018,7 @@ class NEFTranslator:
                         if not has_member:
                             member = set(group['member-with'])
                             member.add(name)
-                            raise ValueError("One of tag items %s must not be empty." % member)
+                            raise ValueError(f"One of tag items {member} must not be empty.")
 
         if len(user_warn_msg) > 0:
             raise UserWarning(user_warn_msg)
@@ -4260,7 +4408,7 @@ class NEFTranslator:
             else:
 
                 if leave_unmatched:
-                    details = 'Unknown non-standard residue %s found.' % comp_id
+                    details = f'Unknown non-standard residue {comp_id} found.'
                 else:
                     logging.critical('Unknown non-standard residue %s found.', comp_id)
 
@@ -4279,7 +4427,7 @@ class NEFTranslator:
 
                 len_atom_type = len(atom_type)
 
-                pattern = re.compile(r'%s\S\d+' % (atom_type))
+                pattern = re.compile(fr'{atom_type}\S\d+')
 
                 alist2 = [i for i in atoms
                           if re.search(pattern, i) and i[len_atom_type].isdigit()]  # bmrb_id: 15879, pdb_id: 2k6r, comp_id: DNS
@@ -4305,11 +4453,11 @@ class NEFTranslator:
 
                 if wc_code == '%':
                     if comp_code == 'X':
-                        pattern = re.compile(r'%s\S?$' % atom_type)
+                        pattern = re.compile(fr'{atom_type}\S?$')
                     else:
-                        pattern = re.compile(r'%s\d+' % atom_type)
+                        pattern = re.compile(fr'{atom_type}\d+')
                 elif wc_code == '*':
-                    pattern = re.compile(r'%s\S+' % atom_type)
+                    pattern = re.compile(fr'{atom_type}\S+')
                 else:
                     logging.critical('Invalid NEF atom nomenclature %s found.', nef_atom)
 
@@ -4324,7 +4472,7 @@ class NEFTranslator:
                 atom_type = ref_atom[5]
                 xy_code = ref_atom[6].lower()
 
-                pattern = re.compile(r'%s[^\']+' % atom_type)
+                pattern = re.compile(fr'{atom_type}[^\']+')
 
                 atom_list = [i for i in atoms if re.search(pattern, i)]
 
@@ -4358,16 +4506,17 @@ class NEFTranslator:
                 methyl_atoms = self.__csStat.getMethylAtoms(comp_id)
 
                 if comp_code != 'X' and not nef_atom.endswith('%') and comp_code != 'X' and not nef_atom.endswith('*') and nef_atom + '1' in methyl_atoms:
-                    return self.get_star_atom(comp_id, nef_atom + '%', ('%s converted to %s%%.' % (nef_atom, nef_atom)) if leave_unmatched else None, leave_unmatched)
+                    return self.get_star_atom(comp_id, nef_atom + '%',
+                                              f'{nef_atom} converted to {nef_atom}%%.' if leave_unmatched else None, leave_unmatched)
 
                 if nef_atom[-1].lower() == 'x' or nef_atom[-1].lower() == 'y' and nef_atom[:-1] + '1' in methyl_atoms:
-                    return self.get_star_atom(comp_id, nef_atom[:-1] + '%', ('%s converted to %s%%.' % (nef_atom, nef_atom[:-1])) if leave_unmatched else None, leave_unmatched)
+                    return self.get_star_atom(comp_id, nef_atom[:-1] + '%',
+                                              f'{nef_atom} converted to {nef_atom[:-1]}%%.' if leave_unmatched else None, leave_unmatched)
 
                 if ((comp_code != 'X' and nef_atom[-1] == '%') or nef_atom[-1] == '*') and (nef_atom[:-1] + '1' not in methyl_atoms) and\
                    len(nef_atom) > 2 and (nef_atom[-2].lower() == 'x' or nef_atom[-2].lower() == 'y'):
                     return self.get_star_atom(comp_id, nef_atom[:-2] + ('1' if nef_atom[-2].lower() == 'x' else '2') + '%',
-                                              ('%s converted to %s%%.'
-                                               % (nef_atom, nef_atom[:-2] + ('1' if nef_atom[-2].lower() == 'x' else '2'))) if leave_unmatched else None,
+                                              f"{nef_atom} converted to {nef_atom[:-2] + ('1' if nef_atom[-2].lower() == 'x' else '2')}%%." if leave_unmatched else None,
                                               leave_unmatched)
 
             if nef_atom in atoms:
@@ -4377,7 +4526,7 @@ class NEFTranslator:
                 atom_list.append(nef_atom)
                 ambiguity_code = None
                 if details is None:
-                    details = '%s is invalid atom_id in comp_id %s.' % (nef_atom, comp_id)
+                    details = f'{nef_atom} is invalid atom_id in comp_id {comp_id}.'
 
         return atom_list, ambiguity_code, details
 
@@ -4451,9 +4600,9 @@ class NEFTranslator:
                         if leave_unmatched:
                             atom_list.append(atom_id)
                             if not self.__last_comp_id_test:
-                                details[atom_id] = 'Unknown non-standard residue %s found.' % comp_id
+                                details[atom_id] = f'Unknown non-standard residue {comp_id} found.'
                             else:
-                                details[atom_id] = '%s is invalid atom_id in comp_id %s.' % (atom_id, comp_id)
+                                details[atom_id] = f'{atom_id} is invalid atom_id in comp_id {comp_id}.'
                             atom_id_map[atom_id] = atom_id
                         else:
                             if not self.__last_comp_id_test:
@@ -4476,7 +4625,7 @@ class NEFTranslator:
 
                     if leave_unmatched:
                         atom_list.append(atom_id)
-                        details[atom_id] = '%s has invalid ambiguity code %s.' % (atom_id, ambig_code)
+                        details[atom_id] = f'{atom_id} has invalid ambiguity code {ambig_code}.'
                         atom_id_map[atom_id] = atom_id
                     else:
                         logging.critical('Invalid ambiguity code %s for atom_id %s found.', ambig_code, atom_id)
@@ -4493,14 +4642,15 @@ class NEFTranslator:
 
                             if leave_unmatched:
                                 atom_list.append(atom_id)
-                                details[atom_id] = '%s is invalid atom_id in comp_id %s.' % (atom_id, comp_id)
+                                details[atom_id] = f'{atom_id} is invalid atom_id in comp_id {comp_id}.'
                                 atom_id_map[atom_id] = atom_id
                             else:
                                 logging.critical('Invalid atom nomenclature %s found.', atom_id)
 
                         else:
 
-                            has_methyl_proton = len([_a['atom_id'] for _a in star_atom_list if _a['atom_id'] in methyl_h_list and (_a['value'] is None or _a['value'] == _value)]) == 3
+                            has_methyl_proton = len([_a['atom_id'] for _a in star_atom_list
+                                                     if _a['atom_id'] in methyl_h_list and (_a['value'] is None or _a['value'] == _value)]) == 3
 
                             if has_methyl_proton:
 
@@ -4535,7 +4685,7 @@ class NEFTranslator:
 
                         if leave_unmatched:
                             atom_list.append(atom_id)
-                            details[atom_id] = '%s has invalid ambiguity code %s.' % (atom_id, ambig_code)
+                            details[atom_id] = f'{atom_id} has invalid ambiguity code {ambig_code}.'
                             atom_id_map[atom_id] = atom_id
                         else:
                             logging.critical('Invalid ambiguity code %s for atom_id %s found.', ambig_code, atom_id)
@@ -4551,7 +4701,7 @@ class NEFTranslator:
 
                                 if leave_unmatched:
                                     atom_list.append(atom_id)
-                                    details[atom_id] = '%s is invalid atom_id in comp_id %s.' % (atom_id, comp_id)
+                                    details[atom_id] = f'{atom_id} is invalid atom_id in comp_id {comp_id}.'
                                     atom_id_map[atom_id] = atom_id
                                 else:
                                     logging.critical('Invalid atom nomenclature %s found.', atom_id)
@@ -4561,7 +4711,8 @@ class NEFTranslator:
                                 has_methyl_proton = len([_a['atom_id'] for _a in star_atom_list
                                                          if _a['atom_id'] in methyl_h_list and (_a['value'] is None or _a['value'] == _value)]) == 3
                                 has_methyl_proton_2 = methyl_h_list_2 is not None and len([_a['atom_id'] for _a in star_atom_list
-                                                                                           if _a['atom_id'] in methyl_h_list_2 and (_a['value'] is None or _a['value'] == _value)]) == 3  # noqa: E501
+                                                                                           if _a['atom_id'] in methyl_h_list_2
+                                                                                           and (_a['value'] is None or _a['value'] == _value)]) == 3
 
                                 nef_atom_prefix = 'x'
                                 nef_atom_prefix_2 = 'y'
@@ -4571,7 +4722,8 @@ class NEFTranslator:
                                     methyl_proton_value = next((_a['value'] for _a in star_atom_list if _a['atom_id'] in methyl_h_list), None)
                                     methyl_proton_value_2 = next((_a['value'] for _a in star_atom_list if _a['atom_id'] in methyl_h_list_2), None)
 
-                                    if methyl_proton_value is not None and methyl_proton_value_2 is not None and float(methyl_proton_value_2) < float(methyl_proton_value):
+                                    if methyl_proton_value is not None and methyl_proton_value_2 is not None\
+                                            and float(methyl_proton_value_2) < float(methyl_proton_value):
                                         nef_atom_prefix = 'y'
                                         nef_atom_prefix_2 = 'x'
 
@@ -4615,7 +4767,7 @@ class NEFTranslator:
 
                                 if leave_unmatched:
                                     atom_list.append(atom_id)
-                                    details[atom_id] = '%s is invalid atom_id in comp_id %s.' % (atom_id, comp_id)
+                                    details[atom_id] = f'{atom_id} is invalid atom_id in comp_id {comp_id}.'
                                     atom_id_map[atom_id] = atom_id
                                 else:
                                     logging.critical('Invalid atom nomenclature %s found.', atom_id)
@@ -4638,7 +4790,8 @@ class NEFTranslator:
                                     geminal_proton_value = next((_a['value'] for _a in star_atom_list if _a['atom_id'] == geminal_h_list[0]), None)
                                     geminal_proton_value_2 = next((_a['value'] for _a in star_atom_list if _a['atom_id'] == geminal_h_list[1]), None)
 
-                                    if geminal_proton_value is not None and geminal_proton_value_2 is not None and float(geminal_proton_value_2) < float(geminal_proton_value):
+                                    if geminal_proton_value is not None and geminal_proton_value_2 is not None\
+                                            and float(geminal_proton_value_2) < float(geminal_proton_value):
                                         nef_atom_prefix = 'y'
                                         nef_atom_prefix_2 = 'x'
 
@@ -4675,7 +4828,7 @@ class NEFTranslator:
 
                             if leave_unmatched:
                                 atom_list.append(atom_id)
-                                details[atom_id] = '%s is invalid atom_id in comp_id %s.' % (atom_id, comp_id)
+                                details[atom_id] = f'{atom_id} is invalid atom_id in comp_id {comp_id}.'
                                 atom_id_map[atom_id] = atom_id
                             else:
                                 logging.critical('Invalid atom nomenclature %s found.', atom_id)
@@ -4692,7 +4845,8 @@ class NEFTranslator:
                                 atom_id_value = next((_a['value'] for _a in star_atom_list if _a['atom_id'] == atom_id), None)
                                 atom_id_value_2 = next((_a['value'] for _a in star_atom_list if _a['atom_id'] == atom_id_2), None)
 
-                                if atom_id_value is not None and atom_id_value_2 is not None and float(atom_id_value_2) < float(atom_id_value):
+                                if atom_id_value is not None and atom_id_value_2 is not None\
+                                        and float(atom_id_value_2) < float(atom_id_value):
                                     nef_atom_prefix = 'y'
                                     nef_atom_prefix_2 = 'x'
 
@@ -4725,7 +4879,7 @@ class NEFTranslator:
 
                         if leave_unmatched:
                             atom_list.append(atom_id)
-                            details[atom_id] = '%s has invalid ambiguity code %s.' % (atom_id, ambig_code)
+                            details[atom_id] = f'{atom_id} has invalid ambiguity code {ambig_code}.'
                             atom_id_map[atom_id] = atom_id
                         else:
                             logging.critical('Invalid ambiguity code %s for atom_id %s found.', ambig_code, atom_id)
@@ -4738,7 +4892,7 @@ class NEFTranslator:
 
                             if leave_unmatched:
                                 atom_list.append(atom_id)
-                                details[atom_id] = '%s is invalid atom_id in comp_id %s.' % (atom_id, comp_id)
+                                details[atom_id] = f'{atom_id} is invalid atom_id in comp_id {comp_id}.'
                                 atom_id_map[atom_id] = atom_id
                             else:
                                 logging.critical('Invalid atom nomenclature %s found.', atom_id)
@@ -4755,7 +4909,8 @@ class NEFTranslator:
                                 atom_id_value = next((_a['value'] for _a in star_atom_list if _a['atom_id'] == atom_id), None)
                                 atom_id_value_2 = next((_a['value'] for _a in star_atom_list if _a['atom_id'] == atom_id_2), None)
 
-                                if atom_id_value is not None and atom_id_value_2 is not None and float(atom_id_value_2) < float(atom_id_value):
+                                if atom_id_value is not None and atom_id_value_2 is not None\
+                                        and float(atom_id_value_2) < float(atom_id_value):
                                     nef_atom_prefix = 'y'
                                     nef_atom_prefix_2 = 'x'
 
@@ -5364,7 +5519,8 @@ class NEFTranslator:
                     self_tag_map[chain_tag] = nef_chain
                     self_tag_map[seq_tag] = _nef_seq
 
-            intra_residue = i[nef_tags.index(chain_tag_1)] == i[nef_tags.index(chain_tag_2)] and i[nef_tags.index(seq_tag_1)] == i[nef_tags.index(seq_tag_2)]
+            intra_residue = i[nef_tags.index(chain_tag_1)] == i[nef_tags.index(chain_tag_2)]\
+                and i[nef_tags.index(seq_tag_1)] == i[nef_tags.index(seq_tag_2)]
 
             atom_list_1 = self.get_star_atom(i[nef_comp_index_1], i[nef_atom_index_1])[0]
             atom_list_2 = self.get_star_atom(i[nef_comp_index_2], i[nef_atom_index_2])[0]
@@ -5527,7 +5683,8 @@ class NEFTranslator:
                     self_tag_map[chain_tag] = in_star_chain
                     self_tag_map[seq_tag] = _in_star_seq
 
-            intra_residue = i[in_star_tags.index(chain_tag_1)] == i[in_star_tags.index(chain_tag_2)] and i[in_star_tags.index(seq_tag_1)] == i[in_star_tags.index(seq_tag_2)]
+            intra_residue = i[in_star_tags.index(chain_tag_1)] == i[in_star_tags.index(chain_tag_2)]\
+                and i[in_star_tags.index(seq_tag_1)] == i[in_star_tags.index(seq_tag_2)]
 
             atom_list_1 = self.get_valid_star_atom(i[in_star_comp_index_1], i[in_star_atom_index_1])[0]
             atom_list_2 = self.get_valid_star_atom(i[in_star_comp_index_2], i[in_star_atom_index_2])[0]
@@ -5682,7 +5839,8 @@ class NEFTranslator:
                     cif_chain = nef_chain
                     _cif_seq = _nef_seq
 
-                in_row = [i for i in loop_data if i[chain_index] == nef_chain and i[seq_index] == nef_seq and i[value_index] not in self.empty_value]
+                in_row = [i for i in loop_data
+                          if i[chain_index] == nef_chain and i[seq_index] == nef_seq and i[value_index] not in self.empty_value]
 
                 if len(in_row) == 0:
                     continue
@@ -5782,7 +5940,8 @@ class NEFTranslator:
 
                 star_seq = str(_star_seq)
 
-                in_row = [i for i in loop_data if i[chain_index] == star_chain and i[seq_index] == star_seq and i[value_index] not in self.empty_value]
+                in_row = [i for i in loop_data
+                          if i[chain_index] == star_chain and i[seq_index] == star_seq and i[value_index] not in self.empty_value]
 
                 if len(in_row) == 0:
                     continue
@@ -5996,9 +6155,9 @@ class NEFTranslator:
         for j in range(1, self.lim_num_dim):
 
             if file_type == 'nef':
-                chain_tag_suffix = '.chain_code_%s' % j
+                chain_tag_suffix = f'.chain_code_{j}'
             else:
-                chain_tag_suffix = '.Entity_assembly_ID_%s' % j
+                chain_tag_suffix = f'.Entity_assembly_ID_{j}'
 
             try:
                 chain_tag = next(i for i in in_tags if i.endswith(chain_tag_suffix))
@@ -6006,9 +6165,9 @@ class NEFTranslator:
                 break
 
             if file_type == 'nef':
-                seq_tag_suffix = '.sequence_code_%s' % j
+                seq_tag_suffix = f'.sequence_code_{j}'
             else:
-                seq_tag_suffix = '.Comp_index_ID_%s' % j
+                seq_tag_suffix = f'.Comp_index_ID_{j}'
 
             try:
                 seq_tag = next(i for i in in_tags if i.endswith(seq_tag_suffix))
@@ -6032,9 +6191,9 @@ class NEFTranslator:
         for j in range(1, self.lim_num_dim):
 
             if file_type == 'nef':
-                chain_tag_suffix = '.chain_code_%s' % j
+                chain_tag_suffix = f'.chain_code_{j}'
             else:
-                chain_tag_suffix = '.Entity_assembly_ID_%s' % j
+                chain_tag_suffix = f'.Entity_assembly_ID_{j}'
 
             try:
                 chain_tag = next(i for i in in_tags if i.endswith(chain_tag_suffix))
@@ -6042,9 +6201,9 @@ class NEFTranslator:
                 break
 
             if file_type == 'nef':
-                seq_tag_suffix = '.sequence_code_%s' % j
+                seq_tag_suffix = f'.sequence_code_{j}'
             else:
-                seq_tag_suffix = '.Comp_index_ID_%s' % j
+                seq_tag_suffix = f'.Comp_index_ID_{j}'
 
             try:
                 seq_tag = next(i for i in in_tags if i.endswith(seq_tag_suffix))
@@ -6052,9 +6211,9 @@ class NEFTranslator:
                 break
 
             if file_type == 'nef':
-                atom_tag_suffix = '.atom_name_%s' % j
+                atom_tag_suffix = f'.atom_name_{j}'
             else:
-                atom_tag_suffix = '.Atom_ID_%s' % j
+                atom_tag_suffix = f'.Atom_ID_{j}'
 
             try:
                 atom_tag = next(i for i in in_tags if i.endswith(atom_tag_suffix))
@@ -6099,8 +6258,12 @@ class NEFTranslator:
         except ValueError:
             index_index = -1
 
-        key_indices = [star_tags.index(j) for j in ['_Gen_dist_constraint.Entity_assembly_ID_1', '_Gen_dist_constraint.Comp_index_ID_1', '_Gen_dist_constraint.Atom_ID_1',
-                                                    '_Gen_dist_constraint.Entity_assembly_ID_2', '_Gen_dist_constraint.Comp_index_ID_2', '_Gen_dist_constraint.Atom_ID_2']]
+        key_indices = [star_tags.index(j) for j in ['_Gen_dist_constraint.Entity_assembly_ID_1',
+                                                    '_Gen_dist_constraint.Comp_index_ID_1',
+                                                    '_Gen_dist_constraint.Atom_ID_1',
+                                                    '_Gen_dist_constraint.Entity_assembly_ID_2',
+                                                    '_Gen_dist_constraint.Comp_index_ID_2',
+                                                    '_Gen_dist_constraint.Atom_ID_2']]
 
         member_code_index = star_tags.index('_Gen_dist_constraint.Member_logic_code')
 
@@ -6141,7 +6304,8 @@ class NEFTranslator:
                         self_tag_map[chain_tag] = nef_chain
                         self_tag_map[seq_tag] = _nef_seq
 
-                intra_residue = i[nef_tags.index(chain_tag_1)] == i[nef_tags.index(chain_tag_2)] and i[nef_tags.index(seq_tag_1)] == i[nef_tags.index(seq_tag_2)]
+                intra_residue = i[nef_tags.index(chain_tag_1)] == i[nef_tags.index(chain_tag_2)]\
+                    and i[nef_tags.index(seq_tag_1)] == i[nef_tags.index(seq_tag_2)]
 
                 atom_list_1 = self.get_star_atom(i[nef_comp_index_1], i[nef_atom_index_1])[0]
                 atom_list_2 = self.get_star_atom(i[nef_comp_index_2], i[nef_atom_index_2])[0]
@@ -6254,8 +6418,12 @@ class NEFTranslator:
         except ValueError:
             index_index = -1
 
-        key_indices = [nef_tags.index(j) for j in ['_nef_distance_restraint.chain_code_1', '_nef_distance_restraint.sequence_code_1', '_nef_distance_restraint.atom_name_1',
-                                                   '_nef_distance_restraint.chain_code_2', '_nef_distance_restraint.sequence_code_2', '_nef_distance_restraint.atom_name_2']]
+        key_indices = [nef_tags.index(j) for j in ['_nef_distance_restraint.chain_code_1',
+                                                   '_nef_distance_restraint.sequence_code_1',
+                                                   '_nef_distance_restraint.atom_name_1',
+                                                   '_nef_distance_restraint.chain_code_2',
+                                                   '_nef_distance_restraint.sequence_code_2',
+                                                   '_nef_distance_restraint.atom_name_2']]
 
         id_index = star_tags.index('_Gen_dist_constraint.ID')
 
@@ -6407,8 +6575,12 @@ class NEFTranslator:
         except ValueError:
             index_index = -1
 
-        key_indices = [star_tags.index(j) for j in ['_Gen_dist_constraint.Entity_assembly_ID_1', '_Gen_dist_constraint.Comp_index_ID_1', '_Gen_dist_constraint.Atom_ID_1',
-                                                    '_Gen_dist_constraint.Entity_assembly_ID_2', '_Gen_dist_constraint.Comp_index_ID_2', '_Gen_dist_constraint.Atom_ID_2']]
+        key_indices = [star_tags.index(j) for j in ['_Gen_dist_constraint.Entity_assembly_ID_1',
+                                                    '_Gen_dist_constraint.Comp_index_ID_1',
+                                                    '_Gen_dist_constraint.Atom_ID_1',
+                                                    '_Gen_dist_constraint.Entity_assembly_ID_2',
+                                                    '_Gen_dist_constraint.Comp_index_ID_2',
+                                                    '_Gen_dist_constraint.Atom_ID_2']]
 
         member_code_index = star_tags.index('_Gen_dist_constraint.Member_logic_code')
 
@@ -6449,7 +6621,8 @@ class NEFTranslator:
                         self_tag_map[chain_tag] = in_star_chain
                         self_tag_map[seq_tag] = _in_star_seq
 
-                intra_residue = i[in_star_tags.index(chain_tag_1)] == i[in_star_tags.index(chain_tag_2)] and i[in_star_tags.index(seq_tag_1)] == i[in_star_tags.index(seq_tag_2)]
+                intra_residue = i[in_star_tags.index(chain_tag_1)] == i[in_star_tags.index(chain_tag_2)]\
+                    and i[in_star_tags.index(seq_tag_1)] == i[in_star_tags.index(seq_tag_2)]
 
                 atom_list_1 = self.get_valid_star_atom(i[in_star_comp_index_1], i[in_star_atom_index_1])[0]
                 atom_list_2 = self.get_valid_star_atom(i[in_star_comp_index_2], i[in_star_atom_index_2])[0]
@@ -6566,10 +6739,18 @@ class NEFTranslator:
         except ValueError:
             index_index = -1
 
-        key_indices = [star_tags.index(j) for j in ['_Torsion_angle_constraint.Entity_assembly_ID_1', '_Torsion_angle_constraint.Comp_index_ID_1', '_Torsion_angle_constraint.Atom_ID_1',
-                                                    '_Torsion_angle_constraint.Entity_assembly_ID_2', '_Torsion_angle_constraint.Comp_index_ID_2', '_Torsion_angle_constraint.Atom_ID_2',
-                                                    '_Torsion_angle_constraint.Entity_assembly_ID_3', '_Torsion_angle_constraint.Comp_index_ID_3', '_Torsion_angle_constraint.Atom_ID_3',
-                                                    '_Torsion_angle_constraint.Entity_assembly_ID_4', '_Torsion_angle_constraint.Comp_index_ID_4', '_Torsion_angle_constraint.Atom_ID_4']]
+        key_indices = [star_tags.index(j) for j in ['_Torsion_angle_constraint.Entity_assembly_ID_1',
+                                                    '_Torsion_angle_constraint.Comp_index_ID_1',
+                                                    '_Torsion_angle_constraint.Atom_ID_1',
+                                                    '_Torsion_angle_constraint.Entity_assembly_ID_2',
+                                                    '_Torsion_angle_constraint.Comp_index_ID_2',
+                                                    '_Torsion_angle_constraint.Atom_ID_2',
+                                                    '_Torsion_angle_constraint.Entity_assembly_ID_3',
+                                                    '_Torsion_angle_constraint.Comp_index_ID_3',
+                                                    '_Torsion_angle_constraint.Atom_ID_3',
+                                                    '_Torsion_angle_constraint.Entity_assembly_ID_4',
+                                                    '_Torsion_angle_constraint.Comp_index_ID_4',
+                                                    '_Torsion_angle_constraint.Atom_ID_4']]
 
         id_index = nef_tags.index('_nef_dihedral_restraint.restraint_id')
 
@@ -6608,12 +6789,18 @@ class NEFTranslator:
                         self_tag_map[chain_tag] = nef_chain
                         self_tag_map[seq_tag] = _nef_seq
 
-                intra_residue_12 = i[nef_tags.index(chain_tag_1)] == i[nef_tags.index(chain_tag_2)] and i[nef_tags.index(seq_tag_1)] == i[nef_tags.index(seq_tag_2)]
-                intra_residue_13 = i[nef_tags.index(chain_tag_1)] == i[nef_tags.index(chain_tag_3)] and i[nef_tags.index(seq_tag_1)] == i[nef_tags.index(seq_tag_3)]
-                intra_residue_14 = i[nef_tags.index(chain_tag_1)] == i[nef_tags.index(chain_tag_4)] and i[nef_tags.index(seq_tag_1)] == i[nef_tags.index(seq_tag_4)]
-                intra_residue_23 = i[nef_tags.index(chain_tag_2)] == i[nef_tags.index(chain_tag_3)] and i[nef_tags.index(seq_tag_2)] == i[nef_tags.index(seq_tag_3)]
-                intra_residue_24 = i[nef_tags.index(chain_tag_2)] == i[nef_tags.index(chain_tag_4)] and i[nef_tags.index(seq_tag_2)] == i[nef_tags.index(seq_tag_4)]
-                intra_residue_34 = i[nef_tags.index(chain_tag_3)] == i[nef_tags.index(chain_tag_4)] and i[nef_tags.index(seq_tag_3)] == i[nef_tags.index(seq_tag_4)]
+                intra_residue_12 = i[nef_tags.index(chain_tag_1)] == i[nef_tags.index(chain_tag_2)]\
+                    and i[nef_tags.index(seq_tag_1)] == i[nef_tags.index(seq_tag_2)]
+                intra_residue_13 = i[nef_tags.index(chain_tag_1)] == i[nef_tags.index(chain_tag_3)]\
+                    and i[nef_tags.index(seq_tag_1)] == i[nef_tags.index(seq_tag_3)]
+                intra_residue_14 = i[nef_tags.index(chain_tag_1)] == i[nef_tags.index(chain_tag_4)]\
+                    and i[nef_tags.index(seq_tag_1)] == i[nef_tags.index(seq_tag_4)]
+                intra_residue_23 = i[nef_tags.index(chain_tag_2)] == i[nef_tags.index(chain_tag_3)]\
+                    and i[nef_tags.index(seq_tag_2)] == i[nef_tags.index(seq_tag_3)]
+                intra_residue_24 = i[nef_tags.index(chain_tag_2)] == i[nef_tags.index(chain_tag_4)]\
+                    and i[nef_tags.index(seq_tag_2)] == i[nef_tags.index(seq_tag_4)]
+                intra_residue_34 = i[nef_tags.index(chain_tag_3)] == i[nef_tags.index(chain_tag_4)]\
+                    and i[nef_tags.index(seq_tag_3)] == i[nef_tags.index(seq_tag_4)]
 
                 atom_list_1 = self.get_star_atom(i[nef_comp_index_1], i[nef_atom_index_1])[0]
                 atom_list_2 = self.get_star_atom(i[nef_comp_index_2], i[nef_atom_index_2])[0]
@@ -6739,10 +6926,18 @@ class NEFTranslator:
         except ValueError:
             index_index = -1
 
-        key_indices = [star_tags.index(j) for j in ['_Torsion_angle_constraint.Entity_assembly_ID_1', '_Torsion_angle_constraint.Comp_index_ID_1', '_Torsion_angle_constraint.Atom_ID_1',
-                                                    '_Torsion_angle_constraint.Entity_assembly_ID_2', '_Torsion_angle_constraint.Comp_index_ID_2', '_Torsion_angle_constraint.Atom_ID_2',
-                                                    '_Torsion_angle_constraint.Entity_assembly_ID_3', '_Torsion_angle_constraint.Comp_index_ID_3', '_Torsion_angle_constraint.Atom_ID_3',
-                                                    '_Torsion_angle_constraint.Entity_assembly_ID_4', '_Torsion_angle_constraint.Comp_index_ID_4', '_Torsion_angle_constraint.Atom_ID_4']]
+        key_indices = [star_tags.index(j) for j in ['_Torsion_angle_constraint.Entity_assembly_ID_1',
+                                                    '_Torsion_angle_constraint.Comp_index_ID_1',
+                                                    '_Torsion_angle_constraint.Atom_ID_1',
+                                                    '_Torsion_angle_constraint.Entity_assembly_ID_2',
+                                                    '_Torsion_angle_constraint.Comp_index_ID_2',
+                                                    '_Torsion_angle_constraint.Atom_ID_2',
+                                                    '_Torsion_angle_constraint.Entity_assembly_ID_3',
+                                                    '_Torsion_angle_constraint.Comp_index_ID_3',
+                                                    '_Torsion_angle_constraint.Atom_ID_3',
+                                                    '_Torsion_angle_constraint.Entity_assembly_ID_4',
+                                                    '_Torsion_angle_constraint.Comp_index_ID_4',
+                                                    '_Torsion_angle_constraint.Atom_ID_4']]
 
         id_index = in_star_tags.index('_Torsion_angle_constraint.ID')
 
@@ -6781,12 +6976,18 @@ class NEFTranslator:
                         self_tag_map[chain_tag] = in_star_chain
                         self_tag_map[seq_tag] = _in_star_seq
 
-                intra_residue_12 = i[in_star_tags.index(chain_tag_1)] == i[in_star_tags.index(chain_tag_2)] and i[in_star_tags.index(seq_tag_1)] == i[in_star_tags.index(seq_tag_2)]
-                intra_residue_13 = i[in_star_tags.index(chain_tag_1)] == i[in_star_tags.index(chain_tag_3)] and i[in_star_tags.index(seq_tag_1)] == i[in_star_tags.index(seq_tag_3)]
-                intra_residue_14 = i[in_star_tags.index(chain_tag_1)] == i[in_star_tags.index(chain_tag_4)] and i[in_star_tags.index(seq_tag_1)] == i[in_star_tags.index(seq_tag_4)]
-                intra_residue_23 = i[in_star_tags.index(chain_tag_2)] == i[in_star_tags.index(chain_tag_3)] and i[in_star_tags.index(seq_tag_2)] == i[in_star_tags.index(seq_tag_3)]
-                intra_residue_24 = i[in_star_tags.index(chain_tag_2)] == i[in_star_tags.index(chain_tag_4)] and i[in_star_tags.index(seq_tag_2)] == i[in_star_tags.index(seq_tag_4)]
-                intra_residue_34 = i[in_star_tags.index(chain_tag_3)] == i[in_star_tags.index(chain_tag_4)] and i[in_star_tags.index(seq_tag_3)] == i[in_star_tags.index(seq_tag_4)]
+                intra_residue_12 = i[in_star_tags.index(chain_tag_1)] == i[in_star_tags.index(chain_tag_2)]\
+                    and i[in_star_tags.index(seq_tag_1)] == i[in_star_tags.index(seq_tag_2)]
+                intra_residue_13 = i[in_star_tags.index(chain_tag_1)] == i[in_star_tags.index(chain_tag_3)]\
+                    and i[in_star_tags.index(seq_tag_1)] == i[in_star_tags.index(seq_tag_3)]
+                intra_residue_14 = i[in_star_tags.index(chain_tag_1)] == i[in_star_tags.index(chain_tag_4)]\
+                    and i[in_star_tags.index(seq_tag_1)] == i[in_star_tags.index(seq_tag_4)]
+                intra_residue_23 = i[in_star_tags.index(chain_tag_2)] == i[in_star_tags.index(chain_tag_3)]\
+                    and i[in_star_tags.index(seq_tag_2)] == i[in_star_tags.index(seq_tag_3)]
+                intra_residue_24 = i[in_star_tags.index(chain_tag_2)] == i[in_star_tags.index(chain_tag_4)]\
+                    and i[in_star_tags.index(seq_tag_2)] == i[in_star_tags.index(seq_tag_4)]
+                intra_residue_34 = i[in_star_tags.index(chain_tag_3)] == i[in_star_tags.index(chain_tag_4)]\
+                    and i[in_star_tags.index(seq_tag_3)] == i[in_star_tags.index(seq_tag_4)]
 
                 atom_list_1 = self.get_valid_star_atom(i[in_star_comp_index_1], i[in_star_atom_index_1])[0]
                 atom_list_2 = self.get_valid_star_atom(i[in_star_comp_index_2], i[in_star_atom_index_2])[0]
@@ -6904,8 +7105,12 @@ class NEFTranslator:
         except ValueError:
             index_index = -1
 
-        key_indices = [star_tags.index(j) for j in ['_RDC_constraint.Entity_assembly_ID_1', '_RDC_constraint.Comp_index_ID_1', '_RDC_constraint.Atom_ID_1',
-                                                    '_RDC_constraint.Entity_assembly_ID_2', '_RDC_constraint.Comp_index_ID_2', '_RDC_constraint.Atom_ID_2']]
+        key_indices = [star_tags.index(j) for j in ['_RDC_constraint.Entity_assembly_ID_1',
+                                                    '_RDC_constraint.Comp_index_ID_1',
+                                                    '_RDC_constraint.Atom_ID_1',
+                                                    '_RDC_constraint.Entity_assembly_ID_2',
+                                                    '_RDC_constraint.Comp_index_ID_2',
+                                                    '_RDC_constraint.Atom_ID_2']]
 
         id_index = nef_tags.index('_nef_rdc_restraint.restraint_id')
 
@@ -6944,7 +7149,8 @@ class NEFTranslator:
                         self_tag_map[chain_tag] = nef_chain
                         self_tag_map[seq_tag] = _nef_seq
 
-                intra_residue = i[nef_tags.index(chain_tag_1)] == i[nef_tags.index(chain_tag_2)] and i[nef_tags.index(seq_tag_1)] == i[nef_tags.index(seq_tag_2)]
+                intra_residue = i[nef_tags.index(chain_tag_1)] == i[nef_tags.index(chain_tag_2)]\
+                    and i[nef_tags.index(seq_tag_1)] == i[nef_tags.index(seq_tag_2)]
 
                 atom_list_1 = self.get_star_atom(i[nef_comp_index_1], i[nef_atom_index_1])[0]
                 atom_list_2 = self.get_star_atom(i[nef_comp_index_2], i[nef_atom_index_2])[0]
@@ -7044,8 +7250,12 @@ class NEFTranslator:
         except ValueError:
             index_index = -1
 
-        key_indices = [star_tags.index(j) for j in ['_RDC_constraint.Entity_assembly_ID_1', '_RDC_constraint.Comp_index_ID_1', '_RDC_constraint.Atom_ID_1',
-                                                    '_RDC_constraint.Entity_assembly_ID_2', '_RDC_constraint.Comp_index_ID_2', '_RDC_constraint.Atom_ID_2']]
+        key_indices = [star_tags.index(j) for j in ['_RDC_constraint.Entity_assembly_ID_1',
+                                                    '_RDC_constraint.Comp_index_ID_1',
+                                                    '_RDC_constraint.Atom_ID_1',
+                                                    '_RDC_constraint.Entity_assembly_ID_2',
+                                                    '_RDC_constraint.Comp_index_ID_2',
+                                                    '_RDC_constraint.Atom_ID_2']]
 
         id_index = in_star_tags.index('_RDC_constraint.ID')
 
@@ -7084,7 +7294,8 @@ class NEFTranslator:
                         self_tag_map[chain_tag] = in_star_chain
                         self_tag_map[seq_tag] = _in_star_seq
 
-                intra_residue = i[in_star_tags.index(chain_tag_1)] == i[in_star_tags.index(chain_tag_2)] and i[in_star_tags.index(seq_tag_1)] == i[in_star_tags.index(seq_tag_2)]
+                intra_residue = i[in_star_tags.index(chain_tag_1)] == i[in_star_tags.index(chain_tag_2)]\
+                    and i[in_star_tags.index(seq_tag_1)] == i[in_star_tags.index(seq_tag_2)]
 
                 atom_list_1 = self.get_valid_star_atom(i[in_star_comp_index_1], i[in_star_atom_index_1])[0]
                 atom_list_2 = self.get_valid_star_atom(i[in_star_comp_index_2], i[in_star_atom_index_2])[0]
@@ -7170,8 +7381,8 @@ class NEFTranslator:
         num_dim = len(seq_ident_tags)
 
         for d in range(1, num_dim + 1):
-            nef_comp_indices.append(nef_tags.index('_nef_peak.residue_name_%s' % d))
-            nef_atom_indices.append(nef_tags.index('_nef_peak.atom_name_%s' % d))
+            nef_comp_indices.append(nef_tags.index(f'_nef_peak.residue_name_{d}'))
+            nef_atom_indices.append(nef_tags.index(f'_nef_peak.atom_name_{d}'))
 
         try:
             index_index = star_tags.index('_Peak_row_format.Index_ID')
@@ -7229,7 +7440,7 @@ class NEFTranslator:
                     if len_atom_list == 0:
                         atom_list.append('.')
                     elif len_atom_list > 1 and leave_unmatched:
-                        details += '%s -> %s, ' % (i[nef_atom_index], atom_list)
+                        details += f'{i[nef_atom_index]} -> {atom_list}, '
 
                     a.append(atom_list)
 
@@ -7387,7 +7598,7 @@ class NEFTranslator:
         num_dim = len(seq_ident_tags)
 
         for d in range(1, num_dim + 1):
-            comp_indices.append(star_tags.index('_Peak_row_format.Comp_ID_%s' % d))
+            comp_indices.append(star_tags.index(f'_Peak_row_format.Comp_ID_{d}'))
 
         try:
             index_index = nef_tags.index('_nef_peak.index')
@@ -7471,7 +7682,8 @@ class NEFTranslator:
                             if self.atomIdMap is not None:
                                 buf[data_index] = self.atomIdMap[s[int(nef_tag[20:]) - 1]][data]
                         except KeyError:
-                            atom_list = self.get_nef_atom(i[comp_indices[int(nef_tag[20:]) - 1]], [{'atom_id': data, 'ambig_code': None, 'value': None}])[0]
+                            atom_list = self.get_nef_atom(i[comp_indices[int(nef_tag[20:]) - 1]],
+                                                          [{'atom_id': data, 'ambig_code': None, 'value': None}])[0]
                             if len(atom_list) > 0:
                                 buf[data_index] = atom_list[0]
                             else:
@@ -7522,8 +7734,8 @@ class NEFTranslator:
         num_dim = len(seq_ident_tags)
 
         for d in range(1, num_dim + 1):
-            in_star_comp_indices.append(in_star_tags.index('_Peak_row_format.Comp_ID_%s' % d))
-            in_star_atom_indices.append(in_star_tags.index('_Peak_row_format.Atom_ID_%s' % d))
+            in_star_comp_indices.append(in_star_tags.index(f'_Peak_row_format.Comp_ID_{d}'))
+            in_star_atom_indices.append(in_star_tags.index(f'_Peak_row_format.Atom_ID_{d}'))
 
         try:
             index_index = star_tags.index('_Peak_row_format.Index_ID')
@@ -7581,7 +7793,7 @@ class NEFTranslator:
                     if len_atom_list == 0:
                         atom_list.append('.')
                     elif len_atom_list > 1 and leave_unmatched:
-                        details += '%s -> %s, ' % (i[in_star_atom_index], atom_list)
+                        details += f'{i[in_star_atom_index]} -> {atom_list}, '
 
                     a.append(atom_list)
 
@@ -7976,15 +8188,17 @@ class NEFTranslator:
             pk_assign_loop = None
 
         out_lp = pynmrstar.Loop.from_scratch()
-        out_tags = ['_nef_peak.index', '_nef_peak.peak_id', '_nef_peak.volume', '_nef_peak.volume_uncertainty', '_nef_peak.height', '_nef_peak.height_uncertainty']
+        out_tags = ['_nef_peak.index', '_nef_peak.peak_id',
+                    '_nef_peak.volume', '_nef_peak.volume_uncertainty',
+                    '_nef_peak.height', '_nef_peak.height_uncertainty']
         for d in range(1, num_dim + 1):
-            out_tags.append('_nef_peak.position_%s' % d)
-            out_tags.append('_nef_peak.position_uncertainty_%s' % d)
+            out_tags.append(f'_nef_peak.position_{d}')
+            out_tags.append(f'_nef_peak.position_uncertainty_{d}')
         for d in range(1, num_dim + 1):
-            out_tags.append('_nef_peak.chain_code_%s' % d)
-            out_tags.append('_nef_peak.sequence_code_%s' % d)
-            out_tags.append('_nef_peak.residue_name_%s' % d)
-            out_tags.append('_nef_peak.atom_name_%s' % d)
+            out_tags.append(f'_nef_peak.chain_code_{d}')
+            out_tags.append(f'_nef_peak.sequence_code_{d}')
+            out_tags.append(f'_nef_peak.residue_name_{d}')
+            out_tags.append(f'_nef_peak.atom_name_{d}')
 
         for tag in out_tags:
             out_lp.add_tag(tag)
@@ -8033,11 +8247,13 @@ class NEFTranslator:
             if pk_gen_char_loop is not None:
                 out[2], out[3] = next(((pk_gen_char[pk_gen_char_val_col], pk_gen_char[pk_gen_char_val_err_col])
                                        for pk_gen_char in pk_gen_char_loop.data
-                                       if pk_gen_char[pk_gen_char_id_col] == pk_id and pk_gen_char[pk_gen_char_type_col] == 'volume'), (None, None))
+                                       if pk_gen_char[pk_gen_char_id_col] == pk_id
+                                       and pk_gen_char[pk_gen_char_type_col] == 'volume'), (None, None))
 
                 out[4], out[5] = next(((pk_gen_char[pk_gen_char_val_col], pk_gen_char[pk_gen_char_val_err_col])
                                        for pk_gen_char in pk_gen_char_loop.data
-                                       if pk_gen_char[pk_gen_char_id_col] == pk_id and pk_gen_char[pk_gen_char_type_col] == 'height'), (None, None))
+                                       if pk_gen_char[pk_gen_char_id_col] == pk_id
+                                       and pk_gen_char[pk_gen_char_type_col] == 'height'), (None, None))
 
             l = 6  # noqa: E741
 
@@ -8089,7 +8305,8 @@ class NEFTranslator:
                             if self.atomIdMap is not None:
                                 _atom_id = self.atomIdMap[seq_key][atom_id]
                         except KeyError:
-                            atom_list = self.get_nef_atom(comp_id, [{'atom_id': atom_id, 'ambig_code': None, 'value': None}])[0]
+                            atom_list = self.get_nef_atom(comp_id,
+                                                          [{'atom_id': atom_id, 'ambig_code': None, 'value': None}])[0]
                             if len(atom_list) > 0:
                                 _atom_id = atom_list[0]
                             else:
@@ -8209,22 +8426,22 @@ class NEFTranslator:
                         if auth_tag is not None:
                             sf.add_tag('Sf_category', auth_tag)
                     elif saveframe.category == 'nef_distance_restraint_list' and tag[0] == 'restraint_origin':
-                        nef_tag = '{}.{}'.format(saveframe.tag_prefix, tag[0])
+                        nef_tag = f'{saveframe.tag_prefix}.{tag[0]}'
                         auth_tag = self.get_star_tag(nef_tag)[0]
                         if auth_tag is not None:
                             sf.add_tag(auth_tag, tag[1] if tag[1] not in self.dist_alt_constraint_type['nmr-star'] else self.dist_alt_constraint_type['nmr-star'][tag[1]])
                     elif saveframe.category == 'nef_dihedral_restraint_list' and tag[0] == 'restraint_origin':
-                        nef_tag = '{}.{}'.format(saveframe.tag_prefix, tag[0])
+                        nef_tag = f'{saveframe.tag_prefix}.{tag[0]}'
                         auth_tag = self.get_star_tag(nef_tag)[0]
                         if auth_tag is not None:
                             sf.add_tag(auth_tag, tag[1] if tag[1] not in self.dihed_alt_constraint_type['nmr-star'] else self.dihed_alt_constraint_type['nmr-star'][tag[1]])
                     elif saveframe.category == 'nef_rdc_restraint_list' and tag[0] == 'restraint_origin':
-                        nef_tag = '{}.{}'.format(saveframe.tag_prefix, tag[0])
+                        nef_tag = f'{saveframe.tag_prefix}.{tag[0]}'
                         auth_tag = self.get_star_tag(nef_tag)[0]
                         if auth_tag is not None:
                             sf.add_tag(auth_tag, tag[1] if tag[1] not in self.rdc_alt_constraint_type['nmr-star'] else self.rdc_alt_constraint_type['nmr-star'][tag[1]])
                     else:
-                        nef_tag = '{}.{}'.format(saveframe.tag_prefix, tag[0])
+                        nef_tag = f'{saveframe.tag_prefix}.{tag[0]}'
                         auth_tag = self.get_star_tag(nef_tag)[0]
                         if auth_tag is not None:
                             sf.add_tag(auth_tag, tag[1])
@@ -8315,7 +8532,7 @@ class NEFTranslator:
                                               or (loop.category == '_nef_covalent_links' and has_covalent_links)):
                         lp = pynmrstar.Loop.from_scratch()
                         for _tag in self.entity_del_atom_row:
-                            lp.add_tag('_Entity_deleted_atom.%s' % _tag)
+                            lp.add_tag('_Entity_deleted_atom.' + _tag)
                         for d in aux_rows:
                             d[lp.get_tag_names().index('_Entity_deleted_atom.Assembly_ID')] = asm_id
                             lp.add_data(d)
@@ -8404,22 +8621,22 @@ class NEFTranslator:
                         if auth_tag is not None:
                             sf.add_tag('Sf_category', auth_tag)
                     elif saveframe.category == 'nef_distance_restraint_list' and tag[0] == 'restraint_origin':
-                        nef_tag = '{}.{}'.format(saveframe.tag_prefix, tag[0])
+                        nef_tag = f'{saveframe.tag_prefix}.{tag[0]}'
                         auth_tag = self.get_star_tag(nef_tag)[0]
                         if auth_tag is not None:
                             sf.add_tag(auth_tag, tag[1] if tag[1] not in self.dist_alt_constraint_type['nmr-star'] else self.dist_alt_constraint_type['nmr-star'][tag[1]])
                     elif saveframe.category == 'nef_dihedral_restraint_list' and tag[0] == 'restraint_origin':
-                        nef_tag = '{}.{}'.format(saveframe.tag_prefix, tag[0])
+                        nef_tag = f'{saveframe.tag_prefix}.{tag[0]}'
                         auth_tag = self.get_star_tag(nef_tag)[0]
                         if auth_tag is not None:
                             sf.add_tag(auth_tag, tag[1] if tag[1] not in self.dihed_alt_constraint_type['nmr-star'] else self.dihed_alt_constraint_type['nmr-star'][tag[1]])
                     elif saveframe.category == 'nef_rdc_restraint_list' and tag[0] == 'restraint_origin':
-                        nef_tag = '{}.{}'.format(saveframe.tag_prefix, tag[0])
+                        nef_tag = f'{saveframe.tag_prefix}.{tag[0]}'
                         auth_tag = self.get_star_tag(nef_tag)[0]
                         if auth_tag is not None:
                             sf.add_tag(auth_tag, tag[1] if tag[1] not in self.rdc_alt_constraint_type['nmr-star'] else self.rdc_alt_constraint_type['nmr-star'][tag[1]])
                     else:
-                        nef_tag = '{}.{}'.format(saveframe.tag_prefix, tag[0])
+                        nef_tag = f'{saveframe.tag_prefix}.{tag[0]}'
                         auth_tag = self.get_star_tag(nef_tag)[0]
                         if auth_tag is not None:
                             sf.add_tag(auth_tag, tag[1])
@@ -8444,36 +8661,36 @@ class NEFTranslator:
 
                 elif nef_data.category == '_nef_chemical_shift':
                     cs_list_id += 1
-                    sf = pynmrstar.Saveframe.from_scratch('assigned_chem_shift_list_%s' % cs_list_id)
+                    sf = pynmrstar.Saveframe.from_scratch(f'assigned_chem_shift_list_{cs_list_id}')
                     sf.set_tag_prefix('Assigned_chem_shift_list')
                     sf.add_tag('Sf_category', 'assigned_chemical_shifts')
 
                 elif nef_data.category == '_nef_distance_restraint':
                     dist_list_id += 1
-                    sf = pynmrstar.Saveframe.from_scratch('gen_dist_constraint_list_%s' % dist_list_id)
+                    sf = pynmrstar.Saveframe.from_scratch(f'gen_dist_constraint_list_{dist_list_id}')
                     sf.set_tag_prefix('Gen_dist_constraint_list')
                     sf.add_tag('Sf_category', 'general_distance_constraints')
 
                 elif nef_data.category == '_nef_dihedral_restraint':
                     dihed_list_id += 1
-                    sf = pynmrstar.Saveframe.from_scratch('torsion_angle_constraint_list_%s' % dihed_list_id)
+                    sf = pynmrstar.Saveframe.from_scratch(f'torsion_angle_constraint_list_{dihed_list_id}')
                     sf.set_tag_prefix('Torsion_angle_constraint_list')
                     sf.add_tag('Sf_category', 'torsion_angle_constraints')
 
                 elif nef_data.category == '_nef_rdc_restraint':
                     rdc_list_id += 1
-                    sf = pynmrstar.Saveframe.from_scratch('rdc_constraint_list_%s' % rdc_list_id)
+                    sf = pynmrstar.Saveframe.from_scratch(f'rdc_constraint_list_{rdc_list_id}')
                     sf.set_tag_prefix('RDC_constraint_list')
                     sf.add_tag('Sf_category', 'RDC_constraints')
 
                 elif nef_data.category == '_nef_peak':
                     peak_list_id += 1
-                    sf = pynmrstar.Saveframe.from_scratch('spectral_peak_list_%s' % peak_list_id)
+                    sf = pynmrstar.Saveframe.from_scratch(f'spectral_peak_list_{peak_list_id}')
                     sf.set_tag_prefix('Spectral_peak_list')
                     sf.add_tag('Sf_category', 'spectral_peak_list')
 
                 else:
-                    error.append('Loop category %s is not supported.' % nef_data.category)
+                    error.append(f'Loop category {nef_data.category} is not supported.')
                     return False, {'info': info, 'warning': warning, 'error': error}
 
                 sf.add_tag('Sf_framecode', sf.name)
@@ -8566,7 +8783,7 @@ class NEFTranslator:
                                           or (loop.category == '_nef_covalent_links' and has_covalent_links)):
                     lp = pynmrstar.Loop.from_scratch()
                     for _tag in self.entity_del_atom_row:
-                        lp.add_tag('_Entity_deleted_atom.%s' % _tag)
+                        lp.add_tag('_Entity_deleted_atom.' + _tag)
                     for d in aux_rows:
                         d[lp.get_tag_names().index('_Entity_deleted_atom.Assembly_ID')] = asm_id
                         lp.add_data(d)
@@ -8618,7 +8835,8 @@ class NEFTranslator:
             star_data.write_to_file(star_file, skip_empty_loops=True, skip_empty_tags=False)
         else:
             star_data.write_to_file(star_file)
-        info.append('File {} successfully written.'.format(star_file))
+
+        info.append(f'File {star_file} successfully written.')
 
         return True, {'info': info, 'warning': warning, 'error': error}
 
@@ -8668,11 +8886,14 @@ class NEFTranslator:
             if len(star_data.get_loops_by_category('Chem_comp_assembly')) == 0:  # DAOTHER-6694
                 error.append("Missing mandatory '_Chem_comp_assembly' category.")
                 return False, {'info': info, 'warning': warning, 'error': error}
-            self.authChainId = sorted(list(set(star_data.get_loops_by_category('Chem_comp_assembly')[0].get_tag('Entity_assembly_ID'))), key=lambda x: float(re.sub(r'[^\d]+', '', x)))
+            self.authChainId = sorted(list(set(star_data.get_loops_by_category('Chem_comp_assembly')[0].get_tag('Entity_assembly_ID'))),
+                                      key=lambda x: float(re.sub(r'[^\d]+', '', x)))
         elif data_type == 'Saveframe':
-            self.authChainId = sorted(list(set(star_data[0].get_tag('Entity_assembly_ID'))), key=lambda x: float(re.sub(r'[^\d]+', '', x)))
+            self.authChainId = sorted(list(set(star_data[0].get_tag('Entity_assembly_ID'))),
+                                      key=lambda x: float(re.sub(r'[^\d]+', '', x)))
         else:
-            self.authChainId = sorted(list(set(star_data.get_tag('Entity_assembly_ID'))), key=lambda x: float(re.sub(r'[^\d]+', '', x)))
+            self.authChainId = sorted(list(set(star_data.get_tag('Entity_assembly_ID'))),
+                                      key=lambda x: float(re.sub(r'[^\d]+', '', x)))
 
         self.authSeqMap = None
         self.selfSeqMap = None
@@ -8748,7 +8969,8 @@ class NEFTranslator:
                             if self.authSeqMap is None:
                                 self.authSeqMap = {}
                                 self.selfSeqMap = {}
-                            rows = self.star2nef_seq_row(loop.get_tag_names(), lp.get_tag_names(), loop.data, report, None if entity_del_atom_loop is None else entity_del_atom_loop)
+                            rows = self.star2nef_seq_row(loop.get_tag_names(), lp.get_tag_names(), loop.data, report,
+                                                         None if entity_del_atom_loop is None else entity_del_atom_loop)
                             for d in rows:
                                 lp.add_data(d)
 
@@ -8889,36 +9111,36 @@ class NEFTranslator:
 
                 elif star_data.category == '_Atom_chem_shift':
                     cs_list_id += 1
-                    sf = pynmrstar.Saveframe.from_scratch('nef_chemical_shift_list_%s' % cs_list_id)
+                    sf = pynmrstar.Saveframe.from_scratch(f'nef_chemical_shift_list_{cs_list_id}')
                     sf.set_tag_prefix('nef_chemical_shift_list')
                     sf.add_tag('sf_category', 'nef_chemical_shift_list')
 
                 elif star_data.category == '_Gen_dist_constraint':
                     dist_list_id += 1
-                    sf = pynmrstar.Saveframe.from_scratch('nef_distance_restraint_list_%s' % dist_list_id)
+                    sf = pynmrstar.Saveframe.from_scratch(f'nef_distance_restraint_list_{dist_list_id}')
                     sf.set_tag_prefix('nef_distance_restraint_list')
                     sf.add_tag('sf_category', 'nef_distance_restraint_list')
 
                 elif star_data.category == '_Torsion_angle_constraint':
                     dihed_list_id += 1
-                    sf = pynmrstar.Saveframe.from_scratch('nef_dihedral_restraint_list_%s' % dihed_list_id)
+                    sf = pynmrstar.Saveframe.from_scratch(f'nef_dihedral_restraint_list_{dihed_list_id}')
                     sf.set_tag_prefix('nef_dihedral_restraint_list')
                     sf.add_tag('sf_category', 'nef_dihedral_restraint_list')
 
                 elif star_data.category == '_RDC_constraint':
                     rdc_list_id += 1
-                    sf = pynmrstar.Saveframe.from_scratch('nef_rdc_restraint_list_%s' % rdc_list_id)
+                    sf = pynmrstar.Saveframe.from_scratch(f'nef_rdc_restraint_list_{rdc_list_id}')
                     sf.set_tag_prefix('nef_rdc_restraint_list')
                     sf.add_tag('sf_category', 'nef_rdc_restraint_list')
 
                 elif star_data.category == '_Peak_row_format':
                     peak_list_id += 1
-                    sf = pynmrstar.Saveframe.from_scratch('nef_nmr_spectrum_%s' % peak_list_id)
+                    sf = pynmrstar.Saveframe.from_scratch(f'nef_nmr_spectrum_{peak_list_id}')
                     sf.set_tag_prefix('nef_nmr_spectrum')
                     sf.add_tag('sf_category', 'nef_nmr_spectrum')
 
                 else:
-                    error.append('Loop category %s is not supported.' % star_data.category)
+                    error.append(f'Loop category {star_data.category} is not supported.')
                     return False, {'info': info, 'warning': warning, 'error': error}
 
                 sf.add_tag('sf_framecode', sf.name)
@@ -8950,7 +9172,8 @@ class NEFTranslator:
                         if self.authSeqMap is None:
                             self.authSeqMap = {}
                             self.selfSeqMap = {}
-                        rows = self.star2nef_seq_row(loop.get_tag_names(), lp.get_tag_names(), loop.data, report, None if entity_del_atom_loop is None else entity_del_atom_loop)
+                        rows = self.star2nef_seq_row(loop.get_tag_names(), lp.get_tag_names(), loop.data, report,
+                                                     None if entity_del_atom_loop is None else entity_del_atom_loop)
                         for d in rows:
                             lp.add_data(d)
 
@@ -9036,7 +9259,8 @@ class NEFTranslator:
             nef_data.write_to_file(nef_file, skip_empty_loops=True, skip_empty_tags=False)
         else:
             nef_data.write_to_file(nef_file)
-        info.append('File {} successfully written.'.format(nef_file))
+
+        info.append(f'File {nef_file} successfully written.')
 
         return True, {'info': info, 'warning': warning, 'error': error}
 
@@ -9146,22 +9370,22 @@ class NEFTranslator:
                         if auth_tag is not None:
                             sf.add_tag('Sf_category', auth_tag)
                     elif saveframe.tag_prefix == '_Gen_dist_constraint_list' and tag[0] == 'Constraint_type':
-                        star_tag = '{}.{}'.format(saveframe.tag_prefix, tag[0])
+                        star_tag = f'{saveframe.tag_prefix}.{tag[0]}'
                         auth_tag = self.get_star_auth_tag(star_tag)[0]
                         if auth_tag is not None:
                             sf.add_tag(auth_tag, tag[1] if tag[1] not in self.dist_alt_constraint_type['nmr-star'] else self.dist_alt_constraint_type['nmr-star'][tag[1]])
                     elif saveframe.tag_prefix == '_Torsion_angle_constraint_list' and tag[0] == 'Constraint_type':
-                        star_tag = '{}.{}'.format(saveframe.tag_prefix, tag[0])
+                        star_tag = f'{saveframe.tag_prefix}.{tag[0]}'
                         auth_tag = self.get_star_auth_tag(star_tag)[0]
                         if auth_tag is not None:
                             sf.add_tag(auth_tag, tag[1] if tag[1] not in self.dihed_alt_constraint_type['nmr-star'] else self.dihed_alt_constraint_type['nmr-star'][tag[1]])
                     elif saveframe.tag_prefix == '_RDC_constraint_list' and tag[0] == 'Constraint_type':
-                        star_tag = '{}.{}'.format(saveframe.tag_prefix, tag[0])
+                        star_tag = f'{saveframe.tag_prefix}.{tag[0]}'
                         auth_tag = self.get_star_auth_tag(star_tag)[0]
                         if auth_tag is not None:
                             sf.add_tag(auth_tag, tag[1] if tag[1] not in self.rdc_alt_constraint_type['nmr-star'] else self.rdc_alt_constraint_type['nmr-star'][tag[1]])
                     else:
-                        star_tag = '{}.{}'.format(saveframe.tag_prefix, tag[0])
+                        star_tag = f'{saveframe.tag_prefix}.{tag[0]}'
                         auth_tag = self.get_star_auth_tag(star_tag)[0]
                         if auth_tag is not None:
                             sf.add_tag(auth_tag, tag[1])
@@ -9325,22 +9549,22 @@ class NEFTranslator:
                         if auth_tag is not None:
                             sf.add_tag('Sf_category', auth_tag)
                     elif saveframe.tag_prefix == '_Gen_dist_constraint_list' and tag[0] == 'Constraint_type':
-                        star_tag = '{}.{}'.format(saveframe.tag_prefix, tag[0])
+                        star_tag = f'{saveframe.tag_prefix}.{tag[0]}'
                         auth_tag = self.get_star_auth_tag(star_tag)[0]
                         if auth_tag is not None:
                             sf.add_tag(auth_tag, tag[1] if tag[1] not in self.dist_alt_constraint_type['nmr-star'] else self.dist_alt_constraint_type['nmr-star'][tag[1]])
                     elif saveframe.tag_prefix == '_Torsion_angle_constraint_list' and tag[0] == 'Constraint_type':
-                        star_tag = '{}.{}'.format(saveframe.tag_prefix, tag[0])
+                        star_tag = f'{saveframe.tag_prefix}.{tag[0]}'
                         auth_tag = self.get_star_auth_tag(star_tag)[0]
                         if auth_tag is not None:
                             sf.add_tag(auth_tag, tag[1] if tag[1] not in self.dihed_alt_constraint_type['nmr-star'] else self.dihed_alt_constraint_type['nmr-star'][tag[1]])
                     elif saveframe.tag_prefix == '_RDC_constraint_list' and tag[0] == 'Constraint_type':
-                        star_tag = '{}.{}'.format(saveframe.tag_prefix, tag[0])
+                        star_tag = f'{saveframe.tag_prefix}.{tag[0]}'
                         auth_tag = self.get_star_auth_tag(star_tag)[0]
                         if auth_tag is not None:
                             sf.add_tag(auth_tag, tag[1] if tag[1] not in self.rdc_alt_constraint_type['nmr-star'] else self.rdc_alt_constraint_type['nmr-star'][tag[1]])
                     else:
-                        star_tag = '{}.{}'.format(saveframe.tag_prefix, tag[0])
+                        star_tag = f'{saveframe.tag_prefix}.{tag[0]}'
                         auth_tag = self.get_star_auth_tag(star_tag)[0]
                         if auth_tag is not None:
                             sf.add_tag(auth_tag, tag[1])
@@ -9365,36 +9589,36 @@ class NEFTranslator:
 
                 elif star_data.category == '_Atom_chem_shift':
                     cs_list_id += 1
-                    sf = pynmrstar.Saveframe.from_scratch('assigned_chem_shift_list_%s' % cs_list_id)
+                    sf = pynmrstar.Saveframe.from_scratch(f'assigned_chem_shift_list_{cs_list_id}')
                     sf.set_tag_prefix('Assigned_chem_shift_list')
                     sf.add_tag('Sf_category', 'assigned_chemical_shifts')
 
                 elif star_data.category == '_Gen_dist_constraint':
                     dist_list_id += 1
-                    sf = pynmrstar.Saveframe.from_scratch('gen_dist_constraint_list_%s' % dist_list_id)
+                    sf = pynmrstar.Saveframe.from_scratch(f'gen_dist_constraint_list_{dist_list_id}')
                     sf.set_tag_prefix('Gen_dist_constraint_list')
                     sf.add_tag('Sf_category', 'general_distance_constraints')
 
                 elif star_data.category == '_Torsion_angle_constraint':
                     dihed_list_id += 1
-                    sf = pynmrstar.Saveframe.from_scratch('torsion_angle_constraint_list_%s' % dihed_list_id)
+                    sf = pynmrstar.Saveframe.from_scratch(f'torsion_angle_constraint_list_{dihed_list_id}')
                     sf.set_tag_prefix('Torsion_angle_constraint_list')
                     sf.add_tag('Sf_category', 'torsion_angle_constraints')
 
                 elif star_data.category == '_RDC_constraint':
                     rdc_list_id += 1
-                    sf = pynmrstar.Saveframe.from_scratch('rdc_constraint_list_%s' % rdc_list_id)
+                    sf = pynmrstar.Saveframe.from_scratch(f'rdc_constraint_list_{rdc_list_id}')
                     sf.set_tag_prefix('RDC_constraint_list')
                     sf.add_tag('Sf_category', 'RDC_constraints')
 
                 elif star_data.category == '_Peak_row_format':
                     peak_list_id += 1
-                    sf = pynmrstar.Saveframe.from_scratch('spectral_peak_list_%s' % peak_list_id)
+                    sf = pynmrstar.Saveframe.from_scratch(f'spectral_peak_list_{peak_list_id}')
                     sf.set_tag_prefix('Spectral_peak_list')
                     sf.add_tag('Sf_category', 'spectral_peak_list')
 
                 else:
-                    error.append('Loop category %s is not supported.' % star_data.category)
+                    error.append(f'Loop category {star_data.category} is not supported.')
                     return False, {'info': info, 'warning': warning, 'error': error}
 
                 sf.add_tag('Sf_framecode', sf.name)
@@ -9484,7 +9708,7 @@ class NEFTranslator:
                                           or (loop.category == '_Bond' and has_covalent_links)):
                     lp = pynmrstar.Loop.from_scratch()
                     for _tag in self.entity_del_atom_row:
-                        lp.add_tag('_Entity_deleted_atom.%s' % _tag)
+                        lp.add_tag('_Entity_deleted_atom.' + _tag)
                     for d in aux_rows:
                         d[lp.get_tag_names().index('_Entity_deleted_atom.Assembly_ID')] = asm_id
                         lp.add_data(d)
@@ -9534,7 +9758,8 @@ class NEFTranslator:
             out_data.write_to_file(output_file_path, skip_empty_loops=True, skip_empty_tags=False)
         else:
             out_data.write_to_file(output_file_path)
-        info.append('File {} successfully written.'.format(output_file_path))
+
+        info.append(f'File {output_file_path} successfully written.')
 
         return True, {'info': info, 'warning': warning, 'error': error}
 

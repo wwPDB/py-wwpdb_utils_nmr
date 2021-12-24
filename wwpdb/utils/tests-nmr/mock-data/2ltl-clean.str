@@ -14,7 +14,7 @@ save_nef_nmr_meta_data
    _Entry.Generated_date                2017-01-09T14:35:00.465252
    _Entry.UUID                          CcpNmr-2017-01-09T14:35:00.465252-289848522
    _Entry.Related_coordinate_file_name  .
-   _Entry.NMR_STAR_version              3.2.1.18
+   _Entry.NMR_STAR_version              3.2.6.0
    _Entry.ID                            NEED_ACC_NO
 
    loop_

@@ -852,7 +852,7 @@ class NEFTranslator:
                         if 'internaluseyoushouldntseethis_frame' not in str(e3):
                             msg = str(e3)
                         else:
-                            msg = str(e1)  # '%s contains no valid saveframe or loop. PyNMRSTAR ++ Error  - %s' % (os.path.basename(in_file), str(e))
+                            msg = str(e1)
 
         #
         # except Exception as e:
@@ -1478,7 +1478,6 @@ class NEFTranslator:
                             r[t] = loop.data[l][j]
                         user_warn_msg += '[Invalid data] Sequence must not be empty. '\
                             f'#_of_row {l + 1}, data_of_row {r}.\n'
-                        # raise ValueError("Sequence must not be empty. #_of_row %s, data_of_row %s." % (l + 1, r))
 
             for l, i in enumerate(seq_data):  # noqa: E741
                 try:
@@ -1490,7 +1489,6 @@ class NEFTranslator:
                             r[t] = loop.data[l][j]
                         user_warn_msg += f'[Invalid data] {seq_id} must be an integer. '\
                             f'#_of_row {l + 1}, data_of_row {r}.\n'
-                        # raise ValueError("%s must be an integer. #_of_row %s, data_of_row %s." % (seq_id, l + 1, r))
 
             if len(user_warn_msg) > 0:
                 raise UserWarning(user_warn_msg)
@@ -1510,7 +1508,6 @@ class NEFTranslator:
                 for i in seq_data:
                     chk_key = f'{i[2]} {int(i[0]):04d}'
                     if chk_dict[chk_key] != i[1]:
-                        # raise KeyError("Sequence must be unique. %s %s, %s %s, %s %s vs %s." % (chain_id, i[2], seq_id, i[0], comp_id, i[1], chk_dict[chk_key]))
                         raise KeyError(f"{lp_category[1:]} loop contains different {comp_id} ({i[1]} and {chk_dict[chk_key]}) "
                                        f"with the same {chain_id} {i[2]}, {seq_id} {i[0]}.")
 
@@ -1590,7 +1587,6 @@ class NEFTranslator:
                 data.append(asm)
 
             except ValueError:
-                # raise ValueError("%s must be an integer." % seq_id)
                 pass
 
         if len(data) == 0:
@@ -1688,7 +1684,6 @@ class NEFTranslator:
                             r[t] = loop.data[l][j]
                         user_warn_msg += '[Invalid data] Sequence must not be empty. '\
                             f'#_of_row {l + 1}, data_of_row {r}.\n'
-                        # raise ValueError("Sequence must not be empty. #_of_row %s, data_of_row %s." % (l + 1, r))
 
             for l, i in enumerate(seq_data):  # noqa: E741
                 try:
@@ -1700,7 +1695,6 @@ class NEFTranslator:
                             r[t] = loop.data[l][j]
                         user_warn_msg += f'[Invalid data] {seq_id} must be an integer. '\
                             f'#_of_row {l + 1}, data_of_row {r}.\n'
-                        # raise ValueError("%s must be an integer. #_of_row %s, data_of_row %s." % (seq_id, l + 1, r))
 
             if len(user_warn_msg) > 0:
                 raise UserWarning(user_warn_msg)
@@ -1720,7 +1714,6 @@ class NEFTranslator:
                 for i in seq_data:
                     chk_key = f'{i[2]} {int(i[0]):04d}'
                     if chk_dict[chk_key] != i[1]:
-                        # raise KeyError("Sequence must be unique. %s %s, %s %s, %s %s vs %s." % (chain_id, i[2], seq_id, i[0], comp_id, i[1], chk_dict[chk_key]))
                         raise KeyError(f"{lp_category[1:]} loop contains different {comp_id} ({i[1]} and {chk_dict[chk_key]}) "
                                        f"with the same {chain_id} {i[2]}, {seq_id} {i[0]}.")
 
@@ -1800,7 +1793,6 @@ class NEFTranslator:
                 data.append(asm)
 
             except ValueError:
-                # raise ValueError("%s must be an integer." % seq_id)
                 pass
 
         if len(data) == 0:
@@ -1882,7 +1874,6 @@ class NEFTranslator:
                             r[t] = loop.data[l][j]
                         user_warn_msg += '[Invalid data] Author sequence must not be empty. '\
                             f'#_of_row {l + 1}, data_of_row {r}.\n'
-                        # raise ValueError("Author sequence must not be empty. #_of_row %s, data_of_row %s." % (l + 1, r))
 
             for l, i in enumerate(seq_data):  # noqa: E741
                 try:
@@ -1894,7 +1885,6 @@ class NEFTranslator:
                             r[t] = loop.data[l][j]
                         user_warn_msg += f'[Invalid data] {seq_id} must be an integer. '\
                             f'#_of_row {l + 1}, data_of_row {r}.\n'
-                        # raise ValueError("%s must be an integer. #_of_row %s, data_of_row %s." % (seq_id, l + 1, r))
 
             if len(user_warn_msg) > 0:
                 raise UserWarning(user_warn_msg)
@@ -1961,7 +1951,6 @@ class NEFTranslator:
                 data.append(asm)
 
             except ValueError:
-                # raise ValueError("%s must be an integer." % seq_id)
                 pass
 
         if len(data) == 0:
@@ -2050,7 +2039,6 @@ class NEFTranslator:
                             r[t] = loop.data[l][j]
                         user_warn_msg += f'[Invalid data] {comp_id} and {atom_id} must not be empty. '\
                             f'#_of_row {l + 1}, data_of_row {r}.\n'
-                        # raise ValueError("%s and %s must not be empty. #_of_row %s, data_of_row %s." % (comp_id, atom_id, l + 1, r))
 
             if len(user_warn_msg) > 0:
                 raise UserWarning(user_warn_msg)
@@ -2146,7 +2134,6 @@ class NEFTranslator:
                             r[t] = loop.data[l][j]
                         user_warn_msg += f'[Invalid data] {atom_type}, {isotope_number}, and {atom_id} must not be empty. '\
                             f'#_of_row {l + 1}, data_of_row {r}.\n'
-                        # raise ValueError("%s, %s, and %s must not be empty. #_of_row %s, data_of_row %s." % (atom_type, isotope_number, atom_id, l + 1, r))
 
             for l, i in enumerate(a_type_data):  # noqa: E741
                 try:
@@ -2158,7 +2145,6 @@ class NEFTranslator:
                             r[t] = loop.data[l][j]
                         user_warn_msg += f'[Invalid data] {isotope_number} must be an integer. '\
                             f'#_of_row {l + 1}, data_of_row {r}.\n'
-                        # raise ValueError("%s must be an integer. #_of_row %s, data_of_row %s." % (isotope_number, l + 1, r))
 
             if len(user_warn_msg) > 0:
                 raise UserWarning(user_warn_msg)
@@ -2188,7 +2174,6 @@ class NEFTranslator:
                 data.append(asm)
 
             except ValueError:
-                # raise ValueError("%s must be an integer." % isotope_number)
                 pass
 
         if len(data) == 0:
@@ -2240,9 +2225,9 @@ class NEFTranslator:
             for l, i in enumerate(ambig_data):  # noqa: E741
                 # already checked elsewhere
                 # if i[0] in self.empty_value:
-                #   raise ValueError("%s must not be empty." % comp_id)
+                #   raise ValueError(f"{comp_id} must not be empty.")
                 # if i[1] in self.empty_value:
-                #    raise ValueError("%s must not be empty." % atom_id)
+                #    raise ValueError(f"{comp_id} must not be empty.")
                 if i[2] not in self.empty_value:
 
                     try:
@@ -2254,7 +2239,6 @@ class NEFTranslator:
                                 r[t] = loop.data[l][j]
                             user_warn_msg += f'[Invalid data] {ambig_code} must be one of {self.bmrb_ambiguity_codes}. '\
                                 f'#_of_row {l + 1}, data_of_row {r}.\n'
-                            # raise ValueError("%s must be one of %s. #_of_row %s, data_of_row %s." % (ambig_code, list(self.bmrb_ambiguity_codes), l + 1, r))
 
                     if code not in self.bmrb_ambiguity_codes:
                         if l < len_loop_data:
@@ -2263,7 +2247,6 @@ class NEFTranslator:
                                 r[t] = loop.data[l][j]
                             user_warn_msg += f'[Invalid data] {ambig_code} must be one of {self.bmrb_ambiguity_codes}. '\
                                 f'#_of_row {l + 1}, data_of_row {r}.\n'
-                            # raise ValueError("%s must be one of %s. #_of_row %s, data_of_row %s." % (ambig_code, list(self.bmrb_ambiguity_codes), l + 1, r))
 
                     if code >= 4:
                         if i[3] in self.empty_value and l < len_loop_data:
@@ -2272,7 +2255,6 @@ class NEFTranslator:
                                 r[t] = loop.data[l][j]
                             user_warn_msg += f'[Invalid data] {ambig_set_id} must not be empty for {ambig_code} {code}. '\
                                 f'#_of_row {l + 1}, data_of_row {r}.\n'
-                            # raise ValueError("%s must not be empty for %s %s. #_of_row %s, data_of_row %s." % (ambig_set_id, ambig_code, code, l + 1, r))
                         else:
                             try:
                                 int(i[3])
@@ -2283,7 +2265,6 @@ class NEFTranslator:
                                         r[t] = loop.data[l][j]
                                     user_warn_msg += f'[Invalid data] {ambig_set_id} must be an integer. '\
                                         f'#_of_row {l + 1}, data_of_row {r}.\n'
-                                    # raise ValueError("%s must be an integer. #_of_row %s, data_of_row %s." % (ambig_set_id, l + 1, r))
 
                 if i[3] not in self.empty_value:
 
@@ -2294,7 +2275,6 @@ class NEFTranslator:
                                 r[t] = loop.data[l][j]
                             user_warn_msg += f'[Invalid data] {ambig_set_id} must be empty for {ambig_code} {i[2]}. '\
                                 f'#_of_row {l + 1}, data_of_row {r}.\n'
-                            # raise ValueError("%s must be empty for %s %s. #_of_row %s, data_of_row %s." % (ambig_set_id, ambig_code, i[2], l + 1, r))
 
             if len(user_warn_msg) > 0:
                 raise UserWarning(user_warn_msg)
@@ -2386,7 +2366,6 @@ class NEFTranslator:
                         r[t] = loop.data[l][j]
                     user_warn_msg += f'[Invalid data] {index_id} must not be empty. '\
                         f'#_of_row {l + 1}, data_of_row {r}.\n'
-                    # raise ValueError("%s must not be empty. #_of_row %s, data_of_row %s." % (index_id, l + 1, r))
                 else:
                     try:
                         int(i[0])
@@ -2397,7 +2376,6 @@ class NEFTranslator:
                                 r[t] = loop.data[l][j]
                             user_warn_msg += f'[Invalid data] {index_id} must be an integer. '\
                                 f'#_of_row {l + 1}, data_of_row {r}.\n'
-                            # raise ValueError("%s must be an integer. #_of_row %s, data_of_row %s." % (index_id, l + 1, r))
 
             if len(user_warn_msg) > 0:
                 raise UserWarning(user_warn_msg)
@@ -2417,7 +2395,6 @@ class NEFTranslator:
                 data.append(idxs)
 
             except ValueError:
-                # raise ValueError("%s must be an integer." % index_id)
                 pass
 
         if len(data) == 0:

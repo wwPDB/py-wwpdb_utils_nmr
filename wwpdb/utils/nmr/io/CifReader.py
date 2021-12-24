@@ -166,7 +166,7 @@ class CifReader:
         self.itemTypes = ('str', 'bool', 'int', 'float', 'range-float', 'enum')
 
         # random rotation test for detection of non-superimposed models (DAOTHER-4060)
-        self.__random_rotaion_test = True
+        self.__random_rotaion_test = False
         self.__single_model_rotation_test = True
 
         if self.__random_rotaion_test:

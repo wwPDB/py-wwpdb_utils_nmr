@@ -12506,13 +12506,13 @@ class NmrDpUtility:
                             r = abs(val_1 - val_2) / abs(val_1 + val_2)
 
                             if r >= self.r_conflicted_dist_restraint:
-                                discrepancy += f"{dname} |{_val_1}-{_val_2}|/|{_val_1}+{_val_2}| = {r * 100.0:.1f} %% is out of acceptable range, "\
-                                    f"{int(self.r_conflicted_dist_restraint * 100)} %%, "
+                                discrepancy += f"{dname} |{_val_1}-{_val_2}|/|{_val_1}+{_val_2}| = {r * 100.0:.1f} % is out of acceptable range, "\
+                                    f"{int(self.r_conflicted_dist_restraint * 100)} %, "
                                 conflict = True
 
                             elif r >= self.r_inconsistent_dist_restraint:
-                                discrepancy += f"{dname} |{_val_1}-{_val_2}|/|{_val_1}+{_val_2}| = {r * 100.0:.1f} %% is out of typical range, "\
-                                    f"{int(self.r_inconsistent_dist_restraint * 100)} %%, "
+                                discrepancy += f"{dname} |{_val_1}-{_val_2}|/|{_val_1}+{_val_2}| = {r * 100.0:.1f} % is out of typical range, "\
+                                    f"{int(self.r_inconsistent_dist_restraint * 100)} %, "
                                 inconsist = True
 
                         else:
@@ -14070,7 +14070,7 @@ class NmrDpUtility:
 
                                     warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name)\
                                         + f"] {full_value_name} {value} is an unusual/rare assignment. "\
-                                        f"Occurrence of {atom_name} in {comp_id} is {cs_stat['norm_freq'] * 100.0:.1f} %% in BMRB archive."
+                                        f"Occurrence of {atom_name} in {comp_id} is {cs_stat['norm_freq'] * 100.0:.1f} % in BMRB archive."
 
                                     self.report.warning.appendDescription('unusual/rare_data',
                                                                           {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
@@ -14656,7 +14656,7 @@ class NmrDpUtility:
 
                                 warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name)\
                                     + f"] {full_value_name} {value} is an unusual/rare assignment. "\
-                                    f"Occurrence of {atom_name} in {comp_id} is {cs_stat['norm_freq'] * 100.0:.1f} %% in BMRB archive."
+                                    f"Occurrence of {atom_name} in {comp_id} is {cs_stat['norm_freq'] * 100.0:.1f} % in BMRB archive."
 
                                 self.report.warning.appendDescription('unusual/rare_data',
                                                                       {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
@@ -17971,7 +17971,7 @@ class NmrDpUtility:
                                 elif red < 0.001:
                                     cys['redox_state_pred'] = 'oxidized'
                                 else:
-                                    cys['redox_state_pred'] = f'oxidized {oxi * 100.0:.1f} (%%), reduced {red * 100.0:.1f} (%%)'
+                                    cys['redox_state_pred'] = f'oxidized {oxi * 100.0:.1f} (%), reduced {red * 100.0:.1f} (%)'
 
                             cys['in_disulfide_bond'] = False
                             if input_source_dic['disulfide_bond'] is not None:
@@ -18055,7 +18055,7 @@ class NmrDpUtility:
                                 elif trs < 0.001:
                                     pro['cis_trans_pred'] = 'cis'
                                 else:
-                                    pro['cis_trans_pred'] = f'cis {cis * 100.0:.1f} (%%), trans {trs * 100.0:.1f} (%%)'
+                                    pro['cis_trans_pred'] = f'cis {cis * 100.0:.1f} (%), trans {trs * 100.0:.1f} (%)'
 
                             pro['in_cis_peptide_bond'] = self.__isProtCis(chain_id, seq_id)
 
@@ -18159,7 +18159,7 @@ class NmrDpUtility:
                                 elif bip < 0.001 and tau < 0.001:
                                     his['tautomeric_state_pred'] = 'pi-tautomer'
                                 else:
-                                    his['tautomeric_state_pred'] = f'biprotonated {bip * 100.0:.1f} (%%), tau-tautomer {tau * 100.0:.1f} (%%), pi-tautomer {pi * 100.0:.1f} (%%)'
+                                    his['tautomeric_state_pred'] = f'biprotonated {bip * 100.0:.1f} (%), tau-tautomer {tau * 100.0:.1f} (%), pi-tautomer {pi * 100.0:.1f} (%)'
                             else:
                                 his['tautomeric_state_pred'] = 'unknown'
 
@@ -18269,7 +18269,7 @@ class NmrDpUtility:
                                     elif gp < 0.001 and t < 0.001:
                                         ilv['rotameric_state_pred'] = 'gauche-'
                                     else:
-                                        ilv['rotameric_state_pred'] = f'gauche+ {gp * 100.0:.1f} (%%), trans {t * 100.0:.1f} (%%), gauche- {gm * 100.0:.1f} (%%)'
+                                        ilv['rotameric_state_pred'] = f'gauche+ {gp * 100.0:.1f} (%), trans {t * 100.0:.1f} (%), gauche- {gm * 100.0:.1f} (%)'
                                 else:
                                     ilv['rotameric_state_pred'] = 'unknown'
 
@@ -18363,7 +18363,7 @@ class NmrDpUtility:
                                     elif gp < 0.001 and t < 0.001:
                                         ilv['rotameric_state_pred'] = 'gauche-'
                                     else:
-                                        ilv['rotameric_state_pred'] = f'gauche+ {gp * 100.0:.1f} (%%), trans {t * 100.0:.1f} (%%), gauche- {gm * 100.0:.1f} (%%)'
+                                        ilv['rotameric_state_pred'] = f'gauche+ {gp * 100.0:.1f} (%), trans {t * 100.0:.1f} (%), gauche- {gm * 100.0:.1f} (%)'
                                 else:
                                     ilv['rotameric_state_pred'] = 'unknown'
 
@@ -18446,7 +18446,7 @@ class NmrDpUtility:
                                     elif gp < 0.001 and t < 0.001:
                                         ilv['rotameric_state_pred'] = 'gauche-'
                                     else:
-                                        ilv['rotameric_state_pred'] = f'gauche+ {gp * 100.0:.1f} (%%), trans {t * 100.0:.1f} (%%), gauche- {gm * 100.0:.1f} (%%)'
+                                        ilv['rotameric_state_pred'] = f'gauche+ {gp * 100.0:.1f} (%), trans {t * 100.0:.1f} (%), gauche- {gm * 100.0:.1f} (%)'
                                 else:
                                     ilv['rotameric_state_pred'] = 'unknown'
 
@@ -26985,11 +26985,11 @@ class NmrDpUtility:
 
                 if disulf['redox_state_pred_1'] == 'ambiguous' and ((ca_chem_shift_1 is not None) or (cb_chem_shift_1 is not None)):
                     oxi, red = predict_redox_state_of_cystein(ca_chem_shift_1, cb_chem_shift_1)
-                    disulf['redox_state_pred_1'] = f'oxidized {oxi * 100.0:.1f} (%%), reduced {red * 100.0:.1f} (%%)'
+                    disulf['redox_state_pred_1'] = f'oxidized {oxi * 100.0:.1f} (%), reduced {red * 100.0:.1f} (%)'
 
                 if disulf['redox_state_pred_2'] == 'ambiguous' and ((ca_chem_shift_2 is not None) or (cb_chem_shift_2 is not None)):
                     oxi, red = predict_redox_state_of_cystein(ca_chem_shift_2, cb_chem_shift_2)
-                    disulf['redox_state_pred_2'] = f'oxidized {oxi * 100.0:.1f} (%%), reduced {red * 100.0:.1f} (%%)'
+                    disulf['redox_state_pred_2'] = f'oxidized {oxi * 100.0:.1f} (%), reduced {red * 100.0:.1f} (%)'
 
                 if disulf['redox_state_pred_1'] != 'oxidized' and disulf['redox_state_pred_1'] != 'unknown':
 
@@ -27376,11 +27376,11 @@ class NmrDpUtility:
 
                 if other['redox_state_pred_1'] == 'ambiguous' and ((ca_chem_shift_1 is not None) or (cb_chem_shift_1 is not None)):
                     oxi, red = predict_redox_state_of_cystein(ca_chem_shift_1, cb_chem_shift_1)
-                    other['redox_state_pred_1'] = f'oxidized {oxi * 100.0:.1f} (%%), reduced {red * 100.0:.1f} (%%)'
+                    other['redox_state_pred_1'] = f'oxidized {oxi * 100.0:.1f} (%), reduced {red * 100.0:.1f} (%)'
 
                 if other['redox_state_pred_2'] == 'ambiguous' and ((ca_chem_shift_2 is not None) or (cb_chem_shift_2 is not None)):
                     oxi, red = predict_redox_state_of_cystein(ca_chem_shift_2, cb_chem_shift_2)
-                    other['redox_state_pred_2'] = f'oxidized {oxi * 100.0:.1f} (%%), reduced {red * 100.0:.1f} (%%)'
+                    other['redox_state_pred_2'] = f'oxidized {oxi * 100.0:.1f} (%), reduced {red * 100.0:.1f} (%)'
 
                 if other['redox_state_pred_1'] != 'oxidized' and other['redox_state_pred_1'] != 'unknown':
 

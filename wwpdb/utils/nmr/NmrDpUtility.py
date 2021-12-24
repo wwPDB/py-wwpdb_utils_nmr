@@ -862,6 +862,9 @@ class NmrDpUtility:
         # whether entity category exists (nmr-star specific)
         self.__has_star_entity = False
 
+        # whether legacy distance restraint has been uploaded
+        self.__legacy_dist_restraint_uploaded = False
+
         # source, destination, and log file paths.
         self.__srcPath = None
         self.__dstPath = None
@@ -4447,8 +4450,8 @@ class NmrDpUtility:
 
                 if _file_type != file_type:
 
-                    err = "%r was selected as %s file, but recognized as %s file. Please re-upload the file."\
-                        % (file_name, self.readable_file_type[file_type], self.readable_file_type[_file_type])
+                    err = f"{file_name!r} was selected as {self.readable_file_type[file_type]} file, "\
+                        f"but recognized as {self.readable_file_type[_file_type]} file. Please re-upload the file."
 
                     if len(message['error']) > 0:
                         for err_message in message['error']:
@@ -4539,8 +4542,8 @@ class NmrDpUtility:
 
                     if _file_type != file_type:
 
-                        err = "%r was selected as %s file, but recognized as %s file."\
-                            % (file_name, self.readable_file_type[file_type], self.readable_file_type[_file_type])
+                        err = f"{file_name!r} was selected as {self.readable_file_type[file_type]} file, "\
+                            f"but recognized as {self.readable_file_type[_file_type]} file."
 
                         if _file_type == 'nef':  # DAOTHER-5673
                             err += " Please re-upload the NEF file as an NMR combined data file."
@@ -4594,10 +4597,13 @@ class NmrDpUtility:
                         pass
 
             mr_file_path_list = 'restraint_file_path_list'
+            ar_file_path_list = 'atypical_restraint_file_path_list'
+
+            self.__legacy_dist_restraint_uploaded = False
 
             if mr_file_path_list in self.__inputParamDict:
 
-                has_dist_restraint = False
+                self.__t = False
 
                 for mrPath in self.__inputParamDict[mr_file_path_list]:
 
@@ -4613,7 +4619,7 @@ class NmrDpUtility:
                     is_valid, message = self.__nefT.validate_file(mrPath, 'R')  # 'R' for restraints
 
                     if is_valid:
-                        has_dist_restraint = True
+                        self.__legacy_dist_restraint_uploaded = True
 
                     if mrPath_ is not None:
                         try:
@@ -4621,9 +4627,21 @@ class NmrDpUtility:
                         except:  # noqa: E722 pylint: disable=bare-except
                             pass
 
-                file_path_list_len = self.__cs_file_path_list_len
+                has_atypical_restraint = False
 
-                file_subtype = 'O' if has_dist_restraint else 'R'  # DAOTHER-7545, issue #2, 'R' for restraints, 'O' for other conventional restraints
+                if ar_file_path_list in self.__inputParamDict:
+
+                    for ar in self.__inputParamDict[ar_file_path_list]:
+
+                        arPath = ar['file_name']
+
+                        if os.path.exists(arPath):
+                            has_atypical_restraint = True
+                            break
+
+                file_subtype = 'O' if self.__legacy_dist_restraint_uploaded or has_atypical_restraint else 'R'  # DAOTHER-7545, issue #2, 'R' for restraints, 'O' for other conventional restraints
+
+                file_path_list_len = self.__cs_file_path_list_len
 
                 for mrPath in self.__inputParamDict[mr_file_path_list]:
 
@@ -4658,8 +4676,8 @@ class NmrDpUtility:
 
                         if _file_type != file_type:
 
-                            err = "%r was selected as %s file, but recognized as %s file."\
-                                % (file_name, self.readable_file_type[file_type], self.readable_file_type[_file_type])
+                            err = f"{file_name!r} was selected as {self.readable_file_type[file_type]} file, "\
+                                f"but recognized as {self.readable_file_type[_file_type]} file."
 
                             if _file_type == 'nef':  # DAOTHER-5673
                                 err += " Please re-upload the NEF file as an NMR combined data file."
@@ -4717,8 +4735,6 @@ class NmrDpUtility:
                         except:  # noqa: E722 pylint: disable=bare-except
                             pass
 
-            ar_file_path_list = 'atypical_restraint_file_path_list'
-
             if ar_file_path_list in self.__inputParamDict:
 
                 for ar in self.__inputParamDict[ar_file_path_list]:
@@ -4752,8 +4768,7 @@ class NmrDpUtility:
 
                 missing_loop = True
 
-                err = "%r is not compliant with the %s dictionary."\
-                    % (file_name, self.readable_file_type[file_type])
+                err = f"{file_name!r} is not compliant with the {self.readable_file_type[file_type]} dictionary."
 
                 if len(message['error']) > 0:
 
@@ -5218,8 +5233,8 @@ class NmrDpUtility:
         try:
 
             msg = next(msg for msg in message['error'] if msg_template in msg)
-            warn = 'The saveframe must have NMR-STAR V3.2 tags. Saveframe error occured:%s'\
-                % (msg[len(msg_template):].replace('<pynmrstar.', '').replace("'>", "'"))
+            warn = 'The saveframe must have NMR-STAR V3.2 tags. Saveframe error occured:'\
+                + msg[len(msg_template):].replace('<pynmrstar.', '').replace("'>", "'")
 
             self.report.warning.appendDescription('corrected_format_issue',
                                                   {'file_name': file_name, 'description': warn})
@@ -5316,8 +5331,8 @@ class NmrDpUtility:
         try:
 
             msg = next(msg for msg in message['error'] if msg_template in msg)
-            warn = 'Saveframe(s), instead of the datablock, must hook more than one loop. Loops detected:%s'\
-                % (msg[len(msg_template):].replace('<pynmrstar.', '').replace("'>", "'"))
+            warn = 'Saveframe(s), instead of the datablock, must hook more than one loop. Loops detected:'\
+                + msg[len(msg_template):].replace('<pynmrstar.', '').replace("'>", "'")
 
             self.report.warning.appendDescription('corrected_format_issue',
                                                   {'file_name': file_name, 'description': warn})
@@ -5697,8 +5712,8 @@ class NmrDpUtility:
 
             if _file_type != file_type:
 
-                err = "%r was selected as %s file, but recognized as %s file. Please re-upload the file."\
-                    % (file_name, self.readable_file_type[file_type], self.readable_file_type[_file_type])
+                err = f"{file_name!r} was selected as {self.readable_file_type[file_type]} file, "\
+                    f"but recognized as {self.readable_file_type[_file_type]} file. Please re-upload the file."
 
                 if len(message['error']) > 0:
                     for err_message in message['error']:
@@ -5747,8 +5762,7 @@ class NmrDpUtility:
 
             missing_loop = True
 
-            err = "%r is not compliant with the %s dictionary."\
-                % (file_name, self.readable_file_type[file_type])
+            err = f"{file_name!r} is not compliant with the {self.readable_file_type[file_type]} dictionary."
 
             if len(message['error']) > 0:
 
@@ -5825,8 +5839,7 @@ class NmrDpUtility:
                         itName = '_' + sf_category + '.sf_framecode'
 
                         if self.__resolve_conflict:
-                            warn = "%s %r should be matched with saveframe name %r. %s will be overwritten."\
-                                % (itName, sf_framecode, sf_data.name, itName)
+                            warn = f"{itName} {sf_framecode!r} should be matched with saveframe name {sf_data.name!r}. {itName} will be overwritten."
 
                             self.report.warning.appendDescription('missing_saveframe',
                                                                   {'file_name': file_name, 'sf_framecode': sf_data.name, 'description': warn})
@@ -5842,8 +5855,7 @@ class NmrDpUtility:
                             sf_data.tags[tagNames.index('sf_framecode')][1] = sf_framecode
 
                         else:
-                            err = "%s %r must be matched with saveframe name %r."\
-                                % (itName, sf_framecode, sf_data.name)
+                            err = f"{itName} {sf_framecode!r} must be matched with saveframe name {sf_data.name!r}."
 
                             self.report.error.appendDescription('format_issue',
                                                                 {'file_name': file_name, 'sf_framecode': sf_data.name, 'description': err})
@@ -6180,8 +6192,7 @@ class NmrDpUtility:
                         itName = '_' + sf_category + '.Sf_framecode'
 
                         if self.__resolve_conflict:
-                            warn = "%s %r should be matched with saveframe name %r. %s will be overwritten."\
-                                % (itName, sf_framecode, sf_data.name, itName)
+                            warn = f"{itName} {sf_framecode!r} should be matched with saveframe name {sf_data.name!r}. {itName} will be overwritten."
 
                             self.report.warning.appendDescription('missing_saveframe',
                                                                   {'file_name': file_name, 'sf_framecode': sf_data.name, 'description': warn})
@@ -6197,8 +6208,7 @@ class NmrDpUtility:
                             sf_data.tags[tagNames.index('Sf_framecode')][1] = sf_data.name
 
                         else:
-                            err = "%s %r must be matched with saveframe name %r."\
-                                % (itName, sf_framecode, sf_data.name)
+                            err = f"{itName} {sf_framecode!r} must be matched with saveframe name {sf_data.name!r}."
 
                             self.report.error.appendDescription('format_issue',
                                                                 {'file_name': file_name, 'sf_framecode': sf_data.name, 'description': err})
@@ -6520,8 +6530,7 @@ class NmrDpUtility:
 
             if len(tags_with_null_str) > 0:
 
-                warn = "Empty strings for %s are not allowed as values. Use a '.' or a '?' if needed."\
-                    % tags_with_null_str
+                warn = f"Empty strings for {tags_with_null_str} are not allowed as values. Use a '.' or a '?' if needed."
 
                 self.report.warning.appendDescription('corrected_format_issue',
                                                       {'file_name': file_name, 'description': warn})
@@ -6540,11 +6549,9 @@ class NmrDpUtility:
                     if not self.__bmrb_only:
 
                         if file_type == 'nef':
-                            warn = "Ignored third party software's saveframe %r."\
-                                % sf_category
+                            warn = f"Ignored third party software's saveframe {sf_category!r}."
                         else:
-                            warn = "Ignored saveframe category %r."\
-                                % sf_category
+                            warn = f"Ignored saveframe category {sf_category!r}%r."
 
                         self.report.warning.appendDescription('skipped_saveframe_category',
                                                               {'file_name': file_name, 'sf_category': sf_category, 'description': warn})
@@ -6571,8 +6578,7 @@ class NmrDpUtility:
                 if not self.__has_star_entity and self.__combined_mode:
 
                     if self.__resolve_conflict and self.__update_poly_seq:  # DAOTHER-6694
-                        warn = "A saveframe with a category %r is missing in the NMR data."\
-                            % lp_category
+                        warn = f"A saveframe with a category {lp_category!r} is missing in the NMR data."
 
                         self.report.warning.appendDescription('missing_saveframe',
                                                               {'file_name': file_name, 'description': warn})
@@ -6582,8 +6588,7 @@ class NmrDpUtility:
                             self.__lfh.write(f"+NmrDpUtility.__detectContentSubType() ++ Warning  - {warn}\n")
 
                     else:
-                        err = "A saveframe with a category %r is missing. Please re-upload the %s file."\
-                            % (lp_category, file_type.upper())
+                        err = f"A saveframe with a category {lp_category!r} is missing. Please re-upload the {file_type.upper()} file."
 
                         self.report.error.appendDescription('missing_mandatory_content',
                                                             {'file_name': file_name, 'description': err})
@@ -6593,8 +6598,7 @@ class NmrDpUtility:
                             self.__lfh.write(f"+NmrDpUtility.__detectContentSubType() ++ Error  - {err}\n")
 
                 elif lp_counts['chem_shift'] == 0 and lp_counts['dist_restraint'] > 0 and content_type != 'nmr-restraints':
-                    err = "A saveframe with a category %r is missing. Please re-upload the %s file."\
-                        % (lp_category, file_type.upper())
+                    err = f"A saveframe with a category {lp_category!r} is missing. Please re-upload the {file_type.upper()} file."
 
                     self.report.error.appendDescription('missing_mandatory_content',
                                                         {'file_name': file_name, 'description': err})
@@ -6605,8 +6609,7 @@ class NmrDpUtility:
 
             elif lp_counts[content_subtype] > 1:
 
-                err = "Unexpectedly, multiple saveframes having %r category exist."\
-                    % lp_category
+                err = f"Unexpectedly, multiple saveframes having {lp_category!r} category exist."
 
                 self.report.error.appendDescription('format_issue',
                                                     {'file_name': file_name, 'description': err})
@@ -6622,8 +6625,8 @@ class NmrDpUtility:
                 sf_category = self.sf_categories[file_type][content_subtype]
                 lp_category = self.lp_categories[file_type][content_subtype]
 
-                err = "The mandatory saveframe with a category %r is missing, Deposition of assigned chemical shifts is mandatory. Please re-upload the %s file."\
-                    % (sf_category, file_type.upper())
+                err = f"The mandatory saveframe with a category {sf_category!r} is missing, "\
+                    f"Deposition of assigned chemical shifts is mandatory. Please re-upload the {file_type.upper()} file."
 
                 self.report.error.appendDescription('missing_mandatory_content',
                                                     {'file_name': file_name, 'description': err})
@@ -6634,8 +6637,8 @@ class NmrDpUtility:
 
             if lp_counts[content_subtype] > 0 and content_type == 'nmr-restraints' and not self.__bmrb_only:
 
-                err = "NMR restraint file includes assigned chemical shifts. Please re-upload the %s file as an NMR combined data file."\
-                    % file_type.upper()
+                err = "NMR restraint file includes assigned chemical shifts. "\
+                    f"Please re-upload the {file_type.upper()} file as an NMR combined data file."
 
                 self.report.error.appendDescription('content_mismatch',
                                                     {'file_name': file_name, 'description': err})
@@ -6651,8 +6654,8 @@ class NmrDpUtility:
                 sf_category = self.sf_categories[file_type][content_subtype]
                 lp_category = self.lp_categories[file_type][content_subtype]
 
-                err = "The mandatory saveframe with a category %r is missing, Deposition of distance restraints is mandatory. Please re-upload the %s file."\
-                    % (sf_category, file_type.upper())
+                err = f"The mandatory saveframe with a category {sf_category!r} is missing, "\
+                    f"Deposition of distance restraints is mandatory. Please re-upload the {file_type.upper()} file."
 
                 self.report.error.appendDescription('missing_mandatory_content',
                                                     {'file_name': file_name, 'description': err})
@@ -6661,10 +6664,11 @@ class NmrDpUtility:
                 if self.__verbose:
                     self.__lfh.write(f"+NmrDpUtility.__detectContentSubType() ++ Error  - {err}\n")
 
-            if (lp_counts['dist_restraint'] > 0 or lp_counts['dihed_restraint'] or lp_counts['rdc_restraint']) and content_type == 'nmr-chemical-shifts' and not self.__bmrb_only:
+            if (lp_counts['dist_restraint'] > 0 or lp_counts['dihed_restraint'] or lp_counts['rdc_restraint'])\
+                and content_type == 'nmr-chemical-shifts' and not self.__bmrb_only:
 
-                err = "The assigned chemical shift file includes NMR restraints. Please re-upload the %s file as an NMR combined data file."\
-                    % file_type.upper()
+                err = "The assigned chemical shift file includes NMR restraints. "\
+                    f"Please re-upload the {file_type.upper()} file as an NMR combined data file."
 
                 self.report.error.appendDescription('content_mismatch',
                                                     {'file_name': file_name, 'description': err})
@@ -6677,7 +6681,8 @@ class NmrDpUtility:
 
             if not has_spectral_peak and self.__combined_mode:
 
-                warn = "The wwPDB NMR Validation Task Force strongly encourages the submission of spectral peak lists, in particular those generated from NOESY spectra."
+                warn = "The wwPDB NMR Validation Task Force strongly encourages the submission of spectral peak lists, "\
+                    "in particular those generated from NOESY spectra."
 
                 self.report.warning.appendDescription('encouragement',
                                                       {'file_name': file_name, 'description': warn})
@@ -6688,8 +6693,8 @@ class NmrDpUtility:
 
             if has_spectral_peak and content_type == 'nmr-chemical-shifts' and not self.__bmrb_only:
 
-                err = "The assigned chemical shift file includes spectral peak lists. Please re-upload the %s file as an NMR combined data file."\
-                    % file_type.upper()
+                err = "The assigned chemical shift file includes spectral peak lists. "\
+                    f"Please re-upload the {file_type.upper()} file as an NMR combined data file."
 
                 self.report.error.appendDescription('content_mismatch',
                                                     {'file_name': file_name, 'description': err})
@@ -6719,8 +6724,6 @@ class NmrDpUtility:
         first_atom_pattern = re.compile(r'^ATOM +1 .*')
         hbond_da_atom_types = ('O', 'N', 'F')
         rdc_origins = ('OO', 'X', 'Y', 'Z')
-
-        dist_restraint_uploaded = False
 
         cs_range_min = self.chem_shift_range['min_exclusive']
         cs_range_max = self.chem_shift_range['max_exclusive']
@@ -7547,12 +7550,13 @@ class NmrDpUtility:
 
                     ifp.close()
 
-            if has_coordinate and not has_dist_restraint and not has_dihed_restraint and not has_rdc_restraint and not has_plane_restraint and not has_hbond_restraint:
+            if has_coordinate and not has_dist_restraint and not has_dihed_restraint and not has_rdc_restraint\
+                    and not has_plane_restraint and not has_hbond_restraint:
 
                 if not is_aux_amb:
 
-                    err = "NMR restraint file (%s) includes coordinates. Did you accidentally select the wrong format? Please re-upload the NMR restraint file."\
-                        % mr_format_name
+                    err = f"NMR restraint file ({mr_format_name}) includes coordinates. "\
+                        "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
 
                     self.report.error.appendDescription('content_mismatch',
                                                         {'file_name': file_name, 'description': err})
@@ -7563,14 +7567,17 @@ class NmrDpUtility:
 
                 has_chem_shift = False
 
-            elif has_chem_shift and not has_coordinate and not has_amb_inpcrd and not has_dist_restraint and not has_dihed_restraint and not has_rdc_restraint and not has_plane_restraint and not has_hbond_restraint:
+            elif has_chem_shift and not has_coordinate and not has_amb_inpcrd and not has_dist_restraint and not has_dihed_restraint\
+                    and not has_rdc_restraint and not has_plane_restraint and not has_hbond_restraint:
 
                 if has_rdc_origins:
 
-                    hint = 'assign ( resid # and name OO ) ( resid # and name X ) ( resid # and name Y ) ( resid # and name Z ) ( segid $ and resid # and name $ ) ( segid $ and resid # and name $ ) #.# #.#'
+                    hint = 'assign ( resid # and name OO ) ( resid # and name X ) ( resid # and name Y ) ( resid # and name Z ) "\
+                        "( segid $ and resid # and name $ ) ( segid $ and resid # and name $ ) #.# #.#'
 
-                    err = "NMR restraint file (%s) seems to be a malformed XPLOR-NIH RDC restraint file. Tips for XPLOR-NIH RDC restraints: %r pattern must be present in the file. Did you accidentally select the wrong format? Please re-upload the NMR restraint file."\
-                        % (mr_format_name, hint)
+                    err = f"NMR restraint file ({mr_format_name}) seems to be a malformed XPLOR-NIH RDC restraint file. "\
+                        f"Tips for XPLOR-NIH RDC restraints: {hint!r} pattern must be present in the file. "\
+                        "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
 
                     self.report.error.appendDescription('content_mismatch',
                                                         {'file_name': file_name, 'description': err})
@@ -7583,8 +7590,8 @@ class NmrDpUtility:
 
                 elif not is_aux_amb:
 
-                    err = "NMR restraint file (%s) includes assigned chemical shifts. Did you accidentally select the wrong format? Please re-upload the NMR restraint file."\
-                        % mr_format_name
+                    err = f"NMR restraint file ({mr_format_name}) includes assigned chemical shifts. "\
+                        "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
 
                     self.report.error.appendDescription('content_mismatch',
                                                         {'file_name': file_name, 'description': err})
@@ -7605,7 +7612,8 @@ class NmrDpUtility:
                                'coordinate': 1 if has_coordinate else 0,
                                'topology': 1 if has_topology else 0}
 
-            if not is_aux_amb and not has_chem_shift and not has_dist_restraint and not has_dihed_restraint and not has_rdc_restraint and not has_plane_restraint and not has_hbond_restraint:
+            if not is_aux_amb and not has_chem_shift and not has_dist_restraint and not has_dihed_restraint and not has_rdc_restraint\
+                    and not has_plane_restraint and not has_hbond_restraint:
 
                 hint = ""
                 if file_type in ('nm-res-cns', 'nm-res-xpl') and not has_rdc_origins:
@@ -7616,8 +7624,8 @@ class NmrDpUtility:
                 if len(hint) > 0:
                     hint = f' Tips for {mr_format_name} restraints: ' + f"{hint!r} pattern must be present in the file."
 
-                warn = "Constraint type of the NMR restraint file (%s) could not be identified.%s Did you accidentally select the wrong format?"\
-                    % (mr_format_name, hint)
+                warn = f"Constraint type of the NMR restraint file ({mr_format_name}) could not be identified."\
+                    + hint + " Did you accidentally select the wrong format?"
 
                 self.report.warning.appendDescription('missing_content',
                                                       {'file_name': file_name, 'description': warn})
@@ -7647,13 +7655,15 @@ class NmrDpUtility:
                 if len(subtype_name) > 0:
                     subtype_name = ". It looks like to have " + subtype_name[:-2] + " instead"
 
-                hint = " Tips for AMBER topology: Proper contents starting with '%FLAG ATOM_NAME', '%FLAG RESIDUE_LABEL', and '%FLAG RESIDUE_POINTER' lines must be present in the file"
+                hint = " Tips for AMBER topology: Proper contents starting with '%FLAG ATOM_NAME', '%FLAG RESIDUE_LABEL', "\
+                    "and '%FLAG RESIDUE_POINTER' lines must be present in the file"
 
                 if has_coordinate:
-                    hint = " Tips for AMBER coordinates: It should be directory generated by 'ambpdb' command and must not have MODEL/ENDMDL keywords to ensure that AMBER atomic IDs, referred as 'iat' in the AMBER restraint file, are preserved in the file."
+                    hint = " Tips for AMBER coordinates: It should be directory generated by 'ambpdb' command and must not have MODEL/ENDMDL keywords "\
+                        "to ensure that AMBER atomic IDs, referred as 'iat' in the AMBER restraint file, are preserved in the file."
 
-                err = "%r is neither AMBER topology (.prmtop) nor coordinates (.inpcrd.pdb)%s.%s Did you accidentally select the wrong format? Please re-upload the AMBER topology file."\
-                    % (file_name, subtype_name, hint)
+                err = f"{file_name} is neither AMBER topology (.prmtop) nor coordinates (.inpcrd.pdb){subtype_name}."\
+                    + hint + " Did you accidentally select the wrong format? Please re-upload the AMBER topology file."
 
                 self.report.error.appendDescription('content_mismatch',
                                                     {'file_name': file_name, 'description': err})
@@ -7662,13 +7672,13 @@ class NmrDpUtility:
                 if self.__verbose:
                     self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMR() ++ Error  - {err}\n")
 
-            dist_restraint_uploaded |= has_dist_restraint
+            self.__legacy_dist_restraint_uploaded |= has_dist_restraint
 
             input_source.setItemValue('content_subtype', content_subtype)
 
             fileListId += 1
 
-        if not dist_restraint_uploaded:
+        if not self.__legacy_dist_restraint_uploaded:
 
             fileListId = self.__file_path_list_len
 
@@ -7688,7 +7698,8 @@ class NmrDpUtility:
 
                 if content_subtype is None:
 
-                    err = "NMR restraint file does not include mandatory distance restraints or is not recognized properly. Please re-upload the NMR restraint file."
+                    err = "NMR restraint file does not include mandatory distance restraints or is not recognized properly. "\
+                        "Please re-upload the NMR restraint file."
 
                     self.__suspended_errors_for_polypeptide.append({'content_mismatch': {'file_name': file_name, 'description': err}})
 
@@ -7711,8 +7722,8 @@ class NmrDpUtility:
                     if 'hbond_restraint' in content_subtype:
                         subtype_name += "Hydrogen bond restraints, "
 
-                    err = "NMR restraint file includes %s. However, deposition of distance restraints is mandatory. Please re-upload the NMR restraint file."\
-                        % (subtype_name[:-2])
+                    err = f"NMR restraint file includes {subtype_name[:-2]}. "\
+                        "However, deposition of distance restraints is mandatory. Please re-upload the NMR restraint file."
 
                     self.__suspended_errors_for_polypeptide.append({'content_mismatch': {'file_name': file_name, 'description': err}})
 
@@ -7736,11 +7747,11 @@ class NmrDpUtility:
                     file_name_1 = os.path.basename(self.__inputParamDict[ar_file_path_list][i]['file_name'])
                     file_name_2 = os.path.basename(self.__inputParamDict[ar_file_path_list][j]['file_name'])
 
-                    err = "You have uploaded the same NMR restranit file twice. Please replace/delete either %s or %s."\
-                        % (file_name_1, file_name_2)
+                    err = f"You have uploaded the same NMR restranit file twice. "\
+                        f"Please replace/delete either {file_name_1} or {file_name_2}."
 
                     self.report.error.appendDescription('content_mismatch',
-                                                        {'file_name': '%s vs %s' % (file_name_1, file_name_2), 'description': err})
+                                                        {'file_name': f'{file_name_1} vs {file_name_2}', 'description': err})
                     self.report.setError()
 
                     if self.__verbose:
@@ -7856,7 +7867,7 @@ class NmrDpUtility:
                                         except ValueError:
 
                                             if self.__check_auth_seq:
-                                                warn = "Auth_seq_ID %r (Auth_asym_ID %s, Auth_comp_ID %s) should be a integer."\
+                                                warn = "Auth_seq_ID %r (Auth_asym_ID %s, Auth_comp_ID %s) should be an integer."\
                                                     % (auth_seq_id, auth_asym_id, auth_comp_id)
 
                                                 self.report.warning.appendDescription('sequence_mismatch',
@@ -8127,7 +8138,7 @@ class NmrDpUtility:
                                     except ValueError:
 
                                         if self.__check_auth_seq:
-                                            warn = "Auth_seq_ID %r (Auth_asym_ID %s, Auth_comp_ID %s) should be a integer."\
+                                            warn = "Auth_seq_ID %r (Auth_asym_ID %s, Auth_comp_ID %s) should be an integer."\
                                                 % (auth_seq_id, auth_asym_id, auth_comp_id)
 
                                             self.report.warning.appendDescription('sequence_mismatch',

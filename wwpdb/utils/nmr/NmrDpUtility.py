@@ -13048,9 +13048,9 @@ class NmrDpUtility:
 
                             if position < min_points[j] or position > max_points[j]:
 
-                                err = f'[Check row of {index_tag} {i[index_tag]}] {position_names[j]} {position} is not within expected range "\
+                                err = f"[Check row of {index_tag} {i[index_tag]}] {position_names[j]} {position} is not within expected range "\
                                     f"(min_position {min_points[j]}, max_position {max_points[j]}, absolute_peak_positions {abs[j]}). "\
-                                    "Please check for reference frequency and spectral width.'
+                                    "Please check for reference frequency and spectral width."
 
                                 self.report.warning.appendDescription('anomalous_data',
                                                                       {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
@@ -13065,10 +13065,10 @@ class NmrDpUtility:
 
                             if position < min_limits[j] or position > max_limits[j]:
 
-                                err = f'[Check row of {index_tag} {i[index_tag]}] {position_names[j]} {position} is not within expected range "\
+                                err = f"[Check row of {index_tag} {i[index_tag]}] {position_names[j]} {position} is not within expected range "\
                                     f"(min_position {min_limits[j]}, max_position {max_limits[j]}, absolute_peak_positions {abs[j]}), "\
                                     f"which exceeds limit of current probe design ({self.hard_probe_limit / 1000.0} kHz). "\
-                                    "Please check for reference frequency and spectral width.'\
+                                    "Please check for reference frequency and spectral width."
 
                                 self.report.error.appendDescription('invalid_data',
                                                                     {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
@@ -13213,9 +13213,9 @@ class NmrDpUtility:
 
                         if position < min_points[j] or position > max_points[j]:
 
-                            warn = f'[Check row of {pk_id_name} {i[pk_id_name]}] {position_name} {position} is not within expected range "\
+                            warn = f"[Check row of {pk_id_name} {i[pk_id_name]}] {position_name} {position} is not within expected range "\
                                 f"(min_position {min_points[j]}, max_position {max_points[j]}, absolute_peak_positions {abs[j]}). "\
-                                "Please check for reference frequency and spectral width.'
+                                "Please check for reference frequency and spectral width."
 
                             self.report.warning.appendDescription('anomalous_data',
                                                                   {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
@@ -13230,10 +13230,10 @@ class NmrDpUtility:
 
                         if position < min_limits[j] or position > max_limits[j]:
 
-                            err = f'[Check row of {pk_id_name} {i[pk_id_name]}] {position_name} {position} is not within expected range "\
+                            err = f"[Check row of {pk_id_name} {i[pk_id_name]}] {position_name} {position} is not within expected range "\
                                 f"(min_position {min_limits[j]}, max_position {max_limits[j]}, absolute_peak_positions {abs[j]}), "\
                                 f"which exceeds limit of current probe design ({self.hard_probe_limit / 1000.0} kHz). "\
-                                "Please check for reference frequency and spectral width.'
+                                "Please check for reference frequency and spectral width."
 
                             self.report.error.appendDescription('invalid_data',
                                                                 {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,

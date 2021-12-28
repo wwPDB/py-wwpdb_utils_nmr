@@ -1314,7 +1314,7 @@ class NmrDpReport:
             self.__report['information']['status'] = status
         else:
             logging.error('+NmrDpReport.__setStatus() ++ Error  - Unknown status %s', status)
-            raise KeyError('+NmrDpReport.__setStatus() ++ Error  - Unknown status %s' % status)
+            raise KeyError(f'+NmrDpReport.__setStatus() ++ Error  - Unknown status {status}')
 
     def setError(self):
         """ Set processing status Error.
@@ -1685,24 +1685,24 @@ class NmrDpReportInputSource:
 
             if item == 'file_type' and value not in self.file_types:
                 logging.error('+NmrDpReportInputSource.setItemValue() ++ Error  - Unknown file type %s', value)
-                raise ValueError('+NmrDpReportInputSource.setItemValue() ++ Error  - Unknown file type %s' % value)
+                raise ValueError(f'+NmrDpReportInputSource.setItemValue() ++ Error  - Unknown file type {value}')
 
             if item == 'content_type' and value not in self.content_types:
                 logging.error('+NmrDpReportInputSource.setItemValue() ++ Error  - Unknown content type %s', value)
-                raise ValueError('+NmrDpReportInputSource.setItemValue() ++ Error  - Unknown content type %s' % value)
+                raise ValueError(f'+NmrDpReportInputSource.setItemValue() ++ Error  - Unknown content type {value}')
 
             if item == 'content_subtype':
 
-                for k in value:
+                for key in value:
 
-                    if k not in self.content_subtypes:
+                    if key not in self.content_subtypes:
                         logging.error('+NmrDpReportInputSource.setItemValue() ++ Error  - Unknown content subtype in %s', value.keys())
-                        raise ValueError('+NmrDpReportInputSource.setItemValue() ++ Error  - Unknown content subtype in %s' % value.keys())
+                        raise ValueError(f'+NmrDpReportInputSource.setItemValue() ++ Error  - Unknown content subtype in {value.keys()}')
 
-                non_positive_keys = [k for k in value if int(value[k]) <= 0]
+                non_positive_keys = [key for key in value if int(value[key]) <= 0]
 
-                for k in non_positive_keys:
-                    value.pop(k)
+                for key in non_positive_keys:
+                    value.pop(key)
 
                 if len(value) > 0:
                     self.__contents[item] = value
@@ -1712,7 +1712,7 @@ class NmrDpReportInputSource:
 
         else:
             logging.error('+NmrDpReportInputSource.setItemValue() ++ Error  - Unknown item type %s', item)
-            raise KeyError('+NmrDpReportInputSource.setItemValue() ++ Error  - Unknown item type %s' % item)
+            raise KeyError(f'+NmrDpReportInputSource.setItemValue() ++ Error  - Unknown item type {item}')
 
     def get(self):
         """ Retrieve contents.
@@ -1742,11 +1742,11 @@ class NmrDpReportInputSource:
             # # should pass because reallocation of chain_id may happen
             # else:
             #     logging.error('+NmrDpReportInputSource.updateNonStandardResidueByExptlData() ++ Error  - Unknown seq_id %s', seq_id)
-            #     raise KeyError('+NmrDpReportInputSource.updateNonStandardResidueByExptlData() ++ Error  - Unknown seq_id %s' % seq_id)
+            #     raise KeyError(f'+NmrDpReportInputSource.updateNonStandardResidueByExptlData() ++ Error  - Unknown seq_id {seq_id}')
             #
         except StopIteration:
             logging.error('+NmrDpReportInputSource.updateNonStandardResidueByExptlData() ++ Error  - Unknown chain_id %s', chain_id)
-            raise KeyError('+NmrDpReportInputSource.updateNonStandardResidueByExptlData() ++ Error  - Unknown chain_id %s' % chain_id)  # pylint: disable=raise-missing-from
+            raise KeyError(f'+NmrDpReportInputSource.updateNonStandardResidueByExptlData() ++ Error  - Unknown chain_id {chain_id}')  # pylint: disable=raise-missing-from
 
 
 class NmrDpReportSequenceAlignment:
@@ -1769,7 +1769,7 @@ class NmrDpReportSequenceAlignment:
 
         else:
             logging.error('+NmrDpReportSequenceAlignment.setItemValue() ++ Error  - Unknown item type %s', item)
-            raise KeyError('+NmrDpReportSequenceAlignment.setItemValue() ++ Error  - Unknown item type %s' % item)
+            raise KeyError(f'+NmrDpReportSequenceAlignment.setItemValue() ++ Error  - Unknown item type {item}')
 
     def get(self):
         """ Retrieve contents.
@@ -1802,7 +1802,7 @@ class NmrDpReportChainAssignment:
 
         else:
             logging.error('+NmrDpReportChainAssignment.setItemValue() ++ Error  - Unknown item type %s', item)
-            raise KeyError('+NmrDpReportChainAssignment.setItemValue() ++ Error  - Unknown item type %s' % item)
+            raise KeyError(f'+NmrDpReportChainAssignment.setItemValue() ++ Error  - Unknown item type {item}')
 
     def get(self):
         """ Retrieve contents.
@@ -1896,7 +1896,7 @@ class NmrDpReportError:
                             return
 
                     if v is not None:
-                        v['description'] += '\n%s' % value['description']
+                        v['description'] += f"\n{value['description']}"
 
                         v['subtotal'] += 1
 
@@ -1910,7 +1910,7 @@ class NmrDpReportError:
 
         else:
             logging.error('+NmrDpReportError.appendDescription() ++ Error  - Unknown item type %s', item)
-            raise KeyError('+NmrDpReportError.appendDescription() ++ Error  - Unknown item type %s' % item)
+            raise KeyError(f'+NmrDpReportError.appendDescription() ++ Error  - Unknown item type {item}')
 
     def get(self):
         """ Retrieve errors.
@@ -2144,7 +2144,7 @@ class NmrDpReportWarning:
                             return
 
                     if v is not None:
-                        v['description'] += '\n%s' % value['description']
+                        v['description'] += f"\n{value['description']}"
 
                         v['subtotal'] += 1
 
@@ -2158,7 +2158,7 @@ class NmrDpReportWarning:
 
         else:
             logging.error('+NmrDpReportWarning.appendDescription() ++ Error  - Unknown item type %s', item)
-            raise KeyError('+NmrDpReportWarning.appendDescription() ++ Error  - Unknown item type %s' % item)
+            raise KeyError(f'+NmrDpReportWarning.appendDescription() ++ Error  - Unknown item type {item}')
 
     def get(self):
         """ Retrieve warnings.

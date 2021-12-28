@@ -13076,7 +13076,7 @@ class NmrDpUtility:
                                 err = f"[Check row of {index_tag} {i[index_tag]}] {position_names[j]} {position} is not within expected range "\
                                     f"(min_position {min_limits[j]}, max_position {max_limits[j]}, absolute_peak_positions {abs[j]}), "\
                                     f"which exceeds limit of current probe design ({self.hard_probe_limit / 1000.0} kHz). "\
-                                    "Please check for reference frequency and spectral width."\
+                                    "Please check for reference frequency and spectral width."
 
                                 self.report.error.appendDescription('invalid_data',
                                                                     {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
@@ -22809,7 +22809,7 @@ class NmrDpUtility:
                         f"The raw RMSD value, {r['raw_rmsd']} angstromes (representative model id {r['model_id']}), in estimated well-defined region "\
                         f"(range_of_seq_id {r['range']}, number_of_monomers {r['monomers']}, number_of_gaps {r['gaps']}, percent_of_core {r['core']} %%) is greater than "\
                         f"the estimated RMSD value, {r['rmsd']} angstromes. "\
-                        "Please superimpose the coordinates and re-upload the model file."\
+                        "Please superimpose the coordinates and re-upload the model file."
 
                     self.report.warning.appendDescription('not_superimposed_model',
                                                           {'file_name': file_name, 'category': 'atom_site',

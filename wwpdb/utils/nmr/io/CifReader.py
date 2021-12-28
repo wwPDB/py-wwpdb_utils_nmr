@@ -18,7 +18,7 @@
 # 08-May-2020   my  - make sure parse() is run only once (DAOTHER-5654)
 # 20-Nov-2020   my  - additional support for insertion code in getPolymerSequence() (DAOTHER-6128)
 # 29-Jun-2021   my  - add 'auth_chain_id', 'identical_auth_chain_id' in results of getPolymerSequence() if possible (DAOTHER-7108)
-# 14-Dec-2021   my  - precise RMSD calculation with domain and modoid model identification (DAOTHER-4060, 7544)
+# 14-Dec-2021   my  - precise RMSD calculation with domain and medoid model identification (DAOTHER-4060, 7544)
 ##
 """ A collection of classes for parsing CIF files.
 """
@@ -683,7 +683,7 @@ class CifReader:
                 if min_samples >= features:
                     continue
 
-                for _epsilon in range(2, 42, 2):
+                for _epsilon in range(2, 44, 4):
 
                     epsilon = _epsilon / 100.0
 
@@ -850,8 +850,8 @@ class CifReader:
 
             if min_label != -1:
                 item['domain_id'] = eff_domain_id[min_label]
-                item['raw_rmsd_in_well_defined_region'] = float('{:.2f}'.format(min_core_rmsd))
-                item['rmsd_in_well_defined_region'] = float('{:.2f}'.format(min_align_rmsd))
+                item['raw_rmsd_in_well_defined_region'] = float(f'{min_core_rmsd:.2f}')
+                item['rmsd_in_well_defined_region'] = float(f'{min_align_rmsd:.2f}')
                 rlist.append(item)
 
         dlist = []
@@ -901,7 +901,7 @@ class CifReader:
 
                     _rmsd.append(_rmsd_)
 
-            item['mean_rmsd'] = float('{:.2f}'.format(np.mean(np.array(_rmsd))))
+            item['mean_rmsd'] = float(f'{np.mean(np.array(_rmsd)):.2f}')
 
             _, v = np.linalg.eig(r)
             x = np.delete(np.abs(v), np.s_[1:], 1)
@@ -924,7 +924,7 @@ class CifReader:
 
                 _rmsd.append(calculate_rmsd(_atom_site_p, _atom_site_q))
 
-            item['medoid_rmsd'] = float('{:.2f}'.format(np.mean(np.array(_rmsd))))
+            item['medoid_rmsd'] = float(f'{np.mean(np.array(_rmsd)):.2f}')
 
             dlist.append(item)
 

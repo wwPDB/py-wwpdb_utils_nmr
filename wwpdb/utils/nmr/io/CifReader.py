@@ -176,7 +176,7 @@ class CifReader:
         self.__min_features_for_clustering = 4
         self.__max_features_for_clustering = 8
         self.__min_samples_for_clustering = 2
-        self.__max_samples_for_clustering = 6
+        self.__max_samples_for_clustering = 2
         self.__min_sequence_for_domain = 8
 
         assert self.__min_sequence_for_domain > 6  # must be greater than 6 to prevent the 6xHIS tag from being recognized as a well-defined region
@@ -683,9 +683,9 @@ class CifReader:
                 if min_samples >= features:
                     continue
 
-                for _epsilon in range(2, 44, 4):
+                for _epsilon in range(4, 11):
 
-                    epsilon = _epsilon / 100.0
+                    epsilon = 2.0 ** (_epsilon / 2.0) / 100.0  # epsilon travels from 0.04 to 0.32
 
                     db = DBSCAN(eps=epsilon, min_samples=min_samples).fit(x)
                     labels = db.labels_

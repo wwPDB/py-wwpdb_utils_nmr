@@ -9,7 +9,6 @@ import os
 import json
 
 from wwpdb.utils.nmr.NmrDpUtility import NmrDpUtility
-from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
 
 
 class TestNmrDpUtility(unittest.TestCase):
@@ -72,7 +71,6 @@ class TestNmrDpUtility(unittest.TestCase):
             print('%s: %s, %s' % (cs_type, report['information']['status'], error_type))
 
         self.assertIn('exactly_overlaid_model', report['warning'])
-
 
     def test_nmr_cs_str_consistency_check_daother_7544(self):
         self.__test_nmr_cs_str_consistency('daother-7544')

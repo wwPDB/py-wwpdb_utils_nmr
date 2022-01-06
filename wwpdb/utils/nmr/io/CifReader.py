@@ -706,7 +706,7 @@ class CifReader:
                         _rmsd = []
 
                         _atom_site_ref = _atom_site_dict[1]
-                        _atom_site_p = [a for a, l in zip(_atom_site_ref, list_labels) if l == label]
+                        _atom_site_p = [a for a, l in zip(_atom_site_ref, list_labels) if l == label]  # noqa: E741
 
                         if label != -1:
                             seq_ids = sorted(list(set(a['seq_id'] for a in _atom_site_p)))
@@ -723,7 +723,7 @@ class CifReader:
                             if len(_atom_site_test) == 0:
                                 continue
 
-                            _atom_site_q = [a for a, l in zip(_atom_site_test, list_labels) if l == label]
+                            _atom_site_q = [a for a, l in zip(_atom_site_test, list_labels) if l == label]  # noqa: E741
 
                             _rmsd.append(calculate_rmsd(_atom_site_p, _atom_site_q))
 
@@ -796,7 +796,7 @@ class CifReader:
 
                 _label = int(label)
 
-                _atom_site_p = [a for a, l in zip(_atom_site_ref, list_labels) if l == label]
+                _atom_site_p = [a for a, l in zip(_atom_site_ref, list_labels) if l == label]  # noqa: E741
 
                 core_rmsd = []
                 align_rmsd = []
@@ -807,7 +807,7 @@ class CifReader:
                         continue
 
                     _atom_site_test = _atom_site_dict[test_model_id]
-                    _atom_site_q = [a for a, l in zip(_atom_site_test, list_labels) if l == label]
+                    _atom_site_q = [a for a, l in zip(_atom_site_test, list_labels) if l == label]  # noqa: E741
 
                     _core_rmsd = []
 
@@ -872,7 +872,7 @@ class CifReader:
             for ref_model_id in range(1, _total_models):
 
                 _atom_site_ref = _atom_site_dict[ref_model_id]
-                _atom_site_p = [a for a, l in zip(_atom_site_ref, list_labels) if l == label]
+                _atom_site_p = [a for a, l in zip(_atom_site_ref, list_labels) if l == label]  # noqa: E741
 
                 for test_model_id in range(2, _total_models + 1):
 
@@ -880,7 +880,7 @@ class CifReader:
                         continue
 
                     _atom_site_test = _atom_site_dict[test_model_id]
-                    _atom_site_q = [a for a, l in zip(_atom_site_test, list_labels) if l == label]
+                    _atom_site_q = [a for a, l in zip(_atom_site_test, list_labels) if l == label]  # noqa: E741
 
                     _rmsd_ = calculate_rmsd(_atom_site_p, _atom_site_q)
 
@@ -898,7 +898,7 @@ class CifReader:
             item['medoid_model_id'] = ref_model_id
 
             _atom_site_ref = _atom_site_dict[ref_model_id]
-            _atom_site_p = [a for a, l in zip(_atom_site_ref, list_labels) if l == label]
+            _atom_site_p = [a for a, l in zip(_atom_site_ref, list_labels) if l == label]  # noqa: E741
 
             _rmsd = []
 
@@ -908,7 +908,7 @@ class CifReader:
                     continue
 
                 _atom_site_test = _atom_site_dict[test_model_id]
-                _atom_site_q = [a for a, l in zip(_atom_site_test, list_labels) if l == label]
+                _atom_site_q = [a for a, l in zip(_atom_site_test, list_labels) if l == label]  # noqa: E741
 
                 _rmsd.append(calculate_rmsd(_atom_site_p, _atom_site_q))
 

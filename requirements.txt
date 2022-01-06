@@ -7,6 +7,8 @@ munkres; python_version >= '3'
 mmcif
 numpy
 packaging
+rmsd
+scikit-learn
 #
 # For testing
 testfixtures

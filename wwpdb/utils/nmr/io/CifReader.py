@@ -26,10 +26,11 @@ import sys
 import os
 import traceback
 import math
+import random
+
 from mmcif.io.PdbxReader import PdbxReader
 
 import numpy as np
-import random
 
 
 def M(axis, theta):
@@ -280,12 +281,12 @@ class CifReader:
             chains = sorted(set(row[chain_id_col] for row in rowList))
 
             if ins_code_col == -1 or label_seq_col == -1:
-                sortedSeq = sorted(set(f'{row[chain_id_col]} {int(row[seq_id_col]):04d} {row[comp_id_col]}' for row in rowList))
+                sortedSeq = sorted(set(f"{row[chain_id_col]} {int(row[seq_id_col]):04d} {row[comp_id_col]}" for row in rowList))
 
-                keyDict = {f'{row[chain_id_col]} {int(row[seq_id_col]):04d}': row[comp_id_col] for row in rowList}
+                keyDict = {f"{row[chain_id_col]} {int(row[seq_id_col]):04d}": row[comp_id_col] for row in rowList}
 
                 for row in rowList:
-                    key = f'{row[chain_id_col]} {int(row[seq_id_col]):04d}'
+                    key = f"{row[chain_id_col]} {int(row[seq_id_col]):04d}"
                     if keyDict[key] != row[comp_id_col]:
                         raise KeyError(f"Sequence must be unique. {itNameList[chain_id_col]} {row[chain_id_col]}, "
                                        f"{itNameList[seq_id_col]} {row[seq_id_col]}, "
@@ -301,12 +302,12 @@ class CifReader:
                     seqDict[c] = [int(s.split(' ')[1]) for s in sortedSeq]
 
             else:
-                sortedSeq = sorted(set(f'{row[chain_id_col]} {int(row[seq_id_col]):04d} {row[ins_code_col]} {row[label_seq_col]} {row[comp_id_col]}' for row in rowList))
+                sortedSeq = sorted(set(f"{row[chain_id_col]} {int(row[seq_id_col]):04d} {row[ins_code_col]} {row[label_seq_col]} {row[comp_id_col]}" for row in rowList))
 
-                keyDict = {f'{row[chain_id_col]} {int(row[seq_id_col]):04d} {row[ins_code_col]} {row[label_seq_col]}': row[comp_id_col] for row in rowList}
+                keyDict = {f"{row[chain_id_col]} {int(row[seq_id_col]):04d} {row[ins_code_col]} {row[label_seq_col]}": row[comp_id_col] for row in rowList}
 
                 for row in rowList:
-                    key = f'{row[chain_id_col]} {int(row[seq_id_col]):04d} {row[ins_code_col]} {row[label_seq_col]}'
+                    key = f"{row[chain_id_col]} {int(row[seq_id_col]):04d} {row[ins_code_col]} {row[label_seq_col]}"
                     if keyDict[key] != row[comp_id_col]:
                         raise KeyError(f"Sequence must be unique. {itNameList[chain_id_col]} {row[chain_id_col]}, "
                                        f"{itNameList[seq_id_col]} {row[seq_id_col]}, "
@@ -488,7 +489,7 @@ class CifReader:
                         except StopIteration:
                             continue
 
-                        ret[seq_ids.index(seq_id)] = float(f'{math.sqrt(rmsd2 / (total_models - 1)):.2f}')
+                        ret[seq_ids.index(seq_id)] = float(f"{math.sqrt(rmsd2 / (total_models - 1)):.2f}")
 
             if self.__hold_rmsd_calculation:
                 item['rmsd'] = ret
@@ -502,9 +503,9 @@ class CifReader:
                 _stddev_rmsd = math.sqrt(sum([(r - _mean_rmsd) ** 2 for r in _ret]) / (_len_rmsd - 1))
 
                 item['filtered_total_count'] = [_len_rmsd]
-                item['filtered_mean_rmsd'] = [float(f'{_mean_rmsd:.2f}')]
+                item["filtered_mean_rmsd"] = [float(f"{_mean_rmsd:.2f}")]
                 item['filtered_max_rmsd'] = [max(_ret)]
-                item['filtered_stddev_rmsd'] = [float(f'{_stddev_rmsd:.2f}')]
+                item["filtered_stddev_rmsd"] = [float(f"{_stddev_rmsd:.2f}")]
 
                 self.__calculateFilteredRMSD(_ret, _mean_rmsd, _stddev_rmsd, item)
 
@@ -532,16 +533,16 @@ class CifReader:
             _stddev_rmsd = math.sqrt(sum([(r - _mean_rmsd) ** 2 for r in _ret]) / (_len_rmsd - 1))
 
             item['filtered_total_count'].append(_len_rmsd)
-            item['filtered_mean_rmsd'].append(float(f'{_mean_rmsd:.2f}'))
+            item["filtered_mean_rmsd"].append(float(f"{_mean_rmsd:.2f}"))
             item['filtered_max_rmsd'].append(max(_ret))
-            item['filtered_stddev_rmsd'].append(float(f'{_stddev_rmsd:.2f}'))
+            item["filtered_stddev_rmsd"].append(float(f"{_stddev_rmsd:.2f}"))
 
             if mean_rmsd - _mean_rmsd > 0.2 or stddev_rmsd - _stddev_rmsd > 0.2:
                 self.__calculateFilteredRMSD(_ret, _mean_rmsd, _stddev_rmsd, item)
             elif len(item['filtered_stddev_rmsd']) > 2:
                 model = np.polyfit(item['filtered_stddev_rmsd'], item['filtered_mean_rmsd'], 2)
                 for y in [1.0]:
-                    item['rmsd_in_well_defined_region'] = float(f'{model[2] + model[1] * y + model[0] * (y ** 2):.2f}')
+                    item["rmsd_in_well_defined_region"] = float(f"{model[2] + model[1] * y + model[0] * (y ** 2):.2f}")
 
     def getDictListWithFilter(self, catName, dataItems, filterItems=None):
         """ Return a list of dictionaries of a given category with filter.

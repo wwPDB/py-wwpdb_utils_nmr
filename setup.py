@@ -65,7 +65,7 @@ setup(
         'dev': ['check-manifest'],
         'test': ['coverage'],
     },
-    python_requires='>=3.4',
+    python_requires='>=3.6',
     command_options={
         'build_sphinx': {
             'project': ('setup.py', thisPackage),

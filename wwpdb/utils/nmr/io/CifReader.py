@@ -30,12 +30,13 @@ import math
 import random
 import itertools
 import hashlib
+import collections
+
 import numpy as np
 
 from mmcif.io.PdbxReader import PdbxReader
 
 from sklearn.cluster import DBSCAN
-import collections
 from rmsd.calculate_rmsd import (NAMES_ELEMENT, centroid, check_reflections, rmsd,  # noqa: F401 pylint: disable=no-name-in-module, import-error, unused-import
                                  kabsch_rmsd, quaternion_rmsd,
                                  reorder_hungarian, reorder_brute, reorder_distance)
@@ -452,63 +453,61 @@ class CifReader:
 
                 etype = next((e['type'] for e in entity_poly if 'pdbx_strand_id' in e and c in e['pdbx_strand_id'].split(',')), None)
 
-                if etype is not None:
+                if etype is not None and total_models > 1:
                     ent['type'] = etype
 
-                    if total_models > 1:
+                    randomM = None
+                    if self.__random_rotaion_test:
+                        randomM = {}
+                        for model_id in range(1, total_models + 1):
+                            axis = [random.uniform(-1.0, 1.0), random.uniform(-1.0, 1.0), random.uniform(-1.0, 1.0)]
+                            if self.__single_model_rotation_test:
+                                theta = 0.0 if model_id > 1 else np.pi / 4.0
+                            else:
+                                theta = random.uniform(-np.pi, np.pi)
+                            randomM[model_id] = M(axis, theta)
 
-                        randomM = None
-                        if self.__random_rotaion_test:
-                            randomM = {}
-                            for model_id in range(1, total_models + 1):
-                                axis = [random.uniform(-1.0, 1.0), random.uniform(-1.0, 1.0), random.uniform(-1.0, 1.0)]
-                                if self.__single_model_rotation_test:
-                                    theta = 0.0 if model_id > 1 else np.pi / 4.0
-                                else:
-                                    theta = random.uniform(-np.pi, np.pi)
-                                randomM[model_id] = M(axis, theta)
+                    if 'polypeptide' in etype:
 
-                        if 'polypeptide' in etype:
+                        ca_atom_sites = self.getDictListWithFilter('atom_site',
+                                                                   [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                                    {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                                    {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
+                                                                    {'name': 'label_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                                                    {'name': 'ndb_model' if alias else 'pdbx_PDB_model_num', 'type': 'int', 'alt_name': 'model_id'},
+                                                                    {'name': 'type_symbol', 'type': 'str', 'alt_name': 'element'}
+                                                                    ],
+                                                                   [{'name': 'label_asym_id', 'type': 'str', 'value': c},
+                                                                    {'name': 'label_atom_id', 'type': 'str', 'value': 'CA'},
+                                                                    {'name': 'type_symbol', 'type': 'str', 'value': 'C'}])
 
-                            ca_atom_sites = self.getDictListWithFilter('atom_site',
-                                                                       [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                                        {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                                        {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
-                                                                        {'name': 'label_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                                                        {'name': 'ndb_model' if alias else 'pdbx_PDB_model_num', 'type': 'int', 'alt_name': 'model_id'},
-                                                                        {'name': 'type_symbol', 'type': 'str', 'alt_name': 'element'}
-                                                                        ],
-                                                                       [{'name': 'label_asym_id', 'type': 'str', 'value': c},
-                                                                        {'name': 'label_atom_id', 'type': 'str', 'value': 'CA'},
-                                                                        {'name': 'type_symbol', 'type': 'str', 'value': 'C'}])
+                        ca_rmsd, well_defined_region = self.__calculateRMSD(c, len(seqDict[c]), total_models, ca_atom_sites, randomM)
 
-                            ca_rmsd, well_defined_region = self.__calculateRMSD(c, len(seqDict[c]), total_models, ca_atom_sites, randomM)
+                        if ca_rmsd is not None:
+                            ent['ca_rmsd'] = ca_rmsd
+                        if well_defined_region is not None:
+                            ent['well_defined_region'] = well_defined_region
 
-                            if ca_rmsd is not None:
-                                ent['ca_rmsd'] = ca_rmsd
-                            if well_defined_region is not None:
-                                ent['well_defined_region'] = well_defined_region
+                    elif 'ribonucleotide' in etype:
 
-                        elif 'ribonucleotide' in etype:
+                        p_atom_sites = self.getDictListWithFilter('atom_site',
+                                                                  [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                                   {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                                   {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
+                                                                   {'name': 'label_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                                                   {'name': 'ndb_model' if alias else 'pdbx_PDB_model_num', 'type': 'int', 'alt_name': 'model_id'},
+                                                                   {'name': 'type_symbol', 'type': 'str', 'alt_name': 'element'}
+                                                                   ],
+                                                                  [{'name': 'label_asym_id', 'type': 'str', 'value': c},
+                                                                   {'name': 'label_atom_id', 'type': 'str', 'value': 'P'},
+                                                                   {'name': 'type_symbol', 'type': 'str', 'value': 'P'}])
 
-                            p_atom_sites = self.getDictListWithFilter('atom_site',
-                                                                      [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                                       {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                                       {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
-                                                                       {'name': 'label_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                                                       {'name': 'ndb_model' if alias else 'pdbx_PDB_model_num', 'type': 'int', 'alt_name': 'model_id'},
-                                                                       {'name': 'type_symbol', 'type': 'str', 'alt_name': 'element'}
-                                                                       ],
-                                                                      [{'name': 'label_asym_id', 'type': 'str', 'value': c},
-                                                                       {'name': 'label_atom_id', 'type': 'str', 'value': 'P'},
-                                                                       {'name': 'type_symbol', 'type': 'str', 'value': 'P'}])
+                        p_rmsd, well_defined_region = self.__calculateRMSD(c, len(seqDict[c]), total_models, p_atom_sites, randomM)
 
-                            p_rmsd, well_defined_region = self.__calculateRMSD(c, len(seqDict[c]), total_models, p_atom_sites, randomM)
-
-                            if p_rmsd is not None:
-                                ent['p_rmsd'] = p_rmsd
-                            if well_defined_region is not None:
-                                ent['well_defined_region'] = well_defined_region
+                        if p_rmsd is not None:
+                            ent['p_rmsd'] = p_rmsd
+                        if well_defined_region is not None:
+                            ent['well_defined_region'] = well_defined_region
 
                 if len(chains) > 1:
                     identity = []
@@ -643,27 +642,15 @@ class CifReader:
         d_var = np.multiply(d_var, factor)
 
         max_d_var = np.max(d_var)
-        # max_d_dev = math.sqrt(max_d_var)
-        # avr_d_var = np.average(d_var[np.nonzero(d_var)])
-        # med_d_var = np.median(d_var[np.nonzero(d_var)])
-        """
-        for i, j in itertools.combinations(range(size), 2):
 
-            if i < j:
-                d_var[j, i] = d_var[i, j]
-            else:
-                d_var[i, j] = d_var[j, i]
-
-        w, v = np.linalg.eig(d_var)
-        """
         d_ord = np.ones(matrix_size, dtype=float)
 
         for i, j in itertools.combinations(range(size), 2):
 
             if i < j:
-                q = 1.0 - math.sqrt(d_var[i, j] / max_d_var)  # (math.tanh(med_d_var - d_var[i, j]) + 1.0) / 2.0
+                q = 1.0 - math.sqrt(d_var[i, j] / max_d_var)
             else:
-                q = 1.0 - math.sqrt(d_var[j, i] / max_d_var)  # (math.tanh(med_d_var - d_var[j, i]) + 1.0) / 2.0
+                q = 1.0 - math.sqrt(d_var[j, i] / max_d_var)
 
             d_ord[i, j] = q
             d_ord[j, i] = q
@@ -672,7 +659,7 @@ class CifReader:
 
         md5_set = set()
 
-        min_score = 40.0
+        min_score = 1000000.0
         min_result = None
 
         for features in range(self.__min_features_for_clustering, self.__max_features_for_clustering + 1):
@@ -799,8 +786,8 @@ class CifReader:
             _atom_site_ref = _atom_site_dict[ref_model_id]
 
             min_label = -1
-            min_core_rmsd = 40.0
-            min_align_rmsd = 40.0
+            min_core_rmsd = 1000000.0
+            min_align_rmsd = 1000000.0
 
             for label, count in domains:
 
@@ -851,8 +838,8 @@ class CifReader:
 
             if min_label != -1:
                 item['domain_id'] = eff_domain_id[min_label]
-                item['raw_rmsd_in_well_defined_region'] = float(f"{min_core_rmsd:.2f}")
-                item['rmsd_in_well_defined_region'] = float(f"{min_align_rmsd:.2f}")
+                item['raw_rmsd_in_well_defined_region'] = float(f"{min_core_rmsd:.4f}")
+                item['rmsd_in_well_defined_region'] = float(f"{min_align_rmsd:.4f}")
                 rlist.append(item)
 
         dlist = []
@@ -902,7 +889,7 @@ class CifReader:
 
                     _rmsd.append(_rmsd_)
 
-            item['mean_rmsd'] = float(f"{np.mean(np.array(_rmsd)):.2f}")
+            item['mean_rmsd'] = float(f"{np.mean(np.array(_rmsd)):.4f}")
 
             _, v = np.linalg.eig(r)
             x = np.delete(np.abs(v), np.s_[1:], 1)
@@ -925,7 +912,7 @@ class CifReader:
 
                 _rmsd.append(calculate_rmsd(_atom_site_p, _atom_site_q))
 
-            item['medoid_rmsd'] = float(f"{np.mean(np.array(_rmsd)):.2f}")
+            item['medoid_rmsd'] = float(f"{np.mean(np.array(_rmsd)):.4f}")
 
             dlist.append(item)
 

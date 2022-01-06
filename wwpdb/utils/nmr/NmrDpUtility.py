@@ -11979,7 +11979,7 @@ class NmrDpUtility:
 
             if indices != list(range(1, len(indices) + 1)):
 
-                warn = f"Index of loop '{lp_category}.{index_tag}' should be ordinal numbers."
+                warn = f"Index of loop, '{lp_category}.{index_tag}', should be ordinal numbers."
 
                 self.report.warning.appendDescription('disordered_index',
                                                       {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
@@ -22584,7 +22584,7 @@ class NmrDpUtility:
                             self.__lfh.write(f"+NmrDpUtility.__parseCoordinate() ++ Error  - {str(e)}\n")
 
             if self.__total_models < 2:
-                err = f"Coordinate file has {'no' if self.__total_models == 0 else ('only one' if self.__total_models == 1 else self.__total_models)} model. "\
+                err = f"Coordinate file has {'no' if self.__total_models == 0 else ('only one' if self.__total_models == 1 else self.__total_models)} model(s). "\
                     "Deposition of minimized average structure must be accompanied with ensemble and must be homogeneous with the ensemble."
 
                 self.report.error.appendDescription('missing_mandatory_content',
@@ -22821,7 +22821,7 @@ class NmrDpUtility:
 
                     warn = f"The coordinates (chain_id {chain_id}) are not superimposed, "\
                         f"The raw RMSD value, {r['raw_rmsd']} angstromes (representative model id {r['model_id']}), in estimated well-defined region "\
-                        f"(range_of_seq_id {r['range']}, number_of_monomers {r['monomers']}, number_of_gaps {r['gaps']}, percent_of_core {r['core']} %%) is greater than "\
+                        f"(range_of_seq_id {r['range']}, number_of_monomers {r['monomers']}, number_of_gaps {r['gaps']}, percent_of_core {r['core']} %) is greater than "\
                         f"the estimated RMSD value, {r['rmsd']} angstromes. "\
                         "Please superimpose the coordinates and re-upload the model file."
 
@@ -22840,7 +22840,7 @@ class NmrDpUtility:
                     warn = f"The coordinates (chain_id {chain_id}) are overlaid exactly. "\
                         "Please check there has not been an error during the creation of your model file. "\
                         "You are receiving this message because the mean RMSD in estimated well-defined region "\
-                        f"(range_of_seq_id {r['range']}, number_of_monomers {r['monomers']}, number_of_gaps {r['gaps']}, percent_of_core {r['core']} %%) "\
+                        f"(range_of_seq_id {r['range']}, number_of_monomers {r['monomers']}, number_of_gaps {r['gaps']}, percent_of_core {r['core']} %) "\
                         f"is {r['mean_rmsd']} angstromes. "\
                         "We require you to deposit an appropriate ensemble of coordinate models."
 
@@ -22849,7 +22849,7 @@ class NmrDpUtility:
                     self.report.setWarning()
 
                     if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__extractCoordPolymerSequence() ++ Warning  - %s" % warn)
+                        self.__lfh.write(f"+NmrDpUtility.__extractCoordPolymerSequence() ++ Warning  - {warn}\n")
 
             return True
 

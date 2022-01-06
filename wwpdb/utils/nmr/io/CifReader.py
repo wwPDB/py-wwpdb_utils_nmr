@@ -27,12 +27,13 @@ import sys
 import os
 import traceback
 import math
-from mmcif.io.PdbxReader import PdbxReader
-
-import numpy as np
 import random
 import itertools
 import hashlib
+import numpy as np
+
+from mmcif.io.PdbxReader import PdbxReader
+
 from sklearn.cluster import DBSCAN
 import collections
 from rmsd.calculate_rmsd import (NAMES_ELEMENT, centroid, check_reflections, rmsd,  # noqa: F401 pylint: disable=no-name-in-module, import-error, unused-import
@@ -375,12 +376,12 @@ class CifReader:
             chains = sorted(set(row[chain_id_col] for row in rowList))
 
             if ins_code_col == -1 or label_seq_col == -1:
-                sortedSeq = sorted(set(f'{row[chain_id_col]} {int(row[seq_id_col]):04d} {row[comp_id_col]}' for row in rowList))
+                sortedSeq = sorted(set(f"{row[chain_id_col]} {int(row[seq_id_col]):04d} {row[comp_id_col]}" for row in rowList))
 
-                keyDict = {f'{row[chain_id_col]} {int(row[seq_id_col]):04d}': row[comp_id_col] for row in rowList}
+                keyDict = {f"{row[chain_id_col]} {int(row[seq_id_col]):04d}": row[comp_id_col] for row in rowList}
 
                 for row in rowList:
-                    key = f'{row[chain_id_col]} {int(row[seq_id_col]):04d}'
+                    key = f"{row[chain_id_col]} {int(row[seq_id_col]):04d}"
                     if keyDict[key] != row[comp_id_col]:
                         raise KeyError(f"Sequence must be unique. {itNameList[chain_id_col]} {row[chain_id_col]}, "
                                        f"{itNameList[seq_id_col]} {row[seq_id_col]}, "
@@ -396,12 +397,12 @@ class CifReader:
                     seqDict[c] = [int(s.split(' ')[1]) for s in sortedSeq]
 
             else:
-                sortedSeq = sorted(set(f'{row[chain_id_col]} {int(row[seq_id_col]):04d} {row[ins_code_col]} {row[label_seq_col]} {row[comp_id_col]}' for row in rowList))
+                sortedSeq = sorted(set(f"{row[chain_id_col]} {int(row[seq_id_col]):04d} {row[ins_code_col]} {row[label_seq_col]} {row[comp_id_col]}" for row in rowList))
 
-                keyDict = {f'{row[chain_id_col]} {int(row[seq_id_col]):04d} {row[ins_code_col]} {row[label_seq_col]}': row[comp_id_col] for row in rowList}
+                keyDict = {f"{row[chain_id_col]} {int(row[seq_id_col]):04d} {row[ins_code_col]} {row[label_seq_col]}": row[comp_id_col] for row in rowList}
 
                 for row in rowList:
-                    key = f'{row[chain_id_col]} {int(row[seq_id_col]):04d} {row[ins_code_col]} {row[label_seq_col]}'
+                    key = f"{row[chain_id_col]} {int(row[seq_id_col]):04d} {row[ins_code_col]} {row[label_seq_col]}"
                     if keyDict[key] != row[comp_id_col]:
                         raise KeyError(f"Sequence must be unique. {itNameList[chain_id_col]} {row[chain_id_col]}, "
                                        f"{itNameList[seq_id_col]} {row[seq_id_col]}, "
@@ -850,8 +851,8 @@ class CifReader:
 
             if min_label != -1:
                 item['domain_id'] = eff_domain_id[min_label]
-                item['raw_rmsd_in_well_defined_region'] = float(f'{min_core_rmsd:.2f}')
-                item['rmsd_in_well_defined_region'] = float(f'{min_align_rmsd:.2f}')
+                item['raw_rmsd_in_well_defined_region'] = float(f"{min_core_rmsd:.2f}")
+                item['rmsd_in_well_defined_region'] = float(f"{min_align_rmsd:.2f}")
                 rlist.append(item)
 
         dlist = []
@@ -901,7 +902,7 @@ class CifReader:
 
                     _rmsd.append(_rmsd_)
 
-            item['mean_rmsd'] = float(f'{np.mean(np.array(_rmsd)):.2f}')
+            item['mean_rmsd'] = float(f"{np.mean(np.array(_rmsd)):.2f}")
 
             _, v = np.linalg.eig(r)
             x = np.delete(np.abs(v), np.s_[1:], 1)
@@ -924,7 +925,7 @@ class CifReader:
 
                 _rmsd.append(calculate_rmsd(_atom_site_p, _atom_site_q))
 
-            item['medoid_rmsd'] = float(f'{np.mean(np.array(_rmsd)):.2f}')
+            item['medoid_rmsd'] = float(f"{np.mean(np.array(_rmsd)):.2f}")
 
             dlist.append(item)
 

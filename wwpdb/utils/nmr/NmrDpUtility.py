@@ -22822,12 +22822,14 @@ class NmrDpUtility:
                         f"The RMSD value ({r['raw_rmsd']} A) is greater than the predicted value ({r['rmsd']} A). "\
                         "Please superimpose the coordinates and re-upload the model file."
 
-                    #  warn = f"The coordinates (chain_id {chain_id}) are not superimposed. "\
-                    #      f"The raw RMSD value, {r['raw_rmsd']} Angstroms (representative model_id {r['model_id']}), for an well-defined region "\
-                    #      f"(Sequence ranges {r['range']}, {r['monomers']} residues ({r['gaps']} gaps), "\
-                    #      f"corresponding to {r['core']}% of the entire sequence) "\
-                    #      f"is greater than the predicted RMSD value, {r['rmsd']} Angstroms. "\
-                    #      "Please superimpose the coordinates and re-upload the model file."
+                    # """
+                    # warn = f"The coordinates (chain_id {chain_id}) are not superimposed. "\
+                    #     f"The raw RMSD value, {r['raw_rmsd']} Angstroms (representative model_id {r['model_id']}), for an well-defined region "\
+                    #     f"(Sequence ranges {r['range']}, {r['monomers']} residues ({r['gaps']} gaps), "\
+                    #     f"corresponding to {r['core']}% of the entire sequence) "\
+                    #     f"is greater than the predicted RMSD value, {r['rmsd']} Angstroms. "\
+                    #     "Please superimpose the coordinates and re-upload the model file."
+                    # """
 
                     self.report.warning.appendDescription('not_superimposed_model',
                                                           {'file_name': file_name, 'category': 'atom_site',

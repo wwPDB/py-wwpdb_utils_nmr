@@ -2661,7 +2661,7 @@ class NEFTranslator:
 
                             for d in data_items:
                                 if d['name'] == name and d['mandatory'] and 'default' not in d\
-                                        and not ('remove-bad-pattern' in d and d['detele-bad-pattern']):
+                                   and not ('remove-bad-pattern' in d and d['detele-bad-pattern']):
                                     r = {}
                                     for _j, _t in enumerate(loop.tags):
                                         r[_t] = loop.data[l][_j]
@@ -4723,7 +4723,7 @@ class NEFTranslator:
                                     methyl_proton_value_2 = next((_a['value'] for _a in star_atom_list if _a['atom_id'] in methyl_h_list_2), None)
 
                                     if methyl_proton_value is not None and methyl_proton_value_2 is not None\
-                                            and float(methyl_proton_value_2) < float(methyl_proton_value):
+                                       and float(methyl_proton_value_2) < float(methyl_proton_value):
                                         nef_atom_prefix = 'y'
                                         nef_atom_prefix_2 = 'x'
 
@@ -4791,7 +4791,7 @@ class NEFTranslator:
                                     geminal_proton_value_2 = next((_a['value'] for _a in star_atom_list if _a['atom_id'] == geminal_h_list[1]), None)
 
                                     if geminal_proton_value is not None and geminal_proton_value_2 is not None\
-                                            and float(geminal_proton_value_2) < float(geminal_proton_value):
+                                       and float(geminal_proton_value_2) < float(geminal_proton_value):
                                         nef_atom_prefix = 'y'
                                         nef_atom_prefix_2 = 'x'
 
@@ -4846,7 +4846,7 @@ class NEFTranslator:
                                 atom_id_value_2 = next((_a['value'] for _a in star_atom_list if _a['atom_id'] == atom_id_2), None)
 
                                 if atom_id_value is not None and atom_id_value_2 is not None\
-                                        and float(atom_id_value_2) < float(atom_id_value):
+                                   and float(atom_id_value_2) < float(atom_id_value):
                                     nef_atom_prefix = 'y'
                                     nef_atom_prefix_2 = 'x'
 
@@ -4910,7 +4910,7 @@ class NEFTranslator:
                                 atom_id_value_2 = next((_a['value'] for _a in star_atom_list if _a['atom_id'] == atom_id_2), None)
 
                                 if atom_id_value is not None and atom_id_value_2 is not None\
-                                        and float(atom_id_value_2) < float(atom_id_value):
+                                   and float(atom_id_value_2) < float(atom_id_value):
                                     nef_atom_prefix = 'y'
                                     nef_atom_prefix_2 = 'x'
 

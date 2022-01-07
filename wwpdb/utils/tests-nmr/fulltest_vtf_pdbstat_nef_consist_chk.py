@@ -9,7 +9,6 @@ import os
 import json
 
 from wwpdb.utils.nmr.NmrDpUtility import NmrDpUtility
-from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
 
 
 class TestNmrDpUtility(unittest.TestCase):
@@ -50,7 +49,6 @@ class TestNmrDpUtility(unittest.TestCase):
                                '1pqx': {'nef': 'ZR18/ZR18_1pqx.nef',
                                         'cif': 'ZR18/ZR18_1pqx.cif'}}
         self.utility = NmrDpUtility()
-        self.report = NmrDpReport()
 
     def tearDown(self):
         pass

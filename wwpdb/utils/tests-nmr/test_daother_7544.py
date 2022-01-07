@@ -17,16 +17,20 @@ class TestNmrDpUtility(unittest.TestCase):
         here = os.path.abspath(os.path.dirname(__file__))
         self.data_dir_path = os.path.join(here, 'mock-data-daother-7544/')
         self.res_file_type = {
-            'daother-7544': 'nm-res-xpl'
+            'daother-7544_not_superimposed': 'nm-res-xpl',
+            'daother-7544_exact_overlaid': 'nm-res-xpl'
         }
         self.cs_file_path = {
-            'daother-7544': ['D_1000252755_cs-upload_P1.str.V1']
+            'daother-7544_not_superimposed': ['D_1000252755_cs-upload_P1.str.V1'],
+            'daother-7544_exact_overlaid': ['D_1000252755_cs-upload_P1.str.V1']
         }
         self.mr_file_path = {
-            'daother-7544': ['D_1000252755_mr-upload_P1.xplor-nih.V1']
+            'daother-7544_not_superimposed': ['D_1000252755_mr-upload_P1.xplor-nih.V1'],
+            'daother-7544_exact_overlaid': ['D_1000252755_mr-upload_P1.xplor-nih.V1']
         }
         self.model_file_path = {
-            'daother-7544': 'D_800463_model_P1.cif.V4'
+            'daother-7544_not_superimposed': 'D_800463_model_P1.cif.V4',
+            'daother-7544_exact_overlaid': 'D_800464_model_P1.cif.V4'
         }
         self.utility = NmrDpUtility()
 
@@ -70,10 +74,20 @@ class TestNmrDpUtility(unittest.TestCase):
             error_type = {str(k): len(v) for k, v in report['error'].items() if str(k) != 'total'}
             print('%s: %s, %s' % (cs_type, report['information']['status'], error_type))
 
-        self.assertIn('exactly_overlaid_model', report['warning'])
+        if cs_type == 'daother-7544_not_superimposed':
+            self.assertIn('not_superimposed_model', report['warning'])
+            self.assertNotIn('exactly_overlaid_model', report['warning'])
+        elif cs_type == 'daother-7544_exact_overlaid':
+            self.assertNotIn('not_superimposed_model', report['warning'])
+            self.assertIn('exactly_overlaid_model', report['warning'])
+        else:
+            raise ValueError('Undefined cs_type')
 
-    def test_nmr_cs_str_consistency_check_daother_7544(self):
-        self.__test_nmr_cs_str_consistency('daother-7544')
+    def test_nmr_cs_str_consistency_check_daother_7544_not_superimposed(self):
+        self.__test_nmr_cs_str_consistency('daother-7544_not_superimposed')
+
+    def test_nmr_cs_str_consistency_check_daother_7544_exact_overlaid(self):
+        self.__test_nmr_cs_str_consistency('daother-7544_exact_overlaid')
 
 
 if __name__ == '__main__':

@@ -5,8 +5,8 @@
 # Updates:
 # 10-Oct-2019  M. Yokochi - add 'check_mandatory_tag' option to detect missing mandatory tags as errors
 # 15-Oct-2019  M. Yokochi - revise criteria on discrepancy in distance restraints using normalized value
-# 01-Nov-2019  M. Yokochi - revise error message, instead of Python ValueError message.
-# 05-Nov-2019  M. Yokochi - revise error messages and detect empty sequence information.
+# 01-Nov-2019  M. Yokochi - revise error message, instead of Python ValueError message
+# 05-Nov-2019  M. Yokochi - revise error messages and detect empty sequence information
 # 28-Nov-2019  M. Yokochi - fix saveframe name of nef_molecular_system and add 'nmr-str2nef-deposit' workflow operation
 # 29-Nov-2019  M. Yokochi - relax allowable range of weight values in restraint data and support index pointer in auxiliary loops
 # 11-Dec-2019  M. Yokochi - fix internal errors while processing NMR-VTF/PDBStat_examples and NMR-VTF/BMRB
@@ -867,20 +867,20 @@ class NmrDpUtility:
         # whether legacy distance restraint has been uploaded
         self.__legacy_dist_restraint_uploaded = False
 
-        # source, destination, and log file paths.
+        # source, destination, and log file paths
         self.__srcPath = None
         self.__dstPath = None
         self.__logPath = None
 
         self.__cifPath = None
 
-        # temporary file path to be removed (release mode).
+        # temporary file path to be removed (release mode)
         self.__tmpPath = None
 
-        # auxiliary input resource.
+        # auxiliary input resource
         self.__inputParamDict = {}
 
-        # auxiliary output resource.
+        # auxiliary output resource
         self.__outputParamDict = {}
 
         # list of known workflow operations
@@ -1214,7 +1214,7 @@ class NmrDpUtility:
         # criterion for detection of not superimposed models
         self.rmsd_not_superimposed = 2.0
 
-        # criterion for detection of exactly overlaid models.
+        # criterion for detection of exactly overlaid models
         self.rmsd_overlaid_exactly = 0.01
 
         # criterion for covalent bond length

@@ -4,7 +4,7 @@
 #
 # Update:
 # 06-Aug-2010 - jdw - Generalized construction of methods to apply to any category
-#                     Add accessors for lists of dictionaries.
+#                     Add accessors for lists of dictionaries
 # 12-May-2011 - rps - Added check for None when asking for category Object in __getDataList()
 # 2012-10-24    RPS   Updated to reflect reorganization of modules in pdbx packages
 # 23-Jul-2019   my  - forked original code to wwpdb.util.nmr.CifReader
@@ -175,13 +175,19 @@ class CifReader:
             self.__lfh.write("+WARNING- CifReader.__init__() Enabled random rotation test\n")
             self.__lfh.write(f"+WARNING- CifReader.__init__() Single model rotation test: {self.__single_model_rotation_test}\n")
 
+        # clustering parameters for recognition of well-defined regions
         self.__min_features_for_clustering = 4
         self.__max_features_for_clustering = 8
         self.__min_samples_for_clustering = 2
         self.__max_samples_for_clustering = 2
-        self.__min_sequence_for_domain = 8
 
-        assert self.__min_sequence_for_domain > 6  # must be greater than 6 to prevent the 6xHIS tag from being recognized as a well-defined region
+        # minimum monomers for domain recognition
+        self.__min_monomers_for_domain = 8
+
+        assert self.__min_monomers_for_domain > 6  # must be greater than 6 to prevent the 6xHIS tag from being recognized as a well-defined region
+
+        # criterion for detection of exactly overlaid models
+        self.__rmsd_overlaid_exactly = 0.01
 
     def parse(self, filePath):
         """ Set file path and parse CIF file, and set internal active data block if possible.
@@ -745,7 +751,7 @@ class CifReader:
                         min_score = score
                         min_result = result
 
-                        if n_noise == 0 and min_score < 0.01:
+                        if n_noise == 0 and min_score < self.__rmsd_overlaid_exactly:
                             abort = True
 
         if min_result is None:
@@ -762,7 +768,7 @@ class CifReader:
         if domains[0][0] == -1:
             return rlist, dlist
 
-        eff_labels = [label for label, count in domains if label != -1 and count >= self.__min_sequence_for_domain]
+        eff_labels = [label for label, count in domains if label != -1 and count >= self.__min_monomers_for_domain]
         eff_domain_id = {}
 
         _seq_ids = [a['seq_id'] for a in _atom_site_dict[1]]

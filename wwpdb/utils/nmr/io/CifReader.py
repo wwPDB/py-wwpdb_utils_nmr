@@ -659,6 +659,8 @@ class CifReader:
 
         md5_set = set()
 
+        abort = False
+
         min_score = 1000000.0
         min_result = None
 
@@ -672,6 +674,9 @@ class CifReader:
                     continue
 
                 for _epsilon in range(4, 11):
+
+                    if abort:
+                        break
 
                     epsilon = 2.0 ** (_epsilon / 2.0) / 100.0  # epsilon travels from 0.04 to 0.32
 
@@ -739,6 +744,9 @@ class CifReader:
                     if score < min_score:
                         min_score = score
                         min_result = result
+
+                        if n_noise == 0 and min_score < 0.01:
+                            abort = True
 
         if min_result is None:
             return rlist, dlist

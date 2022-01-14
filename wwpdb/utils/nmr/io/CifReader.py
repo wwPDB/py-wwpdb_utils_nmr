@@ -18,7 +18,7 @@
 # 08-May-2020   my  - make sure parse() is run only once (DAOTHER-5654)
 # 20-Nov-2020   my  - additional support for insertion code in getPolymerSequence() (DAOTHER-6128)
 # 29-Jun-2021   my  - add 'auth_chain_id', 'identical_auth_chain_id' in results of getPolymerSequence() if possible (DAOTHER-7108)
-# 14-Dec-2021   my  - precise RMSD calculation with domain and medoid model identification (DAOTHER-4060, 7544)
+# 14-Jan-2022   my  - precise RMSD calculation with domain and medoid model identification (DAOTHER-4060, 7544)
 ##
 """ A collection of classes for parsing CIF files.
 """
@@ -747,7 +747,7 @@ class CifReader:
 
                     result['score'] = score
 
-                    if score < min_score:
+                    if score < min_score or (n_noise == 0 and min_score < self.__rmsd_overlaid_exactly):
                         min_score = score
                         min_result = result
 
@@ -800,8 +800,7 @@ class CifReader:
             _atom_site_ref = _atom_site_dict[ref_model_id]
 
             min_label = -1
-            min_core_rmsd = 1000000.0
-            min_align_rmsd = 1000000.0
+            min_core_rmsd = mean_align_rmsd = 1000000.0
 
             for label, count in domains:
 
@@ -814,6 +813,7 @@ class CifReader:
 
                 core_rmsd = []
                 align_rmsd = []
+                exact_overlaid_model_ids = []
 
                 for test_model_id in range(1, _total_models + 1):
 
@@ -841,19 +841,26 @@ class CifReader:
                         _core_rmsd.append(np.dot(d, d))
 
                     core_rmsd.append(math.sqrt(np.mean(np.array(_core_rmsd))))
-                    align_rmsd.append(calculate_rmsd(_atom_site_p, _atom_site_q))
+                    _rmsd = calculate_rmsd(_atom_site_p, _atom_site_q)
+                    align_rmsd.append(_rmsd)
+                    if _rmsd < self.__rmsd_overlaid_exactly and ref_model_id < test_model_id:
+                        exact_overlaid_model_ids.append({'ref_model_id': ref_model_id,
+                                                         'test_model_id': test_model_id,
+                                                         'rmsd_in_well_defined_region': float(f"{_rmsd:.4f}")})
 
                 mean_core_rmsd = np.mean(np.array(core_rmsd))
 
                 if mean_core_rmsd < min_core_rmsd:
                     min_label = _label
                     min_core_rmsd = mean_core_rmsd
-                    min_align_rmsd = np.mean(np.array(align_rmsd))
+                    mean_align_rmsd = np.mean(np.array(align_rmsd))
 
             if min_label != -1:
                 item['domain_id'] = eff_domain_id[min_label]
                 item['raw_rmsd_in_well_defined_region'] = float(f"{min_core_rmsd:.4f}")
-                item['rmsd_in_well_defined_region'] = float(f"{min_align_rmsd:.4f}")
+                item['rmsd_in_well_defined_region'] = float(f"{mean_align_rmsd:.4f}")
+                if len(exact_overlaid_model_ids) > 0:
+                    item['exactly_overlaid_model'] = exact_overlaid_model_ids
                 rlist.append(item)
 
         dlist = []

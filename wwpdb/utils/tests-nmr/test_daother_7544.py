@@ -18,19 +18,23 @@ class TestNmrDpUtility(unittest.TestCase):
         self.data_dir_path = os.path.join(here, 'mock-data-daother-7544/')
         self.res_file_type = {
             'daother-7544_not_superimposed': 'nm-res-xpl',
-            'daother-7544_exact_overlaid': 'nm-res-xpl'
+            'daother-7544_exact_overlaid': 'nm-res-xpl',
+            'daother-7544_part_overlaid': ['nm-res-cns', 'nm-res-cns']
         }
         self.cs_file_path = {
             'daother-7544_not_superimposed': ['D_1000252755_cs-upload_P1.str.V1'],
-            'daother-7544_exact_overlaid': ['D_1000252755_cs-upload_P1.str.V1']
+            'daother-7544_exact_overlaid': ['D_1000252755_cs-upload_P1.str.V1'],
+            'daother-7544_part_overlaid': ['D_1000228437_cs-upload_P1.str.V1']
         }
         self.mr_file_path = {
             'daother-7544_not_superimposed': ['D_1000252755_mr-upload_P1.xplor-nih.V1'],
-            'daother-7544_exact_overlaid': ['D_1000252755_mr-upload_P1.xplor-nih.V1']
+            'daother-7544_exact_overlaid': ['D_1000252755_mr-upload_P1.xplor-nih.V1'],
+            'daother-7544_part_overlaid': ['D_1000228437_mr-upload_P1.cns.V1', 'D_1000228437_mr-upload_P2.cns.V1']
         }
         self.model_file_path = {
             'daother-7544_not_superimposed': 'D_800463_model_P1.cif.V4',
-            'daother-7544_exact_overlaid': 'D_800464_model_P1.cif.V4'
+            'daother-7544_exact_overlaid': 'D_800464_model_P1.cif.V4',
+            'daother-7544_part_overlaid': 'D_800466_model_P1.cif.V3'
         }
         self.utility = NmrDpUtility()
 
@@ -77,7 +81,7 @@ class TestNmrDpUtility(unittest.TestCase):
         if cs_type == 'daother-7544_not_superimposed':
             self.assertIn('not_superimposed_model', report['warning'])
             self.assertNotIn('exactly_overlaid_model', report['warning'])
-        elif cs_type == 'daother-7544_exact_overlaid':
+        elif cs_type in ('daother-7544_exact_overlaid', 'daother-7544_part_overlaid'):
             self.assertNotIn('not_superimposed_model', report['warning'])
             self.assertIn('exactly_overlaid_model', report['warning'])
         else:
@@ -88,6 +92,9 @@ class TestNmrDpUtility(unittest.TestCase):
 
     def test_nmr_cs_str_consistency_check_daother_7544_exact_overlaid(self):
         self.__test_nmr_cs_str_consistency('daother-7544_exact_overlaid')
+
+    def test_nmr_cs_str_consistency_check_daother_7544_part_overlaid(self):
+        self.__test_nmr_cs_str_consistency('daother-7544_part_overlaid')
 
 
 if __name__ == '__main__':

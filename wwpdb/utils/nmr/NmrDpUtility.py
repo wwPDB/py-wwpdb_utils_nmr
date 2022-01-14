@@ -144,6 +144,7 @@
 # 14-Dec-2021  M. Yokochi - report detailed warning message against not superimposed models and exactly overlaid models (DAOTHER-4060, 7544)
 # 15-Dec-2021  M. Yokochi - fix server crash while uploading NMR restraint file in NMR-STAR format (DAOTHER-7545)
 # 21-Dec-2021  M. Yokochi - fix wrong missing_mandatory_content error when uploading NMR restraint files in NMR-STAR format (DAOTHER-7545, issue #2)
+# 14-Jan-2022  M. Yokochi - report exactly overlaid models in the coordinate file (DAOTHER-7544)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -22740,7 +22741,8 @@ class NmrDpUtility:
 
             input_source.setItemValue('polymer_sequence', poly_seq)
 
-            not_superimposed_models = {}
+            not_superimposed_ensemble = {}
+            exactly_overlaid_ensemble = {}
             exactly_overlaid_models = {}
 
             for ps in poly_seq:
@@ -22776,7 +22778,9 @@ class NmrDpUtility:
                             if 'raw_rmsd_in_well_defined_region' in r and 'rmsd_in_well_defined_region' in r:
 
                                 if r['raw_rmsd_in_well_defined_region'] - r['rmsd_in_well_defined_region'] > self.rmsd_not_superimposed:
-                                    rmsd_item = {'model_id': model_id, 'raw_rmsd': r['raw_rmsd_in_well_defined_region'], 'rmsd': r['rmsd_in_well_defined_region']}
+                                    rmsd_item = {'model_id': model_id,
+                                                 'raw_rmsd': r['raw_rmsd_in_well_defined_region'],
+                                                 'rmsd': r['rmsd_in_well_defined_region']}
                                     domain_id = r['domain_id']
                                     domain = next((r for r in region if r['domain_id'] == domain_id), None)
                                     if domain is not None:
@@ -22784,13 +22788,13 @@ class NmrDpUtility:
                                         rmsd_item['gaps'] = domain['number_of_gaps']
                                         rmsd_item['core'] = domain['percent_of_core']
                                         rmsd_item['range'] = domain['range_of_seq_id']
-                                        if chain_id not in not_superimposed_models:
-                                            not_superimposed_models[chain_id] = []
-                                        not_superimposed_models[chain_id].append(rmsd_item)
+                                        if chain_id not in not_superimposed_ensemble:
+                                            not_superimposed_ensemble[chain_id] = []
+                                        not_superimposed_ensemble[chain_id].append(rmsd_item)
 
                                 if r['rmsd_in_well_defined_region'] < self.rmsd_overlaid_exactly:
-                                    if chain_id not in exactly_overlaid_models:
-                                        exactly_overlaid_models[chain_id] = []
+                                    if chain_id not in exactly_overlaid_ensemble:
+                                        exactly_overlaid_ensemble[chain_id] = []
                                     domain_id = r['domain_id']
                                     domain = next((r for r in region if r['domain_id'] == domain_id), None)
                                     if domain is not None and domain['mean_rmsd'] < self.rmsd_overlaid_exactly:
@@ -22799,11 +22803,27 @@ class NmrDpUtility:
                                                        'core': domain['percent_of_core'],
                                                        'mean_rmsd': domain['mean_rmsd'],
                                                        'range': domain['range_of_seq_id']}
-                                        exactly_overlaid_models[chain_id] = region_item
+                                        exactly_overlaid_ensemble[chain_id] = region_item
 
-            if len(not_superimposed_models) > 0:
+                                elif 'exactly_overlaid_model' in r:
+                                    domain_id = r['domain_id']
+                                    domain = next((r for r in region if r['domain_id'] == domain_id), None)
+                                    if domain is not None:
+                                        for m in r['exactly_overlaid_model']:
+                                            rmsd_item = {'model_id_1': m['ref_model_id'],
+                                                         'model_id_2': m['test_model_id'],
+                                                         'rmsd': m['rmsd_in_well_defined_region']}
+                                            rmsd_item['monomers'] = domain['number_of_monomers']
+                                            rmsd_item['gaps'] = domain['number_of_gaps']
+                                            rmsd_item['core'] = domain['percent_of_core']
+                                            rmsd_item['range'] = domain['range_of_seq_id']
+                                            if chain_id not in exactly_overlaid_models:
+                                                exactly_overlaid_models[chain_id] = []
+                                            exactly_overlaid_models[chain_id].append(rmsd_item)
 
-                for chain_id, rmsd in not_superimposed_models.items():
+            if len(not_superimposed_ensemble) > 0:
+
+                for chain_id, rmsd in not_superimposed_ensemble.items():
 
                     conformer_id = 1
 
@@ -22819,17 +22839,9 @@ class NmrDpUtility:
                     r = next((r for r in rmsd if r['model_id'] == conformer_id), rmsd[0])
 
                     warn = f"The coordinates (chain_id {chain_id}) are not superimposed. "\
-                        f"The RMSD value ({r['raw_rmsd']}Å) is greater than the predicted value ({r['rmsd']}Å). "\
+                        f"The RMSD ({r['raw_rmsd']}Å) for an well-defined region "\
+                        f"(Sequence ranges {r['range']}) is greater than the predicted value ({r['rmsd']}Å). "\
                         "Please superimpose the coordinates and re-upload the model file."
-
-                    # """
-                    # warn = f"The coordinates (chain_id {chain_id}) are not superimposed. "\
-                    #     f"The raw RMSD value, {r['raw_rmsd']}Å (representative model_id {r['model_id']}), for an well-defined region "\
-                    #     f"(Sequence ranges {r['range']}, {r['monomers']} residues ({r['gaps']} gaps), "\
-                    #     f"corresponding to {r['core']}% of the entire sequence) "\
-                    #     f"is greater than the predicted RMSD value, {r['rmsd']}Å. "\
-                    #     "Please superimpose the coordinates and re-upload the model file."
-                    # """
 
                     self.report.warning.appendDescription('not_superimposed_model',
                                                           {'file_name': file_name, 'category': 'atom_site',
@@ -22839,16 +22851,14 @@ class NmrDpUtility:
                     if self.__verbose:
                         self.__lfh.write(f"+NmrDpUtility.__extractCoordPolymerSequence() ++ Warning  - {warn}\n")
 
-            elif len(exactly_overlaid_models) > 0:
+            elif len(exactly_overlaid_ensemble) > 0:
 
-                for chain_id, r in exactly_overlaid_models.items():
+                for chain_id, r in exactly_overlaid_ensemble.items():
 
                     warn = f"The coordinates (chain_id {chain_id}) are overlaid exactly. "\
                         "Please check there has not been an error during the creation of your model file. "\
                         "You are receiving this message because the mean RMSD for an well-defined region "\
-                        f"(Sequence ranges {r['range']}, {r['monomers']} residues ({r['gaps']} gaps), "\
-                        f"corresponding to {r['core']}% of the entire sequence) "\
-                        f"is {r['mean_rmsd']}Å. "\
+                        f"(Sequence ranges {r['range']}) is {r['mean_rmsd']}Å. "\
                         "We require you to deposit an appropriate ensemble of coordinate models."
 
                     self.report.warning.appendDescription('exactly_overlaid_model',
@@ -22857,6 +22867,26 @@ class NmrDpUtility:
 
                     if self.__verbose:
                         self.__lfh.write(f"+NmrDpUtility.__extractCoordPolymerSequence() ++ Warning  - {warn}\n")
+
+            elif len(exactly_overlaid_models) > 0:
+
+                for chain_id, rs in exactly_overlaid_models.items():
+
+                    for r in rs:
+
+                        warn = f"Two models in the coordinate file (chain_id {chain_id}) are overlaid exactly. "\
+                            "Please check there has not been an error during the creation of your model file. "\
+                            "You are receiving this message because the RMSD for an well-defined region "\
+                            f"(Sequence ranges {r['range']}) between model {r['model_id_1']!r} and model {r['model_id_2']!r} "\
+                            f"is {r['rmsd']}Å. "\
+                            "We require you to deposit an appropriate ensemble of coordinate models."
+
+                        self.report.warning.appendDescription('exactly_overlaid_model',
+                                                              {'file_name': file_name, 'category': 'atom_site', 'description': warn})
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__extractCoordPolymerSequence() ++ Warning  - {warn}\n")
 
             return True
 

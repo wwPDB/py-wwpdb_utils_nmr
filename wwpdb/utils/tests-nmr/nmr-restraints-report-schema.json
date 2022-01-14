@@ -115,14 +115,20 @@
         },
         "polymer_sequence": {
           "description": "The array provides the representative sequences of input source file.",
-          "type": "array",
+          "type": [
+            "array",
+            "null"
+          ],
           "items": {
             "$ref": "#/definitions/polymer_sequence"
           }
         },
         "polymer_sequence_in_loop": {
           "description": "The object provides sequences in data loops of specified subtype of content.",
-          "type": "object",
+          "type": [
+            "object",
+            "null"
+          ],
           "properties": {
             "chem_shift": {
               "description": "The array provides the polymer sequences in data loops for assigned chemical shifts.",
@@ -256,12 +262,41 @@
         },
         "raw_rmsd_in_well_defined_region": {
           "type": "number"
+        },
+        "exactly_overlaid_model": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/exactly_overlaid_model"
+          }
         }
       },
       "additionalProperties": false,
       "required": [
         "model_id",
         "domain_id",
+        "rmsd_in_well_defined_region"
+      ]
+    },
+    "exactly_overlaid_model": {
+      "description": "Template for exactly overlaid models.",
+      "type": "object",
+      "properties": {
+        "ref_model_id": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "test_model_id": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "rmsd_in_well_defined_region": {
+          "type": "number"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "ref_model_id",
+        "test_model_id",
         "rmsd_in_well_defined_region"
       ]
     },

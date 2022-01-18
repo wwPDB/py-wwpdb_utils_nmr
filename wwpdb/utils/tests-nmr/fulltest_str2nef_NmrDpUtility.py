@@ -10,7 +10,6 @@ import os
 import json
 
 from wwpdb.utils.nmr.NmrDpUtility import NmrDpUtility
-from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
 
 
 class TestNmrDpUtility(unittest.TestCase):
@@ -19,7 +18,6 @@ class TestNmrDpUtility(unittest.TestCase):
         here = os.path.abspath(os.path.dirname(__file__))
         self.data_dir_path = os.path.join(here, 'mock-data/')
         self.utility = NmrDpUtility()
-        self.report = NmrDpReport()
 
     def tearDown(self):
         pass

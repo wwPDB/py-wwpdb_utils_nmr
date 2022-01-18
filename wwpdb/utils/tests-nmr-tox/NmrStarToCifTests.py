@@ -15,7 +15,7 @@ if __package__ is None or __package__ == "":
     sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
     from commonsetup import TESTOUTPUT  # noqa:  F401 pylint: disable=import-error,unused-import
 else:
-    from .commonsetup import TESTOUTPUT  # noqa: F401
+    from .commonsetup import TESTOUTPUT  # noqa: F401 pylint: disable=relative-beyond-top-level
 
 from wwpdb.utils.nmr.NmrStarToCif import NmrStarToCif
 from shutil import copyfile

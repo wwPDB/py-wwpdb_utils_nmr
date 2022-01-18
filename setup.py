@@ -46,8 +46,8 @@ setup(
                       "pynmrstar; python_version >= '3'",
                       "munkres==1.0.12; python_version == '2.7'",
                       "munkres; python_version >= '3'",
-                      'mmcif', 'numpy',
-                      "packaging"],
+                      'mmcif', 'numpy', "scikit-learn",
+                      "rmsd", "packaging"],
     packages=find_packages(exclude=['wwpdb.utils.tests-nmr', 'wwpdb.utils.tests-nmr-tox', 'mock-data']),
     # Enables Manifest to be used
     include_package_data=True,
@@ -65,7 +65,7 @@ setup(
         'dev': ['check-manifest'],
         'test': ['coverage'],
     },
-    python_requires='>=3.4',
+    python_requires='>=3.6',
     command_options={
         'build_sphinx': {
             'project': ('setup.py', thisPackage),

@@ -9,7 +9,6 @@ import os
 import json
 
 from wwpdb.utils.nmr.NmrDpUtility import NmrDpUtility
-from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
 
 
 class TestNmrDpUtility(unittest.TestCase):
@@ -25,7 +24,6 @@ class TestNmrDpUtility(unittest.TestCase):
                                            'cif': 'penta_b_modified.cif'}
                                }
         self.utility = NmrDpUtility()
-        self.report = NmrDpReport()
 
     def tearDown(self):
         pass

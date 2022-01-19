@@ -31,6 +31,7 @@ import random
 import itertools
 import hashlib
 import collections
+import re
 
 import numpy as np
 
@@ -747,6 +748,9 @@ class CifReader:
 
                     result['score'] = score
 
+                    if self.__verbose:
+                        print(result)
+
                     if score < min_score or (n_noise == 0 and min_score < self.__rmsd_overlaid_exactly):
                         min_score = score
                         min_result = result
@@ -865,6 +869,8 @@ class CifReader:
 
         dlist = []
 
+        seq_range_p = re.compile(r'^\[(-?\d+)-(-?\d+)\]$')
+
         for label in sorted(eff_labels):
 
             _label = int(label)
@@ -876,14 +882,24 @@ class CifReader:
             gaps = seq_ids[-1] + 1 - seq_ids[0] - len(seq_ids)
             item['number_of_gaps'] = gaps
             if gaps == 0:
-                item['range_of_seq_id'] = f"[{seq_ids[0]}-{seq_ids[-1]}]"
+                seq_range = f"[{seq_ids[0]}-{seq_ids[-1]}]"
             else:
                 seq_range = f"[{seq_ids[0]}-"
                 for idx, seq_id in enumerate(seq_ids):
                     if idx > 0 and seq_id != seq_ids[idx - 1] + 1:
                         seq_range += f"{seq_ids[idx - 1]}],[{seq_id}-"
                 seq_range += f"{seq_ids[-1]}]"
-                item['range_of_seq_id'] = seq_range
+            _seq_range = []
+            for r in seq_range.split(','):
+                try:
+                    g = seq_range_p.search(r).groups()
+                    if g[0] != g[1]:
+                        _seq_range.append(f"[{g[0]}-{g[1]}]")
+                    else:
+                        _seq_range.append(f"[{g[0]}]")
+                except AttributeError:
+                    pass
+            item['range_of_seq_id'] = ','.join(_seq_range)
             item['percent_of_core'] = float(f"{float(count) / length * 100.0:.1f}")
 
             r = np.zeros((_total_models, _total_models), dtype=float)

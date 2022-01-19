@@ -5095,7 +5095,7 @@ class NmrDpUtility:
 
                 cif_stop_pattern = re.compile(r'^#\s*')
                 # """
-                # cs_cif_pattern = re.compile(r'D_[0-9]+_cs_P[0-9]+.cif.V[0-9]+$')
+                # cs_cif_pattern = re.compile(r'D_\d+_cs_P\d+.cif.V\d+$')
 
                 # if cs_cif_pattern.match(file_name):
                 # """
@@ -6469,7 +6469,7 @@ class NmrDpUtility:
                         axis_code_name_col = loop.tags.index('Axis_code')
 
                         for row in loop:
-                            atom_type = re.sub(r'[0-9]+', '', row[axis_code_name_col])
+                            atom_type = re.sub(r'\d+', '', row[axis_code_name_col])
                             row.append(atom_type)
 
                         loop.add_tag(lp_category + '.Atom_type')
@@ -6495,7 +6495,7 @@ class NmrDpUtility:
                         axis_code_name_col = loop.tags.index('Axis_code')
 
                         for row in loop:
-                            atom_type = re.sub(r'[0-9]+', '', row[axis_code_name_col])
+                            atom_type = re.sub(r'\d+', '', row[axis_code_name_col])
                             row.append(str(self.atom_isotopes[atom_type][0]))
 
                         loop.add_tag(lp_category + '.Atom_isotope_number')
@@ -6877,7 +6877,7 @@ class NmrDpUtility:
                                 or line.startswith('_atom_site.ndb_model'):
                             has_ens_coord = True
 
-                        l = " ".join(line.split())  # noqa: E741
+                        l = ' '.join(line.split())  # noqa: E741
 
                         s = re.split('[ ()]', l)
 
@@ -6979,7 +6979,7 @@ class NmrDpUtility:
 
                     for line in ifp:
 
-                        l = " ".join(line.split())  # noqa: E741
+                        l = ' '.join(line.split())  # noqa: E741
 
                         s = re.split('[ ()=]', l)
 
@@ -7095,7 +7095,7 @@ class NmrDpUtility:
                         elif '/' in line:
                             line = re.sub('/', ',&end', line)
 
-                        l = " ".join(line.split())  # noqa: E741
+                        l = ' '.join(line.split())  # noqa: E741
 
                         if len(l) == 0 or l.startswith('#') or l.startswith('!'):
                             continue
@@ -7399,7 +7399,7 @@ class NmrDpUtility:
                                     end += max_char
                                     col += 1
 
-                        l = " ".join(line.split())  # noqa: E741
+                        l = ' '.join(line.split())  # noqa: E741
 
                         if len(l) == 0 or l.startswith('#') or l.startswith('!'):
                             continue
@@ -7467,8 +7467,10 @@ class NmrDpUtility:
                 if file_type == 'nm-res-oth' and has_chem_shift and not has_dist_restraint and not has_dihed_restraint:
 
                     with open(file_path, 'r', encoding='UTF-8') as ifp:
+
                         for line in ifp:
-                            l = " ".join(line.split())  # noqa: E741
+
+                            l = ' '.join(line.split())  # noqa: E741
 
                             if len(l) == 0 or l.startswith('#') or l.startswith('!'):
                                 continue
@@ -7548,7 +7550,7 @@ class NmrDpUtility:
 
                     for line in ifp:
 
-                        l = " ".join(line.split())  # noqa: E741
+                        l = ' '.join(line.split())  # noqa: E741
 
                         if len(l) == 0 or l.startswith('#') or l.startswith('!'):
                             continue
@@ -22839,7 +22841,7 @@ class NmrDpUtility:
                     r = next((r for r in rmsd if r['model_id'] == conformer_id), rmsd[0])
 
                     warn = f"The coordinates (chain_id {chain_id}) are not superimposed. "\
-                        f"The RMSD ({r['raw_rmsd']}Å) for an well-defined region "\
+                        f"The RMSD ({r['raw_rmsd']}Å) for a well-defined region "\
                         f"(Sequence ranges {r['range']}) is greater than the predicted value ({r['rmsd']}Å). "\
                         "Please superimpose the coordinates and re-upload the model file."
 
@@ -22857,7 +22859,7 @@ class NmrDpUtility:
 
                     warn = f"The coordinates (chain_id {chain_id}) are overlaid exactly. "\
                         "Please check there has not been an error during the creation of your model file. "\
-                        "You are receiving this message because the mean RMSD for an well-defined region "\
+                        "You are receiving this message because the mean RMSD for a well-defined region "\
                         f"(Sequence ranges {r['range']}) is {r['mean_rmsd']}Å. "\
                         "We require you to deposit an appropriate ensemble of coordinate models."
 
@@ -22876,7 +22878,7 @@ class NmrDpUtility:
 
                         warn = f"Two models in the coordinate file (chain_id {chain_id}) are overlaid exactly. "\
                             "Please check there has not been an error during the creation of your model file. "\
-                            "You are receiving this message because the RMSD for an well-defined region "\
+                            "You are receiving this message because the RMSD for a well-defined region "\
                             f"(Sequence ranges {r['range']}) between model {r['model_id_1']!r} and model {r['model_id_2']!r} "\
                             f"is {r['rmsd']}Å. "\
                             "We require you to deposit an appropriate ensemble of coordinate models."

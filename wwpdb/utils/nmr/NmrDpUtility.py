@@ -22839,7 +22839,7 @@ class NmrDpUtility:
                     r = next((r for r in rmsd if r['model_id'] == conformer_id), rmsd[0])
 
                     warn = f"The coordinates (chain_id {chain_id}) are not superimposed. "\
-                        f"The RMSD ({r['raw_rmsd']}Å) for an well-defined region "\
+                        f"The RMSD ({r['raw_rmsd']}Å) for a well-defined region "\
                         f"(Sequence ranges {r['range']}) is greater than the predicted value ({r['rmsd']}Å). "\
                         "Please superimpose the coordinates and re-upload the model file."
 
@@ -22857,7 +22857,7 @@ class NmrDpUtility:
 
                     warn = f"The coordinates (chain_id {chain_id}) are overlaid exactly. "\
                         "Please check there has not been an error during the creation of your model file. "\
-                        "You are receiving this message because the mean RMSD for an well-defined region "\
+                        "You are receiving this message because the mean RMSD for a well-defined region "\
                         f"(Sequence ranges {r['range']}) is {r['mean_rmsd']}Å. "\
                         "We require you to deposit an appropriate ensemble of coordinate models."
 
@@ -22876,7 +22876,7 @@ class NmrDpUtility:
 
                         warn = f"Two models in the coordinate file (chain_id {chain_id}) are overlaid exactly. "\
                             "Please check there has not been an error during the creation of your model file. "\
-                            "You are receiving this message because the RMSD for an well-defined region "\
+                            "You are receiving this message because the RMSD for a well-defined region "\
                             f"(Sequence ranges {r['range']}) between model {r['model_id_1']!r} and model {r['model_id_2']!r} "\
                             f"is {r['rmsd']}Å. "\
                             "We require you to deposit an appropriate ensemble of coordinate models."

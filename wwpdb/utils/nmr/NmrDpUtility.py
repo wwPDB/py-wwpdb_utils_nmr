@@ -5095,7 +5095,7 @@ class NmrDpUtility:
 
                 cif_stop_pattern = re.compile(r'^#\s*')
                 # """
-                # cs_cif_pattern = re.compile(r'D_[0-9]+_cs_P[0-9]+.cif.V[0-9]+$')
+                # cs_cif_pattern = re.compile(r'D_\d+_cs_P\d+.cif.V\d+$')
 
                 # if cs_cif_pattern.match(file_name):
                 # """
@@ -6469,7 +6469,7 @@ class NmrDpUtility:
                         axis_code_name_col = loop.tags.index('Axis_code')
 
                         for row in loop:
-                            atom_type = re.sub(r'[0-9]+', '', row[axis_code_name_col])
+                            atom_type = re.sub(r'\d+', '', row[axis_code_name_col])
                             row.append(atom_type)
 
                         loop.add_tag(lp_category + '.Atom_type')
@@ -6495,7 +6495,7 @@ class NmrDpUtility:
                         axis_code_name_col = loop.tags.index('Axis_code')
 
                         for row in loop:
-                            atom_type = re.sub(r'[0-9]+', '', row[axis_code_name_col])
+                            atom_type = re.sub(r'\d+', '', row[axis_code_name_col])
                             row.append(str(self.atom_isotopes[atom_type][0]))
 
                         loop.add_tag(lp_category + '.Atom_isotope_number')
@@ -6877,7 +6877,7 @@ class NmrDpUtility:
                                 or line.startswith('_atom_site.ndb_model'):
                             has_ens_coord = True
 
-                        l = " ".join(line.split())  # noqa: E741
+                        l = ' '.join(line.split())  # noqa: E741
 
                         s = re.split('[ ()]', l)
 
@@ -6979,7 +6979,7 @@ class NmrDpUtility:
 
                     for line in ifp:
 
-                        l = " ".join(line.split())  # noqa: E741
+                        l = ' '.join(line.split())  # noqa: E741
 
                         s = re.split('[ ()=]', l)
 
@@ -7095,7 +7095,7 @@ class NmrDpUtility:
                         elif '/' in line:
                             line = re.sub('/', ',&end', line)
 
-                        l = " ".join(line.split())  # noqa: E741
+                        l = ' '.join(line.split())  # noqa: E741
 
                         if len(l) == 0 or l.startswith('#') or l.startswith('!'):
                             continue
@@ -7399,7 +7399,7 @@ class NmrDpUtility:
                                     end += max_char
                                     col += 1
 
-                        l = " ".join(line.split())  # noqa: E741
+                        l = ' '.join(line.split())  # noqa: E741
 
                         if len(l) == 0 or l.startswith('#') or l.startswith('!'):
                             continue
@@ -7467,8 +7467,10 @@ class NmrDpUtility:
                 if file_type == 'nm-res-oth' and has_chem_shift and not has_dist_restraint and not has_dihed_restraint:
 
                     with open(file_path, 'r', encoding='UTF-8') as ifp:
+
                         for line in ifp:
-                            l = " ".join(line.split())  # noqa: E741
+
+                            l = ' '.join(line.split())  # noqa: E741
 
                             if len(l) == 0 or l.startswith('#') or l.startswith('!'):
                                 continue
@@ -7548,7 +7550,7 @@ class NmrDpUtility:
 
                     for line in ifp:
 
-                        l = " ".join(line.split())  # noqa: E741
+                        l = ' '.join(line.split())  # noqa: E741
 
                         if len(l) == 0 or l.startswith('#') or l.startswith('!'):
                             continue

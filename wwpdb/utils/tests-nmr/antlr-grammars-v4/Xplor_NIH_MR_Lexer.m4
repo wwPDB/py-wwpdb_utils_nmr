@@ -1,5 +1,5 @@
 /*
- Xplor-NIH MR lexer grammar for ANTLR v4.
+ Xplor-NIH MR (Magnetic Restraint) lexer grammar for ANTLR v4.
  Copyright 2021 Masashi Yokochi
 
 you may not use this file except in compliance with the License.

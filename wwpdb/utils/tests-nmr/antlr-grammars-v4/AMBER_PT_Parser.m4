@@ -1,5 +1,5 @@
 /*
- Amber PT (Parameter Topology) parser grammar for ANTLR v4.
+ AMBER PT (Parameter Topology) parser grammar for ANTLR v4.
  Copyright 2022 Masashi Yokochi
 
 you may not use this file except in compliance with the License.
@@ -14,9 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-parser grammar Amber_PT_Parser;
+parser grammar AMBER_PT_Parser;
 
-options { tokenVocab=Amber_PT_Lexer; }
+options { tokenVocab=AMBER_PT_Lexer; }
 
 amber_pt:
 	version_statement |

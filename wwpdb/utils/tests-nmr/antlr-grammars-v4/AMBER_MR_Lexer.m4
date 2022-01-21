@@ -1,5 +1,5 @@
 /*
- Amber MR (Magnetic Restraint) lexer grammar for ANTLR v4.
+ AMBER MR (Magnetic Restraint) lexer grammar for ANTLR v4.
  Copyright 2021 Masashi Yokochi
 
 you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-lexer grammar Amber_MR_Lexer;
+lexer grammar AMBER_MR_Lexer;
 
 /* Case-Insensitive Lexing
  See also https://github.com/antlr/antlr4/blob/master/doc/case-insensitive-lexing.md
@@ -426,20 +426,12 @@ fragment DEC_DOT_DEC:	DECIMAL '.' DECIMAL | DECIMAL '.' | '.' DECIMAL;
 fragment DEC_DIGIT:	[0-9];
 fragment DECIMAL:	DEC_DIGIT+;
 
-fragment ALPHA:		[A-Za-z];
 fragment ALPHA_NUM:	[A-Za-z0-9];
 fragment START_CHAR:	[A-Za-z0-9_];
 fragment NAME_CHAR:	START_CHAR | '\'' | '-' | '+' | '.';
 fragment ATM_NAME_CHAR:	ALPHA_NUM | '\'';
-fragment ATM_TYPE_CHAR:	ALPHA_NUM | '-' | '+' | '*';
-fragment SIMPLE_NAME:	START_CHAR NAME_CHAR*;
 
-Class_name:		SIMPLE_NAME;
-Segment_name:		SIMPLE_NAME;
-Residue_number:		Integer;
-Residue_name:		SIMPLE_NAME;
 Atom_name:		ALPHA_NUM ATM_NAME_CHAR*;
-Atom_type:		ALPHA ATM_TYPE_CHAR*;
 
 Quoted_atom_name:	('\'' | '"')? Atom_name Atom_name* ('\'' | '"')?;
 Res_atom_name:		':' Integer '@' Atom_name;		// ambmask format
@@ -451,10 +443,6 @@ R_brace:		'}';
 L_brakt:		'[';
 R_brakt:		']';
 Equ_op:			'=';
-Lt_op:			'<';
-Gt_op:			'>';
-Leq_op:			'<=';
-Geq_op:			'>=';
 
 QUOT:			'"';
 SPACE:			[ \t\r\n]+ -> skip;

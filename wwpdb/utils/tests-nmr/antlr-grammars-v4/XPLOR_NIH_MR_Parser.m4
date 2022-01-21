@@ -1,5 +1,5 @@
 /*
- Xplor-NIH MR (Magnetic Restraint) parser grammar for ANTLR v4.
+ XPLOR-NIH MR (Magnetic Restraint) parser grammar for ANTLR v4.
  Copyright 2021 Masashi Yokochi
 
 you may not use this file except in compliance with the License.
@@ -14,9 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-parser grammar Xplor_NIH_MR_Parser;
+parser grammar XPLOR_NIH_MR_Parser;
 
-options { tokenVocab=Xplor_NIH_MR_Lexer; }
+options { tokenVocab=XPLOR_NIH_MR_Lexer; }
 
 xplor_nih_mr:
 	distance_restraint*
@@ -113,7 +113,7 @@ pccr_restraint:
 hbond_restraint:
 	Hbda L_brace hbond_statement R_brace End;
 
-/* Xplor-NIH: Distance restraints - Syntax
+/* XPLOR-NIH: Distance restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node377.html
 */
 noe_statement:
@@ -146,7 +146,7 @@ noe_assign:
 predict_statement:
 	Cutoff Equ_op Real | Cuton Equ_op Real | From selection | To selection;
 
-/* Xplor-NIH: Dihedral angle restraints - Syntax
+/* XPLOR-NIH: Dihedral angle restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/cdih_syntax.html
 */
 dihedral_statement:
@@ -158,7 +158,7 @@ dihedral_statement:
 dihedral_assign:
 	Assign selection selection selection selection Real Real Real Integer;
 
-/* Xplor-NIH: RDC - Syntax (SANI - Susceptibility anisotropy)
+/* XPLOR-NIH: RDC - Syntax (SANI - Susceptibility anisotropy)
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node418.html
 */
 sani_statement:
@@ -174,7 +174,7 @@ sani_statement:
 sani_assign:
 	Assign selection selection selection selection selection selection Real Real;
 
-/* Xplor-NIH: RDC - Syntax (XDIP)
+/* XPLOR-NIH: RDC - Syntax (XDIP)
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node419.html
 */
 xdip_statement:
@@ -194,7 +194,7 @@ xdip_statement:
 xdip_assign:
 	Assign selection selection selection selection selection selection Real Real Real (Real Real Real)?;
 
-/* Xplor-NIH: RDC - Syntax (VEAN)
+/* XPLOR-NIH: RDC - Syntax (VEAN)
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node420.html
 */
 vean_statement:
@@ -210,7 +210,7 @@ vean_statement:
 vean_assign:
 	Assign selection selection selection selection Real Real Real Real;
 
-/* Xplor-NIH: RDC - Syntax (TENS)
+/* XPLOR-NIH: RDC - Syntax (TENS)
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node421.html
 */
 tens_statement:
@@ -225,7 +225,7 @@ tens_statement:
 tens_assign:
 	Assign selection selection Real Real;
 
-/* Xplor-NIH: RDC - Syntax (ANIS)
+/* XPLOR-NIH: RDC - Syntax (ANIS)
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node422.html
 */
 anis_statement:
@@ -242,7 +242,7 @@ anis_statement:
 anis_assign:
 	Assign selection selection selection selection Real Real;
 
-/* Xplor-NIH: Planality restraints - Syntax
+/* XPLOR-NIH: Planality restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/plan_syntax.html
 */
 planar_statement:
@@ -253,7 +253,7 @@ group_statement:
 	Selection Equ_op selection |
 	Weight Equ_op Real;
 
-/* Xplor-NIH: Antidiatance restraints - Syntax
+/* XPLOR-NIH: Antidiatance restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node398.html
 */
 antidistance_statement:
@@ -270,7 +270,7 @@ antidistance_statement:
 xadc_assign:
 	Assign selection selection;
 
-/* Xplor-NIH: Scalar J-coupling restraints - Syntax
+/* XPLOR-NIH: Scalar J-coupling restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node401.html
 */
 coupling_statement:
@@ -289,7 +289,7 @@ coupling_statement:
 coup_assign:
 	Assign selection selection selection selection (selection selection selection selection)? Real Real (Real Real)?;
 
-/* Xplor-NIH: Carbon chemical shift restraints - Syntax
+/* XPLOR-NIH: Carbon chemical shift restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node404.html
 */
 carbon_shift_statement:
@@ -312,7 +312,7 @@ carbon_shift_assign:
 carbon_shift_rcoil:
 	Rcoil selection Real Real;
 
-/* Xplor-NIH: Proton chemical shift restraints - Syntax
+/* XPLOR-NIH: Proton chemical shift restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node407.html
 */
 proton_shift_statement:
@@ -360,7 +360,7 @@ proton_shift_ring_atoms:
 proton_shift_alphas_and_amides:
 	AlphasAndAmides selection;
 
-/* Xplor-NIH: Dihedral angle database restraints - Syntax
+/* XPLOR-NIH: Dihedral angle database restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node410.html
 */
 ramachandran_statement:
@@ -383,7 +383,7 @@ ramachandran_statement:
 rama_assign:
 	Assign selection selection selection selection (selection selection selection selection)? (selection selection selection selection)? (selection selection selection selection)?;
 
-/* Xplor-NIH: Radius of gyration restraints - Syntax
+/* XPLOR-NIH: Radius of gyration restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node413.html
 */
 collapse_statement:
@@ -392,7 +392,7 @@ collapse_statement:
 	Print |
 	Reset;
 
-/* Xplor-NIH: Diffusion anisotropy restraints - Syntax
+/* XPLOR-NIH: Diffusion anisotropy restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node415.html
 */
 diffusion_statement:
@@ -409,7 +409,7 @@ diffusion_statement:
 dani_assign:
 	Assign selection selection selection selection selection selection Real Real;
 
-/* Xplor-NIH: Residue-residue position/orientation database restraints - Syntax
+/* XPLOR-NIH: Residue-residue position/orientation database restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node425.html
 */
 orientation_statement:
@@ -432,7 +432,7 @@ orientation_statement:
 orie_assign:
 	Assign selection selection selection selection;
 
-/* Xplor-NIH: Chemical shift anisotropy restraints - Syntax
+/* XPLOR-NIH: Chemical shift anisotropy restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node427.html
 */
 csa_statement:
@@ -451,7 +451,7 @@ csa_statement:
 csa_assign:
 	Assign selection selection selection selection selection selection selection Real Real Real;
 
-/* Xplor-NIH: Pseudo chemical shift anisotropy restraints - Syntax
+/* XPLOR-NIH: Pseudo chemical shift anisotropy restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node430.html
 */
 pcsa_statement:
@@ -466,7 +466,7 @@ pcsa_statement:
 	Print Threshold Real |
 	Reset;
 
-/* Xplor-NIH: One-bond coupling restraints - Syntax
+/* XPLOR-NIH: One-bond coupling restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node433.html
 */
 one_bond_coupling_statement:
@@ -482,7 +482,7 @@ one_bond_coupling_statement:
 one_bond_assign:
 	Assign selection selection selection selection selection selection selection selection Real Real;
 
-/* Xplor-NIH: Angle database restraints - Syntax
+/* XPLOR-NIH: Angle database restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node435.html
 */
 angle_db_statement:
@@ -502,7 +502,7 @@ angle_db_statement:
 angle_db_assign:
 	Assign selection selection selection selection selection selection selection selection selection selection selection selection?;
 
-/* Xplor-NIH: Paramagnetic relaxation enhancement restraints - Syntax
+/* XPLOR-NIH: Paramagnetic relaxation enhancement restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node438.html
 */
 pre_statement:
@@ -521,7 +521,7 @@ pre_statement:
 pre_assign:
 	Assign selection selection Real Real;
 
-/* Xplor-NIH: Paramagnetic pseudocontact shift restraints - Syntax
+/* XPLOR-NIH: Paramagnetic pseudocontact shift restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node442.html
 */
 pcs_statement:
@@ -546,7 +546,7 @@ pcs_statement:
 pcs_assign:
 	Assign selection selection selection selection selection Real Real;
 
-/* Xplor-NIH: Paramagnetic residual dipolar coupling restraints - Syntax
+/* XPLOR-NIH: Paramagnetic residual dipolar coupling restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node445.html
 */
 prdc_statement:
@@ -571,7 +571,7 @@ prdc_statement:
 prdc_assign:
 	Assign selection selection selection selection selection selection Real Real;
 
-/* Xplor-NIH: Paramagnetic orientation restraints - Syntax
+/* XPLOR-NIH: Paramagnetic orientation restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node448.html
 */
 porientation_statement:
@@ -585,7 +585,7 @@ porientation_statement:
 porientation_assign:
 	Assign selection selection Real Real Real;
 
-/* Xplor-NIH: Paramagnetic cross-correlation rate restraints - Syntax
+/* XPLOR-NIH: Paramagnetic cross-correlation rate restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node450.html
 */
 pccr_statement:
@@ -602,7 +602,7 @@ pccr_statement:
 pccr_assign:
 	Assign selection selection selection Real Real;
 
-/* Xplor-NIH: Hydrogen bond geometry restraints - Syntax
+/* XPLOR-NIH: Hydrogen bond geometry restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node452.html
 */
 hbond_statement:

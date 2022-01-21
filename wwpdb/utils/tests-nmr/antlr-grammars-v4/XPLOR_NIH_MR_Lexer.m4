@@ -1,5 +1,5 @@
 /*
- Xplor-NIH MR (Magnetic Restraint) lexer grammar for ANTLR v4.
+ XPLOR-NIH MR (Magnetic Restraint) lexer grammar for ANTLR v4.
  Copyright 2021 Masashi Yokochi
 
 you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-lexer grammar Xplor_NIH_MR_Lexer;
+lexer grammar XPLOR_NIH_MR_Lexer;
 
 /* Case-Insensitive Lexing
  See also https://github.com/antlr/antlr4/blob/master/doc/case-insensitive-lexing.md
@@ -48,7 +48,7 @@ fragment Z:		[zZ];
 
 End:			E N D;
 
-/* Xplor-NIH: Distance restraints - Syntax
+/* XPLOR-NIH: Distance restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node377.html
 */
 Noe:			N O E;					// Noe { noe_statement } End
@@ -90,7 +90,7 @@ Cuton:			C U T O N?;				// = Real
 From:			F R O M;				// = selection
 To:			T O;					// = selection
 
-/* Xplor-NIH: Dihedral angle restraints - Syntax
+/* XPLOR-NIH: Dihedral angle restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/cdih_syntax.html
 */
 Restraints:		R E S T R? A? I? N? T? S?;		// Dihedral
@@ -100,7 +100,7 @@ Nassign:		N A S S I? G? N?;			// = Integer
 //Reset:		R E S E T?;
 //Scale:		S C A L E?;				// Real
 
-/* Xplor-NIH: RDC - Syntax (SANI - Susceptibility anisotropy)
+/* XPLOR-NIH: RDC - Syntax (SANI - Susceptibility anisotropy)
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node418.html
 */
 Sanisotropy:		S A N I S? O? T? R? O? P? Y?;		// Sanisotropy { sani_statement } End
@@ -117,7 +117,7 @@ ForceConstant:		F O R C E? C? O? N? S? T? A? N? T?;	// Real
 // RDC potential statement
 Rdc_potential:		S Q U A R? E? | H A R M O? N? I? C?;
 
-/* Xplor-NIH: RDC - Syntax (XDIP)
+/* XPLOR-NIH: RDC - Syntax (XDIP)
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node419.html
 */
 Xdipolar:		X D I P O? L? A? R?;			// Xdipolar { xdip_statement } End
@@ -141,7 +141,7 @@ Rdc_dist_fix_types:	F I X D | V A R D;
 // RDC averaging methods
 Rdc_avr_methods:	S U M | S U M D I? F? | A V E R A? G? E?;
 
-/* Xplor-NIH: RDC - Syntax (VEAN)
+/* XPLOR-NIH: RDC - Syntax (VEAN)
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node420.html
 */
 VectorAngle:		V E A N G? L? E?;			// VectorAngle { vean_statement } End
@@ -155,7 +155,7 @@ Partition:		P A R T I? T? I? O? N?;			// = Integer
 //Threshold:		T H R E S? H? O? L? D?;			// Real
 //Reset:		R E S E T?;
 
-/* Xplor-NIH: RDC - Syntax (TENS)
+/* XPLOR-NIH: RDC - Syntax (TENS)
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node421.html
 */
 Tensor:			T E N S O? R?;				// Tensor { tens_statement } End
@@ -168,7 +168,7 @@ Tensor:			T E N S O? R?;				// Tensor { tens_statement } End
 //Threshold:		T H R E S? H? O? L? D?;			// Real
 //Reset:		R E S E T?;
 
-/* Xplor-NIH: RDC - Syntax (ANIS)
+/* XPLOR-NIH: RDC - Syntax (ANIS)
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node422.html
 */
 Anisotropy:		A N I S O? T? R? O? P? Y?;		// Anisotropy { anis_statement } End
@@ -186,7 +186,7 @@ Anisotropy:		A N I S O? T? R? O? P? Y?;		// Anisotropy { anis_statement } End
 // RDC anisotropy types
 Rdc_anis_types:		R E L A X | M I S C;
 
-/* Xplor-NIH: Planality restraints - Syntax
+/* XPLOR-NIH: Planality restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/plan_syntax.html
 */
 //Restraints:		R E S T R? A? I? N? T? S?;		// Planar
@@ -200,7 +200,7 @@ Initialize:		I N I T I? A? L? I? Z? E?;
 Selection:		S E L E C? T? I? O? N?;			// = selection
 Weight:			W E I G H? T?;				// = Real
 
-/* Xplor-NIH: Antidiatance restraints - Syntax
+/* XPLOR-NIH: Antidiatance restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node398.html
 */
 Xadc:			X A D C;				// Xadc { xadc_statement } End
@@ -215,7 +215,7 @@ Expectation:		E X P E C? T? A? T? I? O? N?;		// Integer Real
 Size:			S I Z E;				// Real Integer
 Zero:			Z E R O;
 
-/* Xplor-NIH: Scalar J-coupling restraints - Syntax
+/* XPLOR-NIH: Scalar J-coupling restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node401.html
 */
 Coupling:		C O U P L? I? N? G?;			// Coupling { coupling_statement } End
@@ -235,7 +235,7 @@ DegEnergy:		D E G E N? E? R? G? Y?;			// Number_of_couplings
 Number_of_couplings:	'1' | '2';
 Coupling_potential:	Rdc_potential;
 
-/* Xplor-NIH: Carbon chemical shift restraints - Syntax
+/* XPLOR-NIH: Carbon chemical shift restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node404.html
 */
 Carbon:			C A R B O? N?;				// Carbon { carbon_shift_statement } End
@@ -253,7 +253,7 @@ Rcoil:			R C O I L?;				// selection Real Real
 //Reset:		R E S E T?;
 //Zero:			Z E R O;
 
-/* Xplor-NIH: Proton chemical shift restraints - Syntax
+/* XPLOR-NIH: Proton chemical shift restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node407.html
 */
 Proton:			P R O T O? N? S? H? I? F? T? S?;	// Proton { proton_shift_statement } End
@@ -281,7 +281,7 @@ Ring_resname:		P H E | T Y R | H I S | T R P ('5' | '6') | A D E ('5' | '6') | G
 Rmsd_or_Not:		R M S D | N O R M S? D?;
 Number_of_shifts:	'1' | '2';
 
-/* Xplor-NIH: Dihedral angle database restraints - Syntax
+/* XPLOR-NIH: Dihedral angle database restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node410.html
 */
 Ramachandran:		R A M A;				// Rama { ramachandran_statement } End
@@ -305,7 +305,7 @@ Sort:			S O R T;
 Gauss_or_Quart:		G A U S S | Q U A R T;
 Dimensions:		O N E D | T W O D | T H R E E D | F O U R D;
 
-/* Xplor-NIH: Radius of gyration restraints - Syntax
+/* XPLOR-NIH: Radius of gyration restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node413.html
 */
 Collapse:		C O L L A? P? S? E?;			// Collapse { collapse_statement } End
@@ -314,7 +314,7 @@ Collapse:		C O L L A? P? S? E?;			// Collapse { collapse_statement } End
 //Print:		P R I N T?;
 //Reset:		R E S E T?;
 
-/* Xplor-NIH: Diffusion anisotropy restraints - Syntax
+/* XPLOR-NIH: Diffusion anisotropy restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node415.html
 */
 Danisotropy:		D A N I S? O? T? R? O? P? Y?;		// Danisotropy { diffusion_statement } End
@@ -332,7 +332,7 @@ Danisotropy:		D A N I S? O? T? R? O? P? Y?;		// Danisotropy { diffusion_statemen
 // Diffusion anisotropy types
 Diff_anis_types:	D I F F | M I S C;
 
-/* Xplor-NIH: Residue-residue position/orientation database restraints - Syntax
+/* XPLOR-NIH: Residue-residue position/orientation database restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node425.html
 */
 Orient:			O R I E N? T?;				// Orient { orientation_statement } End
@@ -353,7 +353,7 @@ Residues:		R E S I D? U? E? S?;			// Integer
 //Size:			S I Z E;				// Real Real
 //Zero:			Z E R O;
 
-/* Xplor-NIH: Chemical shift anisotropy restraints - Syntax
+/* XPLOR-NIH: Chemical shift anisotropy restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node427.html
 */
 Dcsa:			D C S A;				// Dcsa { csa_statement } End
@@ -372,7 +372,7 @@ Sigma:			S I G M A?;				// Real Real Real
 
 Csa_types:		P H O S | C A R B | N I T R;
 
-/* Xplor-NIH: Pseudo chemical shift anisotropy restraints - Syntax
+/* XPLOR-NIH: Pseudo chemical shift anisotropy restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node430.html
 */
 Pcsa:			P C S A;				// Pcsa { pcsa_statement } End
@@ -388,7 +388,7 @@ Pcsa:			P C S A;				// Pcsa { pcsa_statement } End
 //Threshold:		T H R E S? H? O? L? D?;			// Real
 //Reset:		R E S E T?;
 
-/* Xplor-NIH: One-bond coupling restraints - Syntax
+/* XPLOR-NIH: One-bond coupling restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node433.html
 */
 OneBond:		O N E B O? N? D?;			// OneBond { one_bond_statement } End
@@ -402,7 +402,7 @@ OneBond:		O N E B O? N? D?;			// OneBond { one_bond_statement } End
 //Threshold:		T H R E S? H? O? L? D?;			// Real
 //Reset:		R E S E T?;
 
-/* Xplor-NIH: Angle database restraints - Syntax
+/* XPLOR-NIH: Angle database restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node435.html
 */
 AngleDb:		A N G L E? D? B?;			// AngleDb { bond_angle_statement } End
@@ -423,7 +423,7 @@ DerivFlag:		D E R I V? F? L? A? G?;			// On_or_Off
 On_or_Off:		O N | O F F;
 Angle_dihedral:		A N G L E? | D I H E D? R? A? L?;
 
-/* Xplor-NIH: Paramagnetic relaxation enhancement restraints - Syntax
+/* XPLOR-NIH: Paramagnetic relaxation enhancement restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node438.html
 */
 Paramagnetic:		P A R A M? A? G? N? E? T? I? C?;	// Paramagnetic { pre_statement } End
@@ -440,7 +440,7 @@ Tauc:			T A U C;				// = Class_name Real Real
 //Reset:		R E S E T?;
 Debug:			D E B U G?;
 
-/* Xplor-NIH: Paramagnetic pseudocontact shift restraints - Syntax
+/* XPLOR-NIH: Paramagnetic pseudocontact shift restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node442.html
 */
 Xpcs:			X P C S;				// Xpcs { pcs_statement } End
@@ -465,7 +465,7 @@ Frun:			F R U N;				// Integer
 
 One_or_Zero:		'1' | '0';
 
-/* Xplor-NIH: Paramagnetic residual dipolar coupling restraints - Syntax
+/* XPLOR-NIH: Paramagnetic residual dipolar coupling restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node445.html
 */
 Xrdcoupling:		X R D C O? U? P? L? I? N? G?;		// Xrdcoupling { xrdc_statement } End
@@ -488,7 +488,7 @@ Xrdcoupling:		X R D C O? U? P? L? I? N? G?;		// Xrdcoupling { xrdc_statement } E
 //Son:			S O N;
 //Soff:			S O F F;
 
-/* Xplor-NIH: Paramagnetic orientation restraints - Syntax
+/* XPLOR-NIH: Paramagnetic orientation restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node448.html
 */
 Xangle:			X A N G L? E?;				// Xangle { xang_statement } End
@@ -500,7 +500,7 @@ Xangle:			X A N G L? E?;				// Xangle { xang_statement } End
 //Threshold:		T H R E S? H? O? L? D?;			// Real
 //Reset:		R E S E T?;
 
-/* Xplor-NIH: Paramagnetic cross-correlation rate restraints - Syntax
+/* XPLOR-NIH: Paramagnetic cross-correlation rate restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node450.html
 */
 Xccr:			X C C R;				// Xccr { xccr_statement } End
@@ -515,7 +515,7 @@ Weip:			W E I P;				// One_or_Zero
 //Reset:		R E S E T?;
 //Frun:			F R U N:				// Integer
 
-/* Xplor-NIH: Hydrogen bond geometry restraints - Syntax
+/* XPLOR-NIH: Hydrogen bond geometry restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node452.html
 */
 Hbda:			H B D A;				// Hbda { hbda_statement } End

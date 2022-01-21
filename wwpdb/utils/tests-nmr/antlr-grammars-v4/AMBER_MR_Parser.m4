@@ -1,5 +1,5 @@
 /*
- Amber MR (Magnetic Restraint) parser grammar for ANTLR v4.
+ AMBER MR (Magnetic Restraint) parser grammar for ANTLR v4.
  Copyright 2021 Masashi Yokochi
 
 you may not use this file except in compliance with the License.
@@ -14,9 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-parser grammar Amber_MR_Parser;
+parser grammar AMBER_MR_Parser;
 
-options { tokenVocab=Amber_MR_Lexer; }
+options { tokenVocab=AMBER_MR_Lexer; }
 
 amber_mr:
 	nmr_restraint*

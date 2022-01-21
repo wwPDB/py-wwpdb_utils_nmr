@@ -1,5 +1,5 @@
 /*
- Amber PT (Parameter Topology) lexer grammar for ANTLR v4.
+ AMBER PT (Parameter Topology) lexer grammar for ANTLR v4.
  Copyright 2022 Masashi Yokochi
 
 you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-lexer grammar Amber_PT_Lexer;
+lexer grammar AMBER_PT_Lexer;
 
 /* Case-Insensitive Lexing
  See also https://github.com/antlr/antlr4/blob/master/doc/case-insensitive-lexing.md
@@ -159,15 +159,7 @@ Fortran_format_F:	DECIMAL F DECIMAL ('.' DECIMAL)?;
 
 L_paren:		'(';
 R_paren:		')';
-L_brace:		'{';
-R_brace:		'}';
-L_brakt:		'[';
-R_brakt:		']';
 Equ_op:			'=';
-Lt_op:			'<';
-Gt_op:			'>';
-Leq_op:			'<=';
-Geq_op:			'>=';
 
 RETURN:			[\r\n]+;
 SPACE:			[ \t]+ -> skip;

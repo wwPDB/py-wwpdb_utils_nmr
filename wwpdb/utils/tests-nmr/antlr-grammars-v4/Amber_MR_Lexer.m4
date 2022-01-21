@@ -431,7 +431,7 @@ fragment ALPHA_NUM:	[A-Za-z0-9];
 fragment START_CHAR:	[A-Za-z0-9_];
 fragment NAME_CHAR:	START_CHAR | '\'' | '-' | '+' | '.';
 fragment ATM_NAME_CHAR:	ALPHA_NUM | '\'';
-fragment ATM_TYPE_CHAR:	ALPHA_NUM | '-' | '+';
+fragment ATM_TYPE_CHAR:	ALPHA_NUM | '-' | '+' | '*';
 fragment SIMPLE_NAME:	START_CHAR NAME_CHAR*;
 
 Class_name:		SIMPLE_NAME;

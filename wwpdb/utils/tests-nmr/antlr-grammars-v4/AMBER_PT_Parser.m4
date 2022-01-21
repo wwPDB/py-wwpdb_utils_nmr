@@ -28,10 +28,14 @@ amber_pt:
 	atomic_number_statement |
 	atom_name_statement |
 	atom_type_index_statement |
+	atoms_per_molecule_statement |
 	bond_equil_value_statement |
 	bond_force_constant_statement |
 	bonds_inc_hydrogen_statement |
 	bonds_without_hydrogen_statement |
+	box_dimensions_statement |
+	cap_info_statement |
+	cap_info2_statement |
 	charge_statement |
 	dihedral_force_constant_statement |
 	dihedral_periodicity_statement |
@@ -51,6 +55,7 @@ amber_pt:
 	nonbonded_parm_index_statement |
 	number_excluded_atoms_statement |
 	pointers_statement |
+	polarizability_statement |
 	radii_statement |
 	radius_set_statement |
 	residue_label_statement |
@@ -59,6 +64,7 @@ amber_pt:
 	scnb_scale_factor_statement |
 	screen_statement |
 	solty_statement |
+	solvent_pointers_statement |
 	title_statement |
 	tree_chain_classification_statement |
 	EOF;
@@ -69,6 +75,9 @@ amber_pt:
 version_statement:
 	VERSION	VERSION_STAMP Equ_op Version DATE Equ_op Date Time? RETURN;
 
+/* Amber file format: parameter/topology file specification (prmtop)
+ See also https://ambermd.org/prmtop.pdf
+*/
 amber_atom_type_statement:
 	FLAG AMBER_ATOM_TYPE
 	string4_format_statement
@@ -109,6 +118,11 @@ atom_type_index_statement:
 	integer_format_statement
 	integer_array*;
 
+atoms_per_molecule_statement:
+	FLAG ATOMS_PER_MOLECULE
+	integer_format_statement
+	integer_array*;
+
 bond_equil_value_statement:
 	FLAG BOND_EQUIL_VALUE
 	real_format_statement
@@ -128,6 +142,21 @@ bonds_without_hydrogen_statement:
 	FLAG BONDS_WITHOUT_HYDROGEN
 	integer_format_statement
 	integer_array*;
+
+box_dimensions_statement:
+	FLAG BOX_DIMENSIONS
+	real_format_statement
+	real_array*;
+
+cap_info_statement:
+	FLAG CAP_INFO
+	integer_format_statement
+	integer_array*;
+
+cap_info2_statement:
+	FLAG CAP_INFO2
+	real_format_statement
+	real_array*;
 
 charge_statement:
 	FLAG CHARGE
@@ -224,6 +253,11 @@ pointers_statement:
 	integer_format_statement
 	integer_array*;
 
+polarizability_statement:
+	FLAG POLARIZABILITY
+	real_format_statement
+	real_array*;
+
 radii_statement:
 	FLAG RADII
 	real_format_statement
@@ -263,6 +297,11 @@ solty_statement:
 	FLAG SOLTY
 	real_format_statement
 	real_array*;
+
+solvent_pointers_statement:
+	FLAG SOLVENT_POINTERS
+	integer_format_statement
+	integer_array*;
 
 title_statement:
 	FLAG TITLE

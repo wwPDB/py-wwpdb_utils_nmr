@@ -1,4 +1,4 @@
-# Generated from CYANA_MR_Parser.g4 by ANTLR 4.9
+# Generated from CyanaMRParser.g4 by ANTLR 4.9
 # encoding: utf-8
 from antlr4 import *
 from io import StringIO
@@ -51,9 +51,9 @@ def serializedATN():
         return buf.getvalue()
 
 
-class CYANA_MR_Parser ( Parser ):
+class CyanaMRParser ( Parser ):
 
-    grammarFileName = "CYANA_MR_Parser.g4"
+    grammarFileName = "CyanaMRParser.g4"
 
     atn = ATNDeserializer().deserialize(serializedATN())
 
@@ -112,38 +112,38 @@ class CYANA_MR_Parser ( Parser ):
             self.parser = parser
 
         def EOF(self):
-            return self.getToken(CYANA_MR_Parser.EOF, 0)
+            return self.getToken(CyanaMRParser.EOF, 0)
 
         def distance_restraints(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(CYANA_MR_Parser.Distance_restraintsContext)
+                return self.getTypedRuleContexts(CyanaMRParser.Distance_restraintsContext)
             else:
-                return self.getTypedRuleContext(CYANA_MR_Parser.Distance_restraintsContext,i)
+                return self.getTypedRuleContext(CyanaMRParser.Distance_restraintsContext,i)
 
 
         def torsion_angle_restraints(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(CYANA_MR_Parser.Torsion_angle_restraintsContext)
+                return self.getTypedRuleContexts(CyanaMRParser.Torsion_angle_restraintsContext)
             else:
-                return self.getTypedRuleContext(CYANA_MR_Parser.Torsion_angle_restraintsContext,i)
+                return self.getTypedRuleContext(CyanaMRParser.Torsion_angle_restraintsContext,i)
 
 
         def rdc_restraints(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(CYANA_MR_Parser.Rdc_restraintsContext)
+                return self.getTypedRuleContexts(CyanaMRParser.Rdc_restraintsContext)
             else:
-                return self.getTypedRuleContext(CYANA_MR_Parser.Rdc_restraintsContext,i)
+                return self.getTypedRuleContext(CyanaMRParser.Rdc_restraintsContext,i)
 
 
         def pcs_restraints(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(CYANA_MR_Parser.Pcs_restraintsContext)
+                return self.getTypedRuleContexts(CyanaMRParser.Pcs_restraintsContext)
             else:
-                return self.getTypedRuleContext(CYANA_MR_Parser.Pcs_restraintsContext,i)
+                return self.getTypedRuleContext(CyanaMRParser.Pcs_restraintsContext,i)
 
 
         def getRuleIndex(self):
-            return CYANA_MR_Parser.RULE_cyana_mr
+            return CyanaMRParser.RULE_cyana_mr
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterCyana_mr" ):
@@ -158,7 +158,7 @@ class CYANA_MR_Parser ( Parser ):
 
     def cyana_mr(self):
 
-        localctx = CYANA_MR_Parser.Cyana_mrContext(self, self._ctx, self.state)
+        localctx = CyanaMRParser.Cyana_mrContext(self, self._ctx, self.state)
         self.enterRule(localctx, 0, self.RULE_cyana_mr)
         self._la = 0 # Token type
         try:
@@ -177,7 +177,7 @@ class CYANA_MR_Parser ( Parser ):
             self.state = 31
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==CYANA_MR_Parser.Residue_number:
+            while _la==CyanaMRParser.Residue_number:
                 self.state = 28
                 self.torsion_angle_restraints()
                 self.state = 33
@@ -198,7 +198,7 @@ class CYANA_MR_Parser ( Parser ):
             self.state = 43
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==CYANA_MR_Parser.Integer:
+            while _la==CyanaMRParser.Integer:
                 self.state = 40
                 self.pcs_restraints()
                 self.state = 45
@@ -206,7 +206,7 @@ class CYANA_MR_Parser ( Parser ):
                 _la = self._input.LA(1)
 
             self.state = 46
-            self.match(CYANA_MR_Parser.EOF)
+            self.match(CyanaMRParser.EOF)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -224,13 +224,13 @@ class CYANA_MR_Parser ( Parser ):
 
         def distance_restraint(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(CYANA_MR_Parser.Distance_restraintContext)
+                return self.getTypedRuleContexts(CyanaMRParser.Distance_restraintContext)
             else:
-                return self.getTypedRuleContext(CYANA_MR_Parser.Distance_restraintContext,i)
+                return self.getTypedRuleContext(CyanaMRParser.Distance_restraintContext,i)
 
 
         def getRuleIndex(self):
-            return CYANA_MR_Parser.RULE_distance_restraints
+            return CyanaMRParser.RULE_distance_restraints
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterDistance_restraints" ):
@@ -245,7 +245,7 @@ class CYANA_MR_Parser ( Parser ):
 
     def distance_restraints(self):
 
-        localctx = CYANA_MR_Parser.Distance_restraintsContext(self, self._ctx, self.state)
+        localctx = CyanaMRParser.Distance_restraintsContext(self, self._ctx, self.state)
         self.enterRule(localctx, 2, self.RULE_distance_restraints)
         try:
             self.enterOuterAlt(localctx, 1)
@@ -280,27 +280,27 @@ class CYANA_MR_Parser ( Parser ):
 
         def Residue_number(self, i:int=None):
             if i is None:
-                return self.getTokens(CYANA_MR_Parser.Residue_number)
+                return self.getTokens(CyanaMRParser.Residue_number)
             else:
-                return self.getToken(CYANA_MR_Parser.Residue_number, i)
+                return self.getToken(CyanaMRParser.Residue_number, i)
 
         def Residue_name(self, i:int=None):
             if i is None:
-                return self.getTokens(CYANA_MR_Parser.Residue_name)
+                return self.getTokens(CyanaMRParser.Residue_name)
             else:
-                return self.getToken(CYANA_MR_Parser.Residue_name, i)
+                return self.getToken(CyanaMRParser.Residue_name, i)
 
         def Atom_name(self, i:int=None):
             if i is None:
-                return self.getTokens(CYANA_MR_Parser.Atom_name)
+                return self.getTokens(CyanaMRParser.Atom_name)
             else:
-                return self.getToken(CYANA_MR_Parser.Atom_name, i)
+                return self.getToken(CyanaMRParser.Atom_name, i)
 
         def Float(self):
-            return self.getToken(CYANA_MR_Parser.Float, 0)
+            return self.getToken(CyanaMRParser.Float, 0)
 
         def getRuleIndex(self):
-            return CYANA_MR_Parser.RULE_distance_restraint
+            return CyanaMRParser.RULE_distance_restraint
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterDistance_restraint" ):
@@ -315,24 +315,24 @@ class CYANA_MR_Parser ( Parser ):
 
     def distance_restraint(self):
 
-        localctx = CYANA_MR_Parser.Distance_restraintContext(self, self._ctx, self.state)
+        localctx = CyanaMRParser.Distance_restraintContext(self, self._ctx, self.state)
         self.enterRule(localctx, 4, self.RULE_distance_restraint)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 53
-            self.match(CYANA_MR_Parser.Residue_number)
+            self.match(CyanaMRParser.Residue_number)
             self.state = 54
-            self.match(CYANA_MR_Parser.Residue_name)
+            self.match(CyanaMRParser.Residue_name)
             self.state = 55
-            self.match(CYANA_MR_Parser.Atom_name)
+            self.match(CyanaMRParser.Atom_name)
             self.state = 56
-            self.match(CYANA_MR_Parser.Residue_number)
+            self.match(CyanaMRParser.Residue_number)
             self.state = 57
-            self.match(CYANA_MR_Parser.Residue_name)
+            self.match(CyanaMRParser.Residue_name)
             self.state = 58
-            self.match(CYANA_MR_Parser.Atom_name)
+            self.match(CyanaMRParser.Atom_name)
             self.state = 59
-            self.match(CYANA_MR_Parser.Float)
+            self.match(CyanaMRParser.Float)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -350,13 +350,13 @@ class CYANA_MR_Parser ( Parser ):
 
         def torsion_angle_restraint(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(CYANA_MR_Parser.Torsion_angle_restraintContext)
+                return self.getTypedRuleContexts(CyanaMRParser.Torsion_angle_restraintContext)
             else:
-                return self.getTypedRuleContext(CYANA_MR_Parser.Torsion_angle_restraintContext,i)
+                return self.getTypedRuleContext(CyanaMRParser.Torsion_angle_restraintContext,i)
 
 
         def getRuleIndex(self):
-            return CYANA_MR_Parser.RULE_torsion_angle_restraints
+            return CyanaMRParser.RULE_torsion_angle_restraints
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterTorsion_angle_restraints" ):
@@ -371,7 +371,7 @@ class CYANA_MR_Parser ( Parser ):
 
     def torsion_angle_restraints(self):
 
-        localctx = CYANA_MR_Parser.Torsion_angle_restraintsContext(self, self._ctx, self.state)
+        localctx = CyanaMRParser.Torsion_angle_restraintsContext(self, self._ctx, self.state)
         self.enterRule(localctx, 6, self.RULE_torsion_angle_restraints)
         try:
             self.enterOuterAlt(localctx, 1)
@@ -405,22 +405,22 @@ class CYANA_MR_Parser ( Parser ):
             self.parser = parser
 
         def Residue_number(self):
-            return self.getToken(CYANA_MR_Parser.Residue_number, 0)
+            return self.getToken(CyanaMRParser.Residue_number, 0)
 
         def Residue_name(self):
-            return self.getToken(CYANA_MR_Parser.Residue_name, 0)
+            return self.getToken(CyanaMRParser.Residue_name, 0)
 
         def Class_name(self):
-            return self.getToken(CYANA_MR_Parser.Class_name, 0)
+            return self.getToken(CyanaMRParser.Class_name, 0)
 
         def Float(self, i:int=None):
             if i is None:
-                return self.getTokens(CYANA_MR_Parser.Float)
+                return self.getTokens(CyanaMRParser.Float)
             else:
-                return self.getToken(CYANA_MR_Parser.Float, i)
+                return self.getToken(CyanaMRParser.Float, i)
 
         def getRuleIndex(self):
-            return CYANA_MR_Parser.RULE_torsion_angle_restraint
+            return CyanaMRParser.RULE_torsion_angle_restraint
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterTorsion_angle_restraint" ):
@@ -435,20 +435,20 @@ class CYANA_MR_Parser ( Parser ):
 
     def torsion_angle_restraint(self):
 
-        localctx = CYANA_MR_Parser.Torsion_angle_restraintContext(self, self._ctx, self.state)
+        localctx = CyanaMRParser.Torsion_angle_restraintContext(self, self._ctx, self.state)
         self.enterRule(localctx, 8, self.RULE_torsion_angle_restraint)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 66
-            self.match(CYANA_MR_Parser.Residue_number)
+            self.match(CyanaMRParser.Residue_number)
             self.state = 67
-            self.match(CYANA_MR_Parser.Residue_name)
+            self.match(CyanaMRParser.Residue_name)
             self.state = 68
-            self.match(CYANA_MR_Parser.Class_name)
+            self.match(CyanaMRParser.Class_name)
             self.state = 69
-            self.match(CYANA_MR_Parser.Float)
+            self.match(CyanaMRParser.Float)
             self.state = 70
-            self.match(CYANA_MR_Parser.Float)
+            self.match(CyanaMRParser.Float)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -466,20 +466,20 @@ class CYANA_MR_Parser ( Parser ):
 
         def rdc_parameter(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(CYANA_MR_Parser.Rdc_parameterContext)
+                return self.getTypedRuleContexts(CyanaMRParser.Rdc_parameterContext)
             else:
-                return self.getTypedRuleContext(CYANA_MR_Parser.Rdc_parameterContext,i)
+                return self.getTypedRuleContext(CyanaMRParser.Rdc_parameterContext,i)
 
 
         def rdc_restraint(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(CYANA_MR_Parser.Rdc_restraintContext)
+                return self.getTypedRuleContexts(CyanaMRParser.Rdc_restraintContext)
             else:
-                return self.getTypedRuleContext(CYANA_MR_Parser.Rdc_restraintContext,i)
+                return self.getTypedRuleContext(CyanaMRParser.Rdc_restraintContext,i)
 
 
         def getRuleIndex(self):
-            return CYANA_MR_Parser.RULE_rdc_restraints
+            return CyanaMRParser.RULE_rdc_restraints
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterRdc_restraints" ):
@@ -494,7 +494,7 @@ class CYANA_MR_Parser ( Parser ):
 
     def rdc_restraints(self):
 
-        localctx = CYANA_MR_Parser.Rdc_restraintsContext(self, self._ctx, self.state)
+        localctx = CyanaMRParser.Rdc_restraintsContext(self, self._ctx, self.state)
         self.enterRule(localctx, 10, self.RULE_rdc_restraints)
         self._la = 0 # Token type
         try:
@@ -508,7 +508,7 @@ class CYANA_MR_Parser ( Parser ):
                 self.state = 75 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not (_la==CYANA_MR_Parser.Integer):
+                if not (_la==CyanaMRParser.Integer):
                     break
 
             self.state = 78 
@@ -520,7 +520,7 @@ class CYANA_MR_Parser ( Parser ):
                 self.state = 80 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not (_la==CYANA_MR_Parser.Residue_number):
+                if not (_la==CyanaMRParser.Residue_number):
                     break
 
         except RecognitionException as re:
@@ -540,18 +540,18 @@ class CYANA_MR_Parser ( Parser ):
 
         def Integer(self, i:int=None):
             if i is None:
-                return self.getTokens(CYANA_MR_Parser.Integer)
+                return self.getTokens(CyanaMRParser.Integer)
             else:
-                return self.getToken(CYANA_MR_Parser.Integer, i)
+                return self.getToken(CyanaMRParser.Integer, i)
 
         def Float(self, i:int=None):
             if i is None:
-                return self.getTokens(CYANA_MR_Parser.Float)
+                return self.getTokens(CyanaMRParser.Float)
             else:
-                return self.getToken(CYANA_MR_Parser.Float, i)
+                return self.getToken(CyanaMRParser.Float, i)
 
         def getRuleIndex(self):
-            return CYANA_MR_Parser.RULE_rdc_parameter
+            return CyanaMRParser.RULE_rdc_parameter
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterRdc_parameter" ):
@@ -566,18 +566,18 @@ class CYANA_MR_Parser ( Parser ):
 
     def rdc_parameter(self):
 
-        localctx = CYANA_MR_Parser.Rdc_parameterContext(self, self._ctx, self.state)
+        localctx = CyanaMRParser.Rdc_parameterContext(self, self._ctx, self.state)
         self.enterRule(localctx, 12, self.RULE_rdc_parameter)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 82
-            self.match(CYANA_MR_Parser.Integer)
+            self.match(CyanaMRParser.Integer)
             self.state = 83
-            self.match(CYANA_MR_Parser.Float)
+            self.match(CyanaMRParser.Float)
             self.state = 84
-            self.match(CYANA_MR_Parser.Float)
+            self.match(CyanaMRParser.Float)
             self.state = 85
-            self.match(CYANA_MR_Parser.Integer)
+            self.match(CyanaMRParser.Integer)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -595,33 +595,33 @@ class CYANA_MR_Parser ( Parser ):
 
         def Residue_number(self, i:int=None):
             if i is None:
-                return self.getTokens(CYANA_MR_Parser.Residue_number)
+                return self.getTokens(CyanaMRParser.Residue_number)
             else:
-                return self.getToken(CYANA_MR_Parser.Residue_number, i)
+                return self.getToken(CyanaMRParser.Residue_number, i)
 
         def Residue_name(self, i:int=None):
             if i is None:
-                return self.getTokens(CYANA_MR_Parser.Residue_name)
+                return self.getTokens(CyanaMRParser.Residue_name)
             else:
-                return self.getToken(CYANA_MR_Parser.Residue_name, i)
+                return self.getToken(CyanaMRParser.Residue_name, i)
 
         def Atom_name(self, i:int=None):
             if i is None:
-                return self.getTokens(CYANA_MR_Parser.Atom_name)
+                return self.getTokens(CyanaMRParser.Atom_name)
             else:
-                return self.getToken(CYANA_MR_Parser.Atom_name, i)
+                return self.getToken(CyanaMRParser.Atom_name, i)
 
         def Float(self, i:int=None):
             if i is None:
-                return self.getTokens(CYANA_MR_Parser.Float)
+                return self.getTokens(CyanaMRParser.Float)
             else:
-                return self.getToken(CYANA_MR_Parser.Float, i)
+                return self.getToken(CyanaMRParser.Float, i)
 
         def Integer(self):
-            return self.getToken(CYANA_MR_Parser.Integer, 0)
+            return self.getToken(CyanaMRParser.Integer, 0)
 
         def getRuleIndex(self):
-            return CYANA_MR_Parser.RULE_rdc_restraint
+            return CyanaMRParser.RULE_rdc_restraint
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterRdc_restraint" ):
@@ -636,30 +636,30 @@ class CYANA_MR_Parser ( Parser ):
 
     def rdc_restraint(self):
 
-        localctx = CYANA_MR_Parser.Rdc_restraintContext(self, self._ctx, self.state)
+        localctx = CyanaMRParser.Rdc_restraintContext(self, self._ctx, self.state)
         self.enterRule(localctx, 14, self.RULE_rdc_restraint)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 87
-            self.match(CYANA_MR_Parser.Residue_number)
+            self.match(CyanaMRParser.Residue_number)
             self.state = 88
-            self.match(CYANA_MR_Parser.Residue_name)
+            self.match(CyanaMRParser.Residue_name)
             self.state = 89
-            self.match(CYANA_MR_Parser.Atom_name)
+            self.match(CyanaMRParser.Atom_name)
             self.state = 90
-            self.match(CYANA_MR_Parser.Residue_number)
+            self.match(CyanaMRParser.Residue_number)
             self.state = 91
-            self.match(CYANA_MR_Parser.Residue_name)
+            self.match(CyanaMRParser.Residue_name)
             self.state = 92
-            self.match(CYANA_MR_Parser.Atom_name)
+            self.match(CyanaMRParser.Atom_name)
             self.state = 93
-            self.match(CYANA_MR_Parser.Float)
+            self.match(CyanaMRParser.Float)
             self.state = 94
-            self.match(CYANA_MR_Parser.Float)
+            self.match(CyanaMRParser.Float)
             self.state = 95
-            self.match(CYANA_MR_Parser.Float)
+            self.match(CyanaMRParser.Float)
             self.state = 96
-            self.match(CYANA_MR_Parser.Integer)
+            self.match(CyanaMRParser.Integer)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -677,20 +677,20 @@ class CYANA_MR_Parser ( Parser ):
 
         def pcs_parameter(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(CYANA_MR_Parser.Pcs_parameterContext)
+                return self.getTypedRuleContexts(CyanaMRParser.Pcs_parameterContext)
             else:
-                return self.getTypedRuleContext(CYANA_MR_Parser.Pcs_parameterContext,i)
+                return self.getTypedRuleContext(CyanaMRParser.Pcs_parameterContext,i)
 
 
         def pcs_restraint(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(CYANA_MR_Parser.Pcs_restraintContext)
+                return self.getTypedRuleContexts(CyanaMRParser.Pcs_restraintContext)
             else:
-                return self.getTypedRuleContext(CYANA_MR_Parser.Pcs_restraintContext,i)
+                return self.getTypedRuleContext(CyanaMRParser.Pcs_restraintContext,i)
 
 
         def getRuleIndex(self):
-            return CYANA_MR_Parser.RULE_pcs_restraints
+            return CyanaMRParser.RULE_pcs_restraints
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterPcs_restraints" ):
@@ -705,7 +705,7 @@ class CYANA_MR_Parser ( Parser ):
 
     def pcs_restraints(self):
 
-        localctx = CYANA_MR_Parser.Pcs_restraintsContext(self, self._ctx, self.state)
+        localctx = CyanaMRParser.Pcs_restraintsContext(self, self._ctx, self.state)
         self.enterRule(localctx, 16, self.RULE_pcs_restraints)
         self._la = 0 # Token type
         try:
@@ -719,7 +719,7 @@ class CYANA_MR_Parser ( Parser ):
                 self.state = 101 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not (_la==CYANA_MR_Parser.Integer):
+                if not (_la==CyanaMRParser.Integer):
                     break
 
             self.state = 104 
@@ -731,7 +731,7 @@ class CYANA_MR_Parser ( Parser ):
                 self.state = 106 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not (_la==CYANA_MR_Parser.Residue_number):
+                if not (_la==CyanaMRParser.Residue_number):
                     break
 
         except RecognitionException as re:
@@ -751,18 +751,18 @@ class CYANA_MR_Parser ( Parser ):
 
         def Integer(self, i:int=None):
             if i is None:
-                return self.getTokens(CYANA_MR_Parser.Integer)
+                return self.getTokens(CyanaMRParser.Integer)
             else:
-                return self.getToken(CYANA_MR_Parser.Integer, i)
+                return self.getToken(CyanaMRParser.Integer, i)
 
         def Float(self, i:int=None):
             if i is None:
-                return self.getTokens(CYANA_MR_Parser.Float)
+                return self.getTokens(CyanaMRParser.Float)
             else:
-                return self.getToken(CYANA_MR_Parser.Float, i)
+                return self.getToken(CyanaMRParser.Float, i)
 
         def getRuleIndex(self):
-            return CYANA_MR_Parser.RULE_pcs_parameter
+            return CyanaMRParser.RULE_pcs_parameter
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterPcs_parameter" ):
@@ -777,18 +777,18 @@ class CYANA_MR_Parser ( Parser ):
 
     def pcs_parameter(self):
 
-        localctx = CYANA_MR_Parser.Pcs_parameterContext(self, self._ctx, self.state)
+        localctx = CyanaMRParser.Pcs_parameterContext(self, self._ctx, self.state)
         self.enterRule(localctx, 18, self.RULE_pcs_parameter)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 108
-            self.match(CYANA_MR_Parser.Integer)
+            self.match(CyanaMRParser.Integer)
             self.state = 109
-            self.match(CYANA_MR_Parser.Float)
+            self.match(CyanaMRParser.Float)
             self.state = 110
-            self.match(CYANA_MR_Parser.Float)
+            self.match(CyanaMRParser.Float)
             self.state = 111
-            self.match(CYANA_MR_Parser.Integer)
+            self.match(CyanaMRParser.Integer)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -805,25 +805,25 @@ class CYANA_MR_Parser ( Parser ):
             self.parser = parser
 
         def Residue_number(self):
-            return self.getToken(CYANA_MR_Parser.Residue_number, 0)
+            return self.getToken(CyanaMRParser.Residue_number, 0)
 
         def Residue_name(self):
-            return self.getToken(CYANA_MR_Parser.Residue_name, 0)
+            return self.getToken(CyanaMRParser.Residue_name, 0)
 
         def Atom_name(self):
-            return self.getToken(CYANA_MR_Parser.Atom_name, 0)
+            return self.getToken(CyanaMRParser.Atom_name, 0)
 
         def Float(self, i:int=None):
             if i is None:
-                return self.getTokens(CYANA_MR_Parser.Float)
+                return self.getTokens(CyanaMRParser.Float)
             else:
-                return self.getToken(CYANA_MR_Parser.Float, i)
+                return self.getToken(CyanaMRParser.Float, i)
 
         def Integer(self):
-            return self.getToken(CYANA_MR_Parser.Integer, 0)
+            return self.getToken(CyanaMRParser.Integer, 0)
 
         def getRuleIndex(self):
-            return CYANA_MR_Parser.RULE_pcs_restraint
+            return CyanaMRParser.RULE_pcs_restraint
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterPcs_restraint" ):
@@ -838,24 +838,24 @@ class CYANA_MR_Parser ( Parser ):
 
     def pcs_restraint(self):
 
-        localctx = CYANA_MR_Parser.Pcs_restraintContext(self, self._ctx, self.state)
+        localctx = CyanaMRParser.Pcs_restraintContext(self, self._ctx, self.state)
         self.enterRule(localctx, 20, self.RULE_pcs_restraint)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 113
-            self.match(CYANA_MR_Parser.Residue_number)
+            self.match(CyanaMRParser.Residue_number)
             self.state = 114
-            self.match(CYANA_MR_Parser.Residue_name)
+            self.match(CyanaMRParser.Residue_name)
             self.state = 115
-            self.match(CYANA_MR_Parser.Atom_name)
+            self.match(CyanaMRParser.Atom_name)
             self.state = 116
-            self.match(CYANA_MR_Parser.Float)
+            self.match(CyanaMRParser.Float)
             self.state = 117
-            self.match(CYANA_MR_Parser.Float)
+            self.match(CyanaMRParser.Float)
             self.state = 118
-            self.match(CYANA_MR_Parser.Float)
+            self.match(CyanaMRParser.Float)
             self.state = 119
-            self.match(CYANA_MR_Parser.Integer)
+            self.match(CyanaMRParser.Integer)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)

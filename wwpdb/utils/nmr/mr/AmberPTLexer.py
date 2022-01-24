@@ -1,4 +1,4 @@
-# Generated from AMBER_PT_Lexer.g4 by ANTLR 4.9
+# Generated from AmberPTLexer.g4 by ANTLR 4.9
 from antlr4 import *
 from io import StringIO
 from typing.io import TextIO
@@ -629,7 +629,7 @@ def serializedATN():
         return buf.getvalue()
 
 
-class AMBER_PT_Lexer(Lexer):
+class AmberPTLexer(Lexer):
 
     atn = ATNDeserializer().deserialize(serializedATN())
 
@@ -770,7 +770,7 @@ class AMBER_PT_Lexer(Lexer):
                   "Fortran_format_F", "L_paren", "R_paren", "Equ_op", "RETURN", 
                   "SPACE", "COMMENT", "LINE_COMMENT" ]
 
-    grammarFileName = "AMBER_PT_Lexer.g4"
+    grammarFileName = "AmberPTLexer.g4"
 
     def __init__(self, input=None, output:TextIO = sys.stdout):
         super().__init__(input, output)

@@ -14,9 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-parser grammar CNS_MR_Parser;
+parser grammar CnsMRParser;
 
-options { tokenVocab=CNS_MR_Lexer; }
+options { tokenVocab=CnsMRLexer; }
 
 cns_mr:
 	distance_restraint*

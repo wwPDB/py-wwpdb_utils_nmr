@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-lexer grammar XPLOR_NIH_MR_Lexer;
+lexer grammar XplorMRLexer;
 
 /* Case-Insensitive Lexing
  See also https://github.com/antlr/antlr4/blob/master/doc/case-insensitive-lexing.md

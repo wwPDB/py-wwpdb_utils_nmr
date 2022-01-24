@@ -1,4 +1,4 @@
-# Generated from CNS_MR_Parser.g4 by ANTLR 4.9
+# Generated from CnsMRParser.g4 by ANTLR 4.9
 # encoding: utf-8
 from antlr4 import *
 from io import StringIO
@@ -659,9 +659,9 @@ def serializedATN():
         return buf.getvalue()
 
 
-class CNS_MR_Parser ( Parser ):
+class CnsMRParser ( Parser ):
 
-    grammarFileName = "CNS_MR_Parser.g4"
+    grammarFileName = "CnsMRParser.g4"
 
     atn = ATNDeserializer().deserialize(serializedATN())
 
@@ -998,94 +998,94 @@ class CNS_MR_Parser ( Parser ):
             self.parser = parser
 
         def EOF(self):
-            return self.getToken(CNS_MR_Parser.EOF, 0)
+            return self.getToken(CnsMRParser.EOF, 0)
 
         def distance_restraint(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(CNS_MR_Parser.Distance_restraintContext)
+                return self.getTypedRuleContexts(CnsMRParser.Distance_restraintContext)
             else:
-                return self.getTypedRuleContext(CNS_MR_Parser.Distance_restraintContext,i)
+                return self.getTypedRuleContext(CnsMRParser.Distance_restraintContext,i)
 
 
         def dihedral_angle_restraint(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(CNS_MR_Parser.Dihedral_angle_restraintContext)
+                return self.getTypedRuleContexts(CnsMRParser.Dihedral_angle_restraintContext)
             else:
-                return self.getTypedRuleContext(CNS_MR_Parser.Dihedral_angle_restraintContext,i)
+                return self.getTypedRuleContext(CnsMRParser.Dihedral_angle_restraintContext,i)
 
 
         def plane_restraint(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(CNS_MR_Parser.Plane_restraintContext)
+                return self.getTypedRuleContexts(CnsMRParser.Plane_restraintContext)
             else:
-                return self.getTypedRuleContext(CNS_MR_Parser.Plane_restraintContext,i)
+                return self.getTypedRuleContext(CnsMRParser.Plane_restraintContext,i)
 
 
         def harmonic_restraint(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(CNS_MR_Parser.Harmonic_restraintContext)
+                return self.getTypedRuleContexts(CnsMRParser.Harmonic_restraintContext)
             else:
-                return self.getTypedRuleContext(CNS_MR_Parser.Harmonic_restraintContext,i)
+                return self.getTypedRuleContext(CnsMRParser.Harmonic_restraintContext,i)
 
 
         def rdc_restraint(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(CNS_MR_Parser.Rdc_restraintContext)
+                return self.getTypedRuleContexts(CnsMRParser.Rdc_restraintContext)
             else:
-                return self.getTypedRuleContext(CNS_MR_Parser.Rdc_restraintContext,i)
+                return self.getTypedRuleContext(CnsMRParser.Rdc_restraintContext,i)
 
 
         def coupling_restraint(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(CNS_MR_Parser.Coupling_restraintContext)
+                return self.getTypedRuleContexts(CnsMRParser.Coupling_restraintContext)
             else:
-                return self.getTypedRuleContext(CNS_MR_Parser.Coupling_restraintContext,i)
+                return self.getTypedRuleContext(CnsMRParser.Coupling_restraintContext,i)
 
 
         def carbon_shift_restraint(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(CNS_MR_Parser.Carbon_shift_restraintContext)
+                return self.getTypedRuleContexts(CnsMRParser.Carbon_shift_restraintContext)
             else:
-                return self.getTypedRuleContext(CNS_MR_Parser.Carbon_shift_restraintContext,i)
+                return self.getTypedRuleContext(CnsMRParser.Carbon_shift_restraintContext,i)
 
 
         def proton_shift_restraint(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(CNS_MR_Parser.Proton_shift_restraintContext)
+                return self.getTypedRuleContexts(CnsMRParser.Proton_shift_restraintContext)
             else:
-                return self.getTypedRuleContext(CNS_MR_Parser.Proton_shift_restraintContext,i)
+                return self.getTypedRuleContext(CnsMRParser.Proton_shift_restraintContext,i)
 
 
         def conformation_db_restraint(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(CNS_MR_Parser.Conformation_db_restraintContext)
+                return self.getTypedRuleContexts(CnsMRParser.Conformation_db_restraintContext)
             else:
-                return self.getTypedRuleContext(CNS_MR_Parser.Conformation_db_restraintContext,i)
+                return self.getTypedRuleContext(CnsMRParser.Conformation_db_restraintContext,i)
 
 
         def diffusion_anisotropy_restraint(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(CNS_MR_Parser.Diffusion_anisotropy_restraintContext)
+                return self.getTypedRuleContexts(CnsMRParser.Diffusion_anisotropy_restraintContext)
             else:
-                return self.getTypedRuleContext(CNS_MR_Parser.Diffusion_anisotropy_restraintContext,i)
+                return self.getTypedRuleContext(CnsMRParser.Diffusion_anisotropy_restraintContext,i)
 
 
         def one_bond_coupling_restraint(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(CNS_MR_Parser.One_bond_coupling_restraintContext)
+                return self.getTypedRuleContexts(CnsMRParser.One_bond_coupling_restraintContext)
             else:
-                return self.getTypedRuleContext(CNS_MR_Parser.One_bond_coupling_restraintContext,i)
+                return self.getTypedRuleContext(CnsMRParser.One_bond_coupling_restraintContext,i)
 
 
         def angle_db_restraint(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(CNS_MR_Parser.Angle_db_restraintContext)
+                return self.getTypedRuleContexts(CnsMRParser.Angle_db_restraintContext)
             else:
-                return self.getTypedRuleContext(CNS_MR_Parser.Angle_db_restraintContext,i)
+                return self.getTypedRuleContext(CnsMRParser.Angle_db_restraintContext,i)
 
 
         def getRuleIndex(self):
-            return CNS_MR_Parser.RULE_cns_mr
+            return CnsMRParser.RULE_cns_mr
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterCns_mr" ):
@@ -1100,7 +1100,7 @@ class CNS_MR_Parser ( Parser ):
 
     def cns_mr(self):
 
-        localctx = CNS_MR_Parser.Cns_mrContext(self, self._ctx, self.state)
+        localctx = CnsMRParser.Cns_mrContext(self, self._ctx, self.state)
         self.enterRule(localctx, 0, self.RULE_cns_mr)
         self._la = 0 # Token type
         try:
@@ -1108,7 +1108,7 @@ class CNS_MR_Parser ( Parser ):
             self.state = 105
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==CNS_MR_Parser.Noe:
+            while _la==CnsMRParser.Noe:
                 self.state = 102
                 self.distance_restraint()
                 self.state = 107
@@ -1140,7 +1140,7 @@ class CNS_MR_Parser ( Parser ):
             self.state = 123
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==CNS_MR_Parser.Restraints:
+            while _la==CnsMRParser.Restraints:
                 self.state = 120
                 self.harmonic_restraint()
                 self.state = 125
@@ -1150,7 +1150,7 @@ class CNS_MR_Parser ( Parser ):
             self.state = 129
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==CNS_MR_Parser.Sanisotropy:
+            while _la==CnsMRParser.Sanisotropy:
                 self.state = 126
                 self.rdc_restraint()
                 self.state = 131
@@ -1160,7 +1160,7 @@ class CNS_MR_Parser ( Parser ):
             self.state = 135
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==CNS_MR_Parser.Coupling:
+            while _la==CnsMRParser.Coupling:
                 self.state = 132
                 self.coupling_restraint()
                 self.state = 137
@@ -1170,7 +1170,7 @@ class CNS_MR_Parser ( Parser ):
             self.state = 141
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==CNS_MR_Parser.Carbon:
+            while _la==CnsMRParser.Carbon:
                 self.state = 138
                 self.carbon_shift_restraint()
                 self.state = 143
@@ -1180,7 +1180,7 @@ class CNS_MR_Parser ( Parser ):
             self.state = 147
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==CNS_MR_Parser.Proton:
+            while _la==CnsMRParser.Proton:
                 self.state = 144
                 self.proton_shift_restraint()
                 self.state = 149
@@ -1190,7 +1190,7 @@ class CNS_MR_Parser ( Parser ):
             self.state = 153
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==CNS_MR_Parser.Conformation:
+            while _la==CnsMRParser.Conformation:
                 self.state = 150
                 self.conformation_db_restraint()
                 self.state = 155
@@ -1200,7 +1200,7 @@ class CNS_MR_Parser ( Parser ):
             self.state = 159
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==CNS_MR_Parser.Danisotropy:
+            while _la==CnsMRParser.Danisotropy:
                 self.state = 156
                 self.diffusion_anisotropy_restraint()
                 self.state = 161
@@ -1210,7 +1210,7 @@ class CNS_MR_Parser ( Parser ):
             self.state = 165
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==CNS_MR_Parser.OneBond:
+            while _la==CnsMRParser.OneBond:
                 self.state = 162
                 self.one_bond_coupling_restraint()
                 self.state = 167
@@ -1220,7 +1220,7 @@ class CNS_MR_Parser ( Parser ):
             self.state = 171
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==CNS_MR_Parser.AngleDb:
+            while _la==CnsMRParser.AngleDb:
                 self.state = 168
                 self.angle_db_restraint()
                 self.state = 173
@@ -1228,7 +1228,7 @@ class CNS_MR_Parser ( Parser ):
                 _la = self._input.LA(1)
 
             self.state = 174
-            self.match(CNS_MR_Parser.EOF)
+            self.match(CnsMRParser.EOF)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -1245,23 +1245,23 @@ class CNS_MR_Parser ( Parser ):
             self.parser = parser
 
         def Noe(self):
-            return self.getToken(CNS_MR_Parser.Noe, 0)
+            return self.getToken(CnsMRParser.Noe, 0)
 
         def L_brace(self):
-            return self.getToken(CNS_MR_Parser.L_brace, 0)
+            return self.getToken(CnsMRParser.L_brace, 0)
 
         def noe_statement(self):
-            return self.getTypedRuleContext(CNS_MR_Parser.Noe_statementContext,0)
+            return self.getTypedRuleContext(CnsMRParser.Noe_statementContext,0)
 
 
         def R_brace(self):
-            return self.getToken(CNS_MR_Parser.R_brace, 0)
+            return self.getToken(CnsMRParser.R_brace, 0)
 
         def End(self):
-            return self.getToken(CNS_MR_Parser.End, 0)
+            return self.getToken(CnsMRParser.End, 0)
 
         def getRuleIndex(self):
-            return CNS_MR_Parser.RULE_distance_restraint
+            return CnsMRParser.RULE_distance_restraint
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterDistance_restraint" ):
@@ -1276,20 +1276,20 @@ class CNS_MR_Parser ( Parser ):
 
     def distance_restraint(self):
 
-        localctx = CNS_MR_Parser.Distance_restraintContext(self, self._ctx, self.state)
+        localctx = CnsMRParser.Distance_restraintContext(self, self._ctx, self.state)
         self.enterRule(localctx, 2, self.RULE_distance_restraint)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 176
-            self.match(CNS_MR_Parser.Noe)
+            self.match(CnsMRParser.Noe)
             self.state = 177
-            self.match(CNS_MR_Parser.L_brace)
+            self.match(CnsMRParser.L_brace)
             self.state = 178
             self.noe_statement()
             self.state = 179
-            self.match(CNS_MR_Parser.R_brace)
+            self.match(CnsMRParser.R_brace)
             self.state = 180
-            self.match(CNS_MR_Parser.End)
+            self.match(CnsMRParser.End)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -1306,26 +1306,26 @@ class CNS_MR_Parser ( Parser ):
             self.parser = parser
 
         def Restraints(self):
-            return self.getToken(CNS_MR_Parser.Restraints, 0)
+            return self.getToken(CnsMRParser.Restraints, 0)
 
         def Dihedral(self):
-            return self.getToken(CNS_MR_Parser.Dihedral, 0)
+            return self.getToken(CnsMRParser.Dihedral, 0)
 
         def L_brace(self):
-            return self.getToken(CNS_MR_Parser.L_brace, 0)
+            return self.getToken(CnsMRParser.L_brace, 0)
 
         def dihedral_statement(self):
-            return self.getTypedRuleContext(CNS_MR_Parser.Dihedral_statementContext,0)
+            return self.getTypedRuleContext(CnsMRParser.Dihedral_statementContext,0)
 
 
         def R_brace(self):
-            return self.getToken(CNS_MR_Parser.R_brace, 0)
+            return self.getToken(CnsMRParser.R_brace, 0)
 
         def End(self):
-            return self.getToken(CNS_MR_Parser.End, 0)
+            return self.getToken(CnsMRParser.End, 0)
 
         def getRuleIndex(self):
-            return CNS_MR_Parser.RULE_dihedral_angle_restraint
+            return CnsMRParser.RULE_dihedral_angle_restraint
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterDihedral_angle_restraint" ):
@@ -1340,22 +1340,22 @@ class CNS_MR_Parser ( Parser ):
 
     def dihedral_angle_restraint(self):
 
-        localctx = CNS_MR_Parser.Dihedral_angle_restraintContext(self, self._ctx, self.state)
+        localctx = CnsMRParser.Dihedral_angle_restraintContext(self, self._ctx, self.state)
         self.enterRule(localctx, 4, self.RULE_dihedral_angle_restraint)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 182
-            self.match(CNS_MR_Parser.Restraints)
+            self.match(CnsMRParser.Restraints)
             self.state = 183
-            self.match(CNS_MR_Parser.Dihedral)
+            self.match(CnsMRParser.Dihedral)
             self.state = 184
-            self.match(CNS_MR_Parser.L_brace)
+            self.match(CnsMRParser.L_brace)
             self.state = 185
             self.dihedral_statement()
             self.state = 186
-            self.match(CNS_MR_Parser.R_brace)
+            self.match(CnsMRParser.R_brace)
             self.state = 187
-            self.match(CNS_MR_Parser.End)
+            self.match(CnsMRParser.End)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -1372,26 +1372,26 @@ class CNS_MR_Parser ( Parser ):
             self.parser = parser
 
         def Restraints(self):
-            return self.getToken(CNS_MR_Parser.Restraints, 0)
+            return self.getToken(CnsMRParser.Restraints, 0)
 
         def Plane(self):
-            return self.getToken(CNS_MR_Parser.Plane, 0)
+            return self.getToken(CnsMRParser.Plane, 0)
 
         def L_brace(self):
-            return self.getToken(CNS_MR_Parser.L_brace, 0)
+            return self.getToken(CnsMRParser.L_brace, 0)
 
         def plane_statement(self):
-            return self.getTypedRuleContext(CNS_MR_Parser.Plane_statementContext,0)
+            return self.getTypedRuleContext(CnsMRParser.Plane_statementContext,0)
 
 
         def R_brace(self):
-            return self.getToken(CNS_MR_Parser.R_brace, 0)
+            return self.getToken(CnsMRParser.R_brace, 0)
 
         def End(self):
-            return self.getToken(CNS_MR_Parser.End, 0)
+            return self.getToken(CnsMRParser.End, 0)
 
         def getRuleIndex(self):
-            return CNS_MR_Parser.RULE_plane_restraint
+            return CnsMRParser.RULE_plane_restraint
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterPlane_restraint" ):
@@ -1406,22 +1406,22 @@ class CNS_MR_Parser ( Parser ):
 
     def plane_restraint(self):
 
-        localctx = CNS_MR_Parser.Plane_restraintContext(self, self._ctx, self.state)
+        localctx = CnsMRParser.Plane_restraintContext(self, self._ctx, self.state)
         self.enterRule(localctx, 6, self.RULE_plane_restraint)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 189
-            self.match(CNS_MR_Parser.Restraints)
+            self.match(CnsMRParser.Restraints)
             self.state = 190
-            self.match(CNS_MR_Parser.Plane)
+            self.match(CnsMRParser.Plane)
             self.state = 191
-            self.match(CNS_MR_Parser.L_brace)
+            self.match(CnsMRParser.L_brace)
             self.state = 192
             self.plane_statement()
             self.state = 193
-            self.match(CNS_MR_Parser.R_brace)
+            self.match(CnsMRParser.R_brace)
             self.state = 194
-            self.match(CNS_MR_Parser.End)
+            self.match(CnsMRParser.End)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -1438,26 +1438,26 @@ class CNS_MR_Parser ( Parser ):
             self.parser = parser
 
         def Restraints(self):
-            return self.getToken(CNS_MR_Parser.Restraints, 0)
+            return self.getToken(CnsMRParser.Restraints, 0)
 
         def Harmonic(self):
-            return self.getToken(CNS_MR_Parser.Harmonic, 0)
+            return self.getToken(CnsMRParser.Harmonic, 0)
 
         def L_brace(self):
-            return self.getToken(CNS_MR_Parser.L_brace, 0)
+            return self.getToken(CnsMRParser.L_brace, 0)
 
         def harmonic_statement(self):
-            return self.getTypedRuleContext(CNS_MR_Parser.Harmonic_statementContext,0)
+            return self.getTypedRuleContext(CnsMRParser.Harmonic_statementContext,0)
 
 
         def R_brace(self):
-            return self.getToken(CNS_MR_Parser.R_brace, 0)
+            return self.getToken(CnsMRParser.R_brace, 0)
 
         def End(self):
-            return self.getToken(CNS_MR_Parser.End, 0)
+            return self.getToken(CnsMRParser.End, 0)
 
         def getRuleIndex(self):
-            return CNS_MR_Parser.RULE_harmonic_restraint
+            return CnsMRParser.RULE_harmonic_restraint
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterHarmonic_restraint" ):
@@ -1472,22 +1472,22 @@ class CNS_MR_Parser ( Parser ):
 
     def harmonic_restraint(self):
 
-        localctx = CNS_MR_Parser.Harmonic_restraintContext(self, self._ctx, self.state)
+        localctx = CnsMRParser.Harmonic_restraintContext(self, self._ctx, self.state)
         self.enterRule(localctx, 8, self.RULE_harmonic_restraint)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 196
-            self.match(CNS_MR_Parser.Restraints)
+            self.match(CnsMRParser.Restraints)
             self.state = 197
-            self.match(CNS_MR_Parser.Harmonic)
+            self.match(CnsMRParser.Harmonic)
             self.state = 198
-            self.match(CNS_MR_Parser.L_brace)
+            self.match(CnsMRParser.L_brace)
             self.state = 199
             self.harmonic_statement()
             self.state = 200
-            self.match(CNS_MR_Parser.R_brace)
+            self.match(CnsMRParser.R_brace)
             self.state = 201
-            self.match(CNS_MR_Parser.End)
+            self.match(CnsMRParser.End)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -1504,23 +1504,23 @@ class CNS_MR_Parser ( Parser ):
             self.parser = parser
 
         def Sanisotropy(self):
-            return self.getToken(CNS_MR_Parser.Sanisotropy, 0)
+            return self.getToken(CnsMRParser.Sanisotropy, 0)
 
         def L_brace(self):
-            return self.getToken(CNS_MR_Parser.L_brace, 0)
+            return self.getToken(CnsMRParser.L_brace, 0)
 
         def sani_statement(self):
-            return self.getTypedRuleContext(CNS_MR_Parser.Sani_statementContext,0)
+            return self.getTypedRuleContext(CnsMRParser.Sani_statementContext,0)
 
 
         def R_brace(self):
-            return self.getToken(CNS_MR_Parser.R_brace, 0)
+            return self.getToken(CnsMRParser.R_brace, 0)
 
         def End(self):
-            return self.getToken(CNS_MR_Parser.End, 0)
+            return self.getToken(CnsMRParser.End, 0)
 
         def getRuleIndex(self):
-            return CNS_MR_Parser.RULE_rdc_restraint
+            return CnsMRParser.RULE_rdc_restraint
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterRdc_restraint" ):
@@ -1535,20 +1535,20 @@ class CNS_MR_Parser ( Parser ):
 
     def rdc_restraint(self):
 
-        localctx = CNS_MR_Parser.Rdc_restraintContext(self, self._ctx, self.state)
+        localctx = CnsMRParser.Rdc_restraintContext(self, self._ctx, self.state)
         self.enterRule(localctx, 10, self.RULE_rdc_restraint)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 203
-            self.match(CNS_MR_Parser.Sanisotropy)
+            self.match(CnsMRParser.Sanisotropy)
             self.state = 204
-            self.match(CNS_MR_Parser.L_brace)
+            self.match(CnsMRParser.L_brace)
             self.state = 205
             self.sani_statement()
             self.state = 206
-            self.match(CNS_MR_Parser.R_brace)
+            self.match(CnsMRParser.R_brace)
             self.state = 207
-            self.match(CNS_MR_Parser.End)
+            self.match(CnsMRParser.End)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -1565,23 +1565,23 @@ class CNS_MR_Parser ( Parser ):
             self.parser = parser
 
         def Coupling(self):
-            return self.getToken(CNS_MR_Parser.Coupling, 0)
+            return self.getToken(CnsMRParser.Coupling, 0)
 
         def L_brace(self):
-            return self.getToken(CNS_MR_Parser.L_brace, 0)
+            return self.getToken(CnsMRParser.L_brace, 0)
 
         def coupling_statement(self):
-            return self.getTypedRuleContext(CNS_MR_Parser.Coupling_statementContext,0)
+            return self.getTypedRuleContext(CnsMRParser.Coupling_statementContext,0)
 
 
         def R_brace(self):
-            return self.getToken(CNS_MR_Parser.R_brace, 0)
+            return self.getToken(CnsMRParser.R_brace, 0)
 
         def End(self):
-            return self.getToken(CNS_MR_Parser.End, 0)
+            return self.getToken(CnsMRParser.End, 0)
 
         def getRuleIndex(self):
-            return CNS_MR_Parser.RULE_coupling_restraint
+            return CnsMRParser.RULE_coupling_restraint
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterCoupling_restraint" ):
@@ -1596,20 +1596,20 @@ class CNS_MR_Parser ( Parser ):
 
     def coupling_restraint(self):
 
-        localctx = CNS_MR_Parser.Coupling_restraintContext(self, self._ctx, self.state)
+        localctx = CnsMRParser.Coupling_restraintContext(self, self._ctx, self.state)
         self.enterRule(localctx, 12, self.RULE_coupling_restraint)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 209
-            self.match(CNS_MR_Parser.Coupling)
+            self.match(CnsMRParser.Coupling)
             self.state = 210
-            self.match(CNS_MR_Parser.L_brace)
+            self.match(CnsMRParser.L_brace)
             self.state = 211
             self.coupling_statement()
             self.state = 212
-            self.match(CNS_MR_Parser.R_brace)
+            self.match(CnsMRParser.R_brace)
             self.state = 213
-            self.match(CNS_MR_Parser.End)
+            self.match(CnsMRParser.End)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -1626,23 +1626,23 @@ class CNS_MR_Parser ( Parser ):
             self.parser = parser
 
         def Carbon(self):
-            return self.getToken(CNS_MR_Parser.Carbon, 0)
+            return self.getToken(CnsMRParser.Carbon, 0)
 
         def L_brace(self):
-            return self.getToken(CNS_MR_Parser.L_brace, 0)
+            return self.getToken(CnsMRParser.L_brace, 0)
 
         def carbon_shift_statement(self):
-            return self.getTypedRuleContext(CNS_MR_Parser.Carbon_shift_statementContext,0)
+            return self.getTypedRuleContext(CnsMRParser.Carbon_shift_statementContext,0)
 
 
         def R_brace(self):
-            return self.getToken(CNS_MR_Parser.R_brace, 0)
+            return self.getToken(CnsMRParser.R_brace, 0)
 
         def End(self):
-            return self.getToken(CNS_MR_Parser.End, 0)
+            return self.getToken(CnsMRParser.End, 0)
 
         def getRuleIndex(self):
-            return CNS_MR_Parser.RULE_carbon_shift_restraint
+            return CnsMRParser.RULE_carbon_shift_restraint
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterCarbon_shift_restraint" ):
@@ -1657,20 +1657,20 @@ class CNS_MR_Parser ( Parser ):
 
     def carbon_shift_restraint(self):
 
-        localctx = CNS_MR_Parser.Carbon_shift_restraintContext(self, self._ctx, self.state)
+        localctx = CnsMRParser.Carbon_shift_restraintContext(self, self._ctx, self.state)
         self.enterRule(localctx, 14, self.RULE_carbon_shift_restraint)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 215
-            self.match(CNS_MR_Parser.Carbon)
+            self.match(CnsMRParser.Carbon)
             self.state = 216
-            self.match(CNS_MR_Parser.L_brace)
+            self.match(CnsMRParser.L_brace)
             self.state = 217
             self.carbon_shift_statement()
             self.state = 218
-            self.match(CNS_MR_Parser.R_brace)
+            self.match(CnsMRParser.R_brace)
             self.state = 219
-            self.match(CNS_MR_Parser.End)
+            self.match(CnsMRParser.End)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -1687,23 +1687,23 @@ class CNS_MR_Parser ( Parser ):
             self.parser = parser
 
         def Proton(self):
-            return self.getToken(CNS_MR_Parser.Proton, 0)
+            return self.getToken(CnsMRParser.Proton, 0)
 
         def L_brace(self):
-            return self.getToken(CNS_MR_Parser.L_brace, 0)
+            return self.getToken(CnsMRParser.L_brace, 0)
 
         def proton_shift_statement(self):
-            return self.getTypedRuleContext(CNS_MR_Parser.Proton_shift_statementContext,0)
+            return self.getTypedRuleContext(CnsMRParser.Proton_shift_statementContext,0)
 
 
         def R_brace(self):
-            return self.getToken(CNS_MR_Parser.R_brace, 0)
+            return self.getToken(CnsMRParser.R_brace, 0)
 
         def End(self):
-            return self.getToken(CNS_MR_Parser.End, 0)
+            return self.getToken(CnsMRParser.End, 0)
 
         def getRuleIndex(self):
-            return CNS_MR_Parser.RULE_proton_shift_restraint
+            return CnsMRParser.RULE_proton_shift_restraint
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterProton_shift_restraint" ):
@@ -1718,20 +1718,20 @@ class CNS_MR_Parser ( Parser ):
 
     def proton_shift_restraint(self):
 
-        localctx = CNS_MR_Parser.Proton_shift_restraintContext(self, self._ctx, self.state)
+        localctx = CnsMRParser.Proton_shift_restraintContext(self, self._ctx, self.state)
         self.enterRule(localctx, 16, self.RULE_proton_shift_restraint)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 221
-            self.match(CNS_MR_Parser.Proton)
+            self.match(CnsMRParser.Proton)
             self.state = 222
-            self.match(CNS_MR_Parser.L_brace)
+            self.match(CnsMRParser.L_brace)
             self.state = 223
             self.proton_shift_statement()
             self.state = 224
-            self.match(CNS_MR_Parser.R_brace)
+            self.match(CnsMRParser.R_brace)
             self.state = 225
-            self.match(CNS_MR_Parser.End)
+            self.match(CnsMRParser.End)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -1748,23 +1748,23 @@ class CNS_MR_Parser ( Parser ):
             self.parser = parser
 
         def Conformation(self):
-            return self.getToken(CNS_MR_Parser.Conformation, 0)
+            return self.getToken(CnsMRParser.Conformation, 0)
 
         def L_brace(self):
-            return self.getToken(CNS_MR_Parser.L_brace, 0)
+            return self.getToken(CnsMRParser.L_brace, 0)
 
         def conformation_statement(self):
-            return self.getTypedRuleContext(CNS_MR_Parser.Conformation_statementContext,0)
+            return self.getTypedRuleContext(CnsMRParser.Conformation_statementContext,0)
 
 
         def R_brace(self):
-            return self.getToken(CNS_MR_Parser.R_brace, 0)
+            return self.getToken(CnsMRParser.R_brace, 0)
 
         def End(self):
-            return self.getToken(CNS_MR_Parser.End, 0)
+            return self.getToken(CnsMRParser.End, 0)
 
         def getRuleIndex(self):
-            return CNS_MR_Parser.RULE_conformation_db_restraint
+            return CnsMRParser.RULE_conformation_db_restraint
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterConformation_db_restraint" ):
@@ -1779,20 +1779,20 @@ class CNS_MR_Parser ( Parser ):
 
     def conformation_db_restraint(self):
 
-        localctx = CNS_MR_Parser.Conformation_db_restraintContext(self, self._ctx, self.state)
+        localctx = CnsMRParser.Conformation_db_restraintContext(self, self._ctx, self.state)
         self.enterRule(localctx, 18, self.RULE_conformation_db_restraint)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 227
-            self.match(CNS_MR_Parser.Conformation)
+            self.match(CnsMRParser.Conformation)
             self.state = 228
-            self.match(CNS_MR_Parser.L_brace)
+            self.match(CnsMRParser.L_brace)
             self.state = 229
             self.conformation_statement()
             self.state = 230
-            self.match(CNS_MR_Parser.R_brace)
+            self.match(CnsMRParser.R_brace)
             self.state = 231
-            self.match(CNS_MR_Parser.End)
+            self.match(CnsMRParser.End)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -1809,23 +1809,23 @@ class CNS_MR_Parser ( Parser ):
             self.parser = parser
 
         def Danisotropy(self):
-            return self.getToken(CNS_MR_Parser.Danisotropy, 0)
+            return self.getToken(CnsMRParser.Danisotropy, 0)
 
         def L_brace(self):
-            return self.getToken(CNS_MR_Parser.L_brace, 0)
+            return self.getToken(CnsMRParser.L_brace, 0)
 
         def diffusion_statement(self):
-            return self.getTypedRuleContext(CNS_MR_Parser.Diffusion_statementContext,0)
+            return self.getTypedRuleContext(CnsMRParser.Diffusion_statementContext,0)
 
 
         def R_brace(self):
-            return self.getToken(CNS_MR_Parser.R_brace, 0)
+            return self.getToken(CnsMRParser.R_brace, 0)
 
         def End(self):
-            return self.getToken(CNS_MR_Parser.End, 0)
+            return self.getToken(CnsMRParser.End, 0)
 
         def getRuleIndex(self):
-            return CNS_MR_Parser.RULE_diffusion_anisotropy_restraint
+            return CnsMRParser.RULE_diffusion_anisotropy_restraint
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterDiffusion_anisotropy_restraint" ):
@@ -1840,20 +1840,20 @@ class CNS_MR_Parser ( Parser ):
 
     def diffusion_anisotropy_restraint(self):
 
-        localctx = CNS_MR_Parser.Diffusion_anisotropy_restraintContext(self, self._ctx, self.state)
+        localctx = CnsMRParser.Diffusion_anisotropy_restraintContext(self, self._ctx, self.state)
         self.enterRule(localctx, 20, self.RULE_diffusion_anisotropy_restraint)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 233
-            self.match(CNS_MR_Parser.Danisotropy)
+            self.match(CnsMRParser.Danisotropy)
             self.state = 234
-            self.match(CNS_MR_Parser.L_brace)
+            self.match(CnsMRParser.L_brace)
             self.state = 235
             self.diffusion_statement()
             self.state = 236
-            self.match(CNS_MR_Parser.R_brace)
+            self.match(CnsMRParser.R_brace)
             self.state = 237
-            self.match(CNS_MR_Parser.End)
+            self.match(CnsMRParser.End)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -1870,23 +1870,23 @@ class CNS_MR_Parser ( Parser ):
             self.parser = parser
 
         def OneBond(self):
-            return self.getToken(CNS_MR_Parser.OneBond, 0)
+            return self.getToken(CnsMRParser.OneBond, 0)
 
         def L_brace(self):
-            return self.getToken(CNS_MR_Parser.L_brace, 0)
+            return self.getToken(CnsMRParser.L_brace, 0)
 
         def one_bond_coupling_statement(self):
-            return self.getTypedRuleContext(CNS_MR_Parser.One_bond_coupling_statementContext,0)
+            return self.getTypedRuleContext(CnsMRParser.One_bond_coupling_statementContext,0)
 
 
         def R_brace(self):
-            return self.getToken(CNS_MR_Parser.R_brace, 0)
+            return self.getToken(CnsMRParser.R_brace, 0)
 
         def End(self):
-            return self.getToken(CNS_MR_Parser.End, 0)
+            return self.getToken(CnsMRParser.End, 0)
 
         def getRuleIndex(self):
-            return CNS_MR_Parser.RULE_one_bond_coupling_restraint
+            return CnsMRParser.RULE_one_bond_coupling_restraint
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterOne_bond_coupling_restraint" ):
@@ -1901,20 +1901,20 @@ class CNS_MR_Parser ( Parser ):
 
     def one_bond_coupling_restraint(self):
 
-        localctx = CNS_MR_Parser.One_bond_coupling_restraintContext(self, self._ctx, self.state)
+        localctx = CnsMRParser.One_bond_coupling_restraintContext(self, self._ctx, self.state)
         self.enterRule(localctx, 22, self.RULE_one_bond_coupling_restraint)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 239
-            self.match(CNS_MR_Parser.OneBond)
+            self.match(CnsMRParser.OneBond)
             self.state = 240
-            self.match(CNS_MR_Parser.L_brace)
+            self.match(CnsMRParser.L_brace)
             self.state = 241
             self.one_bond_coupling_statement()
             self.state = 242
-            self.match(CNS_MR_Parser.R_brace)
+            self.match(CnsMRParser.R_brace)
             self.state = 243
-            self.match(CNS_MR_Parser.End)
+            self.match(CnsMRParser.End)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -1931,23 +1931,23 @@ class CNS_MR_Parser ( Parser ):
             self.parser = parser
 
         def AngleDb(self):
-            return self.getToken(CNS_MR_Parser.AngleDb, 0)
+            return self.getToken(CnsMRParser.AngleDb, 0)
 
         def L_brace(self):
-            return self.getToken(CNS_MR_Parser.L_brace, 0)
+            return self.getToken(CnsMRParser.L_brace, 0)
 
         def angle_db_statement(self):
-            return self.getTypedRuleContext(CNS_MR_Parser.Angle_db_statementContext,0)
+            return self.getTypedRuleContext(CnsMRParser.Angle_db_statementContext,0)
 
 
         def R_brace(self):
-            return self.getToken(CNS_MR_Parser.R_brace, 0)
+            return self.getToken(CnsMRParser.R_brace, 0)
 
         def End(self):
-            return self.getToken(CNS_MR_Parser.End, 0)
+            return self.getToken(CnsMRParser.End, 0)
 
         def getRuleIndex(self):
-            return CNS_MR_Parser.RULE_angle_db_restraint
+            return CnsMRParser.RULE_angle_db_restraint
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterAngle_db_restraint" ):
@@ -1962,20 +1962,20 @@ class CNS_MR_Parser ( Parser ):
 
     def angle_db_restraint(self):
 
-        localctx = CNS_MR_Parser.Angle_db_restraintContext(self, self._ctx, self.state)
+        localctx = CnsMRParser.Angle_db_restraintContext(self, self._ctx, self.state)
         self.enterRule(localctx, 24, self.RULE_angle_db_restraint)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 245
-            self.match(CNS_MR_Parser.AngleDb)
+            self.match(CnsMRParser.AngleDb)
             self.state = 246
-            self.match(CNS_MR_Parser.L_brace)
+            self.match(CnsMRParser.L_brace)
             self.state = 247
             self.angle_db_statement()
             self.state = 248
-            self.match(CNS_MR_Parser.R_brace)
+            self.match(CnsMRParser.R_brace)
             self.state = 249
-            self.match(CNS_MR_Parser.End)
+            self.match(CnsMRParser.End)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -1992,165 +1992,165 @@ class CNS_MR_Parser ( Parser ):
             self.parser = parser
 
         def Analysis(self):
-            return self.getToken(CNS_MR_Parser.Analysis, 0)
+            return self.getToken(CnsMRParser.Analysis, 0)
 
         def Equ_op(self, i:int=None):
             if i is None:
-                return self.getTokens(CNS_MR_Parser.Equ_op)
+                return self.getTokens(CnsMRParser.Equ_op)
             else:
-                return self.getToken(CNS_MR_Parser.Equ_op, i)
+                return self.getToken(CnsMRParser.Equ_op, i)
 
         def Noe_analysis(self):
-            return self.getToken(CNS_MR_Parser.Noe_analysis, 0)
+            return self.getToken(CnsMRParser.Noe_analysis, 0)
 
         def noe_assign(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(CNS_MR_Parser.Noe_assignContext)
+                return self.getTypedRuleContexts(CnsMRParser.Noe_assignContext)
             else:
-                return self.getTypedRuleContext(CNS_MR_Parser.Noe_assignContext,i)
+                return self.getTypedRuleContext(CnsMRParser.Noe_assignContext,i)
 
 
         def Asymptote(self):
-            return self.getToken(CNS_MR_Parser.Asymptote, 0)
+            return self.getToken(CnsMRParser.Asymptote, 0)
 
         def Class_names(self):
-            return self.getToken(CNS_MR_Parser.Class_names, 0)
+            return self.getToken(CnsMRParser.Class_names, 0)
 
         def Real(self, i:int=None):
             if i is None:
-                return self.getTokens(CNS_MR_Parser.Real)
+                return self.getTokens(CnsMRParser.Real)
             else:
-                return self.getToken(CNS_MR_Parser.Real, i)
+                return self.getToken(CnsMRParser.Real, i)
 
         def Averaging(self):
-            return self.getToken(CNS_MR_Parser.Averaging, 0)
+            return self.getToken(CnsMRParser.Averaging, 0)
 
         def Noe_avr_methods(self):
-            return self.getToken(CNS_MR_Parser.Noe_avr_methods, 0)
+            return self.getToken(CnsMRParser.Noe_avr_methods, 0)
 
         def Bgig(self):
-            return self.getToken(CNS_MR_Parser.Bgig, 0)
+            return self.getToken(CnsMRParser.Bgig, 0)
 
         def Ceiling(self):
-            return self.getToken(CNS_MR_Parser.Ceiling, 0)
+            return self.getToken(CnsMRParser.Ceiling, 0)
 
         def Classification(self):
-            return self.getToken(CNS_MR_Parser.Classification, 0)
+            return self.getToken(CnsMRParser.Classification, 0)
 
         def Class_name(self, i:int=None):
             if i is None:
-                return self.getTokens(CNS_MR_Parser.Class_name)
+                return self.getTokens(CnsMRParser.Class_name)
             else:
-                return self.getToken(CNS_MR_Parser.Class_name, i)
+                return self.getToken(CnsMRParser.Class_name, i)
 
         def CountViol(self):
-            return self.getToken(CNS_MR_Parser.CountViol, 0)
+            return self.getToken(CnsMRParser.CountViol, 0)
 
         def Cv(self):
-            return self.getToken(CNS_MR_Parser.Cv, 0)
+            return self.getToken(CnsMRParser.Cv, 0)
 
         def Integer(self):
-            return self.getToken(CNS_MR_Parser.Integer, 0)
+            return self.getToken(CnsMRParser.Integer, 0)
 
         def Den(self):
-            return self.getToken(CNS_MR_Parser.Den, 0)
+            return self.getToken(CnsMRParser.Den, 0)
 
         def Initialize(self):
-            return self.getToken(CNS_MR_Parser.Initialize, 0)
+            return self.getToken(CnsMRParser.Initialize, 0)
 
         def Update(self):
-            return self.getToken(CNS_MR_Parser.Update, 0)
+            return self.getToken(CnsMRParser.Update, 0)
 
         def Gamma(self):
-            return self.getToken(CNS_MR_Parser.Gamma, 0)
+            return self.getToken(CnsMRParser.Gamma, 0)
 
         def Kappa(self):
-            return self.getToken(CNS_MR_Parser.Kappa, 0)
+            return self.getToken(CnsMRParser.Kappa, 0)
 
         def Distribute(self):
-            return self.getToken(CNS_MR_Parser.Distribute, 0)
+            return self.getToken(CnsMRParser.Distribute, 0)
 
         def Ensemble(self):
-            return self.getToken(CNS_MR_Parser.Ensemble, 0)
+            return self.getToken(CnsMRParser.Ensemble, 0)
 
         def R_brace(self):
-            return self.getToken(CNS_MR_Parser.R_brace, 0)
+            return self.getToken(CnsMRParser.R_brace, 0)
 
         def End(self):
-            return self.getToken(CNS_MR_Parser.End, 0)
+            return self.getToken(CnsMRParser.End, 0)
 
         def L_brace(self, i:int=None):
             if i is None:
-                return self.getTokens(CNS_MR_Parser.L_brace)
+                return self.getTokens(CnsMRParser.L_brace)
             else:
-                return self.getToken(CNS_MR_Parser.L_brace, i)
+                return self.getToken(CnsMRParser.L_brace, i)
 
         def Monomers(self):
-            return self.getToken(CNS_MR_Parser.Monomers, 0)
+            return self.getToken(CnsMRParser.Monomers, 0)
 
         def Ncount(self):
-            return self.getToken(CNS_MR_Parser.Ncount, 0)
+            return self.getToken(CnsMRParser.Ncount, 0)
 
         def Nrestraints(self):
-            return self.getToken(CNS_MR_Parser.Nrestraints, 0)
+            return self.getToken(CnsMRParser.Nrestraints, 0)
 
         def Outd(self):
-            return self.getToken(CNS_MR_Parser.Outd, 0)
+            return self.getToken(CnsMRParser.Outd, 0)
 
         def Partition(self):
-            return self.getToken(CNS_MR_Parser.Partition, 0)
+            return self.getToken(CnsMRParser.Partition, 0)
 
         def Potential(self):
-            return self.getToken(CNS_MR_Parser.Potential, 0)
+            return self.getToken(CnsMRParser.Potential, 0)
 
         def Noe_potential(self):
-            return self.getToken(CNS_MR_Parser.Noe_potential, 0)
+            return self.getToken(CnsMRParser.Noe_potential, 0)
 
         def Predict(self):
-            return self.getToken(CNS_MR_Parser.Predict, 0)
+            return self.getToken(CnsMRParser.Predict, 0)
 
         def predict_statement(self):
-            return self.getTypedRuleContext(CNS_MR_Parser.Predict_statementContext,0)
+            return self.getTypedRuleContext(CnsMRParser.Predict_statementContext,0)
 
 
         def Print(self):
-            return self.getToken(CNS_MR_Parser.Print, 0)
+            return self.getToken(CnsMRParser.Print, 0)
 
         def Threshold(self):
-            return self.getToken(CNS_MR_Parser.Threshold, 0)
+            return self.getToken(CnsMRParser.Threshold, 0)
 
         def Raverage(self):
-            return self.getToken(CNS_MR_Parser.Raverage, 0)
+            return self.getToken(CnsMRParser.Raverage, 0)
 
         def Reset(self):
-            return self.getToken(CNS_MR_Parser.Reset, 0)
+            return self.getToken(CnsMRParser.Reset, 0)
 
         def Rswitch(self):
-            return self.getToken(CNS_MR_Parser.Rswitch, 0)
+            return self.getToken(CnsMRParser.Rswitch, 0)
 
         def Scale(self):
-            return self.getToken(CNS_MR_Parser.Scale, 0)
+            return self.getToken(CnsMRParser.Scale, 0)
 
         def SoExponent(self):
-            return self.getToken(CNS_MR_Parser.SoExponent, 0)
+            return self.getToken(CnsMRParser.SoExponent, 0)
 
         def SqConstant(self):
-            return self.getToken(CNS_MR_Parser.SqConstant, 0)
+            return self.getToken(CnsMRParser.SqConstant, 0)
 
         def SqExponent(self):
-            return self.getToken(CNS_MR_Parser.SqExponent, 0)
+            return self.getToken(CnsMRParser.SqExponent, 0)
 
         def SqOffset(self):
-            return self.getToken(CNS_MR_Parser.SqOffset, 0)
+            return self.getToken(CnsMRParser.SqOffset, 0)
 
         def Taverage(self):
-            return self.getToken(CNS_MR_Parser.Taverage, 0)
+            return self.getToken(CnsMRParser.Taverage, 0)
 
         def Temperature(self):
-            return self.getToken(CNS_MR_Parser.Temperature, 0)
+            return self.getToken(CnsMRParser.Temperature, 0)
 
         def getRuleIndex(self):
-            return CNS_MR_Parser.RULE_noe_statement
+            return CnsMRParser.RULE_noe_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterNoe_statement" ):
@@ -2165,7 +2165,7 @@ class CNS_MR_Parser ( Parser ):
 
     def noe_statement(self):
 
-        localctx = CNS_MR_Parser.Noe_statementContext(self, self._ctx, self.state)
+        localctx = CnsMRParser.Noe_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 26, self.RULE_noe_statement)
         self._la = 0 # Token type
         try:
@@ -2175,11 +2175,11 @@ class CNS_MR_Parser ( Parser ):
             if la_ == 1:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 251
-                self.match(CNS_MR_Parser.Analysis)
+                self.match(CnsMRParser.Analysis)
                 self.state = 252
-                self.match(CNS_MR_Parser.Equ_op)
+                self.match(CnsMRParser.Equ_op)
                 self.state = 253
-                self.match(CNS_MR_Parser.Noe_analysis)
+                self.match(CnsMRParser.Noe_analysis)
                 pass
 
             elif la_ == 2:
@@ -2187,7 +2187,7 @@ class CNS_MR_Parser ( Parser ):
                 self.state = 257
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==CNS_MR_Parser.Assign:
+                while _la==CnsMRParser.Assign:
                     self.state = 254
                     self.noe_assign()
                     self.state = 259
@@ -2199,334 +2199,334 @@ class CNS_MR_Parser ( Parser ):
             elif la_ == 3:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 260
-                self.match(CNS_MR_Parser.Asymptote)
+                self.match(CnsMRParser.Asymptote)
                 self.state = 261
-                self.match(CNS_MR_Parser.Class_names)
+                self.match(CnsMRParser.Class_names)
                 self.state = 262
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 pass
 
             elif la_ == 4:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 263
-                self.match(CNS_MR_Parser.Averaging)
+                self.match(CnsMRParser.Averaging)
                 self.state = 264
-                self.match(CNS_MR_Parser.Class_names)
+                self.match(CnsMRParser.Class_names)
                 self.state = 265
-                self.match(CNS_MR_Parser.Noe_avr_methods)
+                self.match(CnsMRParser.Noe_avr_methods)
                 pass
 
             elif la_ == 5:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 266
-                self.match(CNS_MR_Parser.Bgig)
+                self.match(CnsMRParser.Bgig)
                 self.state = 267
-                self.match(CNS_MR_Parser.Class_names)
+                self.match(CnsMRParser.Class_names)
                 self.state = 268
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 pass
 
             elif la_ == 6:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 269
-                self.match(CNS_MR_Parser.Ceiling)
+                self.match(CnsMRParser.Ceiling)
                 self.state = 270
-                self.match(CNS_MR_Parser.Equ_op)
+                self.match(CnsMRParser.Equ_op)
                 self.state = 271
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 pass
 
             elif la_ == 7:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 272
-                self.match(CNS_MR_Parser.Classification)
+                self.match(CnsMRParser.Classification)
                 self.state = 273
-                self.match(CNS_MR_Parser.Equ_op)
+                self.match(CnsMRParser.Equ_op)
                 self.state = 274
-                self.match(CNS_MR_Parser.Class_name)
+                self.match(CnsMRParser.Class_name)
                 pass
 
             elif la_ == 8:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 275
-                self.match(CNS_MR_Parser.CountViol)
+                self.match(CnsMRParser.CountViol)
                 self.state = 276
-                self.match(CNS_MR_Parser.Class_name)
+                self.match(CnsMRParser.Class_name)
                 pass
 
             elif la_ == 9:
                 self.enterOuterAlt(localctx, 9)
                 self.state = 277
-                self.match(CNS_MR_Parser.Cv)
+                self.match(CnsMRParser.Cv)
                 self.state = 278
-                self.match(CNS_MR_Parser.Equ_op)
+                self.match(CnsMRParser.Equ_op)
                 self.state = 279
-                self.match(CNS_MR_Parser.Integer)
+                self.match(CnsMRParser.Integer)
                 pass
 
             elif la_ == 10:
                 self.enterOuterAlt(localctx, 10)
                 self.state = 280
-                self.match(CNS_MR_Parser.Den)
+                self.match(CnsMRParser.Den)
                 self.state = 281
-                self.match(CNS_MR_Parser.Initialize)
+                self.match(CnsMRParser.Initialize)
                 pass
 
             elif la_ == 11:
                 self.enterOuterAlt(localctx, 11)
                 self.state = 282
-                self.match(CNS_MR_Parser.Den)
+                self.match(CnsMRParser.Den)
                 self.state = 283
-                self.match(CNS_MR_Parser.Update)
+                self.match(CnsMRParser.Update)
                 self.state = 284
-                self.match(CNS_MR_Parser.Gamma)
+                self.match(CnsMRParser.Gamma)
                 self.state = 285
-                self.match(CNS_MR_Parser.Equ_op)
+                self.match(CnsMRParser.Equ_op)
                 self.state = 286
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 self.state = 287
-                self.match(CNS_MR_Parser.Kappa)
+                self.match(CnsMRParser.Kappa)
                 self.state = 288
-                self.match(CNS_MR_Parser.Equ_op)
+                self.match(CnsMRParser.Equ_op)
                 self.state = 289
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 pass
 
             elif la_ == 12:
                 self.enterOuterAlt(localctx, 12)
                 self.state = 290
-                self.match(CNS_MR_Parser.Distribute)
+                self.match(CnsMRParser.Distribute)
                 self.state = 291
-                self.match(CNS_MR_Parser.Class_name)
+                self.match(CnsMRParser.Class_name)
                 self.state = 292
-                self.match(CNS_MR_Parser.Class_name)
+                self.match(CnsMRParser.Class_name)
                 self.state = 293
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 pass
 
             elif la_ == 13:
                 self.enterOuterAlt(localctx, 13)
                 self.state = 294
-                self.match(CNS_MR_Parser.Ensemble)
+                self.match(CnsMRParser.Ensemble)
                 self.state = 298
                 self._errHandler.sync(self)
                 _alt = self._interp.adaptivePredict(self._input,13,self._ctx)
                 while _alt!=1 and _alt!=ATN.INVALID_ALT_NUMBER:
                     if _alt==1+1:
                         self.state = 295
-                        self.match(CNS_MR_Parser.L_brace) 
+                        self.match(CnsMRParser.L_brace) 
                     self.state = 300
                     self._errHandler.sync(self)
                     _alt = self._interp.adaptivePredict(self._input,13,self._ctx)
 
                 self.state = 301
-                self.match(CNS_MR_Parser.R_brace)
+                self.match(CnsMRParser.R_brace)
                 self.state = 302
-                self.match(CNS_MR_Parser.End)
+                self.match(CnsMRParser.End)
                 pass
 
             elif la_ == 14:
                 self.enterOuterAlt(localctx, 14)
                 self.state = 303
-                self.match(CNS_MR_Parser.Monomers)
+                self.match(CnsMRParser.Monomers)
                 self.state = 304
-                self.match(CNS_MR_Parser.Class_names)
+                self.match(CnsMRParser.Class_names)
                 self.state = 305
-                self.match(CNS_MR_Parser.Integer)
+                self.match(CnsMRParser.Integer)
                 pass
 
             elif la_ == 15:
                 self.enterOuterAlt(localctx, 15)
                 self.state = 306
-                self.match(CNS_MR_Parser.Ncount)
+                self.match(CnsMRParser.Ncount)
                 self.state = 307
-                self.match(CNS_MR_Parser.Class_names)
+                self.match(CnsMRParser.Class_names)
                 self.state = 308
-                self.match(CNS_MR_Parser.Integer)
+                self.match(CnsMRParser.Integer)
                 pass
 
             elif la_ == 16:
                 self.enterOuterAlt(localctx, 16)
                 self.state = 309
-                self.match(CNS_MR_Parser.Nrestraints)
+                self.match(CnsMRParser.Nrestraints)
                 self.state = 310
-                self.match(CNS_MR_Parser.Equ_op)
+                self.match(CnsMRParser.Equ_op)
                 self.state = 311
-                self.match(CNS_MR_Parser.Integer)
+                self.match(CnsMRParser.Integer)
                 pass
 
             elif la_ == 17:
                 self.enterOuterAlt(localctx, 17)
                 self.state = 312
-                self.match(CNS_MR_Parser.Outd)
+                self.match(CnsMRParser.Outd)
                 pass
 
             elif la_ == 18:
                 self.enterOuterAlt(localctx, 18)
                 self.state = 313
-                self.match(CNS_MR_Parser.Partition)
+                self.match(CnsMRParser.Partition)
                 self.state = 314
-                self.match(CNS_MR_Parser.Equ_op)
+                self.match(CnsMRParser.Equ_op)
                 self.state = 315
-                self.match(CNS_MR_Parser.Integer)
+                self.match(CnsMRParser.Integer)
                 pass
 
             elif la_ == 19:
                 self.enterOuterAlt(localctx, 19)
                 self.state = 316
-                self.match(CNS_MR_Parser.Potential)
+                self.match(CnsMRParser.Potential)
                 self.state = 317
-                self.match(CNS_MR_Parser.Class_names)
+                self.match(CnsMRParser.Class_names)
                 self.state = 318
-                self.match(CNS_MR_Parser.Noe_potential)
+                self.match(CnsMRParser.Noe_potential)
                 pass
 
             elif la_ == 20:
                 self.enterOuterAlt(localctx, 20)
                 self.state = 319
-                self.match(CNS_MR_Parser.Predict)
+                self.match(CnsMRParser.Predict)
                 self.state = 320
-                self.match(CNS_MR_Parser.L_brace)
+                self.match(CnsMRParser.L_brace)
                 self.state = 321
                 self.predict_statement()
                 self.state = 322
-                self.match(CNS_MR_Parser.R_brace)
+                self.match(CnsMRParser.R_brace)
                 self.state = 323
-                self.match(CNS_MR_Parser.End)
+                self.match(CnsMRParser.End)
                 pass
 
             elif la_ == 21:
                 self.enterOuterAlt(localctx, 21)
                 self.state = 325
-                self.match(CNS_MR_Parser.Print)
+                self.match(CnsMRParser.Print)
                 self.state = 326
-                self.match(CNS_MR_Parser.Threshold)
+                self.match(CnsMRParser.Threshold)
                 self.state = 327
-                self.match(CNS_MR_Parser.Equ_op)
+                self.match(CnsMRParser.Equ_op)
                 self.state = 328
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 pass
 
             elif la_ == 22:
                 self.enterOuterAlt(localctx, 22)
                 self.state = 329
-                self.match(CNS_MR_Parser.Raverage)
+                self.match(CnsMRParser.Raverage)
                 self.state = 330
-                self.match(CNS_MR_Parser.Class_name)
+                self.match(CnsMRParser.Class_name)
                 self.state = 334
                 self._errHandler.sync(self)
                 _alt = self._interp.adaptivePredict(self._input,14,self._ctx)
                 while _alt!=1 and _alt!=ATN.INVALID_ALT_NUMBER:
                     if _alt==1+1:
                         self.state = 331
-                        self.match(CNS_MR_Parser.L_brace) 
+                        self.match(CnsMRParser.L_brace) 
                     self.state = 336
                     self._errHandler.sync(self)
                     _alt = self._interp.adaptivePredict(self._input,14,self._ctx)
 
                 self.state = 337
-                self.match(CNS_MR_Parser.R_brace)
+                self.match(CnsMRParser.R_brace)
                 self.state = 338
-                self.match(CNS_MR_Parser.End)
+                self.match(CnsMRParser.End)
                 pass
 
             elif la_ == 23:
                 self.enterOuterAlt(localctx, 23)
                 self.state = 339
-                self.match(CNS_MR_Parser.Reset)
+                self.match(CnsMRParser.Reset)
                 pass
 
             elif la_ == 24:
                 self.enterOuterAlt(localctx, 24)
                 self.state = 340
-                self.match(CNS_MR_Parser.Rswitch)
+                self.match(CnsMRParser.Rswitch)
                 self.state = 341
-                self.match(CNS_MR_Parser.Class_names)
+                self.match(CnsMRParser.Class_names)
                 self.state = 342
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 pass
 
             elif la_ == 25:
                 self.enterOuterAlt(localctx, 25)
                 self.state = 343
-                self.match(CNS_MR_Parser.Scale)
+                self.match(CnsMRParser.Scale)
                 self.state = 344
-                self.match(CNS_MR_Parser.Class_names)
+                self.match(CnsMRParser.Class_names)
                 self.state = 345
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 pass
 
             elif la_ == 26:
                 self.enterOuterAlt(localctx, 26)
                 self.state = 346
-                self.match(CNS_MR_Parser.SoExponent)
+                self.match(CnsMRParser.SoExponent)
                 self.state = 347
-                self.match(CNS_MR_Parser.Class_names)
+                self.match(CnsMRParser.Class_names)
                 self.state = 348
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 pass
 
             elif la_ == 27:
                 self.enterOuterAlt(localctx, 27)
                 self.state = 349
-                self.match(CNS_MR_Parser.SqConstant)
+                self.match(CnsMRParser.SqConstant)
                 self.state = 350
-                self.match(CNS_MR_Parser.Class_names)
+                self.match(CnsMRParser.Class_names)
                 self.state = 351
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 pass
 
             elif la_ == 28:
                 self.enterOuterAlt(localctx, 28)
                 self.state = 352
-                self.match(CNS_MR_Parser.SqExponent)
+                self.match(CnsMRParser.SqExponent)
                 self.state = 353
-                self.match(CNS_MR_Parser.Class_names)
+                self.match(CnsMRParser.Class_names)
                 self.state = 354
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 pass
 
             elif la_ == 29:
                 self.enterOuterAlt(localctx, 29)
                 self.state = 355
-                self.match(CNS_MR_Parser.SqOffset)
+                self.match(CnsMRParser.SqOffset)
                 self.state = 356
-                self.match(CNS_MR_Parser.Class_names)
+                self.match(CnsMRParser.Class_names)
                 self.state = 357
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 pass
 
             elif la_ == 30:
                 self.enterOuterAlt(localctx, 30)
                 self.state = 358
-                self.match(CNS_MR_Parser.Taverage)
+                self.match(CnsMRParser.Taverage)
                 self.state = 359
-                self.match(CNS_MR_Parser.Class_name)
+                self.match(CnsMRParser.Class_name)
                 self.state = 363
                 self._errHandler.sync(self)
                 _alt = self._interp.adaptivePredict(self._input,15,self._ctx)
                 while _alt!=1 and _alt!=ATN.INVALID_ALT_NUMBER:
                     if _alt==1+1:
                         self.state = 360
-                        self.match(CNS_MR_Parser.L_brace) 
+                        self.match(CnsMRParser.L_brace) 
                     self.state = 365
                     self._errHandler.sync(self)
                     _alt = self._interp.adaptivePredict(self._input,15,self._ctx)
 
                 self.state = 366
-                self.match(CNS_MR_Parser.R_brace)
+                self.match(CnsMRParser.R_brace)
                 self.state = 367
-                self.match(CNS_MR_Parser.End)
+                self.match(CnsMRParser.End)
                 pass
 
             elif la_ == 31:
                 self.enterOuterAlt(localctx, 31)
                 self.state = 368
-                self.match(CNS_MR_Parser.Temperature)
+                self.match(CnsMRParser.Temperature)
                 self.state = 369
-                self.match(CNS_MR_Parser.Equ_op)
+                self.match(CnsMRParser.Equ_op)
                 self.state = 370
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 pass
 
 
@@ -2546,29 +2546,29 @@ class CNS_MR_Parser ( Parser ):
             self.parser = parser
 
         def Assign(self):
-            return self.getToken(CNS_MR_Parser.Assign, 0)
+            return self.getToken(CnsMRParser.Assign, 0)
 
         def selection(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(CNS_MR_Parser.SelectionContext)
+                return self.getTypedRuleContexts(CnsMRParser.SelectionContext)
             else:
-                return self.getTypedRuleContext(CNS_MR_Parser.SelectionContext,i)
+                return self.getTypedRuleContext(CnsMRParser.SelectionContext,i)
 
 
         def Real(self, i:int=None):
             if i is None:
-                return self.getTokens(CNS_MR_Parser.Real)
+                return self.getTokens(CnsMRParser.Real)
             else:
-                return self.getToken(CNS_MR_Parser.Real, i)
+                return self.getToken(CnsMRParser.Real, i)
 
         def Or_op(self, i:int=None):
             if i is None:
-                return self.getTokens(CNS_MR_Parser.Or_op)
+                return self.getTokens(CnsMRParser.Or_op)
             else:
-                return self.getToken(CNS_MR_Parser.Or_op, i)
+                return self.getToken(CnsMRParser.Or_op, i)
 
         def getRuleIndex(self):
-            return CNS_MR_Parser.RULE_noe_assign
+            return CnsMRParser.RULE_noe_assign
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterNoe_assign" ):
@@ -2583,29 +2583,29 @@ class CNS_MR_Parser ( Parser ):
 
     def noe_assign(self):
 
-        localctx = CNS_MR_Parser.Noe_assignContext(self, self._ctx, self.state)
+        localctx = CnsMRParser.Noe_assignContext(self, self._ctx, self.state)
         self.enterRule(localctx, 28, self.RULE_noe_assign)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 373
-            self.match(CNS_MR_Parser.Assign)
+            self.match(CnsMRParser.Assign)
             self.state = 374
             self.selection()
             self.state = 375
             self.selection()
             self.state = 376
-            self.match(CNS_MR_Parser.Real)
+            self.match(CnsMRParser.Real)
             self.state = 377
-            self.match(CNS_MR_Parser.Real)
+            self.match(CnsMRParser.Real)
             self.state = 378
-            self.match(CNS_MR_Parser.Real)
+            self.match(CnsMRParser.Real)
             self.state = 385
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==CNS_MR_Parser.Or_op:
+            while _la==CnsMRParser.Or_op:
                 self.state = 379
-                self.match(CNS_MR_Parser.Or_op)
+                self.match(CnsMRParser.Or_op)
                 self.state = 380
                 self.selection()
                 self.state = 381
@@ -2630,29 +2630,29 @@ class CNS_MR_Parser ( Parser ):
             self.parser = parser
 
         def Cutoff(self):
-            return self.getToken(CNS_MR_Parser.Cutoff, 0)
+            return self.getToken(CnsMRParser.Cutoff, 0)
 
         def Equ_op(self):
-            return self.getToken(CNS_MR_Parser.Equ_op, 0)
+            return self.getToken(CnsMRParser.Equ_op, 0)
 
         def Real(self):
-            return self.getToken(CNS_MR_Parser.Real, 0)
+            return self.getToken(CnsMRParser.Real, 0)
 
         def Cuton(self):
-            return self.getToken(CNS_MR_Parser.Cuton, 0)
+            return self.getToken(CnsMRParser.Cuton, 0)
 
         def From(self):
-            return self.getToken(CNS_MR_Parser.From, 0)
+            return self.getToken(CnsMRParser.From, 0)
 
         def selection(self):
-            return self.getTypedRuleContext(CNS_MR_Parser.SelectionContext,0)
+            return self.getTypedRuleContext(CnsMRParser.SelectionContext,0)
 
 
         def To(self):
-            return self.getToken(CNS_MR_Parser.To, 0)
+            return self.getToken(CnsMRParser.To, 0)
 
         def getRuleIndex(self):
-            return CNS_MR_Parser.RULE_predict_statement
+            return CnsMRParser.RULE_predict_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterPredict_statement" ):
@@ -2667,41 +2667,41 @@ class CNS_MR_Parser ( Parser ):
 
     def predict_statement(self):
 
-        localctx = CNS_MR_Parser.Predict_statementContext(self, self._ctx, self.state)
+        localctx = CnsMRParser.Predict_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 30, self.RULE_predict_statement)
         try:
             self.state = 398
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [CNS_MR_Parser.Cutoff]:
+            if token in [CnsMRParser.Cutoff]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 388
-                self.match(CNS_MR_Parser.Cutoff)
+                self.match(CnsMRParser.Cutoff)
                 self.state = 389
-                self.match(CNS_MR_Parser.Equ_op)
+                self.match(CnsMRParser.Equ_op)
                 self.state = 390
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 pass
-            elif token in [CNS_MR_Parser.Cuton]:
+            elif token in [CnsMRParser.Cuton]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 391
-                self.match(CNS_MR_Parser.Cuton)
+                self.match(CnsMRParser.Cuton)
                 self.state = 392
-                self.match(CNS_MR_Parser.Equ_op)
+                self.match(CnsMRParser.Equ_op)
                 self.state = 393
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 pass
-            elif token in [CNS_MR_Parser.From]:
+            elif token in [CnsMRParser.From]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 394
-                self.match(CNS_MR_Parser.From)
+                self.match(CnsMRParser.From)
                 self.state = 395
                 self.selection()
                 pass
-            elif token in [CNS_MR_Parser.To]:
+            elif token in [CnsMRParser.To]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 396
-                self.match(CNS_MR_Parser.To)
+                self.match(CnsMRParser.To)
                 self.state = 397
                 self.selection()
                 pass
@@ -2725,40 +2725,40 @@ class CNS_MR_Parser ( Parser ):
 
         def dihedral_assign(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(CNS_MR_Parser.Dihedral_assignContext)
+                return self.getTypedRuleContexts(CnsMRParser.Dihedral_assignContext)
             else:
-                return self.getTypedRuleContext(CNS_MR_Parser.Dihedral_assignContext,i)
+                return self.getTypedRuleContext(CnsMRParser.Dihedral_assignContext,i)
 
 
         def Cv(self):
-            return self.getToken(CNS_MR_Parser.Cv, 0)
+            return self.getToken(CnsMRParser.Cv, 0)
 
         def Equ_op(self):
-            return self.getToken(CNS_MR_Parser.Equ_op, 0)
+            return self.getToken(CnsMRParser.Equ_op, 0)
 
         def Integer(self):
-            return self.getToken(CNS_MR_Parser.Integer, 0)
+            return self.getToken(CnsMRParser.Integer, 0)
 
         def Nassign(self):
-            return self.getToken(CNS_MR_Parser.Nassign, 0)
+            return self.getToken(CnsMRParser.Nassign, 0)
 
         def Partition(self):
-            return self.getToken(CNS_MR_Parser.Partition, 0)
+            return self.getToken(CnsMRParser.Partition, 0)
 
         def Reset(self):
-            return self.getToken(CNS_MR_Parser.Reset, 0)
+            return self.getToken(CnsMRParser.Reset, 0)
 
         def Scale(self):
-            return self.getToken(CNS_MR_Parser.Scale, 0)
+            return self.getToken(CnsMRParser.Scale, 0)
 
         def Real(self):
-            return self.getToken(CNS_MR_Parser.Real, 0)
+            return self.getToken(CnsMRParser.Real, 0)
 
         def Print_any(self):
-            return self.getToken(CNS_MR_Parser.Print_any, 0)
+            return self.getToken(CnsMRParser.Print_any, 0)
 
         def getRuleIndex(self):
-            return CNS_MR_Parser.RULE_dihedral_statement
+            return CnsMRParser.RULE_dihedral_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterDihedral_statement" ):
@@ -2773,19 +2773,19 @@ class CNS_MR_Parser ( Parser ):
 
     def dihedral_statement(self):
 
-        localctx = CNS_MR_Parser.Dihedral_statementContext(self, self._ctx, self.state)
+        localctx = CnsMRParser.Dihedral_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 32, self.RULE_dihedral_statement)
         self._la = 0 # Token type
         try:
             self.state = 420
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [CNS_MR_Parser.Assign, CNS_MR_Parser.R_brace]:
+            if token in [CnsMRParser.Assign, CnsMRParser.R_brace]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 403
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==CNS_MR_Parser.Assign:
+                while _la==CnsMRParser.Assign:
                     self.state = 400
                     self.dihedral_assign()
                     self.state = 405
@@ -2793,51 +2793,51 @@ class CNS_MR_Parser ( Parser ):
                     _la = self._input.LA(1)
 
                 pass
-            elif token in [CNS_MR_Parser.Cv]:
+            elif token in [CnsMRParser.Cv]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 406
-                self.match(CNS_MR_Parser.Cv)
+                self.match(CnsMRParser.Cv)
                 self.state = 407
-                self.match(CNS_MR_Parser.Equ_op)
+                self.match(CnsMRParser.Equ_op)
                 self.state = 408
-                self.match(CNS_MR_Parser.Integer)
+                self.match(CnsMRParser.Integer)
                 pass
-            elif token in [CNS_MR_Parser.Nassign]:
+            elif token in [CnsMRParser.Nassign]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 409
-                self.match(CNS_MR_Parser.Nassign)
+                self.match(CnsMRParser.Nassign)
                 self.state = 410
-                self.match(CNS_MR_Parser.Equ_op)
+                self.match(CnsMRParser.Equ_op)
                 self.state = 411
-                self.match(CNS_MR_Parser.Integer)
+                self.match(CnsMRParser.Integer)
                 pass
-            elif token in [CNS_MR_Parser.Partition]:
+            elif token in [CnsMRParser.Partition]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 412
-                self.match(CNS_MR_Parser.Partition)
+                self.match(CnsMRParser.Partition)
                 self.state = 413
-                self.match(CNS_MR_Parser.Equ_op)
+                self.match(CnsMRParser.Equ_op)
                 self.state = 414
-                self.match(CNS_MR_Parser.Integer)
+                self.match(CnsMRParser.Integer)
                 pass
-            elif token in [CNS_MR_Parser.Reset]:
+            elif token in [CnsMRParser.Reset]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 415
-                self.match(CNS_MR_Parser.Reset)
+                self.match(CnsMRParser.Reset)
                 pass
-            elif token in [CNS_MR_Parser.Scale]:
+            elif token in [CnsMRParser.Scale]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 416
-                self.match(CNS_MR_Parser.Scale)
+                self.match(CnsMRParser.Scale)
                 self.state = 417
-                self.match(CNS_MR_Parser.Equ_op)
+                self.match(CnsMRParser.Equ_op)
                 self.state = 418
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 pass
-            elif token in [CNS_MR_Parser.Print_any]:
+            elif token in [CnsMRParser.Print_any]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 419
-                self.match(CNS_MR_Parser.Print_any)
+                self.match(CnsMRParser.Print_any)
                 pass
             else:
                 raise NoViableAltException(self)
@@ -2858,26 +2858,26 @@ class CNS_MR_Parser ( Parser ):
             self.parser = parser
 
         def Assign(self):
-            return self.getToken(CNS_MR_Parser.Assign, 0)
+            return self.getToken(CnsMRParser.Assign, 0)
 
         def selection(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(CNS_MR_Parser.SelectionContext)
+                return self.getTypedRuleContexts(CnsMRParser.SelectionContext)
             else:
-                return self.getTypedRuleContext(CNS_MR_Parser.SelectionContext,i)
+                return self.getTypedRuleContext(CnsMRParser.SelectionContext,i)
 
 
         def Real(self, i:int=None):
             if i is None:
-                return self.getTokens(CNS_MR_Parser.Real)
+                return self.getTokens(CnsMRParser.Real)
             else:
-                return self.getToken(CNS_MR_Parser.Real, i)
+                return self.getToken(CnsMRParser.Real, i)
 
         def Integer(self):
-            return self.getToken(CNS_MR_Parser.Integer, 0)
+            return self.getToken(CnsMRParser.Integer, 0)
 
         def getRuleIndex(self):
-            return CNS_MR_Parser.RULE_dihedral_assign
+            return CnsMRParser.RULE_dihedral_assign
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterDihedral_assign" ):
@@ -2892,12 +2892,12 @@ class CNS_MR_Parser ( Parser ):
 
     def dihedral_assign(self):
 
-        localctx = CNS_MR_Parser.Dihedral_assignContext(self, self._ctx, self.state)
+        localctx = CnsMRParser.Dihedral_assignContext(self, self._ctx, self.state)
         self.enterRule(localctx, 34, self.RULE_dihedral_assign)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 422
-            self.match(CNS_MR_Parser.Assign)
+            self.match(CnsMRParser.Assign)
             self.state = 423
             self.selection()
             self.state = 424
@@ -2907,13 +2907,13 @@ class CNS_MR_Parser ( Parser ):
             self.state = 426
             self.selection()
             self.state = 427
-            self.match(CNS_MR_Parser.Real)
+            self.match(CnsMRParser.Real)
             self.state = 428
-            self.match(CNS_MR_Parser.Real)
+            self.match(CnsMRParser.Real)
             self.state = 429
-            self.match(CNS_MR_Parser.Real)
+            self.match(CnsMRParser.Real)
             self.state = 430
-            self.match(CNS_MR_Parser.Integer)
+            self.match(CnsMRParser.Integer)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -2930,26 +2930,26 @@ class CNS_MR_Parser ( Parser ):
             self.parser = parser
 
         def Group(self):
-            return self.getToken(CNS_MR_Parser.Group, 0)
+            return self.getToken(CnsMRParser.Group, 0)
 
         def L_brace(self):
-            return self.getToken(CNS_MR_Parser.L_brace, 0)
+            return self.getToken(CnsMRParser.L_brace, 0)
 
         def group_statement(self):
-            return self.getTypedRuleContext(CNS_MR_Parser.Group_statementContext,0)
+            return self.getTypedRuleContext(CnsMRParser.Group_statementContext,0)
 
 
         def R_brace(self):
-            return self.getToken(CNS_MR_Parser.R_brace, 0)
+            return self.getToken(CnsMRParser.R_brace, 0)
 
         def Initialize(self):
-            return self.getToken(CNS_MR_Parser.Initialize, 0)
+            return self.getToken(CnsMRParser.Initialize, 0)
 
         def Print_any(self):
-            return self.getToken(CNS_MR_Parser.Print_any, 0)
+            return self.getToken(CnsMRParser.Print_any, 0)
 
         def getRuleIndex(self):
-            return CNS_MR_Parser.RULE_plane_statement
+            return CnsMRParser.RULE_plane_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterPlane_statement" ):
@@ -2964,32 +2964,32 @@ class CNS_MR_Parser ( Parser ):
 
     def plane_statement(self):
 
-        localctx = CNS_MR_Parser.Plane_statementContext(self, self._ctx, self.state)
+        localctx = CnsMRParser.Plane_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 36, self.RULE_plane_statement)
         try:
             self.state = 439
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [CNS_MR_Parser.Group]:
+            if token in [CnsMRParser.Group]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 432
-                self.match(CNS_MR_Parser.Group)
+                self.match(CnsMRParser.Group)
                 self.state = 433
-                self.match(CNS_MR_Parser.L_brace)
+                self.match(CnsMRParser.L_brace)
                 self.state = 434
                 self.group_statement()
                 self.state = 435
-                self.match(CNS_MR_Parser.R_brace)
+                self.match(CnsMRParser.R_brace)
                 pass
-            elif token in [CNS_MR_Parser.Initialize]:
+            elif token in [CnsMRParser.Initialize]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 437
-                self.match(CNS_MR_Parser.Initialize)
+                self.match(CnsMRParser.Initialize)
                 pass
-            elif token in [CNS_MR_Parser.Print_any]:
+            elif token in [CnsMRParser.Print_any]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 438
-                self.match(CNS_MR_Parser.Print_any)
+                self.match(CnsMRParser.Print_any)
                 pass
             else:
                 raise NoViableAltException(self)
@@ -3010,23 +3010,23 @@ class CNS_MR_Parser ( Parser ):
             self.parser = parser
 
         def Selection(self):
-            return self.getToken(CNS_MR_Parser.Selection, 0)
+            return self.getToken(CnsMRParser.Selection, 0)
 
         def Equ_op(self):
-            return self.getToken(CNS_MR_Parser.Equ_op, 0)
+            return self.getToken(CnsMRParser.Equ_op, 0)
 
         def selection(self):
-            return self.getTypedRuleContext(CNS_MR_Parser.SelectionContext,0)
+            return self.getTypedRuleContext(CnsMRParser.SelectionContext,0)
 
 
         def Weight(self):
-            return self.getToken(CNS_MR_Parser.Weight, 0)
+            return self.getToken(CnsMRParser.Weight, 0)
 
         def Real(self):
-            return self.getToken(CNS_MR_Parser.Real, 0)
+            return self.getToken(CnsMRParser.Real, 0)
 
         def getRuleIndex(self):
-            return CNS_MR_Parser.RULE_group_statement
+            return CnsMRParser.RULE_group_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterGroup_statement" ):
@@ -3041,29 +3041,29 @@ class CNS_MR_Parser ( Parser ):
 
     def group_statement(self):
 
-        localctx = CNS_MR_Parser.Group_statementContext(self, self._ctx, self.state)
+        localctx = CnsMRParser.Group_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 38, self.RULE_group_statement)
         try:
             self.state = 447
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [CNS_MR_Parser.Selection]:
+            if token in [CnsMRParser.Selection]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 441
-                self.match(CNS_MR_Parser.Selection)
+                self.match(CnsMRParser.Selection)
                 self.state = 442
-                self.match(CNS_MR_Parser.Equ_op)
+                self.match(CnsMRParser.Equ_op)
                 self.state = 443
                 self.selection()
                 pass
-            elif token in [CNS_MR_Parser.Weight]:
+            elif token in [CnsMRParser.Weight]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 444
-                self.match(CNS_MR_Parser.Weight)
+                self.match(CnsMRParser.Weight)
                 self.state = 445
-                self.match(CNS_MR_Parser.Equ_op)
+                self.match(CnsMRParser.Equ_op)
                 self.state = 446
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 pass
             else:
                 raise NoViableAltException(self)
@@ -3084,23 +3084,23 @@ class CNS_MR_Parser ( Parser ):
             self.parser = parser
 
         def Exponent(self):
-            return self.getToken(CNS_MR_Parser.Exponent, 0)
+            return self.getToken(CnsMRParser.Exponent, 0)
 
         def Equ_op(self):
-            return self.getToken(CNS_MR_Parser.Equ_op, 0)
+            return self.getToken(CnsMRParser.Equ_op, 0)
 
         def Integer(self):
-            return self.getToken(CNS_MR_Parser.Integer, 0)
+            return self.getToken(CnsMRParser.Integer, 0)
 
         def Normal(self):
-            return self.getToken(CNS_MR_Parser.Normal, 0)
+            return self.getToken(CnsMRParser.Normal, 0)
 
         def vector_3d(self):
-            return self.getTypedRuleContext(CNS_MR_Parser.Vector_3dContext,0)
+            return self.getTypedRuleContext(CnsMRParser.Vector_3dContext,0)
 
 
         def getRuleIndex(self):
-            return CNS_MR_Parser.RULE_harmonic_statement
+            return CnsMRParser.RULE_harmonic_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterHarmonic_statement" ):
@@ -3115,27 +3115,27 @@ class CNS_MR_Parser ( Parser ):
 
     def harmonic_statement(self):
 
-        localctx = CNS_MR_Parser.Harmonic_statementContext(self, self._ctx, self.state)
+        localctx = CnsMRParser.Harmonic_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 40, self.RULE_harmonic_statement)
         try:
             self.state = 455
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [CNS_MR_Parser.Exponent]:
+            if token in [CnsMRParser.Exponent]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 449
-                self.match(CNS_MR_Parser.Exponent)
+                self.match(CnsMRParser.Exponent)
                 self.state = 450
-                self.match(CNS_MR_Parser.Equ_op)
+                self.match(CnsMRParser.Equ_op)
                 self.state = 451
-                self.match(CNS_MR_Parser.Integer)
+                self.match(CnsMRParser.Integer)
                 pass
-            elif token in [CNS_MR_Parser.Normal]:
+            elif token in [CnsMRParser.Normal]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 452
-                self.match(CNS_MR_Parser.Normal)
+                self.match(CnsMRParser.Normal)
                 self.state = 453
-                self.match(CNS_MR_Parser.Equ_op)
+                self.match(CnsMRParser.Equ_op)
                 self.state = 454
                 self.vector_3d()
                 pass
@@ -3159,55 +3159,55 @@ class CNS_MR_Parser ( Parser ):
 
         def sani_assign(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(CNS_MR_Parser.Sani_assignContext)
+                return self.getTypedRuleContexts(CnsMRParser.Sani_assignContext)
             else:
-                return self.getTypedRuleContext(CNS_MR_Parser.Sani_assignContext,i)
+                return self.getTypedRuleContext(CnsMRParser.Sani_assignContext,i)
 
 
         def Classification(self):
-            return self.getToken(CNS_MR_Parser.Classification, 0)
+            return self.getToken(CnsMRParser.Classification, 0)
 
         def Equ_op(self):
-            return self.getToken(CNS_MR_Parser.Equ_op, 0)
+            return self.getToken(CnsMRParser.Equ_op, 0)
 
         def Class_name(self):
-            return self.getToken(CNS_MR_Parser.Class_name, 0)
+            return self.getToken(CnsMRParser.Class_name, 0)
 
         def Coefficients(self):
-            return self.getToken(CNS_MR_Parser.Coefficients, 0)
+            return self.getToken(CnsMRParser.Coefficients, 0)
 
         def Real(self, i:int=None):
             if i is None:
-                return self.getTokens(CNS_MR_Parser.Real)
+                return self.getTokens(CnsMRParser.Real)
             else:
-                return self.getToken(CNS_MR_Parser.Real, i)
+                return self.getToken(CnsMRParser.Real, i)
 
         def ForceConstant(self):
-            return self.getToken(CNS_MR_Parser.ForceConstant, 0)
+            return self.getToken(CnsMRParser.ForceConstant, 0)
 
         def Nrestraints(self):
-            return self.getToken(CNS_MR_Parser.Nrestraints, 0)
+            return self.getToken(CnsMRParser.Nrestraints, 0)
 
         def Integer(self):
-            return self.getToken(CNS_MR_Parser.Integer, 0)
+            return self.getToken(CnsMRParser.Integer, 0)
 
         def Potential(self):
-            return self.getToken(CNS_MR_Parser.Potential, 0)
+            return self.getToken(CnsMRParser.Potential, 0)
 
         def Rdc_potential(self):
-            return self.getToken(CNS_MR_Parser.Rdc_potential, 0)
+            return self.getToken(CnsMRParser.Rdc_potential, 0)
 
         def Print(self):
-            return self.getToken(CNS_MR_Parser.Print, 0)
+            return self.getToken(CnsMRParser.Print, 0)
 
         def Threshold(self):
-            return self.getToken(CNS_MR_Parser.Threshold, 0)
+            return self.getToken(CnsMRParser.Threshold, 0)
 
         def Reset(self):
-            return self.getToken(CNS_MR_Parser.Reset, 0)
+            return self.getToken(CnsMRParser.Reset, 0)
 
         def getRuleIndex(self):
-            return CNS_MR_Parser.RULE_sani_statement
+            return CnsMRParser.RULE_sani_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterSani_statement" ):
@@ -3222,19 +3222,19 @@ class CNS_MR_Parser ( Parser ):
 
     def sani_statement(self):
 
-        localctx = CNS_MR_Parser.Sani_statementContext(self, self._ctx, self.state)
+        localctx = CnsMRParser.Sani_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 42, self.RULE_sani_statement)
         self._la = 0 # Token type
         try:
             self.state = 483
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [CNS_MR_Parser.Assign, CNS_MR_Parser.R_brace]:
+            if token in [CnsMRParser.Assign, CnsMRParser.R_brace]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 460
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==CNS_MR_Parser.Assign:
+                while _la==CnsMRParser.Assign:
                     self.state = 457
                     self.sani_assign()
                     self.state = 462
@@ -3242,66 +3242,66 @@ class CNS_MR_Parser ( Parser ):
                     _la = self._input.LA(1)
 
                 pass
-            elif token in [CNS_MR_Parser.Classification]:
+            elif token in [CnsMRParser.Classification]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 463
-                self.match(CNS_MR_Parser.Classification)
+                self.match(CnsMRParser.Classification)
                 self.state = 464
-                self.match(CNS_MR_Parser.Equ_op)
+                self.match(CnsMRParser.Equ_op)
                 self.state = 465
-                self.match(CNS_MR_Parser.Class_name)
+                self.match(CnsMRParser.Class_name)
                 pass
-            elif token in [CNS_MR_Parser.Coefficients]:
+            elif token in [CnsMRParser.Coefficients]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 466
-                self.match(CNS_MR_Parser.Coefficients)
+                self.match(CnsMRParser.Coefficients)
                 self.state = 467
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 self.state = 468
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 self.state = 469
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 pass
-            elif token in [CNS_MR_Parser.ForceConstant]:
+            elif token in [CnsMRParser.ForceConstant]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 470
-                self.match(CNS_MR_Parser.ForceConstant)
+                self.match(CnsMRParser.ForceConstant)
                 self.state = 471
-                self.match(CNS_MR_Parser.Equ_op)
+                self.match(CnsMRParser.Equ_op)
                 self.state = 472
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 pass
-            elif token in [CNS_MR_Parser.Nrestraints]:
+            elif token in [CnsMRParser.Nrestraints]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 473
-                self.match(CNS_MR_Parser.Nrestraints)
+                self.match(CnsMRParser.Nrestraints)
                 self.state = 474
-                self.match(CNS_MR_Parser.Equ_op)
+                self.match(CnsMRParser.Equ_op)
                 self.state = 475
-                self.match(CNS_MR_Parser.Integer)
+                self.match(CnsMRParser.Integer)
                 pass
-            elif token in [CNS_MR_Parser.Potential]:
+            elif token in [CnsMRParser.Potential]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 476
-                self.match(CNS_MR_Parser.Potential)
+                self.match(CnsMRParser.Potential)
                 self.state = 477
-                self.match(CNS_MR_Parser.Equ_op)
+                self.match(CnsMRParser.Equ_op)
                 self.state = 478
-                self.match(CNS_MR_Parser.Rdc_potential)
+                self.match(CnsMRParser.Rdc_potential)
                 pass
-            elif token in [CNS_MR_Parser.Print]:
+            elif token in [CnsMRParser.Print]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 479
-                self.match(CNS_MR_Parser.Print)
+                self.match(CnsMRParser.Print)
                 self.state = 480
-                self.match(CNS_MR_Parser.Threshold)
+                self.match(CnsMRParser.Threshold)
                 self.state = 481
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 pass
-            elif token in [CNS_MR_Parser.Reset]:
+            elif token in [CnsMRParser.Reset]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 482
-                self.match(CNS_MR_Parser.Reset)
+                self.match(CnsMRParser.Reset)
                 pass
             else:
                 raise NoViableAltException(self)
@@ -3322,23 +3322,23 @@ class CNS_MR_Parser ( Parser ):
             self.parser = parser
 
         def Assign(self):
-            return self.getToken(CNS_MR_Parser.Assign, 0)
+            return self.getToken(CnsMRParser.Assign, 0)
 
         def selection(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(CNS_MR_Parser.SelectionContext)
+                return self.getTypedRuleContexts(CnsMRParser.SelectionContext)
             else:
-                return self.getTypedRuleContext(CNS_MR_Parser.SelectionContext,i)
+                return self.getTypedRuleContext(CnsMRParser.SelectionContext,i)
 
 
         def Real(self, i:int=None):
             if i is None:
-                return self.getTokens(CNS_MR_Parser.Real)
+                return self.getTokens(CnsMRParser.Real)
             else:
-                return self.getToken(CNS_MR_Parser.Real, i)
+                return self.getToken(CnsMRParser.Real, i)
 
         def getRuleIndex(self):
-            return CNS_MR_Parser.RULE_sani_assign
+            return CnsMRParser.RULE_sani_assign
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterSani_assign" ):
@@ -3353,12 +3353,12 @@ class CNS_MR_Parser ( Parser ):
 
     def sani_assign(self):
 
-        localctx = CNS_MR_Parser.Sani_assignContext(self, self._ctx, self.state)
+        localctx = CnsMRParser.Sani_assignContext(self, self._ctx, self.state)
         self.enterRule(localctx, 44, self.RULE_sani_assign)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 485
-            self.match(CNS_MR_Parser.Assign)
+            self.match(CnsMRParser.Assign)
             self.state = 486
             self.selection()
             self.state = 487
@@ -3372,9 +3372,9 @@ class CNS_MR_Parser ( Parser ):
             self.state = 491
             self.selection()
             self.state = 492
-            self.match(CNS_MR_Parser.Real)
+            self.match(CnsMRParser.Real)
             self.state = 493
-            self.match(CNS_MR_Parser.Real)
+            self.match(CnsMRParser.Real)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -3392,64 +3392,64 @@ class CNS_MR_Parser ( Parser ):
 
         def coup_assign(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(CNS_MR_Parser.Coup_assignContext)
+                return self.getTypedRuleContexts(CnsMRParser.Coup_assignContext)
             else:
-                return self.getTypedRuleContext(CNS_MR_Parser.Coup_assignContext,i)
+                return self.getTypedRuleContext(CnsMRParser.Coup_assignContext,i)
 
 
         def Classification(self):
-            return self.getToken(CNS_MR_Parser.Classification, 0)
+            return self.getToken(CnsMRParser.Classification, 0)
 
         def Equ_op(self):
-            return self.getToken(CNS_MR_Parser.Equ_op, 0)
+            return self.getToken(CnsMRParser.Equ_op, 0)
 
         def Class_name(self):
-            return self.getToken(CNS_MR_Parser.Class_name, 0)
+            return self.getToken(CnsMRParser.Class_name, 0)
 
         def Coefficients(self):
-            return self.getToken(CNS_MR_Parser.Coefficients, 0)
+            return self.getToken(CnsMRParser.Coefficients, 0)
 
         def Real(self, i:int=None):
             if i is None:
-                return self.getTokens(CNS_MR_Parser.Real)
+                return self.getTokens(CnsMRParser.Real)
             else:
-                return self.getToken(CNS_MR_Parser.Real, i)
+                return self.getToken(CnsMRParser.Real, i)
 
         def Cv(self):
-            return self.getToken(CNS_MR_Parser.Cv, 0)
+            return self.getToken(CnsMRParser.Cv, 0)
 
         def Integer(self):
-            return self.getToken(CNS_MR_Parser.Integer, 0)
+            return self.getToken(CnsMRParser.Integer, 0)
 
         def ForceConstant(self):
-            return self.getToken(CNS_MR_Parser.ForceConstant, 0)
+            return self.getToken(CnsMRParser.ForceConstant, 0)
 
         def Nrestraints(self):
-            return self.getToken(CNS_MR_Parser.Nrestraints, 0)
+            return self.getToken(CnsMRParser.Nrestraints, 0)
 
         def Partition(self):
-            return self.getToken(CNS_MR_Parser.Partition, 0)
+            return self.getToken(CnsMRParser.Partition, 0)
 
         def Potential(self):
-            return self.getToken(CNS_MR_Parser.Potential, 0)
+            return self.getToken(CnsMRParser.Potential, 0)
 
         def Coupling_potential(self):
-            return self.getToken(CNS_MR_Parser.Coupling_potential, 0)
+            return self.getToken(CnsMRParser.Coupling_potential, 0)
 
         def Print(self):
-            return self.getToken(CNS_MR_Parser.Print, 0)
+            return self.getToken(CnsMRParser.Print, 0)
 
         def Threshold(self):
-            return self.getToken(CNS_MR_Parser.Threshold, 0)
+            return self.getToken(CnsMRParser.Threshold, 0)
 
         def All(self):
-            return self.getToken(CNS_MR_Parser.All, 0)
+            return self.getToken(CnsMRParser.All, 0)
 
         def Reset(self):
-            return self.getToken(CNS_MR_Parser.Reset, 0)
+            return self.getToken(CnsMRParser.Reset, 0)
 
         def getRuleIndex(self):
-            return CNS_MR_Parser.RULE_coupling_statement
+            return CnsMRParser.RULE_coupling_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterCoupling_statement" ):
@@ -3464,19 +3464,19 @@ class CNS_MR_Parser ( Parser ):
 
     def coupling_statement(self):
 
-        localctx = CNS_MR_Parser.Coupling_statementContext(self, self._ctx, self.state)
+        localctx = CnsMRParser.Coupling_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 46, self.RULE_coupling_statement)
         self._la = 0 # Token type
         try:
             self.state = 536
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [CNS_MR_Parser.Assign, CNS_MR_Parser.R_brace]:
+            if token in [CnsMRParser.Assign, CnsMRParser.R_brace]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 498
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==CNS_MR_Parser.Assign:
+                while _la==CnsMRParser.Assign:
                     self.state = 495
                     self.coup_assign()
                     self.state = 500
@@ -3484,110 +3484,110 @@ class CNS_MR_Parser ( Parser ):
                     _la = self._input.LA(1)
 
                 pass
-            elif token in [CNS_MR_Parser.Classification]:
+            elif token in [CnsMRParser.Classification]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 501
-                self.match(CNS_MR_Parser.Classification)
+                self.match(CnsMRParser.Classification)
                 self.state = 502
-                self.match(CNS_MR_Parser.Equ_op)
+                self.match(CnsMRParser.Equ_op)
                 self.state = 503
-                self.match(CNS_MR_Parser.Class_name)
+                self.match(CnsMRParser.Class_name)
                 pass
-            elif token in [CNS_MR_Parser.Coefficients]:
+            elif token in [CnsMRParser.Coefficients]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 504
-                self.match(CNS_MR_Parser.Coefficients)
+                self.match(CnsMRParser.Coefficients)
                 self.state = 505
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 self.state = 506
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 self.state = 507
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 self.state = 508
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 pass
-            elif token in [CNS_MR_Parser.Cv]:
+            elif token in [CnsMRParser.Cv]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 509
-                self.match(CNS_MR_Parser.Cv)
+                self.match(CnsMRParser.Cv)
                 self.state = 510
-                self.match(CNS_MR_Parser.Equ_op)
+                self.match(CnsMRParser.Equ_op)
                 self.state = 511
-                self.match(CNS_MR_Parser.Integer)
+                self.match(CnsMRParser.Integer)
                 pass
-            elif token in [CNS_MR_Parser.ForceConstant]:
+            elif token in [CnsMRParser.ForceConstant]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 512
-                self.match(CNS_MR_Parser.ForceConstant)
+                self.match(CnsMRParser.ForceConstant)
                 self.state = 513
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 self.state = 515
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CNS_MR_Parser.Real:
+                if _la==CnsMRParser.Real:
                     self.state = 514
-                    self.match(CNS_MR_Parser.Real)
+                    self.match(CnsMRParser.Real)
 
 
                 pass
-            elif token in [CNS_MR_Parser.Nrestraints]:
+            elif token in [CnsMRParser.Nrestraints]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 517
-                self.match(CNS_MR_Parser.Nrestraints)
+                self.match(CnsMRParser.Nrestraints)
                 self.state = 518
-                self.match(CNS_MR_Parser.Equ_op)
+                self.match(CnsMRParser.Equ_op)
                 self.state = 519
-                self.match(CNS_MR_Parser.Integer)
+                self.match(CnsMRParser.Integer)
                 pass
-            elif token in [CNS_MR_Parser.Partition]:
+            elif token in [CnsMRParser.Partition]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 520
-                self.match(CNS_MR_Parser.Partition)
+                self.match(CnsMRParser.Partition)
                 self.state = 521
-                self.match(CNS_MR_Parser.Equ_op)
+                self.match(CnsMRParser.Equ_op)
                 self.state = 522
-                self.match(CNS_MR_Parser.Integer)
+                self.match(CnsMRParser.Integer)
                 pass
-            elif token in [CNS_MR_Parser.Potential]:
+            elif token in [CnsMRParser.Potential]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 523
-                self.match(CNS_MR_Parser.Potential)
+                self.match(CnsMRParser.Potential)
                 self.state = 524
-                self.match(CNS_MR_Parser.Equ_op)
+                self.match(CnsMRParser.Equ_op)
                 self.state = 525
-                self.match(CNS_MR_Parser.Coupling_potential)
+                self.match(CnsMRParser.Coupling_potential)
                 pass
-            elif token in [CNS_MR_Parser.Print]:
+            elif token in [CnsMRParser.Print]:
                 self.enterOuterAlt(localctx, 9)
                 self.state = 526
-                self.match(CNS_MR_Parser.Print)
+                self.match(CnsMRParser.Print)
                 self.state = 527
-                self.match(CNS_MR_Parser.Threshold)
+                self.match(CnsMRParser.Threshold)
                 self.state = 528
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 self.state = 533
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [CNS_MR_Parser.All]:
+                if token in [CnsMRParser.All]:
                     self.state = 529
-                    self.match(CNS_MR_Parser.All)
+                    self.match(CnsMRParser.All)
                     pass
-                elif token in [CNS_MR_Parser.Classification]:
+                elif token in [CnsMRParser.Classification]:
                     self.state = 530
-                    self.match(CNS_MR_Parser.Classification)
+                    self.match(CnsMRParser.Classification)
                     self.state = 531
-                    self.match(CNS_MR_Parser.Equ_op)
+                    self.match(CnsMRParser.Equ_op)
                     self.state = 532
-                    self.match(CNS_MR_Parser.Class_name)
+                    self.match(CnsMRParser.Class_name)
                     pass
                 else:
                     raise NoViableAltException(self)
 
                 pass
-            elif token in [CNS_MR_Parser.Reset]:
+            elif token in [CnsMRParser.Reset]:
                 self.enterOuterAlt(localctx, 10)
                 self.state = 535
-                self.match(CNS_MR_Parser.Reset)
+                self.match(CnsMRParser.Reset)
                 pass
             else:
                 raise NoViableAltException(self)
@@ -3608,23 +3608,23 @@ class CNS_MR_Parser ( Parser ):
             self.parser = parser
 
         def Assign(self):
-            return self.getToken(CNS_MR_Parser.Assign, 0)
+            return self.getToken(CnsMRParser.Assign, 0)
 
         def selection(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(CNS_MR_Parser.SelectionContext)
+                return self.getTypedRuleContexts(CnsMRParser.SelectionContext)
             else:
-                return self.getTypedRuleContext(CNS_MR_Parser.SelectionContext,i)
+                return self.getTypedRuleContext(CnsMRParser.SelectionContext,i)
 
 
         def Real(self, i:int=None):
             if i is None:
-                return self.getTokens(CNS_MR_Parser.Real)
+                return self.getTokens(CnsMRParser.Real)
             else:
-                return self.getToken(CNS_MR_Parser.Real, i)
+                return self.getToken(CnsMRParser.Real, i)
 
         def getRuleIndex(self):
-            return CNS_MR_Parser.RULE_coup_assign
+            return CnsMRParser.RULE_coup_assign
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterCoup_assign" ):
@@ -3639,13 +3639,13 @@ class CNS_MR_Parser ( Parser ):
 
     def coup_assign(self):
 
-        localctx = CNS_MR_Parser.Coup_assignContext(self, self._ctx, self.state)
+        localctx = CnsMRParser.Coup_assignContext(self, self._ctx, self.state)
         self.enterRule(localctx, 48, self.RULE_coup_assign)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 538
-            self.match(CNS_MR_Parser.Assign)
+            self.match(CnsMRParser.Assign)
             self.state = 539
             self.selection()
             self.state = 540
@@ -3657,7 +3657,7 @@ class CNS_MR_Parser ( Parser ):
             self.state = 548
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==CNS_MR_Parser.L_paren:
+            if _la==CnsMRParser.L_paren:
                 self.state = 543
                 self.selection()
                 self.state = 544
@@ -3669,17 +3669,17 @@ class CNS_MR_Parser ( Parser ):
 
 
             self.state = 550
-            self.match(CNS_MR_Parser.Real)
+            self.match(CnsMRParser.Real)
             self.state = 551
-            self.match(CNS_MR_Parser.Real)
+            self.match(CnsMRParser.Real)
             self.state = 554
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==CNS_MR_Parser.Real:
+            if _la==CnsMRParser.Real:
                 self.state = 552
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 self.state = 553
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
 
 
         except RecognitionException as re:
@@ -3699,74 +3699,74 @@ class CNS_MR_Parser ( Parser ):
 
         def carbon_shift_assign(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(CNS_MR_Parser.Carbon_shift_assignContext)
+                return self.getTypedRuleContexts(CnsMRParser.Carbon_shift_assignContext)
             else:
-                return self.getTypedRuleContext(CNS_MR_Parser.Carbon_shift_assignContext,i)
+                return self.getTypedRuleContext(CnsMRParser.Carbon_shift_assignContext,i)
 
 
         def Classification(self):
-            return self.getToken(CNS_MR_Parser.Classification, 0)
+            return self.getToken(CnsMRParser.Classification, 0)
 
         def Equ_op(self):
-            return self.getToken(CNS_MR_Parser.Equ_op, 0)
+            return self.getToken(CnsMRParser.Equ_op, 0)
 
         def Class_name(self):
-            return self.getToken(CNS_MR_Parser.Class_name, 0)
+            return self.getToken(CnsMRParser.Class_name, 0)
 
         def Expectation(self):
-            return self.getToken(CNS_MR_Parser.Expectation, 0)
+            return self.getToken(CnsMRParser.Expectation, 0)
 
         def Integer(self, i:int=None):
             if i is None:
-                return self.getTokens(CNS_MR_Parser.Integer)
+                return self.getTokens(CnsMRParser.Integer)
             else:
-                return self.getToken(CNS_MR_Parser.Integer, i)
+                return self.getToken(CnsMRParser.Integer, i)
 
         def Real(self, i:int=None):
             if i is None:
-                return self.getTokens(CNS_MR_Parser.Real)
+                return self.getTokens(CnsMRParser.Real)
             else:
-                return self.getToken(CNS_MR_Parser.Real, i)
+                return self.getToken(CnsMRParser.Real, i)
 
         def ForceConstant(self):
-            return self.getToken(CNS_MR_Parser.ForceConstant, 0)
+            return self.getToken(CnsMRParser.ForceConstant, 0)
 
         def Nrestraints(self):
-            return self.getToken(CNS_MR_Parser.Nrestraints, 0)
+            return self.getToken(CnsMRParser.Nrestraints, 0)
 
         def PhiStep(self):
-            return self.getToken(CNS_MR_Parser.PhiStep, 0)
+            return self.getToken(CnsMRParser.PhiStep, 0)
 
         def PsiStep(self):
-            return self.getToken(CNS_MR_Parser.PsiStep, 0)
+            return self.getToken(CnsMRParser.PsiStep, 0)
 
         def Potential(self):
-            return self.getToken(CNS_MR_Parser.Potential, 0)
+            return self.getToken(CnsMRParser.Potential, 0)
 
         def Rdc_potential(self):
-            return self.getToken(CNS_MR_Parser.Rdc_potential, 0)
+            return self.getToken(CnsMRParser.Rdc_potential, 0)
 
         def Print(self):
-            return self.getToken(CNS_MR_Parser.Print, 0)
+            return self.getToken(CnsMRParser.Print, 0)
 
         def Threshold(self):
-            return self.getToken(CNS_MR_Parser.Threshold, 0)
+            return self.getToken(CnsMRParser.Threshold, 0)
 
         def carbon_shift_rcoil(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(CNS_MR_Parser.Carbon_shift_rcoilContext)
+                return self.getTypedRuleContexts(CnsMRParser.Carbon_shift_rcoilContext)
             else:
-                return self.getTypedRuleContext(CNS_MR_Parser.Carbon_shift_rcoilContext,i)
+                return self.getTypedRuleContext(CnsMRParser.Carbon_shift_rcoilContext,i)
 
 
         def Reset(self):
-            return self.getToken(CNS_MR_Parser.Reset, 0)
+            return self.getToken(CnsMRParser.Reset, 0)
 
         def Zero(self):
-            return self.getToken(CNS_MR_Parser.Zero, 0)
+            return self.getToken(CnsMRParser.Zero, 0)
 
         def getRuleIndex(self):
-            return CNS_MR_Parser.RULE_carbon_shift_statement
+            return CnsMRParser.RULE_carbon_shift_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterCarbon_shift_statement" ):
@@ -3781,7 +3781,7 @@ class CNS_MR_Parser ( Parser ):
 
     def carbon_shift_statement(self):
 
-        localctx = CNS_MR_Parser.Carbon_shift_statementContext(self, self._ctx, self.state)
+        localctx = CnsMRParser.Carbon_shift_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 50, self.RULE_carbon_shift_statement)
         self._la = 0 # Token type
         try:
@@ -3793,7 +3793,7 @@ class CNS_MR_Parser ( Parser ):
                 self.state = 559
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==CNS_MR_Parser.Assign:
+                while _la==CnsMRParser.Assign:
                     self.state = 556
                     self.carbon_shift_assign()
                     self.state = 561
@@ -3805,87 +3805,87 @@ class CNS_MR_Parser ( Parser ):
             elif la_ == 2:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 562
-                self.match(CNS_MR_Parser.Classification)
+                self.match(CnsMRParser.Classification)
                 self.state = 563
-                self.match(CNS_MR_Parser.Equ_op)
+                self.match(CnsMRParser.Equ_op)
                 self.state = 564
-                self.match(CNS_MR_Parser.Class_name)
+                self.match(CnsMRParser.Class_name)
                 pass
 
             elif la_ == 3:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 565
-                self.match(CNS_MR_Parser.Expectation)
+                self.match(CnsMRParser.Expectation)
                 self.state = 566
-                self.match(CNS_MR_Parser.Integer)
+                self.match(CnsMRParser.Integer)
                 self.state = 567
-                self.match(CNS_MR_Parser.Integer)
+                self.match(CnsMRParser.Integer)
                 self.state = 568
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 self.state = 569
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 self.state = 570
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 pass
 
             elif la_ == 4:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 571
-                self.match(CNS_MR_Parser.ForceConstant)
+                self.match(CnsMRParser.ForceConstant)
                 self.state = 572
-                self.match(CNS_MR_Parser.Equ_op)
+                self.match(CnsMRParser.Equ_op)
                 self.state = 573
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 pass
 
             elif la_ == 5:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 574
-                self.match(CNS_MR_Parser.Nrestraints)
+                self.match(CnsMRParser.Nrestraints)
                 self.state = 575
-                self.match(CNS_MR_Parser.Equ_op)
+                self.match(CnsMRParser.Equ_op)
                 self.state = 576
-                self.match(CNS_MR_Parser.Integer)
+                self.match(CnsMRParser.Integer)
                 pass
 
             elif la_ == 6:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 577
-                self.match(CNS_MR_Parser.PhiStep)
+                self.match(CnsMRParser.PhiStep)
                 self.state = 578
-                self.match(CNS_MR_Parser.Equ_op)
+                self.match(CnsMRParser.Equ_op)
                 self.state = 579
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 pass
 
             elif la_ == 7:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 580
-                self.match(CNS_MR_Parser.PsiStep)
+                self.match(CnsMRParser.PsiStep)
                 self.state = 581
-                self.match(CNS_MR_Parser.Equ_op)
+                self.match(CnsMRParser.Equ_op)
                 self.state = 582
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 pass
 
             elif la_ == 8:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 583
-                self.match(CNS_MR_Parser.Potential)
+                self.match(CnsMRParser.Potential)
                 self.state = 584
-                self.match(CNS_MR_Parser.Equ_op)
+                self.match(CnsMRParser.Equ_op)
                 self.state = 585
-                self.match(CNS_MR_Parser.Rdc_potential)
+                self.match(CnsMRParser.Rdc_potential)
                 pass
 
             elif la_ == 9:
                 self.enterOuterAlt(localctx, 9)
                 self.state = 586
-                self.match(CNS_MR_Parser.Print)
+                self.match(CnsMRParser.Print)
                 self.state = 587
-                self.match(CNS_MR_Parser.Threshold)
+                self.match(CnsMRParser.Threshold)
                 self.state = 588
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 pass
 
             elif la_ == 10:
@@ -3893,7 +3893,7 @@ class CNS_MR_Parser ( Parser ):
                 self.state = 592
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==CNS_MR_Parser.Rcoil:
+                while _la==CnsMRParser.Rcoil:
                     self.state = 589
                     self.carbon_shift_rcoil()
                     self.state = 594
@@ -3905,13 +3905,13 @@ class CNS_MR_Parser ( Parser ):
             elif la_ == 11:
                 self.enterOuterAlt(localctx, 11)
                 self.state = 595
-                self.match(CNS_MR_Parser.Reset)
+                self.match(CnsMRParser.Reset)
                 pass
 
             elif la_ == 12:
                 self.enterOuterAlt(localctx, 12)
                 self.state = 596
-                self.match(CNS_MR_Parser.Zero)
+                self.match(CnsMRParser.Zero)
                 pass
 
 
@@ -3931,23 +3931,23 @@ class CNS_MR_Parser ( Parser ):
             self.parser = parser
 
         def Assign(self):
-            return self.getToken(CNS_MR_Parser.Assign, 0)
+            return self.getToken(CnsMRParser.Assign, 0)
 
         def selection(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(CNS_MR_Parser.SelectionContext)
+                return self.getTypedRuleContexts(CnsMRParser.SelectionContext)
             else:
-                return self.getTypedRuleContext(CNS_MR_Parser.SelectionContext,i)
+                return self.getTypedRuleContext(CnsMRParser.SelectionContext,i)
 
 
         def Real(self, i:int=None):
             if i is None:
-                return self.getTokens(CNS_MR_Parser.Real)
+                return self.getTokens(CnsMRParser.Real)
             else:
-                return self.getToken(CNS_MR_Parser.Real, i)
+                return self.getToken(CnsMRParser.Real, i)
 
         def getRuleIndex(self):
-            return CNS_MR_Parser.RULE_carbon_shift_assign
+            return CnsMRParser.RULE_carbon_shift_assign
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterCarbon_shift_assign" ):
@@ -3962,12 +3962,12 @@ class CNS_MR_Parser ( Parser ):
 
     def carbon_shift_assign(self):
 
-        localctx = CNS_MR_Parser.Carbon_shift_assignContext(self, self._ctx, self.state)
+        localctx = CnsMRParser.Carbon_shift_assignContext(self, self._ctx, self.state)
         self.enterRule(localctx, 52, self.RULE_carbon_shift_assign)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 599
-            self.match(CNS_MR_Parser.Assign)
+            self.match(CnsMRParser.Assign)
             self.state = 600
             self.selection()
             self.state = 601
@@ -3979,9 +3979,9 @@ class CNS_MR_Parser ( Parser ):
             self.state = 604
             self.selection()
             self.state = 605
-            self.match(CNS_MR_Parser.Real)
+            self.match(CnsMRParser.Real)
             self.state = 606
-            self.match(CNS_MR_Parser.Real)
+            self.match(CnsMRParser.Real)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -3998,20 +3998,20 @@ class CNS_MR_Parser ( Parser ):
             self.parser = parser
 
         def Rcoil(self):
-            return self.getToken(CNS_MR_Parser.Rcoil, 0)
+            return self.getToken(CnsMRParser.Rcoil, 0)
 
         def selection(self):
-            return self.getTypedRuleContext(CNS_MR_Parser.SelectionContext,0)
+            return self.getTypedRuleContext(CnsMRParser.SelectionContext,0)
 
 
         def Real(self, i:int=None):
             if i is None:
-                return self.getTokens(CNS_MR_Parser.Real)
+                return self.getTokens(CnsMRParser.Real)
             else:
-                return self.getToken(CNS_MR_Parser.Real, i)
+                return self.getToken(CnsMRParser.Real, i)
 
         def getRuleIndex(self):
-            return CNS_MR_Parser.RULE_carbon_shift_rcoil
+            return CnsMRParser.RULE_carbon_shift_rcoil
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterCarbon_shift_rcoil" ):
@@ -4026,18 +4026,18 @@ class CNS_MR_Parser ( Parser ):
 
     def carbon_shift_rcoil(self):
 
-        localctx = CNS_MR_Parser.Carbon_shift_rcoilContext(self, self._ctx, self.state)
+        localctx = CnsMRParser.Carbon_shift_rcoilContext(self, self._ctx, self.state)
         self.enterRule(localctx, 54, self.RULE_carbon_shift_rcoil)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 608
-            self.match(CNS_MR_Parser.Rcoil)
+            self.match(CnsMRParser.Rcoil)
             self.state = 609
             self.selection()
             self.state = 610
-            self.match(CNS_MR_Parser.Real)
+            self.match(CnsMRParser.Real)
             self.state = 611
-            self.match(CNS_MR_Parser.Real)
+            self.match(CnsMRParser.Real)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -4055,111 +4055,111 @@ class CNS_MR_Parser ( Parser ):
 
         def observed(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(CNS_MR_Parser.ObservedContext)
+                return self.getTypedRuleContexts(CnsMRParser.ObservedContext)
             else:
-                return self.getTypedRuleContext(CNS_MR_Parser.ObservedContext,i)
+                return self.getTypedRuleContext(CnsMRParser.ObservedContext,i)
 
 
         def proton_shift_rcoil(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(CNS_MR_Parser.Proton_shift_rcoilContext)
+                return self.getTypedRuleContexts(CnsMRParser.Proton_shift_rcoilContext)
             else:
-                return self.getTypedRuleContext(CNS_MR_Parser.Proton_shift_rcoilContext,i)
+                return self.getTypedRuleContext(CnsMRParser.Proton_shift_rcoilContext,i)
 
 
         def proton_shift_anisotropy(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(CNS_MR_Parser.Proton_shift_anisotropyContext)
+                return self.getTypedRuleContexts(CnsMRParser.Proton_shift_anisotropyContext)
             else:
-                return self.getTypedRuleContext(CNS_MR_Parser.Proton_shift_anisotropyContext,i)
+                return self.getTypedRuleContext(CnsMRParser.Proton_shift_anisotropyContext,i)
 
 
         def proton_shift_amides(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(CNS_MR_Parser.Proton_shift_amidesContext)
+                return self.getTypedRuleContexts(CnsMRParser.Proton_shift_amidesContext)
             else:
-                return self.getTypedRuleContext(CNS_MR_Parser.Proton_shift_amidesContext,i)
+                return self.getTypedRuleContext(CnsMRParser.Proton_shift_amidesContext,i)
 
 
         def proton_shift_carbons(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(CNS_MR_Parser.Proton_shift_carbonsContext)
+                return self.getTypedRuleContexts(CnsMRParser.Proton_shift_carbonsContext)
             else:
-                return self.getTypedRuleContext(CNS_MR_Parser.Proton_shift_carbonsContext,i)
+                return self.getTypedRuleContext(CnsMRParser.Proton_shift_carbonsContext,i)
 
 
         def proton_shift_nitrogens(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(CNS_MR_Parser.Proton_shift_nitrogensContext)
+                return self.getTypedRuleContexts(CnsMRParser.Proton_shift_nitrogensContext)
             else:
-                return self.getTypedRuleContext(CNS_MR_Parser.Proton_shift_nitrogensContext,i)
+                return self.getTypedRuleContext(CnsMRParser.Proton_shift_nitrogensContext,i)
 
 
         def proton_shift_oxygens(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(CNS_MR_Parser.Proton_shift_oxygensContext)
+                return self.getTypedRuleContexts(CnsMRParser.Proton_shift_oxygensContext)
             else:
-                return self.getTypedRuleContext(CNS_MR_Parser.Proton_shift_oxygensContext,i)
+                return self.getTypedRuleContext(CnsMRParser.Proton_shift_oxygensContext,i)
 
 
         def proton_shift_ring_atoms(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(CNS_MR_Parser.Proton_shift_ring_atomsContext)
+                return self.getTypedRuleContexts(CnsMRParser.Proton_shift_ring_atomsContext)
             else:
-                return self.getTypedRuleContext(CNS_MR_Parser.Proton_shift_ring_atomsContext,i)
+                return self.getTypedRuleContext(CnsMRParser.Proton_shift_ring_atomsContext,i)
 
 
         def proton_shift_alphas_and_amides(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(CNS_MR_Parser.Proton_shift_alphas_and_amidesContext)
+                return self.getTypedRuleContexts(CnsMRParser.Proton_shift_alphas_and_amidesContext)
             else:
-                return self.getTypedRuleContext(CNS_MR_Parser.Proton_shift_alphas_and_amidesContext,i)
+                return self.getTypedRuleContext(CnsMRParser.Proton_shift_alphas_and_amidesContext,i)
 
 
         def Classification(self):
-            return self.getToken(CNS_MR_Parser.Classification, 0)
+            return self.getToken(CnsMRParser.Classification, 0)
 
         def Equ_op(self):
-            return self.getToken(CNS_MR_Parser.Equ_op, 0)
+            return self.getToken(CnsMRParser.Equ_op, 0)
 
         def Class_name(self):
-            return self.getToken(CNS_MR_Parser.Class_name, 0)
+            return self.getToken(CnsMRParser.Class_name, 0)
 
         def Error(self):
-            return self.getToken(CNS_MR_Parser.Error, 0)
+            return self.getToken(CnsMRParser.Error, 0)
 
         def Real(self, i:int=None):
             if i is None:
-                return self.getTokens(CNS_MR_Parser.Real)
+                return self.getTokens(CnsMRParser.Real)
             else:
-                return self.getToken(CNS_MR_Parser.Real, i)
+                return self.getToken(CnsMRParser.Real, i)
 
         def ForceConstant(self):
-            return self.getToken(CNS_MR_Parser.ForceConstant, 0)
+            return self.getToken(CnsMRParser.ForceConstant, 0)
 
         def Potential(self):
-            return self.getToken(CNS_MR_Parser.Potential, 0)
+            return self.getToken(CnsMRParser.Potential, 0)
 
         def Coupling_potential(self):
-            return self.getToken(CNS_MR_Parser.Coupling_potential, 0)
+            return self.getToken(CnsMRParser.Coupling_potential, 0)
 
         def Print(self):
-            return self.getToken(CNS_MR_Parser.Print, 0)
+            return self.getToken(CnsMRParser.Print, 0)
 
         def Threshold(self):
-            return self.getToken(CNS_MR_Parser.Threshold, 0)
+            return self.getToken(CnsMRParser.Threshold, 0)
 
         def Rmsd_or_Not(self):
-            return self.getToken(CNS_MR_Parser.Rmsd_or_Not, 0)
+            return self.getToken(CnsMRParser.Rmsd_or_Not, 0)
 
         def All(self):
-            return self.getToken(CNS_MR_Parser.All, 0)
+            return self.getToken(CnsMRParser.All, 0)
 
         def Reset(self):
-            return self.getToken(CNS_MR_Parser.Reset, 0)
+            return self.getToken(CnsMRParser.Reset, 0)
 
         def getRuleIndex(self):
-            return CNS_MR_Parser.RULE_proton_shift_statement
+            return CnsMRParser.RULE_proton_shift_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterProton_shift_statement" ):
@@ -4174,7 +4174,7 @@ class CNS_MR_Parser ( Parser ):
 
     def proton_shift_statement(self):
 
-        localctx = CNS_MR_Parser.Proton_shift_statementContext(self, self._ctx, self.state)
+        localctx = CnsMRParser.Proton_shift_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 56, self.RULE_proton_shift_statement)
         self._la = 0 # Token type
         try:
@@ -4186,7 +4186,7 @@ class CNS_MR_Parser ( Parser ):
                 self.state = 616
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==CNS_MR_Parser.Observed:
+                while _la==CnsMRParser.Observed:
                     self.state = 613
                     self.observed()
                     self.state = 618
@@ -4200,7 +4200,7 @@ class CNS_MR_Parser ( Parser ):
                 self.state = 622
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==CNS_MR_Parser.Rcoil:
+                while _la==CnsMRParser.Rcoil:
                     self.state = 619
                     self.proton_shift_rcoil()
                     self.state = 624
@@ -4214,7 +4214,7 @@ class CNS_MR_Parser ( Parser ):
                 self.state = 628
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==CNS_MR_Parser.Anisotropy:
+                while _la==CnsMRParser.Anisotropy:
                     self.state = 625
                     self.proton_shift_anisotropy()
                     self.state = 630
@@ -4228,7 +4228,7 @@ class CNS_MR_Parser ( Parser ):
                 self.state = 634
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==CNS_MR_Parser.Amides:
+                while _la==CnsMRParser.Amides:
                     self.state = 631
                     self.proton_shift_amides()
                     self.state = 636
@@ -4242,7 +4242,7 @@ class CNS_MR_Parser ( Parser ):
                 self.state = 640
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==CNS_MR_Parser.Carbons:
+                while _la==CnsMRParser.Carbons:
                     self.state = 637
                     self.proton_shift_carbons()
                     self.state = 642
@@ -4256,7 +4256,7 @@ class CNS_MR_Parser ( Parser ):
                 self.state = 646
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==CNS_MR_Parser.Nitrogens:
+                while _la==CnsMRParser.Nitrogens:
                     self.state = 643
                     self.proton_shift_nitrogens()
                     self.state = 648
@@ -4270,7 +4270,7 @@ class CNS_MR_Parser ( Parser ):
                 self.state = 652
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==CNS_MR_Parser.Oxygens:
+                while _la==CnsMRParser.Oxygens:
                     self.state = 649
                     self.proton_shift_oxygens()
                     self.state = 654
@@ -4284,7 +4284,7 @@ class CNS_MR_Parser ( Parser ):
                 self.state = 658
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==CNS_MR_Parser.RingAtoms:
+                while _la==CnsMRParser.RingAtoms:
                     self.state = 655
                     self.proton_shift_ring_atoms()
                     self.state = 660
@@ -4298,7 +4298,7 @@ class CNS_MR_Parser ( Parser ):
                 self.state = 664
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==CNS_MR_Parser.AlphasAndAmides:
+                while _la==CnsMRParser.AlphasAndAmides:
                     self.state = 661
                     self.proton_shift_alphas_and_amides()
                     self.state = 666
@@ -4310,41 +4310,41 @@ class CNS_MR_Parser ( Parser ):
             elif la_ == 10:
                 self.enterOuterAlt(localctx, 10)
                 self.state = 667
-                self.match(CNS_MR_Parser.Classification)
+                self.match(CnsMRParser.Classification)
                 self.state = 668
-                self.match(CNS_MR_Parser.Equ_op)
+                self.match(CnsMRParser.Equ_op)
                 self.state = 669
-                self.match(CNS_MR_Parser.Class_name)
+                self.match(CnsMRParser.Class_name)
                 pass
 
             elif la_ == 11:
                 self.enterOuterAlt(localctx, 11)
                 self.state = 670
-                self.match(CNS_MR_Parser.Error)
+                self.match(CnsMRParser.Error)
                 self.state = 672
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CNS_MR_Parser.Equ_op:
+                if _la==CnsMRParser.Equ_op:
                     self.state = 671
-                    self.match(CNS_MR_Parser.Equ_op)
+                    self.match(CnsMRParser.Equ_op)
 
 
                 self.state = 674
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 pass
 
             elif la_ == 12:
                 self.enterOuterAlt(localctx, 12)
                 self.state = 675
-                self.match(CNS_MR_Parser.ForceConstant)
+                self.match(CnsMRParser.ForceConstant)
                 self.state = 676
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 self.state = 678
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CNS_MR_Parser.Real:
+                if _la==CnsMRParser.Real:
                     self.state = 677
-                    self.match(CNS_MR_Parser.Real)
+                    self.match(CnsMRParser.Real)
 
 
                 pass
@@ -4352,45 +4352,45 @@ class CNS_MR_Parser ( Parser ):
             elif la_ == 13:
                 self.enterOuterAlt(localctx, 13)
                 self.state = 680
-                self.match(CNS_MR_Parser.Potential)
+                self.match(CnsMRParser.Potential)
                 self.state = 681
-                self.match(CNS_MR_Parser.Coupling_potential)
+                self.match(CnsMRParser.Coupling_potential)
                 pass
 
             elif la_ == 14:
                 self.enterOuterAlt(localctx, 14)
                 self.state = 682
-                self.match(CNS_MR_Parser.Print)
+                self.match(CnsMRParser.Print)
                 self.state = 683
-                self.match(CNS_MR_Parser.Threshold)
+                self.match(CnsMRParser.Threshold)
                 self.state = 684
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 self.state = 689
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [CNS_MR_Parser.All]:
+                if token in [CnsMRParser.All]:
                     self.state = 685
-                    self.match(CNS_MR_Parser.All)
+                    self.match(CnsMRParser.All)
                     pass
-                elif token in [CNS_MR_Parser.Classification]:
+                elif token in [CnsMRParser.Classification]:
                     self.state = 686
-                    self.match(CNS_MR_Parser.Classification)
+                    self.match(CnsMRParser.Classification)
                     self.state = 687
-                    self.match(CNS_MR_Parser.Equ_op)
+                    self.match(CnsMRParser.Equ_op)
                     self.state = 688
-                    self.match(CNS_MR_Parser.Class_name)
+                    self.match(CnsMRParser.Class_name)
                     pass
                 else:
                     raise NoViableAltException(self)
 
                 self.state = 691
-                self.match(CNS_MR_Parser.Rmsd_or_Not)
+                self.match(CnsMRParser.Rmsd_or_Not)
                 pass
 
             elif la_ == 15:
                 self.enterOuterAlt(localctx, 15)
                 self.state = 692
-                self.match(CNS_MR_Parser.Reset)
+                self.match(CnsMRParser.Reset)
                 pass
 
 
@@ -4410,23 +4410,23 @@ class CNS_MR_Parser ( Parser ):
             self.parser = parser
 
         def Observed(self):
-            return self.getToken(CNS_MR_Parser.Observed, 0)
+            return self.getToken(CnsMRParser.Observed, 0)
 
         def selection(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(CNS_MR_Parser.SelectionContext)
+                return self.getTypedRuleContexts(CnsMRParser.SelectionContext)
             else:
-                return self.getTypedRuleContext(CNS_MR_Parser.SelectionContext,i)
+                return self.getTypedRuleContext(CnsMRParser.SelectionContext,i)
 
 
         def Real(self, i:int=None):
             if i is None:
-                return self.getTokens(CNS_MR_Parser.Real)
+                return self.getTokens(CnsMRParser.Real)
             else:
-                return self.getToken(CNS_MR_Parser.Real, i)
+                return self.getToken(CnsMRParser.Real, i)
 
         def getRuleIndex(self):
-            return CNS_MR_Parser.RULE_observed
+            return CnsMRParser.RULE_observed
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterObserved" ):
@@ -4441,31 +4441,31 @@ class CNS_MR_Parser ( Parser ):
 
     def observed(self):
 
-        localctx = CNS_MR_Parser.ObservedContext(self, self._ctx, self.state)
+        localctx = CnsMRParser.ObservedContext(self, self._ctx, self.state)
         self.enterRule(localctx, 58, self.RULE_observed)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 695
-            self.match(CNS_MR_Parser.Observed)
+            self.match(CnsMRParser.Observed)
             self.state = 696
             self.selection()
             self.state = 698
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==CNS_MR_Parser.L_paren:
+            if _la==CnsMRParser.L_paren:
                 self.state = 697
                 self.selection()
 
 
             self.state = 700
-            self.match(CNS_MR_Parser.Real)
+            self.match(CnsMRParser.Real)
             self.state = 702
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==CNS_MR_Parser.Real:
+            if _la==CnsMRParser.Real:
                 self.state = 701
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
 
 
         except RecognitionException as re:
@@ -4484,17 +4484,17 @@ class CNS_MR_Parser ( Parser ):
             self.parser = parser
 
         def Rcoil(self):
-            return self.getToken(CNS_MR_Parser.Rcoil, 0)
+            return self.getToken(CnsMRParser.Rcoil, 0)
 
         def selection(self):
-            return self.getTypedRuleContext(CNS_MR_Parser.SelectionContext,0)
+            return self.getTypedRuleContext(CnsMRParser.SelectionContext,0)
 
 
         def Real(self):
-            return self.getToken(CNS_MR_Parser.Real, 0)
+            return self.getToken(CnsMRParser.Real, 0)
 
         def getRuleIndex(self):
-            return CNS_MR_Parser.RULE_proton_shift_rcoil
+            return CnsMRParser.RULE_proton_shift_rcoil
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterProton_shift_rcoil" ):
@@ -4509,16 +4509,16 @@ class CNS_MR_Parser ( Parser ):
 
     def proton_shift_rcoil(self):
 
-        localctx = CNS_MR_Parser.Proton_shift_rcoilContext(self, self._ctx, self.state)
+        localctx = CnsMRParser.Proton_shift_rcoilContext(self, self._ctx, self.state)
         self.enterRule(localctx, 60, self.RULE_proton_shift_rcoil)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 704
-            self.match(CNS_MR_Parser.Rcoil)
+            self.match(CnsMRParser.Rcoil)
             self.state = 705
             self.selection()
             self.state = 706
-            self.match(CNS_MR_Parser.Real)
+            self.match(CnsMRParser.Real)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -4535,26 +4535,26 @@ class CNS_MR_Parser ( Parser ):
             self.parser = parser
 
         def Anisotropy(self):
-            return self.getToken(CNS_MR_Parser.Anisotropy, 0)
+            return self.getToken(CnsMRParser.Anisotropy, 0)
 
         def selection(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(CNS_MR_Parser.SelectionContext)
+                return self.getTypedRuleContexts(CnsMRParser.SelectionContext)
             else:
-                return self.getTypedRuleContext(CNS_MR_Parser.SelectionContext,i)
+                return self.getTypedRuleContext(CnsMRParser.SelectionContext,i)
 
 
         def CO_or_CN(self):
-            return self.getToken(CNS_MR_Parser.CO_or_CN, 0)
+            return self.getToken(CnsMRParser.CO_or_CN, 0)
 
         def SC_or_BB(self):
-            return self.getToken(CNS_MR_Parser.SC_or_BB, 0)
+            return self.getToken(CnsMRParser.SC_or_BB, 0)
 
         def Logical(self):
-            return self.getToken(CNS_MR_Parser.Logical, 0)
+            return self.getToken(CnsMRParser.Logical, 0)
 
         def getRuleIndex(self):
-            return CNS_MR_Parser.RULE_proton_shift_anisotropy
+            return CnsMRParser.RULE_proton_shift_anisotropy
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterProton_shift_anisotropy" ):
@@ -4569,13 +4569,13 @@ class CNS_MR_Parser ( Parser ):
 
     def proton_shift_anisotropy(self):
 
-        localctx = CNS_MR_Parser.Proton_shift_anisotropyContext(self, self._ctx, self.state)
+        localctx = CnsMRParser.Proton_shift_anisotropyContext(self, self._ctx, self.state)
         self.enterRule(localctx, 62, self.RULE_proton_shift_anisotropy)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 708
-            self.match(CNS_MR_Parser.Anisotropy)
+            self.match(CnsMRParser.Anisotropy)
             self.state = 709
             self.selection()
             self.state = 710
@@ -4583,17 +4583,17 @@ class CNS_MR_Parser ( Parser ):
             self.state = 711
             self.selection()
             self.state = 712
-            self.match(CNS_MR_Parser.CO_or_CN)
+            self.match(CnsMRParser.CO_or_CN)
             self.state = 714
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==CNS_MR_Parser.Logical:
+            if _la==CnsMRParser.Logical:
                 self.state = 713
-                self.match(CNS_MR_Parser.Logical)
+                self.match(CnsMRParser.Logical)
 
 
             self.state = 716
-            self.match(CNS_MR_Parser.SC_or_BB)
+            self.match(CnsMRParser.SC_or_BB)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -4610,14 +4610,14 @@ class CNS_MR_Parser ( Parser ):
             self.parser = parser
 
         def Amides(self):
-            return self.getToken(CNS_MR_Parser.Amides, 0)
+            return self.getToken(CnsMRParser.Amides, 0)
 
         def selection(self):
-            return self.getTypedRuleContext(CNS_MR_Parser.SelectionContext,0)
+            return self.getTypedRuleContext(CnsMRParser.SelectionContext,0)
 
 
         def getRuleIndex(self):
-            return CNS_MR_Parser.RULE_proton_shift_amides
+            return CnsMRParser.RULE_proton_shift_amides
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterProton_shift_amides" ):
@@ -4632,12 +4632,12 @@ class CNS_MR_Parser ( Parser ):
 
     def proton_shift_amides(self):
 
-        localctx = CNS_MR_Parser.Proton_shift_amidesContext(self, self._ctx, self.state)
+        localctx = CnsMRParser.Proton_shift_amidesContext(self, self._ctx, self.state)
         self.enterRule(localctx, 64, self.RULE_proton_shift_amides)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 718
-            self.match(CNS_MR_Parser.Amides)
+            self.match(CnsMRParser.Amides)
             self.state = 719
             self.selection()
         except RecognitionException as re:
@@ -4656,14 +4656,14 @@ class CNS_MR_Parser ( Parser ):
             self.parser = parser
 
         def Carbons(self):
-            return self.getToken(CNS_MR_Parser.Carbons, 0)
+            return self.getToken(CnsMRParser.Carbons, 0)
 
         def selection(self):
-            return self.getTypedRuleContext(CNS_MR_Parser.SelectionContext,0)
+            return self.getTypedRuleContext(CnsMRParser.SelectionContext,0)
 
 
         def getRuleIndex(self):
-            return CNS_MR_Parser.RULE_proton_shift_carbons
+            return CnsMRParser.RULE_proton_shift_carbons
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterProton_shift_carbons" ):
@@ -4678,12 +4678,12 @@ class CNS_MR_Parser ( Parser ):
 
     def proton_shift_carbons(self):
 
-        localctx = CNS_MR_Parser.Proton_shift_carbonsContext(self, self._ctx, self.state)
+        localctx = CnsMRParser.Proton_shift_carbonsContext(self, self._ctx, self.state)
         self.enterRule(localctx, 66, self.RULE_proton_shift_carbons)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 721
-            self.match(CNS_MR_Parser.Carbons)
+            self.match(CnsMRParser.Carbons)
             self.state = 722
             self.selection()
         except RecognitionException as re:
@@ -4702,14 +4702,14 @@ class CNS_MR_Parser ( Parser ):
             self.parser = parser
 
         def Nitrogens(self):
-            return self.getToken(CNS_MR_Parser.Nitrogens, 0)
+            return self.getToken(CnsMRParser.Nitrogens, 0)
 
         def selection(self):
-            return self.getTypedRuleContext(CNS_MR_Parser.SelectionContext,0)
+            return self.getTypedRuleContext(CnsMRParser.SelectionContext,0)
 
 
         def getRuleIndex(self):
-            return CNS_MR_Parser.RULE_proton_shift_nitrogens
+            return CnsMRParser.RULE_proton_shift_nitrogens
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterProton_shift_nitrogens" ):
@@ -4724,12 +4724,12 @@ class CNS_MR_Parser ( Parser ):
 
     def proton_shift_nitrogens(self):
 
-        localctx = CNS_MR_Parser.Proton_shift_nitrogensContext(self, self._ctx, self.state)
+        localctx = CnsMRParser.Proton_shift_nitrogensContext(self, self._ctx, self.state)
         self.enterRule(localctx, 68, self.RULE_proton_shift_nitrogens)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 724
-            self.match(CNS_MR_Parser.Nitrogens)
+            self.match(CnsMRParser.Nitrogens)
             self.state = 725
             self.selection()
         except RecognitionException as re:
@@ -4748,14 +4748,14 @@ class CNS_MR_Parser ( Parser ):
             self.parser = parser
 
         def Oxygens(self):
-            return self.getToken(CNS_MR_Parser.Oxygens, 0)
+            return self.getToken(CnsMRParser.Oxygens, 0)
 
         def selection(self):
-            return self.getTypedRuleContext(CNS_MR_Parser.SelectionContext,0)
+            return self.getTypedRuleContext(CnsMRParser.SelectionContext,0)
 
 
         def getRuleIndex(self):
-            return CNS_MR_Parser.RULE_proton_shift_oxygens
+            return CnsMRParser.RULE_proton_shift_oxygens
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterProton_shift_oxygens" ):
@@ -4770,12 +4770,12 @@ class CNS_MR_Parser ( Parser ):
 
     def proton_shift_oxygens(self):
 
-        localctx = CNS_MR_Parser.Proton_shift_oxygensContext(self, self._ctx, self.state)
+        localctx = CnsMRParser.Proton_shift_oxygensContext(self, self._ctx, self.state)
         self.enterRule(localctx, 70, self.RULE_proton_shift_oxygens)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 727
-            self.match(CNS_MR_Parser.Oxygens)
+            self.match(CnsMRParser.Oxygens)
             self.state = 728
             self.selection()
         except RecognitionException as re:
@@ -4794,20 +4794,20 @@ class CNS_MR_Parser ( Parser ):
             self.parser = parser
 
         def RingAtoms(self):
-            return self.getToken(CNS_MR_Parser.RingAtoms, 0)
+            return self.getToken(CnsMRParser.RingAtoms, 0)
 
         def Ring_resname(self):
-            return self.getToken(CNS_MR_Parser.Ring_resname, 0)
+            return self.getToken(CnsMRParser.Ring_resname, 0)
 
         def selection(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(CNS_MR_Parser.SelectionContext)
+                return self.getTypedRuleContexts(CnsMRParser.SelectionContext)
             else:
-                return self.getTypedRuleContext(CNS_MR_Parser.SelectionContext,i)
+                return self.getTypedRuleContext(CnsMRParser.SelectionContext,i)
 
 
         def getRuleIndex(self):
-            return CNS_MR_Parser.RULE_proton_shift_ring_atoms
+            return CnsMRParser.RULE_proton_shift_ring_atoms
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterProton_shift_ring_atoms" ):
@@ -4822,15 +4822,15 @@ class CNS_MR_Parser ( Parser ):
 
     def proton_shift_ring_atoms(self):
 
-        localctx = CNS_MR_Parser.Proton_shift_ring_atomsContext(self, self._ctx, self.state)
+        localctx = CnsMRParser.Proton_shift_ring_atomsContext(self, self._ctx, self.state)
         self.enterRule(localctx, 72, self.RULE_proton_shift_ring_atoms)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 730
-            self.match(CNS_MR_Parser.RingAtoms)
+            self.match(CnsMRParser.RingAtoms)
             self.state = 731
-            self.match(CNS_MR_Parser.Ring_resname)
+            self.match(CnsMRParser.Ring_resname)
             self.state = 732
             self.selection()
             self.state = 733
@@ -4844,7 +4844,7 @@ class CNS_MR_Parser ( Parser ):
             self.state = 738
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==CNS_MR_Parser.L_paren:
+            if _la==CnsMRParser.L_paren:
                 self.state = 737
                 self.selection()
 
@@ -4865,14 +4865,14 @@ class CNS_MR_Parser ( Parser ):
             self.parser = parser
 
         def AlphasAndAmides(self):
-            return self.getToken(CNS_MR_Parser.AlphasAndAmides, 0)
+            return self.getToken(CnsMRParser.AlphasAndAmides, 0)
 
         def selection(self):
-            return self.getTypedRuleContext(CNS_MR_Parser.SelectionContext,0)
+            return self.getTypedRuleContext(CnsMRParser.SelectionContext,0)
 
 
         def getRuleIndex(self):
-            return CNS_MR_Parser.RULE_proton_shift_alphas_and_amides
+            return CnsMRParser.RULE_proton_shift_alphas_and_amides
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterProton_shift_alphas_and_amides" ):
@@ -4887,12 +4887,12 @@ class CNS_MR_Parser ( Parser ):
 
     def proton_shift_alphas_and_amides(self):
 
-        localctx = CNS_MR_Parser.Proton_shift_alphas_and_amidesContext(self, self._ctx, self.state)
+        localctx = CnsMRParser.Proton_shift_alphas_and_amidesContext(self, self._ctx, self.state)
         self.enterRule(localctx, 74, self.RULE_proton_shift_alphas_and_amides)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 740
-            self.match(CNS_MR_Parser.AlphasAndAmides)
+            self.match(CnsMRParser.AlphasAndAmides)
             self.state = 741
             self.selection()
         except RecognitionException as re:
@@ -4912,76 +4912,76 @@ class CNS_MR_Parser ( Parser ):
 
         def conf_assign(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(CNS_MR_Parser.Conf_assignContext)
+                return self.getTypedRuleContexts(CnsMRParser.Conf_assignContext)
             else:
-                return self.getTypedRuleContext(CNS_MR_Parser.Conf_assignContext,i)
+                return self.getTypedRuleContext(CnsMRParser.Conf_assignContext,i)
 
 
         def Classification(self):
-            return self.getToken(CNS_MR_Parser.Classification, 0)
+            return self.getToken(CnsMRParser.Classification, 0)
 
         def Equ_op(self):
-            return self.getToken(CNS_MR_Parser.Equ_op, 0)
+            return self.getToken(CnsMRParser.Equ_op, 0)
 
         def Class_name(self):
-            return self.getToken(CNS_MR_Parser.Class_name, 0)
+            return self.getToken(CnsMRParser.Class_name, 0)
 
         def Compressed(self):
-            return self.getToken(CNS_MR_Parser.Compressed, 0)
+            return self.getToken(CnsMRParser.Compressed, 0)
 
         def Expectation(self):
-            return self.getToken(CNS_MR_Parser.Expectation, 0)
+            return self.getToken(CnsMRParser.Expectation, 0)
 
         def Integer(self, i:int=None):
             if i is None:
-                return self.getTokens(CNS_MR_Parser.Integer)
+                return self.getTokens(CnsMRParser.Integer)
             else:
-                return self.getToken(CNS_MR_Parser.Integer, i)
+                return self.getToken(CnsMRParser.Integer, i)
 
         def Real(self):
-            return self.getToken(CNS_MR_Parser.Real, 0)
+            return self.getToken(CnsMRParser.Real, 0)
 
         def Error(self):
-            return self.getToken(CNS_MR_Parser.Error, 0)
+            return self.getToken(CnsMRParser.Error, 0)
 
         def ForceConstant(self):
-            return self.getToken(CNS_MR_Parser.ForceConstant, 0)
+            return self.getToken(CnsMRParser.ForceConstant, 0)
 
         def Nrestraints(self):
-            return self.getToken(CNS_MR_Parser.Nrestraints, 0)
+            return self.getToken(CnsMRParser.Nrestraints, 0)
 
         def Phase(self):
-            return self.getToken(CNS_MR_Parser.Phase, 0)
+            return self.getToken(CnsMRParser.Phase, 0)
 
         def Potential(self):
-            return self.getToken(CNS_MR_Parser.Potential, 0)
+            return self.getToken(CnsMRParser.Potential, 0)
 
         def Rdc_potential(self):
-            return self.getToken(CNS_MR_Parser.Rdc_potential, 0)
+            return self.getToken(CnsMRParser.Rdc_potential, 0)
 
         def Print(self):
-            return self.getToken(CNS_MR_Parser.Print, 0)
+            return self.getToken(CnsMRParser.Print, 0)
 
         def Threshold(self):
-            return self.getToken(CNS_MR_Parser.Threshold, 0)
+            return self.getToken(CnsMRParser.Threshold, 0)
 
         def All(self):
-            return self.getToken(CNS_MR_Parser.All, 0)
+            return self.getToken(CnsMRParser.All, 0)
 
         def Reset(self):
-            return self.getToken(CNS_MR_Parser.Reset, 0)
+            return self.getToken(CnsMRParser.Reset, 0)
 
         def Size(self):
-            return self.getToken(CNS_MR_Parser.Size, 0)
+            return self.getToken(CnsMRParser.Size, 0)
 
         def Dimensions(self):
-            return self.getToken(CNS_MR_Parser.Dimensions, 0)
+            return self.getToken(CnsMRParser.Dimensions, 0)
 
         def Zero(self):
-            return self.getToken(CNS_MR_Parser.Zero, 0)
+            return self.getToken(CnsMRParser.Zero, 0)
 
         def getRuleIndex(self):
-            return CNS_MR_Parser.RULE_conformation_statement
+            return CnsMRParser.RULE_conformation_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterConformation_statement" ):
@@ -4996,19 +4996,19 @@ class CNS_MR_Parser ( Parser ):
 
     def conformation_statement(self):
 
-        localctx = CNS_MR_Parser.Conformation_statementContext(self, self._ctx, self.state)
+        localctx = CnsMRParser.Conformation_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 76, self.RULE_conformation_statement)
         self._la = 0 # Token type
         try:
             self.state = 819
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [CNS_MR_Parser.Assign, CNS_MR_Parser.R_brace]:
+            if token in [CnsMRParser.Assign, CnsMRParser.R_brace]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 746
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==CNS_MR_Parser.Assign:
+                while _la==CnsMRParser.Assign:
                     self.state = 743
                     self.conf_assign()
                     self.state = 748
@@ -5016,32 +5016,32 @@ class CNS_MR_Parser ( Parser ):
                     _la = self._input.LA(1)
 
                 pass
-            elif token in [CNS_MR_Parser.Classification]:
+            elif token in [CnsMRParser.Classification]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 749
-                self.match(CNS_MR_Parser.Classification)
+                self.match(CnsMRParser.Classification)
                 self.state = 750
-                self.match(CNS_MR_Parser.Equ_op)
+                self.match(CnsMRParser.Equ_op)
                 self.state = 751
-                self.match(CNS_MR_Parser.Class_name)
+                self.match(CnsMRParser.Class_name)
                 pass
-            elif token in [CNS_MR_Parser.Compressed]:
+            elif token in [CnsMRParser.Compressed]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 752
-                self.match(CNS_MR_Parser.Compressed)
+                self.match(CnsMRParser.Compressed)
                 pass
-            elif token in [CNS_MR_Parser.Expectation]:
+            elif token in [CnsMRParser.Expectation]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 753
-                self.match(CNS_MR_Parser.Expectation)
+                self.match(CnsMRParser.Expectation)
                 self.state = 754
-                self.match(CNS_MR_Parser.Integer)
+                self.match(CnsMRParser.Integer)
                 self.state = 756
                 self._errHandler.sync(self)
                 la_ = self._interp.adaptivePredict(self._input,53,self._ctx)
                 if la_ == 1:
                     self.state = 755
-                    self.match(CNS_MR_Parser.Integer)
+                    self.match(CnsMRParser.Integer)
 
 
                 self.state = 759
@@ -5049,67 +5049,67 @@ class CNS_MR_Parser ( Parser ):
                 la_ = self._interp.adaptivePredict(self._input,54,self._ctx)
                 if la_ == 1:
                     self.state = 758
-                    self.match(CNS_MR_Parser.Integer)
+                    self.match(CnsMRParser.Integer)
 
 
                 self.state = 762
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CNS_MR_Parser.Integer:
+                if _la==CnsMRParser.Integer:
                     self.state = 761
-                    self.match(CNS_MR_Parser.Integer)
+                    self.match(CnsMRParser.Integer)
 
 
                 self.state = 764
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 pass
-            elif token in [CNS_MR_Parser.Error]:
+            elif token in [CnsMRParser.Error]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 765
-                self.match(CNS_MR_Parser.Error)
+                self.match(CnsMRParser.Error)
                 self.state = 766
-                self.match(CNS_MR_Parser.Equ_op)
+                self.match(CnsMRParser.Equ_op)
                 self.state = 767
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 pass
-            elif token in [CNS_MR_Parser.ForceConstant]:
+            elif token in [CnsMRParser.ForceConstant]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 768
-                self.match(CNS_MR_Parser.ForceConstant)
+                self.match(CnsMRParser.ForceConstant)
                 self.state = 769
-                self.match(CNS_MR_Parser.Equ_op)
+                self.match(CnsMRParser.Equ_op)
                 self.state = 770
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 pass
-            elif token in [CNS_MR_Parser.Nrestraints]:
+            elif token in [CnsMRParser.Nrestraints]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 771
-                self.match(CNS_MR_Parser.Nrestraints)
+                self.match(CnsMRParser.Nrestraints)
                 self.state = 772
-                self.match(CNS_MR_Parser.Equ_op)
+                self.match(CnsMRParser.Equ_op)
                 self.state = 773
-                self.match(CNS_MR_Parser.Integer)
+                self.match(CnsMRParser.Integer)
                 pass
-            elif token in [CNS_MR_Parser.Phase]:
+            elif token in [CnsMRParser.Phase]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 774
-                self.match(CNS_MR_Parser.Phase)
+                self.match(CnsMRParser.Phase)
                 self.state = 775
-                self.match(CNS_MR_Parser.Integer)
+                self.match(CnsMRParser.Integer)
                 self.state = 776
-                self.match(CNS_MR_Parser.Integer)
+                self.match(CnsMRParser.Integer)
                 self.state = 777
-                self.match(CNS_MR_Parser.Integer)
+                self.match(CnsMRParser.Integer)
                 self.state = 781
                 self._errHandler.sync(self)
                 la_ = self._interp.adaptivePredict(self._input,56,self._ctx)
                 if la_ == 1:
                     self.state = 778
-                    self.match(CNS_MR_Parser.Integer)
+                    self.match(CnsMRParser.Integer)
                     self.state = 779
-                    self.match(CNS_MR_Parser.Integer)
+                    self.match(CnsMRParser.Integer)
                     self.state = 780
-                    self.match(CNS_MR_Parser.Integer)
+                    self.match(CnsMRParser.Integer)
 
 
                 self.state = 786
@@ -5117,81 +5117,81 @@ class CNS_MR_Parser ( Parser ):
                 la_ = self._interp.adaptivePredict(self._input,57,self._ctx)
                 if la_ == 1:
                     self.state = 783
-                    self.match(CNS_MR_Parser.Integer)
+                    self.match(CnsMRParser.Integer)
                     self.state = 784
-                    self.match(CNS_MR_Parser.Integer)
+                    self.match(CnsMRParser.Integer)
                     self.state = 785
-                    self.match(CNS_MR_Parser.Integer)
+                    self.match(CnsMRParser.Integer)
 
 
                 self.state = 791
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CNS_MR_Parser.Integer:
+                if _la==CnsMRParser.Integer:
                     self.state = 788
-                    self.match(CNS_MR_Parser.Integer)
+                    self.match(CnsMRParser.Integer)
                     self.state = 789
-                    self.match(CNS_MR_Parser.Integer)
+                    self.match(CnsMRParser.Integer)
                     self.state = 790
-                    self.match(CNS_MR_Parser.Integer)
+                    self.match(CnsMRParser.Integer)
 
 
                 pass
-            elif token in [CNS_MR_Parser.Potential]:
+            elif token in [CnsMRParser.Potential]:
                 self.enterOuterAlt(localctx, 9)
                 self.state = 793
-                self.match(CNS_MR_Parser.Potential)
+                self.match(CnsMRParser.Potential)
                 self.state = 794
-                self.match(CNS_MR_Parser.Equ_op)
+                self.match(CnsMRParser.Equ_op)
                 self.state = 795
-                self.match(CNS_MR_Parser.Rdc_potential)
+                self.match(CnsMRParser.Rdc_potential)
                 pass
-            elif token in [CNS_MR_Parser.Print]:
+            elif token in [CnsMRParser.Print]:
                 self.enterOuterAlt(localctx, 10)
                 self.state = 796
-                self.match(CNS_MR_Parser.Print)
+                self.match(CnsMRParser.Print)
                 self.state = 797
-                self.match(CNS_MR_Parser.Threshold)
+                self.match(CnsMRParser.Threshold)
                 self.state = 798
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 self.state = 803
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [CNS_MR_Parser.All]:
+                if token in [CnsMRParser.All]:
                     self.state = 799
-                    self.match(CNS_MR_Parser.All)
+                    self.match(CnsMRParser.All)
                     pass
-                elif token in [CNS_MR_Parser.Classification]:
+                elif token in [CnsMRParser.Classification]:
                     self.state = 800
-                    self.match(CNS_MR_Parser.Classification)
+                    self.match(CnsMRParser.Classification)
                     self.state = 801
-                    self.match(CNS_MR_Parser.Equ_op)
+                    self.match(CnsMRParser.Equ_op)
                     self.state = 802
-                    self.match(CNS_MR_Parser.Class_name)
+                    self.match(CnsMRParser.Class_name)
                     pass
                 else:
                     raise NoViableAltException(self)
 
                 pass
-            elif token in [CNS_MR_Parser.Reset]:
+            elif token in [CnsMRParser.Reset]:
                 self.enterOuterAlt(localctx, 11)
                 self.state = 805
-                self.match(CNS_MR_Parser.Reset)
+                self.match(CnsMRParser.Reset)
                 pass
-            elif token in [CNS_MR_Parser.Size]:
+            elif token in [CnsMRParser.Size]:
                 self.enterOuterAlt(localctx, 12)
                 self.state = 806
-                self.match(CNS_MR_Parser.Size)
+                self.match(CnsMRParser.Size)
                 self.state = 807
-                self.match(CNS_MR_Parser.Dimensions)
+                self.match(CnsMRParser.Dimensions)
                 self.state = 808
-                self.match(CNS_MR_Parser.Integer)
+                self.match(CnsMRParser.Integer)
                 self.state = 810
                 self._errHandler.sync(self)
                 la_ = self._interp.adaptivePredict(self._input,60,self._ctx)
                 if la_ == 1:
                     self.state = 809
-                    self.match(CNS_MR_Parser.Integer)
+                    self.match(CnsMRParser.Integer)
 
 
                 self.state = 813
@@ -5199,22 +5199,22 @@ class CNS_MR_Parser ( Parser ):
                 la_ = self._interp.adaptivePredict(self._input,61,self._ctx)
                 if la_ == 1:
                     self.state = 812
-                    self.match(CNS_MR_Parser.Integer)
+                    self.match(CnsMRParser.Integer)
 
 
                 self.state = 816
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CNS_MR_Parser.Integer:
+                if _la==CnsMRParser.Integer:
                     self.state = 815
-                    self.match(CNS_MR_Parser.Integer)
+                    self.match(CnsMRParser.Integer)
 
 
                 pass
-            elif token in [CNS_MR_Parser.Zero]:
+            elif token in [CnsMRParser.Zero]:
                 self.enterOuterAlt(localctx, 13)
                 self.state = 818
-                self.match(CNS_MR_Parser.Zero)
+                self.match(CnsMRParser.Zero)
                 pass
             else:
                 raise NoViableAltException(self)
@@ -5235,17 +5235,17 @@ class CNS_MR_Parser ( Parser ):
             self.parser = parser
 
         def Assign(self):
-            return self.getToken(CNS_MR_Parser.Assign, 0)
+            return self.getToken(CnsMRParser.Assign, 0)
 
         def selection(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(CNS_MR_Parser.SelectionContext)
+                return self.getTypedRuleContexts(CnsMRParser.SelectionContext)
             else:
-                return self.getTypedRuleContext(CNS_MR_Parser.SelectionContext,i)
+                return self.getTypedRuleContext(CnsMRParser.SelectionContext,i)
 
 
         def getRuleIndex(self):
-            return CNS_MR_Parser.RULE_conf_assign
+            return CnsMRParser.RULE_conf_assign
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterConf_assign" ):
@@ -5260,13 +5260,13 @@ class CNS_MR_Parser ( Parser ):
 
     def conf_assign(self):
 
-        localctx = CNS_MR_Parser.Conf_assignContext(self, self._ctx, self.state)
+        localctx = CnsMRParser.Conf_assignContext(self, self._ctx, self.state)
         self.enterRule(localctx, 78, self.RULE_conf_assign)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 821
-            self.match(CNS_MR_Parser.Assign)
+            self.match(CnsMRParser.Assign)
             self.state = 822
             self.selection()
             self.state = 823
@@ -5306,7 +5306,7 @@ class CNS_MR_Parser ( Parser ):
             self.state = 845
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==CNS_MR_Parser.L_paren:
+            if _la==CnsMRParser.L_paren:
                 self.state = 840
                 self.selection()
                 self.state = 841
@@ -5334,55 +5334,55 @@ class CNS_MR_Parser ( Parser ):
 
         def dani_assign(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(CNS_MR_Parser.Dani_assignContext)
+                return self.getTypedRuleContexts(CnsMRParser.Dani_assignContext)
             else:
-                return self.getTypedRuleContext(CNS_MR_Parser.Dani_assignContext,i)
+                return self.getTypedRuleContext(CnsMRParser.Dani_assignContext,i)
 
 
         def Classification(self):
-            return self.getToken(CNS_MR_Parser.Classification, 0)
+            return self.getToken(CnsMRParser.Classification, 0)
 
         def Equ_op(self):
-            return self.getToken(CNS_MR_Parser.Equ_op, 0)
+            return self.getToken(CnsMRParser.Equ_op, 0)
 
         def Class_name(self):
-            return self.getToken(CNS_MR_Parser.Class_name, 0)
+            return self.getToken(CnsMRParser.Class_name, 0)
 
         def Coefficients(self):
-            return self.getToken(CNS_MR_Parser.Coefficients, 0)
+            return self.getToken(CnsMRParser.Coefficients, 0)
 
         def Real(self, i:int=None):
             if i is None:
-                return self.getTokens(CNS_MR_Parser.Real)
+                return self.getTokens(CnsMRParser.Real)
             else:
-                return self.getToken(CNS_MR_Parser.Real, i)
+                return self.getToken(CnsMRParser.Real, i)
 
         def ForceConstant(self):
-            return self.getToken(CNS_MR_Parser.ForceConstant, 0)
+            return self.getToken(CnsMRParser.ForceConstant, 0)
 
         def Nrestraints(self):
-            return self.getToken(CNS_MR_Parser.Nrestraints, 0)
+            return self.getToken(CnsMRParser.Nrestraints, 0)
 
         def Integer(self):
-            return self.getToken(CNS_MR_Parser.Integer, 0)
+            return self.getToken(CnsMRParser.Integer, 0)
 
         def Potential(self):
-            return self.getToken(CNS_MR_Parser.Potential, 0)
+            return self.getToken(CnsMRParser.Potential, 0)
 
         def Rdc_potential(self):
-            return self.getToken(CNS_MR_Parser.Rdc_potential, 0)
+            return self.getToken(CnsMRParser.Rdc_potential, 0)
 
         def Print(self):
-            return self.getToken(CNS_MR_Parser.Print, 0)
+            return self.getToken(CnsMRParser.Print, 0)
 
         def Threshold(self):
-            return self.getToken(CNS_MR_Parser.Threshold, 0)
+            return self.getToken(CnsMRParser.Threshold, 0)
 
         def Reset(self):
-            return self.getToken(CNS_MR_Parser.Reset, 0)
+            return self.getToken(CnsMRParser.Reset, 0)
 
         def getRuleIndex(self):
-            return CNS_MR_Parser.RULE_diffusion_statement
+            return CnsMRParser.RULE_diffusion_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterDiffusion_statement" ):
@@ -5397,19 +5397,19 @@ class CNS_MR_Parser ( Parser ):
 
     def diffusion_statement(self):
 
-        localctx = CNS_MR_Parser.Diffusion_statementContext(self, self._ctx, self.state)
+        localctx = CnsMRParser.Diffusion_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 80, self.RULE_diffusion_statement)
         self._la = 0 # Token type
         try:
             self.state = 875
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [CNS_MR_Parser.Assign, CNS_MR_Parser.R_brace]:
+            if token in [CnsMRParser.Assign, CnsMRParser.R_brace]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 850
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==CNS_MR_Parser.Assign:
+                while _la==CnsMRParser.Assign:
                     self.state = 847
                     self.dani_assign()
                     self.state = 852
@@ -5417,70 +5417,70 @@ class CNS_MR_Parser ( Parser ):
                     _la = self._input.LA(1)
 
                 pass
-            elif token in [CNS_MR_Parser.Classification]:
+            elif token in [CnsMRParser.Classification]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 853
-                self.match(CNS_MR_Parser.Classification)
+                self.match(CnsMRParser.Classification)
                 self.state = 854
-                self.match(CNS_MR_Parser.Equ_op)
+                self.match(CnsMRParser.Equ_op)
                 self.state = 855
-                self.match(CNS_MR_Parser.Class_name)
+                self.match(CnsMRParser.Class_name)
                 pass
-            elif token in [CNS_MR_Parser.Coefficients]:
+            elif token in [CnsMRParser.Coefficients]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 856
-                self.match(CNS_MR_Parser.Coefficients)
+                self.match(CnsMRParser.Coefficients)
                 self.state = 857
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 self.state = 858
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 self.state = 859
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 self.state = 860
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 self.state = 861
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 pass
-            elif token in [CNS_MR_Parser.ForceConstant]:
+            elif token in [CnsMRParser.ForceConstant]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 862
-                self.match(CNS_MR_Parser.ForceConstant)
+                self.match(CnsMRParser.ForceConstant)
                 self.state = 863
-                self.match(CNS_MR_Parser.Equ_op)
+                self.match(CnsMRParser.Equ_op)
                 self.state = 864
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 pass
-            elif token in [CNS_MR_Parser.Nrestraints]:
+            elif token in [CnsMRParser.Nrestraints]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 865
-                self.match(CNS_MR_Parser.Nrestraints)
+                self.match(CnsMRParser.Nrestraints)
                 self.state = 866
-                self.match(CNS_MR_Parser.Equ_op)
+                self.match(CnsMRParser.Equ_op)
                 self.state = 867
-                self.match(CNS_MR_Parser.Integer)
+                self.match(CnsMRParser.Integer)
                 pass
-            elif token in [CNS_MR_Parser.Potential]:
+            elif token in [CnsMRParser.Potential]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 868
-                self.match(CNS_MR_Parser.Potential)
+                self.match(CnsMRParser.Potential)
                 self.state = 869
-                self.match(CNS_MR_Parser.Equ_op)
+                self.match(CnsMRParser.Equ_op)
                 self.state = 870
-                self.match(CNS_MR_Parser.Rdc_potential)
+                self.match(CnsMRParser.Rdc_potential)
                 pass
-            elif token in [CNS_MR_Parser.Print]:
+            elif token in [CnsMRParser.Print]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 871
-                self.match(CNS_MR_Parser.Print)
+                self.match(CnsMRParser.Print)
                 self.state = 872
-                self.match(CNS_MR_Parser.Threshold)
+                self.match(CnsMRParser.Threshold)
                 self.state = 873
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 pass
-            elif token in [CNS_MR_Parser.Reset]:
+            elif token in [CnsMRParser.Reset]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 874
-                self.match(CNS_MR_Parser.Reset)
+                self.match(CnsMRParser.Reset)
                 pass
             else:
                 raise NoViableAltException(self)
@@ -5501,23 +5501,23 @@ class CNS_MR_Parser ( Parser ):
             self.parser = parser
 
         def Assign(self):
-            return self.getToken(CNS_MR_Parser.Assign, 0)
+            return self.getToken(CnsMRParser.Assign, 0)
 
         def selection(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(CNS_MR_Parser.SelectionContext)
+                return self.getTypedRuleContexts(CnsMRParser.SelectionContext)
             else:
-                return self.getTypedRuleContext(CNS_MR_Parser.SelectionContext,i)
+                return self.getTypedRuleContext(CnsMRParser.SelectionContext,i)
 
 
         def Real(self, i:int=None):
             if i is None:
-                return self.getTokens(CNS_MR_Parser.Real)
+                return self.getTokens(CnsMRParser.Real)
             else:
-                return self.getToken(CNS_MR_Parser.Real, i)
+                return self.getToken(CnsMRParser.Real, i)
 
         def getRuleIndex(self):
-            return CNS_MR_Parser.RULE_dani_assign
+            return CnsMRParser.RULE_dani_assign
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterDani_assign" ):
@@ -5532,12 +5532,12 @@ class CNS_MR_Parser ( Parser ):
 
     def dani_assign(self):
 
-        localctx = CNS_MR_Parser.Dani_assignContext(self, self._ctx, self.state)
+        localctx = CnsMRParser.Dani_assignContext(self, self._ctx, self.state)
         self.enterRule(localctx, 82, self.RULE_dani_assign)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 877
-            self.match(CNS_MR_Parser.Assign)
+            self.match(CnsMRParser.Assign)
             self.state = 878
             self.selection()
             self.state = 879
@@ -5551,9 +5551,9 @@ class CNS_MR_Parser ( Parser ):
             self.state = 883
             self.selection()
             self.state = 884
-            self.match(CNS_MR_Parser.Real)
+            self.match(CnsMRParser.Real)
             self.state = 885
-            self.match(CNS_MR_Parser.Real)
+            self.match(CnsMRParser.Real)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -5571,55 +5571,55 @@ class CNS_MR_Parser ( Parser ):
 
         def one_bond_assign(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(CNS_MR_Parser.One_bond_assignContext)
+                return self.getTypedRuleContexts(CnsMRParser.One_bond_assignContext)
             else:
-                return self.getTypedRuleContext(CNS_MR_Parser.One_bond_assignContext,i)
+                return self.getTypedRuleContext(CnsMRParser.One_bond_assignContext,i)
 
 
         def Classification(self):
-            return self.getToken(CNS_MR_Parser.Classification, 0)
+            return self.getToken(CnsMRParser.Classification, 0)
 
         def Equ_op(self):
-            return self.getToken(CNS_MR_Parser.Equ_op, 0)
+            return self.getToken(CnsMRParser.Equ_op, 0)
 
         def Class_name(self):
-            return self.getToken(CNS_MR_Parser.Class_name, 0)
+            return self.getToken(CnsMRParser.Class_name, 0)
 
         def Coefficients(self):
-            return self.getToken(CNS_MR_Parser.Coefficients, 0)
+            return self.getToken(CnsMRParser.Coefficients, 0)
 
         def Real(self, i:int=None):
             if i is None:
-                return self.getTokens(CNS_MR_Parser.Real)
+                return self.getTokens(CnsMRParser.Real)
             else:
-                return self.getToken(CNS_MR_Parser.Real, i)
+                return self.getToken(CnsMRParser.Real, i)
 
         def ForceConstant(self):
-            return self.getToken(CNS_MR_Parser.ForceConstant, 0)
+            return self.getToken(CnsMRParser.ForceConstant, 0)
 
         def Nrestraints(self):
-            return self.getToken(CNS_MR_Parser.Nrestraints, 0)
+            return self.getToken(CnsMRParser.Nrestraints, 0)
 
         def Integer(self):
-            return self.getToken(CNS_MR_Parser.Integer, 0)
+            return self.getToken(CnsMRParser.Integer, 0)
 
         def Potential(self):
-            return self.getToken(CNS_MR_Parser.Potential, 0)
+            return self.getToken(CnsMRParser.Potential, 0)
 
         def Rdc_potential(self):
-            return self.getToken(CNS_MR_Parser.Rdc_potential, 0)
+            return self.getToken(CnsMRParser.Rdc_potential, 0)
 
         def Print(self):
-            return self.getToken(CNS_MR_Parser.Print, 0)
+            return self.getToken(CnsMRParser.Print, 0)
 
         def Threshold(self):
-            return self.getToken(CNS_MR_Parser.Threshold, 0)
+            return self.getToken(CnsMRParser.Threshold, 0)
 
         def Reset(self):
-            return self.getToken(CNS_MR_Parser.Reset, 0)
+            return self.getToken(CnsMRParser.Reset, 0)
 
         def getRuleIndex(self):
-            return CNS_MR_Parser.RULE_one_bond_coupling_statement
+            return CnsMRParser.RULE_one_bond_coupling_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterOne_bond_coupling_statement" ):
@@ -5634,19 +5634,19 @@ class CNS_MR_Parser ( Parser ):
 
     def one_bond_coupling_statement(self):
 
-        localctx = CNS_MR_Parser.One_bond_coupling_statementContext(self, self._ctx, self.state)
+        localctx = CnsMRParser.One_bond_coupling_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 84, self.RULE_one_bond_coupling_statement)
         self._la = 0 # Token type
         try:
             self.state = 917
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [CNS_MR_Parser.Assign, CNS_MR_Parser.R_brace]:
+            if token in [CnsMRParser.Assign, CnsMRParser.R_brace]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 890
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==CNS_MR_Parser.Assign:
+                while _la==CnsMRParser.Assign:
                     self.state = 887
                     self.one_bond_assign()
                     self.state = 892
@@ -5654,74 +5654,74 @@ class CNS_MR_Parser ( Parser ):
                     _la = self._input.LA(1)
 
                 pass
-            elif token in [CNS_MR_Parser.Classification]:
+            elif token in [CnsMRParser.Classification]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 893
-                self.match(CNS_MR_Parser.Classification)
+                self.match(CnsMRParser.Classification)
                 self.state = 894
-                self.match(CNS_MR_Parser.Equ_op)
+                self.match(CnsMRParser.Equ_op)
                 self.state = 895
-                self.match(CNS_MR_Parser.Class_name)
+                self.match(CnsMRParser.Class_name)
                 pass
-            elif token in [CNS_MR_Parser.Coefficients]:
+            elif token in [CnsMRParser.Coefficients]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 896
-                self.match(CNS_MR_Parser.Coefficients)
+                self.match(CnsMRParser.Coefficients)
                 self.state = 897
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 self.state = 898
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 self.state = 899
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 self.state = 900
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 self.state = 901
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 self.state = 902
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 self.state = 903
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 pass
-            elif token in [CNS_MR_Parser.ForceConstant]:
+            elif token in [CnsMRParser.ForceConstant]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 904
-                self.match(CNS_MR_Parser.ForceConstant)
+                self.match(CnsMRParser.ForceConstant)
                 self.state = 905
-                self.match(CNS_MR_Parser.Equ_op)
+                self.match(CnsMRParser.Equ_op)
                 self.state = 906
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 pass
-            elif token in [CNS_MR_Parser.Nrestraints]:
+            elif token in [CnsMRParser.Nrestraints]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 907
-                self.match(CNS_MR_Parser.Nrestraints)
+                self.match(CnsMRParser.Nrestraints)
                 self.state = 908
-                self.match(CNS_MR_Parser.Equ_op)
+                self.match(CnsMRParser.Equ_op)
                 self.state = 909
-                self.match(CNS_MR_Parser.Integer)
+                self.match(CnsMRParser.Integer)
                 pass
-            elif token in [CNS_MR_Parser.Potential]:
+            elif token in [CnsMRParser.Potential]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 910
-                self.match(CNS_MR_Parser.Potential)
+                self.match(CnsMRParser.Potential)
                 self.state = 911
-                self.match(CNS_MR_Parser.Equ_op)
+                self.match(CnsMRParser.Equ_op)
                 self.state = 912
-                self.match(CNS_MR_Parser.Rdc_potential)
+                self.match(CnsMRParser.Rdc_potential)
                 pass
-            elif token in [CNS_MR_Parser.Print]:
+            elif token in [CnsMRParser.Print]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 913
-                self.match(CNS_MR_Parser.Print)
+                self.match(CnsMRParser.Print)
                 self.state = 914
-                self.match(CNS_MR_Parser.Threshold)
+                self.match(CnsMRParser.Threshold)
                 self.state = 915
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 pass
-            elif token in [CNS_MR_Parser.Reset]:
+            elif token in [CnsMRParser.Reset]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 916
-                self.match(CNS_MR_Parser.Reset)
+                self.match(CnsMRParser.Reset)
                 pass
             else:
                 raise NoViableAltException(self)
@@ -5742,23 +5742,23 @@ class CNS_MR_Parser ( Parser ):
             self.parser = parser
 
         def Assign(self):
-            return self.getToken(CNS_MR_Parser.Assign, 0)
+            return self.getToken(CnsMRParser.Assign, 0)
 
         def selection(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(CNS_MR_Parser.SelectionContext)
+                return self.getTypedRuleContexts(CnsMRParser.SelectionContext)
             else:
-                return self.getTypedRuleContext(CNS_MR_Parser.SelectionContext,i)
+                return self.getTypedRuleContext(CnsMRParser.SelectionContext,i)
 
 
         def Real(self, i:int=None):
             if i is None:
-                return self.getTokens(CNS_MR_Parser.Real)
+                return self.getTokens(CnsMRParser.Real)
             else:
-                return self.getToken(CNS_MR_Parser.Real, i)
+                return self.getToken(CnsMRParser.Real, i)
 
         def getRuleIndex(self):
-            return CNS_MR_Parser.RULE_one_bond_assign
+            return CnsMRParser.RULE_one_bond_assign
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterOne_bond_assign" ):
@@ -5773,12 +5773,12 @@ class CNS_MR_Parser ( Parser ):
 
     def one_bond_assign(self):
 
-        localctx = CNS_MR_Parser.One_bond_assignContext(self, self._ctx, self.state)
+        localctx = CnsMRParser.One_bond_assignContext(self, self._ctx, self.state)
         self.enterRule(localctx, 86, self.RULE_one_bond_assign)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 919
-            self.match(CNS_MR_Parser.Assign)
+            self.match(CnsMRParser.Assign)
             self.state = 920
             self.selection()
             self.state = 921
@@ -5796,9 +5796,9 @@ class CNS_MR_Parser ( Parser ):
             self.state = 927
             self.selection()
             self.state = 928
-            self.match(CNS_MR_Parser.Real)
+            self.match(CnsMRParser.Real)
             self.state = 929
-            self.match(CNS_MR_Parser.Real)
+            self.match(CnsMRParser.Real)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -5816,76 +5816,76 @@ class CNS_MR_Parser ( Parser ):
 
         def angle_db_assign(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(CNS_MR_Parser.Angle_db_assignContext)
+                return self.getTypedRuleContexts(CnsMRParser.Angle_db_assignContext)
             else:
-                return self.getTypedRuleContext(CNS_MR_Parser.Angle_db_assignContext,i)
+                return self.getTypedRuleContext(CnsMRParser.Angle_db_assignContext,i)
 
 
         def Classification(self):
-            return self.getToken(CNS_MR_Parser.Classification, 0)
+            return self.getToken(CnsMRParser.Classification, 0)
 
         def Equ_op(self):
-            return self.getToken(CNS_MR_Parser.Equ_op, 0)
+            return self.getToken(CnsMRParser.Equ_op, 0)
 
         def Class_name(self):
-            return self.getToken(CNS_MR_Parser.Class_name, 0)
+            return self.getToken(CnsMRParser.Class_name, 0)
 
         def DerivFlag(self):
-            return self.getToken(CNS_MR_Parser.DerivFlag, 0)
+            return self.getToken(CnsMRParser.DerivFlag, 0)
 
         def On_or_Off(self):
-            return self.getToken(CNS_MR_Parser.On_or_Off, 0)
+            return self.getToken(CnsMRParser.On_or_Off, 0)
 
         def Expectation(self):
-            return self.getToken(CNS_MR_Parser.Expectation, 0)
+            return self.getToken(CnsMRParser.Expectation, 0)
 
         def Integer(self, i:int=None):
             if i is None:
-                return self.getTokens(CNS_MR_Parser.Integer)
+                return self.getTokens(CnsMRParser.Integer)
             else:
-                return self.getToken(CNS_MR_Parser.Integer, i)
+                return self.getToken(CnsMRParser.Integer, i)
 
         def Real(self):
-            return self.getToken(CNS_MR_Parser.Real, 0)
+            return self.getToken(CnsMRParser.Real, 0)
 
         def Error(self):
-            return self.getToken(CNS_MR_Parser.Error, 0)
+            return self.getToken(CnsMRParser.Error, 0)
 
         def ForceConstant(self):
-            return self.getToken(CNS_MR_Parser.ForceConstant, 0)
+            return self.getToken(CnsMRParser.ForceConstant, 0)
 
         def Nrestraints(self):
-            return self.getToken(CNS_MR_Parser.Nrestraints, 0)
+            return self.getToken(CnsMRParser.Nrestraints, 0)
 
         def Potential(self):
-            return self.getToken(CNS_MR_Parser.Potential, 0)
+            return self.getToken(CnsMRParser.Potential, 0)
 
         def Rdc_potential(self):
-            return self.getToken(CNS_MR_Parser.Rdc_potential, 0)
+            return self.getToken(CnsMRParser.Rdc_potential, 0)
 
         def Print(self):
-            return self.getToken(CNS_MR_Parser.Print, 0)
+            return self.getToken(CnsMRParser.Print, 0)
 
         def Threshold(self):
-            return self.getToken(CNS_MR_Parser.Threshold, 0)
+            return self.getToken(CnsMRParser.Threshold, 0)
 
         def All(self):
-            return self.getToken(CNS_MR_Parser.All, 0)
+            return self.getToken(CnsMRParser.All, 0)
 
         def Reset(self):
-            return self.getToken(CNS_MR_Parser.Reset, 0)
+            return self.getToken(CnsMRParser.Reset, 0)
 
         def Size(self):
-            return self.getToken(CNS_MR_Parser.Size, 0)
+            return self.getToken(CnsMRParser.Size, 0)
 
         def Angle_dihedral(self):
-            return self.getToken(CNS_MR_Parser.Angle_dihedral, 0)
+            return self.getToken(CnsMRParser.Angle_dihedral, 0)
 
         def Zero(self):
-            return self.getToken(CNS_MR_Parser.Zero, 0)
+            return self.getToken(CnsMRParser.Zero, 0)
 
         def getRuleIndex(self):
-            return CNS_MR_Parser.RULE_angle_db_statement
+            return CnsMRParser.RULE_angle_db_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterAngle_db_statement" ):
@@ -5900,19 +5900,19 @@ class CNS_MR_Parser ( Parser ):
 
     def angle_db_statement(self):
 
-        localctx = CNS_MR_Parser.Angle_db_statementContext(self, self._ctx, self.state)
+        localctx = CnsMRParser.Angle_db_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 88, self.RULE_angle_db_statement)
         self._la = 0 # Token type
         try:
             self.state = 974
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [CNS_MR_Parser.Assign, CNS_MR_Parser.R_brace]:
+            if token in [CnsMRParser.Assign, CnsMRParser.R_brace]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 934
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==CNS_MR_Parser.Assign:
+                while _la==CnsMRParser.Assign:
                     self.state = 931
                     self.angle_db_assign()
                     self.state = 936
@@ -5920,118 +5920,118 @@ class CNS_MR_Parser ( Parser ):
                     _la = self._input.LA(1)
 
                 pass
-            elif token in [CNS_MR_Parser.Classification]:
+            elif token in [CnsMRParser.Classification]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 937
-                self.match(CNS_MR_Parser.Classification)
+                self.match(CnsMRParser.Classification)
                 self.state = 938
-                self.match(CNS_MR_Parser.Equ_op)
+                self.match(CnsMRParser.Equ_op)
                 self.state = 939
-                self.match(CNS_MR_Parser.Class_name)
+                self.match(CnsMRParser.Class_name)
                 pass
-            elif token in [CNS_MR_Parser.DerivFlag]:
+            elif token in [CnsMRParser.DerivFlag]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 940
-                self.match(CNS_MR_Parser.DerivFlag)
+                self.match(CnsMRParser.DerivFlag)
                 self.state = 941
-                self.match(CNS_MR_Parser.Equ_op)
+                self.match(CnsMRParser.Equ_op)
                 self.state = 942
-                self.match(CNS_MR_Parser.On_or_Off)
+                self.match(CnsMRParser.On_or_Off)
                 pass
-            elif token in [CNS_MR_Parser.Expectation]:
+            elif token in [CnsMRParser.Expectation]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 943
-                self.match(CNS_MR_Parser.Expectation)
+                self.match(CnsMRParser.Expectation)
                 self.state = 944
-                self.match(CNS_MR_Parser.Integer)
+                self.match(CnsMRParser.Integer)
                 self.state = 945
-                self.match(CNS_MR_Parser.Integer)
+                self.match(CnsMRParser.Integer)
                 self.state = 946
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 pass
-            elif token in [CNS_MR_Parser.Error]:
+            elif token in [CnsMRParser.Error]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 947
-                self.match(CNS_MR_Parser.Error)
+                self.match(CnsMRParser.Error)
                 self.state = 948
-                self.match(CNS_MR_Parser.Equ_op)
+                self.match(CnsMRParser.Equ_op)
                 self.state = 949
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 pass
-            elif token in [CNS_MR_Parser.ForceConstant]:
+            elif token in [CnsMRParser.ForceConstant]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 950
-                self.match(CNS_MR_Parser.ForceConstant)
+                self.match(CnsMRParser.ForceConstant)
                 self.state = 951
-                self.match(CNS_MR_Parser.Equ_op)
+                self.match(CnsMRParser.Equ_op)
                 self.state = 952
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 pass
-            elif token in [CNS_MR_Parser.Nrestraints]:
+            elif token in [CnsMRParser.Nrestraints]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 953
-                self.match(CNS_MR_Parser.Nrestraints)
+                self.match(CnsMRParser.Nrestraints)
                 self.state = 954
-                self.match(CNS_MR_Parser.Equ_op)
+                self.match(CnsMRParser.Equ_op)
                 self.state = 955
-                self.match(CNS_MR_Parser.Integer)
+                self.match(CnsMRParser.Integer)
                 pass
-            elif token in [CNS_MR_Parser.Potential]:
+            elif token in [CnsMRParser.Potential]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 956
-                self.match(CNS_MR_Parser.Potential)
+                self.match(CnsMRParser.Potential)
                 self.state = 957
-                self.match(CNS_MR_Parser.Equ_op)
+                self.match(CnsMRParser.Equ_op)
                 self.state = 958
-                self.match(CNS_MR_Parser.Rdc_potential)
+                self.match(CnsMRParser.Rdc_potential)
                 pass
-            elif token in [CNS_MR_Parser.Print]:
+            elif token in [CnsMRParser.Print]:
                 self.enterOuterAlt(localctx, 9)
                 self.state = 959
-                self.match(CNS_MR_Parser.Print)
+                self.match(CnsMRParser.Print)
                 self.state = 960
-                self.match(CNS_MR_Parser.Threshold)
+                self.match(CnsMRParser.Threshold)
                 self.state = 961
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 self.state = 966
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [CNS_MR_Parser.All]:
+                if token in [CnsMRParser.All]:
                     self.state = 962
-                    self.match(CNS_MR_Parser.All)
+                    self.match(CnsMRParser.All)
                     pass
-                elif token in [CNS_MR_Parser.Classification]:
+                elif token in [CnsMRParser.Classification]:
                     self.state = 963
-                    self.match(CNS_MR_Parser.Classification)
+                    self.match(CnsMRParser.Classification)
                     self.state = 964
-                    self.match(CNS_MR_Parser.Equ_op)
+                    self.match(CnsMRParser.Equ_op)
                     self.state = 965
-                    self.match(CNS_MR_Parser.Class_name)
+                    self.match(CnsMRParser.Class_name)
                     pass
                 else:
                     raise NoViableAltException(self)
 
                 pass
-            elif token in [CNS_MR_Parser.Reset]:
+            elif token in [CnsMRParser.Reset]:
                 self.enterOuterAlt(localctx, 10)
                 self.state = 968
-                self.match(CNS_MR_Parser.Reset)
+                self.match(CnsMRParser.Reset)
                 pass
-            elif token in [CNS_MR_Parser.Size]:
+            elif token in [CnsMRParser.Size]:
                 self.enterOuterAlt(localctx, 11)
                 self.state = 969
-                self.match(CNS_MR_Parser.Size)
+                self.match(CnsMRParser.Size)
                 self.state = 970
-                self.match(CNS_MR_Parser.Angle_dihedral)
+                self.match(CnsMRParser.Angle_dihedral)
                 self.state = 971
-                self.match(CNS_MR_Parser.Integer)
+                self.match(CnsMRParser.Integer)
                 self.state = 972
-                self.match(CNS_MR_Parser.Integer)
+                self.match(CnsMRParser.Integer)
                 pass
-            elif token in [CNS_MR_Parser.Zero]:
+            elif token in [CnsMRParser.Zero]:
                 self.enterOuterAlt(localctx, 12)
                 self.state = 973
-                self.match(CNS_MR_Parser.Zero)
+                self.match(CnsMRParser.Zero)
                 pass
             else:
                 raise NoViableAltException(self)
@@ -6052,17 +6052,17 @@ class CNS_MR_Parser ( Parser ):
             self.parser = parser
 
         def Assign(self):
-            return self.getToken(CNS_MR_Parser.Assign, 0)
+            return self.getToken(CnsMRParser.Assign, 0)
 
         def selection(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(CNS_MR_Parser.SelectionContext)
+                return self.getTypedRuleContexts(CnsMRParser.SelectionContext)
             else:
-                return self.getTypedRuleContext(CNS_MR_Parser.SelectionContext,i)
+                return self.getTypedRuleContext(CnsMRParser.SelectionContext,i)
 
 
         def getRuleIndex(self):
-            return CNS_MR_Parser.RULE_angle_db_assign
+            return CnsMRParser.RULE_angle_db_assign
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterAngle_db_assign" ):
@@ -6077,13 +6077,13 @@ class CNS_MR_Parser ( Parser ):
 
     def angle_db_assign(self):
 
-        localctx = CNS_MR_Parser.Angle_db_assignContext(self, self._ctx, self.state)
+        localctx = CnsMRParser.Angle_db_assignContext(self, self._ctx, self.state)
         self.enterRule(localctx, 90, self.RULE_angle_db_assign)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 976
-            self.match(CNS_MR_Parser.Assign)
+            self.match(CnsMRParser.Assign)
             self.state = 977
             self.selection()
             self.state = 978
@@ -6109,7 +6109,7 @@ class CNS_MR_Parser ( Parser ):
             self.state = 989
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==CNS_MR_Parser.L_paren:
+            if _la==CnsMRParser.L_paren:
                 self.state = 988
                 self.selection()
 
@@ -6130,17 +6130,17 @@ class CNS_MR_Parser ( Parser ):
             self.parser = parser
 
         def L_paren(self):
-            return self.getToken(CNS_MR_Parser.L_paren, 0)
+            return self.getToken(CnsMRParser.L_paren, 0)
 
         def selection_expression(self):
-            return self.getTypedRuleContext(CNS_MR_Parser.Selection_expressionContext,0)
+            return self.getTypedRuleContext(CnsMRParser.Selection_expressionContext,0)
 
 
         def R_paren(self):
-            return self.getToken(CNS_MR_Parser.R_paren, 0)
+            return self.getToken(CnsMRParser.R_paren, 0)
 
         def getRuleIndex(self):
-            return CNS_MR_Parser.RULE_selection
+            return CnsMRParser.RULE_selection
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterSelection" ):
@@ -6155,16 +6155,16 @@ class CNS_MR_Parser ( Parser ):
 
     def selection(self):
 
-        localctx = CNS_MR_Parser.SelectionContext(self, self._ctx, self.state)
+        localctx = CnsMRParser.SelectionContext(self, self._ctx, self.state)
         self.enterRule(localctx, 92, self.RULE_selection)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 991
-            self.match(CNS_MR_Parser.L_paren)
+            self.match(CnsMRParser.L_paren)
             self.state = 992
             self.selection_expression()
             self.state = 993
-            self.match(CNS_MR_Parser.R_paren)
+            self.match(CnsMRParser.R_paren)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -6182,31 +6182,31 @@ class CNS_MR_Parser ( Parser ):
 
         def term(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(CNS_MR_Parser.TermContext)
+                return self.getTypedRuleContexts(CnsMRParser.TermContext)
             else:
-                return self.getTypedRuleContext(CNS_MR_Parser.TermContext,i)
+                return self.getTypedRuleContext(CnsMRParser.TermContext,i)
 
 
         def L_brace(self, i:int=None):
             if i is None:
-                return self.getTokens(CNS_MR_Parser.L_brace)
+                return self.getTokens(CnsMRParser.L_brace)
             else:
-                return self.getToken(CNS_MR_Parser.L_brace, i)
+                return self.getToken(CnsMRParser.L_brace, i)
 
         def Or_op(self, i:int=None):
             if i is None:
-                return self.getTokens(CNS_MR_Parser.Or_op)
+                return self.getTokens(CnsMRParser.Or_op)
             else:
-                return self.getToken(CNS_MR_Parser.Or_op, i)
+                return self.getToken(CnsMRParser.Or_op, i)
 
         def R_brace(self, i:int=None):
             if i is None:
-                return self.getTokens(CNS_MR_Parser.R_brace)
+                return self.getTokens(CnsMRParser.R_brace)
             else:
-                return self.getToken(CNS_MR_Parser.R_brace, i)
+                return self.getToken(CnsMRParser.R_brace, i)
 
         def getRuleIndex(self):
-            return CNS_MR_Parser.RULE_selection_expression
+            return CnsMRParser.RULE_selection_expression
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterSelection_expression" ):
@@ -6221,7 +6221,7 @@ class CNS_MR_Parser ( Parser ):
 
     def selection_expression(self):
 
-        localctx = CNS_MR_Parser.Selection_expressionContext(self, self._ctx, self.state)
+        localctx = CnsMRParser.Selection_expressionContext(self, self._ctx, self.state)
         self.enterRule(localctx, 94, self.RULE_selection_expression)
         self._la = 0 # Token type
         try:
@@ -6231,15 +6231,15 @@ class CNS_MR_Parser ( Parser ):
             self.state = 1003
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==CNS_MR_Parser.L_brace:
+            while _la==CnsMRParser.L_brace:
                 self.state = 996
-                self.match(CNS_MR_Parser.L_brace)
+                self.match(CnsMRParser.L_brace)
                 self.state = 997
-                self.match(CNS_MR_Parser.Or_op)
+                self.match(CnsMRParser.Or_op)
                 self.state = 998
                 self.term()
                 self.state = 999
-                self.match(CNS_MR_Parser.R_brace)
+                self.match(CnsMRParser.R_brace)
                 self.state = 1005
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
@@ -6261,31 +6261,31 @@ class CNS_MR_Parser ( Parser ):
 
         def factor(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(CNS_MR_Parser.FactorContext)
+                return self.getTypedRuleContexts(CnsMRParser.FactorContext)
             else:
-                return self.getTypedRuleContext(CNS_MR_Parser.FactorContext,i)
+                return self.getTypedRuleContext(CnsMRParser.FactorContext,i)
 
 
         def L_brace(self, i:int=None):
             if i is None:
-                return self.getTokens(CNS_MR_Parser.L_brace)
+                return self.getTokens(CnsMRParser.L_brace)
             else:
-                return self.getToken(CNS_MR_Parser.L_brace, i)
+                return self.getToken(CnsMRParser.L_brace, i)
 
         def And_op(self, i:int=None):
             if i is None:
-                return self.getTokens(CNS_MR_Parser.And_op)
+                return self.getTokens(CnsMRParser.And_op)
             else:
-                return self.getToken(CNS_MR_Parser.And_op, i)
+                return self.getToken(CnsMRParser.And_op, i)
 
         def R_brace(self, i:int=None):
             if i is None:
-                return self.getTokens(CNS_MR_Parser.R_brace)
+                return self.getTokens(CnsMRParser.R_brace)
             else:
-                return self.getToken(CNS_MR_Parser.R_brace, i)
+                return self.getToken(CnsMRParser.R_brace, i)
 
         def getRuleIndex(self):
-            return CNS_MR_Parser.RULE_term
+            return CnsMRParser.RULE_term
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterTerm" ):
@@ -6300,7 +6300,7 @@ class CNS_MR_Parser ( Parser ):
 
     def term(self):
 
-        localctx = CNS_MR_Parser.TermContext(self, self._ctx, self.state)
+        localctx = CnsMRParser.TermContext(self, self._ctx, self.state)
         self.enterRule(localctx, 96, self.RULE_term)
         try:
             self.enterOuterAlt(localctx, 1)
@@ -6312,13 +6312,13 @@ class CNS_MR_Parser ( Parser ):
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt==1:
                     self.state = 1007
-                    self.match(CNS_MR_Parser.L_brace)
+                    self.match(CnsMRParser.L_brace)
                     self.state = 1008
-                    self.match(CNS_MR_Parser.And_op)
+                    self.match(CnsMRParser.And_op)
                     self.state = 1009
                     self.factor(0)
                     self.state = 1010
-                    self.match(CNS_MR_Parser.R_brace) 
+                    self.match(CnsMRParser.R_brace) 
                 self.state = 1016
                 self._errHandler.sync(self)
                 _alt = self._interp.adaptivePredict(self._input,76,self._ctx)
@@ -6339,199 +6339,199 @@ class CNS_MR_Parser ( Parser ):
             self.parser = parser
 
         def L_paren(self):
-            return self.getToken(CNS_MR_Parser.L_paren, 0)
+            return self.getToken(CnsMRParser.L_paren, 0)
 
         def selection_expression(self):
-            return self.getTypedRuleContext(CNS_MR_Parser.Selection_expressionContext,0)
+            return self.getTypedRuleContext(CnsMRParser.Selection_expressionContext,0)
 
 
         def R_paren(self):
-            return self.getToken(CNS_MR_Parser.R_paren, 0)
+            return self.getToken(CnsMRParser.R_paren, 0)
 
         def All(self):
-            return self.getToken(CNS_MR_Parser.All, 0)
+            return self.getToken(CnsMRParser.All, 0)
 
         def Atom(self):
-            return self.getToken(CNS_MR_Parser.Atom, 0)
+            return self.getToken(CnsMRParser.Atom, 0)
 
         def Segment_names(self):
-            return self.getToken(CNS_MR_Parser.Segment_names, 0)
+            return self.getToken(CnsMRParser.Segment_names, 0)
 
         def Residue_numbers(self):
-            return self.getToken(CNS_MR_Parser.Residue_numbers, 0)
+            return self.getToken(CnsMRParser.Residue_numbers, 0)
 
         def Atom_names(self):
-            return self.getToken(CNS_MR_Parser.Atom_names, 0)
+            return self.getToken(CnsMRParser.Atom_names, 0)
 
         def Attribute(self):
-            return self.getToken(CNS_MR_Parser.Attribute, 0)
+            return self.getToken(CnsMRParser.Attribute, 0)
 
         def Attr_properties(self):
-            return self.getToken(CNS_MR_Parser.Attr_properties, 0)
+            return self.getToken(CnsMRParser.Attr_properties, 0)
 
         def Comparison_ops(self):
-            return self.getToken(CNS_MR_Parser.Comparison_ops, 0)
+            return self.getToken(CnsMRParser.Comparison_ops, 0)
 
         def Real(self, i:int=None):
             if i is None:
-                return self.getTokens(CNS_MR_Parser.Real)
+                return self.getTokens(CnsMRParser.Real)
             else:
-                return self.getToken(CNS_MR_Parser.Real, i)
+                return self.getToken(CnsMRParser.Real, i)
 
         def Abs(self):
-            return self.getToken(CNS_MR_Parser.Abs, 0)
+            return self.getToken(CnsMRParser.Abs, 0)
 
         def Chemical(self):
-            return self.getToken(CNS_MR_Parser.Chemical, 0)
+            return self.getToken(CnsMRParser.Chemical, 0)
 
         def String_comp_ops(self):
-            return self.getToken(CNS_MR_Parser.String_comp_ops, 0)
+            return self.getToken(CnsMRParser.String_comp_ops, 0)
 
         def Atom_type(self, i:int=None):
             if i is None:
-                return self.getTokens(CNS_MR_Parser.Atom_type)
+                return self.getTokens(CnsMRParser.Atom_type)
             else:
-                return self.getToken(CNS_MR_Parser.Atom_type, i)
+                return self.getToken(CnsMRParser.Atom_type, i)
 
         def Name(self):
-            return self.getToken(CNS_MR_Parser.Name, 0)
+            return self.getToken(CnsMRParser.Name, 0)
 
         def Atom_name(self, i:int=None):
             if i is None:
-                return self.getTokens(CNS_MR_Parser.Atom_name)
+                return self.getTokens(CnsMRParser.Atom_name)
             else:
-                return self.getToken(CNS_MR_Parser.Atom_name, i)
+                return self.getToken(CnsMRParser.Atom_name, i)
 
         def Residue(self):
-            return self.getToken(CNS_MR_Parser.Residue, 0)
+            return self.getToken(CnsMRParser.Residue, 0)
 
         def Residue_number(self, i:int=None):
             if i is None:
-                return self.getTokens(CNS_MR_Parser.Residue_number)
+                return self.getTokens(CnsMRParser.Residue_number)
             else:
-                return self.getToken(CNS_MR_Parser.Residue_number, i)
+                return self.getToken(CnsMRParser.Residue_number, i)
 
         def Resname(self):
-            return self.getToken(CNS_MR_Parser.Resname, 0)
+            return self.getToken(CnsMRParser.Resname, 0)
 
         def Residue_name(self, i:int=None):
             if i is None:
-                return self.getTokens(CNS_MR_Parser.Residue_name)
+                return self.getTokens(CnsMRParser.Residue_name)
             else:
-                return self.getToken(CNS_MR_Parser.Residue_name, i)
+                return self.getToken(CnsMRParser.Residue_name, i)
 
         def SegIdentifier(self):
-            return self.getToken(CNS_MR_Parser.SegIdentifier, 0)
+            return self.getToken(CnsMRParser.SegIdentifier, 0)
 
         def Segment_name(self, i:int=None):
             if i is None:
-                return self.getTokens(CNS_MR_Parser.Segment_name)
+                return self.getTokens(CnsMRParser.Segment_name)
             else:
-                return self.getToken(CNS_MR_Parser.Segment_name, i)
+                return self.getToken(CnsMRParser.Segment_name, i)
 
         def BondedTo(self):
-            return self.getToken(CNS_MR_Parser.BondedTo, 0)
+            return self.getToken(CnsMRParser.BondedTo, 0)
 
         def factor(self):
-            return self.getTypedRuleContext(CNS_MR_Parser.FactorContext,0)
+            return self.getTypedRuleContext(CnsMRParser.FactorContext,0)
 
 
         def ByGroup(self):
-            return self.getToken(CNS_MR_Parser.ByGroup, 0)
+            return self.getToken(CnsMRParser.ByGroup, 0)
 
         def ByRes(self):
-            return self.getToken(CNS_MR_Parser.ByRes, 0)
+            return self.getToken(CnsMRParser.ByRes, 0)
 
         def Atom_types(self):
-            return self.getToken(CNS_MR_Parser.Atom_types, 0)
+            return self.getToken(CnsMRParser.Atom_types, 0)
 
         def Colon(self, i:int=None):
             if i is None:
-                return self.getTokens(CNS_MR_Parser.Colon)
+                return self.getTokens(CnsMRParser.Colon)
             else:
-                return self.getToken(CNS_MR_Parser.Colon, i)
+                return self.getToken(CnsMRParser.Colon, i)
 
         def Fbox(self):
-            return self.getToken(CNS_MR_Parser.Fbox, 0)
+            return self.getToken(CnsMRParser.Fbox, 0)
 
         def Hydrogen(self):
-            return self.getToken(CNS_MR_Parser.Hydrogen, 0)
+            return self.getToken(CnsMRParser.Hydrogen, 0)
 
         def Id(self):
-            return self.getToken(CNS_MR_Parser.Id, 0)
+            return self.getToken(CnsMRParser.Id, 0)
 
         def Integer(self):
-            return self.getToken(CNS_MR_Parser.Integer, 0)
+            return self.getToken(CnsMRParser.Integer, 0)
 
         def Known(self):
-            return self.getToken(CNS_MR_Parser.Known, 0)
+            return self.getToken(CnsMRParser.Known, 0)
 
         def Not_op(self):
-            return self.getToken(CNS_MR_Parser.Not_op, 0)
+            return self.getToken(CnsMRParser.Not_op, 0)
 
         def Point(self):
-            return self.getToken(CNS_MR_Parser.Point, 0)
+            return self.getToken(CnsMRParser.Point, 0)
 
         def vector_3d(self):
-            return self.getTypedRuleContext(CNS_MR_Parser.Vector_3dContext,0)
+            return self.getTypedRuleContext(CnsMRParser.Vector_3dContext,0)
 
 
         def Cut(self):
-            return self.getToken(CNS_MR_Parser.Cut, 0)
+            return self.getToken(CnsMRParser.Cut, 0)
 
         def Previous(self):
-            return self.getToken(CNS_MR_Parser.Previous, 0)
+            return self.getToken(CnsMRParser.Previous, 0)
 
         def Pseudo(self):
-            return self.getToken(CNS_MR_Parser.Pseudo, 0)
+            return self.getToken(CnsMRParser.Pseudo, 0)
 
         def Residue_names(self):
-            return self.getToken(CNS_MR_Parser.Residue_names, 0)
+            return self.getToken(CnsMRParser.Residue_names, 0)
 
         def Double_quote_string(self):
-            return self.getToken(CNS_MR_Parser.Double_quote_string, 0)
+            return self.getToken(CnsMRParser.Double_quote_string, 0)
 
         def Sfbox(self):
-            return self.getToken(CNS_MR_Parser.Sfbox, 0)
+            return self.getToken(CnsMRParser.Sfbox, 0)
 
         def Store_1(self):
-            return self.getToken(CNS_MR_Parser.Store_1, 0)
+            return self.getToken(CnsMRParser.Store_1, 0)
 
         def Store_2(self):
-            return self.getToken(CNS_MR_Parser.Store_2, 0)
+            return self.getToken(CnsMRParser.Store_2, 0)
 
         def Store_3(self):
-            return self.getToken(CNS_MR_Parser.Store_3, 0)
+            return self.getToken(CnsMRParser.Store_3, 0)
 
         def Store_4(self):
-            return self.getToken(CNS_MR_Parser.Store_4, 0)
+            return self.getToken(CnsMRParser.Store_4, 0)
 
         def Store_5(self):
-            return self.getToken(CNS_MR_Parser.Store_5, 0)
+            return self.getToken(CnsMRParser.Store_5, 0)
 
         def Store_6(self):
-            return self.getToken(CNS_MR_Parser.Store_6, 0)
+            return self.getToken(CnsMRParser.Store_6, 0)
 
         def Store_7(self):
-            return self.getToken(CNS_MR_Parser.Store_7, 0)
+            return self.getToken(CnsMRParser.Store_7, 0)
 
         def Store_8(self):
-            return self.getToken(CNS_MR_Parser.Store_8, 0)
+            return self.getToken(CnsMRParser.Store_8, 0)
 
         def Store_9(self):
-            return self.getToken(CNS_MR_Parser.Store_9, 0)
+            return self.getToken(CnsMRParser.Store_9, 0)
 
         def Tag(self):
-            return self.getToken(CNS_MR_Parser.Tag, 0)
+            return self.getToken(CnsMRParser.Tag, 0)
 
         def Around(self):
-            return self.getToken(CNS_MR_Parser.Around, 0)
+            return self.getToken(CnsMRParser.Around, 0)
 
         def Saround(self):
-            return self.getToken(CNS_MR_Parser.Saround, 0)
+            return self.getToken(CnsMRParser.Saround, 0)
 
         def getRuleIndex(self):
-            return CNS_MR_Parser.RULE_factor
+            return CnsMRParser.RULE_factor
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterFactor" ):
@@ -6546,7 +6546,7 @@ class CNS_MR_Parser ( Parser ):
     def factor(self, _p:int=0):
         _parentctx = self._ctx
         _parentState = self.state
-        localctx = CNS_MR_Parser.FactorContext(self, self._ctx, _parentState)
+        localctx = CnsMRParser.FactorContext(self, self._ctx, _parentState)
         _prevctx = localctx
         _startState = 98
         self.enterRecursionRule(localctx, 98, self.RULE_factor, _p)
@@ -6558,154 +6558,154 @@ class CNS_MR_Parser ( Parser ):
             la_ = self._interp.adaptivePredict(self._input,89,self._ctx)
             if la_ == 1:
                 self.state = 1018
-                self.match(CNS_MR_Parser.L_paren)
+                self.match(CnsMRParser.L_paren)
                 self.state = 1019
                 self.selection_expression()
                 self.state = 1020
-                self.match(CNS_MR_Parser.R_paren)
+                self.match(CnsMRParser.R_paren)
                 pass
 
             elif la_ == 2:
                 self.state = 1022
-                self.match(CNS_MR_Parser.All)
+                self.match(CnsMRParser.All)
                 pass
 
             elif la_ == 3:
                 self.state = 1023
-                self.match(CNS_MR_Parser.Atom)
+                self.match(CnsMRParser.Atom)
                 self.state = 1024
-                self.match(CNS_MR_Parser.Segment_names)
+                self.match(CnsMRParser.Segment_names)
                 self.state = 1025
-                self.match(CNS_MR_Parser.Residue_numbers)
+                self.match(CnsMRParser.Residue_numbers)
                 self.state = 1026
-                self.match(CNS_MR_Parser.Atom_names)
+                self.match(CnsMRParser.Atom_names)
                 pass
 
             elif la_ == 4:
                 self.state = 1027
-                self.match(CNS_MR_Parser.Attribute)
+                self.match(CnsMRParser.Attribute)
                 self.state = 1029
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CNS_MR_Parser.Abs:
+                if _la==CnsMRParser.Abs:
                     self.state = 1028
-                    self.match(CNS_MR_Parser.Abs)
+                    self.match(CnsMRParser.Abs)
 
 
                 self.state = 1031
-                self.match(CNS_MR_Parser.Attr_properties)
+                self.match(CnsMRParser.Attr_properties)
                 self.state = 1032
-                self.match(CNS_MR_Parser.Comparison_ops)
+                self.match(CnsMRParser.Comparison_ops)
                 self.state = 1033
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 pass
 
             elif la_ == 5:
                 self.state = 1034
-                self.match(CNS_MR_Parser.Attribute)
+                self.match(CnsMRParser.Attribute)
                 self.state = 1035
-                self.match(CNS_MR_Parser.Chemical)
+                self.match(CnsMRParser.Chemical)
                 self.state = 1036
-                self.match(CNS_MR_Parser.String_comp_ops)
+                self.match(CnsMRParser.String_comp_ops)
                 self.state = 1037
-                self.match(CNS_MR_Parser.Atom_type)
+                self.match(CnsMRParser.Atom_type)
                 pass
 
             elif la_ == 6:
                 self.state = 1038
-                self.match(CNS_MR_Parser.Attribute)
+                self.match(CnsMRParser.Attribute)
                 self.state = 1039
-                self.match(CNS_MR_Parser.Name)
+                self.match(CnsMRParser.Name)
                 self.state = 1040
-                self.match(CNS_MR_Parser.String_comp_ops)
+                self.match(CnsMRParser.String_comp_ops)
                 self.state = 1041
-                self.match(CNS_MR_Parser.Atom_name)
+                self.match(CnsMRParser.Atom_name)
                 pass
 
             elif la_ == 7:
                 self.state = 1042
-                self.match(CNS_MR_Parser.Attribute)
+                self.match(CnsMRParser.Attribute)
                 self.state = 1044
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CNS_MR_Parser.Abs:
+                if _la==CnsMRParser.Abs:
                     self.state = 1043
-                    self.match(CNS_MR_Parser.Abs)
+                    self.match(CnsMRParser.Abs)
 
 
                 self.state = 1046
-                self.match(CNS_MR_Parser.Residue)
+                self.match(CnsMRParser.Residue)
                 self.state = 1047
-                self.match(CNS_MR_Parser.Comparison_ops)
+                self.match(CnsMRParser.Comparison_ops)
                 self.state = 1048
-                self.match(CNS_MR_Parser.Residue_number)
+                self.match(CnsMRParser.Residue_number)
                 pass
 
             elif la_ == 8:
                 self.state = 1049
-                self.match(CNS_MR_Parser.Attribute)
+                self.match(CnsMRParser.Attribute)
                 self.state = 1050
-                self.match(CNS_MR_Parser.Resname)
+                self.match(CnsMRParser.Resname)
                 self.state = 1051
-                self.match(CNS_MR_Parser.String_comp_ops)
+                self.match(CnsMRParser.String_comp_ops)
                 self.state = 1052
-                self.match(CNS_MR_Parser.Residue_name)
+                self.match(CnsMRParser.Residue_name)
                 pass
 
             elif la_ == 9:
                 self.state = 1053
-                self.match(CNS_MR_Parser.Attribute)
+                self.match(CnsMRParser.Attribute)
                 self.state = 1054
-                self.match(CNS_MR_Parser.SegIdentifier)
+                self.match(CnsMRParser.SegIdentifier)
                 self.state = 1055
-                self.match(CNS_MR_Parser.String_comp_ops)
+                self.match(CnsMRParser.String_comp_ops)
                 self.state = 1056
-                self.match(CNS_MR_Parser.Segment_name)
+                self.match(CnsMRParser.Segment_name)
                 pass
 
             elif la_ == 10:
                 self.state = 1057
-                self.match(CNS_MR_Parser.BondedTo)
+                self.match(CnsMRParser.BondedTo)
                 self.state = 1058
                 self.factor(28)
                 pass
 
             elif la_ == 11:
                 self.state = 1059
-                self.match(CNS_MR_Parser.ByGroup)
+                self.match(CnsMRParser.ByGroup)
                 self.state = 1060
                 self.factor(27)
                 pass
 
             elif la_ == 12:
                 self.state = 1061
-                self.match(CNS_MR_Parser.ByRes)
+                self.match(CnsMRParser.ByRes)
                 self.state = 1062
                 self.factor(26)
                 pass
 
             elif la_ == 13:
                 self.state = 1063
-                self.match(CNS_MR_Parser.Chemical)
+                self.match(CnsMRParser.Chemical)
                 self.state = 1073
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [CNS_MR_Parser.Atom_types]:
+                if token in [CnsMRParser.Atom_types]:
                     self.state = 1064
-                    self.match(CNS_MR_Parser.Atom_types)
+                    self.match(CnsMRParser.Atom_types)
                     pass
-                elif token in [CNS_MR_Parser.Atom_type]:
+                elif token in [CnsMRParser.Atom_type]:
                     self.state = 1065
-                    self.match(CNS_MR_Parser.Atom_type)
+                    self.match(CnsMRParser.Atom_type)
                     self.state = 1070
                     self._errHandler.sync(self)
                     _alt = self._interp.adaptivePredict(self._input,79,self._ctx)
                     while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                         if _alt==1:
                             self.state = 1066
-                            self.match(CNS_MR_Parser.Colon)
+                            self.match(CnsMRParser.Colon)
                             self.state = 1067
-                            self.match(CNS_MR_Parser.Atom_type) 
+                            self.match(CnsMRParser.Atom_type) 
                         self.state = 1072
                         self._errHandler.sync(self)
                         _alt = self._interp.adaptivePredict(self._input,79,self._ctx)
@@ -6718,60 +6718,60 @@ class CNS_MR_Parser ( Parser ):
 
             elif la_ == 14:
                 self.state = 1075
-                self.match(CNS_MR_Parser.Fbox)
+                self.match(CnsMRParser.Fbox)
                 self.state = 1076
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 self.state = 1077
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 self.state = 1078
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 self.state = 1079
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 self.state = 1080
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 self.state = 1081
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 pass
 
             elif la_ == 15:
                 self.state = 1082
-                self.match(CNS_MR_Parser.Hydrogen)
+                self.match(CnsMRParser.Hydrogen)
                 pass
 
             elif la_ == 16:
                 self.state = 1083
-                self.match(CNS_MR_Parser.Id)
+                self.match(CnsMRParser.Id)
                 self.state = 1084
-                self.match(CNS_MR_Parser.Integer)
+                self.match(CnsMRParser.Integer)
                 pass
 
             elif la_ == 17:
                 self.state = 1085
-                self.match(CNS_MR_Parser.Known)
+                self.match(CnsMRParser.Known)
                 pass
 
             elif la_ == 18:
                 self.state = 1086
-                self.match(CNS_MR_Parser.Name)
+                self.match(CnsMRParser.Name)
                 self.state = 1096
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [CNS_MR_Parser.Atom_names]:
+                if token in [CnsMRParser.Atom_names]:
                     self.state = 1087
-                    self.match(CNS_MR_Parser.Atom_names)
+                    self.match(CnsMRParser.Atom_names)
                     pass
-                elif token in [CNS_MR_Parser.Atom_name]:
+                elif token in [CnsMRParser.Atom_name]:
                     self.state = 1088
-                    self.match(CNS_MR_Parser.Atom_name)
+                    self.match(CnsMRParser.Atom_name)
                     self.state = 1093
                     self._errHandler.sync(self)
                     _alt = self._interp.adaptivePredict(self._input,81,self._ctx)
                     while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                         if _alt==1:
                             self.state = 1089
-                            self.match(CNS_MR_Parser.Colon)
+                            self.match(CnsMRParser.Colon)
                             self.state = 1090
-                            self.match(CNS_MR_Parser.Atom_name) 
+                            self.match(CnsMRParser.Atom_name) 
                         self.state = 1095
                         self._errHandler.sync(self)
                         _alt = self._interp.adaptivePredict(self._input,81,self._ctx)
@@ -6784,54 +6784,54 @@ class CNS_MR_Parser ( Parser ):
 
             elif la_ == 19:
                 self.state = 1098
-                self.match(CNS_MR_Parser.Not_op)
+                self.match(CnsMRParser.Not_op)
                 self.state = 1099
                 self.factor(19)
                 pass
 
             elif la_ == 20:
                 self.state = 1100
-                self.match(CNS_MR_Parser.Point)
+                self.match(CnsMRParser.Point)
                 self.state = 1101
                 self.vector_3d()
                 self.state = 1102
-                self.match(CNS_MR_Parser.Cut)
+                self.match(CnsMRParser.Cut)
                 self.state = 1103
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 pass
 
             elif la_ == 21:
                 self.state = 1105
-                self.match(CNS_MR_Parser.Previous)
+                self.match(CnsMRParser.Previous)
                 pass
 
             elif la_ == 22:
                 self.state = 1106
-                self.match(CNS_MR_Parser.Pseudo)
+                self.match(CnsMRParser.Pseudo)
                 pass
 
             elif la_ == 23:
                 self.state = 1107
-                self.match(CNS_MR_Parser.Residue)
+                self.match(CnsMRParser.Residue)
                 self.state = 1117
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [CNS_MR_Parser.Residue_numbers]:
+                if token in [CnsMRParser.Residue_numbers]:
                     self.state = 1108
-                    self.match(CNS_MR_Parser.Residue_numbers)
+                    self.match(CnsMRParser.Residue_numbers)
                     pass
-                elif token in [CNS_MR_Parser.Residue_number]:
+                elif token in [CnsMRParser.Residue_number]:
                     self.state = 1109
-                    self.match(CNS_MR_Parser.Residue_number)
+                    self.match(CnsMRParser.Residue_number)
                     self.state = 1114
                     self._errHandler.sync(self)
                     _alt = self._interp.adaptivePredict(self._input,83,self._ctx)
                     while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                         if _alt==1:
                             self.state = 1110
-                            self.match(CNS_MR_Parser.Colon)
+                            self.match(CnsMRParser.Colon)
                             self.state = 1111
-                            self.match(CNS_MR_Parser.Residue_number) 
+                            self.match(CnsMRParser.Residue_number) 
                         self.state = 1116
                         self._errHandler.sync(self)
                         _alt = self._interp.adaptivePredict(self._input,83,self._ctx)
@@ -6844,26 +6844,26 @@ class CNS_MR_Parser ( Parser ):
 
             elif la_ == 24:
                 self.state = 1119
-                self.match(CNS_MR_Parser.Resname)
+                self.match(CnsMRParser.Resname)
                 self.state = 1129
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [CNS_MR_Parser.Residue_names]:
+                if token in [CnsMRParser.Residue_names]:
                     self.state = 1120
-                    self.match(CNS_MR_Parser.Residue_names)
+                    self.match(CnsMRParser.Residue_names)
                     pass
-                elif token in [CNS_MR_Parser.Residue_name]:
+                elif token in [CnsMRParser.Residue_name]:
                     self.state = 1121
-                    self.match(CNS_MR_Parser.Residue_name)
+                    self.match(CnsMRParser.Residue_name)
                     self.state = 1126
                     self._errHandler.sync(self)
                     _alt = self._interp.adaptivePredict(self._input,85,self._ctx)
                     while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                         if _alt==1:
                             self.state = 1122
-                            self.match(CNS_MR_Parser.Colon)
+                            self.match(CnsMRParser.Colon)
                             self.state = 1123
-                            self.match(CNS_MR_Parser.Residue_name) 
+                            self.match(CnsMRParser.Residue_name) 
                         self.state = 1128
                         self._errHandler.sync(self)
                         _alt = self._interp.adaptivePredict(self._input,85,self._ctx)
@@ -6876,34 +6876,34 @@ class CNS_MR_Parser ( Parser ):
 
             elif la_ == 25:
                 self.state = 1131
-                self.match(CNS_MR_Parser.SegIdentifier)
+                self.match(CnsMRParser.SegIdentifier)
                 self.state = 1142
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [CNS_MR_Parser.Segment_names]:
+                if token in [CnsMRParser.Segment_names]:
                     self.state = 1132
-                    self.match(CNS_MR_Parser.Segment_names)
+                    self.match(CnsMRParser.Segment_names)
                     pass
-                elif token in [CNS_MR_Parser.Segment_name]:
+                elif token in [CnsMRParser.Segment_name]:
                     self.state = 1133
-                    self.match(CNS_MR_Parser.Segment_name)
+                    self.match(CnsMRParser.Segment_name)
                     self.state = 1138
                     self._errHandler.sync(self)
                     _alt = self._interp.adaptivePredict(self._input,87,self._ctx)
                     while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                         if _alt==1:
                             self.state = 1134
-                            self.match(CNS_MR_Parser.Colon)
+                            self.match(CnsMRParser.Colon)
                             self.state = 1135
-                            self.match(CNS_MR_Parser.Segment_name) 
+                            self.match(CnsMRParser.Segment_name) 
                         self.state = 1140
                         self._errHandler.sync(self)
                         _alt = self._interp.adaptivePredict(self._input,87,self._ctx)
 
                     pass
-                elif token in [CNS_MR_Parser.Double_quote_string]:
+                elif token in [CnsMRParser.Double_quote_string]:
                     self.state = 1141
-                    self.match(CNS_MR_Parser.Double_quote_string)
+                    self.match(CnsMRParser.Double_quote_string)
                     pass
                 else:
                     raise NoViableAltException(self)
@@ -6912,69 +6912,69 @@ class CNS_MR_Parser ( Parser ):
 
             elif la_ == 26:
                 self.state = 1144
-                self.match(CNS_MR_Parser.Sfbox)
+                self.match(CnsMRParser.Sfbox)
                 self.state = 1145
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 self.state = 1146
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 self.state = 1147
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 self.state = 1148
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 self.state = 1149
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 self.state = 1150
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 pass
 
             elif la_ == 27:
                 self.state = 1151
-                self.match(CNS_MR_Parser.Store_1)
+                self.match(CnsMRParser.Store_1)
                 pass
 
             elif la_ == 28:
                 self.state = 1152
-                self.match(CNS_MR_Parser.Store_2)
+                self.match(CnsMRParser.Store_2)
                 pass
 
             elif la_ == 29:
                 self.state = 1153
-                self.match(CNS_MR_Parser.Store_3)
+                self.match(CnsMRParser.Store_3)
                 pass
 
             elif la_ == 30:
                 self.state = 1154
-                self.match(CNS_MR_Parser.Store_4)
+                self.match(CnsMRParser.Store_4)
                 pass
 
             elif la_ == 31:
                 self.state = 1155
-                self.match(CNS_MR_Parser.Store_5)
+                self.match(CnsMRParser.Store_5)
                 pass
 
             elif la_ == 32:
                 self.state = 1156
-                self.match(CNS_MR_Parser.Store_6)
+                self.match(CnsMRParser.Store_6)
                 pass
 
             elif la_ == 33:
                 self.state = 1157
-                self.match(CNS_MR_Parser.Store_7)
+                self.match(CnsMRParser.Store_7)
                 pass
 
             elif la_ == 34:
                 self.state = 1158
-                self.match(CNS_MR_Parser.Store_8)
+                self.match(CnsMRParser.Store_8)
                 pass
 
             elif la_ == 35:
                 self.state = 1159
-                self.match(CNS_MR_Parser.Store_9)
+                self.match(CnsMRParser.Store_9)
                 pass
 
             elif la_ == 36:
                 self.state = 1160
-                self.match(CNS_MR_Parser.Tag)
+                self.match(CnsMRParser.Tag)
                 pass
 
 
@@ -6991,29 +6991,29 @@ class CNS_MR_Parser ( Parser ):
                     self._errHandler.sync(self)
                     la_ = self._interp.adaptivePredict(self._input,90,self._ctx)
                     if la_ == 1:
-                        localctx = CNS_MR_Parser.FactorContext(self, _parentctx, _parentState)
+                        localctx = CnsMRParser.FactorContext(self, _parentctx, _parentState)
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_factor)
                         self.state = 1163
                         if not self.precpred(self._ctx, 36):
                             from antlr4.error.Errors import FailedPredicateException
                             raise FailedPredicateException(self, "self.precpred(self._ctx, 36)")
                         self.state = 1164
-                        self.match(CNS_MR_Parser.Around)
+                        self.match(CnsMRParser.Around)
                         self.state = 1165
-                        self.match(CNS_MR_Parser.Real)
+                        self.match(CnsMRParser.Real)
                         pass
 
                     elif la_ == 2:
-                        localctx = CNS_MR_Parser.FactorContext(self, _parentctx, _parentState)
+                        localctx = CnsMRParser.FactorContext(self, _parentctx, _parentState)
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_factor)
                         self.state = 1166
                         if not self.precpred(self._ctx, 13):
                             from antlr4.error.Errors import FailedPredicateException
                             raise FailedPredicateException(self, "self.precpred(self._ctx, 13)")
                         self.state = 1167
-                        self.match(CNS_MR_Parser.Saround)
+                        self.match(CnsMRParser.Saround)
                         self.state = 1168
-                        self.match(CNS_MR_Parser.Real)
+                        self.match(CnsMRParser.Real)
                         pass
 
              
@@ -7037,44 +7037,44 @@ class CNS_MR_Parser ( Parser ):
             self.parser = parser
 
         def L_paren(self):
-            return self.getToken(CNS_MR_Parser.L_paren, 0)
+            return self.getToken(CnsMRParser.L_paren, 0)
 
         def Real(self, i:int=None):
             if i is None:
-                return self.getTokens(CNS_MR_Parser.Real)
+                return self.getTokens(CnsMRParser.Real)
             else:
-                return self.getToken(CNS_MR_Parser.Real, i)
+                return self.getToken(CnsMRParser.Real, i)
 
         def R_paren(self):
-            return self.getToken(CNS_MR_Parser.R_paren, 0)
+            return self.getToken(CnsMRParser.R_paren, 0)
 
         def Comma(self, i:int=None):
             if i is None:
-                return self.getTokens(CNS_MR_Parser.Comma)
+                return self.getTokens(CnsMRParser.Comma)
             else:
-                return self.getToken(CNS_MR_Parser.Comma, i)
+                return self.getToken(CnsMRParser.Comma, i)
 
         def Tail(self):
-            return self.getToken(CNS_MR_Parser.Tail, 0)
+            return self.getToken(CnsMRParser.Tail, 0)
 
         def Equ_op(self, i:int=None):
             if i is None:
-                return self.getTokens(CNS_MR_Parser.Equ_op)
+                return self.getTokens(CnsMRParser.Equ_op)
             else:
-                return self.getToken(CNS_MR_Parser.Equ_op, i)
+                return self.getToken(CnsMRParser.Equ_op, i)
 
         def selection(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(CNS_MR_Parser.SelectionContext)
+                return self.getTypedRuleContexts(CnsMRParser.SelectionContext)
             else:
-                return self.getTypedRuleContext(CNS_MR_Parser.SelectionContext,i)
+                return self.getTypedRuleContext(CnsMRParser.SelectionContext,i)
 
 
         def Head(self):
-            return self.getToken(CNS_MR_Parser.Head, 0)
+            return self.getToken(CnsMRParser.Head, 0)
 
         def getRuleIndex(self):
-            return CNS_MR_Parser.RULE_vector_3d
+            return CnsMRParser.RULE_vector_3d
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterVector_3d" ):
@@ -7089,7 +7089,7 @@ class CNS_MR_Parser ( Parser ):
 
     def vector_3d(self):
 
-        localctx = CNS_MR_Parser.Vector_3dContext(self, self._ctx, self.state)
+        localctx = CnsMRParser.Vector_3dContext(self, self._ctx, self.state)
         self.enterRule(localctx, 100, self.RULE_vector_3d)
         self._la = 0 # Token type
         try:
@@ -7099,65 +7099,65 @@ class CNS_MR_Parser ( Parser ):
             if la_ == 1:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 1174
-                self.match(CNS_MR_Parser.L_paren)
+                self.match(CnsMRParser.L_paren)
                 self.state = 1175
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 self.state = 1177
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CNS_MR_Parser.Comma:
+                if _la==CnsMRParser.Comma:
                     self.state = 1176
-                    self.match(CNS_MR_Parser.Comma)
+                    self.match(CnsMRParser.Comma)
 
 
                 self.state = 1179
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 self.state = 1181
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CNS_MR_Parser.Comma:
+                if _la==CnsMRParser.Comma:
                     self.state = 1180
-                    self.match(CNS_MR_Parser.Comma)
+                    self.match(CnsMRParser.Comma)
 
 
                 self.state = 1183
-                self.match(CNS_MR_Parser.Real)
+                self.match(CnsMRParser.Real)
                 self.state = 1184
-                self.match(CNS_MR_Parser.R_paren)
+                self.match(CnsMRParser.R_paren)
                 pass
 
             elif la_ == 2:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 1185
-                self.match(CNS_MR_Parser.L_paren)
+                self.match(CnsMRParser.L_paren)
                 self.state = 1186
-                self.match(CNS_MR_Parser.Tail)
+                self.match(CnsMRParser.Tail)
                 self.state = 1187
-                self.match(CNS_MR_Parser.Equ_op)
+                self.match(CnsMRParser.Equ_op)
                 self.state = 1188
                 self.selection()
                 self.state = 1190
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CNS_MR_Parser.Comma:
+                if _la==CnsMRParser.Comma:
                     self.state = 1189
-                    self.match(CNS_MR_Parser.Comma)
+                    self.match(CnsMRParser.Comma)
 
 
                 self.state = 1195
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CNS_MR_Parser.Head:
+                if _la==CnsMRParser.Head:
                     self.state = 1192
-                    self.match(CNS_MR_Parser.Head)
+                    self.match(CnsMRParser.Head)
                     self.state = 1193
-                    self.match(CNS_MR_Parser.Equ_op)
+                    self.match(CnsMRParser.Equ_op)
                     self.state = 1194
                     self.selection()
 
 
                 self.state = 1197
-                self.match(CNS_MR_Parser.R_paren)
+                self.match(CnsMRParser.R_paren)
                 pass
 
 

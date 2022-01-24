@@ -1,4 +1,4 @@
-# Generated from AMBER_MR_Parser.g4 by ANTLR 4.9
+# Generated from AmberMRParser.g4 by ANTLR 4.9
 # encoding: utf-8
 from antlr4 import *
 from io import StringIO
@@ -1531,9 +1531,9 @@ def serializedATN():
         return buf.getvalue()
 
 
-class AMBER_MR_Parser ( Parser ):
+class AmberMRParser ( Parser ):
 
-    grammarFileName = "AMBER_MR_Parser.g4"
+    grammarFileName = "AmberMRParser.g4"
 
     atn = ATNDeserializer().deserialize(serializedATN())
 
@@ -1948,52 +1948,52 @@ class AMBER_MR_Parser ( Parser ):
             self.parser = parser
 
         def EOF(self):
-            return self.getToken(AMBER_MR_Parser.EOF, 0)
+            return self.getToken(AmberMRParser.EOF, 0)
 
         def nmr_restraint(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(AMBER_MR_Parser.Nmr_restraintContext)
+                return self.getTypedRuleContexts(AmberMRParser.Nmr_restraintContext)
             else:
-                return self.getTypedRuleContext(AMBER_MR_Parser.Nmr_restraintContext,i)
+                return self.getTypedRuleContext(AmberMRParser.Nmr_restraintContext,i)
 
 
         def noesy_volume_restraint(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(AMBER_MR_Parser.Noesy_volume_restraintContext)
+                return self.getTypedRuleContexts(AmberMRParser.Noesy_volume_restraintContext)
             else:
-                return self.getTypedRuleContext(AMBER_MR_Parser.Noesy_volume_restraintContext,i)
+                return self.getTypedRuleContext(AmberMRParser.Noesy_volume_restraintContext,i)
 
 
         def chemical_shift_restraint(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(AMBER_MR_Parser.Chemical_shift_restraintContext)
+                return self.getTypedRuleContexts(AmberMRParser.Chemical_shift_restraintContext)
             else:
-                return self.getTypedRuleContext(AMBER_MR_Parser.Chemical_shift_restraintContext,i)
+                return self.getTypedRuleContext(AmberMRParser.Chemical_shift_restraintContext,i)
 
 
         def pcs_restraint(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(AMBER_MR_Parser.Pcs_restraintContext)
+                return self.getTypedRuleContexts(AmberMRParser.Pcs_restraintContext)
             else:
-                return self.getTypedRuleContext(AMBER_MR_Parser.Pcs_restraintContext,i)
+                return self.getTypedRuleContext(AmberMRParser.Pcs_restraintContext,i)
 
 
         def dipolar_coupling_restraint(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(AMBER_MR_Parser.Dipolar_coupling_restraintContext)
+                return self.getTypedRuleContexts(AmberMRParser.Dipolar_coupling_restraintContext)
             else:
-                return self.getTypedRuleContext(AMBER_MR_Parser.Dipolar_coupling_restraintContext,i)
+                return self.getTypedRuleContext(AmberMRParser.Dipolar_coupling_restraintContext,i)
 
 
         def csa_restraint(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(AMBER_MR_Parser.Csa_restraintContext)
+                return self.getTypedRuleContexts(AmberMRParser.Csa_restraintContext)
             else:
-                return self.getTypedRuleContext(AMBER_MR_Parser.Csa_restraintContext,i)
+                return self.getTypedRuleContext(AmberMRParser.Csa_restraintContext,i)
 
 
         def getRuleIndex(self):
-            return AMBER_MR_Parser.RULE_amber_mr
+            return AmberMRParser.RULE_amber_mr
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterAmber_mr" ):
@@ -2008,7 +2008,7 @@ class AMBER_MR_Parser ( Parser ):
 
     def amber_mr(self):
 
-        localctx = AMBER_MR_Parser.Amber_mrContext(self, self._ctx, self.state)
+        localctx = AmberMRParser.Amber_mrContext(self, self._ctx, self.state)
         self.enterRule(localctx, 0, self.RULE_amber_mr)
         self._la = 0 # Token type
         try:
@@ -2016,7 +2016,7 @@ class AMBER_MR_Parser ( Parser ):
             self.state = 45
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AMBER_MR_Parser.RST:
+            while _la==AmberMRParser.RST:
                 self.state = 42
                 self.nmr_restraint()
                 self.state = 47
@@ -2026,7 +2026,7 @@ class AMBER_MR_Parser ( Parser ):
             self.state = 51
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AMBER_MR_Parser.NOEEXP:
+            while _la==AmberMRParser.NOEEXP:
                 self.state = 48
                 self.noesy_volume_restraint()
                 self.state = 53
@@ -2036,7 +2036,7 @@ class AMBER_MR_Parser ( Parser ):
             self.state = 57
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AMBER_MR_Parser.SHF:
+            while _la==AmberMRParser.SHF:
                 self.state = 54
                 self.chemical_shift_restraint()
                 self.state = 59
@@ -2046,7 +2046,7 @@ class AMBER_MR_Parser ( Parser ):
             self.state = 63
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AMBER_MR_Parser.PCSHF:
+            while _la==AmberMRParser.PCSHF:
                 self.state = 60
                 self.pcs_restraint()
                 self.state = 65
@@ -2056,7 +2056,7 @@ class AMBER_MR_Parser ( Parser ):
             self.state = 69
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AMBER_MR_Parser.ALIGN:
+            while _la==AmberMRParser.ALIGN:
                 self.state = 66
                 self.dipolar_coupling_restraint()
                 self.state = 71
@@ -2066,7 +2066,7 @@ class AMBER_MR_Parser ( Parser ):
             self.state = 75
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AMBER_MR_Parser.CSA:
+            while _la==AmberMRParser.CSA:
                 self.state = 72
                 self.csa_restraint()
                 self.state = 77
@@ -2074,7 +2074,7 @@ class AMBER_MR_Parser ( Parser ):
                 _la = self._input.LA(1)
 
             self.state = 78
-            self.match(AMBER_MR_Parser.EOF)
+            self.match(AmberMRParser.EOF)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -2091,17 +2091,17 @@ class AMBER_MR_Parser ( Parser ):
             self.parser = parser
 
         def RST(self):
-            return self.getToken(AMBER_MR_Parser.RST, 0)
+            return self.getToken(AmberMRParser.RST, 0)
 
         def restraint_statement(self):
-            return self.getTypedRuleContext(AMBER_MR_Parser.Restraint_statementContext,0)
+            return self.getTypedRuleContext(AmberMRParser.Restraint_statementContext,0)
 
 
         def END(self):
-            return self.getToken(AMBER_MR_Parser.END, 0)
+            return self.getToken(AmberMRParser.END, 0)
 
         def getRuleIndex(self):
-            return AMBER_MR_Parser.RULE_nmr_restraint
+            return AmberMRParser.RULE_nmr_restraint
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterNmr_restraint" ):
@@ -2116,16 +2116,16 @@ class AMBER_MR_Parser ( Parser ):
 
     def nmr_restraint(self):
 
-        localctx = AMBER_MR_Parser.Nmr_restraintContext(self, self._ctx, self.state)
+        localctx = AmberMRParser.Nmr_restraintContext(self, self._ctx, self.state)
         self.enterRule(localctx, 2, self.RULE_nmr_restraint)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 80
-            self.match(AMBER_MR_Parser.RST)
+            self.match(AmberMRParser.RST)
             self.state = 81
             self.restraint_statement()
             self.state = 82
-            self.match(AMBER_MR_Parser.END)
+            self.match(AmberMRParser.END)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -2142,17 +2142,17 @@ class AMBER_MR_Parser ( Parser ):
             self.parser = parser
 
         def NOEEXP(self):
-            return self.getToken(AMBER_MR_Parser.NOEEXP, 0)
+            return self.getToken(AmberMRParser.NOEEXP, 0)
 
         def noeexp_statement(self):
-            return self.getTypedRuleContext(AMBER_MR_Parser.Noeexp_statementContext,0)
+            return self.getTypedRuleContext(AmberMRParser.Noeexp_statementContext,0)
 
 
         def END(self):
-            return self.getToken(AMBER_MR_Parser.END, 0)
+            return self.getToken(AmberMRParser.END, 0)
 
         def getRuleIndex(self):
-            return AMBER_MR_Parser.RULE_noesy_volume_restraint
+            return AmberMRParser.RULE_noesy_volume_restraint
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterNoesy_volume_restraint" ):
@@ -2167,16 +2167,16 @@ class AMBER_MR_Parser ( Parser ):
 
     def noesy_volume_restraint(self):
 
-        localctx = AMBER_MR_Parser.Noesy_volume_restraintContext(self, self._ctx, self.state)
+        localctx = AmberMRParser.Noesy_volume_restraintContext(self, self._ctx, self.state)
         self.enterRule(localctx, 4, self.RULE_noesy_volume_restraint)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 84
-            self.match(AMBER_MR_Parser.NOEEXP)
+            self.match(AmberMRParser.NOEEXP)
             self.state = 85
             self.noeexp_statement()
             self.state = 86
-            self.match(AMBER_MR_Parser.END)
+            self.match(AmberMRParser.END)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -2193,17 +2193,17 @@ class AMBER_MR_Parser ( Parser ):
             self.parser = parser
 
         def SHF(self):
-            return self.getToken(AMBER_MR_Parser.SHF, 0)
+            return self.getToken(AmberMRParser.SHF, 0)
 
         def shf_statement(self):
-            return self.getTypedRuleContext(AMBER_MR_Parser.Shf_statementContext,0)
+            return self.getTypedRuleContext(AmberMRParser.Shf_statementContext,0)
 
 
         def END(self):
-            return self.getToken(AMBER_MR_Parser.END, 0)
+            return self.getToken(AmberMRParser.END, 0)
 
         def getRuleIndex(self):
-            return AMBER_MR_Parser.RULE_chemical_shift_restraint
+            return AmberMRParser.RULE_chemical_shift_restraint
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterChemical_shift_restraint" ):
@@ -2218,16 +2218,16 @@ class AMBER_MR_Parser ( Parser ):
 
     def chemical_shift_restraint(self):
 
-        localctx = AMBER_MR_Parser.Chemical_shift_restraintContext(self, self._ctx, self.state)
+        localctx = AmberMRParser.Chemical_shift_restraintContext(self, self._ctx, self.state)
         self.enterRule(localctx, 6, self.RULE_chemical_shift_restraint)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 88
-            self.match(AMBER_MR_Parser.SHF)
+            self.match(AmberMRParser.SHF)
             self.state = 89
             self.shf_statement()
             self.state = 90
-            self.match(AMBER_MR_Parser.END)
+            self.match(AmberMRParser.END)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -2244,17 +2244,17 @@ class AMBER_MR_Parser ( Parser ):
             self.parser = parser
 
         def PCSHF(self):
-            return self.getToken(AMBER_MR_Parser.PCSHF, 0)
+            return self.getToken(AmberMRParser.PCSHF, 0)
 
         def pcshf_statement(self):
-            return self.getTypedRuleContext(AMBER_MR_Parser.Pcshf_statementContext,0)
+            return self.getTypedRuleContext(AmberMRParser.Pcshf_statementContext,0)
 
 
         def END(self):
-            return self.getToken(AMBER_MR_Parser.END, 0)
+            return self.getToken(AmberMRParser.END, 0)
 
         def getRuleIndex(self):
-            return AMBER_MR_Parser.RULE_pcs_restraint
+            return AmberMRParser.RULE_pcs_restraint
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterPcs_restraint" ):
@@ -2269,16 +2269,16 @@ class AMBER_MR_Parser ( Parser ):
 
     def pcs_restraint(self):
 
-        localctx = AMBER_MR_Parser.Pcs_restraintContext(self, self._ctx, self.state)
+        localctx = AmberMRParser.Pcs_restraintContext(self, self._ctx, self.state)
         self.enterRule(localctx, 8, self.RULE_pcs_restraint)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 92
-            self.match(AMBER_MR_Parser.PCSHF)
+            self.match(AmberMRParser.PCSHF)
             self.state = 93
             self.pcshf_statement()
             self.state = 94
-            self.match(AMBER_MR_Parser.END)
+            self.match(AmberMRParser.END)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -2295,17 +2295,17 @@ class AMBER_MR_Parser ( Parser ):
             self.parser = parser
 
         def ALIGN(self):
-            return self.getToken(AMBER_MR_Parser.ALIGN, 0)
+            return self.getToken(AmberMRParser.ALIGN, 0)
 
         def align_statement(self):
-            return self.getTypedRuleContext(AMBER_MR_Parser.Align_statementContext,0)
+            return self.getTypedRuleContext(AmberMRParser.Align_statementContext,0)
 
 
         def END(self):
-            return self.getToken(AMBER_MR_Parser.END, 0)
+            return self.getToken(AmberMRParser.END, 0)
 
         def getRuleIndex(self):
-            return AMBER_MR_Parser.RULE_dipolar_coupling_restraint
+            return AmberMRParser.RULE_dipolar_coupling_restraint
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterDipolar_coupling_restraint" ):
@@ -2320,16 +2320,16 @@ class AMBER_MR_Parser ( Parser ):
 
     def dipolar_coupling_restraint(self):
 
-        localctx = AMBER_MR_Parser.Dipolar_coupling_restraintContext(self, self._ctx, self.state)
+        localctx = AmberMRParser.Dipolar_coupling_restraintContext(self, self._ctx, self.state)
         self.enterRule(localctx, 10, self.RULE_dipolar_coupling_restraint)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 96
-            self.match(AMBER_MR_Parser.ALIGN)
+            self.match(AmberMRParser.ALIGN)
             self.state = 97
             self.align_statement()
             self.state = 98
-            self.match(AMBER_MR_Parser.END)
+            self.match(AmberMRParser.END)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -2346,17 +2346,17 @@ class AMBER_MR_Parser ( Parser ):
             self.parser = parser
 
         def CSA(self):
-            return self.getToken(AMBER_MR_Parser.CSA, 0)
+            return self.getToken(AmberMRParser.CSA, 0)
 
         def csa_statement(self):
-            return self.getTypedRuleContext(AMBER_MR_Parser.Csa_statementContext,0)
+            return self.getTypedRuleContext(AmberMRParser.Csa_statementContext,0)
 
 
         def END(self):
-            return self.getToken(AMBER_MR_Parser.END, 0)
+            return self.getToken(AmberMRParser.END, 0)
 
         def getRuleIndex(self):
-            return AMBER_MR_Parser.RULE_csa_restraint
+            return AmberMRParser.RULE_csa_restraint
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterCsa_restraint" ):
@@ -2371,16 +2371,16 @@ class AMBER_MR_Parser ( Parser ):
 
     def csa_restraint(self):
 
-        localctx = AMBER_MR_Parser.Csa_restraintContext(self, self._ctx, self.state)
+        localctx = AmberMRParser.Csa_restraintContext(self, self._ctx, self.state)
         self.enterRule(localctx, 12, self.RULE_csa_restraint)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 100
-            self.match(AMBER_MR_Parser.CSA)
+            self.match(AmberMRParser.CSA)
             self.state = 101
             self.csa_statement()
             self.state = 102
-            self.match(AMBER_MR_Parser.END)
+            self.match(AmberMRParser.END)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -2397,39 +2397,39 @@ class AMBER_MR_Parser ( Parser ):
             self.parser = parser
 
         def distance_statement(self):
-            return self.getTypedRuleContext(AMBER_MR_Parser.Distance_statementContext,0)
+            return self.getTypedRuleContext(AmberMRParser.Distance_statementContext,0)
 
 
         def angle_statement(self):
-            return self.getTypedRuleContext(AMBER_MR_Parser.Angle_statementContext,0)
+            return self.getTypedRuleContext(AmberMRParser.Angle_statementContext,0)
 
 
         def torsion_statement(self):
-            return self.getTypedRuleContext(AMBER_MR_Parser.Torsion_statementContext,0)
+            return self.getTypedRuleContext(AmberMRParser.Torsion_statementContext,0)
 
 
         def plane_point_angle_statement(self):
-            return self.getTypedRuleContext(AMBER_MR_Parser.Plane_point_angle_statementContext,0)
+            return self.getTypedRuleContext(AmberMRParser.Plane_point_angle_statementContext,0)
 
 
         def plane_plane_angle_statement(self):
-            return self.getTypedRuleContext(AMBER_MR_Parser.Plane_plane_angle_statementContext,0)
+            return self.getTypedRuleContext(AmberMRParser.Plane_plane_angle_statementContext,0)
 
 
         def general_distance2_statement(self):
-            return self.getTypedRuleContext(AMBER_MR_Parser.General_distance2_statementContext,0)
+            return self.getTypedRuleContext(AmberMRParser.General_distance2_statementContext,0)
 
 
         def general_distance3_statement(self):
-            return self.getTypedRuleContext(AMBER_MR_Parser.General_distance3_statementContext,0)
+            return self.getTypedRuleContext(AmberMRParser.General_distance3_statementContext,0)
 
 
         def general_distance4_statement(self):
-            return self.getTypedRuleContext(AMBER_MR_Parser.General_distance4_statementContext,0)
+            return self.getTypedRuleContext(AmberMRParser.General_distance4_statementContext,0)
 
 
         def getRuleIndex(self):
-            return AMBER_MR_Parser.RULE_restraint_statement
+            return AmberMRParser.RULE_restraint_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterRestraint_statement" ):
@@ -2444,7 +2444,7 @@ class AMBER_MR_Parser ( Parser ):
 
     def restraint_statement(self):
 
-        localctx = AMBER_MR_Parser.Restraint_statementContext(self, self._ctx, self.state)
+        localctx = AmberMRParser.Restraint_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 14, self.RULE_restraint_statement)
         try:
             self.state = 112
@@ -2515,172 +2515,172 @@ class AMBER_MR_Parser ( Parser ):
             self.parser = parser
 
         def IAT(self):
-            return self.getToken(AMBER_MR_Parser.IAT, 0)
+            return self.getToken(AmberMRParser.IAT, 0)
 
         def Equ_op(self):
-            return self.getToken(AMBER_MR_Parser.Equ_op, 0)
+            return self.getToken(AmberMRParser.Equ_op, 0)
 
         def Integer(self, i:int=None):
             if i is None:
-                return self.getTokens(AMBER_MR_Parser.Integer)
+                return self.getTokens(AmberMRParser.Integer)
             else:
-                return self.getToken(AMBER_MR_Parser.Integer, i)
+                return self.getToken(AmberMRParser.Integer, i)
 
         def Comma(self, i:int=None):
             if i is None:
-                return self.getTokens(AMBER_MR_Parser.Comma)
+                return self.getTokens(AmberMRParser.Comma)
             else:
-                return self.getToken(AMBER_MR_Parser.Comma, i)
+                return self.getToken(AmberMRParser.Comma, i)
 
         def RSTWT(self):
-            return self.getToken(AMBER_MR_Parser.RSTWT, 0)
+            return self.getToken(AmberMRParser.RSTWT, 0)
 
         def Real(self):
-            return self.getToken(AMBER_MR_Parser.Real, 0)
+            return self.getToken(AmberMRParser.Real, 0)
 
         def RESTRAINT(self):
-            return self.getToken(AMBER_MR_Parser.RESTRAINT, 0)
+            return self.getToken(AmberMRParser.RESTRAINT, 0)
 
         def QUOT(self, i:int=None):
             if i is None:
-                return self.getTokens(AMBER_MR_Parser.QUOT)
+                return self.getTokens(AmberMRParser.QUOT)
             else:
-                return self.getToken(AMBER_MR_Parser.QUOT, i)
+                return self.getToken(AmberMRParser.QUOT, i)
 
         def DistanceRstFunctionCall(self):
-            return self.getToken(AMBER_MR_Parser.DistanceRstFunctionCall, 0)
+            return self.getToken(AmberMRParser.DistanceRstFunctionCall, 0)
 
         def ATNAM(self):
-            return self.getToken(AMBER_MR_Parser.ATNAM, 0)
+            return self.getToken(AmberMRParser.ATNAM, 0)
 
         def Quoted_atom_name(self, i:int=None):
             if i is None:
-                return self.getTokens(AMBER_MR_Parser.Quoted_atom_name)
+                return self.getTokens(AmberMRParser.Quoted_atom_name)
             else:
-                return self.getToken(AMBER_MR_Parser.Quoted_atom_name, i)
+                return self.getToken(AmberMRParser.Quoted_atom_name, i)
 
         def IRESID(self):
-            return self.getToken(AMBER_MR_Parser.IRESID, 0)
+            return self.getToken(AmberMRParser.IRESID, 0)
 
         def One_or_Zero(self, i:int=None):
             if i is None:
-                return self.getTokens(AMBER_MR_Parser.One_or_Zero)
+                return self.getTokens(AmberMRParser.One_or_Zero)
             else:
-                return self.getToken(AMBER_MR_Parser.One_or_Zero, i)
+                return self.getToken(AmberMRParser.One_or_Zero, i)
 
         def NSTEP1(self):
-            return self.getToken(AMBER_MR_Parser.NSTEP1, 0)
+            return self.getToken(AmberMRParser.NSTEP1, 0)
 
         def NSTEP2(self):
-            return self.getToken(AMBER_MR_Parser.NSTEP2, 0)
+            return self.getToken(AmberMRParser.NSTEP2, 0)
 
         def IRSTYP(self):
-            return self.getToken(AMBER_MR_Parser.IRSTYP, 0)
+            return self.getToken(AmberMRParser.IRSTYP, 0)
 
         def IALTD(self):
-            return self.getToken(AMBER_MR_Parser.IALTD, 0)
+            return self.getToken(AmberMRParser.IALTD, 0)
 
         def IFVARI(self):
-            return self.getToken(AMBER_MR_Parser.IFVARI, 0)
+            return self.getToken(AmberMRParser.IFVARI, 0)
 
         def NINC(self):
-            return self.getToken(AMBER_MR_Parser.NINC, 0)
+            return self.getToken(AmberMRParser.NINC, 0)
 
         def IMULT(self):
-            return self.getToken(AMBER_MR_Parser.IMULT, 0)
+            return self.getToken(AmberMRParser.IMULT, 0)
 
         def R1(self):
-            return self.getToken(AMBER_MR_Parser.R1, 0)
+            return self.getToken(AmberMRParser.R1, 0)
 
         def R2(self):
-            return self.getToken(AMBER_MR_Parser.R2, 0)
+            return self.getToken(AmberMRParser.R2, 0)
 
         def R3(self):
-            return self.getToken(AMBER_MR_Parser.R3, 0)
+            return self.getToken(AmberMRParser.R3, 0)
 
         def R4(self):
-            return self.getToken(AMBER_MR_Parser.R4, 0)
+            return self.getToken(AmberMRParser.R4, 0)
 
         def RK2(self):
-            return self.getToken(AMBER_MR_Parser.RK2, 0)
+            return self.getToken(AmberMRParser.RK2, 0)
 
         def RK3(self):
-            return self.getToken(AMBER_MR_Parser.RK3, 0)
+            return self.getToken(AmberMRParser.RK3, 0)
 
         def R1A(self):
-            return self.getToken(AMBER_MR_Parser.R1A, 0)
+            return self.getToken(AmberMRParser.R1A, 0)
 
         def R2A(self):
-            return self.getToken(AMBER_MR_Parser.R2A, 0)
+            return self.getToken(AmberMRParser.R2A, 0)
 
         def R3A(self):
-            return self.getToken(AMBER_MR_Parser.R3A, 0)
+            return self.getToken(AmberMRParser.R3A, 0)
 
         def R4A(self):
-            return self.getToken(AMBER_MR_Parser.R4A, 0)
+            return self.getToken(AmberMRParser.R4A, 0)
 
         def RK2A(self):
-            return self.getToken(AMBER_MR_Parser.RK2A, 0)
+            return self.getToken(AmberMRParser.RK2A, 0)
 
         def RK3A(self):
-            return self.getToken(AMBER_MR_Parser.RK3A, 0)
+            return self.getToken(AmberMRParser.RK3A, 0)
 
         def R0(self):
-            return self.getToken(AMBER_MR_Parser.R0, 0)
+            return self.getToken(AmberMRParser.R0, 0)
 
         def K0(self):
-            return self.getToken(AMBER_MR_Parser.K0, 0)
+            return self.getToken(AmberMRParser.K0, 0)
 
         def R0A(self):
-            return self.getToken(AMBER_MR_Parser.R0A, 0)
+            return self.getToken(AmberMRParser.R0A, 0)
 
         def K0A(self):
-            return self.getToken(AMBER_MR_Parser.K0A, 0)
+            return self.getToken(AmberMRParser.K0A, 0)
 
         def DISTANCE_IGR(self):
-            return self.getToken(AMBER_MR_Parser.DISTANCE_IGR, 0)
+            return self.getToken(AmberMRParser.DISTANCE_IGR, 0)
 
         def FXYZ(self):
-            return self.getToken(AMBER_MR_Parser.FXYZ, 0)
+            return self.getToken(AmberMRParser.FXYZ, 0)
 
         def OUTXYZ(self):
-            return self.getToken(AMBER_MR_Parser.OUTXYZ, 0)
+            return self.getToken(AmberMRParser.OUTXYZ, 0)
 
         def DISTANCE_GRNAM(self):
-            return self.getToken(AMBER_MR_Parser.DISTANCE_GRNAM, 0)
+            return self.getToken(AmberMRParser.DISTANCE_GRNAM, 0)
 
         def IR6(self):
-            return self.getToken(AMBER_MR_Parser.IR6, 0)
+            return self.getToken(AmberMRParser.IR6, 0)
 
         def IFNTYP(self):
-            return self.getToken(AMBER_MR_Parser.IFNTYP, 0)
+            return self.getToken(AmberMRParser.IFNTYP, 0)
 
         def IXPK(self):
-            return self.getToken(AMBER_MR_Parser.IXPK, 0)
+            return self.getToken(AmberMRParser.IXPK, 0)
 
         def NXPK(self):
-            return self.getToken(AMBER_MR_Parser.NXPK, 0)
+            return self.getToken(AmberMRParser.NXPK, 0)
 
         def ICONSTR(self):
-            return self.getToken(AMBER_MR_Parser.ICONSTR, 0)
+            return self.getToken(AmberMRParser.ICONSTR, 0)
 
         def DistanceIFunctionCall(self):
-            return self.getToken(AMBER_MR_Parser.DistanceIFunctionCall, 0)
+            return self.getToken(AmberMRParser.DistanceIFunctionCall, 0)
 
         def DistanceIGFunctionCall(self):
-            return self.getToken(AMBER_MR_Parser.DistanceIGFunctionCall, 0)
+            return self.getToken(AmberMRParser.DistanceIGFunctionCall, 0)
 
         def IntegerArray(self):
-            return self.getToken(AMBER_MR_Parser.IntegerArray, 0)
+            return self.getToken(AmberMRParser.IntegerArray, 0)
 
         def DistanceRFunctionCall(self):
-            return self.getToken(AMBER_MR_Parser.DistanceRFunctionCall, 0)
+            return self.getToken(AmberMRParser.DistanceRFunctionCall, 0)
 
         def DistanceNFunctionCall(self):
-            return self.getToken(AMBER_MR_Parser.DistanceNFunctionCall, 0)
+            return self.getToken(AmberMRParser.DistanceNFunctionCall, 0)
 
         def getRuleIndex(self):
-            return AMBER_MR_Parser.RULE_distance_statement
+            return AmberMRParser.RULE_distance_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterDistance_statement" ):
@@ -2695,518 +2695,518 @@ class AMBER_MR_Parser ( Parser ):
 
     def distance_statement(self):
 
-        localctx = AMBER_MR_Parser.Distance_statementContext(self, self._ctx, self.state)
+        localctx = AmberMRParser.Distance_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 16, self.RULE_distance_statement)
         self._la = 0 # Token type
         try:
             self.state = 384
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [AMBER_MR_Parser.IAT]:
+            if token in [AmberMRParser.IAT]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 114
-                self.match(AMBER_MR_Parser.IAT)
+                self.match(AmberMRParser.IAT)
                 self.state = 115
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 116
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 117
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 118
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 120
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 119
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.RSTWT]:
+            elif token in [AmberMRParser.RSTWT]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 122
-                self.match(AMBER_MR_Parser.RSTWT)
+                self.match(AmberMRParser.RSTWT)
                 self.state = 123
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 124
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 126
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 125
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.RESTRAINT]:
+            elif token in [AmberMRParser.RESTRAINT]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 128
-                self.match(AMBER_MR_Parser.RESTRAINT)
+                self.match(AmberMRParser.RESTRAINT)
                 self.state = 129
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 130
-                self.match(AMBER_MR_Parser.QUOT)
+                self.match(AmberMRParser.QUOT)
                 self.state = 131
-                self.match(AMBER_MR_Parser.DistanceRstFunctionCall)
+                self.match(AmberMRParser.DistanceRstFunctionCall)
                 self.state = 132
-                self.match(AMBER_MR_Parser.QUOT)
+                self.match(AmberMRParser.QUOT)
                 self.state = 134
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 133
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.ATNAM]:
+            elif token in [AmberMRParser.ATNAM]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 136
-                self.match(AMBER_MR_Parser.ATNAM)
+                self.match(AmberMRParser.ATNAM)
                 self.state = 137
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 138
-                self.match(AMBER_MR_Parser.Quoted_atom_name)
+                self.match(AmberMRParser.Quoted_atom_name)
                 self.state = 139
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 140
-                self.match(AMBER_MR_Parser.Quoted_atom_name)
+                self.match(AmberMRParser.Quoted_atom_name)
                 self.state = 142
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 141
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.IRESID]:
+            elif token in [AmberMRParser.IRESID]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 144
-                self.match(AMBER_MR_Parser.IRESID)
+                self.match(AmberMRParser.IRESID)
                 self.state = 145
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 146
-                self.match(AMBER_MR_Parser.One_or_Zero)
+                self.match(AmberMRParser.One_or_Zero)
                 self.state = 148
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 147
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.NSTEP1]:
+            elif token in [AmberMRParser.NSTEP1]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 150
-                self.match(AMBER_MR_Parser.NSTEP1)
+                self.match(AmberMRParser.NSTEP1)
                 self.state = 151
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 152
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 154
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 153
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.NSTEP2]:
+            elif token in [AmberMRParser.NSTEP2]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 156
-                self.match(AMBER_MR_Parser.NSTEP2)
+                self.match(AmberMRParser.NSTEP2)
                 self.state = 157
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 158
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 160
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 159
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.IRSTYP]:
+            elif token in [AmberMRParser.IRSTYP]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 162
-                self.match(AMBER_MR_Parser.IRSTYP)
+                self.match(AmberMRParser.IRSTYP)
                 self.state = 163
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 164
-                self.match(AMBER_MR_Parser.One_or_Zero)
+                self.match(AmberMRParser.One_or_Zero)
                 self.state = 166
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 165
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.IALTD]:
+            elif token in [AmberMRParser.IALTD]:
                 self.enterOuterAlt(localctx, 9)
                 self.state = 168
-                self.match(AMBER_MR_Parser.IALTD)
+                self.match(AmberMRParser.IALTD)
                 self.state = 169
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 170
-                self.match(AMBER_MR_Parser.One_or_Zero)
+                self.match(AmberMRParser.One_or_Zero)
                 self.state = 172
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 171
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.IFVARI]:
+            elif token in [AmberMRParser.IFVARI]:
                 self.enterOuterAlt(localctx, 10)
                 self.state = 174
-                self.match(AMBER_MR_Parser.IFVARI)
+                self.match(AmberMRParser.IFVARI)
                 self.state = 175
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 176
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 178
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 177
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.NINC]:
+            elif token in [AmberMRParser.NINC]:
                 self.enterOuterAlt(localctx, 11)
                 self.state = 180
-                self.match(AMBER_MR_Parser.NINC)
+                self.match(AmberMRParser.NINC)
                 self.state = 181
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 182
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 184
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 183
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.IMULT]:
+            elif token in [AmberMRParser.IMULT]:
                 self.enterOuterAlt(localctx, 12)
                 self.state = 186
-                self.match(AMBER_MR_Parser.IMULT)
+                self.match(AmberMRParser.IMULT)
                 self.state = 187
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 188
-                self.match(AMBER_MR_Parser.One_or_Zero)
+                self.match(AmberMRParser.One_or_Zero)
                 self.state = 190
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 189
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R1]:
+            elif token in [AmberMRParser.R1]:
                 self.enterOuterAlt(localctx, 13)
                 self.state = 192
-                self.match(AMBER_MR_Parser.R1)
+                self.match(AmberMRParser.R1)
                 self.state = 193
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 194
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 196
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 195
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R2]:
+            elif token in [AmberMRParser.R2]:
                 self.enterOuterAlt(localctx, 14)
                 self.state = 198
-                self.match(AMBER_MR_Parser.R2)
+                self.match(AmberMRParser.R2)
                 self.state = 199
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 200
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 202
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 201
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R3]:
+            elif token in [AmberMRParser.R3]:
                 self.enterOuterAlt(localctx, 15)
                 self.state = 204
-                self.match(AMBER_MR_Parser.R3)
+                self.match(AmberMRParser.R3)
                 self.state = 205
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 206
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 208
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 207
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R4]:
+            elif token in [AmberMRParser.R4]:
                 self.enterOuterAlt(localctx, 16)
                 self.state = 210
-                self.match(AMBER_MR_Parser.R4)
+                self.match(AmberMRParser.R4)
                 self.state = 211
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 212
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 214
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 213
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.RK2]:
+            elif token in [AmberMRParser.RK2]:
                 self.enterOuterAlt(localctx, 17)
                 self.state = 216
-                self.match(AMBER_MR_Parser.RK2)
+                self.match(AmberMRParser.RK2)
                 self.state = 217
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 218
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 220
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 219
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.RK3]:
+            elif token in [AmberMRParser.RK3]:
                 self.enterOuterAlt(localctx, 18)
                 self.state = 222
-                self.match(AMBER_MR_Parser.RK3)
+                self.match(AmberMRParser.RK3)
                 self.state = 223
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 224
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 226
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 225
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R1A]:
+            elif token in [AmberMRParser.R1A]:
                 self.enterOuterAlt(localctx, 19)
                 self.state = 228
-                self.match(AMBER_MR_Parser.R1A)
+                self.match(AmberMRParser.R1A)
                 self.state = 229
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 230
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 232
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 231
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R2A]:
+            elif token in [AmberMRParser.R2A]:
                 self.enterOuterAlt(localctx, 20)
                 self.state = 234
-                self.match(AMBER_MR_Parser.R2A)
+                self.match(AmberMRParser.R2A)
                 self.state = 235
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 236
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 238
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 237
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R3A]:
+            elif token in [AmberMRParser.R3A]:
                 self.enterOuterAlt(localctx, 21)
                 self.state = 240
-                self.match(AMBER_MR_Parser.R3A)
+                self.match(AmberMRParser.R3A)
                 self.state = 241
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 242
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 244
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 243
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R4A]:
+            elif token in [AmberMRParser.R4A]:
                 self.enterOuterAlt(localctx, 22)
                 self.state = 246
-                self.match(AMBER_MR_Parser.R4A)
+                self.match(AmberMRParser.R4A)
                 self.state = 247
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 248
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 250
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 249
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.RK2A]:
+            elif token in [AmberMRParser.RK2A]:
                 self.enterOuterAlt(localctx, 23)
                 self.state = 252
-                self.match(AMBER_MR_Parser.RK2A)
+                self.match(AmberMRParser.RK2A)
                 self.state = 253
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 254
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 256
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 255
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.RK3A]:
+            elif token in [AmberMRParser.RK3A]:
                 self.enterOuterAlt(localctx, 24)
                 self.state = 258
-                self.match(AMBER_MR_Parser.RK3A)
+                self.match(AmberMRParser.RK3A)
                 self.state = 259
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 260
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 262
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 261
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R0]:
+            elif token in [AmberMRParser.R0]:
                 self.enterOuterAlt(localctx, 25)
                 self.state = 264
-                self.match(AMBER_MR_Parser.R0)
+                self.match(AmberMRParser.R0)
                 self.state = 265
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 266
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 268
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 267
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.K0]:
+            elif token in [AmberMRParser.K0]:
                 self.enterOuterAlt(localctx, 26)
                 self.state = 270
-                self.match(AMBER_MR_Parser.K0)
+                self.match(AmberMRParser.K0)
                 self.state = 271
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 272
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 274
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 273
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R0A]:
+            elif token in [AmberMRParser.R0A]:
                 self.enterOuterAlt(localctx, 27)
                 self.state = 276
-                self.match(AMBER_MR_Parser.R0A)
+                self.match(AmberMRParser.R0A)
                 self.state = 277
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 278
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 280
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 279
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.K0A]:
+            elif token in [AmberMRParser.K0A]:
                 self.enterOuterAlt(localctx, 28)
                 self.state = 282
-                self.match(AMBER_MR_Parser.K0A)
+                self.match(AmberMRParser.K0A)
                 self.state = 283
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 284
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 286
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 285
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.DISTANCE_IGR]:
+            elif token in [AmberMRParser.DISTANCE_IGR]:
                 self.enterOuterAlt(localctx, 29)
                 self.state = 288
-                self.match(AMBER_MR_Parser.DISTANCE_IGR)
+                self.match(AmberMRParser.DISTANCE_IGR)
                 self.state = 289
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 290
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 295
                 self._errHandler.sync(self)
                 _alt = self._interp.adaptivePredict(self._input,35,self._ctx)
                 while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                     if _alt==1:
                         self.state = 291
-                        self.match(AMBER_MR_Parser.Comma)
+                        self.match(AmberMRParser.Comma)
                         self.state = 292
-                        self.match(AMBER_MR_Parser.Integer) 
+                        self.match(AmberMRParser.Integer) 
                     self.state = 297
                     self._errHandler.sync(self)
                     _alt = self._interp.adaptivePredict(self._input,35,self._ctx)
@@ -3214,71 +3214,71 @@ class AMBER_MR_Parser ( Parser ):
                 self.state = 299
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 298
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.FXYZ]:
+            elif token in [AmberMRParser.FXYZ]:
                 self.enterOuterAlt(localctx, 30)
                 self.state = 301
-                self.match(AMBER_MR_Parser.FXYZ)
+                self.match(AmberMRParser.FXYZ)
                 self.state = 302
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 303
-                self.match(AMBER_MR_Parser.One_or_Zero)
+                self.match(AmberMRParser.One_or_Zero)
                 self.state = 304
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 305
-                self.match(AMBER_MR_Parser.One_or_Zero)
+                self.match(AmberMRParser.One_or_Zero)
                 self.state = 306
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 307
-                self.match(AMBER_MR_Parser.One_or_Zero)
+                self.match(AmberMRParser.One_or_Zero)
                 self.state = 309
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 308
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.OUTXYZ]:
+            elif token in [AmberMRParser.OUTXYZ]:
                 self.enterOuterAlt(localctx, 31)
                 self.state = 311
-                self.match(AMBER_MR_Parser.OUTXYZ)
+                self.match(AmberMRParser.OUTXYZ)
                 self.state = 312
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 313
-                self.match(AMBER_MR_Parser.One_or_Zero)
+                self.match(AmberMRParser.One_or_Zero)
                 self.state = 315
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 314
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.DISTANCE_GRNAM]:
+            elif token in [AmberMRParser.DISTANCE_GRNAM]:
                 self.enterOuterAlt(localctx, 32)
                 self.state = 317
-                self.match(AMBER_MR_Parser.DISTANCE_GRNAM)
+                self.match(AmberMRParser.DISTANCE_GRNAM)
                 self.state = 318
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 319
-                self.match(AMBER_MR_Parser.Quoted_atom_name)
+                self.match(AmberMRParser.Quoted_atom_name)
                 self.state = 324
                 self._errHandler.sync(self)
                 _alt = self._interp.adaptivePredict(self._input,39,self._ctx)
                 while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                     if _alt==1:
                         self.state = 320
-                        self.match(AMBER_MR_Parser.Comma)
+                        self.match(AmberMRParser.Comma)
                         self.state = 321
-                        self.match(AMBER_MR_Parser.Quoted_atom_name) 
+                        self.match(AmberMRParser.Quoted_atom_name) 
                     self.state = 326
                     self._errHandler.sync(self)
                     _alt = self._interp.adaptivePredict(self._input,39,self._ctx)
@@ -3286,162 +3286,162 @@ class AMBER_MR_Parser ( Parser ):
                 self.state = 328
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 327
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.IR6]:
+            elif token in [AmberMRParser.IR6]:
                 self.enterOuterAlt(localctx, 33)
                 self.state = 330
-                self.match(AMBER_MR_Parser.IR6)
+                self.match(AmberMRParser.IR6)
                 self.state = 331
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 332
-                self.match(AMBER_MR_Parser.One_or_Zero)
+                self.match(AmberMRParser.One_or_Zero)
                 self.state = 334
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 333
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.IFNTYP]:
+            elif token in [AmberMRParser.IFNTYP]:
                 self.enterOuterAlt(localctx, 34)
                 self.state = 336
-                self.match(AMBER_MR_Parser.IFNTYP)
+                self.match(AmberMRParser.IFNTYP)
                 self.state = 337
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 338
-                self.match(AMBER_MR_Parser.One_or_Zero)
+                self.match(AmberMRParser.One_or_Zero)
                 self.state = 340
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 339
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.IXPK]:
+            elif token in [AmberMRParser.IXPK]:
                 self.enterOuterAlt(localctx, 35)
                 self.state = 342
-                self.match(AMBER_MR_Parser.IXPK)
+                self.match(AmberMRParser.IXPK)
                 self.state = 343
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 344
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 346
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 345
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.NXPK]:
+            elif token in [AmberMRParser.NXPK]:
                 self.enterOuterAlt(localctx, 36)
                 self.state = 348
-                self.match(AMBER_MR_Parser.NXPK)
+                self.match(AmberMRParser.NXPK)
                 self.state = 349
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 350
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 352
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 351
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.ICONSTR]:
+            elif token in [AmberMRParser.ICONSTR]:
                 self.enterOuterAlt(localctx, 37)
                 self.state = 354
-                self.match(AMBER_MR_Parser.ICONSTR)
+                self.match(AmberMRParser.ICONSTR)
                 self.state = 355
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 356
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 358
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 357
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.DistanceIFunctionCall]:
+            elif token in [AmberMRParser.DistanceIFunctionCall]:
                 self.enterOuterAlt(localctx, 38)
                 self.state = 360
-                self.match(AMBER_MR_Parser.DistanceIFunctionCall)
+                self.match(AmberMRParser.DistanceIFunctionCall)
                 self.state = 361
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 362
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 364
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 363
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.DistanceIGFunctionCall]:
+            elif token in [AmberMRParser.DistanceIGFunctionCall]:
                 self.enterOuterAlt(localctx, 39)
                 self.state = 366
-                self.match(AMBER_MR_Parser.DistanceIGFunctionCall)
+                self.match(AmberMRParser.DistanceIGFunctionCall)
                 self.state = 367
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 368
-                self.match(AMBER_MR_Parser.IntegerArray)
+                self.match(AmberMRParser.IntegerArray)
                 self.state = 370
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 369
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.DistanceRFunctionCall]:
+            elif token in [AmberMRParser.DistanceRFunctionCall]:
                 self.enterOuterAlt(localctx, 40)
                 self.state = 372
-                self.match(AMBER_MR_Parser.DistanceRFunctionCall)
+                self.match(AmberMRParser.DistanceRFunctionCall)
                 self.state = 373
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 374
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 376
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 375
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.DistanceNFunctionCall]:
+            elif token in [AmberMRParser.DistanceNFunctionCall]:
                 self.enterOuterAlt(localctx, 41)
                 self.state = 378
-                self.match(AMBER_MR_Parser.DistanceNFunctionCall)
+                self.match(AmberMRParser.DistanceNFunctionCall)
                 self.state = 379
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 380
-                self.match(AMBER_MR_Parser.Quoted_atom_name)
+                self.match(AmberMRParser.Quoted_atom_name)
                 self.state = 382
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 381
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
@@ -3464,154 +3464,154 @@ class AMBER_MR_Parser ( Parser ):
             self.parser = parser
 
         def IAT(self):
-            return self.getToken(AMBER_MR_Parser.IAT, 0)
+            return self.getToken(AmberMRParser.IAT, 0)
 
         def Equ_op(self):
-            return self.getToken(AMBER_MR_Parser.Equ_op, 0)
+            return self.getToken(AmberMRParser.Equ_op, 0)
 
         def Integer(self, i:int=None):
             if i is None:
-                return self.getTokens(AMBER_MR_Parser.Integer)
+                return self.getTokens(AmberMRParser.Integer)
             else:
-                return self.getToken(AMBER_MR_Parser.Integer, i)
+                return self.getToken(AmberMRParser.Integer, i)
 
         def Comma(self, i:int=None):
             if i is None:
-                return self.getTokens(AMBER_MR_Parser.Comma)
+                return self.getTokens(AmberMRParser.Comma)
             else:
-                return self.getToken(AMBER_MR_Parser.Comma, i)
+                return self.getToken(AmberMRParser.Comma, i)
 
         def RSTWT(self):
-            return self.getToken(AMBER_MR_Parser.RSTWT, 0)
+            return self.getToken(AmberMRParser.RSTWT, 0)
 
         def Real(self):
-            return self.getToken(AMBER_MR_Parser.Real, 0)
+            return self.getToken(AmberMRParser.Real, 0)
 
         def RESTRAINT(self):
-            return self.getToken(AMBER_MR_Parser.RESTRAINT, 0)
+            return self.getToken(AmberMRParser.RESTRAINT, 0)
 
         def QUOT(self, i:int=None):
             if i is None:
-                return self.getTokens(AMBER_MR_Parser.QUOT)
+                return self.getTokens(AmberMRParser.QUOT)
             else:
-                return self.getToken(AMBER_MR_Parser.QUOT, i)
+                return self.getToken(AmberMRParser.QUOT, i)
 
         def AngleRstFunctionCall(self):
-            return self.getToken(AMBER_MR_Parser.AngleRstFunctionCall, 0)
+            return self.getToken(AmberMRParser.AngleRstFunctionCall, 0)
 
         def ATNAM(self):
-            return self.getToken(AMBER_MR_Parser.ATNAM, 0)
+            return self.getToken(AmberMRParser.ATNAM, 0)
 
         def Quoted_atom_name(self, i:int=None):
             if i is None:
-                return self.getTokens(AMBER_MR_Parser.Quoted_atom_name)
+                return self.getTokens(AmberMRParser.Quoted_atom_name)
             else:
-                return self.getToken(AMBER_MR_Parser.Quoted_atom_name, i)
+                return self.getToken(AmberMRParser.Quoted_atom_name, i)
 
         def IRESID(self):
-            return self.getToken(AMBER_MR_Parser.IRESID, 0)
+            return self.getToken(AmberMRParser.IRESID, 0)
 
         def One_or_Zero(self):
-            return self.getToken(AMBER_MR_Parser.One_or_Zero, 0)
+            return self.getToken(AmberMRParser.One_or_Zero, 0)
 
         def NSTEP1(self):
-            return self.getToken(AMBER_MR_Parser.NSTEP1, 0)
+            return self.getToken(AmberMRParser.NSTEP1, 0)
 
         def NSTEP2(self):
-            return self.getToken(AMBER_MR_Parser.NSTEP2, 0)
+            return self.getToken(AmberMRParser.NSTEP2, 0)
 
         def IRSTYP(self):
-            return self.getToken(AMBER_MR_Parser.IRSTYP, 0)
+            return self.getToken(AmberMRParser.IRSTYP, 0)
 
         def IFVARI(self):
-            return self.getToken(AMBER_MR_Parser.IFVARI, 0)
+            return self.getToken(AmberMRParser.IFVARI, 0)
 
         def NINC(self):
-            return self.getToken(AMBER_MR_Parser.NINC, 0)
+            return self.getToken(AmberMRParser.NINC, 0)
 
         def IMULT(self):
-            return self.getToken(AMBER_MR_Parser.IMULT, 0)
+            return self.getToken(AmberMRParser.IMULT, 0)
 
         def R1(self):
-            return self.getToken(AMBER_MR_Parser.R1, 0)
+            return self.getToken(AmberMRParser.R1, 0)
 
         def R2(self):
-            return self.getToken(AMBER_MR_Parser.R2, 0)
+            return self.getToken(AmberMRParser.R2, 0)
 
         def R3(self):
-            return self.getToken(AMBER_MR_Parser.R3, 0)
+            return self.getToken(AmberMRParser.R3, 0)
 
         def R4(self):
-            return self.getToken(AMBER_MR_Parser.R4, 0)
+            return self.getToken(AmberMRParser.R4, 0)
 
         def RK2(self):
-            return self.getToken(AMBER_MR_Parser.RK2, 0)
+            return self.getToken(AmberMRParser.RK2, 0)
 
         def RK3(self):
-            return self.getToken(AMBER_MR_Parser.RK3, 0)
+            return self.getToken(AmberMRParser.RK3, 0)
 
         def R1A(self):
-            return self.getToken(AMBER_MR_Parser.R1A, 0)
+            return self.getToken(AmberMRParser.R1A, 0)
 
         def R2A(self):
-            return self.getToken(AMBER_MR_Parser.R2A, 0)
+            return self.getToken(AmberMRParser.R2A, 0)
 
         def R3A(self):
-            return self.getToken(AMBER_MR_Parser.R3A, 0)
+            return self.getToken(AmberMRParser.R3A, 0)
 
         def R4A(self):
-            return self.getToken(AMBER_MR_Parser.R4A, 0)
+            return self.getToken(AmberMRParser.R4A, 0)
 
         def RK2A(self):
-            return self.getToken(AMBER_MR_Parser.RK2A, 0)
+            return self.getToken(AmberMRParser.RK2A, 0)
 
         def RK3A(self):
-            return self.getToken(AMBER_MR_Parser.RK3A, 0)
+            return self.getToken(AmberMRParser.RK3A, 0)
 
         def R0(self):
-            return self.getToken(AMBER_MR_Parser.R0, 0)
+            return self.getToken(AmberMRParser.R0, 0)
 
         def K0(self):
-            return self.getToken(AMBER_MR_Parser.K0, 0)
+            return self.getToken(AmberMRParser.K0, 0)
 
         def R0A(self):
-            return self.getToken(AMBER_MR_Parser.R0A, 0)
+            return self.getToken(AmberMRParser.R0A, 0)
 
         def K0A(self):
-            return self.getToken(AMBER_MR_Parser.K0A, 0)
+            return self.getToken(AmberMRParser.K0A, 0)
 
         def ANGLE_IGR(self):
-            return self.getToken(AMBER_MR_Parser.ANGLE_IGR, 0)
+            return self.getToken(AmberMRParser.ANGLE_IGR, 0)
 
         def ANGLE_GRNAM(self):
-            return self.getToken(AMBER_MR_Parser.ANGLE_GRNAM, 0)
+            return self.getToken(AmberMRParser.ANGLE_GRNAM, 0)
 
         def IFNTYP(self):
-            return self.getToken(AMBER_MR_Parser.IFNTYP, 0)
+            return self.getToken(AmberMRParser.IFNTYP, 0)
 
         def IXPK(self):
-            return self.getToken(AMBER_MR_Parser.IXPK, 0)
+            return self.getToken(AmberMRParser.IXPK, 0)
 
         def NXPK(self):
-            return self.getToken(AMBER_MR_Parser.NXPK, 0)
+            return self.getToken(AmberMRParser.NXPK, 0)
 
         def AngleIFunctionCall(self):
-            return self.getToken(AMBER_MR_Parser.AngleIFunctionCall, 0)
+            return self.getToken(AmberMRParser.AngleIFunctionCall, 0)
 
         def AngleIGFunctionCall(self):
-            return self.getToken(AMBER_MR_Parser.AngleIGFunctionCall, 0)
+            return self.getToken(AmberMRParser.AngleIGFunctionCall, 0)
 
         def IntegerArray(self):
-            return self.getToken(AMBER_MR_Parser.IntegerArray, 0)
+            return self.getToken(AmberMRParser.IntegerArray, 0)
 
         def AngleRFunctionCall(self):
-            return self.getToken(AMBER_MR_Parser.AngleRFunctionCall, 0)
+            return self.getToken(AmberMRParser.AngleRFunctionCall, 0)
 
         def AngleNFunctionCall(self):
-            return self.getToken(AMBER_MR_Parser.AngleNFunctionCall, 0)
+            return self.getToken(AmberMRParser.AngleNFunctionCall, 0)
 
         def getRuleIndex(self):
-            return AMBER_MR_Parser.RULE_angle_statement
+            return AmberMRParser.RULE_angle_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterAngle_statement" ):
@@ -3626,509 +3626,509 @@ class AMBER_MR_Parser ( Parser ):
 
     def angle_statement(self):
 
-        localctx = AMBER_MR_Parser.Angle_statementContext(self, self._ctx, self.state)
+        localctx = AmberMRParser.Angle_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 18, self.RULE_angle_statement)
         self._la = 0 # Token type
         try:
             self.state = 626
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [AMBER_MR_Parser.IAT]:
+            if token in [AmberMRParser.IAT]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 386
-                self.match(AMBER_MR_Parser.IAT)
+                self.match(AmberMRParser.IAT)
                 self.state = 387
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 388
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 389
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 390
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 391
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 392
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 394
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 393
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.RSTWT]:
+            elif token in [AmberMRParser.RSTWT]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 396
-                self.match(AMBER_MR_Parser.RSTWT)
+                self.match(AmberMRParser.RSTWT)
                 self.state = 397
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 398
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 400
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 399
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.RESTRAINT]:
+            elif token in [AmberMRParser.RESTRAINT]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 402
-                self.match(AMBER_MR_Parser.RESTRAINT)
+                self.match(AmberMRParser.RESTRAINT)
                 self.state = 403
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 404
-                self.match(AMBER_MR_Parser.QUOT)
+                self.match(AmberMRParser.QUOT)
                 self.state = 405
-                self.match(AMBER_MR_Parser.AngleRstFunctionCall)
+                self.match(AmberMRParser.AngleRstFunctionCall)
                 self.state = 406
-                self.match(AMBER_MR_Parser.QUOT)
+                self.match(AmberMRParser.QUOT)
                 self.state = 408
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 407
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.ATNAM]:
+            elif token in [AmberMRParser.ATNAM]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 410
-                self.match(AMBER_MR_Parser.ATNAM)
+                self.match(AmberMRParser.ATNAM)
                 self.state = 411
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 412
-                self.match(AMBER_MR_Parser.Quoted_atom_name)
+                self.match(AmberMRParser.Quoted_atom_name)
                 self.state = 413
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 414
-                self.match(AMBER_MR_Parser.Quoted_atom_name)
+                self.match(AmberMRParser.Quoted_atom_name)
                 self.state = 415
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 416
-                self.match(AMBER_MR_Parser.Quoted_atom_name)
+                self.match(AmberMRParser.Quoted_atom_name)
                 self.state = 418
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 417
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.IRESID]:
+            elif token in [AmberMRParser.IRESID]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 420
-                self.match(AMBER_MR_Parser.IRESID)
+                self.match(AmberMRParser.IRESID)
                 self.state = 421
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 422
-                self.match(AMBER_MR_Parser.One_or_Zero)
+                self.match(AmberMRParser.One_or_Zero)
                 self.state = 424
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 423
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.NSTEP1]:
+            elif token in [AmberMRParser.NSTEP1]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 426
-                self.match(AMBER_MR_Parser.NSTEP1)
+                self.match(AmberMRParser.NSTEP1)
                 self.state = 427
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 428
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 430
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 429
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.NSTEP2]:
+            elif token in [AmberMRParser.NSTEP2]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 432
-                self.match(AMBER_MR_Parser.NSTEP2)
+                self.match(AmberMRParser.NSTEP2)
                 self.state = 433
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 434
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 436
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 435
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.IRSTYP]:
+            elif token in [AmberMRParser.IRSTYP]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 438
-                self.match(AMBER_MR_Parser.IRSTYP)
+                self.match(AmberMRParser.IRSTYP)
                 self.state = 439
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 440
-                self.match(AMBER_MR_Parser.One_or_Zero)
+                self.match(AmberMRParser.One_or_Zero)
                 self.state = 442
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 441
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.IFVARI]:
+            elif token in [AmberMRParser.IFVARI]:
                 self.enterOuterAlt(localctx, 9)
                 self.state = 444
-                self.match(AMBER_MR_Parser.IFVARI)
+                self.match(AmberMRParser.IFVARI)
                 self.state = 445
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 446
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 448
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 447
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.NINC]:
+            elif token in [AmberMRParser.NINC]:
                 self.enterOuterAlt(localctx, 10)
                 self.state = 450
-                self.match(AMBER_MR_Parser.NINC)
+                self.match(AmberMRParser.NINC)
                 self.state = 451
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 452
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 454
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 453
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.IMULT]:
+            elif token in [AmberMRParser.IMULT]:
                 self.enterOuterAlt(localctx, 11)
                 self.state = 456
-                self.match(AMBER_MR_Parser.IMULT)
+                self.match(AmberMRParser.IMULT)
                 self.state = 457
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 458
-                self.match(AMBER_MR_Parser.One_or_Zero)
+                self.match(AmberMRParser.One_or_Zero)
                 self.state = 460
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 459
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R1]:
+            elif token in [AmberMRParser.R1]:
                 self.enterOuterAlt(localctx, 12)
                 self.state = 462
-                self.match(AMBER_MR_Parser.R1)
+                self.match(AmberMRParser.R1)
                 self.state = 463
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 464
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 466
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 465
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R2]:
+            elif token in [AmberMRParser.R2]:
                 self.enterOuterAlt(localctx, 13)
                 self.state = 468
-                self.match(AMBER_MR_Parser.R2)
+                self.match(AmberMRParser.R2)
                 self.state = 469
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 470
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 472
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 471
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R3]:
+            elif token in [AmberMRParser.R3]:
                 self.enterOuterAlt(localctx, 14)
                 self.state = 474
-                self.match(AMBER_MR_Parser.R3)
+                self.match(AmberMRParser.R3)
                 self.state = 475
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 476
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 478
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 477
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R4]:
+            elif token in [AmberMRParser.R4]:
                 self.enterOuterAlt(localctx, 15)
                 self.state = 480
-                self.match(AMBER_MR_Parser.R4)
+                self.match(AmberMRParser.R4)
                 self.state = 481
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 482
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 484
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 483
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.RK2]:
+            elif token in [AmberMRParser.RK2]:
                 self.enterOuterAlt(localctx, 16)
                 self.state = 486
-                self.match(AMBER_MR_Parser.RK2)
+                self.match(AmberMRParser.RK2)
                 self.state = 487
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 488
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 490
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 489
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.RK3]:
+            elif token in [AmberMRParser.RK3]:
                 self.enterOuterAlt(localctx, 17)
                 self.state = 492
-                self.match(AMBER_MR_Parser.RK3)
+                self.match(AmberMRParser.RK3)
                 self.state = 493
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 494
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 496
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 495
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R1A]:
+            elif token in [AmberMRParser.R1A]:
                 self.enterOuterAlt(localctx, 18)
                 self.state = 498
-                self.match(AMBER_MR_Parser.R1A)
+                self.match(AmberMRParser.R1A)
                 self.state = 499
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 500
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 502
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 501
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R2A]:
+            elif token in [AmberMRParser.R2A]:
                 self.enterOuterAlt(localctx, 19)
                 self.state = 504
-                self.match(AMBER_MR_Parser.R2A)
+                self.match(AmberMRParser.R2A)
                 self.state = 505
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 506
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 508
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 507
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R3A]:
+            elif token in [AmberMRParser.R3A]:
                 self.enterOuterAlt(localctx, 20)
                 self.state = 510
-                self.match(AMBER_MR_Parser.R3A)
+                self.match(AmberMRParser.R3A)
                 self.state = 511
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 512
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 514
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 513
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R4A]:
+            elif token in [AmberMRParser.R4A]:
                 self.enterOuterAlt(localctx, 21)
                 self.state = 516
-                self.match(AMBER_MR_Parser.R4A)
+                self.match(AmberMRParser.R4A)
                 self.state = 517
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 518
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 520
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 519
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.RK2A]:
+            elif token in [AmberMRParser.RK2A]:
                 self.enterOuterAlt(localctx, 22)
                 self.state = 522
-                self.match(AMBER_MR_Parser.RK2A)
+                self.match(AmberMRParser.RK2A)
                 self.state = 523
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 524
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 526
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 525
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.RK3A]:
+            elif token in [AmberMRParser.RK3A]:
                 self.enterOuterAlt(localctx, 23)
                 self.state = 528
-                self.match(AMBER_MR_Parser.RK3A)
+                self.match(AmberMRParser.RK3A)
                 self.state = 529
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 530
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 532
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 531
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R0]:
+            elif token in [AmberMRParser.R0]:
                 self.enterOuterAlt(localctx, 24)
                 self.state = 534
-                self.match(AMBER_MR_Parser.R0)
+                self.match(AmberMRParser.R0)
                 self.state = 535
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 536
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 538
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 537
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.K0]:
+            elif token in [AmberMRParser.K0]:
                 self.enterOuterAlt(localctx, 25)
                 self.state = 540
-                self.match(AMBER_MR_Parser.K0)
+                self.match(AmberMRParser.K0)
                 self.state = 541
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 542
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 544
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 543
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R0A]:
+            elif token in [AmberMRParser.R0A]:
                 self.enterOuterAlt(localctx, 26)
                 self.state = 546
-                self.match(AMBER_MR_Parser.R0A)
+                self.match(AmberMRParser.R0A)
                 self.state = 547
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 548
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 550
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 549
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.K0A]:
+            elif token in [AmberMRParser.K0A]:
                 self.enterOuterAlt(localctx, 27)
                 self.state = 552
-                self.match(AMBER_MR_Parser.K0A)
+                self.match(AmberMRParser.K0A)
                 self.state = 553
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 554
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 556
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 555
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.ANGLE_IGR]:
+            elif token in [AmberMRParser.ANGLE_IGR]:
                 self.enterOuterAlt(localctx, 28)
                 self.state = 558
-                self.match(AMBER_MR_Parser.ANGLE_IGR)
+                self.match(AmberMRParser.ANGLE_IGR)
                 self.state = 559
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 560
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 565
                 self._errHandler.sync(self)
                 _alt = self._interp.adaptivePredict(self._input,78,self._ctx)
                 while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                     if _alt==1:
                         self.state = 561
-                        self.match(AMBER_MR_Parser.Comma)
+                        self.match(AmberMRParser.Comma)
                         self.state = 562
-                        self.match(AMBER_MR_Parser.Integer) 
+                        self.match(AmberMRParser.Integer) 
                     self.state = 567
                     self._errHandler.sync(self)
                     _alt = self._interp.adaptivePredict(self._input,78,self._ctx)
@@ -4136,29 +4136,29 @@ class AMBER_MR_Parser ( Parser ):
                 self.state = 569
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 568
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.ANGLE_GRNAM]:
+            elif token in [AmberMRParser.ANGLE_GRNAM]:
                 self.enterOuterAlt(localctx, 29)
                 self.state = 571
-                self.match(AMBER_MR_Parser.ANGLE_GRNAM)
+                self.match(AmberMRParser.ANGLE_GRNAM)
                 self.state = 572
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 573
-                self.match(AMBER_MR_Parser.Quoted_atom_name)
+                self.match(AmberMRParser.Quoted_atom_name)
                 self.state = 578
                 self._errHandler.sync(self)
                 _alt = self._interp.adaptivePredict(self._input,80,self._ctx)
                 while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                     if _alt==1:
                         self.state = 574
-                        self.match(AMBER_MR_Parser.Comma)
+                        self.match(AmberMRParser.Comma)
                         self.state = 575
-                        self.match(AMBER_MR_Parser.Quoted_atom_name) 
+                        self.match(AmberMRParser.Quoted_atom_name) 
                     self.state = 580
                     self._errHandler.sync(self)
                     _alt = self._interp.adaptivePredict(self._input,80,self._ctx)
@@ -4166,128 +4166,128 @@ class AMBER_MR_Parser ( Parser ):
                 self.state = 582
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 581
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.IFNTYP]:
+            elif token in [AmberMRParser.IFNTYP]:
                 self.enterOuterAlt(localctx, 30)
                 self.state = 584
-                self.match(AMBER_MR_Parser.IFNTYP)
+                self.match(AmberMRParser.IFNTYP)
                 self.state = 585
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 586
-                self.match(AMBER_MR_Parser.One_or_Zero)
+                self.match(AmberMRParser.One_or_Zero)
                 self.state = 588
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 587
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.IXPK]:
+            elif token in [AmberMRParser.IXPK]:
                 self.enterOuterAlt(localctx, 31)
                 self.state = 590
-                self.match(AMBER_MR_Parser.IXPK)
+                self.match(AmberMRParser.IXPK)
                 self.state = 591
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 592
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 594
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 593
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.NXPK]:
+            elif token in [AmberMRParser.NXPK]:
                 self.enterOuterAlt(localctx, 32)
                 self.state = 596
-                self.match(AMBER_MR_Parser.NXPK)
+                self.match(AmberMRParser.NXPK)
                 self.state = 597
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 598
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 600
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 599
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.AngleIFunctionCall]:
+            elif token in [AmberMRParser.AngleIFunctionCall]:
                 self.enterOuterAlt(localctx, 33)
                 self.state = 602
-                self.match(AMBER_MR_Parser.AngleIFunctionCall)
+                self.match(AmberMRParser.AngleIFunctionCall)
                 self.state = 603
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 604
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 606
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 605
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.AngleIGFunctionCall]:
+            elif token in [AmberMRParser.AngleIGFunctionCall]:
                 self.enterOuterAlt(localctx, 34)
                 self.state = 608
-                self.match(AMBER_MR_Parser.AngleIGFunctionCall)
+                self.match(AmberMRParser.AngleIGFunctionCall)
                 self.state = 609
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 610
-                self.match(AMBER_MR_Parser.IntegerArray)
+                self.match(AmberMRParser.IntegerArray)
                 self.state = 612
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 611
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.AngleRFunctionCall]:
+            elif token in [AmberMRParser.AngleRFunctionCall]:
                 self.enterOuterAlt(localctx, 35)
                 self.state = 614
-                self.match(AMBER_MR_Parser.AngleRFunctionCall)
+                self.match(AmberMRParser.AngleRFunctionCall)
                 self.state = 615
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 616
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 618
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 617
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.AngleNFunctionCall]:
+            elif token in [AmberMRParser.AngleNFunctionCall]:
                 self.enterOuterAlt(localctx, 36)
                 self.state = 620
-                self.match(AMBER_MR_Parser.AngleNFunctionCall)
+                self.match(AmberMRParser.AngleNFunctionCall)
                 self.state = 621
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 622
-                self.match(AMBER_MR_Parser.Quoted_atom_name)
+                self.match(AmberMRParser.Quoted_atom_name)
                 self.state = 624
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 623
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
@@ -4310,160 +4310,160 @@ class AMBER_MR_Parser ( Parser ):
             self.parser = parser
 
         def IAT(self):
-            return self.getToken(AMBER_MR_Parser.IAT, 0)
+            return self.getToken(AmberMRParser.IAT, 0)
 
         def Equ_op(self):
-            return self.getToken(AMBER_MR_Parser.Equ_op, 0)
+            return self.getToken(AmberMRParser.Equ_op, 0)
 
         def Integer(self, i:int=None):
             if i is None:
-                return self.getTokens(AMBER_MR_Parser.Integer)
+                return self.getTokens(AmberMRParser.Integer)
             else:
-                return self.getToken(AMBER_MR_Parser.Integer, i)
+                return self.getToken(AmberMRParser.Integer, i)
 
         def Comma(self, i:int=None):
             if i is None:
-                return self.getTokens(AMBER_MR_Parser.Comma)
+                return self.getTokens(AmberMRParser.Comma)
             else:
-                return self.getToken(AMBER_MR_Parser.Comma, i)
+                return self.getToken(AmberMRParser.Comma, i)
 
         def RSTWT(self):
-            return self.getToken(AMBER_MR_Parser.RSTWT, 0)
+            return self.getToken(AmberMRParser.RSTWT, 0)
 
         def Real(self, i:int=None):
             if i is None:
-                return self.getTokens(AMBER_MR_Parser.Real)
+                return self.getTokens(AmberMRParser.Real)
             else:
-                return self.getToken(AMBER_MR_Parser.Real, i)
+                return self.getToken(AmberMRParser.Real, i)
 
         def RESTRAINT(self):
-            return self.getToken(AMBER_MR_Parser.RESTRAINT, 0)
+            return self.getToken(AmberMRParser.RESTRAINT, 0)
 
         def QUOT(self, i:int=None):
             if i is None:
-                return self.getTokens(AMBER_MR_Parser.QUOT)
+                return self.getTokens(AmberMRParser.QUOT)
             else:
-                return self.getToken(AMBER_MR_Parser.QUOT, i)
+                return self.getToken(AmberMRParser.QUOT, i)
 
         def TorsionRstFunctionCall(self):
-            return self.getToken(AMBER_MR_Parser.TorsionRstFunctionCall, 0)
+            return self.getToken(AmberMRParser.TorsionRstFunctionCall, 0)
 
         def ATNAM(self):
-            return self.getToken(AMBER_MR_Parser.ATNAM, 0)
+            return self.getToken(AmberMRParser.ATNAM, 0)
 
         def Quoted_atom_name(self, i:int=None):
             if i is None:
-                return self.getTokens(AMBER_MR_Parser.Quoted_atom_name)
+                return self.getTokens(AmberMRParser.Quoted_atom_name)
             else:
-                return self.getToken(AMBER_MR_Parser.Quoted_atom_name, i)
+                return self.getToken(AmberMRParser.Quoted_atom_name, i)
 
         def IRESID(self):
-            return self.getToken(AMBER_MR_Parser.IRESID, 0)
+            return self.getToken(AmberMRParser.IRESID, 0)
 
         def One_or_Zero(self):
-            return self.getToken(AMBER_MR_Parser.One_or_Zero, 0)
+            return self.getToken(AmberMRParser.One_or_Zero, 0)
 
         def NSTEP1(self):
-            return self.getToken(AMBER_MR_Parser.NSTEP1, 0)
+            return self.getToken(AmberMRParser.NSTEP1, 0)
 
         def NSTEP2(self):
-            return self.getToken(AMBER_MR_Parser.NSTEP2, 0)
+            return self.getToken(AmberMRParser.NSTEP2, 0)
 
         def IRSTYP(self):
-            return self.getToken(AMBER_MR_Parser.IRSTYP, 0)
+            return self.getToken(AmberMRParser.IRSTYP, 0)
 
         def IFVARI(self):
-            return self.getToken(AMBER_MR_Parser.IFVARI, 0)
+            return self.getToken(AmberMRParser.IFVARI, 0)
 
         def NINC(self):
-            return self.getToken(AMBER_MR_Parser.NINC, 0)
+            return self.getToken(AmberMRParser.NINC, 0)
 
         def IMULT(self):
-            return self.getToken(AMBER_MR_Parser.IMULT, 0)
+            return self.getToken(AmberMRParser.IMULT, 0)
 
         def R1(self):
-            return self.getToken(AMBER_MR_Parser.R1, 0)
+            return self.getToken(AmberMRParser.R1, 0)
 
         def R2(self):
-            return self.getToken(AMBER_MR_Parser.R2, 0)
+            return self.getToken(AmberMRParser.R2, 0)
 
         def R3(self):
-            return self.getToken(AMBER_MR_Parser.R3, 0)
+            return self.getToken(AmberMRParser.R3, 0)
 
         def R4(self):
-            return self.getToken(AMBER_MR_Parser.R4, 0)
+            return self.getToken(AmberMRParser.R4, 0)
 
         def RK2(self):
-            return self.getToken(AMBER_MR_Parser.RK2, 0)
+            return self.getToken(AmberMRParser.RK2, 0)
 
         def RK3(self):
-            return self.getToken(AMBER_MR_Parser.RK3, 0)
+            return self.getToken(AmberMRParser.RK3, 0)
 
         def R1A(self):
-            return self.getToken(AMBER_MR_Parser.R1A, 0)
+            return self.getToken(AmberMRParser.R1A, 0)
 
         def R2A(self):
-            return self.getToken(AMBER_MR_Parser.R2A, 0)
+            return self.getToken(AmberMRParser.R2A, 0)
 
         def R3A(self):
-            return self.getToken(AMBER_MR_Parser.R3A, 0)
+            return self.getToken(AmberMRParser.R3A, 0)
 
         def R4A(self):
-            return self.getToken(AMBER_MR_Parser.R4A, 0)
+            return self.getToken(AmberMRParser.R4A, 0)
 
         def RK2A(self):
-            return self.getToken(AMBER_MR_Parser.RK2A, 0)
+            return self.getToken(AmberMRParser.RK2A, 0)
 
         def RK3A(self):
-            return self.getToken(AMBER_MR_Parser.RK3A, 0)
+            return self.getToken(AmberMRParser.RK3A, 0)
 
         def R0(self):
-            return self.getToken(AMBER_MR_Parser.R0, 0)
+            return self.getToken(AmberMRParser.R0, 0)
 
         def K0(self):
-            return self.getToken(AMBER_MR_Parser.K0, 0)
+            return self.getToken(AmberMRParser.K0, 0)
 
         def R0A(self):
-            return self.getToken(AMBER_MR_Parser.R0A, 0)
+            return self.getToken(AmberMRParser.R0A, 0)
 
         def K0A(self):
-            return self.getToken(AMBER_MR_Parser.K0A, 0)
+            return self.getToken(AmberMRParser.K0A, 0)
 
         def TORSION_IGR(self):
-            return self.getToken(AMBER_MR_Parser.TORSION_IGR, 0)
+            return self.getToken(AmberMRParser.TORSION_IGR, 0)
 
         def TORSION_GRNAM(self):
-            return self.getToken(AMBER_MR_Parser.TORSION_GRNAM, 0)
+            return self.getToken(AmberMRParser.TORSION_GRNAM, 0)
 
         def RJCOEF(self):
-            return self.getToken(AMBER_MR_Parser.RJCOEF, 0)
+            return self.getToken(AmberMRParser.RJCOEF, 0)
 
         def IFNTYP(self):
-            return self.getToken(AMBER_MR_Parser.IFNTYP, 0)
+            return self.getToken(AmberMRParser.IFNTYP, 0)
 
         def IXPK(self):
-            return self.getToken(AMBER_MR_Parser.IXPK, 0)
+            return self.getToken(AmberMRParser.IXPK, 0)
 
         def NXPK(self):
-            return self.getToken(AMBER_MR_Parser.NXPK, 0)
+            return self.getToken(AmberMRParser.NXPK, 0)
 
         def TorsionIFunctionCall(self):
-            return self.getToken(AMBER_MR_Parser.TorsionIFunctionCall, 0)
+            return self.getToken(AmberMRParser.TorsionIFunctionCall, 0)
 
         def TorsionIGFunctionCall(self):
-            return self.getToken(AMBER_MR_Parser.TorsionIGFunctionCall, 0)
+            return self.getToken(AmberMRParser.TorsionIGFunctionCall, 0)
 
         def IntegerArray(self):
-            return self.getToken(AMBER_MR_Parser.IntegerArray, 0)
+            return self.getToken(AmberMRParser.IntegerArray, 0)
 
         def TorsionRFunctionCall(self):
-            return self.getToken(AMBER_MR_Parser.TorsionRFunctionCall, 0)
+            return self.getToken(AmberMRParser.TorsionRFunctionCall, 0)
 
         def TorsionNFunctionCall(self):
-            return self.getToken(AMBER_MR_Parser.TorsionNFunctionCall, 0)
+            return self.getToken(AmberMRParser.TorsionNFunctionCall, 0)
 
         def getRuleIndex(self):
-            return AMBER_MR_Parser.RULE_torsion_statement
+            return AmberMRParser.RULE_torsion_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterTorsion_statement" ):
@@ -4478,517 +4478,517 @@ class AMBER_MR_Parser ( Parser ):
 
     def torsion_statement(self):
 
-        localctx = AMBER_MR_Parser.Torsion_statementContext(self, self._ctx, self.state)
+        localctx = AmberMRParser.Torsion_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 20, self.RULE_torsion_statement)
         self._la = 0 # Token type
         try:
             self.state = 882
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [AMBER_MR_Parser.IAT]:
+            if token in [AmberMRParser.IAT]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 628
-                self.match(AMBER_MR_Parser.IAT)
+                self.match(AmberMRParser.IAT)
                 self.state = 629
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 630
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 631
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 632
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 633
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 634
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 635
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 636
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 638
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 637
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.RSTWT]:
+            elif token in [AmberMRParser.RSTWT]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 640
-                self.match(AMBER_MR_Parser.RSTWT)
+                self.match(AmberMRParser.RSTWT)
                 self.state = 641
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 642
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 644
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 643
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.RESTRAINT]:
+            elif token in [AmberMRParser.RESTRAINT]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 646
-                self.match(AMBER_MR_Parser.RESTRAINT)
+                self.match(AmberMRParser.RESTRAINT)
                 self.state = 647
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 648
-                self.match(AMBER_MR_Parser.QUOT)
+                self.match(AmberMRParser.QUOT)
                 self.state = 649
-                self.match(AMBER_MR_Parser.TorsionRstFunctionCall)
+                self.match(AmberMRParser.TorsionRstFunctionCall)
                 self.state = 650
-                self.match(AMBER_MR_Parser.QUOT)
+                self.match(AmberMRParser.QUOT)
                 self.state = 652
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 651
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.ATNAM]:
+            elif token in [AmberMRParser.ATNAM]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 654
-                self.match(AMBER_MR_Parser.ATNAM)
+                self.match(AmberMRParser.ATNAM)
                 self.state = 655
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 656
-                self.match(AMBER_MR_Parser.Quoted_atom_name)
+                self.match(AmberMRParser.Quoted_atom_name)
                 self.state = 657
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 658
-                self.match(AMBER_MR_Parser.Quoted_atom_name)
+                self.match(AmberMRParser.Quoted_atom_name)
                 self.state = 659
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 660
-                self.match(AMBER_MR_Parser.Quoted_atom_name)
+                self.match(AmberMRParser.Quoted_atom_name)
                 self.state = 661
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 662
-                self.match(AMBER_MR_Parser.Quoted_atom_name)
+                self.match(AmberMRParser.Quoted_atom_name)
                 self.state = 664
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 663
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.IRESID]:
+            elif token in [AmberMRParser.IRESID]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 666
-                self.match(AMBER_MR_Parser.IRESID)
+                self.match(AmberMRParser.IRESID)
                 self.state = 667
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 668
-                self.match(AMBER_MR_Parser.One_or_Zero)
+                self.match(AmberMRParser.One_or_Zero)
                 self.state = 670
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 669
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.NSTEP1]:
+            elif token in [AmberMRParser.NSTEP1]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 672
-                self.match(AMBER_MR_Parser.NSTEP1)
+                self.match(AmberMRParser.NSTEP1)
                 self.state = 673
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 674
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 676
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 675
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.NSTEP2]:
+            elif token in [AmberMRParser.NSTEP2]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 678
-                self.match(AMBER_MR_Parser.NSTEP2)
+                self.match(AmberMRParser.NSTEP2)
                 self.state = 679
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 680
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 682
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 681
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.IRSTYP]:
+            elif token in [AmberMRParser.IRSTYP]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 684
-                self.match(AMBER_MR_Parser.IRSTYP)
+                self.match(AmberMRParser.IRSTYP)
                 self.state = 685
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 686
-                self.match(AMBER_MR_Parser.One_or_Zero)
+                self.match(AmberMRParser.One_or_Zero)
                 self.state = 688
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 687
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.IFVARI]:
+            elif token in [AmberMRParser.IFVARI]:
                 self.enterOuterAlt(localctx, 9)
                 self.state = 690
-                self.match(AMBER_MR_Parser.IFVARI)
+                self.match(AmberMRParser.IFVARI)
                 self.state = 691
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 692
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 694
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 693
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.NINC]:
+            elif token in [AmberMRParser.NINC]:
                 self.enterOuterAlt(localctx, 10)
                 self.state = 696
-                self.match(AMBER_MR_Parser.NINC)
+                self.match(AmberMRParser.NINC)
                 self.state = 697
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 698
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 700
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 699
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.IMULT]:
+            elif token in [AmberMRParser.IMULT]:
                 self.enterOuterAlt(localctx, 11)
                 self.state = 702
-                self.match(AMBER_MR_Parser.IMULT)
+                self.match(AmberMRParser.IMULT)
                 self.state = 703
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 704
-                self.match(AMBER_MR_Parser.One_or_Zero)
+                self.match(AmberMRParser.One_or_Zero)
                 self.state = 706
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 705
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R1]:
+            elif token in [AmberMRParser.R1]:
                 self.enterOuterAlt(localctx, 12)
                 self.state = 708
-                self.match(AMBER_MR_Parser.R1)
+                self.match(AmberMRParser.R1)
                 self.state = 709
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 710
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 712
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 711
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R2]:
+            elif token in [AmberMRParser.R2]:
                 self.enterOuterAlt(localctx, 13)
                 self.state = 714
-                self.match(AMBER_MR_Parser.R2)
+                self.match(AmberMRParser.R2)
                 self.state = 715
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 716
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 718
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 717
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R3]:
+            elif token in [AmberMRParser.R3]:
                 self.enterOuterAlt(localctx, 14)
                 self.state = 720
-                self.match(AMBER_MR_Parser.R3)
+                self.match(AmberMRParser.R3)
                 self.state = 721
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 722
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 724
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 723
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R4]:
+            elif token in [AmberMRParser.R4]:
                 self.enterOuterAlt(localctx, 15)
                 self.state = 726
-                self.match(AMBER_MR_Parser.R4)
+                self.match(AmberMRParser.R4)
                 self.state = 727
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 728
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 730
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 729
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.RK2]:
+            elif token in [AmberMRParser.RK2]:
                 self.enterOuterAlt(localctx, 16)
                 self.state = 732
-                self.match(AMBER_MR_Parser.RK2)
+                self.match(AmberMRParser.RK2)
                 self.state = 733
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 734
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 736
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 735
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.RK3]:
+            elif token in [AmberMRParser.RK3]:
                 self.enterOuterAlt(localctx, 17)
                 self.state = 738
-                self.match(AMBER_MR_Parser.RK3)
+                self.match(AmberMRParser.RK3)
                 self.state = 739
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 740
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 742
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 741
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R1A]:
+            elif token in [AmberMRParser.R1A]:
                 self.enterOuterAlt(localctx, 18)
                 self.state = 744
-                self.match(AMBER_MR_Parser.R1A)
+                self.match(AmberMRParser.R1A)
                 self.state = 745
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 746
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 748
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 747
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R2A]:
+            elif token in [AmberMRParser.R2A]:
                 self.enterOuterAlt(localctx, 19)
                 self.state = 750
-                self.match(AMBER_MR_Parser.R2A)
+                self.match(AmberMRParser.R2A)
                 self.state = 751
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 752
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 754
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 753
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R3A]:
+            elif token in [AmberMRParser.R3A]:
                 self.enterOuterAlt(localctx, 20)
                 self.state = 756
-                self.match(AMBER_MR_Parser.R3A)
+                self.match(AmberMRParser.R3A)
                 self.state = 757
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 758
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 760
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 759
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R4A]:
+            elif token in [AmberMRParser.R4A]:
                 self.enterOuterAlt(localctx, 21)
                 self.state = 762
-                self.match(AMBER_MR_Parser.R4A)
+                self.match(AmberMRParser.R4A)
                 self.state = 763
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 764
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 766
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 765
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.RK2A]:
+            elif token in [AmberMRParser.RK2A]:
                 self.enterOuterAlt(localctx, 22)
                 self.state = 768
-                self.match(AMBER_MR_Parser.RK2A)
+                self.match(AmberMRParser.RK2A)
                 self.state = 769
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 770
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 772
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 771
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.RK3A]:
+            elif token in [AmberMRParser.RK3A]:
                 self.enterOuterAlt(localctx, 23)
                 self.state = 774
-                self.match(AMBER_MR_Parser.RK3A)
+                self.match(AmberMRParser.RK3A)
                 self.state = 775
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 776
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 778
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 777
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R0]:
+            elif token in [AmberMRParser.R0]:
                 self.enterOuterAlt(localctx, 24)
                 self.state = 780
-                self.match(AMBER_MR_Parser.R0)
+                self.match(AmberMRParser.R0)
                 self.state = 781
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 782
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 784
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 783
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.K0]:
+            elif token in [AmberMRParser.K0]:
                 self.enterOuterAlt(localctx, 25)
                 self.state = 786
-                self.match(AMBER_MR_Parser.K0)
+                self.match(AmberMRParser.K0)
                 self.state = 787
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 788
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 790
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 789
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R0A]:
+            elif token in [AmberMRParser.R0A]:
                 self.enterOuterAlt(localctx, 26)
                 self.state = 792
-                self.match(AMBER_MR_Parser.R0A)
+                self.match(AmberMRParser.R0A)
                 self.state = 793
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 794
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 796
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 795
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.K0A]:
+            elif token in [AmberMRParser.K0A]:
                 self.enterOuterAlt(localctx, 27)
                 self.state = 798
-                self.match(AMBER_MR_Parser.K0A)
+                self.match(AmberMRParser.K0A)
                 self.state = 799
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 800
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 802
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 801
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.TORSION_IGR]:
+            elif token in [AmberMRParser.TORSION_IGR]:
                 self.enterOuterAlt(localctx, 28)
                 self.state = 804
-                self.match(AMBER_MR_Parser.TORSION_IGR)
+                self.match(AmberMRParser.TORSION_IGR)
                 self.state = 805
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 806
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 811
                 self._errHandler.sync(self)
                 _alt = self._interp.adaptivePredict(self._input,117,self._ctx)
                 while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                     if _alt==1:
                         self.state = 807
-                        self.match(AMBER_MR_Parser.Comma)
+                        self.match(AmberMRParser.Comma)
                         self.state = 808
-                        self.match(AMBER_MR_Parser.Integer) 
+                        self.match(AmberMRParser.Integer) 
                     self.state = 813
                     self._errHandler.sync(self)
                     _alt = self._interp.adaptivePredict(self._input,117,self._ctx)
@@ -4996,29 +4996,29 @@ class AMBER_MR_Parser ( Parser ):
                 self.state = 815
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 814
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.TORSION_GRNAM]:
+            elif token in [AmberMRParser.TORSION_GRNAM]:
                 self.enterOuterAlt(localctx, 29)
                 self.state = 817
-                self.match(AMBER_MR_Parser.TORSION_GRNAM)
+                self.match(AmberMRParser.TORSION_GRNAM)
                 self.state = 818
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 819
-                self.match(AMBER_MR_Parser.Quoted_atom_name)
+                self.match(AmberMRParser.Quoted_atom_name)
                 self.state = 824
                 self._errHandler.sync(self)
                 _alt = self._interp.adaptivePredict(self._input,119,self._ctx)
                 while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                     if _alt==1:
                         self.state = 820
-                        self.match(AMBER_MR_Parser.Comma)
+                        self.match(AmberMRParser.Comma)
                         self.state = 821
-                        self.match(AMBER_MR_Parser.Quoted_atom_name) 
+                        self.match(AmberMRParser.Quoted_atom_name) 
                     self.state = 826
                     self._errHandler.sync(self)
                     _alt = self._interp.adaptivePredict(self._input,119,self._ctx)
@@ -5026,153 +5026,153 @@ class AMBER_MR_Parser ( Parser ):
                 self.state = 828
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 827
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.RJCOEF]:
+            elif token in [AmberMRParser.RJCOEF]:
                 self.enterOuterAlt(localctx, 30)
                 self.state = 830
-                self.match(AMBER_MR_Parser.RJCOEF)
+                self.match(AmberMRParser.RJCOEF)
                 self.state = 831
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 832
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 833
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 834
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 835
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 836
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 838
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 837
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.IFNTYP]:
+            elif token in [AmberMRParser.IFNTYP]:
                 self.enterOuterAlt(localctx, 31)
                 self.state = 840
-                self.match(AMBER_MR_Parser.IFNTYP)
+                self.match(AmberMRParser.IFNTYP)
                 self.state = 841
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 842
-                self.match(AMBER_MR_Parser.One_or_Zero)
+                self.match(AmberMRParser.One_or_Zero)
                 self.state = 844
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 843
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.IXPK]:
+            elif token in [AmberMRParser.IXPK]:
                 self.enterOuterAlt(localctx, 32)
                 self.state = 846
-                self.match(AMBER_MR_Parser.IXPK)
+                self.match(AmberMRParser.IXPK)
                 self.state = 847
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 848
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 850
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 849
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.NXPK]:
+            elif token in [AmberMRParser.NXPK]:
                 self.enterOuterAlt(localctx, 33)
                 self.state = 852
-                self.match(AMBER_MR_Parser.NXPK)
+                self.match(AmberMRParser.NXPK)
                 self.state = 853
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 854
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 856
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 855
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.TorsionIFunctionCall]:
+            elif token in [AmberMRParser.TorsionIFunctionCall]:
                 self.enterOuterAlt(localctx, 34)
                 self.state = 858
-                self.match(AMBER_MR_Parser.TorsionIFunctionCall)
+                self.match(AmberMRParser.TorsionIFunctionCall)
                 self.state = 859
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 860
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 862
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 861
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.TorsionIGFunctionCall]:
+            elif token in [AmberMRParser.TorsionIGFunctionCall]:
                 self.enterOuterAlt(localctx, 35)
                 self.state = 864
-                self.match(AMBER_MR_Parser.TorsionIGFunctionCall)
+                self.match(AmberMRParser.TorsionIGFunctionCall)
                 self.state = 865
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 866
-                self.match(AMBER_MR_Parser.IntegerArray)
+                self.match(AmberMRParser.IntegerArray)
                 self.state = 868
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 867
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.TorsionRFunctionCall]:
+            elif token in [AmberMRParser.TorsionRFunctionCall]:
                 self.enterOuterAlt(localctx, 36)
                 self.state = 870
-                self.match(AMBER_MR_Parser.TorsionRFunctionCall)
+                self.match(AmberMRParser.TorsionRFunctionCall)
                 self.state = 871
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 872
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 874
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 873
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.TorsionNFunctionCall]:
+            elif token in [AmberMRParser.TorsionNFunctionCall]:
                 self.enterOuterAlt(localctx, 37)
                 self.state = 876
-                self.match(AMBER_MR_Parser.TorsionNFunctionCall)
+                self.match(AmberMRParser.TorsionNFunctionCall)
                 self.state = 877
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 878
-                self.match(AMBER_MR_Parser.Quoted_atom_name)
+                self.match(AmberMRParser.Quoted_atom_name)
                 self.state = 880
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 879
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
@@ -5195,142 +5195,142 @@ class AMBER_MR_Parser ( Parser ):
             self.parser = parser
 
         def IAT(self):
-            return self.getToken(AMBER_MR_Parser.IAT, 0)
+            return self.getToken(AmberMRParser.IAT, 0)
 
         def Equ_op(self, i:int=None):
             if i is None:
-                return self.getTokens(AMBER_MR_Parser.Equ_op)
+                return self.getTokens(AmberMRParser.Equ_op)
             else:
-                return self.getToken(AMBER_MR_Parser.Equ_op, i)
+                return self.getToken(AmberMRParser.Equ_op, i)
 
         def Integer(self, i:int=None):
             if i is None:
-                return self.getTokens(AMBER_MR_Parser.Integer)
+                return self.getTokens(AmberMRParser.Integer)
             else:
-                return self.getToken(AMBER_MR_Parser.Integer, i)
+                return self.getToken(AmberMRParser.Integer, i)
 
         def Comma(self, i:int=None):
             if i is None:
-                return self.getTokens(AMBER_MR_Parser.Comma)
+                return self.getTokens(AmberMRParser.Comma)
             else:
-                return self.getToken(AMBER_MR_Parser.Comma, i)
+                return self.getToken(AmberMRParser.Comma, i)
 
         def RSTWT(self):
-            return self.getToken(AMBER_MR_Parser.RSTWT, 0)
+            return self.getToken(AmberMRParser.RSTWT, 0)
 
         def Real(self):
-            return self.getToken(AMBER_MR_Parser.Real, 0)
+            return self.getToken(AmberMRParser.Real, 0)
 
         def ATNAM(self):
-            return self.getToken(AMBER_MR_Parser.ATNAM, 0)
+            return self.getToken(AmberMRParser.ATNAM, 0)
 
         def Quoted_atom_name(self, i:int=None):
             if i is None:
-                return self.getTokens(AMBER_MR_Parser.Quoted_atom_name)
+                return self.getTokens(AmberMRParser.Quoted_atom_name)
             else:
-                return self.getToken(AMBER_MR_Parser.Quoted_atom_name, i)
+                return self.getToken(AmberMRParser.Quoted_atom_name, i)
 
         def IRESID(self):
-            return self.getToken(AMBER_MR_Parser.IRESID, 0)
+            return self.getToken(AmberMRParser.IRESID, 0)
 
         def One_or_Zero(self):
-            return self.getToken(AMBER_MR_Parser.One_or_Zero, 0)
+            return self.getToken(AmberMRParser.One_or_Zero, 0)
 
         def NSTEP1(self):
-            return self.getToken(AMBER_MR_Parser.NSTEP1, 0)
+            return self.getToken(AmberMRParser.NSTEP1, 0)
 
         def NSTEP2(self):
-            return self.getToken(AMBER_MR_Parser.NSTEP2, 0)
+            return self.getToken(AmberMRParser.NSTEP2, 0)
 
         def IRSTYP(self):
-            return self.getToken(AMBER_MR_Parser.IRSTYP, 0)
+            return self.getToken(AmberMRParser.IRSTYP, 0)
 
         def IFVARI(self):
-            return self.getToken(AMBER_MR_Parser.IFVARI, 0)
+            return self.getToken(AmberMRParser.IFVARI, 0)
 
         def NINC(self):
-            return self.getToken(AMBER_MR_Parser.NINC, 0)
+            return self.getToken(AmberMRParser.NINC, 0)
 
         def IMULT(self):
-            return self.getToken(AMBER_MR_Parser.IMULT, 0)
+            return self.getToken(AmberMRParser.IMULT, 0)
 
         def R1(self):
-            return self.getToken(AMBER_MR_Parser.R1, 0)
+            return self.getToken(AmberMRParser.R1, 0)
 
         def R2(self):
-            return self.getToken(AMBER_MR_Parser.R2, 0)
+            return self.getToken(AmberMRParser.R2, 0)
 
         def R3(self):
-            return self.getToken(AMBER_MR_Parser.R3, 0)
+            return self.getToken(AmberMRParser.R3, 0)
 
         def R4(self):
-            return self.getToken(AMBER_MR_Parser.R4, 0)
+            return self.getToken(AmberMRParser.R4, 0)
 
         def RK2(self):
-            return self.getToken(AMBER_MR_Parser.RK2, 0)
+            return self.getToken(AmberMRParser.RK2, 0)
 
         def RK3(self):
-            return self.getToken(AMBER_MR_Parser.RK3, 0)
+            return self.getToken(AmberMRParser.RK3, 0)
 
         def R1A(self):
-            return self.getToken(AMBER_MR_Parser.R1A, 0)
+            return self.getToken(AmberMRParser.R1A, 0)
 
         def R2A(self):
-            return self.getToken(AMBER_MR_Parser.R2A, 0)
+            return self.getToken(AmberMRParser.R2A, 0)
 
         def R3A(self):
-            return self.getToken(AMBER_MR_Parser.R3A, 0)
+            return self.getToken(AmberMRParser.R3A, 0)
 
         def R4A(self):
-            return self.getToken(AMBER_MR_Parser.R4A, 0)
+            return self.getToken(AmberMRParser.R4A, 0)
 
         def RK2A(self):
-            return self.getToken(AMBER_MR_Parser.RK2A, 0)
+            return self.getToken(AmberMRParser.RK2A, 0)
 
         def RK3A(self):
-            return self.getToken(AMBER_MR_Parser.RK3A, 0)
+            return self.getToken(AmberMRParser.RK3A, 0)
 
         def R0(self):
-            return self.getToken(AMBER_MR_Parser.R0, 0)
+            return self.getToken(AmberMRParser.R0, 0)
 
         def K0(self):
-            return self.getToken(AMBER_MR_Parser.K0, 0)
+            return self.getToken(AmberMRParser.K0, 0)
 
         def R0A(self):
-            return self.getToken(AMBER_MR_Parser.R0A, 0)
+            return self.getToken(AmberMRParser.R0A, 0)
 
         def K0A(self):
-            return self.getToken(AMBER_MR_Parser.K0A, 0)
+            return self.getToken(AmberMRParser.K0A, 0)
 
         def PLANEPOINTANG_IGR(self):
-            return self.getToken(AMBER_MR_Parser.PLANEPOINTANG_IGR, 0)
+            return self.getToken(AmberMRParser.PLANEPOINTANG_IGR, 0)
 
         def PLANEPOINTANG_GRNAM(self):
-            return self.getToken(AMBER_MR_Parser.PLANEPOINTANG_GRNAM, 0)
+            return self.getToken(AmberMRParser.PLANEPOINTANG_GRNAM, 0)
 
         def IXPK(self):
-            return self.getToken(AMBER_MR_Parser.IXPK, 0)
+            return self.getToken(AmberMRParser.IXPK, 0)
 
         def NXPK(self):
-            return self.getToken(AMBER_MR_Parser.NXPK, 0)
+            return self.getToken(AmberMRParser.NXPK, 0)
 
         def PlanePointAngleIFunctionCall(self):
-            return self.getToken(AMBER_MR_Parser.PlanePointAngleIFunctionCall, 0)
+            return self.getToken(AmberMRParser.PlanePointAngleIFunctionCall, 0)
 
         def PlanePointAngleIGFunctionCall(self):
-            return self.getToken(AMBER_MR_Parser.PlanePointAngleIGFunctionCall, 0)
+            return self.getToken(AmberMRParser.PlanePointAngleIGFunctionCall, 0)
 
         def IntegerArray(self):
-            return self.getToken(AMBER_MR_Parser.IntegerArray, 0)
+            return self.getToken(AmberMRParser.IntegerArray, 0)
 
         def PlanePointAngleRFunctionCall(self):
-            return self.getToken(AMBER_MR_Parser.PlanePointAngleRFunctionCall, 0)
+            return self.getToken(AmberMRParser.PlanePointAngleRFunctionCall, 0)
 
         def PlanePointAngleNFunctionCall(self):
-            return self.getToken(AMBER_MR_Parser.PlanePointAngleNFunctionCall, 0)
+            return self.getToken(AmberMRParser.PlanePointAngleNFunctionCall, 0)
 
         def getRuleIndex(self):
-            return AMBER_MR_Parser.RULE_plane_point_angle_statement
+            return AmberMRParser.RULE_plane_point_angle_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterPlane_point_angle_statement" ):
@@ -5345,501 +5345,501 @@ class AMBER_MR_Parser ( Parser ):
 
     def plane_point_angle_statement(self):
 
-        localctx = AMBER_MR_Parser.Plane_point_angle_statementContext(self, self._ctx, self.state)
+        localctx = AmberMRParser.Plane_point_angle_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 22, self.RULE_plane_point_angle_statement)
         self._la = 0 # Token type
         try:
             self.state = 1118
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [AMBER_MR_Parser.IAT]:
+            if token in [AmberMRParser.IAT]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 884
-                self.match(AMBER_MR_Parser.IAT)
+                self.match(AmberMRParser.IAT)
                 self.state = 885
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 886
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 887
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 888
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 889
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 890
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 891
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 892
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 893
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 894
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 896
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 895
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.RSTWT]:
+            elif token in [AmberMRParser.RSTWT]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 898
-                self.match(AMBER_MR_Parser.RSTWT)
+                self.match(AmberMRParser.RSTWT)
                 self.state = 899
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 900
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 902
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 901
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.ATNAM]:
+            elif token in [AmberMRParser.ATNAM]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 904
-                self.match(AMBER_MR_Parser.ATNAM)
+                self.match(AmberMRParser.ATNAM)
                 self.state = 905
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 906
-                self.match(AMBER_MR_Parser.Quoted_atom_name)
+                self.match(AmberMRParser.Quoted_atom_name)
                 self.state = 907
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 908
-                self.match(AMBER_MR_Parser.Quoted_atom_name)
+                self.match(AmberMRParser.Quoted_atom_name)
                 self.state = 909
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 910
-                self.match(AMBER_MR_Parser.Quoted_atom_name)
+                self.match(AmberMRParser.Quoted_atom_name)
                 self.state = 911
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 912
-                self.match(AMBER_MR_Parser.Quoted_atom_name)
+                self.match(AmberMRParser.Quoted_atom_name)
                 self.state = 913
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 914
-                self.match(AMBER_MR_Parser.Quoted_atom_name)
+                self.match(AmberMRParser.Quoted_atom_name)
                 self.state = 916
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 915
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 self.state = 918
-                self.match(AMBER_MR_Parser.IRESID)
+                self.match(AmberMRParser.IRESID)
                 self.state = 919
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 920
-                self.match(AMBER_MR_Parser.One_or_Zero)
+                self.match(AmberMRParser.One_or_Zero)
                 self.state = 922
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 921
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.NSTEP1]:
+            elif token in [AmberMRParser.NSTEP1]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 924
-                self.match(AMBER_MR_Parser.NSTEP1)
+                self.match(AmberMRParser.NSTEP1)
                 self.state = 925
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 926
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 928
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 927
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.NSTEP2]:
+            elif token in [AmberMRParser.NSTEP2]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 930
-                self.match(AMBER_MR_Parser.NSTEP2)
+                self.match(AmberMRParser.NSTEP2)
                 self.state = 931
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 932
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 934
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 933
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.IRSTYP]:
+            elif token in [AmberMRParser.IRSTYP]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 936
-                self.match(AMBER_MR_Parser.IRSTYP)
+                self.match(AmberMRParser.IRSTYP)
                 self.state = 937
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 938
-                self.match(AMBER_MR_Parser.One_or_Zero)
+                self.match(AmberMRParser.One_or_Zero)
                 self.state = 940
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 939
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.IFVARI]:
+            elif token in [AmberMRParser.IFVARI]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 942
-                self.match(AMBER_MR_Parser.IFVARI)
+                self.match(AmberMRParser.IFVARI)
                 self.state = 943
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 944
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 946
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 945
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.NINC]:
+            elif token in [AmberMRParser.NINC]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 948
-                self.match(AMBER_MR_Parser.NINC)
+                self.match(AmberMRParser.NINC)
                 self.state = 949
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 950
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 952
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 951
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.IMULT]:
+            elif token in [AmberMRParser.IMULT]:
                 self.enterOuterAlt(localctx, 9)
                 self.state = 954
-                self.match(AMBER_MR_Parser.IMULT)
+                self.match(AmberMRParser.IMULT)
                 self.state = 955
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 956
-                self.match(AMBER_MR_Parser.One_or_Zero)
+                self.match(AmberMRParser.One_or_Zero)
                 self.state = 958
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 957
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R1]:
+            elif token in [AmberMRParser.R1]:
                 self.enterOuterAlt(localctx, 10)
                 self.state = 960
-                self.match(AMBER_MR_Parser.R1)
+                self.match(AmberMRParser.R1)
                 self.state = 961
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 962
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 964
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 963
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R2]:
+            elif token in [AmberMRParser.R2]:
                 self.enterOuterAlt(localctx, 11)
                 self.state = 966
-                self.match(AMBER_MR_Parser.R2)
+                self.match(AmberMRParser.R2)
                 self.state = 967
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 968
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 970
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 969
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R3]:
+            elif token in [AmberMRParser.R3]:
                 self.enterOuterAlt(localctx, 12)
                 self.state = 972
-                self.match(AMBER_MR_Parser.R3)
+                self.match(AmberMRParser.R3)
                 self.state = 973
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 974
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 976
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 975
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R4]:
+            elif token in [AmberMRParser.R4]:
                 self.enterOuterAlt(localctx, 13)
                 self.state = 978
-                self.match(AMBER_MR_Parser.R4)
+                self.match(AmberMRParser.R4)
                 self.state = 979
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 980
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 982
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 981
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.RK2]:
+            elif token in [AmberMRParser.RK2]:
                 self.enterOuterAlt(localctx, 14)
                 self.state = 984
-                self.match(AMBER_MR_Parser.RK2)
+                self.match(AmberMRParser.RK2)
                 self.state = 985
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 986
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 988
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 987
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.RK3]:
+            elif token in [AmberMRParser.RK3]:
                 self.enterOuterAlt(localctx, 15)
                 self.state = 990
-                self.match(AMBER_MR_Parser.RK3)
+                self.match(AmberMRParser.RK3)
                 self.state = 991
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 992
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 994
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 993
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R1A]:
+            elif token in [AmberMRParser.R1A]:
                 self.enterOuterAlt(localctx, 16)
                 self.state = 996
-                self.match(AMBER_MR_Parser.R1A)
+                self.match(AmberMRParser.R1A)
                 self.state = 997
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 998
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 1000
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 999
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R2A]:
+            elif token in [AmberMRParser.R2A]:
                 self.enterOuterAlt(localctx, 17)
                 self.state = 1002
-                self.match(AMBER_MR_Parser.R2A)
+                self.match(AmberMRParser.R2A)
                 self.state = 1003
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1004
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 1006
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1005
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R3A]:
+            elif token in [AmberMRParser.R3A]:
                 self.enterOuterAlt(localctx, 18)
                 self.state = 1008
-                self.match(AMBER_MR_Parser.R3A)
+                self.match(AmberMRParser.R3A)
                 self.state = 1009
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1010
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 1012
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1011
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R4A]:
+            elif token in [AmberMRParser.R4A]:
                 self.enterOuterAlt(localctx, 19)
                 self.state = 1014
-                self.match(AMBER_MR_Parser.R4A)
+                self.match(AmberMRParser.R4A)
                 self.state = 1015
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1016
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 1018
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1017
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.RK2A]:
+            elif token in [AmberMRParser.RK2A]:
                 self.enterOuterAlt(localctx, 20)
                 self.state = 1020
-                self.match(AMBER_MR_Parser.RK2A)
+                self.match(AmberMRParser.RK2A)
                 self.state = 1021
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1022
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 1024
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1023
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.RK3A]:
+            elif token in [AmberMRParser.RK3A]:
                 self.enterOuterAlt(localctx, 21)
                 self.state = 1026
-                self.match(AMBER_MR_Parser.RK3A)
+                self.match(AmberMRParser.RK3A)
                 self.state = 1027
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1028
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 1030
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1029
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R0]:
+            elif token in [AmberMRParser.R0]:
                 self.enterOuterAlt(localctx, 22)
                 self.state = 1032
-                self.match(AMBER_MR_Parser.R0)
+                self.match(AmberMRParser.R0)
                 self.state = 1033
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1034
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 1036
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1035
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.K0]:
+            elif token in [AmberMRParser.K0]:
                 self.enterOuterAlt(localctx, 23)
                 self.state = 1038
-                self.match(AMBER_MR_Parser.K0)
+                self.match(AmberMRParser.K0)
                 self.state = 1039
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1040
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 1042
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1041
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R0A]:
+            elif token in [AmberMRParser.R0A]:
                 self.enterOuterAlt(localctx, 24)
                 self.state = 1044
-                self.match(AMBER_MR_Parser.R0A)
+                self.match(AmberMRParser.R0A)
                 self.state = 1045
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1046
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 1048
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1047
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.K0A]:
+            elif token in [AmberMRParser.K0A]:
                 self.enterOuterAlt(localctx, 25)
                 self.state = 1050
-                self.match(AMBER_MR_Parser.K0A)
+                self.match(AmberMRParser.K0A)
                 self.state = 1051
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1052
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 1054
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1053
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.PLANEPOINTANG_IGR]:
+            elif token in [AmberMRParser.PLANEPOINTANG_IGR]:
                 self.enterOuterAlt(localctx, 26)
                 self.state = 1056
-                self.match(AMBER_MR_Parser.PLANEPOINTANG_IGR)
+                self.match(AmberMRParser.PLANEPOINTANG_IGR)
                 self.state = 1057
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1058
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 1063
                 self._errHandler.sync(self)
                 _alt = self._interp.adaptivePredict(self._input,156,self._ctx)
                 while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                     if _alt==1:
                         self.state = 1059
-                        self.match(AMBER_MR_Parser.Comma)
+                        self.match(AmberMRParser.Comma)
                         self.state = 1060
-                        self.match(AMBER_MR_Parser.Integer) 
+                        self.match(AmberMRParser.Integer) 
                     self.state = 1065
                     self._errHandler.sync(self)
                     _alt = self._interp.adaptivePredict(self._input,156,self._ctx)
@@ -5847,29 +5847,29 @@ class AMBER_MR_Parser ( Parser ):
                 self.state = 1067
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1066
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.PLANEPOINTANG_GRNAM]:
+            elif token in [AmberMRParser.PLANEPOINTANG_GRNAM]:
                 self.enterOuterAlt(localctx, 27)
                 self.state = 1069
-                self.match(AMBER_MR_Parser.PLANEPOINTANG_GRNAM)
+                self.match(AmberMRParser.PLANEPOINTANG_GRNAM)
                 self.state = 1070
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1071
-                self.match(AMBER_MR_Parser.Quoted_atom_name)
+                self.match(AmberMRParser.Quoted_atom_name)
                 self.state = 1076
                 self._errHandler.sync(self)
                 _alt = self._interp.adaptivePredict(self._input,158,self._ctx)
                 while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                     if _alt==1:
                         self.state = 1072
-                        self.match(AMBER_MR_Parser.Comma)
+                        self.match(AmberMRParser.Comma)
                         self.state = 1073
-                        self.match(AMBER_MR_Parser.Quoted_atom_name) 
+                        self.match(AmberMRParser.Quoted_atom_name) 
                     self.state = 1078
                     self._errHandler.sync(self)
                     _alt = self._interp.adaptivePredict(self._input,158,self._ctx)
@@ -5877,111 +5877,111 @@ class AMBER_MR_Parser ( Parser ):
                 self.state = 1080
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1079
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.IXPK]:
+            elif token in [AmberMRParser.IXPK]:
                 self.enterOuterAlt(localctx, 28)
                 self.state = 1082
-                self.match(AMBER_MR_Parser.IXPK)
+                self.match(AmberMRParser.IXPK)
                 self.state = 1083
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1084
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 1086
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1085
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.NXPK]:
+            elif token in [AmberMRParser.NXPK]:
                 self.enterOuterAlt(localctx, 29)
                 self.state = 1088
-                self.match(AMBER_MR_Parser.NXPK)
+                self.match(AmberMRParser.NXPK)
                 self.state = 1089
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1090
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 1092
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1091
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.PlanePointAngleIFunctionCall]:
+            elif token in [AmberMRParser.PlanePointAngleIFunctionCall]:
                 self.enterOuterAlt(localctx, 30)
                 self.state = 1094
-                self.match(AMBER_MR_Parser.PlanePointAngleIFunctionCall)
+                self.match(AmberMRParser.PlanePointAngleIFunctionCall)
                 self.state = 1095
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1096
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 1098
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1097
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.PlanePointAngleIGFunctionCall]:
+            elif token in [AmberMRParser.PlanePointAngleIGFunctionCall]:
                 self.enterOuterAlt(localctx, 31)
                 self.state = 1100
-                self.match(AMBER_MR_Parser.PlanePointAngleIGFunctionCall)
+                self.match(AmberMRParser.PlanePointAngleIGFunctionCall)
                 self.state = 1101
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1102
-                self.match(AMBER_MR_Parser.IntegerArray)
+                self.match(AmberMRParser.IntegerArray)
                 self.state = 1104
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1103
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.PlanePointAngleRFunctionCall]:
+            elif token in [AmberMRParser.PlanePointAngleRFunctionCall]:
                 self.enterOuterAlt(localctx, 32)
                 self.state = 1106
-                self.match(AMBER_MR_Parser.PlanePointAngleRFunctionCall)
+                self.match(AmberMRParser.PlanePointAngleRFunctionCall)
                 self.state = 1107
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1108
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 1110
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1109
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.PlanePointAngleNFunctionCall]:
+            elif token in [AmberMRParser.PlanePointAngleNFunctionCall]:
                 self.enterOuterAlt(localctx, 33)
                 self.state = 1112
-                self.match(AMBER_MR_Parser.PlanePointAngleNFunctionCall)
+                self.match(AmberMRParser.PlanePointAngleNFunctionCall)
                 self.state = 1113
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1114
-                self.match(AMBER_MR_Parser.Quoted_atom_name)
+                self.match(AmberMRParser.Quoted_atom_name)
                 self.state = 1116
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1115
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
@@ -6004,142 +6004,142 @@ class AMBER_MR_Parser ( Parser ):
             self.parser = parser
 
         def IAT(self):
-            return self.getToken(AMBER_MR_Parser.IAT, 0)
+            return self.getToken(AmberMRParser.IAT, 0)
 
         def Equ_op(self, i:int=None):
             if i is None:
-                return self.getTokens(AMBER_MR_Parser.Equ_op)
+                return self.getTokens(AmberMRParser.Equ_op)
             else:
-                return self.getToken(AMBER_MR_Parser.Equ_op, i)
+                return self.getToken(AmberMRParser.Equ_op, i)
 
         def Integer(self, i:int=None):
             if i is None:
-                return self.getTokens(AMBER_MR_Parser.Integer)
+                return self.getTokens(AmberMRParser.Integer)
             else:
-                return self.getToken(AMBER_MR_Parser.Integer, i)
+                return self.getToken(AmberMRParser.Integer, i)
 
         def Comma(self, i:int=None):
             if i is None:
-                return self.getTokens(AMBER_MR_Parser.Comma)
+                return self.getTokens(AmberMRParser.Comma)
             else:
-                return self.getToken(AMBER_MR_Parser.Comma, i)
+                return self.getToken(AmberMRParser.Comma, i)
 
         def RSTWT(self):
-            return self.getToken(AMBER_MR_Parser.RSTWT, 0)
+            return self.getToken(AmberMRParser.RSTWT, 0)
 
         def Real(self):
-            return self.getToken(AMBER_MR_Parser.Real, 0)
+            return self.getToken(AmberMRParser.Real, 0)
 
         def ATNAM(self):
-            return self.getToken(AMBER_MR_Parser.ATNAM, 0)
+            return self.getToken(AmberMRParser.ATNAM, 0)
 
         def Quoted_atom_name(self, i:int=None):
             if i is None:
-                return self.getTokens(AMBER_MR_Parser.Quoted_atom_name)
+                return self.getTokens(AmberMRParser.Quoted_atom_name)
             else:
-                return self.getToken(AMBER_MR_Parser.Quoted_atom_name, i)
+                return self.getToken(AmberMRParser.Quoted_atom_name, i)
 
         def IRESID(self):
-            return self.getToken(AMBER_MR_Parser.IRESID, 0)
+            return self.getToken(AmberMRParser.IRESID, 0)
 
         def One_or_Zero(self):
-            return self.getToken(AMBER_MR_Parser.One_or_Zero, 0)
+            return self.getToken(AmberMRParser.One_or_Zero, 0)
 
         def NSTEP1(self):
-            return self.getToken(AMBER_MR_Parser.NSTEP1, 0)
+            return self.getToken(AmberMRParser.NSTEP1, 0)
 
         def NSTEP2(self):
-            return self.getToken(AMBER_MR_Parser.NSTEP2, 0)
+            return self.getToken(AmberMRParser.NSTEP2, 0)
 
         def IRSTYP(self):
-            return self.getToken(AMBER_MR_Parser.IRSTYP, 0)
+            return self.getToken(AmberMRParser.IRSTYP, 0)
 
         def IFVARI(self):
-            return self.getToken(AMBER_MR_Parser.IFVARI, 0)
+            return self.getToken(AmberMRParser.IFVARI, 0)
 
         def NINC(self):
-            return self.getToken(AMBER_MR_Parser.NINC, 0)
+            return self.getToken(AmberMRParser.NINC, 0)
 
         def IMULT(self):
-            return self.getToken(AMBER_MR_Parser.IMULT, 0)
+            return self.getToken(AmberMRParser.IMULT, 0)
 
         def R1(self):
-            return self.getToken(AMBER_MR_Parser.R1, 0)
+            return self.getToken(AmberMRParser.R1, 0)
 
         def R2(self):
-            return self.getToken(AMBER_MR_Parser.R2, 0)
+            return self.getToken(AmberMRParser.R2, 0)
 
         def R3(self):
-            return self.getToken(AMBER_MR_Parser.R3, 0)
+            return self.getToken(AmberMRParser.R3, 0)
 
         def R4(self):
-            return self.getToken(AMBER_MR_Parser.R4, 0)
+            return self.getToken(AmberMRParser.R4, 0)
 
         def RK2(self):
-            return self.getToken(AMBER_MR_Parser.RK2, 0)
+            return self.getToken(AmberMRParser.RK2, 0)
 
         def RK3(self):
-            return self.getToken(AMBER_MR_Parser.RK3, 0)
+            return self.getToken(AmberMRParser.RK3, 0)
 
         def R1A(self):
-            return self.getToken(AMBER_MR_Parser.R1A, 0)
+            return self.getToken(AmberMRParser.R1A, 0)
 
         def R2A(self):
-            return self.getToken(AMBER_MR_Parser.R2A, 0)
+            return self.getToken(AmberMRParser.R2A, 0)
 
         def R3A(self):
-            return self.getToken(AMBER_MR_Parser.R3A, 0)
+            return self.getToken(AmberMRParser.R3A, 0)
 
         def R4A(self):
-            return self.getToken(AMBER_MR_Parser.R4A, 0)
+            return self.getToken(AmberMRParser.R4A, 0)
 
         def RK2A(self):
-            return self.getToken(AMBER_MR_Parser.RK2A, 0)
+            return self.getToken(AmberMRParser.RK2A, 0)
 
         def RK3A(self):
-            return self.getToken(AMBER_MR_Parser.RK3A, 0)
+            return self.getToken(AmberMRParser.RK3A, 0)
 
         def R0(self):
-            return self.getToken(AMBER_MR_Parser.R0, 0)
+            return self.getToken(AmberMRParser.R0, 0)
 
         def K0(self):
-            return self.getToken(AMBER_MR_Parser.K0, 0)
+            return self.getToken(AmberMRParser.K0, 0)
 
         def R0A(self):
-            return self.getToken(AMBER_MR_Parser.R0A, 0)
+            return self.getToken(AmberMRParser.R0A, 0)
 
         def K0A(self):
-            return self.getToken(AMBER_MR_Parser.K0A, 0)
+            return self.getToken(AmberMRParser.K0A, 0)
 
         def PLANEPLANEANG_IGR(self):
-            return self.getToken(AMBER_MR_Parser.PLANEPLANEANG_IGR, 0)
+            return self.getToken(AmberMRParser.PLANEPLANEANG_IGR, 0)
 
         def PLANEPLANEANG_GRNAM(self):
-            return self.getToken(AMBER_MR_Parser.PLANEPLANEANG_GRNAM, 0)
+            return self.getToken(AmberMRParser.PLANEPLANEANG_GRNAM, 0)
 
         def IXPK(self):
-            return self.getToken(AMBER_MR_Parser.IXPK, 0)
+            return self.getToken(AmberMRParser.IXPK, 0)
 
         def NXPK(self):
-            return self.getToken(AMBER_MR_Parser.NXPK, 0)
+            return self.getToken(AmberMRParser.NXPK, 0)
 
         def PlanePlaneAngleIFunctionCall(self):
-            return self.getToken(AMBER_MR_Parser.PlanePlaneAngleIFunctionCall, 0)
+            return self.getToken(AmberMRParser.PlanePlaneAngleIFunctionCall, 0)
 
         def PlanePlaneAngleIGFunctionCall(self):
-            return self.getToken(AMBER_MR_Parser.PlanePlaneAngleIGFunctionCall, 0)
+            return self.getToken(AmberMRParser.PlanePlaneAngleIGFunctionCall, 0)
 
         def IntegerArray(self):
-            return self.getToken(AMBER_MR_Parser.IntegerArray, 0)
+            return self.getToken(AmberMRParser.IntegerArray, 0)
 
         def PlanePlaneAngleRFunctionCall(self):
-            return self.getToken(AMBER_MR_Parser.PlanePlaneAngleRFunctionCall, 0)
+            return self.getToken(AmberMRParser.PlanePlaneAngleRFunctionCall, 0)
 
         def PlanePlaneAngleNFunctionCall(self):
-            return self.getToken(AMBER_MR_Parser.PlanePlaneAngleNFunctionCall, 0)
+            return self.getToken(AmberMRParser.PlanePlaneAngleNFunctionCall, 0)
 
         def getRuleIndex(self):
-            return AMBER_MR_Parser.RULE_plane_plane_angle_statement
+            return AmberMRParser.RULE_plane_plane_angle_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterPlane_plane_angle_statement" ):
@@ -6154,525 +6154,525 @@ class AMBER_MR_Parser ( Parser ):
 
     def plane_plane_angle_statement(self):
 
-        localctx = AMBER_MR_Parser.Plane_plane_angle_statementContext(self, self._ctx, self.state)
+        localctx = AmberMRParser.Plane_plane_angle_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 24, self.RULE_plane_plane_angle_statement)
         self._la = 0 # Token type
         try:
             self.state = 1366
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [AMBER_MR_Parser.IAT]:
+            if token in [AmberMRParser.IAT]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 1120
-                self.match(AMBER_MR_Parser.IAT)
+                self.match(AmberMRParser.IAT)
                 self.state = 1121
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1122
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 1123
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 1124
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 1125
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 1126
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 1127
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 1128
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 1129
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 1130
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 1131
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 1132
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 1133
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 1134
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 1135
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 1136
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 1138
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1137
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.RSTWT]:
+            elif token in [AmberMRParser.RSTWT]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 1140
-                self.match(AMBER_MR_Parser.RSTWT)
+                self.match(AmberMRParser.RSTWT)
                 self.state = 1141
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1142
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 1144
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1143
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.ATNAM]:
+            elif token in [AmberMRParser.ATNAM]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 1146
-                self.match(AMBER_MR_Parser.ATNAM)
+                self.match(AmberMRParser.ATNAM)
                 self.state = 1147
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1148
-                self.match(AMBER_MR_Parser.Quoted_atom_name)
+                self.match(AmberMRParser.Quoted_atom_name)
                 self.state = 1149
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 1150
-                self.match(AMBER_MR_Parser.Quoted_atom_name)
+                self.match(AmberMRParser.Quoted_atom_name)
                 self.state = 1151
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 1152
-                self.match(AMBER_MR_Parser.Quoted_atom_name)
+                self.match(AmberMRParser.Quoted_atom_name)
                 self.state = 1153
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 1154
-                self.match(AMBER_MR_Parser.Quoted_atom_name)
+                self.match(AmberMRParser.Quoted_atom_name)
                 self.state = 1155
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 1156
-                self.match(AMBER_MR_Parser.Quoted_atom_name)
+                self.match(AmberMRParser.Quoted_atom_name)
                 self.state = 1157
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 1158
-                self.match(AMBER_MR_Parser.Quoted_atom_name)
+                self.match(AmberMRParser.Quoted_atom_name)
                 self.state = 1159
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 1160
-                self.match(AMBER_MR_Parser.Quoted_atom_name)
+                self.match(AmberMRParser.Quoted_atom_name)
                 self.state = 1161
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 1162
-                self.match(AMBER_MR_Parser.Quoted_atom_name)
+                self.match(AmberMRParser.Quoted_atom_name)
                 self.state = 1164
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1163
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 self.state = 1166
-                self.match(AMBER_MR_Parser.IRESID)
+                self.match(AmberMRParser.IRESID)
                 self.state = 1167
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1168
-                self.match(AMBER_MR_Parser.One_or_Zero)
+                self.match(AmberMRParser.One_or_Zero)
                 self.state = 1170
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1169
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.NSTEP1]:
+            elif token in [AmberMRParser.NSTEP1]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 1172
-                self.match(AMBER_MR_Parser.NSTEP1)
+                self.match(AmberMRParser.NSTEP1)
                 self.state = 1173
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1174
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 1176
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1175
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.NSTEP2]:
+            elif token in [AmberMRParser.NSTEP2]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 1178
-                self.match(AMBER_MR_Parser.NSTEP2)
+                self.match(AmberMRParser.NSTEP2)
                 self.state = 1179
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1180
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 1182
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1181
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.IRSTYP]:
+            elif token in [AmberMRParser.IRSTYP]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 1184
-                self.match(AMBER_MR_Parser.IRSTYP)
+                self.match(AmberMRParser.IRSTYP)
                 self.state = 1185
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1186
-                self.match(AMBER_MR_Parser.One_or_Zero)
+                self.match(AmberMRParser.One_or_Zero)
                 self.state = 1188
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1187
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.IFVARI]:
+            elif token in [AmberMRParser.IFVARI]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 1190
-                self.match(AMBER_MR_Parser.IFVARI)
+                self.match(AmberMRParser.IFVARI)
                 self.state = 1191
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1192
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 1194
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1193
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.NINC]:
+            elif token in [AmberMRParser.NINC]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 1196
-                self.match(AMBER_MR_Parser.NINC)
+                self.match(AmberMRParser.NINC)
                 self.state = 1197
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1198
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 1200
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1199
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.IMULT]:
+            elif token in [AmberMRParser.IMULT]:
                 self.enterOuterAlt(localctx, 9)
                 self.state = 1202
-                self.match(AMBER_MR_Parser.IMULT)
+                self.match(AmberMRParser.IMULT)
                 self.state = 1203
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1204
-                self.match(AMBER_MR_Parser.One_or_Zero)
+                self.match(AmberMRParser.One_or_Zero)
                 self.state = 1206
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1205
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R1]:
+            elif token in [AmberMRParser.R1]:
                 self.enterOuterAlt(localctx, 10)
                 self.state = 1208
-                self.match(AMBER_MR_Parser.R1)
+                self.match(AmberMRParser.R1)
                 self.state = 1209
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1210
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 1212
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1211
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R2]:
+            elif token in [AmberMRParser.R2]:
                 self.enterOuterAlt(localctx, 11)
                 self.state = 1214
-                self.match(AMBER_MR_Parser.R2)
+                self.match(AmberMRParser.R2)
                 self.state = 1215
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1216
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 1218
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1217
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R3]:
+            elif token in [AmberMRParser.R3]:
                 self.enterOuterAlt(localctx, 12)
                 self.state = 1220
-                self.match(AMBER_MR_Parser.R3)
+                self.match(AmberMRParser.R3)
                 self.state = 1221
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1222
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 1224
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1223
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R4]:
+            elif token in [AmberMRParser.R4]:
                 self.enterOuterAlt(localctx, 13)
                 self.state = 1226
-                self.match(AMBER_MR_Parser.R4)
+                self.match(AmberMRParser.R4)
                 self.state = 1227
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1228
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 1230
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1229
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.RK2]:
+            elif token in [AmberMRParser.RK2]:
                 self.enterOuterAlt(localctx, 14)
                 self.state = 1232
-                self.match(AMBER_MR_Parser.RK2)
+                self.match(AmberMRParser.RK2)
                 self.state = 1233
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1234
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 1236
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1235
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.RK3]:
+            elif token in [AmberMRParser.RK3]:
                 self.enterOuterAlt(localctx, 15)
                 self.state = 1238
-                self.match(AMBER_MR_Parser.RK3)
+                self.match(AmberMRParser.RK3)
                 self.state = 1239
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1240
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 1242
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1241
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R1A]:
+            elif token in [AmberMRParser.R1A]:
                 self.enterOuterAlt(localctx, 16)
                 self.state = 1244
-                self.match(AMBER_MR_Parser.R1A)
+                self.match(AmberMRParser.R1A)
                 self.state = 1245
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1246
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 1248
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1247
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R2A]:
+            elif token in [AmberMRParser.R2A]:
                 self.enterOuterAlt(localctx, 17)
                 self.state = 1250
-                self.match(AMBER_MR_Parser.R2A)
+                self.match(AmberMRParser.R2A)
                 self.state = 1251
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1252
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 1254
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1253
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R3A]:
+            elif token in [AmberMRParser.R3A]:
                 self.enterOuterAlt(localctx, 18)
                 self.state = 1256
-                self.match(AMBER_MR_Parser.R3A)
+                self.match(AmberMRParser.R3A)
                 self.state = 1257
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1258
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 1260
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1259
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R4A]:
+            elif token in [AmberMRParser.R4A]:
                 self.enterOuterAlt(localctx, 19)
                 self.state = 1262
-                self.match(AMBER_MR_Parser.R4A)
+                self.match(AmberMRParser.R4A)
                 self.state = 1263
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1264
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 1266
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1265
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.RK2A]:
+            elif token in [AmberMRParser.RK2A]:
                 self.enterOuterAlt(localctx, 20)
                 self.state = 1268
-                self.match(AMBER_MR_Parser.RK2A)
+                self.match(AmberMRParser.RK2A)
                 self.state = 1269
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1270
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 1272
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1271
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.RK3A]:
+            elif token in [AmberMRParser.RK3A]:
                 self.enterOuterAlt(localctx, 21)
                 self.state = 1274
-                self.match(AMBER_MR_Parser.RK3A)
+                self.match(AmberMRParser.RK3A)
                 self.state = 1275
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1276
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 1278
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1277
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R0]:
+            elif token in [AmberMRParser.R0]:
                 self.enterOuterAlt(localctx, 22)
                 self.state = 1280
-                self.match(AMBER_MR_Parser.R0)
+                self.match(AmberMRParser.R0)
                 self.state = 1281
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1282
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 1284
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1283
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.K0]:
+            elif token in [AmberMRParser.K0]:
                 self.enterOuterAlt(localctx, 23)
                 self.state = 1286
-                self.match(AMBER_MR_Parser.K0)
+                self.match(AmberMRParser.K0)
                 self.state = 1287
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1288
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 1290
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1289
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R0A]:
+            elif token in [AmberMRParser.R0A]:
                 self.enterOuterAlt(localctx, 24)
                 self.state = 1292
-                self.match(AMBER_MR_Parser.R0A)
+                self.match(AmberMRParser.R0A)
                 self.state = 1293
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1294
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 1296
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1295
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.K0A]:
+            elif token in [AmberMRParser.K0A]:
                 self.enterOuterAlt(localctx, 25)
                 self.state = 1298
-                self.match(AMBER_MR_Parser.K0A)
+                self.match(AmberMRParser.K0A)
                 self.state = 1299
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1300
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 1302
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1301
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.PLANEPLANEANG_IGR]:
+            elif token in [AmberMRParser.PLANEPLANEANG_IGR]:
                 self.enterOuterAlt(localctx, 26)
                 self.state = 1304
-                self.match(AMBER_MR_Parser.PLANEPLANEANG_IGR)
+                self.match(AmberMRParser.PLANEPLANEANG_IGR)
                 self.state = 1305
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1306
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 1311
                 self._errHandler.sync(self)
                 _alt = self._interp.adaptivePredict(self._input,193,self._ctx)
                 while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                     if _alt==1:
                         self.state = 1307
-                        self.match(AMBER_MR_Parser.Comma)
+                        self.match(AmberMRParser.Comma)
                         self.state = 1308
-                        self.match(AMBER_MR_Parser.Integer) 
+                        self.match(AmberMRParser.Integer) 
                     self.state = 1313
                     self._errHandler.sync(self)
                     _alt = self._interp.adaptivePredict(self._input,193,self._ctx)
@@ -6680,29 +6680,29 @@ class AMBER_MR_Parser ( Parser ):
                 self.state = 1315
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1314
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.PLANEPLANEANG_GRNAM]:
+            elif token in [AmberMRParser.PLANEPLANEANG_GRNAM]:
                 self.enterOuterAlt(localctx, 27)
                 self.state = 1317
-                self.match(AMBER_MR_Parser.PLANEPLANEANG_GRNAM)
+                self.match(AmberMRParser.PLANEPLANEANG_GRNAM)
                 self.state = 1318
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1319
-                self.match(AMBER_MR_Parser.Quoted_atom_name)
+                self.match(AmberMRParser.Quoted_atom_name)
                 self.state = 1324
                 self._errHandler.sync(self)
                 _alt = self._interp.adaptivePredict(self._input,195,self._ctx)
                 while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                     if _alt==1:
                         self.state = 1320
-                        self.match(AMBER_MR_Parser.Comma)
+                        self.match(AmberMRParser.Comma)
                         self.state = 1321
-                        self.match(AMBER_MR_Parser.Quoted_atom_name) 
+                        self.match(AmberMRParser.Quoted_atom_name) 
                     self.state = 1326
                     self._errHandler.sync(self)
                     _alt = self._interp.adaptivePredict(self._input,195,self._ctx)
@@ -6710,111 +6710,111 @@ class AMBER_MR_Parser ( Parser ):
                 self.state = 1328
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1327
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.IXPK]:
+            elif token in [AmberMRParser.IXPK]:
                 self.enterOuterAlt(localctx, 28)
                 self.state = 1330
-                self.match(AMBER_MR_Parser.IXPK)
+                self.match(AmberMRParser.IXPK)
                 self.state = 1331
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1332
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 1334
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1333
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.NXPK]:
+            elif token in [AmberMRParser.NXPK]:
                 self.enterOuterAlt(localctx, 29)
                 self.state = 1336
-                self.match(AMBER_MR_Parser.NXPK)
+                self.match(AmberMRParser.NXPK)
                 self.state = 1337
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1338
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 1340
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1339
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.PlanePlaneAngleIFunctionCall]:
+            elif token in [AmberMRParser.PlanePlaneAngleIFunctionCall]:
                 self.enterOuterAlt(localctx, 30)
                 self.state = 1342
-                self.match(AMBER_MR_Parser.PlanePlaneAngleIFunctionCall)
+                self.match(AmberMRParser.PlanePlaneAngleIFunctionCall)
                 self.state = 1343
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1344
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 1346
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1345
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.PlanePlaneAngleIGFunctionCall]:
+            elif token in [AmberMRParser.PlanePlaneAngleIGFunctionCall]:
                 self.enterOuterAlt(localctx, 31)
                 self.state = 1348
-                self.match(AMBER_MR_Parser.PlanePlaneAngleIGFunctionCall)
+                self.match(AmberMRParser.PlanePlaneAngleIGFunctionCall)
                 self.state = 1349
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1350
-                self.match(AMBER_MR_Parser.IntegerArray)
+                self.match(AmberMRParser.IntegerArray)
                 self.state = 1352
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1351
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.PlanePlaneAngleRFunctionCall]:
+            elif token in [AmberMRParser.PlanePlaneAngleRFunctionCall]:
                 self.enterOuterAlt(localctx, 32)
                 self.state = 1354
-                self.match(AMBER_MR_Parser.PlanePlaneAngleRFunctionCall)
+                self.match(AmberMRParser.PlanePlaneAngleRFunctionCall)
                 self.state = 1355
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1356
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 1358
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1357
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.PlanePlaneAngleNFunctionCall]:
+            elif token in [AmberMRParser.PlanePlaneAngleNFunctionCall]:
                 self.enterOuterAlt(localctx, 33)
                 self.state = 1360
-                self.match(AMBER_MR_Parser.PlanePlaneAngleNFunctionCall)
+                self.match(AmberMRParser.PlanePlaneAngleNFunctionCall)
                 self.state = 1361
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1362
-                self.match(AMBER_MR_Parser.Quoted_atom_name)
+                self.match(AmberMRParser.Quoted_atom_name)
                 self.state = 1364
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1363
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
@@ -6837,160 +6837,160 @@ class AMBER_MR_Parser ( Parser ):
             self.parser = parser
 
         def IAT(self):
-            return self.getToken(AMBER_MR_Parser.IAT, 0)
+            return self.getToken(AmberMRParser.IAT, 0)
 
         def Equ_op(self):
-            return self.getToken(AMBER_MR_Parser.Equ_op, 0)
+            return self.getToken(AmberMRParser.Equ_op, 0)
 
         def Integer(self, i:int=None):
             if i is None:
-                return self.getTokens(AMBER_MR_Parser.Integer)
+                return self.getTokens(AmberMRParser.Integer)
             else:
-                return self.getToken(AMBER_MR_Parser.Integer, i)
+                return self.getToken(AmberMRParser.Integer, i)
 
         def Comma(self, i:int=None):
             if i is None:
-                return self.getTokens(AMBER_MR_Parser.Comma)
+                return self.getTokens(AmberMRParser.Comma)
             else:
-                return self.getToken(AMBER_MR_Parser.Comma, i)
+                return self.getToken(AmberMRParser.Comma, i)
 
         def RSTWT(self):
-            return self.getToken(AMBER_MR_Parser.RSTWT, 0)
+            return self.getToken(AmberMRParser.RSTWT, 0)
 
         def Real(self, i:int=None):
             if i is None:
-                return self.getTokens(AMBER_MR_Parser.Real)
+                return self.getTokens(AmberMRParser.Real)
             else:
-                return self.getToken(AMBER_MR_Parser.Real, i)
+                return self.getToken(AmberMRParser.Real, i)
 
         def RESTRAINT(self):
-            return self.getToken(AMBER_MR_Parser.RESTRAINT, 0)
+            return self.getToken(AmberMRParser.RESTRAINT, 0)
 
         def QUOT(self, i:int=None):
             if i is None:
-                return self.getTokens(AMBER_MR_Parser.QUOT)
+                return self.getTokens(AmberMRParser.QUOT)
             else:
-                return self.getToken(AMBER_MR_Parser.QUOT, i)
+                return self.getToken(AmberMRParser.QUOT, i)
 
         def Coordinate2RstFunctionCall(self):
-            return self.getToken(AMBER_MR_Parser.Coordinate2RstFunctionCall, 0)
+            return self.getToken(AmberMRParser.Coordinate2RstFunctionCall, 0)
 
         def ATNAM(self):
-            return self.getToken(AMBER_MR_Parser.ATNAM, 0)
+            return self.getToken(AmberMRParser.ATNAM, 0)
 
         def Quoted_atom_name(self, i:int=None):
             if i is None:
-                return self.getTokens(AMBER_MR_Parser.Quoted_atom_name)
+                return self.getTokens(AmberMRParser.Quoted_atom_name)
             else:
-                return self.getToken(AMBER_MR_Parser.Quoted_atom_name, i)
+                return self.getToken(AmberMRParser.Quoted_atom_name, i)
 
         def IRESID(self):
-            return self.getToken(AMBER_MR_Parser.IRESID, 0)
+            return self.getToken(AmberMRParser.IRESID, 0)
 
         def One_or_Zero(self):
-            return self.getToken(AMBER_MR_Parser.One_or_Zero, 0)
+            return self.getToken(AmberMRParser.One_or_Zero, 0)
 
         def NSTEP1(self):
-            return self.getToken(AMBER_MR_Parser.NSTEP1, 0)
+            return self.getToken(AmberMRParser.NSTEP1, 0)
 
         def NSTEP2(self):
-            return self.getToken(AMBER_MR_Parser.NSTEP2, 0)
+            return self.getToken(AmberMRParser.NSTEP2, 0)
 
         def IRSTYP(self):
-            return self.getToken(AMBER_MR_Parser.IRSTYP, 0)
+            return self.getToken(AmberMRParser.IRSTYP, 0)
 
         def IALTD(self):
-            return self.getToken(AMBER_MR_Parser.IALTD, 0)
+            return self.getToken(AmberMRParser.IALTD, 0)
 
         def IFVARI(self):
-            return self.getToken(AMBER_MR_Parser.IFVARI, 0)
+            return self.getToken(AmberMRParser.IFVARI, 0)
 
         def NINC(self):
-            return self.getToken(AMBER_MR_Parser.NINC, 0)
+            return self.getToken(AmberMRParser.NINC, 0)
 
         def IMULT(self):
-            return self.getToken(AMBER_MR_Parser.IMULT, 0)
+            return self.getToken(AmberMRParser.IMULT, 0)
 
         def R1(self):
-            return self.getToken(AMBER_MR_Parser.R1, 0)
+            return self.getToken(AmberMRParser.R1, 0)
 
         def R2(self):
-            return self.getToken(AMBER_MR_Parser.R2, 0)
+            return self.getToken(AmberMRParser.R2, 0)
 
         def R3(self):
-            return self.getToken(AMBER_MR_Parser.R3, 0)
+            return self.getToken(AmberMRParser.R3, 0)
 
         def R4(self):
-            return self.getToken(AMBER_MR_Parser.R4, 0)
+            return self.getToken(AmberMRParser.R4, 0)
 
         def RK2(self):
-            return self.getToken(AMBER_MR_Parser.RK2, 0)
+            return self.getToken(AmberMRParser.RK2, 0)
 
         def RK3(self):
-            return self.getToken(AMBER_MR_Parser.RK3, 0)
+            return self.getToken(AmberMRParser.RK3, 0)
 
         def R1A(self):
-            return self.getToken(AMBER_MR_Parser.R1A, 0)
+            return self.getToken(AmberMRParser.R1A, 0)
 
         def R2A(self):
-            return self.getToken(AMBER_MR_Parser.R2A, 0)
+            return self.getToken(AmberMRParser.R2A, 0)
 
         def R3A(self):
-            return self.getToken(AMBER_MR_Parser.R3A, 0)
+            return self.getToken(AmberMRParser.R3A, 0)
 
         def R4A(self):
-            return self.getToken(AMBER_MR_Parser.R4A, 0)
+            return self.getToken(AmberMRParser.R4A, 0)
 
         def RK2A(self):
-            return self.getToken(AMBER_MR_Parser.RK2A, 0)
+            return self.getToken(AmberMRParser.RK2A, 0)
 
         def RK3A(self):
-            return self.getToken(AMBER_MR_Parser.RK3A, 0)
+            return self.getToken(AmberMRParser.RK3A, 0)
 
         def R0(self):
-            return self.getToken(AMBER_MR_Parser.R0, 0)
+            return self.getToken(AmberMRParser.R0, 0)
 
         def K0(self):
-            return self.getToken(AMBER_MR_Parser.K0, 0)
+            return self.getToken(AmberMRParser.K0, 0)
 
         def R0A(self):
-            return self.getToken(AMBER_MR_Parser.R0A, 0)
+            return self.getToken(AmberMRParser.R0A, 0)
 
         def K0A(self):
-            return self.getToken(AMBER_MR_Parser.K0A, 0)
+            return self.getToken(AmberMRParser.K0A, 0)
 
         def GENDISTANCE2_IGR(self):
-            return self.getToken(AMBER_MR_Parser.GENDISTANCE2_IGR, 0)
+            return self.getToken(AmberMRParser.GENDISTANCE2_IGR, 0)
 
         def GENDISTANCE2_GRNAM(self):
-            return self.getToken(AMBER_MR_Parser.GENDISTANCE2_GRNAM, 0)
+            return self.getToken(AmberMRParser.GENDISTANCE2_GRNAM, 0)
 
         def IFNTYP(self):
-            return self.getToken(AMBER_MR_Parser.IFNTYP, 0)
+            return self.getToken(AmberMRParser.IFNTYP, 0)
 
         def IXPK(self):
-            return self.getToken(AMBER_MR_Parser.IXPK, 0)
+            return self.getToken(AmberMRParser.IXPK, 0)
 
         def NXPK(self):
-            return self.getToken(AMBER_MR_Parser.NXPK, 0)
+            return self.getToken(AmberMRParser.NXPK, 0)
 
         def GeneralDistance2IFunctionCall(self):
-            return self.getToken(AMBER_MR_Parser.GeneralDistance2IFunctionCall, 0)
+            return self.getToken(AmberMRParser.GeneralDistance2IFunctionCall, 0)
 
         def GeneralDistance2IGFunctionCall(self):
-            return self.getToken(AMBER_MR_Parser.GeneralDistance2IGFunctionCall, 0)
+            return self.getToken(AmberMRParser.GeneralDistance2IGFunctionCall, 0)
 
         def IntegerArray(self):
-            return self.getToken(AMBER_MR_Parser.IntegerArray, 0)
+            return self.getToken(AmberMRParser.IntegerArray, 0)
 
         def GeneralDistance2RFunctionCall(self):
-            return self.getToken(AMBER_MR_Parser.GeneralDistance2RFunctionCall, 0)
+            return self.getToken(AmberMRParser.GeneralDistance2RFunctionCall, 0)
 
         def GeneralDistance2NFunctionCall(self):
-            return self.getToken(AMBER_MR_Parser.GeneralDistance2NFunctionCall, 0)
+            return self.getToken(AmberMRParser.GeneralDistance2NFunctionCall, 0)
 
         def getRuleIndex(self):
-            return AMBER_MR_Parser.RULE_general_distance2_statement
+            return AmberMRParser.RULE_general_distance2_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterGeneral_distance2_statement" ):
@@ -7005,538 +7005,538 @@ class AMBER_MR_Parser ( Parser ):
 
     def general_distance2_statement(self):
 
-        localctx = AMBER_MR_Parser.General_distance2_statementContext(self, self._ctx, self.state)
+        localctx = AmberMRParser.General_distance2_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 26, self.RULE_general_distance2_statement)
         self._la = 0 # Token type
         try:
             self.state = 1620
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [AMBER_MR_Parser.IAT]:
+            if token in [AmberMRParser.IAT]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 1368
-                self.match(AMBER_MR_Parser.IAT)
+                self.match(AmberMRParser.IAT)
                 self.state = 1369
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1370
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 1371
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 1372
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 1373
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 1374
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 1375
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 1376
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 1378
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1377
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.RSTWT]:
+            elif token in [AmberMRParser.RSTWT]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 1380
-                self.match(AMBER_MR_Parser.RSTWT)
+                self.match(AmberMRParser.RSTWT)
                 self.state = 1381
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1382
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 1383
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 1384
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 1386
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1385
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.RESTRAINT]:
+            elif token in [AmberMRParser.RESTRAINT]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 1388
-                self.match(AMBER_MR_Parser.RESTRAINT)
+                self.match(AmberMRParser.RESTRAINT)
                 self.state = 1389
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1390
-                self.match(AMBER_MR_Parser.QUOT)
+                self.match(AmberMRParser.QUOT)
                 self.state = 1391
-                self.match(AMBER_MR_Parser.Coordinate2RstFunctionCall)
+                self.match(AmberMRParser.Coordinate2RstFunctionCall)
                 self.state = 1392
-                self.match(AMBER_MR_Parser.QUOT)
+                self.match(AmberMRParser.QUOT)
                 self.state = 1394
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1393
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.ATNAM]:
+            elif token in [AmberMRParser.ATNAM]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 1396
-                self.match(AMBER_MR_Parser.ATNAM)
+                self.match(AmberMRParser.ATNAM)
                 self.state = 1397
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1398
-                self.match(AMBER_MR_Parser.Quoted_atom_name)
+                self.match(AmberMRParser.Quoted_atom_name)
                 self.state = 1399
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 1400
-                self.match(AMBER_MR_Parser.Quoted_atom_name)
+                self.match(AmberMRParser.Quoted_atom_name)
                 self.state = 1401
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 1402
-                self.match(AMBER_MR_Parser.Quoted_atom_name)
+                self.match(AmberMRParser.Quoted_atom_name)
                 self.state = 1403
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 1404
-                self.match(AMBER_MR_Parser.Quoted_atom_name)
+                self.match(AmberMRParser.Quoted_atom_name)
                 self.state = 1406
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1405
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.IRESID]:
+            elif token in [AmberMRParser.IRESID]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 1408
-                self.match(AMBER_MR_Parser.IRESID)
+                self.match(AmberMRParser.IRESID)
                 self.state = 1409
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1410
-                self.match(AMBER_MR_Parser.One_or_Zero)
+                self.match(AmberMRParser.One_or_Zero)
                 self.state = 1412
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1411
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.NSTEP1]:
+            elif token in [AmberMRParser.NSTEP1]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 1414
-                self.match(AMBER_MR_Parser.NSTEP1)
+                self.match(AmberMRParser.NSTEP1)
                 self.state = 1415
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1416
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 1418
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1417
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.NSTEP2]:
+            elif token in [AmberMRParser.NSTEP2]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 1420
-                self.match(AMBER_MR_Parser.NSTEP2)
+                self.match(AmberMRParser.NSTEP2)
                 self.state = 1421
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1422
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 1424
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1423
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.IRSTYP]:
+            elif token in [AmberMRParser.IRSTYP]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 1426
-                self.match(AMBER_MR_Parser.IRSTYP)
+                self.match(AmberMRParser.IRSTYP)
                 self.state = 1427
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1428
-                self.match(AMBER_MR_Parser.One_or_Zero)
+                self.match(AmberMRParser.One_or_Zero)
                 self.state = 1430
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1429
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.IALTD]:
+            elif token in [AmberMRParser.IALTD]:
                 self.enterOuterAlt(localctx, 9)
                 self.state = 1432
-                self.match(AMBER_MR_Parser.IALTD)
+                self.match(AmberMRParser.IALTD)
                 self.state = 1433
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1434
-                self.match(AMBER_MR_Parser.One_or_Zero)
+                self.match(AmberMRParser.One_or_Zero)
                 self.state = 1436
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1435
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.IFVARI]:
+            elif token in [AmberMRParser.IFVARI]:
                 self.enterOuterAlt(localctx, 10)
                 self.state = 1438
-                self.match(AMBER_MR_Parser.IFVARI)
+                self.match(AmberMRParser.IFVARI)
                 self.state = 1439
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1440
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 1442
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1441
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.NINC]:
+            elif token in [AmberMRParser.NINC]:
                 self.enterOuterAlt(localctx, 11)
                 self.state = 1444
-                self.match(AMBER_MR_Parser.NINC)
+                self.match(AmberMRParser.NINC)
                 self.state = 1445
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1446
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 1448
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1447
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.IMULT]:
+            elif token in [AmberMRParser.IMULT]:
                 self.enterOuterAlt(localctx, 12)
                 self.state = 1450
-                self.match(AMBER_MR_Parser.IMULT)
+                self.match(AmberMRParser.IMULT)
                 self.state = 1451
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1452
-                self.match(AMBER_MR_Parser.One_or_Zero)
+                self.match(AmberMRParser.One_or_Zero)
                 self.state = 1454
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1453
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R1]:
+            elif token in [AmberMRParser.R1]:
                 self.enterOuterAlt(localctx, 13)
                 self.state = 1456
-                self.match(AMBER_MR_Parser.R1)
+                self.match(AmberMRParser.R1)
                 self.state = 1457
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1458
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 1460
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1459
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R2]:
+            elif token in [AmberMRParser.R2]:
                 self.enterOuterAlt(localctx, 14)
                 self.state = 1462
-                self.match(AMBER_MR_Parser.R2)
+                self.match(AmberMRParser.R2)
                 self.state = 1463
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1464
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 1466
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1465
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R3]:
+            elif token in [AmberMRParser.R3]:
                 self.enterOuterAlt(localctx, 15)
                 self.state = 1468
-                self.match(AMBER_MR_Parser.R3)
+                self.match(AmberMRParser.R3)
                 self.state = 1469
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1470
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 1472
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1471
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R4]:
+            elif token in [AmberMRParser.R4]:
                 self.enterOuterAlt(localctx, 16)
                 self.state = 1474
-                self.match(AMBER_MR_Parser.R4)
+                self.match(AmberMRParser.R4)
                 self.state = 1475
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1476
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 1478
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1477
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.RK2]:
+            elif token in [AmberMRParser.RK2]:
                 self.enterOuterAlt(localctx, 17)
                 self.state = 1480
-                self.match(AMBER_MR_Parser.RK2)
+                self.match(AmberMRParser.RK2)
                 self.state = 1481
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1482
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 1484
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1483
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.RK3]:
+            elif token in [AmberMRParser.RK3]:
                 self.enterOuterAlt(localctx, 18)
                 self.state = 1486
-                self.match(AMBER_MR_Parser.RK3)
+                self.match(AmberMRParser.RK3)
                 self.state = 1487
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1488
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 1490
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1489
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R1A]:
+            elif token in [AmberMRParser.R1A]:
                 self.enterOuterAlt(localctx, 19)
                 self.state = 1492
-                self.match(AMBER_MR_Parser.R1A)
+                self.match(AmberMRParser.R1A)
                 self.state = 1493
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1494
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 1496
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1495
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R2A]:
+            elif token in [AmberMRParser.R2A]:
                 self.enterOuterAlt(localctx, 20)
                 self.state = 1498
-                self.match(AMBER_MR_Parser.R2A)
+                self.match(AmberMRParser.R2A)
                 self.state = 1499
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1500
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 1502
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1501
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R3A]:
+            elif token in [AmberMRParser.R3A]:
                 self.enterOuterAlt(localctx, 21)
                 self.state = 1504
-                self.match(AMBER_MR_Parser.R3A)
+                self.match(AmberMRParser.R3A)
                 self.state = 1505
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1506
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 1508
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1507
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R4A]:
+            elif token in [AmberMRParser.R4A]:
                 self.enterOuterAlt(localctx, 22)
                 self.state = 1510
-                self.match(AMBER_MR_Parser.R4A)
+                self.match(AmberMRParser.R4A)
                 self.state = 1511
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1512
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 1514
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1513
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.RK2A]:
+            elif token in [AmberMRParser.RK2A]:
                 self.enterOuterAlt(localctx, 23)
                 self.state = 1516
-                self.match(AMBER_MR_Parser.RK2A)
+                self.match(AmberMRParser.RK2A)
                 self.state = 1517
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1518
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 1520
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1519
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.RK3A]:
+            elif token in [AmberMRParser.RK3A]:
                 self.enterOuterAlt(localctx, 24)
                 self.state = 1522
-                self.match(AMBER_MR_Parser.RK3A)
+                self.match(AmberMRParser.RK3A)
                 self.state = 1523
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1524
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 1526
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1525
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R0]:
+            elif token in [AmberMRParser.R0]:
                 self.enterOuterAlt(localctx, 25)
                 self.state = 1528
-                self.match(AMBER_MR_Parser.R0)
+                self.match(AmberMRParser.R0)
                 self.state = 1529
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1530
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 1532
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1531
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.K0]:
+            elif token in [AmberMRParser.K0]:
                 self.enterOuterAlt(localctx, 26)
                 self.state = 1534
-                self.match(AMBER_MR_Parser.K0)
+                self.match(AmberMRParser.K0)
                 self.state = 1535
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1536
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 1538
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1537
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R0A]:
+            elif token in [AmberMRParser.R0A]:
                 self.enterOuterAlt(localctx, 27)
                 self.state = 1540
-                self.match(AMBER_MR_Parser.R0A)
+                self.match(AmberMRParser.R0A)
                 self.state = 1541
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1542
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 1544
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1543
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.K0A]:
+            elif token in [AmberMRParser.K0A]:
                 self.enterOuterAlt(localctx, 28)
                 self.state = 1546
-                self.match(AMBER_MR_Parser.K0A)
+                self.match(AmberMRParser.K0A)
                 self.state = 1547
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1548
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 1550
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1549
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.GENDISTANCE2_IGR]:
+            elif token in [AmberMRParser.GENDISTANCE2_IGR]:
                 self.enterOuterAlt(localctx, 29)
                 self.state = 1552
-                self.match(AMBER_MR_Parser.GENDISTANCE2_IGR)
+                self.match(AmberMRParser.GENDISTANCE2_IGR)
                 self.state = 1553
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1554
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 1559
                 self._errHandler.sync(self)
                 _alt = self._interp.adaptivePredict(self._input,232,self._ctx)
                 while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                     if _alt==1:
                         self.state = 1555
-                        self.match(AMBER_MR_Parser.Comma)
+                        self.match(AmberMRParser.Comma)
                         self.state = 1556
-                        self.match(AMBER_MR_Parser.Integer) 
+                        self.match(AmberMRParser.Integer) 
                     self.state = 1561
                     self._errHandler.sync(self)
                     _alt = self._interp.adaptivePredict(self._input,232,self._ctx)
@@ -7544,29 +7544,29 @@ class AMBER_MR_Parser ( Parser ):
                 self.state = 1563
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1562
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.GENDISTANCE2_GRNAM]:
+            elif token in [AmberMRParser.GENDISTANCE2_GRNAM]:
                 self.enterOuterAlt(localctx, 30)
                 self.state = 1565
-                self.match(AMBER_MR_Parser.GENDISTANCE2_GRNAM)
+                self.match(AmberMRParser.GENDISTANCE2_GRNAM)
                 self.state = 1566
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1567
-                self.match(AMBER_MR_Parser.Quoted_atom_name)
+                self.match(AmberMRParser.Quoted_atom_name)
                 self.state = 1572
                 self._errHandler.sync(self)
                 _alt = self._interp.adaptivePredict(self._input,234,self._ctx)
                 while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                     if _alt==1:
                         self.state = 1568
-                        self.match(AMBER_MR_Parser.Comma)
+                        self.match(AmberMRParser.Comma)
                         self.state = 1569
-                        self.match(AMBER_MR_Parser.Quoted_atom_name) 
+                        self.match(AmberMRParser.Quoted_atom_name) 
                     self.state = 1574
                     self._errHandler.sync(self)
                     _alt = self._interp.adaptivePredict(self._input,234,self._ctx)
@@ -7574,128 +7574,128 @@ class AMBER_MR_Parser ( Parser ):
                 self.state = 1576
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1575
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.IFNTYP]:
+            elif token in [AmberMRParser.IFNTYP]:
                 self.enterOuterAlt(localctx, 31)
                 self.state = 1578
-                self.match(AMBER_MR_Parser.IFNTYP)
+                self.match(AmberMRParser.IFNTYP)
                 self.state = 1579
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1580
-                self.match(AMBER_MR_Parser.One_or_Zero)
+                self.match(AmberMRParser.One_or_Zero)
                 self.state = 1582
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1581
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.IXPK]:
+            elif token in [AmberMRParser.IXPK]:
                 self.enterOuterAlt(localctx, 32)
                 self.state = 1584
-                self.match(AMBER_MR_Parser.IXPK)
+                self.match(AmberMRParser.IXPK)
                 self.state = 1585
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1586
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 1588
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1587
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.NXPK]:
+            elif token in [AmberMRParser.NXPK]:
                 self.enterOuterAlt(localctx, 33)
                 self.state = 1590
-                self.match(AMBER_MR_Parser.NXPK)
+                self.match(AmberMRParser.NXPK)
                 self.state = 1591
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1592
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 1594
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1593
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.GeneralDistance2IFunctionCall]:
+            elif token in [AmberMRParser.GeneralDistance2IFunctionCall]:
                 self.enterOuterAlt(localctx, 34)
                 self.state = 1596
-                self.match(AMBER_MR_Parser.GeneralDistance2IFunctionCall)
+                self.match(AmberMRParser.GeneralDistance2IFunctionCall)
                 self.state = 1597
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1598
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 1600
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1599
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.GeneralDistance2IGFunctionCall]:
+            elif token in [AmberMRParser.GeneralDistance2IGFunctionCall]:
                 self.enterOuterAlt(localctx, 35)
                 self.state = 1602
-                self.match(AMBER_MR_Parser.GeneralDistance2IGFunctionCall)
+                self.match(AmberMRParser.GeneralDistance2IGFunctionCall)
                 self.state = 1603
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1604
-                self.match(AMBER_MR_Parser.IntegerArray)
+                self.match(AmberMRParser.IntegerArray)
                 self.state = 1606
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1605
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.GeneralDistance2RFunctionCall]:
+            elif token in [AmberMRParser.GeneralDistance2RFunctionCall]:
                 self.enterOuterAlt(localctx, 36)
                 self.state = 1608
-                self.match(AMBER_MR_Parser.GeneralDistance2RFunctionCall)
+                self.match(AmberMRParser.GeneralDistance2RFunctionCall)
                 self.state = 1609
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1610
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 1612
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1611
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.GeneralDistance2NFunctionCall]:
+            elif token in [AmberMRParser.GeneralDistance2NFunctionCall]:
                 self.enterOuterAlt(localctx, 37)
                 self.state = 1614
-                self.match(AMBER_MR_Parser.GeneralDistance2NFunctionCall)
+                self.match(AmberMRParser.GeneralDistance2NFunctionCall)
                 self.state = 1615
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1616
-                self.match(AMBER_MR_Parser.Quoted_atom_name)
+                self.match(AmberMRParser.Quoted_atom_name)
                 self.state = 1618
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1617
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
@@ -7718,160 +7718,160 @@ class AMBER_MR_Parser ( Parser ):
             self.parser = parser
 
         def IAT(self):
-            return self.getToken(AMBER_MR_Parser.IAT, 0)
+            return self.getToken(AmberMRParser.IAT, 0)
 
         def Equ_op(self):
-            return self.getToken(AMBER_MR_Parser.Equ_op, 0)
+            return self.getToken(AmberMRParser.Equ_op, 0)
 
         def Integer(self, i:int=None):
             if i is None:
-                return self.getTokens(AMBER_MR_Parser.Integer)
+                return self.getTokens(AmberMRParser.Integer)
             else:
-                return self.getToken(AMBER_MR_Parser.Integer, i)
+                return self.getToken(AmberMRParser.Integer, i)
 
         def Comma(self, i:int=None):
             if i is None:
-                return self.getTokens(AMBER_MR_Parser.Comma)
+                return self.getTokens(AmberMRParser.Comma)
             else:
-                return self.getToken(AMBER_MR_Parser.Comma, i)
+                return self.getToken(AmberMRParser.Comma, i)
 
         def RSTWT(self):
-            return self.getToken(AMBER_MR_Parser.RSTWT, 0)
+            return self.getToken(AmberMRParser.RSTWT, 0)
 
         def Real(self, i:int=None):
             if i is None:
-                return self.getTokens(AMBER_MR_Parser.Real)
+                return self.getTokens(AmberMRParser.Real)
             else:
-                return self.getToken(AMBER_MR_Parser.Real, i)
+                return self.getToken(AmberMRParser.Real, i)
 
         def RESTRAINT(self):
-            return self.getToken(AMBER_MR_Parser.RESTRAINT, 0)
+            return self.getToken(AmberMRParser.RESTRAINT, 0)
 
         def QUOT(self, i:int=None):
             if i is None:
-                return self.getTokens(AMBER_MR_Parser.QUOT)
+                return self.getTokens(AmberMRParser.QUOT)
             else:
-                return self.getToken(AMBER_MR_Parser.QUOT, i)
+                return self.getToken(AmberMRParser.QUOT, i)
 
         def Coordinate3RstFunctionCall(self):
-            return self.getToken(AMBER_MR_Parser.Coordinate3RstFunctionCall, 0)
+            return self.getToken(AmberMRParser.Coordinate3RstFunctionCall, 0)
 
         def ATNAM(self):
-            return self.getToken(AMBER_MR_Parser.ATNAM, 0)
+            return self.getToken(AmberMRParser.ATNAM, 0)
 
         def Quoted_atom_name(self, i:int=None):
             if i is None:
-                return self.getTokens(AMBER_MR_Parser.Quoted_atom_name)
+                return self.getTokens(AmberMRParser.Quoted_atom_name)
             else:
-                return self.getToken(AMBER_MR_Parser.Quoted_atom_name, i)
+                return self.getToken(AmberMRParser.Quoted_atom_name, i)
 
         def IRESID(self):
-            return self.getToken(AMBER_MR_Parser.IRESID, 0)
+            return self.getToken(AmberMRParser.IRESID, 0)
 
         def One_or_Zero(self):
-            return self.getToken(AMBER_MR_Parser.One_or_Zero, 0)
+            return self.getToken(AmberMRParser.One_or_Zero, 0)
 
         def NSTEP1(self):
-            return self.getToken(AMBER_MR_Parser.NSTEP1, 0)
+            return self.getToken(AmberMRParser.NSTEP1, 0)
 
         def NSTEP2(self):
-            return self.getToken(AMBER_MR_Parser.NSTEP2, 0)
+            return self.getToken(AmberMRParser.NSTEP2, 0)
 
         def IRSTYP(self):
-            return self.getToken(AMBER_MR_Parser.IRSTYP, 0)
+            return self.getToken(AmberMRParser.IRSTYP, 0)
 
         def IALTD(self):
-            return self.getToken(AMBER_MR_Parser.IALTD, 0)
+            return self.getToken(AmberMRParser.IALTD, 0)
 
         def IFVARI(self):
-            return self.getToken(AMBER_MR_Parser.IFVARI, 0)
+            return self.getToken(AmberMRParser.IFVARI, 0)
 
         def NINC(self):
-            return self.getToken(AMBER_MR_Parser.NINC, 0)
+            return self.getToken(AmberMRParser.NINC, 0)
 
         def IMULT(self):
-            return self.getToken(AMBER_MR_Parser.IMULT, 0)
+            return self.getToken(AmberMRParser.IMULT, 0)
 
         def R1(self):
-            return self.getToken(AMBER_MR_Parser.R1, 0)
+            return self.getToken(AmberMRParser.R1, 0)
 
         def R2(self):
-            return self.getToken(AMBER_MR_Parser.R2, 0)
+            return self.getToken(AmberMRParser.R2, 0)
 
         def R3(self):
-            return self.getToken(AMBER_MR_Parser.R3, 0)
+            return self.getToken(AmberMRParser.R3, 0)
 
         def R4(self):
-            return self.getToken(AMBER_MR_Parser.R4, 0)
+            return self.getToken(AmberMRParser.R4, 0)
 
         def RK2(self):
-            return self.getToken(AMBER_MR_Parser.RK2, 0)
+            return self.getToken(AmberMRParser.RK2, 0)
 
         def RK3(self):
-            return self.getToken(AMBER_MR_Parser.RK3, 0)
+            return self.getToken(AmberMRParser.RK3, 0)
 
         def R1A(self):
-            return self.getToken(AMBER_MR_Parser.R1A, 0)
+            return self.getToken(AmberMRParser.R1A, 0)
 
         def R2A(self):
-            return self.getToken(AMBER_MR_Parser.R2A, 0)
+            return self.getToken(AmberMRParser.R2A, 0)
 
         def R3A(self):
-            return self.getToken(AMBER_MR_Parser.R3A, 0)
+            return self.getToken(AmberMRParser.R3A, 0)
 
         def R4A(self):
-            return self.getToken(AMBER_MR_Parser.R4A, 0)
+            return self.getToken(AmberMRParser.R4A, 0)
 
         def RK2A(self):
-            return self.getToken(AMBER_MR_Parser.RK2A, 0)
+            return self.getToken(AmberMRParser.RK2A, 0)
 
         def RK3A(self):
-            return self.getToken(AMBER_MR_Parser.RK3A, 0)
+            return self.getToken(AmberMRParser.RK3A, 0)
 
         def R0(self):
-            return self.getToken(AMBER_MR_Parser.R0, 0)
+            return self.getToken(AmberMRParser.R0, 0)
 
         def K0(self):
-            return self.getToken(AMBER_MR_Parser.K0, 0)
+            return self.getToken(AmberMRParser.K0, 0)
 
         def R0A(self):
-            return self.getToken(AMBER_MR_Parser.R0A, 0)
+            return self.getToken(AmberMRParser.R0A, 0)
 
         def K0A(self):
-            return self.getToken(AMBER_MR_Parser.K0A, 0)
+            return self.getToken(AmberMRParser.K0A, 0)
 
         def GENDISTANCE3_IGR(self):
-            return self.getToken(AMBER_MR_Parser.GENDISTANCE3_IGR, 0)
+            return self.getToken(AmberMRParser.GENDISTANCE3_IGR, 0)
 
         def GENDISTANCE3_GRNAM(self):
-            return self.getToken(AMBER_MR_Parser.GENDISTANCE3_GRNAM, 0)
+            return self.getToken(AmberMRParser.GENDISTANCE3_GRNAM, 0)
 
         def IFNTYP(self):
-            return self.getToken(AMBER_MR_Parser.IFNTYP, 0)
+            return self.getToken(AmberMRParser.IFNTYP, 0)
 
         def IXPK(self):
-            return self.getToken(AMBER_MR_Parser.IXPK, 0)
+            return self.getToken(AmberMRParser.IXPK, 0)
 
         def NXPK(self):
-            return self.getToken(AMBER_MR_Parser.NXPK, 0)
+            return self.getToken(AmberMRParser.NXPK, 0)
 
         def GeneralDistance3IFunctionCall(self):
-            return self.getToken(AMBER_MR_Parser.GeneralDistance3IFunctionCall, 0)
+            return self.getToken(AmberMRParser.GeneralDistance3IFunctionCall, 0)
 
         def GeneralDistance3IGFunctionCall(self):
-            return self.getToken(AMBER_MR_Parser.GeneralDistance3IGFunctionCall, 0)
+            return self.getToken(AmberMRParser.GeneralDistance3IGFunctionCall, 0)
 
         def IntegerArray(self):
-            return self.getToken(AMBER_MR_Parser.IntegerArray, 0)
+            return self.getToken(AmberMRParser.IntegerArray, 0)
 
         def GeneralDistance3RFunctionCall(self):
-            return self.getToken(AMBER_MR_Parser.GeneralDistance3RFunctionCall, 0)
+            return self.getToken(AmberMRParser.GeneralDistance3RFunctionCall, 0)
 
         def GeneralDistance3NFunctionCall(self):
-            return self.getToken(AMBER_MR_Parser.GeneralDistance3NFunctionCall, 0)
+            return self.getToken(AmberMRParser.GeneralDistance3NFunctionCall, 0)
 
         def getRuleIndex(self):
-            return AMBER_MR_Parser.RULE_general_distance3_statement
+            return AmberMRParser.RULE_general_distance3_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterGeneral_distance3_statement" ):
@@ -7886,558 +7886,558 @@ class AMBER_MR_Parser ( Parser ):
 
     def general_distance3_statement(self):
 
-        localctx = AMBER_MR_Parser.General_distance3_statementContext(self, self._ctx, self.state)
+        localctx = AmberMRParser.General_distance3_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 28, self.RULE_general_distance3_statement)
         self._la = 0 # Token type
         try:
             self.state = 1884
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [AMBER_MR_Parser.IAT]:
+            if token in [AmberMRParser.IAT]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 1622
-                self.match(AMBER_MR_Parser.IAT)
+                self.match(AmberMRParser.IAT)
                 self.state = 1623
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1624
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 1625
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 1626
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 1627
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 1628
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 1629
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 1630
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 1631
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 1632
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 1633
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 1634
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 1636
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1635
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.RSTWT]:
+            elif token in [AmberMRParser.RSTWT]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 1638
-                self.match(AMBER_MR_Parser.RSTWT)
+                self.match(AmberMRParser.RSTWT)
                 self.state = 1639
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1640
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 1641
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 1642
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 1643
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 1644
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 1646
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1645
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.RESTRAINT]:
+            elif token in [AmberMRParser.RESTRAINT]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 1648
-                self.match(AMBER_MR_Parser.RESTRAINT)
+                self.match(AmberMRParser.RESTRAINT)
                 self.state = 1649
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1650
-                self.match(AMBER_MR_Parser.QUOT)
+                self.match(AmberMRParser.QUOT)
                 self.state = 1651
-                self.match(AMBER_MR_Parser.Coordinate3RstFunctionCall)
+                self.match(AmberMRParser.Coordinate3RstFunctionCall)
                 self.state = 1652
-                self.match(AMBER_MR_Parser.QUOT)
+                self.match(AmberMRParser.QUOT)
                 self.state = 1654
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1653
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.ATNAM]:
+            elif token in [AmberMRParser.ATNAM]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 1656
-                self.match(AMBER_MR_Parser.ATNAM)
+                self.match(AmberMRParser.ATNAM)
                 self.state = 1657
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1658
-                self.match(AMBER_MR_Parser.Quoted_atom_name)
+                self.match(AmberMRParser.Quoted_atom_name)
                 self.state = 1659
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 1660
-                self.match(AMBER_MR_Parser.Quoted_atom_name)
+                self.match(AmberMRParser.Quoted_atom_name)
                 self.state = 1661
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 1662
-                self.match(AMBER_MR_Parser.Quoted_atom_name)
+                self.match(AmberMRParser.Quoted_atom_name)
                 self.state = 1663
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 1664
-                self.match(AMBER_MR_Parser.Quoted_atom_name)
+                self.match(AmberMRParser.Quoted_atom_name)
                 self.state = 1665
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 1666
-                self.match(AMBER_MR_Parser.Quoted_atom_name)
+                self.match(AmberMRParser.Quoted_atom_name)
                 self.state = 1667
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 1668
-                self.match(AMBER_MR_Parser.Quoted_atom_name)
+                self.match(AmberMRParser.Quoted_atom_name)
                 self.state = 1670
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1669
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.IRESID]:
+            elif token in [AmberMRParser.IRESID]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 1672
-                self.match(AMBER_MR_Parser.IRESID)
+                self.match(AmberMRParser.IRESID)
                 self.state = 1673
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1674
-                self.match(AMBER_MR_Parser.One_or_Zero)
+                self.match(AmberMRParser.One_or_Zero)
                 self.state = 1676
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1675
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.NSTEP1]:
+            elif token in [AmberMRParser.NSTEP1]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 1678
-                self.match(AMBER_MR_Parser.NSTEP1)
+                self.match(AmberMRParser.NSTEP1)
                 self.state = 1679
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1680
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 1682
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1681
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.NSTEP2]:
+            elif token in [AmberMRParser.NSTEP2]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 1684
-                self.match(AMBER_MR_Parser.NSTEP2)
+                self.match(AmberMRParser.NSTEP2)
                 self.state = 1685
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1686
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 1688
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1687
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.IRSTYP]:
+            elif token in [AmberMRParser.IRSTYP]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 1690
-                self.match(AMBER_MR_Parser.IRSTYP)
+                self.match(AmberMRParser.IRSTYP)
                 self.state = 1691
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1692
-                self.match(AMBER_MR_Parser.One_or_Zero)
+                self.match(AmberMRParser.One_or_Zero)
                 self.state = 1694
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1693
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.IALTD]:
+            elif token in [AmberMRParser.IALTD]:
                 self.enterOuterAlt(localctx, 9)
                 self.state = 1696
-                self.match(AMBER_MR_Parser.IALTD)
+                self.match(AmberMRParser.IALTD)
                 self.state = 1697
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1698
-                self.match(AMBER_MR_Parser.One_or_Zero)
+                self.match(AmberMRParser.One_or_Zero)
                 self.state = 1700
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1699
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.IFVARI]:
+            elif token in [AmberMRParser.IFVARI]:
                 self.enterOuterAlt(localctx, 10)
                 self.state = 1702
-                self.match(AMBER_MR_Parser.IFVARI)
+                self.match(AmberMRParser.IFVARI)
                 self.state = 1703
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1704
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 1706
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1705
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.NINC]:
+            elif token in [AmberMRParser.NINC]:
                 self.enterOuterAlt(localctx, 11)
                 self.state = 1708
-                self.match(AMBER_MR_Parser.NINC)
+                self.match(AmberMRParser.NINC)
                 self.state = 1709
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1710
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 1712
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1711
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.IMULT]:
+            elif token in [AmberMRParser.IMULT]:
                 self.enterOuterAlt(localctx, 12)
                 self.state = 1714
-                self.match(AMBER_MR_Parser.IMULT)
+                self.match(AmberMRParser.IMULT)
                 self.state = 1715
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1716
-                self.match(AMBER_MR_Parser.One_or_Zero)
+                self.match(AmberMRParser.One_or_Zero)
                 self.state = 1718
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1717
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R1]:
+            elif token in [AmberMRParser.R1]:
                 self.enterOuterAlt(localctx, 13)
                 self.state = 1720
-                self.match(AMBER_MR_Parser.R1)
+                self.match(AmberMRParser.R1)
                 self.state = 1721
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1722
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 1724
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1723
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R2]:
+            elif token in [AmberMRParser.R2]:
                 self.enterOuterAlt(localctx, 14)
                 self.state = 1726
-                self.match(AMBER_MR_Parser.R2)
+                self.match(AmberMRParser.R2)
                 self.state = 1727
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1728
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 1730
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1729
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R3]:
+            elif token in [AmberMRParser.R3]:
                 self.enterOuterAlt(localctx, 15)
                 self.state = 1732
-                self.match(AMBER_MR_Parser.R3)
+                self.match(AmberMRParser.R3)
                 self.state = 1733
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1734
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 1736
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1735
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R4]:
+            elif token in [AmberMRParser.R4]:
                 self.enterOuterAlt(localctx, 16)
                 self.state = 1738
-                self.match(AMBER_MR_Parser.R4)
+                self.match(AmberMRParser.R4)
                 self.state = 1739
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1740
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 1742
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1741
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.RK2]:
+            elif token in [AmberMRParser.RK2]:
                 self.enterOuterAlt(localctx, 17)
                 self.state = 1744
-                self.match(AMBER_MR_Parser.RK2)
+                self.match(AmberMRParser.RK2)
                 self.state = 1745
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1746
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 1748
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1747
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.RK3]:
+            elif token in [AmberMRParser.RK3]:
                 self.enterOuterAlt(localctx, 18)
                 self.state = 1750
-                self.match(AMBER_MR_Parser.RK3)
+                self.match(AmberMRParser.RK3)
                 self.state = 1751
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1752
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 1754
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1753
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R1A]:
+            elif token in [AmberMRParser.R1A]:
                 self.enterOuterAlt(localctx, 19)
                 self.state = 1756
-                self.match(AMBER_MR_Parser.R1A)
+                self.match(AmberMRParser.R1A)
                 self.state = 1757
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1758
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 1760
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1759
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R2A]:
+            elif token in [AmberMRParser.R2A]:
                 self.enterOuterAlt(localctx, 20)
                 self.state = 1762
-                self.match(AMBER_MR_Parser.R2A)
+                self.match(AmberMRParser.R2A)
                 self.state = 1763
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1764
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 1766
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1765
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R3A]:
+            elif token in [AmberMRParser.R3A]:
                 self.enterOuterAlt(localctx, 21)
                 self.state = 1768
-                self.match(AMBER_MR_Parser.R3A)
+                self.match(AmberMRParser.R3A)
                 self.state = 1769
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1770
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 1772
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1771
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R4A]:
+            elif token in [AmberMRParser.R4A]:
                 self.enterOuterAlt(localctx, 22)
                 self.state = 1774
-                self.match(AMBER_MR_Parser.R4A)
+                self.match(AmberMRParser.R4A)
                 self.state = 1775
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1776
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 1778
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1777
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.RK2A]:
+            elif token in [AmberMRParser.RK2A]:
                 self.enterOuterAlt(localctx, 23)
                 self.state = 1780
-                self.match(AMBER_MR_Parser.RK2A)
+                self.match(AmberMRParser.RK2A)
                 self.state = 1781
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1782
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 1784
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1783
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.RK3A]:
+            elif token in [AmberMRParser.RK3A]:
                 self.enterOuterAlt(localctx, 24)
                 self.state = 1786
-                self.match(AMBER_MR_Parser.RK3A)
+                self.match(AmberMRParser.RK3A)
                 self.state = 1787
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1788
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 1790
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1789
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R0]:
+            elif token in [AmberMRParser.R0]:
                 self.enterOuterAlt(localctx, 25)
                 self.state = 1792
-                self.match(AMBER_MR_Parser.R0)
+                self.match(AmberMRParser.R0)
                 self.state = 1793
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1794
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 1796
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1795
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.K0]:
+            elif token in [AmberMRParser.K0]:
                 self.enterOuterAlt(localctx, 26)
                 self.state = 1798
-                self.match(AMBER_MR_Parser.K0)
+                self.match(AmberMRParser.K0)
                 self.state = 1799
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1800
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 1802
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1801
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R0A]:
+            elif token in [AmberMRParser.R0A]:
                 self.enterOuterAlt(localctx, 27)
                 self.state = 1804
-                self.match(AMBER_MR_Parser.R0A)
+                self.match(AmberMRParser.R0A)
                 self.state = 1805
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1806
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 1808
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1807
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.K0A]:
+            elif token in [AmberMRParser.K0A]:
                 self.enterOuterAlt(localctx, 28)
                 self.state = 1810
-                self.match(AMBER_MR_Parser.K0A)
+                self.match(AmberMRParser.K0A)
                 self.state = 1811
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1812
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 1814
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1813
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.GENDISTANCE3_IGR]:
+            elif token in [AmberMRParser.GENDISTANCE3_IGR]:
                 self.enterOuterAlt(localctx, 29)
                 self.state = 1816
-                self.match(AMBER_MR_Parser.GENDISTANCE3_IGR)
+                self.match(AmberMRParser.GENDISTANCE3_IGR)
                 self.state = 1817
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1818
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 1823
                 self._errHandler.sync(self)
                 _alt = self._interp.adaptivePredict(self._input,272,self._ctx)
                 while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                     if _alt==1:
                         self.state = 1819
-                        self.match(AMBER_MR_Parser.Comma)
+                        self.match(AmberMRParser.Comma)
                         self.state = 1820
-                        self.match(AMBER_MR_Parser.Integer) 
+                        self.match(AmberMRParser.Integer) 
                     self.state = 1825
                     self._errHandler.sync(self)
                     _alt = self._interp.adaptivePredict(self._input,272,self._ctx)
@@ -8445,29 +8445,29 @@ class AMBER_MR_Parser ( Parser ):
                 self.state = 1827
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1826
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.GENDISTANCE3_GRNAM]:
+            elif token in [AmberMRParser.GENDISTANCE3_GRNAM]:
                 self.enterOuterAlt(localctx, 30)
                 self.state = 1829
-                self.match(AMBER_MR_Parser.GENDISTANCE3_GRNAM)
+                self.match(AmberMRParser.GENDISTANCE3_GRNAM)
                 self.state = 1830
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1831
-                self.match(AMBER_MR_Parser.Quoted_atom_name)
+                self.match(AmberMRParser.Quoted_atom_name)
                 self.state = 1836
                 self._errHandler.sync(self)
                 _alt = self._interp.adaptivePredict(self._input,274,self._ctx)
                 while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                     if _alt==1:
                         self.state = 1832
-                        self.match(AMBER_MR_Parser.Comma)
+                        self.match(AmberMRParser.Comma)
                         self.state = 1833
-                        self.match(AMBER_MR_Parser.Quoted_atom_name) 
+                        self.match(AmberMRParser.Quoted_atom_name) 
                     self.state = 1838
                     self._errHandler.sync(self)
                     _alt = self._interp.adaptivePredict(self._input,274,self._ctx)
@@ -8475,128 +8475,128 @@ class AMBER_MR_Parser ( Parser ):
                 self.state = 1840
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1839
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.IFNTYP]:
+            elif token in [AmberMRParser.IFNTYP]:
                 self.enterOuterAlt(localctx, 31)
                 self.state = 1842
-                self.match(AMBER_MR_Parser.IFNTYP)
+                self.match(AmberMRParser.IFNTYP)
                 self.state = 1843
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1844
-                self.match(AMBER_MR_Parser.One_or_Zero)
+                self.match(AmberMRParser.One_or_Zero)
                 self.state = 1846
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1845
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.IXPK]:
+            elif token in [AmberMRParser.IXPK]:
                 self.enterOuterAlt(localctx, 32)
                 self.state = 1848
-                self.match(AMBER_MR_Parser.IXPK)
+                self.match(AmberMRParser.IXPK)
                 self.state = 1849
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1850
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 1852
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1851
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.NXPK]:
+            elif token in [AmberMRParser.NXPK]:
                 self.enterOuterAlt(localctx, 33)
                 self.state = 1854
-                self.match(AMBER_MR_Parser.NXPK)
+                self.match(AmberMRParser.NXPK)
                 self.state = 1855
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1856
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 1858
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1857
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.GeneralDistance3IFunctionCall]:
+            elif token in [AmberMRParser.GeneralDistance3IFunctionCall]:
                 self.enterOuterAlt(localctx, 34)
                 self.state = 1860
-                self.match(AMBER_MR_Parser.GeneralDistance3IFunctionCall)
+                self.match(AmberMRParser.GeneralDistance3IFunctionCall)
                 self.state = 1861
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1862
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 1864
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1863
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.GeneralDistance3IGFunctionCall]:
+            elif token in [AmberMRParser.GeneralDistance3IGFunctionCall]:
                 self.enterOuterAlt(localctx, 35)
                 self.state = 1866
-                self.match(AMBER_MR_Parser.GeneralDistance3IGFunctionCall)
+                self.match(AmberMRParser.GeneralDistance3IGFunctionCall)
                 self.state = 1867
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1868
-                self.match(AMBER_MR_Parser.IntegerArray)
+                self.match(AmberMRParser.IntegerArray)
                 self.state = 1870
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1869
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.GeneralDistance3RFunctionCall]:
+            elif token in [AmberMRParser.GeneralDistance3RFunctionCall]:
                 self.enterOuterAlt(localctx, 36)
                 self.state = 1872
-                self.match(AMBER_MR_Parser.GeneralDistance3RFunctionCall)
+                self.match(AmberMRParser.GeneralDistance3RFunctionCall)
                 self.state = 1873
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1874
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 1876
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1875
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.GeneralDistance3NFunctionCall]:
+            elif token in [AmberMRParser.GeneralDistance3NFunctionCall]:
                 self.enterOuterAlt(localctx, 37)
                 self.state = 1878
-                self.match(AMBER_MR_Parser.GeneralDistance3NFunctionCall)
+                self.match(AmberMRParser.GeneralDistance3NFunctionCall)
                 self.state = 1879
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1880
-                self.match(AMBER_MR_Parser.Quoted_atom_name)
+                self.match(AmberMRParser.Quoted_atom_name)
                 self.state = 1882
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1881
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
@@ -8619,160 +8619,160 @@ class AMBER_MR_Parser ( Parser ):
             self.parser = parser
 
         def IAT(self):
-            return self.getToken(AMBER_MR_Parser.IAT, 0)
+            return self.getToken(AmberMRParser.IAT, 0)
 
         def Equ_op(self):
-            return self.getToken(AMBER_MR_Parser.Equ_op, 0)
+            return self.getToken(AmberMRParser.Equ_op, 0)
 
         def Integer(self, i:int=None):
             if i is None:
-                return self.getTokens(AMBER_MR_Parser.Integer)
+                return self.getTokens(AmberMRParser.Integer)
             else:
-                return self.getToken(AMBER_MR_Parser.Integer, i)
+                return self.getToken(AmberMRParser.Integer, i)
 
         def Comma(self, i:int=None):
             if i is None:
-                return self.getTokens(AMBER_MR_Parser.Comma)
+                return self.getTokens(AmberMRParser.Comma)
             else:
-                return self.getToken(AMBER_MR_Parser.Comma, i)
+                return self.getToken(AmberMRParser.Comma, i)
 
         def RSTWT(self):
-            return self.getToken(AMBER_MR_Parser.RSTWT, 0)
+            return self.getToken(AmberMRParser.RSTWT, 0)
 
         def Real(self, i:int=None):
             if i is None:
-                return self.getTokens(AMBER_MR_Parser.Real)
+                return self.getTokens(AmberMRParser.Real)
             else:
-                return self.getToken(AMBER_MR_Parser.Real, i)
+                return self.getToken(AmberMRParser.Real, i)
 
         def RESTRAINT(self):
-            return self.getToken(AMBER_MR_Parser.RESTRAINT, 0)
+            return self.getToken(AmberMRParser.RESTRAINT, 0)
 
         def QUOT(self, i:int=None):
             if i is None:
-                return self.getTokens(AMBER_MR_Parser.QUOT)
+                return self.getTokens(AmberMRParser.QUOT)
             else:
-                return self.getToken(AMBER_MR_Parser.QUOT, i)
+                return self.getToken(AmberMRParser.QUOT, i)
 
         def Coordinate4RstFunctionCall(self):
-            return self.getToken(AMBER_MR_Parser.Coordinate4RstFunctionCall, 0)
+            return self.getToken(AmberMRParser.Coordinate4RstFunctionCall, 0)
 
         def ATNAM(self):
-            return self.getToken(AMBER_MR_Parser.ATNAM, 0)
+            return self.getToken(AmberMRParser.ATNAM, 0)
 
         def Quoted_atom_name(self, i:int=None):
             if i is None:
-                return self.getTokens(AMBER_MR_Parser.Quoted_atom_name)
+                return self.getTokens(AmberMRParser.Quoted_atom_name)
             else:
-                return self.getToken(AMBER_MR_Parser.Quoted_atom_name, i)
+                return self.getToken(AmberMRParser.Quoted_atom_name, i)
 
         def IRESID(self):
-            return self.getToken(AMBER_MR_Parser.IRESID, 0)
+            return self.getToken(AmberMRParser.IRESID, 0)
 
         def One_or_Zero(self):
-            return self.getToken(AMBER_MR_Parser.One_or_Zero, 0)
+            return self.getToken(AmberMRParser.One_or_Zero, 0)
 
         def NSTEP1(self):
-            return self.getToken(AMBER_MR_Parser.NSTEP1, 0)
+            return self.getToken(AmberMRParser.NSTEP1, 0)
 
         def NSTEP2(self):
-            return self.getToken(AMBER_MR_Parser.NSTEP2, 0)
+            return self.getToken(AmberMRParser.NSTEP2, 0)
 
         def IRSTYP(self):
-            return self.getToken(AMBER_MR_Parser.IRSTYP, 0)
+            return self.getToken(AmberMRParser.IRSTYP, 0)
 
         def IALTD(self):
-            return self.getToken(AMBER_MR_Parser.IALTD, 0)
+            return self.getToken(AmberMRParser.IALTD, 0)
 
         def IFVARI(self):
-            return self.getToken(AMBER_MR_Parser.IFVARI, 0)
+            return self.getToken(AmberMRParser.IFVARI, 0)
 
         def NINC(self):
-            return self.getToken(AMBER_MR_Parser.NINC, 0)
+            return self.getToken(AmberMRParser.NINC, 0)
 
         def IMULT(self):
-            return self.getToken(AMBER_MR_Parser.IMULT, 0)
+            return self.getToken(AmberMRParser.IMULT, 0)
 
         def R1(self):
-            return self.getToken(AMBER_MR_Parser.R1, 0)
+            return self.getToken(AmberMRParser.R1, 0)
 
         def R2(self):
-            return self.getToken(AMBER_MR_Parser.R2, 0)
+            return self.getToken(AmberMRParser.R2, 0)
 
         def R3(self):
-            return self.getToken(AMBER_MR_Parser.R3, 0)
+            return self.getToken(AmberMRParser.R3, 0)
 
         def R4(self):
-            return self.getToken(AMBER_MR_Parser.R4, 0)
+            return self.getToken(AmberMRParser.R4, 0)
 
         def RK2(self):
-            return self.getToken(AMBER_MR_Parser.RK2, 0)
+            return self.getToken(AmberMRParser.RK2, 0)
 
         def RK3(self):
-            return self.getToken(AMBER_MR_Parser.RK3, 0)
+            return self.getToken(AmberMRParser.RK3, 0)
 
         def R1A(self):
-            return self.getToken(AMBER_MR_Parser.R1A, 0)
+            return self.getToken(AmberMRParser.R1A, 0)
 
         def R2A(self):
-            return self.getToken(AMBER_MR_Parser.R2A, 0)
+            return self.getToken(AmberMRParser.R2A, 0)
 
         def R3A(self):
-            return self.getToken(AMBER_MR_Parser.R3A, 0)
+            return self.getToken(AmberMRParser.R3A, 0)
 
         def R4A(self):
-            return self.getToken(AMBER_MR_Parser.R4A, 0)
+            return self.getToken(AmberMRParser.R4A, 0)
 
         def RK2A(self):
-            return self.getToken(AMBER_MR_Parser.RK2A, 0)
+            return self.getToken(AmberMRParser.RK2A, 0)
 
         def RK3A(self):
-            return self.getToken(AMBER_MR_Parser.RK3A, 0)
+            return self.getToken(AmberMRParser.RK3A, 0)
 
         def R0(self):
-            return self.getToken(AMBER_MR_Parser.R0, 0)
+            return self.getToken(AmberMRParser.R0, 0)
 
         def K0(self):
-            return self.getToken(AMBER_MR_Parser.K0, 0)
+            return self.getToken(AmberMRParser.K0, 0)
 
         def R0A(self):
-            return self.getToken(AMBER_MR_Parser.R0A, 0)
+            return self.getToken(AmberMRParser.R0A, 0)
 
         def K0A(self):
-            return self.getToken(AMBER_MR_Parser.K0A, 0)
+            return self.getToken(AmberMRParser.K0A, 0)
 
         def GENDISTANCE4_IGR(self):
-            return self.getToken(AMBER_MR_Parser.GENDISTANCE4_IGR, 0)
+            return self.getToken(AmberMRParser.GENDISTANCE4_IGR, 0)
 
         def GENDISTANCE4_GRNAM(self):
-            return self.getToken(AMBER_MR_Parser.GENDISTANCE4_GRNAM, 0)
+            return self.getToken(AmberMRParser.GENDISTANCE4_GRNAM, 0)
 
         def IFNTYP(self):
-            return self.getToken(AMBER_MR_Parser.IFNTYP, 0)
+            return self.getToken(AmberMRParser.IFNTYP, 0)
 
         def IXPK(self):
-            return self.getToken(AMBER_MR_Parser.IXPK, 0)
+            return self.getToken(AmberMRParser.IXPK, 0)
 
         def NXPK(self):
-            return self.getToken(AMBER_MR_Parser.NXPK, 0)
+            return self.getToken(AmberMRParser.NXPK, 0)
 
         def GeneralDistance4IFunctionCall(self):
-            return self.getToken(AMBER_MR_Parser.GeneralDistance4IFunctionCall, 0)
+            return self.getToken(AmberMRParser.GeneralDistance4IFunctionCall, 0)
 
         def GeneralDistance4IGFunctionCall(self):
-            return self.getToken(AMBER_MR_Parser.GeneralDistance4IGFunctionCall, 0)
+            return self.getToken(AmberMRParser.GeneralDistance4IGFunctionCall, 0)
 
         def IntegerArray(self):
-            return self.getToken(AMBER_MR_Parser.IntegerArray, 0)
+            return self.getToken(AmberMRParser.IntegerArray, 0)
 
         def GeneralDistance4RFunctionCall(self):
-            return self.getToken(AMBER_MR_Parser.GeneralDistance4RFunctionCall, 0)
+            return self.getToken(AmberMRParser.GeneralDistance4RFunctionCall, 0)
 
         def GeneralDistance4NFunctionCall(self):
-            return self.getToken(AMBER_MR_Parser.GeneralDistance4NFunctionCall, 0)
+            return self.getToken(AmberMRParser.GeneralDistance4NFunctionCall, 0)
 
         def getRuleIndex(self):
-            return AMBER_MR_Parser.RULE_general_distance4_statement
+            return AmberMRParser.RULE_general_distance4_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterGeneral_distance4_statement" ):
@@ -8787,578 +8787,578 @@ class AMBER_MR_Parser ( Parser ):
 
     def general_distance4_statement(self):
 
-        localctx = AMBER_MR_Parser.General_distance4_statementContext(self, self._ctx, self.state)
+        localctx = AmberMRParser.General_distance4_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 30, self.RULE_general_distance4_statement)
         self._la = 0 # Token type
         try:
             self.state = 2158
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [AMBER_MR_Parser.IAT]:
+            if token in [AmberMRParser.IAT]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 1886
-                self.match(AMBER_MR_Parser.IAT)
+                self.match(AmberMRParser.IAT)
                 self.state = 1887
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1888
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 1889
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 1890
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 1891
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 1892
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 1893
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 1894
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 1895
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 1896
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 1897
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 1898
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 1899
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 1900
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 1901
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 1902
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 1904
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1903
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.RSTWT]:
+            elif token in [AmberMRParser.RSTWT]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 1906
-                self.match(AMBER_MR_Parser.RSTWT)
+                self.match(AmberMRParser.RSTWT)
                 self.state = 1907
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1908
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 1909
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 1910
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 1911
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 1912
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 1913
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 1914
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 1916
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1915
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.RESTRAINT]:
+            elif token in [AmberMRParser.RESTRAINT]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 1918
-                self.match(AMBER_MR_Parser.RESTRAINT)
+                self.match(AmberMRParser.RESTRAINT)
                 self.state = 1919
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1920
-                self.match(AMBER_MR_Parser.QUOT)
+                self.match(AmberMRParser.QUOT)
                 self.state = 1921
-                self.match(AMBER_MR_Parser.Coordinate4RstFunctionCall)
+                self.match(AmberMRParser.Coordinate4RstFunctionCall)
                 self.state = 1922
-                self.match(AMBER_MR_Parser.QUOT)
+                self.match(AmberMRParser.QUOT)
                 self.state = 1924
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1923
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.ATNAM]:
+            elif token in [AmberMRParser.ATNAM]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 1926
-                self.match(AMBER_MR_Parser.ATNAM)
+                self.match(AmberMRParser.ATNAM)
                 self.state = 1927
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1928
-                self.match(AMBER_MR_Parser.Quoted_atom_name)
+                self.match(AmberMRParser.Quoted_atom_name)
                 self.state = 1929
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 1930
-                self.match(AMBER_MR_Parser.Quoted_atom_name)
+                self.match(AmberMRParser.Quoted_atom_name)
                 self.state = 1931
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 1932
-                self.match(AMBER_MR_Parser.Quoted_atom_name)
+                self.match(AmberMRParser.Quoted_atom_name)
                 self.state = 1933
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 1934
-                self.match(AMBER_MR_Parser.Quoted_atom_name)
+                self.match(AmberMRParser.Quoted_atom_name)
                 self.state = 1935
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 1936
-                self.match(AMBER_MR_Parser.Quoted_atom_name)
+                self.match(AmberMRParser.Quoted_atom_name)
                 self.state = 1937
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 1938
-                self.match(AMBER_MR_Parser.Quoted_atom_name)
+                self.match(AmberMRParser.Quoted_atom_name)
                 self.state = 1939
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 1940
-                self.match(AMBER_MR_Parser.Quoted_atom_name)
+                self.match(AmberMRParser.Quoted_atom_name)
                 self.state = 1941
-                self.match(AMBER_MR_Parser.Comma)
+                self.match(AmberMRParser.Comma)
                 self.state = 1942
-                self.match(AMBER_MR_Parser.Quoted_atom_name)
+                self.match(AmberMRParser.Quoted_atom_name)
                 self.state = 1944
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1943
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.IRESID]:
+            elif token in [AmberMRParser.IRESID]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 1946
-                self.match(AMBER_MR_Parser.IRESID)
+                self.match(AmberMRParser.IRESID)
                 self.state = 1947
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1948
-                self.match(AMBER_MR_Parser.One_or_Zero)
+                self.match(AmberMRParser.One_or_Zero)
                 self.state = 1950
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1949
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.NSTEP1]:
+            elif token in [AmberMRParser.NSTEP1]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 1952
-                self.match(AMBER_MR_Parser.NSTEP1)
+                self.match(AmberMRParser.NSTEP1)
                 self.state = 1953
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1954
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 1956
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1955
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.NSTEP2]:
+            elif token in [AmberMRParser.NSTEP2]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 1958
-                self.match(AMBER_MR_Parser.NSTEP2)
+                self.match(AmberMRParser.NSTEP2)
                 self.state = 1959
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1960
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 1962
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1961
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.IRSTYP]:
+            elif token in [AmberMRParser.IRSTYP]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 1964
-                self.match(AMBER_MR_Parser.IRSTYP)
+                self.match(AmberMRParser.IRSTYP)
                 self.state = 1965
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1966
-                self.match(AMBER_MR_Parser.One_or_Zero)
+                self.match(AmberMRParser.One_or_Zero)
                 self.state = 1968
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1967
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.IALTD]:
+            elif token in [AmberMRParser.IALTD]:
                 self.enterOuterAlt(localctx, 9)
                 self.state = 1970
-                self.match(AMBER_MR_Parser.IALTD)
+                self.match(AmberMRParser.IALTD)
                 self.state = 1971
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1972
-                self.match(AMBER_MR_Parser.One_or_Zero)
+                self.match(AmberMRParser.One_or_Zero)
                 self.state = 1974
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1973
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.IFVARI]:
+            elif token in [AmberMRParser.IFVARI]:
                 self.enterOuterAlt(localctx, 10)
                 self.state = 1976
-                self.match(AMBER_MR_Parser.IFVARI)
+                self.match(AmberMRParser.IFVARI)
                 self.state = 1977
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1978
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 1980
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1979
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.NINC]:
+            elif token in [AmberMRParser.NINC]:
                 self.enterOuterAlt(localctx, 11)
                 self.state = 1982
-                self.match(AMBER_MR_Parser.NINC)
+                self.match(AmberMRParser.NINC)
                 self.state = 1983
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1984
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 1986
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1985
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.IMULT]:
+            elif token in [AmberMRParser.IMULT]:
                 self.enterOuterAlt(localctx, 12)
                 self.state = 1988
-                self.match(AMBER_MR_Parser.IMULT)
+                self.match(AmberMRParser.IMULT)
                 self.state = 1989
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1990
-                self.match(AMBER_MR_Parser.One_or_Zero)
+                self.match(AmberMRParser.One_or_Zero)
                 self.state = 1992
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1991
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R1]:
+            elif token in [AmberMRParser.R1]:
                 self.enterOuterAlt(localctx, 13)
                 self.state = 1994
-                self.match(AMBER_MR_Parser.R1)
+                self.match(AmberMRParser.R1)
                 self.state = 1995
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 1996
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 1998
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 1997
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R2]:
+            elif token in [AmberMRParser.R2]:
                 self.enterOuterAlt(localctx, 14)
                 self.state = 2000
-                self.match(AMBER_MR_Parser.R2)
+                self.match(AmberMRParser.R2)
                 self.state = 2001
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 2002
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 2004
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 2003
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R3]:
+            elif token in [AmberMRParser.R3]:
                 self.enterOuterAlt(localctx, 15)
                 self.state = 2006
-                self.match(AMBER_MR_Parser.R3)
+                self.match(AmberMRParser.R3)
                 self.state = 2007
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 2008
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 2010
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 2009
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R4]:
+            elif token in [AmberMRParser.R4]:
                 self.enterOuterAlt(localctx, 16)
                 self.state = 2012
-                self.match(AMBER_MR_Parser.R4)
+                self.match(AmberMRParser.R4)
                 self.state = 2013
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 2014
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 2016
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 2015
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.RK2]:
+            elif token in [AmberMRParser.RK2]:
                 self.enterOuterAlt(localctx, 17)
                 self.state = 2018
-                self.match(AMBER_MR_Parser.RK2)
+                self.match(AmberMRParser.RK2)
                 self.state = 2019
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 2020
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 2022
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 2021
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.RK3]:
+            elif token in [AmberMRParser.RK3]:
                 self.enterOuterAlt(localctx, 18)
                 self.state = 2024
-                self.match(AMBER_MR_Parser.RK3)
+                self.match(AmberMRParser.RK3)
                 self.state = 2025
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 2026
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 2028
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 2027
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R1A]:
+            elif token in [AmberMRParser.R1A]:
                 self.enterOuterAlt(localctx, 19)
                 self.state = 2030
-                self.match(AMBER_MR_Parser.R1A)
+                self.match(AmberMRParser.R1A)
                 self.state = 2031
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 2032
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 2034
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 2033
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R2A]:
+            elif token in [AmberMRParser.R2A]:
                 self.enterOuterAlt(localctx, 20)
                 self.state = 2036
-                self.match(AMBER_MR_Parser.R2A)
+                self.match(AmberMRParser.R2A)
                 self.state = 2037
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 2038
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 2040
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 2039
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R3A]:
+            elif token in [AmberMRParser.R3A]:
                 self.enterOuterAlt(localctx, 21)
                 self.state = 2042
-                self.match(AMBER_MR_Parser.R3A)
+                self.match(AmberMRParser.R3A)
                 self.state = 2043
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 2044
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 2046
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 2045
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R4A]:
+            elif token in [AmberMRParser.R4A]:
                 self.enterOuterAlt(localctx, 22)
                 self.state = 2048
-                self.match(AMBER_MR_Parser.R4A)
+                self.match(AmberMRParser.R4A)
                 self.state = 2049
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 2050
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 2052
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 2051
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.RK2A]:
+            elif token in [AmberMRParser.RK2A]:
                 self.enterOuterAlt(localctx, 23)
                 self.state = 2054
-                self.match(AMBER_MR_Parser.RK2A)
+                self.match(AmberMRParser.RK2A)
                 self.state = 2055
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 2056
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 2058
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 2057
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.RK3A]:
+            elif token in [AmberMRParser.RK3A]:
                 self.enterOuterAlt(localctx, 24)
                 self.state = 2060
-                self.match(AMBER_MR_Parser.RK3A)
+                self.match(AmberMRParser.RK3A)
                 self.state = 2061
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 2062
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 2064
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 2063
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R0]:
+            elif token in [AmberMRParser.R0]:
                 self.enterOuterAlt(localctx, 25)
                 self.state = 2066
-                self.match(AMBER_MR_Parser.R0)
+                self.match(AmberMRParser.R0)
                 self.state = 2067
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 2068
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 2070
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 2069
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.K0]:
+            elif token in [AmberMRParser.K0]:
                 self.enterOuterAlt(localctx, 26)
                 self.state = 2072
-                self.match(AMBER_MR_Parser.K0)
+                self.match(AmberMRParser.K0)
                 self.state = 2073
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 2074
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 2076
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 2075
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.R0A]:
+            elif token in [AmberMRParser.R0A]:
                 self.enterOuterAlt(localctx, 27)
                 self.state = 2078
-                self.match(AMBER_MR_Parser.R0A)
+                self.match(AmberMRParser.R0A)
                 self.state = 2079
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 2080
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 2082
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 2081
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.K0A]:
+            elif token in [AmberMRParser.K0A]:
                 self.enterOuterAlt(localctx, 28)
                 self.state = 2084
-                self.match(AMBER_MR_Parser.K0A)
+                self.match(AmberMRParser.K0A)
                 self.state = 2085
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 2086
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 2088
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 2087
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.GENDISTANCE4_IGR]:
+            elif token in [AmberMRParser.GENDISTANCE4_IGR]:
                 self.enterOuterAlt(localctx, 29)
                 self.state = 2090
-                self.match(AMBER_MR_Parser.GENDISTANCE4_IGR)
+                self.match(AmberMRParser.GENDISTANCE4_IGR)
                 self.state = 2091
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 2092
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 2097
                 self._errHandler.sync(self)
                 _alt = self._interp.adaptivePredict(self._input,312,self._ctx)
                 while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                     if _alt==1:
                         self.state = 2093
-                        self.match(AMBER_MR_Parser.Comma)
+                        self.match(AmberMRParser.Comma)
                         self.state = 2094
-                        self.match(AMBER_MR_Parser.Integer) 
+                        self.match(AmberMRParser.Integer) 
                     self.state = 2099
                     self._errHandler.sync(self)
                     _alt = self._interp.adaptivePredict(self._input,312,self._ctx)
@@ -9366,29 +9366,29 @@ class AMBER_MR_Parser ( Parser ):
                 self.state = 2101
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 2100
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.GENDISTANCE4_GRNAM]:
+            elif token in [AmberMRParser.GENDISTANCE4_GRNAM]:
                 self.enterOuterAlt(localctx, 30)
                 self.state = 2103
-                self.match(AMBER_MR_Parser.GENDISTANCE4_GRNAM)
+                self.match(AmberMRParser.GENDISTANCE4_GRNAM)
                 self.state = 2104
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 2105
-                self.match(AMBER_MR_Parser.Quoted_atom_name)
+                self.match(AmberMRParser.Quoted_atom_name)
                 self.state = 2110
                 self._errHandler.sync(self)
                 _alt = self._interp.adaptivePredict(self._input,314,self._ctx)
                 while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                     if _alt==1:
                         self.state = 2106
-                        self.match(AMBER_MR_Parser.Comma)
+                        self.match(AmberMRParser.Comma)
                         self.state = 2107
-                        self.match(AMBER_MR_Parser.Quoted_atom_name) 
+                        self.match(AmberMRParser.Quoted_atom_name) 
                     self.state = 2112
                     self._errHandler.sync(self)
                     _alt = self._interp.adaptivePredict(self._input,314,self._ctx)
@@ -9396,128 +9396,128 @@ class AMBER_MR_Parser ( Parser ):
                 self.state = 2114
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 2113
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.IFNTYP]:
+            elif token in [AmberMRParser.IFNTYP]:
                 self.enterOuterAlt(localctx, 31)
                 self.state = 2116
-                self.match(AMBER_MR_Parser.IFNTYP)
+                self.match(AmberMRParser.IFNTYP)
                 self.state = 2117
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 2118
-                self.match(AMBER_MR_Parser.One_or_Zero)
+                self.match(AmberMRParser.One_or_Zero)
                 self.state = 2120
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 2119
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.IXPK]:
+            elif token in [AmberMRParser.IXPK]:
                 self.enterOuterAlt(localctx, 32)
                 self.state = 2122
-                self.match(AMBER_MR_Parser.IXPK)
+                self.match(AmberMRParser.IXPK)
                 self.state = 2123
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 2124
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 2126
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 2125
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.NXPK]:
+            elif token in [AmberMRParser.NXPK]:
                 self.enterOuterAlt(localctx, 33)
                 self.state = 2128
-                self.match(AMBER_MR_Parser.NXPK)
+                self.match(AmberMRParser.NXPK)
                 self.state = 2129
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 2130
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 2132
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 2131
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.GeneralDistance4IFunctionCall]:
+            elif token in [AmberMRParser.GeneralDistance4IFunctionCall]:
                 self.enterOuterAlt(localctx, 34)
                 self.state = 2134
-                self.match(AMBER_MR_Parser.GeneralDistance4IFunctionCall)
+                self.match(AmberMRParser.GeneralDistance4IFunctionCall)
                 self.state = 2135
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 2136
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 2138
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 2137
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.GeneralDistance4IGFunctionCall]:
+            elif token in [AmberMRParser.GeneralDistance4IGFunctionCall]:
                 self.enterOuterAlt(localctx, 35)
                 self.state = 2140
-                self.match(AMBER_MR_Parser.GeneralDistance4IGFunctionCall)
+                self.match(AmberMRParser.GeneralDistance4IGFunctionCall)
                 self.state = 2141
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 2142
-                self.match(AMBER_MR_Parser.IntegerArray)
+                self.match(AmberMRParser.IntegerArray)
                 self.state = 2144
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 2143
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.GeneralDistance4RFunctionCall]:
+            elif token in [AmberMRParser.GeneralDistance4RFunctionCall]:
                 self.enterOuterAlt(localctx, 36)
                 self.state = 2146
-                self.match(AMBER_MR_Parser.GeneralDistance4RFunctionCall)
+                self.match(AmberMRParser.GeneralDistance4RFunctionCall)
                 self.state = 2147
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 2148
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 2150
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 2149
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.GeneralDistance4NFunctionCall]:
+            elif token in [AmberMRParser.GeneralDistance4NFunctionCall]:
                 self.enterOuterAlt(localctx, 37)
                 self.state = 2152
-                self.match(AMBER_MR_Parser.GeneralDistance4NFunctionCall)
+                self.match(AmberMRParser.GeneralDistance4NFunctionCall)
                 self.state = 2153
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 2154
-                self.match(AMBER_MR_Parser.Quoted_atom_name)
+                self.match(AmberMRParser.Quoted_atom_name)
                 self.state = 2156
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 2155
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
@@ -9540,64 +9540,64 @@ class AMBER_MR_Parser ( Parser ):
             self.parser = parser
 
         def NPEAK(self):
-            return self.getToken(AMBER_MR_Parser.NPEAK, 0)
+            return self.getToken(AmberMRParser.NPEAK, 0)
 
         def Equ_op(self):
-            return self.getToken(AMBER_MR_Parser.Equ_op, 0)
+            return self.getToken(AmberMRParser.Equ_op, 0)
 
         def IntegerArray(self):
-            return self.getToken(AMBER_MR_Parser.IntegerArray, 0)
+            return self.getToken(AmberMRParser.IntegerArray, 0)
 
         def Comma(self, i:int=None):
             if i is None:
-                return self.getTokens(AMBER_MR_Parser.Comma)
+                return self.getTokens(AmberMRParser.Comma)
             else:
-                return self.getToken(AMBER_MR_Parser.Comma, i)
+                return self.getToken(AmberMRParser.Comma, i)
 
         def EMIX(self):
-            return self.getToken(AMBER_MR_Parser.EMIX, 0)
+            return self.getToken(AmberMRParser.EMIX, 0)
 
         def Real(self, i:int=None):
             if i is None:
-                return self.getTokens(AMBER_MR_Parser.Real)
+                return self.getTokens(AmberMRParser.Real)
             else:
-                return self.getToken(AMBER_MR_Parser.Real, i)
+                return self.getToken(AmberMRParser.Real, i)
 
         def NoeExpIGFunctionCall(self):
-            return self.getToken(AMBER_MR_Parser.NoeExpIGFunctionCall, 0)
+            return self.getToken(AmberMRParser.NoeExpIGFunctionCall, 0)
 
         def NoeExpRGFunctionCall(self):
-            return self.getToken(AMBER_MR_Parser.NoeExpRGFunctionCall, 0)
+            return self.getToken(AmberMRParser.NoeExpRGFunctionCall, 0)
 
         def RealArray(self):
-            return self.getToken(AMBER_MR_Parser.RealArray, 0)
+            return self.getToken(AmberMRParser.RealArray, 0)
 
         def INVWT1(self):
-            return self.getToken(AMBER_MR_Parser.INVWT1, 0)
+            return self.getToken(AmberMRParser.INVWT1, 0)
 
         def INVWT2(self):
-            return self.getToken(AMBER_MR_Parser.INVWT2, 0)
+            return self.getToken(AmberMRParser.INVWT2, 0)
 
         def OMEGA(self):
-            return self.getToken(AMBER_MR_Parser.OMEGA, 0)
+            return self.getToken(AmberMRParser.OMEGA, 0)
 
         def TAUROT(self):
-            return self.getToken(AMBER_MR_Parser.TAUROT, 0)
+            return self.getToken(AmberMRParser.TAUROT, 0)
 
         def TAUMET(self):
-            return self.getToken(AMBER_MR_Parser.TAUMET, 0)
+            return self.getToken(AmberMRParser.TAUMET, 0)
 
         def ID2O(self):
-            return self.getToken(AMBER_MR_Parser.ID2O, 0)
+            return self.getToken(AmberMRParser.ID2O, 0)
 
         def One_or_Zero(self):
-            return self.getToken(AMBER_MR_Parser.One_or_Zero, 0)
+            return self.getToken(AmberMRParser.One_or_Zero, 0)
 
         def OSCALE(self):
-            return self.getToken(AMBER_MR_Parser.OSCALE, 0)
+            return self.getToken(AmberMRParser.OSCALE, 0)
 
         def getRuleIndex(self):
-            return AMBER_MR_Parser.RULE_noeexp_statement
+            return AmberMRParser.RULE_noeexp_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterNoeexp_statement" ):
@@ -9612,47 +9612,47 @@ class AMBER_MR_Parser ( Parser ):
 
     def noeexp_statement(self):
 
-        localctx = AMBER_MR_Parser.Noeexp_statementContext(self, self._ctx, self.state)
+        localctx = AmberMRParser.Noeexp_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 32, self.RULE_noeexp_statement)
         self._la = 0 # Token type
         try:
             self.state = 2233
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [AMBER_MR_Parser.NPEAK]:
+            if token in [AmberMRParser.NPEAK]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 2160
-                self.match(AMBER_MR_Parser.NPEAK)
+                self.match(AmberMRParser.NPEAK)
                 self.state = 2161
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 2162
-                self.match(AMBER_MR_Parser.IntegerArray)
+                self.match(AmberMRParser.IntegerArray)
                 self.state = 2164
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 2163
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.EMIX]:
+            elif token in [AmberMRParser.EMIX]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 2166
-                self.match(AMBER_MR_Parser.EMIX)
+                self.match(AmberMRParser.EMIX)
                 self.state = 2167
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 2168
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 2173
                 self._errHandler.sync(self)
                 _alt = self._interp.adaptivePredict(self._input,325,self._ctx)
                 while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                     if _alt==1:
                         self.state = 2169
-                        self.match(AMBER_MR_Parser.Comma)
+                        self.match(AmberMRParser.Comma)
                         self.state = 2170
-                        self.match(AMBER_MR_Parser.Real) 
+                        self.match(AmberMRParser.Real) 
                     self.state = 2175
                     self._errHandler.sync(self)
                     _alt = self._interp.adaptivePredict(self._input,325,self._ctx)
@@ -9660,162 +9660,162 @@ class AMBER_MR_Parser ( Parser ):
                 self.state = 2177
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 2176
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.NoeExpIGFunctionCall]:
+            elif token in [AmberMRParser.NoeExpIGFunctionCall]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 2179
-                self.match(AMBER_MR_Parser.NoeExpIGFunctionCall)
+                self.match(AmberMRParser.NoeExpIGFunctionCall)
                 self.state = 2180
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 2181
-                self.match(AMBER_MR_Parser.IntegerArray)
+                self.match(AmberMRParser.IntegerArray)
                 self.state = 2183
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 2182
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.NoeExpRGFunctionCall]:
+            elif token in [AmberMRParser.NoeExpRGFunctionCall]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 2185
-                self.match(AMBER_MR_Parser.NoeExpRGFunctionCall)
+                self.match(AmberMRParser.NoeExpRGFunctionCall)
                 self.state = 2186
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 2187
-                self.match(AMBER_MR_Parser.RealArray)
+                self.match(AmberMRParser.RealArray)
                 self.state = 2189
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 2188
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.INVWT1]:
+            elif token in [AmberMRParser.INVWT1]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 2191
-                self.match(AMBER_MR_Parser.INVWT1)
+                self.match(AmberMRParser.INVWT1)
                 self.state = 2192
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 2193
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 2195
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 2194
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.INVWT2]:
+            elif token in [AmberMRParser.INVWT2]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 2197
-                self.match(AMBER_MR_Parser.INVWT2)
+                self.match(AmberMRParser.INVWT2)
                 self.state = 2198
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 2199
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 2201
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 2200
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.OMEGA]:
+            elif token in [AmberMRParser.OMEGA]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 2203
-                self.match(AMBER_MR_Parser.OMEGA)
+                self.match(AmberMRParser.OMEGA)
                 self.state = 2204
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 2205
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 2207
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 2206
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.TAUROT]:
+            elif token in [AmberMRParser.TAUROT]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 2209
-                self.match(AMBER_MR_Parser.TAUROT)
+                self.match(AmberMRParser.TAUROT)
                 self.state = 2210
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 2211
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 2213
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 2212
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.TAUMET]:
+            elif token in [AmberMRParser.TAUMET]:
                 self.enterOuterAlt(localctx, 9)
                 self.state = 2215
-                self.match(AMBER_MR_Parser.TAUMET)
+                self.match(AmberMRParser.TAUMET)
                 self.state = 2216
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 2217
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 2219
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 2218
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.ID2O]:
+            elif token in [AmberMRParser.ID2O]:
                 self.enterOuterAlt(localctx, 10)
                 self.state = 2221
-                self.match(AMBER_MR_Parser.ID2O)
+                self.match(AmberMRParser.ID2O)
                 self.state = 2222
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 2223
-                self.match(AMBER_MR_Parser.One_or_Zero)
+                self.match(AmberMRParser.One_or_Zero)
                 self.state = 2225
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 2224
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.OSCALE]:
+            elif token in [AmberMRParser.OSCALE]:
                 self.enterOuterAlt(localctx, 11)
                 self.state = 2227
-                self.match(AMBER_MR_Parser.OSCALE)
+                self.match(AmberMRParser.OSCALE)
                 self.state = 2228
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 2229
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 2231
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 2230
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
@@ -9838,55 +9838,55 @@ class AMBER_MR_Parser ( Parser ):
             self.parser = parser
 
         def NRING(self):
-            return self.getToken(AMBER_MR_Parser.NRING, 0)
+            return self.getToken(AmberMRParser.NRING, 0)
 
         def Equ_op(self):
-            return self.getToken(AMBER_MR_Parser.Equ_op, 0)
+            return self.getToken(AmberMRParser.Equ_op, 0)
 
         def Integer(self):
-            return self.getToken(AMBER_MR_Parser.Integer, 0)
+            return self.getToken(AmberMRParser.Integer, 0)
 
         def Comma(self):
-            return self.getToken(AMBER_MR_Parser.Comma, 0)
+            return self.getToken(AmberMRParser.Comma, 0)
 
         def SftIFunctionCall(self):
-            return self.getToken(AMBER_MR_Parser.SftIFunctionCall, 0)
+            return self.getToken(AmberMRParser.SftIFunctionCall, 0)
 
         def SftIFunctionCall2(self):
-            return self.getToken(AMBER_MR_Parser.SftIFunctionCall2, 0)
+            return self.getToken(AmberMRParser.SftIFunctionCall2, 0)
 
         def SftRFunctionCall(self):
-            return self.getToken(AMBER_MR_Parser.SftRFunctionCall, 0)
+            return self.getToken(AmberMRParser.SftRFunctionCall, 0)
 
         def Real(self):
-            return self.getToken(AMBER_MR_Parser.Real, 0)
+            return self.getToken(AmberMRParser.Real, 0)
 
         def SftRGFunctionCall(self):
-            return self.getToken(AMBER_MR_Parser.SftRGFunctionCall, 0)
+            return self.getToken(AmberMRParser.SftRGFunctionCall, 0)
 
         def RealArray(self):
-            return self.getToken(AMBER_MR_Parser.RealArray, 0)
+            return self.getToken(AmberMRParser.RealArray, 0)
 
         def SftNFunctionCall(self):
-            return self.getToken(AMBER_MR_Parser.SftNFunctionCall, 0)
+            return self.getToken(AmberMRParser.SftNFunctionCall, 0)
 
         def Quoted_atom_name(self):
-            return self.getToken(AMBER_MR_Parser.Quoted_atom_name, 0)
+            return self.getToken(AmberMRParser.Quoted_atom_name, 0)
 
         def NPROT(self):
-            return self.getToken(AMBER_MR_Parser.NPROT, 0)
+            return self.getToken(AmberMRParser.NPROT, 0)
 
         def SHCUT(self):
-            return self.getToken(AMBER_MR_Parser.SHCUT, 0)
+            return self.getToken(AmberMRParser.SHCUT, 0)
 
         def NTER(self):
-            return self.getToken(AMBER_MR_Parser.NTER, 0)
+            return self.getToken(AmberMRParser.NTER, 0)
 
         def CTER(self):
-            return self.getToken(AMBER_MR_Parser.CTER, 0)
+            return self.getToken(AmberMRParser.CTER, 0)
 
         def getRuleIndex(self):
-            return AMBER_MR_Parser.RULE_shf_statement
+            return AmberMRParser.RULE_shf_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterShf_statement" ):
@@ -9901,180 +9901,180 @@ class AMBER_MR_Parser ( Parser ):
 
     def shf_statement(self):
 
-        localctx = AMBER_MR_Parser.Shf_statementContext(self, self._ctx, self.state)
+        localctx = AmberMRParser.Shf_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 34, self.RULE_shf_statement)
         self._la = 0 # Token type
         try:
             self.state = 2295
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [AMBER_MR_Parser.NRING]:
+            if token in [AmberMRParser.NRING]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 2235
-                self.match(AMBER_MR_Parser.NRING)
+                self.match(AmberMRParser.NRING)
                 self.state = 2236
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 2237
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 2239
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 2238
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.SftIFunctionCall]:
+            elif token in [AmberMRParser.SftIFunctionCall]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 2241
-                self.match(AMBER_MR_Parser.SftIFunctionCall)
+                self.match(AmberMRParser.SftIFunctionCall)
                 self.state = 2242
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 2243
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 2245
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 2244
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.SftIFunctionCall2]:
+            elif token in [AmberMRParser.SftIFunctionCall2]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 2247
-                self.match(AMBER_MR_Parser.SftIFunctionCall2)
+                self.match(AmberMRParser.SftIFunctionCall2)
                 self.state = 2248
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 2249
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 2251
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 2250
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.SftRFunctionCall]:
+            elif token in [AmberMRParser.SftRFunctionCall]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 2253
-                self.match(AMBER_MR_Parser.SftRFunctionCall)
+                self.match(AmberMRParser.SftRFunctionCall)
                 self.state = 2254
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 2255
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 2257
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 2256
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.SftRGFunctionCall]:
+            elif token in [AmberMRParser.SftRGFunctionCall]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 2259
-                self.match(AMBER_MR_Parser.SftRGFunctionCall)
+                self.match(AmberMRParser.SftRGFunctionCall)
                 self.state = 2260
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 2261
-                self.match(AMBER_MR_Parser.RealArray)
+                self.match(AmberMRParser.RealArray)
                 self.state = 2263
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 2262
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.SftNFunctionCall]:
+            elif token in [AmberMRParser.SftNFunctionCall]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 2265
-                self.match(AMBER_MR_Parser.SftNFunctionCall)
+                self.match(AmberMRParser.SftNFunctionCall)
                 self.state = 2266
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 2267
-                self.match(AMBER_MR_Parser.Quoted_atom_name)
+                self.match(AmberMRParser.Quoted_atom_name)
                 self.state = 2269
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 2268
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.NPROT]:
+            elif token in [AmberMRParser.NPROT]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 2271
-                self.match(AMBER_MR_Parser.NPROT)
+                self.match(AmberMRParser.NPROT)
                 self.state = 2272
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 2273
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 2275
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 2274
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.SHCUT]:
+            elif token in [AmberMRParser.SHCUT]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 2277
-                self.match(AMBER_MR_Parser.SHCUT)
+                self.match(AmberMRParser.SHCUT)
                 self.state = 2278
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 2279
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 2281
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 2280
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.NTER]:
+            elif token in [AmberMRParser.NTER]:
                 self.enterOuterAlt(localctx, 9)
                 self.state = 2283
-                self.match(AMBER_MR_Parser.NTER)
+                self.match(AmberMRParser.NTER)
                 self.state = 2284
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 2285
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 2287
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 2286
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.CTER]:
+            elif token in [AmberMRParser.CTER]:
                 self.enterOuterAlt(localctx, 10)
                 self.state = 2289
-                self.match(AMBER_MR_Parser.CTER)
+                self.match(AmberMRParser.CTER)
                 self.state = 2290
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 2291
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 2293
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 2292
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
@@ -10097,58 +10097,58 @@ class AMBER_MR_Parser ( Parser ):
             self.parser = parser
 
         def NPROT(self):
-            return self.getToken(AMBER_MR_Parser.NPROT, 0)
+            return self.getToken(AmberMRParser.NPROT, 0)
 
         def Equ_op(self):
-            return self.getToken(AMBER_MR_Parser.Equ_op, 0)
+            return self.getToken(AmberMRParser.Equ_op, 0)
 
         def Integer(self):
-            return self.getToken(AMBER_MR_Parser.Integer, 0)
+            return self.getToken(AmberMRParser.Integer, 0)
 
         def Comma(self, i:int=None):
             if i is None:
-                return self.getTokens(AMBER_MR_Parser.Comma)
+                return self.getTokens(AmberMRParser.Comma)
             else:
-                return self.getToken(AMBER_MR_Parser.Comma, i)
+                return self.getToken(AmberMRParser.Comma, i)
 
         def NME(self):
-            return self.getToken(AMBER_MR_Parser.NME, 0)
+            return self.getToken(AmberMRParser.NME, 0)
 
         def NMPMC(self):
-            return self.getToken(AMBER_MR_Parser.NMPMC, 0)
+            return self.getToken(AmberMRParser.NMPMC, 0)
 
         def Quoted_atom_name(self, i:int=None):
             if i is None:
-                return self.getTokens(AMBER_MR_Parser.Quoted_atom_name)
+                return self.getTokens(AmberMRParser.Quoted_atom_name)
             else:
-                return self.getToken(AMBER_MR_Parser.Quoted_atom_name, i)
+                return self.getToken(AmberMRParser.Quoted_atom_name, i)
 
         def PcshfIFunctionCall(self):
-            return self.getToken(AMBER_MR_Parser.PcshfIFunctionCall, 0)
+            return self.getToken(AmberMRParser.PcshfIFunctionCall, 0)
 
         def PcshfIGFunctionCall(self):
-            return self.getToken(AMBER_MR_Parser.PcshfIGFunctionCall, 0)
+            return self.getToken(AmberMRParser.PcshfIGFunctionCall, 0)
 
         def IntegerArray(self):
-            return self.getToken(AMBER_MR_Parser.IntegerArray, 0)
+            return self.getToken(AmberMRParser.IntegerArray, 0)
 
         def PcshfRFunctionCall(self):
-            return self.getToken(AMBER_MR_Parser.PcshfRFunctionCall, 0)
+            return self.getToken(AmberMRParser.PcshfRFunctionCall, 0)
 
         def Real(self):
-            return self.getToken(AMBER_MR_Parser.Real, 0)
+            return self.getToken(AmberMRParser.Real, 0)
 
         def PcshfRGFunctionCall(self):
-            return self.getToken(AMBER_MR_Parser.PcshfRGFunctionCall, 0)
+            return self.getToken(AmberMRParser.PcshfRGFunctionCall, 0)
 
         def RealArray(self):
-            return self.getToken(AMBER_MR_Parser.RealArray, 0)
+            return self.getToken(AmberMRParser.RealArray, 0)
 
         def OPTKON(self):
-            return self.getToken(AMBER_MR_Parser.OPTKON, 0)
+            return self.getToken(AmberMRParser.OPTKON, 0)
 
         def getRuleIndex(self):
-            return AMBER_MR_Parser.RULE_pcshf_statement
+            return AmberMRParser.RULE_pcshf_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterPcshf_statement" ):
@@ -10163,64 +10163,64 @@ class AMBER_MR_Parser ( Parser ):
 
     def pcshf_statement(self):
 
-        localctx = AMBER_MR_Parser.Pcshf_statementContext(self, self._ctx, self.state)
+        localctx = AmberMRParser.Pcshf_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 36, self.RULE_pcshf_statement)
         self._la = 0 # Token type
         try:
             self.state = 2352
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [AMBER_MR_Parser.NPROT]:
+            if token in [AmberMRParser.NPROT]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 2297
-                self.match(AMBER_MR_Parser.NPROT)
+                self.match(AmberMRParser.NPROT)
                 self.state = 2298
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 2299
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 2301
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 2300
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.NME]:
+            elif token in [AmberMRParser.NME]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 2303
-                self.match(AMBER_MR_Parser.NME)
+                self.match(AmberMRParser.NME)
                 self.state = 2304
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 2305
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 2307
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 2306
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.NMPMC]:
+            elif token in [AmberMRParser.NMPMC]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 2309
-                self.match(AMBER_MR_Parser.NMPMC)
+                self.match(AmberMRParser.NMPMC)
                 self.state = 2310
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 2311
-                self.match(AMBER_MR_Parser.Quoted_atom_name)
+                self.match(AmberMRParser.Quoted_atom_name)
                 self.state = 2316
                 self._errHandler.sync(self)
                 _alt = self._interp.adaptivePredict(self._input,350,self._ctx)
                 while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                     if _alt==1:
                         self.state = 2312
-                        self.match(AMBER_MR_Parser.Comma)
+                        self.match(AmberMRParser.Comma)
                         self.state = 2313
-                        self.match(AMBER_MR_Parser.Quoted_atom_name) 
+                        self.match(AmberMRParser.Quoted_atom_name) 
                     self.state = 2318
                     self._errHandler.sync(self)
                     _alt = self._interp.adaptivePredict(self._input,350,self._ctx)
@@ -10228,94 +10228,94 @@ class AMBER_MR_Parser ( Parser ):
                 self.state = 2320
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 2319
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.PcshfIFunctionCall]:
+            elif token in [AmberMRParser.PcshfIFunctionCall]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 2322
-                self.match(AMBER_MR_Parser.PcshfIFunctionCall)
+                self.match(AmberMRParser.PcshfIFunctionCall)
                 self.state = 2323
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 2324
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 2326
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 2325
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.PcshfIGFunctionCall]:
+            elif token in [AmberMRParser.PcshfIGFunctionCall]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 2328
-                self.match(AMBER_MR_Parser.PcshfIGFunctionCall)
+                self.match(AmberMRParser.PcshfIGFunctionCall)
                 self.state = 2329
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 2330
-                self.match(AMBER_MR_Parser.IntegerArray)
+                self.match(AmberMRParser.IntegerArray)
                 self.state = 2332
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 2331
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.PcshfRFunctionCall]:
+            elif token in [AmberMRParser.PcshfRFunctionCall]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 2334
-                self.match(AMBER_MR_Parser.PcshfRFunctionCall)
+                self.match(AmberMRParser.PcshfRFunctionCall)
                 self.state = 2335
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 2336
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 2338
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 2337
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.PcshfRGFunctionCall]:
+            elif token in [AmberMRParser.PcshfRGFunctionCall]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 2340
-                self.match(AMBER_MR_Parser.PcshfRGFunctionCall)
+                self.match(AmberMRParser.PcshfRGFunctionCall)
                 self.state = 2341
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 2342
-                self.match(AMBER_MR_Parser.RealArray)
+                self.match(AmberMRParser.RealArray)
                 self.state = 2344
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 2343
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.OPTKON]:
+            elif token in [AmberMRParser.OPTKON]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 2346
-                self.match(AMBER_MR_Parser.OPTKON)
+                self.match(AmberMRParser.OPTKON)
                 self.state = 2347
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 2348
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 2350
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 2349
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
@@ -10338,58 +10338,58 @@ class AMBER_MR_Parser ( Parser ):
             self.parser = parser
 
         def NDIP(self):
-            return self.getToken(AMBER_MR_Parser.NDIP, 0)
+            return self.getToken(AmberMRParser.NDIP, 0)
 
         def Equ_op(self):
-            return self.getToken(AMBER_MR_Parser.Equ_op, 0)
+            return self.getToken(AmberMRParser.Equ_op, 0)
 
         def Integer(self):
-            return self.getToken(AMBER_MR_Parser.Integer, 0)
+            return self.getToken(AmberMRParser.Integer, 0)
 
         def Comma(self):
-            return self.getToken(AMBER_MR_Parser.Comma, 0)
+            return self.getToken(AmberMRParser.Comma, 0)
 
         def AlignIFunctionCall(self):
-            return self.getToken(AMBER_MR_Parser.AlignIFunctionCall, 0)
+            return self.getToken(AmberMRParser.AlignIFunctionCall, 0)
 
         def AlignRFunctionCall(self):
-            return self.getToken(AMBER_MR_Parser.AlignRFunctionCall, 0)
+            return self.getToken(AmberMRParser.AlignRFunctionCall, 0)
 
         def Real(self):
-            return self.getToken(AMBER_MR_Parser.Real, 0)
+            return self.getToken(AmberMRParser.Real, 0)
 
         def DWT(self):
-            return self.getToken(AMBER_MR_Parser.DWT, 0)
+            return self.getToken(AmberMRParser.DWT, 0)
 
         def RealArray(self):
-            return self.getToken(AMBER_MR_Parser.RealArray, 0)
+            return self.getToken(AmberMRParser.RealArray, 0)
 
         def DATASET(self):
-            return self.getToken(AMBER_MR_Parser.DATASET, 0)
+            return self.getToken(AmberMRParser.DATASET, 0)
 
         def NUM_DATASET(self):
-            return self.getToken(AMBER_MR_Parser.NUM_DATASET, 0)
+            return self.getToken(AmberMRParser.NUM_DATASET, 0)
 
         def SNN(self):
-            return self.getToken(AMBER_MR_Parser.SNN, 0)
+            return self.getToken(AmberMRParser.SNN, 0)
 
         def GIGJ(self):
-            return self.getToken(AMBER_MR_Parser.GIGJ, 0)
+            return self.getToken(AmberMRParser.GIGJ, 0)
 
         def DIJ(self):
-            return self.getToken(AMBER_MR_Parser.DIJ, 0)
+            return self.getToken(AmberMRParser.DIJ, 0)
 
         def DCUT(self):
-            return self.getToken(AMBER_MR_Parser.DCUT, 0)
+            return self.getToken(AmberMRParser.DCUT, 0)
 
         def FREEZEMOL(self):
-            return self.getToken(AMBER_MR_Parser.FREEZEMOL, 0)
+            return self.getToken(AmberMRParser.FREEZEMOL, 0)
 
         def Logical(self):
-            return self.getToken(AMBER_MR_Parser.Logical, 0)
+            return self.getToken(AmberMRParser.Logical, 0)
 
         def getRuleIndex(self):
-            return AMBER_MR_Parser.RULE_align_statement
+            return AmberMRParser.RULE_align_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterAlign_statement" ):
@@ -10404,197 +10404,197 @@ class AMBER_MR_Parser ( Parser ):
 
     def align_statement(self):
 
-        localctx = AMBER_MR_Parser.Align_statementContext(self, self._ctx, self.state)
+        localctx = AmberMRParser.Align_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 38, self.RULE_align_statement)
         self._la = 0 # Token type
         try:
             self.state = 2420
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [AMBER_MR_Parser.NDIP]:
+            if token in [AmberMRParser.NDIP]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 2354
-                self.match(AMBER_MR_Parser.NDIP)
+                self.match(AmberMRParser.NDIP)
                 self.state = 2355
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 2356
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 2358
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 2357
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.AlignIFunctionCall]:
+            elif token in [AmberMRParser.AlignIFunctionCall]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 2360
-                self.match(AMBER_MR_Parser.AlignIFunctionCall)
+                self.match(AmberMRParser.AlignIFunctionCall)
                 self.state = 2361
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 2362
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 2364
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 2363
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.AlignRFunctionCall]:
+            elif token in [AmberMRParser.AlignRFunctionCall]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 2366
-                self.match(AMBER_MR_Parser.AlignRFunctionCall)
+                self.match(AmberMRParser.AlignRFunctionCall)
                 self.state = 2367
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 2368
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 2370
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 2369
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.DWT]:
+            elif token in [AmberMRParser.DWT]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 2372
-                self.match(AMBER_MR_Parser.DWT)
+                self.match(AmberMRParser.DWT)
                 self.state = 2373
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 2374
-                self.match(AMBER_MR_Parser.RealArray)
+                self.match(AmberMRParser.RealArray)
                 self.state = 2376
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 2375
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.DATASET]:
+            elif token in [AmberMRParser.DATASET]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 2378
-                self.match(AMBER_MR_Parser.DATASET)
+                self.match(AmberMRParser.DATASET)
                 self.state = 2379
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 2380
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 2382
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 2381
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.NUM_DATASET]:
+            elif token in [AmberMRParser.NUM_DATASET]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 2384
-                self.match(AMBER_MR_Parser.NUM_DATASET)
+                self.match(AmberMRParser.NUM_DATASET)
                 self.state = 2385
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 2386
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 2388
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 2387
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.SNN]:
+            elif token in [AmberMRParser.SNN]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 2390
-                self.match(AMBER_MR_Parser.SNN)
+                self.match(AmberMRParser.SNN)
                 self.state = 2391
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 2392
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 2394
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 2393
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.GIGJ]:
+            elif token in [AmberMRParser.GIGJ]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 2396
-                self.match(AMBER_MR_Parser.GIGJ)
+                self.match(AmberMRParser.GIGJ)
                 self.state = 2397
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 2398
-                self.match(AMBER_MR_Parser.RealArray)
+                self.match(AmberMRParser.RealArray)
                 self.state = 2400
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 2399
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.DIJ]:
+            elif token in [AmberMRParser.DIJ]:
                 self.enterOuterAlt(localctx, 9)
                 self.state = 2402
-                self.match(AMBER_MR_Parser.DIJ)
+                self.match(AmberMRParser.DIJ)
                 self.state = 2403
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 2404
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 2406
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 2405
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.DCUT]:
+            elif token in [AmberMRParser.DCUT]:
                 self.enterOuterAlt(localctx, 10)
                 self.state = 2408
-                self.match(AMBER_MR_Parser.DCUT)
+                self.match(AmberMRParser.DCUT)
                 self.state = 2409
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 2410
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 2412
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 2411
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.FREEZEMOL]:
+            elif token in [AmberMRParser.FREEZEMOL]:
                 self.enterOuterAlt(localctx, 11)
                 self.state = 2414
-                self.match(AMBER_MR_Parser.FREEZEMOL)
+                self.match(AmberMRParser.FREEZEMOL)
                 self.state = 2415
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 2416
-                self.match(AMBER_MR_Parser.Logical)
+                self.match(AmberMRParser.Logical)
                 self.state = 2418
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 2417
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
@@ -10617,46 +10617,46 @@ class AMBER_MR_Parser ( Parser ):
             self.parser = parser
 
         def NCSA(self):
-            return self.getToken(AMBER_MR_Parser.NCSA, 0)
+            return self.getToken(AmberMRParser.NCSA, 0)
 
         def Equ_op(self):
-            return self.getToken(AMBER_MR_Parser.Equ_op, 0)
+            return self.getToken(AmberMRParser.Equ_op, 0)
 
         def Integer(self):
-            return self.getToken(AMBER_MR_Parser.Integer, 0)
+            return self.getToken(AmberMRParser.Integer, 0)
 
         def Comma(self):
-            return self.getToken(AMBER_MR_Parser.Comma, 0)
+            return self.getToken(AmberMRParser.Comma, 0)
 
         def CsaIFunctionCall(self):
-            return self.getToken(AMBER_MR_Parser.CsaIFunctionCall, 0)
+            return self.getToken(AmberMRParser.CsaIFunctionCall, 0)
 
         def CsaRFunctionCall(self):
-            return self.getToken(AMBER_MR_Parser.CsaRFunctionCall, 0)
+            return self.getToken(AmberMRParser.CsaRFunctionCall, 0)
 
         def Real(self):
-            return self.getToken(AMBER_MR_Parser.Real, 0)
+            return self.getToken(AmberMRParser.Real, 0)
 
         def CWT(self):
-            return self.getToken(AMBER_MR_Parser.CWT, 0)
+            return self.getToken(AmberMRParser.CWT, 0)
 
         def RealArray(self):
-            return self.getToken(AMBER_MR_Parser.RealArray, 0)
+            return self.getToken(AmberMRParser.RealArray, 0)
 
         def DATASETC(self):
-            return self.getToken(AMBER_MR_Parser.DATASETC, 0)
+            return self.getToken(AmberMRParser.DATASETC, 0)
 
         def FIELD(self):
-            return self.getToken(AMBER_MR_Parser.FIELD, 0)
+            return self.getToken(AmberMRParser.FIELD, 0)
 
         def SIGMANN(self):
-            return self.getToken(AMBER_MR_Parser.SIGMANN, 0)
+            return self.getToken(AmberMRParser.SIGMANN, 0)
 
         def CCUT(self):
-            return self.getToken(AMBER_MR_Parser.CCUT, 0)
+            return self.getToken(AmberMRParser.CCUT, 0)
 
         def getRuleIndex(self):
-            return AMBER_MR_Parser.RULE_csa_statement
+            return AmberMRParser.RULE_csa_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterCsa_statement" ):
@@ -10671,146 +10671,146 @@ class AMBER_MR_Parser ( Parser ):
 
     def csa_statement(self):
 
-        localctx = AMBER_MR_Parser.Csa_statementContext(self, self._ctx, self.state)
+        localctx = AmberMRParser.Csa_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 40, self.RULE_csa_statement)
         self._la = 0 # Token type
         try:
             self.state = 2470
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [AMBER_MR_Parser.NCSA]:
+            if token in [AmberMRParser.NCSA]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 2422
-                self.match(AMBER_MR_Parser.NCSA)
+                self.match(AmberMRParser.NCSA)
                 self.state = 2423
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 2424
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 2426
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 2425
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.CsaIFunctionCall]:
+            elif token in [AmberMRParser.CsaIFunctionCall]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 2428
-                self.match(AMBER_MR_Parser.CsaIFunctionCall)
+                self.match(AmberMRParser.CsaIFunctionCall)
                 self.state = 2429
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 2430
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 2432
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 2431
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.CsaRFunctionCall]:
+            elif token in [AmberMRParser.CsaRFunctionCall]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 2434
-                self.match(AMBER_MR_Parser.CsaRFunctionCall)
+                self.match(AmberMRParser.CsaRFunctionCall)
                 self.state = 2435
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 2436
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 2438
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 2437
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.CWT]:
+            elif token in [AmberMRParser.CWT]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 2440
-                self.match(AMBER_MR_Parser.CWT)
+                self.match(AmberMRParser.CWT)
                 self.state = 2441
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 2442
-                self.match(AMBER_MR_Parser.RealArray)
+                self.match(AmberMRParser.RealArray)
                 self.state = 2444
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 2443
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.DATASETC]:
+            elif token in [AmberMRParser.DATASETC]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 2446
-                self.match(AMBER_MR_Parser.DATASETC)
+                self.match(AmberMRParser.DATASETC)
                 self.state = 2447
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 2448
-                self.match(AMBER_MR_Parser.Integer)
+                self.match(AmberMRParser.Integer)
                 self.state = 2450
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 2449
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.FIELD]:
+            elif token in [AmberMRParser.FIELD]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 2452
-                self.match(AMBER_MR_Parser.FIELD)
+                self.match(AmberMRParser.FIELD)
                 self.state = 2453
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 2454
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 2456
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 2455
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.SIGMANN]:
+            elif token in [AmberMRParser.SIGMANN]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 2458
-                self.match(AMBER_MR_Parser.SIGMANN)
+                self.match(AmberMRParser.SIGMANN)
                 self.state = 2459
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 2460
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 2462
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 2461
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AMBER_MR_Parser.CCUT]:
+            elif token in [AmberMRParser.CCUT]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 2464
-                self.match(AMBER_MR_Parser.CCUT)
+                self.match(AmberMRParser.CCUT)
                 self.state = 2465
-                self.match(AMBER_MR_Parser.Equ_op)
+                self.match(AmberMRParser.Equ_op)
                 self.state = 2466
-                self.match(AMBER_MR_Parser.Real)
+                self.match(AmberMRParser.Real)
                 self.state = 2468
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AMBER_MR_Parser.Comma:
+                if _la==AmberMRParser.Comma:
                     self.state = 2467
-                    self.match(AMBER_MR_Parser.Comma)
+                    self.match(AmberMRParser.Comma)
 
 
                 pass

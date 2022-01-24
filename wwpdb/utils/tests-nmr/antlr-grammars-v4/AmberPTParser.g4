@@ -14,9 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-parser grammar AMBER_PT_Parser;
+parser grammar AmberPTParser;
 
-options { tokenVocab=AMBER_PT_Lexer; }
+options { tokenVocab=AmberPTLexer; }
 
 amber_pt:
 	version_statement |

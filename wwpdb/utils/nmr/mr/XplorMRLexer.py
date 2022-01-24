@@ -1,4 +1,4 @@
-# Generated from XPLOR_NIH_MR_Lexer.g4 by ANTLR 4.9
+# Generated from XplorMRLexer.g4 by ANTLR 4.9
 from antlr4 import *
 from io import StringIO
 from typing.io import TextIO
@@ -1712,7 +1712,7 @@ def serializedATN():
         return buf.getvalue()
 
 
-class XPLOR_NIH_MR_Lexer(Lexer):
+class XplorMRLexer(Lexer):
 
     atn = ATNDeserializer().deserialize(serializedATN())
 
@@ -2009,7 +2009,7 @@ class XPLOR_NIH_MR_Lexer(Lexer):
                   "Colon", "Equ_op", "Lt_op", "Gt_op", "Leq_op", "Geq_op", 
                   "Neq_op", "SPACE", "COMMENT", "LINE_COMMENT" ]
 
-    grammarFileName = "XPLOR_NIH_MR_Lexer.g4"
+    grammarFileName = "XplorMRLexer.g4"
 
     def __init__(self, input=None, output:TextIO = sys.stdout):
         super().__init__(input, output)

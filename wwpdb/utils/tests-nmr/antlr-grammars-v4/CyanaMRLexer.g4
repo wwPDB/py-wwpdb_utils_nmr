@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-lexer grammar CYANA_MR_Lexer;
+lexer grammar CyanaMRLexer;
 
 /* CYANA 3.0 Reference Manual
  See also http://www.cyana.org/wiki/index.php/CYANA_3.0_Reference_Manual

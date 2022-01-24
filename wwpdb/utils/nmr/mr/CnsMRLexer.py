@@ -1,4 +1,4 @@
-# Generated from CNS_MR_Lexer.g4 by ANTLR 4.9
+# Generated from CnsMRLexer.g4 by ANTLR 4.9
 from antlr4 import *
 from io import StringIO
 from typing.io import TextIO
@@ -1578,7 +1578,7 @@ def serializedATN():
         return buf.getvalue()
 
 
-class CNS_MR_Lexer(Lexer):
+class CnsMRLexer(Lexer):
 
     atn = ATNDeserializer().deserialize(serializedATN())
 
@@ -1829,7 +1829,7 @@ class CNS_MR_Lexer(Lexer):
                   "Colon", "Equ_op", "Lt_op", "Gt_op", "Leq_op", "Geq_op", 
                   "Neq_op", "SPACE", "COMMENT", "LINE_COMMENT" ]
 
-    grammarFileName = "CNS_MR_Lexer.g4"
+    grammarFileName = "CnsMRLexer.g4"
 
     def __init__(self, input=None, output:TextIO = sys.stdout):
         super().__init__(input, output)

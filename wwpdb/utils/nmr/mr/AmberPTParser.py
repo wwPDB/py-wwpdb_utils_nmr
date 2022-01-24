@@ -1,4 +1,4 @@
-# Generated from AMBER_PT_Parser.g4 by ANTLR 4.9
+# Generated from AmberPTParser.g4 by ANTLR 4.9
 # encoding: utf-8
 from antlr4 import *
 from io import StringIO
@@ -347,9 +347,9 @@ def serializedATN():
         return buf.getvalue()
 
 
-class AMBER_PT_Parser ( Parser ):
+class AmberPTParser ( Parser ):
 
-    grammarFileName = "AMBER_PT_Parser.g4"
+    grammarFileName = "AmberPTParser.g4"
 
     atn = ATNDeserializer().deserialize(serializedATN())
 
@@ -582,202 +582,202 @@ class AMBER_PT_Parser ( Parser ):
             self.parser = parser
 
         def version_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Version_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Version_statementContext,0)
 
 
         def amber_atom_type_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Amber_atom_type_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Amber_atom_type_statementContext,0)
 
 
         def angle_equil_value_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Angle_equil_value_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Angle_equil_value_statementContext,0)
 
 
         def angle_force_constant_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Angle_force_constant_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Angle_force_constant_statementContext,0)
 
 
         def angles_inc_hydrogen_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Angles_inc_hydrogen_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Angles_inc_hydrogen_statementContext,0)
 
 
         def angles_without_hydrogen_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Angles_without_hydrogen_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Angles_without_hydrogen_statementContext,0)
 
 
         def atomic_number_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Atomic_number_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Atomic_number_statementContext,0)
 
 
         def atom_name_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Atom_name_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Atom_name_statementContext,0)
 
 
         def atom_type_index_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Atom_type_index_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Atom_type_index_statementContext,0)
 
 
         def atoms_per_molecule_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Atoms_per_molecule_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Atoms_per_molecule_statementContext,0)
 
 
         def bond_equil_value_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Bond_equil_value_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Bond_equil_value_statementContext,0)
 
 
         def bond_force_constant_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Bond_force_constant_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Bond_force_constant_statementContext,0)
 
 
         def bonds_inc_hydrogen_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Bonds_inc_hydrogen_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Bonds_inc_hydrogen_statementContext,0)
 
 
         def bonds_without_hydrogen_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Bonds_without_hydrogen_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Bonds_without_hydrogen_statementContext,0)
 
 
         def box_dimensions_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Box_dimensions_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Box_dimensions_statementContext,0)
 
 
         def cap_info_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Cap_info_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Cap_info_statementContext,0)
 
 
         def cap_info2_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Cap_info2_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Cap_info2_statementContext,0)
 
 
         def charge_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Charge_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Charge_statementContext,0)
 
 
         def dihedral_force_constant_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Dihedral_force_constant_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Dihedral_force_constant_statementContext,0)
 
 
         def dihedral_periodicity_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Dihedral_periodicity_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Dihedral_periodicity_statementContext,0)
 
 
         def dihedral_phase_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Dihedral_phase_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Dihedral_phase_statementContext,0)
 
 
         def dihedrals_inc_hydrogen_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Dihedrals_inc_hydrogen_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Dihedrals_inc_hydrogen_statementContext,0)
 
 
         def dihedrals_without_hydrogen_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Dihedrals_without_hydrogen_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Dihedrals_without_hydrogen_statementContext,0)
 
 
         def excluded_atoms_list_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Excluded_atoms_list_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Excluded_atoms_list_statementContext,0)
 
 
         def hbcut_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Hbcut_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Hbcut_statementContext,0)
 
 
         def hbond_acoef_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Hbond_acoef_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Hbond_acoef_statementContext,0)
 
 
         def hbond_bcoef_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Hbond_bcoef_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Hbond_bcoef_statementContext,0)
 
 
         def ipol_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Ipol_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Ipol_statementContext,0)
 
 
         def irotat_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Irotat_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Irotat_statementContext,0)
 
 
         def join_array_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Join_array_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Join_array_statementContext,0)
 
 
         def lennard_jones_acoef_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Lennard_jones_acoef_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Lennard_jones_acoef_statementContext,0)
 
 
         def lennard_jones_bcoef_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Lennard_jones_bcoef_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Lennard_jones_bcoef_statementContext,0)
 
 
         def mass_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Mass_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Mass_statementContext,0)
 
 
         def nonbonded_parm_index_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Nonbonded_parm_index_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Nonbonded_parm_index_statementContext,0)
 
 
         def number_excluded_atoms_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Number_excluded_atoms_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Number_excluded_atoms_statementContext,0)
 
 
         def pointers_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Pointers_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Pointers_statementContext,0)
 
 
         def polarizability_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Polarizability_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Polarizability_statementContext,0)
 
 
         def radii_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Radii_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Radii_statementContext,0)
 
 
         def radius_set_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Radius_set_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Radius_set_statementContext,0)
 
 
         def residue_label_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Residue_label_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Residue_label_statementContext,0)
 
 
         def residue_pointer_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Residue_pointer_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Residue_pointer_statementContext,0)
 
 
         def scee_scale_factor_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Scee_scale_factor_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Scee_scale_factor_statementContext,0)
 
 
         def scnb_scale_factor_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Scnb_scale_factor_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Scnb_scale_factor_statementContext,0)
 
 
         def screen_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Screen_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Screen_statementContext,0)
 
 
         def solty_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Solty_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Solty_statementContext,0)
 
 
         def solvent_pointers_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Solvent_pointers_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Solvent_pointers_statementContext,0)
 
 
         def title_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Title_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Title_statementContext,0)
 
 
         def tree_chain_classification_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Tree_chain_classification_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Tree_chain_classification_statementContext,0)
 
 
         def EOF(self):
-            return self.getToken(AMBER_PT_Parser.EOF, 0)
+            return self.getToken(AmberPTParser.EOF, 0)
 
         def getRuleIndex(self):
-            return AMBER_PT_Parser.RULE_amber_pt
+            return AmberPTParser.RULE_amber_pt
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterAmber_pt" ):
@@ -792,7 +792,7 @@ class AMBER_PT_Parser ( Parser ):
 
     def amber_pt(self):
 
-        localctx = AMBER_PT_Parser.Amber_ptContext(self, self._ctx, self.state)
+        localctx = AmberPTParser.Amber_ptContext(self, self._ctx, self.state)
         self.enterRule(localctx, 0, self.RULE_amber_pt)
         try:
             self.state = 173
@@ -1089,7 +1089,7 @@ class AMBER_PT_Parser ( Parser ):
             elif la_ == 49:
                 self.enterOuterAlt(localctx, 49)
                 self.state = 172
-                self.match(AMBER_PT_Parser.EOF)
+                self.match(AmberPTParser.EOF)
                 pass
 
 
@@ -1109,34 +1109,34 @@ class AMBER_PT_Parser ( Parser ):
             self.parser = parser
 
         def VERSION(self):
-            return self.getToken(AMBER_PT_Parser.VERSION, 0)
+            return self.getToken(AmberPTParser.VERSION, 0)
 
         def VERSION_STAMP(self):
-            return self.getToken(AMBER_PT_Parser.VERSION_STAMP, 0)
+            return self.getToken(AmberPTParser.VERSION_STAMP, 0)
 
         def Equ_op(self, i:int=None):
             if i is None:
-                return self.getTokens(AMBER_PT_Parser.Equ_op)
+                return self.getTokens(AmberPTParser.Equ_op)
             else:
-                return self.getToken(AMBER_PT_Parser.Equ_op, i)
+                return self.getToken(AmberPTParser.Equ_op, i)
 
         def Version(self):
-            return self.getToken(AMBER_PT_Parser.Version, 0)
+            return self.getToken(AmberPTParser.Version, 0)
 
         def DATE(self):
-            return self.getToken(AMBER_PT_Parser.DATE, 0)
+            return self.getToken(AmberPTParser.DATE, 0)
 
         def Date(self):
-            return self.getToken(AMBER_PT_Parser.Date, 0)
+            return self.getToken(AmberPTParser.Date, 0)
 
         def RETURN(self):
-            return self.getToken(AMBER_PT_Parser.RETURN, 0)
+            return self.getToken(AmberPTParser.RETURN, 0)
 
         def Time(self):
-            return self.getToken(AMBER_PT_Parser.Time, 0)
+            return self.getToken(AmberPTParser.Time, 0)
 
         def getRuleIndex(self):
-            return AMBER_PT_Parser.RULE_version_statement
+            return AmberPTParser.RULE_version_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterVersion_statement" ):
@@ -1151,35 +1151,35 @@ class AMBER_PT_Parser ( Parser ):
 
     def version_statement(self):
 
-        localctx = AMBER_PT_Parser.Version_statementContext(self, self._ctx, self.state)
+        localctx = AmberPTParser.Version_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 2, self.RULE_version_statement)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 175
-            self.match(AMBER_PT_Parser.VERSION)
+            self.match(AmberPTParser.VERSION)
             self.state = 176
-            self.match(AMBER_PT_Parser.VERSION_STAMP)
+            self.match(AmberPTParser.VERSION_STAMP)
             self.state = 177
-            self.match(AMBER_PT_Parser.Equ_op)
+            self.match(AmberPTParser.Equ_op)
             self.state = 178
-            self.match(AMBER_PT_Parser.Version)
+            self.match(AmberPTParser.Version)
             self.state = 179
-            self.match(AMBER_PT_Parser.DATE)
+            self.match(AmberPTParser.DATE)
             self.state = 180
-            self.match(AMBER_PT_Parser.Equ_op)
+            self.match(AmberPTParser.Equ_op)
             self.state = 181
-            self.match(AMBER_PT_Parser.Date)
+            self.match(AmberPTParser.Date)
             self.state = 183
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==AMBER_PT_Parser.Time:
+            if _la==AmberPTParser.Time:
                 self.state = 182
-                self.match(AMBER_PT_Parser.Time)
+                self.match(AmberPTParser.Time)
 
 
             self.state = 185
-            self.match(AMBER_PT_Parser.RETURN)
+            self.match(AmberPTParser.RETURN)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -1196,24 +1196,24 @@ class AMBER_PT_Parser ( Parser ):
             self.parser = parser
 
         def FLAG(self):
-            return self.getToken(AMBER_PT_Parser.FLAG, 0)
+            return self.getToken(AmberPTParser.FLAG, 0)
 
         def AMBER_ATOM_TYPE(self):
-            return self.getToken(AMBER_PT_Parser.AMBER_ATOM_TYPE, 0)
+            return self.getToken(AmberPTParser.AMBER_ATOM_TYPE, 0)
 
         def string4_format_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.String4_format_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.String4_format_statementContext,0)
 
 
         def atom_type_array(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(AMBER_PT_Parser.Atom_type_arrayContext)
+                return self.getTypedRuleContexts(AmberPTParser.Atom_type_arrayContext)
             else:
-                return self.getTypedRuleContext(AMBER_PT_Parser.Atom_type_arrayContext,i)
+                return self.getTypedRuleContext(AmberPTParser.Atom_type_arrayContext,i)
 
 
         def getRuleIndex(self):
-            return AMBER_PT_Parser.RULE_amber_atom_type_statement
+            return AmberPTParser.RULE_amber_atom_type_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterAmber_atom_type_statement" ):
@@ -1228,21 +1228,21 @@ class AMBER_PT_Parser ( Parser ):
 
     def amber_atom_type_statement(self):
 
-        localctx = AMBER_PT_Parser.Amber_atom_type_statementContext(self, self._ctx, self.state)
+        localctx = AmberPTParser.Amber_atom_type_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 4, self.RULE_amber_atom_type_statement)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 187
-            self.match(AMBER_PT_Parser.FLAG)
+            self.match(AmberPTParser.FLAG)
             self.state = 188
-            self.match(AMBER_PT_Parser.AMBER_ATOM_TYPE)
+            self.match(AmberPTParser.AMBER_ATOM_TYPE)
             self.state = 189
             self.string4_format_statement()
             self.state = 193
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AMBER_PT_Parser.Atom_type4 or _la==AMBER_PT_Parser.RETURN:
+            while _la==AmberPTParser.Atom_type4 or _la==AmberPTParser.RETURN:
                 self.state = 190
                 self.atom_type_array()
                 self.state = 195
@@ -1265,24 +1265,24 @@ class AMBER_PT_Parser ( Parser ):
             self.parser = parser
 
         def FLAG(self):
-            return self.getToken(AMBER_PT_Parser.FLAG, 0)
+            return self.getToken(AmberPTParser.FLAG, 0)
 
         def ANGLE_EQUIL_VALUE(self):
-            return self.getToken(AMBER_PT_Parser.ANGLE_EQUIL_VALUE, 0)
+            return self.getToken(AmberPTParser.ANGLE_EQUIL_VALUE, 0)
 
         def real_format_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Real_format_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Real_format_statementContext,0)
 
 
         def real_array(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(AMBER_PT_Parser.Real_arrayContext)
+                return self.getTypedRuleContexts(AmberPTParser.Real_arrayContext)
             else:
-                return self.getTypedRuleContext(AMBER_PT_Parser.Real_arrayContext,i)
+                return self.getTypedRuleContext(AmberPTParser.Real_arrayContext,i)
 
 
         def getRuleIndex(self):
-            return AMBER_PT_Parser.RULE_angle_equil_value_statement
+            return AmberPTParser.RULE_angle_equil_value_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterAngle_equil_value_statement" ):
@@ -1297,21 +1297,21 @@ class AMBER_PT_Parser ( Parser ):
 
     def angle_equil_value_statement(self):
 
-        localctx = AMBER_PT_Parser.Angle_equil_value_statementContext(self, self._ctx, self.state)
+        localctx = AmberPTParser.Angle_equil_value_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 6, self.RULE_angle_equil_value_statement)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 196
-            self.match(AMBER_PT_Parser.FLAG)
+            self.match(AmberPTParser.FLAG)
             self.state = 197
-            self.match(AMBER_PT_Parser.ANGLE_EQUIL_VALUE)
+            self.match(AmberPTParser.ANGLE_EQUIL_VALUE)
             self.state = 198
             self.real_format_statement()
             self.state = 202
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AMBER_PT_Parser.Real or _la==AMBER_PT_Parser.RETURN:
+            while _la==AmberPTParser.Real or _la==AmberPTParser.RETURN:
                 self.state = 199
                 self.real_array()
                 self.state = 204
@@ -1334,24 +1334,24 @@ class AMBER_PT_Parser ( Parser ):
             self.parser = parser
 
         def FLAG(self):
-            return self.getToken(AMBER_PT_Parser.FLAG, 0)
+            return self.getToken(AmberPTParser.FLAG, 0)
 
         def ANGLE_FORCE_CONSTANT(self):
-            return self.getToken(AMBER_PT_Parser.ANGLE_FORCE_CONSTANT, 0)
+            return self.getToken(AmberPTParser.ANGLE_FORCE_CONSTANT, 0)
 
         def real_format_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Real_format_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Real_format_statementContext,0)
 
 
         def real_array(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(AMBER_PT_Parser.Real_arrayContext)
+                return self.getTypedRuleContexts(AmberPTParser.Real_arrayContext)
             else:
-                return self.getTypedRuleContext(AMBER_PT_Parser.Real_arrayContext,i)
+                return self.getTypedRuleContext(AmberPTParser.Real_arrayContext,i)
 
 
         def getRuleIndex(self):
-            return AMBER_PT_Parser.RULE_angle_force_constant_statement
+            return AmberPTParser.RULE_angle_force_constant_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterAngle_force_constant_statement" ):
@@ -1366,21 +1366,21 @@ class AMBER_PT_Parser ( Parser ):
 
     def angle_force_constant_statement(self):
 
-        localctx = AMBER_PT_Parser.Angle_force_constant_statementContext(self, self._ctx, self.state)
+        localctx = AmberPTParser.Angle_force_constant_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 8, self.RULE_angle_force_constant_statement)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 205
-            self.match(AMBER_PT_Parser.FLAG)
+            self.match(AmberPTParser.FLAG)
             self.state = 206
-            self.match(AMBER_PT_Parser.ANGLE_FORCE_CONSTANT)
+            self.match(AmberPTParser.ANGLE_FORCE_CONSTANT)
             self.state = 207
             self.real_format_statement()
             self.state = 211
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AMBER_PT_Parser.Real or _la==AMBER_PT_Parser.RETURN:
+            while _la==AmberPTParser.Real or _la==AmberPTParser.RETURN:
                 self.state = 208
                 self.real_array()
                 self.state = 213
@@ -1403,24 +1403,24 @@ class AMBER_PT_Parser ( Parser ):
             self.parser = parser
 
         def FLAG(self):
-            return self.getToken(AMBER_PT_Parser.FLAG, 0)
+            return self.getToken(AmberPTParser.FLAG, 0)
 
         def ANGLES_INC_HYDROGEN(self):
-            return self.getToken(AMBER_PT_Parser.ANGLES_INC_HYDROGEN, 0)
+            return self.getToken(AmberPTParser.ANGLES_INC_HYDROGEN, 0)
 
         def integer_format_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Integer_format_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Integer_format_statementContext,0)
 
 
         def integer_array(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(AMBER_PT_Parser.Integer_arrayContext)
+                return self.getTypedRuleContexts(AmberPTParser.Integer_arrayContext)
             else:
-                return self.getTypedRuleContext(AMBER_PT_Parser.Integer_arrayContext,i)
+                return self.getTypedRuleContext(AmberPTParser.Integer_arrayContext,i)
 
 
         def getRuleIndex(self):
-            return AMBER_PT_Parser.RULE_angles_inc_hydrogen_statement
+            return AmberPTParser.RULE_angles_inc_hydrogen_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterAngles_inc_hydrogen_statement" ):
@@ -1435,21 +1435,21 @@ class AMBER_PT_Parser ( Parser ):
 
     def angles_inc_hydrogen_statement(self):
 
-        localctx = AMBER_PT_Parser.Angles_inc_hydrogen_statementContext(self, self._ctx, self.state)
+        localctx = AmberPTParser.Angles_inc_hydrogen_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 10, self.RULE_angles_inc_hydrogen_statement)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 214
-            self.match(AMBER_PT_Parser.FLAG)
+            self.match(AmberPTParser.FLAG)
             self.state = 215
-            self.match(AMBER_PT_Parser.ANGLES_INC_HYDROGEN)
+            self.match(AmberPTParser.ANGLES_INC_HYDROGEN)
             self.state = 216
             self.integer_format_statement()
             self.state = 220
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AMBER_PT_Parser.Integer or _la==AMBER_PT_Parser.RETURN:
+            while _la==AmberPTParser.Integer or _la==AmberPTParser.RETURN:
                 self.state = 217
                 self.integer_array()
                 self.state = 222
@@ -1472,24 +1472,24 @@ class AMBER_PT_Parser ( Parser ):
             self.parser = parser
 
         def FLAG(self):
-            return self.getToken(AMBER_PT_Parser.FLAG, 0)
+            return self.getToken(AmberPTParser.FLAG, 0)
 
         def ANGLES_WITHOUT_HYDROGEN(self):
-            return self.getToken(AMBER_PT_Parser.ANGLES_WITHOUT_HYDROGEN, 0)
+            return self.getToken(AmberPTParser.ANGLES_WITHOUT_HYDROGEN, 0)
 
         def integer_format_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Integer_format_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Integer_format_statementContext,0)
 
 
         def integer_array(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(AMBER_PT_Parser.Integer_arrayContext)
+                return self.getTypedRuleContexts(AmberPTParser.Integer_arrayContext)
             else:
-                return self.getTypedRuleContext(AMBER_PT_Parser.Integer_arrayContext,i)
+                return self.getTypedRuleContext(AmberPTParser.Integer_arrayContext,i)
 
 
         def getRuleIndex(self):
-            return AMBER_PT_Parser.RULE_angles_without_hydrogen_statement
+            return AmberPTParser.RULE_angles_without_hydrogen_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterAngles_without_hydrogen_statement" ):
@@ -1504,21 +1504,21 @@ class AMBER_PT_Parser ( Parser ):
 
     def angles_without_hydrogen_statement(self):
 
-        localctx = AMBER_PT_Parser.Angles_without_hydrogen_statementContext(self, self._ctx, self.state)
+        localctx = AmberPTParser.Angles_without_hydrogen_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 12, self.RULE_angles_without_hydrogen_statement)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 223
-            self.match(AMBER_PT_Parser.FLAG)
+            self.match(AmberPTParser.FLAG)
             self.state = 224
-            self.match(AMBER_PT_Parser.ANGLES_WITHOUT_HYDROGEN)
+            self.match(AmberPTParser.ANGLES_WITHOUT_HYDROGEN)
             self.state = 225
             self.integer_format_statement()
             self.state = 229
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AMBER_PT_Parser.Integer or _la==AMBER_PT_Parser.RETURN:
+            while _la==AmberPTParser.Integer or _la==AmberPTParser.RETURN:
                 self.state = 226
                 self.integer_array()
                 self.state = 231
@@ -1541,24 +1541,24 @@ class AMBER_PT_Parser ( Parser ):
             self.parser = parser
 
         def FLAG(self):
-            return self.getToken(AMBER_PT_Parser.FLAG, 0)
+            return self.getToken(AmberPTParser.FLAG, 0)
 
         def ATOMIC_NUMBER(self):
-            return self.getToken(AMBER_PT_Parser.ATOMIC_NUMBER, 0)
+            return self.getToken(AmberPTParser.ATOMIC_NUMBER, 0)
 
         def integer_format_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Integer_format_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Integer_format_statementContext,0)
 
 
         def integer_array(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(AMBER_PT_Parser.Integer_arrayContext)
+                return self.getTypedRuleContexts(AmberPTParser.Integer_arrayContext)
             else:
-                return self.getTypedRuleContext(AMBER_PT_Parser.Integer_arrayContext,i)
+                return self.getTypedRuleContext(AmberPTParser.Integer_arrayContext,i)
 
 
         def getRuleIndex(self):
-            return AMBER_PT_Parser.RULE_atomic_number_statement
+            return AmberPTParser.RULE_atomic_number_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterAtomic_number_statement" ):
@@ -1573,21 +1573,21 @@ class AMBER_PT_Parser ( Parser ):
 
     def atomic_number_statement(self):
 
-        localctx = AMBER_PT_Parser.Atomic_number_statementContext(self, self._ctx, self.state)
+        localctx = AmberPTParser.Atomic_number_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 14, self.RULE_atomic_number_statement)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 232
-            self.match(AMBER_PT_Parser.FLAG)
+            self.match(AmberPTParser.FLAG)
             self.state = 233
-            self.match(AMBER_PT_Parser.ATOMIC_NUMBER)
+            self.match(AmberPTParser.ATOMIC_NUMBER)
             self.state = 234
             self.integer_format_statement()
             self.state = 238
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AMBER_PT_Parser.Integer or _la==AMBER_PT_Parser.RETURN:
+            while _la==AmberPTParser.Integer or _la==AmberPTParser.RETURN:
                 self.state = 235
                 self.integer_array()
                 self.state = 240
@@ -1610,24 +1610,24 @@ class AMBER_PT_Parser ( Parser ):
             self.parser = parser
 
         def FLAG(self):
-            return self.getToken(AMBER_PT_Parser.FLAG, 0)
+            return self.getToken(AmberPTParser.FLAG, 0)
 
         def ATOM_NAME(self):
-            return self.getToken(AMBER_PT_Parser.ATOM_NAME, 0)
+            return self.getToken(AmberPTParser.ATOM_NAME, 0)
 
         def string4_format_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.String4_format_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.String4_format_statementContext,0)
 
 
         def atom_name_array(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(AMBER_PT_Parser.Atom_name_arrayContext)
+                return self.getTypedRuleContexts(AmberPTParser.Atom_name_arrayContext)
             else:
-                return self.getTypedRuleContext(AMBER_PT_Parser.Atom_name_arrayContext,i)
+                return self.getTypedRuleContext(AmberPTParser.Atom_name_arrayContext,i)
 
 
         def getRuleIndex(self):
-            return AMBER_PT_Parser.RULE_atom_name_statement
+            return AmberPTParser.RULE_atom_name_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterAtom_name_statement" ):
@@ -1642,21 +1642,21 @@ class AMBER_PT_Parser ( Parser ):
 
     def atom_name_statement(self):
 
-        localctx = AMBER_PT_Parser.Atom_name_statementContext(self, self._ctx, self.state)
+        localctx = AmberPTParser.Atom_name_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 16, self.RULE_atom_name_statement)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 241
-            self.match(AMBER_PT_Parser.FLAG)
+            self.match(AmberPTParser.FLAG)
             self.state = 242
-            self.match(AMBER_PT_Parser.ATOM_NAME)
+            self.match(AmberPTParser.ATOM_NAME)
             self.state = 243
             self.string4_format_statement()
             self.state = 247
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AMBER_PT_Parser.Atom_name4 or _la==AMBER_PT_Parser.RETURN:
+            while _la==AmberPTParser.Atom_name4 or _la==AmberPTParser.RETURN:
                 self.state = 244
                 self.atom_name_array()
                 self.state = 249
@@ -1679,24 +1679,24 @@ class AMBER_PT_Parser ( Parser ):
             self.parser = parser
 
         def FLAG(self):
-            return self.getToken(AMBER_PT_Parser.FLAG, 0)
+            return self.getToken(AmberPTParser.FLAG, 0)
 
         def ATOM_TYPE_INDEX(self):
-            return self.getToken(AMBER_PT_Parser.ATOM_TYPE_INDEX, 0)
+            return self.getToken(AmberPTParser.ATOM_TYPE_INDEX, 0)
 
         def integer_format_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Integer_format_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Integer_format_statementContext,0)
 
 
         def integer_array(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(AMBER_PT_Parser.Integer_arrayContext)
+                return self.getTypedRuleContexts(AmberPTParser.Integer_arrayContext)
             else:
-                return self.getTypedRuleContext(AMBER_PT_Parser.Integer_arrayContext,i)
+                return self.getTypedRuleContext(AmberPTParser.Integer_arrayContext,i)
 
 
         def getRuleIndex(self):
-            return AMBER_PT_Parser.RULE_atom_type_index_statement
+            return AmberPTParser.RULE_atom_type_index_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterAtom_type_index_statement" ):
@@ -1711,21 +1711,21 @@ class AMBER_PT_Parser ( Parser ):
 
     def atom_type_index_statement(self):
 
-        localctx = AMBER_PT_Parser.Atom_type_index_statementContext(self, self._ctx, self.state)
+        localctx = AmberPTParser.Atom_type_index_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 18, self.RULE_atom_type_index_statement)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 250
-            self.match(AMBER_PT_Parser.FLAG)
+            self.match(AmberPTParser.FLAG)
             self.state = 251
-            self.match(AMBER_PT_Parser.ATOM_TYPE_INDEX)
+            self.match(AmberPTParser.ATOM_TYPE_INDEX)
             self.state = 252
             self.integer_format_statement()
             self.state = 256
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AMBER_PT_Parser.Integer or _la==AMBER_PT_Parser.RETURN:
+            while _la==AmberPTParser.Integer or _la==AmberPTParser.RETURN:
                 self.state = 253
                 self.integer_array()
                 self.state = 258
@@ -1748,24 +1748,24 @@ class AMBER_PT_Parser ( Parser ):
             self.parser = parser
 
         def FLAG(self):
-            return self.getToken(AMBER_PT_Parser.FLAG, 0)
+            return self.getToken(AmberPTParser.FLAG, 0)
 
         def ATOMS_PER_MOLECULE(self):
-            return self.getToken(AMBER_PT_Parser.ATOMS_PER_MOLECULE, 0)
+            return self.getToken(AmberPTParser.ATOMS_PER_MOLECULE, 0)
 
         def integer_format_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Integer_format_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Integer_format_statementContext,0)
 
 
         def integer_array(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(AMBER_PT_Parser.Integer_arrayContext)
+                return self.getTypedRuleContexts(AmberPTParser.Integer_arrayContext)
             else:
-                return self.getTypedRuleContext(AMBER_PT_Parser.Integer_arrayContext,i)
+                return self.getTypedRuleContext(AmberPTParser.Integer_arrayContext,i)
 
 
         def getRuleIndex(self):
-            return AMBER_PT_Parser.RULE_atoms_per_molecule_statement
+            return AmberPTParser.RULE_atoms_per_molecule_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterAtoms_per_molecule_statement" ):
@@ -1780,21 +1780,21 @@ class AMBER_PT_Parser ( Parser ):
 
     def atoms_per_molecule_statement(self):
 
-        localctx = AMBER_PT_Parser.Atoms_per_molecule_statementContext(self, self._ctx, self.state)
+        localctx = AmberPTParser.Atoms_per_molecule_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 20, self.RULE_atoms_per_molecule_statement)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 259
-            self.match(AMBER_PT_Parser.FLAG)
+            self.match(AmberPTParser.FLAG)
             self.state = 260
-            self.match(AMBER_PT_Parser.ATOMS_PER_MOLECULE)
+            self.match(AmberPTParser.ATOMS_PER_MOLECULE)
             self.state = 261
             self.integer_format_statement()
             self.state = 265
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AMBER_PT_Parser.Integer or _la==AMBER_PT_Parser.RETURN:
+            while _la==AmberPTParser.Integer or _la==AmberPTParser.RETURN:
                 self.state = 262
                 self.integer_array()
                 self.state = 267
@@ -1817,24 +1817,24 @@ class AMBER_PT_Parser ( Parser ):
             self.parser = parser
 
         def FLAG(self):
-            return self.getToken(AMBER_PT_Parser.FLAG, 0)
+            return self.getToken(AmberPTParser.FLAG, 0)
 
         def BOND_EQUIL_VALUE(self):
-            return self.getToken(AMBER_PT_Parser.BOND_EQUIL_VALUE, 0)
+            return self.getToken(AmberPTParser.BOND_EQUIL_VALUE, 0)
 
         def real_format_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Real_format_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Real_format_statementContext,0)
 
 
         def real_array(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(AMBER_PT_Parser.Real_arrayContext)
+                return self.getTypedRuleContexts(AmberPTParser.Real_arrayContext)
             else:
-                return self.getTypedRuleContext(AMBER_PT_Parser.Real_arrayContext,i)
+                return self.getTypedRuleContext(AmberPTParser.Real_arrayContext,i)
 
 
         def getRuleIndex(self):
-            return AMBER_PT_Parser.RULE_bond_equil_value_statement
+            return AmberPTParser.RULE_bond_equil_value_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterBond_equil_value_statement" ):
@@ -1849,21 +1849,21 @@ class AMBER_PT_Parser ( Parser ):
 
     def bond_equil_value_statement(self):
 
-        localctx = AMBER_PT_Parser.Bond_equil_value_statementContext(self, self._ctx, self.state)
+        localctx = AmberPTParser.Bond_equil_value_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 22, self.RULE_bond_equil_value_statement)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 268
-            self.match(AMBER_PT_Parser.FLAG)
+            self.match(AmberPTParser.FLAG)
             self.state = 269
-            self.match(AMBER_PT_Parser.BOND_EQUIL_VALUE)
+            self.match(AmberPTParser.BOND_EQUIL_VALUE)
             self.state = 270
             self.real_format_statement()
             self.state = 274
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AMBER_PT_Parser.Real or _la==AMBER_PT_Parser.RETURN:
+            while _la==AmberPTParser.Real or _la==AmberPTParser.RETURN:
                 self.state = 271
                 self.real_array()
                 self.state = 276
@@ -1886,24 +1886,24 @@ class AMBER_PT_Parser ( Parser ):
             self.parser = parser
 
         def FLAG(self):
-            return self.getToken(AMBER_PT_Parser.FLAG, 0)
+            return self.getToken(AmberPTParser.FLAG, 0)
 
         def BOND_FORCE_CONSTANT(self):
-            return self.getToken(AMBER_PT_Parser.BOND_FORCE_CONSTANT, 0)
+            return self.getToken(AmberPTParser.BOND_FORCE_CONSTANT, 0)
 
         def real_format_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Real_format_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Real_format_statementContext,0)
 
 
         def real_array(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(AMBER_PT_Parser.Real_arrayContext)
+                return self.getTypedRuleContexts(AmberPTParser.Real_arrayContext)
             else:
-                return self.getTypedRuleContext(AMBER_PT_Parser.Real_arrayContext,i)
+                return self.getTypedRuleContext(AmberPTParser.Real_arrayContext,i)
 
 
         def getRuleIndex(self):
-            return AMBER_PT_Parser.RULE_bond_force_constant_statement
+            return AmberPTParser.RULE_bond_force_constant_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterBond_force_constant_statement" ):
@@ -1918,21 +1918,21 @@ class AMBER_PT_Parser ( Parser ):
 
     def bond_force_constant_statement(self):
 
-        localctx = AMBER_PT_Parser.Bond_force_constant_statementContext(self, self._ctx, self.state)
+        localctx = AmberPTParser.Bond_force_constant_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 24, self.RULE_bond_force_constant_statement)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 277
-            self.match(AMBER_PT_Parser.FLAG)
+            self.match(AmberPTParser.FLAG)
             self.state = 278
-            self.match(AMBER_PT_Parser.BOND_FORCE_CONSTANT)
+            self.match(AmberPTParser.BOND_FORCE_CONSTANT)
             self.state = 279
             self.real_format_statement()
             self.state = 283
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AMBER_PT_Parser.Real or _la==AMBER_PT_Parser.RETURN:
+            while _la==AmberPTParser.Real or _la==AmberPTParser.RETURN:
                 self.state = 280
                 self.real_array()
                 self.state = 285
@@ -1955,24 +1955,24 @@ class AMBER_PT_Parser ( Parser ):
             self.parser = parser
 
         def FLAG(self):
-            return self.getToken(AMBER_PT_Parser.FLAG, 0)
+            return self.getToken(AmberPTParser.FLAG, 0)
 
         def BONDS_INC_HYDROGEN(self):
-            return self.getToken(AMBER_PT_Parser.BONDS_INC_HYDROGEN, 0)
+            return self.getToken(AmberPTParser.BONDS_INC_HYDROGEN, 0)
 
         def integer_format_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Integer_format_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Integer_format_statementContext,0)
 
 
         def integer_array(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(AMBER_PT_Parser.Integer_arrayContext)
+                return self.getTypedRuleContexts(AmberPTParser.Integer_arrayContext)
             else:
-                return self.getTypedRuleContext(AMBER_PT_Parser.Integer_arrayContext,i)
+                return self.getTypedRuleContext(AmberPTParser.Integer_arrayContext,i)
 
 
         def getRuleIndex(self):
-            return AMBER_PT_Parser.RULE_bonds_inc_hydrogen_statement
+            return AmberPTParser.RULE_bonds_inc_hydrogen_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterBonds_inc_hydrogen_statement" ):
@@ -1987,21 +1987,21 @@ class AMBER_PT_Parser ( Parser ):
 
     def bonds_inc_hydrogen_statement(self):
 
-        localctx = AMBER_PT_Parser.Bonds_inc_hydrogen_statementContext(self, self._ctx, self.state)
+        localctx = AmberPTParser.Bonds_inc_hydrogen_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 26, self.RULE_bonds_inc_hydrogen_statement)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 286
-            self.match(AMBER_PT_Parser.FLAG)
+            self.match(AmberPTParser.FLAG)
             self.state = 287
-            self.match(AMBER_PT_Parser.BONDS_INC_HYDROGEN)
+            self.match(AmberPTParser.BONDS_INC_HYDROGEN)
             self.state = 288
             self.integer_format_statement()
             self.state = 292
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AMBER_PT_Parser.Integer or _la==AMBER_PT_Parser.RETURN:
+            while _la==AmberPTParser.Integer or _la==AmberPTParser.RETURN:
                 self.state = 289
                 self.integer_array()
                 self.state = 294
@@ -2024,24 +2024,24 @@ class AMBER_PT_Parser ( Parser ):
             self.parser = parser
 
         def FLAG(self):
-            return self.getToken(AMBER_PT_Parser.FLAG, 0)
+            return self.getToken(AmberPTParser.FLAG, 0)
 
         def BONDS_WITHOUT_HYDROGEN(self):
-            return self.getToken(AMBER_PT_Parser.BONDS_WITHOUT_HYDROGEN, 0)
+            return self.getToken(AmberPTParser.BONDS_WITHOUT_HYDROGEN, 0)
 
         def integer_format_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Integer_format_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Integer_format_statementContext,0)
 
 
         def integer_array(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(AMBER_PT_Parser.Integer_arrayContext)
+                return self.getTypedRuleContexts(AmberPTParser.Integer_arrayContext)
             else:
-                return self.getTypedRuleContext(AMBER_PT_Parser.Integer_arrayContext,i)
+                return self.getTypedRuleContext(AmberPTParser.Integer_arrayContext,i)
 
 
         def getRuleIndex(self):
-            return AMBER_PT_Parser.RULE_bonds_without_hydrogen_statement
+            return AmberPTParser.RULE_bonds_without_hydrogen_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterBonds_without_hydrogen_statement" ):
@@ -2056,21 +2056,21 @@ class AMBER_PT_Parser ( Parser ):
 
     def bonds_without_hydrogen_statement(self):
 
-        localctx = AMBER_PT_Parser.Bonds_without_hydrogen_statementContext(self, self._ctx, self.state)
+        localctx = AmberPTParser.Bonds_without_hydrogen_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 28, self.RULE_bonds_without_hydrogen_statement)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 295
-            self.match(AMBER_PT_Parser.FLAG)
+            self.match(AmberPTParser.FLAG)
             self.state = 296
-            self.match(AMBER_PT_Parser.BONDS_WITHOUT_HYDROGEN)
+            self.match(AmberPTParser.BONDS_WITHOUT_HYDROGEN)
             self.state = 297
             self.integer_format_statement()
             self.state = 301
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AMBER_PT_Parser.Integer or _la==AMBER_PT_Parser.RETURN:
+            while _la==AmberPTParser.Integer or _la==AmberPTParser.RETURN:
                 self.state = 298
                 self.integer_array()
                 self.state = 303
@@ -2093,24 +2093,24 @@ class AMBER_PT_Parser ( Parser ):
             self.parser = parser
 
         def FLAG(self):
-            return self.getToken(AMBER_PT_Parser.FLAG, 0)
+            return self.getToken(AmberPTParser.FLAG, 0)
 
         def BOX_DIMENSIONS(self):
-            return self.getToken(AMBER_PT_Parser.BOX_DIMENSIONS, 0)
+            return self.getToken(AmberPTParser.BOX_DIMENSIONS, 0)
 
         def real_format_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Real_format_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Real_format_statementContext,0)
 
 
         def real_array(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(AMBER_PT_Parser.Real_arrayContext)
+                return self.getTypedRuleContexts(AmberPTParser.Real_arrayContext)
             else:
-                return self.getTypedRuleContext(AMBER_PT_Parser.Real_arrayContext,i)
+                return self.getTypedRuleContext(AmberPTParser.Real_arrayContext,i)
 
 
         def getRuleIndex(self):
-            return AMBER_PT_Parser.RULE_box_dimensions_statement
+            return AmberPTParser.RULE_box_dimensions_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterBox_dimensions_statement" ):
@@ -2125,21 +2125,21 @@ class AMBER_PT_Parser ( Parser ):
 
     def box_dimensions_statement(self):
 
-        localctx = AMBER_PT_Parser.Box_dimensions_statementContext(self, self._ctx, self.state)
+        localctx = AmberPTParser.Box_dimensions_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 30, self.RULE_box_dimensions_statement)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 304
-            self.match(AMBER_PT_Parser.FLAG)
+            self.match(AmberPTParser.FLAG)
             self.state = 305
-            self.match(AMBER_PT_Parser.BOX_DIMENSIONS)
+            self.match(AmberPTParser.BOX_DIMENSIONS)
             self.state = 306
             self.real_format_statement()
             self.state = 310
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AMBER_PT_Parser.Real or _la==AMBER_PT_Parser.RETURN:
+            while _la==AmberPTParser.Real or _la==AmberPTParser.RETURN:
                 self.state = 307
                 self.real_array()
                 self.state = 312
@@ -2162,24 +2162,24 @@ class AMBER_PT_Parser ( Parser ):
             self.parser = parser
 
         def FLAG(self):
-            return self.getToken(AMBER_PT_Parser.FLAG, 0)
+            return self.getToken(AmberPTParser.FLAG, 0)
 
         def CAP_INFO(self):
-            return self.getToken(AMBER_PT_Parser.CAP_INFO, 0)
+            return self.getToken(AmberPTParser.CAP_INFO, 0)
 
         def integer_format_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Integer_format_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Integer_format_statementContext,0)
 
 
         def integer_array(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(AMBER_PT_Parser.Integer_arrayContext)
+                return self.getTypedRuleContexts(AmberPTParser.Integer_arrayContext)
             else:
-                return self.getTypedRuleContext(AMBER_PT_Parser.Integer_arrayContext,i)
+                return self.getTypedRuleContext(AmberPTParser.Integer_arrayContext,i)
 
 
         def getRuleIndex(self):
-            return AMBER_PT_Parser.RULE_cap_info_statement
+            return AmberPTParser.RULE_cap_info_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterCap_info_statement" ):
@@ -2194,21 +2194,21 @@ class AMBER_PT_Parser ( Parser ):
 
     def cap_info_statement(self):
 
-        localctx = AMBER_PT_Parser.Cap_info_statementContext(self, self._ctx, self.state)
+        localctx = AmberPTParser.Cap_info_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 32, self.RULE_cap_info_statement)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 313
-            self.match(AMBER_PT_Parser.FLAG)
+            self.match(AmberPTParser.FLAG)
             self.state = 314
-            self.match(AMBER_PT_Parser.CAP_INFO)
+            self.match(AmberPTParser.CAP_INFO)
             self.state = 315
             self.integer_format_statement()
             self.state = 319
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AMBER_PT_Parser.Integer or _la==AMBER_PT_Parser.RETURN:
+            while _la==AmberPTParser.Integer or _la==AmberPTParser.RETURN:
                 self.state = 316
                 self.integer_array()
                 self.state = 321
@@ -2231,24 +2231,24 @@ class AMBER_PT_Parser ( Parser ):
             self.parser = parser
 
         def FLAG(self):
-            return self.getToken(AMBER_PT_Parser.FLAG, 0)
+            return self.getToken(AmberPTParser.FLAG, 0)
 
         def CAP_INFO2(self):
-            return self.getToken(AMBER_PT_Parser.CAP_INFO2, 0)
+            return self.getToken(AmberPTParser.CAP_INFO2, 0)
 
         def real_format_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Real_format_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Real_format_statementContext,0)
 
 
         def real_array(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(AMBER_PT_Parser.Real_arrayContext)
+                return self.getTypedRuleContexts(AmberPTParser.Real_arrayContext)
             else:
-                return self.getTypedRuleContext(AMBER_PT_Parser.Real_arrayContext,i)
+                return self.getTypedRuleContext(AmberPTParser.Real_arrayContext,i)
 
 
         def getRuleIndex(self):
-            return AMBER_PT_Parser.RULE_cap_info2_statement
+            return AmberPTParser.RULE_cap_info2_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterCap_info2_statement" ):
@@ -2263,21 +2263,21 @@ class AMBER_PT_Parser ( Parser ):
 
     def cap_info2_statement(self):
 
-        localctx = AMBER_PT_Parser.Cap_info2_statementContext(self, self._ctx, self.state)
+        localctx = AmberPTParser.Cap_info2_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 34, self.RULE_cap_info2_statement)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 322
-            self.match(AMBER_PT_Parser.FLAG)
+            self.match(AmberPTParser.FLAG)
             self.state = 323
-            self.match(AMBER_PT_Parser.CAP_INFO2)
+            self.match(AmberPTParser.CAP_INFO2)
             self.state = 324
             self.real_format_statement()
             self.state = 328
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AMBER_PT_Parser.Real or _la==AMBER_PT_Parser.RETURN:
+            while _la==AmberPTParser.Real or _la==AmberPTParser.RETURN:
                 self.state = 325
                 self.real_array()
                 self.state = 330
@@ -2300,24 +2300,24 @@ class AMBER_PT_Parser ( Parser ):
             self.parser = parser
 
         def FLAG(self):
-            return self.getToken(AMBER_PT_Parser.FLAG, 0)
+            return self.getToken(AmberPTParser.FLAG, 0)
 
         def CHARGE(self):
-            return self.getToken(AMBER_PT_Parser.CHARGE, 0)
+            return self.getToken(AmberPTParser.CHARGE, 0)
 
         def real_format_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Real_format_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Real_format_statementContext,0)
 
 
         def real_array(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(AMBER_PT_Parser.Real_arrayContext)
+                return self.getTypedRuleContexts(AmberPTParser.Real_arrayContext)
             else:
-                return self.getTypedRuleContext(AMBER_PT_Parser.Real_arrayContext,i)
+                return self.getTypedRuleContext(AmberPTParser.Real_arrayContext,i)
 
 
         def getRuleIndex(self):
-            return AMBER_PT_Parser.RULE_charge_statement
+            return AmberPTParser.RULE_charge_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterCharge_statement" ):
@@ -2332,21 +2332,21 @@ class AMBER_PT_Parser ( Parser ):
 
     def charge_statement(self):
 
-        localctx = AMBER_PT_Parser.Charge_statementContext(self, self._ctx, self.state)
+        localctx = AmberPTParser.Charge_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 36, self.RULE_charge_statement)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 331
-            self.match(AMBER_PT_Parser.FLAG)
+            self.match(AmberPTParser.FLAG)
             self.state = 332
-            self.match(AMBER_PT_Parser.CHARGE)
+            self.match(AmberPTParser.CHARGE)
             self.state = 333
             self.real_format_statement()
             self.state = 337
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AMBER_PT_Parser.Real or _la==AMBER_PT_Parser.RETURN:
+            while _la==AmberPTParser.Real or _la==AmberPTParser.RETURN:
                 self.state = 334
                 self.real_array()
                 self.state = 339
@@ -2369,24 +2369,24 @@ class AMBER_PT_Parser ( Parser ):
             self.parser = parser
 
         def FLAG(self):
-            return self.getToken(AMBER_PT_Parser.FLAG, 0)
+            return self.getToken(AmberPTParser.FLAG, 0)
 
         def DIHEDRAL_FORCE_CONSTANT(self):
-            return self.getToken(AMBER_PT_Parser.DIHEDRAL_FORCE_CONSTANT, 0)
+            return self.getToken(AmberPTParser.DIHEDRAL_FORCE_CONSTANT, 0)
 
         def real_format_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Real_format_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Real_format_statementContext,0)
 
 
         def real_array(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(AMBER_PT_Parser.Real_arrayContext)
+                return self.getTypedRuleContexts(AmberPTParser.Real_arrayContext)
             else:
-                return self.getTypedRuleContext(AMBER_PT_Parser.Real_arrayContext,i)
+                return self.getTypedRuleContext(AmberPTParser.Real_arrayContext,i)
 
 
         def getRuleIndex(self):
-            return AMBER_PT_Parser.RULE_dihedral_force_constant_statement
+            return AmberPTParser.RULE_dihedral_force_constant_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterDihedral_force_constant_statement" ):
@@ -2401,21 +2401,21 @@ class AMBER_PT_Parser ( Parser ):
 
     def dihedral_force_constant_statement(self):
 
-        localctx = AMBER_PT_Parser.Dihedral_force_constant_statementContext(self, self._ctx, self.state)
+        localctx = AmberPTParser.Dihedral_force_constant_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 38, self.RULE_dihedral_force_constant_statement)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 340
-            self.match(AMBER_PT_Parser.FLAG)
+            self.match(AmberPTParser.FLAG)
             self.state = 341
-            self.match(AMBER_PT_Parser.DIHEDRAL_FORCE_CONSTANT)
+            self.match(AmberPTParser.DIHEDRAL_FORCE_CONSTANT)
             self.state = 342
             self.real_format_statement()
             self.state = 346
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AMBER_PT_Parser.Real or _la==AMBER_PT_Parser.RETURN:
+            while _la==AmberPTParser.Real or _la==AmberPTParser.RETURN:
                 self.state = 343
                 self.real_array()
                 self.state = 348
@@ -2438,24 +2438,24 @@ class AMBER_PT_Parser ( Parser ):
             self.parser = parser
 
         def FLAG(self):
-            return self.getToken(AMBER_PT_Parser.FLAG, 0)
+            return self.getToken(AmberPTParser.FLAG, 0)
 
         def DIHEDRAL_PERIODICITY(self):
-            return self.getToken(AMBER_PT_Parser.DIHEDRAL_PERIODICITY, 0)
+            return self.getToken(AmberPTParser.DIHEDRAL_PERIODICITY, 0)
 
         def real_format_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Real_format_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Real_format_statementContext,0)
 
 
         def real_array(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(AMBER_PT_Parser.Real_arrayContext)
+                return self.getTypedRuleContexts(AmberPTParser.Real_arrayContext)
             else:
-                return self.getTypedRuleContext(AMBER_PT_Parser.Real_arrayContext,i)
+                return self.getTypedRuleContext(AmberPTParser.Real_arrayContext,i)
 
 
         def getRuleIndex(self):
-            return AMBER_PT_Parser.RULE_dihedral_periodicity_statement
+            return AmberPTParser.RULE_dihedral_periodicity_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterDihedral_periodicity_statement" ):
@@ -2470,21 +2470,21 @@ class AMBER_PT_Parser ( Parser ):
 
     def dihedral_periodicity_statement(self):
 
-        localctx = AMBER_PT_Parser.Dihedral_periodicity_statementContext(self, self._ctx, self.state)
+        localctx = AmberPTParser.Dihedral_periodicity_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 40, self.RULE_dihedral_periodicity_statement)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 349
-            self.match(AMBER_PT_Parser.FLAG)
+            self.match(AmberPTParser.FLAG)
             self.state = 350
-            self.match(AMBER_PT_Parser.DIHEDRAL_PERIODICITY)
+            self.match(AmberPTParser.DIHEDRAL_PERIODICITY)
             self.state = 351
             self.real_format_statement()
             self.state = 355
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AMBER_PT_Parser.Real or _la==AMBER_PT_Parser.RETURN:
+            while _la==AmberPTParser.Real or _la==AmberPTParser.RETURN:
                 self.state = 352
                 self.real_array()
                 self.state = 357
@@ -2507,24 +2507,24 @@ class AMBER_PT_Parser ( Parser ):
             self.parser = parser
 
         def FLAG(self):
-            return self.getToken(AMBER_PT_Parser.FLAG, 0)
+            return self.getToken(AmberPTParser.FLAG, 0)
 
         def DIHEDRAL_PHASE(self):
-            return self.getToken(AMBER_PT_Parser.DIHEDRAL_PHASE, 0)
+            return self.getToken(AmberPTParser.DIHEDRAL_PHASE, 0)
 
         def real_format_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Real_format_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Real_format_statementContext,0)
 
 
         def real_array(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(AMBER_PT_Parser.Real_arrayContext)
+                return self.getTypedRuleContexts(AmberPTParser.Real_arrayContext)
             else:
-                return self.getTypedRuleContext(AMBER_PT_Parser.Real_arrayContext,i)
+                return self.getTypedRuleContext(AmberPTParser.Real_arrayContext,i)
 
 
         def getRuleIndex(self):
-            return AMBER_PT_Parser.RULE_dihedral_phase_statement
+            return AmberPTParser.RULE_dihedral_phase_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterDihedral_phase_statement" ):
@@ -2539,21 +2539,21 @@ class AMBER_PT_Parser ( Parser ):
 
     def dihedral_phase_statement(self):
 
-        localctx = AMBER_PT_Parser.Dihedral_phase_statementContext(self, self._ctx, self.state)
+        localctx = AmberPTParser.Dihedral_phase_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 42, self.RULE_dihedral_phase_statement)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 358
-            self.match(AMBER_PT_Parser.FLAG)
+            self.match(AmberPTParser.FLAG)
             self.state = 359
-            self.match(AMBER_PT_Parser.DIHEDRAL_PHASE)
+            self.match(AmberPTParser.DIHEDRAL_PHASE)
             self.state = 360
             self.real_format_statement()
             self.state = 364
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AMBER_PT_Parser.Real or _la==AMBER_PT_Parser.RETURN:
+            while _la==AmberPTParser.Real or _la==AmberPTParser.RETURN:
                 self.state = 361
                 self.real_array()
                 self.state = 366
@@ -2576,24 +2576,24 @@ class AMBER_PT_Parser ( Parser ):
             self.parser = parser
 
         def FLAG(self):
-            return self.getToken(AMBER_PT_Parser.FLAG, 0)
+            return self.getToken(AmberPTParser.FLAG, 0)
 
         def DIHEDRALS_INC_HYDROGEN(self):
-            return self.getToken(AMBER_PT_Parser.DIHEDRALS_INC_HYDROGEN, 0)
+            return self.getToken(AmberPTParser.DIHEDRALS_INC_HYDROGEN, 0)
 
         def integer_format_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Integer_format_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Integer_format_statementContext,0)
 
 
         def integer_array(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(AMBER_PT_Parser.Integer_arrayContext)
+                return self.getTypedRuleContexts(AmberPTParser.Integer_arrayContext)
             else:
-                return self.getTypedRuleContext(AMBER_PT_Parser.Integer_arrayContext,i)
+                return self.getTypedRuleContext(AmberPTParser.Integer_arrayContext,i)
 
 
         def getRuleIndex(self):
-            return AMBER_PT_Parser.RULE_dihedrals_inc_hydrogen_statement
+            return AmberPTParser.RULE_dihedrals_inc_hydrogen_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterDihedrals_inc_hydrogen_statement" ):
@@ -2608,21 +2608,21 @@ class AMBER_PT_Parser ( Parser ):
 
     def dihedrals_inc_hydrogen_statement(self):
 
-        localctx = AMBER_PT_Parser.Dihedrals_inc_hydrogen_statementContext(self, self._ctx, self.state)
+        localctx = AmberPTParser.Dihedrals_inc_hydrogen_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 44, self.RULE_dihedrals_inc_hydrogen_statement)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 367
-            self.match(AMBER_PT_Parser.FLAG)
+            self.match(AmberPTParser.FLAG)
             self.state = 368
-            self.match(AMBER_PT_Parser.DIHEDRALS_INC_HYDROGEN)
+            self.match(AmberPTParser.DIHEDRALS_INC_HYDROGEN)
             self.state = 369
             self.integer_format_statement()
             self.state = 373
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AMBER_PT_Parser.Integer or _la==AMBER_PT_Parser.RETURN:
+            while _la==AmberPTParser.Integer or _la==AmberPTParser.RETURN:
                 self.state = 370
                 self.integer_array()
                 self.state = 375
@@ -2645,24 +2645,24 @@ class AMBER_PT_Parser ( Parser ):
             self.parser = parser
 
         def FLAG(self):
-            return self.getToken(AMBER_PT_Parser.FLAG, 0)
+            return self.getToken(AmberPTParser.FLAG, 0)
 
         def DIHEDRALS_WITHOUT_HYDROGEN(self):
-            return self.getToken(AMBER_PT_Parser.DIHEDRALS_WITHOUT_HYDROGEN, 0)
+            return self.getToken(AmberPTParser.DIHEDRALS_WITHOUT_HYDROGEN, 0)
 
         def integer_format_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Integer_format_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Integer_format_statementContext,0)
 
 
         def integer_array(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(AMBER_PT_Parser.Integer_arrayContext)
+                return self.getTypedRuleContexts(AmberPTParser.Integer_arrayContext)
             else:
-                return self.getTypedRuleContext(AMBER_PT_Parser.Integer_arrayContext,i)
+                return self.getTypedRuleContext(AmberPTParser.Integer_arrayContext,i)
 
 
         def getRuleIndex(self):
-            return AMBER_PT_Parser.RULE_dihedrals_without_hydrogen_statement
+            return AmberPTParser.RULE_dihedrals_without_hydrogen_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterDihedrals_without_hydrogen_statement" ):
@@ -2677,21 +2677,21 @@ class AMBER_PT_Parser ( Parser ):
 
     def dihedrals_without_hydrogen_statement(self):
 
-        localctx = AMBER_PT_Parser.Dihedrals_without_hydrogen_statementContext(self, self._ctx, self.state)
+        localctx = AmberPTParser.Dihedrals_without_hydrogen_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 46, self.RULE_dihedrals_without_hydrogen_statement)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 376
-            self.match(AMBER_PT_Parser.FLAG)
+            self.match(AmberPTParser.FLAG)
             self.state = 377
-            self.match(AMBER_PT_Parser.DIHEDRALS_WITHOUT_HYDROGEN)
+            self.match(AmberPTParser.DIHEDRALS_WITHOUT_HYDROGEN)
             self.state = 378
             self.integer_format_statement()
             self.state = 382
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AMBER_PT_Parser.Integer or _la==AMBER_PT_Parser.RETURN:
+            while _la==AmberPTParser.Integer or _la==AmberPTParser.RETURN:
                 self.state = 379
                 self.integer_array()
                 self.state = 384
@@ -2714,24 +2714,24 @@ class AMBER_PT_Parser ( Parser ):
             self.parser = parser
 
         def FLAG(self):
-            return self.getToken(AMBER_PT_Parser.FLAG, 0)
+            return self.getToken(AmberPTParser.FLAG, 0)
 
         def EXCLUDED_ATOMS_LIST(self):
-            return self.getToken(AMBER_PT_Parser.EXCLUDED_ATOMS_LIST, 0)
+            return self.getToken(AmberPTParser.EXCLUDED_ATOMS_LIST, 0)
 
         def integer_format_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Integer_format_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Integer_format_statementContext,0)
 
 
         def integer_array(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(AMBER_PT_Parser.Integer_arrayContext)
+                return self.getTypedRuleContexts(AmberPTParser.Integer_arrayContext)
             else:
-                return self.getTypedRuleContext(AMBER_PT_Parser.Integer_arrayContext,i)
+                return self.getTypedRuleContext(AmberPTParser.Integer_arrayContext,i)
 
 
         def getRuleIndex(self):
-            return AMBER_PT_Parser.RULE_excluded_atoms_list_statement
+            return AmberPTParser.RULE_excluded_atoms_list_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterExcluded_atoms_list_statement" ):
@@ -2746,21 +2746,21 @@ class AMBER_PT_Parser ( Parser ):
 
     def excluded_atoms_list_statement(self):
 
-        localctx = AMBER_PT_Parser.Excluded_atoms_list_statementContext(self, self._ctx, self.state)
+        localctx = AmberPTParser.Excluded_atoms_list_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 48, self.RULE_excluded_atoms_list_statement)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 385
-            self.match(AMBER_PT_Parser.FLAG)
+            self.match(AmberPTParser.FLAG)
             self.state = 386
-            self.match(AMBER_PT_Parser.EXCLUDED_ATOMS_LIST)
+            self.match(AmberPTParser.EXCLUDED_ATOMS_LIST)
             self.state = 387
             self.integer_format_statement()
             self.state = 391
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AMBER_PT_Parser.Integer or _la==AMBER_PT_Parser.RETURN:
+            while _la==AmberPTParser.Integer or _la==AmberPTParser.RETURN:
                 self.state = 388
                 self.integer_array()
                 self.state = 393
@@ -2783,24 +2783,24 @@ class AMBER_PT_Parser ( Parser ):
             self.parser = parser
 
         def FLAG(self):
-            return self.getToken(AMBER_PT_Parser.FLAG, 0)
+            return self.getToken(AmberPTParser.FLAG, 0)
 
         def HBCUT(self):
-            return self.getToken(AMBER_PT_Parser.HBCUT, 0)
+            return self.getToken(AmberPTParser.HBCUT, 0)
 
         def real_format_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Real_format_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Real_format_statementContext,0)
 
 
         def real_array(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(AMBER_PT_Parser.Real_arrayContext)
+                return self.getTypedRuleContexts(AmberPTParser.Real_arrayContext)
             else:
-                return self.getTypedRuleContext(AMBER_PT_Parser.Real_arrayContext,i)
+                return self.getTypedRuleContext(AmberPTParser.Real_arrayContext,i)
 
 
         def getRuleIndex(self):
-            return AMBER_PT_Parser.RULE_hbcut_statement
+            return AmberPTParser.RULE_hbcut_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterHbcut_statement" ):
@@ -2815,21 +2815,21 @@ class AMBER_PT_Parser ( Parser ):
 
     def hbcut_statement(self):
 
-        localctx = AMBER_PT_Parser.Hbcut_statementContext(self, self._ctx, self.state)
+        localctx = AmberPTParser.Hbcut_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 50, self.RULE_hbcut_statement)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 394
-            self.match(AMBER_PT_Parser.FLAG)
+            self.match(AmberPTParser.FLAG)
             self.state = 395
-            self.match(AMBER_PT_Parser.HBCUT)
+            self.match(AmberPTParser.HBCUT)
             self.state = 396
             self.real_format_statement()
             self.state = 400
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AMBER_PT_Parser.Real or _la==AMBER_PT_Parser.RETURN:
+            while _la==AmberPTParser.Real or _la==AmberPTParser.RETURN:
                 self.state = 397
                 self.real_array()
                 self.state = 402
@@ -2852,24 +2852,24 @@ class AMBER_PT_Parser ( Parser ):
             self.parser = parser
 
         def FLAG(self):
-            return self.getToken(AMBER_PT_Parser.FLAG, 0)
+            return self.getToken(AmberPTParser.FLAG, 0)
 
         def HBOND_ACOEF(self):
-            return self.getToken(AMBER_PT_Parser.HBOND_ACOEF, 0)
+            return self.getToken(AmberPTParser.HBOND_ACOEF, 0)
 
         def real_format_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Real_format_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Real_format_statementContext,0)
 
 
         def real_array(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(AMBER_PT_Parser.Real_arrayContext)
+                return self.getTypedRuleContexts(AmberPTParser.Real_arrayContext)
             else:
-                return self.getTypedRuleContext(AMBER_PT_Parser.Real_arrayContext,i)
+                return self.getTypedRuleContext(AmberPTParser.Real_arrayContext,i)
 
 
         def getRuleIndex(self):
-            return AMBER_PT_Parser.RULE_hbond_acoef_statement
+            return AmberPTParser.RULE_hbond_acoef_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterHbond_acoef_statement" ):
@@ -2884,21 +2884,21 @@ class AMBER_PT_Parser ( Parser ):
 
     def hbond_acoef_statement(self):
 
-        localctx = AMBER_PT_Parser.Hbond_acoef_statementContext(self, self._ctx, self.state)
+        localctx = AmberPTParser.Hbond_acoef_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 52, self.RULE_hbond_acoef_statement)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 403
-            self.match(AMBER_PT_Parser.FLAG)
+            self.match(AmberPTParser.FLAG)
             self.state = 404
-            self.match(AMBER_PT_Parser.HBOND_ACOEF)
+            self.match(AmberPTParser.HBOND_ACOEF)
             self.state = 405
             self.real_format_statement()
             self.state = 409
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AMBER_PT_Parser.Real or _la==AMBER_PT_Parser.RETURN:
+            while _la==AmberPTParser.Real or _la==AmberPTParser.RETURN:
                 self.state = 406
                 self.real_array()
                 self.state = 411
@@ -2921,24 +2921,24 @@ class AMBER_PT_Parser ( Parser ):
             self.parser = parser
 
         def FLAG(self):
-            return self.getToken(AMBER_PT_Parser.FLAG, 0)
+            return self.getToken(AmberPTParser.FLAG, 0)
 
         def HBOND_BCOEF(self):
-            return self.getToken(AMBER_PT_Parser.HBOND_BCOEF, 0)
+            return self.getToken(AmberPTParser.HBOND_BCOEF, 0)
 
         def real_format_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Real_format_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Real_format_statementContext,0)
 
 
         def real_array(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(AMBER_PT_Parser.Real_arrayContext)
+                return self.getTypedRuleContexts(AmberPTParser.Real_arrayContext)
             else:
-                return self.getTypedRuleContext(AMBER_PT_Parser.Real_arrayContext,i)
+                return self.getTypedRuleContext(AmberPTParser.Real_arrayContext,i)
 
 
         def getRuleIndex(self):
-            return AMBER_PT_Parser.RULE_hbond_bcoef_statement
+            return AmberPTParser.RULE_hbond_bcoef_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterHbond_bcoef_statement" ):
@@ -2953,21 +2953,21 @@ class AMBER_PT_Parser ( Parser ):
 
     def hbond_bcoef_statement(self):
 
-        localctx = AMBER_PT_Parser.Hbond_bcoef_statementContext(self, self._ctx, self.state)
+        localctx = AmberPTParser.Hbond_bcoef_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 54, self.RULE_hbond_bcoef_statement)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 412
-            self.match(AMBER_PT_Parser.FLAG)
+            self.match(AmberPTParser.FLAG)
             self.state = 413
-            self.match(AMBER_PT_Parser.HBOND_BCOEF)
+            self.match(AmberPTParser.HBOND_BCOEF)
             self.state = 414
             self.real_format_statement()
             self.state = 418
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AMBER_PT_Parser.Real or _la==AMBER_PT_Parser.RETURN:
+            while _la==AmberPTParser.Real or _la==AmberPTParser.RETURN:
                 self.state = 415
                 self.real_array()
                 self.state = 420
@@ -2990,24 +2990,24 @@ class AMBER_PT_Parser ( Parser ):
             self.parser = parser
 
         def FLAG(self):
-            return self.getToken(AMBER_PT_Parser.FLAG, 0)
+            return self.getToken(AmberPTParser.FLAG, 0)
 
         def IPOL(self):
-            return self.getToken(AMBER_PT_Parser.IPOL, 0)
+            return self.getToken(AmberPTParser.IPOL, 0)
 
         def integer_format_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Integer_format_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Integer_format_statementContext,0)
 
 
         def integer_array(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(AMBER_PT_Parser.Integer_arrayContext)
+                return self.getTypedRuleContexts(AmberPTParser.Integer_arrayContext)
             else:
-                return self.getTypedRuleContext(AMBER_PT_Parser.Integer_arrayContext,i)
+                return self.getTypedRuleContext(AmberPTParser.Integer_arrayContext,i)
 
 
         def getRuleIndex(self):
-            return AMBER_PT_Parser.RULE_ipol_statement
+            return AmberPTParser.RULE_ipol_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterIpol_statement" ):
@@ -3022,21 +3022,21 @@ class AMBER_PT_Parser ( Parser ):
 
     def ipol_statement(self):
 
-        localctx = AMBER_PT_Parser.Ipol_statementContext(self, self._ctx, self.state)
+        localctx = AmberPTParser.Ipol_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 56, self.RULE_ipol_statement)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 421
-            self.match(AMBER_PT_Parser.FLAG)
+            self.match(AmberPTParser.FLAG)
             self.state = 422
-            self.match(AMBER_PT_Parser.IPOL)
+            self.match(AmberPTParser.IPOL)
             self.state = 423
             self.integer_format_statement()
             self.state = 427
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AMBER_PT_Parser.Integer or _la==AMBER_PT_Parser.RETURN:
+            while _la==AmberPTParser.Integer or _la==AmberPTParser.RETURN:
                 self.state = 424
                 self.integer_array()
                 self.state = 429
@@ -3059,24 +3059,24 @@ class AMBER_PT_Parser ( Parser ):
             self.parser = parser
 
         def FLAG(self):
-            return self.getToken(AMBER_PT_Parser.FLAG, 0)
+            return self.getToken(AmberPTParser.FLAG, 0)
 
         def IROTAT(self):
-            return self.getToken(AMBER_PT_Parser.IROTAT, 0)
+            return self.getToken(AmberPTParser.IROTAT, 0)
 
         def integer_format_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Integer_format_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Integer_format_statementContext,0)
 
 
         def integer_array(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(AMBER_PT_Parser.Integer_arrayContext)
+                return self.getTypedRuleContexts(AmberPTParser.Integer_arrayContext)
             else:
-                return self.getTypedRuleContext(AMBER_PT_Parser.Integer_arrayContext,i)
+                return self.getTypedRuleContext(AmberPTParser.Integer_arrayContext,i)
 
 
         def getRuleIndex(self):
-            return AMBER_PT_Parser.RULE_irotat_statement
+            return AmberPTParser.RULE_irotat_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterIrotat_statement" ):
@@ -3091,21 +3091,21 @@ class AMBER_PT_Parser ( Parser ):
 
     def irotat_statement(self):
 
-        localctx = AMBER_PT_Parser.Irotat_statementContext(self, self._ctx, self.state)
+        localctx = AmberPTParser.Irotat_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 58, self.RULE_irotat_statement)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 430
-            self.match(AMBER_PT_Parser.FLAG)
+            self.match(AmberPTParser.FLAG)
             self.state = 431
-            self.match(AMBER_PT_Parser.IROTAT)
+            self.match(AmberPTParser.IROTAT)
             self.state = 432
             self.integer_format_statement()
             self.state = 436
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AMBER_PT_Parser.Integer or _la==AMBER_PT_Parser.RETURN:
+            while _la==AmberPTParser.Integer or _la==AmberPTParser.RETURN:
                 self.state = 433
                 self.integer_array()
                 self.state = 438
@@ -3128,24 +3128,24 @@ class AMBER_PT_Parser ( Parser ):
             self.parser = parser
 
         def FLAG(self):
-            return self.getToken(AMBER_PT_Parser.FLAG, 0)
+            return self.getToken(AmberPTParser.FLAG, 0)
 
         def JOIN_ARRAY(self):
-            return self.getToken(AMBER_PT_Parser.JOIN_ARRAY, 0)
+            return self.getToken(AmberPTParser.JOIN_ARRAY, 0)
 
         def integer_format_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Integer_format_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Integer_format_statementContext,0)
 
 
         def integer_array(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(AMBER_PT_Parser.Integer_arrayContext)
+                return self.getTypedRuleContexts(AmberPTParser.Integer_arrayContext)
             else:
-                return self.getTypedRuleContext(AMBER_PT_Parser.Integer_arrayContext,i)
+                return self.getTypedRuleContext(AmberPTParser.Integer_arrayContext,i)
 
 
         def getRuleIndex(self):
-            return AMBER_PT_Parser.RULE_join_array_statement
+            return AmberPTParser.RULE_join_array_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterJoin_array_statement" ):
@@ -3160,21 +3160,21 @@ class AMBER_PT_Parser ( Parser ):
 
     def join_array_statement(self):
 
-        localctx = AMBER_PT_Parser.Join_array_statementContext(self, self._ctx, self.state)
+        localctx = AmberPTParser.Join_array_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 60, self.RULE_join_array_statement)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 439
-            self.match(AMBER_PT_Parser.FLAG)
+            self.match(AmberPTParser.FLAG)
             self.state = 440
-            self.match(AMBER_PT_Parser.JOIN_ARRAY)
+            self.match(AmberPTParser.JOIN_ARRAY)
             self.state = 441
             self.integer_format_statement()
             self.state = 445
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AMBER_PT_Parser.Integer or _la==AMBER_PT_Parser.RETURN:
+            while _la==AmberPTParser.Integer or _la==AmberPTParser.RETURN:
                 self.state = 442
                 self.integer_array()
                 self.state = 447
@@ -3197,24 +3197,24 @@ class AMBER_PT_Parser ( Parser ):
             self.parser = parser
 
         def FLAG(self):
-            return self.getToken(AMBER_PT_Parser.FLAG, 0)
+            return self.getToken(AmberPTParser.FLAG, 0)
 
         def LENNARD_JONES_ACOEF(self):
-            return self.getToken(AMBER_PT_Parser.LENNARD_JONES_ACOEF, 0)
+            return self.getToken(AmberPTParser.LENNARD_JONES_ACOEF, 0)
 
         def real_format_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Real_format_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Real_format_statementContext,0)
 
 
         def real_array(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(AMBER_PT_Parser.Real_arrayContext)
+                return self.getTypedRuleContexts(AmberPTParser.Real_arrayContext)
             else:
-                return self.getTypedRuleContext(AMBER_PT_Parser.Real_arrayContext,i)
+                return self.getTypedRuleContext(AmberPTParser.Real_arrayContext,i)
 
 
         def getRuleIndex(self):
-            return AMBER_PT_Parser.RULE_lennard_jones_acoef_statement
+            return AmberPTParser.RULE_lennard_jones_acoef_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterLennard_jones_acoef_statement" ):
@@ -3229,21 +3229,21 @@ class AMBER_PT_Parser ( Parser ):
 
     def lennard_jones_acoef_statement(self):
 
-        localctx = AMBER_PT_Parser.Lennard_jones_acoef_statementContext(self, self._ctx, self.state)
+        localctx = AmberPTParser.Lennard_jones_acoef_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 62, self.RULE_lennard_jones_acoef_statement)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 448
-            self.match(AMBER_PT_Parser.FLAG)
+            self.match(AmberPTParser.FLAG)
             self.state = 449
-            self.match(AMBER_PT_Parser.LENNARD_JONES_ACOEF)
+            self.match(AmberPTParser.LENNARD_JONES_ACOEF)
             self.state = 450
             self.real_format_statement()
             self.state = 454
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AMBER_PT_Parser.Real or _la==AMBER_PT_Parser.RETURN:
+            while _la==AmberPTParser.Real or _la==AmberPTParser.RETURN:
                 self.state = 451
                 self.real_array()
                 self.state = 456
@@ -3266,24 +3266,24 @@ class AMBER_PT_Parser ( Parser ):
             self.parser = parser
 
         def FLAG(self):
-            return self.getToken(AMBER_PT_Parser.FLAG, 0)
+            return self.getToken(AmberPTParser.FLAG, 0)
 
         def LENNARD_JONES_BCOEF(self):
-            return self.getToken(AMBER_PT_Parser.LENNARD_JONES_BCOEF, 0)
+            return self.getToken(AmberPTParser.LENNARD_JONES_BCOEF, 0)
 
         def real_format_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Real_format_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Real_format_statementContext,0)
 
 
         def real_array(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(AMBER_PT_Parser.Real_arrayContext)
+                return self.getTypedRuleContexts(AmberPTParser.Real_arrayContext)
             else:
-                return self.getTypedRuleContext(AMBER_PT_Parser.Real_arrayContext,i)
+                return self.getTypedRuleContext(AmberPTParser.Real_arrayContext,i)
 
 
         def getRuleIndex(self):
-            return AMBER_PT_Parser.RULE_lennard_jones_bcoef_statement
+            return AmberPTParser.RULE_lennard_jones_bcoef_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterLennard_jones_bcoef_statement" ):
@@ -3298,21 +3298,21 @@ class AMBER_PT_Parser ( Parser ):
 
     def lennard_jones_bcoef_statement(self):
 
-        localctx = AMBER_PT_Parser.Lennard_jones_bcoef_statementContext(self, self._ctx, self.state)
+        localctx = AmberPTParser.Lennard_jones_bcoef_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 64, self.RULE_lennard_jones_bcoef_statement)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 457
-            self.match(AMBER_PT_Parser.FLAG)
+            self.match(AmberPTParser.FLAG)
             self.state = 458
-            self.match(AMBER_PT_Parser.LENNARD_JONES_BCOEF)
+            self.match(AmberPTParser.LENNARD_JONES_BCOEF)
             self.state = 459
             self.real_format_statement()
             self.state = 463
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AMBER_PT_Parser.Real or _la==AMBER_PT_Parser.RETURN:
+            while _la==AmberPTParser.Real or _la==AmberPTParser.RETURN:
                 self.state = 460
                 self.real_array()
                 self.state = 465
@@ -3335,24 +3335,24 @@ class AMBER_PT_Parser ( Parser ):
             self.parser = parser
 
         def FLAG(self):
-            return self.getToken(AMBER_PT_Parser.FLAG, 0)
+            return self.getToken(AmberPTParser.FLAG, 0)
 
         def MASS(self):
-            return self.getToken(AMBER_PT_Parser.MASS, 0)
+            return self.getToken(AmberPTParser.MASS, 0)
 
         def real_format_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Real_format_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Real_format_statementContext,0)
 
 
         def real_array(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(AMBER_PT_Parser.Real_arrayContext)
+                return self.getTypedRuleContexts(AmberPTParser.Real_arrayContext)
             else:
-                return self.getTypedRuleContext(AMBER_PT_Parser.Real_arrayContext,i)
+                return self.getTypedRuleContext(AmberPTParser.Real_arrayContext,i)
 
 
         def getRuleIndex(self):
-            return AMBER_PT_Parser.RULE_mass_statement
+            return AmberPTParser.RULE_mass_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterMass_statement" ):
@@ -3367,21 +3367,21 @@ class AMBER_PT_Parser ( Parser ):
 
     def mass_statement(self):
 
-        localctx = AMBER_PT_Parser.Mass_statementContext(self, self._ctx, self.state)
+        localctx = AmberPTParser.Mass_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 66, self.RULE_mass_statement)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 466
-            self.match(AMBER_PT_Parser.FLAG)
+            self.match(AmberPTParser.FLAG)
             self.state = 467
-            self.match(AMBER_PT_Parser.MASS)
+            self.match(AmberPTParser.MASS)
             self.state = 468
             self.real_format_statement()
             self.state = 472
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AMBER_PT_Parser.Real or _la==AMBER_PT_Parser.RETURN:
+            while _la==AmberPTParser.Real or _la==AmberPTParser.RETURN:
                 self.state = 469
                 self.real_array()
                 self.state = 474
@@ -3404,21 +3404,21 @@ class AMBER_PT_Parser ( Parser ):
             self.parser = parser
 
         def NONBONDED_PARM_INDEX(self):
-            return self.getToken(AMBER_PT_Parser.NONBONDED_PARM_INDEX, 0)
+            return self.getToken(AmberPTParser.NONBONDED_PARM_INDEX, 0)
 
         def integer_format_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Integer_format_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Integer_format_statementContext,0)
 
 
         def integer_array(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(AMBER_PT_Parser.Integer_arrayContext)
+                return self.getTypedRuleContexts(AmberPTParser.Integer_arrayContext)
             else:
-                return self.getTypedRuleContext(AMBER_PT_Parser.Integer_arrayContext,i)
+                return self.getTypedRuleContext(AmberPTParser.Integer_arrayContext,i)
 
 
         def getRuleIndex(self):
-            return AMBER_PT_Parser.RULE_nonbonded_parm_index_statement
+            return AmberPTParser.RULE_nonbonded_parm_index_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterNonbonded_parm_index_statement" ):
@@ -3433,19 +3433,19 @@ class AMBER_PT_Parser ( Parser ):
 
     def nonbonded_parm_index_statement(self):
 
-        localctx = AMBER_PT_Parser.Nonbonded_parm_index_statementContext(self, self._ctx, self.state)
+        localctx = AmberPTParser.Nonbonded_parm_index_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 68, self.RULE_nonbonded_parm_index_statement)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 475
-            self.match(AMBER_PT_Parser.NONBONDED_PARM_INDEX)
+            self.match(AmberPTParser.NONBONDED_PARM_INDEX)
             self.state = 476
             self.integer_format_statement()
             self.state = 480
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AMBER_PT_Parser.Integer or _la==AMBER_PT_Parser.RETURN:
+            while _la==AmberPTParser.Integer or _la==AmberPTParser.RETURN:
                 self.state = 477
                 self.integer_array()
                 self.state = 482
@@ -3468,24 +3468,24 @@ class AMBER_PT_Parser ( Parser ):
             self.parser = parser
 
         def FLAG(self):
-            return self.getToken(AMBER_PT_Parser.FLAG, 0)
+            return self.getToken(AmberPTParser.FLAG, 0)
 
         def NUMBER_EXCLUDED_ATOMS(self):
-            return self.getToken(AMBER_PT_Parser.NUMBER_EXCLUDED_ATOMS, 0)
+            return self.getToken(AmberPTParser.NUMBER_EXCLUDED_ATOMS, 0)
 
         def integer_format_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Integer_format_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Integer_format_statementContext,0)
 
 
         def integer_array(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(AMBER_PT_Parser.Integer_arrayContext)
+                return self.getTypedRuleContexts(AmberPTParser.Integer_arrayContext)
             else:
-                return self.getTypedRuleContext(AMBER_PT_Parser.Integer_arrayContext,i)
+                return self.getTypedRuleContext(AmberPTParser.Integer_arrayContext,i)
 
 
         def getRuleIndex(self):
-            return AMBER_PT_Parser.RULE_number_excluded_atoms_statement
+            return AmberPTParser.RULE_number_excluded_atoms_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterNumber_excluded_atoms_statement" ):
@@ -3500,21 +3500,21 @@ class AMBER_PT_Parser ( Parser ):
 
     def number_excluded_atoms_statement(self):
 
-        localctx = AMBER_PT_Parser.Number_excluded_atoms_statementContext(self, self._ctx, self.state)
+        localctx = AmberPTParser.Number_excluded_atoms_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 70, self.RULE_number_excluded_atoms_statement)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 483
-            self.match(AMBER_PT_Parser.FLAG)
+            self.match(AmberPTParser.FLAG)
             self.state = 484
-            self.match(AMBER_PT_Parser.NUMBER_EXCLUDED_ATOMS)
+            self.match(AmberPTParser.NUMBER_EXCLUDED_ATOMS)
             self.state = 485
             self.integer_format_statement()
             self.state = 489
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AMBER_PT_Parser.Integer or _la==AMBER_PT_Parser.RETURN:
+            while _la==AmberPTParser.Integer or _la==AmberPTParser.RETURN:
                 self.state = 486
                 self.integer_array()
                 self.state = 491
@@ -3537,24 +3537,24 @@ class AMBER_PT_Parser ( Parser ):
             self.parser = parser
 
         def FLAG(self):
-            return self.getToken(AMBER_PT_Parser.FLAG, 0)
+            return self.getToken(AmberPTParser.FLAG, 0)
 
         def POINTERS(self):
-            return self.getToken(AMBER_PT_Parser.POINTERS, 0)
+            return self.getToken(AmberPTParser.POINTERS, 0)
 
         def integer_format_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Integer_format_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Integer_format_statementContext,0)
 
 
         def integer_array(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(AMBER_PT_Parser.Integer_arrayContext)
+                return self.getTypedRuleContexts(AmberPTParser.Integer_arrayContext)
             else:
-                return self.getTypedRuleContext(AMBER_PT_Parser.Integer_arrayContext,i)
+                return self.getTypedRuleContext(AmberPTParser.Integer_arrayContext,i)
 
 
         def getRuleIndex(self):
-            return AMBER_PT_Parser.RULE_pointers_statement
+            return AmberPTParser.RULE_pointers_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterPointers_statement" ):
@@ -3569,21 +3569,21 @@ class AMBER_PT_Parser ( Parser ):
 
     def pointers_statement(self):
 
-        localctx = AMBER_PT_Parser.Pointers_statementContext(self, self._ctx, self.state)
+        localctx = AmberPTParser.Pointers_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 72, self.RULE_pointers_statement)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 492
-            self.match(AMBER_PT_Parser.FLAG)
+            self.match(AmberPTParser.FLAG)
             self.state = 493
-            self.match(AMBER_PT_Parser.POINTERS)
+            self.match(AmberPTParser.POINTERS)
             self.state = 494
             self.integer_format_statement()
             self.state = 498
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AMBER_PT_Parser.Integer or _la==AMBER_PT_Parser.RETURN:
+            while _la==AmberPTParser.Integer or _la==AmberPTParser.RETURN:
                 self.state = 495
                 self.integer_array()
                 self.state = 500
@@ -3606,24 +3606,24 @@ class AMBER_PT_Parser ( Parser ):
             self.parser = parser
 
         def FLAG(self):
-            return self.getToken(AMBER_PT_Parser.FLAG, 0)
+            return self.getToken(AmberPTParser.FLAG, 0)
 
         def POLARIZABILITY(self):
-            return self.getToken(AMBER_PT_Parser.POLARIZABILITY, 0)
+            return self.getToken(AmberPTParser.POLARIZABILITY, 0)
 
         def real_format_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Real_format_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Real_format_statementContext,0)
 
 
         def real_array(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(AMBER_PT_Parser.Real_arrayContext)
+                return self.getTypedRuleContexts(AmberPTParser.Real_arrayContext)
             else:
-                return self.getTypedRuleContext(AMBER_PT_Parser.Real_arrayContext,i)
+                return self.getTypedRuleContext(AmberPTParser.Real_arrayContext,i)
 
 
         def getRuleIndex(self):
-            return AMBER_PT_Parser.RULE_polarizability_statement
+            return AmberPTParser.RULE_polarizability_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterPolarizability_statement" ):
@@ -3638,21 +3638,21 @@ class AMBER_PT_Parser ( Parser ):
 
     def polarizability_statement(self):
 
-        localctx = AMBER_PT_Parser.Polarizability_statementContext(self, self._ctx, self.state)
+        localctx = AmberPTParser.Polarizability_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 74, self.RULE_polarizability_statement)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 501
-            self.match(AMBER_PT_Parser.FLAG)
+            self.match(AmberPTParser.FLAG)
             self.state = 502
-            self.match(AMBER_PT_Parser.POLARIZABILITY)
+            self.match(AmberPTParser.POLARIZABILITY)
             self.state = 503
             self.real_format_statement()
             self.state = 507
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AMBER_PT_Parser.Real or _la==AMBER_PT_Parser.RETURN:
+            while _la==AmberPTParser.Real or _la==AmberPTParser.RETURN:
                 self.state = 504
                 self.real_array()
                 self.state = 509
@@ -3675,24 +3675,24 @@ class AMBER_PT_Parser ( Parser ):
             self.parser = parser
 
         def FLAG(self):
-            return self.getToken(AMBER_PT_Parser.FLAG, 0)
+            return self.getToken(AmberPTParser.FLAG, 0)
 
         def RADII(self):
-            return self.getToken(AMBER_PT_Parser.RADII, 0)
+            return self.getToken(AmberPTParser.RADII, 0)
 
         def real_format_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Real_format_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Real_format_statementContext,0)
 
 
         def real_array(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(AMBER_PT_Parser.Real_arrayContext)
+                return self.getTypedRuleContexts(AmberPTParser.Real_arrayContext)
             else:
-                return self.getTypedRuleContext(AMBER_PT_Parser.Real_arrayContext,i)
+                return self.getTypedRuleContext(AmberPTParser.Real_arrayContext,i)
 
 
         def getRuleIndex(self):
-            return AMBER_PT_Parser.RULE_radii_statement
+            return AmberPTParser.RULE_radii_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterRadii_statement" ):
@@ -3707,21 +3707,21 @@ class AMBER_PT_Parser ( Parser ):
 
     def radii_statement(self):
 
-        localctx = AMBER_PT_Parser.Radii_statementContext(self, self._ctx, self.state)
+        localctx = AmberPTParser.Radii_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 76, self.RULE_radii_statement)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 510
-            self.match(AMBER_PT_Parser.FLAG)
+            self.match(AmberPTParser.FLAG)
             self.state = 511
-            self.match(AMBER_PT_Parser.RADII)
+            self.match(AmberPTParser.RADII)
             self.state = 512
             self.real_format_statement()
             self.state = 516
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AMBER_PT_Parser.Real or _la==AMBER_PT_Parser.RETURN:
+            while _la==AmberPTParser.Real or _la==AmberPTParser.RETURN:
                 self.state = 513
                 self.real_array()
                 self.state = 518
@@ -3744,24 +3744,24 @@ class AMBER_PT_Parser ( Parser ):
             self.parser = parser
 
         def FLAG(self):
-            return self.getToken(AMBER_PT_Parser.FLAG, 0)
+            return self.getToken(AmberPTParser.FLAG, 0)
 
         def RADIUS_SET(self):
-            return self.getToken(AMBER_PT_Parser.RADIUS_SET, 0)
+            return self.getToken(AmberPTParser.RADIUS_SET, 0)
 
         def integer_format_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Integer_format_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Integer_format_statementContext,0)
 
 
         def integer_array(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(AMBER_PT_Parser.Integer_arrayContext)
+                return self.getTypedRuleContexts(AmberPTParser.Integer_arrayContext)
             else:
-                return self.getTypedRuleContext(AMBER_PT_Parser.Integer_arrayContext,i)
+                return self.getTypedRuleContext(AmberPTParser.Integer_arrayContext,i)
 
 
         def getRuleIndex(self):
-            return AMBER_PT_Parser.RULE_radius_set_statement
+            return AmberPTParser.RULE_radius_set_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterRadius_set_statement" ):
@@ -3776,21 +3776,21 @@ class AMBER_PT_Parser ( Parser ):
 
     def radius_set_statement(self):
 
-        localctx = AMBER_PT_Parser.Radius_set_statementContext(self, self._ctx, self.state)
+        localctx = AmberPTParser.Radius_set_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 78, self.RULE_radius_set_statement)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 519
-            self.match(AMBER_PT_Parser.FLAG)
+            self.match(AmberPTParser.FLAG)
             self.state = 520
-            self.match(AMBER_PT_Parser.RADIUS_SET)
+            self.match(AmberPTParser.RADIUS_SET)
             self.state = 521
             self.integer_format_statement()
             self.state = 525
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AMBER_PT_Parser.Integer or _la==AMBER_PT_Parser.RETURN:
+            while _la==AmberPTParser.Integer or _la==AmberPTParser.RETURN:
                 self.state = 522
                 self.integer_array()
                 self.state = 527
@@ -3813,24 +3813,24 @@ class AMBER_PT_Parser ( Parser ):
             self.parser = parser
 
         def FLAG(self):
-            return self.getToken(AMBER_PT_Parser.FLAG, 0)
+            return self.getToken(AmberPTParser.FLAG, 0)
 
         def RESIDUE_LABEL(self):
-            return self.getToken(AMBER_PT_Parser.RESIDUE_LABEL, 0)
+            return self.getToken(AmberPTParser.RESIDUE_LABEL, 0)
 
         def string4_format_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.String4_format_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.String4_format_statementContext,0)
 
 
         def residue_name_array(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(AMBER_PT_Parser.Residue_name_arrayContext)
+                return self.getTypedRuleContexts(AmberPTParser.Residue_name_arrayContext)
             else:
-                return self.getTypedRuleContext(AMBER_PT_Parser.Residue_name_arrayContext,i)
+                return self.getTypedRuleContext(AmberPTParser.Residue_name_arrayContext,i)
 
 
         def getRuleIndex(self):
-            return AMBER_PT_Parser.RULE_residue_label_statement
+            return AmberPTParser.RULE_residue_label_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterResidue_label_statement" ):
@@ -3845,21 +3845,21 @@ class AMBER_PT_Parser ( Parser ):
 
     def residue_label_statement(self):
 
-        localctx = AMBER_PT_Parser.Residue_label_statementContext(self, self._ctx, self.state)
+        localctx = AmberPTParser.Residue_label_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 80, self.RULE_residue_label_statement)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 528
-            self.match(AMBER_PT_Parser.FLAG)
+            self.match(AmberPTParser.FLAG)
             self.state = 529
-            self.match(AMBER_PT_Parser.RESIDUE_LABEL)
+            self.match(AmberPTParser.RESIDUE_LABEL)
             self.state = 530
             self.string4_format_statement()
             self.state = 534
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AMBER_PT_Parser.Residue_name4 or _la==AMBER_PT_Parser.RETURN:
+            while _la==AmberPTParser.Residue_name4 or _la==AmberPTParser.RETURN:
                 self.state = 531
                 self.residue_name_array()
                 self.state = 536
@@ -3882,24 +3882,24 @@ class AMBER_PT_Parser ( Parser ):
             self.parser = parser
 
         def FLAG(self):
-            return self.getToken(AMBER_PT_Parser.FLAG, 0)
+            return self.getToken(AmberPTParser.FLAG, 0)
 
         def RESIDUE_POINTER(self):
-            return self.getToken(AMBER_PT_Parser.RESIDUE_POINTER, 0)
+            return self.getToken(AmberPTParser.RESIDUE_POINTER, 0)
 
         def integer_format_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Integer_format_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Integer_format_statementContext,0)
 
 
         def integer_array(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(AMBER_PT_Parser.Integer_arrayContext)
+                return self.getTypedRuleContexts(AmberPTParser.Integer_arrayContext)
             else:
-                return self.getTypedRuleContext(AMBER_PT_Parser.Integer_arrayContext,i)
+                return self.getTypedRuleContext(AmberPTParser.Integer_arrayContext,i)
 
 
         def getRuleIndex(self):
-            return AMBER_PT_Parser.RULE_residue_pointer_statement
+            return AmberPTParser.RULE_residue_pointer_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterResidue_pointer_statement" ):
@@ -3914,21 +3914,21 @@ class AMBER_PT_Parser ( Parser ):
 
     def residue_pointer_statement(self):
 
-        localctx = AMBER_PT_Parser.Residue_pointer_statementContext(self, self._ctx, self.state)
+        localctx = AmberPTParser.Residue_pointer_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 82, self.RULE_residue_pointer_statement)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 537
-            self.match(AMBER_PT_Parser.FLAG)
+            self.match(AmberPTParser.FLAG)
             self.state = 538
-            self.match(AMBER_PT_Parser.RESIDUE_POINTER)
+            self.match(AmberPTParser.RESIDUE_POINTER)
             self.state = 539
             self.integer_format_statement()
             self.state = 543
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AMBER_PT_Parser.Integer or _la==AMBER_PT_Parser.RETURN:
+            while _la==AmberPTParser.Integer or _la==AmberPTParser.RETURN:
                 self.state = 540
                 self.integer_array()
                 self.state = 545
@@ -3951,24 +3951,24 @@ class AMBER_PT_Parser ( Parser ):
             self.parser = parser
 
         def FLAG(self):
-            return self.getToken(AMBER_PT_Parser.FLAG, 0)
+            return self.getToken(AmberPTParser.FLAG, 0)
 
         def SCEE_SCALE_FACTOR(self):
-            return self.getToken(AMBER_PT_Parser.SCEE_SCALE_FACTOR, 0)
+            return self.getToken(AmberPTParser.SCEE_SCALE_FACTOR, 0)
 
         def real_format_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Real_format_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Real_format_statementContext,0)
 
 
         def real_array(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(AMBER_PT_Parser.Real_arrayContext)
+                return self.getTypedRuleContexts(AmberPTParser.Real_arrayContext)
             else:
-                return self.getTypedRuleContext(AMBER_PT_Parser.Real_arrayContext,i)
+                return self.getTypedRuleContext(AmberPTParser.Real_arrayContext,i)
 
 
         def getRuleIndex(self):
-            return AMBER_PT_Parser.RULE_scee_scale_factor_statement
+            return AmberPTParser.RULE_scee_scale_factor_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterScee_scale_factor_statement" ):
@@ -3983,21 +3983,21 @@ class AMBER_PT_Parser ( Parser ):
 
     def scee_scale_factor_statement(self):
 
-        localctx = AMBER_PT_Parser.Scee_scale_factor_statementContext(self, self._ctx, self.state)
+        localctx = AmberPTParser.Scee_scale_factor_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 84, self.RULE_scee_scale_factor_statement)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 546
-            self.match(AMBER_PT_Parser.FLAG)
+            self.match(AmberPTParser.FLAG)
             self.state = 547
-            self.match(AMBER_PT_Parser.SCEE_SCALE_FACTOR)
+            self.match(AmberPTParser.SCEE_SCALE_FACTOR)
             self.state = 548
             self.real_format_statement()
             self.state = 552
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AMBER_PT_Parser.Real or _la==AMBER_PT_Parser.RETURN:
+            while _la==AmberPTParser.Real or _la==AmberPTParser.RETURN:
                 self.state = 549
                 self.real_array()
                 self.state = 554
@@ -4020,24 +4020,24 @@ class AMBER_PT_Parser ( Parser ):
             self.parser = parser
 
         def FLAG(self):
-            return self.getToken(AMBER_PT_Parser.FLAG, 0)
+            return self.getToken(AmberPTParser.FLAG, 0)
 
         def SCNB_SCALE_FACTOR(self):
-            return self.getToken(AMBER_PT_Parser.SCNB_SCALE_FACTOR, 0)
+            return self.getToken(AmberPTParser.SCNB_SCALE_FACTOR, 0)
 
         def real_format_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Real_format_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Real_format_statementContext,0)
 
 
         def real_array(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(AMBER_PT_Parser.Real_arrayContext)
+                return self.getTypedRuleContexts(AmberPTParser.Real_arrayContext)
             else:
-                return self.getTypedRuleContext(AMBER_PT_Parser.Real_arrayContext,i)
+                return self.getTypedRuleContext(AmberPTParser.Real_arrayContext,i)
 
 
         def getRuleIndex(self):
-            return AMBER_PT_Parser.RULE_scnb_scale_factor_statement
+            return AmberPTParser.RULE_scnb_scale_factor_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterScnb_scale_factor_statement" ):
@@ -4052,21 +4052,21 @@ class AMBER_PT_Parser ( Parser ):
 
     def scnb_scale_factor_statement(self):
 
-        localctx = AMBER_PT_Parser.Scnb_scale_factor_statementContext(self, self._ctx, self.state)
+        localctx = AmberPTParser.Scnb_scale_factor_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 86, self.RULE_scnb_scale_factor_statement)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 555
-            self.match(AMBER_PT_Parser.FLAG)
+            self.match(AmberPTParser.FLAG)
             self.state = 556
-            self.match(AMBER_PT_Parser.SCNB_SCALE_FACTOR)
+            self.match(AmberPTParser.SCNB_SCALE_FACTOR)
             self.state = 557
             self.real_format_statement()
             self.state = 561
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AMBER_PT_Parser.Real or _la==AMBER_PT_Parser.RETURN:
+            while _la==AmberPTParser.Real or _la==AmberPTParser.RETURN:
                 self.state = 558
                 self.real_array()
                 self.state = 563
@@ -4089,24 +4089,24 @@ class AMBER_PT_Parser ( Parser ):
             self.parser = parser
 
         def FLAG(self):
-            return self.getToken(AMBER_PT_Parser.FLAG, 0)
+            return self.getToken(AmberPTParser.FLAG, 0)
 
         def SCREEN(self):
-            return self.getToken(AMBER_PT_Parser.SCREEN, 0)
+            return self.getToken(AmberPTParser.SCREEN, 0)
 
         def real_format_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Real_format_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Real_format_statementContext,0)
 
 
         def real_array(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(AMBER_PT_Parser.Real_arrayContext)
+                return self.getTypedRuleContexts(AmberPTParser.Real_arrayContext)
             else:
-                return self.getTypedRuleContext(AMBER_PT_Parser.Real_arrayContext,i)
+                return self.getTypedRuleContext(AmberPTParser.Real_arrayContext,i)
 
 
         def getRuleIndex(self):
-            return AMBER_PT_Parser.RULE_screen_statement
+            return AmberPTParser.RULE_screen_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterScreen_statement" ):
@@ -4121,21 +4121,21 @@ class AMBER_PT_Parser ( Parser ):
 
     def screen_statement(self):
 
-        localctx = AMBER_PT_Parser.Screen_statementContext(self, self._ctx, self.state)
+        localctx = AmberPTParser.Screen_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 88, self.RULE_screen_statement)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 564
-            self.match(AMBER_PT_Parser.FLAG)
+            self.match(AmberPTParser.FLAG)
             self.state = 565
-            self.match(AMBER_PT_Parser.SCREEN)
+            self.match(AmberPTParser.SCREEN)
             self.state = 566
             self.real_format_statement()
             self.state = 570
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AMBER_PT_Parser.Real or _la==AMBER_PT_Parser.RETURN:
+            while _la==AmberPTParser.Real or _la==AmberPTParser.RETURN:
                 self.state = 567
                 self.real_array()
                 self.state = 572
@@ -4158,24 +4158,24 @@ class AMBER_PT_Parser ( Parser ):
             self.parser = parser
 
         def FLAG(self):
-            return self.getToken(AMBER_PT_Parser.FLAG, 0)
+            return self.getToken(AmberPTParser.FLAG, 0)
 
         def SOLTY(self):
-            return self.getToken(AMBER_PT_Parser.SOLTY, 0)
+            return self.getToken(AmberPTParser.SOLTY, 0)
 
         def real_format_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Real_format_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Real_format_statementContext,0)
 
 
         def real_array(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(AMBER_PT_Parser.Real_arrayContext)
+                return self.getTypedRuleContexts(AmberPTParser.Real_arrayContext)
             else:
-                return self.getTypedRuleContext(AMBER_PT_Parser.Real_arrayContext,i)
+                return self.getTypedRuleContext(AmberPTParser.Real_arrayContext,i)
 
 
         def getRuleIndex(self):
-            return AMBER_PT_Parser.RULE_solty_statement
+            return AmberPTParser.RULE_solty_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterSolty_statement" ):
@@ -4190,21 +4190,21 @@ class AMBER_PT_Parser ( Parser ):
 
     def solty_statement(self):
 
-        localctx = AMBER_PT_Parser.Solty_statementContext(self, self._ctx, self.state)
+        localctx = AmberPTParser.Solty_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 90, self.RULE_solty_statement)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 573
-            self.match(AMBER_PT_Parser.FLAG)
+            self.match(AmberPTParser.FLAG)
             self.state = 574
-            self.match(AMBER_PT_Parser.SOLTY)
+            self.match(AmberPTParser.SOLTY)
             self.state = 575
             self.real_format_statement()
             self.state = 579
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AMBER_PT_Parser.Real or _la==AMBER_PT_Parser.RETURN:
+            while _la==AmberPTParser.Real or _la==AmberPTParser.RETURN:
                 self.state = 576
                 self.real_array()
                 self.state = 581
@@ -4227,24 +4227,24 @@ class AMBER_PT_Parser ( Parser ):
             self.parser = parser
 
         def FLAG(self):
-            return self.getToken(AMBER_PT_Parser.FLAG, 0)
+            return self.getToken(AmberPTParser.FLAG, 0)
 
         def SOLVENT_POINTERS(self):
-            return self.getToken(AMBER_PT_Parser.SOLVENT_POINTERS, 0)
+            return self.getToken(AmberPTParser.SOLVENT_POINTERS, 0)
 
         def integer_format_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.Integer_format_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.Integer_format_statementContext,0)
 
 
         def integer_array(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(AMBER_PT_Parser.Integer_arrayContext)
+                return self.getTypedRuleContexts(AmberPTParser.Integer_arrayContext)
             else:
-                return self.getTypedRuleContext(AMBER_PT_Parser.Integer_arrayContext,i)
+                return self.getTypedRuleContext(AmberPTParser.Integer_arrayContext,i)
 
 
         def getRuleIndex(self):
-            return AMBER_PT_Parser.RULE_solvent_pointers_statement
+            return AmberPTParser.RULE_solvent_pointers_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterSolvent_pointers_statement" ):
@@ -4259,21 +4259,21 @@ class AMBER_PT_Parser ( Parser ):
 
     def solvent_pointers_statement(self):
 
-        localctx = AMBER_PT_Parser.Solvent_pointers_statementContext(self, self._ctx, self.state)
+        localctx = AmberPTParser.Solvent_pointers_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 92, self.RULE_solvent_pointers_statement)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 582
-            self.match(AMBER_PT_Parser.FLAG)
+            self.match(AmberPTParser.FLAG)
             self.state = 583
-            self.match(AMBER_PT_Parser.SOLVENT_POINTERS)
+            self.match(AmberPTParser.SOLVENT_POINTERS)
             self.state = 584
             self.integer_format_statement()
             self.state = 588
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AMBER_PT_Parser.Integer or _la==AMBER_PT_Parser.RETURN:
+            while _la==AmberPTParser.Integer or _la==AmberPTParser.RETURN:
                 self.state = 585
                 self.integer_array()
                 self.state = 590
@@ -4296,24 +4296,24 @@ class AMBER_PT_Parser ( Parser ):
             self.parser = parser
 
         def FLAG(self):
-            return self.getToken(AMBER_PT_Parser.FLAG, 0)
+            return self.getToken(AmberPTParser.FLAG, 0)
 
         def TITLE(self):
-            return self.getToken(AMBER_PT_Parser.TITLE, 0)
+            return self.getToken(AmberPTParser.TITLE, 0)
 
         def string_format_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.String_format_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.String_format_statementContext,0)
 
 
         def line_string_array(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(AMBER_PT_Parser.Line_string_arrayContext)
+                return self.getTypedRuleContexts(AmberPTParser.Line_string_arrayContext)
             else:
-                return self.getTypedRuleContext(AMBER_PT_Parser.Line_string_arrayContext,i)
+                return self.getTypedRuleContext(AmberPTParser.Line_string_arrayContext,i)
 
 
         def getRuleIndex(self):
-            return AMBER_PT_Parser.RULE_title_statement
+            return AmberPTParser.RULE_title_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterTitle_statement" ):
@@ -4328,21 +4328,21 @@ class AMBER_PT_Parser ( Parser ):
 
     def title_statement(self):
 
-        localctx = AMBER_PT_Parser.Title_statementContext(self, self._ctx, self.state)
+        localctx = AmberPTParser.Title_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 94, self.RULE_title_statement)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 591
-            self.match(AMBER_PT_Parser.FLAG)
+            self.match(AmberPTParser.FLAG)
             self.state = 592
-            self.match(AMBER_PT_Parser.TITLE)
+            self.match(AmberPTParser.TITLE)
             self.state = 593
             self.string_format_statement()
             self.state = 597
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AMBER_PT_Parser.Line_string:
+            while _la==AmberPTParser.Line_string:
                 self.state = 594
                 self.line_string_array()
                 self.state = 599
@@ -4365,24 +4365,24 @@ class AMBER_PT_Parser ( Parser ):
             self.parser = parser
 
         def FLAG(self):
-            return self.getToken(AMBER_PT_Parser.FLAG, 0)
+            return self.getToken(AmberPTParser.FLAG, 0)
 
         def TREE_CHAIN_CLASSIFICATION(self):
-            return self.getToken(AMBER_PT_Parser.TREE_CHAIN_CLASSIFICATION, 0)
+            return self.getToken(AmberPTParser.TREE_CHAIN_CLASSIFICATION, 0)
 
         def string4_format_statement(self):
-            return self.getTypedRuleContext(AMBER_PT_Parser.String4_format_statementContext,0)
+            return self.getTypedRuleContext(AmberPTParser.String4_format_statementContext,0)
 
 
         def generic_name_array(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(AMBER_PT_Parser.Generic_name_arrayContext)
+                return self.getTypedRuleContexts(AmberPTParser.Generic_name_arrayContext)
             else:
-                return self.getTypedRuleContext(AMBER_PT_Parser.Generic_name_arrayContext,i)
+                return self.getTypedRuleContext(AmberPTParser.Generic_name_arrayContext,i)
 
 
         def getRuleIndex(self):
-            return AMBER_PT_Parser.RULE_tree_chain_classification_statement
+            return AmberPTParser.RULE_tree_chain_classification_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterTree_chain_classification_statement" ):
@@ -4397,21 +4397,21 @@ class AMBER_PT_Parser ( Parser ):
 
     def tree_chain_classification_statement(self):
 
-        localctx = AMBER_PT_Parser.Tree_chain_classification_statementContext(self, self._ctx, self.state)
+        localctx = AmberPTParser.Tree_chain_classification_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 96, self.RULE_tree_chain_classification_statement)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 600
-            self.match(AMBER_PT_Parser.FLAG)
+            self.match(AmberPTParser.FLAG)
             self.state = 601
-            self.match(AMBER_PT_Parser.TREE_CHAIN_CLASSIFICATION)
+            self.match(AmberPTParser.TREE_CHAIN_CLASSIFICATION)
             self.state = 602
             self.string4_format_statement()
             self.state = 606
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AMBER_PT_Parser.Generic_name4 or _la==AMBER_PT_Parser.RETURN:
+            while _la==AmberPTParser.Generic_name4 or _la==AmberPTParser.RETURN:
                 self.state = 603
                 self.generic_name_array()
                 self.state = 608
@@ -4434,22 +4434,22 @@ class AMBER_PT_Parser ( Parser ):
             self.parser = parser
 
         def FORMAT(self):
-            return self.getToken(AMBER_PT_Parser.FORMAT, 0)
+            return self.getToken(AmberPTParser.FORMAT, 0)
 
         def L_paren(self):
-            return self.getToken(AMBER_PT_Parser.L_paren, 0)
+            return self.getToken(AmberPTParser.L_paren, 0)
 
         def Fortran_format_A(self):
-            return self.getToken(AMBER_PT_Parser.Fortran_format_A, 0)
+            return self.getToken(AmberPTParser.Fortran_format_A, 0)
 
         def R_paren(self):
-            return self.getToken(AMBER_PT_Parser.R_paren, 0)
+            return self.getToken(AmberPTParser.R_paren, 0)
 
         def RETURN(self):
-            return self.getToken(AMBER_PT_Parser.RETURN, 0)
+            return self.getToken(AmberPTParser.RETURN, 0)
 
         def getRuleIndex(self):
-            return AMBER_PT_Parser.RULE_string_format_statement
+            return AmberPTParser.RULE_string_format_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterString_format_statement" ):
@@ -4464,20 +4464,20 @@ class AMBER_PT_Parser ( Parser ):
 
     def string_format_statement(self):
 
-        localctx = AMBER_PT_Parser.String_format_statementContext(self, self._ctx, self.state)
+        localctx = AmberPTParser.String_format_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 98, self.RULE_string_format_statement)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 609
-            self.match(AMBER_PT_Parser.FORMAT)
+            self.match(AmberPTParser.FORMAT)
             self.state = 610
-            self.match(AMBER_PT_Parser.L_paren)
+            self.match(AmberPTParser.L_paren)
             self.state = 611
-            self.match(AMBER_PT_Parser.Fortran_format_A)
+            self.match(AmberPTParser.Fortran_format_A)
             self.state = 612
-            self.match(AMBER_PT_Parser.R_paren)
+            self.match(AmberPTParser.R_paren)
             self.state = 613
-            self.match(AMBER_PT_Parser.RETURN)
+            self.match(AmberPTParser.RETURN)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -4494,22 +4494,22 @@ class AMBER_PT_Parser ( Parser ):
             self.parser = parser
 
         def FORMAT(self):
-            return self.getToken(AMBER_PT_Parser.FORMAT, 0)
+            return self.getToken(AmberPTParser.FORMAT, 0)
 
         def L_paren(self):
-            return self.getToken(AMBER_PT_Parser.L_paren, 0)
+            return self.getToken(AmberPTParser.L_paren, 0)
 
         def Fortran_format_A4(self):
-            return self.getToken(AMBER_PT_Parser.Fortran_format_A4, 0)
+            return self.getToken(AmberPTParser.Fortran_format_A4, 0)
 
         def R_paren(self):
-            return self.getToken(AMBER_PT_Parser.R_paren, 0)
+            return self.getToken(AmberPTParser.R_paren, 0)
 
         def RETURN(self):
-            return self.getToken(AMBER_PT_Parser.RETURN, 0)
+            return self.getToken(AmberPTParser.RETURN, 0)
 
         def getRuleIndex(self):
-            return AMBER_PT_Parser.RULE_string4_format_statement
+            return AmberPTParser.RULE_string4_format_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterString4_format_statement" ):
@@ -4524,20 +4524,20 @@ class AMBER_PT_Parser ( Parser ):
 
     def string4_format_statement(self):
 
-        localctx = AMBER_PT_Parser.String4_format_statementContext(self, self._ctx, self.state)
+        localctx = AmberPTParser.String4_format_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 100, self.RULE_string4_format_statement)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 615
-            self.match(AMBER_PT_Parser.FORMAT)
+            self.match(AmberPTParser.FORMAT)
             self.state = 616
-            self.match(AMBER_PT_Parser.L_paren)
+            self.match(AmberPTParser.L_paren)
             self.state = 617
-            self.match(AMBER_PT_Parser.Fortran_format_A4)
+            self.match(AmberPTParser.Fortran_format_A4)
             self.state = 618
-            self.match(AMBER_PT_Parser.R_paren)
+            self.match(AmberPTParser.R_paren)
             self.state = 619
-            self.match(AMBER_PT_Parser.RETURN)
+            self.match(AmberPTParser.RETURN)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -4554,22 +4554,22 @@ class AMBER_PT_Parser ( Parser ):
             self.parser = parser
 
         def FORMAT(self):
-            return self.getToken(AMBER_PT_Parser.FORMAT, 0)
+            return self.getToken(AmberPTParser.FORMAT, 0)
 
         def L_paren(self):
-            return self.getToken(AMBER_PT_Parser.L_paren, 0)
+            return self.getToken(AmberPTParser.L_paren, 0)
 
         def Fortran_format_I(self):
-            return self.getToken(AMBER_PT_Parser.Fortran_format_I, 0)
+            return self.getToken(AmberPTParser.Fortran_format_I, 0)
 
         def R_paren(self):
-            return self.getToken(AMBER_PT_Parser.R_paren, 0)
+            return self.getToken(AmberPTParser.R_paren, 0)
 
         def RETURN(self):
-            return self.getToken(AMBER_PT_Parser.RETURN, 0)
+            return self.getToken(AmberPTParser.RETURN, 0)
 
         def getRuleIndex(self):
-            return AMBER_PT_Parser.RULE_integer_format_statement
+            return AmberPTParser.RULE_integer_format_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterInteger_format_statement" ):
@@ -4584,20 +4584,20 @@ class AMBER_PT_Parser ( Parser ):
 
     def integer_format_statement(self):
 
-        localctx = AMBER_PT_Parser.Integer_format_statementContext(self, self._ctx, self.state)
+        localctx = AmberPTParser.Integer_format_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 102, self.RULE_integer_format_statement)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 621
-            self.match(AMBER_PT_Parser.FORMAT)
+            self.match(AmberPTParser.FORMAT)
             self.state = 622
-            self.match(AMBER_PT_Parser.L_paren)
+            self.match(AmberPTParser.L_paren)
             self.state = 623
-            self.match(AMBER_PT_Parser.Fortran_format_I)
+            self.match(AmberPTParser.Fortran_format_I)
             self.state = 624
-            self.match(AMBER_PT_Parser.R_paren)
+            self.match(AmberPTParser.R_paren)
             self.state = 625
-            self.match(AMBER_PT_Parser.RETURN)
+            self.match(AmberPTParser.RETURN)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -4614,22 +4614,22 @@ class AMBER_PT_Parser ( Parser ):
             self.parser = parser
 
         def FORMAT(self):
-            return self.getToken(AMBER_PT_Parser.FORMAT, 0)
+            return self.getToken(AmberPTParser.FORMAT, 0)
 
         def L_paren(self):
-            return self.getToken(AMBER_PT_Parser.L_paren, 0)
+            return self.getToken(AmberPTParser.L_paren, 0)
 
         def Fortran_format_E(self):
-            return self.getToken(AMBER_PT_Parser.Fortran_format_E, 0)
+            return self.getToken(AmberPTParser.Fortran_format_E, 0)
 
         def R_paren(self):
-            return self.getToken(AMBER_PT_Parser.R_paren, 0)
+            return self.getToken(AmberPTParser.R_paren, 0)
 
         def RETURN(self):
-            return self.getToken(AMBER_PT_Parser.RETURN, 0)
+            return self.getToken(AmberPTParser.RETURN, 0)
 
         def getRuleIndex(self):
-            return AMBER_PT_Parser.RULE_real_format_statement
+            return AmberPTParser.RULE_real_format_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterReal_format_statement" ):
@@ -4644,20 +4644,20 @@ class AMBER_PT_Parser ( Parser ):
 
     def real_format_statement(self):
 
-        localctx = AMBER_PT_Parser.Real_format_statementContext(self, self._ctx, self.state)
+        localctx = AmberPTParser.Real_format_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 104, self.RULE_real_format_statement)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 627
-            self.match(AMBER_PT_Parser.FORMAT)
+            self.match(AmberPTParser.FORMAT)
             self.state = 628
-            self.match(AMBER_PT_Parser.L_paren)
+            self.match(AmberPTParser.L_paren)
             self.state = 629
-            self.match(AMBER_PT_Parser.Fortran_format_E)
+            self.match(AmberPTParser.Fortran_format_E)
             self.state = 630
-            self.match(AMBER_PT_Parser.R_paren)
+            self.match(AmberPTParser.R_paren)
             self.state = 631
-            self.match(AMBER_PT_Parser.RETURN)
+            self.match(AmberPTParser.RETURN)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -4674,22 +4674,22 @@ class AMBER_PT_Parser ( Parser ):
             self.parser = parser
 
         def FORMAT(self):
-            return self.getToken(AMBER_PT_Parser.FORMAT, 0)
+            return self.getToken(AmberPTParser.FORMAT, 0)
 
         def L_paren(self):
-            return self.getToken(AMBER_PT_Parser.L_paren, 0)
+            return self.getToken(AmberPTParser.L_paren, 0)
 
         def Fortran_format_F(self):
-            return self.getToken(AMBER_PT_Parser.Fortran_format_F, 0)
+            return self.getToken(AmberPTParser.Fortran_format_F, 0)
 
         def R_paren(self):
-            return self.getToken(AMBER_PT_Parser.R_paren, 0)
+            return self.getToken(AmberPTParser.R_paren, 0)
 
         def RETURN(self):
-            return self.getToken(AMBER_PT_Parser.RETURN, 0)
+            return self.getToken(AmberPTParser.RETURN, 0)
 
         def getRuleIndex(self):
-            return AMBER_PT_Parser.RULE_float_format_statement
+            return AmberPTParser.RULE_float_format_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterFloat_format_statement" ):
@@ -4704,20 +4704,20 @@ class AMBER_PT_Parser ( Parser ):
 
     def float_format_statement(self):
 
-        localctx = AMBER_PT_Parser.Float_format_statementContext(self, self._ctx, self.state)
+        localctx = AmberPTParser.Float_format_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 106, self.RULE_float_format_statement)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 633
-            self.match(AMBER_PT_Parser.FORMAT)
+            self.match(AmberPTParser.FORMAT)
             self.state = 634
-            self.match(AMBER_PT_Parser.L_paren)
+            self.match(AmberPTParser.L_paren)
             self.state = 635
-            self.match(AMBER_PT_Parser.Fortran_format_F)
+            self.match(AmberPTParser.Fortran_format_F)
             self.state = 636
-            self.match(AMBER_PT_Parser.R_paren)
+            self.match(AmberPTParser.R_paren)
             self.state = 637
-            self.match(AMBER_PT_Parser.RETURN)
+            self.match(AmberPTParser.RETURN)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -4734,16 +4734,16 @@ class AMBER_PT_Parser ( Parser ):
             self.parser = parser
 
         def RETURN(self):
-            return self.getToken(AMBER_PT_Parser.RETURN, 0)
+            return self.getToken(AmberPTParser.RETURN, 0)
 
         def Atom_type4(self, i:int=None):
             if i is None:
-                return self.getTokens(AMBER_PT_Parser.Atom_type4)
+                return self.getTokens(AmberPTParser.Atom_type4)
             else:
-                return self.getToken(AMBER_PT_Parser.Atom_type4, i)
+                return self.getToken(AmberPTParser.Atom_type4, i)
 
         def getRuleIndex(self):
-            return AMBER_PT_Parser.RULE_atom_type_array
+            return AmberPTParser.RULE_atom_type_array
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterAtom_type_array" ):
@@ -4758,7 +4758,7 @@ class AMBER_PT_Parser ( Parser ):
 
     def atom_type_array(self):
 
-        localctx = AMBER_PT_Parser.Atom_type_arrayContext(self, self._ctx, self.state)
+        localctx = AmberPTParser.Atom_type_arrayContext(self, self._ctx, self.state)
         self.enterRule(localctx, 108, self.RULE_atom_type_array)
         self._la = 0 # Token type
         try:
@@ -4766,15 +4766,15 @@ class AMBER_PT_Parser ( Parser ):
             self.state = 642
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AMBER_PT_Parser.Atom_type4:
+            while _la==AmberPTParser.Atom_type4:
                 self.state = 639
-                self.match(AMBER_PT_Parser.Atom_type4)
+                self.match(AmberPTParser.Atom_type4)
                 self.state = 644
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
 
             self.state = 645
-            self.match(AMBER_PT_Parser.RETURN)
+            self.match(AmberPTParser.RETURN)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -4791,16 +4791,16 @@ class AMBER_PT_Parser ( Parser ):
             self.parser = parser
 
         def RETURN(self):
-            return self.getToken(AMBER_PT_Parser.RETURN, 0)
+            return self.getToken(AmberPTParser.RETURN, 0)
 
         def Atom_name4(self, i:int=None):
             if i is None:
-                return self.getTokens(AMBER_PT_Parser.Atom_name4)
+                return self.getTokens(AmberPTParser.Atom_name4)
             else:
-                return self.getToken(AMBER_PT_Parser.Atom_name4, i)
+                return self.getToken(AmberPTParser.Atom_name4, i)
 
         def getRuleIndex(self):
-            return AMBER_PT_Parser.RULE_atom_name_array
+            return AmberPTParser.RULE_atom_name_array
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterAtom_name_array" ):
@@ -4815,7 +4815,7 @@ class AMBER_PT_Parser ( Parser ):
 
     def atom_name_array(self):
 
-        localctx = AMBER_PT_Parser.Atom_name_arrayContext(self, self._ctx, self.state)
+        localctx = AmberPTParser.Atom_name_arrayContext(self, self._ctx, self.state)
         self.enterRule(localctx, 110, self.RULE_atom_name_array)
         self._la = 0 # Token type
         try:
@@ -4823,15 +4823,15 @@ class AMBER_PT_Parser ( Parser ):
             self.state = 650
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AMBER_PT_Parser.Atom_name4:
+            while _la==AmberPTParser.Atom_name4:
                 self.state = 647
-                self.match(AMBER_PT_Parser.Atom_name4)
+                self.match(AmberPTParser.Atom_name4)
                 self.state = 652
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
 
             self.state = 653
-            self.match(AMBER_PT_Parser.RETURN)
+            self.match(AmberPTParser.RETURN)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -4848,16 +4848,16 @@ class AMBER_PT_Parser ( Parser ):
             self.parser = parser
 
         def RETURN(self):
-            return self.getToken(AMBER_PT_Parser.RETURN, 0)
+            return self.getToken(AmberPTParser.RETURN, 0)
 
         def Residue_name4(self, i:int=None):
             if i is None:
-                return self.getTokens(AMBER_PT_Parser.Residue_name4)
+                return self.getTokens(AmberPTParser.Residue_name4)
             else:
-                return self.getToken(AMBER_PT_Parser.Residue_name4, i)
+                return self.getToken(AmberPTParser.Residue_name4, i)
 
         def getRuleIndex(self):
-            return AMBER_PT_Parser.RULE_residue_name_array
+            return AmberPTParser.RULE_residue_name_array
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterResidue_name_array" ):
@@ -4872,7 +4872,7 @@ class AMBER_PT_Parser ( Parser ):
 
     def residue_name_array(self):
 
-        localctx = AMBER_PT_Parser.Residue_name_arrayContext(self, self._ctx, self.state)
+        localctx = AmberPTParser.Residue_name_arrayContext(self, self._ctx, self.state)
         self.enterRule(localctx, 112, self.RULE_residue_name_array)
         self._la = 0 # Token type
         try:
@@ -4880,15 +4880,15 @@ class AMBER_PT_Parser ( Parser ):
             self.state = 658
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AMBER_PT_Parser.Residue_name4:
+            while _la==AmberPTParser.Residue_name4:
                 self.state = 655
-                self.match(AMBER_PT_Parser.Residue_name4)
+                self.match(AmberPTParser.Residue_name4)
                 self.state = 660
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
 
             self.state = 661
-            self.match(AMBER_PT_Parser.RETURN)
+            self.match(AmberPTParser.RETURN)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -4905,16 +4905,16 @@ class AMBER_PT_Parser ( Parser ):
             self.parser = parser
 
         def RETURN(self):
-            return self.getToken(AMBER_PT_Parser.RETURN, 0)
+            return self.getToken(AmberPTParser.RETURN, 0)
 
         def Generic_name4(self, i:int=None):
             if i is None:
-                return self.getTokens(AMBER_PT_Parser.Generic_name4)
+                return self.getTokens(AmberPTParser.Generic_name4)
             else:
-                return self.getToken(AMBER_PT_Parser.Generic_name4, i)
+                return self.getToken(AmberPTParser.Generic_name4, i)
 
         def getRuleIndex(self):
-            return AMBER_PT_Parser.RULE_generic_name_array
+            return AmberPTParser.RULE_generic_name_array
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterGeneric_name_array" ):
@@ -4929,7 +4929,7 @@ class AMBER_PT_Parser ( Parser ):
 
     def generic_name_array(self):
 
-        localctx = AMBER_PT_Parser.Generic_name_arrayContext(self, self._ctx, self.state)
+        localctx = AmberPTParser.Generic_name_arrayContext(self, self._ctx, self.state)
         self.enterRule(localctx, 114, self.RULE_generic_name_array)
         self._la = 0 # Token type
         try:
@@ -4937,15 +4937,15 @@ class AMBER_PT_Parser ( Parser ):
             self.state = 666
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AMBER_PT_Parser.Generic_name4:
+            while _la==AmberPTParser.Generic_name4:
                 self.state = 663
-                self.match(AMBER_PT_Parser.Generic_name4)
+                self.match(AmberPTParser.Generic_name4)
                 self.state = 668
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
 
             self.state = 669
-            self.match(AMBER_PT_Parser.RETURN)
+            self.match(AmberPTParser.RETURN)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -4962,13 +4962,13 @@ class AMBER_PT_Parser ( Parser ):
             self.parser = parser
 
         def Line_string(self):
-            return self.getToken(AMBER_PT_Parser.Line_string, 0)
+            return self.getToken(AmberPTParser.Line_string, 0)
 
         def RETURN(self):
-            return self.getToken(AMBER_PT_Parser.RETURN, 0)
+            return self.getToken(AmberPTParser.RETURN, 0)
 
         def getRuleIndex(self):
-            return AMBER_PT_Parser.RULE_line_string_array
+            return AmberPTParser.RULE_line_string_array
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterLine_string_array" ):
@@ -4983,14 +4983,14 @@ class AMBER_PT_Parser ( Parser ):
 
     def line_string_array(self):
 
-        localctx = AMBER_PT_Parser.Line_string_arrayContext(self, self._ctx, self.state)
+        localctx = AmberPTParser.Line_string_arrayContext(self, self._ctx, self.state)
         self.enterRule(localctx, 116, self.RULE_line_string_array)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 671
-            self.match(AMBER_PT_Parser.Line_string)
+            self.match(AmberPTParser.Line_string)
             self.state = 672
-            self.match(AMBER_PT_Parser.RETURN)
+            self.match(AmberPTParser.RETURN)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -5007,16 +5007,16 @@ class AMBER_PT_Parser ( Parser ):
             self.parser = parser
 
         def RETURN(self):
-            return self.getToken(AMBER_PT_Parser.RETURN, 0)
+            return self.getToken(AmberPTParser.RETURN, 0)
 
         def Integer(self, i:int=None):
             if i is None:
-                return self.getTokens(AMBER_PT_Parser.Integer)
+                return self.getTokens(AmberPTParser.Integer)
             else:
-                return self.getToken(AMBER_PT_Parser.Integer, i)
+                return self.getToken(AmberPTParser.Integer, i)
 
         def getRuleIndex(self):
-            return AMBER_PT_Parser.RULE_integer_array
+            return AmberPTParser.RULE_integer_array
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterInteger_array" ):
@@ -5031,7 +5031,7 @@ class AMBER_PT_Parser ( Parser ):
 
     def integer_array(self):
 
-        localctx = AMBER_PT_Parser.Integer_arrayContext(self, self._ctx, self.state)
+        localctx = AmberPTParser.Integer_arrayContext(self, self._ctx, self.state)
         self.enterRule(localctx, 118, self.RULE_integer_array)
         self._la = 0 # Token type
         try:
@@ -5039,15 +5039,15 @@ class AMBER_PT_Parser ( Parser ):
             self.state = 677
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AMBER_PT_Parser.Integer:
+            while _la==AmberPTParser.Integer:
                 self.state = 674
-                self.match(AMBER_PT_Parser.Integer)
+                self.match(AmberPTParser.Integer)
                 self.state = 679
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
 
             self.state = 680
-            self.match(AMBER_PT_Parser.RETURN)
+            self.match(AmberPTParser.RETURN)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -5064,16 +5064,16 @@ class AMBER_PT_Parser ( Parser ):
             self.parser = parser
 
         def RETURN(self):
-            return self.getToken(AMBER_PT_Parser.RETURN, 0)
+            return self.getToken(AmberPTParser.RETURN, 0)
 
         def Float(self, i:int=None):
             if i is None:
-                return self.getTokens(AMBER_PT_Parser.Float)
+                return self.getTokens(AmberPTParser.Float)
             else:
-                return self.getToken(AMBER_PT_Parser.Float, i)
+                return self.getToken(AmberPTParser.Float, i)
 
         def getRuleIndex(self):
-            return AMBER_PT_Parser.RULE_float_array
+            return AmberPTParser.RULE_float_array
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterFloat_array" ):
@@ -5088,7 +5088,7 @@ class AMBER_PT_Parser ( Parser ):
 
     def float_array(self):
 
-        localctx = AMBER_PT_Parser.Float_arrayContext(self, self._ctx, self.state)
+        localctx = AmberPTParser.Float_arrayContext(self, self._ctx, self.state)
         self.enterRule(localctx, 120, self.RULE_float_array)
         self._la = 0 # Token type
         try:
@@ -5096,15 +5096,15 @@ class AMBER_PT_Parser ( Parser ):
             self.state = 685
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AMBER_PT_Parser.Float:
+            while _la==AmberPTParser.Float:
                 self.state = 682
-                self.match(AMBER_PT_Parser.Float)
+                self.match(AmberPTParser.Float)
                 self.state = 687
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
 
             self.state = 688
-            self.match(AMBER_PT_Parser.RETURN)
+            self.match(AmberPTParser.RETURN)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -5121,16 +5121,16 @@ class AMBER_PT_Parser ( Parser ):
             self.parser = parser
 
         def RETURN(self):
-            return self.getToken(AMBER_PT_Parser.RETURN, 0)
+            return self.getToken(AmberPTParser.RETURN, 0)
 
         def Real(self, i:int=None):
             if i is None:
-                return self.getTokens(AMBER_PT_Parser.Real)
+                return self.getTokens(AmberPTParser.Real)
             else:
-                return self.getToken(AMBER_PT_Parser.Real, i)
+                return self.getToken(AmberPTParser.Real, i)
 
         def getRuleIndex(self):
-            return AMBER_PT_Parser.RULE_real_array
+            return AmberPTParser.RULE_real_array
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterReal_array" ):
@@ -5145,7 +5145,7 @@ class AMBER_PT_Parser ( Parser ):
 
     def real_array(self):
 
-        localctx = AMBER_PT_Parser.Real_arrayContext(self, self._ctx, self.state)
+        localctx = AmberPTParser.Real_arrayContext(self, self._ctx, self.state)
         self.enterRule(localctx, 122, self.RULE_real_array)
         self._la = 0 # Token type
         try:
@@ -5153,15 +5153,15 @@ class AMBER_PT_Parser ( Parser ):
             self.state = 693
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AMBER_PT_Parser.Real:
+            while _la==AmberPTParser.Real:
                 self.state = 690
-                self.match(AMBER_PT_Parser.Real)
+                self.match(AmberPTParser.Real)
                 self.state = 695
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
 
             self.state = 696
-            self.match(AMBER_PT_Parser.RETURN)
+            self.match(AmberPTParser.RETURN)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)

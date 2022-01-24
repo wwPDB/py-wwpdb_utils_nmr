@@ -25,7 +25,6 @@
 
 import sys
 import os
-import traceback
 import math
 import random
 import itertools
@@ -191,7 +190,7 @@ class CifReader:
         self.__rmsd_overlaid_exactly = 0.01
 
     def parse(self, filePath):
-        """ Set file path and parse CIF file, and set internal active data block if possible.
+        """ Parse CIF file, and set internal active data block if possible.
             @return: True for success or False otherwise.
         """
 
@@ -204,27 +203,13 @@ class CifReader:
         try:
             if not os.access(self.__filePath, os.R_OK):
                 if self.__verbose:
-                    self.__lfh.write(f"+ERROR- CifReader.setFilePath() Missing file {self.__filePath}\n")
+                    self.__lfh.write(f"+ERROR- CifReader.parse() Missing file {self.__filePath}\n")
                 return False
-            return self.__parse()
-        except:  # noqa: E722 pylint: disable=bare-except
-            if self.__verbose:
-                self.__lfh.write(f"+ERROR- CifReader.setFilePath() Missing file {self.__filePath}\n")
-            return False
-
-    def __parse(self):
-        """ Parse CIF file and set internal active data block.
-            @return: True for success or False otherwise.
-        """
-
-        if self.__dBlock is not None:
-            return True
-
-        try:
             block = self.__getDataBlock()
             return self.__setDataBlock(block)
         except:  # noqa: E722 pylint: disable=bare-except
-            traceback.print_exc(file=sys.stdout)
+            if self.__verbose:
+                self.__lfh.write(f"+ERROR- CifReader.parse() Missing file {self.__filePath}\n")
             return False
 
     def __getDataBlock(self, blockId=None):

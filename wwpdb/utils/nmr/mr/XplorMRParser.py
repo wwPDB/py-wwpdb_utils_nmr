@@ -1,4 +1,4 @@
-# Generated from XPLOR_NIH_MR_Parser.g4 by ANTLR 4.9
+# Generated from XplorMRParser.g4 by ANTLR 4.9
 # encoding: utf-8
 from antlr4 import *
 from io import StringIO
@@ -1007,9 +1007,9 @@ def serializedATN():
         return buf.getvalue()
 
 
-class XPLOR_NIH_MR_Parser ( Parser ):
+class XplorMRParser ( Parser ):
 
-    grammarFileName = "XPLOR_NIH_MR_Parser.g4"
+    grammarFileName = "XplorMRParser.g4"
 
     atn = ATNDeserializer().deserialize(serializedATN())
 
@@ -1445,164 +1445,164 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.parser = parser
 
         def EOF(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.EOF, 0)
+            return self.getToken(XplorMRParser.EOF, 0)
 
         def distance_restraint(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.Distance_restraintContext)
+                return self.getTypedRuleContexts(XplorMRParser.Distance_restraintContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Distance_restraintContext,i)
+                return self.getTypedRuleContext(XplorMRParser.Distance_restraintContext,i)
 
 
         def dihedral_angle_restraint(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.Dihedral_angle_restraintContext)
+                return self.getTypedRuleContexts(XplorMRParser.Dihedral_angle_restraintContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Dihedral_angle_restraintContext,i)
+                return self.getTypedRuleContext(XplorMRParser.Dihedral_angle_restraintContext,i)
 
 
         def rdc_restraint(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.Rdc_restraintContext)
+                return self.getTypedRuleContexts(XplorMRParser.Rdc_restraintContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Rdc_restraintContext,i)
+                return self.getTypedRuleContext(XplorMRParser.Rdc_restraintContext,i)
 
 
         def planar_restraint(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.Planar_restraintContext)
+                return self.getTypedRuleContexts(XplorMRParser.Planar_restraintContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Planar_restraintContext,i)
+                return self.getTypedRuleContext(XplorMRParser.Planar_restraintContext,i)
 
 
         def antidistance_restraint(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.Antidistance_restraintContext)
+                return self.getTypedRuleContexts(XplorMRParser.Antidistance_restraintContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Antidistance_restraintContext,i)
+                return self.getTypedRuleContext(XplorMRParser.Antidistance_restraintContext,i)
 
 
         def coupling_restraint(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.Coupling_restraintContext)
+                return self.getTypedRuleContexts(XplorMRParser.Coupling_restraintContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Coupling_restraintContext,i)
+                return self.getTypedRuleContext(XplorMRParser.Coupling_restraintContext,i)
 
 
         def carbon_shift_restraint(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.Carbon_shift_restraintContext)
+                return self.getTypedRuleContexts(XplorMRParser.Carbon_shift_restraintContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Carbon_shift_restraintContext,i)
+                return self.getTypedRuleContext(XplorMRParser.Carbon_shift_restraintContext,i)
 
 
         def proton_shift_restraint(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.Proton_shift_restraintContext)
+                return self.getTypedRuleContexts(XplorMRParser.Proton_shift_restraintContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Proton_shift_restraintContext,i)
+                return self.getTypedRuleContext(XplorMRParser.Proton_shift_restraintContext,i)
 
 
         def dihedral_angle_db_restraint(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.Dihedral_angle_db_restraintContext)
+                return self.getTypedRuleContexts(XplorMRParser.Dihedral_angle_db_restraintContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Dihedral_angle_db_restraintContext,i)
+                return self.getTypedRuleContext(XplorMRParser.Dihedral_angle_db_restraintContext,i)
 
 
         def radius_of_gyration_restraint(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.Radius_of_gyration_restraintContext)
+                return self.getTypedRuleContexts(XplorMRParser.Radius_of_gyration_restraintContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Radius_of_gyration_restraintContext,i)
+                return self.getTypedRuleContext(XplorMRParser.Radius_of_gyration_restraintContext,i)
 
 
         def diffusion_anisotropy_restraint(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.Diffusion_anisotropy_restraintContext)
+                return self.getTypedRuleContexts(XplorMRParser.Diffusion_anisotropy_restraintContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Diffusion_anisotropy_restraintContext,i)
+                return self.getTypedRuleContext(XplorMRParser.Diffusion_anisotropy_restraintContext,i)
 
 
         def orientation_db_restraint(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.Orientation_db_restraintContext)
+                return self.getTypedRuleContexts(XplorMRParser.Orientation_db_restraintContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Orientation_db_restraintContext,i)
+                return self.getTypedRuleContext(XplorMRParser.Orientation_db_restraintContext,i)
 
 
         def csa_restraint(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.Csa_restraintContext)
+                return self.getTypedRuleContexts(XplorMRParser.Csa_restraintContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Csa_restraintContext,i)
+                return self.getTypedRuleContext(XplorMRParser.Csa_restraintContext,i)
 
 
         def pcsa_restraint(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.Pcsa_restraintContext)
+                return self.getTypedRuleContexts(XplorMRParser.Pcsa_restraintContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Pcsa_restraintContext,i)
+                return self.getTypedRuleContext(XplorMRParser.Pcsa_restraintContext,i)
 
 
         def one_bond_coupling_restraint(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.One_bond_coupling_restraintContext)
+                return self.getTypedRuleContexts(XplorMRParser.One_bond_coupling_restraintContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.One_bond_coupling_restraintContext,i)
+                return self.getTypedRuleContext(XplorMRParser.One_bond_coupling_restraintContext,i)
 
 
         def angle_db_restraint(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.Angle_db_restraintContext)
+                return self.getTypedRuleContexts(XplorMRParser.Angle_db_restraintContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Angle_db_restraintContext,i)
+                return self.getTypedRuleContext(XplorMRParser.Angle_db_restraintContext,i)
 
 
         def pre_restraint(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.Pre_restraintContext)
+                return self.getTypedRuleContexts(XplorMRParser.Pre_restraintContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Pre_restraintContext,i)
+                return self.getTypedRuleContext(XplorMRParser.Pre_restraintContext,i)
 
 
         def pcs_restraint(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.Pcs_restraintContext)
+                return self.getTypedRuleContexts(XplorMRParser.Pcs_restraintContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Pcs_restraintContext,i)
+                return self.getTypedRuleContext(XplorMRParser.Pcs_restraintContext,i)
 
 
         def prdc_restraint(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.Prdc_restraintContext)
+                return self.getTypedRuleContexts(XplorMRParser.Prdc_restraintContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Prdc_restraintContext,i)
+                return self.getTypedRuleContext(XplorMRParser.Prdc_restraintContext,i)
 
 
         def porientation_restraint(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.Porientation_restraintContext)
+                return self.getTypedRuleContexts(XplorMRParser.Porientation_restraintContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Porientation_restraintContext,i)
+                return self.getTypedRuleContext(XplorMRParser.Porientation_restraintContext,i)
 
 
         def pccr_restraint(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.Pccr_restraintContext)
+                return self.getTypedRuleContexts(XplorMRParser.Pccr_restraintContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Pccr_restraintContext,i)
+                return self.getTypedRuleContext(XplorMRParser.Pccr_restraintContext,i)
 
 
         def hbond_restraint(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.Hbond_restraintContext)
+                return self.getTypedRuleContexts(XplorMRParser.Hbond_restraintContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Hbond_restraintContext,i)
+                return self.getTypedRuleContext(XplorMRParser.Hbond_restraintContext,i)
 
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_xplor_nih_mr
+            return XplorMRParser.RULE_xplor_nih_mr
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterXplor_nih_mr" ):
@@ -1617,7 +1617,7 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def xplor_nih_mr(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Xplor_nih_mrContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Xplor_nih_mrContext(self, self._ctx, self.state)
         self.enterRule(localctx, 0, self.RULE_xplor_nih_mr)
         self._la = 0 # Token type
         try:
@@ -1625,7 +1625,7 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.state = 179
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==XPLOR_NIH_MR_Parser.Noe:
+            while _la==XplorMRParser.Noe:
                 self.state = 176
                 self.distance_restraint()
                 self.state = 181
@@ -1646,7 +1646,7 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.state = 191
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << XPLOR_NIH_MR_Parser.Sanisotropy) | (1 << XPLOR_NIH_MR_Parser.Xdipolar) | (1 << XPLOR_NIH_MR_Parser.Dipolar) | (1 << XPLOR_NIH_MR_Parser.VectorAngle) | (1 << XPLOR_NIH_MR_Parser.Tensor) | (1 << XPLOR_NIH_MR_Parser.Anisotropy))) != 0):
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << XplorMRParser.Sanisotropy) | (1 << XplorMRParser.Xdipolar) | (1 << XplorMRParser.Dipolar) | (1 << XplorMRParser.VectorAngle) | (1 << XplorMRParser.Tensor) | (1 << XplorMRParser.Anisotropy))) != 0):
                 self.state = 188
                 self.rdc_restraint()
                 self.state = 193
@@ -1656,7 +1656,7 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.state = 197
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==XPLOR_NIH_MR_Parser.Restraints:
+            while _la==XplorMRParser.Restraints:
                 self.state = 194
                 self.planar_restraint()
                 self.state = 199
@@ -1666,7 +1666,7 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.state = 203
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==XPLOR_NIH_MR_Parser.Xadc:
+            while _la==XplorMRParser.Xadc:
                 self.state = 200
                 self.antidistance_restraint()
                 self.state = 205
@@ -1676,7 +1676,7 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.state = 209
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==XPLOR_NIH_MR_Parser.Coupling:
+            while _la==XplorMRParser.Coupling:
                 self.state = 206
                 self.coupling_restraint()
                 self.state = 211
@@ -1686,7 +1686,7 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.state = 215
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==XPLOR_NIH_MR_Parser.Carbon:
+            while _la==XplorMRParser.Carbon:
                 self.state = 212
                 self.carbon_shift_restraint()
                 self.state = 217
@@ -1696,7 +1696,7 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.state = 221
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==XPLOR_NIH_MR_Parser.Proton:
+            while _la==XplorMRParser.Proton:
                 self.state = 218
                 self.proton_shift_restraint()
                 self.state = 223
@@ -1706,7 +1706,7 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.state = 227
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==XPLOR_NIH_MR_Parser.Ramachandran:
+            while _la==XplorMRParser.Ramachandran:
                 self.state = 224
                 self.dihedral_angle_db_restraint()
                 self.state = 229
@@ -1716,7 +1716,7 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.state = 233
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==XPLOR_NIH_MR_Parser.Collapse:
+            while _la==XplorMRParser.Collapse:
                 self.state = 230
                 self.radius_of_gyration_restraint()
                 self.state = 235
@@ -1726,7 +1726,7 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.state = 239
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==XPLOR_NIH_MR_Parser.Danisotropy:
+            while _la==XplorMRParser.Danisotropy:
                 self.state = 236
                 self.diffusion_anisotropy_restraint()
                 self.state = 241
@@ -1736,7 +1736,7 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.state = 245
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==XPLOR_NIH_MR_Parser.Orient:
+            while _la==XplorMRParser.Orient:
                 self.state = 242
                 self.orientation_db_restraint()
                 self.state = 247
@@ -1746,7 +1746,7 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.state = 251
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==XPLOR_NIH_MR_Parser.Dcsa:
+            while _la==XplorMRParser.Dcsa:
                 self.state = 248
                 self.csa_restraint()
                 self.state = 253
@@ -1756,7 +1756,7 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.state = 257
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==XPLOR_NIH_MR_Parser.Pcsa:
+            while _la==XplorMRParser.Pcsa:
                 self.state = 254
                 self.pcsa_restraint()
                 self.state = 259
@@ -1766,7 +1766,7 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.state = 263
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==XPLOR_NIH_MR_Parser.OneBond:
+            while _la==XplorMRParser.OneBond:
                 self.state = 260
                 self.one_bond_coupling_restraint()
                 self.state = 265
@@ -1776,7 +1776,7 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.state = 269
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==XPLOR_NIH_MR_Parser.AngleDb:
+            while _la==XplorMRParser.AngleDb:
                 self.state = 266
                 self.angle_db_restraint()
                 self.state = 271
@@ -1786,7 +1786,7 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.state = 275
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==XPLOR_NIH_MR_Parser.Paramagnetic:
+            while _la==XplorMRParser.Paramagnetic:
                 self.state = 272
                 self.pre_restraint()
                 self.state = 277
@@ -1796,7 +1796,7 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.state = 281
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==XPLOR_NIH_MR_Parser.Xpcs:
+            while _la==XplorMRParser.Xpcs:
                 self.state = 278
                 self.pcs_restraint()
                 self.state = 283
@@ -1806,7 +1806,7 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.state = 287
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==XPLOR_NIH_MR_Parser.Xrdcoupling:
+            while _la==XplorMRParser.Xrdcoupling:
                 self.state = 284
                 self.prdc_restraint()
                 self.state = 289
@@ -1816,7 +1816,7 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.state = 293
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==XPLOR_NIH_MR_Parser.Xangle:
+            while _la==XplorMRParser.Xangle:
                 self.state = 290
                 self.porientation_restraint()
                 self.state = 295
@@ -1826,7 +1826,7 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.state = 299
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==XPLOR_NIH_MR_Parser.Xccr:
+            while _la==XplorMRParser.Xccr:
                 self.state = 296
                 self.pccr_restraint()
                 self.state = 301
@@ -1836,7 +1836,7 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.state = 305
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==XPLOR_NIH_MR_Parser.Hbda:
+            while _la==XplorMRParser.Hbda:
                 self.state = 302
                 self.hbond_restraint()
                 self.state = 307
@@ -1844,7 +1844,7 @@ class XPLOR_NIH_MR_Parser ( Parser ):
                 _la = self._input.LA(1)
 
             self.state = 308
-            self.match(XPLOR_NIH_MR_Parser.EOF)
+            self.match(XplorMRParser.EOF)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -1861,23 +1861,23 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.parser = parser
 
         def Noe(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Noe, 0)
+            return self.getToken(XplorMRParser.Noe, 0)
 
         def L_brace(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.L_brace, 0)
+            return self.getToken(XplorMRParser.L_brace, 0)
 
         def noe_statement(self):
-            return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Noe_statementContext,0)
+            return self.getTypedRuleContext(XplorMRParser.Noe_statementContext,0)
 
 
         def R_brace(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.R_brace, 0)
+            return self.getToken(XplorMRParser.R_brace, 0)
 
         def End(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.End, 0)
+            return self.getToken(XplorMRParser.End, 0)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_distance_restraint
+            return XplorMRParser.RULE_distance_restraint
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterDistance_restraint" ):
@@ -1892,20 +1892,20 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def distance_restraint(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Distance_restraintContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Distance_restraintContext(self, self._ctx, self.state)
         self.enterRule(localctx, 2, self.RULE_distance_restraint)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 310
-            self.match(XPLOR_NIH_MR_Parser.Noe)
+            self.match(XplorMRParser.Noe)
             self.state = 311
-            self.match(XPLOR_NIH_MR_Parser.L_brace)
+            self.match(XplorMRParser.L_brace)
             self.state = 312
             self.noe_statement()
             self.state = 313
-            self.match(XPLOR_NIH_MR_Parser.R_brace)
+            self.match(XplorMRParser.R_brace)
             self.state = 314
-            self.match(XPLOR_NIH_MR_Parser.End)
+            self.match(XplorMRParser.End)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -1922,26 +1922,26 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.parser = parser
 
         def Restraints(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Restraints, 0)
+            return self.getToken(XplorMRParser.Restraints, 0)
 
         def Dihedral(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Dihedral, 0)
+            return self.getToken(XplorMRParser.Dihedral, 0)
 
         def L_brace(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.L_brace, 0)
+            return self.getToken(XplorMRParser.L_brace, 0)
 
         def dihedral_statement(self):
-            return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Dihedral_statementContext,0)
+            return self.getTypedRuleContext(XplorMRParser.Dihedral_statementContext,0)
 
 
         def R_brace(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.R_brace, 0)
+            return self.getToken(XplorMRParser.R_brace, 0)
 
         def End(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.End, 0)
+            return self.getToken(XplorMRParser.End, 0)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_dihedral_angle_restraint
+            return XplorMRParser.RULE_dihedral_angle_restraint
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterDihedral_angle_restraint" ):
@@ -1956,22 +1956,22 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def dihedral_angle_restraint(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Dihedral_angle_restraintContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Dihedral_angle_restraintContext(self, self._ctx, self.state)
         self.enterRule(localctx, 4, self.RULE_dihedral_angle_restraint)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 316
-            self.match(XPLOR_NIH_MR_Parser.Restraints)
+            self.match(XplorMRParser.Restraints)
             self.state = 317
-            self.match(XPLOR_NIH_MR_Parser.Dihedral)
+            self.match(XplorMRParser.Dihedral)
             self.state = 318
-            self.match(XPLOR_NIH_MR_Parser.L_brace)
+            self.match(XplorMRParser.L_brace)
             self.state = 319
             self.dihedral_statement()
             self.state = 320
-            self.match(XPLOR_NIH_MR_Parser.R_brace)
+            self.match(XplorMRParser.R_brace)
             self.state = 321
-            self.match(XPLOR_NIH_MR_Parser.End)
+            self.match(XplorMRParser.End)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -1988,54 +1988,54 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.parser = parser
 
         def Sanisotropy(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Sanisotropy, 0)
+            return self.getToken(XplorMRParser.Sanisotropy, 0)
 
         def L_brace(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.L_brace, 0)
+            return self.getToken(XplorMRParser.L_brace, 0)
 
         def sani_statement(self):
-            return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Sani_statementContext,0)
+            return self.getTypedRuleContext(XplorMRParser.Sani_statementContext,0)
 
 
         def R_brace(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.R_brace, 0)
+            return self.getToken(XplorMRParser.R_brace, 0)
 
         def End(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.End, 0)
+            return self.getToken(XplorMRParser.End, 0)
 
         def xdip_statement(self):
-            return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Xdip_statementContext,0)
+            return self.getTypedRuleContext(XplorMRParser.Xdip_statementContext,0)
 
 
         def Xdipolar(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Xdipolar, 0)
+            return self.getToken(XplorMRParser.Xdipolar, 0)
 
         def Dipolar(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Dipolar, 0)
+            return self.getToken(XplorMRParser.Dipolar, 0)
 
         def VectorAngle(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.VectorAngle, 0)
+            return self.getToken(XplorMRParser.VectorAngle, 0)
 
         def vean_statement(self):
-            return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Vean_statementContext,0)
+            return self.getTypedRuleContext(XplorMRParser.Vean_statementContext,0)
 
 
         def Tensor(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Tensor, 0)
+            return self.getToken(XplorMRParser.Tensor, 0)
 
         def tens_statement(self):
-            return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Tens_statementContext,0)
+            return self.getTypedRuleContext(XplorMRParser.Tens_statementContext,0)
 
 
         def Anisotropy(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Anisotropy, 0)
+            return self.getToken(XplorMRParser.Anisotropy, 0)
 
         def anis_statement(self):
-            return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Anis_statementContext,0)
+            return self.getTypedRuleContext(XplorMRParser.Anis_statementContext,0)
 
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_rdc_restraint
+            return XplorMRParser.RULE_rdc_restraint
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterRdc_restraint" ):
@@ -2050,82 +2050,82 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def rdc_restraint(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Rdc_restraintContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Rdc_restraintContext(self, self._ctx, self.state)
         self.enterRule(localctx, 6, self.RULE_rdc_restraint)
         self._la = 0 # Token type
         try:
             self.state = 353
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [XPLOR_NIH_MR_Parser.Sanisotropy]:
+            if token in [XplorMRParser.Sanisotropy]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 323
-                self.match(XPLOR_NIH_MR_Parser.Sanisotropy)
+                self.match(XplorMRParser.Sanisotropy)
                 self.state = 324
-                self.match(XPLOR_NIH_MR_Parser.L_brace)
+                self.match(XplorMRParser.L_brace)
                 self.state = 325
                 self.sani_statement()
                 self.state = 326
-                self.match(XPLOR_NIH_MR_Parser.R_brace)
+                self.match(XplorMRParser.R_brace)
                 self.state = 327
-                self.match(XPLOR_NIH_MR_Parser.End)
+                self.match(XplorMRParser.End)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Xdipolar, XPLOR_NIH_MR_Parser.Dipolar]:
+            elif token in [XplorMRParser.Xdipolar, XplorMRParser.Dipolar]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 329
                 _la = self._input.LA(1)
-                if not(_la==XPLOR_NIH_MR_Parser.Xdipolar or _la==XPLOR_NIH_MR_Parser.Dipolar):
+                if not(_la==XplorMRParser.Xdipolar or _la==XplorMRParser.Dipolar):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
                     self.consume()
                 self.state = 330
-                self.match(XPLOR_NIH_MR_Parser.L_brace)
+                self.match(XplorMRParser.L_brace)
                 self.state = 331
                 self.xdip_statement()
                 self.state = 332
-                self.match(XPLOR_NIH_MR_Parser.R_brace)
+                self.match(XplorMRParser.R_brace)
                 self.state = 333
-                self.match(XPLOR_NIH_MR_Parser.End)
+                self.match(XplorMRParser.End)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.VectorAngle]:
+            elif token in [XplorMRParser.VectorAngle]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 335
-                self.match(XPLOR_NIH_MR_Parser.VectorAngle)
+                self.match(XplorMRParser.VectorAngle)
                 self.state = 336
-                self.match(XPLOR_NIH_MR_Parser.L_brace)
+                self.match(XplorMRParser.L_brace)
                 self.state = 337
                 self.vean_statement()
                 self.state = 338
-                self.match(XPLOR_NIH_MR_Parser.R_brace)
+                self.match(XplorMRParser.R_brace)
                 self.state = 339
-                self.match(XPLOR_NIH_MR_Parser.End)
+                self.match(XplorMRParser.End)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Tensor]:
+            elif token in [XplorMRParser.Tensor]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 341
-                self.match(XPLOR_NIH_MR_Parser.Tensor)
+                self.match(XplorMRParser.Tensor)
                 self.state = 342
-                self.match(XPLOR_NIH_MR_Parser.L_brace)
+                self.match(XplorMRParser.L_brace)
                 self.state = 343
                 self.tens_statement()
                 self.state = 344
-                self.match(XPLOR_NIH_MR_Parser.R_brace)
+                self.match(XplorMRParser.R_brace)
                 self.state = 345
-                self.match(XPLOR_NIH_MR_Parser.End)
+                self.match(XplorMRParser.End)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Anisotropy]:
+            elif token in [XplorMRParser.Anisotropy]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 347
-                self.match(XPLOR_NIH_MR_Parser.Anisotropy)
+                self.match(XplorMRParser.Anisotropy)
                 self.state = 348
-                self.match(XPLOR_NIH_MR_Parser.L_brace)
+                self.match(XplorMRParser.L_brace)
                 self.state = 349
                 self.anis_statement()
                 self.state = 350
-                self.match(XPLOR_NIH_MR_Parser.R_brace)
+                self.match(XplorMRParser.R_brace)
                 self.state = 351
-                self.match(XPLOR_NIH_MR_Parser.End)
+                self.match(XplorMRParser.End)
                 pass
             else:
                 raise NoViableAltException(self)
@@ -2146,26 +2146,26 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.parser = parser
 
         def Restraints(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Restraints, 0)
+            return self.getToken(XplorMRParser.Restraints, 0)
 
         def Planar(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Planar, 0)
+            return self.getToken(XplorMRParser.Planar, 0)
 
         def L_brace(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.L_brace, 0)
+            return self.getToken(XplorMRParser.L_brace, 0)
 
         def planar_statement(self):
-            return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Planar_statementContext,0)
+            return self.getTypedRuleContext(XplorMRParser.Planar_statementContext,0)
 
 
         def R_brace(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.R_brace, 0)
+            return self.getToken(XplorMRParser.R_brace, 0)
 
         def End(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.End, 0)
+            return self.getToken(XplorMRParser.End, 0)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_planar_restraint
+            return XplorMRParser.RULE_planar_restraint
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterPlanar_restraint" ):
@@ -2180,22 +2180,22 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def planar_restraint(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Planar_restraintContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Planar_restraintContext(self, self._ctx, self.state)
         self.enterRule(localctx, 8, self.RULE_planar_restraint)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 355
-            self.match(XPLOR_NIH_MR_Parser.Restraints)
+            self.match(XplorMRParser.Restraints)
             self.state = 356
-            self.match(XPLOR_NIH_MR_Parser.Planar)
+            self.match(XplorMRParser.Planar)
             self.state = 357
-            self.match(XPLOR_NIH_MR_Parser.L_brace)
+            self.match(XplorMRParser.L_brace)
             self.state = 358
             self.planar_statement()
             self.state = 359
-            self.match(XPLOR_NIH_MR_Parser.R_brace)
+            self.match(XplorMRParser.R_brace)
             self.state = 360
-            self.match(XPLOR_NIH_MR_Parser.End)
+            self.match(XplorMRParser.End)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -2212,23 +2212,23 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.parser = parser
 
         def Xadc(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Xadc, 0)
+            return self.getToken(XplorMRParser.Xadc, 0)
 
         def L_brace(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.L_brace, 0)
+            return self.getToken(XplorMRParser.L_brace, 0)
 
         def antidistance_statement(self):
-            return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Antidistance_statementContext,0)
+            return self.getTypedRuleContext(XplorMRParser.Antidistance_statementContext,0)
 
 
         def R_brace(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.R_brace, 0)
+            return self.getToken(XplorMRParser.R_brace, 0)
 
         def End(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.End, 0)
+            return self.getToken(XplorMRParser.End, 0)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_antidistance_restraint
+            return XplorMRParser.RULE_antidistance_restraint
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterAntidistance_restraint" ):
@@ -2243,20 +2243,20 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def antidistance_restraint(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Antidistance_restraintContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Antidistance_restraintContext(self, self._ctx, self.state)
         self.enterRule(localctx, 10, self.RULE_antidistance_restraint)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 362
-            self.match(XPLOR_NIH_MR_Parser.Xadc)
+            self.match(XplorMRParser.Xadc)
             self.state = 363
-            self.match(XPLOR_NIH_MR_Parser.L_brace)
+            self.match(XplorMRParser.L_brace)
             self.state = 364
             self.antidistance_statement()
             self.state = 365
-            self.match(XPLOR_NIH_MR_Parser.R_brace)
+            self.match(XplorMRParser.R_brace)
             self.state = 366
-            self.match(XPLOR_NIH_MR_Parser.End)
+            self.match(XplorMRParser.End)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -2273,23 +2273,23 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.parser = parser
 
         def Coupling(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Coupling, 0)
+            return self.getToken(XplorMRParser.Coupling, 0)
 
         def L_brace(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.L_brace, 0)
+            return self.getToken(XplorMRParser.L_brace, 0)
 
         def coupling_statement(self):
-            return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Coupling_statementContext,0)
+            return self.getTypedRuleContext(XplorMRParser.Coupling_statementContext,0)
 
 
         def R_brace(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.R_brace, 0)
+            return self.getToken(XplorMRParser.R_brace, 0)
 
         def End(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.End, 0)
+            return self.getToken(XplorMRParser.End, 0)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_coupling_restraint
+            return XplorMRParser.RULE_coupling_restraint
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterCoupling_restraint" ):
@@ -2304,20 +2304,20 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def coupling_restraint(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Coupling_restraintContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Coupling_restraintContext(self, self._ctx, self.state)
         self.enterRule(localctx, 12, self.RULE_coupling_restraint)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 368
-            self.match(XPLOR_NIH_MR_Parser.Coupling)
+            self.match(XplorMRParser.Coupling)
             self.state = 369
-            self.match(XPLOR_NIH_MR_Parser.L_brace)
+            self.match(XplorMRParser.L_brace)
             self.state = 370
             self.coupling_statement()
             self.state = 371
-            self.match(XPLOR_NIH_MR_Parser.R_brace)
+            self.match(XplorMRParser.R_brace)
             self.state = 372
-            self.match(XPLOR_NIH_MR_Parser.End)
+            self.match(XplorMRParser.End)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -2334,23 +2334,23 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.parser = parser
 
         def Carbon(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Carbon, 0)
+            return self.getToken(XplorMRParser.Carbon, 0)
 
         def L_brace(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.L_brace, 0)
+            return self.getToken(XplorMRParser.L_brace, 0)
 
         def carbon_shift_statement(self):
-            return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Carbon_shift_statementContext,0)
+            return self.getTypedRuleContext(XplorMRParser.Carbon_shift_statementContext,0)
 
 
         def R_brace(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.R_brace, 0)
+            return self.getToken(XplorMRParser.R_brace, 0)
 
         def End(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.End, 0)
+            return self.getToken(XplorMRParser.End, 0)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_carbon_shift_restraint
+            return XplorMRParser.RULE_carbon_shift_restraint
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterCarbon_shift_restraint" ):
@@ -2365,20 +2365,20 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def carbon_shift_restraint(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Carbon_shift_restraintContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Carbon_shift_restraintContext(self, self._ctx, self.state)
         self.enterRule(localctx, 14, self.RULE_carbon_shift_restraint)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 374
-            self.match(XPLOR_NIH_MR_Parser.Carbon)
+            self.match(XplorMRParser.Carbon)
             self.state = 375
-            self.match(XPLOR_NIH_MR_Parser.L_brace)
+            self.match(XplorMRParser.L_brace)
             self.state = 376
             self.carbon_shift_statement()
             self.state = 377
-            self.match(XPLOR_NIH_MR_Parser.R_brace)
+            self.match(XplorMRParser.R_brace)
             self.state = 378
-            self.match(XPLOR_NIH_MR_Parser.End)
+            self.match(XplorMRParser.End)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -2395,23 +2395,23 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.parser = parser
 
         def Proton(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Proton, 0)
+            return self.getToken(XplorMRParser.Proton, 0)
 
         def L_brace(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.L_brace, 0)
+            return self.getToken(XplorMRParser.L_brace, 0)
 
         def proton_shift_statement(self):
-            return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Proton_shift_statementContext,0)
+            return self.getTypedRuleContext(XplorMRParser.Proton_shift_statementContext,0)
 
 
         def R_brace(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.R_brace, 0)
+            return self.getToken(XplorMRParser.R_brace, 0)
 
         def End(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.End, 0)
+            return self.getToken(XplorMRParser.End, 0)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_proton_shift_restraint
+            return XplorMRParser.RULE_proton_shift_restraint
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterProton_shift_restraint" ):
@@ -2426,20 +2426,20 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def proton_shift_restraint(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Proton_shift_restraintContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Proton_shift_restraintContext(self, self._ctx, self.state)
         self.enterRule(localctx, 16, self.RULE_proton_shift_restraint)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 380
-            self.match(XPLOR_NIH_MR_Parser.Proton)
+            self.match(XplorMRParser.Proton)
             self.state = 381
-            self.match(XPLOR_NIH_MR_Parser.L_brace)
+            self.match(XplorMRParser.L_brace)
             self.state = 382
             self.proton_shift_statement()
             self.state = 383
-            self.match(XPLOR_NIH_MR_Parser.R_brace)
+            self.match(XplorMRParser.R_brace)
             self.state = 384
-            self.match(XPLOR_NIH_MR_Parser.End)
+            self.match(XplorMRParser.End)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -2456,23 +2456,23 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.parser = parser
 
         def Ramachandran(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Ramachandran, 0)
+            return self.getToken(XplorMRParser.Ramachandran, 0)
 
         def L_brace(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.L_brace, 0)
+            return self.getToken(XplorMRParser.L_brace, 0)
 
         def ramachandran_statement(self):
-            return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Ramachandran_statementContext,0)
+            return self.getTypedRuleContext(XplorMRParser.Ramachandran_statementContext,0)
 
 
         def R_brace(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.R_brace, 0)
+            return self.getToken(XplorMRParser.R_brace, 0)
 
         def End(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.End, 0)
+            return self.getToken(XplorMRParser.End, 0)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_dihedral_angle_db_restraint
+            return XplorMRParser.RULE_dihedral_angle_db_restraint
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterDihedral_angle_db_restraint" ):
@@ -2487,20 +2487,20 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def dihedral_angle_db_restraint(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Dihedral_angle_db_restraintContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Dihedral_angle_db_restraintContext(self, self._ctx, self.state)
         self.enterRule(localctx, 18, self.RULE_dihedral_angle_db_restraint)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 386
-            self.match(XPLOR_NIH_MR_Parser.Ramachandran)
+            self.match(XplorMRParser.Ramachandran)
             self.state = 387
-            self.match(XPLOR_NIH_MR_Parser.L_brace)
+            self.match(XplorMRParser.L_brace)
             self.state = 388
             self.ramachandran_statement()
             self.state = 389
-            self.match(XPLOR_NIH_MR_Parser.R_brace)
+            self.match(XplorMRParser.R_brace)
             self.state = 390
-            self.match(XPLOR_NIH_MR_Parser.End)
+            self.match(XplorMRParser.End)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -2517,23 +2517,23 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.parser = parser
 
         def Collapse(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Collapse, 0)
+            return self.getToken(XplorMRParser.Collapse, 0)
 
         def L_brace(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.L_brace, 0)
+            return self.getToken(XplorMRParser.L_brace, 0)
 
         def collapse_statement(self):
-            return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Collapse_statementContext,0)
+            return self.getTypedRuleContext(XplorMRParser.Collapse_statementContext,0)
 
 
         def R_brace(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.R_brace, 0)
+            return self.getToken(XplorMRParser.R_brace, 0)
 
         def End(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.End, 0)
+            return self.getToken(XplorMRParser.End, 0)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_radius_of_gyration_restraint
+            return XplorMRParser.RULE_radius_of_gyration_restraint
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterRadius_of_gyration_restraint" ):
@@ -2548,20 +2548,20 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def radius_of_gyration_restraint(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Radius_of_gyration_restraintContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Radius_of_gyration_restraintContext(self, self._ctx, self.state)
         self.enterRule(localctx, 20, self.RULE_radius_of_gyration_restraint)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 392
-            self.match(XPLOR_NIH_MR_Parser.Collapse)
+            self.match(XplorMRParser.Collapse)
             self.state = 393
-            self.match(XPLOR_NIH_MR_Parser.L_brace)
+            self.match(XplorMRParser.L_brace)
             self.state = 394
             self.collapse_statement()
             self.state = 395
-            self.match(XPLOR_NIH_MR_Parser.R_brace)
+            self.match(XplorMRParser.R_brace)
             self.state = 396
-            self.match(XPLOR_NIH_MR_Parser.End)
+            self.match(XplorMRParser.End)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -2578,23 +2578,23 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.parser = parser
 
         def Danisotropy(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Danisotropy, 0)
+            return self.getToken(XplorMRParser.Danisotropy, 0)
 
         def L_brace(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.L_brace, 0)
+            return self.getToken(XplorMRParser.L_brace, 0)
 
         def diffusion_statement(self):
-            return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Diffusion_statementContext,0)
+            return self.getTypedRuleContext(XplorMRParser.Diffusion_statementContext,0)
 
 
         def R_brace(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.R_brace, 0)
+            return self.getToken(XplorMRParser.R_brace, 0)
 
         def End(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.End, 0)
+            return self.getToken(XplorMRParser.End, 0)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_diffusion_anisotropy_restraint
+            return XplorMRParser.RULE_diffusion_anisotropy_restraint
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterDiffusion_anisotropy_restraint" ):
@@ -2609,20 +2609,20 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def diffusion_anisotropy_restraint(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Diffusion_anisotropy_restraintContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Diffusion_anisotropy_restraintContext(self, self._ctx, self.state)
         self.enterRule(localctx, 22, self.RULE_diffusion_anisotropy_restraint)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 398
-            self.match(XPLOR_NIH_MR_Parser.Danisotropy)
+            self.match(XplorMRParser.Danisotropy)
             self.state = 399
-            self.match(XPLOR_NIH_MR_Parser.L_brace)
+            self.match(XplorMRParser.L_brace)
             self.state = 400
             self.diffusion_statement()
             self.state = 401
-            self.match(XPLOR_NIH_MR_Parser.R_brace)
+            self.match(XplorMRParser.R_brace)
             self.state = 402
-            self.match(XPLOR_NIH_MR_Parser.End)
+            self.match(XplorMRParser.End)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -2639,23 +2639,23 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.parser = parser
 
         def Orient(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Orient, 0)
+            return self.getToken(XplorMRParser.Orient, 0)
 
         def L_brace(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.L_brace, 0)
+            return self.getToken(XplorMRParser.L_brace, 0)
 
         def orientation_statement(self):
-            return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Orientation_statementContext,0)
+            return self.getTypedRuleContext(XplorMRParser.Orientation_statementContext,0)
 
 
         def R_brace(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.R_brace, 0)
+            return self.getToken(XplorMRParser.R_brace, 0)
 
         def End(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.End, 0)
+            return self.getToken(XplorMRParser.End, 0)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_orientation_db_restraint
+            return XplorMRParser.RULE_orientation_db_restraint
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterOrientation_db_restraint" ):
@@ -2670,20 +2670,20 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def orientation_db_restraint(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Orientation_db_restraintContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Orientation_db_restraintContext(self, self._ctx, self.state)
         self.enterRule(localctx, 24, self.RULE_orientation_db_restraint)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 404
-            self.match(XPLOR_NIH_MR_Parser.Orient)
+            self.match(XplorMRParser.Orient)
             self.state = 405
-            self.match(XPLOR_NIH_MR_Parser.L_brace)
+            self.match(XplorMRParser.L_brace)
             self.state = 406
             self.orientation_statement()
             self.state = 407
-            self.match(XPLOR_NIH_MR_Parser.R_brace)
+            self.match(XplorMRParser.R_brace)
             self.state = 408
-            self.match(XPLOR_NIH_MR_Parser.End)
+            self.match(XplorMRParser.End)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -2700,23 +2700,23 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.parser = parser
 
         def Dcsa(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Dcsa, 0)
+            return self.getToken(XplorMRParser.Dcsa, 0)
 
         def L_brace(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.L_brace, 0)
+            return self.getToken(XplorMRParser.L_brace, 0)
 
         def csa_statement(self):
-            return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Csa_statementContext,0)
+            return self.getTypedRuleContext(XplorMRParser.Csa_statementContext,0)
 
 
         def R_brace(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.R_brace, 0)
+            return self.getToken(XplorMRParser.R_brace, 0)
 
         def End(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.End, 0)
+            return self.getToken(XplorMRParser.End, 0)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_csa_restraint
+            return XplorMRParser.RULE_csa_restraint
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterCsa_restraint" ):
@@ -2731,20 +2731,20 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def csa_restraint(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Csa_restraintContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Csa_restraintContext(self, self._ctx, self.state)
         self.enterRule(localctx, 26, self.RULE_csa_restraint)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 410
-            self.match(XPLOR_NIH_MR_Parser.Dcsa)
+            self.match(XplorMRParser.Dcsa)
             self.state = 411
-            self.match(XPLOR_NIH_MR_Parser.L_brace)
+            self.match(XplorMRParser.L_brace)
             self.state = 412
             self.csa_statement()
             self.state = 413
-            self.match(XPLOR_NIH_MR_Parser.R_brace)
+            self.match(XplorMRParser.R_brace)
             self.state = 414
-            self.match(XPLOR_NIH_MR_Parser.End)
+            self.match(XplorMRParser.End)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -2761,23 +2761,23 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.parser = parser
 
         def Pcsa(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Pcsa, 0)
+            return self.getToken(XplorMRParser.Pcsa, 0)
 
         def L_brace(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.L_brace, 0)
+            return self.getToken(XplorMRParser.L_brace, 0)
 
         def pcsa_statement(self):
-            return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Pcsa_statementContext,0)
+            return self.getTypedRuleContext(XplorMRParser.Pcsa_statementContext,0)
 
 
         def R_brace(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.R_brace, 0)
+            return self.getToken(XplorMRParser.R_brace, 0)
 
         def End(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.End, 0)
+            return self.getToken(XplorMRParser.End, 0)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_pcsa_restraint
+            return XplorMRParser.RULE_pcsa_restraint
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterPcsa_restraint" ):
@@ -2792,20 +2792,20 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def pcsa_restraint(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Pcsa_restraintContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Pcsa_restraintContext(self, self._ctx, self.state)
         self.enterRule(localctx, 28, self.RULE_pcsa_restraint)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 416
-            self.match(XPLOR_NIH_MR_Parser.Pcsa)
+            self.match(XplorMRParser.Pcsa)
             self.state = 417
-            self.match(XPLOR_NIH_MR_Parser.L_brace)
+            self.match(XplorMRParser.L_brace)
             self.state = 418
             self.pcsa_statement()
             self.state = 419
-            self.match(XPLOR_NIH_MR_Parser.R_brace)
+            self.match(XplorMRParser.R_brace)
             self.state = 420
-            self.match(XPLOR_NIH_MR_Parser.End)
+            self.match(XplorMRParser.End)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -2822,23 +2822,23 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.parser = parser
 
         def OneBond(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.OneBond, 0)
+            return self.getToken(XplorMRParser.OneBond, 0)
 
         def L_brace(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.L_brace, 0)
+            return self.getToken(XplorMRParser.L_brace, 0)
 
         def one_bond_coupling_statement(self):
-            return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.One_bond_coupling_statementContext,0)
+            return self.getTypedRuleContext(XplorMRParser.One_bond_coupling_statementContext,0)
 
 
         def R_brace(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.R_brace, 0)
+            return self.getToken(XplorMRParser.R_brace, 0)
 
         def End(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.End, 0)
+            return self.getToken(XplorMRParser.End, 0)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_one_bond_coupling_restraint
+            return XplorMRParser.RULE_one_bond_coupling_restraint
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterOne_bond_coupling_restraint" ):
@@ -2853,20 +2853,20 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def one_bond_coupling_restraint(self):
 
-        localctx = XPLOR_NIH_MR_Parser.One_bond_coupling_restraintContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.One_bond_coupling_restraintContext(self, self._ctx, self.state)
         self.enterRule(localctx, 30, self.RULE_one_bond_coupling_restraint)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 422
-            self.match(XPLOR_NIH_MR_Parser.OneBond)
+            self.match(XplorMRParser.OneBond)
             self.state = 423
-            self.match(XPLOR_NIH_MR_Parser.L_brace)
+            self.match(XplorMRParser.L_brace)
             self.state = 424
             self.one_bond_coupling_statement()
             self.state = 425
-            self.match(XPLOR_NIH_MR_Parser.R_brace)
+            self.match(XplorMRParser.R_brace)
             self.state = 426
-            self.match(XPLOR_NIH_MR_Parser.End)
+            self.match(XplorMRParser.End)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -2883,23 +2883,23 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.parser = parser
 
         def AngleDb(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.AngleDb, 0)
+            return self.getToken(XplorMRParser.AngleDb, 0)
 
         def L_brace(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.L_brace, 0)
+            return self.getToken(XplorMRParser.L_brace, 0)
 
         def angle_db_statement(self):
-            return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Angle_db_statementContext,0)
+            return self.getTypedRuleContext(XplorMRParser.Angle_db_statementContext,0)
 
 
         def R_brace(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.R_brace, 0)
+            return self.getToken(XplorMRParser.R_brace, 0)
 
         def End(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.End, 0)
+            return self.getToken(XplorMRParser.End, 0)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_angle_db_restraint
+            return XplorMRParser.RULE_angle_db_restraint
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterAngle_db_restraint" ):
@@ -2914,20 +2914,20 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def angle_db_restraint(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Angle_db_restraintContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Angle_db_restraintContext(self, self._ctx, self.state)
         self.enterRule(localctx, 32, self.RULE_angle_db_restraint)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 428
-            self.match(XPLOR_NIH_MR_Parser.AngleDb)
+            self.match(XplorMRParser.AngleDb)
             self.state = 429
-            self.match(XPLOR_NIH_MR_Parser.L_brace)
+            self.match(XplorMRParser.L_brace)
             self.state = 430
             self.angle_db_statement()
             self.state = 431
-            self.match(XPLOR_NIH_MR_Parser.R_brace)
+            self.match(XplorMRParser.R_brace)
             self.state = 432
-            self.match(XPLOR_NIH_MR_Parser.End)
+            self.match(XplorMRParser.End)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -2944,23 +2944,23 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.parser = parser
 
         def Paramagnetic(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Paramagnetic, 0)
+            return self.getToken(XplorMRParser.Paramagnetic, 0)
 
         def L_brace(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.L_brace, 0)
+            return self.getToken(XplorMRParser.L_brace, 0)
 
         def pre_statement(self):
-            return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Pre_statementContext,0)
+            return self.getTypedRuleContext(XplorMRParser.Pre_statementContext,0)
 
 
         def R_brace(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.R_brace, 0)
+            return self.getToken(XplorMRParser.R_brace, 0)
 
         def End(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.End, 0)
+            return self.getToken(XplorMRParser.End, 0)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_pre_restraint
+            return XplorMRParser.RULE_pre_restraint
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterPre_restraint" ):
@@ -2975,20 +2975,20 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def pre_restraint(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Pre_restraintContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Pre_restraintContext(self, self._ctx, self.state)
         self.enterRule(localctx, 34, self.RULE_pre_restraint)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 434
-            self.match(XPLOR_NIH_MR_Parser.Paramagnetic)
+            self.match(XplorMRParser.Paramagnetic)
             self.state = 435
-            self.match(XPLOR_NIH_MR_Parser.L_brace)
+            self.match(XplorMRParser.L_brace)
             self.state = 436
             self.pre_statement()
             self.state = 437
-            self.match(XPLOR_NIH_MR_Parser.R_brace)
+            self.match(XplorMRParser.R_brace)
             self.state = 438
-            self.match(XPLOR_NIH_MR_Parser.End)
+            self.match(XplorMRParser.End)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -3005,23 +3005,23 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.parser = parser
 
         def Xpcs(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Xpcs, 0)
+            return self.getToken(XplorMRParser.Xpcs, 0)
 
         def L_brace(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.L_brace, 0)
+            return self.getToken(XplorMRParser.L_brace, 0)
 
         def pcs_statement(self):
-            return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Pcs_statementContext,0)
+            return self.getTypedRuleContext(XplorMRParser.Pcs_statementContext,0)
 
 
         def R_brace(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.R_brace, 0)
+            return self.getToken(XplorMRParser.R_brace, 0)
 
         def End(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.End, 0)
+            return self.getToken(XplorMRParser.End, 0)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_pcs_restraint
+            return XplorMRParser.RULE_pcs_restraint
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterPcs_restraint" ):
@@ -3036,20 +3036,20 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def pcs_restraint(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Pcs_restraintContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Pcs_restraintContext(self, self._ctx, self.state)
         self.enterRule(localctx, 36, self.RULE_pcs_restraint)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 440
-            self.match(XPLOR_NIH_MR_Parser.Xpcs)
+            self.match(XplorMRParser.Xpcs)
             self.state = 441
-            self.match(XPLOR_NIH_MR_Parser.L_brace)
+            self.match(XplorMRParser.L_brace)
             self.state = 442
             self.pcs_statement()
             self.state = 443
-            self.match(XPLOR_NIH_MR_Parser.R_brace)
+            self.match(XplorMRParser.R_brace)
             self.state = 444
-            self.match(XPLOR_NIH_MR_Parser.End)
+            self.match(XplorMRParser.End)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -3066,23 +3066,23 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.parser = parser
 
         def Xrdcoupling(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Xrdcoupling, 0)
+            return self.getToken(XplorMRParser.Xrdcoupling, 0)
 
         def L_brace(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.L_brace, 0)
+            return self.getToken(XplorMRParser.L_brace, 0)
 
         def prdc_statement(self):
-            return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Prdc_statementContext,0)
+            return self.getTypedRuleContext(XplorMRParser.Prdc_statementContext,0)
 
 
         def R_brace(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.R_brace, 0)
+            return self.getToken(XplorMRParser.R_brace, 0)
 
         def End(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.End, 0)
+            return self.getToken(XplorMRParser.End, 0)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_prdc_restraint
+            return XplorMRParser.RULE_prdc_restraint
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterPrdc_restraint" ):
@@ -3097,20 +3097,20 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def prdc_restraint(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Prdc_restraintContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Prdc_restraintContext(self, self._ctx, self.state)
         self.enterRule(localctx, 38, self.RULE_prdc_restraint)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 446
-            self.match(XPLOR_NIH_MR_Parser.Xrdcoupling)
+            self.match(XplorMRParser.Xrdcoupling)
             self.state = 447
-            self.match(XPLOR_NIH_MR_Parser.L_brace)
+            self.match(XplorMRParser.L_brace)
             self.state = 448
             self.prdc_statement()
             self.state = 449
-            self.match(XPLOR_NIH_MR_Parser.R_brace)
+            self.match(XplorMRParser.R_brace)
             self.state = 450
-            self.match(XPLOR_NIH_MR_Parser.End)
+            self.match(XplorMRParser.End)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -3127,23 +3127,23 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.parser = parser
 
         def Xangle(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Xangle, 0)
+            return self.getToken(XplorMRParser.Xangle, 0)
 
         def L_brace(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.L_brace, 0)
+            return self.getToken(XplorMRParser.L_brace, 0)
 
         def porientation_statement(self):
-            return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Porientation_statementContext,0)
+            return self.getTypedRuleContext(XplorMRParser.Porientation_statementContext,0)
 
 
         def R_brace(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.R_brace, 0)
+            return self.getToken(XplorMRParser.R_brace, 0)
 
         def End(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.End, 0)
+            return self.getToken(XplorMRParser.End, 0)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_porientation_restraint
+            return XplorMRParser.RULE_porientation_restraint
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterPorientation_restraint" ):
@@ -3158,20 +3158,20 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def porientation_restraint(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Porientation_restraintContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Porientation_restraintContext(self, self._ctx, self.state)
         self.enterRule(localctx, 40, self.RULE_porientation_restraint)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 452
-            self.match(XPLOR_NIH_MR_Parser.Xangle)
+            self.match(XplorMRParser.Xangle)
             self.state = 453
-            self.match(XPLOR_NIH_MR_Parser.L_brace)
+            self.match(XplorMRParser.L_brace)
             self.state = 454
             self.porientation_statement()
             self.state = 455
-            self.match(XPLOR_NIH_MR_Parser.R_brace)
+            self.match(XplorMRParser.R_brace)
             self.state = 456
-            self.match(XPLOR_NIH_MR_Parser.End)
+            self.match(XplorMRParser.End)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -3188,23 +3188,23 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.parser = parser
 
         def Xccr(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Xccr, 0)
+            return self.getToken(XplorMRParser.Xccr, 0)
 
         def L_brace(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.L_brace, 0)
+            return self.getToken(XplorMRParser.L_brace, 0)
 
         def pccr_statement(self):
-            return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Pccr_statementContext,0)
+            return self.getTypedRuleContext(XplorMRParser.Pccr_statementContext,0)
 
 
         def R_brace(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.R_brace, 0)
+            return self.getToken(XplorMRParser.R_brace, 0)
 
         def End(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.End, 0)
+            return self.getToken(XplorMRParser.End, 0)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_pccr_restraint
+            return XplorMRParser.RULE_pccr_restraint
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterPccr_restraint" ):
@@ -3219,20 +3219,20 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def pccr_restraint(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Pccr_restraintContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Pccr_restraintContext(self, self._ctx, self.state)
         self.enterRule(localctx, 42, self.RULE_pccr_restraint)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 458
-            self.match(XPLOR_NIH_MR_Parser.Xccr)
+            self.match(XplorMRParser.Xccr)
             self.state = 459
-            self.match(XPLOR_NIH_MR_Parser.L_brace)
+            self.match(XplorMRParser.L_brace)
             self.state = 460
             self.pccr_statement()
             self.state = 461
-            self.match(XPLOR_NIH_MR_Parser.R_brace)
+            self.match(XplorMRParser.R_brace)
             self.state = 462
-            self.match(XPLOR_NIH_MR_Parser.End)
+            self.match(XplorMRParser.End)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -3249,23 +3249,23 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.parser = parser
 
         def Hbda(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Hbda, 0)
+            return self.getToken(XplorMRParser.Hbda, 0)
 
         def L_brace(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.L_brace, 0)
+            return self.getToken(XplorMRParser.L_brace, 0)
 
         def hbond_statement(self):
-            return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Hbond_statementContext,0)
+            return self.getTypedRuleContext(XplorMRParser.Hbond_statementContext,0)
 
 
         def R_brace(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.R_brace, 0)
+            return self.getToken(XplorMRParser.R_brace, 0)
 
         def End(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.End, 0)
+            return self.getToken(XplorMRParser.End, 0)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_hbond_restraint
+            return XplorMRParser.RULE_hbond_restraint
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterHbond_restraint" ):
@@ -3280,20 +3280,20 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def hbond_restraint(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Hbond_restraintContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Hbond_restraintContext(self, self._ctx, self.state)
         self.enterRule(localctx, 44, self.RULE_hbond_restraint)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 464
-            self.match(XPLOR_NIH_MR_Parser.Hbda)
+            self.match(XplorMRParser.Hbda)
             self.state = 465
-            self.match(XPLOR_NIH_MR_Parser.L_brace)
+            self.match(XplorMRParser.L_brace)
             self.state = 466
             self.hbond_statement()
             self.state = 467
-            self.match(XPLOR_NIH_MR_Parser.R_brace)
+            self.match(XplorMRParser.R_brace)
             self.state = 468
-            self.match(XPLOR_NIH_MR_Parser.End)
+            self.match(XplorMRParser.End)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -3311,116 +3311,116 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
         def noe_assign(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.Noe_assignContext)
+                return self.getTypedRuleContexts(XplorMRParser.Noe_assignContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Noe_assignContext,i)
+                return self.getTypedRuleContext(XplorMRParser.Noe_assignContext,i)
 
 
         def Asymptote(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Asymptote, 0)
+            return self.getToken(XplorMRParser.Asymptote, 0)
 
         def Class_names(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Class_names, 0)
+            return self.getToken(XplorMRParser.Class_names, 0)
 
         def Real(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Real, 0)
+            return self.getToken(XplorMRParser.Real, 0)
 
         def Averaging(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Averaging, 0)
+            return self.getToken(XplorMRParser.Averaging, 0)
 
         def Noe_avr_methods(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Noe_avr_methods, 0)
+            return self.getToken(XplorMRParser.Noe_avr_methods, 0)
 
         def Bhig(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Bhig, 0)
+            return self.getToken(XplorMRParser.Bhig, 0)
 
         def Ceiling(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Ceiling, 0)
+            return self.getToken(XplorMRParser.Ceiling, 0)
 
         def Equ_op(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Equ_op, 0)
+            return self.getToken(XplorMRParser.Equ_op, 0)
 
         def Classification(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Classification, 0)
+            return self.getToken(XplorMRParser.Classification, 0)
 
         def Class_name(self, i:int=None):
             if i is None:
-                return self.getTokens(XPLOR_NIH_MR_Parser.Class_name)
+                return self.getTokens(XplorMRParser.Class_name)
             else:
-                return self.getToken(XPLOR_NIH_MR_Parser.Class_name, i)
+                return self.getToken(XplorMRParser.Class_name, i)
 
         def CountViol(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.CountViol, 0)
+            return self.getToken(XplorMRParser.CountViol, 0)
 
         def Distribute(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Distribute, 0)
+            return self.getToken(XplorMRParser.Distribute, 0)
 
         def Monomers(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Monomers, 0)
+            return self.getToken(XplorMRParser.Monomers, 0)
 
         def Integer(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Integer, 0)
+            return self.getToken(XplorMRParser.Integer, 0)
 
         def Ncount(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Ncount, 0)
+            return self.getToken(XplorMRParser.Ncount, 0)
 
         def Nrestraints(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Nrestraints, 0)
+            return self.getToken(XplorMRParser.Nrestraints, 0)
 
         def Potential(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Potential, 0)
+            return self.getToken(XplorMRParser.Potential, 0)
 
         def Noe_potential(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Noe_potential, 0)
+            return self.getToken(XplorMRParser.Noe_potential, 0)
 
         def Predict(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Predict, 0)
+            return self.getToken(XplorMRParser.Predict, 0)
 
         def L_brace(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.L_brace, 0)
+            return self.getToken(XplorMRParser.L_brace, 0)
 
         def predict_statement(self):
-            return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Predict_statementContext,0)
+            return self.getTypedRuleContext(XplorMRParser.Predict_statementContext,0)
 
 
         def R_brace(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.R_brace, 0)
+            return self.getToken(XplorMRParser.R_brace, 0)
 
         def End(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.End, 0)
+            return self.getToken(XplorMRParser.End, 0)
 
         def Print(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Print, 0)
+            return self.getToken(XplorMRParser.Print, 0)
 
         def Threshold(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Threshold, 0)
+            return self.getToken(XplorMRParser.Threshold, 0)
 
         def Reset(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Reset, 0)
+            return self.getToken(XplorMRParser.Reset, 0)
 
         def Rswitch(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Rswitch, 0)
+            return self.getToken(XplorMRParser.Rswitch, 0)
 
         def Scale(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Scale, 0)
+            return self.getToken(XplorMRParser.Scale, 0)
 
         def SoExponent(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.SoExponent, 0)
+            return self.getToken(XplorMRParser.SoExponent, 0)
 
         def SqConstant(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.SqConstant, 0)
+            return self.getToken(XplorMRParser.SqConstant, 0)
 
         def SqExponent(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.SqExponent, 0)
+            return self.getToken(XplorMRParser.SqExponent, 0)
 
         def SqOffset(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.SqOffset, 0)
+            return self.getToken(XplorMRParser.SqOffset, 0)
 
         def Temperature(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Temperature, 0)
+            return self.getToken(XplorMRParser.Temperature, 0)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_noe_statement
+            return XplorMRParser.RULE_noe_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterNoe_statement" ):
@@ -3435,19 +3435,19 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def noe_statement(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Noe_statementContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Noe_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 46, self.RULE_noe_statement)
         self._la = 0 # Token type
         try:
             self.state = 542
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [XPLOR_NIH_MR_Parser.Assign, XPLOR_NIH_MR_Parser.R_brace]:
+            if token in [XplorMRParser.Assign, XplorMRParser.R_brace]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 473
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==XPLOR_NIH_MR_Parser.Assign:
+                while _la==XplorMRParser.Assign:
                     self.state = 470
                     self.noe_assign()
                     self.state = 475
@@ -3455,200 +3455,200 @@ class XPLOR_NIH_MR_Parser ( Parser ):
                     _la = self._input.LA(1)
 
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Asymptote]:
+            elif token in [XplorMRParser.Asymptote]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 476
-                self.match(XPLOR_NIH_MR_Parser.Asymptote)
+                self.match(XplorMRParser.Asymptote)
                 self.state = 477
-                self.match(XPLOR_NIH_MR_Parser.Class_names)
+                self.match(XplorMRParser.Class_names)
                 self.state = 478
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Averaging]:
+            elif token in [XplorMRParser.Averaging]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 479
-                self.match(XPLOR_NIH_MR_Parser.Averaging)
+                self.match(XplorMRParser.Averaging)
                 self.state = 480
-                self.match(XPLOR_NIH_MR_Parser.Class_names)
+                self.match(XplorMRParser.Class_names)
                 self.state = 481
-                self.match(XPLOR_NIH_MR_Parser.Noe_avr_methods)
+                self.match(XplorMRParser.Noe_avr_methods)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Bhig]:
+            elif token in [XplorMRParser.Bhig]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 482
-                self.match(XPLOR_NIH_MR_Parser.Bhig)
+                self.match(XplorMRParser.Bhig)
                 self.state = 483
-                self.match(XPLOR_NIH_MR_Parser.Class_names)
+                self.match(XplorMRParser.Class_names)
                 self.state = 484
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Ceiling]:
+            elif token in [XplorMRParser.Ceiling]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 485
-                self.match(XPLOR_NIH_MR_Parser.Ceiling)
+                self.match(XplorMRParser.Ceiling)
                 self.state = 486
-                self.match(XPLOR_NIH_MR_Parser.Equ_op)
+                self.match(XplorMRParser.Equ_op)
                 self.state = 487
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Classification]:
+            elif token in [XplorMRParser.Classification]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 488
-                self.match(XPLOR_NIH_MR_Parser.Classification)
+                self.match(XplorMRParser.Classification)
                 self.state = 489
-                self.match(XPLOR_NIH_MR_Parser.Class_name)
+                self.match(XplorMRParser.Class_name)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.CountViol]:
+            elif token in [XplorMRParser.CountViol]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 490
-                self.match(XPLOR_NIH_MR_Parser.CountViol)
+                self.match(XplorMRParser.CountViol)
                 self.state = 491
-                self.match(XPLOR_NIH_MR_Parser.Class_name)
+                self.match(XplorMRParser.Class_name)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Distribute]:
+            elif token in [XplorMRParser.Distribute]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 492
-                self.match(XPLOR_NIH_MR_Parser.Distribute)
+                self.match(XplorMRParser.Distribute)
                 self.state = 493
-                self.match(XPLOR_NIH_MR_Parser.Class_name)
+                self.match(XplorMRParser.Class_name)
                 self.state = 494
-                self.match(XPLOR_NIH_MR_Parser.Class_name)
+                self.match(XplorMRParser.Class_name)
                 self.state = 495
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Monomers]:
+            elif token in [XplorMRParser.Monomers]:
                 self.enterOuterAlt(localctx, 9)
                 self.state = 496
-                self.match(XPLOR_NIH_MR_Parser.Monomers)
+                self.match(XplorMRParser.Monomers)
                 self.state = 497
-                self.match(XPLOR_NIH_MR_Parser.Class_names)
+                self.match(XplorMRParser.Class_names)
                 self.state = 498
-                self.match(XPLOR_NIH_MR_Parser.Integer)
+                self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Ncount]:
+            elif token in [XplorMRParser.Ncount]:
                 self.enterOuterAlt(localctx, 10)
                 self.state = 499
-                self.match(XPLOR_NIH_MR_Parser.Ncount)
+                self.match(XplorMRParser.Ncount)
                 self.state = 500
-                self.match(XPLOR_NIH_MR_Parser.Class_names)
+                self.match(XplorMRParser.Class_names)
                 self.state = 501
-                self.match(XPLOR_NIH_MR_Parser.Integer)
+                self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Nrestraints]:
+            elif token in [XplorMRParser.Nrestraints]:
                 self.enterOuterAlt(localctx, 11)
                 self.state = 502
-                self.match(XPLOR_NIH_MR_Parser.Nrestraints)
+                self.match(XplorMRParser.Nrestraints)
                 self.state = 503
-                self.match(XPLOR_NIH_MR_Parser.Equ_op)
+                self.match(XplorMRParser.Equ_op)
                 self.state = 504
-                self.match(XPLOR_NIH_MR_Parser.Integer)
+                self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Potential]:
+            elif token in [XplorMRParser.Potential]:
                 self.enterOuterAlt(localctx, 12)
                 self.state = 505
-                self.match(XPLOR_NIH_MR_Parser.Potential)
+                self.match(XplorMRParser.Potential)
                 self.state = 506
-                self.match(XPLOR_NIH_MR_Parser.Class_names)
+                self.match(XplorMRParser.Class_names)
                 self.state = 507
-                self.match(XPLOR_NIH_MR_Parser.Noe_potential)
+                self.match(XplorMRParser.Noe_potential)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Predict]:
+            elif token in [XplorMRParser.Predict]:
                 self.enterOuterAlt(localctx, 13)
                 self.state = 508
-                self.match(XPLOR_NIH_MR_Parser.Predict)
+                self.match(XplorMRParser.Predict)
                 self.state = 509
-                self.match(XPLOR_NIH_MR_Parser.L_brace)
+                self.match(XplorMRParser.L_brace)
                 self.state = 510
                 self.predict_statement()
                 self.state = 511
-                self.match(XPLOR_NIH_MR_Parser.R_brace)
+                self.match(XplorMRParser.R_brace)
                 self.state = 512
-                self.match(XPLOR_NIH_MR_Parser.End)
+                self.match(XplorMRParser.End)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Print]:
+            elif token in [XplorMRParser.Print]:
                 self.enterOuterAlt(localctx, 14)
                 self.state = 514
-                self.match(XPLOR_NIH_MR_Parser.Print)
+                self.match(XplorMRParser.Print)
                 self.state = 515
-                self.match(XPLOR_NIH_MR_Parser.Threshold)
+                self.match(XplorMRParser.Threshold)
                 self.state = 517
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XPLOR_NIH_MR_Parser.Equ_op:
+                if _la==XplorMRParser.Equ_op:
                     self.state = 516
-                    self.match(XPLOR_NIH_MR_Parser.Equ_op)
+                    self.match(XplorMRParser.Equ_op)
 
 
                 self.state = 519
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Reset]:
+            elif token in [XplorMRParser.Reset]:
                 self.enterOuterAlt(localctx, 15)
                 self.state = 520
-                self.match(XPLOR_NIH_MR_Parser.Reset)
+                self.match(XplorMRParser.Reset)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Rswitch]:
+            elif token in [XplorMRParser.Rswitch]:
                 self.enterOuterAlt(localctx, 16)
                 self.state = 521
-                self.match(XPLOR_NIH_MR_Parser.Rswitch)
+                self.match(XplorMRParser.Rswitch)
                 self.state = 522
-                self.match(XPLOR_NIH_MR_Parser.Class_names)
+                self.match(XplorMRParser.Class_names)
                 self.state = 523
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Scale]:
+            elif token in [XplorMRParser.Scale]:
                 self.enterOuterAlt(localctx, 17)
                 self.state = 524
-                self.match(XPLOR_NIH_MR_Parser.Scale)
+                self.match(XplorMRParser.Scale)
                 self.state = 525
-                self.match(XPLOR_NIH_MR_Parser.Class_names)
+                self.match(XplorMRParser.Class_names)
                 self.state = 526
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.SoExponent]:
+            elif token in [XplorMRParser.SoExponent]:
                 self.enterOuterAlt(localctx, 18)
                 self.state = 527
-                self.match(XPLOR_NIH_MR_Parser.SoExponent)
+                self.match(XplorMRParser.SoExponent)
                 self.state = 528
-                self.match(XPLOR_NIH_MR_Parser.Class_names)
+                self.match(XplorMRParser.Class_names)
                 self.state = 529
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.SqConstant]:
+            elif token in [XplorMRParser.SqConstant]:
                 self.enterOuterAlt(localctx, 19)
                 self.state = 530
-                self.match(XPLOR_NIH_MR_Parser.SqConstant)
+                self.match(XplorMRParser.SqConstant)
                 self.state = 531
-                self.match(XPLOR_NIH_MR_Parser.Class_names)
+                self.match(XplorMRParser.Class_names)
                 self.state = 532
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.SqExponent]:
+            elif token in [XplorMRParser.SqExponent]:
                 self.enterOuterAlt(localctx, 20)
                 self.state = 533
-                self.match(XPLOR_NIH_MR_Parser.SqExponent)
+                self.match(XplorMRParser.SqExponent)
                 self.state = 534
-                self.match(XPLOR_NIH_MR_Parser.Class_names)
+                self.match(XplorMRParser.Class_names)
                 self.state = 535
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.SqOffset]:
+            elif token in [XplorMRParser.SqOffset]:
                 self.enterOuterAlt(localctx, 21)
                 self.state = 536
-                self.match(XPLOR_NIH_MR_Parser.SqOffset)
+                self.match(XplorMRParser.SqOffset)
                 self.state = 537
-                self.match(XPLOR_NIH_MR_Parser.Class_names)
+                self.match(XplorMRParser.Class_names)
                 self.state = 538
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Temperature]:
+            elif token in [XplorMRParser.Temperature]:
                 self.enterOuterAlt(localctx, 22)
                 self.state = 539
-                self.match(XPLOR_NIH_MR_Parser.Temperature)
+                self.match(XplorMRParser.Temperature)
                 self.state = 540
-                self.match(XPLOR_NIH_MR_Parser.Equ_op)
+                self.match(XplorMRParser.Equ_op)
                 self.state = 541
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
             else:
                 raise NoViableAltException(self)
@@ -3669,29 +3669,29 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.parser = parser
 
         def Assign(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Assign, 0)
+            return self.getToken(XplorMRParser.Assign, 0)
 
         def selection(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.SelectionContext)
+                return self.getTypedRuleContexts(XplorMRParser.SelectionContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.SelectionContext,i)
+                return self.getTypedRuleContext(XplorMRParser.SelectionContext,i)
 
 
         def Real(self, i:int=None):
             if i is None:
-                return self.getTokens(XPLOR_NIH_MR_Parser.Real)
+                return self.getTokens(XplorMRParser.Real)
             else:
-                return self.getToken(XPLOR_NIH_MR_Parser.Real, i)
+                return self.getToken(XplorMRParser.Real, i)
 
         def Or_op(self, i:int=None):
             if i is None:
-                return self.getTokens(XPLOR_NIH_MR_Parser.Or_op)
+                return self.getTokens(XplorMRParser.Or_op)
             else:
-                return self.getToken(XPLOR_NIH_MR_Parser.Or_op, i)
+                return self.getToken(XplorMRParser.Or_op, i)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_noe_assign
+            return XplorMRParser.RULE_noe_assign
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterNoe_assign" ):
@@ -3706,29 +3706,29 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def noe_assign(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Noe_assignContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Noe_assignContext(self, self._ctx, self.state)
         self.enterRule(localctx, 48, self.RULE_noe_assign)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 544
-            self.match(XPLOR_NIH_MR_Parser.Assign)
+            self.match(XplorMRParser.Assign)
             self.state = 545
             self.selection()
             self.state = 546
             self.selection()
             self.state = 547
-            self.match(XPLOR_NIH_MR_Parser.Real)
+            self.match(XplorMRParser.Real)
             self.state = 548
-            self.match(XPLOR_NIH_MR_Parser.Real)
+            self.match(XplorMRParser.Real)
             self.state = 549
-            self.match(XPLOR_NIH_MR_Parser.Real)
+            self.match(XplorMRParser.Real)
             self.state = 556
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==XPLOR_NIH_MR_Parser.Or_op:
+            while _la==XplorMRParser.Or_op:
                 self.state = 550
-                self.match(XPLOR_NIH_MR_Parser.Or_op)
+                self.match(XplorMRParser.Or_op)
                 self.state = 551
                 self.selection()
                 self.state = 552
@@ -3753,29 +3753,29 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.parser = parser
 
         def Cutoff(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Cutoff, 0)
+            return self.getToken(XplorMRParser.Cutoff, 0)
 
         def Equ_op(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Equ_op, 0)
+            return self.getToken(XplorMRParser.Equ_op, 0)
 
         def Real(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Real, 0)
+            return self.getToken(XplorMRParser.Real, 0)
 
         def Cuton(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Cuton, 0)
+            return self.getToken(XplorMRParser.Cuton, 0)
 
         def From(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.From, 0)
+            return self.getToken(XplorMRParser.From, 0)
 
         def selection(self):
-            return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.SelectionContext,0)
+            return self.getTypedRuleContext(XplorMRParser.SelectionContext,0)
 
 
         def To(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.To, 0)
+            return self.getToken(XplorMRParser.To, 0)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_predict_statement
+            return XplorMRParser.RULE_predict_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterPredict_statement" ):
@@ -3790,41 +3790,41 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def predict_statement(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Predict_statementContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Predict_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 50, self.RULE_predict_statement)
         try:
             self.state = 569
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [XPLOR_NIH_MR_Parser.Cutoff]:
+            if token in [XplorMRParser.Cutoff]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 559
-                self.match(XPLOR_NIH_MR_Parser.Cutoff)
+                self.match(XplorMRParser.Cutoff)
                 self.state = 560
-                self.match(XPLOR_NIH_MR_Parser.Equ_op)
+                self.match(XplorMRParser.Equ_op)
                 self.state = 561
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Cuton]:
+            elif token in [XplorMRParser.Cuton]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 562
-                self.match(XPLOR_NIH_MR_Parser.Cuton)
+                self.match(XplorMRParser.Cuton)
                 self.state = 563
-                self.match(XPLOR_NIH_MR_Parser.Equ_op)
+                self.match(XplorMRParser.Equ_op)
                 self.state = 564
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.From]:
+            elif token in [XplorMRParser.From]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 565
-                self.match(XPLOR_NIH_MR_Parser.From)
+                self.match(XplorMRParser.From)
                 self.state = 566
                 self.selection()
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.To]:
+            elif token in [XplorMRParser.To]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 567
-                self.match(XPLOR_NIH_MR_Parser.To)
+                self.match(XplorMRParser.To)
                 self.state = 568
                 self.selection()
                 pass
@@ -3848,31 +3848,31 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
         def dihedral_assign(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.Dihedral_assignContext)
+                return self.getTypedRuleContexts(XplorMRParser.Dihedral_assignContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Dihedral_assignContext,i)
+                return self.getTypedRuleContext(XplorMRParser.Dihedral_assignContext,i)
 
 
         def Nassign(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Nassign, 0)
+            return self.getToken(XplorMRParser.Nassign, 0)
 
         def Equ_op(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Equ_op, 0)
+            return self.getToken(XplorMRParser.Equ_op, 0)
 
         def Integer(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Integer, 0)
+            return self.getToken(XplorMRParser.Integer, 0)
 
         def Reset(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Reset, 0)
+            return self.getToken(XplorMRParser.Reset, 0)
 
         def Scale(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Scale, 0)
+            return self.getToken(XplorMRParser.Scale, 0)
 
         def Real(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Real, 0)
+            return self.getToken(XplorMRParser.Real, 0)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_dihedral_statement
+            return XplorMRParser.RULE_dihedral_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterDihedral_statement" ):
@@ -3887,19 +3887,19 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def dihedral_statement(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Dihedral_statementContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Dihedral_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 52, self.RULE_dihedral_statement)
         self._la = 0 # Token type
         try:
             self.state = 583
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [XPLOR_NIH_MR_Parser.Assign, XPLOR_NIH_MR_Parser.R_brace]:
+            if token in [XplorMRParser.Assign, XplorMRParser.R_brace]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 574
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==XPLOR_NIH_MR_Parser.Assign:
+                while _la==XplorMRParser.Assign:
                     self.state = 571
                     self.dihedral_assign()
                     self.state = 576
@@ -3907,26 +3907,26 @@ class XPLOR_NIH_MR_Parser ( Parser ):
                     _la = self._input.LA(1)
 
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Nassign]:
+            elif token in [XplorMRParser.Nassign]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 577
-                self.match(XPLOR_NIH_MR_Parser.Nassign)
+                self.match(XplorMRParser.Nassign)
                 self.state = 578
-                self.match(XPLOR_NIH_MR_Parser.Equ_op)
+                self.match(XplorMRParser.Equ_op)
                 self.state = 579
-                self.match(XPLOR_NIH_MR_Parser.Integer)
+                self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Reset]:
+            elif token in [XplorMRParser.Reset]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 580
-                self.match(XPLOR_NIH_MR_Parser.Reset)
+                self.match(XplorMRParser.Reset)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Scale]:
+            elif token in [XplorMRParser.Scale]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 581
-                self.match(XPLOR_NIH_MR_Parser.Scale)
+                self.match(XplorMRParser.Scale)
                 self.state = 582
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
             else:
                 raise NoViableAltException(self)
@@ -3947,26 +3947,26 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.parser = parser
 
         def Assign(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Assign, 0)
+            return self.getToken(XplorMRParser.Assign, 0)
 
         def selection(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.SelectionContext)
+                return self.getTypedRuleContexts(XplorMRParser.SelectionContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.SelectionContext,i)
+                return self.getTypedRuleContext(XplorMRParser.SelectionContext,i)
 
 
         def Real(self, i:int=None):
             if i is None:
-                return self.getTokens(XPLOR_NIH_MR_Parser.Real)
+                return self.getTokens(XplorMRParser.Real)
             else:
-                return self.getToken(XPLOR_NIH_MR_Parser.Real, i)
+                return self.getToken(XplorMRParser.Real, i)
 
         def Integer(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Integer, 0)
+            return self.getToken(XplorMRParser.Integer, 0)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_dihedral_assign
+            return XplorMRParser.RULE_dihedral_assign
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterDihedral_assign" ):
@@ -3981,12 +3981,12 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def dihedral_assign(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Dihedral_assignContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Dihedral_assignContext(self, self._ctx, self.state)
         self.enterRule(localctx, 54, self.RULE_dihedral_assign)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 585
-            self.match(XPLOR_NIH_MR_Parser.Assign)
+            self.match(XplorMRParser.Assign)
             self.state = 586
             self.selection()
             self.state = 587
@@ -3996,13 +3996,13 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.state = 589
             self.selection()
             self.state = 590
-            self.match(XPLOR_NIH_MR_Parser.Real)
+            self.match(XplorMRParser.Real)
             self.state = 591
-            self.match(XPLOR_NIH_MR_Parser.Real)
+            self.match(XplorMRParser.Real)
             self.state = 592
-            self.match(XPLOR_NIH_MR_Parser.Real)
+            self.match(XplorMRParser.Real)
             self.state = 593
-            self.match(XPLOR_NIH_MR_Parser.Integer)
+            self.match(XplorMRParser.Integer)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -4020,52 +4020,52 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
         def sani_assign(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.Sani_assignContext)
+                return self.getTypedRuleContexts(XplorMRParser.Sani_assignContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Sani_assignContext,i)
+                return self.getTypedRuleContext(XplorMRParser.Sani_assignContext,i)
 
 
         def Classification(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Classification, 0)
+            return self.getToken(XplorMRParser.Classification, 0)
 
         def Class_name(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Class_name, 0)
+            return self.getToken(XplorMRParser.Class_name, 0)
 
         def Coefficients(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Coefficients, 0)
+            return self.getToken(XplorMRParser.Coefficients, 0)
 
         def Real(self, i:int=None):
             if i is None:
-                return self.getTokens(XPLOR_NIH_MR_Parser.Real)
+                return self.getTokens(XplorMRParser.Real)
             else:
-                return self.getToken(XPLOR_NIH_MR_Parser.Real, i)
+                return self.getToken(XplorMRParser.Real, i)
 
         def ForceConstant(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.ForceConstant, 0)
+            return self.getToken(XplorMRParser.ForceConstant, 0)
 
         def Nrestraints(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Nrestraints, 0)
+            return self.getToken(XplorMRParser.Nrestraints, 0)
 
         def Integer(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Integer, 0)
+            return self.getToken(XplorMRParser.Integer, 0)
 
         def Potential(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Potential, 0)
+            return self.getToken(XplorMRParser.Potential, 0)
 
         def Rdc_potential(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Rdc_potential, 0)
+            return self.getToken(XplorMRParser.Rdc_potential, 0)
 
         def Print(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Print, 0)
+            return self.getToken(XplorMRParser.Print, 0)
 
         def Threshold(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Threshold, 0)
+            return self.getToken(XplorMRParser.Threshold, 0)
 
         def Reset(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Reset, 0)
+            return self.getToken(XplorMRParser.Reset, 0)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_sani_statement
+            return XplorMRParser.RULE_sani_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterSani_statement" ):
@@ -4080,19 +4080,19 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def sani_statement(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Sani_statementContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Sani_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 56, self.RULE_sani_statement)
         self._la = 0 # Token type
         try:
             self.state = 617
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [XPLOR_NIH_MR_Parser.Assign, XPLOR_NIH_MR_Parser.R_brace]:
+            if token in [XplorMRParser.Assign, XplorMRParser.R_brace]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 598
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==XPLOR_NIH_MR_Parser.Assign:
+                while _la==XplorMRParser.Assign:
                     self.state = 595
                     self.sani_assign()
                     self.state = 600
@@ -4100,58 +4100,58 @@ class XPLOR_NIH_MR_Parser ( Parser ):
                     _la = self._input.LA(1)
 
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Classification]:
+            elif token in [XplorMRParser.Classification]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 601
-                self.match(XPLOR_NIH_MR_Parser.Classification)
+                self.match(XplorMRParser.Classification)
                 self.state = 602
-                self.match(XPLOR_NIH_MR_Parser.Class_name)
+                self.match(XplorMRParser.Class_name)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Coefficients]:
+            elif token in [XplorMRParser.Coefficients]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 603
-                self.match(XPLOR_NIH_MR_Parser.Coefficients)
+                self.match(XplorMRParser.Coefficients)
                 self.state = 604
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 605
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 606
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.ForceConstant]:
+            elif token in [XplorMRParser.ForceConstant]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 607
-                self.match(XPLOR_NIH_MR_Parser.ForceConstant)
+                self.match(XplorMRParser.ForceConstant)
                 self.state = 608
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Nrestraints]:
+            elif token in [XplorMRParser.Nrestraints]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 609
-                self.match(XPLOR_NIH_MR_Parser.Nrestraints)
+                self.match(XplorMRParser.Nrestraints)
                 self.state = 610
-                self.match(XPLOR_NIH_MR_Parser.Integer)
+                self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Potential]:
+            elif token in [XplorMRParser.Potential]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 611
-                self.match(XPLOR_NIH_MR_Parser.Potential)
+                self.match(XplorMRParser.Potential)
                 self.state = 612
-                self.match(XPLOR_NIH_MR_Parser.Rdc_potential)
+                self.match(XplorMRParser.Rdc_potential)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Print]:
+            elif token in [XplorMRParser.Print]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 613
-                self.match(XPLOR_NIH_MR_Parser.Print)
+                self.match(XplorMRParser.Print)
                 self.state = 614
-                self.match(XPLOR_NIH_MR_Parser.Threshold)
+                self.match(XplorMRParser.Threshold)
                 self.state = 615
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Reset]:
+            elif token in [XplorMRParser.Reset]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 616
-                self.match(XPLOR_NIH_MR_Parser.Reset)
+                self.match(XplorMRParser.Reset)
                 pass
             else:
                 raise NoViableAltException(self)
@@ -4172,23 +4172,23 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.parser = parser
 
         def Assign(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Assign, 0)
+            return self.getToken(XplorMRParser.Assign, 0)
 
         def selection(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.SelectionContext)
+                return self.getTypedRuleContexts(XplorMRParser.SelectionContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.SelectionContext,i)
+                return self.getTypedRuleContext(XplorMRParser.SelectionContext,i)
 
 
         def Real(self, i:int=None):
             if i is None:
-                return self.getTokens(XPLOR_NIH_MR_Parser.Real)
+                return self.getTokens(XplorMRParser.Real)
             else:
-                return self.getToken(XPLOR_NIH_MR_Parser.Real, i)
+                return self.getToken(XplorMRParser.Real, i)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_sani_assign
+            return XplorMRParser.RULE_sani_assign
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterSani_assign" ):
@@ -4203,12 +4203,12 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def sani_assign(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Sani_assignContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Sani_assignContext(self, self._ctx, self.state)
         self.enterRule(localctx, 58, self.RULE_sani_assign)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 619
-            self.match(XPLOR_NIH_MR_Parser.Assign)
+            self.match(XplorMRParser.Assign)
             self.state = 620
             self.selection()
             self.state = 621
@@ -4222,9 +4222,9 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.state = 625
             self.selection()
             self.state = 626
-            self.match(XPLOR_NIH_MR_Parser.Real)
+            self.match(XplorMRParser.Real)
             self.state = 627
-            self.match(XPLOR_NIH_MR_Parser.Real)
+            self.match(XplorMRParser.Real)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -4242,73 +4242,73 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
         def xdip_assign(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.Xdip_assignContext)
+                return self.getTypedRuleContexts(XplorMRParser.Xdip_assignContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Xdip_assignContext,i)
+                return self.getTypedRuleContext(XplorMRParser.Xdip_assignContext,i)
 
 
         def Classification(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Classification, 0)
+            return self.getToken(XplorMRParser.Classification, 0)
 
         def Class_name(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Class_name, 0)
+            return self.getToken(XplorMRParser.Class_name, 0)
 
         def Type(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Type, 0)
+            return self.getToken(XplorMRParser.Type, 0)
 
         def Rdc_dist_fix_types(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Rdc_dist_fix_types, 0)
+            return self.getToken(XplorMRParser.Rdc_dist_fix_types, 0)
 
         def Scale(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Scale, 0)
+            return self.getToken(XplorMRParser.Scale, 0)
 
         def Real(self, i:int=None):
             if i is None:
-                return self.getTokens(XPLOR_NIH_MR_Parser.Real)
+                return self.getTokens(XplorMRParser.Real)
             else:
-                return self.getToken(XPLOR_NIH_MR_Parser.Real, i)
+                return self.getToken(XplorMRParser.Real, i)
 
         def Sign(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Sign, 0)
+            return self.getToken(XplorMRParser.Sign, 0)
 
         def Logical(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Logical, 0)
+            return self.getToken(XplorMRParser.Logical, 0)
 
         def Average(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Average, 0)
+            return self.getToken(XplorMRParser.Average, 0)
 
         def Rdc_avr_methods(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Rdc_avr_methods, 0)
+            return self.getToken(XplorMRParser.Rdc_avr_methods, 0)
 
         def Coefficients(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Coefficients, 0)
+            return self.getToken(XplorMRParser.Coefficients, 0)
 
         def ForceConstant(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.ForceConstant, 0)
+            return self.getToken(XplorMRParser.ForceConstant, 0)
 
         def Nrestraints(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Nrestraints, 0)
+            return self.getToken(XplorMRParser.Nrestraints, 0)
 
         def Integer(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Integer, 0)
+            return self.getToken(XplorMRParser.Integer, 0)
 
         def Potential(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Potential, 0)
+            return self.getToken(XplorMRParser.Potential, 0)
 
         def Rdc_potential(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Rdc_potential, 0)
+            return self.getToken(XplorMRParser.Rdc_potential, 0)
 
         def Print(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Print, 0)
+            return self.getToken(XplorMRParser.Print, 0)
 
         def Threshold(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Threshold, 0)
+            return self.getToken(XplorMRParser.Threshold, 0)
 
         def Reset(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Reset, 0)
+            return self.getToken(XplorMRParser.Reset, 0)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_xdip_statement
+            return XplorMRParser.RULE_xdip_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterXdip_statement" ):
@@ -4323,19 +4323,19 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def xdip_statement(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Xdip_statementContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Xdip_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 60, self.RULE_xdip_statement)
         self._la = 0 # Token type
         try:
             self.state = 659
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [XPLOR_NIH_MR_Parser.Assign, XPLOR_NIH_MR_Parser.R_brace]:
+            if token in [XplorMRParser.Assign, XplorMRParser.R_brace]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 632
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==XPLOR_NIH_MR_Parser.Assign:
+                while _la==XplorMRParser.Assign:
                     self.state = 629
                     self.xdip_assign()
                     self.state = 634
@@ -4343,86 +4343,86 @@ class XPLOR_NIH_MR_Parser ( Parser ):
                     _la = self._input.LA(1)
 
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Classification]:
+            elif token in [XplorMRParser.Classification]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 635
-                self.match(XPLOR_NIH_MR_Parser.Classification)
+                self.match(XplorMRParser.Classification)
                 self.state = 636
-                self.match(XPLOR_NIH_MR_Parser.Class_name)
+                self.match(XplorMRParser.Class_name)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Type]:
+            elif token in [XplorMRParser.Type]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 637
-                self.match(XPLOR_NIH_MR_Parser.Type)
+                self.match(XplorMRParser.Type)
                 self.state = 638
-                self.match(XPLOR_NIH_MR_Parser.Rdc_dist_fix_types)
+                self.match(XplorMRParser.Rdc_dist_fix_types)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Scale]:
+            elif token in [XplorMRParser.Scale]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 639
-                self.match(XPLOR_NIH_MR_Parser.Scale)
+                self.match(XplorMRParser.Scale)
                 self.state = 640
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Sign]:
+            elif token in [XplorMRParser.Sign]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 641
-                self.match(XPLOR_NIH_MR_Parser.Sign)
+                self.match(XplorMRParser.Sign)
                 self.state = 642
-                self.match(XPLOR_NIH_MR_Parser.Logical)
+                self.match(XplorMRParser.Logical)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Average]:
+            elif token in [XplorMRParser.Average]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 643
-                self.match(XPLOR_NIH_MR_Parser.Average)
+                self.match(XplorMRParser.Average)
                 self.state = 644
-                self.match(XPLOR_NIH_MR_Parser.Rdc_avr_methods)
+                self.match(XplorMRParser.Rdc_avr_methods)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Coefficients]:
+            elif token in [XplorMRParser.Coefficients]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 645
-                self.match(XPLOR_NIH_MR_Parser.Coefficients)
+                self.match(XplorMRParser.Coefficients)
                 self.state = 646
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 647
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 648
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.ForceConstant]:
+            elif token in [XplorMRParser.ForceConstant]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 649
-                self.match(XPLOR_NIH_MR_Parser.ForceConstant)
+                self.match(XplorMRParser.ForceConstant)
                 self.state = 650
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Nrestraints]:
+            elif token in [XplorMRParser.Nrestraints]:
                 self.enterOuterAlt(localctx, 9)
                 self.state = 651
-                self.match(XPLOR_NIH_MR_Parser.Nrestraints)
+                self.match(XplorMRParser.Nrestraints)
                 self.state = 652
-                self.match(XPLOR_NIH_MR_Parser.Integer)
+                self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Potential]:
+            elif token in [XplorMRParser.Potential]:
                 self.enterOuterAlt(localctx, 10)
                 self.state = 653
-                self.match(XPLOR_NIH_MR_Parser.Potential)
+                self.match(XplorMRParser.Potential)
                 self.state = 654
-                self.match(XPLOR_NIH_MR_Parser.Rdc_potential)
+                self.match(XplorMRParser.Rdc_potential)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Print]:
+            elif token in [XplorMRParser.Print]:
                 self.enterOuterAlt(localctx, 11)
                 self.state = 655
-                self.match(XPLOR_NIH_MR_Parser.Print)
+                self.match(XplorMRParser.Print)
                 self.state = 656
-                self.match(XPLOR_NIH_MR_Parser.Threshold)
+                self.match(XplorMRParser.Threshold)
                 self.state = 657
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Reset]:
+            elif token in [XplorMRParser.Reset]:
                 self.enterOuterAlt(localctx, 12)
                 self.state = 658
-                self.match(XPLOR_NIH_MR_Parser.Reset)
+                self.match(XplorMRParser.Reset)
                 pass
             else:
                 raise NoViableAltException(self)
@@ -4443,23 +4443,23 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.parser = parser
 
         def Assign(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Assign, 0)
+            return self.getToken(XplorMRParser.Assign, 0)
 
         def selection(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.SelectionContext)
+                return self.getTypedRuleContexts(XplorMRParser.SelectionContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.SelectionContext,i)
+                return self.getTypedRuleContext(XplorMRParser.SelectionContext,i)
 
 
         def Real(self, i:int=None):
             if i is None:
-                return self.getTokens(XPLOR_NIH_MR_Parser.Real)
+                return self.getTokens(XplorMRParser.Real)
             else:
-                return self.getToken(XPLOR_NIH_MR_Parser.Real, i)
+                return self.getToken(XplorMRParser.Real, i)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_xdip_assign
+            return XplorMRParser.RULE_xdip_assign
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterXdip_assign" ):
@@ -4474,13 +4474,13 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def xdip_assign(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Xdip_assignContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Xdip_assignContext(self, self._ctx, self.state)
         self.enterRule(localctx, 62, self.RULE_xdip_assign)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 661
-            self.match(XPLOR_NIH_MR_Parser.Assign)
+            self.match(XplorMRParser.Assign)
             self.state = 662
             self.selection()
             self.state = 663
@@ -4494,21 +4494,21 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.state = 667
             self.selection()
             self.state = 668
-            self.match(XPLOR_NIH_MR_Parser.Real)
+            self.match(XplorMRParser.Real)
             self.state = 669
-            self.match(XPLOR_NIH_MR_Parser.Real)
+            self.match(XplorMRParser.Real)
             self.state = 670
-            self.match(XPLOR_NIH_MR_Parser.Real)
+            self.match(XplorMRParser.Real)
             self.state = 674
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==XPLOR_NIH_MR_Parser.Real:
+            if _la==XplorMRParser.Real:
                 self.state = 671
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 672
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 673
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
 
 
         except RecognitionException as re:
@@ -4528,52 +4528,52 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
         def vean_assign(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.Vean_assignContext)
+                return self.getTypedRuleContexts(XplorMRParser.Vean_assignContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Vean_assignContext,i)
+                return self.getTypedRuleContext(XplorMRParser.Vean_assignContext,i)
 
 
         def Cv(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Cv, 0)
+            return self.getToken(XplorMRParser.Cv, 0)
 
         def Equ_op(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Equ_op, 0)
+            return self.getToken(XplorMRParser.Equ_op, 0)
 
         def Integer(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Integer, 0)
+            return self.getToken(XplorMRParser.Integer, 0)
 
         def Classification(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Classification, 0)
+            return self.getToken(XplorMRParser.Classification, 0)
 
         def Class_name(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Class_name, 0)
+            return self.getToken(XplorMRParser.Class_name, 0)
 
         def ForceConstant(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.ForceConstant, 0)
+            return self.getToken(XplorMRParser.ForceConstant, 0)
 
         def Real(self, i:int=None):
             if i is None:
-                return self.getTokens(XPLOR_NIH_MR_Parser.Real)
+                return self.getTokens(XplorMRParser.Real)
             else:
-                return self.getToken(XPLOR_NIH_MR_Parser.Real, i)
+                return self.getToken(XplorMRParser.Real, i)
 
         def Nrestraints(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Nrestraints, 0)
+            return self.getToken(XplorMRParser.Nrestraints, 0)
 
         def Partition(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Partition, 0)
+            return self.getToken(XplorMRParser.Partition, 0)
 
         def Print(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Print, 0)
+            return self.getToken(XplorMRParser.Print, 0)
 
         def Threshold(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Threshold, 0)
+            return self.getToken(XplorMRParser.Threshold, 0)
 
         def Reset(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Reset, 0)
+            return self.getToken(XplorMRParser.Reset, 0)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_vean_statement
+            return XplorMRParser.RULE_vean_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterVean_statement" ):
@@ -4588,19 +4588,19 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def vean_statement(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Vean_statementContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Vean_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 64, self.RULE_vean_statement)
         self._la = 0 # Token type
         try:
             self.state = 699
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [XPLOR_NIH_MR_Parser.Assign, XPLOR_NIH_MR_Parser.R_brace]:
+            if token in [XplorMRParser.Assign, XplorMRParser.R_brace]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 679
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==XPLOR_NIH_MR_Parser.Assign:
+                while _la==XplorMRParser.Assign:
                     self.state = 676
                     self.vean_assign()
                     self.state = 681
@@ -4608,60 +4608,60 @@ class XPLOR_NIH_MR_Parser ( Parser ):
                     _la = self._input.LA(1)
 
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Cv]:
+            elif token in [XplorMRParser.Cv]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 682
-                self.match(XPLOR_NIH_MR_Parser.Cv)
+                self.match(XplorMRParser.Cv)
                 self.state = 683
-                self.match(XPLOR_NIH_MR_Parser.Equ_op)
+                self.match(XplorMRParser.Equ_op)
                 self.state = 684
-                self.match(XPLOR_NIH_MR_Parser.Integer)
+                self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Classification]:
+            elif token in [XplorMRParser.Classification]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 685
-                self.match(XPLOR_NIH_MR_Parser.Classification)
+                self.match(XplorMRParser.Classification)
                 self.state = 686
-                self.match(XPLOR_NIH_MR_Parser.Class_name)
+                self.match(XplorMRParser.Class_name)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.ForceConstant]:
+            elif token in [XplorMRParser.ForceConstant]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 687
-                self.match(XPLOR_NIH_MR_Parser.ForceConstant)
+                self.match(XplorMRParser.ForceConstant)
                 self.state = 688
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 689
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Nrestraints]:
+            elif token in [XplorMRParser.Nrestraints]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 690
-                self.match(XPLOR_NIH_MR_Parser.Nrestraints)
+                self.match(XplorMRParser.Nrestraints)
                 self.state = 691
-                self.match(XPLOR_NIH_MR_Parser.Integer)
+                self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Partition]:
+            elif token in [XplorMRParser.Partition]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 692
-                self.match(XPLOR_NIH_MR_Parser.Partition)
+                self.match(XplorMRParser.Partition)
                 self.state = 693
-                self.match(XPLOR_NIH_MR_Parser.Equ_op)
+                self.match(XplorMRParser.Equ_op)
                 self.state = 694
-                self.match(XPLOR_NIH_MR_Parser.Integer)
+                self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Print]:
+            elif token in [XplorMRParser.Print]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 695
-                self.match(XPLOR_NIH_MR_Parser.Print)
+                self.match(XplorMRParser.Print)
                 self.state = 696
-                self.match(XPLOR_NIH_MR_Parser.Threshold)
+                self.match(XplorMRParser.Threshold)
                 self.state = 697
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Reset]:
+            elif token in [XplorMRParser.Reset]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 698
-                self.match(XPLOR_NIH_MR_Parser.Reset)
+                self.match(XplorMRParser.Reset)
                 pass
             else:
                 raise NoViableAltException(self)
@@ -4682,23 +4682,23 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.parser = parser
 
         def Assign(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Assign, 0)
+            return self.getToken(XplorMRParser.Assign, 0)
 
         def selection(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.SelectionContext)
+                return self.getTypedRuleContexts(XplorMRParser.SelectionContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.SelectionContext,i)
+                return self.getTypedRuleContext(XplorMRParser.SelectionContext,i)
 
 
         def Real(self, i:int=None):
             if i is None:
-                return self.getTokens(XPLOR_NIH_MR_Parser.Real)
+                return self.getTokens(XplorMRParser.Real)
             else:
-                return self.getToken(XPLOR_NIH_MR_Parser.Real, i)
+                return self.getToken(XplorMRParser.Real, i)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_vean_assign
+            return XplorMRParser.RULE_vean_assign
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterVean_assign" ):
@@ -4713,12 +4713,12 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def vean_assign(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Vean_assignContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Vean_assignContext(self, self._ctx, self.state)
         self.enterRule(localctx, 66, self.RULE_vean_assign)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 701
-            self.match(XPLOR_NIH_MR_Parser.Assign)
+            self.match(XplorMRParser.Assign)
             self.state = 702
             self.selection()
             self.state = 703
@@ -4728,13 +4728,13 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.state = 705
             self.selection()
             self.state = 706
-            self.match(XPLOR_NIH_MR_Parser.Real)
+            self.match(XplorMRParser.Real)
             self.state = 707
-            self.match(XPLOR_NIH_MR_Parser.Real)
+            self.match(XplorMRParser.Real)
             self.state = 708
-            self.match(XPLOR_NIH_MR_Parser.Real)
+            self.match(XplorMRParser.Real)
             self.state = 709
-            self.match(XPLOR_NIH_MR_Parser.Real)
+            self.match(XplorMRParser.Real)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -4752,46 +4752,46 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
         def tens_assign(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.Tens_assignContext)
+                return self.getTypedRuleContexts(XplorMRParser.Tens_assignContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Tens_assignContext,i)
+                return self.getTypedRuleContext(XplorMRParser.Tens_assignContext,i)
 
 
         def Classification(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Classification, 0)
+            return self.getToken(XplorMRParser.Classification, 0)
 
         def Class_name(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Class_name, 0)
+            return self.getToken(XplorMRParser.Class_name, 0)
 
         def Coefficients(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Coefficients, 0)
+            return self.getToken(XplorMRParser.Coefficients, 0)
 
         def Real(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Real, 0)
+            return self.getToken(XplorMRParser.Real, 0)
 
         def Nrestraints(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Nrestraints, 0)
+            return self.getToken(XplorMRParser.Nrestraints, 0)
 
         def Integer(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Integer, 0)
+            return self.getToken(XplorMRParser.Integer, 0)
 
         def Potential(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Potential, 0)
+            return self.getToken(XplorMRParser.Potential, 0)
 
         def Rdc_potential(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Rdc_potential, 0)
+            return self.getToken(XplorMRParser.Rdc_potential, 0)
 
         def Print(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Print, 0)
+            return self.getToken(XplorMRParser.Print, 0)
 
         def Threshold(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Threshold, 0)
+            return self.getToken(XplorMRParser.Threshold, 0)
 
         def Reset(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Reset, 0)
+            return self.getToken(XplorMRParser.Reset, 0)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_tens_statement
+            return XplorMRParser.RULE_tens_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterTens_statement" ):
@@ -4806,19 +4806,19 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def tens_statement(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Tens_statementContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Tens_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 68, self.RULE_tens_statement)
         self._la = 0 # Token type
         try:
             self.state = 729
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [XPLOR_NIH_MR_Parser.Assign, XPLOR_NIH_MR_Parser.R_brace]:
+            if token in [XplorMRParser.Assign, XplorMRParser.R_brace]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 714
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==XPLOR_NIH_MR_Parser.Assign:
+                while _la==XplorMRParser.Assign:
                     self.state = 711
                     self.tens_assign()
                     self.state = 716
@@ -4826,47 +4826,47 @@ class XPLOR_NIH_MR_Parser ( Parser ):
                     _la = self._input.LA(1)
 
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Classification]:
+            elif token in [XplorMRParser.Classification]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 717
-                self.match(XPLOR_NIH_MR_Parser.Classification)
+                self.match(XplorMRParser.Classification)
                 self.state = 718
-                self.match(XPLOR_NIH_MR_Parser.Class_name)
+                self.match(XplorMRParser.Class_name)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Coefficients]:
+            elif token in [XplorMRParser.Coefficients]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 719
-                self.match(XPLOR_NIH_MR_Parser.Coefficients)
+                self.match(XplorMRParser.Coefficients)
                 self.state = 720
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Nrestraints]:
+            elif token in [XplorMRParser.Nrestraints]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 721
-                self.match(XPLOR_NIH_MR_Parser.Nrestraints)
+                self.match(XplorMRParser.Nrestraints)
                 self.state = 722
-                self.match(XPLOR_NIH_MR_Parser.Integer)
+                self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Potential]:
+            elif token in [XplorMRParser.Potential]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 723
-                self.match(XPLOR_NIH_MR_Parser.Potential)
+                self.match(XplorMRParser.Potential)
                 self.state = 724
-                self.match(XPLOR_NIH_MR_Parser.Rdc_potential)
+                self.match(XplorMRParser.Rdc_potential)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Print]:
+            elif token in [XplorMRParser.Print]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 725
-                self.match(XPLOR_NIH_MR_Parser.Print)
+                self.match(XplorMRParser.Print)
                 self.state = 726
-                self.match(XPLOR_NIH_MR_Parser.Threshold)
+                self.match(XplorMRParser.Threshold)
                 self.state = 727
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Reset]:
+            elif token in [XplorMRParser.Reset]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 728
-                self.match(XPLOR_NIH_MR_Parser.Reset)
+                self.match(XplorMRParser.Reset)
                 pass
             else:
                 raise NoViableAltException(self)
@@ -4887,23 +4887,23 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.parser = parser
 
         def Assign(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Assign, 0)
+            return self.getToken(XplorMRParser.Assign, 0)
 
         def selection(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.SelectionContext)
+                return self.getTypedRuleContexts(XplorMRParser.SelectionContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.SelectionContext,i)
+                return self.getTypedRuleContext(XplorMRParser.SelectionContext,i)
 
 
         def Real(self, i:int=None):
             if i is None:
-                return self.getTokens(XPLOR_NIH_MR_Parser.Real)
+                return self.getTokens(XplorMRParser.Real)
             else:
-                return self.getToken(XPLOR_NIH_MR_Parser.Real, i)
+                return self.getToken(XplorMRParser.Real, i)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_tens_assign
+            return XplorMRParser.RULE_tens_assign
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterTens_assign" ):
@@ -4918,20 +4918,20 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def tens_assign(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Tens_assignContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Tens_assignContext(self, self._ctx, self.state)
         self.enterRule(localctx, 70, self.RULE_tens_assign)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 731
-            self.match(XPLOR_NIH_MR_Parser.Assign)
+            self.match(XplorMRParser.Assign)
             self.state = 732
             self.selection()
             self.state = 733
             self.selection()
             self.state = 734
-            self.match(XPLOR_NIH_MR_Parser.Real)
+            self.match(XplorMRParser.Real)
             self.state = 735
-            self.match(XPLOR_NIH_MR_Parser.Real)
+            self.match(XplorMRParser.Real)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -4949,58 +4949,58 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
         def anis_assign(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.Anis_assignContext)
+                return self.getTypedRuleContexts(XplorMRParser.Anis_assignContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Anis_assignContext,i)
+                return self.getTypedRuleContext(XplorMRParser.Anis_assignContext,i)
 
 
         def Classification(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Classification, 0)
+            return self.getToken(XplorMRParser.Classification, 0)
 
         def Class_name(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Class_name, 0)
+            return self.getToken(XplorMRParser.Class_name, 0)
 
         def Coefficients(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Coefficients, 0)
+            return self.getToken(XplorMRParser.Coefficients, 0)
 
         def Real(self, i:int=None):
             if i is None:
-                return self.getTokens(XPLOR_NIH_MR_Parser.Real)
+                return self.getTokens(XplorMRParser.Real)
             else:
-                return self.getToken(XPLOR_NIH_MR_Parser.Real, i)
+                return self.getToken(XplorMRParser.Real, i)
 
         def ForceConstant(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.ForceConstant, 0)
+            return self.getToken(XplorMRParser.ForceConstant, 0)
 
         def Nrestraints(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Nrestraints, 0)
+            return self.getToken(XplorMRParser.Nrestraints, 0)
 
         def Integer(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Integer, 0)
+            return self.getToken(XplorMRParser.Integer, 0)
 
         def Potential(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Potential, 0)
+            return self.getToken(XplorMRParser.Potential, 0)
 
         def Rdc_potential(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Rdc_potential, 0)
+            return self.getToken(XplorMRParser.Rdc_potential, 0)
 
         def Print(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Print, 0)
+            return self.getToken(XplorMRParser.Print, 0)
 
         def Threshold(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Threshold, 0)
+            return self.getToken(XplorMRParser.Threshold, 0)
 
         def Reset(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Reset, 0)
+            return self.getToken(XplorMRParser.Reset, 0)
 
         def Type(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Type, 0)
+            return self.getToken(XplorMRParser.Type, 0)
 
         def Rdc_anis_types(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Rdc_anis_types, 0)
+            return self.getToken(XplorMRParser.Rdc_anis_types, 0)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_anis_statement
+            return XplorMRParser.RULE_anis_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterAnis_statement" ):
@@ -5015,19 +5015,19 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def anis_statement(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Anis_statementContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Anis_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 72, self.RULE_anis_statement)
         self._la = 0 # Token type
         try:
             self.state = 762
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [XPLOR_NIH_MR_Parser.Assign, XPLOR_NIH_MR_Parser.R_brace]:
+            if token in [XplorMRParser.Assign, XplorMRParser.R_brace]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 740
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==XPLOR_NIH_MR_Parser.Assign:
+                while _la==XplorMRParser.Assign:
                     self.state = 737
                     self.anis_assign()
                     self.state = 742
@@ -5035,67 +5035,67 @@ class XPLOR_NIH_MR_Parser ( Parser ):
                     _la = self._input.LA(1)
 
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Classification]:
+            elif token in [XplorMRParser.Classification]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 743
-                self.match(XPLOR_NIH_MR_Parser.Classification)
+                self.match(XplorMRParser.Classification)
                 self.state = 744
-                self.match(XPLOR_NIH_MR_Parser.Class_name)
+                self.match(XplorMRParser.Class_name)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Coefficients]:
+            elif token in [XplorMRParser.Coefficients]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 745
-                self.match(XPLOR_NIH_MR_Parser.Coefficients)
+                self.match(XplorMRParser.Coefficients)
                 self.state = 746
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 747
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 748
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 749
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.ForceConstant]:
+            elif token in [XplorMRParser.ForceConstant]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 750
-                self.match(XPLOR_NIH_MR_Parser.ForceConstant)
+                self.match(XplorMRParser.ForceConstant)
                 self.state = 751
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Nrestraints]:
+            elif token in [XplorMRParser.Nrestraints]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 752
-                self.match(XPLOR_NIH_MR_Parser.Nrestraints)
+                self.match(XplorMRParser.Nrestraints)
                 self.state = 753
-                self.match(XPLOR_NIH_MR_Parser.Integer)
+                self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Potential]:
+            elif token in [XplorMRParser.Potential]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 754
-                self.match(XPLOR_NIH_MR_Parser.Potential)
+                self.match(XplorMRParser.Potential)
                 self.state = 755
-                self.match(XPLOR_NIH_MR_Parser.Rdc_potential)
+                self.match(XplorMRParser.Rdc_potential)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Print]:
+            elif token in [XplorMRParser.Print]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 756
-                self.match(XPLOR_NIH_MR_Parser.Print)
+                self.match(XplorMRParser.Print)
                 self.state = 757
-                self.match(XPLOR_NIH_MR_Parser.Threshold)
+                self.match(XplorMRParser.Threshold)
                 self.state = 758
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Reset]:
+            elif token in [XplorMRParser.Reset]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 759
-                self.match(XPLOR_NIH_MR_Parser.Reset)
+                self.match(XplorMRParser.Reset)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Type]:
+            elif token in [XplorMRParser.Type]:
                 self.enterOuterAlt(localctx, 9)
                 self.state = 760
-                self.match(XPLOR_NIH_MR_Parser.Type)
+                self.match(XplorMRParser.Type)
                 self.state = 761
-                self.match(XPLOR_NIH_MR_Parser.Rdc_anis_types)
+                self.match(XplorMRParser.Rdc_anis_types)
                 pass
             else:
                 raise NoViableAltException(self)
@@ -5116,23 +5116,23 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.parser = parser
 
         def Assign(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Assign, 0)
+            return self.getToken(XplorMRParser.Assign, 0)
 
         def selection(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.SelectionContext)
+                return self.getTypedRuleContexts(XplorMRParser.SelectionContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.SelectionContext,i)
+                return self.getTypedRuleContext(XplorMRParser.SelectionContext,i)
 
 
         def Real(self, i:int=None):
             if i is None:
-                return self.getTokens(XPLOR_NIH_MR_Parser.Real)
+                return self.getTokens(XplorMRParser.Real)
             else:
-                return self.getToken(XPLOR_NIH_MR_Parser.Real, i)
+                return self.getToken(XplorMRParser.Real, i)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_anis_assign
+            return XplorMRParser.RULE_anis_assign
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterAnis_assign" ):
@@ -5147,12 +5147,12 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def anis_assign(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Anis_assignContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Anis_assignContext(self, self._ctx, self.state)
         self.enterRule(localctx, 74, self.RULE_anis_assign)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 764
-            self.match(XPLOR_NIH_MR_Parser.Assign)
+            self.match(XplorMRParser.Assign)
             self.state = 765
             self.selection()
             self.state = 766
@@ -5162,9 +5162,9 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.state = 768
             self.selection()
             self.state = 769
-            self.match(XPLOR_NIH_MR_Parser.Real)
+            self.match(XplorMRParser.Real)
             self.state = 770
-            self.match(XPLOR_NIH_MR_Parser.Real)
+            self.match(XplorMRParser.Real)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -5181,23 +5181,23 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.parser = parser
 
         def Group(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Group, 0)
+            return self.getToken(XplorMRParser.Group, 0)
 
         def L_brace(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.L_brace, 0)
+            return self.getToken(XplorMRParser.L_brace, 0)
 
         def group_statement(self):
-            return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Group_statementContext,0)
+            return self.getTypedRuleContext(XplorMRParser.Group_statementContext,0)
 
 
         def R_brace(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.R_brace, 0)
+            return self.getToken(XplorMRParser.R_brace, 0)
 
         def Initialize(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Initialize, 0)
+            return self.getToken(XplorMRParser.Initialize, 0)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_planar_statement
+            return XplorMRParser.RULE_planar_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterPlanar_statement" ):
@@ -5212,27 +5212,27 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def planar_statement(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Planar_statementContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Planar_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 76, self.RULE_planar_statement)
         try:
             self.state = 778
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [XPLOR_NIH_MR_Parser.Group]:
+            if token in [XplorMRParser.Group]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 772
-                self.match(XPLOR_NIH_MR_Parser.Group)
+                self.match(XplorMRParser.Group)
                 self.state = 773
-                self.match(XPLOR_NIH_MR_Parser.L_brace)
+                self.match(XplorMRParser.L_brace)
                 self.state = 774
                 self.group_statement()
                 self.state = 775
-                self.match(XPLOR_NIH_MR_Parser.R_brace)
+                self.match(XplorMRParser.R_brace)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Initialize]:
+            elif token in [XplorMRParser.Initialize]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 777
-                self.match(XPLOR_NIH_MR_Parser.Initialize)
+                self.match(XplorMRParser.Initialize)
                 pass
             else:
                 raise NoViableAltException(self)
@@ -5253,23 +5253,23 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.parser = parser
 
         def Selection(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Selection, 0)
+            return self.getToken(XplorMRParser.Selection, 0)
 
         def Equ_op(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Equ_op, 0)
+            return self.getToken(XplorMRParser.Equ_op, 0)
 
         def selection(self):
-            return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.SelectionContext,0)
+            return self.getTypedRuleContext(XplorMRParser.SelectionContext,0)
 
 
         def Weight(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Weight, 0)
+            return self.getToken(XplorMRParser.Weight, 0)
 
         def Real(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Real, 0)
+            return self.getToken(XplorMRParser.Real, 0)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_group_statement
+            return XplorMRParser.RULE_group_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterGroup_statement" ):
@@ -5284,29 +5284,29 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def group_statement(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Group_statementContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Group_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 78, self.RULE_group_statement)
         try:
             self.state = 786
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [XPLOR_NIH_MR_Parser.Selection]:
+            if token in [XplorMRParser.Selection]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 780
-                self.match(XPLOR_NIH_MR_Parser.Selection)
+                self.match(XplorMRParser.Selection)
                 self.state = 781
-                self.match(XPLOR_NIH_MR_Parser.Equ_op)
+                self.match(XplorMRParser.Equ_op)
                 self.state = 782
                 self.selection()
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Weight]:
+            elif token in [XplorMRParser.Weight]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 783
-                self.match(XPLOR_NIH_MR_Parser.Weight)
+                self.match(XplorMRParser.Weight)
                 self.state = 784
-                self.match(XPLOR_NIH_MR_Parser.Equ_op)
+                self.match(XplorMRParser.Equ_op)
                 self.state = 785
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
             else:
                 raise NoViableAltException(self)
@@ -5328,52 +5328,52 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
         def xadc_assign(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.Xadc_assignContext)
+                return self.getTypedRuleContexts(XplorMRParser.Xadc_assignContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Xadc_assignContext,i)
+                return self.getTypedRuleContext(XplorMRParser.Xadc_assignContext,i)
 
 
         def Classification(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Classification, 0)
+            return self.getToken(XplorMRParser.Classification, 0)
 
         def Class_name(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Class_name, 0)
+            return self.getToken(XplorMRParser.Class_name, 0)
 
         def Expectation(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Expectation, 0)
+            return self.getToken(XplorMRParser.Expectation, 0)
 
         def Integer(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Integer, 0)
+            return self.getToken(XplorMRParser.Integer, 0)
 
         def Real(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Real, 0)
+            return self.getToken(XplorMRParser.Real, 0)
 
         def ForceConstant(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.ForceConstant, 0)
+            return self.getToken(XplorMRParser.ForceConstant, 0)
 
         def Nrestraints(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Nrestraints, 0)
+            return self.getToken(XplorMRParser.Nrestraints, 0)
 
         def Print(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Print, 0)
+            return self.getToken(XplorMRParser.Print, 0)
 
         def Threshold(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Threshold, 0)
+            return self.getToken(XplorMRParser.Threshold, 0)
 
         def All(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.All, 0)
+            return self.getToken(XplorMRParser.All, 0)
 
         def Reset(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Reset, 0)
+            return self.getToken(XplorMRParser.Reset, 0)
 
         def Size(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Size, 0)
+            return self.getToken(XplorMRParser.Size, 0)
 
         def Zero(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Zero, 0)
+            return self.getToken(XplorMRParser.Zero, 0)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_antidistance_statement
+            return XplorMRParser.RULE_antidistance_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterAntidistance_statement" ):
@@ -5388,19 +5388,19 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def antidistance_statement(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Antidistance_statementContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Antidistance_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 80, self.RULE_antidistance_statement)
         self._la = 0 # Token type
         try:
             self.state = 816
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [XPLOR_NIH_MR_Parser.Assign, XPLOR_NIH_MR_Parser.R_brace]:
+            if token in [XplorMRParser.Assign, XplorMRParser.R_brace]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 791
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==XPLOR_NIH_MR_Parser.Assign:
+                while _la==XplorMRParser.Assign:
                     self.state = 788
                     self.xadc_assign()
                     self.state = 793
@@ -5408,79 +5408,79 @@ class XPLOR_NIH_MR_Parser ( Parser ):
                     _la = self._input.LA(1)
 
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Classification]:
+            elif token in [XplorMRParser.Classification]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 794
-                self.match(XPLOR_NIH_MR_Parser.Classification)
+                self.match(XplorMRParser.Classification)
                 self.state = 795
-                self.match(XPLOR_NIH_MR_Parser.Class_name)
+                self.match(XplorMRParser.Class_name)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Expectation]:
+            elif token in [XplorMRParser.Expectation]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 796
-                self.match(XPLOR_NIH_MR_Parser.Expectation)
+                self.match(XplorMRParser.Expectation)
                 self.state = 797
-                self.match(XPLOR_NIH_MR_Parser.Integer)
+                self.match(XplorMRParser.Integer)
                 self.state = 798
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.ForceConstant]:
+            elif token in [XplorMRParser.ForceConstant]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 799
-                self.match(XPLOR_NIH_MR_Parser.ForceConstant)
+                self.match(XplorMRParser.ForceConstant)
                 self.state = 800
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Nrestraints]:
+            elif token in [XplorMRParser.Nrestraints]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 801
-                self.match(XPLOR_NIH_MR_Parser.Nrestraints)
+                self.match(XplorMRParser.Nrestraints)
                 self.state = 802
-                self.match(XPLOR_NIH_MR_Parser.Integer)
+                self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Print]:
+            elif token in [XplorMRParser.Print]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 803
-                self.match(XPLOR_NIH_MR_Parser.Print)
+                self.match(XplorMRParser.Print)
                 self.state = 804
-                self.match(XPLOR_NIH_MR_Parser.Threshold)
+                self.match(XplorMRParser.Threshold)
                 self.state = 805
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 809
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [XPLOR_NIH_MR_Parser.All]:
+                if token in [XplorMRParser.All]:
                     self.state = 806
-                    self.match(XPLOR_NIH_MR_Parser.All)
+                    self.match(XplorMRParser.All)
                     pass
-                elif token in [XPLOR_NIH_MR_Parser.Classification]:
+                elif token in [XplorMRParser.Classification]:
                     self.state = 807
-                    self.match(XPLOR_NIH_MR_Parser.Classification)
+                    self.match(XplorMRParser.Classification)
                     self.state = 808
-                    self.match(XPLOR_NIH_MR_Parser.Class_name)
+                    self.match(XplorMRParser.Class_name)
                     pass
                 else:
                     raise NoViableAltException(self)
 
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Reset]:
+            elif token in [XplorMRParser.Reset]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 811
-                self.match(XPLOR_NIH_MR_Parser.Reset)
+                self.match(XplorMRParser.Reset)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Size]:
+            elif token in [XplorMRParser.Size]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 812
-                self.match(XPLOR_NIH_MR_Parser.Size)
+                self.match(XplorMRParser.Size)
                 self.state = 813
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 814
-                self.match(XPLOR_NIH_MR_Parser.Integer)
+                self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Zero]:
+            elif token in [XplorMRParser.Zero]:
                 self.enterOuterAlt(localctx, 9)
                 self.state = 815
-                self.match(XPLOR_NIH_MR_Parser.Zero)
+                self.match(XplorMRParser.Zero)
                 pass
             else:
                 raise NoViableAltException(self)
@@ -5501,17 +5501,17 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.parser = parser
 
         def Assign(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Assign, 0)
+            return self.getToken(XplorMRParser.Assign, 0)
 
         def selection(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.SelectionContext)
+                return self.getTypedRuleContexts(XplorMRParser.SelectionContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.SelectionContext,i)
+                return self.getTypedRuleContext(XplorMRParser.SelectionContext,i)
 
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_xadc_assign
+            return XplorMRParser.RULE_xadc_assign
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterXadc_assign" ):
@@ -5526,12 +5526,12 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def xadc_assign(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Xadc_assignContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Xadc_assignContext(self, self._ctx, self.state)
         self.enterRule(localctx, 82, self.RULE_xadc_assign)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 818
-            self.match(XPLOR_NIH_MR_Parser.Assign)
+            self.match(XplorMRParser.Assign)
             self.state = 819
             self.selection()
             self.state = 820
@@ -5553,70 +5553,70 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
         def coup_assign(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.Coup_assignContext)
+                return self.getTypedRuleContexts(XplorMRParser.Coup_assignContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Coup_assignContext,i)
+                return self.getTypedRuleContext(XplorMRParser.Coup_assignContext,i)
 
 
         def Classification(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Classification, 0)
+            return self.getToken(XplorMRParser.Classification, 0)
 
         def Class_name(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Class_name, 0)
+            return self.getToken(XplorMRParser.Class_name, 0)
 
         def Coefficients(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Coefficients, 0)
+            return self.getToken(XplorMRParser.Coefficients, 0)
 
         def Real(self, i:int=None):
             if i is None:
-                return self.getTokens(XPLOR_NIH_MR_Parser.Real)
+                return self.getTokens(XplorMRParser.Real)
             else:
-                return self.getToken(XPLOR_NIH_MR_Parser.Real, i)
+                return self.getToken(XplorMRParser.Real, i)
 
         def Cv(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Cv, 0)
+            return self.getToken(XplorMRParser.Cv, 0)
 
         def Equ_op(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Equ_op, 0)
+            return self.getToken(XplorMRParser.Equ_op, 0)
 
         def Integer(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Integer, 0)
+            return self.getToken(XplorMRParser.Integer, 0)
 
         def DegEnergy(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.DegEnergy, 0)
+            return self.getToken(XplorMRParser.DegEnergy, 0)
 
         def Number_of_couplings(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Number_of_couplings, 0)
+            return self.getToken(XplorMRParser.Number_of_couplings, 0)
 
         def ForceConstant(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.ForceConstant, 0)
+            return self.getToken(XplorMRParser.ForceConstant, 0)
 
         def Nrestraints(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Nrestraints, 0)
+            return self.getToken(XplorMRParser.Nrestraints, 0)
 
         def Partition(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Partition, 0)
+            return self.getToken(XplorMRParser.Partition, 0)
 
         def Potential(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Potential, 0)
+            return self.getToken(XplorMRParser.Potential, 0)
 
         def Coupling_potential(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Coupling_potential, 0)
+            return self.getToken(XplorMRParser.Coupling_potential, 0)
 
         def Print(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Print, 0)
+            return self.getToken(XplorMRParser.Print, 0)
 
         def Threshold(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Threshold, 0)
+            return self.getToken(XplorMRParser.Threshold, 0)
 
         def All(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.All, 0)
+            return self.getToken(XplorMRParser.All, 0)
 
         def Reset(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Reset, 0)
+            return self.getToken(XplorMRParser.Reset, 0)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_coupling_statement
+            return XplorMRParser.RULE_coupling_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterCoupling_statement" ):
@@ -5631,19 +5631,19 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def coupling_statement(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Coupling_statementContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Coupling_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 84, self.RULE_coupling_statement)
         self._la = 0 # Token type
         try:
             self.state = 861
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [XPLOR_NIH_MR_Parser.Assign, XPLOR_NIH_MR_Parser.R_brace]:
+            if token in [XplorMRParser.Assign, XplorMRParser.R_brace]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 825
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==XPLOR_NIH_MR_Parser.Assign:
+                while _la==XplorMRParser.Assign:
                     self.state = 822
                     self.coup_assign()
                     self.state = 827
@@ -5651,109 +5651,109 @@ class XPLOR_NIH_MR_Parser ( Parser ):
                     _la = self._input.LA(1)
 
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Classification]:
+            elif token in [XplorMRParser.Classification]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 828
-                self.match(XPLOR_NIH_MR_Parser.Classification)
+                self.match(XplorMRParser.Classification)
                 self.state = 829
-                self.match(XPLOR_NIH_MR_Parser.Class_name)
+                self.match(XplorMRParser.Class_name)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Coefficients]:
+            elif token in [XplorMRParser.Coefficients]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 830
-                self.match(XPLOR_NIH_MR_Parser.Coefficients)
+                self.match(XplorMRParser.Coefficients)
                 self.state = 831
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 832
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 833
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 834
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Cv]:
+            elif token in [XplorMRParser.Cv]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 835
-                self.match(XPLOR_NIH_MR_Parser.Cv)
+                self.match(XplorMRParser.Cv)
                 self.state = 836
-                self.match(XPLOR_NIH_MR_Parser.Equ_op)
+                self.match(XplorMRParser.Equ_op)
                 self.state = 837
-                self.match(XPLOR_NIH_MR_Parser.Integer)
+                self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.DegEnergy]:
+            elif token in [XplorMRParser.DegEnergy]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 838
-                self.match(XPLOR_NIH_MR_Parser.DegEnergy)
+                self.match(XplorMRParser.DegEnergy)
                 self.state = 839
-                self.match(XPLOR_NIH_MR_Parser.Number_of_couplings)
+                self.match(XplorMRParser.Number_of_couplings)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.ForceConstant]:
+            elif token in [XplorMRParser.ForceConstant]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 840
-                self.match(XPLOR_NIH_MR_Parser.ForceConstant)
+                self.match(XplorMRParser.ForceConstant)
                 self.state = 841
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 843
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XPLOR_NIH_MR_Parser.Real:
+                if _la==XplorMRParser.Real:
                     self.state = 842
-                    self.match(XPLOR_NIH_MR_Parser.Real)
+                    self.match(XplorMRParser.Real)
 
 
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Nrestraints]:
+            elif token in [XplorMRParser.Nrestraints]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 845
-                self.match(XPLOR_NIH_MR_Parser.Nrestraints)
+                self.match(XplorMRParser.Nrestraints)
                 self.state = 846
-                self.match(XPLOR_NIH_MR_Parser.Integer)
+                self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Partition]:
+            elif token in [XplorMRParser.Partition]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 847
-                self.match(XPLOR_NIH_MR_Parser.Partition)
+                self.match(XplorMRParser.Partition)
                 self.state = 848
-                self.match(XPLOR_NIH_MR_Parser.Equ_op)
+                self.match(XplorMRParser.Equ_op)
                 self.state = 849
-                self.match(XPLOR_NIH_MR_Parser.Integer)
+                self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Potential]:
+            elif token in [XplorMRParser.Potential]:
                 self.enterOuterAlt(localctx, 9)
                 self.state = 850
-                self.match(XPLOR_NIH_MR_Parser.Potential)
+                self.match(XplorMRParser.Potential)
                 self.state = 851
-                self.match(XPLOR_NIH_MR_Parser.Coupling_potential)
+                self.match(XplorMRParser.Coupling_potential)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Print]:
+            elif token in [XplorMRParser.Print]:
                 self.enterOuterAlt(localctx, 10)
                 self.state = 852
-                self.match(XPLOR_NIH_MR_Parser.Print)
+                self.match(XplorMRParser.Print)
                 self.state = 853
-                self.match(XPLOR_NIH_MR_Parser.Threshold)
+                self.match(XplorMRParser.Threshold)
                 self.state = 854
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 858
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [XPLOR_NIH_MR_Parser.All]:
+                if token in [XplorMRParser.All]:
                     self.state = 855
-                    self.match(XPLOR_NIH_MR_Parser.All)
+                    self.match(XplorMRParser.All)
                     pass
-                elif token in [XPLOR_NIH_MR_Parser.Classification]:
+                elif token in [XplorMRParser.Classification]:
                     self.state = 856
-                    self.match(XPLOR_NIH_MR_Parser.Classification)
+                    self.match(XplorMRParser.Classification)
                     self.state = 857
-                    self.match(XPLOR_NIH_MR_Parser.Class_name)
+                    self.match(XplorMRParser.Class_name)
                     pass
                 else:
                     raise NoViableAltException(self)
 
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Reset]:
+            elif token in [XplorMRParser.Reset]:
                 self.enterOuterAlt(localctx, 11)
                 self.state = 860
-                self.match(XPLOR_NIH_MR_Parser.Reset)
+                self.match(XplorMRParser.Reset)
                 pass
             else:
                 raise NoViableAltException(self)
@@ -5774,23 +5774,23 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.parser = parser
 
         def Assign(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Assign, 0)
+            return self.getToken(XplorMRParser.Assign, 0)
 
         def selection(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.SelectionContext)
+                return self.getTypedRuleContexts(XplorMRParser.SelectionContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.SelectionContext,i)
+                return self.getTypedRuleContext(XplorMRParser.SelectionContext,i)
 
 
         def Real(self, i:int=None):
             if i is None:
-                return self.getTokens(XPLOR_NIH_MR_Parser.Real)
+                return self.getTokens(XplorMRParser.Real)
             else:
-                return self.getToken(XPLOR_NIH_MR_Parser.Real, i)
+                return self.getToken(XplorMRParser.Real, i)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_coup_assign
+            return XplorMRParser.RULE_coup_assign
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterCoup_assign" ):
@@ -5805,13 +5805,13 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def coup_assign(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Coup_assignContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Coup_assignContext(self, self._ctx, self.state)
         self.enterRule(localctx, 86, self.RULE_coup_assign)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 863
-            self.match(XPLOR_NIH_MR_Parser.Assign)
+            self.match(XplorMRParser.Assign)
             self.state = 864
             self.selection()
             self.state = 865
@@ -5823,7 +5823,7 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.state = 873
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==XPLOR_NIH_MR_Parser.L_paren:
+            if _la==XplorMRParser.L_paren:
                 self.state = 868
                 self.selection()
                 self.state = 869
@@ -5835,17 +5835,17 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
 
             self.state = 875
-            self.match(XPLOR_NIH_MR_Parser.Real)
+            self.match(XplorMRParser.Real)
             self.state = 876
-            self.match(XPLOR_NIH_MR_Parser.Real)
+            self.match(XplorMRParser.Real)
             self.state = 879
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==XPLOR_NIH_MR_Parser.Real:
+            if _la==XplorMRParser.Real:
                 self.state = 877
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 878
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
 
 
         except RecognitionException as re:
@@ -5865,71 +5865,71 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
         def carbon_shift_assign(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.Carbon_shift_assignContext)
+                return self.getTypedRuleContexts(XplorMRParser.Carbon_shift_assignContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Carbon_shift_assignContext,i)
+                return self.getTypedRuleContext(XplorMRParser.Carbon_shift_assignContext,i)
 
 
         def Classification(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Classification, 0)
+            return self.getToken(XplorMRParser.Classification, 0)
 
         def Class_name(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Class_name, 0)
+            return self.getToken(XplorMRParser.Class_name, 0)
 
         def Expectation(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Expectation, 0)
+            return self.getToken(XplorMRParser.Expectation, 0)
 
         def Integer(self, i:int=None):
             if i is None:
-                return self.getTokens(XPLOR_NIH_MR_Parser.Integer)
+                return self.getTokens(XplorMRParser.Integer)
             else:
-                return self.getToken(XPLOR_NIH_MR_Parser.Integer, i)
+                return self.getToken(XplorMRParser.Integer, i)
 
         def Real(self, i:int=None):
             if i is None:
-                return self.getTokens(XPLOR_NIH_MR_Parser.Real)
+                return self.getTokens(XplorMRParser.Real)
             else:
-                return self.getToken(XPLOR_NIH_MR_Parser.Real, i)
+                return self.getToken(XplorMRParser.Real, i)
 
         def ForceConstant(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.ForceConstant, 0)
+            return self.getToken(XplorMRParser.ForceConstant, 0)
 
         def Nrestraints(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Nrestraints, 0)
+            return self.getToken(XplorMRParser.Nrestraints, 0)
 
         def PhiStep(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.PhiStep, 0)
+            return self.getToken(XplorMRParser.PhiStep, 0)
 
         def PsiStep(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.PsiStep, 0)
+            return self.getToken(XplorMRParser.PsiStep, 0)
 
         def Potential(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Potential, 0)
+            return self.getToken(XplorMRParser.Potential, 0)
 
         def Coupling_potential(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Coupling_potential, 0)
+            return self.getToken(XplorMRParser.Coupling_potential, 0)
 
         def Print(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Print, 0)
+            return self.getToken(XplorMRParser.Print, 0)
 
         def Threshold(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Threshold, 0)
+            return self.getToken(XplorMRParser.Threshold, 0)
 
         def carbon_shift_rcoil(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.Carbon_shift_rcoilContext)
+                return self.getTypedRuleContexts(XplorMRParser.Carbon_shift_rcoilContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Carbon_shift_rcoilContext,i)
+                return self.getTypedRuleContext(XplorMRParser.Carbon_shift_rcoilContext,i)
 
 
         def Reset(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Reset, 0)
+            return self.getToken(XplorMRParser.Reset, 0)
 
         def Zero(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Zero, 0)
+            return self.getToken(XplorMRParser.Zero, 0)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_carbon_shift_statement
+            return XplorMRParser.RULE_carbon_shift_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterCarbon_shift_statement" ):
@@ -5944,7 +5944,7 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def carbon_shift_statement(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Carbon_shift_statementContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Carbon_shift_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 88, self.RULE_carbon_shift_statement)
         self._la = 0 # Token type
         try:
@@ -5956,7 +5956,7 @@ class XPLOR_NIH_MR_Parser ( Parser ):
                 self.state = 884
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==XPLOR_NIH_MR_Parser.Assign:
+                while _la==XplorMRParser.Assign:
                     self.state = 881
                     self.carbon_shift_assign()
                     self.state = 886
@@ -5968,75 +5968,75 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             elif la_ == 2:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 887
-                self.match(XPLOR_NIH_MR_Parser.Classification)
+                self.match(XplorMRParser.Classification)
                 self.state = 888
-                self.match(XPLOR_NIH_MR_Parser.Class_name)
+                self.match(XplorMRParser.Class_name)
                 pass
 
             elif la_ == 3:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 889
-                self.match(XPLOR_NIH_MR_Parser.Expectation)
+                self.match(XplorMRParser.Expectation)
                 self.state = 890
-                self.match(XPLOR_NIH_MR_Parser.Integer)
+                self.match(XplorMRParser.Integer)
                 self.state = 891
-                self.match(XPLOR_NIH_MR_Parser.Integer)
+                self.match(XplorMRParser.Integer)
                 self.state = 892
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 893
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 894
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
 
             elif la_ == 4:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 895
-                self.match(XPLOR_NIH_MR_Parser.ForceConstant)
+                self.match(XplorMRParser.ForceConstant)
                 self.state = 896
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
 
             elif la_ == 5:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 897
-                self.match(XPLOR_NIH_MR_Parser.Nrestraints)
+                self.match(XplorMRParser.Nrestraints)
                 self.state = 898
-                self.match(XPLOR_NIH_MR_Parser.Integer)
+                self.match(XplorMRParser.Integer)
                 pass
 
             elif la_ == 6:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 899
-                self.match(XPLOR_NIH_MR_Parser.PhiStep)
+                self.match(XplorMRParser.PhiStep)
                 self.state = 900
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
 
             elif la_ == 7:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 901
-                self.match(XPLOR_NIH_MR_Parser.PsiStep)
+                self.match(XplorMRParser.PsiStep)
                 self.state = 902
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
 
             elif la_ == 8:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 903
-                self.match(XPLOR_NIH_MR_Parser.Potential)
+                self.match(XplorMRParser.Potential)
                 self.state = 904
-                self.match(XPLOR_NIH_MR_Parser.Coupling_potential)
+                self.match(XplorMRParser.Coupling_potential)
                 pass
 
             elif la_ == 9:
                 self.enterOuterAlt(localctx, 9)
                 self.state = 905
-                self.match(XPLOR_NIH_MR_Parser.Print)
+                self.match(XplorMRParser.Print)
                 self.state = 906
-                self.match(XPLOR_NIH_MR_Parser.Threshold)
+                self.match(XplorMRParser.Threshold)
                 self.state = 907
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
 
             elif la_ == 10:
@@ -6044,7 +6044,7 @@ class XPLOR_NIH_MR_Parser ( Parser ):
                 self.state = 911
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==XPLOR_NIH_MR_Parser.Rcoil:
+                while _la==XplorMRParser.Rcoil:
                     self.state = 908
                     self.carbon_shift_rcoil()
                     self.state = 913
@@ -6056,13 +6056,13 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             elif la_ == 11:
                 self.enterOuterAlt(localctx, 11)
                 self.state = 914
-                self.match(XPLOR_NIH_MR_Parser.Reset)
+                self.match(XplorMRParser.Reset)
                 pass
 
             elif la_ == 12:
                 self.enterOuterAlt(localctx, 12)
                 self.state = 915
-                self.match(XPLOR_NIH_MR_Parser.Zero)
+                self.match(XplorMRParser.Zero)
                 pass
 
 
@@ -6082,23 +6082,23 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.parser = parser
 
         def Assign(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Assign, 0)
+            return self.getToken(XplorMRParser.Assign, 0)
 
         def selection(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.SelectionContext)
+                return self.getTypedRuleContexts(XplorMRParser.SelectionContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.SelectionContext,i)
+                return self.getTypedRuleContext(XplorMRParser.SelectionContext,i)
 
 
         def Real(self, i:int=None):
             if i is None:
-                return self.getTokens(XPLOR_NIH_MR_Parser.Real)
+                return self.getTokens(XplorMRParser.Real)
             else:
-                return self.getToken(XPLOR_NIH_MR_Parser.Real, i)
+                return self.getToken(XplorMRParser.Real, i)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_carbon_shift_assign
+            return XplorMRParser.RULE_carbon_shift_assign
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterCarbon_shift_assign" ):
@@ -6113,12 +6113,12 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def carbon_shift_assign(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Carbon_shift_assignContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Carbon_shift_assignContext(self, self._ctx, self.state)
         self.enterRule(localctx, 90, self.RULE_carbon_shift_assign)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 918
-            self.match(XPLOR_NIH_MR_Parser.Assign)
+            self.match(XplorMRParser.Assign)
             self.state = 919
             self.selection()
             self.state = 920
@@ -6130,9 +6130,9 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.state = 923
             self.selection()
             self.state = 924
-            self.match(XPLOR_NIH_MR_Parser.Real)
+            self.match(XplorMRParser.Real)
             self.state = 925
-            self.match(XPLOR_NIH_MR_Parser.Real)
+            self.match(XplorMRParser.Real)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -6149,20 +6149,20 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.parser = parser
 
         def Rcoil(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Rcoil, 0)
+            return self.getToken(XplorMRParser.Rcoil, 0)
 
         def selection(self):
-            return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.SelectionContext,0)
+            return self.getTypedRuleContext(XplorMRParser.SelectionContext,0)
 
 
         def Real(self, i:int=None):
             if i is None:
-                return self.getTokens(XPLOR_NIH_MR_Parser.Real)
+                return self.getTokens(XplorMRParser.Real)
             else:
-                return self.getToken(XPLOR_NIH_MR_Parser.Real, i)
+                return self.getToken(XplorMRParser.Real, i)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_carbon_shift_rcoil
+            return XplorMRParser.RULE_carbon_shift_rcoil
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterCarbon_shift_rcoil" ):
@@ -6177,18 +6177,18 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def carbon_shift_rcoil(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Carbon_shift_rcoilContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Carbon_shift_rcoilContext(self, self._ctx, self.state)
         self.enterRule(localctx, 92, self.RULE_carbon_shift_rcoil)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 927
-            self.match(XPLOR_NIH_MR_Parser.Rcoil)
+            self.match(XplorMRParser.Rcoil)
             self.state = 928
             self.selection()
             self.state = 929
-            self.match(XPLOR_NIH_MR_Parser.Real)
+            self.match(XplorMRParser.Real)
             self.state = 930
-            self.match(XPLOR_NIH_MR_Parser.Real)
+            self.match(XplorMRParser.Real)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -6206,114 +6206,114 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
         def observed(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.ObservedContext)
+                return self.getTypedRuleContexts(XplorMRParser.ObservedContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.ObservedContext,i)
+                return self.getTypedRuleContext(XplorMRParser.ObservedContext,i)
 
 
         def proton_shift_rcoil(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.Proton_shift_rcoilContext)
+                return self.getTypedRuleContexts(XplorMRParser.Proton_shift_rcoilContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Proton_shift_rcoilContext,i)
+                return self.getTypedRuleContext(XplorMRParser.Proton_shift_rcoilContext,i)
 
 
         def proton_shift_anisotropy(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.Proton_shift_anisotropyContext)
+                return self.getTypedRuleContexts(XplorMRParser.Proton_shift_anisotropyContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Proton_shift_anisotropyContext,i)
+                return self.getTypedRuleContext(XplorMRParser.Proton_shift_anisotropyContext,i)
 
 
         def proton_shift_amides(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.Proton_shift_amidesContext)
+                return self.getTypedRuleContexts(XplorMRParser.Proton_shift_amidesContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Proton_shift_amidesContext,i)
+                return self.getTypedRuleContext(XplorMRParser.Proton_shift_amidesContext,i)
 
 
         def proton_shift_carbons(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.Proton_shift_carbonsContext)
+                return self.getTypedRuleContexts(XplorMRParser.Proton_shift_carbonsContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Proton_shift_carbonsContext,i)
+                return self.getTypedRuleContext(XplorMRParser.Proton_shift_carbonsContext,i)
 
 
         def proton_shift_nitrogens(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.Proton_shift_nitrogensContext)
+                return self.getTypedRuleContexts(XplorMRParser.Proton_shift_nitrogensContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Proton_shift_nitrogensContext,i)
+                return self.getTypedRuleContext(XplorMRParser.Proton_shift_nitrogensContext,i)
 
 
         def proton_shift_oxygens(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.Proton_shift_oxygensContext)
+                return self.getTypedRuleContexts(XplorMRParser.Proton_shift_oxygensContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Proton_shift_oxygensContext,i)
+                return self.getTypedRuleContext(XplorMRParser.Proton_shift_oxygensContext,i)
 
 
         def proton_shift_ring_atoms(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.Proton_shift_ring_atomsContext)
+                return self.getTypedRuleContexts(XplorMRParser.Proton_shift_ring_atomsContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Proton_shift_ring_atomsContext,i)
+                return self.getTypedRuleContext(XplorMRParser.Proton_shift_ring_atomsContext,i)
 
 
         def proton_shift_alphas_and_amides(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.Proton_shift_alphas_and_amidesContext)
+                return self.getTypedRuleContexts(XplorMRParser.Proton_shift_alphas_and_amidesContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Proton_shift_alphas_and_amidesContext,i)
+                return self.getTypedRuleContext(XplorMRParser.Proton_shift_alphas_and_amidesContext,i)
 
 
         def Classification(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Classification, 0)
+            return self.getToken(XplorMRParser.Classification, 0)
 
         def Class_name(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Class_name, 0)
+            return self.getToken(XplorMRParser.Class_name, 0)
 
         def Error(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Error, 0)
+            return self.getToken(XplorMRParser.Error, 0)
 
         def Real(self, i:int=None):
             if i is None:
-                return self.getTokens(XPLOR_NIH_MR_Parser.Real)
+                return self.getTokens(XplorMRParser.Real)
             else:
-                return self.getToken(XPLOR_NIH_MR_Parser.Real, i)
+                return self.getToken(XplorMRParser.Real, i)
 
         def DegEnergy(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.DegEnergy, 0)
+            return self.getToken(XplorMRParser.DegEnergy, 0)
 
         def Number_of_shifts(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Number_of_shifts, 0)
+            return self.getToken(XplorMRParser.Number_of_shifts, 0)
 
         def ForceConstant(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.ForceConstant, 0)
+            return self.getToken(XplorMRParser.ForceConstant, 0)
 
         def Potential(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Potential, 0)
+            return self.getToken(XplorMRParser.Potential, 0)
 
         def Coupling_potential(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Coupling_potential, 0)
+            return self.getToken(XplorMRParser.Coupling_potential, 0)
 
         def Print(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Print, 0)
+            return self.getToken(XplorMRParser.Print, 0)
 
         def Threshold(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Threshold, 0)
+            return self.getToken(XplorMRParser.Threshold, 0)
 
         def Rmsd_or_Not(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Rmsd_or_Not, 0)
+            return self.getToken(XplorMRParser.Rmsd_or_Not, 0)
 
         def All(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.All, 0)
+            return self.getToken(XplorMRParser.All, 0)
 
         def Reset(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Reset, 0)
+            return self.getToken(XplorMRParser.Reset, 0)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_proton_shift_statement
+            return XplorMRParser.RULE_proton_shift_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterProton_shift_statement" ):
@@ -6328,7 +6328,7 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def proton_shift_statement(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Proton_shift_statementContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Proton_shift_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 94, self.RULE_proton_shift_statement)
         self._la = 0 # Token type
         try:
@@ -6340,7 +6340,7 @@ class XPLOR_NIH_MR_Parser ( Parser ):
                 self.state = 935
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==XPLOR_NIH_MR_Parser.Observed:
+                while _la==XplorMRParser.Observed:
                     self.state = 932
                     self.observed()
                     self.state = 937
@@ -6354,7 +6354,7 @@ class XPLOR_NIH_MR_Parser ( Parser ):
                 self.state = 941
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==XPLOR_NIH_MR_Parser.Rcoil:
+                while _la==XplorMRParser.Rcoil:
                     self.state = 938
                     self.proton_shift_rcoil()
                     self.state = 943
@@ -6368,7 +6368,7 @@ class XPLOR_NIH_MR_Parser ( Parser ):
                 self.state = 947
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==XPLOR_NIH_MR_Parser.Anisotropy:
+                while _la==XplorMRParser.Anisotropy:
                     self.state = 944
                     self.proton_shift_anisotropy()
                     self.state = 949
@@ -6382,7 +6382,7 @@ class XPLOR_NIH_MR_Parser ( Parser ):
                 self.state = 953
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==XPLOR_NIH_MR_Parser.Amides:
+                while _la==XplorMRParser.Amides:
                     self.state = 950
                     self.proton_shift_amides()
                     self.state = 955
@@ -6396,7 +6396,7 @@ class XPLOR_NIH_MR_Parser ( Parser ):
                 self.state = 959
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==XPLOR_NIH_MR_Parser.Carbons:
+                while _la==XplorMRParser.Carbons:
                     self.state = 956
                     self.proton_shift_carbons()
                     self.state = 961
@@ -6410,7 +6410,7 @@ class XPLOR_NIH_MR_Parser ( Parser ):
                 self.state = 965
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==XPLOR_NIH_MR_Parser.Nitrogens:
+                while _la==XplorMRParser.Nitrogens:
                     self.state = 962
                     self.proton_shift_nitrogens()
                     self.state = 967
@@ -6424,7 +6424,7 @@ class XPLOR_NIH_MR_Parser ( Parser ):
                 self.state = 971
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==XPLOR_NIH_MR_Parser.Oxygens:
+                while _la==XplorMRParser.Oxygens:
                     self.state = 968
                     self.proton_shift_oxygens()
                     self.state = 973
@@ -6438,7 +6438,7 @@ class XPLOR_NIH_MR_Parser ( Parser ):
                 self.state = 977
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==XPLOR_NIH_MR_Parser.RingAtoms:
+                while _la==XplorMRParser.RingAtoms:
                     self.state = 974
                     self.proton_shift_ring_atoms()
                     self.state = 979
@@ -6452,7 +6452,7 @@ class XPLOR_NIH_MR_Parser ( Parser ):
                 self.state = 983
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==XPLOR_NIH_MR_Parser.AlphasAndAmides:
+                while _la==XplorMRParser.AlphasAndAmides:
                     self.state = 980
                     self.proton_shift_alphas_and_amides()
                     self.state = 985
@@ -6464,39 +6464,39 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             elif la_ == 10:
                 self.enterOuterAlt(localctx, 10)
                 self.state = 986
-                self.match(XPLOR_NIH_MR_Parser.Classification)
+                self.match(XplorMRParser.Classification)
                 self.state = 987
-                self.match(XPLOR_NIH_MR_Parser.Class_name)
+                self.match(XplorMRParser.Class_name)
                 pass
 
             elif la_ == 11:
                 self.enterOuterAlt(localctx, 11)
                 self.state = 988
-                self.match(XPLOR_NIH_MR_Parser.Error)
+                self.match(XplorMRParser.Error)
                 self.state = 989
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
 
             elif la_ == 12:
                 self.enterOuterAlt(localctx, 12)
                 self.state = 990
-                self.match(XPLOR_NIH_MR_Parser.DegEnergy)
+                self.match(XplorMRParser.DegEnergy)
                 self.state = 991
-                self.match(XPLOR_NIH_MR_Parser.Number_of_shifts)
+                self.match(XplorMRParser.Number_of_shifts)
                 pass
 
             elif la_ == 13:
                 self.enterOuterAlt(localctx, 13)
                 self.state = 992
-                self.match(XPLOR_NIH_MR_Parser.ForceConstant)
+                self.match(XplorMRParser.ForceConstant)
                 self.state = 993
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 995
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XPLOR_NIH_MR_Parser.Real:
+                if _la==XplorMRParser.Real:
                     self.state = 994
-                    self.match(XPLOR_NIH_MR_Parser.Real)
+                    self.match(XplorMRParser.Real)
 
 
                 pass
@@ -6504,43 +6504,43 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             elif la_ == 14:
                 self.enterOuterAlt(localctx, 14)
                 self.state = 997
-                self.match(XPLOR_NIH_MR_Parser.Potential)
+                self.match(XplorMRParser.Potential)
                 self.state = 998
-                self.match(XPLOR_NIH_MR_Parser.Coupling_potential)
+                self.match(XplorMRParser.Coupling_potential)
                 pass
 
             elif la_ == 15:
                 self.enterOuterAlt(localctx, 15)
                 self.state = 999
-                self.match(XPLOR_NIH_MR_Parser.Print)
+                self.match(XplorMRParser.Print)
                 self.state = 1000
-                self.match(XPLOR_NIH_MR_Parser.Threshold)
+                self.match(XplorMRParser.Threshold)
                 self.state = 1001
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 1005
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [XPLOR_NIH_MR_Parser.All]:
+                if token in [XplorMRParser.All]:
                     self.state = 1002
-                    self.match(XPLOR_NIH_MR_Parser.All)
+                    self.match(XplorMRParser.All)
                     pass
-                elif token in [XPLOR_NIH_MR_Parser.Classification]:
+                elif token in [XplorMRParser.Classification]:
                     self.state = 1003
-                    self.match(XPLOR_NIH_MR_Parser.Classification)
+                    self.match(XplorMRParser.Classification)
                     self.state = 1004
-                    self.match(XPLOR_NIH_MR_Parser.Class_name)
+                    self.match(XplorMRParser.Class_name)
                     pass
                 else:
                     raise NoViableAltException(self)
 
                 self.state = 1007
-                self.match(XPLOR_NIH_MR_Parser.Rmsd_or_Not)
+                self.match(XplorMRParser.Rmsd_or_Not)
                 pass
 
             elif la_ == 16:
                 self.enterOuterAlt(localctx, 16)
                 self.state = 1008
-                self.match(XPLOR_NIH_MR_Parser.Reset)
+                self.match(XplorMRParser.Reset)
                 pass
 
 
@@ -6560,23 +6560,23 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.parser = parser
 
         def Observed(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Observed, 0)
+            return self.getToken(XplorMRParser.Observed, 0)
 
         def selection(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.SelectionContext)
+                return self.getTypedRuleContexts(XplorMRParser.SelectionContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.SelectionContext,i)
+                return self.getTypedRuleContext(XplorMRParser.SelectionContext,i)
 
 
         def Real(self, i:int=None):
             if i is None:
-                return self.getTokens(XPLOR_NIH_MR_Parser.Real)
+                return self.getTokens(XplorMRParser.Real)
             else:
-                return self.getToken(XPLOR_NIH_MR_Parser.Real, i)
+                return self.getToken(XplorMRParser.Real, i)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_observed
+            return XplorMRParser.RULE_observed
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterObserved" ):
@@ -6591,31 +6591,31 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def observed(self):
 
-        localctx = XPLOR_NIH_MR_Parser.ObservedContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.ObservedContext(self, self._ctx, self.state)
         self.enterRule(localctx, 96, self.RULE_observed)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 1011
-            self.match(XPLOR_NIH_MR_Parser.Observed)
+            self.match(XplorMRParser.Observed)
             self.state = 1012
             self.selection()
             self.state = 1014
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==XPLOR_NIH_MR_Parser.L_paren:
+            if _la==XplorMRParser.L_paren:
                 self.state = 1013
                 self.selection()
 
 
             self.state = 1016
-            self.match(XPLOR_NIH_MR_Parser.Real)
+            self.match(XplorMRParser.Real)
             self.state = 1018
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==XPLOR_NIH_MR_Parser.Real:
+            if _la==XplorMRParser.Real:
                 self.state = 1017
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
 
 
         except RecognitionException as re:
@@ -6634,17 +6634,17 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.parser = parser
 
         def Rcoil(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Rcoil, 0)
+            return self.getToken(XplorMRParser.Rcoil, 0)
 
         def selection(self):
-            return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.SelectionContext,0)
+            return self.getTypedRuleContext(XplorMRParser.SelectionContext,0)
 
 
         def Real(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Real, 0)
+            return self.getToken(XplorMRParser.Real, 0)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_proton_shift_rcoil
+            return XplorMRParser.RULE_proton_shift_rcoil
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterProton_shift_rcoil" ):
@@ -6659,16 +6659,16 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def proton_shift_rcoil(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Proton_shift_rcoilContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Proton_shift_rcoilContext(self, self._ctx, self.state)
         self.enterRule(localctx, 98, self.RULE_proton_shift_rcoil)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 1020
-            self.match(XPLOR_NIH_MR_Parser.Rcoil)
+            self.match(XplorMRParser.Rcoil)
             self.state = 1021
             self.selection()
             self.state = 1022
-            self.match(XPLOR_NIH_MR_Parser.Real)
+            self.match(XplorMRParser.Real)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -6685,26 +6685,26 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.parser = parser
 
         def Anisotropy(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Anisotropy, 0)
+            return self.getToken(XplorMRParser.Anisotropy, 0)
 
         def selection(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.SelectionContext)
+                return self.getTypedRuleContexts(XplorMRParser.SelectionContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.SelectionContext,i)
+                return self.getTypedRuleContext(XplorMRParser.SelectionContext,i)
 
 
         def CO_or_CN(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.CO_or_CN, 0)
+            return self.getToken(XplorMRParser.CO_or_CN, 0)
 
         def SC_or_BB(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.SC_or_BB, 0)
+            return self.getToken(XplorMRParser.SC_or_BB, 0)
 
         def Logical(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Logical, 0)
+            return self.getToken(XplorMRParser.Logical, 0)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_proton_shift_anisotropy
+            return XplorMRParser.RULE_proton_shift_anisotropy
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterProton_shift_anisotropy" ):
@@ -6719,13 +6719,13 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def proton_shift_anisotropy(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Proton_shift_anisotropyContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Proton_shift_anisotropyContext(self, self._ctx, self.state)
         self.enterRule(localctx, 100, self.RULE_proton_shift_anisotropy)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 1024
-            self.match(XPLOR_NIH_MR_Parser.Anisotropy)
+            self.match(XplorMRParser.Anisotropy)
             self.state = 1025
             self.selection()
             self.state = 1026
@@ -6733,17 +6733,17 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.state = 1027
             self.selection()
             self.state = 1028
-            self.match(XPLOR_NIH_MR_Parser.CO_or_CN)
+            self.match(XplorMRParser.CO_or_CN)
             self.state = 1030
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==XPLOR_NIH_MR_Parser.Logical:
+            if _la==XplorMRParser.Logical:
                 self.state = 1029
-                self.match(XPLOR_NIH_MR_Parser.Logical)
+                self.match(XplorMRParser.Logical)
 
 
             self.state = 1032
-            self.match(XPLOR_NIH_MR_Parser.SC_or_BB)
+            self.match(XplorMRParser.SC_or_BB)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -6760,14 +6760,14 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.parser = parser
 
         def Amides(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Amides, 0)
+            return self.getToken(XplorMRParser.Amides, 0)
 
         def selection(self):
-            return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.SelectionContext,0)
+            return self.getTypedRuleContext(XplorMRParser.SelectionContext,0)
 
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_proton_shift_amides
+            return XplorMRParser.RULE_proton_shift_amides
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterProton_shift_amides" ):
@@ -6782,12 +6782,12 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def proton_shift_amides(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Proton_shift_amidesContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Proton_shift_amidesContext(self, self._ctx, self.state)
         self.enterRule(localctx, 102, self.RULE_proton_shift_amides)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 1034
-            self.match(XPLOR_NIH_MR_Parser.Amides)
+            self.match(XplorMRParser.Amides)
             self.state = 1035
             self.selection()
         except RecognitionException as re:
@@ -6806,14 +6806,14 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.parser = parser
 
         def Carbons(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Carbons, 0)
+            return self.getToken(XplorMRParser.Carbons, 0)
 
         def selection(self):
-            return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.SelectionContext,0)
+            return self.getTypedRuleContext(XplorMRParser.SelectionContext,0)
 
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_proton_shift_carbons
+            return XplorMRParser.RULE_proton_shift_carbons
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterProton_shift_carbons" ):
@@ -6828,12 +6828,12 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def proton_shift_carbons(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Proton_shift_carbonsContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Proton_shift_carbonsContext(self, self._ctx, self.state)
         self.enterRule(localctx, 104, self.RULE_proton_shift_carbons)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 1037
-            self.match(XPLOR_NIH_MR_Parser.Carbons)
+            self.match(XplorMRParser.Carbons)
             self.state = 1038
             self.selection()
         except RecognitionException as re:
@@ -6852,14 +6852,14 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.parser = parser
 
         def Nitrogens(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Nitrogens, 0)
+            return self.getToken(XplorMRParser.Nitrogens, 0)
 
         def selection(self):
-            return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.SelectionContext,0)
+            return self.getTypedRuleContext(XplorMRParser.SelectionContext,0)
 
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_proton_shift_nitrogens
+            return XplorMRParser.RULE_proton_shift_nitrogens
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterProton_shift_nitrogens" ):
@@ -6874,12 +6874,12 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def proton_shift_nitrogens(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Proton_shift_nitrogensContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Proton_shift_nitrogensContext(self, self._ctx, self.state)
         self.enterRule(localctx, 106, self.RULE_proton_shift_nitrogens)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 1040
-            self.match(XPLOR_NIH_MR_Parser.Nitrogens)
+            self.match(XplorMRParser.Nitrogens)
             self.state = 1041
             self.selection()
         except RecognitionException as re:
@@ -6898,14 +6898,14 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.parser = parser
 
         def Oxygens(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Oxygens, 0)
+            return self.getToken(XplorMRParser.Oxygens, 0)
 
         def selection(self):
-            return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.SelectionContext,0)
+            return self.getTypedRuleContext(XplorMRParser.SelectionContext,0)
 
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_proton_shift_oxygens
+            return XplorMRParser.RULE_proton_shift_oxygens
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterProton_shift_oxygens" ):
@@ -6920,12 +6920,12 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def proton_shift_oxygens(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Proton_shift_oxygensContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Proton_shift_oxygensContext(self, self._ctx, self.state)
         self.enterRule(localctx, 108, self.RULE_proton_shift_oxygens)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 1043
-            self.match(XPLOR_NIH_MR_Parser.Oxygens)
+            self.match(XplorMRParser.Oxygens)
             self.state = 1044
             self.selection()
         except RecognitionException as re:
@@ -6944,20 +6944,20 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.parser = parser
 
         def RingAtoms(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.RingAtoms, 0)
+            return self.getToken(XplorMRParser.RingAtoms, 0)
 
         def Ring_resname(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Ring_resname, 0)
+            return self.getToken(XplorMRParser.Ring_resname, 0)
 
         def selection(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.SelectionContext)
+                return self.getTypedRuleContexts(XplorMRParser.SelectionContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.SelectionContext,i)
+                return self.getTypedRuleContext(XplorMRParser.SelectionContext,i)
 
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_proton_shift_ring_atoms
+            return XplorMRParser.RULE_proton_shift_ring_atoms
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterProton_shift_ring_atoms" ):
@@ -6972,15 +6972,15 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def proton_shift_ring_atoms(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Proton_shift_ring_atomsContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Proton_shift_ring_atomsContext(self, self._ctx, self.state)
         self.enterRule(localctx, 110, self.RULE_proton_shift_ring_atoms)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 1046
-            self.match(XPLOR_NIH_MR_Parser.RingAtoms)
+            self.match(XplorMRParser.RingAtoms)
             self.state = 1047
-            self.match(XPLOR_NIH_MR_Parser.Ring_resname)
+            self.match(XplorMRParser.Ring_resname)
             self.state = 1048
             self.selection()
             self.state = 1049
@@ -6994,7 +6994,7 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.state = 1054
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==XPLOR_NIH_MR_Parser.L_paren:
+            if _la==XplorMRParser.L_paren:
                 self.state = 1053
                 self.selection()
 
@@ -7015,14 +7015,14 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.parser = parser
 
         def AlphasAndAmides(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.AlphasAndAmides, 0)
+            return self.getToken(XplorMRParser.AlphasAndAmides, 0)
 
         def selection(self):
-            return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.SelectionContext,0)
+            return self.getTypedRuleContext(XplorMRParser.SelectionContext,0)
 
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_proton_shift_alphas_and_amides
+            return XplorMRParser.RULE_proton_shift_alphas_and_amides
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterProton_shift_alphas_and_amides" ):
@@ -7037,12 +7037,12 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def proton_shift_alphas_and_amides(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Proton_shift_alphas_and_amidesContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Proton_shift_alphas_and_amidesContext(self, self._ctx, self.state)
         self.enterRule(localctx, 112, self.RULE_proton_shift_alphas_and_amides)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 1056
-            self.match(XPLOR_NIH_MR_Parser.AlphasAndAmides)
+            self.match(XplorMRParser.AlphasAndAmides)
             self.state = 1057
             self.selection()
         except RecognitionException as re:
@@ -7062,79 +7062,79 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
         def rama_assign(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.Rama_assignContext)
+                return self.getTypedRuleContexts(XplorMRParser.Rama_assignContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Rama_assignContext,i)
+                return self.getTypedRuleContext(XplorMRParser.Rama_assignContext,i)
 
 
         def Classification(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Classification, 0)
+            return self.getToken(XplorMRParser.Classification, 0)
 
         def Class_name(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Class_name, 0)
+            return self.getToken(XplorMRParser.Class_name, 0)
 
         def Cutoff(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Cutoff, 0)
+            return self.getToken(XplorMRParser.Cutoff, 0)
 
         def Real(self, i:int=None):
             if i is None:
-                return self.getTokens(XPLOR_NIH_MR_Parser.Real)
+                return self.getTokens(XplorMRParser.Real)
             else:
-                return self.getToken(XPLOR_NIH_MR_Parser.Real, i)
+                return self.getToken(XplorMRParser.Real, i)
 
         def ForceConstant(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.ForceConstant, 0)
+            return self.getToken(XplorMRParser.ForceConstant, 0)
 
         def Gaussian(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Gaussian, 0)
+            return self.getToken(XplorMRParser.Gaussian, 0)
 
         def Nrestraints(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Nrestraints, 0)
+            return self.getToken(XplorMRParser.Nrestraints, 0)
 
         def Integer(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Integer, 0)
+            return self.getToken(XplorMRParser.Integer, 0)
 
         def Phase(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Phase, 0)
+            return self.getToken(XplorMRParser.Phase, 0)
 
         def Print(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Print, 0)
+            return self.getToken(XplorMRParser.Print, 0)
 
         def Threshold(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Threshold, 0)
+            return self.getToken(XplorMRParser.Threshold, 0)
 
         def All(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.All, 0)
+            return self.getToken(XplorMRParser.All, 0)
 
         def Quartic(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Quartic, 0)
+            return self.getToken(XplorMRParser.Quartic, 0)
 
         def Reset(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Reset, 0)
+            return self.getToken(XplorMRParser.Reset, 0)
 
         def Scale(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Scale, 0)
+            return self.getToken(XplorMRParser.Scale, 0)
 
         def Shape(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Shape, 0)
+            return self.getToken(XplorMRParser.Shape, 0)
 
         def Gauss_or_Quart(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Gauss_or_Quart, 0)
+            return self.getToken(XplorMRParser.Gauss_or_Quart, 0)
 
         def Size(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Size, 0)
+            return self.getToken(XplorMRParser.Size, 0)
 
         def Dimensions(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Dimensions, 0)
+            return self.getToken(XplorMRParser.Dimensions, 0)
 
         def Sort(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Sort, 0)
+            return self.getToken(XplorMRParser.Sort, 0)
 
         def Zero(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Zero, 0)
+            return self.getToken(XplorMRParser.Zero, 0)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_ramachandran_statement
+            return XplorMRParser.RULE_ramachandran_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterRamachandran_statement" ):
@@ -7149,19 +7149,19 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def ramachandran_statement(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Ramachandran_statementContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Ramachandran_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 114, self.RULE_ramachandran_statement)
         self._la = 0 # Token type
         try:
             self.state = 1157
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [XPLOR_NIH_MR_Parser.Assign, XPLOR_NIH_MR_Parser.R_brace]:
+            if token in [XplorMRParser.Assign, XplorMRParser.R_brace]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 1062
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==XPLOR_NIH_MR_Parser.Assign:
+                while _la==XplorMRParser.Assign:
                     self.state = 1059
                     self.rama_assign()
                     self.state = 1064
@@ -7169,47 +7169,47 @@ class XPLOR_NIH_MR_Parser ( Parser ):
                     _la = self._input.LA(1)
 
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Classification]:
+            elif token in [XplorMRParser.Classification]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 1065
-                self.match(XPLOR_NIH_MR_Parser.Classification)
+                self.match(XplorMRParser.Classification)
                 self.state = 1066
-                self.match(XPLOR_NIH_MR_Parser.Class_name)
+                self.match(XplorMRParser.Class_name)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Cutoff]:
+            elif token in [XplorMRParser.Cutoff]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 1067
-                self.match(XPLOR_NIH_MR_Parser.Cutoff)
+                self.match(XplorMRParser.Cutoff)
                 self.state = 1068
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.ForceConstant]:
+            elif token in [XplorMRParser.ForceConstant]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 1069
-                self.match(XPLOR_NIH_MR_Parser.ForceConstant)
+                self.match(XplorMRParser.ForceConstant)
                 self.state = 1070
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Gaussian]:
+            elif token in [XplorMRParser.Gaussian]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 1071
-                self.match(XPLOR_NIH_MR_Parser.Gaussian)
+                self.match(XplorMRParser.Gaussian)
                 self.state = 1072
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 1073
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 1074
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 1078
                 self._errHandler.sync(self)
                 la_ = self._interp.adaptivePredict(self._input,72,self._ctx)
                 if la_ == 1:
                     self.state = 1075
-                    self.match(XPLOR_NIH_MR_Parser.Real)
+                    self.match(XplorMRParser.Real)
                     self.state = 1076
-                    self.match(XPLOR_NIH_MR_Parser.Real)
+                    self.match(XplorMRParser.Real)
                     self.state = 1077
-                    self.match(XPLOR_NIH_MR_Parser.Real)
+                    self.match(XplorMRParser.Real)
 
 
                 self.state = 1083
@@ -7217,53 +7217,53 @@ class XPLOR_NIH_MR_Parser ( Parser ):
                 la_ = self._interp.adaptivePredict(self._input,73,self._ctx)
                 if la_ == 1:
                     self.state = 1080
-                    self.match(XPLOR_NIH_MR_Parser.Real)
+                    self.match(XplorMRParser.Real)
                     self.state = 1081
-                    self.match(XPLOR_NIH_MR_Parser.Real)
+                    self.match(XplorMRParser.Real)
                     self.state = 1082
-                    self.match(XPLOR_NIH_MR_Parser.Real)
+                    self.match(XplorMRParser.Real)
 
 
                 self.state = 1088
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XPLOR_NIH_MR_Parser.Real:
+                if _la==XplorMRParser.Real:
                     self.state = 1085
-                    self.match(XPLOR_NIH_MR_Parser.Real)
+                    self.match(XplorMRParser.Real)
                     self.state = 1086
-                    self.match(XPLOR_NIH_MR_Parser.Real)
+                    self.match(XplorMRParser.Real)
                     self.state = 1087
-                    self.match(XPLOR_NIH_MR_Parser.Real)
+                    self.match(XplorMRParser.Real)
 
 
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Nrestraints]:
+            elif token in [XplorMRParser.Nrestraints]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 1090
-                self.match(XPLOR_NIH_MR_Parser.Nrestraints)
+                self.match(XplorMRParser.Nrestraints)
                 self.state = 1091
-                self.match(XPLOR_NIH_MR_Parser.Integer)
+                self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Phase]:
+            elif token in [XplorMRParser.Phase]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 1092
-                self.match(XPLOR_NIH_MR_Parser.Phase)
+                self.match(XplorMRParser.Phase)
                 self.state = 1093
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 1094
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 1095
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 1099
                 self._errHandler.sync(self)
                 la_ = self._interp.adaptivePredict(self._input,75,self._ctx)
                 if la_ == 1:
                     self.state = 1096
-                    self.match(XPLOR_NIH_MR_Parser.Real)
+                    self.match(XplorMRParser.Real)
                     self.state = 1097
-                    self.match(XPLOR_NIH_MR_Parser.Real)
+                    self.match(XplorMRParser.Real)
                     self.state = 1098
-                    self.match(XPLOR_NIH_MR_Parser.Real)
+                    self.match(XplorMRParser.Real)
 
 
                 self.state = 1104
@@ -7271,71 +7271,71 @@ class XPLOR_NIH_MR_Parser ( Parser ):
                 la_ = self._interp.adaptivePredict(self._input,76,self._ctx)
                 if la_ == 1:
                     self.state = 1101
-                    self.match(XPLOR_NIH_MR_Parser.Real)
+                    self.match(XplorMRParser.Real)
                     self.state = 1102
-                    self.match(XPLOR_NIH_MR_Parser.Real)
+                    self.match(XplorMRParser.Real)
                     self.state = 1103
-                    self.match(XPLOR_NIH_MR_Parser.Real)
+                    self.match(XplorMRParser.Real)
 
 
                 self.state = 1109
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XPLOR_NIH_MR_Parser.Real:
+                if _la==XplorMRParser.Real:
                     self.state = 1106
-                    self.match(XPLOR_NIH_MR_Parser.Real)
+                    self.match(XplorMRParser.Real)
                     self.state = 1107
-                    self.match(XPLOR_NIH_MR_Parser.Real)
+                    self.match(XplorMRParser.Real)
                     self.state = 1108
-                    self.match(XPLOR_NIH_MR_Parser.Real)
+                    self.match(XplorMRParser.Real)
 
 
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Print]:
+            elif token in [XplorMRParser.Print]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 1111
-                self.match(XPLOR_NIH_MR_Parser.Print)
+                self.match(XplorMRParser.Print)
                 self.state = 1112
-                self.match(XPLOR_NIH_MR_Parser.Threshold)
+                self.match(XplorMRParser.Threshold)
                 self.state = 1113
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 1117
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [XPLOR_NIH_MR_Parser.All]:
+                if token in [XplorMRParser.All]:
                     self.state = 1114
-                    self.match(XPLOR_NIH_MR_Parser.All)
+                    self.match(XplorMRParser.All)
                     pass
-                elif token in [XPLOR_NIH_MR_Parser.Classification]:
+                elif token in [XplorMRParser.Classification]:
                     self.state = 1115
-                    self.match(XPLOR_NIH_MR_Parser.Classification)
+                    self.match(XplorMRParser.Classification)
                     self.state = 1116
-                    self.match(XPLOR_NIH_MR_Parser.Class_name)
+                    self.match(XplorMRParser.Class_name)
                     pass
                 else:
                     raise NoViableAltException(self)
 
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Quartic]:
+            elif token in [XplorMRParser.Quartic]:
                 self.enterOuterAlt(localctx, 9)
                 self.state = 1119
-                self.match(XPLOR_NIH_MR_Parser.Quartic)
+                self.match(XplorMRParser.Quartic)
                 self.state = 1120
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 1121
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 1122
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 1126
                 self._errHandler.sync(self)
                 la_ = self._interp.adaptivePredict(self._input,79,self._ctx)
                 if la_ == 1:
                     self.state = 1123
-                    self.match(XPLOR_NIH_MR_Parser.Real)
+                    self.match(XplorMRParser.Real)
                     self.state = 1124
-                    self.match(XPLOR_NIH_MR_Parser.Real)
+                    self.match(XplorMRParser.Real)
                     self.state = 1125
-                    self.match(XPLOR_NIH_MR_Parser.Real)
+                    self.match(XplorMRParser.Real)
 
 
                 self.state = 1131
@@ -7343,59 +7343,59 @@ class XPLOR_NIH_MR_Parser ( Parser ):
                 la_ = self._interp.adaptivePredict(self._input,80,self._ctx)
                 if la_ == 1:
                     self.state = 1128
-                    self.match(XPLOR_NIH_MR_Parser.Real)
+                    self.match(XplorMRParser.Real)
                     self.state = 1129
-                    self.match(XPLOR_NIH_MR_Parser.Real)
+                    self.match(XplorMRParser.Real)
                     self.state = 1130
-                    self.match(XPLOR_NIH_MR_Parser.Real)
+                    self.match(XplorMRParser.Real)
 
 
                 self.state = 1136
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XPLOR_NIH_MR_Parser.Real:
+                if _la==XplorMRParser.Real:
                     self.state = 1133
-                    self.match(XPLOR_NIH_MR_Parser.Real)
+                    self.match(XplorMRParser.Real)
                     self.state = 1134
-                    self.match(XPLOR_NIH_MR_Parser.Real)
+                    self.match(XplorMRParser.Real)
                     self.state = 1135
-                    self.match(XPLOR_NIH_MR_Parser.Real)
+                    self.match(XplorMRParser.Real)
 
 
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Reset]:
+            elif token in [XplorMRParser.Reset]:
                 self.enterOuterAlt(localctx, 10)
                 self.state = 1138
-                self.match(XPLOR_NIH_MR_Parser.Reset)
+                self.match(XplorMRParser.Reset)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Scale]:
+            elif token in [XplorMRParser.Scale]:
                 self.enterOuterAlt(localctx, 11)
                 self.state = 1139
-                self.match(XPLOR_NIH_MR_Parser.Scale)
+                self.match(XplorMRParser.Scale)
                 self.state = 1140
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Shape]:
+            elif token in [XplorMRParser.Shape]:
                 self.enterOuterAlt(localctx, 12)
                 self.state = 1141
-                self.match(XPLOR_NIH_MR_Parser.Shape)
+                self.match(XplorMRParser.Shape)
                 self.state = 1142
-                self.match(XPLOR_NIH_MR_Parser.Gauss_or_Quart)
+                self.match(XplorMRParser.Gauss_or_Quart)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Size]:
+            elif token in [XplorMRParser.Size]:
                 self.enterOuterAlt(localctx, 13)
                 self.state = 1143
-                self.match(XPLOR_NIH_MR_Parser.Size)
+                self.match(XplorMRParser.Size)
                 self.state = 1144
-                self.match(XPLOR_NIH_MR_Parser.Dimensions)
+                self.match(XplorMRParser.Dimensions)
                 self.state = 1145
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 1147
                 self._errHandler.sync(self)
                 la_ = self._interp.adaptivePredict(self._input,82,self._ctx)
                 if la_ == 1:
                     self.state = 1146
-                    self.match(XPLOR_NIH_MR_Parser.Real)
+                    self.match(XplorMRParser.Real)
 
 
                 self.state = 1150
@@ -7403,27 +7403,27 @@ class XPLOR_NIH_MR_Parser ( Parser ):
                 la_ = self._interp.adaptivePredict(self._input,83,self._ctx)
                 if la_ == 1:
                     self.state = 1149
-                    self.match(XPLOR_NIH_MR_Parser.Real)
+                    self.match(XplorMRParser.Real)
 
 
                 self.state = 1153
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XPLOR_NIH_MR_Parser.Real:
+                if _la==XplorMRParser.Real:
                     self.state = 1152
-                    self.match(XPLOR_NIH_MR_Parser.Real)
+                    self.match(XplorMRParser.Real)
 
 
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Sort]:
+            elif token in [XplorMRParser.Sort]:
                 self.enterOuterAlt(localctx, 14)
                 self.state = 1155
-                self.match(XPLOR_NIH_MR_Parser.Sort)
+                self.match(XplorMRParser.Sort)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Zero]:
+            elif token in [XplorMRParser.Zero]:
                 self.enterOuterAlt(localctx, 15)
                 self.state = 1156
-                self.match(XPLOR_NIH_MR_Parser.Zero)
+                self.match(XplorMRParser.Zero)
                 pass
             else:
                 raise NoViableAltException(self)
@@ -7444,17 +7444,17 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.parser = parser
 
         def Assign(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Assign, 0)
+            return self.getToken(XplorMRParser.Assign, 0)
 
         def selection(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.SelectionContext)
+                return self.getTypedRuleContexts(XplorMRParser.SelectionContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.SelectionContext,i)
+                return self.getTypedRuleContext(XplorMRParser.SelectionContext,i)
 
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_rama_assign
+            return XplorMRParser.RULE_rama_assign
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterRama_assign" ):
@@ -7469,13 +7469,13 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def rama_assign(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Rama_assignContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Rama_assignContext(self, self._ctx, self.state)
         self.enterRule(localctx, 116, self.RULE_rama_assign)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 1159
-            self.match(XPLOR_NIH_MR_Parser.Assign)
+            self.match(XplorMRParser.Assign)
             self.state = 1160
             self.selection()
             self.state = 1161
@@ -7515,7 +7515,7 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.state = 1183
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==XPLOR_NIH_MR_Parser.L_paren:
+            if _la==XplorMRParser.L_paren:
                 self.state = 1178
                 self.selection()
                 self.state = 1179
@@ -7542,29 +7542,29 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.parser = parser
 
         def Scale(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Scale, 0)
+            return self.getToken(XplorMRParser.Scale, 0)
 
         def Real(self, i:int=None):
             if i is None:
-                return self.getTokens(XPLOR_NIH_MR_Parser.Real)
+                return self.getTokens(XplorMRParser.Real)
             else:
-                return self.getToken(XPLOR_NIH_MR_Parser.Real, i)
+                return self.getToken(XplorMRParser.Real, i)
 
         def Assign(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Assign, 0)
+            return self.getToken(XplorMRParser.Assign, 0)
 
         def selection(self):
-            return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.SelectionContext,0)
+            return self.getTypedRuleContext(XplorMRParser.SelectionContext,0)
 
 
         def Print(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Print, 0)
+            return self.getToken(XplorMRParser.Print, 0)
 
         def Reset(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Reset, 0)
+            return self.getToken(XplorMRParser.Reset, 0)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_collapse_statement
+            return XplorMRParser.RULE_collapse_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterCollapse_statement" ):
@@ -7579,39 +7579,39 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def collapse_statement(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Collapse_statementContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Collapse_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 118, self.RULE_collapse_statement)
         try:
             self.state = 1194
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [XPLOR_NIH_MR_Parser.Scale]:
+            if token in [XplorMRParser.Scale]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 1185
-                self.match(XPLOR_NIH_MR_Parser.Scale)
+                self.match(XplorMRParser.Scale)
                 self.state = 1186
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Assign]:
+            elif token in [XplorMRParser.Assign]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 1187
-                self.match(XPLOR_NIH_MR_Parser.Assign)
+                self.match(XplorMRParser.Assign)
                 self.state = 1188
                 self.selection()
                 self.state = 1189
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 1190
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Print]:
+            elif token in [XplorMRParser.Print]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 1192
-                self.match(XPLOR_NIH_MR_Parser.Print)
+                self.match(XplorMRParser.Print)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Reset]:
+            elif token in [XplorMRParser.Reset]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 1193
-                self.match(XPLOR_NIH_MR_Parser.Reset)
+                self.match(XplorMRParser.Reset)
                 pass
             else:
                 raise NoViableAltException(self)
@@ -7633,58 +7633,58 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
         def dani_assign(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.Dani_assignContext)
+                return self.getTypedRuleContexts(XplorMRParser.Dani_assignContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Dani_assignContext,i)
+                return self.getTypedRuleContext(XplorMRParser.Dani_assignContext,i)
 
 
         def Classification(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Classification, 0)
+            return self.getToken(XplorMRParser.Classification, 0)
 
         def Class_name(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Class_name, 0)
+            return self.getToken(XplorMRParser.Class_name, 0)
 
         def Coefficients(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Coefficients, 0)
+            return self.getToken(XplorMRParser.Coefficients, 0)
 
         def Real(self, i:int=None):
             if i is None:
-                return self.getTokens(XPLOR_NIH_MR_Parser.Real)
+                return self.getTokens(XplorMRParser.Real)
             else:
-                return self.getToken(XPLOR_NIH_MR_Parser.Real, i)
+                return self.getToken(XplorMRParser.Real, i)
 
         def ForceConstant(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.ForceConstant, 0)
+            return self.getToken(XplorMRParser.ForceConstant, 0)
 
         def Nrestraints(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Nrestraints, 0)
+            return self.getToken(XplorMRParser.Nrestraints, 0)
 
         def Integer(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Integer, 0)
+            return self.getToken(XplorMRParser.Integer, 0)
 
         def Potential(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Potential, 0)
+            return self.getToken(XplorMRParser.Potential, 0)
 
         def Rdc_potential(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Rdc_potential, 0)
+            return self.getToken(XplorMRParser.Rdc_potential, 0)
 
         def Print(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Print, 0)
+            return self.getToken(XplorMRParser.Print, 0)
 
         def Threshold(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Threshold, 0)
+            return self.getToken(XplorMRParser.Threshold, 0)
 
         def Reset(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Reset, 0)
+            return self.getToken(XplorMRParser.Reset, 0)
 
         def Type(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Type, 0)
+            return self.getToken(XplorMRParser.Type, 0)
 
         def Diff_anis_types(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Diff_anis_types, 0)
+            return self.getToken(XplorMRParser.Diff_anis_types, 0)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_diffusion_statement
+            return XplorMRParser.RULE_diffusion_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterDiffusion_statement" ):
@@ -7699,19 +7699,19 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def diffusion_statement(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Diffusion_statementContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Diffusion_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 120, self.RULE_diffusion_statement)
         self._la = 0 # Token type
         try:
             self.state = 1222
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [XPLOR_NIH_MR_Parser.Assign, XPLOR_NIH_MR_Parser.R_brace]:
+            if token in [XplorMRParser.Assign, XplorMRParser.R_brace]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 1199
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==XPLOR_NIH_MR_Parser.Assign:
+                while _la==XplorMRParser.Assign:
                     self.state = 1196
                     self.dani_assign()
                     self.state = 1201
@@ -7719,69 +7719,69 @@ class XPLOR_NIH_MR_Parser ( Parser ):
                     _la = self._input.LA(1)
 
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Classification]:
+            elif token in [XplorMRParser.Classification]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 1202
-                self.match(XPLOR_NIH_MR_Parser.Classification)
+                self.match(XplorMRParser.Classification)
                 self.state = 1203
-                self.match(XPLOR_NIH_MR_Parser.Class_name)
+                self.match(XplorMRParser.Class_name)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Coefficients]:
+            elif token in [XplorMRParser.Coefficients]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 1204
-                self.match(XPLOR_NIH_MR_Parser.Coefficients)
+                self.match(XplorMRParser.Coefficients)
                 self.state = 1205
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 1206
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 1207
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 1208
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 1209
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.ForceConstant]:
+            elif token in [XplorMRParser.ForceConstant]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 1210
-                self.match(XPLOR_NIH_MR_Parser.ForceConstant)
+                self.match(XplorMRParser.ForceConstant)
                 self.state = 1211
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Nrestraints]:
+            elif token in [XplorMRParser.Nrestraints]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 1212
-                self.match(XPLOR_NIH_MR_Parser.Nrestraints)
+                self.match(XplorMRParser.Nrestraints)
                 self.state = 1213
-                self.match(XPLOR_NIH_MR_Parser.Integer)
+                self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Potential]:
+            elif token in [XplorMRParser.Potential]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 1214
-                self.match(XPLOR_NIH_MR_Parser.Potential)
+                self.match(XplorMRParser.Potential)
                 self.state = 1215
-                self.match(XPLOR_NIH_MR_Parser.Rdc_potential)
+                self.match(XplorMRParser.Rdc_potential)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Print]:
+            elif token in [XplorMRParser.Print]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 1216
-                self.match(XPLOR_NIH_MR_Parser.Print)
+                self.match(XplorMRParser.Print)
                 self.state = 1217
-                self.match(XPLOR_NIH_MR_Parser.Threshold)
+                self.match(XplorMRParser.Threshold)
                 self.state = 1218
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Reset]:
+            elif token in [XplorMRParser.Reset]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 1219
-                self.match(XPLOR_NIH_MR_Parser.Reset)
+                self.match(XplorMRParser.Reset)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Type]:
+            elif token in [XplorMRParser.Type]:
                 self.enterOuterAlt(localctx, 9)
                 self.state = 1220
-                self.match(XPLOR_NIH_MR_Parser.Type)
+                self.match(XplorMRParser.Type)
                 self.state = 1221
-                self.match(XPLOR_NIH_MR_Parser.Diff_anis_types)
+                self.match(XplorMRParser.Diff_anis_types)
                 pass
             else:
                 raise NoViableAltException(self)
@@ -7802,23 +7802,23 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.parser = parser
 
         def Assign(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Assign, 0)
+            return self.getToken(XplorMRParser.Assign, 0)
 
         def selection(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.SelectionContext)
+                return self.getTypedRuleContexts(XplorMRParser.SelectionContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.SelectionContext,i)
+                return self.getTypedRuleContext(XplorMRParser.SelectionContext,i)
 
 
         def Real(self, i:int=None):
             if i is None:
-                return self.getTokens(XPLOR_NIH_MR_Parser.Real)
+                return self.getTokens(XplorMRParser.Real)
             else:
-                return self.getToken(XPLOR_NIH_MR_Parser.Real, i)
+                return self.getToken(XplorMRParser.Real, i)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_dani_assign
+            return XplorMRParser.RULE_dani_assign
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterDani_assign" ):
@@ -7833,12 +7833,12 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def dani_assign(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Dani_assignContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Dani_assignContext(self, self._ctx, self.state)
         self.enterRule(localctx, 122, self.RULE_dani_assign)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 1224
-            self.match(XPLOR_NIH_MR_Parser.Assign)
+            self.match(XplorMRParser.Assign)
             self.state = 1225
             self.selection()
             self.state = 1226
@@ -7852,9 +7852,9 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.state = 1230
             self.selection()
             self.state = 1231
-            self.match(XPLOR_NIH_MR_Parser.Real)
+            self.match(XplorMRParser.Real)
             self.state = 1232
-            self.match(XPLOR_NIH_MR_Parser.Real)
+            self.match(XplorMRParser.Real)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -7872,73 +7872,73 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
         def orie_assign(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.Orie_assignContext)
+                return self.getTypedRuleContexts(XplorMRParser.Orie_assignContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Orie_assignContext,i)
+                return self.getTypedRuleContext(XplorMRParser.Orie_assignContext,i)
 
 
         def Classification(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Classification, 0)
+            return self.getToken(XplorMRParser.Classification, 0)
 
         def Class_name(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Class_name, 0)
+            return self.getToken(XplorMRParser.Class_name, 0)
 
         def Cutoff(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Cutoff, 0)
+            return self.getToken(XplorMRParser.Cutoff, 0)
 
         def Real(self, i:int=None):
             if i is None:
-                return self.getTokens(XPLOR_NIH_MR_Parser.Real)
+                return self.getTokens(XplorMRParser.Real)
             else:
-                return self.getToken(XPLOR_NIH_MR_Parser.Real, i)
+                return self.getToken(XplorMRParser.Real, i)
 
         def Height(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Height, 0)
+            return self.getToken(XplorMRParser.Height, 0)
 
         def ForceConstant(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.ForceConstant, 0)
+            return self.getToken(XplorMRParser.ForceConstant, 0)
 
         def Gaussian(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Gaussian, 0)
+            return self.getToken(XplorMRParser.Gaussian, 0)
 
         def MaxGaussians(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.MaxGaussians, 0)
+            return self.getToken(XplorMRParser.MaxGaussians, 0)
 
         def Integer(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Integer, 0)
+            return self.getToken(XplorMRParser.Integer, 0)
 
         def NewGaussian(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.NewGaussian, 0)
+            return self.getToken(XplorMRParser.NewGaussian, 0)
 
         def Nrestraints(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Nrestraints, 0)
+            return self.getToken(XplorMRParser.Nrestraints, 0)
 
         def Print(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Print, 0)
+            return self.getToken(XplorMRParser.Print, 0)
 
         def Threshold(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Threshold, 0)
+            return self.getToken(XplorMRParser.Threshold, 0)
 
         def All(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.All, 0)
+            return self.getToken(XplorMRParser.All, 0)
 
         def Quartic(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Quartic, 0)
+            return self.getToken(XplorMRParser.Quartic, 0)
 
         def Reset(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Reset, 0)
+            return self.getToken(XplorMRParser.Reset, 0)
 
         def Residues(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Residues, 0)
+            return self.getToken(XplorMRParser.Residues, 0)
 
         def Size(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Size, 0)
+            return self.getToken(XplorMRParser.Size, 0)
 
         def Zero(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Zero, 0)
+            return self.getToken(XplorMRParser.Zero, 0)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_orientation_statement
+            return XplorMRParser.RULE_orientation_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterOrientation_statement" ):
@@ -7953,19 +7953,19 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def orientation_statement(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Orientation_statementContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Orientation_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 124, self.RULE_orientation_statement)
         self._la = 0 # Token type
         try:
             self.state = 1292
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [XPLOR_NIH_MR_Parser.Assign, XPLOR_NIH_MR_Parser.R_brace]:
+            if token in [XplorMRParser.Assign, XplorMRParser.R_brace]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 1237
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==XPLOR_NIH_MR_Parser.Assign:
+                while _la==XplorMRParser.Assign:
                     self.state = 1234
                     self.orie_assign()
                     self.state = 1239
@@ -7973,157 +7973,157 @@ class XPLOR_NIH_MR_Parser ( Parser ):
                     _la = self._input.LA(1)
 
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Classification]:
+            elif token in [XplorMRParser.Classification]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 1240
-                self.match(XPLOR_NIH_MR_Parser.Classification)
+                self.match(XplorMRParser.Classification)
                 self.state = 1241
-                self.match(XPLOR_NIH_MR_Parser.Class_name)
+                self.match(XplorMRParser.Class_name)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Cutoff]:
+            elif token in [XplorMRParser.Cutoff]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 1242
-                self.match(XPLOR_NIH_MR_Parser.Cutoff)
+                self.match(XplorMRParser.Cutoff)
                 self.state = 1243
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Height]:
+            elif token in [XplorMRParser.Height]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 1244
-                self.match(XPLOR_NIH_MR_Parser.Height)
+                self.match(XplorMRParser.Height)
                 self.state = 1245
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.ForceConstant]:
+            elif token in [XplorMRParser.ForceConstant]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 1246
-                self.match(XPLOR_NIH_MR_Parser.ForceConstant)
+                self.match(XplorMRParser.ForceConstant)
                 self.state = 1247
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Gaussian]:
+            elif token in [XplorMRParser.Gaussian]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 1248
-                self.match(XPLOR_NIH_MR_Parser.Gaussian)
+                self.match(XplorMRParser.Gaussian)
                 self.state = 1249
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 1250
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 1251
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 1252
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 1253
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 1254
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 1255
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.MaxGaussians]:
+            elif token in [XplorMRParser.MaxGaussians]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 1256
-                self.match(XPLOR_NIH_MR_Parser.MaxGaussians)
+                self.match(XplorMRParser.MaxGaussians)
                 self.state = 1257
-                self.match(XPLOR_NIH_MR_Parser.Integer)
+                self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.NewGaussian]:
+            elif token in [XplorMRParser.NewGaussian]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 1258
-                self.match(XPLOR_NIH_MR_Parser.NewGaussian)
+                self.match(XplorMRParser.NewGaussian)
                 self.state = 1259
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 1260
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 1261
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 1262
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 1263
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 1264
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 1265
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 1266
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Nrestraints]:
+            elif token in [XplorMRParser.Nrestraints]:
                 self.enterOuterAlt(localctx, 9)
                 self.state = 1267
-                self.match(XPLOR_NIH_MR_Parser.Nrestraints)
+                self.match(XplorMRParser.Nrestraints)
                 self.state = 1268
-                self.match(XPLOR_NIH_MR_Parser.Integer)
+                self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Print]:
+            elif token in [XplorMRParser.Print]:
                 self.enterOuterAlt(localctx, 10)
                 self.state = 1269
-                self.match(XPLOR_NIH_MR_Parser.Print)
+                self.match(XplorMRParser.Print)
                 self.state = 1270
-                self.match(XPLOR_NIH_MR_Parser.Threshold)
+                self.match(XplorMRParser.Threshold)
                 self.state = 1271
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 1275
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [XPLOR_NIH_MR_Parser.All]:
+                if token in [XplorMRParser.All]:
                     self.state = 1272
-                    self.match(XPLOR_NIH_MR_Parser.All)
+                    self.match(XplorMRParser.All)
                     pass
-                elif token in [XPLOR_NIH_MR_Parser.Classification]:
+                elif token in [XplorMRParser.Classification]:
                     self.state = 1273
-                    self.match(XPLOR_NIH_MR_Parser.Classification)
+                    self.match(XplorMRParser.Classification)
                     self.state = 1274
-                    self.match(XPLOR_NIH_MR_Parser.Class_name)
+                    self.match(XplorMRParser.Class_name)
                     pass
                 else:
                     raise NoViableAltException(self)
 
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Quartic]:
+            elif token in [XplorMRParser.Quartic]:
                 self.enterOuterAlt(localctx, 11)
                 self.state = 1277
-                self.match(XPLOR_NIH_MR_Parser.Quartic)
+                self.match(XplorMRParser.Quartic)
                 self.state = 1278
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 1279
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 1280
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 1281
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 1282
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 1283
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 1284
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Reset]:
+            elif token in [XplorMRParser.Reset]:
                 self.enterOuterAlt(localctx, 12)
                 self.state = 1285
-                self.match(XPLOR_NIH_MR_Parser.Reset)
+                self.match(XplorMRParser.Reset)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Residues]:
+            elif token in [XplorMRParser.Residues]:
                 self.enterOuterAlt(localctx, 13)
                 self.state = 1286
-                self.match(XPLOR_NIH_MR_Parser.Residues)
+                self.match(XplorMRParser.Residues)
                 self.state = 1287
-                self.match(XPLOR_NIH_MR_Parser.Integer)
+                self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Size]:
+            elif token in [XplorMRParser.Size]:
                 self.enterOuterAlt(localctx, 14)
                 self.state = 1288
-                self.match(XPLOR_NIH_MR_Parser.Size)
+                self.match(XplorMRParser.Size)
                 self.state = 1289
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 1290
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Zero]:
+            elif token in [XplorMRParser.Zero]:
                 self.enterOuterAlt(localctx, 15)
                 self.state = 1291
-                self.match(XPLOR_NIH_MR_Parser.Zero)
+                self.match(XplorMRParser.Zero)
                 pass
             else:
                 raise NoViableAltException(self)
@@ -8144,17 +8144,17 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.parser = parser
 
         def Assign(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Assign, 0)
+            return self.getToken(XplorMRParser.Assign, 0)
 
         def selection(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.SelectionContext)
+                return self.getTypedRuleContexts(XplorMRParser.SelectionContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.SelectionContext,i)
+                return self.getTypedRuleContext(XplorMRParser.SelectionContext,i)
 
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_orie_assign
+            return XplorMRParser.RULE_orie_assign
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterOrie_assign" ):
@@ -8169,12 +8169,12 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def orie_assign(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Orie_assignContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Orie_assignContext(self, self._ctx, self.state)
         self.enterRule(localctx, 126, self.RULE_orie_assign)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 1294
-            self.match(XPLOR_NIH_MR_Parser.Assign)
+            self.match(XplorMRParser.Assign)
             self.state = 1295
             self.selection()
             self.state = 1296
@@ -8200,64 +8200,64 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
         def csa_assign(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.Csa_assignContext)
+                return self.getTypedRuleContexts(XplorMRParser.Csa_assignContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Csa_assignContext,i)
+                return self.getTypedRuleContext(XplorMRParser.Csa_assignContext,i)
 
 
         def Classification(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Classification, 0)
+            return self.getToken(XplorMRParser.Classification, 0)
 
         def Class_name(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Class_name, 0)
+            return self.getToken(XplorMRParser.Class_name, 0)
 
         def Scale(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Scale, 0)
+            return self.getToken(XplorMRParser.Scale, 0)
 
         def Real(self, i:int=None):
             if i is None:
-                return self.getTokens(XPLOR_NIH_MR_Parser.Real)
+                return self.getTokens(XplorMRParser.Real)
             else:
-                return self.getToken(XPLOR_NIH_MR_Parser.Real, i)
+                return self.getToken(XplorMRParser.Real, i)
 
         def Type(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Type, 0)
+            return self.getToken(XplorMRParser.Type, 0)
 
         def Csa_types(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Csa_types, 0)
+            return self.getToken(XplorMRParser.Csa_types, 0)
 
         def Coefficients(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Coefficients, 0)
+            return self.getToken(XplorMRParser.Coefficients, 0)
 
         def Sigma(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Sigma, 0)
+            return self.getToken(XplorMRParser.Sigma, 0)
 
         def ForceConstant(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.ForceConstant, 0)
+            return self.getToken(XplorMRParser.ForceConstant, 0)
 
         def Nrestraints(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Nrestraints, 0)
+            return self.getToken(XplorMRParser.Nrestraints, 0)
 
         def Integer(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Integer, 0)
+            return self.getToken(XplorMRParser.Integer, 0)
 
         def Potential(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Potential, 0)
+            return self.getToken(XplorMRParser.Potential, 0)
 
         def Rdc_potential(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Rdc_potential, 0)
+            return self.getToken(XplorMRParser.Rdc_potential, 0)
 
         def Print(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Print, 0)
+            return self.getToken(XplorMRParser.Print, 0)
 
         def Threshold(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Threshold, 0)
+            return self.getToken(XplorMRParser.Threshold, 0)
 
         def Reset(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Reset, 0)
+            return self.getToken(XplorMRParser.Reset, 0)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_csa_statement
+            return XplorMRParser.RULE_csa_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterCsa_statement" ):
@@ -8272,19 +8272,19 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def csa_statement(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Csa_statementContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Csa_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 128, self.RULE_csa_statement)
         self._la = 0 # Token type
         try:
             self.state = 1330
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [XPLOR_NIH_MR_Parser.Assign, XPLOR_NIH_MR_Parser.R_brace]:
+            if token in [XplorMRParser.Assign, XplorMRParser.R_brace]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 1303
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==XPLOR_NIH_MR_Parser.Assign:
+                while _la==XplorMRParser.Assign:
                     self.state = 1300
                     self.csa_assign()
                     self.state = 1305
@@ -8292,83 +8292,83 @@ class XPLOR_NIH_MR_Parser ( Parser ):
                     _la = self._input.LA(1)
 
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Classification]:
+            elif token in [XplorMRParser.Classification]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 1306
-                self.match(XPLOR_NIH_MR_Parser.Classification)
+                self.match(XplorMRParser.Classification)
                 self.state = 1307
-                self.match(XPLOR_NIH_MR_Parser.Class_name)
+                self.match(XplorMRParser.Class_name)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Scale]:
+            elif token in [XplorMRParser.Scale]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 1308
-                self.match(XPLOR_NIH_MR_Parser.Scale)
+                self.match(XplorMRParser.Scale)
                 self.state = 1309
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Type]:
+            elif token in [XplorMRParser.Type]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 1310
-                self.match(XPLOR_NIH_MR_Parser.Type)
+                self.match(XplorMRParser.Type)
                 self.state = 1311
-                self.match(XPLOR_NIH_MR_Parser.Csa_types)
+                self.match(XplorMRParser.Csa_types)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Coefficients]:
+            elif token in [XplorMRParser.Coefficients]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 1312
-                self.match(XPLOR_NIH_MR_Parser.Coefficients)
+                self.match(XplorMRParser.Coefficients)
                 self.state = 1313
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 1314
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 1315
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Sigma]:
+            elif token in [XplorMRParser.Sigma]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 1316
-                self.match(XPLOR_NIH_MR_Parser.Sigma)
+                self.match(XplorMRParser.Sigma)
                 self.state = 1317
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 1318
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 1319
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.ForceConstant]:
+            elif token in [XplorMRParser.ForceConstant]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 1320
-                self.match(XPLOR_NIH_MR_Parser.ForceConstant)
+                self.match(XplorMRParser.ForceConstant)
                 self.state = 1321
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Nrestraints]:
+            elif token in [XplorMRParser.Nrestraints]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 1322
-                self.match(XPLOR_NIH_MR_Parser.Nrestraints)
+                self.match(XplorMRParser.Nrestraints)
                 self.state = 1323
-                self.match(XPLOR_NIH_MR_Parser.Integer)
+                self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Potential]:
+            elif token in [XplorMRParser.Potential]:
                 self.enterOuterAlt(localctx, 9)
                 self.state = 1324
-                self.match(XPLOR_NIH_MR_Parser.Potential)
+                self.match(XplorMRParser.Potential)
                 self.state = 1325
-                self.match(XPLOR_NIH_MR_Parser.Rdc_potential)
+                self.match(XplorMRParser.Rdc_potential)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Print]:
+            elif token in [XplorMRParser.Print]:
                 self.enterOuterAlt(localctx, 10)
                 self.state = 1326
-                self.match(XPLOR_NIH_MR_Parser.Print)
+                self.match(XplorMRParser.Print)
                 self.state = 1327
-                self.match(XPLOR_NIH_MR_Parser.Threshold)
+                self.match(XplorMRParser.Threshold)
                 self.state = 1328
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Reset]:
+            elif token in [XplorMRParser.Reset]:
                 self.enterOuterAlt(localctx, 11)
                 self.state = 1329
-                self.match(XPLOR_NIH_MR_Parser.Reset)
+                self.match(XplorMRParser.Reset)
                 pass
             else:
                 raise NoViableAltException(self)
@@ -8389,23 +8389,23 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.parser = parser
 
         def Assign(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Assign, 0)
+            return self.getToken(XplorMRParser.Assign, 0)
 
         def selection(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.SelectionContext)
+                return self.getTypedRuleContexts(XplorMRParser.SelectionContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.SelectionContext,i)
+                return self.getTypedRuleContext(XplorMRParser.SelectionContext,i)
 
 
         def Real(self, i:int=None):
             if i is None:
-                return self.getTokens(XPLOR_NIH_MR_Parser.Real)
+                return self.getTokens(XplorMRParser.Real)
             else:
-                return self.getToken(XPLOR_NIH_MR_Parser.Real, i)
+                return self.getToken(XplorMRParser.Real, i)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_csa_assign
+            return XplorMRParser.RULE_csa_assign
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterCsa_assign" ):
@@ -8420,12 +8420,12 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def csa_assign(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Csa_assignContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Csa_assignContext(self, self._ctx, self.state)
         self.enterRule(localctx, 130, self.RULE_csa_assign)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 1332
-            self.match(XPLOR_NIH_MR_Parser.Assign)
+            self.match(XplorMRParser.Assign)
             self.state = 1333
             self.selection()
             self.state = 1334
@@ -8441,11 +8441,11 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.state = 1339
             self.selection()
             self.state = 1340
-            self.match(XPLOR_NIH_MR_Parser.Real)
+            self.match(XplorMRParser.Real)
             self.state = 1341
-            self.match(XPLOR_NIH_MR_Parser.Real)
+            self.match(XplorMRParser.Real)
             self.state = 1342
-            self.match(XPLOR_NIH_MR_Parser.Real)
+            self.match(XplorMRParser.Real)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -8463,58 +8463,58 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
         def csa_assign(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.Csa_assignContext)
+                return self.getTypedRuleContexts(XplorMRParser.Csa_assignContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Csa_assignContext,i)
+                return self.getTypedRuleContext(XplorMRParser.Csa_assignContext,i)
 
 
         def Classification(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Classification, 0)
+            return self.getToken(XplorMRParser.Classification, 0)
 
         def Class_name(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Class_name, 0)
+            return self.getToken(XplorMRParser.Class_name, 0)
 
         def Scale(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Scale, 0)
+            return self.getToken(XplorMRParser.Scale, 0)
 
         def Real(self, i:int=None):
             if i is None:
-                return self.getTokens(XPLOR_NIH_MR_Parser.Real)
+                return self.getTokens(XplorMRParser.Real)
             else:
-                return self.getToken(XPLOR_NIH_MR_Parser.Real, i)
+                return self.getToken(XplorMRParser.Real, i)
 
         def Coefficients(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Coefficients, 0)
+            return self.getToken(XplorMRParser.Coefficients, 0)
 
         def Sigma(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Sigma, 0)
+            return self.getToken(XplorMRParser.Sigma, 0)
 
         def ForceConstant(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.ForceConstant, 0)
+            return self.getToken(XplorMRParser.ForceConstant, 0)
 
         def Nrestraints(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Nrestraints, 0)
+            return self.getToken(XplorMRParser.Nrestraints, 0)
 
         def Integer(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Integer, 0)
+            return self.getToken(XplorMRParser.Integer, 0)
 
         def Potential(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Potential, 0)
+            return self.getToken(XplorMRParser.Potential, 0)
 
         def Rdc_potential(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Rdc_potential, 0)
+            return self.getToken(XplorMRParser.Rdc_potential, 0)
 
         def Print(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Print, 0)
+            return self.getToken(XplorMRParser.Print, 0)
 
         def Threshold(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Threshold, 0)
+            return self.getToken(XplorMRParser.Threshold, 0)
 
         def Reset(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Reset, 0)
+            return self.getToken(XplorMRParser.Reset, 0)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_pcsa_statement
+            return XplorMRParser.RULE_pcsa_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterPcsa_statement" ):
@@ -8529,19 +8529,19 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def pcsa_statement(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Pcsa_statementContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Pcsa_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 132, self.RULE_pcsa_statement)
         self._la = 0 # Token type
         try:
             self.state = 1373
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [XPLOR_NIH_MR_Parser.Assign, XPLOR_NIH_MR_Parser.R_brace]:
+            if token in [XplorMRParser.Assign, XplorMRParser.R_brace]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 1347
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==XPLOR_NIH_MR_Parser.Assign:
+                while _la==XplorMRParser.Assign:
                     self.state = 1344
                     self.csa_assign()
                     self.state = 1349
@@ -8549,78 +8549,78 @@ class XPLOR_NIH_MR_Parser ( Parser ):
                     _la = self._input.LA(1)
 
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Classification]:
+            elif token in [XplorMRParser.Classification]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 1350
-                self.match(XPLOR_NIH_MR_Parser.Classification)
+                self.match(XplorMRParser.Classification)
                 self.state = 1351
-                self.match(XPLOR_NIH_MR_Parser.Class_name)
+                self.match(XplorMRParser.Class_name)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Scale]:
+            elif token in [XplorMRParser.Scale]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 1352
-                self.match(XPLOR_NIH_MR_Parser.Scale)
+                self.match(XplorMRParser.Scale)
                 self.state = 1353
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Coefficients]:
+            elif token in [XplorMRParser.Coefficients]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 1354
-                self.match(XPLOR_NIH_MR_Parser.Coefficients)
+                self.match(XplorMRParser.Coefficients)
                 self.state = 1355
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 1356
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 1357
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Sigma]:
+            elif token in [XplorMRParser.Sigma]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 1358
-                self.match(XPLOR_NIH_MR_Parser.Sigma)
+                self.match(XplorMRParser.Sigma)
                 self.state = 1359
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 1360
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 1361
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 1362
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.ForceConstant]:
+            elif token in [XplorMRParser.ForceConstant]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 1363
-                self.match(XPLOR_NIH_MR_Parser.ForceConstant)
+                self.match(XplorMRParser.ForceConstant)
                 self.state = 1364
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Nrestraints]:
+            elif token in [XplorMRParser.Nrestraints]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 1365
-                self.match(XPLOR_NIH_MR_Parser.Nrestraints)
+                self.match(XplorMRParser.Nrestraints)
                 self.state = 1366
-                self.match(XPLOR_NIH_MR_Parser.Integer)
+                self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Potential]:
+            elif token in [XplorMRParser.Potential]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 1367
-                self.match(XPLOR_NIH_MR_Parser.Potential)
+                self.match(XplorMRParser.Potential)
                 self.state = 1368
-                self.match(XPLOR_NIH_MR_Parser.Rdc_potential)
+                self.match(XplorMRParser.Rdc_potential)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Print]:
+            elif token in [XplorMRParser.Print]:
                 self.enterOuterAlt(localctx, 9)
                 self.state = 1369
-                self.match(XPLOR_NIH_MR_Parser.Print)
+                self.match(XplorMRParser.Print)
                 self.state = 1370
-                self.match(XPLOR_NIH_MR_Parser.Threshold)
+                self.match(XplorMRParser.Threshold)
                 self.state = 1371
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Reset]:
+            elif token in [XplorMRParser.Reset]:
                 self.enterOuterAlt(localctx, 10)
                 self.state = 1372
-                self.match(XPLOR_NIH_MR_Parser.Reset)
+                self.match(XplorMRParser.Reset)
                 pass
             else:
                 raise NoViableAltException(self)
@@ -8642,52 +8642,52 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
         def one_bond_assign(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.One_bond_assignContext)
+                return self.getTypedRuleContexts(XplorMRParser.One_bond_assignContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.One_bond_assignContext,i)
+                return self.getTypedRuleContext(XplorMRParser.One_bond_assignContext,i)
 
 
         def Classification(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Classification, 0)
+            return self.getToken(XplorMRParser.Classification, 0)
 
         def Class_name(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Class_name, 0)
+            return self.getToken(XplorMRParser.Class_name, 0)
 
         def Coefficients(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Coefficients, 0)
+            return self.getToken(XplorMRParser.Coefficients, 0)
 
         def Real(self, i:int=None):
             if i is None:
-                return self.getTokens(XPLOR_NIH_MR_Parser.Real)
+                return self.getTokens(XplorMRParser.Real)
             else:
-                return self.getToken(XPLOR_NIH_MR_Parser.Real, i)
+                return self.getToken(XplorMRParser.Real, i)
 
         def ForceConstant(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.ForceConstant, 0)
+            return self.getToken(XplorMRParser.ForceConstant, 0)
 
         def Nrestraints(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Nrestraints, 0)
+            return self.getToken(XplorMRParser.Nrestraints, 0)
 
         def Integer(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Integer, 0)
+            return self.getToken(XplorMRParser.Integer, 0)
 
         def Potential(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Potential, 0)
+            return self.getToken(XplorMRParser.Potential, 0)
 
         def Rdc_potential(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Rdc_potential, 0)
+            return self.getToken(XplorMRParser.Rdc_potential, 0)
 
         def Print(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Print, 0)
+            return self.getToken(XplorMRParser.Print, 0)
 
         def Threshold(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Threshold, 0)
+            return self.getToken(XplorMRParser.Threshold, 0)
 
         def Reset(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Reset, 0)
+            return self.getToken(XplorMRParser.Reset, 0)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_one_bond_coupling_statement
+            return XplorMRParser.RULE_one_bond_coupling_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterOne_bond_coupling_statement" ):
@@ -8702,19 +8702,19 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def one_bond_coupling_statement(self):
 
-        localctx = XPLOR_NIH_MR_Parser.One_bond_coupling_statementContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.One_bond_coupling_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 134, self.RULE_one_bond_coupling_statement)
         self._la = 0 # Token type
         try:
             self.state = 1401
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [XPLOR_NIH_MR_Parser.Assign, XPLOR_NIH_MR_Parser.R_brace]:
+            if token in [XplorMRParser.Assign, XplorMRParser.R_brace]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 1378
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==XPLOR_NIH_MR_Parser.Assign:
+                while _la==XplorMRParser.Assign:
                     self.state = 1375
                     self.one_bond_assign()
                     self.state = 1380
@@ -8722,66 +8722,66 @@ class XPLOR_NIH_MR_Parser ( Parser ):
                     _la = self._input.LA(1)
 
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Classification]:
+            elif token in [XplorMRParser.Classification]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 1381
-                self.match(XPLOR_NIH_MR_Parser.Classification)
+                self.match(XplorMRParser.Classification)
                 self.state = 1382
-                self.match(XPLOR_NIH_MR_Parser.Class_name)
+                self.match(XplorMRParser.Class_name)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Coefficients]:
+            elif token in [XplorMRParser.Coefficients]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 1383
-                self.match(XPLOR_NIH_MR_Parser.Coefficients)
+                self.match(XplorMRParser.Coefficients)
                 self.state = 1384
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 1385
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 1386
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 1387
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 1388
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 1389
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 1390
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.ForceConstant]:
+            elif token in [XplorMRParser.ForceConstant]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 1391
-                self.match(XPLOR_NIH_MR_Parser.ForceConstant)
+                self.match(XplorMRParser.ForceConstant)
                 self.state = 1392
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Nrestraints]:
+            elif token in [XplorMRParser.Nrestraints]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 1393
-                self.match(XPLOR_NIH_MR_Parser.Nrestraints)
+                self.match(XplorMRParser.Nrestraints)
                 self.state = 1394
-                self.match(XPLOR_NIH_MR_Parser.Integer)
+                self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Potential]:
+            elif token in [XplorMRParser.Potential]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 1395
-                self.match(XPLOR_NIH_MR_Parser.Potential)
+                self.match(XplorMRParser.Potential)
                 self.state = 1396
-                self.match(XPLOR_NIH_MR_Parser.Rdc_potential)
+                self.match(XplorMRParser.Rdc_potential)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Print]:
+            elif token in [XplorMRParser.Print]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 1397
-                self.match(XPLOR_NIH_MR_Parser.Print)
+                self.match(XplorMRParser.Print)
                 self.state = 1398
-                self.match(XPLOR_NIH_MR_Parser.Threshold)
+                self.match(XplorMRParser.Threshold)
                 self.state = 1399
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Reset]:
+            elif token in [XplorMRParser.Reset]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 1400
-                self.match(XPLOR_NIH_MR_Parser.Reset)
+                self.match(XplorMRParser.Reset)
                 pass
             else:
                 raise NoViableAltException(self)
@@ -8802,23 +8802,23 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.parser = parser
 
         def Assign(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Assign, 0)
+            return self.getToken(XplorMRParser.Assign, 0)
 
         def selection(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.SelectionContext)
+                return self.getTypedRuleContexts(XplorMRParser.SelectionContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.SelectionContext,i)
+                return self.getTypedRuleContext(XplorMRParser.SelectionContext,i)
 
 
         def Real(self, i:int=None):
             if i is None:
-                return self.getTokens(XPLOR_NIH_MR_Parser.Real)
+                return self.getTokens(XplorMRParser.Real)
             else:
-                return self.getToken(XPLOR_NIH_MR_Parser.Real, i)
+                return self.getToken(XplorMRParser.Real, i)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_one_bond_assign
+            return XplorMRParser.RULE_one_bond_assign
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterOne_bond_assign" ):
@@ -8833,12 +8833,12 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def one_bond_assign(self):
 
-        localctx = XPLOR_NIH_MR_Parser.One_bond_assignContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.One_bond_assignContext(self, self._ctx, self.state)
         self.enterRule(localctx, 136, self.RULE_one_bond_assign)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 1403
-            self.match(XPLOR_NIH_MR_Parser.Assign)
+            self.match(XplorMRParser.Assign)
             self.state = 1404
             self.selection()
             self.state = 1405
@@ -8856,9 +8856,9 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.state = 1411
             self.selection()
             self.state = 1412
-            self.match(XPLOR_NIH_MR_Parser.Real)
+            self.match(XplorMRParser.Real)
             self.state = 1413
-            self.match(XPLOR_NIH_MR_Parser.Real)
+            self.match(XplorMRParser.Real)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -8876,73 +8876,73 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
         def angle_db_assign(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.Angle_db_assignContext)
+                return self.getTypedRuleContexts(XplorMRParser.Angle_db_assignContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Angle_db_assignContext,i)
+                return self.getTypedRuleContext(XplorMRParser.Angle_db_assignContext,i)
 
 
         def Classification(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Classification, 0)
+            return self.getToken(XplorMRParser.Classification, 0)
 
         def Class_name(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Class_name, 0)
+            return self.getToken(XplorMRParser.Class_name, 0)
 
         def DerivFlag(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.DerivFlag, 0)
+            return self.getToken(XplorMRParser.DerivFlag, 0)
 
         def On_or_Off(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.On_or_Off, 0)
+            return self.getToken(XplorMRParser.On_or_Off, 0)
 
         def Expectation(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Expectation, 0)
+            return self.getToken(XplorMRParser.Expectation, 0)
 
         def Integer(self, i:int=None):
             if i is None:
-                return self.getTokens(XPLOR_NIH_MR_Parser.Integer)
+                return self.getTokens(XplorMRParser.Integer)
             else:
-                return self.getToken(XPLOR_NIH_MR_Parser.Integer, i)
+                return self.getToken(XplorMRParser.Integer, i)
 
         def Real(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Real, 0)
+            return self.getToken(XplorMRParser.Real, 0)
 
         def Error(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Error, 0)
+            return self.getToken(XplorMRParser.Error, 0)
 
         def ForceConstant(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.ForceConstant, 0)
+            return self.getToken(XplorMRParser.ForceConstant, 0)
 
         def Nrestraints(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Nrestraints, 0)
+            return self.getToken(XplorMRParser.Nrestraints, 0)
 
         def Potential(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Potential, 0)
+            return self.getToken(XplorMRParser.Potential, 0)
 
         def Rdc_potential(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Rdc_potential, 0)
+            return self.getToken(XplorMRParser.Rdc_potential, 0)
 
         def Print(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Print, 0)
+            return self.getToken(XplorMRParser.Print, 0)
 
         def Threshold(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Threshold, 0)
+            return self.getToken(XplorMRParser.Threshold, 0)
 
         def All(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.All, 0)
+            return self.getToken(XplorMRParser.All, 0)
 
         def Reset(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Reset, 0)
+            return self.getToken(XplorMRParser.Reset, 0)
 
         def Size(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Size, 0)
+            return self.getToken(XplorMRParser.Size, 0)
 
         def Angle_dihedral(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Angle_dihedral, 0)
+            return self.getToken(XplorMRParser.Angle_dihedral, 0)
 
         def Zero(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Zero, 0)
+            return self.getToken(XplorMRParser.Zero, 0)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_angle_db_statement
+            return XplorMRParser.RULE_angle_db_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterAngle_db_statement" ):
@@ -8957,19 +8957,19 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def angle_db_statement(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Angle_db_statementContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Angle_db_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 138, self.RULE_angle_db_statement)
         self._la = 0 # Token type
         try:
             self.state = 1451
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [XPLOR_NIH_MR_Parser.Assign, XPLOR_NIH_MR_Parser.R_brace]:
+            if token in [XplorMRParser.Assign, XplorMRParser.R_brace]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 1418
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==XPLOR_NIH_MR_Parser.Assign:
+                while _la==XplorMRParser.Assign:
                     self.state = 1415
                     self.angle_db_assign()
                     self.state = 1420
@@ -8977,104 +8977,104 @@ class XPLOR_NIH_MR_Parser ( Parser ):
                     _la = self._input.LA(1)
 
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Classification]:
+            elif token in [XplorMRParser.Classification]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 1421
-                self.match(XPLOR_NIH_MR_Parser.Classification)
+                self.match(XplorMRParser.Classification)
                 self.state = 1422
-                self.match(XPLOR_NIH_MR_Parser.Class_name)
+                self.match(XplorMRParser.Class_name)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.DerivFlag]:
+            elif token in [XplorMRParser.DerivFlag]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 1423
-                self.match(XPLOR_NIH_MR_Parser.DerivFlag)
+                self.match(XplorMRParser.DerivFlag)
                 self.state = 1424
-                self.match(XPLOR_NIH_MR_Parser.On_or_Off)
+                self.match(XplorMRParser.On_or_Off)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Expectation]:
+            elif token in [XplorMRParser.Expectation]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 1425
-                self.match(XPLOR_NIH_MR_Parser.Expectation)
+                self.match(XplorMRParser.Expectation)
                 self.state = 1426
-                self.match(XPLOR_NIH_MR_Parser.Integer)
+                self.match(XplorMRParser.Integer)
                 self.state = 1427
-                self.match(XPLOR_NIH_MR_Parser.Integer)
+                self.match(XplorMRParser.Integer)
                 self.state = 1428
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Error]:
+            elif token in [XplorMRParser.Error]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 1429
-                self.match(XPLOR_NIH_MR_Parser.Error)
+                self.match(XplorMRParser.Error)
                 self.state = 1430
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.ForceConstant]:
+            elif token in [XplorMRParser.ForceConstant]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 1431
-                self.match(XPLOR_NIH_MR_Parser.ForceConstant)
+                self.match(XplorMRParser.ForceConstant)
                 self.state = 1432
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Nrestraints]:
+            elif token in [XplorMRParser.Nrestraints]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 1433
-                self.match(XPLOR_NIH_MR_Parser.Nrestraints)
+                self.match(XplorMRParser.Nrestraints)
                 self.state = 1434
-                self.match(XPLOR_NIH_MR_Parser.Integer)
+                self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Potential]:
+            elif token in [XplorMRParser.Potential]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 1435
-                self.match(XPLOR_NIH_MR_Parser.Potential)
+                self.match(XplorMRParser.Potential)
                 self.state = 1436
-                self.match(XPLOR_NIH_MR_Parser.Rdc_potential)
+                self.match(XplorMRParser.Rdc_potential)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Print]:
+            elif token in [XplorMRParser.Print]:
                 self.enterOuterAlt(localctx, 9)
                 self.state = 1437
-                self.match(XPLOR_NIH_MR_Parser.Print)
+                self.match(XplorMRParser.Print)
                 self.state = 1438
-                self.match(XPLOR_NIH_MR_Parser.Threshold)
+                self.match(XplorMRParser.Threshold)
                 self.state = 1439
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 1443
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [XPLOR_NIH_MR_Parser.All]:
+                if token in [XplorMRParser.All]:
                     self.state = 1440
-                    self.match(XPLOR_NIH_MR_Parser.All)
+                    self.match(XplorMRParser.All)
                     pass
-                elif token in [XPLOR_NIH_MR_Parser.Classification]:
+                elif token in [XplorMRParser.Classification]:
                     self.state = 1441
-                    self.match(XPLOR_NIH_MR_Parser.Classification)
+                    self.match(XplorMRParser.Classification)
                     self.state = 1442
-                    self.match(XPLOR_NIH_MR_Parser.Class_name)
+                    self.match(XplorMRParser.Class_name)
                     pass
                 else:
                     raise NoViableAltException(self)
 
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Reset]:
+            elif token in [XplorMRParser.Reset]:
                 self.enterOuterAlt(localctx, 10)
                 self.state = 1445
-                self.match(XPLOR_NIH_MR_Parser.Reset)
+                self.match(XplorMRParser.Reset)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Size]:
+            elif token in [XplorMRParser.Size]:
                 self.enterOuterAlt(localctx, 11)
                 self.state = 1446
-                self.match(XPLOR_NIH_MR_Parser.Size)
+                self.match(XplorMRParser.Size)
                 self.state = 1447
-                self.match(XPLOR_NIH_MR_Parser.Angle_dihedral)
+                self.match(XplorMRParser.Angle_dihedral)
                 self.state = 1448
-                self.match(XPLOR_NIH_MR_Parser.Integer)
+                self.match(XplorMRParser.Integer)
                 self.state = 1449
-                self.match(XPLOR_NIH_MR_Parser.Integer)
+                self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Zero]:
+            elif token in [XplorMRParser.Zero]:
                 self.enterOuterAlt(localctx, 12)
                 self.state = 1450
-                self.match(XPLOR_NIH_MR_Parser.Zero)
+                self.match(XplorMRParser.Zero)
                 pass
             else:
                 raise NoViableAltException(self)
@@ -9095,17 +9095,17 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.parser = parser
 
         def Assign(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Assign, 0)
+            return self.getToken(XplorMRParser.Assign, 0)
 
         def selection(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.SelectionContext)
+                return self.getTypedRuleContexts(XplorMRParser.SelectionContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.SelectionContext,i)
+                return self.getTypedRuleContext(XplorMRParser.SelectionContext,i)
 
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_angle_db_assign
+            return XplorMRParser.RULE_angle_db_assign
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterAngle_db_assign" ):
@@ -9120,13 +9120,13 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def angle_db_assign(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Angle_db_assignContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Angle_db_assignContext(self, self._ctx, self.state)
         self.enterRule(localctx, 140, self.RULE_angle_db_assign)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 1453
-            self.match(XPLOR_NIH_MR_Parser.Assign)
+            self.match(XplorMRParser.Assign)
             self.state = 1454
             self.selection()
             self.state = 1455
@@ -9152,7 +9152,7 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.state = 1466
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==XPLOR_NIH_MR_Parser.L_paren:
+            if _la==XplorMRParser.L_paren:
                 self.state = 1465
                 self.selection()
 
@@ -9174,67 +9174,67 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
         def pre_assign(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.Pre_assignContext)
+                return self.getTypedRuleContexts(XplorMRParser.Pre_assignContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Pre_assignContext,i)
+                return self.getTypedRuleContext(XplorMRParser.Pre_assignContext,i)
 
 
         def Classification(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Classification, 0)
+            return self.getToken(XplorMRParser.Classification, 0)
 
         def Equ_op(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Equ_op, 0)
+            return self.getToken(XplorMRParser.Equ_op, 0)
 
         def Class_name(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Class_name, 0)
+            return self.getToken(XplorMRParser.Class_name, 0)
 
         def ForceConstant(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.ForceConstant, 0)
+            return self.getToken(XplorMRParser.ForceConstant, 0)
 
         def Real(self, i:int=None):
             if i is None:
-                return self.getTokens(XPLOR_NIH_MR_Parser.Real)
+                return self.getTokens(XplorMRParser.Real)
             else:
-                return self.getToken(XPLOR_NIH_MR_Parser.Real, i)
+                return self.getToken(XplorMRParser.Real, i)
 
         def Nrestraints(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Nrestraints, 0)
+            return self.getToken(XplorMRParser.Nrestraints, 0)
 
         def Integer(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Integer, 0)
+            return self.getToken(XplorMRParser.Integer, 0)
 
         def Potential(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Potential, 0)
+            return self.getToken(XplorMRParser.Potential, 0)
 
         def Rdc_potential(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Rdc_potential, 0)
+            return self.getToken(XplorMRParser.Rdc_potential, 0)
 
         def Kconst(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Kconst, 0)
+            return self.getToken(XplorMRParser.Kconst, 0)
 
         def Omega(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Omega, 0)
+            return self.getToken(XplorMRParser.Omega, 0)
 
         def Tauc(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Tauc, 0)
+            return self.getToken(XplorMRParser.Tauc, 0)
 
         def Print(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Print, 0)
+            return self.getToken(XplorMRParser.Print, 0)
 
         def Threshold(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Threshold, 0)
+            return self.getToken(XplorMRParser.Threshold, 0)
 
         def All(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.All, 0)
+            return self.getToken(XplorMRParser.All, 0)
 
         def Reset(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Reset, 0)
+            return self.getToken(XplorMRParser.Reset, 0)
 
         def Debug(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Debug, 0)
+            return self.getToken(XplorMRParser.Debug, 0)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_pre_statement
+            return XplorMRParser.RULE_pre_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterPre_statement" ):
@@ -9249,19 +9249,19 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def pre_statement(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Pre_statementContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Pre_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 142, self.RULE_pre_statement)
         self._la = 0 # Token type
         try:
             self.state = 1511
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [XPLOR_NIH_MR_Parser.Assign, XPLOR_NIH_MR_Parser.R_brace]:
+            if token in [XplorMRParser.Assign, XplorMRParser.R_brace]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 1471
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==XPLOR_NIH_MR_Parser.Assign:
+                while _la==XplorMRParser.Assign:
                     self.state = 1468
                     self.pre_assign()
                     self.state = 1473
@@ -9269,115 +9269,115 @@ class XPLOR_NIH_MR_Parser ( Parser ):
                     _la = self._input.LA(1)
 
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Classification]:
+            elif token in [XplorMRParser.Classification]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 1474
-                self.match(XPLOR_NIH_MR_Parser.Classification)
+                self.match(XplorMRParser.Classification)
                 self.state = 1475
-                self.match(XPLOR_NIH_MR_Parser.Equ_op)
+                self.match(XplorMRParser.Equ_op)
                 self.state = 1476
-                self.match(XPLOR_NIH_MR_Parser.Class_name)
+                self.match(XplorMRParser.Class_name)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.ForceConstant]:
+            elif token in [XplorMRParser.ForceConstant]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 1477
-                self.match(XPLOR_NIH_MR_Parser.ForceConstant)
+                self.match(XplorMRParser.ForceConstant)
                 self.state = 1478
-                self.match(XPLOR_NIH_MR_Parser.Equ_op)
+                self.match(XplorMRParser.Equ_op)
                 self.state = 1479
-                self.match(XPLOR_NIH_MR_Parser.Class_name)
+                self.match(XplorMRParser.Class_name)
                 self.state = 1480
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Nrestraints]:
+            elif token in [XplorMRParser.Nrestraints]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 1481
-                self.match(XPLOR_NIH_MR_Parser.Nrestraints)
+                self.match(XplorMRParser.Nrestraints)
                 self.state = 1482
-                self.match(XPLOR_NIH_MR_Parser.Equ_op)
+                self.match(XplorMRParser.Equ_op)
                 self.state = 1483
-                self.match(XPLOR_NIH_MR_Parser.Integer)
+                self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Potential]:
+            elif token in [XplorMRParser.Potential]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 1484
-                self.match(XPLOR_NIH_MR_Parser.Potential)
+                self.match(XplorMRParser.Potential)
                 self.state = 1485
-                self.match(XPLOR_NIH_MR_Parser.Equ_op)
+                self.match(XplorMRParser.Equ_op)
                 self.state = 1486
-                self.match(XPLOR_NIH_MR_Parser.Class_name)
+                self.match(XplorMRParser.Class_name)
                 self.state = 1487
-                self.match(XPLOR_NIH_MR_Parser.Rdc_potential)
+                self.match(XplorMRParser.Rdc_potential)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Kconst]:
+            elif token in [XplorMRParser.Kconst]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 1488
-                self.match(XPLOR_NIH_MR_Parser.Kconst)
+                self.match(XplorMRParser.Kconst)
                 self.state = 1489
-                self.match(XPLOR_NIH_MR_Parser.Equ_op)
+                self.match(XplorMRParser.Equ_op)
                 self.state = 1490
-                self.match(XPLOR_NIH_MR_Parser.Class_name)
+                self.match(XplorMRParser.Class_name)
                 self.state = 1491
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Omega]:
+            elif token in [XplorMRParser.Omega]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 1492
-                self.match(XPLOR_NIH_MR_Parser.Omega)
+                self.match(XplorMRParser.Omega)
                 self.state = 1493
-                self.match(XPLOR_NIH_MR_Parser.Equ_op)
+                self.match(XplorMRParser.Equ_op)
                 self.state = 1494
-                self.match(XPLOR_NIH_MR_Parser.Class_name)
+                self.match(XplorMRParser.Class_name)
                 self.state = 1495
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Tauc]:
+            elif token in [XplorMRParser.Tauc]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 1496
-                self.match(XPLOR_NIH_MR_Parser.Tauc)
+                self.match(XplorMRParser.Tauc)
                 self.state = 1497
-                self.match(XPLOR_NIH_MR_Parser.Equ_op)
+                self.match(XplorMRParser.Equ_op)
                 self.state = 1498
-                self.match(XPLOR_NIH_MR_Parser.Class_name)
+                self.match(XplorMRParser.Class_name)
                 self.state = 1499
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 1500
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Print]:
+            elif token in [XplorMRParser.Print]:
                 self.enterOuterAlt(localctx, 9)
                 self.state = 1501
-                self.match(XPLOR_NIH_MR_Parser.Print)
+                self.match(XplorMRParser.Print)
                 self.state = 1502
-                self.match(XPLOR_NIH_MR_Parser.Threshold)
+                self.match(XplorMRParser.Threshold)
                 self.state = 1503
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 1507
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [XPLOR_NIH_MR_Parser.All]:
+                if token in [XplorMRParser.All]:
                     self.state = 1504
-                    self.match(XPLOR_NIH_MR_Parser.All)
+                    self.match(XplorMRParser.All)
                     pass
-                elif token in [XPLOR_NIH_MR_Parser.Classification]:
+                elif token in [XplorMRParser.Classification]:
                     self.state = 1505
-                    self.match(XPLOR_NIH_MR_Parser.Classification)
+                    self.match(XplorMRParser.Classification)
                     self.state = 1506
-                    self.match(XPLOR_NIH_MR_Parser.Class_name)
+                    self.match(XplorMRParser.Class_name)
                     pass
                 else:
                     raise NoViableAltException(self)
 
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Reset]:
+            elif token in [XplorMRParser.Reset]:
                 self.enterOuterAlt(localctx, 10)
                 self.state = 1509
-                self.match(XPLOR_NIH_MR_Parser.Reset)
+                self.match(XplorMRParser.Reset)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Debug]:
+            elif token in [XplorMRParser.Debug]:
                 self.enterOuterAlt(localctx, 11)
                 self.state = 1510
-                self.match(XPLOR_NIH_MR_Parser.Debug)
+                self.match(XplorMRParser.Debug)
                 pass
             else:
                 raise NoViableAltException(self)
@@ -9398,23 +9398,23 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.parser = parser
 
         def Assign(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Assign, 0)
+            return self.getToken(XplorMRParser.Assign, 0)
 
         def selection(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.SelectionContext)
+                return self.getTypedRuleContexts(XplorMRParser.SelectionContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.SelectionContext,i)
+                return self.getTypedRuleContext(XplorMRParser.SelectionContext,i)
 
 
         def Real(self, i:int=None):
             if i is None:
-                return self.getTokens(XPLOR_NIH_MR_Parser.Real)
+                return self.getTokens(XplorMRParser.Real)
             else:
-                return self.getToken(XPLOR_NIH_MR_Parser.Real, i)
+                return self.getToken(XplorMRParser.Real, i)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_pre_assign
+            return XplorMRParser.RULE_pre_assign
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterPre_assign" ):
@@ -9429,20 +9429,20 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def pre_assign(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Pre_assignContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Pre_assignContext(self, self._ctx, self.state)
         self.enterRule(localctx, 144, self.RULE_pre_assign)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 1513
-            self.match(XPLOR_NIH_MR_Parser.Assign)
+            self.match(XplorMRParser.Assign)
             self.state = 1514
             self.selection()
             self.state = 1515
             self.selection()
             self.state = 1516
-            self.match(XPLOR_NIH_MR_Parser.Real)
+            self.match(XplorMRParser.Real)
             self.state = 1517
-            self.match(XPLOR_NIH_MR_Parser.Real)
+            self.match(XplorMRParser.Real)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -9460,82 +9460,82 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
         def pcs_assign(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.Pcs_assignContext)
+                return self.getTypedRuleContexts(XplorMRParser.Pcs_assignContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Pcs_assignContext,i)
+                return self.getTypedRuleContext(XplorMRParser.Pcs_assignContext,i)
 
 
         def Classification(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Classification, 0)
+            return self.getToken(XplorMRParser.Classification, 0)
 
         def Class_name(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Class_name, 0)
+            return self.getToken(XplorMRParser.Class_name, 0)
 
         def Tolerance(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Tolerance, 0)
+            return self.getToken(XplorMRParser.Tolerance, 0)
 
         def One_or_Zero(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.One_or_Zero, 0)
+            return self.getToken(XplorMRParser.One_or_Zero, 0)
 
         def Coefficients(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Coefficients, 0)
+            return self.getToken(XplorMRParser.Coefficients, 0)
 
         def Real(self, i:int=None):
             if i is None:
-                return self.getTokens(XPLOR_NIH_MR_Parser.Real)
+                return self.getTokens(XplorMRParser.Real)
             else:
-                return self.getToken(XPLOR_NIH_MR_Parser.Real, i)
+                return self.getToken(XplorMRParser.Real, i)
 
         def ForceConstant(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.ForceConstant, 0)
+            return self.getToken(XplorMRParser.ForceConstant, 0)
 
         def Nrestraints(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Nrestraints, 0)
+            return self.getToken(XplorMRParser.Nrestraints, 0)
 
         def Integer(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Integer, 0)
+            return self.getToken(XplorMRParser.Integer, 0)
 
         def Print(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Print, 0)
+            return self.getToken(XplorMRParser.Print, 0)
 
         def Threshold(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Threshold, 0)
+            return self.getToken(XplorMRParser.Threshold, 0)
 
         def All(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.All, 0)
+            return self.getToken(XplorMRParser.All, 0)
 
         def Reset(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Reset, 0)
+            return self.getToken(XplorMRParser.Reset, 0)
 
         def Save(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Save, 0)
+            return self.getToken(XplorMRParser.Save, 0)
 
         def Fmed(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Fmed, 0)
+            return self.getToken(XplorMRParser.Fmed, 0)
 
         def ErrOn(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.ErrOn, 0)
+            return self.getToken(XplorMRParser.ErrOn, 0)
 
         def ErrOff(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.ErrOff, 0)
+            return self.getToken(XplorMRParser.ErrOff, 0)
 
         def Fon(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Fon, 0)
+            return self.getToken(XplorMRParser.Fon, 0)
 
         def Foff(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Foff, 0)
+            return self.getToken(XplorMRParser.Foff, 0)
 
         def Son(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Son, 0)
+            return self.getToken(XplorMRParser.Son, 0)
 
         def Soff(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Soff, 0)
+            return self.getToken(XplorMRParser.Soff, 0)
 
         def Frun(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Frun, 0)
+            return self.getToken(XplorMRParser.Frun, 0)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_pcs_statement
+            return XplorMRParser.RULE_pcs_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterPcs_statement" ):
@@ -9550,19 +9550,19 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def pcs_statement(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Pcs_statementContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Pcs_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 146, self.RULE_pcs_statement)
         self._la = 0 # Token type
         try:
             self.state = 1558
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [XPLOR_NIH_MR_Parser.Assign, XPLOR_NIH_MR_Parser.R_brace]:
+            if token in [XplorMRParser.Assign, XplorMRParser.R_brace]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 1522
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==XPLOR_NIH_MR_Parser.Assign:
+                while _la==XplorMRParser.Assign:
                     self.state = 1519
                     self.pcs_assign()
                     self.state = 1524
@@ -9570,125 +9570,125 @@ class XPLOR_NIH_MR_Parser ( Parser ):
                     _la = self._input.LA(1)
 
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Classification]:
+            elif token in [XplorMRParser.Classification]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 1525
-                self.match(XPLOR_NIH_MR_Parser.Classification)
+                self.match(XplorMRParser.Classification)
                 self.state = 1526
-                self.match(XPLOR_NIH_MR_Parser.Class_name)
+                self.match(XplorMRParser.Class_name)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Tolerance]:
+            elif token in [XplorMRParser.Tolerance]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 1527
-                self.match(XPLOR_NIH_MR_Parser.Tolerance)
+                self.match(XplorMRParser.Tolerance)
                 self.state = 1528
-                self.match(XPLOR_NIH_MR_Parser.One_or_Zero)
+                self.match(XplorMRParser.One_or_Zero)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Coefficients]:
+            elif token in [XplorMRParser.Coefficients]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 1529
-                self.match(XPLOR_NIH_MR_Parser.Coefficients)
+                self.match(XplorMRParser.Coefficients)
                 self.state = 1530
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 1531
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.ForceConstant]:
+            elif token in [XplorMRParser.ForceConstant]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 1532
-                self.match(XPLOR_NIH_MR_Parser.ForceConstant)
+                self.match(XplorMRParser.ForceConstant)
                 self.state = 1533
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Nrestraints]:
+            elif token in [XplorMRParser.Nrestraints]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 1534
-                self.match(XPLOR_NIH_MR_Parser.Nrestraints)
+                self.match(XplorMRParser.Nrestraints)
                 self.state = 1535
-                self.match(XPLOR_NIH_MR_Parser.Integer)
+                self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Print]:
+            elif token in [XplorMRParser.Print]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 1536
-                self.match(XPLOR_NIH_MR_Parser.Print)
+                self.match(XplorMRParser.Print)
                 self.state = 1537
-                self.match(XPLOR_NIH_MR_Parser.Threshold)
+                self.match(XplorMRParser.Threshold)
                 self.state = 1538
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 1542
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [XPLOR_NIH_MR_Parser.All]:
+                if token in [XplorMRParser.All]:
                     self.state = 1539
-                    self.match(XPLOR_NIH_MR_Parser.All)
+                    self.match(XplorMRParser.All)
                     pass
-                elif token in [XPLOR_NIH_MR_Parser.Classification]:
+                elif token in [XplorMRParser.Classification]:
                     self.state = 1540
-                    self.match(XPLOR_NIH_MR_Parser.Classification)
+                    self.match(XplorMRParser.Classification)
                     self.state = 1541
-                    self.match(XPLOR_NIH_MR_Parser.Class_name)
+                    self.match(XplorMRParser.Class_name)
                     pass
                 else:
                     raise NoViableAltException(self)
 
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Reset]:
+            elif token in [XplorMRParser.Reset]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 1544
-                self.match(XPLOR_NIH_MR_Parser.Reset)
+                self.match(XplorMRParser.Reset)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Save]:
+            elif token in [XplorMRParser.Save]:
                 self.enterOuterAlt(localctx, 9)
                 self.state = 1545
-                self.match(XPLOR_NIH_MR_Parser.Save)
+                self.match(XplorMRParser.Save)
                 self.state = 1546
-                self.match(XPLOR_NIH_MR_Parser.Class_name)
+                self.match(XplorMRParser.Class_name)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Fmed]:
+            elif token in [XplorMRParser.Fmed]:
                 self.enterOuterAlt(localctx, 10)
                 self.state = 1547
-                self.match(XPLOR_NIH_MR_Parser.Fmed)
+                self.match(XplorMRParser.Fmed)
                 self.state = 1548
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 1549
-                self.match(XPLOR_NIH_MR_Parser.Integer)
+                self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.ErrOn]:
+            elif token in [XplorMRParser.ErrOn]:
                 self.enterOuterAlt(localctx, 11)
                 self.state = 1550
-                self.match(XPLOR_NIH_MR_Parser.ErrOn)
+                self.match(XplorMRParser.ErrOn)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.ErrOff]:
+            elif token in [XplorMRParser.ErrOff]:
                 self.enterOuterAlt(localctx, 12)
                 self.state = 1551
-                self.match(XPLOR_NIH_MR_Parser.ErrOff)
+                self.match(XplorMRParser.ErrOff)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Fon]:
+            elif token in [XplorMRParser.Fon]:
                 self.enterOuterAlt(localctx, 13)
                 self.state = 1552
-                self.match(XPLOR_NIH_MR_Parser.Fon)
+                self.match(XplorMRParser.Fon)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Foff]:
+            elif token in [XplorMRParser.Foff]:
                 self.enterOuterAlt(localctx, 14)
                 self.state = 1553
-                self.match(XPLOR_NIH_MR_Parser.Foff)
+                self.match(XplorMRParser.Foff)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Son]:
+            elif token in [XplorMRParser.Son]:
                 self.enterOuterAlt(localctx, 15)
                 self.state = 1554
-                self.match(XPLOR_NIH_MR_Parser.Son)
+                self.match(XplorMRParser.Son)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Soff]:
+            elif token in [XplorMRParser.Soff]:
                 self.enterOuterAlt(localctx, 16)
                 self.state = 1555
-                self.match(XPLOR_NIH_MR_Parser.Soff)
+                self.match(XplorMRParser.Soff)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Frun]:
+            elif token in [XplorMRParser.Frun]:
                 self.enterOuterAlt(localctx, 17)
                 self.state = 1556
-                self.match(XPLOR_NIH_MR_Parser.Frun)
+                self.match(XplorMRParser.Frun)
                 self.state = 1557
-                self.match(XPLOR_NIH_MR_Parser.Integer)
+                self.match(XplorMRParser.Integer)
                 pass
             else:
                 raise NoViableAltException(self)
@@ -9709,23 +9709,23 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.parser = parser
 
         def Assign(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Assign, 0)
+            return self.getToken(XplorMRParser.Assign, 0)
 
         def selection(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.SelectionContext)
+                return self.getTypedRuleContexts(XplorMRParser.SelectionContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.SelectionContext,i)
+                return self.getTypedRuleContext(XplorMRParser.SelectionContext,i)
 
 
         def Real(self, i:int=None):
             if i is None:
-                return self.getTokens(XPLOR_NIH_MR_Parser.Real)
+                return self.getTokens(XplorMRParser.Real)
             else:
-                return self.getToken(XPLOR_NIH_MR_Parser.Real, i)
+                return self.getToken(XplorMRParser.Real, i)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_pcs_assign
+            return XplorMRParser.RULE_pcs_assign
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterPcs_assign" ):
@@ -9740,12 +9740,12 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def pcs_assign(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Pcs_assignContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Pcs_assignContext(self, self._ctx, self.state)
         self.enterRule(localctx, 148, self.RULE_pcs_assign)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 1560
-            self.match(XPLOR_NIH_MR_Parser.Assign)
+            self.match(XplorMRParser.Assign)
             self.state = 1561
             self.selection()
             self.state = 1562
@@ -9757,9 +9757,9 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.state = 1565
             self.selection()
             self.state = 1566
-            self.match(XPLOR_NIH_MR_Parser.Real)
+            self.match(XplorMRParser.Real)
             self.state = 1567
-            self.match(XPLOR_NIH_MR_Parser.Real)
+            self.match(XplorMRParser.Real)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -9777,79 +9777,79 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
         def prdc_assign(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.Prdc_assignContext)
+                return self.getTypedRuleContexts(XplorMRParser.Prdc_assignContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Prdc_assignContext,i)
+                return self.getTypedRuleContext(XplorMRParser.Prdc_assignContext,i)
 
 
         def Classification(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Classification, 0)
+            return self.getToken(XplorMRParser.Classification, 0)
 
         def Class_name(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Class_name, 0)
+            return self.getToken(XplorMRParser.Class_name, 0)
 
         def Tolerance(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Tolerance, 0)
+            return self.getToken(XplorMRParser.Tolerance, 0)
 
         def One_or_Zero(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.One_or_Zero, 0)
+            return self.getToken(XplorMRParser.One_or_Zero, 0)
 
         def Coefficients(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Coefficients, 0)
+            return self.getToken(XplorMRParser.Coefficients, 0)
 
         def Real(self, i:int=None):
             if i is None:
-                return self.getTokens(XPLOR_NIH_MR_Parser.Real)
+                return self.getTokens(XplorMRParser.Real)
             else:
-                return self.getToken(XPLOR_NIH_MR_Parser.Real, i)
+                return self.getToken(XplorMRParser.Real, i)
 
         def ForceConstant(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.ForceConstant, 0)
+            return self.getToken(XplorMRParser.ForceConstant, 0)
 
         def Nrestraints(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Nrestraints, 0)
+            return self.getToken(XplorMRParser.Nrestraints, 0)
 
         def Integer(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Integer, 0)
+            return self.getToken(XplorMRParser.Integer, 0)
 
         def ErrOn(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.ErrOn, 0)
+            return self.getToken(XplorMRParser.ErrOn, 0)
 
         def ErrOff(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.ErrOff, 0)
+            return self.getToken(XplorMRParser.ErrOff, 0)
 
         def Fmed(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Fmed, 0)
+            return self.getToken(XplorMRParser.Fmed, 0)
 
         def Fon(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Fon, 0)
+            return self.getToken(XplorMRParser.Fon, 0)
 
         def Foff(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Foff, 0)
+            return self.getToken(XplorMRParser.Foff, 0)
 
         def Frun(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Frun, 0)
+            return self.getToken(XplorMRParser.Frun, 0)
 
         def Print(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Print, 0)
+            return self.getToken(XplorMRParser.Print, 0)
 
         def Threshold(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Threshold, 0)
+            return self.getToken(XplorMRParser.Threshold, 0)
 
         def Reset(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Reset, 0)
+            return self.getToken(XplorMRParser.Reset, 0)
 
         def Save(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Save, 0)
+            return self.getToken(XplorMRParser.Save, 0)
 
         def Son(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Son, 0)
+            return self.getToken(XplorMRParser.Son, 0)
 
         def Soff(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Soff, 0)
+            return self.getToken(XplorMRParser.Soff, 0)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_prdc_statement
+            return XplorMRParser.RULE_prdc_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterPrdc_statement" ):
@@ -9864,19 +9864,19 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def prdc_statement(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Prdc_statementContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Prdc_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 150, self.RULE_prdc_statement)
         self._la = 0 # Token type
         try:
             self.state = 1599
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [XPLOR_NIH_MR_Parser.Assign, XPLOR_NIH_MR_Parser.R_brace]:
+            if token in [XplorMRParser.Assign, XplorMRParser.R_brace]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 1572
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==XPLOR_NIH_MR_Parser.Assign:
+                while _la==XplorMRParser.Assign:
                     self.state = 1569
                     self.prdc_assign()
                     self.state = 1574
@@ -9884,101 +9884,101 @@ class XPLOR_NIH_MR_Parser ( Parser ):
                     _la = self._input.LA(1)
 
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Classification]:
+            elif token in [XplorMRParser.Classification]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 1575
-                self.match(XPLOR_NIH_MR_Parser.Classification)
+                self.match(XplorMRParser.Classification)
                 self.state = 1576
-                self.match(XPLOR_NIH_MR_Parser.Class_name)
+                self.match(XplorMRParser.Class_name)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Tolerance]:
+            elif token in [XplorMRParser.Tolerance]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 1577
-                self.match(XPLOR_NIH_MR_Parser.Tolerance)
+                self.match(XplorMRParser.Tolerance)
                 self.state = 1578
-                self.match(XPLOR_NIH_MR_Parser.One_or_Zero)
+                self.match(XplorMRParser.One_or_Zero)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Coefficients]:
+            elif token in [XplorMRParser.Coefficients]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 1579
-                self.match(XPLOR_NIH_MR_Parser.Coefficients)
+                self.match(XplorMRParser.Coefficients)
                 self.state = 1580
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 1581
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.ForceConstant]:
+            elif token in [XplorMRParser.ForceConstant]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 1582
-                self.match(XPLOR_NIH_MR_Parser.ForceConstant)
+                self.match(XplorMRParser.ForceConstant)
                 self.state = 1583
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Nrestraints]:
+            elif token in [XplorMRParser.Nrestraints]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 1584
-                self.match(XPLOR_NIH_MR_Parser.Nrestraints)
+                self.match(XplorMRParser.Nrestraints)
                 self.state = 1585
-                self.match(XPLOR_NIH_MR_Parser.Integer)
+                self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.ErrOn]:
+            elif token in [XplorMRParser.ErrOn]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 1586
-                self.match(XPLOR_NIH_MR_Parser.ErrOn)
+                self.match(XplorMRParser.ErrOn)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.ErrOff]:
+            elif token in [XplorMRParser.ErrOff]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 1587
-                self.match(XPLOR_NIH_MR_Parser.ErrOff)
+                self.match(XplorMRParser.ErrOff)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Fmed]:
+            elif token in [XplorMRParser.Fmed]:
                 self.enterOuterAlt(localctx, 9)
                 self.state = 1588
-                self.match(XPLOR_NIH_MR_Parser.Fmed)
+                self.match(XplorMRParser.Fmed)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Fon]:
+            elif token in [XplorMRParser.Fon]:
                 self.enterOuterAlt(localctx, 10)
                 self.state = 1589
-                self.match(XPLOR_NIH_MR_Parser.Fon)
+                self.match(XplorMRParser.Fon)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Foff]:
+            elif token in [XplorMRParser.Foff]:
                 self.enterOuterAlt(localctx, 11)
                 self.state = 1590
-                self.match(XPLOR_NIH_MR_Parser.Foff)
+                self.match(XplorMRParser.Foff)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Frun]:
+            elif token in [XplorMRParser.Frun]:
                 self.enterOuterAlt(localctx, 12)
                 self.state = 1591
-                self.match(XPLOR_NIH_MR_Parser.Frun)
+                self.match(XplorMRParser.Frun)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Print]:
+            elif token in [XplorMRParser.Print]:
                 self.enterOuterAlt(localctx, 13)
                 self.state = 1592
-                self.match(XPLOR_NIH_MR_Parser.Print)
+                self.match(XplorMRParser.Print)
                 self.state = 1593
-                self.match(XPLOR_NIH_MR_Parser.Threshold)
+                self.match(XplorMRParser.Threshold)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Reset]:
+            elif token in [XplorMRParser.Reset]:
                 self.enterOuterAlt(localctx, 14)
                 self.state = 1594
-                self.match(XPLOR_NIH_MR_Parser.Reset)
+                self.match(XplorMRParser.Reset)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Save]:
+            elif token in [XplorMRParser.Save]:
                 self.enterOuterAlt(localctx, 15)
                 self.state = 1595
-                self.match(XPLOR_NIH_MR_Parser.Save)
+                self.match(XplorMRParser.Save)
                 self.state = 1596
-                self.match(XPLOR_NIH_MR_Parser.Class_name)
+                self.match(XplorMRParser.Class_name)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Son]:
+            elif token in [XplorMRParser.Son]:
                 self.enterOuterAlt(localctx, 16)
                 self.state = 1597
-                self.match(XPLOR_NIH_MR_Parser.Son)
+                self.match(XplorMRParser.Son)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Soff]:
+            elif token in [XplorMRParser.Soff]:
                 self.enterOuterAlt(localctx, 17)
                 self.state = 1598
-                self.match(XPLOR_NIH_MR_Parser.Soff)
+                self.match(XplorMRParser.Soff)
                 pass
             else:
                 raise NoViableAltException(self)
@@ -9999,23 +9999,23 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.parser = parser
 
         def Assign(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Assign, 0)
+            return self.getToken(XplorMRParser.Assign, 0)
 
         def selection(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.SelectionContext)
+                return self.getTypedRuleContexts(XplorMRParser.SelectionContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.SelectionContext,i)
+                return self.getTypedRuleContext(XplorMRParser.SelectionContext,i)
 
 
         def Real(self, i:int=None):
             if i is None:
-                return self.getTokens(XPLOR_NIH_MR_Parser.Real)
+                return self.getTokens(XplorMRParser.Real)
             else:
-                return self.getToken(XPLOR_NIH_MR_Parser.Real, i)
+                return self.getToken(XplorMRParser.Real, i)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_prdc_assign
+            return XplorMRParser.RULE_prdc_assign
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterPrdc_assign" ):
@@ -10030,12 +10030,12 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def prdc_assign(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Prdc_assignContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Prdc_assignContext(self, self._ctx, self.state)
         self.enterRule(localctx, 152, self.RULE_prdc_assign)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 1601
-            self.match(XPLOR_NIH_MR_Parser.Assign)
+            self.match(XplorMRParser.Assign)
             self.state = 1602
             self.selection()
             self.state = 1603
@@ -10049,9 +10049,9 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.state = 1607
             self.selection()
             self.state = 1608
-            self.match(XPLOR_NIH_MR_Parser.Real)
+            self.match(XplorMRParser.Real)
             self.state = 1609
-            self.match(XPLOR_NIH_MR_Parser.Real)
+            self.match(XplorMRParser.Real)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -10069,40 +10069,40 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
         def porientation_assign(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.Porientation_assignContext)
+                return self.getTypedRuleContexts(XplorMRParser.Porientation_assignContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Porientation_assignContext,i)
+                return self.getTypedRuleContext(XplorMRParser.Porientation_assignContext,i)
 
 
         def Classification(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Classification, 0)
+            return self.getToken(XplorMRParser.Classification, 0)
 
         def Class_name(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Class_name, 0)
+            return self.getToken(XplorMRParser.Class_name, 0)
 
         def ForceConstant(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.ForceConstant, 0)
+            return self.getToken(XplorMRParser.ForceConstant, 0)
 
         def Real(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Real, 0)
+            return self.getToken(XplorMRParser.Real, 0)
 
         def Nrestraints(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Nrestraints, 0)
+            return self.getToken(XplorMRParser.Nrestraints, 0)
 
         def Integer(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Integer, 0)
+            return self.getToken(XplorMRParser.Integer, 0)
 
         def Print(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Print, 0)
+            return self.getToken(XplorMRParser.Print, 0)
 
         def Threshold(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Threshold, 0)
+            return self.getToken(XplorMRParser.Threshold, 0)
 
         def Reset(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Reset, 0)
+            return self.getToken(XplorMRParser.Reset, 0)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_porientation_statement
+            return XplorMRParser.RULE_porientation_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterPorientation_statement" ):
@@ -10117,19 +10117,19 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def porientation_statement(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Porientation_statementContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Porientation_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 154, self.RULE_porientation_statement)
         self._la = 0 # Token type
         try:
             self.state = 1627
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [XPLOR_NIH_MR_Parser.Assign, XPLOR_NIH_MR_Parser.R_brace]:
+            if token in [XplorMRParser.Assign, XplorMRParser.R_brace]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 1614
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==XPLOR_NIH_MR_Parser.Assign:
+                while _la==XplorMRParser.Assign:
                     self.state = 1611
                     self.porientation_assign()
                     self.state = 1616
@@ -10137,40 +10137,40 @@ class XPLOR_NIH_MR_Parser ( Parser ):
                     _la = self._input.LA(1)
 
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Classification]:
+            elif token in [XplorMRParser.Classification]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 1617
-                self.match(XPLOR_NIH_MR_Parser.Classification)
+                self.match(XplorMRParser.Classification)
                 self.state = 1618
-                self.match(XPLOR_NIH_MR_Parser.Class_name)
+                self.match(XplorMRParser.Class_name)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.ForceConstant]:
+            elif token in [XplorMRParser.ForceConstant]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 1619
-                self.match(XPLOR_NIH_MR_Parser.ForceConstant)
+                self.match(XplorMRParser.ForceConstant)
                 self.state = 1620
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Nrestraints]:
+            elif token in [XplorMRParser.Nrestraints]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 1621
-                self.match(XPLOR_NIH_MR_Parser.Nrestraints)
+                self.match(XplorMRParser.Nrestraints)
                 self.state = 1622
-                self.match(XPLOR_NIH_MR_Parser.Integer)
+                self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Print]:
+            elif token in [XplorMRParser.Print]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 1623
-                self.match(XPLOR_NIH_MR_Parser.Print)
+                self.match(XplorMRParser.Print)
                 self.state = 1624
-                self.match(XPLOR_NIH_MR_Parser.Threshold)
+                self.match(XplorMRParser.Threshold)
                 self.state = 1625
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Reset]:
+            elif token in [XplorMRParser.Reset]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 1626
-                self.match(XPLOR_NIH_MR_Parser.Reset)
+                self.match(XplorMRParser.Reset)
                 pass
             else:
                 raise NoViableAltException(self)
@@ -10191,23 +10191,23 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.parser = parser
 
         def Assign(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Assign, 0)
+            return self.getToken(XplorMRParser.Assign, 0)
 
         def selection(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.SelectionContext)
+                return self.getTypedRuleContexts(XplorMRParser.SelectionContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.SelectionContext,i)
+                return self.getTypedRuleContext(XplorMRParser.SelectionContext,i)
 
 
         def Real(self, i:int=None):
             if i is None:
-                return self.getTokens(XPLOR_NIH_MR_Parser.Real)
+                return self.getTokens(XplorMRParser.Real)
             else:
-                return self.getToken(XPLOR_NIH_MR_Parser.Real, i)
+                return self.getToken(XplorMRParser.Real, i)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_porientation_assign
+            return XplorMRParser.RULE_porientation_assign
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterPorientation_assign" ):
@@ -10222,22 +10222,22 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def porientation_assign(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Porientation_assignContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Porientation_assignContext(self, self._ctx, self.state)
         self.enterRule(localctx, 156, self.RULE_porientation_assign)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 1629
-            self.match(XPLOR_NIH_MR_Parser.Assign)
+            self.match(XplorMRParser.Assign)
             self.state = 1630
             self.selection()
             self.state = 1631
             self.selection()
             self.state = 1632
-            self.match(XPLOR_NIH_MR_Parser.Real)
+            self.match(XplorMRParser.Real)
             self.state = 1633
-            self.match(XPLOR_NIH_MR_Parser.Real)
+            self.match(XplorMRParser.Real)
             self.state = 1634
-            self.match(XPLOR_NIH_MR_Parser.Real)
+            self.match(XplorMRParser.Real)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -10255,52 +10255,52 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
         def pccr_assign(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.Pccr_assignContext)
+                return self.getTypedRuleContexts(XplorMRParser.Pccr_assignContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Pccr_assignContext,i)
+                return self.getTypedRuleContext(XplorMRParser.Pccr_assignContext,i)
 
 
         def Classification(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Classification, 0)
+            return self.getToken(XplorMRParser.Classification, 0)
 
         def Class_name(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Class_name, 0)
+            return self.getToken(XplorMRParser.Class_name, 0)
 
         def Weip(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Weip, 0)
+            return self.getToken(XplorMRParser.Weip, 0)
 
         def One_or_Zero(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.One_or_Zero, 0)
+            return self.getToken(XplorMRParser.One_or_Zero, 0)
 
         def Coefficients(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Coefficients, 0)
+            return self.getToken(XplorMRParser.Coefficients, 0)
 
         def Real(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Real, 0)
+            return self.getToken(XplorMRParser.Real, 0)
 
         def ForceConstant(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.ForceConstant, 0)
+            return self.getToken(XplorMRParser.ForceConstant, 0)
 
         def Nrestraints(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Nrestraints, 0)
+            return self.getToken(XplorMRParser.Nrestraints, 0)
 
         def Integer(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Integer, 0)
+            return self.getToken(XplorMRParser.Integer, 0)
 
         def Print(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Print, 0)
+            return self.getToken(XplorMRParser.Print, 0)
 
         def Threshold(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Threshold, 0)
+            return self.getToken(XplorMRParser.Threshold, 0)
 
         def Reset(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Reset, 0)
+            return self.getToken(XplorMRParser.Reset, 0)
 
         def Frun(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Frun, 0)
+            return self.getToken(XplorMRParser.Frun, 0)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_pccr_statement
+            return XplorMRParser.RULE_pccr_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterPccr_statement" ):
@@ -10315,19 +10315,19 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def pccr_statement(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Pccr_statementContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Pccr_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 158, self.RULE_pccr_statement)
         self._la = 0 # Token type
         try:
             self.state = 1658
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [XPLOR_NIH_MR_Parser.Assign, XPLOR_NIH_MR_Parser.R_brace]:
+            if token in [XplorMRParser.Assign, XplorMRParser.R_brace]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 1639
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==XPLOR_NIH_MR_Parser.Assign:
+                while _la==XplorMRParser.Assign:
                     self.state = 1636
                     self.pccr_assign()
                     self.state = 1641
@@ -10335,61 +10335,61 @@ class XPLOR_NIH_MR_Parser ( Parser ):
                     _la = self._input.LA(1)
 
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Classification]:
+            elif token in [XplorMRParser.Classification]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 1642
-                self.match(XPLOR_NIH_MR_Parser.Classification)
+                self.match(XplorMRParser.Classification)
                 self.state = 1643
-                self.match(XPLOR_NIH_MR_Parser.Class_name)
+                self.match(XplorMRParser.Class_name)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Weip]:
+            elif token in [XplorMRParser.Weip]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 1644
-                self.match(XPLOR_NIH_MR_Parser.Weip)
+                self.match(XplorMRParser.Weip)
                 self.state = 1645
-                self.match(XPLOR_NIH_MR_Parser.One_or_Zero)
+                self.match(XplorMRParser.One_or_Zero)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Coefficients]:
+            elif token in [XplorMRParser.Coefficients]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 1646
-                self.match(XPLOR_NIH_MR_Parser.Coefficients)
+                self.match(XplorMRParser.Coefficients)
                 self.state = 1647
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.ForceConstant]:
+            elif token in [XplorMRParser.ForceConstant]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 1648
-                self.match(XPLOR_NIH_MR_Parser.ForceConstant)
+                self.match(XplorMRParser.ForceConstant)
                 self.state = 1649
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Nrestraints]:
+            elif token in [XplorMRParser.Nrestraints]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 1650
-                self.match(XPLOR_NIH_MR_Parser.Nrestraints)
+                self.match(XplorMRParser.Nrestraints)
                 self.state = 1651
-                self.match(XPLOR_NIH_MR_Parser.Integer)
+                self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Print]:
+            elif token in [XplorMRParser.Print]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 1652
-                self.match(XPLOR_NIH_MR_Parser.Print)
+                self.match(XplorMRParser.Print)
                 self.state = 1653
-                self.match(XPLOR_NIH_MR_Parser.Threshold)
+                self.match(XplorMRParser.Threshold)
                 self.state = 1654
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Reset]:
+            elif token in [XplorMRParser.Reset]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 1655
-                self.match(XPLOR_NIH_MR_Parser.Reset)
+                self.match(XplorMRParser.Reset)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Frun]:
+            elif token in [XplorMRParser.Frun]:
                 self.enterOuterAlt(localctx, 9)
                 self.state = 1656
-                self.match(XPLOR_NIH_MR_Parser.Frun)
+                self.match(XplorMRParser.Frun)
                 self.state = 1657
-                self.match(XPLOR_NIH_MR_Parser.Integer)
+                self.match(XplorMRParser.Integer)
                 pass
             else:
                 raise NoViableAltException(self)
@@ -10410,23 +10410,23 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.parser = parser
 
         def Assign(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Assign, 0)
+            return self.getToken(XplorMRParser.Assign, 0)
 
         def selection(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.SelectionContext)
+                return self.getTypedRuleContexts(XplorMRParser.SelectionContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.SelectionContext,i)
+                return self.getTypedRuleContext(XplorMRParser.SelectionContext,i)
 
 
         def Real(self, i:int=None):
             if i is None:
-                return self.getTokens(XPLOR_NIH_MR_Parser.Real)
+                return self.getTokens(XplorMRParser.Real)
             else:
-                return self.getToken(XPLOR_NIH_MR_Parser.Real, i)
+                return self.getToken(XplorMRParser.Real, i)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_pccr_assign
+            return XplorMRParser.RULE_pccr_assign
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterPccr_assign" ):
@@ -10441,12 +10441,12 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def pccr_assign(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Pccr_assignContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Pccr_assignContext(self, self._ctx, self.state)
         self.enterRule(localctx, 160, self.RULE_pccr_assign)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 1660
-            self.match(XPLOR_NIH_MR_Parser.Assign)
+            self.match(XplorMRParser.Assign)
             self.state = 1661
             self.selection()
             self.state = 1662
@@ -10454,9 +10454,9 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.state = 1663
             self.selection()
             self.state = 1664
-            self.match(XPLOR_NIH_MR_Parser.Real)
+            self.match(XplorMRParser.Real)
             self.state = 1665
-            self.match(XPLOR_NIH_MR_Parser.Real)
+            self.match(XplorMRParser.Real)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -10474,40 +10474,40 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
         def hbond_assign(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.Hbond_assignContext)
+                return self.getTypedRuleContexts(XplorMRParser.Hbond_assignContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Hbond_assignContext,i)
+                return self.getTypedRuleContext(XplorMRParser.Hbond_assignContext,i)
 
 
         def Classification(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Classification, 0)
+            return self.getToken(XplorMRParser.Classification, 0)
 
         def Class_name(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Class_name, 0)
+            return self.getToken(XplorMRParser.Class_name, 0)
 
         def ForceConstant(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.ForceConstant, 0)
+            return self.getToken(XplorMRParser.ForceConstant, 0)
 
         def Real(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Real, 0)
+            return self.getToken(XplorMRParser.Real, 0)
 
         def Nrestraints(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Nrestraints, 0)
+            return self.getToken(XplorMRParser.Nrestraints, 0)
 
         def Integer(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Integer, 0)
+            return self.getToken(XplorMRParser.Integer, 0)
 
         def Print(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Print, 0)
+            return self.getToken(XplorMRParser.Print, 0)
 
         def Threshold(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Threshold, 0)
+            return self.getToken(XplorMRParser.Threshold, 0)
 
         def Reset(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Reset, 0)
+            return self.getToken(XplorMRParser.Reset, 0)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_hbond_statement
+            return XplorMRParser.RULE_hbond_statement
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterHbond_statement" ):
@@ -10522,19 +10522,19 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def hbond_statement(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Hbond_statementContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Hbond_statementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 162, self.RULE_hbond_statement)
         self._la = 0 # Token type
         try:
             self.state = 1683
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [XPLOR_NIH_MR_Parser.Assign, XPLOR_NIH_MR_Parser.R_brace]:
+            if token in [XplorMRParser.Assign, XplorMRParser.R_brace]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 1670
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==XPLOR_NIH_MR_Parser.Assign:
+                while _la==XplorMRParser.Assign:
                     self.state = 1667
                     self.hbond_assign()
                     self.state = 1672
@@ -10542,40 +10542,40 @@ class XPLOR_NIH_MR_Parser ( Parser ):
                     _la = self._input.LA(1)
 
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Classification]:
+            elif token in [XplorMRParser.Classification]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 1673
-                self.match(XPLOR_NIH_MR_Parser.Classification)
+                self.match(XplorMRParser.Classification)
                 self.state = 1674
-                self.match(XPLOR_NIH_MR_Parser.Class_name)
+                self.match(XplorMRParser.Class_name)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.ForceConstant]:
+            elif token in [XplorMRParser.ForceConstant]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 1675
-                self.match(XPLOR_NIH_MR_Parser.ForceConstant)
+                self.match(XplorMRParser.ForceConstant)
                 self.state = 1676
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Nrestraints]:
+            elif token in [XplorMRParser.Nrestraints]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 1677
-                self.match(XPLOR_NIH_MR_Parser.Nrestraints)
+                self.match(XplorMRParser.Nrestraints)
                 self.state = 1678
-                self.match(XPLOR_NIH_MR_Parser.Integer)
+                self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Print]:
+            elif token in [XplorMRParser.Print]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 1679
-                self.match(XPLOR_NIH_MR_Parser.Print)
+                self.match(XplorMRParser.Print)
                 self.state = 1680
-                self.match(XPLOR_NIH_MR_Parser.Threshold)
+                self.match(XplorMRParser.Threshold)
                 self.state = 1681
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Reset]:
+            elif token in [XplorMRParser.Reset]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 1682
-                self.match(XPLOR_NIH_MR_Parser.Reset)
+                self.match(XplorMRParser.Reset)
                 pass
             else:
                 raise NoViableAltException(self)
@@ -10596,17 +10596,17 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.parser = parser
 
         def Assign(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Assign, 0)
+            return self.getToken(XplorMRParser.Assign, 0)
 
         def selection(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.SelectionContext)
+                return self.getTypedRuleContexts(XplorMRParser.SelectionContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.SelectionContext,i)
+                return self.getTypedRuleContext(XplorMRParser.SelectionContext,i)
 
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_hbond_assign
+            return XplorMRParser.RULE_hbond_assign
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterHbond_assign" ):
@@ -10621,12 +10621,12 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def hbond_assign(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Hbond_assignContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Hbond_assignContext(self, self._ctx, self.state)
         self.enterRule(localctx, 164, self.RULE_hbond_assign)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 1685
-            self.match(XPLOR_NIH_MR_Parser.Assign)
+            self.match(XplorMRParser.Assign)
             self.state = 1686
             self.selection()
             self.state = 1687
@@ -10649,17 +10649,17 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.parser = parser
 
         def L_paren(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.L_paren, 0)
+            return self.getToken(XplorMRParser.L_paren, 0)
 
         def selection_expression(self):
-            return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Selection_expressionContext,0)
+            return self.getTypedRuleContext(XplorMRParser.Selection_expressionContext,0)
 
 
         def R_paren(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.R_paren, 0)
+            return self.getToken(XplorMRParser.R_paren, 0)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_selection
+            return XplorMRParser.RULE_selection
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterSelection" ):
@@ -10674,16 +10674,16 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def selection(self):
 
-        localctx = XPLOR_NIH_MR_Parser.SelectionContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.SelectionContext(self, self._ctx, self.state)
         self.enterRule(localctx, 166, self.RULE_selection)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 1690
-            self.match(XPLOR_NIH_MR_Parser.L_paren)
+            self.match(XplorMRParser.L_paren)
             self.state = 1691
             self.selection_expression()
             self.state = 1692
-            self.match(XPLOR_NIH_MR_Parser.R_paren)
+            self.match(XplorMRParser.R_paren)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -10701,31 +10701,31 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
         def term(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.TermContext)
+                return self.getTypedRuleContexts(XplorMRParser.TermContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.TermContext,i)
+                return self.getTypedRuleContext(XplorMRParser.TermContext,i)
 
 
         def L_brace(self, i:int=None):
             if i is None:
-                return self.getTokens(XPLOR_NIH_MR_Parser.L_brace)
+                return self.getTokens(XplorMRParser.L_brace)
             else:
-                return self.getToken(XPLOR_NIH_MR_Parser.L_brace, i)
+                return self.getToken(XplorMRParser.L_brace, i)
 
         def Or_op(self, i:int=None):
             if i is None:
-                return self.getTokens(XPLOR_NIH_MR_Parser.Or_op)
+                return self.getTokens(XplorMRParser.Or_op)
             else:
-                return self.getToken(XPLOR_NIH_MR_Parser.Or_op, i)
+                return self.getToken(XplorMRParser.Or_op, i)
 
         def R_brace(self, i:int=None):
             if i is None:
-                return self.getTokens(XPLOR_NIH_MR_Parser.R_brace)
+                return self.getTokens(XplorMRParser.R_brace)
             else:
-                return self.getToken(XPLOR_NIH_MR_Parser.R_brace, i)
+                return self.getToken(XplorMRParser.R_brace, i)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_selection_expression
+            return XplorMRParser.RULE_selection_expression
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterSelection_expression" ):
@@ -10740,7 +10740,7 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def selection_expression(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Selection_expressionContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Selection_expressionContext(self, self._ctx, self.state)
         self.enterRule(localctx, 168, self.RULE_selection_expression)
         self._la = 0 # Token type
         try:
@@ -10750,15 +10750,15 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.state = 1702
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==XPLOR_NIH_MR_Parser.L_brace:
+            while _la==XplorMRParser.L_brace:
                 self.state = 1695
-                self.match(XPLOR_NIH_MR_Parser.L_brace)
+                self.match(XplorMRParser.L_brace)
                 self.state = 1696
-                self.match(XPLOR_NIH_MR_Parser.Or_op)
+                self.match(XplorMRParser.Or_op)
                 self.state = 1697
                 self.term()
                 self.state = 1698
-                self.match(XPLOR_NIH_MR_Parser.R_brace)
+                self.match(XplorMRParser.R_brace)
                 self.state = 1704
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
@@ -10780,31 +10780,31 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
         def factor(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.FactorContext)
+                return self.getTypedRuleContexts(XplorMRParser.FactorContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.FactorContext,i)
+                return self.getTypedRuleContext(XplorMRParser.FactorContext,i)
 
 
         def L_brace(self, i:int=None):
             if i is None:
-                return self.getTokens(XPLOR_NIH_MR_Parser.L_brace)
+                return self.getTokens(XplorMRParser.L_brace)
             else:
-                return self.getToken(XPLOR_NIH_MR_Parser.L_brace, i)
+                return self.getToken(XplorMRParser.L_brace, i)
 
         def And_op(self, i:int=None):
             if i is None:
-                return self.getTokens(XPLOR_NIH_MR_Parser.And_op)
+                return self.getTokens(XplorMRParser.And_op)
             else:
-                return self.getToken(XPLOR_NIH_MR_Parser.And_op, i)
+                return self.getToken(XplorMRParser.And_op, i)
 
         def R_brace(self, i:int=None):
             if i is None:
-                return self.getTokens(XPLOR_NIH_MR_Parser.R_brace)
+                return self.getTokens(XplorMRParser.R_brace)
             else:
-                return self.getToken(XPLOR_NIH_MR_Parser.R_brace, i)
+                return self.getToken(XplorMRParser.R_brace, i)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_term
+            return XplorMRParser.RULE_term
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterTerm" ):
@@ -10819,7 +10819,7 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def term(self):
 
-        localctx = XPLOR_NIH_MR_Parser.TermContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.TermContext(self, self._ctx, self.state)
         self.enterRule(localctx, 170, self.RULE_term)
         try:
             self.enterOuterAlt(localctx, 1)
@@ -10831,13 +10831,13 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt==1:
                     self.state = 1706
-                    self.match(XPLOR_NIH_MR_Parser.L_brace)
+                    self.match(XplorMRParser.L_brace)
                     self.state = 1707
-                    self.match(XPLOR_NIH_MR_Parser.And_op)
+                    self.match(XplorMRParser.And_op)
                     self.state = 1708
                     self.factor(0)
                     self.state = 1709
-                    self.match(XPLOR_NIH_MR_Parser.R_brace) 
+                    self.match(XplorMRParser.R_brace) 
                 self.state = 1715
                 self._errHandler.sync(self)
                 _alt = self._interp.adaptivePredict(self._input,120,self._ctx)
@@ -10858,187 +10858,187 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.parser = parser
 
         def L_paren(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.L_paren, 0)
+            return self.getToken(XplorMRParser.L_paren, 0)
 
         def selection_expression(self):
-            return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Selection_expressionContext,0)
+            return self.getTypedRuleContext(XplorMRParser.Selection_expressionContext,0)
 
 
         def R_paren(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.R_paren, 0)
+            return self.getToken(XplorMRParser.R_paren, 0)
 
         def All(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.All, 0)
+            return self.getToken(XplorMRParser.All, 0)
 
         def Atom(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Atom, 0)
+            return self.getToken(XplorMRParser.Atom, 0)
 
         def Segment_names(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Segment_names, 0)
+            return self.getToken(XplorMRParser.Segment_names, 0)
 
         def Residue_numbers(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Residue_numbers, 0)
+            return self.getToken(XplorMRParser.Residue_numbers, 0)
 
         def Atom_names(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Atom_names, 0)
+            return self.getToken(XplorMRParser.Atom_names, 0)
 
         def Attribute(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Attribute, 0)
+            return self.getToken(XplorMRParser.Attribute, 0)
 
         def Attr_properties(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Attr_properties, 0)
+            return self.getToken(XplorMRParser.Attr_properties, 0)
 
         def Comparison_ops(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Comparison_ops, 0)
+            return self.getToken(XplorMRParser.Comparison_ops, 0)
 
         def Real(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Real, 0)
+            return self.getToken(XplorMRParser.Real, 0)
 
         def Abs(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Abs, 0)
+            return self.getToken(XplorMRParser.Abs, 0)
 
         def BondedTo(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.BondedTo, 0)
+            return self.getToken(XplorMRParser.BondedTo, 0)
 
         def factor(self):
-            return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.FactorContext,0)
+            return self.getTypedRuleContext(XplorMRParser.FactorContext,0)
 
 
         def ByGroup(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.ByGroup, 0)
+            return self.getToken(XplorMRParser.ByGroup, 0)
 
         def ByRes(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.ByRes, 0)
+            return self.getToken(XplorMRParser.ByRes, 0)
 
         def Chemical(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Chemical, 0)
+            return self.getToken(XplorMRParser.Chemical, 0)
 
         def Atom_types(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Atom_types, 0)
+            return self.getToken(XplorMRParser.Atom_types, 0)
 
         def Atom_type(self, i:int=None):
             if i is None:
-                return self.getTokens(XPLOR_NIH_MR_Parser.Atom_type)
+                return self.getTokens(XplorMRParser.Atom_type)
             else:
-                return self.getToken(XPLOR_NIH_MR_Parser.Atom_type, i)
+                return self.getToken(XplorMRParser.Atom_type, i)
 
         def Colon(self, i:int=None):
             if i is None:
-                return self.getTokens(XPLOR_NIH_MR_Parser.Colon)
+                return self.getTokens(XplorMRParser.Colon)
             else:
-                return self.getToken(XPLOR_NIH_MR_Parser.Colon, i)
+                return self.getToken(XplorMRParser.Colon, i)
 
         def Hydrogen(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Hydrogen, 0)
+            return self.getToken(XplorMRParser.Hydrogen, 0)
 
         def Id(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Id, 0)
+            return self.getToken(XplorMRParser.Id, 0)
 
         def Integer(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Integer, 0)
+            return self.getToken(XplorMRParser.Integer, 0)
 
         def Known(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Known, 0)
+            return self.getToken(XplorMRParser.Known, 0)
 
         def Name(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Name, 0)
+            return self.getToken(XplorMRParser.Name, 0)
 
         def Atom_name(self, i:int=None):
             if i is None:
-                return self.getTokens(XPLOR_NIH_MR_Parser.Atom_name)
+                return self.getTokens(XplorMRParser.Atom_name)
             else:
-                return self.getToken(XPLOR_NIH_MR_Parser.Atom_name, i)
+                return self.getToken(XplorMRParser.Atom_name, i)
 
         def Not_op(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Not_op, 0)
+            return self.getToken(XplorMRParser.Not_op, 0)
 
         def Point(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Point, 0)
+            return self.getToken(XplorMRParser.Point, 0)
 
         def vector_3d(self):
-            return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.Vector_3dContext,0)
+            return self.getTypedRuleContext(XplorMRParser.Vector_3dContext,0)
 
 
         def Cut(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Cut, 0)
+            return self.getToken(XplorMRParser.Cut, 0)
 
         def Previous(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Previous, 0)
+            return self.getToken(XplorMRParser.Previous, 0)
 
         def Pseudo(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Pseudo, 0)
+            return self.getToken(XplorMRParser.Pseudo, 0)
 
         def Residue(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Residue, 0)
+            return self.getToken(XplorMRParser.Residue, 0)
 
         def Residue_number(self, i:int=None):
             if i is None:
-                return self.getTokens(XPLOR_NIH_MR_Parser.Residue_number)
+                return self.getTokens(XplorMRParser.Residue_number)
             else:
-                return self.getToken(XPLOR_NIH_MR_Parser.Residue_number, i)
+                return self.getToken(XplorMRParser.Residue_number, i)
 
         def Resname(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Resname, 0)
+            return self.getToken(XplorMRParser.Resname, 0)
 
         def Residue_names(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Residue_names, 0)
+            return self.getToken(XplorMRParser.Residue_names, 0)
 
         def Residue_name(self, i:int=None):
             if i is None:
-                return self.getTokens(XPLOR_NIH_MR_Parser.Residue_name)
+                return self.getTokens(XplorMRParser.Residue_name)
             else:
-                return self.getToken(XPLOR_NIH_MR_Parser.Residue_name, i)
+                return self.getToken(XplorMRParser.Residue_name, i)
 
         def SegIdentifier(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.SegIdentifier, 0)
+            return self.getToken(XplorMRParser.SegIdentifier, 0)
 
         def Segment_name(self, i:int=None):
             if i is None:
-                return self.getTokens(XPLOR_NIH_MR_Parser.Segment_name)
+                return self.getTokens(XplorMRParser.Segment_name)
             else:
-                return self.getToken(XPLOR_NIH_MR_Parser.Segment_name, i)
+                return self.getToken(XplorMRParser.Segment_name, i)
 
         def Double_quote_string(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Double_quote_string, 0)
+            return self.getToken(XplorMRParser.Double_quote_string, 0)
 
         def Store_1(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Store_1, 0)
+            return self.getToken(XplorMRParser.Store_1, 0)
 
         def Store_2(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Store_2, 0)
+            return self.getToken(XplorMRParser.Store_2, 0)
 
         def Store_3(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Store_3, 0)
+            return self.getToken(XplorMRParser.Store_3, 0)
 
         def Store_4(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Store_4, 0)
+            return self.getToken(XplorMRParser.Store_4, 0)
 
         def Store_5(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Store_5, 0)
+            return self.getToken(XplorMRParser.Store_5, 0)
 
         def Store_6(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Store_6, 0)
+            return self.getToken(XplorMRParser.Store_6, 0)
 
         def Store_7(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Store_7, 0)
+            return self.getToken(XplorMRParser.Store_7, 0)
 
         def Store_8(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Store_8, 0)
+            return self.getToken(XplorMRParser.Store_8, 0)
 
         def Store_9(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Store_9, 0)
+            return self.getToken(XplorMRParser.Store_9, 0)
 
         def Tag(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Tag, 0)
+            return self.getToken(XplorMRParser.Tag, 0)
 
         def Around(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Around, 0)
+            return self.getToken(XplorMRParser.Around, 0)
 
         def Saround(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Saround, 0)
+            return self.getToken(XplorMRParser.Saround, 0)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_factor
+            return XplorMRParser.RULE_factor
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterFactor" ):
@@ -11053,7 +11053,7 @@ class XPLOR_NIH_MR_Parser ( Parser ):
     def factor(self, _p:int=0):
         _parentctx = self._ctx
         _parentState = self.state
-        localctx = XPLOR_NIH_MR_Parser.FactorContext(self, self._ctx, _parentState)
+        localctx = XplorMRParser.FactorContext(self, self._ctx, _parentState)
         _prevctx = localctx
         _startState = 172
         self.enterRecursionRule(localctx, 172, self.RULE_factor, _p)
@@ -11063,86 +11063,86 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.state = 1823
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [XPLOR_NIH_MR_Parser.L_paren]:
+            if token in [XplorMRParser.L_paren]:
                 self.state = 1717
-                self.match(XPLOR_NIH_MR_Parser.L_paren)
+                self.match(XplorMRParser.L_paren)
                 self.state = 1718
                 self.selection_expression()
                 self.state = 1719
-                self.match(XPLOR_NIH_MR_Parser.R_paren)
+                self.match(XplorMRParser.R_paren)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.All]:
+            elif token in [XplorMRParser.All]:
                 self.state = 1721
-                self.match(XPLOR_NIH_MR_Parser.All)
+                self.match(XplorMRParser.All)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Atom]:
+            elif token in [XplorMRParser.Atom]:
                 self.state = 1722
-                self.match(XPLOR_NIH_MR_Parser.Atom)
+                self.match(XplorMRParser.Atom)
                 self.state = 1723
-                self.match(XPLOR_NIH_MR_Parser.Segment_names)
+                self.match(XplorMRParser.Segment_names)
                 self.state = 1724
-                self.match(XPLOR_NIH_MR_Parser.Residue_numbers)
+                self.match(XplorMRParser.Residue_numbers)
                 self.state = 1725
-                self.match(XPLOR_NIH_MR_Parser.Atom_names)
+                self.match(XplorMRParser.Atom_names)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Attribute]:
+            elif token in [XplorMRParser.Attribute]:
                 self.state = 1726
-                self.match(XPLOR_NIH_MR_Parser.Attribute)
+                self.match(XplorMRParser.Attribute)
                 self.state = 1728
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XPLOR_NIH_MR_Parser.Abs:
+                if _la==XplorMRParser.Abs:
                     self.state = 1727
-                    self.match(XPLOR_NIH_MR_Parser.Abs)
+                    self.match(XplorMRParser.Abs)
 
 
                 self.state = 1730
-                self.match(XPLOR_NIH_MR_Parser.Attr_properties)
+                self.match(XplorMRParser.Attr_properties)
                 self.state = 1731
-                self.match(XPLOR_NIH_MR_Parser.Comparison_ops)
+                self.match(XplorMRParser.Comparison_ops)
                 self.state = 1732
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.BondedTo]:
+            elif token in [XplorMRParser.BondedTo]:
                 self.state = 1733
-                self.match(XPLOR_NIH_MR_Parser.BondedTo)
+                self.match(XplorMRParser.BondedTo)
                 self.state = 1734
                 self.factor(26)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.ByGroup]:
+            elif token in [XplorMRParser.ByGroup]:
                 self.state = 1735
-                self.match(XPLOR_NIH_MR_Parser.ByGroup)
+                self.match(XplorMRParser.ByGroup)
                 self.state = 1736
                 self.factor(25)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.ByRes]:
+            elif token in [XplorMRParser.ByRes]:
                 self.state = 1737
-                self.match(XPLOR_NIH_MR_Parser.ByRes)
+                self.match(XplorMRParser.ByRes)
                 self.state = 1738
                 self.factor(24)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Chemical]:
+            elif token in [XplorMRParser.Chemical]:
                 self.state = 1739
-                self.match(XPLOR_NIH_MR_Parser.Chemical)
+                self.match(XplorMRParser.Chemical)
                 self.state = 1749
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [XPLOR_NIH_MR_Parser.Atom_types]:
+                if token in [XplorMRParser.Atom_types]:
                     self.state = 1740
-                    self.match(XPLOR_NIH_MR_Parser.Atom_types)
+                    self.match(XplorMRParser.Atom_types)
                     pass
-                elif token in [XPLOR_NIH_MR_Parser.Atom_type]:
+                elif token in [XplorMRParser.Atom_type]:
                     self.state = 1741
-                    self.match(XPLOR_NIH_MR_Parser.Atom_type)
+                    self.match(XplorMRParser.Atom_type)
                     self.state = 1746
                     self._errHandler.sync(self)
                     _alt = self._interp.adaptivePredict(self._input,122,self._ctx)
                     while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                         if _alt==1:
                             self.state = 1742
-                            self.match(XPLOR_NIH_MR_Parser.Colon)
+                            self.match(XplorMRParser.Colon)
                             self.state = 1743
-                            self.match(XPLOR_NIH_MR_Parser.Atom_type) 
+                            self.match(XplorMRParser.Atom_type) 
                         self.state = 1748
                         self._errHandler.sync(self)
                         _alt = self._interp.adaptivePredict(self._input,122,self._ctx)
@@ -11152,42 +11152,42 @@ class XPLOR_NIH_MR_Parser ( Parser ):
                     raise NoViableAltException(self)
 
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Hydrogen]:
+            elif token in [XplorMRParser.Hydrogen]:
                 self.state = 1751
-                self.match(XPLOR_NIH_MR_Parser.Hydrogen)
+                self.match(XplorMRParser.Hydrogen)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Id]:
+            elif token in [XplorMRParser.Id]:
                 self.state = 1752
-                self.match(XPLOR_NIH_MR_Parser.Id)
+                self.match(XplorMRParser.Id)
                 self.state = 1753
-                self.match(XPLOR_NIH_MR_Parser.Integer)
+                self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Known]:
+            elif token in [XplorMRParser.Known]:
                 self.state = 1754
-                self.match(XPLOR_NIH_MR_Parser.Known)
+                self.match(XplorMRParser.Known)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Name]:
+            elif token in [XplorMRParser.Name]:
                 self.state = 1755
-                self.match(XPLOR_NIH_MR_Parser.Name)
+                self.match(XplorMRParser.Name)
                 self.state = 1765
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [XPLOR_NIH_MR_Parser.Atom_names]:
+                if token in [XplorMRParser.Atom_names]:
                     self.state = 1756
-                    self.match(XPLOR_NIH_MR_Parser.Atom_names)
+                    self.match(XplorMRParser.Atom_names)
                     pass
-                elif token in [XPLOR_NIH_MR_Parser.Atom_name]:
+                elif token in [XplorMRParser.Atom_name]:
                     self.state = 1757
-                    self.match(XPLOR_NIH_MR_Parser.Atom_name)
+                    self.match(XplorMRParser.Atom_name)
                     self.state = 1762
                     self._errHandler.sync(self)
                     _alt = self._interp.adaptivePredict(self._input,124,self._ctx)
                     while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                         if _alt==1:
                             self.state = 1758
-                            self.match(XPLOR_NIH_MR_Parser.Colon)
+                            self.match(XplorMRParser.Colon)
                             self.state = 1759
-                            self.match(XPLOR_NIH_MR_Parser.Atom_name) 
+                            self.match(XplorMRParser.Atom_name) 
                         self.state = 1764
                         self._errHandler.sync(self)
                         _alt = self._interp.adaptivePredict(self._input,124,self._ctx)
@@ -11197,52 +11197,52 @@ class XPLOR_NIH_MR_Parser ( Parser ):
                     raise NoViableAltException(self)
 
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Not_op]:
+            elif token in [XplorMRParser.Not_op]:
                 self.state = 1767
-                self.match(XPLOR_NIH_MR_Parser.Not_op)
+                self.match(XplorMRParser.Not_op)
                 self.state = 1768
                 self.factor(18)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Point]:
+            elif token in [XplorMRParser.Point]:
                 self.state = 1769
-                self.match(XPLOR_NIH_MR_Parser.Point)
+                self.match(XplorMRParser.Point)
                 self.state = 1770
                 self.vector_3d()
                 self.state = 1771
-                self.match(XPLOR_NIH_MR_Parser.Cut)
+                self.match(XplorMRParser.Cut)
                 self.state = 1772
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Previous]:
+            elif token in [XplorMRParser.Previous]:
                 self.state = 1774
-                self.match(XPLOR_NIH_MR_Parser.Previous)
+                self.match(XplorMRParser.Previous)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Pseudo]:
+            elif token in [XplorMRParser.Pseudo]:
                 self.state = 1775
-                self.match(XPLOR_NIH_MR_Parser.Pseudo)
+                self.match(XplorMRParser.Pseudo)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Residue]:
+            elif token in [XplorMRParser.Residue]:
                 self.state = 1776
-                self.match(XPLOR_NIH_MR_Parser.Residue)
+                self.match(XplorMRParser.Residue)
                 self.state = 1786
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [XPLOR_NIH_MR_Parser.Residue_numbers]:
+                if token in [XplorMRParser.Residue_numbers]:
                     self.state = 1777
-                    self.match(XPLOR_NIH_MR_Parser.Residue_numbers)
+                    self.match(XplorMRParser.Residue_numbers)
                     pass
-                elif token in [XPLOR_NIH_MR_Parser.Residue_number]:
+                elif token in [XplorMRParser.Residue_number]:
                     self.state = 1778
-                    self.match(XPLOR_NIH_MR_Parser.Residue_number)
+                    self.match(XplorMRParser.Residue_number)
                     self.state = 1783
                     self._errHandler.sync(self)
                     _alt = self._interp.adaptivePredict(self._input,126,self._ctx)
                     while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                         if _alt==1:
                             self.state = 1779
-                            self.match(XPLOR_NIH_MR_Parser.Colon)
+                            self.match(XplorMRParser.Colon)
                             self.state = 1780
-                            self.match(XPLOR_NIH_MR_Parser.Residue_number) 
+                            self.match(XplorMRParser.Residue_number) 
                         self.state = 1785
                         self._errHandler.sync(self)
                         _alt = self._interp.adaptivePredict(self._input,126,self._ctx)
@@ -11252,28 +11252,28 @@ class XPLOR_NIH_MR_Parser ( Parser ):
                     raise NoViableAltException(self)
 
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Resname]:
+            elif token in [XplorMRParser.Resname]:
                 self.state = 1788
-                self.match(XPLOR_NIH_MR_Parser.Resname)
+                self.match(XplorMRParser.Resname)
                 self.state = 1798
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [XPLOR_NIH_MR_Parser.Residue_names]:
+                if token in [XplorMRParser.Residue_names]:
                     self.state = 1789
-                    self.match(XPLOR_NIH_MR_Parser.Residue_names)
+                    self.match(XplorMRParser.Residue_names)
                     pass
-                elif token in [XPLOR_NIH_MR_Parser.Residue_name]:
+                elif token in [XplorMRParser.Residue_name]:
                     self.state = 1790
-                    self.match(XPLOR_NIH_MR_Parser.Residue_name)
+                    self.match(XplorMRParser.Residue_name)
                     self.state = 1795
                     self._errHandler.sync(self)
                     _alt = self._interp.adaptivePredict(self._input,128,self._ctx)
                     while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                         if _alt==1:
                             self.state = 1791
-                            self.match(XPLOR_NIH_MR_Parser.Colon)
+                            self.match(XplorMRParser.Colon)
                             self.state = 1792
-                            self.match(XPLOR_NIH_MR_Parser.Residue_name) 
+                            self.match(XplorMRParser.Residue_name) 
                         self.state = 1797
                         self._errHandler.sync(self)
                         _alt = self._interp.adaptivePredict(self._input,128,self._ctx)
@@ -11283,80 +11283,80 @@ class XPLOR_NIH_MR_Parser ( Parser ):
                     raise NoViableAltException(self)
 
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.SegIdentifier]:
+            elif token in [XplorMRParser.SegIdentifier]:
                 self.state = 1800
-                self.match(XPLOR_NIH_MR_Parser.SegIdentifier)
+                self.match(XplorMRParser.SegIdentifier)
                 self.state = 1811
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [XPLOR_NIH_MR_Parser.Segment_names]:
+                if token in [XplorMRParser.Segment_names]:
                     self.state = 1801
-                    self.match(XPLOR_NIH_MR_Parser.Segment_names)
+                    self.match(XplorMRParser.Segment_names)
                     pass
-                elif token in [XPLOR_NIH_MR_Parser.Segment_name]:
+                elif token in [XplorMRParser.Segment_name]:
                     self.state = 1802
-                    self.match(XPLOR_NIH_MR_Parser.Segment_name)
+                    self.match(XplorMRParser.Segment_name)
                     self.state = 1807
                     self._errHandler.sync(self)
                     _alt = self._interp.adaptivePredict(self._input,130,self._ctx)
                     while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                         if _alt==1:
                             self.state = 1803
-                            self.match(XPLOR_NIH_MR_Parser.Colon)
+                            self.match(XplorMRParser.Colon)
                             self.state = 1804
-                            self.match(XPLOR_NIH_MR_Parser.Segment_name) 
+                            self.match(XplorMRParser.Segment_name) 
                         self.state = 1809
                         self._errHandler.sync(self)
                         _alt = self._interp.adaptivePredict(self._input,130,self._ctx)
 
                     pass
-                elif token in [XPLOR_NIH_MR_Parser.Double_quote_string]:
+                elif token in [XplorMRParser.Double_quote_string]:
                     self.state = 1810
-                    self.match(XPLOR_NIH_MR_Parser.Double_quote_string)
+                    self.match(XplorMRParser.Double_quote_string)
                     pass
                 else:
                     raise NoViableAltException(self)
 
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Store_1]:
+            elif token in [XplorMRParser.Store_1]:
                 self.state = 1813
-                self.match(XPLOR_NIH_MR_Parser.Store_1)
+                self.match(XplorMRParser.Store_1)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Store_2]:
+            elif token in [XplorMRParser.Store_2]:
                 self.state = 1814
-                self.match(XPLOR_NIH_MR_Parser.Store_2)
+                self.match(XplorMRParser.Store_2)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Store_3]:
+            elif token in [XplorMRParser.Store_3]:
                 self.state = 1815
-                self.match(XPLOR_NIH_MR_Parser.Store_3)
+                self.match(XplorMRParser.Store_3)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Store_4]:
+            elif token in [XplorMRParser.Store_4]:
                 self.state = 1816
-                self.match(XPLOR_NIH_MR_Parser.Store_4)
+                self.match(XplorMRParser.Store_4)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Store_5]:
+            elif token in [XplorMRParser.Store_5]:
                 self.state = 1817
-                self.match(XPLOR_NIH_MR_Parser.Store_5)
+                self.match(XplorMRParser.Store_5)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Store_6]:
+            elif token in [XplorMRParser.Store_6]:
                 self.state = 1818
-                self.match(XPLOR_NIH_MR_Parser.Store_6)
+                self.match(XplorMRParser.Store_6)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Store_7]:
+            elif token in [XplorMRParser.Store_7]:
                 self.state = 1819
-                self.match(XPLOR_NIH_MR_Parser.Store_7)
+                self.match(XplorMRParser.Store_7)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Store_8]:
+            elif token in [XplorMRParser.Store_8]:
                 self.state = 1820
-                self.match(XPLOR_NIH_MR_Parser.Store_8)
+                self.match(XplorMRParser.Store_8)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Store_9]:
+            elif token in [XplorMRParser.Store_9]:
                 self.state = 1821
-                self.match(XPLOR_NIH_MR_Parser.Store_9)
+                self.match(XplorMRParser.Store_9)
                 pass
-            elif token in [XPLOR_NIH_MR_Parser.Tag]:
+            elif token in [XplorMRParser.Tag]:
                 self.state = 1822
-                self.match(XPLOR_NIH_MR_Parser.Tag)
+                self.match(XplorMRParser.Tag)
                 pass
             else:
                 raise NoViableAltException(self)
@@ -11374,29 +11374,29 @@ class XPLOR_NIH_MR_Parser ( Parser ):
                     self._errHandler.sync(self)
                     la_ = self._interp.adaptivePredict(self._input,133,self._ctx)
                     if la_ == 1:
-                        localctx = XPLOR_NIH_MR_Parser.FactorContext(self, _parentctx, _parentState)
+                        localctx = XplorMRParser.FactorContext(self, _parentctx, _parentState)
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_factor)
                         self.state = 1825
                         if not self.precpred(self._ctx, 29):
                             from antlr4.error.Errors import FailedPredicateException
                             raise FailedPredicateException(self, "self.precpred(self._ctx, 29)")
                         self.state = 1826
-                        self.match(XPLOR_NIH_MR_Parser.Around)
+                        self.match(XplorMRParser.Around)
                         self.state = 1827
-                        self.match(XPLOR_NIH_MR_Parser.Real)
+                        self.match(XplorMRParser.Real)
                         pass
 
                     elif la_ == 2:
-                        localctx = XPLOR_NIH_MR_Parser.FactorContext(self, _parentctx, _parentState)
+                        localctx = XplorMRParser.FactorContext(self, _parentctx, _parentState)
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_factor)
                         self.state = 1828
                         if not self.precpred(self._ctx, 12):
                             from antlr4.error.Errors import FailedPredicateException
                             raise FailedPredicateException(self, "self.precpred(self._ctx, 12)")
                         self.state = 1829
-                        self.match(XPLOR_NIH_MR_Parser.Saround)
+                        self.match(XplorMRParser.Saround)
                         self.state = 1830
-                        self.match(XPLOR_NIH_MR_Parser.Real)
+                        self.match(XplorMRParser.Real)
                         pass
 
              
@@ -11420,38 +11420,38 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             self.parser = parser
 
         def L_paren(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.L_paren, 0)
+            return self.getToken(XplorMRParser.L_paren, 0)
 
         def Real(self, i:int=None):
             if i is None:
-                return self.getTokens(XPLOR_NIH_MR_Parser.Real)
+                return self.getTokens(XplorMRParser.Real)
             else:
-                return self.getToken(XPLOR_NIH_MR_Parser.Real, i)
+                return self.getToken(XplorMRParser.Real, i)
 
         def R_paren(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.R_paren, 0)
+            return self.getToken(XplorMRParser.R_paren, 0)
 
         def Tail(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Tail, 0)
+            return self.getToken(XplorMRParser.Tail, 0)
 
         def Equ_op(self, i:int=None):
             if i is None:
-                return self.getTokens(XPLOR_NIH_MR_Parser.Equ_op)
+                return self.getTokens(XplorMRParser.Equ_op)
             else:
-                return self.getToken(XPLOR_NIH_MR_Parser.Equ_op, i)
+                return self.getToken(XplorMRParser.Equ_op, i)
 
         def selection(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XPLOR_NIH_MR_Parser.SelectionContext)
+                return self.getTypedRuleContexts(XplorMRParser.SelectionContext)
             else:
-                return self.getTypedRuleContext(XPLOR_NIH_MR_Parser.SelectionContext,i)
+                return self.getTypedRuleContext(XplorMRParser.SelectionContext,i)
 
 
         def Head(self):
-            return self.getToken(XPLOR_NIH_MR_Parser.Head, 0)
+            return self.getToken(XplorMRParser.Head, 0)
 
         def getRuleIndex(self):
-            return XPLOR_NIH_MR_Parser.RULE_vector_3d
+            return XplorMRParser.RULE_vector_3d
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterVector_3d" ):
@@ -11466,7 +11466,7 @@ class XPLOR_NIH_MR_Parser ( Parser ):
 
     def vector_3d(self):
 
-        localctx = XPLOR_NIH_MR_Parser.Vector_3dContext(self, self._ctx, self.state)
+        localctx = XplorMRParser.Vector_3dContext(self, self._ctx, self.state)
         self.enterRule(localctx, 174, self.RULE_vector_3d)
         self._la = 0 # Token type
         try:
@@ -11476,41 +11476,41 @@ class XPLOR_NIH_MR_Parser ( Parser ):
             if la_ == 1:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 1836
-                self.match(XPLOR_NIH_MR_Parser.L_paren)
+                self.match(XplorMRParser.L_paren)
                 self.state = 1837
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 1838
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 1839
-                self.match(XPLOR_NIH_MR_Parser.Real)
+                self.match(XplorMRParser.Real)
                 self.state = 1840
-                self.match(XPLOR_NIH_MR_Parser.R_paren)
+                self.match(XplorMRParser.R_paren)
                 pass
 
             elif la_ == 2:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 1841
-                self.match(XPLOR_NIH_MR_Parser.L_paren)
+                self.match(XplorMRParser.L_paren)
                 self.state = 1842
-                self.match(XPLOR_NIH_MR_Parser.Tail)
+                self.match(XplorMRParser.Tail)
                 self.state = 1843
-                self.match(XPLOR_NIH_MR_Parser.Equ_op)
+                self.match(XplorMRParser.Equ_op)
                 self.state = 1844
                 self.selection()
                 self.state = 1848
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XPLOR_NIH_MR_Parser.Head:
+                if _la==XplorMRParser.Head:
                     self.state = 1845
-                    self.match(XPLOR_NIH_MR_Parser.Head)
+                    self.match(XplorMRParser.Head)
                     self.state = 1846
-                    self.match(XPLOR_NIH_MR_Parser.Equ_op)
+                    self.match(XplorMRParser.Equ_op)
                     self.state = 1847
                     self.selection()
 
 
                 self.state = 1850
-                self.match(XPLOR_NIH_MR_Parser.R_paren)
+                self.match(XplorMRParser.R_paren)
                 pass
 
 

@@ -1,4 +1,4 @@
-# Generated from AMBER_MR_Lexer.g4 by ANTLR 4.9
+# Generated from AmberMRLexer.g4 by ANTLR 4.9
 from antlr4 import *
 from io import StringIO
 from typing.io import TextIO
@@ -1420,7 +1420,7 @@ def serializedATN():
         return buf.getvalue()
 
 
-class AMBER_MR_Lexer(Lexer):
+class AmberMRLexer(Lexer):
 
     atn = ATNDeserializer().deserialize(serializedATN())
 
@@ -1793,7 +1793,7 @@ class AMBER_MR_Lexer(Lexer):
                   "L_paren", "R_paren", "L_brace", "R_brace", "L_brakt", 
                   "R_brakt", "Equ_op", "QUOT", "SPACE", "COMMENT", "LINE_COMMENT" ]
 
-    grammarFileName = "AMBER_MR_Lexer.g4"
+    grammarFileName = "AmberMRLexer.g4"
 
     def __init__(self, input=None, output:TextIO = sys.stdout):
         super().__init__(input, output)

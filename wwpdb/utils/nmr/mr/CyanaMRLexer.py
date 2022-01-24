@@ -1,4 +1,4 @@
-# Generated from CYANA_MR_Lexer.g4 by ANTLR 4.9
+# Generated from CyanaMRLexer.g4 by ANTLR 4.9
 from antlr4 import *
 from io import StringIO
 from typing.io import TextIO
@@ -65,7 +65,7 @@ def serializedATN():
         return buf.getvalue()
 
 
-class CYANA_MR_Lexer(Lexer):
+class CyanaMRLexer(Lexer):
 
     atn = ATNDeserializer().deserialize(serializedATN())
 
@@ -99,7 +99,7 @@ class CYANA_MR_Lexer(Lexer):
                   "ATM_NAME_CHAR", "ATM_TYPE_CHAR", "SIMPLE_NAME", "SPACE", 
                   "COMMENT", "LINE_COMMENT" ]
 
-    grammarFileName = "CYANA_MR_Lexer.g4"
+    grammarFileName = "CyanaMRLexer.g4"
 
     def __init__(self, input=None, output:TextIO = sys.stdout):
         super().__init__(input, output)

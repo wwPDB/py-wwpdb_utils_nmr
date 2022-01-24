@@ -14,9 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-parser grammar CYANA_MR_Parser;
+parser grammar CyanaMRParser;
 
-options { tokenVocab=CYANA_MR_Lexer; }
+options { tokenVocab=CyanaMRLexer; }
 
 cyana_mr:
 	distance_restraints*

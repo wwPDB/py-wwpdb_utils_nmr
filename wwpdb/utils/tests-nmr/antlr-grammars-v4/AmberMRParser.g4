@@ -14,9 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-parser grammar AMBER_MR_Parser;
+parser grammar AmberMRParser;
 
-options { tokenVocab=AMBER_MR_Lexer; }
+options { tokenVocab=AmberMRLexer; }
 
 amber_mr:
 	nmr_restraint*

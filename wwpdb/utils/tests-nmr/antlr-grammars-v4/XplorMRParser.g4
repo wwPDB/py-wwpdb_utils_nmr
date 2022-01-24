@@ -14,9 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-parser grammar XPLOR_NIH_MR_Parser;
+parser grammar XplorMRParser;
 
-options { tokenVocab=XPLOR_NIH_MR_Lexer; }
+options { tokenVocab=XplorMRLexer; }
 
 xplor_nih_mr:
 	distance_restraint*

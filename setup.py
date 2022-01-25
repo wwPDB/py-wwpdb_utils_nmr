@@ -50,7 +50,6 @@ setup(
                       "rmsd", "packaging",
                       "antlr4-python2-runtime; python_version == '2.7'",
                       "antlr4-python3-runtime; python_version >= '3'"],
-                      
     packages=find_packages(exclude=['wwpdb.utils.tests-nmr', 'wwpdb.utils.tests-nmr-tox', 'mock-data']),
     # Enables Manifest to be used
     include_package_data=True,

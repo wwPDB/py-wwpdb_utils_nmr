@@ -121,7 +121,7 @@ NXPK:			N X P K;				// = Integer
 
 ICONSTR:		I C O N S T R;				// = Integer
 
-One_or_Zero:		'1' | '0';				// IRESID = 0 for the IAT points to the atoms, IRESID = 1 for the the IAT points to the residues
+//One_or_Zero:		'1' | '0';				// IRESID = 0 for the IAT points to the atoms, IRESID = 1 for the the IAT points to the residues
 								// IRSTYP = 0 for target values are used directly, IRSTYP = 1 for target values are relatively displacement from the initial coordinates
 								// IALTD = 0 for the penalty energy continues to rise in case of large distance violations, IALTD = 1 for the penalty energy is flattened out in that case
 								// IMULT = 0 for R2A->RK2A, R3A->RK3A change linearly, IMULT = 1 for R2A->RK2A, R3A->RK3A change multicatively
@@ -426,15 +426,16 @@ fragment DEC_DOT_DEC:	DECIMAL '.' DECIMAL | DECIMAL '.' | '.' DECIMAL;
 fragment DEC_DIGIT:	[0-9];
 fragment DECIMAL:	DEC_DIGIT+;
 
-fragment ALPHA_NUM:	[A-Za-z0-9];
-fragment START_CHAR:	[A-Za-z0-9_];
+fragment ALPHA:		[A-Za-z];
+fragment ALPHA_NUM:	ALPHA | DEC_DIGIT;
+fragment START_CHAR:	ALPHA_NUM | '_';
 fragment NAME_CHAR:	START_CHAR | '\'' | '-' | '+' | '.';
-fragment ATM_NAME_CHAR:	ALPHA_NUM | '\'';
+fragment SIMPLE_NAME:	START_CHAR NAME_CHAR*;
 
-Atom_name:		ALPHA_NUM ATM_NAME_CHAR*;
+Simple_name:		SIMPLE_NAME;
 
-Quoted_atom_name:	('\'' | '"')? Atom_name Atom_name* ('\'' | '"')?;
-Res_atom_name:		':' Integer '@' Atom_name;		// ambmask format
+Quoted_atom_name:	('\'' | '"')? Simple_name Simple_name* ('\'' | '"')?;
+Res_atom_name:		':' Integer '@' Simple_name;		// ambmask format
 
 L_paren:		'(';
 R_paren:		')';

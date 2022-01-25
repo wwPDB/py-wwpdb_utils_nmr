@@ -63,14 +63,14 @@ distance_statement:
 	RSTWT Equ_op Real Comma? |
 	RESTRAINT Equ_op QUOT DistanceRstFunctionCall QUOT Comma? |
 	ATNAM Equ_op Quoted_atom_name Comma Quoted_atom_name Comma? |
-	IRESID Equ_op One_or_Zero Comma? |
+	IRESID Equ_op Integer Comma? |
 	NSTEP1 Equ_op Integer Comma? |
 	NSTEP2 Equ_op Integer Comma? |
-	IRSTYP Equ_op One_or_Zero Comma? |
-	IALTD Equ_op One_or_Zero Comma? |
+	IRSTYP Equ_op Integer Comma? |
+	IALTD Equ_op Integer Comma? |
 	IFVARI Equ_op Integer Comma? |
 	NINC Equ_op Integer Comma? |
-	IMULT Equ_op One_or_Zero Comma? |
+	IMULT Equ_op Integer Comma? |
 	R1 Equ_op Real Comma? |
 	R2 Equ_op Real Comma? |
 	R3 Equ_op Real Comma? |
@@ -88,11 +88,11 @@ distance_statement:
 	R0A Equ_op Real Comma? |
 	K0A Equ_op Real Comma? |
 	DISTANCE_IGR Equ_op Integer (Comma Integer)* Comma? |
-	FXYZ Equ_op One_or_Zero Comma One_or_Zero Comma One_or_Zero Comma? |
-	OUTXYZ Equ_op One_or_Zero Comma? |
+	FXYZ Equ_op Integer Comma Integer Comma Integer Comma? |
+	OUTXYZ Equ_op Integer Comma? |
 	DISTANCE_GRNAM Equ_op Quoted_atom_name (Comma Quoted_atom_name)* Comma? |
-	IR6 Equ_op One_or_Zero Comma? |
-	IFNTYP Equ_op One_or_Zero Comma? |
+	IR6 Equ_op Integer Comma? |
+	IFNTYP Equ_op Integer Comma? |
 	IXPK Equ_op Integer Comma? |
 	NXPK Equ_op Integer Comma? |
 	ICONSTR Equ_op Integer Comma? |
@@ -106,13 +106,13 @@ angle_statement:
 	RSTWT Equ_op Real Comma? |
 	RESTRAINT Equ_op QUOT AngleRstFunctionCall QUOT Comma? |
 	ATNAM Equ_op Quoted_atom_name Comma Quoted_atom_name Comma Quoted_atom_name Comma? |
-	IRESID Equ_op One_or_Zero Comma? |
+	IRESID Equ_op Integer Comma? |
 	NSTEP1 Equ_op Integer Comma? |
 	NSTEP2 Equ_op Integer Comma? |
-	IRSTYP Equ_op One_or_Zero Comma? |
+	IRSTYP Equ_op Integer Comma? |
 	IFVARI Equ_op Integer Comma? |
 	NINC Equ_op Integer Comma? |
-	IMULT Equ_op One_or_Zero Comma? |
+	IMULT Equ_op Integer Comma? |
 	R1 Equ_op Real Comma? |
 	R2 Equ_op Real Comma? |
 	R3 Equ_op Real Comma? |
@@ -131,7 +131,7 @@ angle_statement:
 	K0A Equ_op Real Comma? |
 	ANGLE_IGR Equ_op Integer (Comma Integer)* Comma? |
 	ANGLE_GRNAM Equ_op Quoted_atom_name (Comma Quoted_atom_name)* Comma? |
-	IFNTYP Equ_op One_or_Zero Comma? |
+	IFNTYP Equ_op Integer Comma? |
 	IXPK Equ_op Integer Comma? |
 	NXPK Equ_op Integer Comma? |
 	AngleIFunctionCall Equ_op Integer Comma? |
@@ -144,13 +144,13 @@ torsion_statement:
 	RSTWT Equ_op Real Comma? |
 	RESTRAINT Equ_op QUOT TorsionRstFunctionCall QUOT Comma? |
 	ATNAM Equ_op Quoted_atom_name Comma Quoted_atom_name Comma Quoted_atom_name Comma Quoted_atom_name Comma? |
-	IRESID Equ_op One_or_Zero Comma? |
+	IRESID Equ_op Integer Comma? |
 	NSTEP1 Equ_op Integer Comma? |
 	NSTEP2 Equ_op Integer Comma? |
-	IRSTYP Equ_op One_or_Zero Comma? |
+	IRSTYP Equ_op Integer Comma? |
 	IFVARI Equ_op Integer Comma? |
 	NINC Equ_op Integer Comma? |
-	IMULT Equ_op One_or_Zero Comma? |
+	IMULT Equ_op Integer Comma? |
 	R1 Equ_op Real Comma? |
 	R2 Equ_op Real Comma? |
 	R3 Equ_op Real Comma? |
@@ -170,7 +170,7 @@ torsion_statement:
 	TORSION_IGR Equ_op Integer (Comma Integer)* Comma? |
 	TORSION_GRNAM Equ_op Quoted_atom_name (Comma Quoted_atom_name)* Comma? |
 	RJCOEF Equ_op Real Comma Real Comma Real Comma? |
-	IFNTYP Equ_op One_or_Zero Comma? |
+	IFNTYP Equ_op Integer Comma? |
 	IXPK Equ_op Integer Comma? |
 	NXPK Equ_op Integer Comma? |
 	TorsionIFunctionCall Equ_op Integer Comma? |
@@ -182,13 +182,13 @@ plane_point_angle_statement:
 	IAT Equ_op Integer Comma Integer Comma Integer Comma Integer Comma Integer Comma? |
 	RSTWT Equ_op Real Comma? |
 	ATNAM Equ_op Quoted_atom_name Comma Quoted_atom_name Comma Quoted_atom_name Comma Quoted_atom_name Comma Quoted_atom_name Comma?
-	IRESID Equ_op One_or_Zero Comma? |
+	IRESID Equ_op Integer Comma? |
 	NSTEP1 Equ_op Integer Comma? |
 	NSTEP2 Equ_op Integer Comma? |
-	IRSTYP Equ_op One_or_Zero Comma? |
+	IRSTYP Equ_op Integer Comma? |
 	IFVARI Equ_op Integer Comma? |
 	NINC Equ_op Integer Comma? |
-	IMULT Equ_op One_or_Zero Comma? |
+	IMULT Equ_op Integer Comma? |
 	R1 Equ_op Real Comma? |
 	R2 Equ_op Real Comma? |
 	R3 Equ_op Real Comma? |
@@ -218,13 +218,13 @@ plane_plane_angle_statement:
 	IAT Equ_op Integer Comma Integer Comma Integer Comma Integer Comma Integer Comma Integer Comma Integer Comma Integer Comma? |
 	RSTWT Equ_op Real Comma? |
 	ATNAM Equ_op Quoted_atom_name Comma Quoted_atom_name Comma Quoted_atom_name Comma Quoted_atom_name Comma Quoted_atom_name Comma Quoted_atom_name Comma Quoted_atom_name Comma Quoted_atom_name Comma?
-	IRESID Equ_op One_or_Zero Comma? |
+	IRESID Equ_op Integer Comma? |
 	NSTEP1 Equ_op Integer Comma? |
 	NSTEP2 Equ_op Integer Comma? |
-	IRSTYP Equ_op One_or_Zero Comma? |
+	IRSTYP Equ_op Integer Comma? |
 	IFVARI Equ_op Integer Comma? |
 	NINC Equ_op Integer Comma? |
-	IMULT Equ_op One_or_Zero Comma? |
+	IMULT Equ_op Integer Comma? |
 	R1 Equ_op Real Comma? |
 	R2 Equ_op Real Comma? |
 	R3 Equ_op Real Comma? |
@@ -255,14 +255,14 @@ general_distance2_statement:
 	RSTWT Equ_op Real Comma Real Comma? |
 	RESTRAINT Equ_op QUOT Coordinate2RstFunctionCall QUOT Comma? |
 	ATNAM Equ_op Quoted_atom_name Comma Quoted_atom_name Comma Quoted_atom_name Comma Quoted_atom_name Comma? |
-	IRESID Equ_op One_or_Zero Comma? |
+	IRESID Equ_op Integer Comma? |
 	NSTEP1 Equ_op Integer Comma? |
 	NSTEP2 Equ_op Integer Comma? |
-	IRSTYP Equ_op One_or_Zero Comma? |
-	IALTD Equ_op One_or_Zero Comma? |
+	IRSTYP Equ_op Integer Comma? |
+	IALTD Equ_op Integer Comma? |
 	IFVARI Equ_op Integer Comma? |
 	NINC Equ_op Integer Comma? |
-	IMULT Equ_op One_or_Zero Comma? |
+	IMULT Equ_op Integer Comma? |
 	R1 Equ_op Real Comma? |
 	R2 Equ_op Real Comma? |
 	R3 Equ_op Real Comma? |
@@ -281,7 +281,7 @@ general_distance2_statement:
 	K0A Equ_op Real Comma? |
 	GENDISTANCE2_IGR Equ_op Integer (Comma Integer)* Comma? |
 	GENDISTANCE2_GRNAM Equ_op Quoted_atom_name (Comma Quoted_atom_name)* Comma? |
-	IFNTYP Equ_op One_or_Zero Comma? |
+	IFNTYP Equ_op Integer Comma? |
 	IXPK Equ_op Integer Comma? |
 	NXPK Equ_op Integer Comma? |
 	GeneralDistance2IFunctionCall Equ_op Integer Comma? |
@@ -294,14 +294,14 @@ general_distance3_statement:
 	RSTWT Equ_op Real Comma Real Comma Real Comma? |
 	RESTRAINT Equ_op QUOT Coordinate3RstFunctionCall QUOT Comma? |
 	ATNAM Equ_op Quoted_atom_name Comma Quoted_atom_name Comma Quoted_atom_name Comma Quoted_atom_name Comma Quoted_atom_name Comma Quoted_atom_name Comma? |
-	IRESID Equ_op One_or_Zero Comma? |
+	IRESID Equ_op Integer Comma? |
 	NSTEP1 Equ_op Integer Comma? |
 	NSTEP2 Equ_op Integer Comma? |
-	IRSTYP Equ_op One_or_Zero Comma? |
-	IALTD Equ_op One_or_Zero Comma? |
+	IRSTYP Equ_op Integer Comma? |
+	IALTD Equ_op Integer Comma? |
 	IFVARI Equ_op Integer Comma? |
 	NINC Equ_op Integer Comma? |
-	IMULT Equ_op One_or_Zero Comma? |
+	IMULT Equ_op Integer Comma? |
 	R1 Equ_op Real Comma? |
 	R2 Equ_op Real Comma? |
 	R3 Equ_op Real Comma? |
@@ -320,7 +320,7 @@ general_distance3_statement:
 	K0A Equ_op Real Comma? |
 	GENDISTANCE3_IGR Equ_op Integer (Comma Integer)* Comma? |
 	GENDISTANCE3_GRNAM Equ_op Quoted_atom_name (Comma Quoted_atom_name)* Comma? |
-	IFNTYP Equ_op One_or_Zero Comma? |
+	IFNTYP Equ_op Integer Comma? |
 	IXPK Equ_op Integer Comma? |
 	NXPK Equ_op Integer Comma? |
 	GeneralDistance3IFunctionCall Equ_op Integer Comma? |
@@ -333,14 +333,14 @@ general_distance4_statement:
 	RSTWT Equ_op Real Comma Real Comma Real Comma Real Comma? |
 	RESTRAINT Equ_op QUOT Coordinate4RstFunctionCall QUOT Comma? |
 	ATNAM Equ_op Quoted_atom_name Comma Quoted_atom_name Comma Quoted_atom_name Comma Quoted_atom_name Comma Quoted_atom_name Comma Quoted_atom_name Comma Quoted_atom_name Comma Quoted_atom_name Comma? |
-	IRESID Equ_op One_or_Zero Comma? |
+	IRESID Equ_op Integer Comma? |
 	NSTEP1 Equ_op Integer Comma? |
 	NSTEP2 Equ_op Integer Comma? |
-	IRSTYP Equ_op One_or_Zero Comma? |
-	IALTD Equ_op One_or_Zero Comma? |
+	IRSTYP Equ_op Integer Comma? |
+	IALTD Equ_op Integer Comma? |
 	IFVARI Equ_op Integer Comma? |
 	NINC Equ_op Integer Comma? |
-	IMULT Equ_op One_or_Zero Comma? |
+	IMULT Equ_op Integer Comma? |
 	R1 Equ_op Real Comma? |
 	R2 Equ_op Real Comma? |
 	R3 Equ_op Real Comma? |
@@ -359,7 +359,7 @@ general_distance4_statement:
 	K0A Equ_op Real Comma? |
 	GENDISTANCE4_IGR Equ_op Integer (Comma Integer)* Comma? |
 	GENDISTANCE4_GRNAM Equ_op Quoted_atom_name (Comma Quoted_atom_name)* Comma? |
-	IFNTYP Equ_op One_or_Zero Comma? |
+	IFNTYP Equ_op Integer Comma? |
 	IXPK Equ_op Integer Comma? |
 	NXPK Equ_op Integer Comma? |
 	GeneralDistance4IFunctionCall Equ_op Integer Comma? |
@@ -380,7 +380,7 @@ noeexp_statement:
 	OMEGA Equ_op Real Comma? |
 	TAUROT Equ_op Real Comma? |
 	TAUMET Equ_op Real Comma? |
-	ID2O Equ_op One_or_Zero Comma? |
+	ID2O Equ_op Integer Comma? |
 	OSCALE Equ_op Real Comma?;
 
 /* Amber: NMR restraints - 29.3. Chemical shift restraints - Syntax

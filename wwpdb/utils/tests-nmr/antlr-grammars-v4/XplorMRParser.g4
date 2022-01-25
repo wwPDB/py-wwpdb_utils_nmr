@@ -1,6 +1,6 @@
 /*
  XPLOR-NIH MR (Magnetic Restraint) parser grammar for ANTLR v4.
- Copyright 2021 Masashi Yokochi
+ Copyright 2022 Masashi Yokochi
 
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -41,6 +41,11 @@ xplor_nih_mr:
 	porientation_restraint*
 	pccr_restraint*
 	hbond_restraint*
+	noe_assign*			// allowing bare assign clauses for distance restraints
+	dihedral_assign*		// allowing bare assign clauses for dihedral angle restraints
+	sani_assign*			// allowing bare assign clauses for RDC restraints
+	planar_statement*		// allowing bare group clauses for planer restraints
+	hbond_assign*			// allowing bare assign clauses for Hydrogen bond restraints
 	EOF;
 
 distance_restraint:
@@ -118,26 +123,26 @@ hbond_restraint:
 */
 noe_statement:
 	noe_assign* |
-	Asymptote Class_names Real |
-	Averaging Class_names Noe_avr_methods |
-	Bhig Class_names Real |
+	Asymptote Simple_names Real |
+	Averaging Simple_names Noe_avr_methods |
+	Bhig Simple_names Real |
 	Ceiling Equ_op Real |
-	Classification Class_name |
-	CountViol Class_name |
-	Distribute Class_name Class_name Real |
-	Monomers Class_names Integer |
-	Ncount Class_names Integer |
+	Classification Simple_name |
+	CountViol Simple_name |
+	Distribute Simple_name Simple_name Real |
+	Monomers Simple_names Integer |
+	Ncount Simple_names Integer |
 	Nrestraints Equ_op Integer |
-	Potential Class_names Noe_potential |
+	Potential Simple_names Noe_potential |
 	Predict L_brace predict_statement R_brace End |
 	Print Threshold Equ_op? Real |
 	Reset |
-	Rswitch Class_names Real |
-	Scale Class_names Real |
-	SoExponent Class_names Real |
-	SqConstant Class_names Real |
-	SqExponent Class_names Real |
-	SqOffset Class_names Real |
+	Rswitch Simple_names Real |
+	Scale Simple_names Real |
+	SoExponent Simple_names Real |
+	SqConstant Simple_names Real |
+	SqExponent Simple_names Real |
+	SqOffset Simple_names Real |
 	Temperature Equ_op Real;
 
 noe_assign:
@@ -163,7 +168,7 @@ dihedral_assign:
 */
 sani_statement:
 	sani_assign* |
-	Classification Class_name |
+	Classification Simple_name |
 	Coefficients Real Real Real |
 	ForceConstant Real |
 	Nrestraints Integer |
@@ -179,7 +184,7 @@ sani_assign:
 */
 xdip_statement:
 	xdip_assign* |
-	Classification Class_name |
+	Classification Simple_name |
 	Type Rdc_dist_fix_types |
 	Scale Real |
 	Sign Logical |
@@ -200,7 +205,7 @@ xdip_assign:
 vean_statement:
 	vean_assign* |
 	Cv Equ_op Integer |
-	Classification Class_name |
+	Classification Simple_name |
 	ForceConstant Real Real |
 	Nrestraints Integer |
 	Partition Equ_op Integer |
@@ -215,7 +220,7 @@ vean_assign:
 */
 tens_statement:
 	tens_assign* |
-	Classification Class_name |
+	Classification Simple_name |
 	Coefficients Real |
 	Nrestraints Integer |
 	Potential Rdc_potential |
@@ -230,7 +235,7 @@ tens_assign:
 */
 anis_statement:
 	anis_assign* |
-	Classification Class_name |
+	Classification Simple_name |
 	Coefficients Real Real Real Real |
 	ForceConstant Real |
 	Nrestraints Integer |
@@ -258,11 +263,11 @@ group_statement:
 */
 antidistance_statement:
 	xadc_assign* |
-	Classification Class_name |
+	Classification Simple_name |
 	Expectation Integer Real |
 	ForceConstant Real |
 	Nrestraints Integer |
-	Print Threshold Real (All | (Classification Class_name)) |
+	Print Threshold Real (All | (Classification Simple_name)) |
 	Reset |
 	Size Real Integer |
 	Zero;
@@ -275,15 +280,15 @@ xadc_assign:
 */
 coupling_statement:
 	coup_assign* |
-	Classification Class_name |
+	Classification Simple_name |
 	Coefficients Real Real Real Real |
 	Cv Equ_op Integer |
-	DegEnergy Number_of_couplings |
+	DegEnergy Integer |
 	ForceConstant Real Real? |
 	Nrestraints Integer |
 	Partition Equ_op Integer |
 	Potential Coupling_potential |
-	Print Threshold Real (All | (Classification Class_name)) |
+	Print Threshold Real (All | (Classification Simple_name)) |
 	Reset;
 
 coup_assign:
@@ -294,7 +299,7 @@ coup_assign:
 */
 carbon_shift_statement:
 	carbon_shift_assign* |
-	Classification Class_name |
+	Classification Simple_name |
 	Expectation Integer Integer Real Real Real |
 	ForceConstant Real |
 	Nrestraints Integer |
@@ -325,12 +330,12 @@ proton_shift_statement:
 	proton_shift_oxygens* |
 	proton_shift_ring_atoms* |
 	proton_shift_alphas_and_amides* |
-	Classification Class_name |
+	Classification Simple_name |
 	Error Real |
-	DegEnergy Number_of_shifts |
+	DegEnergy Integer |
 	ForceConstant Real Real? |
 	Potential Coupling_potential |
-	Print Threshold Real (All | (Classification Class_name)) Rmsd_or_Not |
+	Print Threshold Real (All | (Classification Simple_name)) Simple_name |
 	Reset;
 
 observed:
@@ -340,7 +345,7 @@ proton_shift_rcoil:
 	Rcoil selection Real;
 
 proton_shift_anisotropy:
-	Anisotropy selection selection selection CO_or_CN Logical? SC_or_BB;
+	Anisotropy selection selection selection Simple_name Logical? Simple_name;
 
 proton_shift_amides:
 	Amides selection;
@@ -355,7 +360,7 @@ proton_shift_oxygens:
 	Oxygens selection;
 
 proton_shift_ring_atoms:
-	RingAtoms Ring_resname selection selection selection selection selection selection?;
+	RingAtoms Simple_name selection selection selection selection selection selection?;
 
 proton_shift_alphas_and_amides:
 	AlphasAndAmides selection;
@@ -365,13 +370,13 @@ proton_shift_alphas_and_amides:
 */
 ramachandran_statement:
 	rama_assign* |
-	Classification Class_name |
+	Classification Simple_name |
 	Cutoff Real |
 	ForceConstant Real |
 	Gaussian Real Real Real (Real Real Real)? (Real Real Real)? (Real Real Real)? |
 	Nrestraints Integer |
 	Phase Real Real Real (Real Real Real)? (Real Real Real)? (Real Real Real)? |
-	Print Threshold Real (All | (Classification Class_name)) |
+	Print Threshold Real (All | (Classification Simple_name)) |
 	Quartic Real Real Real (Real Real Real)? (Real Real Real)? (Real Real Real)? |
 	Reset |
 	Scale Real |
@@ -397,7 +402,7 @@ collapse_statement:
 */
 diffusion_statement:
 	dani_assign* |
-	Classification Class_name |
+	Classification Simple_name |
 	Coefficients Real Real Real Real Real |
 	ForceConstant Real |
 	Nrestraints Integer |
@@ -414,7 +419,7 @@ dani_assign:
 */
 orientation_statement:
 	orie_assign* |
-	Classification Class_name |
+	Classification Simple_name |
 	Cutoff Real |
 	Height Real |
 	ForceConstant Real |
@@ -422,10 +427,10 @@ orientation_statement:
 	MaxGaussians Integer |
 	NewGaussian Real Real Real Real Real Real Real Real |
 	Nrestraints Integer |
-	Print Threshold Real (All | (Classification Class_name)) |
+	Print Threshold Real (All | (Classification Simple_name)) |
 	Quartic Real Real Real Real Real Real Real |
 	Reset |
-	Residues Integer |
+	Residue Integer |
 	Size Real Real |
 	Zero;
 
@@ -437,7 +442,7 @@ orie_assign:
 */
 csa_statement:
 	csa_assign* |
-	Classification Class_name |
+	Classification Simple_name |
 	Scale Real |
 	Type Csa_types |
 	Coefficients Real Real Real |
@@ -456,7 +461,7 @@ csa_assign:
 */
 pcsa_statement:
 	csa_assign* |
-	Classification Class_name |
+	Classification Simple_name |
 	Scale Real |
 	Coefficients Real Real Real |
 	Sigma Real Real Real Real |
@@ -471,7 +476,7 @@ pcsa_statement:
 */
 one_bond_coupling_statement:
 	one_bond_assign* |
-	Classification Class_name |
+	Classification Simple_name |
 	Coefficients Real Real Real Real Real Real Real |
 	ForceConstant Real |
 	Nrestraints Integer |
@@ -487,14 +492,14 @@ one_bond_assign:
 */
 angle_db_statement:
 	angle_db_assign* |
-	Classification Class_name |
-	DerivFlag On_or_Off |
+	Classification Simple_name |
+	DerivFlag Simple_name |
 	Expectation Integer Integer Real |
 	Error Real |
 	ForceConstant Real |
 	Nrestraints Integer |
 	Potential Rdc_potential |
-	Print Threshold Real (All | (Classification Class_name)) |
+	Print Threshold Real (All | (Classification Simple_name)) |
 	Reset |
 	Size Angle_dihedral Integer Integer |
 	Zero;
@@ -507,14 +512,14 @@ angle_db_assign:
 */
 pre_statement:
 	pre_assign* |
-	Classification Equ_op Class_name |
-	ForceConstant Equ_op Class_name Real |
+	Classification Equ_op Simple_name |
+	ForceConstant Equ_op Simple_name Real |
 	Nrestraints Equ_op Integer |
-	Potential Equ_op Class_name Rdc_potential |
-	Kconst Equ_op Class_name Real |
-	Omega Equ_op Class_name Real |
-	Tauc Equ_op Class_name Real Real |
-	Print Threshold Real (All | (Classification Class_name)) |
+	Potential Equ_op Simple_name Rdc_potential |
+	Kconst Equ_op Simple_name Real |
+	Omega Equ_op Simple_name Real |
+	Tauc Equ_op Simple_name Real Real |
+	Print Threshold Real (All | (Classification Simple_name)) |
 	Reset |
 	Debug;
 
@@ -526,14 +531,14 @@ pre_assign:
 */
 pcs_statement:
 	pcs_assign* |
-	Classification Class_name |
-	Tolerance One_or_Zero |
+	Classification Simple_name |
+	Tolerance Integer |
 	Coefficients Real Real |
 	ForceConstant Real |
 	Nrestraints Integer |
-	Print Threshold Real (All | (Classification Class_name)) |
+	Print Threshold Real (All | (Classification Simple_name)) |
 	Reset |
-	Save Class_name |
+	Save Simple_name |
 	Fmed Real Integer |
 	ErrOn |
 	ErrOff |
@@ -551,8 +556,8 @@ pcs_assign:
 */
 prdc_statement:
 	prdc_assign* |
-	Classification Class_name |
-	Tolerance One_or_Zero |
+	Classification Simple_name |
+	Tolerance Integer |
 	Coefficients Real Real |
 	ForceConstant Real |
 	Nrestraints Integer |
@@ -564,7 +569,7 @@ prdc_statement:
 	Frun |
 	Print Threshold |
 	Reset |
-	Save Class_name |
+	Save Simple_name |
 	Son |
 	Soff;
 
@@ -576,7 +581,7 @@ prdc_assign:
 */
 porientation_statement:
 	porientation_assign* |
-	Classification Class_name |
+	Classification Simple_name |
 	ForceConstant Real |
 	Nrestraints Integer |
 	Print Threshold Real |
@@ -590,8 +595,8 @@ porientation_assign:
 */
 pccr_statement:
 	pccr_assign* |
-	Classification Class_name |
-	Weip One_or_Zero |
+	Classification Simple_name |
+	Weip Integer |
 	Coefficients Real |
 	ForceConstant Real |
 	Nrestraints Integer |
@@ -607,7 +612,7 @@ pccr_assign:
 */
 hbond_statement:
 	hbond_assign* |
-	Classification Class_name |
+	Classification Simple_name |
 	ForceConstant Real |
 	Nrestraints Integer |
 	Print Threshold Real |
@@ -623,33 +628,33 @@ selection:
 	L_paren selection_expression R_paren;
 
 selection_expression:
-	term (L_brace Or_op term R_brace)*;
+	term (Or_op term)*;
 
 term:
-	factor (L_brace And_op factor R_brace)*;
+	factor (And_op factor)*;
 
 factor:
 	L_paren selection_expression R_paren |
 	All |
 	factor Around Real |
-	Atom Segment_names Residue_numbers Atom_names |
-	Attribute Abs? Attr_properties Comparison_ops Real |
+	Atom Simple_names Integers Simple_names |
+	Attribute Abs? Simple_name Comparison_ops Real |
 	BondedTo factor |
 	ByGroup factor |
 	ByRes factor |
-	Chemical (Atom_types | Atom_type (Colon Atom_type)*) |
+	Chemical (Simple_names | Simple_name (Colon Simple_name)*) |
 	Hydrogen |
 	Id Integer |
 	Known |
-	Name (Atom_names | Atom_name (Colon Atom_name)*) |
+	Name (Simple_names | Simple_name (Colon Simple_name)*) |
 	Not_op factor |
 	Point vector_3d Cut Real |
 	Previous |
 	Pseudo |
-	Residue (Residue_numbers | Residue_number (Colon Residue_number)*) |
-	Resname (Residue_names | Residue_name (Colon Residue_name)*) |
+	Residue (Integers | Integer (Colon Integer)*) |
+	Resname (Simple_names | Simple_name (Colon Simple_name)*) |
 	factor Saround Real |
-	SegIdentifier (Segment_names | Segment_name (Colon Segment_name)* | Double_quote_string) |
+	SegIdentifier (Simple_names | Simple_name (Colon Simple_name)* | Double_quote_string) |
 	Store_1 | Store_2 | Store_3 | Store_4 | Store_5 | Store_6 | Store_7 | Store_8 | Store_9 |
 	Tag;
 

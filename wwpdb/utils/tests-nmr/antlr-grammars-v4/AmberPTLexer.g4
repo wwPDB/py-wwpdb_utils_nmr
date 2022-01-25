@@ -119,8 +119,8 @@ fragment DEC_DIGIT:	[0-9];
 fragment DECIMAL:	DEC_DIGIT+;
 
 fragment ALPHA:		[A-Za-z];
-fragment ALPHA_NUM:	[A-Za-z0-9];
-fragment START_CHAR:	[A-Za-z0-9_];
+fragment ALPHA_NUM:	ALPHA | DEC_DIGIT;
+fragment START_CHAR:	ALPHA_NUM | '_';
 fragment NAME_CHAR:	START_CHAR | '\'' | '-' | '+' | '.';
 fragment ATM_NAME_CHAR:	ALPHA_NUM | '\'';
 fragment ATM_TYPE_CHAR:	ALPHA_NUM | '-' | '+' | '*';
@@ -149,11 +149,11 @@ fragment DEC:		D E C;
 
 fragment MONTH:		JAN | FEB | MAR | APR | MAY | JUN | JUL | AUG | SEP | OCT | NOV | DEC | DEC_DIGIT2;
 
-Residue_number:		Integer;
-Residue_name4:		START_CHAR NAME_FCHR NAME_FCHR NAME_FCHR;
-Atom_name4:		ALPHA_NUM ATM_NAME_FCHR ATM_NAME_FCHR ATM_NAME_FCHR;
-Atom_type4:		ALPHA ATM_TYPE_FCHR ATM_TYPE_FCHR ATM_TYPE_FCHR;
-Generic_name4:		START_CHAR NAME_FCHR NAME_FCHR NAME_FCHR;
+//Residue_number:	Integer;
+//Residue_name4:	START_CHAR NAME_FCHR NAME_FCHR NAME_FCHR;
+//Atom_name4:		ALPHA_NUM ATM_NAME_FCHR ATM_NAME_FCHR ATM_NAME_FCHR;
+//Atom_type4:		ALPHA ATM_TYPE_FCHR ATM_TYPE_FCHR ATM_TYPE_FCHR;
+Simple_name4:		START_CHAR NAME_FCHR NAME_FCHR NAME_FCHR;
 
 Version:		V? DECIMAL ('.' DECIMAL)?;
 Date:			MONTH DATE_TIME_SEP DEC_DIGIT2 DATE_TIME_SEP YEAR;

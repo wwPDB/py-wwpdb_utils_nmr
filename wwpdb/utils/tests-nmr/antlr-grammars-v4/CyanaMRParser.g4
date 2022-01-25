@@ -32,8 +32,8 @@ distance_restraints:
 	distance_restraint+;
 
 distance_restraint:
-	Residue_number Residue_name Atom_name
-	Residue_number Residue_name Atom_name
+	Integer Simple_name Simple_name
+	Integer Simple_name Simple_name
 	Float;
 
 /* CYANA 3.0 Reference Manual - Torsion angle restraint file
@@ -43,7 +43,7 @@ torsion_angle_restraints:
 	torsion_angle_restraint+;
 
 torsion_angle_restraint:
-	Residue_number Residue_name Class_name Float Float;
+	Integer Simple_name Simple_name Float Float;
 
 /* CYANA 3.0 Reference Manual - Residual dipolar coupling restraint file
  See also http://www.cyana.org/wiki/index.php/Residual_dipolar_coupling_restraint_file
@@ -56,8 +56,8 @@ rdc_parameter:
 	Integer Float Float Integer;
 
 rdc_restraint:
-	Residue_number Residue_name Atom_name
-	Residue_number Residue_name Atom_name
+	Integer Simple_name Simple_name
+	Integer Simple_name Simple_name
 	Float Float Float Integer;
 
 /* CYANA 3.0 Reference Manual - Pseudocontact shift restraint file
@@ -71,6 +71,6 @@ pcs_parameter:
 	Integer Float Float Integer;
 
 pcs_restraint:
-	Residue_number Residue_name Atom_name
+	Integer Simple_name Simple_name
 	Float Float Float Integer;
 

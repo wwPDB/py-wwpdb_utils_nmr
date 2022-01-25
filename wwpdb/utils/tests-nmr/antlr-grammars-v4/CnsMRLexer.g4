@@ -218,10 +218,10 @@ Error:			E R R O R?;				// Real
 //Threshold:		T H R E S? H? O? L? D?;			// Real ( All | Class = Class_name ) Rmsd_or_Not
 //Reset:		R E S E T?;
 
-CO_or_CN:		C O | C N;
-SC_or_BB:		S C | B B;
-Ring_resname:		P H E | T Y R | H I S | T R P ('5' | '6') | A D E ('5' | '6') | G U A ('5' | '6') | T H Y | C Y T | U R A;
-Rmsd_or_Not:		R M S D | N O R M S? D?;
+//CO_or_CN:		C O | C N;
+//SC_or_BB:		S C | B B;
+//Ring_resname:		P H E | T Y R | H I S | T R P ('5' | '6') | A D E ('5' | '6') | G U A ('5' | '6') | T H Y | C Y T | U R A;
+//Rmsd_or_Not:		R M S D | N O R M S? D?;
 
 /* CNS: Comformation database restraints - Syntax
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
@@ -290,7 +290,7 @@ DerivFlag:		D E R I V? F? L? A? G?;			// On_or_Off
 //Size:			S I Z E;				// Angle_dihedral Integer Integer
 //Zero:			Z E R O;
 
-On_or_Off:		O N | O F F;
+//On_or_Off:		O N | O F F;
 Angle_dihedral:		A N G L E? | D I H E D? R? A? L?;
 
 /* Atom selection - Syntax - identity/atom-selection
@@ -332,7 +332,7 @@ Tag:			T A G;
 
 // Attribute properties
 Abs:			A B S;
-Attr_properties:	B | B C O M P? | C H A R G? E? | D X | D Y | D Z | F B E T A? | H A R M | M A S S | Q | Q C O M P? | R E F X | R E F Y | R E F Z | R M S D | V X | V Y | V Z | X | X C O M P? | Y | Y C O M P? | Z | Z C O M P? | S C A T T E R '_' A '1' | S C A T T E R '_' A '2' | S C A T T E R '_' A '3' | S C A T T E R '_' A '4' | S C A T T E R '_' B '1' | S C A T T E R '_' B '2' | S C A T T E R '_' B '3' | S C A T T E R '_' B '4' | S C A T T E R '_' C | S C A T T E R '_' F P | S C A T T E R '_' F D P;
+//Attr_properties:	B | B C O M P? | C H A R G? E? | D X | D Y | D Z | F B E T A? | H A R M | M A S S | Q | Q C O M P? | R E F X | R E F Y | R E F Z | R M S D | V X | V Y | V Z | X | X C O M P? | Y | Y C O M P? | Z | Z C O M P? | S C A T T E R '_' A '1' | S C A T T E R '_' A '2' | S C A T T E R '_' A '3' | S C A T T E R '_' A '4' | S C A T T E R '_' B '1' | S C A T T E R '_' B '2' | S C A T T E R '_' B '3' | S C A T T E R '_' B '4' | S C A T T E R '_' C | S C A T T E R '_' F P | S C A T T E R '_' F D P;
 Comparison_ops:		Equ_op | Lt_op | Gt_op | Leq_op | Geq_op | Neq_op;
 String_comp_ops:	Equ_op | Neq_op;
 
@@ -360,18 +360,21 @@ fragment DEC_DOT_DEC:	DECIMAL '.' DECIMAL | DECIMAL '.' | '.' DECIMAL;
 fragment DEC_DIGIT:	[0-9];
 fragment DECIMAL:	DEC_DIGIT+;
 
-Class_name:		SIMPLE_NAME;
-Class_names:		WILDCARD? SIMPLE_NAME WILDCARD?;
-Segment_name:		SIMPLE_NAME;
-Segment_names:		WILDCARD? SIMPLE_NAME WILDCARD?;
-Residue_number:		Integer;
-Residue_numbers:	WILDCARD? Residue_number WILDCARD?;
-Residue_name:		SIMPLE_NAME;
-Residue_names:		WILDCARD? SIMPLE_NAME WILDCARD?;
-Atom_name:		ALPHA_NUM ATM_NAME_CHAR*;
-Atom_names:		WILDCARD? Atom_name WILDCARD?;
-Atom_type:		ALPHA ATM_TYPE_CHAR*;
-Atom_types:		WILDCARD? Atom_type WILDCARD?;
+Simple_name:		SIMPLE_NAME;
+Simple_names:		WILDCARD | SIMPLE_NAME WILDCARD;
+Integers:		WILDCARD | Integer WILDCARD;
+//Class_name:		SIMPLE_NAME;
+//Class_names:		WILDCARD | SIMPLE_NAME WILDCARD;
+//Segment_name:		SIMPLE_NAME;
+//Segment_names:	WILDCARD | SIMPLE_NAME WILDCARD;
+//Residue_number:	Integer;
+//Residue_numbers:	WILDCARD | Residue_number WILDCARD;
+//Residue_name:		SIMPLE_NAME;
+//Residue_names:	WILDCARD | SIMPLE_NAME WILDCARD;
+//Atom_name:		ALPHA_NUM ATM_NAME_CHAR*;
+//Atom_names:		WILDCARD | Atom_name WILDCARD;
+//Atom_type:		ALPHA ATM_TYPE_CHAR*;
+//Atom_types:		WILDCARD | Atom_type WILDCARD;
 
 /* Wildcard - Syntax
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
@@ -379,8 +382,8 @@ Atom_types:		WILDCARD? Atom_type WILDCARD?;
 fragment WILDCARD:	'*' | '%' | '#' | '+';
 
 fragment ALPHA:		[A-Za-z];
-fragment ALPHA_NUM:	[A-Za-z0-9];
-fragment START_CHAR:	[A-Za-z0-9_];
+fragment ALPHA_NUM:	ALPHA | DEC_DIGIT;
+fragment START_CHAR:	ALPHA_NUM | '_';
 fragment NAME_CHAR:	START_CHAR | '\'' | '-' | '+' | '.';
 fragment ATM_NAME_CHAR:	ALPHA_NUM | '\'';
 fragment ATM_TYPE_CHAR:	ALPHA_NUM | '-' | '+';

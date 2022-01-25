@@ -11,7 +11,7 @@ else:
 
 def serializedATN():
     with StringIO() as buf:
-        buf.write("\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3\f")
+        buf.write("\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3\b")
         buf.write("|\4\2\t\2\4\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7\4\b")
         buf.write("\t\b\4\t\t\t\4\n\t\n\4\13\t\13\4\f\t\f\3\2\7\2\32\n\2")
         buf.write("\f\2\16\2\35\13\2\3\2\7\2 \n\2\f\2\16\2#\13\2\3\2\7\2")
@@ -33,20 +33,20 @@ def serializedATN():
         buf.write("\22\n\2+*\3\2\2\2,/\3\2\2\2-+\3\2\2\2-.\3\2\2\2.\60\3")
         buf.write("\2\2\2/-\3\2\2\2\60\61\7\2\2\3\61\3\3\2\2\2\62\64\5\6")
         buf.write("\4\2\63\62\3\2\2\2\64\65\3\2\2\2\65\63\3\2\2\2\65\66\3")
-        buf.write("\2\2\2\66\5\3\2\2\2\678\7\6\2\289\7\7\2\29:\7\b\2\2:;")
-        buf.write("\7\6\2\2;<\7\7\2\2<=\7\b\2\2=>\7\4\2\2>\7\3\2\2\2?A\5")
+        buf.write("\2\2\2\66\5\3\2\2\2\678\7\3\2\289\7\5\2\29:\7\5\2\2:;")
+        buf.write("\7\3\2\2;<\7\5\2\2<=\7\5\2\2=>\7\4\2\2>\7\3\2\2\2?A\5")
         buf.write("\n\6\2@?\3\2\2\2AB\3\2\2\2B@\3\2\2\2BC\3\2\2\2C\t\3\2")
-        buf.write("\2\2DE\7\6\2\2EF\7\7\2\2FG\7\5\2\2GH\7\4\2\2HI\7\4\2\2")
+        buf.write("\2\2DE\7\3\2\2EF\7\5\2\2FG\7\5\2\2GH\7\4\2\2HI\7\4\2\2")
         buf.write("I\13\3\2\2\2JL\5\16\b\2KJ\3\2\2\2LM\3\2\2\2MK\3\2\2\2")
         buf.write("MN\3\2\2\2NP\3\2\2\2OQ\5\20\t\2PO\3\2\2\2QR\3\2\2\2RP")
         buf.write("\3\2\2\2RS\3\2\2\2S\r\3\2\2\2TU\7\3\2\2UV\7\4\2\2VW\7")
-        buf.write("\4\2\2WX\7\3\2\2X\17\3\2\2\2YZ\7\6\2\2Z[\7\7\2\2[\\\7")
-        buf.write("\b\2\2\\]\7\6\2\2]^\7\7\2\2^_\7\b\2\2_`\7\4\2\2`a\7\4")
+        buf.write("\4\2\2WX\7\3\2\2X\17\3\2\2\2YZ\7\3\2\2Z[\7\5\2\2[\\\7")
+        buf.write("\5\2\2\\]\7\3\2\2]^\7\5\2\2^_\7\5\2\2_`\7\4\2\2`a\7\4")
         buf.write("\2\2ab\7\4\2\2bc\7\3\2\2c\21\3\2\2\2df\5\24\13\2ed\3\2")
         buf.write("\2\2fg\3\2\2\2ge\3\2\2\2gh\3\2\2\2hj\3\2\2\2ik\5\26\f")
         buf.write("\2ji\3\2\2\2kl\3\2\2\2lj\3\2\2\2lm\3\2\2\2m\23\3\2\2\2")
         buf.write("no\7\3\2\2op\7\4\2\2pq\7\4\2\2qr\7\3\2\2r\25\3\2\2\2s")
-        buf.write("t\7\6\2\2tu\7\7\2\2uv\7\b\2\2vw\7\4\2\2wx\7\4\2\2xy\7")
+        buf.write("t\7\3\2\2tu\7\5\2\2uv\7\5\2\2vw\7\4\2\2wx\7\4\2\2xy\7")
         buf.write("\4\2\2yz\7\3\2\2z\27\3\2\2\2\f\33!\'-\65BMRgl")
         return buf.getvalue()
 
@@ -63,8 +63,7 @@ class CyanaMRParser ( Parser ):
 
     literalNames = [  ]
 
-    symbolicNames = [ "<INVALID>", "Integer", "Float", "Class_name", "Residue_number", 
-                      "Residue_name", "Atom_name", "Atom_type", "SPACE", 
+    symbolicNames = [ "<INVALID>", "Integer", "Float", "Simple_name", "SPACE", 
                       "COMMENT", "LINE_COMMENT" ]
 
     RULE_cyana_mr = 0
@@ -87,14 +86,10 @@ class CyanaMRParser ( Parser ):
     EOF = Token.EOF
     Integer=1
     Float=2
-    Class_name=3
-    Residue_number=4
-    Residue_name=5
-    Atom_name=6
-    Atom_type=7
-    SPACE=8
-    COMMENT=9
-    LINE_COMMENT=10
+    Simple_name=3
+    SPACE=4
+    COMMENT=5
+    LINE_COMMENT=6
 
     def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
         super().__init__(input, output)
@@ -176,13 +171,14 @@ class CyanaMRParser ( Parser ):
 
             self.state = 31
             self._errHandler.sync(self)
-            _la = self._input.LA(1)
-            while _la==CyanaMRParser.Residue_number:
-                self.state = 28
-                self.torsion_angle_restraints()
+            _alt = self._interp.adaptivePredict(self._input,1,self._ctx)
+            while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
+                if _alt==1:
+                    self.state = 28
+                    self.torsion_angle_restraints() 
                 self.state = 33
                 self._errHandler.sync(self)
-                _la = self._input.LA(1)
+                _alt = self._interp.adaptivePredict(self._input,1,self._ctx)
 
             self.state = 37
             self._errHandler.sync(self)
@@ -278,23 +274,17 @@ class CyanaMRParser ( Parser ):
             super().__init__(parent, invokingState)
             self.parser = parser
 
-        def Residue_number(self, i:int=None):
+        def Integer(self, i:int=None):
             if i is None:
-                return self.getTokens(CyanaMRParser.Residue_number)
+                return self.getTokens(CyanaMRParser.Integer)
             else:
-                return self.getToken(CyanaMRParser.Residue_number, i)
+                return self.getToken(CyanaMRParser.Integer, i)
 
-        def Residue_name(self, i:int=None):
+        def Simple_name(self, i:int=None):
             if i is None:
-                return self.getTokens(CyanaMRParser.Residue_name)
+                return self.getTokens(CyanaMRParser.Simple_name)
             else:
-                return self.getToken(CyanaMRParser.Residue_name, i)
-
-        def Atom_name(self, i:int=None):
-            if i is None:
-                return self.getTokens(CyanaMRParser.Atom_name)
-            else:
-                return self.getToken(CyanaMRParser.Atom_name, i)
+                return self.getToken(CyanaMRParser.Simple_name, i)
 
         def Float(self):
             return self.getToken(CyanaMRParser.Float, 0)
@@ -320,17 +310,17 @@ class CyanaMRParser ( Parser ):
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 53
-            self.match(CyanaMRParser.Residue_number)
+            self.match(CyanaMRParser.Integer)
             self.state = 54
-            self.match(CyanaMRParser.Residue_name)
+            self.match(CyanaMRParser.Simple_name)
             self.state = 55
-            self.match(CyanaMRParser.Atom_name)
+            self.match(CyanaMRParser.Simple_name)
             self.state = 56
-            self.match(CyanaMRParser.Residue_number)
+            self.match(CyanaMRParser.Integer)
             self.state = 57
-            self.match(CyanaMRParser.Residue_name)
+            self.match(CyanaMRParser.Simple_name)
             self.state = 58
-            self.match(CyanaMRParser.Atom_name)
+            self.match(CyanaMRParser.Simple_name)
             self.state = 59
             self.match(CyanaMRParser.Float)
         except RecognitionException as re:
@@ -404,14 +394,14 @@ class CyanaMRParser ( Parser ):
             super().__init__(parent, invokingState)
             self.parser = parser
 
-        def Residue_number(self):
-            return self.getToken(CyanaMRParser.Residue_number, 0)
+        def Integer(self):
+            return self.getToken(CyanaMRParser.Integer, 0)
 
-        def Residue_name(self):
-            return self.getToken(CyanaMRParser.Residue_name, 0)
-
-        def Class_name(self):
-            return self.getToken(CyanaMRParser.Class_name, 0)
+        def Simple_name(self, i:int=None):
+            if i is None:
+                return self.getTokens(CyanaMRParser.Simple_name)
+            else:
+                return self.getToken(CyanaMRParser.Simple_name, i)
 
         def Float(self, i:int=None):
             if i is None:
@@ -440,11 +430,11 @@ class CyanaMRParser ( Parser ):
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 66
-            self.match(CyanaMRParser.Residue_number)
+            self.match(CyanaMRParser.Integer)
             self.state = 67
-            self.match(CyanaMRParser.Residue_name)
+            self.match(CyanaMRParser.Simple_name)
             self.state = 68
-            self.match(CyanaMRParser.Class_name)
+            self.match(CyanaMRParser.Simple_name)
             self.state = 69
             self.match(CyanaMRParser.Float)
             self.state = 70
@@ -496,32 +486,35 @@ class CyanaMRParser ( Parser ):
 
         localctx = CyanaMRParser.Rdc_restraintsContext(self, self._ctx, self.state)
         self.enterRule(localctx, 10, self.RULE_rdc_restraints)
-        self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 73 
             self._errHandler.sync(self)
-            _la = self._input.LA(1)
-            while True:
-                self.state = 72
-                self.rdc_parameter()
+            _alt = 1
+            while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
+                if _alt == 1:
+                    self.state = 72
+                    self.rdc_parameter()
+
+                else:
+                    raise NoViableAltException(self)
                 self.state = 75 
                 self._errHandler.sync(self)
-                _la = self._input.LA(1)
-                if not (_la==CyanaMRParser.Integer):
-                    break
+                _alt = self._interp.adaptivePredict(self._input,6,self._ctx)
 
             self.state = 78 
             self._errHandler.sync(self)
-            _la = self._input.LA(1)
-            while True:
-                self.state = 77
-                self.rdc_restraint()
+            _alt = 1
+            while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
+                if _alt == 1:
+                    self.state = 77
+                    self.rdc_restraint()
+
+                else:
+                    raise NoViableAltException(self)
                 self.state = 80 
                 self._errHandler.sync(self)
-                _la = self._input.LA(1)
-                if not (_la==CyanaMRParser.Residue_number):
-                    break
+                _alt = self._interp.adaptivePredict(self._input,7,self._ctx)
 
         except RecognitionException as re:
             localctx.exception = re
@@ -593,32 +586,23 @@ class CyanaMRParser ( Parser ):
             super().__init__(parent, invokingState)
             self.parser = parser
 
-        def Residue_number(self, i:int=None):
+        def Integer(self, i:int=None):
             if i is None:
-                return self.getTokens(CyanaMRParser.Residue_number)
+                return self.getTokens(CyanaMRParser.Integer)
             else:
-                return self.getToken(CyanaMRParser.Residue_number, i)
+                return self.getToken(CyanaMRParser.Integer, i)
 
-        def Residue_name(self, i:int=None):
+        def Simple_name(self, i:int=None):
             if i is None:
-                return self.getTokens(CyanaMRParser.Residue_name)
+                return self.getTokens(CyanaMRParser.Simple_name)
             else:
-                return self.getToken(CyanaMRParser.Residue_name, i)
-
-        def Atom_name(self, i:int=None):
-            if i is None:
-                return self.getTokens(CyanaMRParser.Atom_name)
-            else:
-                return self.getToken(CyanaMRParser.Atom_name, i)
+                return self.getToken(CyanaMRParser.Simple_name, i)
 
         def Float(self, i:int=None):
             if i is None:
                 return self.getTokens(CyanaMRParser.Float)
             else:
                 return self.getToken(CyanaMRParser.Float, i)
-
-        def Integer(self):
-            return self.getToken(CyanaMRParser.Integer, 0)
 
         def getRuleIndex(self):
             return CyanaMRParser.RULE_rdc_restraint
@@ -641,17 +625,17 @@ class CyanaMRParser ( Parser ):
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 87
-            self.match(CyanaMRParser.Residue_number)
+            self.match(CyanaMRParser.Integer)
             self.state = 88
-            self.match(CyanaMRParser.Residue_name)
+            self.match(CyanaMRParser.Simple_name)
             self.state = 89
-            self.match(CyanaMRParser.Atom_name)
+            self.match(CyanaMRParser.Simple_name)
             self.state = 90
-            self.match(CyanaMRParser.Residue_number)
+            self.match(CyanaMRParser.Integer)
             self.state = 91
-            self.match(CyanaMRParser.Residue_name)
+            self.match(CyanaMRParser.Simple_name)
             self.state = 92
-            self.match(CyanaMRParser.Atom_name)
+            self.match(CyanaMRParser.Simple_name)
             self.state = 93
             self.match(CyanaMRParser.Float)
             self.state = 94
@@ -707,32 +691,35 @@ class CyanaMRParser ( Parser ):
 
         localctx = CyanaMRParser.Pcs_restraintsContext(self, self._ctx, self.state)
         self.enterRule(localctx, 16, self.RULE_pcs_restraints)
-        self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 99 
             self._errHandler.sync(self)
-            _la = self._input.LA(1)
-            while True:
-                self.state = 98
-                self.pcs_parameter()
+            _alt = 1
+            while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
+                if _alt == 1:
+                    self.state = 98
+                    self.pcs_parameter()
+
+                else:
+                    raise NoViableAltException(self)
                 self.state = 101 
                 self._errHandler.sync(self)
-                _la = self._input.LA(1)
-                if not (_la==CyanaMRParser.Integer):
-                    break
+                _alt = self._interp.adaptivePredict(self._input,8,self._ctx)
 
             self.state = 104 
             self._errHandler.sync(self)
-            _la = self._input.LA(1)
-            while True:
-                self.state = 103
-                self.pcs_restraint()
+            _alt = 1
+            while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
+                if _alt == 1:
+                    self.state = 103
+                    self.pcs_restraint()
+
+                else:
+                    raise NoViableAltException(self)
                 self.state = 106 
                 self._errHandler.sync(self)
-                _la = self._input.LA(1)
-                if not (_la==CyanaMRParser.Residue_number):
-                    break
+                _alt = self._interp.adaptivePredict(self._input,9,self._ctx)
 
         except RecognitionException as re:
             localctx.exception = re
@@ -804,23 +791,23 @@ class CyanaMRParser ( Parser ):
             super().__init__(parent, invokingState)
             self.parser = parser
 
-        def Residue_number(self):
-            return self.getToken(CyanaMRParser.Residue_number, 0)
+        def Integer(self, i:int=None):
+            if i is None:
+                return self.getTokens(CyanaMRParser.Integer)
+            else:
+                return self.getToken(CyanaMRParser.Integer, i)
 
-        def Residue_name(self):
-            return self.getToken(CyanaMRParser.Residue_name, 0)
-
-        def Atom_name(self):
-            return self.getToken(CyanaMRParser.Atom_name, 0)
+        def Simple_name(self, i:int=None):
+            if i is None:
+                return self.getTokens(CyanaMRParser.Simple_name)
+            else:
+                return self.getToken(CyanaMRParser.Simple_name, i)
 
         def Float(self, i:int=None):
             if i is None:
                 return self.getTokens(CyanaMRParser.Float)
             else:
                 return self.getToken(CyanaMRParser.Float, i)
-
-        def Integer(self):
-            return self.getToken(CyanaMRParser.Integer, 0)
 
         def getRuleIndex(self):
             return CyanaMRParser.RULE_pcs_restraint
@@ -843,11 +830,11 @@ class CyanaMRParser ( Parser ):
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 113
-            self.match(CyanaMRParser.Residue_number)
+            self.match(CyanaMRParser.Integer)
             self.state = 114
-            self.match(CyanaMRParser.Residue_name)
+            self.match(CyanaMRParser.Simple_name)
             self.state = 115
-            self.match(CyanaMRParser.Atom_name)
+            self.match(CyanaMRParser.Simple_name)
             self.state = 116
             self.match(CyanaMRParser.Float)
             self.state = 117

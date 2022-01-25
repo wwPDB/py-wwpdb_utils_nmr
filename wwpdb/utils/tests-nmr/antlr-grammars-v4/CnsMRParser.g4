@@ -1,6 +1,6 @@
 /*
  CNS MR (Magnetic Restraint) parser grammar for ANTLR v4.
- Copyright 2021 Masashi Yokochi
+ Copyright 2022 Masashi Yokochi
 
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -31,6 +31,10 @@ cns_mr:
 	diffusion_anisotropy_restraint*
 	one_bond_coupling_restraint*
 	angle_db_restraint*
+	noe_assign*			// allowing bare assign clauses for distance restraints
+	dihedral_assign*		// allowing bare assign clauses for dihedral angle restraints
+	sani_assign*			// allowing bare assign clauses for RDC restraints
+	plane_statement*		// allowing bare group clauses for plane restraints
 	EOF;
 
 distance_restraint:
@@ -75,34 +79,34 @@ angle_db_restraint:
 noe_statement:
 	Analysis Equ_op Noe_analysis |
 	noe_assign* |
-	Asymptote Class_names Real |
-	Averaging Class_names Noe_avr_methods |
-	Bgig Class_names Real |
+	Asymptote Simple_names Real |
+	Averaging Simple_names Noe_avr_methods |
+	Bgig Simple_names Real |
 	Ceiling Equ_op Real |
-	Classification Equ_op Class_name |
-	CountViol Class_name |
+	Classification Equ_op Simple_name |
+	CountViol Simple_name |
 	Cv Equ_op Integer |
 	Den Initialize |
 	Den Update Gamma Equ_op Real Kappa Equ_op Real |
-	Distribute Class_name Class_name Real |
+	Distribute Simple_name Simple_name Real |
 	Ensemble L_brace *? R_brace End |
-	Monomers Class_names Integer |
-	Ncount Class_names Integer |
+	Monomers Simple_names Integer |
+	Ncount Simple_names Integer |
 	Nrestraints Equ_op Integer |
 	Outd |
 	Partition Equ_op Integer |
-	Potential Class_names Noe_potential |
+	Potential Simple_names Noe_potential |
 	Predict L_brace predict_statement R_brace End |
 	Print Threshold Equ_op Real |
-	Raverage Class_name L_brace *? R_brace End |
+	Raverage Simple_name L_brace *? R_brace End |
 	Reset |
-	Rswitch Class_names Real |
-	Scale Class_names Real |
-	SoExponent Class_names Real |
-	SqConstant Class_names Real |
-	SqExponent Class_names Real |
-	SqOffset Class_names Real |
-	Taverage Class_name L_brace *? R_brace End |
+	Rswitch Simple_names Real |
+	Scale Simple_names Real |
+	SoExponent Simple_names Real |
+	SqConstant Simple_names Real |
+	SqExponent Simple_names Real |
+	SqOffset Simple_names Real |
+	Taverage Simple_name L_brace *? R_brace End |
 	Temperature Equ_op Real;
 
 noe_assign:
@@ -150,7 +154,7 @@ harmonic_statement:
 */
 sani_statement:
 	sani_assign* |
-	Classification Equ_op Class_name |
+	Classification Equ_op Simple_name |
 	Coefficients Real Real Real |
 	ForceConstant Equ_op Real |
 	Nrestraints Equ_op Integer |
@@ -166,14 +170,14 @@ sani_assign:
 */
 coupling_statement:
 	coup_assign* |
-	Classification Equ_op Class_name |
+	Classification Equ_op Simple_name |
 	Coefficients Real Real Real Real |
 	Cv Equ_op Integer |
 	ForceConstant Real Real? |
 	Nrestraints Equ_op Integer |
 	Partition Equ_op Integer |
 	Potential Equ_op Coupling_potential |
-	Print Threshold Real (All | (Classification Equ_op Class_name)) |
+	Print Threshold Real (All | (Classification Equ_op Simple_name)) |
 	Reset;
 
 coup_assign:
@@ -184,7 +188,7 @@ coup_assign:
 */
 carbon_shift_statement:
 	carbon_shift_assign* |
-	Classification Equ_op Class_name |
+	Classification Equ_op Simple_name |
 	Expectation Integer Integer Real Real Real |
 	ForceConstant Equ_op Real |
 	Nrestraints Equ_op Integer |
@@ -215,11 +219,11 @@ proton_shift_statement:
 	proton_shift_oxygens* |
 	proton_shift_ring_atoms* |
 	proton_shift_alphas_and_amides* |
-	Classification Equ_op Class_name |
+	Classification Equ_op Simple_name |
 	Error Equ_op? Real |
 	ForceConstant Real Real? |
 	Potential Coupling_potential |
-	Print Threshold Real (All | (Classification Equ_op Class_name)) Rmsd_or_Not |
+	Print Threshold Real (All | (Classification Equ_op Simple_name)) Simple_name |
 	Reset;
 
 observed:
@@ -229,7 +233,7 @@ proton_shift_rcoil:
 	Rcoil selection Real;
 
 proton_shift_anisotropy:
-	Anisotropy selection selection selection CO_or_CN Logical? SC_or_BB;
+	Anisotropy selection selection selection Simple_name Logical? Simple_name;
 
 proton_shift_amides:
 	Amides selection;
@@ -244,7 +248,7 @@ proton_shift_oxygens:
 	Oxygens selection;
 
 proton_shift_ring_atoms:
-	RingAtoms Ring_resname selection selection selection selection selection selection?;
+	RingAtoms Simple_name selection selection selection selection selection selection?;
 
 proton_shift_alphas_and_amides:
 	AlphasAndAmides selection;
@@ -254,7 +258,7 @@ proton_shift_alphas_and_amides:
 */
 conformation_statement:
 	conf_assign* |
-	Classification Equ_op Class_name |
+	Classification Equ_op Simple_name |
 	Compressed |
 	Expectation Integer Integer? Integer? Integer? Real |
 	Error Equ_op Real |
@@ -262,7 +266,7 @@ conformation_statement:
 	Nrestraints Equ_op Integer |
 	Phase Integer Integer Integer (Integer Integer Integer)? (Integer Integer Integer)? (Integer Integer Integer)? |
 	Potential Equ_op Rdc_potential |
-	Print Threshold Real (All | (Classification Equ_op Class_name)) |
+	Print Threshold Real (All | (Classification Equ_op Simple_name)) |
 	Reset |
 	Size Dimensions Integer Integer? Integer? Integer? |
 	Zero;
@@ -275,7 +279,7 @@ conf_assign:
 */
 diffusion_statement:
 	dani_assign* |
-	Classification Equ_op Class_name |
+	Classification Equ_op Simple_name |
 	Coefficients Real Real Real Real Real |
 	ForceConstant Equ_op Real |
 	Nrestraints Equ_op Integer |
@@ -291,7 +295,7 @@ dani_assign:
 */
 one_bond_coupling_statement:
 	one_bond_assign* |
-	Classification Equ_op Class_name |
+	Classification Equ_op Simple_name |
 	Coefficients Real Real Real Real Real Real Real |
 	ForceConstant Equ_op Real |
 	Nrestraints Equ_op Integer |
@@ -307,14 +311,14 @@ one_bond_assign:
 */
 angle_db_statement:
 	angle_db_assign* |
-	Classification Equ_op Class_name |
-	DerivFlag Equ_op On_or_Off |
+	Classification Equ_op Simple_name |
+	DerivFlag Equ_op Simple_name |
 	Expectation Integer Integer Real |
 	Error Equ_op Real |
 	ForceConstant Equ_op Real |
 	Nrestraints Equ_op Integer |
 	Potential Equ_op Rdc_potential |
-	Print Threshold Real (All | (Classification Equ_op Class_name)) |
+	Print Threshold Real (All | (Classification Equ_op Simple_name)) |
 	Reset |
 	Size Angle_dihedral Integer Integer |
 	Zero;
@@ -329,39 +333,39 @@ selection:
 	L_paren selection_expression R_paren;
 
 selection_expression:
-	term (L_brace Or_op term R_brace)*;
+	term (Or_op term)*;
 
 term:
-	factor (L_brace And_op factor R_brace)*;
+	factor (And_op factor)*;
 
 factor:
 	L_paren selection_expression R_paren |
 	All |
 	factor Around Real |
-	Atom Segment_names Residue_numbers Atom_names |
-	Attribute Abs? Attr_properties Comparison_ops Real |
-	Attribute Chemical String_comp_ops Atom_type |
-	Attribute Name String_comp_ops Atom_name |
-	Attribute Abs? Residue Comparison_ops Residue_number |
-	Attribute Resname String_comp_ops Residue_name |
-	Attribute SegIdentifier String_comp_ops Segment_name |
+	Atom Simple_names Integers Simple_names |
+	Attribute Abs? Simple_name Comparison_ops Real |
+	Attribute Chemical String_comp_ops Simple_name |
+	Attribute Name String_comp_ops Simple_name |
+	Attribute Abs? Residue Comparison_ops Integer |
+	Attribute Resname String_comp_ops Simple_name |
+	Attribute SegIdentifier String_comp_ops Simple_name |
 	BondedTo factor |
 	ByGroup factor |
 	ByRes factor |
-	Chemical (Atom_types | Atom_type (Colon Atom_type)*) |
+	Chemical (Simple_names | Simple_name (Colon Simple_name)*) |
 	Fbox Real Real Real Real Real Real |
 	Hydrogen |
 	Id Integer |
 	Known |
-	Name (Atom_names | Atom_name (Colon Atom_name)*) |
+	Name (Simple_names | Simple_name (Colon Simple_name)*) |
 	Not_op factor |
 	Point vector_3d Cut Real |
 	Previous |
 	Pseudo |
-	Residue (Residue_numbers | Residue_number (Colon Residue_number)*) |
-	Resname (Residue_names | Residue_name (Colon Residue_name)*) |
+	Residue (Integers | Integer (Colon Integer)*) |
+	Resname (Simple_names | Simple_name (Colon Simple_name)*) |
 	factor Saround Real |
-	SegIdentifier (Segment_names | Segment_name (Colon Segment_name)* | Double_quote_string) |
+	SegIdentifier (Simple_names | Simple_name (Colon Simple_name)* | Double_quote_string) |
 	Sfbox Real Real Real Real Real Real |
 	Store_1 | Store_2 | Store_3 | Store_4 | Store_5 | Store_6 | Store_7 | Store_8 | Store_9 |
 	Tag;

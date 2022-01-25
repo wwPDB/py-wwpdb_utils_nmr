@@ -494,39 +494,12 @@ class AmberPTParserListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by AmberPTParser#atom_type_array.
-    def enterAtom_type_array(self, ctx:AmberPTParser.Atom_type_arrayContext):
+    # Enter a parse tree produced by AmberPTParser#simple_name_array.
+    def enterSimple_name_array(self, ctx:AmberPTParser.Simple_name_arrayContext):
         pass
 
-    # Exit a parse tree produced by AmberPTParser#atom_type_array.
-    def exitAtom_type_array(self, ctx:AmberPTParser.Atom_type_arrayContext):
-        pass
-
-
-    # Enter a parse tree produced by AmberPTParser#atom_name_array.
-    def enterAtom_name_array(self, ctx:AmberPTParser.Atom_name_arrayContext):
-        pass
-
-    # Exit a parse tree produced by AmberPTParser#atom_name_array.
-    def exitAtom_name_array(self, ctx:AmberPTParser.Atom_name_arrayContext):
-        pass
-
-
-    # Enter a parse tree produced by AmberPTParser#residue_name_array.
-    def enterResidue_name_array(self, ctx:AmberPTParser.Residue_name_arrayContext):
-        pass
-
-    # Exit a parse tree produced by AmberPTParser#residue_name_array.
-    def exitResidue_name_array(self, ctx:AmberPTParser.Residue_name_arrayContext):
-        pass
-
-
-    # Enter a parse tree produced by AmberPTParser#generic_name_array.
-    def enterGeneric_name_array(self, ctx:AmberPTParser.Generic_name_arrayContext):
-        pass
-
-    # Exit a parse tree produced by AmberPTParser#generic_name_array.
-    def exitGeneric_name_array(self, ctx:AmberPTParser.Generic_name_arrayContext):
+    # Exit a parse tree produced by AmberPTParser#simple_name_array.
+    def exitSimple_name_array(self, ctx:AmberPTParser.Simple_name_arrayContext):
         pass
 
 

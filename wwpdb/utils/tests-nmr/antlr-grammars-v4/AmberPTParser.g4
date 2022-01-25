@@ -81,7 +81,7 @@ version_statement:
 amber_atom_type_statement:
 	FLAG AMBER_ATOM_TYPE
 	string4_format_statement
-	atom_type_array*;
+	simple_name_array*;
 
 angle_equil_value_statement:
 	FLAG ANGLE_EQUIL_VALUE
@@ -111,7 +111,7 @@ atomic_number_statement:
 atom_name_statement:
 	FLAG ATOM_NAME
 	string4_format_statement
-	atom_name_array*;
+	simple_name_array*;
 
 atom_type_index_statement:
 	FLAG ATOM_TYPE_INDEX
@@ -271,7 +271,7 @@ radius_set_statement:
 residue_label_statement:
 	FLAG RESIDUE_LABEL
 	string4_format_statement
-	residue_name_array*;
+	simple_name_array*;
 
 residue_pointer_statement:
 	FLAG RESIDUE_POINTER
@@ -311,7 +311,7 @@ title_statement:
 tree_chain_classification_statement:
 	FLAG TREE_CHAIN_CLASSIFICATION
 	string4_format_statement
-	generic_name_array*;
+	simple_name_array*;
 
 string_format_statement:
 	FORMAT L_paren Fortran_format_A R_paren RETURN;
@@ -327,7 +327,7 @@ real_format_statement:
 
 float_format_statement:
 	FORMAT L_paren Fortran_format_F R_paren RETURN;
-
+/*
 atom_type_array:
 	Atom_type4* RETURN;
 
@@ -336,9 +336,9 @@ atom_name_array:
 
 residue_name_array:
 	Residue_name4* RETURN;
-
-generic_name_array:
-	Generic_name4* RETURN;
+*/
+simple_name_array:
+	Simple_name4* RETURN;
 
 line_string_array:
 	Line_string RETURN;

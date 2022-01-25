@@ -232,7 +232,7 @@ DegEnergy:		D E G E N? E? R? G? Y?;			// Number_of_couplings
 //Threshold:		T H R E S? H? O? L? D?;			// Real ( All | Class Class_name )
 //Reset:		R E S E T?;
 
-Number_of_couplings:	'1' | '2';
+//Number_of_couplings:	'1' | '2';
 Coupling_potential:	Rdc_potential;
 
 /* XPLOR-NIH: Carbon chemical shift restraints - Syntax
@@ -275,11 +275,11 @@ Error:			E R R O R?;				// Real
 //Threshold:		T H R E S? H? O? L? D?;			// Real ( All | Class Class_name ) Rmsd_or_Not
 //Reset:		R E S E T?;
 
-CO_or_CN:		C O | C N;
-SC_or_BB:		S C | B B;
-Ring_resname:		P H E | T Y R | H I S | T R P ('5' | '6') | A D E ('5' | '6') | G U A ('5' | '6') | T H Y | C Y T | U R A;
+//CO_or_CN:		C O | C N;
+//SC_or_BB:		S C | B B;
+//Ring_resname:		P H E | T Y R | H I S | T R P ('5' | '6') | A D E ('5' | '6') | G U A ('5' | '6') | T H Y | C Y T | U R A;
 Rmsd_or_Not:		R M S D | N O R M S? D?;
-Number_of_shifts:	'1' | '2';
+//Number_of_shifts:	'1' | '2';
 
 /* XPLOR-NIH: Dihedral angle database restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node410.html
@@ -349,7 +349,7 @@ NewGaussian:		N E W G A? U? S? S? I? A? N?;		// Real Real Real Real Real Real Re
 //Threshold:		T H R E S? H? O? L? D?;			// Real ( All | Class Class_name )
 //Quartic:		Q U A R T? I? C?;			// Real Real Real Real Real Real Real Real
 //Reset:		R E S E T?;
-Residues:		R E S I D? U? E? S?;			// Integer
+//Residues:		R E S I D? U? E? S?;			// Integer
 //Size:			S I Z E;				// Real Real
 //Zero:			Z E R O;
 
@@ -420,7 +420,7 @@ DerivFlag:		D E R I V? F? L? A? G?;			// On_or_Off
 //Size:			S I Z E;				// Angle_dihedral Integer Integer
 //Zero:			Z E R O;
 
-On_or_Off:		O N | O F F;
+//On_or_Off:		O N | O F F;
 Angle_dihedral:		A N G L E? | D I H E D? R? A? L?;
 
 /* XPLOR-NIH: Paramagnetic relaxation enhancement restraints - Syntax
@@ -463,7 +463,7 @@ Son:			S O N;
 Soff:			S O F F;
 Frun:			F R U N;				// Integer
 
-One_or_Zero:		'1' | '0';
+//One_or_Zero:		'1' | '0';
 
 /* XPLOR-NIH: Paramagnetic residual dipolar coupling restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node445.html
@@ -564,7 +564,7 @@ Tag:			T A G;
 
 // Attribute properties
 Abs:			A B S;
-Attr_properties:	B | B C O M P? | C H A R G? E? | D X | D Y | D Z | F B E T A? | H A R M | M A S S | Q | Q C O M P? | R E F X | R E F Y | R E F Z | R M S D | V X | V Y | V Z | X | X C O M P? | Y | Y C O M P? | Z | Z C O M P?;
+//Attr_properties:	B | B C O M P? | C H A R G? E? | D X | D Y | D Z | F B E T A? | H A R M | M A S S | Q | Q C O M P? | R E F X | R E F Y | R E F Z | R M S D | V X | V Y | V Z | X | X C O M P? | Y | Y C O M P? | Z | Z C O M P?;
 Comparison_ops:		Equ_op | Lt_op | Gt_op | Leq_op | Geq_op | Neq_op;
 
 /* Three-dimentional vectors - Syntax
@@ -591,18 +591,21 @@ fragment DEC_DOT_DEC:	DECIMAL '.' DECIMAL | DECIMAL '.' | '.' DECIMAL;
 fragment DEC_DIGIT:	[0-9];
 fragment DECIMAL:	DEC_DIGIT+;
 
-Class_name:		SIMPLE_NAME;
-Class_names:		WILDCARD? SIMPLE_NAME WILDCARD?;
-Segment_name:		SIMPLE_NAME;
-Segment_names:		WILDCARD? SIMPLE_NAME WILDCARD?;
-Residue_number:		Integer;
-Residue_numbers:	WILDCARD? Residue_number WILDCARD?;
-Residue_name:		SIMPLE_NAME;
-Residue_names:		WILDCARD? SIMPLE_NAME WILDCARD?;
-Atom_name:		ALPHA_NUM ATM_NAME_CHAR*;
-Atom_names:		WILDCARD? Atom_name WILDCARD?;
-Atom_type:		ALPHA ATM_TYPE_CHAR*;
-Atom_types:		WILDCARD? Atom_type WILDCARD?;
+Simple_name:		SIMPLE_NAME;
+Simple_names:		WILDCARD | SIMPLE_NAME WILDCARD;
+Integers:		WILDCARD | Integer WILDCARD;
+//Class_name:		SIMPLE_NAME;
+//Class_names:		WILDCARD | SIMPLE_NAME WILDCARD;
+//Segment_name:		SIMPLE_NAME;
+//Segment_names:	WILDCARD | SIMPLE_NAME WILDCARD;
+//Residue_number:	Integer;
+//Residue_numbers:	WILDCARD | Residue_number WILDCARD;
+//Residue_name:		SIMPLE_NAME;
+//Residue_names:	WILDCARD | SIMPLE_NAME WILDCARD;
+//Atom_name:		ALPHA_NUM ATM_NAME_CHAR*;
+//Atom_names:		WILDCARD | Atom_name WILDCARD;
+//Atom_type:		ALPHA ATM_TYPE_CHAR*;
+//Atom_types:		WILDCARD | Atom_type WILDCARD;
 
 /* Wildcard - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node19.html
@@ -610,8 +613,8 @@ Atom_types:		WILDCARD? Atom_type WILDCARD?;
 fragment WILDCARD:	'*' | '%' | '#' | '+';
 
 fragment ALPHA:		[A-Za-z];
-fragment ALPHA_NUM:	[A-Za-z0-9];
-fragment START_CHAR:	[A-Za-z0-9_];
+fragment ALPHA_NUM:	ALPHA | DEC_DIGIT;
+fragment START_CHAR:	ALPHA_NUM | '_';
 fragment NAME_CHAR:	START_CHAR | '\'' | '-' | '+' | '.';
 fragment ATM_NAME_CHAR:	ALPHA_NUM | '\'';
 fragment ATM_TYPE_CHAR:	ALPHA_NUM | '-' | '+';

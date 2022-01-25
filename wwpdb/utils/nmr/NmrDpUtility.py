@@ -189,8 +189,8 @@ def detect_bom(in_file, default='utf-8'):
     """ Detect BOM of input file.
     """
 
-    with open(in_file, 'rb') as f:
-        raw = f.read(4)
+    with open(in_file, 'rb') as ifp:
+        raw = ifp.read(4)
 
     for enc, boms in \
             ('utf-8-sig', (codecs.BOM_UTF8,)),\

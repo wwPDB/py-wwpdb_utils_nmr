@@ -1111,6 +1111,12 @@ class CnsMRParser ( Parser ):
             if hasattr( listener, "exitCns_mr" ):
                 listener.exitCns_mr(self)
 
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitCns_mr" ):
+                return visitor.visitCns_mr(self)
+            else:
+                return visitor.visitChildren(self)
+
 
 
 
@@ -1329,6 +1335,12 @@ class CnsMRParser ( Parser ):
             if hasattr( listener, "exitDistance_restraint" ):
                 listener.exitDistance_restraint(self)
 
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitDistance_restraint" ):
+                return visitor.visitDistance_restraint(self)
+            else:
+                return visitor.visitChildren(self)
+
 
 
 
@@ -1392,6 +1404,12 @@ class CnsMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitDihedral_angle_restraint" ):
                 listener.exitDihedral_angle_restraint(self)
+
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitDihedral_angle_restraint" ):
+                return visitor.visitDihedral_angle_restraint(self)
+            else:
+                return visitor.visitChildren(self)
 
 
 
@@ -1459,6 +1477,12 @@ class CnsMRParser ( Parser ):
             if hasattr( listener, "exitPlane_restraint" ):
                 listener.exitPlane_restraint(self)
 
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitPlane_restraint" ):
+                return visitor.visitPlane_restraint(self)
+            else:
+                return visitor.visitChildren(self)
+
 
 
 
@@ -1525,6 +1549,12 @@ class CnsMRParser ( Parser ):
             if hasattr( listener, "exitHarmonic_restraint" ):
                 listener.exitHarmonic_restraint(self)
 
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitHarmonic_restraint" ):
+                return visitor.visitHarmonic_restraint(self)
+            else:
+                return visitor.visitChildren(self)
+
 
 
 
@@ -1588,6 +1618,12 @@ class CnsMRParser ( Parser ):
             if hasattr( listener, "exitRdc_restraint" ):
                 listener.exitRdc_restraint(self)
 
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitRdc_restraint" ):
+                return visitor.visitRdc_restraint(self)
+            else:
+                return visitor.visitChildren(self)
+
 
 
 
@@ -1648,6 +1684,12 @@ class CnsMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitCoupling_restraint" ):
                 listener.exitCoupling_restraint(self)
+
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitCoupling_restraint" ):
+                return visitor.visitCoupling_restraint(self)
+            else:
+                return visitor.visitChildren(self)
 
 
 
@@ -1710,6 +1752,12 @@ class CnsMRParser ( Parser ):
             if hasattr( listener, "exitCarbon_shift_restraint" ):
                 listener.exitCarbon_shift_restraint(self)
 
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitCarbon_shift_restraint" ):
+                return visitor.visitCarbon_shift_restraint(self)
+            else:
+                return visitor.visitChildren(self)
+
 
 
 
@@ -1770,6 +1818,12 @@ class CnsMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitProton_shift_restraint" ):
                 listener.exitProton_shift_restraint(self)
+
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitProton_shift_restraint" ):
+                return visitor.visitProton_shift_restraint(self)
+            else:
+                return visitor.visitChildren(self)
 
 
 
@@ -1832,6 +1886,12 @@ class CnsMRParser ( Parser ):
             if hasattr( listener, "exitConformation_db_restraint" ):
                 listener.exitConformation_db_restraint(self)
 
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitConformation_db_restraint" ):
+                return visitor.visitConformation_db_restraint(self)
+            else:
+                return visitor.visitChildren(self)
+
 
 
 
@@ -1892,6 +1952,12 @@ class CnsMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitDiffusion_anisotropy_restraint" ):
                 listener.exitDiffusion_anisotropy_restraint(self)
+
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitDiffusion_anisotropy_restraint" ):
+                return visitor.visitDiffusion_anisotropy_restraint(self)
+            else:
+                return visitor.visitChildren(self)
 
 
 
@@ -1954,6 +2020,12 @@ class CnsMRParser ( Parser ):
             if hasattr( listener, "exitOne_bond_coupling_restraint" ):
                 listener.exitOne_bond_coupling_restraint(self)
 
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitOne_bond_coupling_restraint" ):
+                return visitor.visitOne_bond_coupling_restraint(self)
+            else:
+                return visitor.visitChildren(self)
+
 
 
 
@@ -2014,6 +2086,12 @@ class CnsMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitAngle_db_restraint" ):
                 listener.exitAngle_db_restraint(self)
+
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitAngle_db_restraint" ):
+                return visitor.visitAngle_db_restraint(self)
+            else:
+                return visitor.visitChildren(self)
 
 
 
@@ -2217,6 +2295,12 @@ class CnsMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitNoe_statement" ):
                 listener.exitNoe_statement(self)
+
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitNoe_statement" ):
+                return visitor.visitNoe_statement(self)
+            else:
+                return visitor.visitChildren(self)
 
 
 
@@ -2636,6 +2720,12 @@ class CnsMRParser ( Parser ):
             if hasattr( listener, "exitNoe_assign" ):
                 listener.exitNoe_assign(self)
 
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitNoe_assign" ):
+                return visitor.visitNoe_assign(self)
+            else:
+                return visitor.visitChildren(self)
+
 
 
 
@@ -2719,6 +2809,12 @@ class CnsMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitPredict_statement" ):
                 listener.exitPredict_statement(self)
+
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitPredict_statement" ):
+                return visitor.visitPredict_statement(self)
+            else:
+                return visitor.visitChildren(self)
 
 
 
@@ -2825,6 +2921,12 @@ class CnsMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitDihedral_statement" ):
                 listener.exitDihedral_statement(self)
+
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitDihedral_statement" ):
+                return visitor.visitDihedral_statement(self)
+            else:
+                return visitor.visitChildren(self)
 
 
 
@@ -2945,6 +3047,12 @@ class CnsMRParser ( Parser ):
             if hasattr( listener, "exitDihedral_assign" ):
                 listener.exitDihedral_assign(self)
 
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitDihedral_assign" ):
+                return visitor.visitDihedral_assign(self)
+            else:
+                return visitor.visitChildren(self)
+
 
 
 
@@ -3016,6 +3124,12 @@ class CnsMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitPlane_statement" ):
                 listener.exitPlane_statement(self)
+
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitPlane_statement" ):
+                return visitor.visitPlane_statement(self)
+            else:
+                return visitor.visitChildren(self)
 
 
 
@@ -3094,6 +3208,12 @@ class CnsMRParser ( Parser ):
             if hasattr( listener, "exitGroup_statement" ):
                 listener.exitGroup_statement(self)
 
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitGroup_statement" ):
+                return visitor.visitGroup_statement(self)
+            else:
+                return visitor.visitChildren(self)
+
 
 
 
@@ -3167,6 +3287,12 @@ class CnsMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitHarmonic_statement" ):
                 listener.exitHarmonic_statement(self)
+
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitHarmonic_statement" ):
+                return visitor.visitHarmonic_statement(self)
+            else:
+                return visitor.visitChildren(self)
 
 
 
@@ -3274,6 +3400,12 @@ class CnsMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitSani_statement" ):
                 listener.exitSani_statement(self)
+
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitSani_statement" ):
+                return visitor.visitSani_statement(self)
+            else:
+                return visitor.visitChildren(self)
 
 
 
@@ -3406,6 +3538,12 @@ class CnsMRParser ( Parser ):
             if hasattr( listener, "exitSani_assign" ):
                 listener.exitSani_assign(self)
 
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitSani_assign" ):
+                return visitor.visitSani_assign(self)
+            else:
+                return visitor.visitChildren(self)
+
 
 
 
@@ -3516,6 +3654,12 @@ class CnsMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitCoupling_statement" ):
                 listener.exitCoupling_statement(self)
+
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitCoupling_statement" ):
+                return visitor.visitCoupling_statement(self)
+            else:
+                return visitor.visitChildren(self)
 
 
 
@@ -3692,6 +3836,12 @@ class CnsMRParser ( Parser ):
             if hasattr( listener, "exitCoup_assign" ):
                 listener.exitCoup_assign(self)
 
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitCoup_assign" ):
+                return visitor.visitCoup_assign(self)
+            else:
+                return visitor.visitChildren(self)
+
 
 
 
@@ -3833,6 +3983,12 @@ class CnsMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitCarbon_shift_statement" ):
                 listener.exitCarbon_shift_statement(self)
+
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitCarbon_shift_statement" ):
+                return visitor.visitCarbon_shift_statement(self)
+            else:
+                return visitor.visitChildren(self)
 
 
 
@@ -4015,6 +4171,12 @@ class CnsMRParser ( Parser ):
             if hasattr( listener, "exitCarbon_shift_assign" ):
                 listener.exitCarbon_shift_assign(self)
 
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitCarbon_shift_assign" ):
+                return visitor.visitCarbon_shift_assign(self)
+            else:
+                return visitor.visitChildren(self)
+
 
 
 
@@ -4078,6 +4240,12 @@ class CnsMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitCarbon_shift_rcoil" ):
                 listener.exitCarbon_shift_rcoil(self)
+
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitCarbon_shift_rcoil" ):
+                return visitor.visitCarbon_shift_rcoil(self)
+            else:
+                return visitor.visitChildren(self)
 
 
 
@@ -4226,6 +4394,12 @@ class CnsMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitProton_shift_statement" ):
                 listener.exitProton_shift_statement(self)
+
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitProton_shift_statement" ):
+                return visitor.visitProton_shift_statement(self)
+            else:
+                return visitor.visitChildren(self)
 
 
 
@@ -4494,6 +4668,12 @@ class CnsMRParser ( Parser ):
             if hasattr( listener, "exitObserved" ):
                 listener.exitObserved(self)
 
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitObserved" ):
+                return visitor.visitObserved(self)
+            else:
+                return visitor.visitChildren(self)
+
 
 
 
@@ -4562,6 +4742,12 @@ class CnsMRParser ( Parser ):
             if hasattr( listener, "exitProton_shift_rcoil" ):
                 listener.exitProton_shift_rcoil(self)
 
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitProton_shift_rcoil" ):
+                return visitor.visitProton_shift_rcoil(self)
+            else:
+                return visitor.visitChildren(self)
+
 
 
 
@@ -4621,6 +4807,12 @@ class CnsMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitProton_shift_anisotropy" ):
                 listener.exitProton_shift_anisotropy(self)
+
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitProton_shift_anisotropy" ):
+                return visitor.visitProton_shift_anisotropy(self)
+            else:
+                return visitor.visitChildren(self)
 
 
 
@@ -4685,6 +4877,12 @@ class CnsMRParser ( Parser ):
             if hasattr( listener, "exitProton_shift_amides" ):
                 listener.exitProton_shift_amides(self)
 
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitProton_shift_amides" ):
+                return visitor.visitProton_shift_amides(self)
+            else:
+                return visitor.visitChildren(self)
+
 
 
 
@@ -4730,6 +4928,12 @@ class CnsMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitProton_shift_carbons" ):
                 listener.exitProton_shift_carbons(self)
+
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitProton_shift_carbons" ):
+                return visitor.visitProton_shift_carbons(self)
+            else:
+                return visitor.visitChildren(self)
 
 
 
@@ -4777,6 +4981,12 @@ class CnsMRParser ( Parser ):
             if hasattr( listener, "exitProton_shift_nitrogens" ):
                 listener.exitProton_shift_nitrogens(self)
 
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitProton_shift_nitrogens" ):
+                return visitor.visitProton_shift_nitrogens(self)
+            else:
+                return visitor.visitChildren(self)
+
 
 
 
@@ -4822,6 +5032,12 @@ class CnsMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitProton_shift_oxygens" ):
                 listener.exitProton_shift_oxygens(self)
+
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitProton_shift_oxygens" ):
+                return visitor.visitProton_shift_oxygens(self)
+            else:
+                return visitor.visitChildren(self)
 
 
 
@@ -4874,6 +5090,12 @@ class CnsMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitProton_shift_ring_atoms" ):
                 listener.exitProton_shift_ring_atoms(self)
+
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitProton_shift_ring_atoms" ):
+                return visitor.visitProton_shift_ring_atoms(self)
+            else:
+                return visitor.visitChildren(self)
 
 
 
@@ -4939,6 +5161,12 @@ class CnsMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitProton_shift_alphas_and_amides" ):
                 listener.exitProton_shift_alphas_and_amides(self)
+
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitProton_shift_alphas_and_amides" ):
+                return visitor.visitProton_shift_alphas_and_amides(self)
+            else:
+                return visitor.visitChildren(self)
 
 
 
@@ -5048,6 +5276,12 @@ class CnsMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitConformation_statement" ):
                 listener.exitConformation_statement(self)
+
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitConformation_statement" ):
+                return visitor.visitConformation_statement(self)
+            else:
+                return visitor.visitChildren(self)
 
 
 
@@ -5313,6 +5547,12 @@ class CnsMRParser ( Parser ):
             if hasattr( listener, "exitConf_assign" ):
                 listener.exitConf_assign(self)
 
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitConf_assign" ):
+                return visitor.visitConf_assign(self)
+            else:
+                return visitor.visitChildren(self)
+
 
 
 
@@ -5450,6 +5690,12 @@ class CnsMRParser ( Parser ):
             if hasattr( listener, "exitDiffusion_statement" ):
                 listener.exitDiffusion_statement(self)
 
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitDiffusion_statement" ):
+                return visitor.visitDiffusion_statement(self)
+            else:
+                return visitor.visitChildren(self)
+
 
 
 
@@ -5585,6 +5831,12 @@ class CnsMRParser ( Parser ):
             if hasattr( listener, "exitDani_assign" ):
                 listener.exitDani_assign(self)
 
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitDani_assign" ):
+                return visitor.visitDani_assign(self)
+            else:
+                return visitor.visitChildren(self)
+
 
 
 
@@ -5686,6 +5938,12 @@ class CnsMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitOne_bond_coupling_statement" ):
                 listener.exitOne_bond_coupling_statement(self)
+
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitOne_bond_coupling_statement" ):
+                return visitor.visitOne_bond_coupling_statement(self)
+            else:
+                return visitor.visitChildren(self)
 
 
 
@@ -5826,6 +6084,12 @@ class CnsMRParser ( Parser ):
             if hasattr( listener, "exitOne_bond_assign" ):
                 listener.exitOne_bond_assign(self)
 
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitOne_bond_assign" ):
+                return visitor.visitOne_bond_assign(self)
+            else:
+                return visitor.visitChildren(self)
+
 
 
 
@@ -5949,6 +6213,12 @@ class CnsMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitAngle_db_statement" ):
                 listener.exitAngle_db_statement(self)
+
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitAngle_db_statement" ):
+                return visitor.visitAngle_db_statement(self)
+            else:
+                return visitor.visitChildren(self)
 
 
 
@@ -6127,6 +6397,12 @@ class CnsMRParser ( Parser ):
             if hasattr( listener, "exitAngle_db_assign" ):
                 listener.exitAngle_db_assign(self)
 
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitAngle_db_assign" ):
+                return visitor.visitAngle_db_assign(self)
+            else:
+                return visitor.visitChildren(self)
+
 
 
 
@@ -6205,6 +6481,12 @@ class CnsMRParser ( Parser ):
             if hasattr( listener, "exitSelection" ):
                 listener.exitSelection(self)
 
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitSelection" ):
+                return visitor.visitSelection(self)
+            else:
+                return visitor.visitChildren(self)
+
 
 
 
@@ -6258,6 +6540,12 @@ class CnsMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitSelection_expression" ):
                 listener.exitSelection_expression(self)
+
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitSelection_expression" ):
+                return visitor.visitSelection_expression(self)
+            else:
+                return visitor.visitChildren(self)
 
 
 
@@ -6321,6 +6609,12 @@ class CnsMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitTerm" ):
                 listener.exitTerm(self)
+
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitTerm" ):
+                return visitor.visitTerm(self)
+            else:
+                return visitor.visitChildren(self)
 
 
 
@@ -6533,6 +6827,12 @@ class CnsMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitFactor" ):
                 listener.exitFactor(self)
+
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitFactor" ):
+                return visitor.visitFactor(self)
+            else:
+                return visitor.visitChildren(self)
 
 
 
@@ -7076,6 +7376,12 @@ class CnsMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitVector_3d" ):
                 listener.exitVector_3d(self)
+
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitVector_3d" ):
+                return visitor.visitVector_3d(self)
+            else:
+                return visitor.visitChildren(self)
 
 
 

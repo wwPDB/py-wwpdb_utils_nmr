@@ -211,10 +211,6 @@ def convert_codec(in_file, out_file, in_codec='utf-8', out_codec='utf-8'):
             contents = ifp.read()
             ofp.write(contents.decode(in_codec).encode(out_codec))
 
-            ofp.close()
-
-        ifp.close()
-
 
 def has_key_value(d=None, key=None):
     """ Return whether a given dictionary has effective value for a key.
@@ -4872,13 +4868,8 @@ class NmrDpUtility:
 
                     ofp.write('save_\n')
 
-                    ofp.close()
-
                     _srcPath = ofp.name
                     tmpPaths.append(_srcPath)
-                    ofp.close()
-
-                ifp.close()
 
         msg_template = "Loop improperly terminated at end of file."
 
@@ -4899,13 +4890,8 @@ class NmrDpUtility:
 
                     ofp.write('save_\n')
 
-                    ofp.close()
-
                     _srcPath = ofp.name
                     tmpPaths.append(_srcPath)
-                    ofp.close()
-
-                ifp.close()
 
 #        if __pynmrstar_v3_1__:
 #            msg_template = 'Invalid token found in loop contents. Expecting \'loop_\' but found:' # \'*\' Error detected on line *.'
@@ -4936,8 +4922,6 @@ class NmrDpUtility:
                         break
                     j -= 1
 
-                ifp.close()
-
             j += 1
             i = 1
 
@@ -4949,13 +4933,8 @@ class NmrDpUtility:
                             ofp.write(line)
                         i += 1
 
-                    ofp.close()
-
                     _srcPath = ofp.name
                     tmpPaths.append(_srcPath)
-                    ofp.close()
-
-                ifp.close()
 
         msg_template = "Only 'save_NAME' is valid in the body of a NMR-STAR file. Found 'loop_'."
 
@@ -4981,13 +4960,8 @@ class NmrDpUtility:
                         else:
                             ofp.write(line)
 
-                    ofp.close()
-
                     _srcPath = ofp.name
                     tmpPaths.append(_srcPath)
-                    ofp.close()
-
-                ifp.close()
 
         msg_template = "Cannot use keywords as data values unless quoted or semi-colon delineated. Perhaps this is a loop that wasn't properly terminated? Illegal value:"
 
@@ -5028,9 +5002,6 @@ class NmrDpUtility:
 
                     _srcPath = ofp.name
                     tmpPaths.append(_srcPath)
-                    ofp.close()
-
-                ifp.close()
 
             except AttributeError:
                 pass
@@ -5075,9 +5046,6 @@ class NmrDpUtility:
 
                     _srcPath = ofp.name
                     tmpPaths.append(_srcPath)
-                    ofp.close()
-
-                ifp.close()
 
             except AttributeError:
                 pass
@@ -5109,8 +5077,6 @@ class NmrDpUtility:
                                 is_cs_cif = False
                                 break
 
-                        ifp.close()
-
                     if is_cs_cif:
 
                         loop_count = 0
@@ -5125,8 +5091,6 @@ class NmrDpUtility:
                                     has_sf_category = True
                                 elif sf_framecode_pattern.match(line):
                                     has_sf_framecode = True
-
-                            ifp.close()
 
                         if not has_sf_category and not has_sf_framecode:
 
@@ -5157,7 +5121,6 @@ class NmrDpUtility:
 
                                 _srcPath = ofp.name
                                 tmpPaths.append(_srcPath)
-                                ofp.close()
 
                         else:
 
@@ -5166,8 +5129,6 @@ class NmrDpUtility:
 
                             _srcPath += '~'
                             tmpPaths.append(_srcPath)
-
-                        ifp.close()
 
                 except AttributeError:
                     pass
@@ -5204,9 +5165,6 @@ class NmrDpUtility:
 
                         _srcPath = ofp.name
                         tmpPaths.append(_srcPath)
-                        ofp.close()
-
-                    ifp.close()
 
                 except AttributeError:
                     pass
@@ -5252,9 +5210,6 @@ class NmrDpUtility:
 
                     _srcPath = ofp.name
                     tmpPaths.append(_srcPath)
-                    ofp.close()
-
-                ifp.close()
 
             except AttributeError:
                 pass
@@ -5323,8 +5278,6 @@ class NmrDpUtility:
                             elif sf_framecode_pattern.match(line):
                                 pass_sf_framecode = True
 
-                        ifp.close()
-
                     targets.append(target)
 
                 except AttributeError:
@@ -5360,9 +5313,6 @@ class NmrDpUtility:
 
                         _srcPath = ofp.name
                         tmpPaths.append(_srcPath)
-                        ofp.close()
-
-                    ifp.close()
 
         except StopIteration:
             pass
@@ -5431,8 +5381,6 @@ class NmrDpUtility:
 
                                 i += 1
 
-                        ifp.close()
-
                         targets.append(target)
 
                 except AttributeError:
@@ -5469,9 +5417,6 @@ class NmrDpUtility:
 
                     _srcPath = ofp.name
                     tmpPaths.append(_srcPath)
-                    ofp.close()
-
-                ifp.close()
 
         except StopIteration:
             pass
@@ -5575,8 +5520,6 @@ class NmrDpUtility:
 
                             i += 1
 
-                        ifp.close()
-
                 except AttributeError:
                     pass
 
@@ -5649,9 +5592,6 @@ class NmrDpUtility:
 
                         _srcPath = ofp.name
                         tmpPaths.append(_srcPath)
-                        ofp.close()
-
-                    ifp.close()
 
         except StopIteration:
             pass
@@ -5698,9 +5638,6 @@ class NmrDpUtility:
 
                     _srcPath = ofp.name
                     tmpPaths.append(_srcPath)
-                    ofp.close()
-
-                ifp.close()
 
             except AttributeError:
                 pass
@@ -6798,8 +6735,6 @@ class NmrDpUtility:
 
                 md5_list.append(hashlib.md5(ifp.read().encode('utf-8')).hexdigest())
 
-                ifp.close()
-
             input_source = self.report.input_sources[fileListId]
             input_source_dic = input_source.get()
 
@@ -6965,8 +6900,6 @@ class NmrDpUtility:
 
                             _t_lower = t_lower
 
-                    ifp.close()
-
                 with open(file_path, 'r', encoding='UTF-8') as ifp:
 
                     atom_likes = 0
@@ -7037,8 +6970,6 @@ class NmrDpUtility:
                                     has_resi = False
 
                             _t_lower = t_lower
-
-                    ifp.close()
 
             elif file_type == 'nm-res-amb':
 
@@ -7243,8 +7174,6 @@ class NmrDpUtility:
                                     in_iat = False
                                     in_igr1 = False
                                     in_igr2 = False
-
-                    ifp.close()
 
             elif file_type == 'nm-res-cya' or file_type == 'nm-res-oth' or is_aux_amb:
 
@@ -7462,8 +7391,6 @@ class NmrDpUtility:
                         elif (atom_likes == 4 or (res_like and angle_like)) and dihed_range_like:
                             has_dihed_restraint = True
 
-                    ifp.close()
-
                 if file_type == 'nm-res-oth' and has_chem_shift and not has_dist_restraint and not has_dihed_restraint:
 
                     with open(file_path, 'r', encoding='UTF-8') as ifp:
@@ -7533,8 +7460,6 @@ class NmrDpUtility:
                             elif (atom_likes == 4 or (res_like and angle_like)) and dihed_range_like:
                                 has_dihed_restraint = True
 
-                        ifp.close()
-
                 if is_aux_amb:
 
                     if has_atom_name and has_residue_label and has_residue_pointer and\
@@ -7600,8 +7525,6 @@ class NmrDpUtility:
                         has_dist_restraint = True
 
                         break
-
-                    ifp.close()
 
             if has_coordinate and not has_dist_restraint and not has_dihed_restraint and not has_rdc_restraint\
                     and not has_plane_restraint and not has_hbond_restraint:

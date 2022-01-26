@@ -148,6 +148,12 @@ class CyanaMRParser ( Parser ):
             if hasattr( listener, "exitCyana_mr" ):
                 listener.exitCyana_mr(self)
 
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitCyana_mr" ):
+                return visitor.visitCyana_mr(self)
+            else:
+                return visitor.visitChildren(self)
+
 
 
 
@@ -236,6 +242,12 @@ class CyanaMRParser ( Parser ):
             if hasattr( listener, "exitDistance_restraints" ):
                 listener.exitDistance_restraints(self)
 
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitDistance_restraints" ):
+                return visitor.visitDistance_restraints(self)
+            else:
+                return visitor.visitChildren(self)
+
 
 
 
@@ -300,6 +312,12 @@ class CyanaMRParser ( Parser ):
             if hasattr( listener, "exitDistance_restraint" ):
                 listener.exitDistance_restraint(self)
 
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitDistance_restraint" ):
+                return visitor.visitDistance_restraint(self)
+            else:
+                return visitor.visitChildren(self)
+
 
 
 
@@ -355,6 +373,12 @@ class CyanaMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitTorsion_angle_restraints" ):
                 listener.exitTorsion_angle_restraints(self)
+
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitTorsion_angle_restraints" ):
+                return visitor.visitTorsion_angle_restraints(self)
+            else:
+                return visitor.visitChildren(self)
 
 
 
@@ -420,6 +444,12 @@ class CyanaMRParser ( Parser ):
             if hasattr( listener, "exitTorsion_angle_restraint" ):
                 listener.exitTorsion_angle_restraint(self)
 
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitTorsion_angle_restraint" ):
+                return visitor.visitTorsion_angle_restraint(self)
+            else:
+                return visitor.visitChildren(self)
+
 
 
 
@@ -478,6 +508,12 @@ class CyanaMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitRdc_restraints" ):
                 listener.exitRdc_restraints(self)
+
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitRdc_restraints" ):
+                return visitor.visitRdc_restraints(self)
+            else:
+                return visitor.visitChildren(self)
 
 
 
@@ -554,6 +590,12 @@ class CyanaMRParser ( Parser ):
             if hasattr( listener, "exitRdc_parameter" ):
                 listener.exitRdc_parameter(self)
 
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitRdc_parameter" ):
+                return visitor.visitRdc_parameter(self)
+            else:
+                return visitor.visitChildren(self)
+
 
 
 
@@ -614,6 +656,12 @@ class CyanaMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitRdc_restraint" ):
                 listener.exitRdc_restraint(self)
+
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitRdc_restraint" ):
+                return visitor.visitRdc_restraint(self)
+            else:
+                return visitor.visitChildren(self)
 
 
 
@@ -683,6 +731,12 @@ class CyanaMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitPcs_restraints" ):
                 listener.exitPcs_restraints(self)
+
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitPcs_restraints" ):
+                return visitor.visitPcs_restraints(self)
+            else:
+                return visitor.visitChildren(self)
 
 
 
@@ -759,6 +813,12 @@ class CyanaMRParser ( Parser ):
             if hasattr( listener, "exitPcs_parameter" ):
                 listener.exitPcs_parameter(self)
 
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitPcs_parameter" ):
+                return visitor.visitPcs_parameter(self)
+            else:
+                return visitor.visitChildren(self)
+
 
 
 
@@ -819,6 +879,12 @@ class CyanaMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitPcs_restraint" ):
                 listener.exitPcs_restraint(self)
+
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitPcs_restraint" ):
+                return visitor.visitPcs_restraint(self)
+            else:
+                return visitor.visitChildren(self)
 
 
 

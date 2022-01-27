@@ -163,7 +163,7 @@ dihedral_statement:
 dihedral_assign:
 	Assign selection selection selection selection Real Real Real Integer;
 
-/* XPLOR-NIH: RDC - Syntax (SANI - Susceptibility anisotropy)
+/* XPLOR-NIH: Residual Dipolar Couplings - Syntax (SANI - Susceptibility anisotropy)
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node418.html
 */
 sani_statement:
@@ -179,7 +179,7 @@ sani_statement:
 sani_assign:
 	Assign selection selection selection selection selection selection Real Real;
 
-/* XPLOR-NIH: RDC - Syntax (XDIP)
+/* XPLOR-NIH: Residual Dipolar Couplings - Syntax (XDIP)
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node419.html
 */
 xdip_statement:
@@ -199,7 +199,7 @@ xdip_statement:
 xdip_assign:
 	Assign selection selection selection selection selection selection Real Real Real (Real Real Real)?;
 
-/* XPLOR-NIH: RDC - Syntax (VEAN)
+/* XPLOR-NIH: Residual Dipolar Couplings - Syntax (VEAN)
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node420.html
 */
 vean_statement:
@@ -215,7 +215,7 @@ vean_statement:
 vean_assign:
 	Assign selection selection selection selection Real Real Real Real;
 
-/* XPLOR-NIH: RDC - Syntax (TENS)
+/* XPLOR-NIH: Residual Dipolar Couplings - Syntax (TENS)
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node421.html
 */
 tens_statement:
@@ -230,7 +230,7 @@ tens_statement:
 tens_assign:
 	Assign selection selection Real Real;
 
-/* XPLOR-NIH: RDC - Syntax (ANIS)
+/* XPLOR-NIH: Residual Dipolar Couplings - Syntax (ANIS)
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node422.html
 */
 anis_statement:

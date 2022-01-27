@@ -8,6 +8,28 @@ else:
 # This class defines a complete listener for a parse tree produced by XplorMRParser.
 class XplorMRParserListener(ParseTreeListener):
 
+    distRestraints = 0      # XPLOR-NIH: Distance restraints
+    dihedRestraints = 0     # XPLOR-NIH: Dihedral angle restraints
+    rdcRestraints = 0       # XPLOR-NIH: Residual Dipolar Couplings
+    planeRestraints = 0     # XPLOR-NIH: Planality restraints
+    adistRestraints = 0     # XPLOR-NIH: Antidiatance restraints
+    jcoupRestraints = 0     # XPLOR-NIH: Scalar J-coupling restraints
+    carbRestraints = 0      # XPLOR-NIH: Carbon chemical shift restraints
+    protResraints = 0       # XPLOR-NIH: Proton chemical shift restraints
+    ramaRestraints = 0      # XPLOR-NIH: Dihedral angle database restraints
+    radiRestraints = 0      # XPLOR-NIH: Radius of gyration restraints
+    diffRestraints = 0      # XPLOR-NIH: Diffusion anisotropy restraints
+    baseRestraints = 0      # XPLOR-NIH: Residue-residue position/orientation database restraints
+    csaRestraints = 0       # XPLOR-NIH: (Pseudo) Chemical shift anisotropy restraints
+    onejRestraints = 0      # XPLOR-NIH: One-bond coupling restraints
+    angRestraints = 0       # XPLOR-NIH: Angle database restraints
+    preRestraints = 0       # XPLOR-NIH: Paramagnetic relaxation enhancement restraints
+    pcsRestraints = 0       # XPLOR-NIH: Paramagnetic pseudocontact shift restraints
+    prdcRestraints = 0      # XPLOR-NIH: Paramagnetic residual dipolar coupling restraints
+    pangRestraints = 0      # XPLOR-NIH: Paramagnetic orientation restraints
+    pccrRestraints = 0      # XPLOR-NIH: Paramagnetic cross-correlation rate restraints
+    hbondRrestraints = 0    # XPLOR-NIH: Hydrogen bond geometry restraints
+
     # Enter a parse tree produced by XplorMRParser#xplor_nih_mr.
     def enterXplor_nih_mr(self, ctx:XplorMRParser.Xplor_nih_mrContext):
         pass
@@ -226,7 +248,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#noe_assign.
     def enterNoe_assign(self, ctx:XplorMRParser.Noe_assignContext):
-        pass
+        self.distRestraints += 1
 
     # Exit a parse tree produced by XplorMRParser#noe_assign.
     def exitNoe_assign(self, ctx:XplorMRParser.Noe_assignContext):
@@ -253,7 +275,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#dihedral_assign.
     def enterDihedral_assign(self, ctx:XplorMRParser.Dihedral_assignContext):
-        pass
+        self.dihedRestraints += 1
 
     # Exit a parse tree produced by XplorMRParser#dihedral_assign.
     def exitDihedral_assign(self, ctx:XplorMRParser.Dihedral_assignContext):
@@ -271,7 +293,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#sani_assign.
     def enterSani_assign(self, ctx:XplorMRParser.Sani_assignContext):
-        pass
+        self.rdcRestraints += 1
 
     # Exit a parse tree produced by XplorMRParser#sani_assign.
     def exitSani_assign(self, ctx:XplorMRParser.Sani_assignContext):
@@ -289,7 +311,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#xdip_assign.
     def enterXdip_assign(self, ctx:XplorMRParser.Xdip_assignContext):
-        pass
+        self.rdcRestraints += 1
 
     # Exit a parse tree produced by XplorMRParser#xdip_assign.
     def exitXdip_assign(self, ctx:XplorMRParser.Xdip_assignContext):
@@ -307,7 +329,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#vean_assign.
     def enterVean_assign(self, ctx:XplorMRParser.Vean_assignContext):
-        pass
+        self.rdcRestraints += 1
 
     # Exit a parse tree produced by XplorMRParser#vean_assign.
     def exitVean_assign(self, ctx:XplorMRParser.Vean_assignContext):
@@ -325,7 +347,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#tens_assign.
     def enterTens_assign(self, ctx:XplorMRParser.Tens_assignContext):
-        pass
+        self.rdcRestraints += 1
 
     # Exit a parse tree produced by XplorMRParser#tens_assign.
     def exitTens_assign(self, ctx:XplorMRParser.Tens_assignContext):
@@ -343,7 +365,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#anis_assign.
     def enterAnis_assign(self, ctx:XplorMRParser.Anis_assignContext):
-        pass
+        self.rdcRestraints += 1
 
     # Exit a parse tree produced by XplorMRParser#anis_assign.
     def exitAnis_assign(self, ctx:XplorMRParser.Anis_assignContext):
@@ -361,7 +383,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#group_statement.
     def enterGroup_statement(self, ctx:XplorMRParser.Group_statementContext):
-        pass
+        self.planeRestraints += 1
 
     # Exit a parse tree produced by XplorMRParser#group_statement.
     def exitGroup_statement(self, ctx:XplorMRParser.Group_statementContext):
@@ -379,7 +401,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#xadc_assign.
     def enterXadc_assign(self, ctx:XplorMRParser.Xadc_assignContext):
-        pass
+        self.adistRestraints += 1
 
     # Exit a parse tree produced by XplorMRParser#xadc_assign.
     def exitXadc_assign(self, ctx:XplorMRParser.Xadc_assignContext):
@@ -397,7 +419,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#coup_assign.
     def enterCoup_assign(self, ctx:XplorMRParser.Coup_assignContext):
-        pass
+        self.jcoupRestraints += 1
 
     # Exit a parse tree produced by XplorMRParser#coup_assign.
     def exitCoup_assign(self, ctx:XplorMRParser.Coup_assignContext):
@@ -415,7 +437,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#carbon_shift_assign.
     def enterCarbon_shift_assign(self, ctx:XplorMRParser.Carbon_shift_assignContext):
-        pass
+        self.carbRestraints += 1
 
     # Exit a parse tree produced by XplorMRParser#carbon_shift_assign.
     def exitCarbon_shift_assign(self, ctx:XplorMRParser.Carbon_shift_assignContext):
@@ -442,7 +464,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#observed.
     def enterObserved(self, ctx:XplorMRParser.ObservedContext):
-        pass
+        self.protResraints += 1
 
     # Exit a parse tree produced by XplorMRParser#observed.
     def exitObserved(self, ctx:XplorMRParser.ObservedContext):
@@ -532,7 +554,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#rama_assign.
     def enterRama_assign(self, ctx:XplorMRParser.Rama_assignContext):
-        pass
+        self.ramaRestraints += 1
 
     # Exit a parse tree produced by XplorMRParser#rama_assign.
     def exitRama_assign(self, ctx:XplorMRParser.Rama_assignContext):
@@ -541,7 +563,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#collapse_statement.
     def enterCollapse_statement(self, ctx:XplorMRParser.Collapse_statementContext):
-        pass
+        self.radiRestraints += 1
 
     # Exit a parse tree produced by XplorMRParser#collapse_statement.
     def exitCollapse_statement(self, ctx:XplorMRParser.Collapse_statementContext):
@@ -559,7 +581,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#dani_assign.
     def enterDani_assign(self, ctx:XplorMRParser.Dani_assignContext):
-        pass
+        self.diffRestraints += 1
 
     # Exit a parse tree produced by XplorMRParser#dani_assign.
     def exitDani_assign(self, ctx:XplorMRParser.Dani_assignContext):
@@ -577,7 +599,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#orie_assign.
     def enterOrie_assign(self, ctx:XplorMRParser.Orie_assignContext):
-        pass
+        self.baseRestraints += 1
 
     # Exit a parse tree produced by XplorMRParser#orie_assign.
     def exitOrie_assign(self, ctx:XplorMRParser.Orie_assignContext):
@@ -595,7 +617,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#csa_assign.
     def enterCsa_assign(self, ctx:XplorMRParser.Csa_assignContext):
-        pass
+        self.csaRestraints += 1
 
     # Exit a parse tree produced by XplorMRParser#csa_assign.
     def exitCsa_assign(self, ctx:XplorMRParser.Csa_assignContext):
@@ -622,7 +644,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#one_bond_assign.
     def enterOne_bond_assign(self, ctx:XplorMRParser.One_bond_assignContext):
-        pass
+        self.onejRestraints += 1
 
     # Exit a parse tree produced by XplorMRParser#one_bond_assign.
     def exitOne_bond_assign(self, ctx:XplorMRParser.One_bond_assignContext):
@@ -640,7 +662,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#angle_db_assign.
     def enterAngle_db_assign(self, ctx:XplorMRParser.Angle_db_assignContext):
-        pass
+        self.angRestraints += 1
 
     # Exit a parse tree produced by XplorMRParser#angle_db_assign.
     def exitAngle_db_assign(self, ctx:XplorMRParser.Angle_db_assignContext):
@@ -658,7 +680,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#pre_assign.
     def enterPre_assign(self, ctx:XplorMRParser.Pre_assignContext):
-        pass
+        self.preRestraints += 1
 
     # Exit a parse tree produced by XplorMRParser#pre_assign.
     def exitPre_assign(self, ctx:XplorMRParser.Pre_assignContext):
@@ -676,7 +698,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#pcs_assign.
     def enterPcs_assign(self, ctx:XplorMRParser.Pcs_assignContext):
-        pass
+        self.pcsRestraints += 1
 
     # Exit a parse tree produced by XplorMRParser#pcs_assign.
     def exitPcs_assign(self, ctx:XplorMRParser.Pcs_assignContext):
@@ -712,7 +734,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#porientation_assign.
     def enterPorientation_assign(self, ctx:XplorMRParser.Porientation_assignContext):
-        pass
+        self.pangRestraints += 1
 
     # Exit a parse tree produced by XplorMRParser#porientation_assign.
     def exitPorientation_assign(self, ctx:XplorMRParser.Porientation_assignContext):
@@ -730,7 +752,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#pccr_assign.
     def enterPccr_assign(self, ctx:XplorMRParser.Pccr_assignContext):
-        pass
+        self.pccrRestraints += 1
 
     # Exit a parse tree produced by XplorMRParser#pccr_assign.
     def exitPccr_assign(self, ctx:XplorMRParser.Pccr_assignContext):
@@ -748,7 +770,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#hbond_assign.
     def enterHbond_assign(self, ctx:XplorMRParser.Hbond_assignContext):
-        pass
+        self.hbondRrestraints += 1
 
     # Exit a parse tree produced by XplorMRParser#hbond_assign.
     def exitHbond_assign(self, ctx:XplorMRParser.Hbond_assignContext):
@@ -788,6 +810,12 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#factor.
     def exitFactor(self, ctx:XplorMRParser.FactorContext):
+        if ctx.Name():
+            print(f"name={ctx.Simple_name(0)}")
+        if ctx.Residue():
+            print(f"resid={ctx.Integer(0)}")
+        if ctx.SegIdentifier():
+            print(f"segid={ctx.Simple_name(0)}")
         pass
 
 

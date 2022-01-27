@@ -32,20 +32,26 @@ class MRErrorListener(ErrorListener):
         if self.__messageList is None:
             self.__messageList = []
 
-        description = f"SyntaxError: {msg}\n"
-        description += f"  File \"{self.__fileName}\", line {line}\n"
+        dict = {'file_path': self.__filePath,
+                'file_name': self.__fileName,
+                'line_number': line,
+                'column_position': column,
+                'message': msg}
 
         _line = 1
         with open(self.__filePath, 'r', encoding='UTF-8') as ifp:
             for content in ifp:
                 if _line == line:
-                    description += content
+                    dict['input'] = content.replace('\t', ' ')\
+                        .replace('\r', ' ').replace('\n', ' ')\
+                        .rstrip(' ')
                     break
                 _line += 1
 
-        description += " " * (column - 1) + "^"
+        if 'input' in dict:
+            dict['marker'] = " " * (column - 1) + "^"
 
-        self.__messageList.append(description)
+        self.__messageList.append(dict)
 
     def getMessageList(self):
         return self.__messageList

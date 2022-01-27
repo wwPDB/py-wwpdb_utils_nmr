@@ -8,6 +8,20 @@ else:
 # This class defines a complete listener for a parse tree produced by CnsMRParser.
 class CnsMRParserListener(ParseTreeListener):
 
+    distRestraints = 0      # CNS: Distance restraints
+    dihedRestraints = 0     # CNS: Dihedral angle restraints
+    rdcRestraints = 0       # CNS: Suscetibility anisotropy restraints
+    planeRestraints = 0     # CNS: Plane restraints
+    jcoupRestraints = 0     # CNS: Scalar J-coupling restraints
+    carbRestraints = 0      # CNS: Carbon chemical shift restraints
+    protResraints = 0       # CNS: Proton chemical shift restraints
+    ramaRestraints = 0      # CNS: Comformation database restraints
+    diffRestraints = 0      # CNS: Diffusion anisotropy restraints
+    baseRestraints = 0      # CNS: Residue-residue position/orientation database restraints
+    csaRestraints = 0       # CNS: (Pseudo) Chemical shift anisotropy restraints
+    onejRestraints = 0      # CNS: One-bond coupling restraints
+    angRestraints = 0       # CNS: Angle database restraints
+
     # Enter a parse tree produced by CnsMRParser#cns_mr.
     def enterCns_mr(self, ctx:CnsMRParser.Cns_mrContext):
         pass
@@ -136,7 +150,7 @@ class CnsMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by CnsMRParser#noe_assign.
     def enterNoe_assign(self, ctx:CnsMRParser.Noe_assignContext):
-        pass
+        self.distRestraints += 1
 
     # Exit a parse tree produced by CnsMRParser#noe_assign.
     def exitNoe_assign(self, ctx:CnsMRParser.Noe_assignContext):
@@ -163,7 +177,7 @@ class CnsMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by CnsMRParser#dihedral_assign.
     def enterDihedral_assign(self, ctx:CnsMRParser.Dihedral_assignContext):
-        pass
+        self.dihedRestraints += 1
 
     # Exit a parse tree produced by CnsMRParser#dihedral_assign.
     def exitDihedral_assign(self, ctx:CnsMRParser.Dihedral_assignContext):
@@ -181,7 +195,7 @@ class CnsMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by CnsMRParser#group_statement.
     def enterGroup_statement(self, ctx:CnsMRParser.Group_statementContext):
-        pass
+        self.planeRestraints += 1
 
     # Exit a parse tree produced by CnsMRParser#group_statement.
     def exitGroup_statement(self, ctx:CnsMRParser.Group_statementContext):
@@ -208,7 +222,7 @@ class CnsMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by CnsMRParser#sani_assign.
     def enterSani_assign(self, ctx:CnsMRParser.Sani_assignContext):
-        pass
+        self.rdcRestraints += 1
 
     # Exit a parse tree produced by CnsMRParser#sani_assign.
     def exitSani_assign(self, ctx:CnsMRParser.Sani_assignContext):
@@ -226,7 +240,7 @@ class CnsMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by CnsMRParser#coup_assign.
     def enterCoup_assign(self, ctx:CnsMRParser.Coup_assignContext):
-        pass
+        self.jcoupRestraints += 1
 
     # Exit a parse tree produced by CnsMRParser#coup_assign.
     def exitCoup_assign(self, ctx:CnsMRParser.Coup_assignContext):
@@ -244,7 +258,7 @@ class CnsMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by CnsMRParser#carbon_shift_assign.
     def enterCarbon_shift_assign(self, ctx:CnsMRParser.Carbon_shift_assignContext):
-        pass
+        self.carbRestraints += 1
 
     # Exit a parse tree produced by CnsMRParser#carbon_shift_assign.
     def exitCarbon_shift_assign(self, ctx:CnsMRParser.Carbon_shift_assignContext):
@@ -271,7 +285,7 @@ class CnsMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by CnsMRParser#observed.
     def enterObserved(self, ctx:CnsMRParser.ObservedContext):
-        pass
+        self.protResraints += 1
 
     # Exit a parse tree produced by CnsMRParser#observed.
     def exitObserved(self, ctx:CnsMRParser.ObservedContext):
@@ -361,7 +375,7 @@ class CnsMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by CnsMRParser#conf_assign.
     def enterConf_assign(self, ctx:CnsMRParser.Conf_assignContext):
-        pass
+        self.ramaRestraints += 1
 
     # Exit a parse tree produced by CnsMRParser#conf_assign.
     def exitConf_assign(self, ctx:CnsMRParser.Conf_assignContext):
@@ -379,7 +393,7 @@ class CnsMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by CnsMRParser#dani_assign.
     def enterDani_assign(self, ctx:CnsMRParser.Dani_assignContext):
-        pass
+        self.diffRestraints += 1
 
     # Exit a parse tree produced by CnsMRParser#dani_assign.
     def exitDani_assign(self, ctx:CnsMRParser.Dani_assignContext):
@@ -397,7 +411,7 @@ class CnsMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by CnsMRParser#one_bond_assign.
     def enterOne_bond_assign(self, ctx:CnsMRParser.One_bond_assignContext):
-        pass
+        self.onejRestraints += 1
 
     # Exit a parse tree produced by CnsMRParser#one_bond_assign.
     def exitOne_bond_assign(self, ctx:CnsMRParser.One_bond_assignContext):
@@ -415,7 +429,7 @@ class CnsMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by CnsMRParser#angle_db_assign.
     def enterAngle_db_assign(self, ctx:CnsMRParser.Angle_db_assignContext):
-        pass
+        self.angRestraints += 1
 
     # Exit a parse tree produced by CnsMRParser#angle_db_assign.
     def exitAngle_db_assign(self, ctx:CnsMRParser.Angle_db_assignContext):

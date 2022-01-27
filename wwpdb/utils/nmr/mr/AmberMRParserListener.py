@@ -8,6 +8,16 @@ else:
 # This class defines a complete listener for a parse tree produced by AmberMRParser.
 class AmberMRParserListener(ParseTreeListener):
 
+    distRestraints = 0      # AMBER: Distance restraints
+    angRestraints = 0       # AMBER: Angle restraints
+    dihedRestraints = 0     # AMBER: Torsinal restraints
+    planeRestraints = 0     # AMBER: Plane-point/plane angle restraints
+    noepkRestraints = 0     # AMBER: NOESY volume restraints
+    csRestraints = 0        # AMBER: Chemical shift restraints
+    pcsRestraints = 0       # AMBER: Psuedocontact shift restraints
+    rdcRestraints = 0       # AMBER: Direct dipolar coupling restraints
+    csaRestraints = 0       # AMBER: Residual CSA or pseudo-CSA restraints
+
     # Enter a parse tree produced by AmberMRParser#amber_mr.
     def enterAmber_mr(self, ctx:AmberMRParser.Amber_mrContext):
         pass
@@ -82,7 +92,7 @@ class AmberMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by AmberMRParser#distance_statement.
     def enterDistance_statement(self, ctx:AmberMRParser.Distance_statementContext):
-        pass
+        self.distRestraints += 1
 
     # Exit a parse tree produced by AmberMRParser#distance_statement.
     def exitDistance_statement(self, ctx:AmberMRParser.Distance_statementContext):
@@ -91,7 +101,7 @@ class AmberMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by AmberMRParser#angle_statement.
     def enterAngle_statement(self, ctx:AmberMRParser.Angle_statementContext):
-        pass
+        self.angRestraints += 1
 
     # Exit a parse tree produced by AmberMRParser#angle_statement.
     def exitAngle_statement(self, ctx:AmberMRParser.Angle_statementContext):
@@ -100,7 +110,7 @@ class AmberMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by AmberMRParser#torsion_statement.
     def enterTorsion_statement(self, ctx:AmberMRParser.Torsion_statementContext):
-        pass
+        self.dihedRestraints += 1
 
     # Exit a parse tree produced by AmberMRParser#torsion_statement.
     def exitTorsion_statement(self, ctx:AmberMRParser.Torsion_statementContext):
@@ -109,7 +119,7 @@ class AmberMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by AmberMRParser#plane_point_angle_statement.
     def enterPlane_point_angle_statement(self, ctx:AmberMRParser.Plane_point_angle_statementContext):
-        pass
+        self.planeRestraints += 1
 
     # Exit a parse tree produced by AmberMRParser#plane_point_angle_statement.
     def exitPlane_point_angle_statement(self, ctx:AmberMRParser.Plane_point_angle_statementContext):
@@ -118,7 +128,7 @@ class AmberMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by AmberMRParser#plane_plane_angle_statement.
     def enterPlane_plane_angle_statement(self, ctx:AmberMRParser.Plane_plane_angle_statementContext):
-        pass
+        self.planeRestraints += 1
 
     # Exit a parse tree produced by AmberMRParser#plane_plane_angle_statement.
     def exitPlane_plane_angle_statement(self, ctx:AmberMRParser.Plane_plane_angle_statementContext):
@@ -127,7 +137,7 @@ class AmberMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by AmberMRParser#general_distance2_statement.
     def enterGeneral_distance2_statement(self, ctx:AmberMRParser.General_distance2_statementContext):
-        pass
+        self.distRestraints += 1
 
     # Exit a parse tree produced by AmberMRParser#general_distance2_statement.
     def exitGeneral_distance2_statement(self, ctx:AmberMRParser.General_distance2_statementContext):
@@ -136,7 +146,7 @@ class AmberMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by AmberMRParser#general_distance3_statement.
     def enterGeneral_distance3_statement(self, ctx:AmberMRParser.General_distance3_statementContext):
-        pass
+        self.distRestraints += 1
 
     # Exit a parse tree produced by AmberMRParser#general_distance3_statement.
     def exitGeneral_distance3_statement(self, ctx:AmberMRParser.General_distance3_statementContext):
@@ -145,7 +155,7 @@ class AmberMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by AmberMRParser#general_distance4_statement.
     def enterGeneral_distance4_statement(self, ctx:AmberMRParser.General_distance4_statementContext):
-        pass
+        self.distRestraints += 1
 
     # Exit a parse tree produced by AmberMRParser#general_distance4_statement.
     def exitGeneral_distance4_statement(self, ctx:AmberMRParser.General_distance4_statementContext):
@@ -154,7 +164,7 @@ class AmberMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by AmberMRParser#noeexp_statement.
     def enterNoeexp_statement(self, ctx:AmberMRParser.Noeexp_statementContext):
-        pass
+        self.noepkRestraints += 1
 
     # Exit a parse tree produced by AmberMRParser#noeexp_statement.
     def exitNoeexp_statement(self, ctx:AmberMRParser.Noeexp_statementContext):
@@ -163,7 +173,7 @@ class AmberMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by AmberMRParser#shf_statement.
     def enterShf_statement(self, ctx:AmberMRParser.Shf_statementContext):
-        pass
+        self.csaRestraints += 1
 
     # Exit a parse tree produced by AmberMRParser#shf_statement.
     def exitShf_statement(self, ctx:AmberMRParser.Shf_statementContext):
@@ -172,7 +182,7 @@ class AmberMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by AmberMRParser#pcshf_statement.
     def enterPcshf_statement(self, ctx:AmberMRParser.Pcshf_statementContext):
-        pass
+        self.pcsRestraints += 1
 
     # Exit a parse tree produced by AmberMRParser#pcshf_statement.
     def exitPcshf_statement(self, ctx:AmberMRParser.Pcshf_statementContext):
@@ -181,7 +191,7 @@ class AmberMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by AmberMRParser#align_statement.
     def enterAlign_statement(self, ctx:AmberMRParser.Align_statementContext):
-        pass
+        self.rdcRestraints += 1
 
     # Exit a parse tree produced by AmberMRParser#align_statement.
     def exitAlign_statement(self, ctx:AmberMRParser.Align_statementContext):
@@ -190,7 +200,7 @@ class AmberMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by AmberMRParser#csa_statement.
     def enterCsa_statement(self, ctx:AmberMRParser.Csa_statementContext):
-        pass
+        self.csaRestraints += 1
 
     # Exit a parse tree produced by AmberMRParser#csa_statement.
     def exitCsa_statement(self, ctx:AmberMRParser.Csa_statementContext):

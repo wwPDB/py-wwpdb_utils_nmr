@@ -55,6 +55,7 @@
 # 16-Nov-2021  M. Yokochi - revised error message for malformed XPLOR-NIH RDC restraints (DAOTHER-7478)
 # 18-Nov-2021  M. Yokochi - detect content type of XPLOR-NIH hydrogen bond geometry restraints (DAOTHER-7478)
 # 21 Dec-2021  M. Yokochi - add 'exactly_overlaid_model' warning type (DAOTHER-7544)
+# 27-Jan-2022  M. Yokochi - add restraint types described by XPLOR-NIH, CNS, CYANA, and AMBER systems (NMR restraint remediation)
 ##
 """ Wrapper class for NMR data processing report.
     @author: Masashi Yokochi
@@ -1670,10 +1671,20 @@ class NmrDpReportInputSource:
                       'polymer_sequence', 'polymer_sequence_in_loop',
                       'non_standard_residue', 'disulfide_bond', 'other_bond',
                       'stats_of_exptl_data')
-        self.file_types = ('pdbx', 'nef', 'nmr-star', 'nm-res-amb', 'nm-res-cns', 'nm-res-cya', 'nm-res-xpl', 'nm-res-oth', 'nm-aux-amb')
-        self.content_types = ('model', 'nmr-data-nef', 'nmr-data-str', 'nmr-chemical-shifts', 'nmr-restraints')
+        self.file_types = ('pdbx',
+                           'nef', 'nmr-star',
+                           'nm-res-amb', 'nm-res-cns', 'nm-res-cya', 'nm-res-xpl', 'nm-res-oth',
+                           'nm-aux-amb')
+        self.content_types = ('model',
+                              'nmr-data-nef', 'nmr-data-str',
+                              'nmr-chemical-shifts', 'nmr-restraints')
         self.content_subtypes = ('coordinate', 'non_poly', 'entry_info', 'poly_seq', 'entity', 'chem_shift',
-                                 'chem_shift_ref', 'dist_restraint', 'dihed_restraint', 'rdc_restraint', 'plane_restraint', 'hbond_restraint',
+                                 'chem_shift_ref', 'dist_restraint', 'dihed_restraint', 'rdc_restraint',
+                                 'plane_restraint', 'adist_restraint', 'jcoup_restraint', 'hvycs_restraint',
+                                 'procs_restraint', 'rama_restraint', 'radi_restraint', 'diff_restraint',
+                                 'nbase_restraint', 'csa_restraint', 'ang_restraint', 'pre_restraint',
+                                 'pcs_restraint', 'prdc_restraint', 'pang_restraint', 'pccr_restraint',
+                                 'hbond_restraint', 'noepk_restraint',
                                  'spectral_peak', 'spectral_peak_alt', 'topology')
 
         self.__contents = {item: None for item in self.items}
@@ -1756,6 +1767,13 @@ class NmrDpReportSequenceAlignment:
 
     def __init__(self):
         self.items = ('model_poly_seq_vs_coordinate', 'model_poly_seq_vs_nmr_poly_seq', 'nmr_poly_seq_vs_model_poly_seq',
+                      'model_poly_seq_vs_dist_restraint', 'model_poly_seq_vs_dihed_restraint', 'model_poly_seq_vs_rdc_restraint',
+                      'model_poly_seq_vs_plane_restraint', 'model_poly_seq_vs_adist_restraint', 'model_poly_seq_vs_jcoup_restraint',
+                      'model_poly_seq_vs_hvycs_restraint', 'model_poly_seq_vs_procs_restraint', 'model_poly_seq_vs_rama_restraint',
+                      'model_poly_seq_vs_radi_restraint', 'model_poly_seq_vs_diff_restraint', 'model_poly_seq_vs_nbase_restraint',
+                      'model_poly_seq_vs_csa_restraint', 'model_poly_seq_vs_ang_restraint', 'model_poly_seq_vs_pre_restraint',
+                      'model_poly_seq_vs_pcs_restraint', 'model_poly_seq_vs_prdc_restraint', 'model_poly_seq_vs_pang_restraint',
+                      'model_poly_seq_vs_pccr_restraint', 'model_poly_seq_vs_hbond_restraint', 'model_poly_seq_vs_noepk_restraint',
                       'nmr_poly_seq_vs_chem_shift', 'nmr_poly_seq_vs_dist_restraint', 'nmr_poly_seq_vs_dihed_restraint',
                       'nmr_poly_seq_vs_rdc_restraint', 'nmr_poly_seq_vs_spectral_peak', 'nmr_poly_seq_vs_spectral_peak_alt')
 

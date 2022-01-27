@@ -140,8 +140,8 @@
               "type": "integer",
               "minimum": 1
             },
-            "base_restraint": {
-              "description": "The number of lists associated with nucleic acid's base orientation database restraints.",
+            "nbase_restraint": {
+              "description": "The number of lists associated with nucleic acid base orientation database restraints.",
               "type": "integer",
               "minimum": 1
             },
@@ -182,6 +182,11 @@
             },
             "hbond_restraint": {
               "description": "The number of lists associated with hydrogen bond geometry restraints.",
+              "type": "integer",
+              "minimum": 1
+            },
+            "noepk_restraint": {
+              "description": "The number of lists associated with NOESY peak volume restraints.",
               "type": "integer",
               "minimum": 1
             },
@@ -304,8 +309,8 @@
                 "$ref": "#/definitions/polymer_sequence_in_loop"
               }
             },
-            "base_restraint": {
-              "description": "The array provides the polymer sequences in data loops for nucleic acid's base orientation database restraints.",
+            "nbase_restraint": {
+              "description": "The array provides the polymer sequences in data loops for nucleic acid base orientation database restraints.",
               "type": "array",
               "items": {
                 "$ref": "#/definitions/polymer_sequence_in_loop"
@@ -362,6 +367,13 @@
             },
             "hbond_restraint": {
               "description": "The array provides the polymer sequences in data loops for hydrogen bond geometry restraints.",
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/polymer_sequence_in_loop"
+              }
+            },
+            "noepk_restraint": {
+              "description": "The array provides the polymer sequences in data loops for NOESY peak volume restraints.",
               "type": "array",
               "items": {
                 "$ref": "#/definitions/polymer_sequence_in_loop"
@@ -4084,8 +4096,8 @@
                 ]
               }
             },
-            "model_poly_seq_vs_base_restraint": {
-              "description": "The object provides sequence alignment between sequence of the coordinates and sequence in data loops for nucleic acid's base orientation database restraints.",
+            "model_poly_seq_vs_nbase_restraint": {
+              "description": "The object provides sequence alignment between sequence of the coordinates and sequence in data loops for nucleic acid base orientation database restraints.",
               "type": [
                 "array",
                 "null"
@@ -4222,6 +4234,23 @@
             },
             "model_poly_seq_vs_hbond_restraint": {
               "description": "The object provides sequence alignment between sequence of the coordinates and sequence in data loops for hydrogen bond geometry restraints.",
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "allOf": [
+                  {
+                    "$ref": "#/definitions/sequence_alignment_in_coord"
+                  },
+                  {
+                    "$ref": "#/definitions/common_sequence_alignment"
+                  }
+                ]
+              }
+            },
+            "model_poly_seq_vs_noepk_restraint": {
+              "description": "The object provides sequence alignment between sequence of the coordinates and sequence in data loops for NOESY peak volume restraints.",
               "type": [
                 "array",
                 "null"

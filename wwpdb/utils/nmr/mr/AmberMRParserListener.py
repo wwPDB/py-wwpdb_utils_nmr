@@ -13,7 +13,7 @@ class AmberMRParserListener(ParseTreeListener):
     dihedRestraints = 0     # AMBER: Torsinal restraints
     planeRestraints = 0     # AMBER: Plane-point/plane angle restraints
     noepkRestraints = 0     # AMBER: NOESY volume restraints
-    csRestraints = 0        # AMBER: Chemical shift restraints
+    hvycsRestraints = 0     # AMBER: Chemical shift restraints
     pcsRestraints = 0       # AMBER: Psuedocontact shift restraints
     rdcRestraints = 0       # AMBER: Direct dipolar coupling restraints
     csaRestraints = 0       # AMBER: Residual CSA or pseudo-CSA restraints
@@ -173,7 +173,7 @@ class AmberMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by AmberMRParser#shf_statement.
     def enterShf_statement(self, ctx:AmberMRParser.Shf_statementContext):
-        self.csaRestraints += 1
+        self.hvycsRestraints += 1
 
     # Exit a parse tree produced by AmberMRParser#shf_statement.
     def exitShf_statement(self, ctx:AmberMRParser.Shf_statementContext):

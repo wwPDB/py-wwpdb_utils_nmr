@@ -14,14 +14,13 @@ class XplorMRParserListener(ParseTreeListener):
     planeRestraints = 0     # XPLOR-NIH: Planality restraints
     adistRestraints = 0     # XPLOR-NIH: Antidiatance restraints
     jcoupRestraints = 0     # XPLOR-NIH: Scalar J-coupling restraints
-    carbRestraints = 0      # XPLOR-NIH: Carbon chemical shift restraints
-    protResraints = 0       # XPLOR-NIH: Proton chemical shift restraints
+    hvycsRestraints = 0     # XPLOR-NIH: Carbon chemical shift restraints
+    procsResraints = 0      # XPLOR-NIH: Proton chemical shift restraints
     ramaRestraints = 0      # XPLOR-NIH: Dihedral angle database restraints
     radiRestraints = 0      # XPLOR-NIH: Radius of gyration restraints
     diffRestraints = 0      # XPLOR-NIH: Diffusion anisotropy restraints
     baseRestraints = 0      # XPLOR-NIH: Residue-residue position/orientation database restraints
     csaRestraints = 0       # XPLOR-NIH: (Pseudo) Chemical shift anisotropy restraints
-    onejRestraints = 0      # XPLOR-NIH: One-bond coupling restraints
     angRestraints = 0       # XPLOR-NIH: Angle database restraints
     preRestraints = 0       # XPLOR-NIH: Paramagnetic relaxation enhancement restraints
     pcsRestraints = 0       # XPLOR-NIH: Paramagnetic pseudocontact shift restraints
@@ -437,7 +436,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#carbon_shift_assign.
     def enterCarbon_shift_assign(self, ctx:XplorMRParser.Carbon_shift_assignContext):
-        self.carbRestraints += 1
+        self.hvycsRestraints += 1
 
     # Exit a parse tree produced by XplorMRParser#carbon_shift_assign.
     def exitCarbon_shift_assign(self, ctx:XplorMRParser.Carbon_shift_assignContext):
@@ -464,7 +463,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#observed.
     def enterObserved(self, ctx:XplorMRParser.ObservedContext):
-        self.protResraints += 1
+        self.procsResraints += 1
 
     # Exit a parse tree produced by XplorMRParser#observed.
     def exitObserved(self, ctx:XplorMRParser.ObservedContext):
@@ -644,7 +643,10 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#one_bond_assign.
     def enterOne_bond_assign(self, ctx:XplorMRParser.One_bond_assignContext):
-        self.onejRestraints += 1
+        """
+        @deprecated: This restraint has not been useful in practice, but has been preserved for historical reasons.
+        """
+        pass
 
     # Exit a parse tree produced by XplorMRParser#one_bond_assign.
     def exitOne_bond_assign(self, ctx:XplorMRParser.One_bond_assignContext):

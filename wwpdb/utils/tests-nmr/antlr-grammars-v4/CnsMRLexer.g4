@@ -223,7 +223,7 @@ Error:			E R R O R?;				// Real
 //Ring_resname:		P H E | T Y R | H I S | T R P ('5' | '6') | A D E ('5' | '6') | G U A ('5' | '6') | T H Y | C Y T | U R A;
 //Rmsd_or_Not:		R M S D | N O R M S? D?;
 
-/* CNS: Comformation database restraints - Syntax
+/* CNS: Conformation database restraints - Syntax
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
 */
 Conformation:		C O N F O? R? M? A? T? I? O? N?;	// Conformation { conformation_statement } End

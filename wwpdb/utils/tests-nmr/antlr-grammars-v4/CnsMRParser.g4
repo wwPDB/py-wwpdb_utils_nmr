@@ -253,7 +253,7 @@ proton_shift_ring_atoms:
 proton_shift_alphas_and_amides:
 	AlphasAndAmides selection;
 
-/* CNS: Comformation database restraints - Syntax
+/* CNS: Conformation database restraints - Syntax
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
 */
 conformation_statement:

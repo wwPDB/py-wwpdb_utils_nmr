@@ -13,13 +13,12 @@ class CnsMRParserListener(ParseTreeListener):
     rdcRestraints = 0       # CNS: Suscetibility anisotropy restraints
     planeRestraints = 0     # CNS: Plane restraints
     jcoupRestraints = 0     # CNS: Scalar J-coupling restraints
-    carbRestraints = 0      # CNS: Carbon chemical shift restraints
-    protResraints = 0       # CNS: Proton chemical shift restraints
+    hvycsRestraints = 0     # CNS: Carbon chemical shift restraints
+    procsResraints = 0      # CNS: Proton chemical shift restraints
     ramaRestraints = 0      # CNS: Comformation database restraints
     diffRestraints = 0      # CNS: Diffusion anisotropy restraints
     baseRestraints = 0      # CNS: Residue-residue position/orientation database restraints
     csaRestraints = 0       # CNS: (Pseudo) Chemical shift anisotropy restraints
-    onejRestraints = 0      # CNS: One-bond coupling restraints
     angRestraints = 0       # CNS: Angle database restraints
 
     # Enter a parse tree produced by CnsMRParser#cns_mr.
@@ -258,7 +257,7 @@ class CnsMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by CnsMRParser#carbon_shift_assign.
     def enterCarbon_shift_assign(self, ctx:CnsMRParser.Carbon_shift_assignContext):
-        self.carbRestraints += 1
+        self.hvycsRestraints += 1
 
     # Exit a parse tree produced by CnsMRParser#carbon_shift_assign.
     def exitCarbon_shift_assign(self, ctx:CnsMRParser.Carbon_shift_assignContext):
@@ -285,7 +284,7 @@ class CnsMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by CnsMRParser#observed.
     def enterObserved(self, ctx:CnsMRParser.ObservedContext):
-        self.protResraints += 1
+        self.procsResraints += 1
 
     # Exit a parse tree produced by CnsMRParser#observed.
     def exitObserved(self, ctx:CnsMRParser.ObservedContext):
@@ -411,7 +410,10 @@ class CnsMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by CnsMRParser#one_bond_assign.
     def enterOne_bond_assign(self, ctx:CnsMRParser.One_bond_assignContext):
-        self.onejRestraints += 1
+        """
+        @deprecated: This restraint has not been useful in practice, but has been preserved for historical reasons.
+        """
+        pass
 
     # Exit a parse tree produced by CnsMRParser#one_bond_assign.
     def exitOne_bond_assign(self, ctx:CnsMRParser.One_bond_assignContext):

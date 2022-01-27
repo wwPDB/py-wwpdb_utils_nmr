@@ -26,171 +26,171 @@ class AmberMRParserListener(ParseTreeListener):
     csaRestraints = 0       # AMBER: Residual CSA or pseudo-CSA restraints
 
     # Enter a parse tree produced by AmberMRParser#amber_mr.
-    def enterAmber_mr(self, ctx: AmberMRParser.Amber_mrContext):
+    def enterAmber_mr(self, ctx: AmberMRParser.Amber_mrContext):  # pylint: disable=unused-argument
         pass
 
     # Exit a parse tree produced by AmberMRParser#amber_mr.
-    def exitAmber_mr(self, ctx: AmberMRParser.Amber_mrContext):
+    def exitAmber_mr(self, ctx: AmberMRParser.Amber_mrContext):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by AmberMRParser#nmr_restraint.
-    def enterNmr_restraint(self, ctx: AmberMRParser.Nmr_restraintContext):
+    def enterNmr_restraint(self, ctx: AmberMRParser.Nmr_restraintContext):  # pylint: disable=unused-argument
         pass
 
     # Exit a parse tree produced by AmberMRParser#nmr_restraint.
-    def exitNmr_restraint(self, ctx: AmberMRParser.Nmr_restraintContext):
+    def exitNmr_restraint(self, ctx: AmberMRParser.Nmr_restraintContext):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by AmberMRParser#noesy_volume_restraint.
-    def enterNoesy_volume_restraint(self, ctx: AmberMRParser.Noesy_volume_restraintContext):
+    def enterNoesy_volume_restraint(self, ctx: AmberMRParser.Noesy_volume_restraintContext):  # pylint: disable=unused-argument
         pass
 
     # Exit a parse tree produced by AmberMRParser#noesy_volume_restraint.
-    def exitNoesy_volume_restraint(self, ctx: AmberMRParser.Noesy_volume_restraintContext):
+    def exitNoesy_volume_restraint(self, ctx: AmberMRParser.Noesy_volume_restraintContext):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by AmberMRParser#chemical_shift_restraint.
-    def enterChemical_shift_restraint(self, ctx: AmberMRParser.Chemical_shift_restraintContext):
+    def enterChemical_shift_restraint(self, ctx: AmberMRParser.Chemical_shift_restraintContext):  # pylint: disable=unused-argument
         pass
 
     # Exit a parse tree produced by AmberMRParser#chemical_shift_restraint.
-    def exitChemical_shift_restraint(self, ctx: AmberMRParser.Chemical_shift_restraintContext):
+    def exitChemical_shift_restraint(self, ctx: AmberMRParser.Chemical_shift_restraintContext):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by AmberMRParser#pcs_restraint.
-    def enterPcs_restraint(self, ctx: AmberMRParser.Pcs_restraintContext):
+    def enterPcs_restraint(self, ctx: AmberMRParser.Pcs_restraintContext):  # pylint: disable=unused-argument
         pass
 
     # Exit a parse tree produced by AmberMRParser#pcs_restraint.
-    def exitPcs_restraint(self, ctx: AmberMRParser.Pcs_restraintContext):
+    def exitPcs_restraint(self, ctx: AmberMRParser.Pcs_restraintContext):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by AmberMRParser#dipolar_coupling_restraint.
-    def enterDipolar_coupling_restraint(self, ctx: AmberMRParser.Dipolar_coupling_restraintContext):
+    def enterDipolar_coupling_restraint(self, ctx: AmberMRParser.Dipolar_coupling_restraintContext):  # pylint: disable=unused-argument
         pass
 
     # Exit a parse tree produced by AmberMRParser#dipolar_coupling_restraint.
-    def exitDipolar_coupling_restraint(self, ctx: AmberMRParser.Dipolar_coupling_restraintContext):
+    def exitDipolar_coupling_restraint(self, ctx: AmberMRParser.Dipolar_coupling_restraintContext):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by AmberMRParser#csa_restraint.
-    def enterCsa_restraint(self, ctx: AmberMRParser.Csa_restraintContext):
+    def enterCsa_restraint(self, ctx: AmberMRParser.Csa_restraintContext):  # pylint: disable=unused-argument
         pass
 
     # Exit a parse tree produced by AmberMRParser#csa_restraint.
-    def exitCsa_restraint(self, ctx: AmberMRParser.Csa_restraintContext):
+    def exitCsa_restraint(self, ctx: AmberMRParser.Csa_restraintContext):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by AmberMRParser#restraint_statement.
-    def enterRestraint_statement(self, ctx: AmberMRParser.Restraint_statementContext):
+    def enterRestraint_statement(self, ctx: AmberMRParser.Restraint_statementContext):  # pylint: disable=unused-argument
         pass
 
     # Exit a parse tree produced by AmberMRParser#restraint_statement.
-    def exitRestraint_statement(self, ctx: AmberMRParser.Restraint_statementContext):
+    def exitRestraint_statement(self, ctx: AmberMRParser.Restraint_statementContext):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by AmberMRParser#distance_statement.
-    def enterDistance_statement(self, ctx: AmberMRParser.Distance_statementContext):
+    def enterDistance_statement(self, ctx: AmberMRParser.Distance_statementContext):  # pylint: disable=unused-argument
         self.distRestraints += 1
 
     # Exit a parse tree produced by AmberMRParser#distance_statement.
-    def exitDistance_statement(self, ctx: AmberMRParser.Distance_statementContext):
+    def exitDistance_statement(self, ctx: AmberMRParser.Distance_statementContext):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by AmberMRParser#angle_statement.
-    def enterAngle_statement(self, ctx: AmberMRParser.Angle_statementContext):
+    def enterAngle_statement(self, ctx: AmberMRParser.Angle_statementContext):  # pylint: disable=unused-argument
         self.angRestraints += 1
 
     # Exit a parse tree produced by AmberMRParser#angle_statement.
-    def exitAngle_statement(self, ctx: AmberMRParser.Angle_statementContext):
+    def exitAngle_statement(self, ctx: AmberMRParser.Angle_statementContext):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by AmberMRParser#torsion_statement.
-    def enterTorsion_statement(self, ctx: AmberMRParser.Torsion_statementContext):
+    def enterTorsion_statement(self, ctx: AmberMRParser.Torsion_statementContext):  # pylint: disable=unused-argument
         self.dihedRestraints += 1
 
     # Exit a parse tree produced by AmberMRParser#torsion_statement.
-    def exitTorsion_statement(self, ctx: AmberMRParser.Torsion_statementContext):
+    def exitTorsion_statement(self, ctx: AmberMRParser.Torsion_statementContext):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by AmberMRParser#plane_point_angle_statement.
-    def enterPlane_point_angle_statement(self, ctx: AmberMRParser.Plane_point_angle_statementContext):
+    def enterPlane_point_angle_statement(self, ctx: AmberMRParser.Plane_point_angle_statementContext):  # pylint: disable=unused-argument
         self.planeRestraints += 1
 
     # Exit a parse tree produced by AmberMRParser#plane_point_angle_statement.
-    def exitPlane_point_angle_statement(self, ctx: AmberMRParser.Plane_point_angle_statementContext):
+    def exitPlane_point_angle_statement(self, ctx: AmberMRParser.Plane_point_angle_statementContext):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by AmberMRParser#plane_plane_angle_statement.
-    def enterPlane_plane_angle_statement(self, ctx: AmberMRParser.Plane_plane_angle_statementContext):
+    def enterPlane_plane_angle_statement(self, ctx: AmberMRParser.Plane_plane_angle_statementContext):  # pylint: disable=unused-argument
         self.planeRestraints += 1
 
     # Exit a parse tree produced by AmberMRParser#plane_plane_angle_statement.
-    def exitPlane_plane_angle_statement(self, ctx: AmberMRParser.Plane_plane_angle_statementContext):
+    def exitPlane_plane_angle_statement(self, ctx: AmberMRParser.Plane_plane_angle_statementContext):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by AmberMRParser#general_distance2_statement.
-    def enterGeneral_distance2_statement(self, ctx: AmberMRParser.General_distance2_statementContext):
+    def enterGeneral_distance2_statement(self, ctx: AmberMRParser.General_distance2_statementContext):  # pylint: disable=unused-argument
         self.distRestraints += 1
 
     # Exit a parse tree produced by AmberMRParser#general_distance2_statement.
-    def exitGeneral_distance2_statement(self, ctx: AmberMRParser.General_distance2_statementContext):
+    def exitGeneral_distance2_statement(self, ctx: AmberMRParser.General_distance2_statementContext):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by AmberMRParser#general_distance3_statement.
-    def enterGeneral_distance3_statement(self, ctx: AmberMRParser.General_distance3_statementContext):
+    def enterGeneral_distance3_statement(self, ctx: AmberMRParser.General_distance3_statementContext):  # pylint: disable=unused-argument
         self.distRestraints += 1
 
     # Exit a parse tree produced by AmberMRParser#general_distance3_statement.
-    def exitGeneral_distance3_statement(self, ctx: AmberMRParser.General_distance3_statementContext):
+    def exitGeneral_distance3_statement(self, ctx: AmberMRParser.General_distance3_statementContext):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by AmberMRParser#general_distance4_statement.
-    def enterGeneral_distance4_statement(self, ctx: AmberMRParser.General_distance4_statementContext):
+    def enterGeneral_distance4_statement(self, ctx: AmberMRParser.General_distance4_statementContext):  # pylint: disable=unused-argument
         self.distRestraints += 1
 
     # Exit a parse tree produced by AmberMRParser#general_distance4_statement.
-    def exitGeneral_distance4_statement(self, ctx: AmberMRParser.General_distance4_statementContext):
+    def exitGeneral_distance4_statement(self, ctx: AmberMRParser.General_distance4_statementContext):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by AmberMRParser#noeexp_statement.
-    def enterNoeexp_statement(self, ctx: AmberMRParser.Noeexp_statementContext):
+    def enterNoeexp_statement(self, ctx: AmberMRParser.Noeexp_statementContext):  # pylint: disable=unused-argument
         self.noepkRestraints += 1
 
     # Exit a parse tree produced by AmberMRParser#noeexp_statement.
-    def exitNoeexp_statement(self, ctx: AmberMRParser.Noeexp_statementContext):
+    def exitNoeexp_statement(self, ctx: AmberMRParser.Noeexp_statementContext):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by AmberMRParser#shf_statement.
-    def enterShf_statement(self, ctx: AmberMRParser.Shf_statementContext):
+    def enterShf_statement(self, ctx: AmberMRParser.Shf_statementContext):  # pylint: disable=unused-argument
         self.hvycsRestraints += 1
 
     # Exit a parse tree produced by AmberMRParser#shf_statement.
-    def exitShf_statement(self, ctx: AmberMRParser.Shf_statementContext):
+    def exitShf_statement(self, ctx: AmberMRParser.Shf_statementContext):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by AmberMRParser#pcshf_statement.
-    def enterPcshf_statement(self, ctx: AmberMRParser.Pcshf_statementContext):
+    def enterPcshf_statement(self, ctx: AmberMRParser.Pcshf_statementContext):  # pylint: disable=unused-argument
         self.pcsRestraints += 1
 
     # Exit a parse tree produced by AmberMRParser#pcshf_statement.
-    def exitPcshf_statement(self, ctx: AmberMRParser.Pcshf_statementContext):
+    def exitPcshf_statement(self, ctx: AmberMRParser.Pcshf_statementContext):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by AmberMRParser#align_statement.
-    def enterAlign_statement(self, ctx: AmberMRParser.Align_statementContext):
+    def enterAlign_statement(self, ctx: AmberMRParser.Align_statementContext):  # pylint: disable=unused-argument
         self.rdcRestraints += 1
 
     # Exit a parse tree produced by AmberMRParser#align_statement.
-    def exitAlign_statement(self, ctx: AmberMRParser.Align_statementContext):
+    def exitAlign_statement(self, ctx: AmberMRParser.Align_statementContext):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by AmberMRParser#csa_statement.
-    def enterCsa_statement(self, ctx: AmberMRParser.Csa_statementContext):
+    def enterCsa_statement(self, ctx: AmberMRParser.Csa_statementContext):  # pylint: disable=unused-argument
         self.csaRestraints += 1
 
     # Exit a parse tree produced by AmberMRParser#csa_statement.
-    def exitCsa_statement(self, ctx: AmberMRParser.Csa_statementContext):
+    def exitCsa_statement(self, ctx: AmberMRParser.Csa_statementContext):  # pylint: disable=unused-argument
         pass
 
     # The followings are extensions.

@@ -21,96 +21,96 @@ class CyanaMRParserListener(ParseTreeListener):
     pcsRestraints = 0       # CYANA: Pseudocontact shift restraint file
 
     # Enter a parse tree produced by CyanaMRParser#cyana_mr.
-    def enterCyana_mr(self, ctx: CyanaMRParser.Cyana_mrContext):
+    def enterCyana_mr(self, ctx: CyanaMRParser.Cyana_mrContext):  # pylint: disable=unused-argument
         pass
 
     # Exit a parse tree produced by CyanaMRParser#cyana_mr.
-    def exitCyana_mr(self, ctx: CyanaMRParser.Cyana_mrContext):
+    def exitCyana_mr(self, ctx: CyanaMRParser.Cyana_mrContext):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by CyanaMRParser#distance_restraints.
-    def enterDistance_restraints(self, ctx: CyanaMRParser.Distance_restraintsContext):
+    def enterDistance_restraints(self, ctx: CyanaMRParser.Distance_restraintsContext):  # pylint: disable=unused-argument
         pass
 
     # Exit a parse tree produced by CyanaMRParser#distance_restraints.
-    def exitDistance_restraints(self, ctx: CyanaMRParser.Distance_restraintsContext):
+    def exitDistance_restraints(self, ctx: CyanaMRParser.Distance_restraintsContext):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by CyanaMRParser#distance_restraint.
-    def enterDistance_restraint(self, ctx: CyanaMRParser.Distance_restraintContext):
+    def enterDistance_restraint(self, ctx: CyanaMRParser.Distance_restraintContext):  # pylint: disable=unused-argument
         self.distRestraints += 1
 
     # Exit a parse tree produced by CyanaMRParser#distance_restraint.
-    def exitDistance_restraint(self, ctx: CyanaMRParser.Distance_restraintContext):
+    def exitDistance_restraint(self, ctx: CyanaMRParser.Distance_restraintContext):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by CyanaMRParser#torsion_angle_restraints.
-    def enterTorsion_angle_restraints(self, ctx: CyanaMRParser.Torsion_angle_restraintsContext):
+    def enterTorsion_angle_restraints(self, ctx: CyanaMRParser.Torsion_angle_restraintsContext):  # pylint: disable=unused-argument
         pass
 
     # Exit a parse tree produced by CyanaMRParser#torsion_angle_restraints.
-    def exitTorsion_angle_restraints(self, ctx: CyanaMRParser.Torsion_angle_restraintsContext):
+    def exitTorsion_angle_restraints(self, ctx: CyanaMRParser.Torsion_angle_restraintsContext):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by CyanaMRParser#torsion_angle_restraint.
-    def enterTorsion_angle_restraint(self, ctx: CyanaMRParser.Torsion_angle_restraintContext):
+    def enterTorsion_angle_restraint(self, ctx: CyanaMRParser.Torsion_angle_restraintContext):  # pylint: disable=unused-argument
         self.dihedRestraints += 1
 
     # Exit a parse tree produced by CyanaMRParser#torsion_angle_restraint.
-    def exitTorsion_angle_restraint(self, ctx: CyanaMRParser.Torsion_angle_restraintContext):
+    def exitTorsion_angle_restraint(self, ctx: CyanaMRParser.Torsion_angle_restraintContext):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by CyanaMRParser#rdc_restraints.
-    def enterRdc_restraints(self, ctx: CyanaMRParser.Rdc_restraintsContext):
+    def enterRdc_restraints(self, ctx: CyanaMRParser.Rdc_restraintsContext):  # pylint: disable=unused-argument
         pass
 
     # Exit a parse tree produced by CyanaMRParser#rdc_restraints.
-    def exitRdc_restraints(self, ctx: CyanaMRParser.Rdc_restraintsContext):
+    def exitRdc_restraints(self, ctx: CyanaMRParser.Rdc_restraintsContext):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by CyanaMRParser#rdc_parameter.
-    def enterRdc_parameter(self, ctx: CyanaMRParser.Rdc_parameterContext):
+    def enterRdc_parameter(self, ctx: CyanaMRParser.Rdc_parameterContext):  # pylint: disable=unused-argument
         pass
 
     # Exit a parse tree produced by CyanaMRParser#rdc_parameter.
-    def exitRdc_parameter(self, ctx: CyanaMRParser.Rdc_parameterContext):
+    def exitRdc_parameter(self, ctx: CyanaMRParser.Rdc_parameterContext):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by CyanaMRParser#rdc_restraint.
-    def enterRdc_restraint(self, ctx: CyanaMRParser.Rdc_restraintContext):
+    def enterRdc_restraint(self, ctx: CyanaMRParser.Rdc_restraintContext):  # pylint: disable=unused-argument
         self.rdcRestraints += 1
 
     # Exit a parse tree produced by CyanaMRParser#rdc_restraint.
-    def exitRdc_restraint(self, ctx: CyanaMRParser.Rdc_restraintContext):
+    def exitRdc_restraint(self, ctx: CyanaMRParser.Rdc_restraintContext):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by CyanaMRParser#pcs_restraints.
-    def enterPcs_restraints(self, ctx: CyanaMRParser.Pcs_restraintsContext):
+    def enterPcs_restraints(self, ctx: CyanaMRParser.Pcs_restraintsContext):  # pylint: disable=unused-argument
         pass
 
     # Exit a parse tree produced by CyanaMRParser#pcs_restraints.
-    def exitPcs_restraints(self, ctx: CyanaMRParser.Pcs_restraintsContext):
+    def exitPcs_restraints(self, ctx: CyanaMRParser.Pcs_restraintsContext):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by CyanaMRParser#pcs_parameter.
-    def enterPcs_parameter(self, ctx: CyanaMRParser.Pcs_parameterContext):
+    def enterPcs_parameter(self, ctx: CyanaMRParser.Pcs_parameterContext):  # pylint: disable=unused-argument
         pass
 
     # Exit a parse tree produced by CyanaMRParser#pcs_parameter.
-    def exitPcs_parameter(self, ctx: CyanaMRParser.Pcs_parameterContext):
+    def exitPcs_parameter(self, ctx: CyanaMRParser.Pcs_parameterContext):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by CyanaMRParser#pcs_restraint.
-    def enterPcs_restraint(self, ctx: CyanaMRParser.Pcs_restraintContext):
+    def enterPcs_restraint(self, ctx: CyanaMRParser.Pcs_restraintContext):  # pylint: disable=unused-argument
         self.pcsRestraints += 1
 
     # Exit a parse tree produced by CyanaMRParser#pcs_restraint.
-    def exitPcs_restraint(self, ctx: CyanaMRParser.Pcs_restraintContext):
+    def exitPcs_restraint(self, ctx: CyanaMRParser.Pcs_restraintContext):  # pylint: disable=unused-argument
         pass
 
     # The followings are extensions.
     def getContentSubtype(self):
-        """ Return content subtype of AMBER MR file.
+        """ Return content subtype of CYANA MR file.
         """
 
         content_subtype = {'dist_restraint': self.distRestraints,

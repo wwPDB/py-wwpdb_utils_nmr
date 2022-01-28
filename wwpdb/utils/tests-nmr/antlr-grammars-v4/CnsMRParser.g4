@@ -352,20 +352,20 @@ factor:
 	BondedTo factor |
 	ByGroup factor |
 	ByRes factor |
-	Chemical (Simple_names | Simple_name (Colon Simple_name)*) |
+	Chemical (Simple_names | Simple_name (Colon Simple_name)?) |
 	Fbox Real Real Real Real Real Real |
 	Hydrogen |
 	Id Integer |
 	Known |
-	Name (Simple_names | Simple_name (Colon Simple_name)*) |
+	Name (Simple_names | Simple_name (Colon Simple_name)?) |
 	Not_op factor |
 	Point vector_3d Cut Real |
 	Previous |
 	Pseudo |
-	Residue (Integers | Integer (Colon Integer)*) |
-	Resname (Simple_names | Simple_name (Colon Simple_name)*) |
+	Residue (Integers | Integer (Colon Integer)?) |
+	Resname (Simple_names | Simple_name (Colon Simple_name)?) |
 	factor Saround Real |
-	SegIdentifier (Simple_names | Simple_name (Colon Simple_name)* | Double_quote_string) |
+	SegIdentifier (Simple_names | Simple_name (Colon Simple_name)? | Double_quote_string (Colon Double_quote_string)?) |
 	Sfbox Real Real Real Real Real Real |
 	Store_1 | Store_2 | Store_3 | Store_4 | Store_5 | Store_6 | Store_7 | Store_8 | Store_9 |
 	Tag;

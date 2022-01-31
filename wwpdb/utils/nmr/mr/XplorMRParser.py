@@ -1628,12 +1628,6 @@ class XplorMRParser ( Parser ):
             if hasattr( listener, "exitXplor_nih_mr" ):
                 listener.exitXplor_nih_mr(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitXplor_nih_mr" ):
-                return visitor.visitXplor_nih_mr(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -1962,12 +1956,6 @@ class XplorMRParser ( Parser ):
             if hasattr( listener, "exitDistance_restraint" ):
                 listener.exitDistance_restraint(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitDistance_restraint" ):
-                return visitor.visitDistance_restraint(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -2031,12 +2019,6 @@ class XplorMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitDihedral_angle_restraint" ):
                 listener.exitDihedral_angle_restraint(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitDihedral_angle_restraint" ):
-                return visitor.visitDihedral_angle_restraint(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -2131,12 +2113,6 @@ class XplorMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitRdc_restraint" ):
                 listener.exitRdc_restraint(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitRdc_restraint" ):
-                return visitor.visitRdc_restraint(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -2268,12 +2244,6 @@ class XplorMRParser ( Parser ):
             if hasattr( listener, "exitPlanar_restraint" ):
                 listener.exitPlanar_restraint(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitPlanar_restraint" ):
-                return visitor.visitPlanar_restraint(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -2337,12 +2307,6 @@ class XplorMRParser ( Parser ):
             if hasattr( listener, "exitAntidistance_restraint" ):
                 listener.exitAntidistance_restraint(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitAntidistance_restraint" ):
-                return visitor.visitAntidistance_restraint(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -2403,12 +2367,6 @@ class XplorMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitCoupling_restraint" ):
                 listener.exitCoupling_restraint(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitCoupling_restraint" ):
-                return visitor.visitCoupling_restraint(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -2471,12 +2429,6 @@ class XplorMRParser ( Parser ):
             if hasattr( listener, "exitCarbon_shift_restraint" ):
                 listener.exitCarbon_shift_restraint(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitCarbon_shift_restraint" ):
-                return visitor.visitCarbon_shift_restraint(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -2537,12 +2489,6 @@ class XplorMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitProton_shift_restraint" ):
                 listener.exitProton_shift_restraint(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitProton_shift_restraint" ):
-                return visitor.visitProton_shift_restraint(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -2605,12 +2551,6 @@ class XplorMRParser ( Parser ):
             if hasattr( listener, "exitDihedral_angle_db_restraint" ):
                 listener.exitDihedral_angle_db_restraint(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitDihedral_angle_db_restraint" ):
-                return visitor.visitDihedral_angle_db_restraint(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -2671,12 +2611,6 @@ class XplorMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitRadius_of_gyration_restraint" ):
                 listener.exitRadius_of_gyration_restraint(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitRadius_of_gyration_restraint" ):
-                return visitor.visitRadius_of_gyration_restraint(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -2739,12 +2673,6 @@ class XplorMRParser ( Parser ):
             if hasattr( listener, "exitDiffusion_anisotropy_restraint" ):
                 listener.exitDiffusion_anisotropy_restraint(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitDiffusion_anisotropy_restraint" ):
-                return visitor.visitDiffusion_anisotropy_restraint(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -2805,12 +2733,6 @@ class XplorMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitOrientation_db_restraint" ):
                 listener.exitOrientation_db_restraint(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitOrientation_db_restraint" ):
-                return visitor.visitOrientation_db_restraint(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -2873,12 +2795,6 @@ class XplorMRParser ( Parser ):
             if hasattr( listener, "exitCsa_restraint" ):
                 listener.exitCsa_restraint(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitCsa_restraint" ):
-                return visitor.visitCsa_restraint(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -2939,12 +2855,6 @@ class XplorMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitPcsa_restraint" ):
                 listener.exitPcsa_restraint(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitPcsa_restraint" ):
-                return visitor.visitPcsa_restraint(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -3007,12 +2917,6 @@ class XplorMRParser ( Parser ):
             if hasattr( listener, "exitOne_bond_coupling_restraint" ):
                 listener.exitOne_bond_coupling_restraint(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitOne_bond_coupling_restraint" ):
-                return visitor.visitOne_bond_coupling_restraint(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -3073,12 +2977,6 @@ class XplorMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitAngle_db_restraint" ):
                 listener.exitAngle_db_restraint(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitAngle_db_restraint" ):
-                return visitor.visitAngle_db_restraint(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -3141,12 +3039,6 @@ class XplorMRParser ( Parser ):
             if hasattr( listener, "exitPre_restraint" ):
                 listener.exitPre_restraint(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitPre_restraint" ):
-                return visitor.visitPre_restraint(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -3207,12 +3099,6 @@ class XplorMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitPcs_restraint" ):
                 listener.exitPcs_restraint(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitPcs_restraint" ):
-                return visitor.visitPcs_restraint(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -3275,12 +3161,6 @@ class XplorMRParser ( Parser ):
             if hasattr( listener, "exitPrdc_restraint" ):
                 listener.exitPrdc_restraint(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitPrdc_restraint" ):
-                return visitor.visitPrdc_restraint(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -3341,12 +3221,6 @@ class XplorMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitPorientation_restraint" ):
                 listener.exitPorientation_restraint(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitPorientation_restraint" ):
-                return visitor.visitPorientation_restraint(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -3409,12 +3283,6 @@ class XplorMRParser ( Parser ):
             if hasattr( listener, "exitPccr_restraint" ):
                 listener.exitPccr_restraint(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitPccr_restraint" ):
-                return visitor.visitPccr_restraint(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -3475,12 +3343,6 @@ class XplorMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitHbond_restraint" ):
                 listener.exitHbond_restraint(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitHbond_restraint" ):
-                return visitor.visitHbond_restraint(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -3636,12 +3498,6 @@ class XplorMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitNoe_statement" ):
                 listener.exitNoe_statement(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitNoe_statement" ):
-                return visitor.visitNoe_statement(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -3914,12 +3770,6 @@ class XplorMRParser ( Parser ):
             if hasattr( listener, "exitNoe_assign" ):
                 listener.exitNoe_assign(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitNoe_assign" ):
-                return visitor.visitNoe_assign(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -4003,12 +3853,6 @@ class XplorMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitPredict_statement" ):
                 listener.exitPredict_statement(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitPredict_statement" ):
-                return visitor.visitPredict_statement(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -4107,12 +3951,6 @@ class XplorMRParser ( Parser ):
             if hasattr( listener, "exitDihedral_statement" ):
                 listener.exitDihedral_statement(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitDihedral_statement" ):
-                return visitor.visitDihedral_statement(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -4206,12 +4044,6 @@ class XplorMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitDihedral_assign" ):
                 listener.exitDihedral_assign(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitDihedral_assign" ):
-                return visitor.visitDihedral_assign(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -4311,12 +4143,6 @@ class XplorMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitSani_statement" ):
                 listener.exitSani_statement(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitSani_statement" ):
-                return visitor.visitSani_statement(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -4441,12 +4267,6 @@ class XplorMRParser ( Parser ):
             if hasattr( listener, "exitSani_assign" ):
                 listener.exitSani_assign(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitSani_assign" ):
-                return visitor.visitSani_assign(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -4566,12 +4386,6 @@ class XplorMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitXdip_statement" ):
                 listener.exitXdip_statement(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitXdip_statement" ):
-                return visitor.visitXdip_statement(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -4724,12 +4538,6 @@ class XplorMRParser ( Parser ):
             if hasattr( listener, "exitXdip_assign" ):
                 listener.exitXdip_assign(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitXdip_assign" ):
-                return visitor.visitXdip_assign(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -4843,12 +4651,6 @@ class XplorMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitVean_statement" ):
                 listener.exitVean_statement(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitVean_statement" ):
-                return visitor.visitVean_statement(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -4975,12 +4777,6 @@ class XplorMRParser ( Parser ):
             if hasattr( listener, "exitVean_assign" ):
                 listener.exitVean_assign(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitVean_assign" ):
-                return visitor.visitVean_assign(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -5073,12 +4869,6 @@ class XplorMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitTens_statement" ):
                 listener.exitTens_statement(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitTens_statement" ):
-                return visitor.visitTens_statement(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -5192,12 +4982,6 @@ class XplorMRParser ( Parser ):
             if hasattr( listener, "exitTens_assign" ):
                 listener.exitTens_assign(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitTens_assign" ):
-                return visitor.visitTens_assign(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -5294,12 +5078,6 @@ class XplorMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitAnis_statement" ):
                 listener.exitAnis_statement(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitAnis_statement" ):
-                return visitor.visitAnis_statement(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -5433,12 +5211,6 @@ class XplorMRParser ( Parser ):
             if hasattr( listener, "exitAnis_assign" ):
                 listener.exitAnis_assign(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitAnis_assign" ):
-                return visitor.visitAnis_assign(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -5503,12 +5275,6 @@ class XplorMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitPlanar_statement" ):
                 listener.exitPlanar_statement(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitPlanar_statement" ):
-                return visitor.visitPlanar_statement(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -5581,12 +5347,6 @@ class XplorMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitGroup_statement" ):
                 listener.exitGroup_statement(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitGroup_statement" ):
-                return visitor.visitGroup_statement(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -5691,12 +5451,6 @@ class XplorMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitAntidistance_statement" ):
                 listener.exitAntidistance_statement(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitAntidistance_statement" ):
-                return visitor.visitAntidistance_statement(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -5836,12 +5590,6 @@ class XplorMRParser ( Parser ):
             if hasattr( listener, "exitXadc_assign" ):
                 listener.exitXadc_assign(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitXadc_assign" ):
-                return visitor.visitXadc_assign(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -5943,12 +5691,6 @@ class XplorMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitCoupling_statement" ):
                 listener.exitCoupling_statement(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitCoupling_statement" ):
-                return visitor.visitCoupling_statement(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -6124,12 +5866,6 @@ class XplorMRParser ( Parser ):
             if hasattr( listener, "exitCoup_assign" ):
                 listener.exitCoup_assign(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitCoup_assign" ):
-                return visitor.visitCoup_assign(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -6268,12 +6004,6 @@ class XplorMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitCarbon_shift_statement" ):
                 listener.exitCarbon_shift_statement(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitCarbon_shift_statement" ):
-                return visitor.visitCarbon_shift_statement(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -6444,12 +6174,6 @@ class XplorMRParser ( Parser ):
             if hasattr( listener, "exitCarbon_shift_assign" ):
                 listener.exitCarbon_shift_assign(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitCarbon_shift_assign" ):
-                return visitor.visitCarbon_shift_assign(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -6513,12 +6237,6 @@ class XplorMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitCarbon_shift_rcoil" ):
                 listener.exitCarbon_shift_rcoil(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitCarbon_shift_rcoil" ):
-                return visitor.visitCarbon_shift_rcoil(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -6670,12 +6388,6 @@ class XplorMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitProton_shift_statement" ):
                 listener.exitProton_shift_statement(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitProton_shift_statement" ):
-                return visitor.visitProton_shift_statement(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -6940,12 +6652,6 @@ class XplorMRParser ( Parser ):
             if hasattr( listener, "exitObserved" ):
                 listener.exitObserved(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitObserved" ):
-                return visitor.visitObserved(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -7014,12 +6720,6 @@ class XplorMRParser ( Parser ):
             if hasattr( listener, "exitProton_shift_rcoil" ):
                 listener.exitProton_shift_rcoil(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitProton_shift_rcoil" ):
-                return visitor.visitProton_shift_rcoil(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -7079,12 +6779,6 @@ class XplorMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitProton_shift_anisotropy" ):
                 listener.exitProton_shift_anisotropy(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitProton_shift_anisotropy" ):
-                return visitor.visitProton_shift_anisotropy(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -7149,12 +6843,6 @@ class XplorMRParser ( Parser ):
             if hasattr( listener, "exitProton_shift_amides" ):
                 listener.exitProton_shift_amides(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitProton_shift_amides" ):
-                return visitor.visitProton_shift_amides(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -7200,12 +6888,6 @@ class XplorMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitProton_shift_carbons" ):
                 listener.exitProton_shift_carbons(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitProton_shift_carbons" ):
-                return visitor.visitProton_shift_carbons(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -7253,12 +6935,6 @@ class XplorMRParser ( Parser ):
             if hasattr( listener, "exitProton_shift_nitrogens" ):
                 listener.exitProton_shift_nitrogens(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitProton_shift_nitrogens" ):
-                return visitor.visitProton_shift_nitrogens(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -7304,12 +6980,6 @@ class XplorMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitProton_shift_oxygens" ):
                 listener.exitProton_shift_oxygens(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitProton_shift_oxygens" ):
-                return visitor.visitProton_shift_oxygens(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -7362,12 +7032,6 @@ class XplorMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitProton_shift_ring_atoms" ):
                 listener.exitProton_shift_ring_atoms(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitProton_shift_ring_atoms" ):
-                return visitor.visitProton_shift_ring_atoms(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -7433,12 +7097,6 @@ class XplorMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitProton_shift_alphas_and_amides" ):
                 listener.exitProton_shift_alphas_and_amides(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitProton_shift_alphas_and_amides" ):
-                return visitor.visitProton_shift_alphas_and_amides(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -7551,12 +7209,6 @@ class XplorMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitRamachandran_statement" ):
                 listener.exitRamachandran_statement(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitRamachandran_statement" ):
-                return visitor.visitRamachandran_statement(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -7878,12 +7530,6 @@ class XplorMRParser ( Parser ):
             if hasattr( listener, "exitRama_assign" ):
                 listener.exitRama_assign(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitRama_assign" ):
-                return visitor.visitRama_assign(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -7993,12 +7639,6 @@ class XplorMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitCollapse_statement" ):
                 listener.exitCollapse_statement(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitCollapse_statement" ):
-                return visitor.visitCollapse_statement(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -8119,12 +7759,6 @@ class XplorMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitDiffusion_statement" ):
                 listener.exitDiffusion_statement(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitDiffusion_statement" ):
-                return visitor.visitDiffusion_statement(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -8260,12 +7894,6 @@ class XplorMRParser ( Parser ):
             if hasattr( listener, "exitDani_assign" ):
                 listener.exitDani_assign(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitDani_assign" ):
-                return visitor.visitDani_assign(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -8385,12 +8013,6 @@ class XplorMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitOrientation_statement" ):
                 listener.exitOrientation_statement(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitOrientation_statement" ):
-                return visitor.visitOrientation_statement(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -8608,12 +8230,6 @@ class XplorMRParser ( Parser ):
             if hasattr( listener, "exitOrie_assign" ):
                 listener.exitOrie_assign(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitOrie_assign" ):
-                return visitor.visitOrie_assign(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -8716,12 +8332,6 @@ class XplorMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitCsa_statement" ):
                 listener.exitCsa_statement(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitCsa_statement" ):
-                return visitor.visitCsa_statement(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -8871,12 +8481,6 @@ class XplorMRParser ( Parser ):
             if hasattr( listener, "exitCsa_assign" ):
                 listener.exitCsa_assign(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitCsa_assign" ):
-                return visitor.visitCsa_assign(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -8985,12 +8589,6 @@ class XplorMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitPcsa_statement" ):
                 listener.exitPcsa_statement(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitPcsa_statement" ):
-                return visitor.visitPcsa_statement(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -9165,12 +8763,6 @@ class XplorMRParser ( Parser ):
             if hasattr( listener, "exitOne_bond_coupling_statement" ):
                 listener.exitOne_bond_coupling_statement(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitOne_bond_coupling_statement" ):
-                return visitor.visitOne_bond_coupling_statement(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -9302,12 +8894,6 @@ class XplorMRParser ( Parser ):
             if hasattr( listener, "exitOne_bond_assign" ):
                 listener.exitOne_bond_assign(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitOne_bond_assign" ):
-                return visitor.visitOne_bond_assign(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -9428,12 +9014,6 @@ class XplorMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitAngle_db_statement" ):
                 listener.exitAngle_db_statement(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitAngle_db_statement" ):
-                return visitor.visitAngle_db_statement(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -9598,12 +9178,6 @@ class XplorMRParser ( Parser ):
             if hasattr( listener, "exitAngle_db_assign" ):
                 listener.exitAngle_db_assign(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitAngle_db_assign" ):
-                return visitor.visitAngle_db_assign(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -9732,12 +9306,6 @@ class XplorMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitPre_statement" ):
                 listener.exitPre_statement(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitPre_statement" ):
-                return visitor.visitPre_statement(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -9919,12 +9487,6 @@ class XplorMRParser ( Parser ):
             if hasattr( listener, "exitPre_assign" ):
                 listener.exitPre_assign(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitPre_assign" ):
-                return visitor.visitPre_assign(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -10042,12 +9604,6 @@ class XplorMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitPcs_statement" ):
                 listener.exitPcs_statement(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitPcs_statement" ):
-                return visitor.visitPcs_statement(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -10239,12 +9795,6 @@ class XplorMRParser ( Parser ):
             if hasattr( listener, "exitPcs_assign" ):
                 listener.exitPcs_assign(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitPcs_assign" ):
-                return visitor.visitPcs_assign(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -10365,12 +9915,6 @@ class XplorMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitPrdc_statement" ):
                 listener.exitPrdc_statement(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitPrdc_statement" ):
-                return visitor.visitPrdc_statement(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -10538,12 +10082,6 @@ class XplorMRParser ( Parser ):
             if hasattr( listener, "exitPrdc_assign" ):
                 listener.exitPrdc_assign(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitPrdc_assign" ):
-                return visitor.visitPrdc_assign(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -10630,12 +10168,6 @@ class XplorMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitPorientation_statement" ):
                 listener.exitPorientation_statement(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitPorientation_statement" ):
-                return visitor.visitPorientation_statement(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -10742,12 +10274,6 @@ class XplorMRParser ( Parser ):
             if hasattr( listener, "exitPorientation_assign" ):
                 listener.exitPorientation_assign(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitPorientation_assign" ):
-                return visitor.visitPorientation_assign(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -10837,12 +10363,6 @@ class XplorMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitPccr_statement" ):
                 listener.exitPccr_statement(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitPccr_statement" ):
-                return visitor.visitPccr_statement(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -10970,12 +10490,6 @@ class XplorMRParser ( Parser ):
             if hasattr( listener, "exitPccr_assign" ):
                 listener.exitPccr_assign(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitPccr_assign" ):
-                return visitor.visitPccr_assign(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -11056,12 +10570,6 @@ class XplorMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitHbond_statement" ):
                 listener.exitHbond_statement(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitHbond_statement" ):
-                return visitor.visitHbond_statement(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -11162,12 +10670,6 @@ class XplorMRParser ( Parser ):
             if hasattr( listener, "exitHbond_assign" ):
                 listener.exitHbond_assign(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitHbond_assign" ):
-                return visitor.visitHbond_assign(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -11220,12 +10722,6 @@ class XplorMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitSelection" ):
                 listener.exitSelection(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitSelection" ):
-                return visitor.visitSelection(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -11280,12 +10776,6 @@ class XplorMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitSelection_expression" ):
                 listener.exitSelection_expression(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitSelection_expression" ):
-                return visitor.visitSelection_expression(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -11349,12 +10839,6 @@ class XplorMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitTerm" ):
                 listener.exitTerm(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitTerm" ):
-                return visitor.visitTerm(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -11555,12 +11039,6 @@ class XplorMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitFactor" ):
                 listener.exitFactor(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitFactor" ):
-                return visitor.visitFactor(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -11969,12 +11447,6 @@ class XplorMRParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitVector_3d" ):
                 listener.exitVector_3d(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitVector_3d" ):
-                return visitor.visitVector_3d(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 

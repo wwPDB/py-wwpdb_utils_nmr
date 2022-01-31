@@ -762,12 +762,6 @@ class AmberPTParser ( Parser ):
             if hasattr( listener, "exitAmber_pt" ):
                 listener.exitAmber_pt(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitAmber_pt" ):
-                return visitor.visitAmber_pt(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -1127,12 +1121,6 @@ class AmberPTParser ( Parser ):
             if hasattr( listener, "exitVersion_statement" ):
                 listener.exitVersion_statement(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitVersion_statement" ):
-                return visitor.visitVersion_statement(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -1210,12 +1198,6 @@ class AmberPTParser ( Parser ):
             if hasattr( listener, "exitAmber_atom_type_statement" ):
                 listener.exitAmber_atom_type_statement(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitAmber_atom_type_statement" ):
-                return visitor.visitAmber_atom_type_statement(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -1284,12 +1266,6 @@ class AmberPTParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitAngle_equil_value_statement" ):
                 listener.exitAngle_equil_value_statement(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitAngle_equil_value_statement" ):
-                return visitor.visitAngle_equil_value_statement(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -1360,12 +1336,6 @@ class AmberPTParser ( Parser ):
             if hasattr( listener, "exitAngle_force_constant_statement" ):
                 listener.exitAngle_force_constant_statement(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitAngle_force_constant_statement" ):
-                return visitor.visitAngle_force_constant_statement(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -1434,12 +1404,6 @@ class AmberPTParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitAngles_inc_hydrogen_statement" ):
                 listener.exitAngles_inc_hydrogen_statement(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitAngles_inc_hydrogen_statement" ):
-                return visitor.visitAngles_inc_hydrogen_statement(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -1510,12 +1474,6 @@ class AmberPTParser ( Parser ):
             if hasattr( listener, "exitAngles_without_hydrogen_statement" ):
                 listener.exitAngles_without_hydrogen_statement(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitAngles_without_hydrogen_statement" ):
-                return visitor.visitAngles_without_hydrogen_statement(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -1584,12 +1542,6 @@ class AmberPTParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitAtomic_number_statement" ):
                 listener.exitAtomic_number_statement(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitAtomic_number_statement" ):
-                return visitor.visitAtomic_number_statement(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -1660,12 +1612,6 @@ class AmberPTParser ( Parser ):
             if hasattr( listener, "exitAtom_name_statement" ):
                 listener.exitAtom_name_statement(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitAtom_name_statement" ):
-                return visitor.visitAtom_name_statement(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -1734,12 +1680,6 @@ class AmberPTParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitAtom_type_index_statement" ):
                 listener.exitAtom_type_index_statement(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitAtom_type_index_statement" ):
-                return visitor.visitAtom_type_index_statement(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -1810,12 +1750,6 @@ class AmberPTParser ( Parser ):
             if hasattr( listener, "exitAtoms_per_molecule_statement" ):
                 listener.exitAtoms_per_molecule_statement(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitAtoms_per_molecule_statement" ):
-                return visitor.visitAtoms_per_molecule_statement(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -1884,12 +1818,6 @@ class AmberPTParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitBond_equil_value_statement" ):
                 listener.exitBond_equil_value_statement(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitBond_equil_value_statement" ):
-                return visitor.visitBond_equil_value_statement(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -1960,12 +1888,6 @@ class AmberPTParser ( Parser ):
             if hasattr( listener, "exitBond_force_constant_statement" ):
                 listener.exitBond_force_constant_statement(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitBond_force_constant_statement" ):
-                return visitor.visitBond_force_constant_statement(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -2034,12 +1956,6 @@ class AmberPTParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitBonds_inc_hydrogen_statement" ):
                 listener.exitBonds_inc_hydrogen_statement(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitBonds_inc_hydrogen_statement" ):
-                return visitor.visitBonds_inc_hydrogen_statement(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -2110,12 +2026,6 @@ class AmberPTParser ( Parser ):
             if hasattr( listener, "exitBonds_without_hydrogen_statement" ):
                 listener.exitBonds_without_hydrogen_statement(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitBonds_without_hydrogen_statement" ):
-                return visitor.visitBonds_without_hydrogen_statement(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -2184,12 +2094,6 @@ class AmberPTParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitBox_dimensions_statement" ):
                 listener.exitBox_dimensions_statement(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitBox_dimensions_statement" ):
-                return visitor.visitBox_dimensions_statement(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -2260,12 +2164,6 @@ class AmberPTParser ( Parser ):
             if hasattr( listener, "exitCap_info_statement" ):
                 listener.exitCap_info_statement(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitCap_info_statement" ):
-                return visitor.visitCap_info_statement(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -2334,12 +2232,6 @@ class AmberPTParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitCap_info2_statement" ):
                 listener.exitCap_info2_statement(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitCap_info2_statement" ):
-                return visitor.visitCap_info2_statement(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -2410,12 +2302,6 @@ class AmberPTParser ( Parser ):
             if hasattr( listener, "exitCharge_statement" ):
                 listener.exitCharge_statement(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitCharge_statement" ):
-                return visitor.visitCharge_statement(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -2484,12 +2370,6 @@ class AmberPTParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitDihedral_force_constant_statement" ):
                 listener.exitDihedral_force_constant_statement(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitDihedral_force_constant_statement" ):
-                return visitor.visitDihedral_force_constant_statement(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -2560,12 +2440,6 @@ class AmberPTParser ( Parser ):
             if hasattr( listener, "exitDihedral_periodicity_statement" ):
                 listener.exitDihedral_periodicity_statement(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitDihedral_periodicity_statement" ):
-                return visitor.visitDihedral_periodicity_statement(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -2634,12 +2508,6 @@ class AmberPTParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitDihedral_phase_statement" ):
                 listener.exitDihedral_phase_statement(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitDihedral_phase_statement" ):
-                return visitor.visitDihedral_phase_statement(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -2710,12 +2578,6 @@ class AmberPTParser ( Parser ):
             if hasattr( listener, "exitDihedrals_inc_hydrogen_statement" ):
                 listener.exitDihedrals_inc_hydrogen_statement(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitDihedrals_inc_hydrogen_statement" ):
-                return visitor.visitDihedrals_inc_hydrogen_statement(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -2784,12 +2646,6 @@ class AmberPTParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitDihedrals_without_hydrogen_statement" ):
                 listener.exitDihedrals_without_hydrogen_statement(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitDihedrals_without_hydrogen_statement" ):
-                return visitor.visitDihedrals_without_hydrogen_statement(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -2860,12 +2716,6 @@ class AmberPTParser ( Parser ):
             if hasattr( listener, "exitExcluded_atoms_list_statement" ):
                 listener.exitExcluded_atoms_list_statement(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitExcluded_atoms_list_statement" ):
-                return visitor.visitExcluded_atoms_list_statement(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -2934,12 +2784,6 @@ class AmberPTParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitHbcut_statement" ):
                 listener.exitHbcut_statement(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitHbcut_statement" ):
-                return visitor.visitHbcut_statement(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -3010,12 +2854,6 @@ class AmberPTParser ( Parser ):
             if hasattr( listener, "exitHbond_acoef_statement" ):
                 listener.exitHbond_acoef_statement(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitHbond_acoef_statement" ):
-                return visitor.visitHbond_acoef_statement(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -3084,12 +2922,6 @@ class AmberPTParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitHbond_bcoef_statement" ):
                 listener.exitHbond_bcoef_statement(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitHbond_bcoef_statement" ):
-                return visitor.visitHbond_bcoef_statement(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -3160,12 +2992,6 @@ class AmberPTParser ( Parser ):
             if hasattr( listener, "exitIpol_statement" ):
                 listener.exitIpol_statement(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitIpol_statement" ):
-                return visitor.visitIpol_statement(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -3234,12 +3060,6 @@ class AmberPTParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitIrotat_statement" ):
                 listener.exitIrotat_statement(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitIrotat_statement" ):
-                return visitor.visitIrotat_statement(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -3310,12 +3130,6 @@ class AmberPTParser ( Parser ):
             if hasattr( listener, "exitJoin_array_statement" ):
                 listener.exitJoin_array_statement(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitJoin_array_statement" ):
-                return visitor.visitJoin_array_statement(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -3384,12 +3198,6 @@ class AmberPTParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitLennard_jones_acoef_statement" ):
                 listener.exitLennard_jones_acoef_statement(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitLennard_jones_acoef_statement" ):
-                return visitor.visitLennard_jones_acoef_statement(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -3460,12 +3268,6 @@ class AmberPTParser ( Parser ):
             if hasattr( listener, "exitLennard_jones_bcoef_statement" ):
                 listener.exitLennard_jones_bcoef_statement(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitLennard_jones_bcoef_statement" ):
-                return visitor.visitLennard_jones_bcoef_statement(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -3535,12 +3337,6 @@ class AmberPTParser ( Parser ):
             if hasattr( listener, "exitMass_statement" ):
                 listener.exitMass_statement(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitMass_statement" ):
-                return visitor.visitMass_statement(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -3606,12 +3402,6 @@ class AmberPTParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitNonbonded_parm_index_statement" ):
                 listener.exitNonbonded_parm_index_statement(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitNonbonded_parm_index_statement" ):
-                return visitor.visitNonbonded_parm_index_statement(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -3679,12 +3469,6 @@ class AmberPTParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitNumber_excluded_atoms_statement" ):
                 listener.exitNumber_excluded_atoms_statement(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitNumber_excluded_atoms_statement" ):
-                return visitor.visitNumber_excluded_atoms_statement(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -3755,12 +3539,6 @@ class AmberPTParser ( Parser ):
             if hasattr( listener, "exitPointers_statement" ):
                 listener.exitPointers_statement(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitPointers_statement" ):
-                return visitor.visitPointers_statement(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -3829,12 +3607,6 @@ class AmberPTParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitPolarizability_statement" ):
                 listener.exitPolarizability_statement(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitPolarizability_statement" ):
-                return visitor.visitPolarizability_statement(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -3905,12 +3677,6 @@ class AmberPTParser ( Parser ):
             if hasattr( listener, "exitRadii_statement" ):
                 listener.exitRadii_statement(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitRadii_statement" ):
-                return visitor.visitRadii_statement(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -3979,12 +3745,6 @@ class AmberPTParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitRadius_set_statement" ):
                 listener.exitRadius_set_statement(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitRadius_set_statement" ):
-                return visitor.visitRadius_set_statement(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -4055,12 +3815,6 @@ class AmberPTParser ( Parser ):
             if hasattr( listener, "exitResidue_label_statement" ):
                 listener.exitResidue_label_statement(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitResidue_label_statement" ):
-                return visitor.visitResidue_label_statement(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -4129,12 +3883,6 @@ class AmberPTParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitResidue_pointer_statement" ):
                 listener.exitResidue_pointer_statement(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitResidue_pointer_statement" ):
-                return visitor.visitResidue_pointer_statement(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -4205,12 +3953,6 @@ class AmberPTParser ( Parser ):
             if hasattr( listener, "exitScee_scale_factor_statement" ):
                 listener.exitScee_scale_factor_statement(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitScee_scale_factor_statement" ):
-                return visitor.visitScee_scale_factor_statement(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -4279,12 +4021,6 @@ class AmberPTParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitScnb_scale_factor_statement" ):
                 listener.exitScnb_scale_factor_statement(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitScnb_scale_factor_statement" ):
-                return visitor.visitScnb_scale_factor_statement(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -4355,12 +4091,6 @@ class AmberPTParser ( Parser ):
             if hasattr( listener, "exitScreen_statement" ):
                 listener.exitScreen_statement(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitScreen_statement" ):
-                return visitor.visitScreen_statement(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -4429,12 +4159,6 @@ class AmberPTParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitSolty_statement" ):
                 listener.exitSolty_statement(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitSolty_statement" ):
-                return visitor.visitSolty_statement(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -4505,12 +4229,6 @@ class AmberPTParser ( Parser ):
             if hasattr( listener, "exitSolvent_pointers_statement" ):
                 listener.exitSolvent_pointers_statement(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitSolvent_pointers_statement" ):
-                return visitor.visitSolvent_pointers_statement(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -4579,12 +4297,6 @@ class AmberPTParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitTitle_statement" ):
                 listener.exitTitle_statement(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitTitle_statement" ):
-                return visitor.visitTitle_statement(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -4655,12 +4367,6 @@ class AmberPTParser ( Parser ):
             if hasattr( listener, "exitTree_chain_classification_statement" ):
                 listener.exitTree_chain_classification_statement(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitTree_chain_classification_statement" ):
-                return visitor.visitTree_chain_classification_statement(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -4728,12 +4434,6 @@ class AmberPTParser ( Parser ):
             if hasattr( listener, "exitString_format_statement" ):
                 listener.exitString_format_statement(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitString_format_statement" ):
-                return visitor.visitString_format_statement(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -4793,12 +4493,6 @@ class AmberPTParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitString4_format_statement" ):
                 listener.exitString4_format_statement(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitString4_format_statement" ):
-                return visitor.visitString4_format_statement(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -4860,12 +4554,6 @@ class AmberPTParser ( Parser ):
             if hasattr( listener, "exitInteger_format_statement" ):
                 listener.exitInteger_format_statement(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitInteger_format_statement" ):
-                return visitor.visitInteger_format_statement(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -4925,12 +4613,6 @@ class AmberPTParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitReal_format_statement" ):
                 listener.exitReal_format_statement(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitReal_format_statement" ):
-                return visitor.visitReal_format_statement(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -4992,12 +4674,6 @@ class AmberPTParser ( Parser ):
             if hasattr( listener, "exitFloat_format_statement" ):
                 listener.exitFloat_format_statement(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitFloat_format_statement" ):
-                return visitor.visitFloat_format_statement(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -5051,12 +4727,6 @@ class AmberPTParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitSimple_name_array" ):
                 listener.exitSimple_name_array(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitSimple_name_array" ):
-                return visitor.visitSimple_name_array(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -5112,12 +4782,6 @@ class AmberPTParser ( Parser ):
             if hasattr( listener, "exitLine_string_array" ):
                 listener.exitLine_string_array(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitLine_string_array" ):
-                return visitor.visitLine_string_array(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -5165,12 +4829,6 @@ class AmberPTParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitInteger_array" ):
                 listener.exitInteger_array(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitInteger_array" ):
-                return visitor.visitInteger_array(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -5229,12 +4887,6 @@ class AmberPTParser ( Parser ):
             if hasattr( listener, "exitFloat_array" ):
                 listener.exitFloat_array(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitFloat_array" ):
-                return visitor.visitFloat_array(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -5291,12 +4943,6 @@ class AmberPTParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitReal_array" ):
                 listener.exitReal_array(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitReal_array" ):
-                return visitor.visitReal_array(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 

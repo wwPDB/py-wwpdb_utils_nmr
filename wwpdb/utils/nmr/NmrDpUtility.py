@@ -26289,7 +26289,8 @@ class NmrDpUtility:
                                                            {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
                                                            {'name': 'label_comp_id', 'type': 'str', 'value': 'HIS'},
                                                            {'name': 'type_symbol', 'type': 'str', 'value': 'H'},
-                                                           {'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id}])
+                                                           {'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id}
+                                                           ])
 
             except Exception as e:
 
@@ -27518,7 +27519,8 @@ class NmrDpUtility:
                                                           [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id},
                                                            {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
                                                            {'name': 'label_atom_id', 'type': 'str', 'value': nmr_atom_id},
-                                                           {'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id}])
+                                                           {'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id}
+                                                           ])
 
             except Exception as e:
 
@@ -27554,7 +27556,8 @@ class NmrDpUtility:
                                                               'range': {'min_exclusive': (o[1] - cutoff), 'max_exclusive': (o[1] + cutoff)}},
                                                              {'name': 'Cartn_z', 'type': 'range-float',
                                                               'range': {'min_exclusive': (o[2] - cutoff), 'max_exclusive': (o[2] + cutoff)}},
-                                                             {'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id}])
+                                                             {'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id}
+                                                             ])
 
             except Exception as e:
 
@@ -27855,7 +27858,8 @@ class NmrDpUtility:
                                                           [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id},
                                                            {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
                                                            {'name': 'label_atom_id', 'type': 'str', 'value': nmr_atom_id},
-                                                           {'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id}])
+                                                           {'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id}
+                                                           ])
 
             except Exception as e:
 
@@ -27891,7 +27895,8 @@ class NmrDpUtility:
                                                               'range': {'min_exclusive': (o[1] - cutoff), 'max_exclusive': (o[1] + cutoff)}},
                                                              {'name': 'Cartn_z', 'type': 'range-float',
                                                               'range': {'min_exclusive': (o[2] - cutoff), 'max_exclusive': (o[2] + cutoff)}},
-                                                             {'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id}])
+                                                             {'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id}
+                                                             ])
 
             except Exception as e:
 

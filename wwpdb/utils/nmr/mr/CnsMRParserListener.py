@@ -497,19 +497,19 @@ class CnsMRParserListener(ParseTreeListener):
         if self.angStatements == 0 and self.angRestraints > 0:
             self.angStatements = 1
 
-        content_subtype = {'dist_restraint': self.distStatements,
-                           'dihed_restraint': self.dihedStatements,
-                           'rdc_restraint': self.rdcStatements,
-                           'plane_restraint': self.planeStatements,
-                           'jcoup_restraint': self.jcoupStatements,
-                           'hvycs_restraint': self.hvycsStatements,
-                           'procs_restraint': self.procsStatements,
-                           'rama_restraint': self.ramaStatements,
-                           'diff_restraint': self.diffStatements,
-                           'nbase_restraint': self.nbaseStatements,
-                           'ang_restraint': self.angStatements
-                           }
+        contentSubtype = {'dist_restraint': self.distStatements,
+                          'dihed_restraint': self.dihedStatements,
+                          'rdc_restraint': self.rdcStatements,
+                          'plane_restraint': self.planeStatements,
+                          'jcoup_restraint': self.jcoupStatements,
+                          'hvycs_restraint': self.hvycsStatements,
+                          'procs_restraint': self.procsStatements,
+                          'rama_restraint': self.ramaStatements,
+                          'diff_restraint': self.diffStatements,
+                          'nbase_restraint': self.nbaseStatements,
+                          'ang_restraint': self.angStatements
+                          }
 
-        return {k: v for k, v in content_subtype.items() if v > 0}
+        return {k: v for k, v in contentSubtype.items() if v > 0}
 
 # del CnsMRParser

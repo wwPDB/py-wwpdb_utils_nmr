@@ -637,7 +637,7 @@ factor:
 	L_paren selection_expression R_paren |
 	All |
 	factor Around Real |
-	Atom Simple_names Integers Simple_names |
+	Atom (Simple_names | Simple_name) (Integers | Integer) (Simple_names | Simple_name) |
 	Attribute Abs? Simple_name Comparison_ops Real |
 	BondedTo factor |
 	ByGroup factor |

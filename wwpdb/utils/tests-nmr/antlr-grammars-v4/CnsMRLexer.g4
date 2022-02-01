@@ -361,20 +361,20 @@ fragment DEC_DIGIT:	[0-9];
 fragment DECIMAL:	DEC_DIGIT+;
 
 Simple_name:		SIMPLE_NAME;
-Simple_names:		WILDCARD | SIMPLE_NAME WILDCARD;
-Integers:		WILDCARD | Integer WILDCARD;
+Simple_names:		WILDCARD | WILDCARD? SIMPLE_NAME WILDCARD;
+Integers:		WILDCARD | WILDCARD? Integer WILDCARD;
 //Class_name:		SIMPLE_NAME;
-//Class_names:		WILDCARD | SIMPLE_NAME WILDCARD;
+//Class_names:		WILDCARD | WILDCARD? SIMPLE_NAME WILDCARD;
 //Segment_name:		SIMPLE_NAME;
-//Segment_names:	WILDCARD | SIMPLE_NAME WILDCARD;
+//Segment_names:	WILDCARD | WILDCARD? SIMPLE_NAME WILDCARD;
 //Residue_number:	Integer;
-//Residue_numbers:	WILDCARD | Residue_number WILDCARD;
+//Residue_numbers:	WILDCARD | WILDCARD? Residue_number WILDCARD;
 //Residue_name:		SIMPLE_NAME;
-//Residue_names:	WILDCARD | SIMPLE_NAME WILDCARD;
+//Residue_names:	WILDCARD | WILDCARD? SIMPLE_NAME WILDCARD;
 //Atom_name:		ALPHA_NUM ATM_NAME_CHAR*;
-//Atom_names:		WILDCARD | Atom_name WILDCARD;
+//Atom_names:		WILDCARD | WILDCARD? Atom_name WILDCARD;
 //Atom_type:		ALPHA ATM_TYPE_CHAR*;
-//Atom_types:		WILDCARD | Atom_type WILDCARD;
+//Atom_types:		WILDCARD | WILDCARD? Atom_type WILDCARD;
 
 /* Wildcard - Syntax
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html

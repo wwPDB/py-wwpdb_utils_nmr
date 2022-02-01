@@ -342,7 +342,7 @@ factor:
 	L_paren selection_expression R_paren |
 	All |
 	factor Around Real |
-	Atom Simple_names Integers Simple_names |
+	Atom (Simple_names | Simple_name) (Integers | Integer) (Simple_names | Simple_name) |
 	Attribute Abs? Simple_name Comparison_ops Real |
 	Attribute Chemical String_comp_ops Simple_name |
 	Attribute Name String_comp_ops Simple_name |

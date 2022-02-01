@@ -198,16 +198,16 @@ class AmberMRParserListener(ParseTreeListener):
         """ Return content subtype of AMBER MR file.
         """
 
-        content_subtype = {'dist_restraint': self.distRestraints,
-                           'dihed_restraint': self.dihedRestraints,
-                           'rdc_restraint': self.rdcRestraints,
-                           'plane_restraint': self.planeRestraints,
-                           'noepk_resraint': self.noepkRestraints,
-                           'hvycs_restraint': self.hvycsRestraints,
-                           'pcs_restraint': self.pcsRestraints,
-                           'csa_restraint': self.csaRestraints
-                           }
+        contentSubtype = {'dist_restraint': self.distRestraints,
+                          'dihed_restraint': self.dihedRestraints,
+                          'rdc_restraint': self.rdcRestraints,
+                          'plane_restraint': self.planeRestraints,
+                          'noepk_resraint': self.noepkRestraints,
+                          'hvycs_restraint': self.hvycsRestraints,
+                          'pcs_restraint': self.pcsRestraints,
+                          'csa_restraint': self.csaRestraints
+                          }
 
-        return {k: 1 for k, v in content_subtype.items() if v > 0}
+        return {k: 1 for k, v in contentSubtype.items() if v > 0}
 
 # del AmberMRParser

@@ -113,12 +113,12 @@ class CyanaMRParserListener(ParseTreeListener):
         """ Return content subtype of CYANA MR file.
         """
 
-        content_subtype = {'dist_restraint': self.distRestraints,
-                           'dihed_restraint': self.dihedRestraints,
-                           'rdc_restraint': self.rdcRestraints,
-                           'pcs_restraint': self.pcsRestraints
-                           }
+        contentSubtype = {'dist_restraint': self.distRestraints,
+                          'dihed_restraint': self.dihedRestraints,
+                          'rdc_restraint': self.rdcRestraints,
+                          'pcs_restraint': self.pcsRestraints
+                          }
 
-        return {k: 1 for k, v in content_subtype.items() if v > 0}
+        return {k: 1 for k, v in contentSubtype.items() if v > 0}
 
 # del CyanaMRParser

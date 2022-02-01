@@ -7,14 +7,30 @@
 """ ParserLister class for XPLOR-NIH MR files.
     @author: Masashi Yokochi
 """
+import sys
 import re
+import numpy as np
 
 from antlr4 import ParseTreeListener
 from wwpdb.utils.nmr.mr.XplorMRParser import XplorMRParser
 
+from wwpdb.utils.config.ConfigInfo import getSiteId
+from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommon
+from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
+
+
+def to_np_array(atom):
+    """ Return Numpy array of a given Cartesian coordinate in {'x': float, 'y': float, 'z': float} format.
+    """
+
+    return np.asarray([atom['x'], atom['y'], atom['z']])
+
 
 # This class defines a complete listener for a parse tree produced by XplorMRParser.
 class XplorMRParserListener(ParseTreeListener):
+
+    __verbose = None
+    __lfh = None
 
     distRestraints = 0      # XPLOR-NIH: Distance restraints
     dihedRestraints = 0     # XPLOR-NIH: Dihedral angle restraints
@@ -58,8 +74,92 @@ class XplorMRParserListener(ParseTreeListener):
     pccrStatements = 0      # XPLOR-NIH: Paramagnetic cross-correlation rate restraints
     hbondStatements = 0     # XPLOR-NIH: Hydrogen bond geometry restraints
 
+    # loop categories
+    lpCategories = {'poly_seq': 'pdbx_poly_seq_scheme',
+                    'non_poly': 'pdbx_nonpoly_scheme',
+                    'coordinate': 'atom_site',
+                    'poly_seq_alias': 'ndb_poly_seq_scheme',
+                    'non_poly_alias': 'ndb_nonpoly_scheme'
+                    }
+
+    # key items of loop
+    keyItems = {'poly_seq': [{'name': 'asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                             {'name': 'seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                             {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
+                             {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_chain_id'}
+                             ],
+                'poly_seq_alias': [{'name': 'id', 'type': 'str', 'alt_name': 'chain_id'},
+                                   {'name': 'seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                   {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'}
+                                   ],
+                'non_poly': [{'name': 'asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                             {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'seq_id'},
+                             {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
+                             {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_chain_id'}
+                             ],
+                'non_poly_alias': [{'name': 'asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                   {'name': 'pdb_num', 'type': 'int', 'alt_name': 'seq_id'},
+                                   {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'}
+                                   ],
+                'coordinate': [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                               {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                               {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                               {'name': 'pdbx_PDB_model_num', 'type': 'int', 'alt_name': 'model_id'}
+                               ],
+                'coordinate_alias': [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                     {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                     {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                     {'name': 'ndb_model', 'type': 'int', 'alt_name': 'model_id'}
+                                     ],
+                'coordinate_ins': [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                   {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                   {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                   {'name': 'pdbx_PDB_ins_code', 'type': 'str', 'alt_name': 'ins_code', 'default': '?'},
+                                   {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'label_seq_id', 'default': '.'},
+                                   {'name': 'pdbx_PDB_model_num', 'type': 'int', 'alt_name': 'model_id'}
+                                   ],
+                'coordinate_ins_alias': [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                         {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                         {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                         {'name': 'ndb_ins_code', 'type': 'str', 'alt_name': 'ins_code', 'default': '?'},
+                                         {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'label_seq_id', 'default': '.'},
+                                         {'name': 'ndb_model', 'type': 'int', 'alt_name': 'model_id'}
+                                         ]
+                }
+
+    # ChemComp reader
+    __ccR = None
+
+    __lastCompId = None
+    __lastCompIdTest = False
+    __lastChemCompDict = None
+    __lastChemCompAtoms = None
+    __lastChemCompBonds = None
+
+    __chemCompAtomDict = None
+    __chemCompBondDict = None
+
+    __ccaAtomId = None
+    # __ccaAromaticFlag = None
+    __ccaLeavingAtomFlag = None
+    __ccaTypeSymbol = None
+
+    __ccbAtomId1 = None
+    __ccbAtomId2 = None
+    __ccbAromaticFlag = None
+
+    # CIF reader
+    __cR = None
+
+    # data item name for model ID in 'atom_site' category
+    __modelNumName = None
+    # representative model id
+    __representativeModelId = 1
+    # total number of models
+    # __totalModels = 0
+
     # polymer sequences in the coordinate file generated by NmrDpUtility.__extractCoordPolymerSequence()
-    polySeq = None
+    __polySeq = None
 
     # atom selection-expressions in a statement
     atomSelExpr = [[None, None]]
@@ -74,8 +174,141 @@ class XplorMRParserListener(ParseTreeListener):
 
     warningMessage = ''
 
-    def __init__(self, polySeq=None):
-        self.polySeq = polySeq
+    def __init__(self, verbose=True, log=sys.stdout, cR=None, polySeq=None):
+        self.__verbose = verbose
+        self.__lfh = log
+        self.__cR = cR
+
+        try:
+
+            self.__modelNumName = 'pdbx_PDB_model_num' if self.__cR.hasItem('atom_site', 'pdbx_PDB_model_num') else 'ndb_model'
+
+            modelIds = self.__cR.getDictListWithFilter('atom_site',
+                                                       [{'name': self.__modelNumName, 'type': 'int', 'alt_name': 'model_id'}
+                                                        ])
+
+            if len(modelIds) > 0:
+                modelIds = set(dict['model_id'] for dict in modelIds)
+
+                self.__representativeModelId = min(modelIds)
+                # self.__totalModels = len(modelIds)
+
+        except Exception as e:
+
+            if self.__verbose:
+                self.__lfh.write(f"+XplorMRParserListener() ++ Error  - {str(e)}\n")
+
+        if polySeq is not None:
+            self.__polySeq = polySeq
+
+        else:
+
+            contetSubtype = 'poly_seq'
+
+            alias = False
+            lpCategory = self.lpCategories[contetSubtype]
+            keyItems = self.keyItems[contetSubtype]
+
+            if not self.__cR.hasCategory(lpCategory):
+                alias = True
+                lpCategory = self.lpCategories[contetSubtype + '_alias']
+                keyItems = self.keyItems[contetSubtype + '_alias']
+
+            try:
+
+                try:
+                    self.__polySeq = self.__cR.getPolymerSequence(lpCategory, keyItems,
+                                                                  withStructConf=True, alias=alias)
+                except KeyError:  # pdbx_PDB_ins_code throws KeyError
+                    if contetSubtype + ('_ins_alias' if alias else '_ins') in self.keyItems:
+                        keyItems = self.keyItems[contetSubtype + ('_ins_alias' if alias else '_ins')]
+                        self.__polySeq = self.__cR.getPolymerSequence(lpCategory, keyItems,
+                                                                      withStructConf=True, alias=alias)
+                    else:
+                        self.__polySeq = []
+
+            except Exception as e:
+                if self.__verbose:
+                    self.__lfh.write(f"+XplorMRParserListener() ++ Error - {str(e)}\n")
+
+        # CCD accessing utility
+        __cICommon = ConfigInfoAppCommon(getSiteId())
+        __ccCvsPath = __cICommon.get_site_cc_cvs_path()
+
+        self.__ccR = ChemCompReader(verbose, log)
+        self.__ccR.setCachePath(__ccCvsPath)
+
+        # taken from wwpdb.apps.ccmodule.io.ChemCompIo
+        self.__chemCompAtomDict = [
+            ('_chem_comp_atom.comp_id', '%s', 'str', ''),
+            ('_chem_comp_atom.atom_id', '%s', 'str', ''),
+            ('_chem_comp_atom.alt_atom_id', '%s', 'str', ''),
+            ('_chem_comp_atom.type_symbol', '%s', 'str', ''),
+            ('_chem_comp_atom.charge', '%s', 'str', ''),
+            ('_chem_comp_atom.pdbx_align', '%s', 'str', ''),
+            ('_chem_comp_atom.pdbx_aromatic_flag', '%s', 'str', ''),
+            ('_chem_comp_atom.pdbx_leaving_atom_flag', '%s', 'str', ''),
+            ('_chem_comp_atom.pdbx_stereo_config', '%s', 'str', ''),
+            ('_chem_comp_atom.model_Cartn_x', '%s', 'str', ''),
+            ('_chem_comp_atom.model_Cartn_y', '%s', 'str', ''),
+            ('_chem_comp_atom.model_Cartn_z', '%s', 'str', ''),
+            ('_chem_comp_atom.pdbx_model_Cartn_x_ideal', '%s', 'str', ''),
+            ('_chem_comp_atom.pdbx_model_Cartn_y_ideal', '%s', 'str', ''),
+            ('_chem_comp_atom.pdbx_model_Cartn_z_ideal', '%s', 'str', ''),
+            ('_chem_comp_atom.pdbx_component_atom_id', '%s', 'str', ''),
+            ('_chem_comp_atom.pdbx_component_comp_id', '%s', 'str', ''),
+            ('_chem_comp_atom.pdbx_ordinal', '%s', 'str', '')
+        ]
+
+        atomId = next(d for d in self.__chemCompAtomDict if d[0] == '_chem_comp_atom.atom_id')
+        self.__ccaAtomId = self.__chemCompAtomDict.index(atomId)
+
+        # aromaticFlag = next(d for d in self.__chemCompAtomDict if d[0] == '_chem_comp_atom.pdbx_aromatic_flag')
+        # self.__ccaAromaticFlag = self.__chemCompAtomDict.index(aromaticFlag)
+
+        leavingAtomFlag = next(d for d in self.__chemCompAtomDict if d[0] == '_chem_comp_atom.pdbx_leaving_atom_flag')
+        self.__ccaLeavingAtomFlag = self.__chemCompAtomDict.index(leavingAtomFlag)
+
+        typeSymbol = next(d for d in self.__chemCompAtomDict if d[0] == '_chem_comp_atom.type_symbol')
+        self.__ccaTypeSymbol = self.__chemCompAtomDict.index(typeSymbol)
+
+        # taken from wwpdb.apps.ccmodule.io.ChemCompIo
+        self.__chemCompBondDict = [
+            ('_chem_comp_bond.comp_id', '%s', 'str', ''),
+            ('_chem_comp_bond.atom_id_1', '%s', 'str', ''),
+            ('_chem_comp_bond.atom_id_2', '%s', 'str', ''),
+            ('_chem_comp_bond.value_order', '%s', 'str', ''),
+            ('_chem_comp_bond.pdbx_aromatic_flag', '%s', 'str', ''),
+            ('_chem_comp_bond.pdbx_stereo_config', '%s', 'str', ''),
+            ('_chem_comp_bond.pdbx_ordinal', '%s', 'str', '')
+        ]
+
+        atomId1 = next(d for d in self.__chemCompBondDict if d[0] == '_chem_comp_bond.atom_id_1')
+        self.__ccbAtomId1 = self.__chemCompBondDict.index(atomId1)
+
+        atomId2 = next(d for d in self.__chemCompBondDict if d[0] == '_chem_comp_bond.atom_id_2')
+        self.__ccbAtomId2 = self.__chemCompBondDict.index(atomId2)
+
+        aromaticFlag = next(d for d in self.__chemCompBondDict if d[0] == '_chem_comp_bond.pdbx_aromatic_flag')
+        self.__ccbAromaticFlag = self.__chemCompBondDict.index(aromaticFlag)
+
+    def __updateChemCompDict(self, compId):
+        """ Update CCD information for a given comp_id.
+            @return: True for successfully update CCD information or False for the case a given comp_id does not exist in CCD
+        """
+
+        compId = compId.upper()
+
+        if compId != self.__lastCompId:
+            self.__lastCompIdTest = False if '_' in compId else self.__ccR.setCompId(compId)
+            self.__lastCompId = compId
+
+            if self.__lastCompIdTest:
+                self.__lastChemCompDict = self.__ccR.getChemCompDict()
+                self.__lastChemCompAtoms = self.__ccR.getAtomList()
+                self.__lastChemCompBonds = self.__ccR.getBonds()
+
+        return self.__lastCompIdTest
 
     # Enter a parse tree produced by XplorMRParser#xplor_nih_mr.
     def enterXplor_nih_mr(self, ctx: XplorMRParser.Xplor_nih_mrContext):  # pylint: disable=unused-argument
@@ -792,6 +1025,8 @@ class XplorMRParserListener(ParseTreeListener):
     def exitTerm(self, ctx: XplorMRParser.TermContext):  # pylint: disable=unused-argument
         self.columnFactor[self.depthSelExpr] = -1
 
+        print(self.factor)
+
     # Enter a parse tree produced by XplorMRParser#factor.
     def enterFactor(self, ctx: XplorMRParser.FactorContext):
         self.columnFactor[self.depthSelExpr] += 1
@@ -816,23 +1051,342 @@ class XplorMRParserListener(ParseTreeListener):
         else:  # @debug
             depth = self.depthSelExpr
 
-        """
-        @note: debug
-        """
-        print(f"{depth=} {self.columnSelExpr[depth]=} {self.columnTerm[depth]=} {self.columnFactor[depth]=}")
+        # @debug
+        # if self.__verbose:
+        #    print(f"{depth=} {self.columnSelExpr[depth]=} {self.columnTerm[depth]=} {self.columnFactor[depth]=}")
 
     # Exit a parse tree produced by XplorMRParser#factor.
     def exitFactor(self, ctx: XplorMRParser.FactorContext):
+
         if ctx.All():
-            pass
+
+            try:
+
+                self.factor['atom_selection'] =\
+                    self.__cR.getDictListWithFilter('atom_site',
+                                                    [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                     {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                                     {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                     {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
+                                                     ],
+                                                    [{'name': self.__modelNumName, 'type': 'int',
+                                                      'value': self.__representativeModelId}
+                                                     ])
+
+                if len(self.factor['atom_selection']) == 0:
+                    self.warningMessage += "[Invalid data] The 'all' clause has no effect.\n"
+                else:
+                    if 'chain_id' in self.factor:
+                        del self.factor['chain_id']
+                    if 'seq_id' in self.factor:
+                        del self.factor['seq_id']
+                    if 'atom_id' in self.factor:
+                        del self.factor['atom_id']
+
+            except Exception as e:
+                if self.__verbose:
+                    self.__lfh.write(f"+XplorMRParserListener.exitFactor() ++ Error  - {str(e)}\n")
+
         elif ctx.Around():
-            print(self.factor)
-            print(ctx.Real())
-            # around = float(ctx.Real())
+            around = float(str(ctx.Real()))
+            _atomSelection = []
+
+            if 'atom_selection' in self.factor:
+
+                for _atom in self.factor['atom_selection']:
+
+                    try:
+
+                        _origin =\
+                            self.__cR.getDictListWithFilter('atom_site',
+                                                            [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                             {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                             {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
+                                                             ],
+                                                            [{'name': 'auth_asym_id', 'type': 'str', 'value': _atom['chain_id']},
+                                                             {'name': 'auth_seq_id', 'type': 'int', 'value': _atom['seq_id']},
+                                                             {'name': 'label_atom_id', 'type': 'str', 'value': _atom['atom_id']},
+                                                             {'name': self.__modelNumName, 'type': 'int',
+                                                              'value': self.__representativeModelId}
+                                                             ])
+
+                        if len(_origin) != 1:
+                            continue
+
+                        origin = to_np_array(_origin[0])
+
+                        _neighbor =\
+                            self.__cR.getDictListWithFilter('atom_site',
+                                                            [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                             {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                                             {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                             {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'},
+                                                             {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                             {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                             {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
+                                                             ],
+                                                            [{'name': 'Cartn_x', 'type': 'range-float',
+                                                              'range': {'min_exclusive': (origin[0] - around),
+                                                                        'max_exclusive': (origin[0] + around)}},
+                                                             {'name': 'Cartn_y', 'type': 'range-float',
+                                                              'range': {'min_exclusive': (origin[1] - around),
+                                                                        'max_exclusive': (origin[1] + around)}},
+                                                             {'name': 'Cartn_z', 'type': 'range-float',
+                                                              'range': {'min_exclusive': (origin[2] - around),
+                                                                        'max_exclusive': (origin[2] + around)}},
+                                                             {'name': self.__modelNumName, 'type': 'int',
+                                                              'value': self.__representativeModelId}
+                                                             ])
+
+                        if len(_neighbor) == 0:
+                            continue
+
+                        neighbor = [atom for atom in _neighbor if np.linalg.norm(to_np_array(atom) - origin) < around]
+
+                        for atom in neighbor:
+                            del atom['x']
+                            del atom['y']
+                            del atom['z']
+                            _atomSelection.append(atom)
+
+                    except Exception as e:
+                        if self.__verbose:
+                            self.__lfh.write(f"+XplorMRParserListener.exitFactor() ++ Error  - {str(e)}\n")
+
+            else:
+
+                if 'chain_id' not in self.factor or len(self.factor['chain_id']) == 0:
+                    self.factor['chain_id'] = [ps['chain_id'] for ps in self.__polySeq]
+
+                if 'seq_id' not in self.factor or len(self.factor['seq_id']) == 0:
+                    seqIds = set()
+                    for chainId in self.factor['chain_id']:
+                        ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chainId), None)
+                        if ps is not None:
+                            seqIds.extend(ps['seq_id'])
+                    self.factor['seq_id'] = list(seqIds)
+
+                if 'atom_id' not in self.factor or len(self.factor['atom_id']) == 0:
+                    self.warningMessage += "[Invalid data] Atom name couldn't specify at the beginning of the 'around' clause.\n"
+
+                else:
+
+                    try:
+
+                        for chainId in self.factor['chain_id']:
+                            for seqId in self.factor['seq_id']:
+                                for atomId in self.factor['atom_id']:
+                                    _origin =\
+                                        self.__cR.getDictListWithFilter('atom_site',
+                                                                        [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                                         {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                                         {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
+                                                                         ],
+                                                                        [{'name': 'auth_asym_id', 'type': 'str', 'value': chainId},
+                                                                         {'name': 'auth_seq_id', 'type': 'int', 'value': seqId},
+                                                                         {'name': 'label_atom_id', 'type': 'str', 'value': atomId},
+                                                                         {'name': self.__modelNumName, 'type': 'int',
+                                                                          'value': self.__representativeModelId}
+                                                                         ])
+
+                                    if len(_origin) != 1:
+                                        continue
+
+                                    origin = to_np_array(_origin[0])
+
+                                    _neighbor =\
+                                        self.__cR.getDictListWithFilter('atom_site',
+                                                                        [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                                         {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                                                         {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                                         {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'},
+                                                                         {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                                         {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                                         {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
+                                                                         ],
+                                                                        [{'name': 'Cartn_x', 'type': 'range-float',
+                                                                          'range': {'min_exclusive': (origin[0] - around),
+                                                                                    'max_exclusive': (origin[0] + around)}},
+                                                                         {'name': 'Cartn_y', 'type': 'range-float',
+                                                                          'range': {'min_exclusive': (origin[1] - around),
+                                                                                    'max_exclusive': (origin[1] + around)}},
+                                                                         {'name': 'Cartn_z', 'type': 'range-float',
+                                                                          'range': {'min_exclusive': (origin[2] - around),
+                                                                                    'max_exclusive': (origin[2] + around)}},
+                                                                         {'name': self.__modelNumName, 'type': 'int',
+                                                                          'value': self.__representativeModelId}
+                                                                         ])
+
+                                    if len(_neighbor) == 0:
+                                        continue
+
+                                    neighbor = [atom for atom in _neighbor if np.linalg.norm(to_np_array(atom) - origin) < around]
+
+                                    for atom in neighbor:
+                                        del atom['x']
+                                        del atom['y']
+                                        del atom['z']
+                                        _atomSelection.append(atom)
+
+                    except Exception as e:
+                        if self.__verbose:
+                            self.__lfh.write(f"+XplorMRParserListener.exitFactor() ++ Error  - {str(e)}\n")
+
+            atomSelection = []
+            for atom in _atomSelection:
+                if atom not in atomSelection:
+                    atomSelection.append(atom)
+
+            self.factor['atom_selection'] = atomSelection
+
+            if len(self.factor['atom_selection']) == 0:
+                self.warningMessage += "[Invalid data] The 'all' clause has no effect.\n"
+            else:
+                if 'chain_id' in self.factor:
+                    del self.factor['chain_id']
+                if 'seq_id' in self.factor:
+                    del self.factor['seq_id']
+                if 'atom_id' in self.factor:
+                    del self.factor['atom_id']
+
         elif ctx.Atom():
-            self.factor['chain_id'] = ctx.Simple_names(0)
-            self.factor['seq_id'] = ctx.Integers()
-            self.factor['atom_id'] = ctx.Simple_names(1)
+            simpleNameIndex = simpleNamesIndex = 0
+            if ctx.Simple_name(0):
+                chainId = str(ctx.Simple_name(0))
+                self.factor['chain_id'] = [ps['chain_id'] for ps in self.__polySeq
+                                           if ps['chain_id'] == chainId]
+                if len(self.factor['chain_id']) > 0:
+                    simpleNameIndex += 1
+
+            if simpleNameIndex == 0 and ctx.Simple_names(0):
+                chainId = str(ctx.Simple_names(0))
+                if '*' in chainId:  # any string
+                    _chainId = chainId.replace('*', '.*')
+                elif '%' in chainId:  # a single character
+                    _chainId = chainId.replace('%', '.')
+                elif '#' in chainId:  # any number
+                    _chainId = chainId.replace('#', '[+-]?[0-9][0-9\\.]?')
+                elif '+' in chainId:  # any digit
+                    _chainId = chainId.replace('+', '[0-9]+')
+                if _chainId is not None:
+                    self.factor['chain_id'] = [ps['chain_id'] for ps in self.__polySeq
+                                               if re.match(_chainId, ps['chain_id'])]
+                simpleNamesIndex += 1
+
+            if len(self.factor['chain_id']) == 0:
+                self.warningMessage += "[Invalid data] Couldn't specify segment name "\
+                    f"'{chainId}' the coordinates.\n"  # do not use 'chainId!r' expression, '%' code throws ValueError
+
+            if ctx.Integer(0):
+                self.factor['seq_id'] = [int(str(ctx.Integer(0)))]
+
+            if ctx.Integers():
+                seqId = str(ctx.Integers())
+                if '*' in seqId:  # any string
+                    _seqId = seqId.replace('*', '.*')
+                elif '%' in seqId:  # a single character
+                    _seqId = seqId.replace('%', '.')
+                elif '#' in seqId:  # any number
+                    _seqId = seqId.replace('#', '[+-]?[0-9][0-9\\.]?')
+                elif '+' in seqId:  # any digit
+                    _seqId = seqId.replace('+', '[0-9]+')
+
+                _seqIdSelect = set()
+
+                for chainId in self.factor['chain_id']:
+                    ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chainId), None)
+                    if ps is not None:
+                        for realSeqId in ps['seq_id']:
+                            if re.match(_seqId, str(realSeqId)):
+                                _seqIdSelect.add(realSeqId)
+
+                self.factor['seq_id'] = list(_seqIdSelect)
+
+            _atomIdSelect = set()
+
+            if ctx.Simple_name(simpleNameIndex):
+                atomId = str(ctx.Simple_name(simpleNameIndex))
+                for chainId in self.factor['chain_id']:
+                    ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chainId), None)
+                    if ps is None:
+                        continue
+                    for seqId in self.factor['seq_id']:
+                        if seqId in ps['seq_id']:
+                            compId = ps['comp_id'][ps['seq_id'].index(seqId)]
+                            if self.__updateChemCompDict(compId):
+                                if any(cca for cca in self.__lastChemCompAtoms if cca[self.__ccaAtomId] == atomId):
+                                    _atomIdSelect.add(atomId)
+
+            elif ctx.Simple_names(simpleNamesIndex):
+                atomId = str(ctx.Simple_names(simpleNamesIndex))
+                if '*' in atomId:  # any string
+                    _atomId = atomId.replace('*', '.*')
+                elif '%' in atomId:  # a single character
+                    _atomId = atomId.replace('%', '.')
+                elif '#' in atomId:  # any number
+                    _atomId = atomId.replace('#', '[+-]?[0-9][0-9\\.]?')
+                elif '+' in atomId:  # any digit
+                    _atomId = atomId.replace('+', '[0-9]+')
+
+                for chainId in self.factor['chain_id']:
+                    ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chainId), None)
+                    if ps is None:
+                        continue
+                    for seqId in self.factor['seq_id']:
+                        if seqId in ps['seq_id']:
+                            compId = ps['comp_id'][ps['seq_id'].index(seqId)]
+                            if self.__updateChemCompDict(compId):
+                                for cca in self.__lastChemCompAtoms:
+                                    realAtomId = cca[self.__ccaAtomId]
+                                    if re.match(_atomId, realAtomId):
+                                        _atomIdSelect.add(realAtomId)
+
+            self.factor['atom_id'] = list(_atomIdSelect)
+
+            _atomSelection = []
+
+            try:
+
+                for chainId in self.factor['chain_id']:
+                    for seqId in self.factor['seq_id']:
+                        for atomId in self.factor['atom_id']:
+                            _atom =\
+                                self.__cR.getDictListWithFilter('atom_site',
+                                                                [{'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                                 ],
+                                                                [{'name': 'auth_asym_id', 'type': 'str', 'value': chainId},
+                                                                 {'name': 'auth_seq_id', 'type': 'int', 'value': seqId},
+                                                                 {'name': 'label_atom_id', 'type': 'str', 'value': atomId},
+                                                                 {'name': self.__modelNumName, 'type': 'int',
+                                                                  'value': self.__representativeModelId}
+                                                                 ])
+
+                            if len(_atom) != 1:
+                                continue
+
+                            _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': _atom[0]['comp_id'], 'atom_id': atomId})
+
+            except Exception as e:
+                if self.__verbose:
+                    self.__lfh.write(f"+XplorMRParserListener.exitFactor() ++ Error  - {str(e)}\n")
+
+            atomSelection = []
+            for atom in _atomSelection:
+                if atom not in atomSelection:
+                    atomSelection.append(atom)
+
+            self.factor['atom_selection'] = atomSelection
+
+            if len(self.factor['atom_selection']) == 0:
+                self.warningMessage += "[Invalid data] The 'atom' clause has no effect.\n"
+            else:
+                if 'chain_id' in self.factor:
+                    del self.factor['chain_id']
+                if 'seq_id' in self.factor:
+                    del self.factor['seq_id']
+                if 'atom_id' in self.factor:
+                    del self.factor['atom_id']
+
         elif ctx.Attribute():
             absolute = bool(ctx.Abs())
             attr_name = ctx.Simple_name(0)
@@ -845,7 +1399,10 @@ class XplorMRParserListener(ParseTreeListener):
         elif ctx.ByRes():
             pass
         elif ctx.Chemical():
-            pass
+            if ctx.Colon():  # range expression
+                pass
+            else:
+                pass
         elif ctx.Hydrogen():
             pass
         elif ctx.Id():
@@ -853,8 +1410,10 @@ class XplorMRParserListener(ParseTreeListener):
         elif ctx.Known():
             pass
         elif ctx.Name():
-            self.factor['atom_id'] = str(ctx.Simple_name(0))
-            print(f"name={ctx.Simple_name(0)}")
+            if ctx.Colon():  # range expression
+                pass
+            else:
+                self.factor['atom_id'] = [str(ctx.Simple_name(0))]
         elif ctx.Not_op():
             pass
         elif ctx.Point():
@@ -866,14 +1425,19 @@ class XplorMRParserListener(ParseTreeListener):
         elif ctx.Pseudo():
             pass
         elif ctx.Residue():
-            self.factor['seq_id'] = int(str(ctx.Integer(0)))
-            print(f"resid={ctx.Integer(0)}")
+            if ctx.Colon():  # range expression
+                pass
+            else:
+                self.factor['seq_id'] = [int(str(ctx.Integer(0)))]
         elif ctx.Resname():
-            pass
+            if ctx.Colon():
+                pass
+            else:
+                pass
         elif ctx.Saround():
             pass
         elif ctx.SegIdentifier():
-            if ctx.Colon():
+            if ctx.Colon():  # range expression
                 if ctx.Simple_name(0):
                     begChainId = str(ctx.Simple_name(0))
                 elif ctx.Double_quote_string(0):
@@ -882,7 +1446,7 @@ class XplorMRParserListener(ParseTreeListener):
                     endChainId = str(ctx.Simple_name(1))
                 elif ctx.Double_quote_string(1):
                     endChainId = str(ctx.Simple_name(1)).strip('"').strip()
-                self.factor['chain_id'] = [ps['chain_id'] for ps in self.polySeq
+                self.factor['chain_id'] = [ps['chain_id'] for ps in self.__polySeq
                                            if begChainId <= ps['chain_id'] <= endChainId]
                 if len(self.factor['chain_id']) == 0:
                     self.warningMessage += f"[Invalid data] Couldn't specify segment name {begChainId:!r}:{endChainId:!r} in the coordinates.\n"
@@ -892,7 +1456,7 @@ class XplorMRParserListener(ParseTreeListener):
                         chainId = str(ctx.Simple_name(0))
                     elif ctx.Double_quote_string(0):
                         chainId = str(ctx.Simple_name(0)).strip('"').strip()
-                    self.factor['chain_id'] = [ps['chain_id'] for ps in self.polySeq
+                    self.factor['chain_id'] = [ps['chain_id'] for ps in self.__polySeq
                                                if ps['chain_id'] == chainId]
                 if ctx.Simple_names(0):
                     chainId = str(ctx.Simple_names(0))
@@ -901,16 +1465,15 @@ class XplorMRParserListener(ParseTreeListener):
                     elif '%' in chainId:  # a single character
                         _chainId = chainId.replace('%', '.')
                     elif '#' in chainId:  # any number
-                        _chainId = chainId.replace('#', '[+-]?[0-9][0-9\\.]+')
+                        _chainId = chainId.replace('#', '[+-]?[0-9][0-9\\.]?')
                     elif '+' in chainId:  # any digit
                         _chainId = chainId.replace('+', '[0-9]+')
                     if _chainId is not None:
-                        self.factor['chain_id'] = [ps['chain_id'] for ps in self.polySeq
+                        self.factor['chain_id'] = [ps['chain_id'] for ps in self.__polySeq
                                                    if re.match(_chainId, ps['chain_id'])]
                 if len(self.factor['chain_id']) == 0:
-                    self.warningMessage += f"[Invalid data] Couldn't specify segment name '{chainId}' in the coordinates.\n"
-                    print(self.warningMessage)
-            print(f"seqid={self.factor['chain_id']}")
+                    self.warningMessage += "[Invalid data] Couldn't specify segment name "\
+                        f"'{chainId}' in the coordinates.\n"  # do not use 'chainId!r' expression, '%' code throws ValueError
         elif ctx.Store_1():
             pass
         elif ctx.Store_2():
@@ -930,6 +1493,8 @@ class XplorMRParserListener(ParseTreeListener):
         elif ctx.Store_8():
             pass
         elif ctx.Store_9():
+            pass
+        elif ctx.Tag():
             pass
 
         if ctx.selection_expression() is not None:
@@ -1008,28 +1573,28 @@ class XplorMRParserListener(ParseTreeListener):
         if self.hbondStatements == 0 and self.hbondRestraints > 0:
             self.hbondStatements = 1
 
-        content_subtype = {'dist_restraint': self.distStatements,
-                           'dihed_restraint': self.dihedStatements,
-                           'rdc_restraint': self.rdcStatements,
-                           'plane_restraint': self.planeStatements,
-                           'adist_restraint': self.adistStatements,
-                           'jcoup_restraint': self.jcoupStatements,
-                           'hvycs_restraint': self.hvycsStatements,
-                           'procs_restraint': self.procsStatements,
-                           'rama_restraint': self.ramaStatements,
-                           'radi_restraint': self.radiStatements,
-                           'diff_restraint': self.diffStatements,
-                           'nbase_restraint': self.nbaseStatements,
-                           'csa_restraint': self.csaStatements,
-                           'ang_restraint': self.angStatements,
-                           'pre_restraint': self.preStatements,
-                           'pcs_restraint': self.pcsStatements,
-                           'prdc_restraint': self.prdcStatements,
-                           'pang_restraint': self.pangStatements,
-                           'pccr_restraint': self.pccrStatements,
-                           'hbond_restraint': self.hbondStatements
-                           }
+        contetSubtype = {'dist_restraint': self.distStatements,
+                         'dihed_restraint': self.dihedStatements,
+                         'rdc_restraint': self.rdcStatements,
+                         'plane_restraint': self.planeStatements,
+                         'adist_restraint': self.adistStatements,
+                         'jcoup_restraint': self.jcoupStatements,
+                         'hvycs_restraint': self.hvycsStatements,
+                         'procs_restraint': self.procsStatements,
+                         'rama_restraint': self.ramaStatements,
+                         'radi_restraint': self.radiStatements,
+                         'diff_restraint': self.diffStatements,
+                         'nbase_restraint': self.nbaseStatements,
+                         'csa_restraint': self.csaStatements,
+                         'ang_restraint': self.angStatements,
+                         'pre_restraint': self.preStatements,
+                         'pcs_restraint': self.pcsStatements,
+                         'prdc_restraint': self.prdcStatements,
+                         'pang_restraint': self.pangStatements,
+                         'pccr_restraint': self.pccrStatements,
+                         'hbond_restraint': self.hbondStatements
+                         }
 
-        return {k: v for k, v in content_subtype.items() if v > 0}
+        return {k: v for k, v in contetSubtype.items() if v > 0}
 
 # del XplorMRParser

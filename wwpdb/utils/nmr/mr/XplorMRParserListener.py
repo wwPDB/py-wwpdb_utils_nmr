@@ -17,6 +17,7 @@ from wwpdb.utils.nmr.mr.XplorMRParser import XplorMRParser
 from wwpdb.utils.config.ConfigInfo import getSiteId
 from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommon
 from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
+from rmsd.calculate_rmsd import (int_atom, ELEMENT_WEIGHTS)  # noqa: F401 pylint: disable=no-name-in-module, import-error
 
 
 def to_np_array(atom):
@@ -1044,152 +1045,153 @@ class XplorMRParserListener(ParseTreeListener):
 
         print(self.factor)
 
-    def consumeFactor_expressions(self):
-        """ Consume factor expressions to atom selection if possible.
+    def consumeFactor_expressions(self, clauseName='atom selection expression'):
+        """ Consume factor expressions as atom selection if possible.
         """
 
-        if 'atom_selection' not in self.factor:
+        if 'atom_selection' in self.factor or len(self.factor) == 0:
+            return
 
-            if 'chain_id' not in self.factor or len(self.factor['chain_id']) == 0:
-                self.factor['chain_id'] = [ps['chain_id'] for ps in self.__polySeq]
+        if 'chain_id' not in self.factor or len(self.factor['chain_id']) == 0:
+            self.factor['chain_id'] = [ps['chain_id'] for ps in self.__polySeq]
 
-            if 'seq_id' not in self.factor and 'seq_ids' not in self.factor:
-                if 'comp_ids' in self.factor and len(self.factor['comp_ids']) > 0\
-                   and ('comp_id' not in self.factor or len(self.factor['comp_id']) == 0):
-                    lenCompIds = len(self.factor['comp_ids'])
-                    _compIdSelect = set()
-                    for chainId in self.factor['chain_id']:
-                        ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chainId), None)
-                        if ps is not None:
-                            for realSeqId in ps['seq_id']:
-                                realCompId = ps['comp_id'][ps['seq_id'].index(realSeqId)]
-                                if (lenCompIds == 1 and re.match(self.factor['comp_ids'][0], realCompId))\
-                                   or (lenCompIds == 2 and self.factor['comp_ids'][0] <= realCompId <= self.factor['comp_ids'][1]):
-                                    _compIdSelect.add(realCompId)
-                    self.factor['comp_id'] = list(_compIdSelect)
-                    del self.factor['comp_ids']
-
-            if 'seq_ids' in self.factor and len(self.factor['seq_ids']) > 0\
-               and ('seq_id' not in self.factor or len(self.factor['seq_id']) == 0):
-                seqIds = []
-                for chainId in self.factor['chain_id']:
-                    ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chainId), None)
-                    if ps is not None:
-                        for realSeqId in ps['seq_id']:
-                            if 'comp_id' in self.factor and len(self.factor['comp_id']) > 0:
-                                realCompId = ps['comp_id'][ps['seq_id'].index(realSeqId)]
-                                if realCompId not in self.factor['comp_id']:
-                                    continue
-                            seqId = self.factor['seq_ids'][0]
-                            _seqId = to_re_exp(seqId)
-                            if re.match(_seqId, str(realSeqId)):
-                                seqIds.append(realSeqId)
-                self.factor['seq_id'] = list(set(seqIds))
-                del self.factor['seq_ids']
-
-            if 'seq_id' not in self.factor or len(self.factor['seq_id']) == 0:
-                seqIds = []
-                for chainId in self.factor['chain_id']:
-                    ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chainId), None)
-                    if ps is not None:
-                        for realSeqId in ps['seq_id']:
-                            if 'comp_id' in self.factor and len(self.factor['comp_id']) > 0:
-                                realCompId = ps['comp_id'][ps['seq_id'].index(realSeqId)]
-                                if realCompId not in self.factor['comp_id']:
-                                    continue
-                            seqIds.append(realSeqId)
-                self.factor['seq_id'] = list(set(seqIds))
-
-            if 'atom_ids' in self.factor and len(self.factor['atom_ids']) > 0\
-               and ('atom_id' not in self.factor or len(self.factor['atom_id']) == 0):
-                lenAtomIds = len(self.factor['atom_ids'])
+        if 'seq_id' not in self.factor and 'seq_ids' not in self.factor:
+            if 'comp_ids' in self.factor and len(self.factor['comp_ids']) > 0\
+               and ('comp_id' not in self.factor or len(self.factor['comp_id']) == 0):
+                lenCompIds = len(self.factor['comp_ids'])
                 _compIdSelect = set()
                 for chainId in self.factor['chain_id']:
                     ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chainId), None)
                     if ps is not None:
                         for realSeqId in ps['seq_id']:
                             realCompId = ps['comp_id'][ps['seq_id'].index(realSeqId)]
-                            if 'comp_id' in self.factor and len(self.factor['comp_id']) > 0:
-                                if realCompId not in self.factor['comp_id']:
-                                    continue
-                            _compIdSelect.add(realCompId)
+                            if (lenCompIds == 1 and re.match(self.factor['comp_ids'][0], realCompId))\
+                               or (lenCompIds == 2 and self.factor['comp_ids'][0] <= realCompId <= self.factor['comp_ids'][1]):
+                                _compIdSelect.add(realCompId)
+                self.factor['comp_id'] = list(_compIdSelect)
+                del self.factor['comp_ids']
 
-                _atomIdSelect = set()
-                for compId in _compIdSelect:
-                    if self.__updateChemCompDict(compId):
-                        for cca in self.__lastChemCompAtoms:
-                            realAtomId = cca[self.__ccaAtomId]
-                            if (lenAtomIds == 1 and re.match(self.factor['atom_ids'][0], realAtomId))\
-                               or (lenAtomIds == 2 and self.factor['atom_ids'][0] <= realAtomId <= self.factor['atom_ids'][1]):
-                                _atomIdSelect.add(realAtomId)
-                self.factor['atom_id'] = list(_atomIdSelect)
-                del self.factor['atom_ids']
-
-            if 'atom_id' not in self.factor or len(self.factor['atom_id']) == 0:
-                _compIdSelect = set()
-                for chainId in self.factor['chain_id']:
-                    ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chainId), None)
-                    if ps is not None:
-                        for realSeqId in ps['seq_id']:
+        if 'seq_ids' in self.factor and len(self.factor['seq_ids']) > 0\
+           and ('seq_id' not in self.factor or len(self.factor['seq_id']) == 0):
+            seqIds = []
+            for chainId in self.factor['chain_id']:
+                ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chainId), None)
+                if ps is not None:
+                    for realSeqId in ps['seq_id']:
+                        if 'comp_id' in self.factor and len(self.factor['comp_id']) > 0:
                             realCompId = ps['comp_id'][ps['seq_id'].index(realSeqId)]
-                            if 'comp_id' in self.factor and len(self.factor['comp_id']) > 0:
-                                if realCompId not in self.factor['comp_id']:
-                                    continue
-                            _compIdSelect.add(realCompId)
-
-                _atomIdSelect = set()
-                for compId in _compIdSelect:
-                    if self.__updateChemCompDict(compId):
-                        for cca in self.__lastChemCompAtoms:
-                            realAtomId = cca[self.__ccaAtomId]
-                            _atomIdSelect.add(realAtomId)
-                self.factor['atom_id'] = list(_atomIdSelect)
-
-            _atomSelection = []
-
-            try:
-
-                for chainId in self.factor['chain_id']:
-                    for seqId in self.factor['seq_id']:
-                        for atomId in self.factor['atom_id']:
-                            _atom =\
-                                self.__cR.getDictListWithFilter('atom_site',
-                                                                [{'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                                 ],
-                                                                [{'name': 'auth_asym_id', 'type': 'str', 'value': chainId},
-                                                                 {'name': 'auth_seq_id', 'type': 'int', 'value': seqId},
-                                                                 {'name': 'label_atom_id', 'type': 'str', 'value': atomId},
-                                                                 {'name': self.__modelNumName, 'type': 'int',
-                                                                  'value': self.__representativeModelId}
-                                                                 ])
-
-                            if len(_atom) != 1:
+                            if realCompId not in self.factor['comp_id']:
                                 continue
+                        seqId = self.factor['seq_ids'][0]
+                        _seqId = to_re_exp(seqId)
+                        if re.match(_seqId, str(realSeqId)):
+                            seqIds.append(realSeqId)
+            self.factor['seq_id'] = list(set(seqIds))
+            del self.factor['seq_ids']
 
-                            _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': _atom[0]['comp_id'], 'atom_id': atomId})
+        if 'seq_id' not in self.factor or len(self.factor['seq_id']) == 0:
+            seqIds = []
+            for chainId in self.factor['chain_id']:
+                ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chainId), None)
+                if ps is not None:
+                    for realSeqId in ps['seq_id']:
+                        if 'comp_id' in self.factor and len(self.factor['comp_id']) > 0:
+                            realCompId = ps['comp_id'][ps['seq_id'].index(realSeqId)]
+                            if realCompId not in self.factor['comp_id']:
+                                continue
+                        seqIds.append(realSeqId)
+            self.factor['seq_id'] = list(set(seqIds))
 
-            except Exception as e:
-                if self.__verbose:
-                    self.__lfh.write(f"+XplorMRParserListener.consumeFactor_expressions() ++ Error  - {str(e)}\n")
+        if 'atom_ids' in self.factor and len(self.factor['atom_ids']) > 0\
+           and ('atom_id' not in self.factor or len(self.factor['atom_id']) == 0):
+            lenAtomIds = len(self.factor['atom_ids'])
+            _compIdSelect = set()
+            for chainId in self.factor['chain_id']:
+                ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chainId), None)
+                if ps is not None:
+                    for realSeqId in ps['seq_id']:
+                        realCompId = ps['comp_id'][ps['seq_id'].index(realSeqId)]
+                        if 'comp_id' in self.factor and len(self.factor['comp_id']) > 0:
+                            if realCompId not in self.factor['comp_id']:
+                                continue
+                        _compIdSelect.add(realCompId)
 
-            atomSelection = []
-            for atom in _atomSelection:
-                if atom not in atomSelection:
-                    atomSelection.append(atom)
+            _atomIdSelect = set()
+            for compId in _compIdSelect:
+                if self.__updateChemCompDict(compId):
+                    for cca in self.__lastChemCompAtoms:
+                        realAtomId = cca[self.__ccaAtomId]
+                        if (lenAtomIds == 1 and re.match(self.factor['atom_ids'][0], realAtomId))\
+                           or (lenAtomIds == 2 and self.factor['atom_ids'][0] <= realAtomId <= self.factor['atom_ids'][1]):
+                            _atomIdSelect.add(realAtomId)
+            self.factor['atom_id'] = list(_atomIdSelect)
+            del self.factor['atom_ids']
 
-            self.factor['atom_selection'] = atomSelection
+        if 'atom_id' not in self.factor or len(self.factor['atom_id']) == 0:
+            _compIdSelect = set()
+            for chainId in self.factor['chain_id']:
+                ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chainId), None)
+                if ps is not None:
+                    for realSeqId in ps['seq_id']:
+                        realCompId = ps['comp_id'][ps['seq_id'].index(realSeqId)]
+                        if 'comp_id' in self.factor and len(self.factor['comp_id']) > 0:
+                            if realCompId not in self.factor['comp_id']:
+                                continue
+                        _compIdSelect.add(realCompId)
 
-            if len(self.factor['atom_selection']) == 0:
-                self.warningMessage += "[Invalid data] The atom selection expression has no effect.\n"
-            else:
-                if 'chain_id' in self.factor:
-                    del self.factor['chain_id']
-                if 'comp_id' in self.factor:
-                    del self.factor['comp_id']
-                if 'seq_id' in self.factor:
-                    del self.factor['seq_id']
-                if 'atom_id' in self.factor:
-                    del self.factor['atom_id']
+            _atomIdSelect = set()
+            for compId in _compIdSelect:
+                if self.__updateChemCompDict(compId):
+                    for cca in self.__lastChemCompAtoms:
+                        realAtomId = cca[self.__ccaAtomId]
+                        _atomIdSelect.add(realAtomId)
+            self.factor['atom_id'] = list(_atomIdSelect)
+
+        _atomSelection = []
+
+        try:
+
+            for chainId in self.factor['chain_id']:
+                for seqId in self.factor['seq_id']:
+                    for atomId in self.factor['atom_id']:
+                        _atom =\
+                            self.__cR.getDictListWithFilter('atom_site',
+                                                            [{'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                             ],
+                                                            [{'name': 'auth_asym_id', 'type': 'str', 'value': chainId},
+                                                             {'name': 'auth_seq_id', 'type': 'int', 'value': seqId},
+                                                             {'name': 'label_atom_id', 'type': 'str', 'value': atomId},
+                                                             {'name': self.__modelNumName, 'type': 'int',
+                                                              'value': self.__representativeModelId}
+                                                             ])
+
+                        if len(_atom) != 1:
+                            continue
+
+                        _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': _atom[0]['comp_id'], 'atom_id': atomId})
+
+        except Exception as e:
+            if self.__verbose:
+                self.__lfh.write(f"+XplorMRParserListener.consumeFactor_expressions() ++ Error  - {str(e)}\n")
+
+        atomSelection = []
+        for atom in _atomSelection:
+            if atom not in atomSelection:
+                atomSelection.append(atom)
+
+        self.factor['atom_selection'] = atomSelection
+
+        if len(self.factor['atom_selection']) == 0:
+            self.warningMessage += f"[Invalid data] The {clauseName} has no effect.\n"
+
+        if 'chain_id' in self.factor:
+            del self.factor['chain_id']
+        if 'comp_id' in self.factor:
+            del self.factor['comp_id']
+        if 'seq_id' in self.factor:
+            del self.factor['seq_id']
+        if 'atom_id' in self.factor:
+            del self.factor['atom_id']
 
     # Enter a parse tree produced by XplorMRParser#factor.
     def enterFactor(self, ctx: XplorMRParser.FactorContext):
@@ -1263,7 +1265,7 @@ class XplorMRParserListener(ParseTreeListener):
             around = float(str(ctx.Real()))
             _atomSelection = []
 
-            self.consumeFactor_expressions()
+            self.consumeFactor_expressions("atom selection expression before the 'around' clause")
 
             if 'atom_selection' in self.factor:
 
@@ -1327,15 +1329,16 @@ class XplorMRParserListener(ParseTreeListener):
                         if self.__verbose:
                             self.__lfh.write(f"+XplorMRParserListener.exitFactor() ++ Error  - {str(e)}\n")
 
-            atomSelection = []
-            for atom in _atomSelection:
-                if atom not in atomSelection:
-                    atomSelection.append(atom)
+                if len(self.factor['atom_selection']) > 0:
+                    atomSelection = []
+                    for atom in _atomSelection:
+                        if atom not in atomSelection:
+                            atomSelection.append(atom)
 
-            self.factor['atom_selection'] = atomSelection
+                    self.factor['atom_selection'] = atomSelection
 
-            if len(self.factor['atom_selection']) == 0:
-                self.warningMessage += "[Invalid data] The 'around' clause has no effect.\n"
+                    if len(self.factor['atom_selection']) == 0:
+                        self.warningMessage += "[Invalid data] The 'around' clause has no effect.\n"
 
         elif ctx.Atom():
             simpleNameIndex = simpleNamesIndex = 0  # these indices are necessary to deal with mixing case of 'Simple_name' and 'Simple_names'
@@ -1404,57 +1407,211 @@ class XplorMRParserListener(ParseTreeListener):
 
             self.factor['atom_id'] = list(_atomIdSelect)
 
-            _atomSelection = []
-
-            try:
-
-                for chainId in self.factor['chain_id']:
-                    for seqId in self.factor['seq_id']:
-                        for atomId in self.factor['atom_id']:
-                            _atom =\
-                                self.__cR.getDictListWithFilter('atom_site',
-                                                                [{'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                                 ],
-                                                                [{'name': 'auth_asym_id', 'type': 'str', 'value': chainId},
-                                                                 {'name': 'auth_seq_id', 'type': 'int', 'value': seqId},
-                                                                 {'name': 'label_atom_id', 'type': 'str', 'value': atomId},
-                                                                 {'name': self.__modelNumName, 'type': 'int',
-                                                                  'value': self.__representativeModelId}
-                                                                 ])
-
-                            if len(_atom) != 1:
-                                continue
-
-                            _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': _atom[0]['comp_id'], 'atom_id': atomId})
-
-            except Exception as e:
-                if self.__verbose:
-                    self.__lfh.write(f"+XplorMRParserListener.exitFactor() ++ Error  - {str(e)}\n")
-
-            atomSelection = []
-            for atom in _atomSelection:
-                if atom not in atomSelection:
-                    atomSelection.append(atom)
-
-            self.factor['atom_selection'] = atomSelection
-
-            if len(self.factor['atom_selection']) == 0:
-                self.warningMessage += "[Invalid data] The 'atom' clause has no effect.\n"
-            else:
-                if 'chain_id' in self.factor:
-                    del self.factor['chain_id']
-                if 'comp_id' in self.factor:
-                    del self.factor['comp_id']
-                if 'seq_id' in self.factor:
-                    del self.factor['seq_id']
-                if 'atom_id' in self.factor:
-                    del self.factor['atom_id']
+            self.consumeFactor_expressions("'atom' clause")
 
         elif ctx.Attribute():
             absolute = bool(ctx.Abs())
-            attr_name = ctx.Simple_name(0)
-            operator = ctx.Comparison_ops()
-            attr_value = ctx.Real()
+            _attr_prop = str(ctx.Simple_name(0))
+            attr_prop = _attr_prop.lower()
+            opCode = str(ctx.Comparison_ops())
+            attr_value = float(str(ctx.Real()))
+
+            validProp = True
+
+            if attr_prop == 'b':
+                valueType = {'name': 'B_iso_or_equiv'}
+                if opCode == '=':
+                    valueType['type'] = 'float' if not absolute else 'abs-float'
+                    valueType['value'] = attr_value
+                elif opCode == '<':
+                    valueType['type'] = 'range-float' if not absolute else 'range-abs-float'
+                    valueType['range'] = {'max_exclusive': attr_value}
+                elif opCode == '>':
+                    valueType['type'] = 'range-float' if not absolute else 'range-abs-float'
+                    valueType['range'] = {'min_exclusive': attr_value}
+                elif opCode == '<=':
+                    valueType['type'] = 'range-float' if not absolute else 'range-abs-float'
+                    valueType['range'] = {'max_inclusive': attr_value}
+                elif opCode == '>=':
+                    valueType['type'] = 'range-float' if not absolute else 'range-abs-float'
+                    valueType['range'] = {'min_inclusive': attr_value}
+                elif opCode == '#':
+                    valueType['type'] = 'range-float' if not absolute else 'range-abs-float'
+                    valueType['range'] = {'not_equal_to': attr_value}
+                self.factor['atom_selection'] =\
+                    self.__cR.getDictListWithFilter('atom_site',
+                                                    [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                     {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                                     {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                     {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
+                                                     ],
+                                                    [valueType,
+                                                     {'name': self.__modelNumName, 'type': 'int',
+                                                      'value': self.__representativeModelId}
+                                                     ])
+
+            elif attr_prop.startswith('bcom')\
+                    or attr_prop.startswith('qcom')\
+                    or attr_prop.startswith('xcom')\
+                    or attr_prop.startswith('ycom')\
+                    or attr_prop.startswith('zcom'):  # BCOMP, QCOMP, XCOMP, YCOMP, ZCOM`
+                self.warningMessage += f"[Unavailable resource] The attribute property {_attr_prop!r} "\
+                    "requires a comparison coordinate set.\n"
+                validProp = False
+
+            elif attr_prop.startswith('char'):  # CAHRGE
+                valueType = {'name': 'pdbx_formal_charge'}
+                if opCode == '=':
+                    valueType['type'] = 'int' if not absolute else 'abs-int'
+                    valueType['value'] = attr_value
+                elif opCode == '<':
+                    valueType['type'] = 'range-int' if not absolute else 'range-abs-int'
+                    valueType['range'] = {'max_exclusive': attr_value}
+                elif opCode == '>':
+                    valueType['type'] = 'range-int' if not absolute else 'range-abs-int'
+                    valueType['range'] = {'min_exclusive': attr_value}
+                elif opCode == '<=':
+                    valueType['type'] = 'range-int' if not absolute else 'range-abs-int'
+                    valueType['range'] = {'max_inclusive': attr_value}
+                elif opCode == '>=':
+                    valueType['type'] = 'range-int' if not absolute else 'range-abs-int'
+                    valueType['range'] = {'min_inclusive': attr_value}
+                elif opCode == '#':
+                    valueType['type'] = 'range-int' if not absolute else 'range-abs-int'
+                    valueType['range'] = {'not_equal_to': attr_value}
+                self.factor['atom_selection'] =\
+                    self.__cR.getDictListWithFilter('atom_site',
+                                                    [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                     {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                                     {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                     {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
+                                                     ],
+                                                    [valueType,
+                                                     {'name': self.__modelNumName, 'type': 'int',
+                                                      'value': self.__representativeModelId}
+                                                     ])
+
+            elif attr_prop in ('dx', 'dy', 'dz', 'harm'):
+                self.warningMessage += f"[Unavailable resource] The attribute property {_attr_prop!r} "\
+                    "related to atomic force of each atom is not possessed by the static coordinate file.\n"
+                validProp = False
+
+            elif attr_prop.startswith('fbet'):  # FBETA
+                self.warningMessage += f"[Unavailable resource] The attribute property {_attr_prop!r} "\
+                    "related to the Langevin dynamics (nonzero friction coefficient) is not possessed by the static coordinate file.\n"
+                validProp = False
+
+            elif attr_prop == 'mass':
+                _typeSymbol = set()
+                atomTypes = self.__cR.getDictList('atom_type')
+                if len(atomTypes) > 0 and 'symbol' in atomTypes[0]:
+                    for atomType in atomTypes:
+                        typeSymbol = atomType['symbol']
+                        atomicNumber = int_atom(typeSymbol.capitalize())
+                        atomicWeight = ELEMENT_WEIGHTS[atomicNumber]
+
+                        if (opCode == '=' and atomicWeight == attr_value)\
+                           or (opCode == '<' and atomicWeight < attr_value)\
+                           or (opCode == '>' and atomicWeight > attr_value)\
+                           or (opCode == '<=' and atomicWeight <= attr_value)\
+                           or (opCode == '>=' and atomicWeight >= attr_value)\
+                           or (opCode == '#' and atomicWeight != attr_value):
+                            _typeSymbol.add(typeSymbol)
+
+                self.factor['atom_selection'] =\
+                    self.__cR.getDictListWithFilter('atom_site',
+                                                    [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                     {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                                     {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                     {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
+                                                     ],
+                                                    [{'name': 'type_symbol', 'type': 'enum', 'enum': _typeSymbol},
+                                                     {'name': self.__modelNumName, 'type': 'int',
+                                                      'value': self.__representativeModelId}
+                                                     ])
+
+            elif attr_prop == 'q':
+                valueType = {'name': 'occupancy'}
+                if opCode == '=':
+                    valueType['type'] = 'float' if not absolute else 'abs-float'
+                    valueType['value'] = attr_value
+                elif opCode == '<':
+                    valueType['type'] = 'range-float' if not absolute else 'range-abs-float'
+                    valueType['range'] = {'max_exclusive': attr_value}
+                elif opCode == '>':
+                    valueType['type'] = 'range-float' if not absolute else 'range-abs-float'
+                    valueType['range'] = {'min_exclusive': attr_value}
+                elif opCode == '<=':
+                    valueType['type'] = 'range-float' if not absolute else 'range-abs-float'
+                    valueType['range'] = {'max_inclusive': attr_value}
+                elif opCode == '>=':
+                    valueType['type'] = 'range-float' if not absolute else 'range-abs-float'
+                    valueType['range'] = {'min_inclusive': attr_value}
+                elif opCode == '#':
+                    valueType['type'] = 'range-float' if not absolute else 'range-abs-float'
+                    valueType['range'] = {'not_equal_to': attr_value}
+                self.factor['atom_selection'] =\
+                    self.__cR.getDictListWithFilter('atom_site',
+                                                    [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                     {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                                     {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                     {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
+                                                     ],
+                                                    [valueType,
+                                                     {'name': self.__modelNumName, 'type': 'int',
+                                                      'value': self.__representativeModelId}
+                                                     ])
+
+            elif attr_prop in ('refx', 'refy', 'refz', 'rmsd'):
+                self.warningMessage += f"[Unavailable resource] The attribute property {_attr_prop!r} "\
+                    "requires a reference coordinate set.\n"
+                validProp = False
+
+            elif attr_prop == ('vx', 'vy', 'vz'):
+                self.warningMessage += f"[Unavailable resource] The attribute property {_attr_prop!r} "\
+                    "related to current velocities of each atom is not possessed by the static coordinate file.\n"
+                validProp = False
+
+            elif attr_prop in ('x', 'y', 'z'):
+                valueType = {'name': f"Cartn_{attr_prop}"}
+                if opCode == '=':
+                    valueType['type'] = 'float' if not absolute else 'abs-float'
+                    valueType['value'] = attr_value
+                elif opCode == '<':
+                    valueType['type'] = 'range-float' if not absolute else 'range-abs-float'
+                    valueType['range'] = {'max_exclusive': attr_value}
+                elif opCode == '>':
+                    valueType['type'] = 'range-float' if not absolute else 'range-abs-float'
+                    valueType['range'] = {'min_exclusive': attr_value}
+                elif opCode == '<=':
+                    valueType['type'] = 'range-float' if not absolute else 'range-abs-float'
+                    valueType['range'] = {'max_inclusive': attr_value}
+                elif opCode == '>=':
+                    valueType['type'] = 'range-float' if not absolute else 'range-abs-float'
+                    valueType['range'] = {'min_inclusive': attr_value}
+                elif opCode == '#':
+                    valueType['type'] = 'range-float' if not absolute else 'range-abs-float'
+                    valueType['range'] = {'not_equal_to': attr_value}
+                print(valueType)
+                self.factor['atom_selection'] =\
+                    self.__cR.getDictListWithFilter('atom_site',
+                                                    [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                     {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                                     {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                     {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
+                                                     ],
+                                                    [valueType,
+                                                     {'name': self.__modelNumName, 'type': 'int',
+                                                      'value': self.__representativeModelId}
+                                                     ])
+
+            else:
+                self.warningMessage += f"[Syntax error] The attribute property {_attr_prop!r} is unknown.\n"
+                validProp = False
+
+            if validProp and len(self.factor['atom_selection']) == 0:
+                _absolute = ' abs ' if absolute else ''
+                self.warningMessage += f"[Invalid data] The 'attribute' clause ('{_attr_prop}{_absolute} {opCode} {attr_value}') has no effect.\n"
 
         elif ctx.BondedTo():
             pass

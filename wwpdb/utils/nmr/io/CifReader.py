@@ -19,6 +19,7 @@
 # 20-Nov-2020   my  - additional support for insertion code in getPolymerSequence() (DAOTHER-6128)
 # 29-Jun-2021   my  - add 'auth_chain_id', 'identical_auth_chain_id' in results of getPolymerSequence() if possible (DAOTHER-7108)
 # 14-Jan-2022   my  - precise RMSD calculation with domain and medoid model identification (DAOTHER-4060, 7544)
+# 02-Feb-2022   my  - add 'abs-int', 'abs-float', 'range-int', 'range-abs-int', 'range-abs-float' as filter item types and 'not_equal_to' range filter (NMR restraint remediation)
 ##
 """ A collection of classes for parsing CIF files.
 """
@@ -165,7 +166,10 @@ class CifReader:
         self.trueValue = ('true', 't', 'yes', 'y', '1')
 
         # allowed item types
-        self.itemTypes = ('str', 'bool', 'int', 'float', 'range-float', 'enum')
+        self.itemTypes = ('str', 'bool',
+                          'int', 'range-int', 'abs-int', 'range-abs-int',
+                          'float', 'range-float', 'abs-float', 'range-abs-float',
+                          'enum')
 
         # random rotation test for detection of non-superimposed models (DAOTHER-4060)
         self.__random_rotaion_test = False
@@ -1006,14 +1010,19 @@ class CifReader:
                                 val = val.lower() in self.trueValue
                             elif filterItemType == 'int':
                                 val = int(val)
-                            else:
+                            elif filterItemType == 'float':
                                 val = float(val)
-                            if filterItemType == 'range-float':
+                            elif filterItemType in ('abs-int', 'range-abs-int'):
+                                val = abs(int(val))
+                            else:  # 'range-float', 'range-abs-float'
+                                val = abs(float(val))
+                            if filterItemType in ('range-int', 'range-abs-int', 'range-float', 'range-abs-float'):
                                 _range = filterItem['range']
                                 if ('min_exclusive' in _range and val <= _range['min_exclusive'])\
                                    or ('min_inclusive' in _range and val < _range['min_inclusive'])\
                                    or ('max_inclusive' in _range and val > _range['max_inclusive'])\
-                                   or ('max_exclusive' in _range and val >= _range['max_exclusive']):
+                                   or ('max_exclusive' in _range and val >= _range['max_exclusive'])\
+                                   or ('not_equal_to' in _range and val == _range['not_equal_to']):
                                     keep = False
                                     break
                             elif filterItemType == 'enum':

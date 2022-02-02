@@ -1502,7 +1502,7 @@ class XplorMRParserListener(ParseTreeListener):
                 validProp = False
 
             elif attr_prop == 'mass':
-                _typeSymbol = set()
+                _symbolSelect = set()
                 atomTypes = self.__cR.getDictList('atom_type')
                 if len(atomTypes) > 0 and 'symbol' in atomTypes[0]:
                     for atomType in atomTypes:
@@ -1516,7 +1516,7 @@ class XplorMRParserListener(ParseTreeListener):
                            or (opCode == '<=' and atomicWeight <= attr_value)\
                            or (opCode == '>=' and atomicWeight >= attr_value)\
                            or (opCode == '#' and atomicWeight != attr_value):
-                            _typeSymbol.add(typeSymbol)
+                            _symbolSelect.add(typeSymbol)
 
                 self.factor['atom_selection'] =\
                     self.__cR.getDictListWithFilter('atom_site',
@@ -1525,7 +1525,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                      {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
                                                      {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
                                                      ],
-                                                    [{'name': 'type_symbol', 'type': 'enum', 'enum': _typeSymbol},
+                                                    [{'name': 'type_symbol', 'type': 'enum', 'enum': _symbolSelect},
                                                      {'name': self.__modelNumName, 'type': 'int',
                                                       'value': self.__representativeModelId}
                                                      ])
@@ -1592,7 +1592,6 @@ class XplorMRParserListener(ParseTreeListener):
                 elif opCode == '#':
                     valueType['type'] = 'range-float' if not absolute else 'range-abs-float'
                     valueType['range'] = {'not_equal_to': attr_value}
-                print(valueType)
                 self.factor['atom_selection'] =\
                     self.__cR.getDictListWithFilter('atom_site',
                                                     [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
@@ -1614,7 +1613,152 @@ class XplorMRParserListener(ParseTreeListener):
                 self.warningMessage += f"[Invalid data] The 'attribute' clause ('{_attr_prop}{_absolute} {opCode} {attr_value}') has no effect.\n"
 
         elif ctx.BondedTo():
-            pass
+            if 'atom_selection' in self.factor and len(self.factor['atom_selection']) > 0:
+                _atomSelection = []
+
+                for _atom in self.factor['atom_selection']:
+                    chainId = _atom['chain_id']
+                    compId = _atom['comp_id']
+                    seqId = _atom['seq_id']
+                    atomId = _atom['atom_id']
+
+                    # intra
+                    if self.__updateChemCompDict(compId):
+                        leavingAtomIds = [cca[self.__ccaAtomId] for cca in self.__lastChemCompAtoms if cca[self.__ccaLeavingAtomFlag] == 'Y']
+
+                        _atomIdSelect = set()
+                        for ccb in self.__lastChemCompBonds:
+                            if ccb[self.__ccbAtomId1] == atomId:
+                                _atomIdSelect.add(ccb[self.__ccbAtomId2])
+                            elif ccb[self.__ccbAtomId2] == atomId:
+                                _atomIdSelect.add(ccb[self.__ccbAtomId1])
+
+                        hasLeaavindAtomId = False
+
+                        for _atomId in _atomIdSelect:
+
+                            if _atomId in leavingAtomIds:
+                                hasLeaavindAtomId = True
+                                continue
+
+                            _atom =\
+                                self.__cR.getDictListWithFilter('atom_site',
+                                                                [{'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                                 ],
+                                                                [{'name': 'auth_asym_id', 'type': 'str', 'value': chainId},
+                                                                 {'name': 'auth_seq_id', 'type': 'int', 'value': seqId},
+                                                                 {'name': 'label_atom_id', 'type': 'str', 'value': _atomId},
+                                                                 {'name': self.__modelNumName, 'type': 'int',
+                                                                  'value': self.__representativeModelId}
+                                                                 ])
+
+                            if len(_atom) != 1 or _atom[0]['comp_id'] != compId:
+                                continue
+
+                            _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId})
+
+                        # sequential
+                        if hasLeaavindAtomId:
+                            _origin =\
+                                self.__cR.getDictListWithFilter('atom_site',
+                                                                [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                                 {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                                 {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
+                                                                 ],
+                                                                [{'name': 'auth_asym_id', 'type': 'str', 'value': chainId},
+                                                                 {'name': 'auth_seq_id', 'type': 'int', 'value': seqId},
+                                                                 {'name': 'label_atom_id', 'type': 'str', 'value': atomId},
+                                                                 {'name': self.__modelNumName, 'type': 'int',
+                                                                  'value': self.__representativeModelId}
+                                                                 ])
+
+                            if len(_origin) == 1:
+                                origin = to_np_array(_origin[0])
+
+                                ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chainId), None)
+                                if ps is not None:
+                                    for _seqId in [seqId - 1, seqId + 1]:
+                                        if _seqId in ps['seq_id']:
+                                            _compId = ps['comp_id'][ps['seq_id'].index(_seqId)]
+                                            if self.__updateChemCompDict(_compId):
+                                                leavingAtomIds = [cca[self.__ccaAtomId] for cca in self.__lastChemCompAtoms if cca[self.__ccaLeavingAtomFlag] == 'Y']
+
+                                                _atomIdSelect = set()
+                                                for ccb in self.__lastChemCompBonds:
+                                                    if ccb[self.__ccbAtomId1] in leavingAtomIds:
+                                                        _atomId = ccb[self.__ccbAtomId2]
+                                                        if _atomId not in leavingAtomIds:
+                                                            _atomIdSelect.add(_atomId)
+                                                    if ccb[self.__ccbAtomId2] in leavingAtomIds:
+                                                        _atomId = ccb[self.__ccbAtomId1]
+                                                        if _atomId not in leavingAtomIds:
+                                                            _atomIdSelect.add(_atomId)
+
+                                                for _atomId in _atomIdSelect:
+                                                    _neighbor =\
+                                                        self.__cR.getDictListWithFilter('atom_site',
+                                                                                        [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                                                         {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                                                         {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
+                                                                                         ],
+                                                                                        [{'name': 'auth_asym_id', 'type': 'str', 'value': chainId},
+                                                                                         {'name': 'auth_seq_id', 'type': 'int', 'value': _seqId},
+                                                                                         {'name': 'label_atom_id', 'type': 'str', 'value': _atomId},
+                                                                                         {'name': self.__modelNumName, 'type': 'int',
+                                                                                          'value': self.__representativeModelId}
+                                                                                         ])
+
+                                                    if len(_neighbor) != 1:
+                                                        continue
+
+                                                    if np.linalg.norm(to_np_array(_neighbor[0]) - origin) < 2.5:
+                                                        _atomSelection.append({'chain_id': chainId, 'seq_id': _seqId, 'comp_id': _compId, 'atom_id': _atomId})
+
+                    # struct_conn category
+                    _atom = self.__cR.getDictListWithFilter('struct_conn',
+                                                            [{'name': 'ptnr1_auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                             {'name': 'ptnr1_auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                                             {'name': 'ptnr1_label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                             {'name': 'ptnr1_label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
+                                                             ],
+                                                            [{'name': 'ptnr2_auth_asym_id', 'type': 'str', 'value': chainId},
+                                                             {'name': 'ptnr2_auth_seq_id', 'type': 'int', 'value': seqId},
+                                                             {'name': 'ptnr2_label_atom_id', 'type': 'str', 'value': atomId},
+                                                             {'name': self.__modelNumName, 'type': 'int',
+                                                              'value': self.__representativeModelId}
+                                                             ])
+
+                    if len(_atom) == 1:
+                        _atomSelection.append(_atom[0])
+
+                    _atom = self.__cR.getDictListWithFilter('struct_conn',
+                                                            [{'name': 'ptnr2_auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                             {'name': 'ptnr2_auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                                             {'name': 'ptnr2_label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                             {'name': 'ptnr2_label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
+                                                             ],
+                                                            [{'name': 'ptnr1_auth_asym_id', 'type': 'str', 'value': chainId},
+                                                             {'name': 'ptnr1_auth_seq_id', 'type': 'int', 'value': seqId},
+                                                             {'name': 'ptnr1_label_atom_id', 'type': 'str', 'value': atomId},
+                                                             {'name': self.__modelNumName, 'type': 'int',
+                                                              'value': self.__representativeModelId}
+                                                             ])
+
+                    if len(_atom) == 1:
+                        _atomSelection.append(_atom[0])
+
+                atomSelection = []
+                for atom in _atomSelection:
+                    if atom not in atomSelection:
+                        atomSelection.append(atom)
+
+                self.factor['atom_selection'] = atomSelection
+
+                if len(self.factor['atom_selection']) == 0:
+                    self.warningMessage += "[Invalid data] The 'bondedto' clause has no effect.\n"
+
+            else:
+                self.warningMessage += "[Invalid data] The 'bondedto' clause has no effect because no atom is selected.\n"
 
         elif ctx.ByGroup():
             pass

@@ -1040,7 +1040,156 @@ class XplorMRParserListener(ParseTreeListener):
     def exitTerm(self, ctx: XplorMRParser.TermContext):  # pylint: disable=unused-argument
         self.columnFactor[self.depthSelExpr] = -1
 
+        self.consumeFactor_expressions()
+
         print(self.factor)
+
+    def consumeFactor_expressions(self):
+        """ Consume factor expressions to atom selection if possible.
+        """
+
+        if 'atom_selection' not in self.factor:
+
+            if 'chain_id' not in self.factor or len(self.factor['chain_id']) == 0:
+                self.factor['chain_id'] = [ps['chain_id'] for ps in self.__polySeq]
+
+            if 'seq_id' not in self.factor and 'seq_ids' not in self.factor:
+                if 'comp_ids' in self.factor and len(self.factor['comp_ids']) > 0\
+                   and ('comp_id' not in self.factor or len(self.factor['comp_id']) == 0):
+                    lenCompIds = len(self.factor['comp_ids'])
+                    _compIdSelect = set()
+                    for chainId in self.factor['chain_id']:
+                        ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chainId), None)
+                        if ps is not None:
+                            for realSeqId in ps['seq_id']:
+                                realCompId = ps['comp_id'][ps['seq_id'].index(realSeqId)]
+                                if (lenCompIds == 1 and re.match(self.factor['comp_ids'][0], realCompId))\
+                                   or (lenCompIds == 2 and self.factor['comp_ids'][0] <= realCompId <= self.factor['comp_ids'][1]):
+                                    _compIdSelect.add(realCompId)
+                    self.factor['comp_id'] = list(_compIdSelect)
+                    del self.factor['comp_ids']
+
+            if 'seq_ids' in self.factor and len(self.factor['seq_ids']) > 0\
+               and ('seq_id' not in self.factor or len(self.factor['seq_id']) == 0):
+                seqIds = []
+                for chainId in self.factor['chain_id']:
+                    ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chainId), None)
+                    if ps is not None:
+                        for realSeqId in ps['seq_id']:
+                            if 'comp_id' in self.factor and len(self.factor['comp_id']) > 0:
+                                realCompId = ps['comp_id'][ps['seq_id'].index(realSeqId)]
+                                if realCompId not in self.factor['comp_id']:
+                                    continue
+                            seqId = self.factor['seq_ids'][0]
+                            _seqId = to_re_exp(seqId)
+                            if re.match(_seqId, str(realSeqId)):
+                                seqIds.append(realSeqId)
+                self.factor['seq_id'] = list(set(seqIds))
+                del self.factor['seq_ids']
+
+            if 'seq_id' not in self.factor or len(self.factor['seq_id']) == 0:
+                seqIds = []
+                for chainId in self.factor['chain_id']:
+                    ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chainId), None)
+                    if ps is not None:
+                        for realSeqId in ps['seq_id']:
+                            if 'comp_id' in self.factor and len(self.factor['comp_id']) > 0:
+                                realCompId = ps['comp_id'][ps['seq_id'].index(realSeqId)]
+                                if realCompId not in self.factor['comp_id']:
+                                    continue
+                            seqIds.append(realSeqId)
+                self.factor['seq_id'] = list(set(seqIds))
+
+            if 'atom_ids' in self.factor and len(self.factor['atom_ids']) > 0\
+               and ('atom_id' not in self.factor or len(self.factor['atom_id']) == 0):
+                lenAtomIds = len(self.factor['atom_ids'])
+                _compIdSelect = set()
+                for chainId in self.factor['chain_id']:
+                    ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chainId), None)
+                    if ps is not None:
+                        for realSeqId in ps['seq_id']:
+                            realCompId = ps['comp_id'][ps['seq_id'].index(realSeqId)]
+                            if 'comp_id' in self.factor and len(self.factor['comp_id']) > 0:
+                                if realCompId not in self.factor['comp_id']:
+                                    continue
+                            _compIdSelect.add(realCompId)
+
+                _atomIdSelect = set()
+                for compId in _compIdSelect:
+                    if self.__updateChemCompDict(compId):
+                        for cca in self.__lastChemCompAtoms:
+                            realAtomId = cca[self.__ccaAtomId]
+                            if (lenAtomIds == 1 and re.match(self.factor['atom_ids'][0], realAtomId))\
+                               or (lenAtomIds == 2 and self.factor['atom_ids'][0] <= realAtomId <= self.factor['atom_ids'][1]):
+                                _atomIdSelect.add(realAtomId)
+                self.factor['atom_id'] = list(_atomIdSelect)
+                del self.factor['atom_ids']
+
+            if 'atom_id' not in self.factor or len(self.factor['atom_id']) == 0:
+                _compIdSelect = set()
+                for chainId in self.factor['chain_id']:
+                    ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chainId), None)
+                    if ps is not None:
+                        for realSeqId in ps['seq_id']:
+                            realCompId = ps['comp_id'][ps['seq_id'].index(realSeqId)]
+                            if 'comp_id' in self.factor and len(self.factor['comp_id']) > 0:
+                                if realCompId not in self.factor['comp_id']:
+                                    continue
+                            _compIdSelect.add(realCompId)
+
+                _atomIdSelect = set()
+                for compId in _compIdSelect:
+                    if self.__updateChemCompDict(compId):
+                        for cca in self.__lastChemCompAtoms:
+                            realAtomId = cca[self.__ccaAtomId]
+                            _atomIdSelect.add(realAtomId)
+                self.factor['atom_id'] = list(_atomIdSelect)
+
+            _atomSelection = []
+
+            try:
+
+                for chainId in self.factor['chain_id']:
+                    for seqId in self.factor['seq_id']:
+                        for atomId in self.factor['atom_id']:
+                            _atom =\
+                                self.__cR.getDictListWithFilter('atom_site',
+                                                                [{'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                                 ],
+                                                                [{'name': 'auth_asym_id', 'type': 'str', 'value': chainId},
+                                                                 {'name': 'auth_seq_id', 'type': 'int', 'value': seqId},
+                                                                 {'name': 'label_atom_id', 'type': 'str', 'value': atomId},
+                                                                 {'name': self.__modelNumName, 'type': 'int',
+                                                                  'value': self.__representativeModelId}
+                                                                 ])
+
+                            if len(_atom) != 1:
+                                continue
+
+                            _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': _atom[0]['comp_id'], 'atom_id': atomId})
+
+            except Exception as e:
+                if self.__verbose:
+                    self.__lfh.write(f"+XplorMRParserListener.consumeFactor_expressions() ++ Error  - {str(e)}\n")
+
+            atomSelection = []
+            for atom in _atomSelection:
+                if atom not in atomSelection:
+                    atomSelection.append(atom)
+
+            self.factor['atom_selection'] = atomSelection
+
+            if len(self.factor['atom_selection']) == 0:
+                self.warningMessage += "[Invalid data] The atom selection expression has no effect.\n"
+            else:
+                if 'chain_id' in self.factor:
+                    del self.factor['chain_id']
+                if 'comp_id' in self.factor:
+                    del self.factor['comp_id']
+                if 'seq_id' in self.factor:
+                    del self.factor['seq_id']
+                if 'atom_id' in self.factor:
+                    del self.factor['atom_id']
 
     # Enter a parse tree produced by XplorMRParser#factor.
     def enterFactor(self, ctx: XplorMRParser.FactorContext):
@@ -1114,6 +1263,8 @@ class XplorMRParserListener(ParseTreeListener):
             around = float(str(ctx.Real()))
             _atomSelection = []
 
+            self.consumeFactor_expressions()
+
             if 'atom_selection' in self.factor:
 
                 for _atom in self.factor['atom_selection']:
@@ -1176,167 +1327,6 @@ class XplorMRParserListener(ParseTreeListener):
                         if self.__verbose:
                             self.__lfh.write(f"+XplorMRParserListener.exitFactor() ++ Error  - {str(e)}\n")
 
-            else:
-
-                if 'chain_id' not in self.factor or len(self.factor['chain_id']) == 0:
-                    self.factor['chain_id'] = [ps['chain_id'] for ps in self.__polySeq]
-
-                if 'seq_id' not in self.factor and 'seq_ids' not in self.factor:
-                    if 'comp_ids' in self.factor and len(self.factor['comp_ids']) > 0\
-                       and ('comp_id' not in self.factor or len(self.factor['comp_id']) == 0):
-                        lenCompIds = len(self.factor['comp_ids'])
-                        _compIdSelect = set()
-                        for chainId in self.factor['chain_id']:
-                            ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chainId), None)
-                            if ps is not None:
-                                for realSeqId in ps['seq_id']:
-                                    realCompId = ps['comp_id'][ps['seq_id'].index(realSeqId)]
-                                    if (lenCompIds == 1 and re.match(self.factor['comp_ids'][0], realCompId))\
-                                       or (lenCompIds == 2 and self.factor['comp_ids'][0] <= realCompId <= self.factor['comp_ids'][1]):
-                                        _compIdSelect.add(realCompId)
-                        self.factor['comp_id'] = list(_compIdSelect)
-                        del self.factor['comp_ids']
-
-                if 'seq_ids' in self.factor and len(self.factor['seq_ids']) > 0\
-                   and ('seq_id' not in self.factor or len(self.factor['seq_id']) == 0):
-                    seqIds = []
-                    for chainId in self.factor['chain_id']:
-                        ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chainId), None)
-                        if ps is not None:
-                            for realSeqId in ps['seq_id']:
-                                if 'comp_id' in self.factor and len(self.factor['comp_id']) > 0:
-                                    realCompId = ps['comp_id'][ps['seq_id'].index(realSeqId)]
-                                    if realCompId not in self.factor['comp_id']:
-                                        continue
-                                seqId = self.factor['seq_ids'][0]
-                                _seqId = to_re_exp(seqId)
-                                if re.match(_seqId, str(realSeqId)):
-                                    seqIds.append(realSeqId)
-                    self.factor['seq_id'] = list(set(seqIds))
-                    del self.factor['seq_ids']
-
-                if 'seq_id' not in self.factor or len(self.factor['seq_id']) == 0:
-                    seqIds = []
-                    for chainId in self.factor['chain_id']:
-                        ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chainId), None)
-                        if ps is not None:
-                            for realSeqId in ps['seq_id']:
-                                if 'comp_id' in self.factor and len(self.factor['comp_id']) > 0:
-                                    realCompId = ps['comp_id'][ps['seq_id'].index(realSeqId)]
-                                    if realCompId not in self.factor['comp_id']:
-                                        continue
-                                seqId = self.factor['seq_ids'][0]
-                                _seqId = to_re_exp(seqId)
-                                if re.match(_seqId, str(realSeqId)):
-                                    seqIds.append(seqId)
-                    self.factor['seq_id'] = list(set(seqIds))
-
-                if 'atom_ids' in self.factor and len(self.factor['atom_ids']) > 0\
-                   and ('atom_id' not in self.factor or len(self.factor['atom_id']) == 0):
-                    lenAtomIds = len(self.factor['atom_ids'])
-                    _compIdSelect = set()
-                    for chainId in self.factor['chain_id']:
-                        ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chainId), None)
-                        if ps is not None:
-                            for realSeqId in ps['seq_id']:
-                                realCompId = ps['comp_id'][ps['seq_id'].index(seqId)]
-                                if 'comp_id' in self.factor and len(self.factor['comp_id']) > 0:
-                                    if realCompId not in self.factor['comp_id']:
-                                        continue
-                                _compIdSelect.add(realCompId)
-
-                    _atomIdSelect = set()
-                    for compId in _compIdSelect:
-                        if self.__updateChemCompDict(compId):
-                            for cca in self.__lastChemCompAtoms:
-                                realAtomId = cca[self.__ccaAtomId]
-                                if (lenAtomIds == 1 and re.match(self.factor['atom_ids'][0], realAtomId))\
-                                   or (lenAtomIds == 2 and self.factor['atom_ids'][0] <= realAtomId <= self.factor['atom_ids'][1]):
-                                    _atomIdSelect.add(realAtomId)
-                    self.factor['atom_id'] = list(_atomIdSelect)
-                    del self.factor['atom_ids']
-
-                if 'atom_id' not in self.factor or len(self.factor['atom_id']) == 0:
-                    _compIdSelect = set()
-                    for chainId in self.factor['chain_id']:
-                        ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chainId), None)
-                        if ps is not None:
-                            for realSeqId in ps['seq_id']:
-                                realCompId = ps['comp_id'][ps['seq_id'].index(seqId)]
-                                if 'comp_id' in self.factor and len(self.factor['comp_id']) > 0:
-                                    if realCompId not in self.factor['comp_id']:
-                                        continue
-                                _compIdSelect.add(realCompId)
-
-                    _atomIdSelect = set()
-                    for compId in _compIdSelect:
-                        if self.__updateChemCompDict(compId):
-                            for cca in self.__lastChemCompAtoms:
-                                realAtomId = cca[self.__ccaAtomId]
-                                _atomIdSelect.add(realAtomId)
-                    self.factor['atom_id'] = list(_atomIdSelect)
-
-                try:
-
-                    for chainId in self.factor['chain_id']:
-                        for seqId in self.factor['seq_id']:
-                            for atomId in self.factor['atom_id']:
-                                _origin =\
-                                    self.__cR.getDictListWithFilter('atom_site',
-                                                                    [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                                     {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                                     {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
-                                                                     ],
-                                                                    [{'name': 'auth_asym_id', 'type': 'str', 'value': chainId},
-                                                                     {'name': 'auth_seq_id', 'type': 'int', 'value': seqId},
-                                                                     {'name': 'label_atom_id', 'type': 'str', 'value': atomId},
-                                                                     {'name': self.__modelNumName, 'type': 'int',
-                                                                      'value': self.__representativeModelId}
-                                                                     ])
-
-                                if len(_origin) != 1:
-                                    continue
-
-                                origin = to_np_array(_origin[0])
-
-                                _neighbor =\
-                                    self.__cR.getDictListWithFilter('atom_site',
-                                                                    [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                                                     {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                                                     {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                                     {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'},
-                                                                     {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                                     {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                                     {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
-                                                                     ],
-                                                                    [{'name': 'Cartn_x', 'type': 'range-float',
-                                                                      'range': {'min_exclusive': (origin[0] - around),
-                                                                                'max_exclusive': (origin[0] + around)}},
-                                                                     {'name': 'Cartn_y', 'type': 'range-float',
-                                                                      'range': {'min_exclusive': (origin[1] - around),
-                                                                                'max_exclusive': (origin[1] + around)}},
-                                                                     {'name': 'Cartn_z', 'type': 'range-float',
-                                                                      'range': {'min_exclusive': (origin[2] - around),
-                                                                                'max_exclusive': (origin[2] + around)}},
-                                                                     {'name': self.__modelNumName, 'type': 'int',
-                                                                      'value': self.__representativeModelId}
-                                                                     ])
-
-                                if len(_neighbor) == 0:
-                                    continue
-
-                                neighbor = [atom for atom in _neighbor if np.linalg.norm(to_np_array(atom) - origin) < around]
-
-                                for atom in neighbor:
-                                    del atom['x']
-                                    del atom['y']
-                                    del atom['z']
-                                    _atomSelection.append(atom)
-
-                except Exception as e:
-                    if self.__verbose:
-                        self.__lfh.write(f"+XplorMRParserListener.exitFactor() ++ Error  - {str(e)}\n")
-
             atomSelection = []
             for atom in _atomSelection:
                 if atom not in atomSelection:
@@ -1345,16 +1335,7 @@ class XplorMRParserListener(ParseTreeListener):
             self.factor['atom_selection'] = atomSelection
 
             if len(self.factor['atom_selection']) == 0:
-                self.warningMessage += "[Invalid data] The 'all' clause has no effect.\n"
-            else:
-                if 'chain_id' in self.factor:
-                    del self.factor['chain_id']
-                if 'comp_id' in self.factor:
-                    del self.factor['comp_id']
-                if 'seq_id' in self.factor:
-                    del self.factor['seq_id']
-                if 'atom_id' in self.factor:
-                    del self.factor['atom_id']
+                self.warningMessage += "[Invalid data] The 'around' clause has no effect.\n"
 
         elif ctx.Atom():
             simpleNameIndex = simpleNamesIndex = 0  # these indices are necessary to deal with mixing case of 'Simple_name' and 'Simple_names'

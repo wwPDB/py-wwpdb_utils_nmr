@@ -26,6 +26,21 @@ def to_np_array(atom):
     return np.asarray([atom['x'], atom['y'], atom['z']])
 
 
+def to_re_exp(string):
+    """ Return regular expression for a given string including XPLOR-NIH wildcard format.
+    """
+
+    if '*' in string:  # any string
+        return string.replace('*', '.*')
+    if '%' in string:  # a single character
+        return string.replace('%', '.')
+    if '#' in string:  # any number
+        return string.replace('#', '[+-]?[0-9][0-9\\.]?')
+    if '+' in string:  # any digit
+        return string.replace('+', '[0-9]+')
+    return string
+
+
 # This class defines a complete listener for a parse tree produced by XplorMRParser.
 class XplorMRParserListener(ParseTreeListener):
 
@@ -1078,10 +1093,18 @@ class XplorMRParserListener(ParseTreeListener):
                 else:
                     if 'chain_id' in self.factor:
                         del self.factor['chain_id']
+                    if 'comp_id' in self.factor:
+                        del self.factor['comp_id']
                     if 'seq_id' in self.factor:
                         del self.factor['seq_id']
                     if 'atom_id' in self.factor:
                         del self.factor['atom_id']
+                    if 'comp_ids' in self.factor:
+                        del self.factor['comp_ids']
+                    if 'seq_ids' in self.factor:
+                        del self.factor['seq_ids']
+                    if 'atom_ids' in self.factor:
+                        del self.factor['atom_ids']
 
             except Exception as e:
                 if self.__verbose:
@@ -1158,79 +1181,161 @@ class XplorMRParserListener(ParseTreeListener):
                 if 'chain_id' not in self.factor or len(self.factor['chain_id']) == 0:
                     self.factor['chain_id'] = [ps['chain_id'] for ps in self.__polySeq]
 
-                if 'seq_id' not in self.factor or len(self.factor['seq_id']) == 0:
-                    seqIds = set()
+                if 'seq_id' not in self.factor and 'seq_ids' not in self.factor:
+                    if 'comp_ids' in self.factor and len(self.factor['comp_ids']) > 0\
+                       and ('comp_id' not in self.factor or len(self.factor['comp_id']) == 0):
+                        lenCompIds = len(self.factor['comp_ids'])
+                        _compIdSelect = set()
+                        for chainId in self.factor['chain_id']:
+                            ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chainId), None)
+                            if ps is not None:
+                                for realSeqId in ps['seq_id']:
+                                    realCompId = ps['comp_id'][ps['seq_id'].index(realSeqId)]
+                                    if (lenCompIds == 1 and re.match(self.factor['comp_ids'][0], realCompId))\
+                                       or (lenCompIds == 2 and self.factor['comp_ids'][0] <= realCompId <= self.factor['comp_ids'][1]):
+                                        _compIdSelect.add(realCompId)
+                        self.factor['comp_id'] = list(_compIdSelect)
+                        del self.factor['comp_ids']
+
+                if 'seq_ids' in self.factor and len(self.factor['seq_ids']) > 0\
+                   and ('seq_id' not in self.factor or len(self.factor['seq_id']) == 0):
+                    seqIds = []
                     for chainId in self.factor['chain_id']:
                         ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chainId), None)
                         if ps is not None:
-                            seqIds.extend(ps['seq_id'])
-                    self.factor['seq_id'] = list(seqIds)
+                            for realSeqId in ps['seq_id']:
+                                if 'comp_id' in self.factor and len(self.factor['comp_id']) > 0:
+                                    realCompId = ps['comp_id'][ps['seq_id'].index(realSeqId)]
+                                    if realCompId not in self.factor['comp_id']:
+                                        continue
+                                seqId = self.factor['seq_ids'][0]
+                                _seqId = to_re_exp(seqId)
+                                if re.match(_seqId, str(realSeqId)):
+                                    seqIds.append(realSeqId)
+                    self.factor['seq_id'] = list(set(seqIds))
+                    del self.factor['seq_ids']
+
+                if 'seq_id' not in self.factor or len(self.factor['seq_id']) == 0:
+                    seqIds = []
+                    for chainId in self.factor['chain_id']:
+                        ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chainId), None)
+                        if ps is not None:
+                            for realSeqId in ps['seq_id']:
+                                if 'comp_id' in self.factor and len(self.factor['comp_id']) > 0:
+                                    realCompId = ps['comp_id'][ps['seq_id'].index(realSeqId)]
+                                    if realCompId not in self.factor['comp_id']:
+                                        continue
+                                seqId = self.factor['seq_ids'][0]
+                                _seqId = to_re_exp(seqId)
+                                if re.match(_seqId, str(realSeqId)):
+                                    seqIds.append(seqId)
+                    self.factor['seq_id'] = list(set(seqIds))
+
+                if 'atom_ids' in self.factor and len(self.factor['atom_ids']) > 0\
+                   and ('atom_id' not in self.factor or len(self.factor['atom_id']) == 0):
+                    lenAtomIds = len(self.factor['atom_ids'])
+                    _compIdSelect = set()
+                    for chainId in self.factor['chain_id']:
+                        ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chainId), None)
+                        if ps is not None:
+                            for realSeqId in ps['seq_id']:
+                                realCompId = ps['comp_id'][ps['seq_id'].index(seqId)]
+                                if 'comp_id' in self.factor and len(self.factor['comp_id']) > 0:
+                                    if realCompId not in self.factor['comp_id']:
+                                        continue
+                                _compIdSelect.add(realCompId)
+
+                    _atomIdSelect = set()
+                    for compId in _compIdSelect:
+                        if self.__updateChemCompDict(compId):
+                            for cca in self.__lastChemCompAtoms:
+                                realAtomId = cca[self.__ccaAtomId]
+                                if (lenAtomIds == 1 and re.match(self.factor['atom_ids'][0], realAtomId))\
+                                   or (lenAtomIds == 2 and self.factor['atom_ids'][0] <= realAtomId <= self.factor['atom_ids'][1]):
+                                    _atomIdSelect.add(realAtomId)
+                    self.factor['atom_id'] = list(_atomIdSelect)
+                    del self.factor['atom_ids']
 
                 if 'atom_id' not in self.factor or len(self.factor['atom_id']) == 0:
-                    self.warningMessage += "[Invalid data] Atom name couldn't specify at the beginning of the 'around' clause.\n"
-
-                else:
-
-                    try:
-
-                        for chainId in self.factor['chain_id']:
-                            for seqId in self.factor['seq_id']:
-                                for atomId in self.factor['atom_id']:
-                                    _origin =\
-                                        self.__cR.getDictListWithFilter('atom_site',
-                                                                        [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                                         {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                                         {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
-                                                                         ],
-                                                                        [{'name': 'auth_asym_id', 'type': 'str', 'value': chainId},
-                                                                         {'name': 'auth_seq_id', 'type': 'int', 'value': seqId},
-                                                                         {'name': 'label_atom_id', 'type': 'str', 'value': atomId},
-                                                                         {'name': self.__modelNumName, 'type': 'int',
-                                                                          'value': self.__representativeModelId}
-                                                                         ])
-
-                                    if len(_origin) != 1:
+                    _compIdSelect = set()
+                    for chainId in self.factor['chain_id']:
+                        ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chainId), None)
+                        if ps is not None:
+                            for realSeqId in ps['seq_id']:
+                                realCompId = ps['comp_id'][ps['seq_id'].index(seqId)]
+                                if 'comp_id' in self.factor and len(self.factor['comp_id']) > 0:
+                                    if realCompId not in self.factor['comp_id']:
                                         continue
+                                _compIdSelect.add(realCompId)
 
-                                    origin = to_np_array(_origin[0])
+                    _atomIdSelect = set()
+                    for compId in _compIdSelect:
+                        if self.__updateChemCompDict(compId):
+                            for cca in self.__lastChemCompAtoms:
+                                realAtomId = cca[self.__ccaAtomId]
+                                _atomIdSelect.add(realAtomId)
+                    self.factor['atom_id'] = list(_atomIdSelect)
 
-                                    _neighbor =\
-                                        self.__cR.getDictListWithFilter('atom_site',
-                                                                        [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                                                         {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                                                         {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                                         {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'},
-                                                                         {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                                         {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                                         {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
-                                                                         ],
-                                                                        [{'name': 'Cartn_x', 'type': 'range-float',
-                                                                          'range': {'min_exclusive': (origin[0] - around),
-                                                                                    'max_exclusive': (origin[0] + around)}},
-                                                                         {'name': 'Cartn_y', 'type': 'range-float',
-                                                                          'range': {'min_exclusive': (origin[1] - around),
-                                                                                    'max_exclusive': (origin[1] + around)}},
-                                                                         {'name': 'Cartn_z', 'type': 'range-float',
-                                                                          'range': {'min_exclusive': (origin[2] - around),
-                                                                                    'max_exclusive': (origin[2] + around)}},
-                                                                         {'name': self.__modelNumName, 'type': 'int',
-                                                                          'value': self.__representativeModelId}
-                                                                         ])
+                try:
 
-                                    if len(_neighbor) == 0:
-                                        continue
+                    for chainId in self.factor['chain_id']:
+                        for seqId in self.factor['seq_id']:
+                            for atomId in self.factor['atom_id']:
+                                _origin =\
+                                    self.__cR.getDictListWithFilter('atom_site',
+                                                                    [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                                     {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                                     {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
+                                                                     ],
+                                                                    [{'name': 'auth_asym_id', 'type': 'str', 'value': chainId},
+                                                                     {'name': 'auth_seq_id', 'type': 'int', 'value': seqId},
+                                                                     {'name': 'label_atom_id', 'type': 'str', 'value': atomId},
+                                                                     {'name': self.__modelNumName, 'type': 'int',
+                                                                      'value': self.__representativeModelId}
+                                                                     ])
 
-                                    neighbor = [atom for atom in _neighbor if np.linalg.norm(to_np_array(atom) - origin) < around]
+                                if len(_origin) != 1:
+                                    continue
 
-                                    for atom in neighbor:
-                                        del atom['x']
-                                        del atom['y']
-                                        del atom['z']
-                                        _atomSelection.append(atom)
+                                origin = to_np_array(_origin[0])
 
-                    except Exception as e:
-                        if self.__verbose:
-                            self.__lfh.write(f"+XplorMRParserListener.exitFactor() ++ Error  - {str(e)}\n")
+                                _neighbor =\
+                                    self.__cR.getDictListWithFilter('atom_site',
+                                                                    [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                                     {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                                                     {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                                     {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'},
+                                                                     {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                                     {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                                     {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
+                                                                     ],
+                                                                    [{'name': 'Cartn_x', 'type': 'range-float',
+                                                                      'range': {'min_exclusive': (origin[0] - around),
+                                                                                'max_exclusive': (origin[0] + around)}},
+                                                                     {'name': 'Cartn_y', 'type': 'range-float',
+                                                                      'range': {'min_exclusive': (origin[1] - around),
+                                                                                'max_exclusive': (origin[1] + around)}},
+                                                                     {'name': 'Cartn_z', 'type': 'range-float',
+                                                                      'range': {'min_exclusive': (origin[2] - around),
+                                                                                'max_exclusive': (origin[2] + around)}},
+                                                                     {'name': self.__modelNumName, 'type': 'int',
+                                                                      'value': self.__representativeModelId}
+                                                                     ])
+
+                                if len(_neighbor) == 0:
+                                    continue
+
+                                neighbor = [atom for atom in _neighbor if np.linalg.norm(to_np_array(atom) - origin) < around]
+
+                                for atom in neighbor:
+                                    del atom['x']
+                                    del atom['y']
+                                    del atom['z']
+                                    _atomSelection.append(atom)
+
+                except Exception as e:
+                    if self.__verbose:
+                        self.__lfh.write(f"+XplorMRParserListener.exitFactor() ++ Error  - {str(e)}\n")
 
             atomSelection = []
             for atom in _atomSelection:
@@ -1244,13 +1349,15 @@ class XplorMRParserListener(ParseTreeListener):
             else:
                 if 'chain_id' in self.factor:
                     del self.factor['chain_id']
+                if 'comp_id' in self.factor:
+                    del self.factor['comp_id']
                 if 'seq_id' in self.factor:
                     del self.factor['seq_id']
                 if 'atom_id' in self.factor:
                     del self.factor['atom_id']
 
         elif ctx.Atom():
-            simpleNameIndex = simpleNamesIndex = 0
+            simpleNameIndex = simpleNamesIndex = 0  # these indices are necessary to deal with mixing case of 'Simple_name' and 'Simple_names'
             if ctx.Simple_name(0):
                 chainId = str(ctx.Simple_name(0))
                 self.factor['chain_id'] = [ps['chain_id'] for ps in self.__polySeq
@@ -1260,17 +1367,9 @@ class XplorMRParserListener(ParseTreeListener):
 
             if simpleNameIndex == 0 and ctx.Simple_names(0):
                 chainId = str(ctx.Simple_names(0))
-                if '*' in chainId:  # any string
-                    _chainId = chainId.replace('*', '.*')
-                elif '%' in chainId:  # a single character
-                    _chainId = chainId.replace('%', '.')
-                elif '#' in chainId:  # any number
-                    _chainId = chainId.replace('#', '[+-]?[0-9][0-9\\.]?')
-                elif '+' in chainId:  # any digit
-                    _chainId = chainId.replace('+', '[0-9]+')
-                if _chainId is not None:
-                    self.factor['chain_id'] = [ps['chain_id'] for ps in self.__polySeq
-                                               if re.match(_chainId, ps['chain_id'])]
+                _chainId = to_re_exp(chainId)
+                self.factor['chain_id'] = [ps['chain_id'] for ps in self.__polySeq
+                                           if re.match(_chainId, ps['chain_id'])]
                 simpleNamesIndex += 1
 
             if len(self.factor['chain_id']) == 0:
@@ -1282,28 +1381,17 @@ class XplorMRParserListener(ParseTreeListener):
 
             if ctx.Integers():
                 seqId = str(ctx.Integers())
-                if '*' in seqId:  # any string
-                    _seqId = seqId.replace('*', '.*')
-                elif '%' in seqId:  # a single character
-                    _seqId = seqId.replace('%', '.')
-                elif '#' in seqId:  # any number
-                    _seqId = seqId.replace('#', '[+-]?[0-9][0-9\\.]?')
-                elif '+' in seqId:  # any digit
-                    _seqId = seqId.replace('+', '[0-9]+')
-
+                _seqId = to_re_exp(seqId)
                 _seqIdSelect = set()
-
                 for chainId in self.factor['chain_id']:
                     ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chainId), None)
                     if ps is not None:
                         for realSeqId in ps['seq_id']:
                             if re.match(_seqId, str(realSeqId)):
                                 _seqIdSelect.add(realSeqId)
-
                 self.factor['seq_id'] = list(_seqIdSelect)
 
             _atomIdSelect = set()
-
             if ctx.Simple_name(simpleNameIndex):
                 atomId = str(ctx.Simple_name(simpleNameIndex))
                 for chainId in self.factor['chain_id']:
@@ -1319,15 +1407,7 @@ class XplorMRParserListener(ParseTreeListener):
 
             elif ctx.Simple_names(simpleNamesIndex):
                 atomId = str(ctx.Simple_names(simpleNamesIndex))
-                if '*' in atomId:  # any string
-                    _atomId = atomId.replace('*', '.*')
-                elif '%' in atomId:  # a single character
-                    _atomId = atomId.replace('%', '.')
-                elif '#' in atomId:  # any number
-                    _atomId = atomId.replace('#', '[+-]?[0-9][0-9\\.]?')
-                elif '+' in atomId:  # any digit
-                    _atomId = atomId.replace('+', '[0-9]+')
-
+                _atomId = to_re_exp(atomId)
                 for chainId in self.factor['chain_id']:
                     ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chainId), None)
                     if ps is None:
@@ -1382,6 +1462,8 @@ class XplorMRParserListener(ParseTreeListener):
             else:
                 if 'chain_id' in self.factor:
                     del self.factor['chain_id']
+                if 'comp_id' in self.factor:
+                    del self.factor['comp_id']
                 if 'seq_id' in self.factor:
                     del self.factor['seq_id']
                 if 'atom_id' in self.factor:
@@ -1392,50 +1474,79 @@ class XplorMRParserListener(ParseTreeListener):
             attr_name = ctx.Simple_name(0)
             operator = ctx.Comparison_ops()
             attr_value = ctx.Real()
+
         elif ctx.BondedTo():
             pass
+
         elif ctx.ByGroup():
             pass
+
         elif ctx.ByRes():
             pass
+
         elif ctx.Chemical():
             if ctx.Colon():  # range expression
                 pass
             else:
                 pass
+
         elif ctx.Hydrogen():
             pass
+
         elif ctx.Id():
             pass
+
         elif ctx.Known():
             pass
+
         elif ctx.Name():
             if ctx.Colon():  # range expression
-                pass
-            else:
+                self.factor['atom_ids'] = [str(ctx.Simple_name(0)), str(ctx.Simple_name(1))]
+
+            elif ctx.Simple_name(0):
                 self.factor['atom_id'] = [str(ctx.Simple_name(0))]
+
+            elif ctx.Simple_names(0):
+                self.factor['atom_ids'] = [str(ctx.Simple_names(0))]
+
         elif ctx.Not_op():
             pass
+
         elif ctx.Point():
             pass
+
         elif ctx.Cut():
             pass
+
         elif ctx.Previous():
             pass
+
         elif ctx.Pseudo():
             pass
+
         elif ctx.Residue():
             if ctx.Colon():  # range expression
-                pass
-            else:
+                self.factor['seq_id'] = list(range(int(str(ctx.Integer(0))), int(str(ctx.Integer(0))) + 1))
+
+            elif ctx.Integer(0):
                 self.factor['seq_id'] = [int(str(ctx.Integer(0)))]
+
+            elif ctx.Integers():
+                self.factor['seq_ids'] = [str(ctx.Integers())]
+
         elif ctx.Resname():
-            if ctx.Colon():
-                pass
-            else:
-                pass
+            if ctx.Colon():  # range expression
+                self.factor['comp_ids'] = [str(ctx.Simple_name(0)), str(ctx.Simple_name(1))]
+
+            elif ctx.Simple_name(0):
+                self.factor['comp_id'] = [str(ctx.Simple_name(0))]
+
+            elif ctx.Simple_names(0):
+                self.factor['comp_ids'] = [str(ctx.Simple_names(0))]
+
         elif ctx.Saround():
             pass
+
         elif ctx.SegIdentifier():
             if ctx.Colon():  # range expression
                 if ctx.Simple_name(0):
@@ -1448,8 +1559,10 @@ class XplorMRParserListener(ParseTreeListener):
                     endChainId = str(ctx.Simple_name(1)).strip('"').strip()
                 self.factor['chain_id'] = [ps['chain_id'] for ps in self.__polySeq
                                            if begChainId <= ps['chain_id'] <= endChainId]
+
                 if len(self.factor['chain_id']) == 0:
                     self.warningMessage += f"[Invalid data] Couldn't specify segment name {begChainId:!r}:{endChainId:!r} in the coordinates.\n"
+
             else:
                 if ctx.Simple_name(0) or ctx.Double_quote_string(0):
                     if ctx.Simple_name(0):
@@ -1460,40 +1573,40 @@ class XplorMRParserListener(ParseTreeListener):
                                                if ps['chain_id'] == chainId]
                 if ctx.Simple_names(0):
                     chainId = str(ctx.Simple_names(0))
-                    if '*' in chainId:  # any string
-                        _chainId = chainId.replace('*', '.*')
-                    elif '%' in chainId:  # a single character
-                        _chainId = chainId.replace('%', '.')
-                    elif '#' in chainId:  # any number
-                        _chainId = chainId.replace('#', '[+-]?[0-9][0-9\\.]?')
-                    elif '+' in chainId:  # any digit
-                        _chainId = chainId.replace('+', '[0-9]+')
-                    if _chainId is not None:
-                        self.factor['chain_id'] = [ps['chain_id'] for ps in self.__polySeq
-                                                   if re.match(_chainId, ps['chain_id'])]
+                    _chainId = to_re_exp(chainId)
+                    self.factor['chain_id'] = [ps['chain_id'] for ps in self.__polySeq
+                                               if re.match(_chainId, ps['chain_id'])]
                 if len(self.factor['chain_id']) == 0:
                     self.warningMessage += "[Invalid data] Couldn't specify segment name "\
                         f"'{chainId}' in the coordinates.\n"  # do not use 'chainId!r' expression, '%' code throws ValueError
+
         elif ctx.Store_1():
             pass
+
         elif ctx.Store_2():
             pass
+
         elif ctx.Store_3():
             pass
+
         elif ctx.Store_4():
             pass
+
         elif ctx.Store_5():
             pass
-        elif ctx.Store_5():
-            pass
+
         elif ctx.Store_6():
             pass
+
         elif ctx.Store_7():
             pass
+
         elif ctx.Store_8():
             pass
+
         elif ctx.Store_9():
             pass
+
         elif ctx.Tag():
             pass
 

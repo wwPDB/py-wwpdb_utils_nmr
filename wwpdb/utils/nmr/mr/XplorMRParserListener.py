@@ -1296,7 +1296,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by XplorMRParser#factor.
     def exitFactor(self, ctx: XplorMRParser.FactorContext):
 
-        if ctx.All():
+        if ctx.All() or ctx.Known():
 
             try:
 
@@ -1312,7 +1312,9 @@ class XplorMRParserListener(ParseTreeListener):
                                                      ])
 
                 if len(self.factor['atom_selection']) == 0:
-                    self.warningMessage += "[Invalid data] The 'all' clause has no effect.\n"
+                    clauseName = 'all' if ctx.All() else 'known'
+                    self.warningMessage += f"[Invalid data] The {clauseName!r} clause has no effect.\n"
+
                 else:
                     if 'chain_id' in self.factor:
                         del self.factor['chain_id']
@@ -1570,12 +1572,12 @@ class XplorMRParserListener(ParseTreeListener):
 
             elif attr_prop in ('dx', 'dy', 'dz', 'harm'):
                 self.warningMessage += f"[Unavailable resource] The attribute property {_attr_prop!r} "\
-                    "related to atomic force of each atom is not possessed by the static coordinate file.\n"
+                    "related to atomic force of each atom is not possessed in the static coordinate file.\n"
                 validProp = False
 
             elif attr_prop.startswith('fbet'):  # FBETA
                 self.warningMessage += f"[Unavailable resource] The attribute property {_attr_prop!r} "\
-                    "related to the Langevin dynamics (nonzero friction coefficient) is not possessed by the static coordinate file.\n"
+                    "related to the Langevin dynamics (nonzero friction coefficient) is not possessed in the static coordinate file.\n"
                 validProp = False
 
             elif attr_prop == 'mass':
@@ -1646,7 +1648,7 @@ class XplorMRParserListener(ParseTreeListener):
 
             elif attr_prop == ('vx', 'vy', 'vz'):
                 self.warningMessage += f"[Unavailable resource] The attribute property {_attr_prop!r} "\
-                    "related to current velocities of each atom is not possessed by the static coordinate file.\n"
+                    "related to current velocities of each atom is not possessed in the static coordinate file.\n"
                 validProp = False
 
             elif attr_prop in ('x', 'y', 'z'):
@@ -2020,10 +2022,8 @@ class XplorMRParserListener(ParseTreeListener):
             self.consumeFactor_expressions("'hydrogen' clause", False)
 
         elif ctx.Id():
-            pass
-
-        elif ctx.Known():
-            pass
+            self.warningMessage += "[Unavailable resource] The 'id' clause has no effect "\
+                "because the internal atom number is not included in the coordinate file.\n"
 
         elif ctx.Name():
             if ctx.Colon():  # range expression
@@ -2036,7 +2036,29 @@ class XplorMRParserListener(ParseTreeListener):
                 self.factor['atom_ids'] = [str(ctx.Simple_names(0))]
 
         elif ctx.Not_op():
-            pass
+
+            try:
+
+                _atomSelection =\
+                    self.__cR.getDictListWithFilter('atom_site',
+                                                    [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                     {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                                     {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                     {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
+                                                     ],
+                                                    [{'name': self.__modelNumName, 'type': 'int',
+                                                      'value': self.__representativeModelId}
+                                                     ])
+
+            except Exception as e:
+                if self.__verbose:
+                    self.__lfh.write(f"+XplorMRParserListener.exitFactor() ++ Error  - {str(e)}\n")
+
+            _refAtomSelection = [atom for atom in self.factor['atom_selection'] if atom in _atomSelection]
+            self.factor['atom_selection'] = [atom for atom in _atomSelection if atom not in _refAtomSelection]
+
+            if len(self.factor['atom_selection']) == 0:
+                self.warningMessage += "[Invalid data] The 'not' clause has no effect.\n"
 
         elif ctx.Point():
             pass
@@ -2109,7 +2131,8 @@ class XplorMRParserListener(ParseTreeListener):
         elif ctx.Store_1() or ctx.Store_2() or ctx.Store_3()\
                 or ctx.Store_4() or ctx.Store_5() or ctx.Store_6()\
                 or ctx.Store_7() or ctx.Store_8() or ctx.Store_9():
-            self.warningMessage += "[Unavailable resource] The 'store#' clause has no effect because no vector statement is available.\n"
+            self.warningMessage += "[Unavailable resource] The 'store#' clause has no effect "\
+                "because the internal vector statement is not included in the coordinate file.\n"
 
         elif ctx.Tag():
             pass

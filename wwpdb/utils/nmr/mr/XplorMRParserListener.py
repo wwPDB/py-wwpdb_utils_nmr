@@ -1052,7 +1052,7 @@ class XplorMRParserListener(ParseTreeListener):
 
         print(self.factor)
 
-    def consumeFactor_expressions(self, clauseName='atom selection expression'):
+    def consumeFactor_expressions(self, clauseName='atom selection expression', cifCheck=True):
         """ Consume factor expressions as atom selection if possible.
         """
 
@@ -1131,7 +1131,7 @@ class XplorMRParserListener(ParseTreeListener):
                     self.factor['atom_id'] = [None]
                 del self.factor['type_symbols']
 
-            if 'type_symbol' in self.factor and len(self.factor['type_symbol']) > 0:
+            if 'type_symbol' in self.factor:
                 _atomIdSelect = set()
                 _compIdSelect = set()
                 for chainId in self.factor['chain_id']:
@@ -1207,24 +1207,31 @@ class XplorMRParserListener(ParseTreeListener):
                 for chainId in self.factor['chain_id']:
                     for seqId in self.factor['seq_id']:
                         for atomId in self.factor['atom_id']:
-                            _atom =\
-                                self.__cR.getDictListWithFilter('atom_site',
-                                                                [{'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                                 {'name': 'type_symbol', 'type': 'str'},
-                                                                 ],
-                                                                [{'name': 'auth_asym_id', 'type': 'str', 'value': chainId},
-                                                                 {'name': 'auth_seq_id', 'type': 'int', 'value': seqId},
-                                                                 {'name': 'label_atom_id', 'type': 'str', 'value': atomId},
-                                                                 {'name': self.__modelNumName, 'type': 'int',
-                                                                  'value': self.__representativeModelId}
-                                                                 ])
 
-                            if len(_atom) == 1:
-                                if ('comp_id' not in self.factor or _atom[0]['comp_id'] in self.factor['comp_id'])\
-                                   and ('type_symbol' not in self.factor or _atom[0]['type_symbol'] in self.factor['type_symbol']):
-                                    _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': _atom[0]['comp_id'], 'atom_id': atomId})
+                            ccdCheck = not cifCheck
 
-                            else:
+                            if cifCheck:
+                                _atom =\
+                                    self.__cR.getDictListWithFilter('atom_site',
+                                                                    [{'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                                     {'name': 'type_symbol', 'type': 'str'},
+                                                                     ],
+                                                                    [{'name': 'auth_asym_id', 'type': 'str', 'value': chainId},
+                                                                     {'name': 'auth_seq_id', 'type': 'int', 'value': seqId},
+                                                                     {'name': 'label_atom_id', 'type': 'str', 'value': atomId},
+                                                                     {'name': self.__modelNumName, 'type': 'int',
+                                                                      'value': self.__representativeModelId}
+                                                                     ])
+
+                                if len(_atom) == 1:
+                                    if ('comp_id' not in self.factor or _atom[0]['comp_id'] in self.factor['comp_id'])\
+                                       and ('type_symbol' not in self.factor or _atom[0]['type_symbol'] in self.factor['type_symbol']):
+                                        _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': _atom[0]['comp_id'], 'atom_id': atomId})
+
+                                else:
+                                    ccdCheck = True
+
+                            if ccdCheck:
                                 ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chainId), None)
                                 if ps is not None and seqId in ps['seq_id']:
                                     compId = ps['comp_id'][ps['seq_id'].index(seqId)]
@@ -1995,10 +2002,22 @@ class XplorMRParserListener(ParseTreeListener):
             elif ctx.Simple_names(0):
                 self.factor['type_symbols'] = [str(ctx.Simple_names(0))]
 
-            self.consumeFactor_expressions("'chemical' clause")
+            self.consumeFactor_expressions("'chemical' clause", False)
 
         elif ctx.Hydrogen():
-            pass
+            _typeSymbolSelect = set()
+            atomTypes = self.__cR.getDictList('atom_type')
+            if len(atomTypes) > 0 and 'symbol' in atomTypes[0]:
+                for atomType in atomTypes:
+                    typeSymbol = atomType['symbol']
+                    atomicNumber = int_atom(typeSymbol)
+                    atomicWeight = ELEMENT_WEIGHTS[atomicNumber]
+                    if atomicWeight < 3.5:
+                        _typeSymbolSelect.add(typeSymbol)
+
+            self.factor['type_symbol'] = list(_typeSymbolSelect)
+
+            self.consumeFactor_expressions("'hydrogen' clause", False)
 
         elif ctx.Id():
             pass

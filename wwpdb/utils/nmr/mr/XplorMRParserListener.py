@@ -1665,7 +1665,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                                   'value': self.__representativeModelId}
                                                                  ])
 
-                            if len(_atom) == 1 or _atom[0]['comp_id'] == compId:
+                            if len(_atom) == 1 and _atom[0]['comp_id'] == compId:
                                 _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId})
 
                             else:
@@ -1878,7 +1878,53 @@ class XplorMRParserListener(ParseTreeListener):
 
         elif ctx.ByRes():
             if 'atom_selection' in self.factor and len(self.factor['atom_selection']) > 0:
-                pass
+                _atomSelection = []
+
+                _sequenceSelect = set()
+
+                for _atom in self.factor['atom_selection']:
+                    chainId = _atom['chain_id']
+                    seqId = _atom['seq_id']
+
+                    _sequenceSelect.add((chainId, seqId))
+
+                for (chainId, seqId) in _sequenceSelect:
+                    _atom = next(_atom for _atom in self.factor['atom_selection'] if _atom['chain_id'] == chainId and _atom['seq_id'] == seqId)
+                    compId = _atom['comp_id']
+
+                    _atomByRes =\
+                        self.__cR.getDictListWithFilter('atom_site',
+                                                        [{'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                         {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
+                                                         ],
+                                                        [{'name': 'auth_asym_id', 'type': 'str', 'value': chainId},
+                                                         {'name': 'auth_seq_id', 'type': 'int', 'value': seqId},
+                                                         {'name': self.__modelNumName, 'type': 'int',
+                                                          'value': self.__representativeModelId}
+                                                         ])
+
+                    if len(_atomByRes) > 0 and _atomByRes[0]['comp_id'] == compId:
+                        for _atom in _atomByRes:
+                            _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': _atom['comp_id'], 'atom_id': _atom['atom_id']})
+
+                    else:
+                        ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chainId), None)
+                        if ps is not None and seqId in ps['seq_id'] and ps['comp_id'][ps['seq_id'].index(seqId)] == compId:
+                            if self.__updateChemCompDict(compId):
+                                atomIds = [cca[self.__ccaAtomId] for cca in self.__lastChemCompAtoms if cca[self.__ccaLeavingAtomFlag] != 'Y']
+                                for atomId in atomIds:
+                                    _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': atomId})
+
+                atomSelection = []
+                for atom in _atomSelection:
+                    if atom not in atomSelection:
+                        atomSelection.append(atom)
+
+                self.factor['atom_selection'] = atomSelection
+
+                if len(self.factor['atom_selection']) == 0:
+                    self.warningMessage += "[Invalid data] The 'byres' clause has no effect.\n"
+
             else:
                 self.warningMessage += "[Invalid data] The 'byres' clause has no effect because no atom is selected.\n"
 

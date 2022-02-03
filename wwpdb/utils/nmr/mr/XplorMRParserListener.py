@@ -279,6 +279,13 @@ class XplorMRParserListener(ParseTreeListener):
         atomId = next(d for d in self.__chemCompAtomDict if d[0] == '_chem_comp_atom.atom_id')
         self.__ccaAtomId = self.__chemCompAtomDict.index(atomId)
 
+        cartnX = next(d for d in self.__chemCompAtomDict if d[0] == '_chem_comp_atom.model_Cartn_x')
+        cartnY = next(d for d in self.__chemCompAtomDict if d[0] == '_chem_comp_atom.model_Cartn_y')
+        cartnZ = next(d for d in self.__chemCompAtomDict if d[0] == '_chem_comp_atom.model_Cartn_z')
+        self.__ccaCartnX = self.__chemCompAtomDict.index(cartnX)
+        self.__ccaCartnY = self.__chemCompAtomDict.index(cartnY)
+        self.__ccaCartnZ = self.__chemCompAtomDict.index(cartnZ)
+
         # aromaticFlag = next(d for d in self.__chemCompAtomDict if d[0] == '_chem_comp_atom.pdbx_aromatic_flag')
         # self.__ccaAromaticFlag = self.__chemCompAtomDict.index(aromaticFlag)
 
@@ -1165,10 +1172,16 @@ class XplorMRParserListener(ParseTreeListener):
                                                               'value': self.__representativeModelId}
                                                              ])
 
-                        if len(_atom) != 1:
-                            continue
+                        if len(_atom) == 1:
+                            _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': _atom[0]['comp_id'], 'atom_id': atomId})
 
-                        _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': _atom[0]['comp_id'], 'atom_id': atomId})
+                        else:
+                            ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chainId), None)
+                            if ps is not None and seqId in ps['seq_id']:
+                                compId = ps['comp_id'][ps['seq_id'].index(seqId)]
+                                if self.__updateChemCompDict(compId):
+                                    if any(cca for cca in self.__lastChemCompAtoms if cca[self.__ccaAtomId] == atomId):
+                                        _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': atomId})
 
         except Exception as e:
             if self.__verbose:
@@ -1652,10 +1665,14 @@ class XplorMRParserListener(ParseTreeListener):
                                                                   'value': self.__representativeModelId}
                                                                  ])
 
-                            if len(_atom) != 1 or _atom[0]['comp_id'] != compId:
-                                continue
+                            if len(_atom) == 1 or _atom[0]['comp_id'] == compId:
+                                _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId})
 
-                            _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId})
+                            else:
+                                ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chainId), None)
+                                if ps is not None and seqId in ps['seq_id'] and ps['comp_id'][ps['seq_id'].index(seqId)] == compId:
+                                    if any(cca for cca in self.__lastChemCompAtoms if cca[self.__ccaAtomId] == _atomId):
+                                        _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId})
 
                         # sequential
                         if hasLeaavindAtomId:
@@ -1761,10 +1778,109 @@ class XplorMRParserListener(ParseTreeListener):
                 self.warningMessage += "[Invalid data] The 'bondedto' clause has no effect because no atom is selected.\n"
 
         elif ctx.ByGroup():
-            pass
+            if 'atom_selection' in self.factor and len(self.factor['atom_selection']) > 0:
+                _atomSelection = []
+
+                for _atom in self.factor['atom_selection']:
+                    chainId = _atom['chain_id']
+                    compId = _atom['comp_id']
+                    seqId = _atom['seq_id']
+                    atomId = _atom['atom_id']
+
+                    _atomSelection.append(_atom)  # self atom
+
+                    if self.__updateChemCompDict(compId):
+                        _bondedAtomIdSelect = set()
+                        for ccb in self.__lastChemCompBonds:
+                            if ccb[self.__ccbAtomId1] == atomId:
+                                _bondedAtomIdSelect.add(ccb[self.__ccbAtomId2])
+                            elif ccb[self.__ccbAtomId2] == atomId:
+                                _bondedAtomIdSelect.add(ccb[self.__ccbAtomId1])
+
+                        _nonBondedAtomIdSelect = set()
+                        for _atomId in _bondedAtomIdSelect:
+                            for ccb in self.__lastChemCompBonds:
+                                if ccb[self.__ccbAtomId1] == _atomId:
+                                    _nonBondedAtomIdSelect.add(ccb[self.__ccbAtomId2])
+                                elif ccb[self.__ccbAtomId2] == _atomId:
+                                    _nonBondedAtomIdSelect.add(ccb[self.__ccbAtomId1])
+
+                        if atomId in _nonBondedAtomIdSelect:
+                            _nonBondedAtomIdSelect.remove(atomId)
+
+                        for _atomId in _bondedAtomIdSelect:
+                            if _atomId in _nonBondedAtomIdSelect:
+                                _nonBondedAtomIdSelect.remove(_atomId)
+
+                        if len(_nonBondedAtomIdSelect) > 0:
+                            _origin =\
+                                self.__cR.getDictListWithFilter('atom_site',
+                                                                [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                                 {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                                 {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
+                                                                 ],
+                                                                [{'name': 'auth_asym_id', 'type': 'str', 'value': chainId},
+                                                                 {'name': 'auth_seq_id', 'type': 'int', 'value': seqId},
+                                                                 {'name': 'label_atom_id', 'type': 'str', 'value': atomId},
+                                                                 {'name': self.__modelNumName, 'type': 'int',
+                                                                  'value': self.__representativeModelId}
+                                                                 ])
+
+                            if len(_origin) == 1:
+                                origin = to_np_array(_origin[0])
+
+                                for _atomId in _nonBondedAtomIdSelect:
+                                    _neighbor =\
+                                        self.__cR.getDictListWithFilter('atom_site',
+                                                                        [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                                         {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                                         {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
+                                                                         ],
+                                                                        [{'name': 'auth_asym_id', 'type': 'str', 'value': chainId},
+                                                                         {'name': 'auth_seq_id', 'type': 'int', 'value': seqId},
+                                                                         {'name': 'label_atom_id', 'type': 'str', 'value': _atomId},
+                                                                         {'name': self.__modelNumName, 'type': 'int',
+                                                                          'value': self.__representativeModelId}
+                                                                         ])
+
+                                    if len(_neighbor) != 1:
+                                        continue
+
+                                    if np.linalg.norm(to_np_array(_neighbor[0]) - origin) < 2.0:
+                                        _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId})
+
+                            else:
+                                cca = next((cca for cca in self.__lastChemCompAtoms if cca[self.__ccaAtomId] == atomId), None)
+                                if cca is not None:
+                                    _origin = {'x': float(cca[self.__ccaCartnX]), 'y': float(cca[self.__ccaCartnY]), 'z': float(cca[self.__ccaCartnZ])}
+                                    origin = to_np_array(_origin)
+
+                                    for _atomId in _nonBondedAtomIdSelect:
+                                        _cca = next((_cca for _cca in self.__lastChemCompAtoms if _cca[self.__ccaAtomId] == _atomId), None)
+                                        if _cca is not None:
+                                            _neighbor = {'x': float(_cca[self.__ccaCartnX]), 'y': float(_cca[self.__ccaCartnY]), 'z': float(_cca[self.__ccaCartnZ])}
+
+                                            if np.linalg.norm(to_np_array(_neighbor) - origin) < 2.0:
+                                                _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId})
+
+                atomSelection = []
+                for atom in _atomSelection:
+                    if atom not in atomSelection:
+                        atomSelection.append(atom)
+
+                if len(atomSelection) <= len(self.factor['atom_selection']):
+                    self.warningMessage += "[Invalid data] The 'bygroup' clause has no effect.\n"
+
+                self.factor['atom_selection'] = atomSelection
+
+            else:
+                self.warningMessage += "[Invalid data] The 'bygroup' clause has no effect because no atom is selected.\n"
 
         elif ctx.ByRes():
-            pass
+            if 'atom_selection' in self.factor and len(self.factor['atom_selection']) > 0:
+                pass
+            else:
+                self.warningMessage += "[Invalid data] The 'byres' clause has no effect because no atom is selected.\n"
 
         elif ctx.Chemical():
             if ctx.Colon():  # range expression
@@ -1862,32 +1978,10 @@ class XplorMRParserListener(ParseTreeListener):
                     self.warningMessage += "[Invalid data] Couldn't specify segment name "\
                         f"'{chainId}' in the coordinates.\n"  # do not use 'chainId!r' expression, '%' code throws ValueError
 
-        elif ctx.Store_1():
-            pass
-
-        elif ctx.Store_2():
-            pass
-
-        elif ctx.Store_3():
-            pass
-
-        elif ctx.Store_4():
-            pass
-
-        elif ctx.Store_5():
-            pass
-
-        elif ctx.Store_6():
-            pass
-
-        elif ctx.Store_7():
-            pass
-
-        elif ctx.Store_8():
-            pass
-
-        elif ctx.Store_9():
-            pass
+        elif ctx.Store_1() or ctx.Store_2() or ctx.Store_3()\
+                or ctx.Store_4() or ctx.Store_5() or ctx.Store_6()\
+                or ctx.Store_7() or ctx.Store_8() or ctx.Store_9():
+            self.warningMessage += "[Unavailable resource] The 'store#' clause has no effect because no vector statement is available.\n"
 
         elif ctx.Tag():
             pass

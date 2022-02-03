@@ -1109,6 +1109,45 @@ class XplorMRParserListener(ParseTreeListener):
                         seqIds.append(realSeqId)
             self.factor['seq_id'] = list(set(seqIds))
 
+        if 'atom_id' not in self.factor and 'atom_ids' not in self.factor:
+            if 'type_symbols' in self.factor and len(self.factor['type_symbols']) > 0\
+               and ('type_symbol' not in self.factor or len(self.factor['type_symbol']) == 0):
+                lenTypeSymbols = len(self.factor['type_symbols'])
+                _typeSymbolSelect = set()
+                _compIdSelect = set()
+                for chainId in self.factor['chain_id']:
+                    ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chainId), None)
+                    if ps is not None:
+                        _compIdSelect |= set(ps['comp_id'])
+                for compId in _compIdSelect:
+                    if self.__updateChemCompDict(compId):
+                        for cca in self.__lastChemCompAtoms:
+                            realTypeSymbol = cca[self.__ccaTypeSymbol]
+                            if (lenTypeSymbols == 1 and re.match(self.factor['type_symbols'][0], realTypeSymbol))\
+                               or (lenTypeSymbols == 2 and self.factor['type_symbols'][0] <= realTypeSymbol <= self.factor['type_symbols'][1]):
+                                _typeSymbolSelect.add(realTypeSymbol)
+                self.factor['type_symbol'] = list(_typeSymbolSelect)
+                if len(self.factor['type_symbol']) == 0:
+                    self.factor['atom_id'] = [None]
+                del self.factor['type_symbols']
+
+            if 'type_symbol' in self.factor and len(self.factor['type_symbol']) > 0:
+                _atomIdSelect = set()
+                _compIdSelect = set()
+                for chainId in self.factor['chain_id']:
+                    ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chainId), None)
+                    if ps is not None:
+                        _compIdSelect |= set(ps['comp_id'])
+                for compId in _compIdSelect:
+                    if self.__updateChemCompDict(compId):
+                        for cca in self.__lastChemCompAtoms:
+                            if cca[self.__ccaTypeSymbol] in self.factor['type_symbol']\
+                               and cca[self.__ccaLeavingAtomFlag] != 'Y':
+                                _atomIdSelect.add(cca[self.__ccaAtomId])
+                self.factor['atom_id'] = list(_atomIdSelect)
+                if len(self.factor['atom_id']) == 0:
+                    self.factor['atom_id'] = [None]
+
         if 'atom_ids' in self.factor and len(self.factor['atom_ids']) > 0\
            and ('atom_id' not in self.factor or len(self.factor['atom_id']) == 0):
             lenAtomIds = len(self.factor['atom_ids'])
@@ -1127,11 +1166,14 @@ class XplorMRParserListener(ParseTreeListener):
             for compId in _compIdSelect:
                 if self.__updateChemCompDict(compId):
                     for cca in self.__lastChemCompAtoms:
-                        realAtomId = cca[self.__ccaAtomId]
-                        if (lenAtomIds == 1 and re.match(self.factor['atom_ids'][0], realAtomId))\
-                           or (lenAtomIds == 2 and self.factor['atom_ids'][0] <= realAtomId <= self.factor['atom_ids'][1]):
-                            _atomIdSelect.add(realAtomId)
+                        if cca[self.__ccaLeavingAtomFlag] != 'Y':
+                            realAtomId = cca[self.__ccaAtomId]
+                            if (lenAtomIds == 1 and re.match(self.factor['atom_ids'][0], realAtomId))\
+                               or (lenAtomIds == 2 and self.factor['atom_ids'][0] <= realAtomId <= self.factor['atom_ids'][1]):
+                                _atomIdSelect.add(realAtomId)
             self.factor['atom_id'] = list(_atomIdSelect)
+            if len(self.factor['atom_id']) == 0:
+                self.factor['atom_id'] = [None]
             del self.factor['atom_ids']
 
         if 'atom_id' not in self.factor or len(self.factor['atom_id']) == 0:
@@ -1150,38 +1192,46 @@ class XplorMRParserListener(ParseTreeListener):
             for compId in _compIdSelect:
                 if self.__updateChemCompDict(compId):
                     for cca in self.__lastChemCompAtoms:
-                        realAtomId = cca[self.__ccaAtomId]
-                        _atomIdSelect.add(realAtomId)
+                        if cca[self.__ccaLeavingAtomFlag] != 'Y':
+                            realAtomId = cca[self.__ccaAtomId]
+                            _atomIdSelect.add(realAtomId)
             self.factor['atom_id'] = list(_atomIdSelect)
+            if len(self.factor['atom_id']) == 0:
+                self.factor['atom_id'] = [None]
 
         _atomSelection = []
 
         try:
 
-            for chainId in self.factor['chain_id']:
-                for seqId in self.factor['seq_id']:
-                    for atomId in self.factor['atom_id']:
-                        _atom =\
-                            self.__cR.getDictListWithFilter('atom_site',
-                                                            [{'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                             ],
-                                                            [{'name': 'auth_asym_id', 'type': 'str', 'value': chainId},
-                                                             {'name': 'auth_seq_id', 'type': 'int', 'value': seqId},
-                                                             {'name': 'label_atom_id', 'type': 'str', 'value': atomId},
-                                                             {'name': self.__modelNumName, 'type': 'int',
-                                                              'value': self.__representativeModelId}
-                                                             ])
+            if self.factor['atom_id'][0] is not None:
+                for chainId in self.factor['chain_id']:
+                    for seqId in self.factor['seq_id']:
+                        for atomId in self.factor['atom_id']:
+                            _atom =\
+                                self.__cR.getDictListWithFilter('atom_site',
+                                                                [{'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                                 {'name': 'type_symbol', 'type': 'str'},
+                                                                 ],
+                                                                [{'name': 'auth_asym_id', 'type': 'str', 'value': chainId},
+                                                                 {'name': 'auth_seq_id', 'type': 'int', 'value': seqId},
+                                                                 {'name': 'label_atom_id', 'type': 'str', 'value': atomId},
+                                                                 {'name': self.__modelNumName, 'type': 'int',
+                                                                  'value': self.__representativeModelId}
+                                                                 ])
 
-                        if len(_atom) == 1:
-                            _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': _atom[0]['comp_id'], 'atom_id': atomId})
+                            if len(_atom) == 1:
+                                if ('comp_id' not in self.factor or _atom[0]['comp_id'] in self.factor['comp_id'])\
+                                   and ('type_symbol' not in self.factor or _atom[0]['type_symbol'] in self.factor['type_symbol']):
+                                    _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': _atom[0]['comp_id'], 'atom_id': atomId})
 
-                        else:
-                            ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chainId), None)
-                            if ps is not None and seqId in ps['seq_id']:
-                                compId = ps['comp_id'][ps['seq_id'].index(seqId)]
-                                if self.__updateChemCompDict(compId):
-                                    if any(cca for cca in self.__lastChemCompAtoms if cca[self.__ccaAtomId] == atomId):
-                                        _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': atomId})
+                            else:
+                                ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chainId), None)
+                                if ps is not None and seqId in ps['seq_id']:
+                                    compId = ps['comp_id'][ps['seq_id'].index(seqId)]
+                                    if self.__updateChemCompDict(compId) and ('comp_id' not in self.factor or compId in self.factor['comp_id']):
+                                        cca = next((cca for cca in self.__lastChemCompAtoms if cca[self.__ccaAtomId] == atomId), None)
+                                        if cca is not None and ('type_symbol' not in self.factor or cca[self.__ccaTypeSymbol] in self.factor['type_symbol']):
+                                            _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': atomId})
 
         except Exception as e:
             if self.__verbose:
@@ -1203,6 +1253,8 @@ class XplorMRParserListener(ParseTreeListener):
             del self.factor['comp_id']
         if 'seq_id' in self.factor:
             del self.factor['seq_id']
+        if 'type_symbol' in self.factor:
+            del self.factor['type_symbol']
         if 'atom_id' in self.factor:
             del self.factor['atom_id']
 
@@ -1261,12 +1313,16 @@ class XplorMRParserListener(ParseTreeListener):
                         del self.factor['comp_id']
                     if 'seq_id' in self.factor:
                         del self.factor['seq_id']
+                    if 'type_symbol' in self.factor:
+                        del self.factor['type_symbol']
                     if 'atom_id' in self.factor:
                         del self.factor['atom_id']
                     if 'comp_ids' in self.factor:
                         del self.factor['comp_ids']
                     if 'seq_ids' in self.factor:
                         del self.factor['seq_ids']
+                    if 'type_symbols' in self.factor:
+                        del self.factor['type_symbols']
                     if 'atom_ids' in self.factor:
                         del self.factor['atom_ids']
 
@@ -1414,9 +1470,10 @@ class XplorMRParserListener(ParseTreeListener):
                             compId = ps['comp_id'][ps['seq_id'].index(seqId)]
                             if self.__updateChemCompDict(compId):
                                 for cca in self.__lastChemCompAtoms:
-                                    realAtomId = cca[self.__ccaAtomId]
-                                    if re.match(_atomId, realAtomId):
-                                        _atomIdSelect.add(realAtomId)
+                                    if cca[self.__ccaLeavingAtomFlag] != 'Y':
+                                        realAtomId = cca[self.__ccaAtomId]
+                                        if re.match(_atomId, realAtomId):
+                                            _atomIdSelect.add(realAtomId)
 
             self.factor['atom_id'] = list(_atomIdSelect)
 
@@ -1515,12 +1572,12 @@ class XplorMRParserListener(ParseTreeListener):
                 validProp = False
 
             elif attr_prop == 'mass':
-                _symbolSelect = set()
+                _typeSymbolSelect = set()
                 atomTypes = self.__cR.getDictList('atom_type')
                 if len(atomTypes) > 0 and 'symbol' in atomTypes[0]:
                     for atomType in atomTypes:
                         typeSymbol = atomType['symbol']
-                        atomicNumber = int_atom(typeSymbol.capitalize())
+                        atomicNumber = int_atom(typeSymbol)
                         atomicWeight = ELEMENT_WEIGHTS[atomicNumber]
 
                         if (opCode == '=' and atomicWeight == attr_value)\
@@ -1529,7 +1586,7 @@ class XplorMRParserListener(ParseTreeListener):
                            or (opCode == '<=' and atomicWeight <= attr_value)\
                            or (opCode == '>=' and atomicWeight >= attr_value)\
                            or (opCode == '#' and atomicWeight != attr_value):
-                            _symbolSelect.add(typeSymbol)
+                            _typeSymbolSelect.add(typeSymbol)
 
                 self.factor['atom_selection'] =\
                     self.__cR.getDictListWithFilter('atom_site',
@@ -1538,7 +1595,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                      {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
                                                      {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
                                                      ],
-                                                    [{'name': 'type_symbol', 'type': 'enum', 'enum': _symbolSelect},
+                                                    [{'name': 'type_symbol', 'type': 'enum', 'enum': _typeSymbolSelect},
                                                      {'name': self.__modelNumName, 'type': 'int',
                                                       'value': self.__representativeModelId}
                                                      ])
@@ -1930,9 +1987,15 @@ class XplorMRParserListener(ParseTreeListener):
 
         elif ctx.Chemical():
             if ctx.Colon():  # range expression
-                pass
-            else:
-                pass
+                self.factor['type_symbols'] = [str(ctx.Simple_name(0)), str(ctx.Simple_name(1))]
+
+            elif ctx.Simple_name(0):
+                self.factor['type_symbol'] = [str(ctx.Simple_name(0))]
+
+            elif ctx.Simple_names(0):
+                self.factor['type_symbols'] = [str(ctx.Simple_names(0))]
+
+            self.consumeFactor_expressions("'chemical' clause")
 
         elif ctx.Hydrogen():
             pass

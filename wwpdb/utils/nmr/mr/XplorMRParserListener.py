@@ -190,6 +190,9 @@ class XplorMRParserListener(ParseTreeListener):
     columnTerm = [-1]
     columnFactor = [-1]
 
+    inUnion = False
+    term = None
+
     factor = None
     presetFactors = []  # stack of factor
 
@@ -1045,6 +1048,10 @@ class XplorMRParserListener(ParseTreeListener):
         if self.inVector3D:
             self.inVector3D_columnSel += 1
 
+        else:
+            self.term = []
+            self.factor = {}
+
     # Exit a parse tree produced by XplorMRParser#selection.
     def exitSelection(self, ctx: XplorMRParser.SelectionContext):  # pylint: disable=unused-argument
         if self.inVector3D:
@@ -1055,9 +1062,14 @@ class XplorMRParserListener(ParseTreeListener):
                 if 'atom_selection' in self.factor and len(self.factor['atom_selection']) == 1:
                     self.inVector3D_head = self.factor['atom_selection'][0]
 
+        else:
+            print(self.term)
+
     # Enter a parse tree produced by XplorMRParser#selection_expression.
-    def enterSelection_expression(self, ctx: XplorMRParser.Selection_expressionContext):  # pylint: disable=unused-argument
+    def enterSelection_expression(self, ctx: XplorMRParser.Selection_expressionContext):
         self.columnSelExpr[self.depthSelExpr] += 1
+
+        self.inUnion = bool(ctx.Or_op(0))
 
         self.presetFactors.append(self.factor)
         self.factor = {}
@@ -1084,7 +1096,13 @@ class XplorMRParserListener(ParseTreeListener):
 
         self.consumeFactor_expressions()
 
-        print(self.factor)
+        if self.inUnion or len(self.presetFactors) == 1:
+            if 'atom_selection' in self.factor:
+                for _atom in self.factor['atom_selection']:
+                    if _atom not in self.term:
+                        self.term.append(_atom)
+
+        # print(self.factor)
 
     def consumeFactor_expressions(self, clauseName='atom selection expression', cifCheck=True):
         """ Consume factor expressions as atom selection if possible.
@@ -1312,7 +1330,6 @@ class XplorMRParserListener(ParseTreeListener):
             del self.factor['atom_id']
 
     def intersectionFactor_expressions(self, atomSelection=None):
-
         self.consumeFactor_expressions()
 
         if 'atom_selection' not in self.factor:
@@ -1332,6 +1349,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by XplorMRParser#factor.
     def enterFactor(self, ctx: XplorMRParser.FactorContext):
         self.columnFactor[self.depthSelExpr] += 1
+
         if ctx.selection_expression():
             self.depthSelExpr += 1
 

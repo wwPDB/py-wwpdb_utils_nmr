@@ -14,6 +14,7 @@ import numpy as np
 from antlr4 import ParseTreeListener
 from wwpdb.utils.nmr.mr.XplorMRParser import XplorMRParser
 
+from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 from wwpdb.utils.config.ConfigInfo import getSiteId
 from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommon
 from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
@@ -143,6 +144,9 @@ class XplorMRParserListener(ParseTreeListener):
                                          ]
                 }
 
+    # BMRB chemical shift statistics
+    __csStat = None
+
     # ChemComp reader
     __ccR = None
 
@@ -219,7 +223,7 @@ class XplorMRParserListener(ParseTreeListener):
         except Exception as e:
 
             if self.__verbose:
-                self.__lfh.write(f"+XplorMRParserListener() ++ Error  - {str(e)}\n")
+                self.__lfh.write(f"+XplorMRParserListener.__init__() ++ Error  - {str(e)}\n")
 
         if polySeq is not None:
             self.__polySeq = polySeq
@@ -252,7 +256,13 @@ class XplorMRParserListener(ParseTreeListener):
 
             except Exception as e:
                 if self.__verbose:
-                    self.__lfh.write(f"+XplorMRParserListener() ++ Error - {str(e)}\n")
+                    self.__lfh.write(f"+XplorMRParserListener.__init__() ++ Error - {str(e)}\n")
+
+        # BMRB chemical shift statistics
+        self.__csStat = BMRBChemShiftStat()
+
+        if not self.__csStat.isOk():
+            raise IOError("+XplorMRParserListener.__init__() ++ Error  - BMRBChemShiftStat is not available.")
 
         # CCD accessing utility
         __cICommon = ConfigInfoAppCommon(getSiteId())
@@ -2137,7 +2147,7 @@ class XplorMRParserListener(ParseTreeListener):
                 self.warningMessage += "[Invalid data] The 'point' clause has no effect because no 3d-vector is specified.\n"
 
             else:
-                _atomSelection = []
+                atomSelection = []
 
                 try:
 
@@ -2171,13 +2181,13 @@ class XplorMRParserListener(ParseTreeListener):
                             del atom['x']
                             del atom['y']
                             del atom['z']
-                            _atomSelection.append(atom)
+                            atomSelection.append(atom)
 
                 except Exception as e:
                     if self.__verbose:
                         self.__lfh.write(f"+XplorMRParserListener.exitFactor() ++ Error  - {str(e)}\n")
 
-                self.factor['atom_selection'] = _atomSelection
+                self.factor['atom_selection'] = atomSelection
 
                 if len(self.factor['atom_selection']) == 0:
                     self.warningMessage += "[Invalid data] The 'cut' clause has no effect.\n"
@@ -2189,7 +2199,43 @@ class XplorMRParserListener(ParseTreeListener):
                 "because the internal atom selection is fragile in the restraint file.\n"
 
         elif ctx.Pseudo():
-            pass
+            atomSelection = []
+
+            try:
+
+                _atomSelection =\
+                    self.__cR.getDictListWithFilter('atom_site',
+                                                    [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                     {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                                     {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                     {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
+                                                     ],
+                                                    [{'name': self.__modelNumName, 'type': 'int',
+                                                      'value': self.__representativeModelId}
+                                                     ])
+
+                lastCompId = None
+                pseudoAtoms = None
+
+                for _atom in _atomSelection:
+                    compId = _atom['comp_id']
+                    atomId = _atom['atom_id']
+
+                    if compId is not lastCompId:
+                        pseudoAtoms = self.__csStat.getPseudoAtoms(compId)
+                        lastCompId = compId
+
+                    if atomId in pseudoAtoms:
+                        atomSelection.append(_atom)
+
+            except Exception as e:
+                if self.__verbose:
+                    self.__lfh.write(f"+XplorMRParserListener.exitFactor() ++ Error  - {str(e)}\n")
+
+            self.factor['atom_selection'] = atomSelection
+
+            if len(self.factor['atom_selection']) == 0:
+                self.warningMessage += "[Invalid data] The 'pseudo' clause has no effect.\n"
 
         elif ctx.Residue():
             if ctx.Colon():  # range expression

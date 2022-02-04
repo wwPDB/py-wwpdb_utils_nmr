@@ -10,6 +10,7 @@
 # 25-Jun-2021  M. Yokochi - add getAtomLikeNameSet() (DAOTHER-6830)
 # 13-Oct-2021  M. Yokochi - code revision according to PEP8 using Pylint (DAOTHER-7389, issue #5)
 # 03-Dec-2021  M. Yokochi - optimize loading performance of other chemical shift statistics (DAOTHER-7514)
+# 04-Feb-2022  M. Yokochi - add getPseudoAtoms() (nmr-restraint-remediation)
 ##
 """ Wrapper class for retrieving BMRB chemical shift statistics.
     @author: Masashi Yokochi
@@ -523,6 +524,27 @@ class BMRBChemShiftStat:
 
         return [i['atom_id'] for i in cs_stat
                 if i['atom_id'] not in bb_atoms and (not excl_minor_atom or 'secondary' not in i or (excl_minor_atom and i['secondary']))]
+
+    def getPseudoAtoms(self, comp_id, excl_minor_atom=False, primary=False):
+        """ Return all pseudo atoms of a give comp_id.
+        """
+
+        if comp_id not in self.__std_comp_ids:
+            self.loadOtherStatFromCsvFiles(comp_id)
+
+        if comp_id not in self.__all_comp_ids:
+            self.__appendExtraFromCcd(comp_id)
+
+        cs_stat = self.__get(comp_id)
+
+        if comp_id in self.__std_comp_ids or primary:
+            return [i['atom_id'] for i in cs_stat
+                    if (('methyl' in i['desc'] and i['atom_id'][0] == 'H') or 'geminal' in i['desc'] or i['desc'] == 'aroma-opposite')
+                    and (not excl_minor_atom or (excl_minor_atom and i['primary']))]
+
+        return [i['atom_id'] for i in cs_stat
+                if (('methyl' in i['desc'] and i['atom_id'][0] == 'H') or 'geminal' in i['desc'] or i['desc'] == 'aroma-opposite')
+                and (not excl_minor_atom or 'secondary' not in i or (excl_minor_atom and i['secondary']))]
 
     def loadStatFromCsvFiles(self):
         """ Load all BMRB chemical shift statistics from CSV files.

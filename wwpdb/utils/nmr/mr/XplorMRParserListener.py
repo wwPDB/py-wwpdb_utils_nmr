@@ -152,7 +152,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     __lastCompId = None
     __lastCompIdTest = False
-    __lastChemCompDict = None
+    # __lastChemCompDict = None
     __lastChemCompAtoms = None
     __lastChemCompBonds = None
 
@@ -166,7 +166,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     __ccbAtomId1 = None
     __ccbAtomId2 = None
-    __ccbAromaticFlag = None
+    # __ccbAromaticFlag = None
 
     # CIF reader
     __cR = None
@@ -191,6 +191,7 @@ class XplorMRParserListener(ParseTreeListener):
     columnFactor = [-1]
 
     factor = None
+    presetFactors = []  # stack of factor
 
     # 3D vectors in point clause
     inVector3D = False
@@ -329,8 +330,8 @@ class XplorMRParserListener(ParseTreeListener):
         atomId2 = next(d for d in self.__chemCompBondDict if d[0] == '_chem_comp_bond.atom_id_2')
         self.__ccbAtomId2 = self.__chemCompBondDict.index(atomId2)
 
-        aromaticFlag = next(d for d in self.__chemCompBondDict if d[0] == '_chem_comp_bond.pdbx_aromatic_flag')
-        self.__ccbAromaticFlag = self.__chemCompBondDict.index(aromaticFlag)
+        # aromaticFlag = next(d for d in self.__chemCompBondDict if d[0] == '_chem_comp_bond.pdbx_aromatic_flag')
+        # self.__ccbAromaticFlag = self.__chemCompBondDict.index(aromaticFlag)
 
     def __updateChemCompDict(self, compId):
         """ Update CCD information for a given comp_id.
@@ -344,7 +345,7 @@ class XplorMRParserListener(ParseTreeListener):
             self.__lastCompId = compId
 
             if self.__lastCompIdTest:
-                self.__lastChemCompDict = self.__ccR.getChemCompDict()
+                # self.__lastChemCompDict = self.__ccR.getChemCompDict()
                 self.__lastChemCompAtoms = self.__ccR.getAtomList()
                 self.__lastChemCompBonds = self.__ccR.getBonds()
 
@@ -1080,7 +1081,12 @@ class XplorMRParserListener(ParseTreeListener):
         """ Consume factor expressions as atom selection if possible.
         """
 
-        if 'atom_selection' in self.factor or len(self.factor) == 0:
+        if ('atom_id' in self.factor and self.factor['atom_id'][0] is None)\
+           or ('atom_selection' in self.factor and len(self.factor['atom_selection']) == 0):
+            self.factor = {'atom_selection': []}
+            return
+
+        if not any(key for key in self.factor if key != 'atom_selection'):
             return
 
         if 'chain_id' not in self.factor or len(self.factor['chain_id']) == 0:
@@ -1273,7 +1279,14 @@ class XplorMRParserListener(ParseTreeListener):
             if atom not in atomSelection:
                 atomSelection.append(atom)
 
-        self.factor['atom_selection'] = atomSelection
+        if 'atom_selection' not in self.factor:
+            self.factor['atom_selection'] = atomSelection
+        else:
+            _atomSelection = []
+            for _atom in self.factor['atom_selection']:
+                if _atom in atomSelection:
+                    _atomSelection.append(_atom)
+            self.factor['atom_selection'] = _atomSelection
 
         if len(self.factor['atom_selection']) == 0:
             self.warningMessage += f"[Invalid data] The {clauseName} has no effect.\n"
@@ -1289,10 +1302,28 @@ class XplorMRParserListener(ParseTreeListener):
         if 'atom_id' in self.factor:
             del self.factor['atom_id']
 
+    def intersectionFactor_expressions(self, atomSelection=None):
+
+        self.consumeFactor_expressions()
+
+        if 'atom_selection' not in self.factor:
+            self.factor['atom_selection'] = atomSelection
+            return
+
+        if atomSelection is None or len(atomSelection) == 0:
+            self.factor['atom_selection'] = []
+
+        _atomSelection = []
+        for _atom in self.factor['atom_selection']:
+            if _atom in atomSelection:
+                _atomSelection.append(_atom)
+
+        self.factor['atom_selection'] = _atomSelection
+
     # Enter a parse tree produced by XplorMRParser#factor.
     def enterFactor(self, ctx: XplorMRParser.FactorContext):
         self.columnFactor[self.depthSelExpr] += 1
-        if ctx.selection_expression() is not None:
+        if ctx.selection_expression():
             self.depthSelExpr += 1
 
             depth = self.depthSelExpr
@@ -1310,6 +1341,9 @@ class XplorMRParserListener(ParseTreeListener):
                 self.columnSelExpr.append(-1)
                 self.columnTerm.append(-1)
                 self.columnFactor.append(-1)
+
+            self.presetFactors.append(self.factor)
+
         else:  # @debug
             depth = self.depthSelExpr
 
@@ -1319,6 +1353,7 @@ class XplorMRParserListener(ParseTreeListener):
             self.inVector3D_tail = None
             self.inVector3D_head = None
             self.vector3D = None
+            self.presetFactors.append(self.factor)
 
         # @debug
         # if self.__verbose:
@@ -1331,7 +1366,7 @@ class XplorMRParserListener(ParseTreeListener):
 
             try:
 
-                self.factor['atom_selection'] =\
+                atomSelection =\
                     self.__cR.getDictListWithFilter('atom_site',
                                                     [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                                      {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
@@ -1342,7 +1377,10 @@ class XplorMRParserListener(ParseTreeListener):
                                                       'value': self.__representativeModelId}
                                                      ])
 
+                self.intersectionFactor_expressions(atomSelection)
+
                 if len(self.factor['atom_selection']) == 0:
+                    self.factor['atom_id'] = [None]
                     clauseName = 'all' if ctx.All() else 'known'
                     self.warningMessage += f"[Invalid data] The {clauseName!r} clause has no effect.\n"
 
@@ -1370,7 +1408,7 @@ class XplorMRParserListener(ParseTreeListener):
                 if self.__verbose:
                     self.__lfh.write(f"+XplorMRParserListener.exitFactor() ++ Error  - {str(e)}\n")
 
-        elif ctx.Around():
+        elif ctx.Around() or ctx.Saround():  # 'saround' is equivalent to 'around' in NMR study because there is no crystallographic symmetry operation
             around = float(str(ctx.Real(0)))
             _atomSelection = []
 
@@ -1447,6 +1485,7 @@ class XplorMRParserListener(ParseTreeListener):
                     self.factor['atom_selection'] = atomSelection
 
                     if len(self.factor['atom_selection']) == 0:
+                        self.factor['atom_id'] = [None]
                         self.warningMessage += "[Invalid data] The 'around' clause has no effect.\n"
 
         elif ctx.Atom():
@@ -1466,6 +1505,7 @@ class XplorMRParserListener(ParseTreeListener):
                 simpleNamesIndex += 1
 
             if len(self.factor['chain_id']) == 0:
+                self.factor['atom_id'] = [None]
                 self.warningMessage += "[Invalid data] Couldn't specify segment name "\
                     f"'{chainId}' the coordinates.\n"  # do not use 'chainId!r' expression, '%' code throws ValueError
 
@@ -1548,7 +1588,7 @@ class XplorMRParserListener(ParseTreeListener):
                 elif opCode == '#':
                     valueType['type'] = 'range-float' if not absolute else 'range-abs-float'
                     valueType['range'] = {'not_equal_to': attr_value}
-                self.factor['atom_selection'] =\
+                atomSelection =\
                     self.__cR.getDictListWithFilter('atom_site',
                                                     [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                                      {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
@@ -1560,11 +1600,14 @@ class XplorMRParserListener(ParseTreeListener):
                                                       'value': self.__representativeModelId}
                                                      ])
 
+                self.intersectionFactor_expressions(atomSelection)
+
             elif attr_prop.startswith('bcom')\
                     or attr_prop.startswith('qcom')\
                     or attr_prop.startswith('xcom')\
                     or attr_prop.startswith('ycom')\
                     or attr_prop.startswith('zcom'):  # BCOMP, QCOMP, XCOMP, YCOMP, ZCOM`
+                self.factor['atom_id'] = [None]
                 self.warningMessage += f"[Unavailable resource] The attribute property {_attr_prop!r} "\
                     "requires a comparison coordinate set.\n"
                 validProp = False
@@ -1589,7 +1632,7 @@ class XplorMRParserListener(ParseTreeListener):
                 elif opCode == '#':
                     valueType['type'] = 'range-int' if not absolute else 'range-abs-int'
                     valueType['range'] = {'not_equal_to': attr_value}
-                self.factor['atom_selection'] =\
+                atomSelection =\
                     self.__cR.getDictListWithFilter('atom_site',
                                                     [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                                      {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
@@ -1601,12 +1644,16 @@ class XplorMRParserListener(ParseTreeListener):
                                                       'value': self.__representativeModelId}
                                                      ])
 
+                self.intersectionFactor_expressions(atomSelection)
+
             elif attr_prop in ('dx', 'dy', 'dz', 'harm'):
+                self.factor['atom_id'] = [None]
                 self.warningMessage += f"[Unavailable resource] The attribute property {_attr_prop!r} "\
                     "related to atomic force of each atom is not possessed in the static coordinate file.\n"
                 validProp = False
 
             elif attr_prop.startswith('fbet'):  # FBETA
+                self.factor['atom_id'] = [None]
                 self.warningMessage += f"[Unavailable resource] The attribute property {_attr_prop!r} "\
                     "related to the Langevin dynamics (nonzero friction coefficient) is not possessed in the static coordinate file.\n"
                 validProp = False
@@ -1628,7 +1675,7 @@ class XplorMRParserListener(ParseTreeListener):
                            or (opCode == '#' and atomicWeight != attr_value):
                             _typeSymbolSelect.add(typeSymbol)
 
-                self.factor['atom_selection'] =\
+                atomSelection =\
                     self.__cR.getDictListWithFilter('atom_site',
                                                     [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                                      {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
@@ -1639,6 +1686,8 @@ class XplorMRParserListener(ParseTreeListener):
                                                      {'name': self.__modelNumName, 'type': 'int',
                                                       'value': self.__representativeModelId}
                                                      ])
+
+                self.intersectionFactor_expressions(atomSelection)
 
             elif attr_prop == 'q':
                 valueType = {'name': 'occupancy'}
@@ -1660,7 +1709,7 @@ class XplorMRParserListener(ParseTreeListener):
                 elif opCode == '#':
                     valueType['type'] = 'range-float' if not absolute else 'range-abs-float'
                     valueType['range'] = {'not_equal_to': attr_value}
-                self.factor['atom_selection'] =\
+                atomSelection =\
                     self.__cR.getDictListWithFilter('atom_site',
                                                     [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                                      {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
@@ -1672,12 +1721,16 @@ class XplorMRParserListener(ParseTreeListener):
                                                       'value': self.__representativeModelId}
                                                      ])
 
+                self.intersectionFactor_expressions(atomSelection)
+
             elif attr_prop in ('refx', 'refy', 'refz', 'rmsd'):
+                self.factor['atom_id'] = [None]
                 self.warningMessage += f"[Unavailable resource] The attribute property {_attr_prop!r} "\
                     "requires a reference coordinate set.\n"
                 validProp = False
 
             elif attr_prop == ('vx', 'vy', 'vz'):
+                self.factor['atom_id'] = [None]
                 self.warningMessage += f"[Unavailable resource] The attribute property {_attr_prop!r} "\
                     "related to current velocities of each atom is not possessed in the static coordinate file.\n"
                 validProp = False
@@ -1702,7 +1755,7 @@ class XplorMRParserListener(ParseTreeListener):
                 elif opCode == '#':
                     valueType['type'] = 'range-float' if not absolute else 'range-abs-float'
                     valueType['range'] = {'not_equal_to': attr_value}
-                self.factor['atom_selection'] =\
+                atomSelection =\
                     self.__cR.getDictListWithFilter('atom_site',
                                                     [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                                      {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
@@ -1714,7 +1767,10 @@ class XplorMRParserListener(ParseTreeListener):
                                                       'value': self.__representativeModelId}
                                                      ])
 
+                self.intersectionFactor_expressions(atomSelection)
+
             if validProp and len(self.factor['atom_selection']) == 0:
+                self.factor['atom_id'] = [None]
                 _absolute = ' abs ' if absolute else ''
                 self.warningMessage += f"[Invalid data] The 'attribute' clause ('{_attr_prop}{_absolute} {opCode} {attr_value}') has no effect.\n"
 
@@ -1865,9 +1921,11 @@ class XplorMRParserListener(ParseTreeListener):
                 self.factor['atom_selection'] = atomSelection
 
                 if len(self.factor['atom_selection']) == 0:
+                    self.factor['atom_id'] = [None]
                     self.warningMessage += "[Invalid data] The 'bondedto' clause has no effect.\n"
 
             else:
+                self.factor['atom_id'] = [None]
                 self.warningMessage += "[Invalid data] The 'bondedto' clause has no effect because no atom is selected.\n"
 
         elif ctx.ByGroup():
@@ -1962,11 +2020,13 @@ class XplorMRParserListener(ParseTreeListener):
                         atomSelection.append(atom)
 
                 if len(atomSelection) <= len(self.factor['atom_selection']):
+                    self.factor['atom_id'] = [None]
                     self.warningMessage += "[Invalid data] The 'bygroup' clause has no effect.\n"
 
                 self.factor['atom_selection'] = atomSelection
 
             else:
+                self.factor['atom_id'] = [None]
                 self.warningMessage += "[Invalid data] The 'bygroup' clause has no effect because no atom is selected.\n"
 
         elif ctx.ByRes():
@@ -2016,9 +2076,11 @@ class XplorMRParserListener(ParseTreeListener):
                 self.factor['atom_selection'] = atomSelection
 
                 if len(self.factor['atom_selection']) == 0:
+                    self.factor['atom_id'] = [None]
                     self.warningMessage += "[Invalid data] The 'byres' clause has no effect.\n"
 
             else:
+                self.factor['atom_id'] = [None]
                 self.warningMessage += "[Invalid data] The 'byres' clause has no effect because no atom is selected.\n"
 
         elif ctx.Chemical():
@@ -2049,6 +2111,7 @@ class XplorMRParserListener(ParseTreeListener):
             self.consumeFactor_expressions("'hydrogen' clause", False)
 
         elif ctx.Id():
+            self.factor['atom_id'] = [None]
             self.warningMessage += "[Unavailable resource] The 'id' clause has no effect "\
                 "because the internal atom number is not included in the coordinate file.\n"
 
@@ -2085,6 +2148,7 @@ class XplorMRParserListener(ParseTreeListener):
             self.factor['atom_selection'] = [atom for atom in _atomSelection if atom not in _refAtomSelection]
 
             if len(self.factor['atom_selection']) == 0:
+                self.factor['atom_id'] = [None]
                 self.warningMessage += "[Invalid data] The 'not' clause has no effect.\n"
 
         elif ctx.Point():
@@ -2144,6 +2208,7 @@ class XplorMRParserListener(ParseTreeListener):
                 cut = float(str(ctx.Real(3)))
 
             if self.vector3D is None:
+                self.factor['atom_id'] = [None]
                 self.warningMessage += "[Invalid data] The 'point' clause has no effect because no 3d-vector is specified.\n"
 
             else:
@@ -2187,14 +2252,17 @@ class XplorMRParserListener(ParseTreeListener):
                     if self.__verbose:
                         self.__lfh.write(f"+XplorMRParserListener.exitFactor() ++ Error  - {str(e)}\n")
 
-                self.factor['atom_selection'] = atomSelection
+                self.factor = self.presetFactors.pop()
+                self.intersectionFactor_expressions(atomSelection)
 
                 if len(self.factor['atom_selection']) == 0:
+                    self.factor['atom_id'] = [None]
                     self.warningMessage += "[Invalid data] The 'cut' clause has no effect.\n"
 
             self.vector3D = None
 
         elif ctx.Previous():
+            self.factor['atom_id'] = [None]
             self.warningMessage += "[Unavailable resource] The 'previous' clause has no effect "\
                 "because the internal atom selection is fragile in the restraint file.\n"
 
@@ -2232,9 +2300,10 @@ class XplorMRParserListener(ParseTreeListener):
                 if self.__verbose:
                     self.__lfh.write(f"+XplorMRParserListener.exitFactor() ++ Error  - {str(e)}\n")
 
-            self.factor['atom_selection'] = atomSelection
+            self.intersectionFactor_expressions(atomSelection)
 
             if len(self.factor['atom_selection']) == 0:
+                self.factor['atom_id'] = [None]
                 self.warningMessage += "[Invalid data] The 'pseudo' clause has no effect.\n"
 
         elif ctx.Residue():
@@ -2257,9 +2326,6 @@ class XplorMRParserListener(ParseTreeListener):
             elif ctx.Simple_names(0):
                 self.factor['comp_ids'] = [str(ctx.Simple_names(0))]
 
-        elif ctx.Saround():
-            pass
-
         elif ctx.SegIdentifier():
             if ctx.Colon():  # range expression
                 if ctx.Simple_name(0):
@@ -2274,6 +2340,7 @@ class XplorMRParserListener(ParseTreeListener):
                                            if begChainId <= ps['chain_id'] <= endChainId]
 
                 if len(self.factor['chain_id']) == 0:
+                    self.factor['atom_id'] = [None]
                     self.warningMessage += f"[Invalid data] Couldn't specify segment name {begChainId:!r}:{endChainId:!r} in the coordinates.\n"
 
             else:
@@ -2290,12 +2357,14 @@ class XplorMRParserListener(ParseTreeListener):
                     self.factor['chain_id'] = [ps['chain_id'] for ps in self.__polySeq
                                                if re.match(_chainId, ps['chain_id'])]
                 if len(self.factor['chain_id']) == 0:
+                    self.factor['atom_id'] = [None]
                     self.warningMessage += "[Invalid data] Couldn't specify segment name "\
                         f"'{chainId}' in the coordinates.\n"  # do not use 'chainId!r' expression, '%' code throws ValueError
 
         elif ctx.Store_1() or ctx.Store_2() or ctx.Store_3()\
                 or ctx.Store_4() or ctx.Store_5() or ctx.Store_6()\
                 or ctx.Store_7() or ctx.Store_8() or ctx.Store_9():
+            self.factor['atom_id'] = [None]
             self.warningMessage += "[Unavailable resource] The 'store#' clause has no effect "\
                 "because the internal vector statement is fragile in the restraint file.\n"
 
@@ -2329,13 +2398,19 @@ class XplorMRParserListener(ParseTreeListener):
                 if self.__verbose:
                     self.__lfh.write(f"+XplorMRParserListener.exitFactor() ++ Error  - {str(e)}\n")
 
-            self.factor['atom_selection'] = atomSelection
+            self.intersectionFactor_expressions(atomSelection)
 
             if len(self.factor['atom_selection']) == 0:
+                self.factor['atom_id'] = [None]
                 self.warningMessage += "[Invalid data] The 'tag' clause has no effect.\n"
 
         if ctx.selection_expression() is not None:
             self.depthSelExpr -= 1
+
+            presetFactor = self.presetFactors.pop()
+            atomSelection = None if 'atom_selection' not in presetFactor else presetFactor['atom_selection']
+
+            self.intersectionFactor_expressions(atomSelection)
 
     # The followings are extensions.
     def getContentSubtype(self):

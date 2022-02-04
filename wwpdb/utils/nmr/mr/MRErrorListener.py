@@ -30,12 +30,16 @@ class MRErrorListener(ErrorListener):
     def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
         if self.__messageList is None:
             self.__messageList = []
+            
+        _msg = msg.split("'")
+        length = 1 if 'alternative' in msg or len(_msg) < 2 else len(_msg[1])
 
         _dict = {'file_path': self.__filePath,
                  'file_name': self.__fileName,
                  'line_number': line,
                  'column_position': column,
-                 'message': msg}
+                 'message': msg,
+                 'marker': " " * (column) + "^" * (length)}
 
         _line = 1
         with open(self.__filePath, 'r', encoding='UTF-8') as ifp:
@@ -48,7 +52,6 @@ class MRErrorListener(ErrorListener):
                 _line += 1
 
         if 'error at' in _dict['message']:  # lexer error
-            _dict['marker'] = " " * (column - 1) + "^"
             try:
                 p = _dict['message'].index('error at')
                 _dict['message'] = _dict['message'][0:p] + 'error at:'
@@ -56,7 +59,6 @@ class MRErrorListener(ErrorListener):
                 pass
 
         elif 'at input' in _dict['message']:  # parser error
-            _dict['marker'] = " " * (column - 1) + "^"
             try:
                 p = _dict['message'].index('at input')
                 _dict['message'] = _dict['message'][0:p] + 'at input:'

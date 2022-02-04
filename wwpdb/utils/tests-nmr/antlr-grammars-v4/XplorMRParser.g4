@@ -638,7 +638,7 @@ factor:
 	All |
 	factor Around Real |
 	Atom (Simple_names | Simple_name) (Integers | Integer) (Simple_names | Simple_name) |
-	Attribute Abs? Simple_name Comparison_ops Real |
+	Attribute Abs? Attr_properties Comparison_ops Real |
 	BondedTo factor |
 	ByGroup factor |
 	ByRes factor |
@@ -648,7 +648,8 @@ factor:
 	Known |
 	Name (Simple_names | Simple_name (Colon Simple_name)?) |
 	Not_op factor |
-	Point vector_3d Cut Real |
+	Point L_paren Real Comma? Real Comma? Real R_paren Cut Real |
+	Point L_paren Tail Equ_op selection Comma? (Head Equ_op selection)? R_paren Cut Real |
 	Previous |
 	Pseudo |
 	Residue (Integers | Integer (Colon Integer)?) |
@@ -660,8 +661,8 @@ factor:
 
 /* Three-dimentional vectors - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node15.html
-*/
-vector_3d:
-	L_paren Real Real Real R_paren |
-	L_paren Tail Equ_op selection (Head Equ_op selection)? R_paren;
 
+vector_3d:
+	L_paren Real Comma? Real Comma? Real R_paren |
+	L_paren Tail Equ_op selection Comma? (Head Equ_op selection)? R_paren;
+*/

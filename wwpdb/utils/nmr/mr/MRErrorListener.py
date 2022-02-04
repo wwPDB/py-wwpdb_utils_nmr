@@ -28,30 +28,42 @@ class MRErrorListener(ErrorListener):
             else os.path.basename(filePath)
 
     def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
-
         if self.__messageList is None:
             self.__messageList = []
 
-        dict = {'file_path': self.__filePath,
-                'file_name': self.__fileName,
-                'line_number': line,
-                'column_position': column,
-                'message': msg}
+        _dict = {'file_path': self.__filePath,
+                 'file_name': self.__fileName,
+                 'line_number': line,
+                 'column_position': column,
+                 'message': msg}
 
         _line = 1
         with open(self.__filePath, 'r', encoding='UTF-8') as ifp:
             for content in ifp:
                 if _line == line:
-                    dict['input'] = content.replace('\t', ' ')\
+                    _dict['input'] = content.replace('\t', ' ')\
                         .replace('\r', ' ').replace('\n', ' ')\
                         .rstrip(' ')
                     break
                 _line += 1
 
-        if 'input' in dict:
-            dict['marker'] = " " * (column - 1) + "^"
+        if 'error at' in _dict['message']:  # lexer error
+            _dict['marker'] = " " * (column - 1) + "^"
+            try:
+                p = _dict['message'].index('error at')
+                _dict['message'] = _dict['message'][0:p] + 'error at:'
+            except ValueError:
+                pass
 
-        self.__messageList.append(dict)
+        elif 'at input' in _dict['message']:  # parser error
+            _dict['marker'] = " " * (column - 1) + "^"
+            try:
+                p = _dict['message'].index('at input')
+                _dict['message'] = _dict['message'][0:p] + 'at input:'
+            except ValueError:
+                pass
+
+        self.__messageList.append(_dict)
 
     def reportAmbiguity(self, recognizer, dfa, startIndex, stopIndex, exact, ambigAlts, configs):
         pass

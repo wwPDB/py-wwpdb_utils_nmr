@@ -704,7 +704,7 @@ def to_np_array(a):
     """ Return Numpy array of a given Cartesian coordinate in {'x': float, 'y': float, 'z': float} format.
     """
 
-    return np.asarray([a['x'], a['y'], a['z']])
+    return np.asarray([a['x'], a['y'], a['z']], dtype=float)
 
 
 def to_unit_vector(a):

@@ -24,7 +24,7 @@ def to_np_array(atom):
     """ Return Numpy array of a given Cartesian coordinate in {'x': float, 'y': float, 'z': float} format.
     """
 
-    return np.asarray([atom['x'], atom['y'], atom['z']])
+    return np.asarray([atom['x'], atom['y'], atom['z']], dtype=float)
 
 
 def to_re_exp(string):
@@ -187,6 +187,13 @@ class XplorMRParserListener(ParseTreeListener):
     columnFactor = [-1]
 
     factor = None
+
+    # 3D vectors in point clause
+    inVector3D = False
+    inVector3D_columnSel = -1
+    inVector3D_tail = None
+    inVector3D_head = None
+    vector3D = None
 
     warningMessage = ''
 
@@ -1024,11 +1031,18 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#selection.
     def enterSelection(self, ctx: XplorMRParser.SelectionContext):  # pylint: disable=unused-argument
-        pass
+        if self.inVector3D:
+            self.inVector3D_columnSel += 1
 
     # Exit a parse tree produced by XplorMRParser#selection.
     def exitSelection(self, ctx: XplorMRParser.SelectionContext):  # pylint: disable=unused-argument
-        pass
+        if self.inVector3D:
+            if self.inVector3D_columnSel == 0:
+                if 'atom_selection' in self.factor and len(self.factor['atom_selection']) == 1:
+                    self.inVector3D_tail = self.factor['atom_selection'][0]
+            elif self.inVector3D_columnSel == 1:
+                if 'atom_selection' in self.factor and len(self.factor['atom_selection']) == 1:
+                    self.inVector3D_head = self.factor['atom_selection'][0]
 
     # Enter a parse tree produced by XplorMRParser#selection_expression.
     def enterSelection_expression(self, ctx: XplorMRParser.Selection_expressionContext):  # pylint: disable=unused-argument
@@ -1289,6 +1303,13 @@ class XplorMRParserListener(ParseTreeListener):
         else:  # @debug
             depth = self.depthSelExpr
 
+        if ctx.Point():
+            self.inVector3D = True
+            self.inVector3D_columnSel = -1
+            self.inVector3D_tail = None
+            self.inVector3D_head = None
+            self.vector3D = None
+
         # @debug
         # if self.__verbose:
         #    print(f"{depth=} {self.columnSelExpr[depth]=} {self.columnTerm[depth]=} {self.columnFactor[depth]=}")
@@ -1340,7 +1361,7 @@ class XplorMRParserListener(ParseTreeListener):
                     self.__lfh.write(f"+XplorMRParserListener.exitFactor() ++ Error  - {str(e)}\n")
 
         elif ctx.Around():
-            around = float(str(ctx.Real()))
+            around = float(str(ctx.Real(0)))
             _atomSelection = []
 
             self.consumeFactor_expressions("atom selection expression before the 'around' clause")
@@ -1490,10 +1511,10 @@ class XplorMRParserListener(ParseTreeListener):
 
         elif ctx.Attribute():
             absolute = bool(ctx.Abs())
-            _attr_prop = str(ctx.Simple_name(0))
+            _attr_prop = str(ctx.Attr_properties())
             attr_prop = _attr_prop.lower()
             opCode = str(ctx.Comparison_ops())
-            attr_value = float(str(ctx.Real()))
+            attr_value = float(str(ctx.Real(0)))
 
             validProp = True
 
@@ -1682,10 +1703,6 @@ class XplorMRParserListener(ParseTreeListener):
                                                      {'name': self.__modelNumName, 'type': 'int',
                                                       'value': self.__representativeModelId}
                                                      ])
-
-            else:
-                self.warningMessage += f"[Syntax error] The attribute property {_attr_prop!r} is unknown.\n"
-                validProp = False
 
             if validProp and len(self.factor['atom_selection']) == 0:
                 _absolute = ' abs ' if absolute else ''
@@ -2061,10 +2078,111 @@ class XplorMRParserListener(ParseTreeListener):
                 self.warningMessage += "[Invalid data] The 'not' clause has no effect.\n"
 
         elif ctx.Point():
-            pass
+            if ctx.Tail():
 
-        elif ctx.Cut():
-            pass
+                if self.inVector3D_tail is not None:
+
+                    try:
+
+                        _tail =\
+                            self.__cR.getDictListWithFilter('atom_site',
+                                                            [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                             {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                             {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
+                                                             ],
+                                                            [{'name': 'auth_asym_id', 'type': 'str', 'value': self.inVector3D_tail['chain_id']},
+                                                             {'name': 'auth_seq_id', 'type': 'int', 'value': self.inVector3D_tail['seq_id']},
+                                                             {'name': 'label_atom_id', 'type': 'str', 'value': self.inVector3D_tail['atom_id']},
+                                                             {'name': self.__modelNumName, 'type': 'int',
+                                                              'value': self.__representativeModelId}
+                                                             ])
+
+                        if len(_tail) == 1:
+                            tail = to_np_array(_tail[0])
+
+                            if self.inVector3D_head is None:
+                                self.vector3D = tail
+
+                            else:
+
+                                _head =\
+                                    self.__cR.getDictListWithFilter('atom_site',
+                                                                    [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                                     {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                                     {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
+                                                                     ],
+                                                                    [{'name': 'auth_asym_id', 'type': 'str', 'value': self.inVector3D_head['chain_id']},
+                                                                     {'name': 'auth_seq_id', 'type': 'int', 'value': self.inVector3D_head['seq_id']},
+                                                                     {'name': 'label_atom_id', 'type': 'str', 'value': self.inVector3D_head['atom_id']},
+                                                                     {'name': self.__modelNumName, 'type': 'int',
+                                                                      'value': self.__representativeModelId}
+                                                                     ])
+
+                                if len(_head) == 1:
+                                    head = to_np_array(_head[0])
+                                    self.vector3D = np.subtract(tail, head, dtype=float)
+
+                    except Exception as e:
+                        if self.__verbose:
+                            self.__lfh.write(f"+XplorMRParserListener.exitFactor() ++ Error  - {str(e)}\n")
+
+                self.inVector3D_tail = self.inVector3D_head = None
+                cut = float(str(ctx.Real(0)))
+
+            else:
+                self.vector3D = [float(str(ctx.Real(0))), float(str(ctx.Real(1))), float(str(ctx.Real(2)))]
+                cut = float(str(ctx.Real(3)))
+
+            if self.vector3D is None:
+                self.warningMessage += "[Invalid data] The 'point' clause has no effect because no 3d-vector is specified.\n"
+
+            else:
+                _atomSelection = []
+
+                try:
+
+                    _neighbor =\
+                        self.__cR.getDictListWithFilter('atom_site',
+                                                        [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                         {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                                         {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                         {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'},
+                                                         {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                         {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                         {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
+                                                         ],
+                                                        [{'name': 'Cartn_x', 'type': 'range-float',
+                                                          'range': {'min_exclusive': (self.vector3D[0] - cut),
+                                                                    'max_exclusive': (self.vector3D[0] + cut)}},
+                                                         {'name': 'Cartn_y', 'type': 'range-float',
+                                                          'range': {'min_exclusive': (self.vector3D[1] - cut),
+                                                                    'max_exclusive': (self.vector3D[1] + cut)}},
+                                                         {'name': 'Cartn_z', 'type': 'range-float',
+                                                          'range': {'min_exclusive': (self.vector3D[2] - cut),
+                                                                    'max_exclusive': (self.vector3D[2] + cut)}},
+                                                         {'name': self.__modelNumName, 'type': 'int',
+                                                          'value': self.__representativeModelId}
+                                                         ])
+
+                    if len(_neighbor) > 0:
+                        neighbor = [atom for atom in _neighbor if np.linalg.norm(to_np_array(atom) - self.vector3D) < cut]
+
+                        for atom in neighbor:
+                            del atom['x']
+                            del atom['y']
+                            del atom['z']
+                            _atomSelection.append(atom)
+
+                except Exception as e:
+                    if self.__verbose:
+                        self.__lfh.write(f"+XplorMRParserListener.exitFactor() ++ Error  - {str(e)}\n")
+
+                self.factor['atom_selection'] = _atomSelection
+
+                if len(self.factor['atom_selection']) == 0:
+                    self.warningMessage += "[Invalid data] The 'cut' clause has no effect.\n"
+
+            self.vector3D = None
 
         elif ctx.Previous():
             pass
@@ -2139,14 +2257,6 @@ class XplorMRParserListener(ParseTreeListener):
 
         if ctx.selection_expression() is not None:
             self.depthSelExpr -= 1
-
-    # Enter a parse tree produced by XplorMRParser#vector_3d.
-    def enterVector_3d(self, ctx: XplorMRParser.Vector_3dContext):  # pylint: disable=unused-argument
-        pass
-
-    # Exit a parse tree produced by XplorMRParser#vector_3d.
-    def exitVector_3d(self, ctx: XplorMRParser.Vector_3dContext):  # pylint: disable=unused-argument
-        pass
 
     # The followings are extensions.
     def getContentSubtype(self):

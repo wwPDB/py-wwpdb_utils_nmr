@@ -1,6 +1,6 @@
 /*
  CNS MR (Magnetic Restraint) lexer grammar for ANTLR v4.
- Copyright 2021 Masashi Yokochi
+ Copyright 2022 Masashi Yokochi
 
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -101,8 +101,8 @@ Noe_avr_methods:	R '-6' | R '-3' | S U M | C E N T E? R?;
 Noe_potential:		B I H A R? M? O? N? I? C? | L O G N O? R? M? A? L? | S Q U A R? E? | S O F T S? Q? U? A? R? E? | S Y M M E? T? R? Y? | H I G H | '3' D P O;
 
 // Predict statement
-Cutoff:			C U T O F? F?;				// = Real
-Cuton:			C U T O N?;				// = Real
+Cutoff:			C U T O F F;				// = Real
+Cuton:			C U T O N;				// = Real
 From:			F R O M;				// = selection
 To:			T O;					// = selection
 
@@ -299,7 +299,8 @@ Angle_dihedral:		A N G L E? | D I H E D? R? A? L?;
 All:			A L L;
 Around:			A R O U N? D?;				// Real (factor as subject)
 Atom:			A T O M;				// Segment_names Residue_numbers Atom_names
-Attribute:		A T T R I? B? U? T? E?;			// Abs? Attr_property Comparison_ops Real
+Attribute:		A T T R I? B? U? T? E?
+			-> pushMode(ATTR_MODE);			// Abs? Attr_property Comparison_ops Real
 BondedTo:		B O N D E? D? T? O?;			// factor
 ByGroup:		B Y G R O? U? P?;			// factor
 ByRes:			B Y R E S?;				// factor
@@ -329,12 +330,6 @@ Store_7:		S T O R E '7';
 Store_8:		S T O R E '8';
 Store_9:		S T O R E '9';
 Tag:			T A G;
-
-// Attribute properties
-Abs:			A B S;
-//Attr_properties:	B | B C O M P? | C H A R G? E? | D X | D Y | D Z | F B E T A? | H A R M | M A S S | Q | Q C O M P? | R E F X | R E F Y | R E F Z | R M S D | V X | V Y | V Z | X | X C O M P? | Y | Y C O M P? | Z | Z C O M P? | S C A T T E R '_' A '1' | S C A T T E R '_' A '2' | S C A T T E R '_' A '3' | S C A T T E R '_' A '4' | S C A T T E R '_' B '1' | S C A T T E R '_' B '2' | S C A T T E R '_' B '3' | S C A T T E R '_' B '4' | S C A T T E R '_' C | S C A T T E R '_' F P | S C A T T E R '_' F D P;
-Comparison_ops:		Equ_op | Lt_op | Gt_op | Leq_op | Geq_op | Neq_op;
-String_comp_ops:	Equ_op | Neq_op;
 
 /* Three-dimentional vectors - Syntax
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
@@ -404,4 +399,12 @@ Neq_op:			'#';
 SPACE:			[ \t\r\n]+ -> skip;
 COMMENT:		'{*' (COMMENT | .)*? '*}' -> channel(HIDDEN);
 LINE_COMMENT:		('#' | '!') ~[\r\n]* -> channel(HIDDEN);
+
+mode ATTR_MODE; // Inside of Attribute tag
+
+// Attribute properties
+Abs:			A B S;
+Attr_properties:	(B | B C O M P? | C H A R G? E? | D X | D Y | D Z | F B E T A? | H A R M | M A S S | Q | Q C O M P? | R E F X | R E F Y | R E F Z | R M S D | V X | V Y | V Z | X | X C O M P? | Y | Y C O M P? | Z | Z C O M P? | S C A T T E R '_' A '1' | S C A T T E R '_' A '2' | S C A T T E R '_' A '3' | S C A T T E R '_' A '4' | S C A T T E R '_' B '1' | S C A T T E R '_' B '2' | S C A T T E R '_' B '3' | S C A T T E R '_' B '4' | S C A T T E R '_' C | S C A T T E R '_' F P | S C A T T E R '_' F D P);
+Comparison_ops:		(Equ_op | Lt_op | Gt_op | Leq_op | Geq_op | Neq_op)
+			-> popMode;
 

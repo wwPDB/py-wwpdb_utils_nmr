@@ -147,7 +147,7 @@ group_statement:
 */
 harmonic_statement:
 	Exponent Equ_op Integer |
-	Normal Equ_op vector_3d;
+	Normal Equ_op L_paren (Real Comma? Real Comma? Real | Tail Equ_op selection Comma? (Head Equ_op selection)?) R_paren;
 
 /* CNS: Suscetibility anisotropy restraints - Syntax
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
@@ -343,12 +343,7 @@ factor:
 	All |
 	factor Around Real |
 	Atom (Simple_names | Simple_name) (Integers | Integer) (Simple_names | Simple_name) |
-	Attribute Abs? Simple_name Comparison_ops Real |
-	Attribute Chemical String_comp_ops Simple_name |
-	Attribute Name String_comp_ops Simple_name |
-	Attribute Abs? Residue Comparison_ops Integer |
-	Attribute Resname String_comp_ops Simple_name |
-	Attribute SegIdentifier String_comp_ops Simple_name |
+	Attribute Abs? Attr_properties Comparison_ops Real |
 	BondedTo factor |
 	ByGroup factor |
 	ByRes factor |
@@ -359,7 +354,8 @@ factor:
 	Known |
 	Name (Simple_names | Simple_name (Colon Simple_name)?) |
 	Not_op factor |
-	Point vector_3d Cut Real |
+	Point L_paren Real Comma? Real Comma? Real R_paren Cut Real |
+	Point L_paren Tail Equ_op selection Comma? (Head Equ_op selection)? R_paren Cut Real |
 	Previous |
 	Pseudo |
 	Residue (Integers | Integer (Colon Integer)?) |
@@ -372,8 +368,8 @@ factor:
 
 /* Three-dimentional vectors - Syntax
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
-*/
+
 vector_3d:
 	L_paren Real Comma? Real Comma? Real R_paren |
 	L_paren Tail Equ_op selection Comma? (Head Equ_op selection)? R_paren;
-
+*/

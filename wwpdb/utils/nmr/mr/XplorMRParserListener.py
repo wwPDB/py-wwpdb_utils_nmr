@@ -2185,7 +2185,8 @@ class XplorMRParserListener(ParseTreeListener):
             self.vector3D = None
 
         elif ctx.Previous():
-            pass
+            self.warningMessage += "[Unavailable resource] The 'previous' clause has no effect "\
+                "because the internal atom selection is fragile in the restraint file.\n"
 
         elif ctx.Pseudo():
             pass
@@ -2250,10 +2251,42 @@ class XplorMRParserListener(ParseTreeListener):
                 or ctx.Store_4() or ctx.Store_5() or ctx.Store_6()\
                 or ctx.Store_7() or ctx.Store_8() or ctx.Store_9():
             self.warningMessage += "[Unavailable resource] The 'store#' clause has no effect "\
-                "because the internal vector statement is not included in the coordinate file.\n"
+                "because the internal vector statement is fragile in the restraint file.\n"
 
         elif ctx.Tag():
-            pass
+            atomSelection = []
+            _sequenceSelect = []
+
+            try:
+
+                _atomSelection =\
+                    self.__cR.getDictListWithFilter('atom_site',
+                                                    [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                     {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                                     {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                     {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
+                                                     ],
+                                                    [{'name': self.__modelNumName, 'type': 'int',
+                                                      'value': self.__representativeModelId}
+                                                     ])
+
+                for _atom in _atomSelection:
+                    _sequence = (_atom['chain_id'], _atom['seq_id'])
+
+                    if _sequence in _sequenceSelect:
+                        continue
+
+                    atomSelection.append(_atom)
+                    _sequenceSelect.append(_sequence)
+
+            except Exception as e:
+                if self.__verbose:
+                    self.__lfh.write(f"+XplorMRParserListener.exitFactor() ++ Error  - {str(e)}\n")
+
+            self.factor['atom_selection'] = atomSelection
+
+            if len(self.factor['atom_selection']) == 0:
+                self.warningMessage += "[Invalid data] The 'tag' clause has no effect.\n"
 
         if ctx.selection_expression() is not None:
             self.depthSelExpr -= 1

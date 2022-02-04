@@ -1059,9 +1059,18 @@ class XplorMRParserListener(ParseTreeListener):
     def enterSelection_expression(self, ctx: XplorMRParser.Selection_expressionContext):  # pylint: disable=unused-argument
         self.columnSelExpr[self.depthSelExpr] += 1
 
+        self.presetFactors.append(self.factor)
+        self.factor = {}
+
     # Exit a parse tree produced by XplorMRParser#selection_expression.
     def exitSelection_expression(self, ctx: XplorMRParser.Selection_expressionContext):  # pylint: disable=unused-argument
         self.columnTerm[self.depthSelExpr] = -1
+
+        presetFactor = self.presetFactors.pop()
+        if presetFactor is not None:
+            atomSelection = None if 'atom_selection' not in presetFactor else presetFactor['atom_selection']
+            if atomSelection is not None:
+                self.intersectionFactor_expressions(atomSelection)
 
     # Enter a parse tree produced by XplorMRParser#term.
     def enterTerm(self, ctx: XplorMRParser.TermContext):  # pylint: disable=unused-argument
@@ -1342,10 +1351,8 @@ class XplorMRParserListener(ParseTreeListener):
                 self.columnTerm.append(-1)
                 self.columnFactor.append(-1)
 
-            self.presetFactors.append(self.factor)
-
-        else:  # @debug
-            depth = self.depthSelExpr
+        # else:  # @debug
+        #    depth = self.depthSelExpr
 
         if ctx.Point():
             self.inVector3D = True
@@ -1353,7 +1360,9 @@ class XplorMRParserListener(ParseTreeListener):
             self.inVector3D_tail = None
             self.inVector3D_head = None
             self.vector3D = None
+
             self.presetFactors.append(self.factor)
+            self.factor = {}
 
         # @debug
         # if self.__verbose:
@@ -2208,6 +2217,7 @@ class XplorMRParserListener(ParseTreeListener):
                 cut = float(str(ctx.Real(3)))
 
             if self.vector3D is None:
+                self.presetFactors.pop()
                 self.factor['atom_id'] = [None]
                 self.warningMessage += "[Invalid data] The 'point' clause has no effect because no 3d-vector is specified.\n"
 
@@ -2404,13 +2414,8 @@ class XplorMRParserListener(ParseTreeListener):
                 self.factor['atom_id'] = [None]
                 self.warningMessage += "[Invalid data] The 'tag' clause has no effect.\n"
 
-        if ctx.selection_expression() is not None:
+        if ctx.selection_expression():
             self.depthSelExpr -= 1
-
-            presetFactor = self.presetFactors.pop()
-            atomSelection = None if 'atom_selection' not in presetFactor else presetFactor['atom_selection']
-
-            self.intersectionFactor_expressions(atomSelection)
 
     # The followings are extensions.
     def getContentSubtype(self):

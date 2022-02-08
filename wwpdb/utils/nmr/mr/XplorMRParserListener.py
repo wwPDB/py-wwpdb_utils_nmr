@@ -188,7 +188,6 @@ class XplorMRParserListener(ParseTreeListener):
     stackFactors = None  # stack of factor
 
     factor = None
-    factorInVector3D = None  # stack of factor in vector 3d expression
 
     # 3D vectors in point clause
     inVector3D = False
@@ -1025,7 +1024,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by XplorMRParser#selection.
     def enterSelection(self, ctx: XplorMRParser.SelectionContext):  # pylint: disable=unused-argument
         if self.__verbose:
-            print("enter_selection")
+            print("  " * self.depth + "enter_selection")
 
         if self.inVector3D:
             self.inVector3D_columnSel += 1
@@ -1038,41 +1037,37 @@ class XplorMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by XplorMRParser#selection.
     def exitSelection(self, ctx: XplorMRParser.SelectionContext):  # pylint: disable=unused-argument
         if self.__verbose:
-            print("exit_selection")
+            print("  " * self.depth + "exit_selection")
+
+        atomSelection = self.stackSelections.pop() if self.stackSelections else []
+        while self.stackSelections:
+            _atomSelection = []
+            _selection = self.stackSelections.pop()
+            if _selection is not None:
+                for _atom in _selection:
+                    if _atom in atomSelection:
+                        _atomSelection.append(_atom)
+            atomSelection = _atomSelection
+
+        if self.__verbose:
+            print("  " * self.depth + f"atom selection: {atomSelection}")
 
         if self.inVector3D:
             if self.inVector3D_columnSel == 0:
-                if 'atom_selection' in self.factor and len(self.factor['atom_selection']) == 1:
-                    self.inVector3D_tail = self.factor['atom_selection'][0]
+                self.inVector3D_tail = atomSelection[0]
             elif self.inVector3D_columnSel == 1:
-                if 'atom_selection' in self.factor and len(self.factor['atom_selection']) == 1:
-                    self.inVector3D_head = self.factor['atom_selection'][0]
-
-        else:
-            atomSelection = self.stackSelections.pop()
-            while self.stackSelections:
-                _atomSelection = []
-                for _atom in self.stackSelections.pop():
-                    if _atom in atomSelection:
-                        _atomSelection.append(_atom)
-                atomSelection = _atomSelection
-            if self.__verbose:
-                print(f"atom selection: {atomSelection}")
+                self.inVector3D_head = atomSelection[0]
 
     # Enter a parse tree produced by XplorMRParser#selection_expression.
     def enterSelection_expression(self, ctx: XplorMRParser.Selection_expressionContext):
         if self.__verbose:
-            print(f"{self.depth}:" + "  " * self.depth + f"enter_sel_expr, union: {bool(ctx.Or_op(0))}")
+            print("  " * self.depth + f"enter_sel_expr, union: {bool(ctx.Or_op(0))}")
 
-        if self.inVector3D:
-            self.factorInVector3D.append(self.factor)
-
-        else:
-            if len(self.factor) > 0:
-                if 'atom_selection' not in self.factor:
-                    self.consumeFactor_expressions()
-                if 'atom_selection' in self.factor:
-                    self.stackSelections.append(self.factor['atom_selection'])
+        if self.depth > 0 and len(self.factor) > 0:
+            if 'atom_selection' not in self.factor:
+                self.consumeFactor_expressions()
+            if 'atom_selection' in self.factor:
+                self.stackSelections.append(self.factor['atom_selection'])
 
         self.factor = {}
 
@@ -1082,27 +1077,25 @@ class XplorMRParserListener(ParseTreeListener):
     def exitSelection_expression(self, ctx: XplorMRParser.Selection_expressionContext):  # pylint: disable=unused-argument
         self.depth -= 1
         if self.__verbose:
-            print(f"{self.depth}:" + "  " * self.depth + "exit_sel_expr")
+            print("  " * self.depth + "exit_sel_expr")
 
-        if self.inVector3D:
-            _factor = self.factorInVector3D.pop()
-            if _factor is not None:
-                atomSelection = None if 'atom_selection' not in _factor else _factor['atom_selection']
-                if atomSelection is not None:
-                    self.intersectionFactor_expressions(atomSelection)
-
-        else:
-            atomSelection = []
-            while self.stackTerms:
-                for _atom in self.stackTerms.pop():
+        atomSelection = []
+        while self.stackTerms:
+            _term = self.stackTerms.pop()
+            if _term is not None:
+                for _atom in _term:
                     if _atom not in atomSelection:
                         atomSelection.append(_atom)
+
+        if len(atomSelection) > 0:
             self.stackSelections.append(atomSelection)
+
+        self.factor = {}
 
     # Enter a parse tree produced by XplorMRParser#term.
     def enterTerm(self, ctx: XplorMRParser.TermContext):  # pylint: disable=unused-argument
         if self.__verbose:
-            print(f"{self.depth}:" + "  " * self.depth + f"enter_term, intersection: {bool(ctx.And_op(0))}")
+            print("  " * self.depth + f"enter_term, intersection: {bool(ctx.And_op(0))}")
 
         self.stackFactors = []
         self.factor = {}
@@ -1113,7 +1106,7 @@ class XplorMRParserListener(ParseTreeListener):
     def exitTerm(self, ctx: XplorMRParser.TermContext):  # pylint: disable=unused-argument
         self.depth -= 1
         if self.__verbose:
-            print(f"{self.depth}:" + "  " * self.depth + "exit_term")
+            print("  " * self.depth + "exit_term")
 
         while self.stackFactors:
             _factor = self.__consumeFactor_expressions(self.stackFactors.pop())
@@ -1382,7 +1375,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by XplorMRParser#factor.
     def enterFactor(self, ctx: XplorMRParser.FactorContext):
         if self.__verbose:
-            print(f"{self.depth}:" + "  " * self.depth + "enter_factor")
+            print("  " * self.depth + f"enter_factor, concatenation: {bool(ctx.factor())}")
 
         if ctx.Point():
             self.inVector3D = True
@@ -1391,21 +1384,22 @@ class XplorMRParserListener(ParseTreeListener):
             self.inVector3D_head = None
             self.vector3D = None
 
-            self.factorInVector3D.append(self.factor)
-            self.factor = {}
-
         self.depth += 1
 
     # Exit a parse tree produced by XplorMRParser#factor.
     def exitFactor(self, ctx: XplorMRParser.FactorContext):
         self.depth -= 1
         if self.__verbose:
-            print(f"{self.depth}:" + "  " * self.depth + "exit_factor")
+            print("  " * self.depth + "exit_factor")
+
+        # concatenation
+        if ctx.factor() and self.stackSelections:
+            self.stackFactors.pop()
+            self.factor = {'atom_selection': self.stackSelections.pop()}
 
         if ctx.All() or ctx.Known():
             if self.__verbose:
                 print("--> all")
-
             try:
 
                 atomSelection =\
@@ -2274,7 +2268,6 @@ class XplorMRParserListener(ParseTreeListener):
                 cut = float(str(ctx.Real(3)))
 
             if self.vector3D is None:
-                self.factorInVector3D.pop()
                 self.factor['atom_id'] = [None]
                 self.warningMessage += "[Invalid data] The 'point' clause has no effect because no 3d-vector is specified.\n"
 
@@ -2319,8 +2312,7 @@ class XplorMRParserListener(ParseTreeListener):
                     if self.__verbose:
                         self.__lfh.write(f"+XplorMRParserListener.exitFactor() ++ Error  - {str(e)}\n")
 
-                self.factor = self.factorInVector3D.pop()
-                self.intersectionFactor_expressions(atomSelection)
+                self.factor['atom_selection'] = atomSelection
 
                 if len(self.factor['atom_selection']) == 0:
                     self.factor['atom_id'] = [None]

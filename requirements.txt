@@ -1,0 +1,17 @@
+wwpdb.utils.config
+wwpdb.utils.align
+pynmrstar ~= 2.6; python_version < '3'
+pynmrstar; python_version >= '3'
+munkres==1.0.12; python_version == '2.7'
+munkres; python_version >= '3'
+mmcif
+numpy
+packaging
+rmsd
+scikit-learn
+antlr4-python2-runtime; python_version == '2.7'
+antlr4-python3-runtime; python_version >= '3'
+#
+# For testing
+testfixtures
+

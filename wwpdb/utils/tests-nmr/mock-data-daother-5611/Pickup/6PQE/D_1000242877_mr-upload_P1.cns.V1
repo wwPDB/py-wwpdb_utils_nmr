@@ -1,0 +1,263 @@
+!
+! ACO file produced by PDBStat [5.15-exp lun jun  1 09:02:43 UTC 2015] 
+!
+   assign (resid 193 and name C   )   (resid 194 and name N   )
+          (resid 194 and name CA  )   (resid 194 and name C   )   1.0   -121.90    52.20   2 
+   assign (resid 194 and name N   )   (resid 194 and name CA  )
+          (resid 194 and name C   )   (resid 195 and name N   )   1.0    136.35    26.45   2 
+   assign (resid 194 and name C   )   (resid 195 and name N   )
+          (resid 195 and name CA  )   (resid 195 and name C   )   1.0   -121.00    33.30   2 
+   assign (resid 195 and name N   )   (resid 195 and name CA  )
+          (resid 195 and name C   )   (resid 196 and name N   )   1.0    137.25    44.25   2 
+   assign (resid 195 and name C   )   (resid 196 and name N   )
+          (resid 196 and name CA  )   (resid 196 and name C   )   1.0   -119.35    27.85   2 
+   assign (resid 196 and name N   )   (resid 196 and name CA  )
+          (resid 196 and name C   )   (resid 197 and name N   )   1.0    131.65    35.65   2 
+   assign (resid 196 and name C   )   (resid 197 and name N   )
+          (resid 197 and name CA  )   (resid 197 and name C   )   1.0   -124.45    47.95   2 
+   assign (resid 197 and name N   )   (resid 197 and name CA  )
+          (resid 197 and name C   )   (resid 198 and name N   )   1.0    135.20    29.00   2 
+   assign (resid 197 and name C   )   (resid 198 and name N   )
+          (resid 198 and name CA  )   (resid 198 and name C   )   1.0   -104.30    45.90   2 
+   assign (resid 198 and name N   )   (resid 198 and name CA  )
+          (resid 198 and name C   )   (resid 199 and name N   )   1.0    124.55    22.25   2 
+   assign (resid 198 and name C   )   (resid 199 and name N   )
+          (resid 199 and name CA  )   (resid 199 and name C   )   1.0   -118.60    36.70   2 
+   assign (resid 199 and name N   )   (resid 199 and name CA  )
+          (resid 199 and name C   )   (resid 200 and name N   )   1.0    126.65    44.55   2 
+   assign (resid 200 and name C   )   (resid 201 and name N   )
+          (resid 201 and name CA  )   (resid 201 and name C   )   1.0    -50.50    20.70   2 
+   assign (resid 201 and name N   )   (resid 201 and name CA  )
+          (resid 201 and name C   )   (resid 202 and name N   )   1.0    -44.90    21.30   2 
+   assign (resid 202 and name C   )   (resid 203 and name N   )
+          (resid 203 and name CA  )   (resid 203 and name C   )   1.0    -64.10    21.60   2 
+   assign (resid 203 and name N   )   (resid 203 and name CA  )
+          (resid 203 and name C   )   (resid 204 and name N   )   1.0    -32.90    20.00   2 
+   assign (resid 203 and name C   )   (resid 204 and name N   )
+          (resid 204 and name CA  )   (resid 204 and name C   )   1.0    -65.70    20.00   2 
+   assign (resid 204 and name N   )   (resid 204 and name CA  )
+          (resid 204 and name C   )   (resid 205 and name N   )   1.0    -43.70    20.00   2 
+   assign (resid 204 and name C   )   (resid 205 and name N   )
+          (resid 205 and name CA  )   (resid 205 and name C   )   1.0    -67.65    32.75   2 
+   assign (resid 205 and name N   )   (resid 205 and name CA  )
+          (resid 205 and name C   )   (resid 206 and name N   )   1.0    -39.90    20.00   2 
+   assign (resid 205 and name C   )   (resid 206 and name N   )
+          (resid 206 and name CA  )   (resid 206 and name C   )   1.0   -113.95    31.85   2 
+   assign (resid 206 and name N   )   (resid 206 and name CA  )
+          (resid 206 and name C   )   (resid 207 and name N   )   1.0    -10.45    25.05   2 
+   assign (resid 208 and name C   )   (resid 209 and name N   )
+          (resid 209 and name CA  )   (resid 209 and name C   )   1.0   -120.60    34.80   2 
+   assign (resid 209 and name N   )   (resid 209 and name CA  )
+          (resid 209 and name C   )   (resid 210 and name N   )   1.0    146.10    26.00   2 
+   assign (resid 209 and name C   )   (resid 210 and name N   )
+          (resid 210 and name CA  )   (resid 210 and name C   )   1.0   -130.55    26.55   2 
+   assign (resid 210 and name N   )   (resid 210 and name CA  )
+          (resid 210 and name C   )   (resid 211 and name N   )   1.0    152.60    24.60   2 
+   assign (resid 210 and name C   )   (resid 211 and name N   )
+          (resid 211 and name CA  )   (resid 211 and name C   )   1.0   -113.15    42.35   2 
+   assign (resid 211 and name N   )   (resid 211 and name CA  )
+          (resid 211 and name C   )   (resid 212 and name N   )   1.0    131.90    20.00   2 
+   assign (resid 211 and name C   )   (resid 212 and name N   )
+          (resid 212 and name CA  )   (resid 212 and name C   )   1.0   -119.65    49.75   2 
+   assign (resid 212 and name N   )   (resid 212 and name CA  )
+          (resid 212 and name C   )   (resid 213 and name N   )   1.0    136.75    21.55   2 
+   assign (resid 212 and name C   )   (resid 213 and name N   )
+          (resid 213 and name CA  )   (resid 213 and name C   )   1.0    -96.50    29.50   2 
+   assign (resid 213 and name N   )   (resid 213 and name CA  )
+          (resid 213 and name C   )   (resid 214 and name N   )   1.0    122.95    36.45   2 
+   assign (resid 213 and name C   )   (resid 214 and name N   )
+          (resid 214 and name CA  )   (resid 214 and name C   )   1.0   -100.80    38.30   2 
+   assign (resid 214 and name N   )   (resid 214 and name CA  )
+          (resid 214 and name C   )   (resid 215 and name N   )   1.0    165.70    20.00   2 
+   assign (resid 214 and name C   )   (resid 215 and name N   )
+          (resid 215 and name CA  )   (resid 215 and name C   )   1.0    -63.80    26.60   2 
+   assign (resid 215 and name N   )   (resid 215 and name CA  )
+          (resid 215 and name C   )   (resid 216 and name N   )   1.0    -31.10    35.20   2 
+   assign (resid 215 and name C   )   (resid 216 and name N   )
+          (resid 216 and name CA  )   (resid 216 and name C   )   1.0    -89.40    20.40   2 
+   assign (resid 216 and name N   )   (resid 216 and name CA  )
+          (resid 216 and name C   )   (resid 217 and name N   )   1.0    -10.80    29.00   2 
+   assign (resid 218 and name C   )   (resid 219 and name N   )
+          (resid 219 and name CA  )   (resid 219 and name C   )   1.0   -117.60    52.10   2 
+   assign (resid 219 and name N   )   (resid 219 and name CA  )
+          (resid 219 and name C   )   (resid 220 and name N   )   1.0    155.80    20.00   2 
+   assign (resid 219 and name C   )   (resid 220 and name N   )
+          (resid 220 and name CA  )   (resid 220 and name C   )   1.0   -107.20    52.50   2 
+   assign (resid 220 and name N   )   (resid 220 and name CA  )
+          (resid 220 and name C   )   (resid 221 and name N   )   1.0    130.15    21.85   2 
+   assign (resid 220 and name C   )   (resid 221 and name N   )
+          (resid 221 and name CA  )   (resid 221 and name C   )   1.0   -111.85    43.75   2 
+   assign (resid 221 and name N   )   (resid 221 and name CA  )
+          (resid 221 and name C   )   (resid 222 and name N   )   1.0    130.30    31.90   2 
+   assign (resid 221 and name C   )   (resid 222 and name N   )
+          (resid 222 and name CA  )   (resid 222 and name C   )   1.0    -95.40    33.80   2 
+   assign (resid 222 and name N   )   (resid 222 and name CA  )
+          (resid 222 and name C   )   (resid 223 and name N   )   1.0    120.65    21.15   2 
+   assign (resid 222 and name C   )   (resid 223 and name N   )
+          (resid 223 and name CA  )   (resid 223 and name C   )   1.0    -96.90    49.10   2 
+   assign (resid 223 and name N   )   (resid 223 and name CA  )
+          (resid 223 and name C   )   (resid 224 and name N   )   1.0    127.35    22.85   2 
+   assign (resid 227 and name C   )   (resid 228 and name N   )
+          (resid 228 and name CA  )   (resid 228 and name C   )   1.0   -121.35    44.35   2 
+   assign (resid 228 and name N   )   (resid 228 and name CA  )
+          (resid 228 and name C   )   (resid 229 and name N   )   1.0    156.70    20.00   2 
+   assign (resid 228 and name C   )   (resid 229 and name N   )
+          (resid 229 and name CA  )   (resid 229 and name C   )   1.0    -59.95    27.35   2 
+   assign (resid 229 and name N   )   (resid 229 and name CA  )
+          (resid 229 and name C   )   (resid 230 and name N   )   1.0    135.00    20.00   2 
+   assign (resid 229 and name C   )   (resid 230 and name N   )
+          (resid 230 and name CA  )   (resid 230 and name C   )   1.0     95.20    20.00   2 
+   assign (resid 230 and name N   )   (resid 230 and name CA  )
+          (resid 230 and name C   )   (resid 231 and name N   )   1.0    -15.10    20.00   2 
+   assign (resid 231 and name C   )   (resid 232 and name N   )
+          (resid 232 and name CA  )   (resid 232 and name C   )   1.0   -118.50    47.10   2 
+   assign (resid 232 and name N   )   (resid 232 and name CA  )
+          (resid 232 and name C   )   (resid 233 and name N   )   1.0    136.35    45.35   2 
+   assign (resid 232 and name C   )   (resid 233 and name N   )
+          (resid 233 and name CA  )   (resid 233 and name C   )   1.0   -100.25    38.65   2 
+   assign (resid 233 and name N   )   (resid 233 and name CA  )
+          (resid 233 and name C   )   (resid 234 and name N   )   1.0    129.00    26.00   2 
+   assign (resid 233 and name C   )   (resid 234 and name N   )
+          (resid 234 and name CA  )   (resid 234 and name C   )   1.0   -111.40    37.10   2 
+   assign (resid 234 and name N   )   (resid 234 and name CA  )
+          (resid 234 and name C   )   (resid 235 and name N   )   1.0    128.40    20.00   2 
+   assign (resid 234 and name C   )   (resid 235 and name N   )
+          (resid 235 and name CA  )   (resid 235 and name C   )   1.0   -100.55    39.05   2 
+   assign (resid 235 and name N   )   (resid 235 and name CA  )
+          (resid 235 and name C   )   (resid 236 and name N   )   1.0    117.20    35.00   2 
+   assign (resid 235 and name C   )   (resid 236 and name N   )
+          (resid 236 and name CA  )   (resid 236 and name C   )   1.0    -70.20    36.30   2 
+   assign (resid 236 and name N   )   (resid 236 and name CA  )
+          (resid 236 and name C   )   (resid 237 and name N   )   1.0    134.05    44.05   2 
+   assign (resid 236 and name C   )   (resid 237 and name N   )
+          (resid 237 and name CA  )   (resid 237 and name C   )   1.0     71.45    34.55   2 
+   assign (resid 237 and name N   )   (resid 237 and name CA  )
+          (resid 237 and name C   )   (resid 238 and name N   )   1.0     16.10    53.10   2 
+   assign (resid 239 and name C   )   (resid 240 and name N   )
+          (resid 240 and name CA  )   (resid 240 and name C   )   1.0    -95.65    36.55   2 
+   assign (resid 240 and name N   )   (resid 240 and name CA  )
+          (resid 240 and name C   )   (resid 241 and name N   )   1.0    132.65    49.65   2 
+   assign (resid 241 and name C   )   (resid 242 and name N   )
+          (resid 242 and name CA  )   (resid 242 and name C   )   1.0    -95.70    35.90   2 
+   assign (resid 242 and name N   )   (resid 242 and name CA  )
+          (resid 242 and name C   )   (resid 243 and name N   )   1.0    136.50    63.60   2 
+   assign (resid 243 and name C   )   (resid 244 and name N   )
+          (resid 244 and name CA  )   (resid 244 and name C   )   1.0    -97.10    20.00   2 
+   assign (resid 244 and name N   )   (resid 244 and name CA  )
+          (resid 244 and name C   )   (resid 245 and name N   )   1.0      3.65    36.55   2 
+   assign (resid 247 and name C   )   (resid 248 and name N   )
+          (resid 248 and name CA  )   (resid 248 and name C   )   1.0   -139.65    35.35   2 
+   assign (resid 248 and name N   )   (resid 248 and name CA  )
+          (resid 248 and name C   )   (resid 249 and name N   )   1.0    146.70    35.40   2 
+   assign (resid 248 and name C   )   (resid 249 and name N   )
+          (resid 249 and name CA  )   (resid 249 and name C   )   1.0   -129.35    47.85   2 
+   assign (resid 249 and name N   )   (resid 249 and name CA  )
+          (resid 249 and name C   )   (resid 250 and name N   )   1.0    137.25    26.35   2 
+   assign (resid 249 and name C   )   (resid 250 and name N   )
+          (resid 250 and name CA  )   (resid 250 and name C   )   1.0   -124.25    22.15   2 
+   assign (resid 250 and name N   )   (resid 250 and name CA  )
+          (resid 250 and name C   )   (resid 251 and name N   )   1.0    129.40    27.30   2 
+   assign (resid 250 and name C   )   (resid 251 and name N   )
+          (resid 251 and name CA  )   (resid 251 and name C   )   1.0   -112.35    23.85   2 
+   assign (resid 251 and name N   )   (resid 251 and name CA  )
+          (resid 251 and name C   )   (resid 252 and name N   )   1.0    126.80    26.10   2 
+   assign (resid 251 and name C   )   (resid 252 and name N   )
+          (resid 252 and name CA  )   (resid 252 and name C   )   1.0   -112.95    41.65   2 
+   assign (resid 252 and name N   )   (resid 252 and name CA  )
+          (resid 252 and name C   )   (resid 253 and name N   )   1.0    132.00    22.10   2 
+   assign (resid 252 and name C   )   (resid 253 and name N   )
+          (resid 253 and name CA  )   (resid 253 and name C   )   1.0    -84.50    40.90   2 
+   assign (resid 253 and name N   )   (resid 253 and name CA  )
+          (resid 253 and name C   )   (resid 254 and name N   )   1.0    128.95    21.45   2 
+   assign (resid 253 and name C   )   (resid 254 and name N   )
+          (resid 254 and name CA  )   (resid 254 and name C   )   1.0   -115.05    29.65   2 
+   assign (resid 254 and name N   )   (resid 254 and name CA  )
+          (resid 254 and name C   )   (resid 255 and name N   )   1.0    130.90    20.10   2 
+   assign (resid 254 and name C   )   (resid 255 and name N   )
+          (resid 255 and name CA  )   (resid 255 and name C   )   1.0    -94.65    26.35   2 
+   assign (resid 255 and name N   )   (resid 255 and name CA  )
+          (resid 255 and name C   )   (resid 256 and name N   )   1.0    117.20    20.00   2 
+   assign (resid 235 and name N   )   (resid 235 and name CA  )
+          (resid 235 and name CB  )   (resid 235 and name CG  )   1.0    -60.00    10.00   2 
+   assign (resid 235 and name CA  )   (resid 235 and name CB  )
+          (resid 235 and name CG  )   (resid 235 and name CD1 )   1.0    180.00    10.00   2 
+   assign (resid 175 and name N   )   (resid 175 and name CA  )
+          (resid 175 and name CB  )   (resid 175 and name CG  )   1.0     60.00    20.00   2 
+   assign (resid 175 and name CA  )   (resid 175 and name CB  )
+          (resid 175 and name CG  )   (resid 175 and name CD  )   1.0    169.35    29.35   2 
+   assign (resid 193 and name N   )   (resid 193 and name CA  )
+          (resid 193 and name CB  )   (resid 193 and name CG  )   1.0    -80.40    20.00   2 
+   assign (resid 193 and name CA  )   (resid 193 and name CB  )
+          (resid 193 and name CG  )   (resid 193 and name CD1 )   1.0    172.70    20.00   2 
+   assign (resid 194 and name N   )   (resid 194 and name CA  )
+          (resid 194 and name CB  )   (resid 194 and name CG  )   1.0    170.00    30.00   2 
+   assign (resid 194 and name CA  )   (resid 194 and name CB  )
+          (resid 194 and name CG  )   (resid 194 and name CD1 )   1.0     50.00    30.00   2 
+   assign (resid 197 and name N   )   (resid 197 and name CA  )
+          (resid 197 and name CB  )   (resid 197 and name CG  )   1.0   -158.40    20.00   2 
+   assign (resid 197 and name CA  )   (resid 197 and name CB  )
+          (resid 197 and name CG  )   (resid 197 and name CD1 )   1.0     73.00    20.00   2 
+   assign (resid 203 and name N   )   (resid 203 and name CA  )
+          (resid 203 and name CB  )   (resid 203 and name CG1 )   1.0    -53.00    20.00   2 
+   assign (resid 203 and name CA  )   (resid 203 and name CB  )
+          (resid 203 and name CG2 )   (resid 203 and name HG21)   1.0   -176.80    20.00   2 
+   assign (resid 203 and name CA  )   (resid 203 and name CB  )
+          (resid 203 and name CG1 )   (resid 203 and name CD1 )   1.0    179.90    20.00   2 
+   assign (resid 209 and name N   )   (resid 209 and name CA  )
+          (resid 209 and name CB  )   (resid 209 and name CG  )   1.0    -99.30    20.00   2 
+   assign (resid 209 and name CA  )   (resid 209 and name CB  )
+          (resid 209 and name CG  )   (resid 209 and name CD  )   1.0   -177.70    20.00   2 
+   assign (resid 211 and name CA  )   (resid 211 and name CB  )
+          (resid 211 and name CG  )   (resid 211 and name CD  )   1.0    174.40    20.00   2 
+   assign (resid 213 and name N   )   (resid 213 and name CA  )
+          (resid 213 and name CB  )   (resid 213 and name CG  )   1.0    180.00    20.00   2 
+   assign (resid 215 and name N   )   (resid 215 and name CA  )
+          (resid 215 and name CB  )   (resid 215 and name CG  )   1.0    -62.70    20.00   2 
+   assign (resid 215 and name CA  )   (resid 215 and name CB  )
+          (resid 215 and name CG  )   (resid 215 and name CD1 )   1.0   -175.70    20.00   2 
+   assign (resid 226 and name N   )   (resid 226 and name CA  )
+          (resid 226 and name CB  )   (resid 226 and name CG  )   1.0    -50.80    20.00   2 
+   assign (resid 226 and name CA  )   (resid 226 and name CB  )
+          (resid 226 and name CG  )   (resid 226 and name CD  )   1.0   -179.70    20.00   2 
+   assign (resid 228 and name N   )   (resid 228 and name CA  )
+          (resid 228 and name CB  )   (resid 228 and name CG  )   1.0    -72.20    20.00   2 
+   assign (resid 228 and name CA  )   (resid 228 and name CB  )
+          (resid 228 and name CG  )   (resid 228 and name CD  )   1.0     67.00    27.00   2 
+   assign (resid 231 and name N   )   (resid 231 and name CA  )
+          (resid 231 and name CB  )   (resid 231 and name CG  )   1.0    -80.30    20.00   2 
+   assign (resid 231 and name CA  )   (resid 231 and name CB  )
+          (resid 231 and name CG  )   (resid 231 and name CD  )   1.0   -161.10    20.00   2 
+   assign (resid 232 and name N   )   (resid 232 and name CA  )
+          (resid 232 and name CB  )   (resid 232 and name CG  )   1.0     60.00    20.00   2 
+   assign (resid 232 and name CA  )   (resid 232 and name CB  )
+          (resid 232 and name CG  )   (resid 232 and name CD  )   1.0    180.00    20.00   2 
+   assign (resid 233 and name N   )   (resid 233 and name CA  )
+          (resid 233 and name CB  )   (resid 233 and name CG  )   1.0    -57.00    20.00   2 
+   assign (resid 233 and name CA  )   (resid 233 and name CB  )
+          (resid 233 and name CG  )   (resid 233 and name CD1 )   1.0    179.30    20.00   2 
+   assign (resid 234 and name CA  )   (resid 234 and name CB  )
+          (resid 234 and name CG  )   (resid 234 and name CD  )   1.0    180.00    20.00   2 
+   assign (resid 235 and name N   )   (resid 235 and name CA  )
+          (resid 235 and name CB  )   (resid 235 and name CG  )   1.0    -53.00    20.00   2 
+   assign (resid 235 and name CA  )   (resid 235 and name CB  )
+          (resid 235 and name CG  )   (resid 235 and name CD1 )   1.0   -178.10    20.00   2 
+   assign (resid 236 and name N   )   (resid 236 and name CA  )
+          (resid 236 and name CB  )   (resid 236 and name CG  )   1.0    -74.60    20.00   2 
+   assign (resid 238 and name N   )   (resid 238 and name CA  )
+          (resid 238 and name CB  )   (resid 238 and name CG  )   1.0    -71.60    20.00   2 
+   assign (resid 238 and name CA  )   (resid 238 and name CB  )
+          (resid 238 and name CG  )   (resid 238 and name CD  )   1.0    -89.20    20.00   2 
+   assign (resid 246 and name CA  )   (resid 246 and name CB  )
+          (resid 246 and name CG  )   (resid 246 and name CD  )   1.0   -164.20    30.00   2 
+   assign (resid 248 and name CA  )   (resid 248 and name CB  )
+          (resid 248 and name CG  )   (resid 248 and name OD1 )   1.0    -40.00    40.00   2 
+   assign (resid 249 and name N   )   (resid 249 and name CA  )
+          (resid 249 and name CB  )   (resid 249 and name CG  )   1.0   -169.00    20.00   2 
+   assign (resid 249 and name CA  )   (resid 249 and name CB  )
+          (resid 249 and name CG  )   (resid 249 and name CD1 )   1.0     60.00    20.00   2 
+   assign (resid 254 and name N   )   (resid 254 and name CA  )
+          (resid 254 and name CB  )   (resid 254 and name CG  )   1.0    -49.60    20.00   2 
+   assign (resid 254 and name CA  )   (resid 254 and name CB  )
+          (resid 254 and name CG  )   (resid 254 and name CD  )   1.0    -55.10    20.00   2 
+   assign (resid 255 and name N   )   (resid 255 and name CA  )
+          (resid 255 and name CB  )   (resid 255 and name CG1 )   1.0    -70.20    20.00   2 

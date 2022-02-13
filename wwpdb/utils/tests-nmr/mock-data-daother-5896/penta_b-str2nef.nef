@@ -1,0 +1,406 @@
+data_NEED_ACC_NO_nmr-data
+
+save_nef_nmr_meta_data
+   _nef_nmr_meta_data.sf_category           nef_nmr_meta_data
+   _nef_nmr_meta_data.sf_framecode          nef_nmr_meta_data
+   _nef_nmr_meta_data.format_name           nmr_exchange_format
+   _nef_nmr_meta_data.format_version        1.1
+   _nef_nmr_meta_data.program_name          AnalysisAssign
+   _nef_nmr_meta_data.program_version       3.0.1.1
+   _nef_nmr_meta_data.creation_date         2020-06-29T12:36:47.067993
+   _nef_nmr_meta_data.uuid                  AnalysisAssign-2020-06-29T12:36:47.067993-749824897
+   _nef_nmr_meta_data.coordinate_file_name  .
+
+   loop_
+      _nef_program_script.program_name
+      _nef_program_script.script_name
+      _nef_program_script.script
+
+     CcpNmr          exportProject    .    
+     NEFTranslator   nef_to_nmrstar   .    
+     NEFTranslator   nmrstar_to_nef   .    
+
+   stop_
+
+save_
+
+save_nef_molecular_system
+   _nef_molecular_system.sf_category   nef_molecular_system
+   _nef_molecular_system.sf_framecode  nef_molecular_system
+
+   loop_
+      _nef_sequence.index
+      _nef_sequence.chain_code
+      _nef_sequence.sequence_code
+      _nef_sequence.residue_name
+      _nef_sequence.linking
+      _nef_sequence.residue_variant
+      _nef_sequence.cis_peptide
+
+     1   A   1   MET   start    .   false    
+     2   A   2   LYS   middle   .   false    
+     3   A   3   ILE   middle   .   false    
+     4   A   4   ILE   middle   .   false    
+     5   A   5   SER   end      .   false    
+
+   stop_
+
+save_
+
+save_nef_chemical_shift_list_cs1
+   _nef_chemical_shift_list.sf_category   nef_chemical_shift_list
+   _nef_chemical_shift_list.sf_framecode  nef_chemical_shift_list_cs1
+
+   loop_
+      _nef_chemical_shift.chain_code
+      _nef_chemical_shift.sequence_code
+      _nef_chemical_shift.residue_name
+      _nef_chemical_shift.atom_name
+      _nef_chemical_shift.element
+      _nef_chemical_shift.isotope_number
+      _nef_chemical_shift.value
+      _nef_chemical_shift.value_uncertainty
+
+     A   1   MET   HA     H   1    3.823          0                  
+     A   1   MET   HBx    H   1    1.956          0                  
+     A   1   MET   HBy    H   1    1.976          0                  
+     A   1   MET   HGy    H   1    2.151          0                  
+     A   1   MET   HGx    H   1    2.036          0                  
+     A   1   MET   C      C   13   170.978        0                  
+     A   1   MET   CA     C   13   55.193         0                  
+     A   1   MET   CB     C   13   34.019         0                  
+     A   1   MET   CG     C   13   31.136         0                  
+     A   2   LYS   H      H   1    8.56           0                  
+     A   2   LYS   HA     H   1    4.62           0                  
+     A   2   LYS   HBy    H   1    1.494          0                  
+     A   2   LYS   HBx    H   1    1.329          0                  
+     A   2   LYS   HDx    H   1    1.604          0                  
+     A   2   LYS   HDy    H   1    1.651          0                  
+     A   2   LYS   HEx    H   1    2.909          0                  
+     A   2   LYS   HGy    H   1    1.384          0                  
+     A   2   LYS   HGx    H   1    1.223          0                  
+     A   2   LYS   C      C   13   174.608        0                  
+     A   2   LYS   CA     C   13   54.206         0                  
+     A   2   LYS   CB     C   13   35.916         0                  
+     A   2   LYS   CD     C   13   29.373         0                  
+     A   2   LYS   CE     C   13   42.086         0                  
+     A   2   LYS   CG     C   13   24.011         0                  
+     A   2   LYS   N      N   15   122.783        0                  
+     A   3   ILE   H      H   1    8.376307844    0.0001791922224    
+     A   3   ILE   HA     H   1    3.619032945    0                  
+     A   3   ILE   HB     H   1    1.486          0                  
+     A   3   ILE   HD1%   H   1    0.7444814145   0                  
+     A   3   ILE   HG1y   H   1    0.781          0                  
+     A   3   ILE   HG1x   H   1    0.06           0                  
+     A   3   ILE   HG2%   H   1    0.595          0                  
+     A   3   ILE   C      C   13   176.569        0                  
+     A   3   ILE   CA     C   13   62.565         0                  
+     A   3   ILE   CB     C   13   38.792         0                  
+     A   3   ILE   CD1    C   13   14.332         0                  
+     A   3   ILE   CG1    C   13   27.255         0                  
+     A   3   ILE   CG2    C   13   17.2           0                  
+     A   3   ILE   N      N   15   119.9906405    0.00327219903      
+     A   4   ILE   H      H   1    9.159          0                  
+     A   4   ILE   HA     H   1    4.135          0                  
+     A   4   ILE   HB     H   1    1.613          0                  
+     A   4   ILE   HD1%   H   1    0.64           0                  
+     A   4   ILE   HG1y   H   1    1.164          0                  
+     A   4   ILE   HG1x   H   1    1.025          0                  
+     A   4   ILE   HG2%   H   1    0.802          0                  
+     A   4   ILE   C      C   13   176.194        0                  
+     A   4   ILE   CA     C   13   60.586         0                  
+     A   4   ILE   CB     C   13   37.466         0                  
+     A   4   ILE   CD1    C   13   10.304         0                  
+     A   4   ILE   CG1    C   13   26.368         0                  
+     A   4   ILE   CG2    C   13   16.57          0                  
+     A   4   ILE   N      N   15   127.239        0                  
+     A   5   SER   H      H   1    7.482          0                  
+     A   5   SER   HA     H   1    4.545          0                  
+     A   5   SER   HBx    H   1    3.784          0                  
+     A   5   SER   HBy    H   1    3.784          0                  
+     A   5   SER   C      C   13   171.58         0                  
+     A   5   SER   CA     C   13   57.655         0                  
+     A   5   SER   CB     C   13   65.178         0                  
+     A   5   SER   N      N   15   112.465        0                  
+
+   stop_
+
+save_
+
+save_nef_distance_restraint_list_dis1
+   _nef_distance_restraint_list.sf_category       nef_distance_restraint_list
+   _nef_distance_restraint_list.sf_framecode      nef_distance_restraint_list_dis1
+   _nef_distance_restraint_list.potential_type    undefined
+   _nef_distance_restraint_list.restraint_origin  undefined
+
+   loop_
+      _nef_distance_restraint.index
+      _nef_distance_restraint.restraint_id
+      _nef_distance_restraint.restraint_combination_id
+      _nef_distance_restraint.chain_code_1
+      _nef_distance_restraint.sequence_code_1
+      _nef_distance_restraint.residue_name_1
+      _nef_distance_restraint.atom_name_1
+      _nef_distance_restraint.chain_code_2
+      _nef_distance_restraint.sequence_code_2
+      _nef_distance_restraint.residue_name_2
+      _nef_distance_restraint.atom_name_2
+      _nef_distance_restraint.weight
+      _nef_distance_restraint.target_value
+      _nef_distance_restraint.target_value_uncertainty
+      _nef_distance_restraint.lower_linear_limit
+      _nef_distance_restraint.lower_limit
+      _nef_distance_restraint.upper_limit
+      _nef_distance_restraint.upper_linear_limit
+
+     1    55    .   A   1   MET   HA     A   1   MET   HGy    1   4     .   .   1.8   5     .    
+     2    56    .   A   1   MET   HA     A   1   MET   HGx    1   4     .   .   1.8   5     .    
+     3    57    .   A   1   MET   HA     A   2   LYS   H      1   3     .   .   1.8   3.5   .    
+     4    61    .   A   1   MET   HGy    A   2   LYS   H      1   4     .   .   1.8   6     .    
+     5    66    .   A   2   LYS   H      A   2   LYS   HA     1   4     .   .   1.8   5     .    
+     6    68    .   A   2   LYS   HA     A   3   ILE   H      1   2.5   .   .   1.8   2.9   .    
+     7    69    .   A   2   LYS   HBy    A   2   LYS   HDx    1   4     .   .   1.8   7     .    
+     8    70    .   A   2   LYS   HBy    A   2   LYS   HEx    1   4     .   .   1.8   7     .    
+     9    71    .   A   2   LYS   HBy    A   3   ILE   H      1   4     .   .   1.8   6     .    
+     10   73    .   A   2   LYS   HEx    A   2   LYS   HGy    1   4     .   .   1.8   6     .    
+     11   74    .   A   2   LYS   HEx    A   2   LYS   HGx    1   4     .   .   1.8   6     .    
+     12   77    .   A   2   LYS   HEx    A   4   ILE   HD1%   1   4     .   .   1.8   7     .    
+     13   78    .   A   3   ILE   H      A   3   ILE   HA     1   4     .   .   1.8   5     .    
+     14   79    .   A   3   ILE   H      A   3   ILE   HB     1   3     .   .   1.8   3.5   .    
+     15   80    .   A   3   ILE   H      A   3   ILE   HG1y   1   4     .   .   1.8   5     .    
+     16   81    .   A   3   ILE   H      A   3   ILE   HG1x   1   4     .   .   1.8   5     .    
+     17   82    .   A   3   ILE   H      A   3   ILE   HG2%   1   4     .   .   1.8   6     .    
+     18   83    .   A   3   ILE   H      A   3   ILE   HD1%   1   4     .   .   1.8   6     .    
+     19   87    .   A   3   ILE   HA     A   3   ILE   HG1y   1   4     .   .   1.8   5     .    
+     20   88    .   A   3   ILE   HA     A   3   ILE   HG1x   1   4     .   .   1.8   5     .    
+     21   89    .   A   3   ILE   HA     A   3   ILE   HG2%   1   4     .   .   1.8   5.6   .    
+     22   90    .   A   3   ILE   HA     A   3   ILE   HD1%   1   4     .   .   1.8   6     .    
+     23   91    .   A   3   ILE   HA     A   4   ILE   H      1   3     .   .   1.8   3.5   .    
+     24   92    .   A   3   ILE   HA     A   4   ILE   HB     1   4     .   .   1.8   5     .    
+     25   93    .   A   3   ILE   HA     A   5   SER   H      1   4     .   .   1.8   5     .    
+     26   96    .   A   3   ILE   HB     A   3   ILE   HD1%   1   4     .   .   1.8   6     .    
+     27   97    .   A   3   ILE   HG1y   A   3   ILE   HG2%   1   4     .   .   1.8   7     .    
+     28   98    .   A   3   ILE   HG1y   A   4   ILE   H      1   4     .   .   1.8   6     .    
+     29   99    .   A   3   ILE   HG1y   A   4   ILE   HD1%   1   4     .   .   1.8   7     .    
+     30   107   .   A   3   ILE   HD1%   A   3   ILE   HG2%   1   4     .   .   1.8   7     .    
+     31   108   .   A   3   ILE   HG2%   A   4   ILE   H      1   4     .   .   1.8   6     .    
+     32   109   .   A   3   ILE   HG2%   A   4   ILE   HA     1   4     .   .   1.8   6     .    
+     33   110   .   A   3   ILE   HG2%   A   4   ILE   HG1y   1   4     .   .   1.8   7     .    
+     34   111   .   A   3   ILE   HG2%   A   5   SER   H      1   4     .   .   1.8   6     .    
+     35   124   .   A   4   ILE   H      A   4   ILE   HA     1   4     .   .   1.8   5     .    
+     36   125   .   A   4   ILE   H      A   4   ILE   HB     1   3     .   .   1.8   3.5   .    
+     37   126   .   A   4   ILE   H      A   4   ILE   HG1y   1   4     .   .   1.8   5     .    
+     38   127   .   A   4   ILE   H      A   4   ILE   HG1x   1   4     .   .   1.8   5     .    
+     39   128   .   A   4   ILE   H      A   4   ILE   HG2%   1   4     .   .   1.8   6     .    
+     40   129   .   A   4   ILE   H      A   4   ILE   HD1%   1   4     .   .   1.8   6     .    
+     41   130   .   A   4   ILE   H      A   5   SER   H      1   3     .   .   1.8   3.5   .    
+     42   134   .   A   4   ILE   HA     A   4   ILE   HG1y   1   4     .   .   1.8   5     .    
+     43   135   .   A   4   ILE   HA     A   4   ILE   HG1x   1   4     .   .   1.8   5     .    
+     44   136   .   A   4   ILE   HA     A   4   ILE   HG2%   1   4     .   .   1.8   5.6   .    
+     45   137   .   A   4   ILE   HA     A   4   ILE   HD1%   1   4     .   .   1.8   6     .    
+     46   138   .   A   4   ILE   HA     A   5   SER   H      1   4     .   .   1.8   5     .    
+     47   139   .   A   4   ILE   HB     A   4   ILE   HD1%   1   4     .   .   1.8   6     .    
+     48   140   .   A   4   ILE   HB     A   5   SER   H      1   4     .   .   1.8   5     .    
+     49   144   .   A   4   ILE   HG1y   A   4   ILE   HG2%   1   4     .   .   1.8   7     .    
+     50   145   .   A   4   ILE   HG1y   A   5   SER   H      1   4     .   .   1.8   5     .    
+     51   146   .   A   4   ILE   HG1x   A   5   SER   H      1   4     .   .   1.8   5     .    
+     52   153   .   A   4   ILE   HG2%   A   5   SER   H      1   4     .   .   1.8   6     .    
+     53   154   .   A   4   ILE   HG2%   A   5   SER   HBx    1   4     .   .   1.8   7     .    
+     54   154   .   A   4   ILE   HG2%   A   5   SER   HBy    1   4     .   .   1.8   7     .    
+     55   161   .   A   5   SER   H      A   5   SER   HA     1   3     .   .   1.8   3.5   .    
+     56   162   .   A   5   SER   H      A   5   SER   HBx    1   4     .   .   1.8   6     .    
+     57   162   .   A   5   SER   H      A   5   SER   HBy    1   4     .   .   1.8   6     .    
+
+   stop_
+
+save_
+
+save_nef_dihedral_restraint_list_dih1
+   _nef_dihedral_restraint_list.sf_category       nef_dihedral_restraint_list
+   _nef_dihedral_restraint_list.sf_framecode      nef_dihedral_restraint_list_dih1
+   _nef_dihedral_restraint_list.potential_type    undefined
+   _nef_dihedral_restraint_list.restraint_origin  chemical_shift
+
+   loop_
+      _nef_dihedral_restraint.index
+      _nef_dihedral_restraint.restraint_id
+      _nef_dihedral_restraint.restraint_combination_id
+      _nef_dihedral_restraint.chain_code_1
+      _nef_dihedral_restraint.sequence_code_1
+      _nef_dihedral_restraint.residue_name_1
+      _nef_dihedral_restraint.atom_name_1
+      _nef_dihedral_restraint.chain_code_2
+      _nef_dihedral_restraint.sequence_code_2
+      _nef_dihedral_restraint.residue_name_2
+      _nef_dihedral_restraint.atom_name_2
+      _nef_dihedral_restraint.chain_code_3
+      _nef_dihedral_restraint.sequence_code_3
+      _nef_dihedral_restraint.residue_name_3
+      _nef_dihedral_restraint.atom_name_3
+      _nef_dihedral_restraint.chain_code_4
+      _nef_dihedral_restraint.sequence_code_4
+      _nef_dihedral_restraint.residue_name_4
+      _nef_dihedral_restraint.atom_name_4
+      _nef_dihedral_restraint.weight
+      _nef_dihedral_restraint.target_value
+      _nef_dihedral_restraint.target_value_uncertainty
+      _nef_dihedral_restraint.lower_linear_limit
+      _nef_dihedral_restraint.lower_limit
+      _nef_dihedral_restraint.upper_limit
+      _nef_dihedral_restraint.upper_linear_limit
+      _nef_dihedral_restraint.name
+
+     1   1   .   A   2   LYS   C   A   3   ILE   N   A   3   ILE   CA   A   3   ILE   C   1   -40    0   .   -170   90    .   PHI    
+     2   2   .   A   3   ILE   C   A   4   ILE   N   A   4   ILE   CA   A   4   ILE   C   1   -120   0   .   -155   -85   .   PHI    
+     3   3   .   A   4   ILE   C   A   5   SER   N   A   5   SER   CA   A   5   SER   C   1   -35    0   .   180    110   .   PHI    
+
+   stop_
+
+save_
+
+save_nef_nmr_spectrum_173
+   _nef_nmr_spectrum.sf_category                nef_nmr_spectrum
+   _nef_nmr_spectrum.sf_framecode               nef_nmr_spectrum_173
+   _nef_nmr_spectrum.num_dimensions             3
+   _nef_nmr_spectrum.chemical_shift_list        nef_chemical_shift_list_cs1
+   _nef_nmr_spectrum.experiment_classification  H[C]_H.through-space
+   _nef_nmr_spectrum.experiment_type            '13C HSQC-NOESY'
+
+   loop_
+      _nef_spectrum_dimension.dimension_id
+      _nef_spectrum_dimension.axis_unit
+      _nef_spectrum_dimension.axis_code
+      _nef_spectrum_dimension.spectrometer_frequency
+      _nef_spectrum_dimension.spectral_width
+      _nef_spectrum_dimension.value_first_point
+      _nef_spectrum_dimension.folding
+      _nef_spectrum_dimension.absolute_peak_positions
+      _nef_spectrum_dimension.is_acquisition
+
+     1   ppm   1H    500.13    19.99480135   14.89740068   folded   true   false    
+     2   ppm   1H    500.13    10.29280387   10.04640194   folded   true   false    
+     3   ppm   13C   125.757   31.8175529    47.20877645   folded   true   false    
+
+   stop_
+
+   loop_
+      _nef_spectrum_dimension_transfer.dimension_1
+      _nef_spectrum_dimension_transfer.dimension_2
+      _nef_spectrum_dimension_transfer.transfer_type
+      _nef_spectrum_dimension_transfer.is_indirect
+
+     1   2   through-space   false    
+     1   3   onebond         false    
+
+   stop_
+
+   loop_
+      _nef_peak.index
+      _nef_peak.peak_id
+      _nef_peak.volume
+      _nef_peak.volume_uncertainty
+      _nef_peak.height
+      _nef_peak.height_uncertainty
+      _nef_peak.position_1
+      _nef_peak.position_uncertainty_1
+      _nef_peak.position_2
+      _nef_peak.position_uncertainty_2
+      _nef_peak.position_3
+      _nef_peak.position_uncertainty_3
+      _nef_peak.chain_code_1
+      _nef_peak.sequence_code_1
+      _nef_peak.residue_name_1
+      _nef_peak.atom_name_1
+      _nef_peak.chain_code_2
+      _nef_peak.sequence_code_2
+      _nef_peak.residue_name_2
+      _nef_peak.atom_name_2
+      _nef_peak.chain_code_3
+      _nef_peak.sequence_code_3
+      _nef_peak.residue_name_3
+      _nef_peak.atom_name_3
+
+     1   1    .   .   3006908.25   .   0.6051161072   .   3.751558504    .   27.8381744    .   .   .   .   .   .   .   .   .   .   .   .   .    
+     2   2    .   .   5426135.5    .   3.638903211    .   0.7777874324   .   34.06819909   .   .   .   .   .   .   .   .   .   .   .   .   .    
+     3   3    .   .   3848352.75   .   4.123148558    .   1.643680685    .   34.35938983   .   .   .   .   .   .   .   .   .   .   .   .   .    
+     4   4    .   .   1354009      .   3.345314971    .   1.765493544    .   34.2262498    .   .   .   .   .   .   .   .   .   .   .   .   .    
+     5   5    .   .   1705175      .   3.346022043    .   1.564863878    .   34.24871538   .   .   .   .   .   .   .   .   .   .   .   .   .    
+     6   7    .   .   2826383.5    .   3.343232688    .   0.902724177    .   34.25168762   .   .   .   .   .   .   .   .   .   .   .   .   .    
+     7   8    .   .   4542511.5    .   3.345721806    .   0.7711593339   .   34.24103851   .   .   .   .   .   .   .   .   .   .   .   .   .    
+     8   9    .   .   2955403.25   .   1.961244944    .   4.608234399    .   33.35644258   .   .   .   .   .   .   .   .   .   .   .   .   .    
+     9   10   .   .   2386816.75   .   1.97335527     .   3.467766587    .   32.47454436   .   .   .   .   .   .   .   .   .   .   .   .   .    
+
+   stop_
+
+save_
+
+save_nef_nmr_spectrum_182
+   _nef_nmr_spectrum.sf_category                nef_nmr_spectrum
+   _nef_nmr_spectrum.sf_framecode               nef_nmr_spectrum_182
+   _nef_nmr_spectrum.num_dimensions             3
+   _nef_nmr_spectrum.chemical_shift_list        nef_chemical_shift_list_cs1
+   _nef_nmr_spectrum.experiment_classification  H[N]_H.through-space
+   _nef_nmr_spectrum.experiment_type            '15N HSQC-NOESY'
+
+   loop_
+      _nef_spectrum_dimension.dimension_id
+      _nef_spectrum_dimension.axis_unit
+      _nef_spectrum_dimension.axis_code
+      _nef_spectrum_dimension.spectrometer_frequency
+      _nef_spectrum_dimension.spectral_width
+      _nef_spectrum_dimension.value_first_point
+      _nef_spectrum_dimension.folding
+      _nef_spectrum_dimension.absolute_peak_positions
+      _nef_spectrum_dimension.is_acquisition
+
+     1   ppm   1H    500.13   4.998700338   9.898700338   folded   true   false    
+     2   ppm   1H    500.13   10.9861536    10.3930768    folded   true   false    
+     3   ppm   15N   50.666   24.00290135   128.0014507   folded   true   false    
+
+   stop_
+
+   loop_
+      _nef_spectrum_dimension_transfer.dimension_1
+      _nef_spectrum_dimension_transfer.dimension_2
+      _nef_spectrum_dimension_transfer.transfer_type
+      _nef_spectrum_dimension_transfer.is_indirect
+
+     1   2   through-space   false    
+     1   3   onebond         false    
+
+   stop_
+
+   loop_
+      _nef_peak.index
+      _nef_peak.peak_id
+      _nef_peak.volume
+      _nef_peak.volume_uncertainty
+      _nef_peak.height
+      _nef_peak.height_uncertainty
+      _nef_peak.position_1
+      _nef_peak.position_uncertainty_1
+      _nef_peak.position_2
+      _nef_peak.position_uncertainty_2
+      _nef_peak.position_3
+      _nef_peak.position_uncertainty_3
+      _nef_peak.chain_code_1
+      _nef_peak.sequence_code_1
+      _nef_peak.residue_name_1
+      _nef_peak.atom_name_1
+      _nef_peak.chain_code_2
+      _nef_peak.sequence_code_2
+      _nef_peak.residue_name_2
+      _nef_peak.atom_name_2
+      _nef_peak.chain_code_3
+      _nef_peak.sequence_code_3
+      _nef_peak.residue_name_3
+      _nef_peak.atom_name_3
+
+     1   1   .   .   2137900.75   .   8.376128652   .   0.7444814145   .   119.9939127   .   A   3   ILE   H   A   3   ILE   HD1%   A   3   ILE   N    
+     2   2   .   .   2309688.75   .   8.375167917   .   0.4802299282   .   119.9837713   .   .   .   .     .   .   .   .     .      .   .   .     .    
+     3   3   .   .   2428724.75   .   8.376162972   .   0.2314502766   .   119.9861519   .   .   .   .     .   .   .   .     .      .   .   .     .    
+     4   4   .   .   2094722.25   .   8.376487036   .   3.619032945    .   119.9873683   .   A   3   ILE   H   A   3   ILE   HA     A   3   ILE   N    
+
+   stop_
+
+save_

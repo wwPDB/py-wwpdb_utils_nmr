@@ -11,6 +11,7 @@
 # 13-Oct-2021  M. Yokochi - code revision according to PEP8 using Pylint (DAOTHER-7389, issue #5)
 # 03-Dec-2021  M. Yokochi - optimize loading performance of other chemical shift statistics (DAOTHER-7514)
 # 04-Feb-2022  M. Yokochi - add getPseudoAtoms() (nmr-restraint-remediation)
+# 14-Feb-2022  M. Yokochi - add getSimilarCompIdFromAtomIds() (nmr-restraint-remediation)
 ##
 """ Wrapper class for retrieving BMRB chemical shift statistics.
     @author: Masashi Yokochi
@@ -209,6 +210,125 @@ class BMRBChemShiftStat:
         return peptide_like > nucleotide_like and peptide_like > carbohydrate_like,\
             nucleotide_like > peptide_like and nucleotide_like > carbohydrate_like,\
             carbohydrate_like > peptide_like and carbohydrate_like > nucleotide_like
+
+    def getSimilarCompIdFromAtomIds(self, atom_ids):
+        """ Return the most similar comp_id including atom_ids.
+            @return: the most similar comp_id, otherwise None
+        """
+
+        aa_bb = set(['C', 'CA', 'CB', 'H', 'HA', 'HA2', 'HA3', 'N'])
+        dn_bb = set(["C1'", "C2'", "C3'", "C4'", "C5'", "H1'", "H2'", "H2''", "H3'", "H4'", "H5'", "H5''", "H5'1", "H5'2", 'P'])
+        rn_bb = set(["C1'", "C2'", "C3'", "C4'", "C5'", "H1'", "H2'", "H3'", "H4'", "H5'", "H5''", "HO2'", "H5'1", "H5'2", "H2'1", "HO'2", 'P', "O2'"])
+        ch_bb = set(['C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'H61', 'H62'])
+
+        length = len(atom_ids)
+        atom_id_set = set(atom_ids)
+
+        match = [len(atom_id_set & aa_bb),
+                 len(atom_id_set & dn_bb),
+                 len(atom_id_set & rn_bb),
+                 len(atom_id_set & ch_bb)]
+
+        max_match = max(match)
+        comp_id = None
+
+        if max_match > 0:
+            position = match.index(max_match)
+            if position == 0:
+                max_score = 0
+                for _comp_id in self.__aa_comp_ids:
+                    _atom_id_set = set(i['atom_id'] for i in self.__get(_comp_id))
+                    conflict = len(atom_id_set - _atom_id_set)
+                    unmapped = len(_atom_id_set - atom_id_set)
+                    score = length - conflict - unmapped
+                    if score > max_score:
+                        max_score = score
+                        comp_id = _comp_id
+                if comp_id is not None:
+                    return comp_id
+
+            elif position == 1:
+                max_score = 0
+                for _comp_id in self.__dna_comp_ids:
+                    _atom_id_set = set(i['atom_id'] for i in self.__get(_comp_id))
+                    conflict = len(atom_id_set - _atom_id_set)
+                    unmapped = len(_atom_id_set - atom_id_set)
+                    score = length - conflict - unmapped
+                    if score > max_score:
+                        max_score = score
+                        comp_id = _comp_id
+                if comp_id is not None:
+                    return comp_id
+
+            elif position == 2:
+                max_score = 0
+                for _comp_id in self.__rna_comp_ids:
+                    _atom_id_set = set(i['atom_id'] for i in self.__get(_comp_id))
+                    conflict = len(atom_id_set - _atom_id_set)
+                    unmapped = len(_atom_id_set - atom_id_set)
+                    score = length - conflict - unmapped
+                    if score > max_score:
+                        max_score = score
+                        comp_id = _comp_id
+                if comp_id is not None:
+                    return comp_id
+
+            if position == 0:
+                comp_id = None
+                max_score = 0
+                for _comp_id in self.__all_comp_ids:
+                    if self.getTypeOfCompId(_comp_id)[0]:
+                        _atom_id_set = set(i['atom_id'] for i in self.__get(_comp_id))
+                        conflict = len(atom_id_set - _atom_id_set)
+                        unmapped = len(_atom_id_set - atom_id_set)
+                        score = length - conflict - unmapped
+                        if score > max_score:
+                            max_score = score
+                            comp_id = _comp_id
+                if comp_id is not None:
+                    return comp_id
+
+            elif position in (1, 2):
+                max_score = 0
+                for _comp_id in self.__all_comp_ids:
+                    if self.getTypeOfCompId(_comp_id)[1]:
+                        _atom_id_set = set(i['atom_id'] for i in self.__get(_comp_id))
+                        conflict = len(atom_id_set - _atom_id_set)
+                        unmapped = len(_atom_id_set - atom_id_set)
+                        score = length - conflict - unmapped
+                        if score > max_score:
+                            max_score = score
+                            comp_id = _comp_id
+                if comp_id is not None:
+                    return comp_id
+
+            else:
+                max_score = 0
+                for _comp_id in self.__all_comp_ids:
+                    if self.getTypeOfCompId(_comp_id)[2]:
+                        _atom_id_set = set(i['atom_id'] for i in self.__get(_comp_id))
+                        conflict = len(atom_id_set - _atom_id_set)
+                        unmapped = len(_atom_id_set - atom_id_set)
+                        score = length - conflict - unmapped
+                        if score > max_score:
+                            max_score = score
+                            comp_id = _comp_id
+                if comp_id is not None:
+                    return comp_id
+
+        else:
+            for _comp_id in self.__all_comp_ids:
+                peptide_like, nucleotide_like, carbohydrate_like = self.getTypeOfCompId(_comp_id)
+                if not(peptide_like or nucleotide_like or carbohydrate_like):
+                    _atom_id_set = set(i['atom_id'] for i in self.__get(_comp_id))
+                    conflict = len(atom_id_set - _atom_id_set)
+                    unmapped = len(_atom_id_set - atom_id_set)
+                    score = length - conflict - unmapped
+                    if score > max_score:
+                        max_score = score
+                        comp_id = _comp_id
+
+        return comp_id
 
     def hasEnoughStat(self, comp_id, primary=True):
         """ Return whether a given comp_id has enough chemical shift statistics.

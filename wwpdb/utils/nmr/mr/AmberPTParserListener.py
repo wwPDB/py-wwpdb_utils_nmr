@@ -205,9 +205,6 @@ class AmberPTParserListener(ParseTreeListener):
     # AMBER atom number dictionary
     __atomNumberDict = None
 
-    # current restraint subtype
-    __cur_subtype = None
-
     # Fortran format
     __a_format_pat = re.compile(r'\((\d+)[aA](\d+)\)$')
     __i_format_pat = re.compile(r'\((\d+)[iI](\d+)\)$')
@@ -323,6 +320,9 @@ class AmberPTParserListener(ParseTreeListener):
         atomId = next(d for d in self.__chemCompAtomDict if d[0] == '_chem_comp_atom.atom_id')
         self.__ccaAtomId = self.__chemCompAtomDict.index(atomId)
 
+        # leavingAtomFlag = next(d for d in self.__chemCompAtomDict if d[0] == '_chem_comp_atom.pdbx_leaving_atom_flag')
+        # self.__ccaLeavingAtomFlag = self.__chemCompAtomDict.index(leavingAtomFlag)
+
     def __updateChemCompDict(self, compId):
         """ Update CCD information for a given comp_id.
             @return: True for successfully update CCD information or False for the case a given comp_id does not exist in CCD
@@ -378,7 +378,7 @@ class AmberPTParserListener(ParseTreeListener):
             if terminus[atomNum - 1]:
                 self.__polySeqInLoop.append({'chain_id': chainId,
                                              'seq_id': seqIdList,
-                                             'comp_id': compIdList})
+                                             'auth_comp_id': compIdList})
                 seqIdList = []
                 compIdList = []
                 chainIndex += 1
@@ -390,12 +390,122 @@ class AmberPTParserListener(ParseTreeListener):
                 compIdList.append(compId)
             self.__atomNumberDict[atomNum] = {'chain_id': chainId,
                                               'seq_id': seqId,
-                                              'comp_id': compId,
-                                              'atom_id': atomName}
+                                              'auth_comp_id': compId,
+                                              'auth_atom_id': atomName}
 
         self.__polySeqInLoop.append({'chain_id': chainId,
                                      'seq_id': seqIdList,
-                                     'comp_id': compIdList})
+                                     'auth_comp_id': compIdList})
+
+        for ps in self.__polySeqInLoop:
+            chainId = ps['chain_id']
+            compIdList = []
+            for seqId, authCompId in zip(ps['seq_id'], ps['auth_comp_id']):
+                authAtomIds = [atomNum['auth_atom_id'] for atomNum in self.__atomNumberDict.values()
+                               if atomNum['chain_id'] == chainId
+                               and atomNum['seq_id'] == seqId
+                               and atomNum['auth_atom_id'][0] != 'H']
+                if authCompId in ('HIE', 'HIP', 'HID'):
+                    authCompId = 'HIS'
+                if self.__updateChemCompDict(authCompId):
+                    chemCompAtomIds = [cca[self.__ccaAtomId] for cca in self.__lastChemCompAtoms]
+                    valid = True
+                    for _atomId in authAtomIds:
+                        if _atomId not in chemCompAtomIds:
+                            valid = False
+                            break
+                        if not valid:
+                            break
+                    if valid:
+                        compIdList.append(authCompId)
+                        for atomNum in self.__atomNumberDict.values():
+                            if atomNum['chain_id'] == chainId and atomNum['seq_id'] == seqId:
+                                atomNum['comp_id'] = authCompId
+                                atomNum['atom_id'] = atomNum['auth_atom_id']
+                    else:
+                        compId = self.__csStat.getSimilarCompIdFromAtomIds([atomNum['auth_atom_id']
+                                                                            for atomNum in self.__atomNumberDict.values()
+                                                                            if atomNum['chain_id'] == chainId
+                                                                            and atomNum['seq_id'] == seqId])
+                        if compId is not None:
+                            compIdList.append(compId)
+                            chemCompAtomIds = None
+                            if self.__updateChemCompDict(compId):
+                                chemCompAtomIds = [cca[self.__ccaAtomId] for cca in self.__lastChemCompAtoms]
+                            for atomNum in self.__atomNumberDict.values():
+                                if atomNum['chain_id'] == chainId and atomNum['seq_id'] == seqId:
+                                    atomNum['comp_id'] = compId
+                                    if chemCompAtomIds is not None and atomNum['auth_atom_id'] in chemCompAtomIds:
+                                        atomNum['atom_id'] = atomNum['auth_atom_id']
+                        else:
+                            compIdList.append('.')
+                            unknownAtomIds = [_atomId for _atomId in authAtomIds if _atomId not in chemCompAtomIds]
+                            self.warningMessage += f"[Unknown atom name] "\
+                                f"{unknownAtomIds} are unknown atom names for {authCompId} residue.\n"
+                            compIdList.append(f"? {authCompId} {unknownAtomIds}")
+                else:
+                    compId = self.__csStat.getSimilarCompIdFromAtomIds([atomNum['auth_atom_id']
+                                                                        for atomNum in self.__atomNumberDict.values()
+                                                                        if atomNum['chain_id'] == chainId
+                                                                        and atomNum['seq_id'] == seqId])
+                    if compId is not None:
+                        compIdList.append(compId)
+                        chemCompAtomIds = None
+                        if self.__updateChemCompDict(compId):
+                            chemCompAtomIds = [cca[self.__ccaAtomId] for cca in self.__lastChemCompAtoms]
+                        for atomNum in self.__atomNumberDict.values():
+                            if atomNum['chain_id'] == chainId and atomNum['seq_id'] == seqId:
+                                atomNum['comp_id'] = compId
+                                if chemCompAtomIds is not None and atomNum['auth_atom_id'] in chemCompAtomIds:
+                                    atomNum['atom_id'] = atomNum['auth_atom_id']
+                    else:
+                        compIdList.append('.')
+                        self.warningMessage += f"[Unknown residue name]"\
+                            f"{authCompId!r} is unknown residue name.\n"
+
+            ps['comp_id'] = compIdList
+
+        for atomNum in self.__atomNumberDict.values():
+            if 'comp_id' in atomNum and atomNum['comp_id'] != atomNum['auth_comp_id']\
+               and 'atom_id' not in atomNum:
+                if self.__updateChemCompDict(atomNum['comp_id']):
+                    chemCompAtomIds = [cca[self.__ccaAtomId] for cca in self.__lastChemCompAtoms]
+                    authAtomId = atomNum['auth_atom_id']
+                    atomId = None
+                    if authAtomId.endswith("O'1"):
+                        atomId = authAtomId[0:len(authAtomId) - 3] + "O1'"
+                    elif authAtomId.endswith("O'2"):
+                        atomId = authAtomId[0:len(authAtomId) - 3] + "O2'"
+                    elif authAtomId.endswith("O'3"):
+                        atomId = authAtomId[0:len(authAtomId) - 3] + "O3'"
+                    elif authAtomId.endswith("O'4"):
+                        atomId = authAtomId[0:len(authAtomId) - 3] + "O4'"
+                    elif authAtomId.endswith("O'5"):
+                        atomId = authAtomId[0:len(authAtomId) - 3] + "O5'"
+                    elif authAtomId.endswith("O'6"):
+                        atomId = authAtomId[0:len(authAtomId) - 3] + "O6'"
+                    elif authAtomId.endswith("'1"):
+                        atomId = authAtomId.rstrip('1')
+                    elif authAtomId.endswith("'2"):
+                        atomId = authAtomId.rstrip('2') + "'"
+                    elif authAtomId == 'O1P':
+                        atomId = 'OP1'
+                    elif authAtomId == 'O2P':
+                        atomId = 'OP2'
+                    elif authAtomId == 'O3P':
+                        atomId = 'OP3'
+                    elif authAtomId == 'H3T':
+                        atomId = "HO3'"
+                    elif authAtomId == 'H5T':
+                        atomId = 'HOP2'
+
+                    if atomId is not None and atomId in chemCompAtomIds:
+                        atomNum['atom_id'] = atomId
+
+        for atomNum in self.__atomNumberDict.values():
+            if 'atom_id' not in atomNum:
+                self.warningMessage += f"[Unknown atom name]"\
+                    f"{atomNum['auth_atom_id']!r} is not recognized as the atom name of residue {atomNum['auth_comp_id']!r}.\n"
 
         if len(self.warningMessage) == 0:
             self.warningMessage = None

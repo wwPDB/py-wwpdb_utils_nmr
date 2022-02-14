@@ -382,6 +382,7 @@ class XplorMRParserListener(ParseTreeListener):
             self.warningMessage = None
         else:
             self.warningMessage = self.warningMessage[0:-1]
+            self.warningMessage = '\n'.join(set(self.warningMessage.split('\n')))
 
     # Enter a parse tree produced by XplorMRParser#distance_restraint.
     def enterDistance_restraint(self, ctx: XplorMRParser.Distance_restraintContext):  # pylint: disable=unused-argument

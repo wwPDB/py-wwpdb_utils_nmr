@@ -272,6 +272,7 @@ class CyanaMRParserListener(ParseTreeListener):
             self.warningMessage = None
         else:
             self.warningMessage = self.warningMessage[0:-1]
+            self.warningMessage = '\n'.join(set(self.warningMessage.split('\n')))
 
     # Enter a parse tree produced by CyanaMRParser#distance_restraints.
     def enterDistance_restraints(self, ctx: CyanaMRParser.Distance_restraintsContext):  # pylint: disable=unused-argument

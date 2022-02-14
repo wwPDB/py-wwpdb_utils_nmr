@@ -26,12 +26,13 @@ class AmberMRReader:
         self.__lfh = log
 
         self.__mrFilePath = None
+        self.__ptFilePath = None
         self.__cifFilePath = None
 
         # CIF reader
         self.__cR = CifReader(verbose, log)
 
-    def parse(self, mrFilePath, cifFilePath):
+    def parse(self, mrFilePath, ptFilePath, cifFilePath):
         """ Parse AMBER MR file.
             @return: True for success or False otherwise.
         """

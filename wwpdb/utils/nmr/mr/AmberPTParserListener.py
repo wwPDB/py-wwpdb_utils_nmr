@@ -9,6 +9,7 @@
 """
 import sys
 import re
+import copy
 
 from antlr4 import ParseTreeListener
 from wwpdb.utils.nmr.mr.AmberPTParser import AmberPTParser
@@ -18,12 +19,312 @@ from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 from wwpdb.utils.config.ConfigInfo import getSiteId
 from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommon
 from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
+from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
+
+
+empty_value = (None, '', '.', '?')
+
+
+# taken from wwpdb.utils.align.SequenceReferenceData.py
+monDict3 = {'ALA': 'A',
+            'ARG': 'R',
+            'ASN': 'N',
+            'ASP': 'D',
+            'ASX': 'B',
+            'CYS': 'C',
+            'GLN': 'Q',
+            'GLU': 'E',
+            'GLX': 'Z',
+            'GLY': 'G',
+            'HIS': 'H',
+            'ILE': 'I',
+            'LEU': 'L',
+            'LYS': 'K',
+            'MET': 'M',
+            'PHE': 'F',
+            'PRO': 'P',
+            'SER': 'S',
+            'THR': 'T',
+            'TRP': 'W',
+            'TYR': 'Y',
+            'VAL': 'V',
+            'DA': 'A',
+            'DC': 'C',
+            'DG': 'G',
+            'DT': 'T',
+            'DU': 'U',
+            'DI': 'I',
+            'A': 'A',
+            'C': 'C',
+            'G': 'G',
+            'I': 'I',
+            'T': 'T',
+            'U': 'U'
+            }
 
 
 def chunk_string(string, length=4):
     """ Split a string into fixed length chunks.
     """
     return [string[i:i + length] for i in range(0, len(string), length)]
+
+
+def has_large_seq_gap(s1, s2):
+    """ Return whether large gap in sequence ID.
+    """
+
+    seq_ids = sorted(set(s1['seq_id']) | set(s2['seq_id']))
+
+    for lp, i in enumerate(seq_ids):
+        if lp > 0 and i - seq_ids[lp - 1] > 20:
+            return True
+
+    return False
+
+
+def fill_blank_comp_id(s1, s2):
+    """ Fill blanked comp ID in s2 against s1.
+    """
+
+    seq_ids = sorted(set(s1['seq_id']) | set(s2['seq_id']))
+    comp_ids = []
+
+    for i in seq_ids:
+        if i in s2['seq_id']:
+            j = s2['seq_id'].index(i)
+            if j < len(s2['comp_id']):
+                comp_ids.append(s2['comp_id'][j])
+            else:
+                comp_ids.append('.')
+        else:
+            comp_ids.append('.')
+
+    return {'chain_id': s2['chain_id'], 'seq_id': seq_ids, 'comp_id': comp_ids}
+
+
+def fill_blank_comp_id_with_offset(s, offset):
+    """ Fill blanked comp ID with offset.
+    """
+
+    seq_ids = list(range(s['seq_id'][0] - offset, s['seq_id'][-1] + 1))
+    comp_ids = []
+
+    for i in seq_ids:
+        if i in s['seq_id']:
+            j = s['seq_id'].index(i)
+            if j < len(s['comp_id']):
+                comp_ids.append(s['comp_id'][j])
+            else:
+                comp_ids.append('.')
+        else:
+            comp_ids.append('.')
+
+    return {'chain_id': s['chain_id'], 'seq_id': seq_ids, 'comp_id': comp_ids}
+
+
+def beautify_seq_id(s1, s2):
+    """ Truncate negative sequence IDs of s1 and s2 and insert spacing between the large gap.
+    """
+
+    _s1 = fill_blank_comp_id(s2, s1)  # pylint: disable=arguments-out-of-order
+    _s2 = fill_blank_comp_id(s1, s2)  # pylint: disable=arguments-out-of-order
+
+    if _s1['seq_id'] != _s2['seq_id']:
+        return _s1, _s2
+
+    _seq_id = [seq_id for seq_id in _s1['seq_id'] if seq_id > 0]
+    _comp_id_1 = [comp_id for seq_id, comp_id in zip(_s1['seq_id'], _s1['comp_id']) if seq_id > 0]
+    _comp_id_2 = [comp_id for seq_id, comp_id in zip(_s1['seq_id'], _s2['comp_id']) if seq_id > 0]
+
+    gap_seq_id = []
+    gap_index = []
+
+    len_spacer = 5  # DAOTHER-7465, issue #2
+
+    for lp, i in enumerate(_seq_id):
+        if lp > 0 and i - _seq_id[lp - 1] > 20:
+            j = _seq_id[lp - 1]
+            for sp in range(1, len_spacer + 1):
+                gap_seq_id.append(j + sp)
+                gap_seq_id.append(i - sp)
+            gap_index.append(lp)
+
+    if len(gap_seq_id) == 0:
+        return {'chain_id': _s1['chain_id'], 'seq_id': _seq_id, 'comp_id': _comp_id_1}, {'chain_id': _s2['chain_id'], 'seq_id': _seq_id, 'comp_id': _comp_id_2}
+
+    _seq_id.extend(gap_seq_id)
+    _seq_id.sort()
+
+    for lp in reversed(gap_index):
+        for sp in range(1, len_spacer + 1):
+            _comp_id_1.insert(lp, '.')
+            _comp_id_2.insert(lp, '.')
+
+    return {'chain_id': _s1['chain_id'], 'seq_id': _seq_id, 'comp_id': _comp_id_1}, {'chain_id': _s2['chain_id'], 'seq_id': _seq_id, 'comp_id': _comp_id_2}
+
+
+def get_middle_code(ref_seq, test_seq):
+    """ Return array of middle code of sequence alignment.
+    """
+
+    array = ''
+
+    for i, rs in enumerate(ref_seq):
+        if i < len(test_seq):
+            array += '|' if rs == test_seq[i] and rs != '.' else ' '
+        else:
+            array += ' '
+
+    return array
+
+
+def get_gauge_code(seq_id, offset=0):
+    """ Return gauge code for seq ID.
+    """
+
+    if offset > 0:
+        _seq_id = list(range(1, offset + 1))
+        for lp, sid in enumerate(seq_id):
+            if lp < offset:
+                continue
+            _seq_id.append(sid)
+        seq_id = _seq_id
+
+    sid_len = len([sid for sid in seq_id if sid is not None])
+    code_len = 0
+
+    chars = []
+
+    for sid in seq_id:
+
+        if sid is None:
+            chars.append('-')
+            continue
+
+        if sid >= 0 and sid % 10 == 0 and code_len == 0:
+
+            code = str(sid)
+            code_len = len(code)
+
+            for j in range(code_len):
+                chars.append(code[j])
+
+        if code_len > 0:
+            code_len -= 1
+        else:
+            chars.append('-')
+
+    for lp, sid in enumerate(seq_id):
+
+        if sid is None or sid % 10 != 0:
+            continue
+
+        code = str(sid)
+        code_len = len(code)
+
+        if lp - code_len > 0:
+            for j in range(code_len):
+                chars[lp + j - code_len + 1] = chars[lp + j]
+                chars[lp + j] = '-'
+
+    if offset > 0:
+        for lp in range(offset):
+            chars[lp] = '-'
+
+    array = ''.join(chars)
+
+    if sid_len == len(seq_id):
+        return array[:sid_len]
+
+    _sid_len = len(seq_id)
+
+    offset = 0
+    for lp, sid in enumerate(seq_id):
+
+        if sid is None:
+            p = lp + offset
+            array = array[0:p] + ' ' + array[p:]
+            offset += 1
+
+    return array[:_sid_len]
+
+
+def score_of_seq_align(my_align):
+    """ Return score of sequence alignment.
+    """
+
+    length = len(my_align)
+
+    aligned = [True] * length
+
+    for i in range(length):
+        myPr = my_align[i]
+        myPr0 = str(myPr[0])
+        myPr1 = str(myPr[1])
+        if myPr0 == '.' or myPr1 == '.':
+            aligned[i] = False
+        elif myPr0 != myPr1:
+            pass
+        else:
+            break
+
+    not_aligned = True
+    offset_1 = 0
+    offset_2 = 0
+
+    unmapped = 0
+    conflict = 0
+    _matched = 0
+    for i in range(length):
+        myPr = my_align[i]
+        myPr0 = str(myPr[0])
+        myPr1 = str(myPr[1])
+        if myPr0 == '.' or myPr1 == '.':
+            if not_aligned and not aligned[i]:
+                if myPr0 == '.' and myPr1 != '.' and offset_2 == 0:  # DAOTHER-7421
+                    offset_1 += 1
+                if myPr0 != '.' and myPr1 == '.' and offset_1 == 0:  # DAOTHER-7421
+                    offset_2 += 1
+                if myPr0 == '.' and myPr1 == '.':  # DAOTHER-7465
+                    if offset_2 == 0:
+                        offset_1 += 1
+                    if offset_1 == 0:
+                        offset_2 += 1
+            unmapped += 1
+        elif myPr0 != myPr1:
+            conflict += 1
+        else:
+            not_aligned = False
+            _matched += 1
+
+    return _matched, unmapped, conflict, offset_1, offset_2
+
+
+def get_one_letter_code(comp_id):
+    """ Convert comp ID to 1-letter code.
+    """
+
+    comp_id = comp_id.upper()
+
+    if comp_id in monDict3:
+        return monDict3[comp_id]
+
+    if comp_id in empty_value:
+        return '.'
+
+    return 'X'
+
+
+def get_one_letter_code_sequence(comp_ids):
+    """ Convert array of comp ID to 1-letter code sequence.
+    """
+
+    array = ''
+
+    for comp_id in comp_ids:
+        array += get_one_letter_code(comp_id)
+
+    return array
 
 
 # This class defines a complete listener for a parse tree produced by AmberPTParser.
@@ -134,11 +435,17 @@ class AmberPTParserListener(ParseTreeListener):
                                          ]
                 }
 
+    # criterion for minimum sequence coverage when conflict occurs (NMR separated deposition)
+    min_seq_coverage_w_conflict = 0.95
+
     # NEFTranslator
     __nefT = None
 
     # BMRB chemical shift statistics
     __csStat = None
+
+    # Pairwise align
+    __pA = None
 
     # ChemComp reader
     __ccR = None
@@ -164,23 +471,14 @@ class AmberPTParserListener(ParseTreeListener):
     # CIF reader
     __cR = None
 
-    # data item name for model ID in 'atom_site' category
-    __modelNumName = None
-    # representative model id
-    __representativeModelId = 1
-    # total number of models
-    # __totalModels = 0
-
-    # data item names for auth_asym_id, auth_seq_id, auth_atom_id in 'atom_site' category
-    __authAsymId = None
-    __authSeqId = None
-    __authAtomId = None
-
     # polymer sequences of the coordinate file generated by NmrDpUtility.__extractCoordPolymerSequence()
-    __polySeq = None
+    __polySeqModel = None
 
     # polymer sequence of AMBER parameter/topology file
-    __polySeqInLoop = None
+    __polySeqPrmTop = None
+
+    __seqAlign = None
+    __chainAssign = None
 
     # version information
     __version = None
@@ -215,36 +513,13 @@ class AmberPTParserListener(ParseTreeListener):
 
     warningMessage = ''
 
-    def __init__(self, verbose=True, log=sys.stdout, cR=None, polySeq=None):
+    def __init__(self, verbose=True, log=sys.stdout, cR=None, polySeqModel=None):
         self.__verbose = verbose
         self.__lfh = log
         self.__cR = cR
 
-        try:
-
-            self.__modelNumName = 'pdbx_PDB_model_num' if self.__cR.hasItem('atom_site', 'pdbx_PDB_model_num') else 'ndb_model'
-
-            modelIds = self.__cR.getDictListWithFilter('atom_site',
-                                                       [{'name': self.__modelNumName, 'type': 'int', 'alt_name': 'model_id'}
-                                                        ])
-
-            if len(modelIds) > 0:
-                modelIds = set(dict['model_id'] for dict in modelIds)
-
-                self.__representativeModelId = min(modelIds)
-                # self.__totalModels = len(modelIds)
-
-            self.__authAsymId = 'pdbx_auth_asym_id' if self.__cR.hasItem('atom_site', 'pdbx_auth_asym_id') else 'auth_asym_id'
-            self.__authSeqId = 'pdbx_auth_seq_id' if self.__cR.hasItem('atom_site', 'pdbx_auth_seq_id') else 'auth_seq_id'
-            self.__authAtomId = 'pdbx_auth_atom_name' if self.__cR.hasItem('atom_site', 'pdbx_auth_atom_name') else 'auth_atom_id'
-
-        except Exception as e:
-
-            if self.__verbose:
-                self.__lfh.write(f"+AmberPTParserListener.__init__() ++ Error  - {str(e)}\n")
-
-        if polySeq is not None:
-            self.__polySeq = polySeq
+        if polySeqModel is not None:
+            self.__polySeqModel = polySeqModel
 
         else:
 
@@ -262,15 +537,15 @@ class AmberPTParserListener(ParseTreeListener):
             try:
 
                 try:
-                    self.__polySeq = self.__cR.getPolymerSequence(lpCategory, keyItems,
-                                                                  withStructConf=True, alias=alias)
+                    self.__polySeqModel = self.__cR.getPolymerSequence(lpCategory, keyItems,
+                                                                       withStructConf=True, alias=alias)
                 except KeyError:  # pdbx_PDB_ins_code throws KeyError
                     if contetSubtype + ('_ins_alias' if alias else '_ins') in self.keyItems:
                         keyItems = self.keyItems[contetSubtype + ('_ins_alias' if alias else '_ins')]
-                        self.__polySeq = self.__cR.getPolymerSequence(lpCategory, keyItems,
-                                                                      withStructConf=True, alias=alias)
+                        self.__polySeqModel = self.__cR.getPolymerSequence(lpCategory, keyItems,
+                                                                           withStructConf=True, alias=alias)
                     else:
-                        self.__polySeq = []
+                        self.__polySeqModel = []
 
             except Exception as e:
                 if self.__verbose:
@@ -287,6 +562,10 @@ class AmberPTParserListener(ParseTreeListener):
 
         if not self.__csStat.isOk():
             raise IOError("+AmberPTParserListener.__init__() ++ Error  - BMRBChemShiftStat is not available.")
+
+        # Pairwise align
+        self.__pA = PairwiseAlign()
+        self.__pA.setVerbose(self.__verbose)
 
         # CCD accessing utility
         __cICommon = ConfigInfoAppCommon(getSiteId())
@@ -344,7 +623,7 @@ class AmberPTParserListener(ParseTreeListener):
     # Enter a parse tree produced by AmberPTParser#amber_pt.
     def enterAmber_pt(self, ctx: AmberPTParser.Amber_ptContext):  # pylint: disable=unused-argument
         self.__atomNumberDict = {}
-        self.__polySeqInLoop = []
+        self.__polySeqPrmTop = []
 
     # Exit a parse tree produced by AmberPTParser#amber_pt.
     def exitAmber_pt(self, ctx: AmberPTParser.Amber_ptContext):  # pylint: disable=unused-argument
@@ -352,7 +631,7 @@ class AmberPTParserListener(ParseTreeListener):
         del residuePointer2[0]
         residuePointer2.append(self.__residuePointer[-1] + 1000)
 
-        chainIndex = self.__nefT.letter_to_int(self.__polySeq[0]['chain_id']) - 1
+        chainIndex = self.__nefT.letter_to_int(self.__polySeqModel[0]['chain_id']) - 1
         chainId = self.__nefT.index_to_letter(chainIndex)
 
         terminus = [atomName.endswith('T') for atomName in self.__atomName]
@@ -376,7 +655,7 @@ class AmberPTParserListener(ParseTreeListener):
                           if atomNumBegin <= atomNum <= atomNumEnd)
             compId = self.__residueLabel[_seqId - 1]
             if terminus[atomNum - 1]:
-                self.__polySeqInLoop.append({'chain_id': chainId,
+                self.__polySeqPrmTop.append({'chain_id': chainId,
                                              'seq_id': seqIdList,
                                              'auth_comp_id': compIdList})
                 seqIdList = []
@@ -393,11 +672,11 @@ class AmberPTParserListener(ParseTreeListener):
                                               'auth_comp_id': compId,
                                               'auth_atom_id': atomName}
 
-        self.__polySeqInLoop.append({'chain_id': chainId,
+        self.__polySeqPrmTop.append({'chain_id': chainId,
                                      'seq_id': seqIdList,
                                      'auth_comp_id': compIdList})
 
-        for ps in self.__polySeqInLoop:
+        for ps in self.__polySeqPrmTop:
             chainId = ps['chain_id']
             compIdList = []
             for seqId, authCompId in zip(ps['seq_id'], ps['auth_comp_id']):
@@ -504,13 +783,408 @@ class AmberPTParserListener(ParseTreeListener):
 
         for atomNum in self.__atomNumberDict.values():
             if 'atom_id' not in atomNum:
-                self.warningMessage += f"[Unknown atom name]"\
-                    f"{atomNum['auth_atom_id']!r} is not recognized as the atom name of residue {atomNum['auth_comp_id']!r}.\n"
+                if 'comp_id' not in atomNum or atomNum['comp_id'] == atomNum['auth_comp_id']:
+                    self.warningMessage += f"[Unknown atom name]"\
+                        f"{atomNum['auth_atom_id']!r} is not recognized as the atom name of {atomNum['auth_comp_id']!r} residue.\n"
+                else:
+                    self.warningMessage += f"[Unknown atom name]"\
+                        f"{atomNum['auth_atom_id']!r} is not recognized as the atom name of {atomNum['comp_id']!r} residue "\
+                        f"(the original residue label is {atomNum['auth_comp_id']!r}).\n"
+
+        self.alignPolymerSequence()
+        self.assignPolymerSequence()
+
+        if self.__chainAssign is not None:
+
+            chain_mapping = {}
+
+            for chain_assign in self.__chainAssign:
+                ref_chain_id = chain_assign['ref_chain_id']
+                test_chain_id = chain_assign['test_chain_id']
+
+                if ref_chain_id != test_chain_id:
+                    chain_mapping[test_chain_id] = ref_chain_id
+
+            if len(chain_mapping) > 0:
+
+                for ps in self.__polySeqPrmTop:
+                    ps['chain_id'] = chain_mapping[ps['chain_id']]
+
+                for atomNum in self.__atomNumberDict:
+                    atomNum['chain_id'] = chain_mapping[atomNum['chain_id']]
+
+                self.alignPolymerSequence()
+                self.assignPolymerSequence()
 
         if len(self.warningMessage) == 0:
             self.warningMessage = None
         else:
             self.warningMessage = self.warningMessage[0:-1]
+            self.warningMessage = '\n'.join(set(self.warningMessage.split('\n')))
+
+    def alignPolymerSequence(self):
+        if self.__polySeqModel is None or self.__polySeqPrmTop is None:
+            return
+
+        self.__seqAlign = []
+
+        for s1 in self.__polySeqModel:
+            chain_id = s1['chain_id']
+
+            for s2 in self.__polySeqPrmTop:
+                chain_id2 = s2['chain_id']
+
+                self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + chain_id)
+                self.__pA.addTestSequence(s2['comp_id'], chain_id)
+                self.__pA.doAlign()
+
+                myAlign = self.__pA.getAlignment(chain_id)
+
+                length = len(myAlign)
+
+                if length == 0:
+                    continue
+
+                _matched, unmapped, conflict, offset_1, offset_2 = score_of_seq_align(myAlign)
+
+                if length == unmapped + conflict or _matched <= conflict:
+                    continue
+
+                _s1 = s1 if offset_1 == 0 else fill_blank_comp_id_with_offset(s1, offset_1)
+                _s2 = s2 if offset_2 == 0 else fill_blank_comp_id_with_offset(s2, offset_2)
+
+                if conflict > 0 and has_large_seq_gap(_s1, _s2):
+                    __s1, __s2 = beautify_seq_id(_s1, _s2)
+                    _s1_ = __s1
+                    _s2_ = __s2
+
+                    self.__pA.setReferenceSequence(_s1_['comp_id'], 'REF' + chain_id)
+                    self.__pA.addTestSequence(_s2_['comp_id'], chain_id)
+                    self.__pA.doAlign()
+
+                    myAlign = self.__pA.getAlignment(chain_id)
+
+                    length = len(myAlign)
+
+                    _matched, unmapped, _conflict, _offset_1, _offset_2 = score_of_seq_align(myAlign)
+
+                    if _conflict == 0 and len(__s2['comp_id']) - len(s2['comp_id']) == conflict:
+                        conflict = 0
+                        offset_1 = _offset_1
+                        offset_2 = _offset_2
+                        _s1 = __s1
+                        _s2 = __s2
+
+                ref_length = len(s1['seq_id'])
+
+                ref_code = get_one_letter_code_sequence(_s1['comp_id'])
+                test_code = get_one_letter_code_sequence(_s2['comp_id'])
+                mid_code = get_middle_code(ref_code, test_code)
+                ref_gauge_code = get_gauge_code(_s1['seq_id'])
+                test_gauge_code = get_gauge_code(_s2['seq_id'])
+
+                if any((__s1, __s2) for (__s1, __s2, __c1, __c2)
+                       in zip(_s1['seq_id'], _s2['seq_id'], _s1['comp_id'], _s2['comp_id'])
+                       if __c1 != '.' and __c2 != '.' and __c1 != __c2):
+                    seq_id1 = []
+                    seq_id2 = []
+                    comp_id1 = []
+                    comp_id2 = []
+                    idx1 = 0
+                    idx2 = 0
+                    for i in range(length):
+                        myPr = myAlign[i]
+                        myPr0 = str(myPr[0])
+                        myPr1 = str(myPr[1])
+                        if myPr0 != '.':
+                            while idx1 < len(_s1['seq_id']):
+                                if _s1['comp_id'][idx1] == myPr0:
+                                    seq_id1.append(_s1['seq_id'][idx1])
+                                    comp_id1.append(myPr0)
+                                    idx1 += 1
+                                    break
+                                idx1 += 1
+                        else:
+                            seq_id1.append(None)
+                            comp_id1.append('.')
+                        if myPr1 != '.':
+                            while idx2 < len(_s2['seq_id']):
+                                if _s2['comp_id'][idx2] == myPr1:
+                                    seq_id2.append(_s2['seq_id'][idx2])
+                                    comp_id2.append(myPr1)
+                                    idx2 += 1
+                                    break
+                                idx2 += 1
+                        else:
+                            seq_id2.append(None)
+                            comp_id2.append('.')
+                    ref_code = get_one_letter_code_sequence(comp_id1)
+                    test_code = get_one_letter_code_sequence(comp_id2)
+                    mid_code = get_middle_code(ref_code, test_code)
+                    ref_gauge_code = get_gauge_code(seq_id1, offset_1)
+                    test_gauge_code = get_gauge_code(seq_id2, offset_2)
+                    if ' ' in ref_gauge_code:
+                        for p, g in enumerate(ref_gauge_code):
+                            if g == ' ':
+                                ref_code = ref_code[0:p] + '-' + ref_code[p + 1:]
+                    if ' ' in test_gauge_code:
+                        for p, g in enumerate(test_gauge_code):
+                            if g == ' ':
+                                test_code = test_code[0:p] + '-' + test_code[p + 1:]
+
+                matched = mid_code.count('|')
+
+                seq_align = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': ref_length,
+                             'matched': matched, 'conflict': conflict, 'unmapped': unmapped,
+                             'sequence_coverage': float(f"{float(length - (unmapped + conflict)) / ref_length:.3f}"),
+                             'ref_seq_id': _s1['seq_id'], 'test_seq_id': _s2['seq_id'],
+                             'ref_gauge_code': ref_gauge_code, 'ref_code': ref_code, 'mid_code': mid_code,
+                             'test_code': test_code, 'test_gauge_code': test_gauge_code}
+
+                self.__seqAlign.append(seq_align)
+
+    def assignPolymerSequence(self):
+        if self.__seqAlign is None:
+            return
+
+        top_chains = len(self.__polySeqPrmTop)
+
+        mat = []
+        indices = []
+
+        for s1 in self.__polySeqModel:
+            chain_id = s1['chain_id']
+
+            cost = [0 for i in range(top_chains)]
+
+            for s2 in self.__polySeqPrmTop:
+                chain_id2 = s2['chain_id']
+
+                result = next((seq_align for seq_align in self.__seqAlign
+                               if seq_align['ref_chain_id'] == chain_id
+                               and seq_align['test_chain_id'] == chain_id2), None)
+
+                if result is not None:
+                    cost[self.__polySeqPrmTop.index(s2)] = result['unmapped'] + result['conflict'] - result['length']
+                    if result['length'] >= len(s1['seq_id']) - result['unmapped']:
+                        indices.append((self.__polySeqModel.index(s1), self.__polySeqPrmTop.index(s2)))
+
+            mat.append(cost)
+
+        self.__chainAssign = []
+
+        concatenated_prmtop_chain = {}
+
+        for row, column in indices:
+
+            if mat[row][column] >= 0:
+                _cif_chains = []
+                for _row, _column in indices:
+                    if column == _column:
+                        _cif_chains.append(self.__polySeqModel[_row]['chain_id'])
+
+                if len(_cif_chains) > 1:
+                    chain_id2 = self.__polySeqPrmTop[column]['chain_id']
+                    concatenated_prmtop_chain[chain_id2] = _cif_chains
+
+                    self.warningMessage += f"[Warning] The chain ID {chain_id2!r} of the sequences in the AMBER paramter/topology file "\
+                        f"will be re-assigned to the chain IDs {_cif_chains} in the coordinates during biocuration.\n"
+
+            chain_id = self.__polySeqModel[row]['chain_id']
+            chain_id2 = self.__polySeqPrmTop[column]['chain_id']
+
+            result = next(seq_align for seq_align in self.__seqAlign
+                          if seq_align['ref_chain_id'] == chain_id and seq_align['test_chain_id'] == chain_id2)
+
+            chain_assign = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': result['length'],
+                            'matched': result['matched'], 'conflict': result['conflict'], 'unmapped': result['unmapped'],
+                            'sequence_coverage': result['sequence_coverage']}
+
+            auth_chain_id = chain_id
+            if 'auth_chain_id' in self.__polySeqModel[row]:
+                auth_chain_id = self.__polySeqModel[row]['auth_chain_id']
+                chain_assign['ref_auth_chain_id'] = auth_chain_id
+
+            s1 = next(s for s in self.__polySeqModel if s['chain_id'] == chain_id)
+            s2 = next(s for s in self.__polySeqPrmTop if s['chain_id'] == chain_id2)
+
+            self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + chain_id)
+            self.__pA.addTestSequence(s2['comp_id'], chain_id)
+            self.__pA.doAlign()
+
+            myAlign = self.__pA.getAlignment(chain_id)
+
+            length = len(myAlign)
+
+            _matched, unmapped, conflict, offset_1, offset_2 = score_of_seq_align(myAlign)
+
+            _s1 = s1 if offset_1 == 0 else fill_blank_comp_id_with_offset(s1, offset_1)
+            _s2 = s2 if offset_2 == 0 else fill_blank_comp_id_with_offset(s2, offset_2)
+
+            if conflict > 0 and has_large_seq_gap(_s1, _s2):
+                __s1, __s2 = beautify_seq_id(_s1, _s2)
+                _s1 = __s1
+                _s2 = __s2
+
+                self.__pA.setReferenceSequence(_s1['comp_id'], 'REF' + chain_id)
+                self.__pA.addTestSequence(_s2['comp_id'], chain_id)
+                self.__pA.doAlign()
+
+                myAlign = self.__pA.getAlignment(chain_id)
+
+                length = len(myAlign)
+
+                _matched, unmapped, _conflict, _, _ = score_of_seq_align(myAlign)
+
+                if _conflict == 0 and len(__s2['comp_id']) - len(s2['comp_id']) == conflict:
+                    result['conflict'] = 0
+                    s2 = __s2
+
+            if result['unmapped'] > 0 or result['conflict'] > 0:
+
+                aligned = [True] * length
+                seq_id1 = []
+                seq_id2 = []
+
+                j = 0
+                for i in range(length):
+                    if str(myAlign[i][0]) != '.':
+                        seq_id1.append(s1['seq_id'][j])
+                        j += 1
+                    else:
+                        seq_id1.append(None)
+
+                j = 0
+                for i in range(length):
+                    if str(myAlign[i][1]) != '.':
+                        seq_id2.append(s2['seq_id'][j])
+                        j += 1
+                    else:
+                        seq_id2.append(None)
+
+                for i in range(length):
+                    myPr = myAlign[i]
+                    myPr0 = str(myPr[0])
+                    myPr1 = str(myPr[1])
+                    if myPr0 == '.' or myPr1 == '.':
+                        aligned[i] = False
+                    elif myPr0 != myPr1:
+                        pass
+                    else:
+                        break
+
+                for i in reversed(range(length)):
+                    myPr = myAlign[i]
+                    myPr0 = str(myPr[0])
+                    myPr1 = str(myPr[1])
+                    if myPr0 == '.' or myPr1 == '.':
+                        aligned[i] = False
+                    elif myPr0 != myPr1:
+                        pass
+                    else:
+                        break
+
+                _conflicts = 0
+
+                for i in range(length):
+                    myPr = myAlign[i]
+                    if myPr[0] == myPr[1]:
+                        continue
+
+                    cif_comp_id = str(myPr[0])
+                    top_comp_id = str(myPr[1])
+
+                    if top_comp_id == '.' and cif_comp_id != '.':
+                        pass
+
+                    elif top_comp_id != cif_comp_id and aligned[i]:
+                        _conflicts += 1
+
+                if _conflicts > chain_assign['unmapped'] and chain_assign['sequence_coverage'] < self.min_seq_coverage_w_conflict:
+                    continue
+
+                unmapped = []
+                conflict = []
+
+                for i in range(length):
+                    myPr = myAlign[i]
+                    if myPr[0] == myPr[1]:
+                        continue
+
+                    cif_comp_id = str(myPr[0])
+                    top_comp_id = str(myPr[1])
+
+                    if top_comp_id == '.' and cif_comp_id != '.':
+
+                        unmapped.append({'ref_seq_id': seq_id1[i], 'ref_comp_id': cif_comp_id})
+
+                        if not aligned[i]:
+                            cif_seq_code = f"{auth_chain_id}:{seq_id1[i]}:{cif_comp_id}"
+
+                            self.warningMessage += f"[Sequence mismatch] {cif_seq_code} is not present "\
+                                f"in the AMBER parameter/topology data (chain_id {chain_id2}).\n"
+
+                    elif top_comp_id != cif_comp_id and aligned[i]:
+
+                        conflict.append({'ref_seq_id': seq_id1[i], 'ref_comp_id': cif_comp_id,
+                                         'test_seq_id': seq_id2[i], 'test_comp_id': top_comp_id})
+
+                        cif_seq_code = f"{auth_chain_id}:{seq_id1[i]}:{cif_comp_id}"
+                        if cif_comp_id == '.':
+                            cif_seq_code += ', insertion error'
+                        top_seq_code = f"{chain_id2}:{seq_id2[i]}:{top_comp_id}"
+                        if top_comp_id == '.':
+                            top_seq_code += ', insertion error'
+
+                        self.warningMessage += f"[Sequence mismatch] Sequence alignment error between the coordinate ({cif_seq_code}) "\
+                            f"and the AMBER parameter/topology data ({top_seq_code}). "\
+                            "Please verify the two sequences and re-upload the correct file(s).\n"
+
+                if len(unmapped) > 0:
+                    chain_assign['unmapped_sequence'] = unmapped
+
+                if len(conflict) > 0:
+                    chain_assign['conflict_sequence'] = conflict
+                    chain_assign['conflict'] = len(conflict)
+                    chain_assign['unmapped'] = chain_assign['unmapped'] - len(conflict)
+                    if chain_assign['unmapped'] < 0:
+                        chain_assign['conflict'] -= chain_assign['unmapped']
+                        chain_assign['unmapped'] = 0
+
+                    result['conflict'] = chain_assign['conflict']
+                    result['unmapped'] = chain_assign['unmapped']
+
+            self.__chainAssign.append(chain_assign)
+
+        if len(self.__chainAssign) > 0:
+
+            if len(self.__polySeqModel) > 1:
+
+                if any(s for s in self.__polySeqModel if 'identical_chain_id' in s):
+
+                    for chain_assign in self.__chainAssign:
+
+                        if chain_assign['conflict'] > 0:
+                            continue
+
+                        chain_id = chain_assign['ref_chain_id']
+                        auth_chain_id = None if 'ref_auth_chain_id' not in chain_assign else chain_assign['ref_auth_chain_id']
+
+                        try:
+                            identity = next(s['identical_chain_id'] for s in self.__polySeqModel
+                                            if s['chain_id'] == chain_id and 'identical_chain_id' in s)
+
+                            for chain_id in identity:
+
+                                if not any(_chain_assign for _chain_assign in self.__chainAssign if _chain_assign['ref_chain_id'] == chain_id):
+                                    _chain_assign = copy.copy(chain_assign)
+                                    _chain_assign['ref_chain_id'] = chain_id
+                                    if auth_chain_id is not None:
+                                        _chain_assign['ref_auth_chain_id'] = auth_chain_id
+                                    self.__chainAssign.append(_chain_assign)
+
+                        except StopIteration:
+                            pass
 
     # Enter a parse tree produced by AmberPTParser#version_statement.
     def enterVersion_statement(self, ctx: AmberPTParser.Version_statementContext):  # pylint: disable=unused-argument
@@ -1126,11 +1800,21 @@ class AmberPTParserListener(ParseTreeListener):
     def getPolymerSequence(self):
         """ Return polymer sequence of AMBER parameter/topology file.
         """
-        return self.__polySeqInLoop
+        return self.__polySeqPrmTop
 
     def getAtomNumberDict(self):
         """ Return AMBER atomic number dictionary.
         """
         return self.__atomNumberDict
+
+    def getSequenceAlignment(self):
+        """ Return sequence alignment between coordinates and AMBER parameter/topology.
+        """
+        return self.__seqAlign
+
+    def getChainAssignment(self):
+        """ Return chain assignment between coordinates and AMBER parameter/topology.
+        """
+        return self.__chainAssign
 
 # del AmberPTParser

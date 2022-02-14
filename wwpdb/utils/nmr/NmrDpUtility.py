@@ -429,6 +429,57 @@ def get_gauge_code(seq_id, offset=0):
     return array[:_sid_len]
 
 
+def score_of_seq_align(my_align):
+    """ Return score of sequence alignment.
+    """
+
+    length = len(my_align)
+
+    aligned = [True] * length
+
+    for i in range(length):
+        myPr = my_align[i]
+        myPr0 = str(myPr[0])
+        myPr1 = str(myPr[1])
+        if myPr0 == '.' or myPr1 == '.':
+            aligned[i] = False
+        elif myPr0 != myPr1:
+            pass
+        else:
+            break
+
+    not_aligned = True
+    offset_1 = 0
+    offset_2 = 0
+
+    unmapped = 0
+    conflict = 0
+    _matched = 0
+    for i in range(length):
+        myPr = my_align[i]
+        myPr0 = str(myPr[0])
+        myPr1 = str(myPr[1])
+        if myPr0 == '.' or myPr1 == '.':
+            if not_aligned and not aligned[i]:
+                if myPr0 == '.' and myPr1 != '.' and offset_2 == 0:  # DAOTHER-7421
+                    offset_1 += 1
+                if myPr0 != '.' and myPr1 == '.' and offset_1 == 0:  # DAOTHER-7421
+                    offset_2 += 1
+                if myPr0 == '.' and myPr1 == '.':  # DAOTHER-7465
+                    if offset_2 == 0:
+                        offset_1 += 1
+                    if offset_1 == 0:
+                        offset_2 += 1
+            unmapped += 1
+        elif myPr0 != myPr1:
+            conflict += 1
+        else:
+            not_aligned = False
+            _matched += 1
+
+    return _matched, unmapped, conflict, offset_1, offset_2
+
+
 def probability_density(value, mean, stddev):
     """ Return probability density.
     """
@@ -740,57 +791,6 @@ def dihedral_angle(p0, p1, p2, p3):
     y = np.dot(np.cross(b1, v), w)
 
     return np.degrees(np.arctan2(y, x))
-
-
-def score_of_seq_align(my_align):
-    """ Return score of sequence alignment.
-    """
-
-    length = len(my_align)
-
-    aligned = [True] * length
-
-    for i in range(length):
-        myPr = my_align[i]
-        myPr0 = str(myPr[0])
-        myPr1 = str(myPr[1])
-        if myPr0 == '.' or myPr1 == '.':
-            aligned[i] = False
-        elif myPr0 != myPr1:
-            pass
-        else:
-            break
-
-    not_aligned = True
-    offset_1 = 0
-    offset_2 = 0
-
-    unmapped = 0
-    conflict = 0
-    _matched = 0
-    for i in range(length):
-        myPr = my_align[i]
-        myPr0 = str(myPr[0])
-        myPr1 = str(myPr[1])
-        if myPr0 == '.' or myPr1 == '.':
-            if not_aligned and not aligned[i]:
-                if myPr0 == '.' and myPr1 != '.' and offset_2 == 0:  # DAOTHER-7421
-                    offset_1 += 1
-                if myPr0 != '.' and myPr1 == '.' and offset_1 == 0:  # DAOTHER-7421
-                    offset_2 += 1
-                if myPr0 == '.' and myPr1 == '.':  # DAOTHER-7465
-                    if offset_2 == 0:
-                        offset_1 += 1
-                    if offset_1 == 0:
-                        offset_2 += 1
-            unmapped += 1
-        elif myPr0 != myPr1:
-            conflict += 1
-        else:
-            not_aligned = False
-            _matched += 1
-
-    return _matched, unmapped, conflict, offset_1, offset_2
 
 
 class NmrDpUtility:
@@ -23847,10 +23847,10 @@ class NmrDpUtility:
 
                                 cif_seq_code = f"{auth_chain_id}:{seq_id1[i]}:{cif_comp_id}"
                                 if cif_comp_id == '.':
-                                    cif_seq_code += ', insersion error'
+                                    cif_seq_code += ', insertion error'
                                 nmr_seq_code = f"{chain_id2}:{seq_id2[i]}:{nmr_comp_id}"
                                 if nmr_comp_id == '.':
-                                    nmr_seq_code += ', insersion error'
+                                    nmr_seq_code += ', insertion error'
 
                                 auth_seq = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_coordinate']
                                                  if seq_align['chain_id'] == chain_id), None)
@@ -24232,10 +24232,10 @@ class NmrDpUtility:
 
                                 cif_seq_code = f"{auth_chain_id2}:{seq_id2[i]}:{cif_comp_id}"
                                 if cif_comp_id == '.':
-                                    cif_seq_code += ', insersion error'
+                                    cif_seq_code += ', insertion error'
                                 nmr_seq_code = f"{chain_id}:{seq_id1[i]}:{nmr_comp_id}"
                                 if nmr_comp_id == '.':
-                                    nmr_seq_code += ', insersion error'
+                                    nmr_seq_code += ', insertion error'
 
                                 auth_seq = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_coordinate']
                                                  if seq_align['chain_id'] == chain_id2), None)

@@ -364,6 +364,7 @@ class CnsMRParserListener(ParseTreeListener):
             self.warningMessage = None
         else:
             self.warningMessage = self.warningMessage[0:-1]
+            self.warningMessage = '\n'.join(set(self.warningMessage.split('\n')))
 
     # Enter a parse tree produced by CnsMRParser#distance_restraint.
     def enterDistance_restraint(self, ctx: CnsMRParser.Distance_restraintContext):  # pylint: disable=unused-argument

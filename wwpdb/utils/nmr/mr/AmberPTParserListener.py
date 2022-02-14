@@ -143,8 +143,6 @@ class AmberPTParserListener(ParseTreeListener):
     # ChemComp reader
     __ccR = None
 
-    __assumeUpperLimit = None
-
     __lastCompId = None
     __lastCompIdTest = False
     # __lastChemCompDict = None
@@ -182,7 +180,7 @@ class AmberPTParserListener(ParseTreeListener):
     __polySeq = None
 
     # polymer sequence of AMBER parameter/topology file
-    __polySeqInMR = None
+    __polySeqInLoop = None
 
     # version information
     __version = None
@@ -215,16 +213,15 @@ class AmberPTParserListener(ParseTreeListener):
     __i_format_pat = re.compile(r'\((\d+)[iI](\d+)\)$')
     __i_format_pat = re.compile(r'\((\d+)[eE](\d+)\.?(\d+)?\)$')
 
-    __cur_column_len = None
+    # __cur_column_len = None
     __cur_word_len = None
 
     warningMessage = ''
 
-    def __init__(self, verbose=True, log=sys.stdout, cR=None, polySeq=None, assumeUpperLimit=True):
+    def __init__(self, verbose=True, log=sys.stdout, cR=None, polySeq=None):
         self.__verbose = verbose
         self.__lfh = log
         self.__cR = cR
-        self.__assumeUpperLimit = assumeUpperLimit
 
         try:
 
@@ -347,7 +344,7 @@ class AmberPTParserListener(ParseTreeListener):
     # Enter a parse tree produced by AmberPTParser#amber_pt.
     def enterAmber_pt(self, ctx: AmberPTParser.Amber_ptContext):  # pylint: disable=unused-argument
         self.__atomNumberDict = {}
-        self.__polySeqInMR = []
+        self.__polySeqInLoop = []
 
     # Exit a parse tree produced by AmberPTParser#amber_pt.
     def exitAmber_pt(self, ctx: AmberPTParser.Amber_ptContext):  # pylint: disable=unused-argument
@@ -355,24 +352,50 @@ class AmberPTParserListener(ParseTreeListener):
         del residuePointer2[0]
         residuePointer2.append(self.__residuePointer[-1] + 1000)
 
-        chainId = self.__polySeq[0]['chain_id']
+        chainIndex = self.__nefT.letter_to_int(self.__polySeq[0]['chain_id']) - 1
+        chainId = self.__nefT.index_to_letter(chainIndex)
 
+        terminus = [atomName.endswith('T') for atomName in self.__atomName]
+        atomTotal = len(self.__atomName)
+        if terminus[0]:
+            terminus[0] = False
+        for i in range(0, atomTotal - 1):
+            j = i + 1
+            if terminus[i] and terminus[j]:
+                terminus[i] = False
+        if terminus[-1]:
+            terminus[-1] = False
+
+        seqIdList = []
+        compIdList = []
+
+        offset = 0
         for atomNum, atomName in enumerate(self.__atomName, start=1):
-            seqId = next(resNum for resNum, (atomNumBegin, atomNumEnd)
-                         in enumerate(zip(self.__residuePointer, residuePointer2), start=1)
-                         if atomNumBegin <= atomNum <= atomNumEnd)
-            compId = self.__residueLabel[seqId - 1]
+            _seqId = next(resNum for resNum, (atomNumBegin, atomNumEnd)
+                          in enumerate(zip(self.__residuePointer, residuePointer2), start=1)
+                          if atomNumBegin <= atomNum <= atomNumEnd)
+            compId = self.__residueLabel[_seqId - 1]
+            if terminus[atomNum - 1]:
+                self.__polySeqInLoop.append({'chain_id': chainId,
+                                             'seq_id': seqIdList,
+                                             'comp_id': compIdList})
+                seqIdList = []
+                compIdList = []
+                chainIndex += 1
+                chainId = self.__nefT.index_to_letter(chainIndex)
+                offset = 1 - _seqId
+            seqId = _seqId + offset
+            if seqId not in seqIdList:
+                seqIdList.append(seqId)
+                compIdList.append(compId)
             self.__atomNumberDict[atomNum] = {'chain_id': chainId,
                                               'seq_id': seqId,
                                               'comp_id': compId,
                                               'atom_id': atomName}
 
-        self.__polySeqInMR.append({'chain_id': chainId,
-                                   'seq_id': list(range(1, len(self.__residueLabel) + 1)),
-                                   'comp_id': self.__residueLabel})
-
-        print(self.__polySeq)
-        print(self.__polySeqInMR)
+        self.__polySeqInLoop.append({'chain_id': chainId,
+                                     'seq_id': seqIdList,
+                                     'comp_id': compIdList})
 
         if len(self.warningMessage) == 0:
             self.warningMessage = None
@@ -736,7 +759,7 @@ class AmberPTParserListener(ParseTreeListener):
     def exitNumber_excluded_atoms_statement(self, ctx: AmberPTParser.Number_excluded_atoms_statementContext):
         if ctx.Integer(0):
             return
-        self.numberExcludedAtomsStatements -=  1
+        self.numberExcludedAtomsStatements -= 1
 
     # Enter a parse tree produced by AmberPTParser#pointers_statement.
     def enterPointers_statement(self, ctx: AmberPTParser.Pointers_statementContext):  # pylint: disable=unused-argument
@@ -900,25 +923,26 @@ class AmberPTParserListener(ParseTreeListener):
         try:
             if ctx.Fortran_format_A():
                 g = self.__a_format_pat.search(str(ctx.Fortran_format_A())).groups()
-                self.__cur_column_len = int(g[0])
+                # self.__cur_column_len = int(g[0])
                 self.__cur_word_len = int(g[1])
             elif ctx.Fortran_format_I():
                 g = self.__i_format_pat.search(str(ctx.Fortran_format_I())).groups()
-                self.__cur_column_len = int(g[0])
+                # self.__cur_column_len = int(g[0])
                 self.__cur_word_len = int(g[1])
             else:
                 g = self.__e_format_pat.search(str(ctx.Fortran_format_E())).groups()
-                self.__cur_column_len = int(g[0])
+                # self.__cur_column_len = int(g[0])
                 self.__cur_word_len = int(g[1])
         except AttributeError:
-            self.__cur_column_len = self.__cur_word_len = None
+            # self.__cur_column_len = None
+            self.__cur_word_len = None
 
     # Exit a parse tree produced by AmberPTParser#format_function.
     def exitFormat_function(self, ctx: AmberPTParser.Format_functionContext):  # pylint: disable=unused-argument
         pass
 
     def getContentSubtype(self):
-        """ Return content subtype of AMBER PT file.
+        """ Return content subtype of AMBER parameter/topology file.
         """
 
         contentSubtype = {'version': self.versionStatements,
@@ -974,20 +998,25 @@ class AmberPTParserListener(ParseTreeListener):
         return {k: 1 for k, v in contentSubtype.items() if v > 0}
 
     def getVersionInfo(self):
-        """ Return version information of AMBER PT file.
+        """ Return version information of AMBER parameter/topology file.
             @return: version, date, time
         """
         return self.__version, self.__date, self.__time
 
     def getTitle(self):
-        """ Return title of AMBER PT file.
+        """ Return title of AMBER parameter/topology file.
         """
         return self.__title
 
-    def getPolymerSequence(self):
-        """ Return polymer sequence of AMBER PT file.
+    def getRadiusSet(self):
+        """ Return radius set of AMBER parameter/topology file.
         """
-        return self.__polySeqInMR
+        return self.__radiusSet
+
+    def getPolymerSequence(self):
+        """ Return polymer sequence of AMBER parameter/topology file.
+        """
+        return self.__polySeqInLoop
 
     def getAtomNumberDict(self):
         """ Return AMBER atomic number dictionary.

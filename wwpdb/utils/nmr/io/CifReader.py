@@ -19,18 +19,19 @@
 # 20-Nov-2020   my  - additional support for insertion code in getPolymerSequence() (DAOTHER-6128)
 # 29-Jun-2021   my  - add 'auth_chain_id', 'identical_auth_chain_id' in results of getPolymerSequence() if possible (DAOTHER-7108)
 # 14-Jan-2022   my  - precise RMSD calculation with domain and medoid model identification (DAOTHER-4060, 7544)
+# 02-Feb-2022   my  - add 'abs-int', 'abs-float', 'range-int', 'range-abs-int', 'range-abs-float' as filter item types and 'not_equal_to' range filter (NMR restraint remediation)
 ##
 """ A collection of classes for parsing CIF files.
 """
 
 import sys
 import os
-import traceback
 import math
 import random
 import itertools
 import hashlib
 import collections
+import re
 
 import numpy as np
 
@@ -165,7 +166,10 @@ class CifReader:
         self.trueValue = ('true', 't', 'yes', 'y', '1')
 
         # allowed item types
-        self.itemTypes = ('str', 'bool', 'int', 'float', 'range-float', 'enum')
+        self.itemTypes = ('str', 'bool',
+                          'int', 'range-int', 'abs-int', 'range-abs-int',
+                          'float', 'range-float', 'abs-float', 'range-abs-float',
+                          'enum')
 
         # random rotation test for detection of non-superimposed models (DAOTHER-4060)
         self.__random_rotaion_test = False
@@ -190,7 +194,7 @@ class CifReader:
         self.__rmsd_overlaid_exactly = 0.01
 
     def parse(self, filePath):
-        """ Set file path and parse CIF file, and set internal active data block if possible.
+        """ Parse CIF file, and set internal active data block if possible.
             @return: True for success or False otherwise.
         """
 
@@ -203,27 +207,13 @@ class CifReader:
         try:
             if not os.access(self.__filePath, os.R_OK):
                 if self.__verbose:
-                    self.__lfh.write(f"+ERROR- CifReader.setFilePath() Missing file {self.__filePath}\n")
+                    self.__lfh.write(f"+ERROR- CifReader.parse() Missing file {self.__filePath}\n")
                 return False
-            return self.__parse()
-        except:  # noqa: E722 pylint: disable=bare-except
-            if self.__verbose:
-                self.__lfh.write(f"+ERROR- CifReader.setFilePath() Missing file {self.__filePath}\n")
-            return False
-
-    def __parse(self):
-        """ Parse CIF file and set internal active data block.
-            @return: True for success or False otherwise.
-        """
-
-        if self.__dBlock is not None:
-            return True
-
-        try:
             block = self.__getDataBlock()
             return self.__setDataBlock(block)
         except:  # noqa: E722 pylint: disable=bare-except
-            traceback.print_exc(file=sys.stdout)
+            if self.__verbose:
+                self.__lfh.write(f"+ERROR- CifReader.parse() Missing file {self.__filePath}\n")
             return False
 
     def __getDataBlock(self, blockId=None):
@@ -695,7 +685,7 @@ class CifReader:
                     n_clusters = len(set_labels) - (1 if -1 in set_labels else 0)
                     n_noise = list_labels.count(-1)
 
-                    if n_clusters == 0:
+                    if n_clusters == 0 or n_clusters >= features:
                         continue
 
                     md5 = hashlib.md5(str(list_labels).encode('utf-8'))
@@ -746,6 +736,9 @@ class CifReader:
                         continue
 
                     result['score'] = score
+
+                    if self.__verbose:
+                        print(result)
 
                     if score < min_score or (n_noise == 0 and min_score < self.__rmsd_overlaid_exactly):
                         min_score = score
@@ -865,6 +858,8 @@ class CifReader:
 
         dlist = []
 
+        seq_range_p = re.compile(r'^\[(-?\d+)-(-?\d+)\]$')
+
         for label in sorted(eff_labels):
 
             _label = int(label)
@@ -876,14 +871,24 @@ class CifReader:
             gaps = seq_ids[-1] + 1 - seq_ids[0] - len(seq_ids)
             item['number_of_gaps'] = gaps
             if gaps == 0:
-                item['range_of_seq_id'] = f"[{seq_ids[0]}-{seq_ids[-1]}]"
+                seq_range = f"[{seq_ids[0]}-{seq_ids[-1]}]"
             else:
                 seq_range = f"[{seq_ids[0]}-"
                 for idx, seq_id in enumerate(seq_ids):
                     if idx > 0 and seq_id != seq_ids[idx - 1] + 1:
                         seq_range += f"{seq_ids[idx - 1]}],[{seq_id}-"
                 seq_range += f"{seq_ids[-1]}]"
-                item['range_of_seq_id'] = seq_range
+            _seq_range = []
+            for r in seq_range.split(','):
+                try:
+                    g = seq_range_p.search(r).groups()
+                    if g[0] != g[1]:
+                        _seq_range.append(f"[{g[0]}-{g[1]}]")
+                    else:
+                        _seq_range.append(f"[{g[0]}]")
+                except AttributeError:
+                    pass
+            item['range_of_seq_id'] = ','.join(_seq_range)
             item['percent_of_core'] = float(f"{float(count) / length * 100.0:.1f}")
 
             r = np.zeros((_total_models, _total_models), dtype=float)
@@ -1005,14 +1010,19 @@ class CifReader:
                                 val = val.lower() in self.trueValue
                             elif filterItemType == 'int':
                                 val = int(val)
-                            else:
+                            elif filterItemType == 'float':
                                 val = float(val)
-                            if filterItemType == 'range-float':
+                            elif filterItemType in ('abs-int', 'range-abs-int'):
+                                val = abs(int(val))
+                            else:  # 'range-float', 'range-abs-float'
+                                val = abs(float(val))
+                            if filterItemType in ('range-int', 'range-abs-int', 'range-float', 'range-abs-float'):
                                 _range = filterItem['range']
                                 if ('min_exclusive' in _range and val <= _range['min_exclusive'])\
                                    or ('min_inclusive' in _range and val < _range['min_inclusive'])\
                                    or ('max_inclusive' in _range and val > _range['max_inclusive'])\
-                                   or ('max_exclusive' in _range and val >= _range['max_exclusive']):
+                                   or ('max_exclusive' in _range and val >= _range['max_exclusive'])\
+                                   or ('not_equal_to' in _range and val == _range['not_equal_to']):
                                     keep = False
                                     break
                             elif filterItemType == 'enum':

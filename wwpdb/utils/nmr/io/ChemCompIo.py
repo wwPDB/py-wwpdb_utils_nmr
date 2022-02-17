@@ -135,12 +135,12 @@ class ChemCompReader:
             self.__filePath = filePath
             if not os.access(self.__filePath, os.R_OK):
                 if self.__verbose:
-                    self.__lfh.write(f"+ERROR- PdbxChemCompReader.getCompId() Missing file {self.__filePath}\n")
+                    self.__lfh.write(f"+ERROR- PdbxChemCompReader.setFilePath() Missing file {self.__filePath}\n")
                 return False
             return True
         except:  # noqa: E722 pylint: disable=bare-except
             if self.__verbose:
-                self.__lfh.write(f"+ERROR- PdbxChemCompReader.getCompId() Missing file {self.__filePath}\n")
+                self.__lfh.write(f"+ERROR- PdbxChemCompReader.setFilePath() Missing file {self.__filePath}\n")
             return False
 
     def getAtomList(self):

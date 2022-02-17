@@ -145,6 +145,8 @@
 # 15-Dec-2021  M. Yokochi - fix server crash while uploading NMR restraint file in NMR-STAR format (DAOTHER-7545)
 # 21-Dec-2021  M. Yokochi - fix wrong missing_mandatory_content error when uploading NMR restraint files in NMR-STAR format (DAOTHER-7545, issue #2)
 # 14-Jan-2022  M. Yokochi - report exactly overlaid models in the coordinate file (DAOTHER-7544)
+# 17-Feb-2022  M. Yokochi - aware of presence of _atom_site.pdbx_auth_atom_name for N-terminal protonation change while upload-conversion of the coordinate file (DAOTHER-7665)
+# 17-Feb-2022  M. Yokochi - do report incompletely assigned chemical shifts for conventional deposition (DAOTHER-7662)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -189,8 +191,8 @@ def detect_bom(in_file, default='utf-8'):
     """ Detect BOM of input file.
     """
 
-    with open(in_file, 'rb') as f:
-        raw = f.read(4)
+    with open(in_file, 'rb') as ifp:
+        raw = ifp.read(4)
 
     for enc, boms in \
             ('utf-8-sig', (codecs.BOM_UTF8,)),\
@@ -210,10 +212,6 @@ def convert_codec(in_file, out_file, in_codec='utf-8', out_codec='utf-8'):
         with open(out_file, 'w+b') as ofp:
             contents = ifp.read()
             ofp.write(contents.decode(in_codec).encode(out_codec))
-
-            ofp.close()
-
-        ifp.close()
 
 
 def has_key_value(d=None, key=None):
@@ -431,6 +429,57 @@ def get_gauge_code(seq_id, offset=0):
             offset += 1
 
     return array[:_sid_len]
+
+
+def score_of_seq_align(my_align):
+    """ Return score of sequence alignment.
+    """
+
+    length = len(my_align)
+
+    aligned = [True] * length
+
+    for i in range(length):
+        myPr = my_align[i]
+        myPr0 = str(myPr[0])
+        myPr1 = str(myPr[1])
+        if myPr0 == '.' or myPr1 == '.':
+            aligned[i] = False
+        elif myPr0 != myPr1:
+            pass
+        else:
+            break
+
+    not_aligned = True
+    offset_1 = 0
+    offset_2 = 0
+
+    unmapped = 0
+    conflict = 0
+    _matched = 0
+    for i in range(length):
+        myPr = my_align[i]
+        myPr0 = str(myPr[0])
+        myPr1 = str(myPr[1])
+        if myPr0 == '.' or myPr1 == '.':
+            if not_aligned and not aligned[i]:
+                if myPr0 == '.' and myPr1 != '.' and offset_2 == 0:  # DAOTHER-7421
+                    offset_1 += 1
+                if myPr0 != '.' and myPr1 == '.' and offset_1 == 0:  # DAOTHER-7421
+                    offset_2 += 1
+                if myPr0 == '.' and myPr1 == '.':  # DAOTHER-7465
+                    if offset_2 == 0:
+                        offset_1 += 1
+                    if offset_1 == 0:
+                        offset_2 += 1
+            unmapped += 1
+        elif myPr0 != myPr1:
+            conflict += 1
+        else:
+            not_aligned = False
+            _matched += 1
+
+    return _matched, unmapped, conflict, offset_1, offset_2
 
 
 def probability_density(value, mean, stddev):
@@ -708,7 +757,7 @@ def to_np_array(a):
     """ Return Numpy array of a given Cartesian coordinate in {'x': float, 'y': float, 'z': float} format.
     """
 
-    return np.asarray([a['x'], a['y'], a['z']])
+    return np.asarray([a['x'], a['y'], a['z']], dtype=float)
 
 
 def to_unit_vector(a):
@@ -744,57 +793,6 @@ def dihedral_angle(p0, p1, p2, p3):
     y = np.dot(np.cross(b1, v), w)
 
     return np.degrees(np.arctan2(y, x))
-
-
-def score_of_seq_align(my_align):
-    """ Return score of sequence alignment.
-    """
-
-    length = len(my_align)
-
-    aligned = [True] * length
-
-    for i in range(length):
-        myPr = my_align[i]
-        myPr0 = str(myPr[0])
-        myPr1 = str(myPr[1])
-        if myPr0 == '.' or myPr1 == '.':
-            aligned[i] = False
-        elif myPr0 != myPr1:
-            pass
-        else:
-            break
-
-    not_aligned = True
-    offset_1 = 0
-    offset_2 = 0
-
-    unmapped = 0
-    conflict = 0
-    _matched = 0
-    for i in range(length):
-        myPr = my_align[i]
-        myPr0 = str(myPr[0])
-        myPr1 = str(myPr[1])
-        if myPr0 == '.' or myPr1 == '.':
-            if not_aligned and not aligned[i]:
-                if myPr0 == '.' and myPr1 != '.' and offset_2 == 0:  # DAOTHER-7421
-                    offset_1 += 1
-                if myPr0 != '.' and myPr1 == '.' and offset_1 == 0:  # DAOTHER-7421
-                    offset_2 += 1
-                if myPr0 == '.' and myPr1 == '.':  # DAOTHER-7465
-                    if offset_2 == 0:
-                        offset_1 += 1
-                    if offset_1 == 0:
-                        offset_2 += 1
-            unmapped += 1
-        elif myPr0 != myPr1:
-            conflict += 1
-        else:
-            not_aligned = False
-            _matched += 1
-
-    return _matched, unmapped, conflict, offset_1, offset_2
 
 
 class NmrDpUtility:
@@ -4097,6 +4095,11 @@ class NmrDpUtility:
             if mr_file_path_list in self.__inputParamDict:
                 self.__file_path_list_len += len(self.__inputParamDict[mr_file_path_list])
 
+        # imcomplete assignments are edited by biocurators for conventional assigned cemical shifts (DAOTHER-7662)
+        for key in self.key_items['nmr-star']['chem_shift']:
+            if 'remove-bad-pattern' in key:
+                key['remove-bad-pattern'] = self.__combined_mode
+
         self.__release_mode = 'release' in op
 
         if self.__verbose:
@@ -4872,13 +4875,8 @@ class NmrDpUtility:
 
                     ofp.write('save_\n')
 
-                    ofp.close()
-
                     _srcPath = ofp.name
                     tmpPaths.append(_srcPath)
-                    ofp.close()
-
-                ifp.close()
 
         msg_template = "Loop improperly terminated at end of file."
 
@@ -4899,13 +4897,8 @@ class NmrDpUtility:
 
                     ofp.write('save_\n')
 
-                    ofp.close()
-
                     _srcPath = ofp.name
                     tmpPaths.append(_srcPath)
-                    ofp.close()
-
-                ifp.close()
 
 #        if __pynmrstar_v3_1__:
 #            msg_template = 'Invalid token found in loop contents. Expecting \'loop_\' but found:' # \'*\' Error detected on line *.'
@@ -4936,8 +4929,6 @@ class NmrDpUtility:
                         break
                     j -= 1
 
-                ifp.close()
-
             j += 1
             i = 1
 
@@ -4949,13 +4940,8 @@ class NmrDpUtility:
                             ofp.write(line)
                         i += 1
 
-                    ofp.close()
-
                     _srcPath = ofp.name
                     tmpPaths.append(_srcPath)
-                    ofp.close()
-
-                ifp.close()
 
         msg_template = "Only 'save_NAME' is valid in the body of a NMR-STAR file. Found 'loop_'."
 
@@ -4981,13 +4967,8 @@ class NmrDpUtility:
                         else:
                             ofp.write(line)
 
-                    ofp.close()
-
                     _srcPath = ofp.name
                     tmpPaths.append(_srcPath)
-                    ofp.close()
-
-                ifp.close()
 
         msg_template = "Cannot use keywords as data values unless quoted or semi-colon delineated. Perhaps this is a loop that wasn't properly terminated? Illegal value:"
 
@@ -5028,9 +5009,6 @@ class NmrDpUtility:
 
                     _srcPath = ofp.name
                     tmpPaths.append(_srcPath)
-                    ofp.close()
-
-                ifp.close()
 
             except AttributeError:
                 pass
@@ -5075,9 +5053,6 @@ class NmrDpUtility:
 
                     _srcPath = ofp.name
                     tmpPaths.append(_srcPath)
-                    ofp.close()
-
-                ifp.close()
 
             except AttributeError:
                 pass
@@ -5095,7 +5070,7 @@ class NmrDpUtility:
 
                 cif_stop_pattern = re.compile(r'^#\s*')
                 # """
-                # cs_cif_pattern = re.compile(r'D_[0-9]+_cs_P[0-9]+.cif.V[0-9]+$')
+                # cs_cif_pattern = re.compile(r'D_\d+_cs_P\d+.cif.V\d+$')
 
                 # if cs_cif_pattern.match(file_name):
                 # """
@@ -5108,8 +5083,6 @@ class NmrDpUtility:
                             if save_pattern.match(line) or stop_pattern.match(line):
                                 is_cs_cif = False
                                 break
-
-                        ifp.close()
 
                     if is_cs_cif:
 
@@ -5125,8 +5098,6 @@ class NmrDpUtility:
                                     has_sf_category = True
                                 elif sf_framecode_pattern.match(line):
                                     has_sf_framecode = True
-
-                            ifp.close()
 
                         if not has_sf_category and not has_sf_framecode:
 
@@ -5157,7 +5128,6 @@ class NmrDpUtility:
 
                                 _srcPath = ofp.name
                                 tmpPaths.append(_srcPath)
-                                ofp.close()
 
                         else:
 
@@ -5166,8 +5136,6 @@ class NmrDpUtility:
 
                             _srcPath += '~'
                             tmpPaths.append(_srcPath)
-
-                        ifp.close()
 
                 except AttributeError:
                     pass
@@ -5204,9 +5172,6 @@ class NmrDpUtility:
 
                         _srcPath = ofp.name
                         tmpPaths.append(_srcPath)
-                        ofp.close()
-
-                    ifp.close()
 
                 except AttributeError:
                     pass
@@ -5252,9 +5217,6 @@ class NmrDpUtility:
 
                     _srcPath = ofp.name
                     tmpPaths.append(_srcPath)
-                    ofp.close()
-
-                ifp.close()
 
             except AttributeError:
                 pass
@@ -5323,8 +5285,6 @@ class NmrDpUtility:
                             elif sf_framecode_pattern.match(line):
                                 pass_sf_framecode = True
 
-                        ifp.close()
-
                     targets.append(target)
 
                 except AttributeError:
@@ -5360,9 +5320,6 @@ class NmrDpUtility:
 
                         _srcPath = ofp.name
                         tmpPaths.append(_srcPath)
-                        ofp.close()
-
-                    ifp.close()
 
         except StopIteration:
             pass
@@ -5431,8 +5388,6 @@ class NmrDpUtility:
 
                                 i += 1
 
-                        ifp.close()
-
                         targets.append(target)
 
                 except AttributeError:
@@ -5469,9 +5424,6 @@ class NmrDpUtility:
 
                     _srcPath = ofp.name
                     tmpPaths.append(_srcPath)
-                    ofp.close()
-
-                ifp.close()
 
         except StopIteration:
             pass
@@ -5575,8 +5527,6 @@ class NmrDpUtility:
 
                             i += 1
 
-                        ifp.close()
-
                 except AttributeError:
                     pass
 
@@ -5649,9 +5599,6 @@ class NmrDpUtility:
 
                         _srcPath = ofp.name
                         tmpPaths.append(_srcPath)
-                        ofp.close()
-
-                    ifp.close()
 
         except StopIteration:
             pass
@@ -5698,9 +5645,6 @@ class NmrDpUtility:
 
                     _srcPath = ofp.name
                     tmpPaths.append(_srcPath)
-                    ofp.close()
-
-                ifp.close()
 
             except AttributeError:
                 pass
@@ -6469,7 +6413,7 @@ class NmrDpUtility:
                         axis_code_name_col = loop.tags.index('Axis_code')
 
                         for row in loop:
-                            atom_type = re.sub(r'[0-9]+', '', row[axis_code_name_col])
+                            atom_type = re.sub(r'\d+', '', row[axis_code_name_col])
                             row.append(atom_type)
 
                         loop.add_tag(lp_category + '.Atom_type')
@@ -6495,7 +6439,7 @@ class NmrDpUtility:
                         axis_code_name_col = loop.tags.index('Axis_code')
 
                         for row in loop:
-                            atom_type = re.sub(r'[0-9]+', '', row[axis_code_name_col])
+                            atom_type = re.sub(r'\d+', '', row[axis_code_name_col])
                             row.append(str(self.atom_isotopes[atom_type][0]))
 
                         loop.add_tag(lp_category + '.Atom_isotope_number')
@@ -6798,8 +6742,6 @@ class NmrDpUtility:
 
                 md5_list.append(hashlib.md5(ifp.read().encode('utf-8')).hexdigest())
 
-                ifp.close()
-
             input_source = self.report.input_sources[fileListId]
             input_source_dic = input_source.get()
 
@@ -6877,7 +6819,7 @@ class NmrDpUtility:
                                 or line.startswith('_atom_site.ndb_model'):
                             has_ens_coord = True
 
-                        l = " ".join(line.split())  # noqa: E741
+                        l = ' '.join(line.split())  # noqa: E741
 
                         s = re.split('[ ()]', l)
 
@@ -6965,8 +6907,6 @@ class NmrDpUtility:
 
                             _t_lower = t_lower
 
-                    ifp.close()
-
                 with open(file_path, 'r', encoding='UTF-8') as ifp:
 
                     atom_likes = 0
@@ -6979,7 +6919,7 @@ class NmrDpUtility:
 
                     for line in ifp:
 
-                        l = " ".join(line.split())  # noqa: E741
+                        l = ' '.join(line.split())  # noqa: E741
 
                         s = re.split('[ ()=]', l)
 
@@ -7038,8 +6978,6 @@ class NmrDpUtility:
 
                             _t_lower = t_lower
 
-                    ifp.close()
-
             elif file_type == 'nm-res-amb':
 
                 ws_pattern = re.compile(r'\s+')
@@ -7095,7 +7033,7 @@ class NmrDpUtility:
                         elif '/' in line:
                             line = re.sub('/', ',&end', line)
 
-                        l = " ".join(line.split())  # noqa: E741
+                        l = ' '.join(line.split())  # noqa: E741
 
                         if len(l) == 0 or l.startswith('#') or l.startswith('!'):
                             continue
@@ -7243,8 +7181,6 @@ class NmrDpUtility:
                                     in_iat = False
                                     in_igr1 = False
                                     in_igr2 = False
-
-                    ifp.close()
 
             elif file_type == 'nm-res-cya' or file_type == 'nm-res-oth' or is_aux_amb:
 
@@ -7399,7 +7335,7 @@ class NmrDpUtility:
                                     end += max_char
                                     col += 1
 
-                        l = " ".join(line.split())  # noqa: E741
+                        l = ' '.join(line.split())  # noqa: E741
 
                         if len(l) == 0 or l.startswith('#') or l.startswith('!'):
                             continue
@@ -7462,13 +7398,13 @@ class NmrDpUtility:
                         elif (atom_likes == 4 or (res_like and angle_like)) and dihed_range_like:
                             has_dihed_restraint = True
 
-                    ifp.close()
-
                 if file_type == 'nm-res-oth' and has_chem_shift and not has_dist_restraint and not has_dihed_restraint:
 
                     with open(file_path, 'r', encoding='UTF-8') as ifp:
+
                         for line in ifp:
-                            l = " ".join(line.split())  # noqa: E741
+
+                            l = ' '.join(line.split())  # noqa: E741
 
                             if len(l) == 0 or l.startswith('#') or l.startswith('!'):
                                 continue
@@ -7531,8 +7467,6 @@ class NmrDpUtility:
                             elif (atom_likes == 4 or (res_like and angle_like)) and dihed_range_like:
                                 has_dihed_restraint = True
 
-                        ifp.close()
-
                 if is_aux_amb:
 
                     if has_atom_name and has_residue_label and has_residue_pointer and\
@@ -7548,7 +7482,7 @@ class NmrDpUtility:
 
                     for line in ifp:
 
-                        l = " ".join(line.split())  # noqa: E741
+                        l = ' '.join(line.split())  # noqa: E741
 
                         if len(l) == 0 or l.startswith('#') or l.startswith('!'):
                             continue
@@ -7598,8 +7532,6 @@ class NmrDpUtility:
                         has_dist_restraint = True
 
                         break
-
-                    ifp.close()
 
             if has_coordinate and not has_dist_restraint and not has_dihed_restraint and not has_rdc_restraint\
                     and not has_plane_restraint and not has_hbond_restraint:
@@ -16580,7 +16512,9 @@ class NmrDpUtility:
                                         if self.__verbose:
                                             self.__lfh.write(f"+NmrDpUtility.__textResidueVariant() ++ Warning  - {warn}\n")
 
-                                if coord_atom_id_ is not None and coord_atom_id_['comp_id'] == cif_comp_id and atom_id_ in coord_atom_id_['atom_id']:
+                                if coord_atom_id_ is not None and coord_atom_id_['comp_id'] == cif_comp_id\
+                                   and (atom_id_ in coord_atom_id_['atom_id']
+                                        or ('auth_atom_id' in coord_atom_id_ and atom_id_ in coord_atom_id_['auth_atom_id'])):
 
                                     err = "Atom ("\
                                         + self.__getReducedAtomNotation(chain_id_name, chain_id, seq_id_name, seq_id, comp_id_name, comp_id, atom_id_name, atom_name)\
@@ -16596,7 +16530,10 @@ class NmrDpUtility:
 
                             else:
 
-                                if coord_atom_id_ is not None and coord_atom_id_['comp_id'] == cif_comp_id and atom_id_ not in coord_atom_id_['atom_id']:
+                                if coord_atom_id_ is not None and coord_atom_id_['comp_id'] == cif_comp_id\
+                                   and (atom_id_ not in coord_atom_id_['atom_id']
+                                        and (('auth_atom_id' in coord_atom_id_ and atom_id_ not in coord_atom_id_['auth_atom_id'])
+                                             or 'auth_atom_id' not in coord_atom_id_)):
 
                                     err = "Atom ("\
                                         + self.__getReducedAtomNotation(chain_id_name, chain_id, seq_id_name, seq_id, comp_id_name, comp_id, atom_id_name, atom_name)\
@@ -16660,7 +16597,10 @@ class NmrDpUtility:
                                     if self.__verbose:
                                         self.__lfh.write(f"+NmrDpUtility.__textResidueVariant() ++ Warning  - {warn}\n")
 
-                            if coord_atom_id_ is not None and coord_atom_id_['comp_id'] == cif_comp_id and atom_id_ in coord_atom_id_['atom_id']:
+                            if coord_atom_id_ is not None and coord_atom_id_['comp_id'] == cif_comp_id\
+                               and (atom_id_ in coord_atom_id_['atom_id']
+                                    and (('auth_atom_id' in coord_atom_id_ and atom_id_ in coord_atom_id_['auth_atom_id'])
+                                         or 'auth_atom_id' not in coord_atom_id_)):
 
                                 err = "Atom ("\
                                     + self.__getReducedAtomNotation(chain_id_name, chain_id, seq_id_name, seq_id, comp_id_name, comp_id, atom_id_name, atom_name)\
@@ -22839,7 +22779,7 @@ class NmrDpUtility:
                     r = next((r for r in rmsd if r['model_id'] == conformer_id), rmsd[0])
 
                     warn = f"The coordinates (chain_id {chain_id}) are not superimposed. "\
-                        f"The RMSD ({r['raw_rmsd']}Å) for an well-defined region "\
+                        f"The RMSD ({r['raw_rmsd']}Å) for a well-defined region "\
                         f"(Sequence ranges {r['range']}) is greater than the predicted value ({r['rmsd']}Å). "\
                         "Please superimpose the coordinates and re-upload the model file."
 
@@ -22857,7 +22797,7 @@ class NmrDpUtility:
 
                     warn = f"The coordinates (chain_id {chain_id}) are overlaid exactly. "\
                         "Please check there has not been an error during the creation of your model file. "\
-                        "You are receiving this message because the mean RMSD for an well-defined region "\
+                        "You are receiving this message because the mean RMSD for a well-defined region "\
                         f"(Sequence ranges {r['range']}) is {r['mean_rmsd']}Å. "\
                         "We require you to deposit an appropriate ensemble of coordinate models."
 
@@ -22876,7 +22816,7 @@ class NmrDpUtility:
 
                         warn = f"Two models in the coordinate file (chain_id {chain_id}) are overlaid exactly. "\
                             "Please check there has not been an error during the creation of your model file. "\
-                            "You are receiving this message because the RMSD for an well-defined region "\
+                            "You are receiving this message because the RMSD for a well-defined region "\
                             f"(Sequence ranges {r['range']}) between model {r['model_id_1']!r} and model {r['model_id_2']!r} "\
                             f"is {r['rmsd']}Å. "\
                             "We require you to deposit an appropriate ensemble of coordinate models."
@@ -23914,10 +23854,10 @@ class NmrDpUtility:
 
                                 cif_seq_code = f"{auth_chain_id}:{seq_id1[i]}:{cif_comp_id}"
                                 if cif_comp_id == '.':
-                                    cif_seq_code += ', insersion error'
+                                    cif_seq_code += ', insertion error'
                                 nmr_seq_code = f"{chain_id2}:{seq_id2[i]}:{nmr_comp_id}"
                                 if nmr_comp_id == '.':
-                                    nmr_seq_code += ', insersion error'
+                                    nmr_seq_code += ', insertion error'
 
                                 auth_seq = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_coordinate']
                                                  if seq_align['chain_id'] == chain_id), None)
@@ -24299,10 +24239,10 @@ class NmrDpUtility:
 
                                 cif_seq_code = f"{auth_chain_id2}:{seq_id2[i]}:{cif_comp_id}"
                                 if cif_comp_id == '.':
-                                    cif_seq_code += ', insersion error'
+                                    cif_seq_code += ', insertion error'
                                 nmr_seq_code = f"{chain_id}:{seq_id1[i]}:{nmr_comp_id}"
                                 if nmr_comp_id == '.':
-                                    nmr_seq_code += ', insersion error'
+                                    nmr_seq_code += ', insertion error'
 
                                 auth_seq = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_coordinate']
                                                  if seq_align['chain_id'] == chain_id2), None)
@@ -24496,16 +24436,29 @@ class NmrDpUtility:
             try:
 
                 model_num_name = 'pdbx_PDB_model_num' if self.__cR.hasItem('atom_site', 'pdbx_PDB_model_num') else 'ndb_model'
+                has_pdbx_auth_atom_name = self.__cR.hasItem('atom_site', 'pdbx_auth_atom_name')
 
-                coord = self.__cR.getDictListWithFilter('atom_site',
-                                                        [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                                         {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'seq_id'},
-                                                         {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'auth_seq_id'},  # non-polymer
-                                                         {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                         {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
-                                                         ],
-                                                        [{'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id}
-                                                         ])
+                if has_pdbx_auth_atom_name:
+                    coord = self.__cR.getDictListWithFilter('atom_site',
+                                                            [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                             {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'seq_id'},
+                                                             {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'auth_seq_id'},  # non-polymer
+                                                             {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                             {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'},
+                                                             {'name': 'pdbx_auth_atom_name', 'type': 'str', 'alt_name': 'auth_atom_id'}
+                                                             ],
+                                                            [{'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id}
+                                                             ])
+                else:
+                    coord = self.__cR.getDictListWithFilter('atom_site',
+                                                            [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                             {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'seq_id'},
+                                                             {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'auth_seq_id'},  # non-polymer
+                                                             {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                             {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
+                                                             ],
+                                                            [{'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id}
+                                                             ])
 
                 self.__coord_atom_id = {}
                 chain_ids = set(c['chain_id'] for c in coord)
@@ -24520,6 +24473,11 @@ class NmrDpUtility:
                                     if c['chain_id'] == chain_id and ((c['seq_id'] is not None and int(c['seq_id']) == seq_id)
                                                                       or (c['seq_id'] is None and c['auth_seq_id'] == seq_id))]
                         self.__coord_atom_id[seq_key] = {'comp_id': comp_id, 'atom_id': atom_ids}
+                        if has_pdbx_auth_atom_name:
+                            auth_atom_ids = [c['auth_atom_id'] for c in coord
+                                             if c['chain_id'] == chain_id and ((c['seq_id'] is not None and int(c['seq_id']) == seq_id)
+                                                                               or (c['seq_id'] is None and c['auth_seq_id'] == seq_id))]
+                            self.__coord_atom_id[seq_key]['auth_atom_id'] = auth_atom_ids
 
             except Exception as e:
 
@@ -24863,7 +24821,10 @@ class NmrDpUtility:
 
                 coord_atom_id_ = None if seq_key not in self.__coord_atom_id else self.__coord_atom_id[seq_key]
 
-                if coord_atom_id_ is None or coord_atom_id_['comp_id'] != cif_comp_id or atom_id_ not in coord_atom_id_['atom_id']:
+                if coord_atom_id_ is None or coord_atom_id_['comp_id'] != cif_comp_id\
+                   or (atom_id_ not in coord_atom_id_['atom_id']
+                       and (('auth_atom_id' in coord_atom_id_ and atom_id_ not in coord_atom_id_['auth_atom_id'])
+                            or 'auth_atom_id' not in coord_atom_id_)):
 
                     idx_msg = ''
                     if index_tag is not None:
@@ -26364,7 +26325,8 @@ class NmrDpUtility:
                                                            {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
                                                            {'name': 'label_comp_id', 'type': 'str', 'value': 'HIS'},
                                                            {'name': 'type_symbol', 'type': 'str', 'value': 'H'},
-                                                           {'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id}])
+                                                           {'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id}
+                                                           ])
 
             except Exception as e:
 
@@ -27593,7 +27555,8 @@ class NmrDpUtility:
                                                           [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id},
                                                            {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
                                                            {'name': 'label_atom_id', 'type': 'str', 'value': nmr_atom_id},
-                                                           {'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id}])
+                                                           {'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id}
+                                                           ])
 
             except Exception as e:
 
@@ -27629,7 +27592,8 @@ class NmrDpUtility:
                                                               'range': {'min_exclusive': (o[1] - cutoff), 'max_exclusive': (o[1] + cutoff)}},
                                                              {'name': 'Cartn_z', 'type': 'range-float',
                                                               'range': {'min_exclusive': (o[2] - cutoff), 'max_exclusive': (o[2] + cutoff)}},
-                                                             {'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id}])
+                                                             {'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id}
+                                                             ])
 
             except Exception as e:
 
@@ -27930,7 +27894,8 @@ class NmrDpUtility:
                                                           [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id},
                                                            {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
                                                            {'name': 'label_atom_id', 'type': 'str', 'value': nmr_atom_id},
-                                                           {'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id}])
+                                                           {'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id}
+                                                           ])
 
             except Exception as e:
 
@@ -27966,7 +27931,8 @@ class NmrDpUtility:
                                                               'range': {'min_exclusive': (o[1] - cutoff), 'max_exclusive': (o[1] + cutoff)}},
                                                              {'name': 'Cartn_z', 'type': 'range-float',
                                                               'range': {'min_exclusive': (o[2] - cutoff), 'max_exclusive': (o[2] + cutoff)}},
-                                                             {'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id}])
+                                                             {'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id}
+                                                             ])
 
             except Exception as e:
 

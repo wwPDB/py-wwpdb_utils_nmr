@@ -145,6 +145,8 @@
 # 15-Dec-2021  M. Yokochi - fix server crash while uploading NMR restraint file in NMR-STAR format (DAOTHER-7545)
 # 21-Dec-2021  M. Yokochi - fix wrong missing_mandatory_content error when uploading NMR restraint files in NMR-STAR format (DAOTHER-7545, issue #2)
 # 14-Jan-2022  M. Yokochi - report exactly overlaid models in the coordinate file (DAOTHER-7544)
+# 17-Feb-2022  M. Yokochi - aware of presence of _atom_site.pdbx_auth_atom_name for N-terminal protonation change while upload-conversion of the coordinate file (DAOTHER-7665)
+# 17-Feb-2022  M. Yokochi - do report incompletely assigned chemical shifts for conventional deposition (DAOTHER-7662)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -4092,6 +4094,11 @@ class NmrDpUtility:
 
             if mr_file_path_list in self.__inputParamDict:
                 self.__file_path_list_len += len(self.__inputParamDict[mr_file_path_list])
+
+        # imcomplete assignments are edited by biocurators for conventional assigned cemical shifts (DAOTHER-7662)
+        for key in self.key_items['nmr-star']['chem_shift']:
+            if 'remove-bad-pattern' in key:
+                key['remove-bad-pattern'] = self.__combined_mode
 
         self.__release_mode = 'release' in op
 

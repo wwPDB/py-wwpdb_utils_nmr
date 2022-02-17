@@ -42,7 +42,7 @@ class TestNmrDpUtility(unittest.TestCase):
         if not report['error'] is None:
             self.assertNotIn('internal_error', report['error'])
 
-        self.assertNotIn('anomalous_chemical_shift', report['warning'])
+        self.assertIn('anomalous_chemical_shift', report['warning'])
 
     def __test_nmr_str_consistency(self, entry_id):  # pylint: disable=unused-private-member
         self.utility.setSource(self.data_dir_path + self.str_data_file_path[entry_id]['str'])
@@ -60,6 +60,8 @@ class TestNmrDpUtility(unittest.TestCase):
 
         if not report['error'] is None:
             self.assertNotIn('internal_error', report['error'])
+
+        self.assertIn('anomalous_chemical_shift', report['warning'])
 
     def test_nmr_nef_consistency_check_1pqx(self):
         self.__test_nmr_nef_consistency('1pqx')

@@ -16,9 +16,7 @@ from wwpdb.utils.nmr.mr.AmberPTParser import AmberPTParser
 
 from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
 from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
-from wwpdb.utils.config.ConfigInfo import getSiteId
-from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommon
-from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
+from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
 from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
 from wwpdb.utils.nmr.AlignUtil import (hasLargeSeqGap,
                                        fillBlankCompIdWithOffset, beautifyPolySeq,
@@ -152,26 +150,8 @@ class AmberPTParserListener(ParseTreeListener):
     # Pairwise align
     __pA = None
 
-    # ChemComp reader
-    __ccR = None
-
-    __lastCompId = None
-    __lastCompIdTest = False
-    # __lastChemCompDict = None
-    __lastChemCompAtoms = None
-    # __lastChemCompBonds = None
-
-    __chemCompAtomDict = None
-    # __chemCompBondDict = None
-
-    __ccaAtomId = None
-    # __ccaAromaticFlag = None
-    # __ccaLeavingAtomFlag = None
-    # __ccaTypeSymbol = None
-
-    # __ccbAtomId1 = None
-    # __ccbAtomId2 = Non
-    # __ccbAromaticFlag = None
+    # CCD accessing utility
+    __ccU = None
 
     # CIF reader
     __cR = None
@@ -273,57 +253,7 @@ class AmberPTParserListener(ParseTreeListener):
         self.__pA.setVerbose(self.__verbose)
 
         # CCD accessing utility
-        __cICommon = ConfigInfoAppCommon(getSiteId())
-        __ccCvsPath = __cICommon.get_site_cc_cvs_path()
-
-        self.__ccR = ChemCompReader(verbose, log)
-        self.__ccR.setCachePath(__ccCvsPath)
-
-        # taken from wwpdb.apps.ccmodule.io.ChemCompIo
-        self.__chemCompAtomDict = [
-            ('_chem_comp_atom.comp_id', '%s', 'str', ''),
-            ('_chem_comp_atom.atom_id', '%s', 'str', ''),
-            ('_chem_comp_atom.alt_atom_id', '%s', 'str', ''),
-            ('_chem_comp_atom.type_symbol', '%s', 'str', ''),
-            ('_chem_comp_atom.charge', '%s', 'str', ''),
-            ('_chem_comp_atom.pdbx_align', '%s', 'str', ''),
-            ('_chem_comp_atom.pdbx_aromatic_flag', '%s', 'str', ''),
-            ('_chem_comp_atom.pdbx_leaving_atom_flag', '%s', 'str', ''),
-            ('_chem_comp_atom.pdbx_stereo_config', '%s', 'str', ''),
-            ('_chem_comp_atom.model_Cartn_x', '%s', 'str', ''),
-            ('_chem_comp_atom.model_Cartn_y', '%s', 'str', ''),
-            ('_chem_comp_atom.model_Cartn_z', '%s', 'str', ''),
-            ('_chem_comp_atom.pdbx_model_Cartn_x_ideal', '%s', 'str', ''),
-            ('_chem_comp_atom.pdbx_model_Cartn_y_ideal', '%s', 'str', ''),
-            ('_chem_comp_atom.pdbx_model_Cartn_z_ideal', '%s', 'str', ''),
-            ('_chem_comp_atom.pdbx_component_atom_id', '%s', 'str', ''),
-            ('_chem_comp_atom.pdbx_component_comp_id', '%s', 'str', ''),
-            ('_chem_comp_atom.pdbx_ordinal', '%s', 'str', '')
-        ]
-
-        atomId = next(d for d in self.__chemCompAtomDict if d[0] == '_chem_comp_atom.atom_id')
-        self.__ccaAtomId = self.__chemCompAtomDict.index(atomId)
-
-        # leavingAtomFlag = next(d for d in self.__chemCompAtomDict if d[0] == '_chem_comp_atom.pdbx_leaving_atom_flag')
-        # self.__ccaLeavingAtomFlag = self.__chemCompAtomDict.index(leavingAtomFlag)
-
-    def __updateChemCompDict(self, compId):
-        """ Update CCD information for a given comp_id.
-            @return: True for successfully update CCD information or False for the case a given comp_id does not exist in CCD
-        """
-
-        compId = compId.upper()
-
-        if compId != self.__lastCompId:
-            self.__lastCompIdTest = False if '_' in compId else self.__ccR.setCompId(compId)
-            self.__lastCompId = compId
-
-            if self.__lastCompIdTest:
-                # self.__lastChemCompDict = self.__ccR.getChemCompDict()
-                self.__lastChemCompAtoms = self.__ccR.getAtomList()
-                # self.__lastChemCompBonds = self.__ccR.getBonds()
-
-        return self.__lastCompIdTest
+        self.__ccU = ChemCompUtil(verbose, log)
 
     # Enter a parse tree produced by AmberPTParser#amber_pt.
     def enterAmber_pt(self, ctx: AmberPTParser.Amber_ptContext):  # pylint: disable=unused-argument
@@ -391,8 +321,8 @@ class AmberPTParserListener(ParseTreeListener):
                                and atomNum['auth_atom_id'][0] != 'H']
                 if authCompId in ('HIE', 'HIP', 'HID'):
                     authCompId = 'HIS'
-                if self.__updateChemCompDict(authCompId):
-                    chemCompAtomIds = [cca[self.__ccaAtomId] for cca in self.__lastChemCompAtoms]
+                if self.__ccU.updateChemCompDict(authCompId):
+                    chemCompAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]
                     valid = True
                     for _atomId in authAtomIds:
                         if _atomId not in chemCompAtomIds:
@@ -414,8 +344,8 @@ class AmberPTParserListener(ParseTreeListener):
                         if compId is not None:
                             compIdList.append(compId)
                             chemCompAtomIds = None
-                            if self.__updateChemCompDict(compId):
-                                chemCompAtomIds = [cca[self.__ccaAtomId] for cca in self.__lastChemCompAtoms]
+                            if self.__ccU.updateChemCompDict(compId):
+                                chemCompAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]
                             for atomNum in self.__atomNumberDict.values():
                                 if atomNum['chain_id'] == chainId and atomNum['seq_id'] == seqId:
                                     atomNum['comp_id'] = compId
@@ -435,8 +365,8 @@ class AmberPTParserListener(ParseTreeListener):
                     if compId is not None:
                         compIdList.append(compId)
                         chemCompAtomIds = None
-                        if self.__updateChemCompDict(compId):
-                            chemCompAtomIds = [cca[self.__ccaAtomId] for cca in self.__lastChemCompAtoms]
+                        if self.__ccU.updateChemCompDict(compId):
+                            chemCompAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]
                         for atomNum in self.__atomNumberDict.values():
                             if atomNum['chain_id'] == chainId and atomNum['seq_id'] == seqId:
                                 atomNum['comp_id'] = compId
@@ -452,8 +382,8 @@ class AmberPTParserListener(ParseTreeListener):
         for atomNum in self.__atomNumberDict.values():
             if 'comp_id' in atomNum and atomNum['comp_id'] != atomNum['auth_comp_id']\
                and 'atom_id' not in atomNum:
-                if self.__updateChemCompDict(atomNum['comp_id']):
-                    chemCompAtomIds = [cca[self.__ccaAtomId] for cca in self.__lastChemCompAtoms]
+                if self.__ccU.updateChemCompDict(atomNum['comp_id']):
+                    chemCompAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]
                     authAtomId = atomNum['auth_atom_id']
                     atomId = None
                     if authAtomId.endswith("O'1"):

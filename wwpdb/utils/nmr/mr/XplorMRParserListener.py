@@ -16,9 +16,7 @@ from wwpdb.utils.nmr.mr.XplorMRParser import XplorMRParser
 
 from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
 from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
-from wwpdb.utils.config.ConfigInfo import getSiteId
-from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommon
-from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
+from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
 from rmsd.calculate_rmsd import (int_atom, ELEMENT_WEIGHTS)  # noqa: F401 pylint: disable=no-name-in-module, import-error
 
 
@@ -151,26 +149,8 @@ class XplorMRParserListener(ParseTreeListener):
     # BMRB chemical shift statistics
     __csStat = None
 
-    # ChemComp reader
-    __ccR = None
-
-    __lastCompId = None
-    __lastCompIdTest = False
-    # __lastChemCompDict = None
-    __lastChemCompAtoms = None
-    __lastChemCompBonds = None
-
-    __chemCompAtomDict = None
-    __chemCompBondDict = None
-
-    __ccaAtomId = None
-    # __ccaAromaticFlag = None
-    __ccaLeavingAtomFlag = None
-    __ccaTypeSymbol = None
-
-    __ccbAtomId1 = None
-    __ccbAtomId2 = None
-    # __ccbAromaticFlag = None
+    # CCD accessing utility
+    __ccU = None
 
     # CIF reader
     __cR = None
@@ -287,90 +267,7 @@ class XplorMRParserListener(ParseTreeListener):
             raise IOError("+XplorMRParserListener.__init__() ++ Error  - BMRBChemShiftStat is not available.")
 
         # CCD accessing utility
-        __cICommon = ConfigInfoAppCommon(getSiteId())
-        __ccCvsPath = __cICommon.get_site_cc_cvs_path()
-
-        self.__ccR = ChemCompReader(verbose, log)
-        self.__ccR.setCachePath(__ccCvsPath)
-
-        # taken from wwpdb.apps.ccmodule.io.ChemCompIo
-        self.__chemCompAtomDict = [
-            ('_chem_comp_atom.comp_id', '%s', 'str', ''),
-            ('_chem_comp_atom.atom_id', '%s', 'str', ''),
-            ('_chem_comp_atom.alt_atom_id', '%s', 'str', ''),
-            ('_chem_comp_atom.type_symbol', '%s', 'str', ''),
-            ('_chem_comp_atom.charge', '%s', 'str', ''),
-            ('_chem_comp_atom.pdbx_align', '%s', 'str', ''),
-            ('_chem_comp_atom.pdbx_aromatic_flag', '%s', 'str', ''),
-            ('_chem_comp_atom.pdbx_leaving_atom_flag', '%s', 'str', ''),
-            ('_chem_comp_atom.pdbx_stereo_config', '%s', 'str', ''),
-            ('_chem_comp_atom.model_Cartn_x', '%s', 'str', ''),
-            ('_chem_comp_atom.model_Cartn_y', '%s', 'str', ''),
-            ('_chem_comp_atom.model_Cartn_z', '%s', 'str', ''),
-            ('_chem_comp_atom.pdbx_model_Cartn_x_ideal', '%s', 'str', ''),
-            ('_chem_comp_atom.pdbx_model_Cartn_y_ideal', '%s', 'str', ''),
-            ('_chem_comp_atom.pdbx_model_Cartn_z_ideal', '%s', 'str', ''),
-            ('_chem_comp_atom.pdbx_component_atom_id', '%s', 'str', ''),
-            ('_chem_comp_atom.pdbx_component_comp_id', '%s', 'str', ''),
-            ('_chem_comp_atom.pdbx_ordinal', '%s', 'str', '')
-        ]
-
-        atomId = next(d for d in self.__chemCompAtomDict if d[0] == '_chem_comp_atom.atom_id')
-        self.__ccaAtomId = self.__chemCompAtomDict.index(atomId)
-
-        cartnX = next(d for d in self.__chemCompAtomDict if d[0] == '_chem_comp_atom.model_Cartn_x')
-        cartnY = next(d for d in self.__chemCompAtomDict if d[0] == '_chem_comp_atom.model_Cartn_y')
-        cartnZ = next(d for d in self.__chemCompAtomDict if d[0] == '_chem_comp_atom.model_Cartn_z')
-        self.__ccaCartnX = self.__chemCompAtomDict.index(cartnX)
-        self.__ccaCartnY = self.__chemCompAtomDict.index(cartnY)
-        self.__ccaCartnZ = self.__chemCompAtomDict.index(cartnZ)
-
-        # aromaticFlag = next(d for d in self.__chemCompAtomDict if d[0] == '_chem_comp_atom.pdbx_aromatic_flag')
-        # self.__ccaAromaticFlag = self.__chemCompAtomDict.index(aromaticFlag)
-
-        leavingAtomFlag = next(d for d in self.__chemCompAtomDict if d[0] == '_chem_comp_atom.pdbx_leaving_atom_flag')
-        self.__ccaLeavingAtomFlag = self.__chemCompAtomDict.index(leavingAtomFlag)
-
-        typeSymbol = next(d for d in self.__chemCompAtomDict if d[0] == '_chem_comp_atom.type_symbol')
-        self.__ccaTypeSymbol = self.__chemCompAtomDict.index(typeSymbol)
-
-        # taken from wwpdb.apps.ccmodule.io.ChemCompIo
-        self.__chemCompBondDict = [
-            ('_chem_comp_bond.comp_id', '%s', 'str', ''),
-            ('_chem_comp_bond.atom_id_1', '%s', 'str', ''),
-            ('_chem_comp_bond.atom_id_2', '%s', 'str', ''),
-            ('_chem_comp_bond.value_order', '%s', 'str', ''),
-            ('_chem_comp_bond.pdbx_aromatic_flag', '%s', 'str', ''),
-            ('_chem_comp_bond.pdbx_stereo_config', '%s', 'str', ''),
-            ('_chem_comp_bond.pdbx_ordinal', '%s', 'str', '')
-        ]
-
-        atomId1 = next(d for d in self.__chemCompBondDict if d[0] == '_chem_comp_bond.atom_id_1')
-        self.__ccbAtomId1 = self.__chemCompBondDict.index(atomId1)
-
-        atomId2 = next(d for d in self.__chemCompBondDict if d[0] == '_chem_comp_bond.atom_id_2')
-        self.__ccbAtomId2 = self.__chemCompBondDict.index(atomId2)
-
-        # aromaticFlag = next(d for d in self.__chemCompBondDict if d[0] == '_chem_comp_bond.pdbx_aromatic_flag')
-        # self.__ccbAromaticFlag = self.__chemCompBondDict.index(aromaticFlag)
-
-    def __updateChemCompDict(self, compId):
-        """ Update CCD information for a given comp_id.
-            @return: True for successfully update CCD information or False for the case a given comp_id does not exist in CCD
-        """
-
-        compId = compId.upper()
-
-        if compId != self.__lastCompId:
-            self.__lastCompIdTest = False if '_' in compId else self.__ccR.setCompId(compId)
-            self.__lastCompId = compId
-
-            if self.__lastCompIdTest:
-                # self.__lastChemCompDict = self.__ccR.getChemCompDict()
-                self.__lastChemCompAtoms = self.__ccR.getAtomList()
-                self.__lastChemCompBonds = self.__ccR.getBonds()
-
-        return self.__lastCompIdTest
+        self.__ccU = ChemCompUtil(verbose, log)
 
     # Enter a parse tree produced by XplorMRParser#xplor_nih_mr.
     def enterXplor_nih_mr(self, ctx: XplorMRParser.Xplor_nih_mrContext):  # pylint: disable=unused-argument
@@ -1263,9 +1160,9 @@ class XplorMRParserListener(ParseTreeListener):
                     if ps is not None:
                         _compIdSelect |= set(ps['comp_id'])
                 for compId in _compIdSelect:
-                    if self.__updateChemCompDict(compId):
-                        for cca in self.__lastChemCompAtoms:
-                            realTypeSymbol = cca[self.__ccaTypeSymbol]
+                    if self.__ccU.updateChemCompDict(compId):
+                        for cca in self.__ccU.lastAtomList:
+                            realTypeSymbol = cca[self.__ccU.ccaTypeSymbol]
                             if (lenTypeSymbols == 1 and re.match(_factor['type_symbols'][0], realTypeSymbol))\
                                or (lenTypeSymbols == 2 and _factor['type_symbols'][0] <= realTypeSymbol <= _factor['type_symbols'][1]):
                                 _typeSymbolSelect.add(realTypeSymbol)
@@ -1282,11 +1179,11 @@ class XplorMRParserListener(ParseTreeListener):
                     if ps is not None:
                         _compIdSelect |= set(ps['comp_id'])
                 for compId in _compIdSelect:
-                    if self.__updateChemCompDict(compId):
-                        for cca in self.__lastChemCompAtoms:
-                            if cca[self.__ccaTypeSymbol] in _factor['type_symbol']\
-                               and cca[self.__ccaLeavingAtomFlag] != 'Y':
-                                _atomIdSelect.add(cca[self.__ccaAtomId])
+                    if self.__ccU.updateChemCompDict(compId):
+                        for cca in self.__ccU.lastAtomList:
+                            if cca[self.__ccU.ccaTypeSymbol] in _factor['type_symbol']\
+                               and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
+                                _atomIdSelect.add(cca[self.__ccU.ccaAtomId])
                 _factor['atom_id'] = list(_atomIdSelect)
                 if len(_factor['atom_id']) == 0:
                     _factor['atom_id'] = [None]
@@ -1307,10 +1204,10 @@ class XplorMRParserListener(ParseTreeListener):
 
             _atomIdSelect = set()
             for compId in _compIdSelect:
-                if self.__updateChemCompDict(compId):
-                    for cca in self.__lastChemCompAtoms:
-                        if cca[self.__ccaLeavingAtomFlag] != 'Y':
-                            realAtomId = cca[self.__ccaAtomId]
+                if self.__ccU.updateChemCompDict(compId):
+                    for cca in self.__ccU.lastAtomList:
+                        if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
+                            realAtomId = cca[self.__ccU.ccaAtomId]
                             if (lenAtomIds == 1 and re.match(_factor['atom_ids'][0], realAtomId))\
                                or (lenAtomIds == 2 and _factor['atom_ids'][0] <= realAtomId <= _factor['atom_ids'][1]):
                                 _atomIdSelect.add(realAtomId)
@@ -1333,10 +1230,10 @@ class XplorMRParserListener(ParseTreeListener):
 
             _atomIdSelect = set()
             for compId in _compIdSelect:
-                if self.__updateChemCompDict(compId):
-                    for cca in self.__lastChemCompAtoms:
-                        if cca[self.__ccaLeavingAtomFlag] != 'Y':
-                            realAtomId = cca[self.__ccaAtomId]
+                if self.__ccU.updateChemCompDict(compId):
+                    for cca in self.__ccU.lastAtomList:
+                        if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
+                            realAtomId = cca[self.__ccU.ccaAtomId]
                             _atomIdSelect.add(realAtomId)
             _factor['atom_id'] = list(_atomIdSelect)
             if len(_factor['atom_id']) == 0:
@@ -1382,9 +1279,9 @@ class XplorMRParserListener(ParseTreeListener):
                                         ccdCheck = True
 
                                 if ccdCheck and compId is not None:
-                                    if self.__updateChemCompDict(compId) and ('comp_id' not in _factor or compId in _factor['comp_id']):
-                                        cca = next((cca for cca in self.__lastChemCompAtoms if cca[self.__ccaAtomId] == _atomId), None)
-                                        if cca is not None and ('type_symbol' not in _factor or cca[self.__ccaTypeSymbol] in _factor['type_symbol']):
+                                    if self.__ccU.updateChemCompDict(compId) and ('comp_id' not in _factor or compId in _factor['comp_id']):
+                                        cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId), None)
+                                        if cca is not None and ('type_symbol' not in _factor or cca[self.__ccU.ccaTypeSymbol] in _factor['type_symbol']):
                                             _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId})
                                             if cifCheck:
                                                 self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
@@ -1730,8 +1627,8 @@ class XplorMRParserListener(ParseTreeListener):
                     for seqId in self.factor['seq_id']:
                         if seqId in ps['seq_id']:
                             compId = ps['comp_id'][ps['seq_id'].index(seqId)]
-                            if self.__updateChemCompDict(compId):
-                                if any(cca for cca in self.__lastChemCompAtoms if cca[self.__ccaAtomId] == atomId):
+                            if self.__ccU.updateChemCompDict(compId):
+                                if any(cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId):
                                     _atomIdSelect.add(atomId)
 
             elif ctx.Simple_names(simpleNamesIndex):
@@ -1744,10 +1641,10 @@ class XplorMRParserListener(ParseTreeListener):
                     for seqId in self.factor['seq_id']:
                         if seqId in ps['seq_id']:
                             compId = ps['comp_id'][ps['seq_id'].index(seqId)]
-                            if self.__updateChemCompDict(compId):
-                                for cca in self.__lastChemCompAtoms:
-                                    if cca[self.__ccaLeavingAtomFlag] != 'Y':
-                                        realAtomId = cca[self.__ccaAtomId]
+                            if self.__ccU.updateChemCompDict(compId):
+                                for cca in self.__ccU.lastAtomList:
+                                    if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
+                                        realAtomId = cca[self.__ccU.ccaAtomId]
                                         if re.match(_atomId, realAtomId):
                                             _atomIdSelect.add(realAtomId)
 
@@ -1991,15 +1888,15 @@ class XplorMRParserListener(ParseTreeListener):
                     atomId = _atom['atom_id']
 
                     # intra
-                    if self.__updateChemCompDict(compId):
-                        leavingAtomIds = [cca[self.__ccaAtomId] for cca in self.__lastChemCompAtoms if cca[self.__ccaLeavingAtomFlag] == 'Y']
+                    if self.__ccU.updateChemCompDict(compId):
+                        leavingAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaLeavingAtomFlag] == 'Y']
 
                         _atomIdSelect = set()
-                        for ccb in self.__lastChemCompBonds:
-                            if ccb[self.__ccbAtomId1] == atomId:
-                                _atomIdSelect.add(ccb[self.__ccbAtomId2])
-                            elif ccb[self.__ccbAtomId2] == atomId:
-                                _atomIdSelect.add(ccb[self.__ccbAtomId1])
+                        for ccb in self.__ccU.lastBonds:
+                            if ccb[self.__ccU.ccbAtomId1] == atomId:
+                                _atomIdSelect.add(ccb[self.__ccU.ccbAtomId2])
+                            elif ccb[self.__ccU.ccbAtomId2] == atomId:
+                                _atomIdSelect.add(ccb[self.__ccU.ccbAtomId1])
 
                         hasLeaavindAtomId = False
 
@@ -2026,7 +1923,7 @@ class XplorMRParserListener(ParseTreeListener):
                             else:
                                 ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chainId), None)
                                 if ps is not None and seqId in ps['seq_id'] and ps['comp_id'][ps['seq_id'].index(seqId)] == compId:
-                                    if any(cca for cca in self.__lastChemCompAtoms if cca[self.__ccaAtomId] == _atomId):
+                                    if any(cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId):
                                         _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId})
 
                         # sequential
@@ -2052,17 +1949,17 @@ class XplorMRParserListener(ParseTreeListener):
                                     for _seqId in [seqId - 1, seqId + 1]:
                                         if _seqId in ps['seq_id']:
                                             _compId = ps['comp_id'][ps['seq_id'].index(_seqId)]
-                                            if self.__updateChemCompDict(_compId):
-                                                leavingAtomIds = [cca[self.__ccaAtomId] for cca in self.__lastChemCompAtoms if cca[self.__ccaLeavingAtomFlag] == 'Y']
+                                            if self.__ccU.updateChemCompDict(_compId):
+                                                leavingAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaLeavingAtomFlag] == 'Y']
 
                                                 _atomIdSelect = set()
-                                                for ccb in self.__lastChemCompBonds:
-                                                    if ccb[self.__ccbAtomId1] in leavingAtomIds:
-                                                        _atomId = ccb[self.__ccbAtomId2]
+                                                for ccb in self.__ccU.lastBonds:
+                                                    if ccb[self.__ccU.ccbAtomId1] in leavingAtomIds:
+                                                        _atomId = ccb[self.__ccU.ccbAtomId2]
                                                         if _atomId not in leavingAtomIds:
                                                             _atomIdSelect.add(_atomId)
-                                                    if ccb[self.__ccbAtomId2] in leavingAtomIds:
-                                                        _atomId = ccb[self.__ccbAtomId1]
+                                                    if ccb[self.__ccU.ccbAtomId2] in leavingAtomIds:
+                                                        _atomId = ccb[self.__ccU.ccbAtomId1]
                                                         if _atomId not in leavingAtomIds:
                                                             _atomIdSelect.add(_atomId)
 
@@ -2150,21 +2047,21 @@ class XplorMRParserListener(ParseTreeListener):
 
                     _atomSelection.append(_atom)  # self atom
 
-                    if self.__updateChemCompDict(compId):
+                    if self.__ccU.updateChemCompDict(compId):
                         _bondedAtomIdSelect = set()
-                        for ccb in self.__lastChemCompBonds:
-                            if ccb[self.__ccbAtomId1] == atomId:
-                                _bondedAtomIdSelect.add(ccb[self.__ccbAtomId2])
-                            elif ccb[self.__ccbAtomId2] == atomId:
-                                _bondedAtomIdSelect.add(ccb[self.__ccbAtomId1])
+                        for ccb in self.__ccU.lastBonds:
+                            if ccb[self.__ccU.ccbAtomId1] == atomId:
+                                _bondedAtomIdSelect.add(ccb[self.__ccU.ccbAtomId2])
+                            elif ccb[self.__ccU.ccbAtomId2] == atomId:
+                                _bondedAtomIdSelect.add(ccb[self.__ccU.ccbAtomId1])
 
                         _nonBondedAtomIdSelect = set()
                         for _atomId in _bondedAtomIdSelect:
-                            for ccb in self.__lastChemCompBonds:
-                                if ccb[self.__ccbAtomId1] == _atomId:
-                                    _nonBondedAtomIdSelect.add(ccb[self.__ccbAtomId2])
-                                elif ccb[self.__ccbAtomId2] == _atomId:
-                                    _nonBondedAtomIdSelect.add(ccb[self.__ccbAtomId1])
+                            for ccb in self.__ccU.lastBonds:
+                                if ccb[self.__ccU.ccbAtomId1] == _atomId:
+                                    _nonBondedAtomIdSelect.add(ccb[self.__ccU.ccbAtomId2])
+                                elif ccb[self.__ccU.ccbAtomId2] == _atomId:
+                                    _nonBondedAtomIdSelect.add(ccb[self.__ccU.ccbAtomId1])
 
                         if atomId in _nonBondedAtomIdSelect:
                             _nonBondedAtomIdSelect.remove(atomId)
@@ -2211,15 +2108,15 @@ class XplorMRParserListener(ParseTreeListener):
                                         _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId})
 
                             else:
-                                cca = next((cca for cca in self.__lastChemCompAtoms if cca[self.__ccaAtomId] == atomId), None)
+                                cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId), None)
                                 if cca is not None:
-                                    _origin = {'x': float(cca[self.__ccaCartnX]), 'y': float(cca[self.__ccaCartnY]), 'z': float(cca[self.__ccaCartnZ])}
+                                    _origin = {'x': float(cca[self.__ccU.ccaCartnX]), 'y': float(cca[self.__ccU.ccaCartnY]), 'z': float(cca[self.__ccU.ccaCartnZ])}
                                     origin = to_np_array(_origin)
 
                                     for _atomId in _nonBondedAtomIdSelect:
-                                        _cca = next((_cca for _cca in self.__lastChemCompAtoms if _cca[self.__ccaAtomId] == _atomId), None)
+                                        _cca = next((_cca for _cca in self.__ccU.lastAtomList if _cca[self.__ccU.ccaAtomId] == _atomId), None)
                                         if _cca is not None:
-                                            _neighbor = {'x': float(_cca[self.__ccaCartnX]), 'y': float(_cca[self.__ccaCartnY]), 'z': float(_cca[self.__ccaCartnZ])}
+                                            _neighbor = {'x': float(_cca[self.__ccU.ccaCartnX]), 'y': float(_cca[self.__ccU.ccaCartnY]), 'z': float(_cca[self.__ccU.ccaCartnZ])}
 
                                             if np.linalg.norm(to_np_array(_neighbor) - origin) < 2.0:
                                                 _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId})
@@ -2277,8 +2174,8 @@ class XplorMRParserListener(ParseTreeListener):
                     else:
                         ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chainId), None)
                         if ps is not None and seqId in ps['seq_id'] and ps['comp_id'][ps['seq_id'].index(seqId)] == compId:
-                            if self.__updateChemCompDict(compId):
-                                atomIds = [cca[self.__ccaAtomId] for cca in self.__lastChemCompAtoms if cca[self.__ccaLeavingAtomFlag] != 'Y']
+                            if self.__ccU.updateChemCompDict(compId):
+                                atomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y']
                                 for atomId in atomIds:
                                     _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': atomId})
 

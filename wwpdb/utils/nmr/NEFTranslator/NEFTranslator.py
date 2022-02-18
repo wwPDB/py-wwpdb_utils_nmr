@@ -96,12 +96,10 @@ import pynmrstar
 
 from packaging import version
 
-from wwpdb.utils.config.ConfigInfo import getSiteId
-from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommon
 from wwpdb.utils.nmr.AlignUtil import (emptyValue, trueValue,
                                        intPattern, badPattern,
                                        getOneLetterCode)
-from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
+from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
 from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 
 __version__ = '3.0.7'
@@ -457,71 +455,7 @@ class NEFTranslator:
         self.__csStat = BMRBChemShiftStat()
 
         # CCD accessing utility
-        self.__cICommon = ConfigInfoAppCommon(getSiteId())
-        self.__ccCvsPath = self.__cICommon.get_site_cc_cvs_path()
-
-        self.__ccR = ChemCompReader(False, sys.stderr)
-        self.__ccR.setCachePath(self.__ccCvsPath)
-
-        self.__last_comp_id = None
-        self.__last_comp_id_test = False
-        # self.__last_chem_comp_dict = None
-        self.__last_chem_comp_atoms = None
-        self.__last_chem_comp_bonds = None
-
-        # taken from wwpdb.apps.ccmodule.io.ChemCompIo
-        self.__chem_comp_atom_dict = [
-            ('_chem_comp_atom.comp_id', '%s', 'str', ''),
-            ('_chem_comp_atom.atom_id', '%s', 'str', ''),
-            ('_chem_comp_atom.alt_atom_id', '%s', 'str', ''),
-            ('_chem_comp_atom.type_symbol', '%s', 'str', ''),
-            ('_chem_comp_atom.charge', '%s', 'str', ''),
-            ('_chem_comp_atom.pdbx_align', '%s', 'str', ''),
-            ('_chem_comp_atom.pdbx_aromatic_flag', '%s', 'str', ''),
-            ('_chem_comp_atom.pdbx_leaving_atom_flag', '%s', 'str', ''),
-            ('_chem_comp_atom.pdbx_stereo_config', '%s', 'str', ''),
-            ('_chem_comp_atom.model_Cartn_x', '%s', 'str', ''),
-            ('_chem_comp_atom.model_Cartn_y', '%s', 'str', ''),
-            ('_chem_comp_atom.model_Cartn_z', '%s', 'str', ''),
-            ('_chem_comp_atom.pdbx_model_Cartn_x_ideal', '%s', 'str', ''),
-            ('_chem_comp_atom.pdbx_model_Cartn_y_ideal', '%s', 'str', ''),
-            ('_chem_comp_atom.pdbx_model_Cartn_z_ideal', '%s', 'str', ''),
-            ('_chem_comp_atom.pdbx_component_atom_id', '%s', 'str', ''),
-            ('_chem_comp_atom.pdbx_component_comp_id', '%s', 'str', ''),
-            ('_chem_comp_atom.pdbx_ordinal', '%s', 'str', '')
-        ]
-
-        atom_id = next(d for d in self.__chem_comp_atom_dict if d[0] == '_chem_comp_atom.atom_id')
-        self.__cca_atom_id = self.__chem_comp_atom_dict.index(atom_id)
-
-        # aromatic_flag = next(d for d in self.__chem_comp_atom_dict if d[0] == '_chem_comp_atom.pdbx_aromatic_flag')
-        # self.__cca_aromatic_flag = self.__chem_comp_atom_dict.index(aromatic_flag)
-
-        # leaving_atom_flag = next(d for d in self.__chem_comp_atom_dict if d[0] == '_chem_comp_atom.pdbx_leaving_atom_flag')
-        # self.__cca_leaving_atom_flag = self.__chem_comp_atom_dict.index(leaving_atom_flag)
-
-        # type_symbol = next(d for d in self.__chem_comp_atom_dict if d[0] == '_chem_comp_atom.type_symbol')
-        # self.__cca_type_symbol = self.__chem_comp_atom_dict.index(type_symbol)
-
-        # taken from wwpdb.apps.ccmodule.io.ChemCompIo
-        self.__chem_comp_bond_dict = [
-            ('_chem_comp_bond.comp_id', '%s', 'str', ''),
-            ('_chem_comp_bond.atom_id_1', '%s', 'str', ''),
-            ('_chem_comp_bond.atom_id_2', '%s', 'str', ''),
-            ('_chem_comp_bond.value_order', '%s', 'str', ''),
-            ('_chem_comp_bond.pdbx_aromatic_flag', '%s', 'str', ''),
-            ('_chem_comp_bond.pdbx_stereo_config', '%s', 'str', ''),
-            ('_chem_comp_bond.pdbx_ordinal', '%s', 'str', '')
-        ]
-
-        atom_id_1 = next(d for d in self.__chem_comp_bond_dict if d[0] == '_chem_comp_bond.atom_id_1')
-        self.__ccb_atom_id_1 = self.__chem_comp_bond_dict.index(atom_id_1)
-
-        atom_id_2 = next(d for d in self.__chem_comp_bond_dict if d[0] == '_chem_comp_bond.atom_id_2')
-        self.__ccb_atom_id_2 = self.__chem_comp_bond_dict.index(atom_id_2)
-
-        # aromatic_flag = next(d for d in self.__chem_comp_bond_dict if d[0] == '_chem_comp_bond.pdbx_aromatic_flag')
-        # self.__ccb_aromatic_flag = self.__chem_comp_bond_dict.index(aromatic_flag)
+        self.__ccU = ChemCompUtil(False, sys.stderr)
 
         # readable item type
         self.readable_item_type = {'str': 'a string',
@@ -3967,22 +3901,6 @@ class NEFTranslator:
 
         return ent
 
-    def __updateChemCompDict(self, comp_id):
-        """ Update CCD information for a given comp_id.
-            @return: True for successfully update CCD information or False for the case a given comp_id does not exist in CCD
-        """
-
-        if comp_id != self.__last_comp_id:
-            self.__last_comp_id_test = False if '_' in comp_id else self.__ccR.setCompId(comp_id)
-            self.__last_comp_id = comp_id
-
-            if self.__last_comp_id_test:
-                # self.__last_chem_comp_dict = self.__ccR.getChemCompDict()
-                self.__last_chem_comp_atoms = self.__ccR.getAtomList()
-                self.__last_chem_comp_bonds = self.__ccR.getBonds()
-
-        return self.__last_comp_id_test
-
     def validate_comp_atom(self, comp_id, atom_id):
         """ Validate atom_id of comp_id.
             @change: support non-standard residue by Masashi Yokochi
@@ -4000,10 +3918,10 @@ class NEFTranslator:
             atoms = self.atomDict[comp_id]
 
         else:
-            self.__updateChemCompDict(comp_id)
+            self.__ccU.updateChemCompDict(comp_id)
 
-            if self.__last_comp_id_test:  # matches with comp_id in CCD
-                atoms = [a[self.__cca_atom_id] for a in self.__last_chem_comp_atoms]
+            if self.__ccU.lastStatus:  # matches with comp_id in CCD
+                atoms = [a[self.__ccU.ccaAtomId] for a in self.__ccU.lastAtomList]
             else:
                 return False
 
@@ -4047,10 +3965,10 @@ class NEFTranslator:
                             valid_row.append(j)
 
                     else:
-                        self.__updateChemCompDict(_comp_id)
+                        self.__ccU.updateChemCompDict(_comp_id)
 
-                        if self.__last_comp_id_test:  # matches with comp_id in CCD
-                            if _atom_id not in [a[self.__cca_atom_id] for a in self.__last_chem_comp_atoms]:
+                        if self.__ccU.lastStatus:  # matches with comp_id in CCD
+                            if _atom_id not in [a[self.__ccU.ccaAtomId] for a in self.__ccU.lastAtomList]:
                                 valid_row.append(j)
                         else:
                             valid_row.append(j)
@@ -4342,10 +4260,10 @@ class NEFTranslator:
             atoms = self.atomDict[comp_id]
 
         else:
-            self.__updateChemCompDict(comp_id)
+            self.__ccU.updateChemCompDict(comp_id)
 
-            if self.__last_comp_id_test:  # matches with comp_id in CCD
-                atoms = [a[self.__cca_atom_id] for a in self.__last_chem_comp_atoms]
+            if self.__ccU.lastStatus:  # matches with comp_id in CCD
+                atoms = [a[self.__ccU.ccaAtomId] for a in self.__ccU.lastAtomList]
 
             else:
 
@@ -4486,15 +4404,15 @@ class NEFTranslator:
         atom_list = []
         atom_id_map = {}
 
-        self.__updateChemCompDict(comp_id)
+        self.__ccU.updateChemCompDict(comp_id)
 
         atoms = []
 
         if comp_id in self.atomDict:
             atoms = self.atomDict[comp_id]
 
-        elif self.__last_comp_id_test:  # matches with comp_id in CCD
-            atoms = [a[self.__cca_atom_id] for a in self.__last_chem_comp_atoms]
+        elif self.__ccU.lastStatus:  # matches with comp_id in CCD
+            atoms = [a[self.__ccU.ccaAtomId] for a in self.__ccU.lastAtomList]
 
         methyl_atoms = self.__csStat.getMethylAtoms(comp_id)
 
@@ -4541,13 +4459,13 @@ class NEFTranslator:
 
                         if leave_unmatched:
                             atom_list.append(atom_id)
-                            if not self.__last_comp_id_test:
+                            if not self.__ccU.lastStatus:
                                 details[atom_id] = f"Unknown non-standard residue {comp_id} found."
                             else:
                                 details[atom_id] = f"{atom_id} is invalid atom_id in comp_id {comp_id}."
                             atom_id_map[atom_id] = atom_id
                         else:
-                            if not self.__last_comp_id_test:
+                            if not self.__ccU.lastStatus:
                                 logging.critical('Unknown non-standard residue %s found.', comp_id)
                             else:
                                 logging.critical('Invalid atom nomenclature %s found.', atom_id)
@@ -4898,23 +4816,23 @@ class NEFTranslator:
             @return: heavy atom name and list of proton names
         """
 
-        self.__updateChemCompDict(comp_id)
+        self.__ccU.updateChemCompDict(comp_id)
 
-        if not self.__last_comp_id_test or atom_id is None or atom_id[0] not in ('H', 'C', 'N', 'O'):
+        if not self.__ccU.lastStatus or atom_id is None or atom_id[0] not in ('H', 'C', 'N', 'O'):
             return None, None
 
         try:
 
-            ccb = next(b for b in self.__last_chem_comp_bonds
-                       if (b[self.__ccb_atom_id_1] == atom_id and (atom_id[0] == 'H' or b[self.__ccb_atom_id_2][0] == 'H'))
-                       or (b[self.__ccb_atom_id_2] == atom_id and (atom_id[0] == 'H' or b[self.__ccb_atom_id_1][0] == 'H')))
+            ccb = next(b for b in self.__ccU.lastBonds
+                       if (b[self.__ccU.ccbAtomId1] == atom_id and (atom_id[0] == 'H' or b[self.__ccU.ccbAtomId2][0] == 'H'))
+                       or (b[self.__ccU.ccbAtomId2] == atom_id and (atom_id[0] == 'H' or b[self.__ccU.ccbAtomId1][0] == 'H')))
 
-            hvy_col = self.__ccb_atom_id_1 if ccb[self.__ccb_atom_id_2 if atom_id[0] == 'H' else self.__ccb_atom_id_1] == atom_id else self.__ccb_atom_id_2
-            pro_col = self.__ccb_atom_id_2 if self.__ccb_atom_id_1 == hvy_col else self.__ccb_atom_id_1
+            hvy_col = self.__ccU.ccbAtomId1 if ccb[self.__ccU.ccbAtomId2 if atom_id[0] == 'H' else self.__ccU.ccbAtomId1] == atom_id else self.__ccU.ccbAtomId2
+            pro_col = self.__ccU.ccbAtomId2 if self.__ccU.ccbAtomId1 == hvy_col else self.__ccU.ccbAtomId1
 
             hvy = ccb[hvy_col]
 
-            return hvy, [b[pro_col] for b in self.__last_chem_comp_bonds if b[hvy_col] == hvy and b[pro_col][0] == 'H']
+            return hvy, [b[pro_col] for b in self.__ccU.lastBonds if b[hvy_col] == hvy and b[pro_col][0] == 'H']
 
         except StopIteration:
             return None, None
@@ -4925,9 +4843,9 @@ class NEFTranslator:
             @return: geminal heavy atom name and list of geminal proton names
         """
 
-        self.__updateChemCompDict(comp_id)
+        self.__ccU.updateChemCompDict(comp_id)
 
-        if not self.__last_comp_id_test or atom_id is None or atom_id[0] not in ('H', 'C', 'N', 'O'):
+        if not self.__ccU.lastStatus or atom_id is None or atom_id[0] not in ('H', 'C', 'N', 'O'):
             return None, None
 
         atom_id, h_list = self.get_group(comp_id, atom_id)
@@ -4939,20 +4857,20 @@ class NEFTranslator:
 
         try:
 
-            ccb = next(b for b in self.__last_chem_comp_bonds
-                       if (b[self.__ccb_atom_id_2] == atom_id and b[self.__ccb_atom_id_1][0] != 'H')
-                       or (b[self.__ccb_atom_id_1] == atom_id and b[self.__ccb_atom_id_2][0] != 'H'))
+            ccb = next(b for b in self.__ccU.lastBonds
+                       if (b[self.__ccU.ccbAtomId2] == atom_id and b[self.__ccU.ccbAtomId1][0] != 'H')
+                       or (b[self.__ccU.ccbAtomId1] == atom_id and b[self.__ccU.ccbAtomId2][0] != 'H'))
 
-            hvy_conn = ccb[self.__ccb_atom_id_1 if ccb[self.__ccb_atom_id_2] == atom_id else self.__ccb_atom_id_2]
+            hvy_conn = ccb[self.__ccU.ccbAtomId1 if ccb[self.__ccU.ccbAtomId2] == atom_id else self.__ccU.ccbAtomId2]
 
-            hvy_2 = next(c[self.__ccb_atom_id_1 if c[self.__ccb_atom_id_2] == hvy_conn else self.__ccb_atom_id_2]
-                         for c in self.__last_chem_comp_bonds
-                         if (c[self.__ccb_atom_id_2] == hvy_conn and c[self.__ccb_atom_id_1] != atom_id and c[self.__ccb_atom_id_1][0] != 'H'
-                             and self.get_group(comp_id, c[self.__ccb_atom_id_1])[1] is not None
-                             and len(self.get_group(comp_id, c[self.__ccb_atom_id_1])[1]) == h_list_len)
-                         or (c[self.__ccb_atom_id_1] == hvy_conn and c[self.__ccb_atom_id_2] != atom_id and c[self.__ccb_atom_id_2][0] != 'H'
-                             and self.get_group(comp_id, c[self.__ccb_atom_id_2])[1] is not None
-                             and len(self.get_group(comp_id, c[self.__ccb_atom_id_2])[1]) == h_list_len))
+            hvy_2 = next(c[self.__ccU.ccbAtomId1 if c[self.__ccU.ccbAtomId2] == hvy_conn else self.__ccU.ccbAtomId2]
+                         for c in self.__ccU.lastBonds
+                         if (c[self.__ccU.ccbAtomId2] == hvy_conn and c[self.__ccU.ccbAtomId1] != atom_id and c[self.__ccU.ccbAtomId1][0] != 'H'
+                             and self.get_group(comp_id, c[self.__ccU.ccbAtomId1])[1] is not None
+                             and len(self.get_group(comp_id, c[self.__ccU.ccbAtomId1])[1]) == h_list_len)
+                         or (c[self.__ccU.ccbAtomId1] == hvy_conn and c[self.__ccU.ccbAtomId2] != atom_id and c[self.__ccU.ccbAtomId2][0] != 'H'
+                             and self.get_group(comp_id, c[self.__ccU.ccbAtomId2])[1] is not None
+                             and len(self.get_group(comp_id, c[self.__ccU.ccbAtomId2])[1]) == h_list_len))
 
             return self.get_group(comp_id, hvy_2)
 

@@ -14,9 +14,7 @@ from wwpdb.utils.nmr.mr.CyanaMRParser import CyanaMRParser
 
 from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
 from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
-from wwpdb.utils.config.ConfigInfo import getSiteId
-from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommon
-from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
+from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
 
 
 # This class defines a complete listener for a parse tree produced by CyanaMRParser.
@@ -89,28 +87,10 @@ class CyanaMRParserListener(ParseTreeListener):
     # BMRB chemical shift statistics
     __csStat = None
 
-    # ChemComp reader
-    __ccR = None
+    # CCD accessing utility
+    __ccU = None
 
     __assumeUpperLimit = None
-
-    __lastCompId = None
-    __lastCompIdTest = False
-    # __lastChemCompDict = None
-    __lastChemCompAtoms = None
-    # __lastChemCompBonds = None
-
-    __chemCompAtomDict = None
-    # __chemCompBondDict = None
-
-    __ccaAtomId = None
-    # __ccaAromaticFlag = None
-    # __ccaLeavingAtomFlag = None
-    # __ccaTypeSymbol = None
-
-    # __ccbAtomId1 = None
-    # __ccbAtomId2 = Non
-    # __ccbAromaticFlag = None
 
     # CIF reader
     __cR = None
@@ -213,54 +193,7 @@ class CyanaMRParserListener(ParseTreeListener):
             raise IOError("+CyanaMRParserListener.__init__() ++ Error  - BMRBChemShiftStat is not available.")
 
         # CCD accessing utility
-        __cICommon = ConfigInfoAppCommon(getSiteId())
-        __ccCvsPath = __cICommon.get_site_cc_cvs_path()
-
-        self.__ccR = ChemCompReader(verbose, log)
-        self.__ccR.setCachePath(__ccCvsPath)
-
-        # taken from wwpdb.apps.ccmodule.io.ChemCompIo
-        self.__chemCompAtomDict = [
-            ('_chem_comp_atom.comp_id', '%s', 'str', ''),
-            ('_chem_comp_atom.atom_id', '%s', 'str', ''),
-            ('_chem_comp_atom.alt_atom_id', '%s', 'str', ''),
-            ('_chem_comp_atom.type_symbol', '%s', 'str', ''),
-            ('_chem_comp_atom.charge', '%s', 'str', ''),
-            ('_chem_comp_atom.pdbx_align', '%s', 'str', ''),
-            ('_chem_comp_atom.pdbx_aromatic_flag', '%s', 'str', ''),
-            ('_chem_comp_atom.pdbx_leaving_atom_flag', '%s', 'str', ''),
-            ('_chem_comp_atom.pdbx_stereo_config', '%s', 'str', ''),
-            ('_chem_comp_atom.model_Cartn_x', '%s', 'str', ''),
-            ('_chem_comp_atom.model_Cartn_y', '%s', 'str', ''),
-            ('_chem_comp_atom.model_Cartn_z', '%s', 'str', ''),
-            ('_chem_comp_atom.pdbx_model_Cartn_x_ideal', '%s', 'str', ''),
-            ('_chem_comp_atom.pdbx_model_Cartn_y_ideal', '%s', 'str', ''),
-            ('_chem_comp_atom.pdbx_model_Cartn_z_ideal', '%s', 'str', ''),
-            ('_chem_comp_atom.pdbx_component_atom_id', '%s', 'str', ''),
-            ('_chem_comp_atom.pdbx_component_comp_id', '%s', 'str', ''),
-            ('_chem_comp_atom.pdbx_ordinal', '%s', 'str', '')
-        ]
-
-        atomId = next(d for d in self.__chemCompAtomDict if d[0] == '_chem_comp_atom.atom_id')
-        self.__ccaAtomId = self.__chemCompAtomDict.index(atomId)
-
-    def __updateChemCompDict(self, compId):
-        """ Update CCD information for a given comp_id.
-            @return: True for successfully update CCD information or False for the case a given comp_id does not exist in CCD
-        """
-
-        compId = compId.upper()
-
-        if compId != self.__lastCompId:
-            self.__lastCompIdTest = False if '_' in compId else self.__ccR.setCompId(compId)
-            self.__lastCompId = compId
-
-            if self.__lastCompIdTest:
-                # self.__lastChemCompDict = self.__ccR.getChemCompDict()
-                self.__lastChemCompAtoms = self.__ccR.getAtomList()
-                # self.__lastChemCompBonds = self.__ccR.getBonds()
-
-        return self.__lastCompIdTest
+        self.__ccU = ChemCompUtil(verbose, log)
 
     # Enter a parse tree produced by CyanaMRParser#cyana_mr.
     def enterCyana_mr(self, ctx: CyanaMRParser.Cyana_mrContext):  # pylint: disable=unused-argument
@@ -366,8 +299,8 @@ class CyanaMRParserListener(ParseTreeListener):
 
                     if len(_atom) == 1:
                         pass
-                    elif self.__updateChemCompDict(compId):
-                        cca = next((cca for cca in self.__lastChemCompAtoms if cca[self.__ccaAtomId] == atomId), None)
+                    elif self.__ccU.updateChemCompDict(compId):
+                        cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId), None)
                         if cca is not None:
                             self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                                 f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinate.\n"
@@ -396,8 +329,8 @@ class CyanaMRParserListener(ParseTreeListener):
 
                     if len(_atom) == 1:
                         pass
-                    elif self.__updateChemCompDict(compId):
-                        cca = next((cca for cca in self.__lastChemCompAtoms if cca[self.__ccaAtomId] == atomId), None)
+                    elif self.__ccU.updateChemCompDict(compId):
+                        cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId), None)
                         if cca is not None:
                             self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                                 f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinate.\n"

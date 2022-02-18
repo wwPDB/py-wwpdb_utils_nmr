@@ -178,9 +178,7 @@ from wwpdb.utils.nmr.AlignUtil import (emptyValue, trueValue,
                                        getMiddleCode, getGaugeCode, getScoreOfSeqAlign,
                                        getOneLetterCode, getOneLetterCodeSequence)
 from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
-from wwpdb.utils.config.ConfigInfo import getSiteId
-from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommon
-from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
+from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
 from wwpdb.utils.nmr.io.CifReader import CifReader
 from wwpdb.utils.nmr.rci.RCI import RCI
 from wwpdb.utils.nmr.CifToNmrStar import CifToNmrStar
@@ -3627,11 +3625,7 @@ class NmrDpUtility:
         self.__pA.setVerbose(self.__verbose)
 
         # CCD accessing utility
-        self.__cICommon = ConfigInfoAppCommon(getSiteId())
-        self.__ccCvsPath = self.__cICommon.get_site_cc_cvs_path()
-
-        self.__ccR = ChemCompReader(self.__verbose, self.__lfh)
-        self.__ccR.setCachePath(self.__ccCvsPath)
+        self.__ccU = ChemCompUtil(self.__verbose, self.__lfh)
 
         # representative model id
         self.__representative_model_id = 1
@@ -3649,66 +3643,6 @@ class NmrDpUtility:
         self.__coord_near_para_ferro = {}
         # bond length in model
         self.__coord_bond_length = {}
-
-        self.__last_comp_id = None
-        self.__last_comp_id_test = False
-        self.__last_chem_comp_dict = None
-        self.__last_chem_comp_atoms = None
-        self.__last_chem_comp_bonds = None
-
-        # taken from wwpdb.apps.ccmodule.io.ChemCompIo
-        self.__chem_comp_atom_dict = [
-            ('_chem_comp_atom.comp_id', '%s', 'str', ''),
-            ('_chem_comp_atom.atom_id', '%s', 'str', ''),
-            ('_chem_comp_atom.alt_atom_id', '%s', 'str', ''),
-            ('_chem_comp_atom.type_symbol', '%s', 'str', ''),
-            ('_chem_comp_atom.charge', '%s', 'str', ''),
-            ('_chem_comp_atom.pdbx_align', '%s', 'str', ''),
-            ('_chem_comp_atom.pdbx_aromatic_flag', '%s', 'str', ''),
-            ('_chem_comp_atom.pdbx_leaving_atom_flag', '%s', 'str', ''),
-            ('_chem_comp_atom.pdbx_stereo_config', '%s', 'str', ''),
-            ('_chem_comp_atom.model_Cartn_x', '%s', 'str', ''),
-            ('_chem_comp_atom.model_Cartn_y', '%s', 'str', ''),
-            ('_chem_comp_atom.model_Cartn_z', '%s', 'str', ''),
-            ('_chem_comp_atom.pdbx_model_Cartn_x_ideal', '%s', 'str', ''),
-            ('_chem_comp_atom.pdbx_model_Cartn_y_ideal', '%s', 'str', ''),
-            ('_chem_comp_atom.pdbx_model_Cartn_z_ideal', '%s', 'str', ''),
-            ('_chem_comp_atom.pdbx_component_atom_id', '%s', 'str', ''),
-            ('_chem_comp_atom.pdbx_component_comp_id', '%s', 'str', ''),
-            ('_chem_comp_atom.pdbx_ordinal', '%s', 'str', '')
-        ]
-
-        atom_id = next(d for d in self.__chem_comp_atom_dict if d[0] == '_chem_comp_atom.atom_id')
-        self.__cca_atom_id = self.__chem_comp_atom_dict.index(atom_id)
-
-        # aromatic_flag = next(d for d in self.__chem_comp_atom_dict if d[0] == '_chem_comp_atom.pdbx_aromatic_flag')
-        # self.__cca_aromatic_flag = self.__chem_comp_atom_dict.index(aromatic_flag)
-
-        leaving_atom_flag = next(d for d in self.__chem_comp_atom_dict if d[0] == '_chem_comp_atom.pdbx_leaving_atom_flag')
-        self.__cca_leaving_atom_flag = self.__chem_comp_atom_dict.index(leaving_atom_flag)
-
-        type_symbol = next(d for d in self.__chem_comp_atom_dict if d[0] == '_chem_comp_atom.type_symbol')
-        self.__cca_type_symbol = self.__chem_comp_atom_dict.index(type_symbol)
-
-        # taken from wwpdb.apps.ccmodule.io.ChemCompIo
-        self.__chem_comp_bond_dict = [
-            ('_chem_comp_bond.comp_id', '%s', 'str', ''),
-            ('_chem_comp_bond.atom_id_1', '%s', 'str', ''),
-            ('_chem_comp_bond.atom_id_2', '%s', 'str', ''),
-            ('_chem_comp_bond.value_order', '%s', 'str', ''),
-            ('_chem_comp_bond.pdbx_aromatic_flag', '%s', 'str', ''),
-            ('_chem_comp_bond.pdbx_stereo_config', '%s', 'str', ''),
-            ('_chem_comp_bond.pdbx_ordinal', '%s', 'str', '')
-        ]
-
-        atom_id_1 = next(d for d in self.__chem_comp_bond_dict if d[0] == '_chem_comp_bond.atom_id_1')
-        self.__ccb_atom_id_1 = self.__chem_comp_bond_dict.index(atom_id_1)
-
-        atom_id_2 = next(d for d in self.__chem_comp_bond_dict if d[0] == '_chem_comp_bond.atom_id_2')
-        self.__ccb_atom_id_2 = self.__chem_comp_bond_dict.index(atom_id_2)
-
-        aromatic_flag = next(d for d in self.__chem_comp_bond_dict if d[0] == '_chem_comp_bond.pdbx_aromatic_flag')
-        self.__ccb_aromatic_flag = self.__chem_comp_bond_dict.index(aromatic_flag)
 
         # CIF reader
         self.__cR = CifReader(self.__verbose, self.__lfh)
@@ -4152,9 +4086,9 @@ class NmrDpUtility:
 
             for comp_id in non_std_comp_ids:
 
-                if self.__updateChemCompDict(comp_id):  # matches with comp_id in CCD
+                if self.__ccU.updateChemCompDict(comp_id):  # matches with comp_id in CCD
 
-                    ref_elems = set(a[self.__cca_type_symbol] for a in self.__last_chem_comp_atoms if a[self.__cca_leaving_atom_flag] != 'Y')
+                    ref_elems = set(a[self.__ccU.ccaTypeSymbol] for a in self.__ccU.lastAtomList if a[self.__ccU.ccaLeavingAtomFlag] != 'Y')
 
                     for elem in ref_elems:
                         if elem in self.paramag_elems or elem in self.ferromag_elems:
@@ -4163,24 +4097,6 @@ class NmrDpUtility:
 
         except:  # noqa: E722 pylint: disable=bare-except
             pass
-
-    def __updateChemCompDict(self, comp_id):
-        """ Update CCD information for a given comp_id.
-            @return: True for successfully update CCD information or False for the case a given comp_id does not exist in CCD
-        """
-
-        comp_id = comp_id.upper()
-
-        if comp_id != self.__last_comp_id:
-            self.__last_comp_id_test = False if '_' in comp_id else self.__ccR.setCompId(comp_id)
-            self.__last_comp_id = comp_id
-
-            if self.__last_comp_id_test:
-                self.__last_chem_comp_dict = self.__ccR.getChemCompDict()
-                self.__last_chem_comp_atoms = self.__ccR.getAtomList()
-                self.__last_chem_comp_bonds = self.__ccR.getBonds()
-
-        return self.__last_comp_id_test
 
     def __validateInputSource(self, srcPath=None):
         """ Validate NMR data as primary input source.
@@ -7243,7 +7159,7 @@ class NmrDpUtility:
                             elif len(comp_id) > 3:
                                 continue
 
-                            elif not self.__updateChemCompDict(comp_id):
+                            elif not self.__ccU.updateChemCompDict(comp_id):
                                 continue
 
                         if s[4].isalnum():
@@ -7257,7 +7173,7 @@ class NmrDpUtility:
                             elif len(comp_id) > 3:
                                 continue
 
-                            elif not self.__updateChemCompDict(comp_id):
+                            elif not self.__ccU.updateChemCompDict(comp_id):
                                 continue
 
                         has_dist_restraint = True
@@ -8438,10 +8354,10 @@ class NmrDpUtility:
         if '_' in comp_id:
             comp_id = comp_id.split('_')[0]
 
-        elif getOneLetterCode(comp_id) == 'X' and self.__updateChemCompDict(comp_id):
-            if '_chem_comp.mon_nstd_parent_comp_id' in self.__last_chem_comp_dict:  # matches with comp_id in CCD
-                if self.__last_chem_comp_dict['_chem_comp.mon_nstd_parent_comp_id'] not in emptyValue:
-                    comp_id = self.__last_chem_comp_dict['_chem_comp.mon_nstd_parent_comp_id']
+        elif getOneLetterCode(comp_id) == 'X' and self.__ccU.updateChemCompDict(comp_id):
+            if '_chem_comp.mon_nstd_parent_comp_id' in self.__ccU.lastChemCompDict:  # matches with comp_id in CCD
+                if self.__ccU.lastChemCompDict['_chem_comp.mon_nstd_parent_comp_id'] not in emptyValue:
+                    comp_id = self.__ccU.lastChemCompDict['_chem_comp.mon_nstd_parent_comp_id']
                     if comp_id in ('A', 'C', 'G', 'T', 'I', 'U') and len(ref_comp_id) == 2 and ref_comp_id.startswith('D'):
                         comp_id = 'D' + comp_id
                     elif ref_comp_id in ('A', 'C', 'G', 'T', 'I', 'U') and len(comp_id) == 2 and comp_id.startswith('D'):
@@ -8450,10 +8366,10 @@ class NmrDpUtility:
         if '_' in ref_comp_id:
             ref_comp_id = ref_comp_id.split('_')[0]
 
-        elif getOneLetterCode(ref_comp_id) == 'X' and self.__updateChemCompDict(ref_comp_id):
-            if '_chem_comp.mon_nstd_parent_comp_id' in self.__last_chem_comp_dict:  # matches with comp_id in CCD
-                if self.__last_chem_comp_dict['_chem_comp.mon_nstd_parent_comp_id'] not in emptyValue:
-                    ref_comp_id = self.__last_chem_comp_dict['_chem_comp.mon_nstd_parent_comp_id']
+        elif getOneLetterCode(ref_comp_id) == 'X' and self.__ccU.updateChemCompDict(ref_comp_id):
+            if '_chem_comp.mon_nstd_parent_comp_id' in self.__ccU.lastChemCompDict:  # matches with comp_id in CCD
+                if self.__ccU.lastChemCompDict['_chem_comp.mon_nstd_parent_comp_id'] not in emptyValue:
+                    ref_comp_id = self.__ccU.lastChemCompDict['_chem_comp.mon_nstd_parent_comp_id']
                     if ref_comp_id in ('A', 'C', 'G', 'T', 'I', 'U') and len(comp_id) == 2 and comp_id.startswith('D'):
                         ref_comp_id = 'D' + ref_comp_id
                     elif comp_id in ('A', 'C', 'G', 'T', 'I', 'U') and len(ref_comp_id) == 2 and ref_comp_id.startswith('D'):
@@ -9109,9 +9025,9 @@ class NmrDpUtility:
                     ent['seq_id'].append(seq_id)
                     ent['comp_id'].append(comp_id)
 
-                    if self.__updateChemCompDict(comp_id):  # matches with comp_id in CCD
-                        cc_name = self.__last_chem_comp_dict['_chem_comp.name']
-                        cc_rel_status = self.__last_chem_comp_dict['_chem_comp.pdbx_release_status']
+                    if self.__ccU.updateChemCompDict(comp_id):  # matches with comp_id in CCD
+                        cc_name = self.__ccU.lastChemCompDict['_chem_comp.name']
+                        cc_rel_status = self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status']
                         if cc_rel_status == 'REL':
                             ent['chem_comp_name'].append(cc_name)
                         else:
@@ -9536,9 +9452,9 @@ class NmrDpUtility:
                                             ent['seq_id'].append(_seq_id)
                                             ent['comp_id'].append(_comp_id)
 
-                                            if self.__updateChemCompDict(_comp_id):  # matches with comp_id in CCD
-                                                cc_name = self.__last_chem_comp_dict['_chem_comp.name']
-                                                cc_rel_status = self.__last_chem_comp_dict['_chem_comp.pdbx_release_status']
+                                            if self.__ccU.updateChemCompDict(_comp_id):  # matches with comp_id in CCD
+                                                cc_name = self.__ccU.lastChemCompDict['_chem_comp.name']
+                                                cc_rel_status = self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status']
                                                 if cc_rel_status == 'REL':
                                                     ent['chem_comp_name'].append(cc_name)
                                                 else:
@@ -9857,9 +9773,9 @@ class NmrDpUtility:
                                             ent['seq_id'].append(_seq_id)
                                             ent['comp_id'].append(_comp_id)
 
-                                            if self.__updateChemCompDict(_comp_id):  # matches with comp_id in CCD
-                                                cc_name = self.__last_chem_comp_dict['_chem_comp.name']
-                                                cc_rel_status = self.__last_chem_comp_dict['_chem_comp.pdbx_release_status']
+                                            if self.__ccU.updateChemCompDict(_comp_id):  # matches with comp_id in CCD
+                                                cc_name = self.__ccU.lastChemCompDict['_chem_comp.name']
+                                                cc_rel_status = self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status']
                                                 if cc_rel_status == 'REL':
                                                     ent['chem_comp_name'].append(cc_name)
                                                 else:
@@ -10749,9 +10665,9 @@ class NmrDpUtility:
                 # non-standard residue
                 else:
 
-                    if self.__updateChemCompDict(comp_id):  # matches with comp_id in CCD
+                    if self.__ccU.updateChemCompDict(comp_id):  # matches with comp_id in CCD
 
-                        ref_atom_ids = [a[self.__cca_atom_id] for a in self.__last_chem_comp_atoms]  # if a[self.__cca_leaving_atom_flag] != 'Y']
+                        ref_atom_ids = [a[self.__ccU.ccaAtomId] for a in self.__ccU.lastAtomList]  # if a[self.__ccU.ccaLeavingAtomFlag] != 'Y']
                         unk_atom_ids = []
 
                         for atom_id in atom_ids:
@@ -10765,9 +10681,9 @@ class NmrDpUtility:
                                 unk_atom_ids.append(atom_id)
 
                         if len(unk_atom_ids) > 0:
-                            cc_rel_status = self.__last_chem_comp_dict['_chem_comp.pdbx_release_status']
+                            cc_rel_status = self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status']
                             if cc_rel_status == 'REL':
-                                cc_name = self.__last_chem_comp_dict['_chem_comp.name']
+                                cc_name = self.__ccU.lastChemCompDict['_chem_comp.name']
                             else:
                                 cc_name = f"(Not available due to CCD status code {cc_rel_status})"
 
@@ -10781,7 +10697,7 @@ class NmrDpUtility:
                             if self.__verbose:
                                 self.__lfh.write(f"+NmrDpUtility.__validateAtomNomenclature() ++ Warning  - {warn}\n")
 
-                        ref_elems = set(a[self.__cca_type_symbol] for a in self.__last_chem_comp_atoms if a[self.__cca_leaving_atom_flag] != 'Y')
+                        ref_elems = set(a[self.__ccU.ccaTypeSymbol] for a in self.__ccU.lastAtomList if a[self.__ccU.ccaLeavingAtomFlag] != 'Y')
 
                         for elem in ref_elems:
                             if elem in self.paramag_elems or elem in self.ferromag_elems:
@@ -15721,11 +15637,11 @@ class NmrDpUtility:
 
                     else:
 
-                        if self.__updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
+                        if self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
 
-                            if not any(b for b in self.__last_chem_comp_bonds
-                                       if ((b[self.__ccb_atom_id_1] == atom_id_1 and b[self.__ccb_atom_id_2] == atom_id_2)
-                                           or (b[self.__ccb_atom_id_1] == atom_id_2 and b[self.__ccb_atom_id_2] == atom_id_1))):
+                            if not any(b for b in self.__ccU.lastBonds
+                                       if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
+                                           or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
 
                                 if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
 
@@ -16144,7 +16060,7 @@ class NmrDpUtility:
 
                     coord_atom_id_ = None if seq_key not in self.__coord_atom_id else self.__coord_atom_id[seq_key]
 
-                    self.__updateChemCompDict(comp_id)
+                    self.__ccU.updateChemCompDict(comp_id)
 
                     if file_type == 'nef':
 
@@ -16202,9 +16118,9 @@ class NmrDpUtility:
 
                             if _variant_[0] == '-':
 
-                                if self.__last_comp_id_test:  # matches with comp_id in CCD
+                                if self.__ccU.lastStatus:  # matches with comp_id in CCD
 
-                                    if not any(a for a in self.__last_chem_comp_atoms if a[self.__cca_atom_id] == atom_id_):
+                                    if not any(a for a in self.__ccU.lastAtomList if a[self.__ccU.ccaAtomId] == atom_id_):
 
                                         warn = "Atom ("\
                                             + self.__getReducedAtomNotation(chain_id_name, chain_id, seq_id_name, seq_id, comp_id_name, comp_id, atom_id_name, atom_name)\
@@ -16287,9 +16203,9 @@ class NmrDpUtility:
                             atom_id_ = atom_id
                             atom_name = atom_id
 
-                            if self.__last_comp_id_test:  # matches with comp_id in CCD
+                            if self.__ccU.lastStatus:  # matches with comp_id in CCD
 
-                                if not any(a for a in self.__last_chem_comp_atoms if a[self.__cca_atom_id] == atom_id_):
+                                if not any(a for a in self.__ccU.lastAtomList if a[self.__ccU.ccaAtomId] == atom_id_):
 
                                     warn = "Atom ("\
                                         + self.__getReducedAtomNotation(chain_id_name, chain_id, seq_id_name, seq_id, comp_id_name, comp_id, atom_id_name, atom_name)\
@@ -22923,9 +22839,9 @@ class NmrDpUtility:
                     ent['seq_id'].append(seq_id)
                     ent['comp_id'].append(comp_id)
 
-                    if self.__updateChemCompDict(comp_id):  # matches with comp_id in CCD
-                        cc_name = self.__last_chem_comp_dict['_chem_comp.name']
-                        cc_rel_status = self.__last_chem_comp_dict['_chem_comp.pdbx_release_status']
+                    if self.__ccU.updateChemCompDict(comp_id):  # matches with comp_id in CCD
+                        cc_name = self.__ccU.lastChemCompDict['_chem_comp.name']
+                        cc_rel_status = self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status']
                         if cc_rel_status == 'REL':
                             ent['chem_comp_name'].append(cc_name)
                         else:
@@ -27366,7 +27282,7 @@ class NmrDpUtility:
 
             na_atom_id = na['atom_id']
 
-            if not self.__updateChemCompDict(na['comp_id']):
+            if not self.__ccU.updateChemCompDict(na['comp_id']):
                 self.__coord_near_ring[seq_key] = None
                 return None
 
@@ -27374,44 +27290,44 @@ class NmrDpUtility:
 
             half_ring_traces = []
 
-            for b1 in self.__last_chem_comp_bonds:
+            for b1 in self.__ccU.lastBonds:
 
-                if b1[self.__ccb_aromatic_flag] != 'Y':
+                if b1[self.__ccU.ccbAromaticFlag] != 'Y':
                     continue
 
-                if b1[self.__ccb_atom_id_1] == na_atom_id and b1[self.__ccb_atom_id_2][0] != 'H':
-                    na_ = b1[self.__ccb_atom_id_2]
+                if b1[self.__ccU.ccbAtomId1] == na_atom_id and b1[self.__ccU.ccbAtomId2][0] != 'H':
+                    na_ = b1[self.__ccU.ccbAtomId2]
 
-                elif b1[self.__ccb_atom_id_2] == na_atom_id and b1[self.__ccb_atom_id_1][0] != 'H':
-                    na_ = b1[self.__ccb_atom_id_1]
+                elif b1[self.__ccU.ccbAtomId2] == na_atom_id and b1[self.__ccU.ccbAtomId1][0] != 'H':
+                    na_ = b1[self.__ccU.ccbAtomId1]
 
                 else:
                     continue
 
-                for b2 in self.__last_chem_comp_bonds:
+                for b2 in self.__ccU.lastBonds:
 
-                    if b2[self.__ccb_aromatic_flag] != 'Y':
+                    if b2[self.__ccU.ccbAromaticFlag] != 'Y':
                         continue
 
-                    if b2[self.__ccb_atom_id_1] == na_ and b2[self.__ccb_atom_id_2][0] != 'H' and b2[self.__ccb_atom_id_2] != na_atom_id:
-                        na__ = b2[self.__ccb_atom_id_2]
+                    if b2[self.__ccU.ccbAtomId1] == na_ and b2[self.__ccU.ccbAtomId2][0] != 'H' and b2[self.__ccU.ccbAtomId2] != na_atom_id:
+                        na__ = b2[self.__ccU.ccbAtomId2]
 
-                    elif b2[self.__ccb_atom_id_2] == na_ and b2[self.__ccb_atom_id_1][0] != 'H' and b2[self.__ccb_atom_id_1] != na_atom_id:
-                        na__ = b2[self.__ccb_atom_id_1]
+                    elif b2[self.__ccU.ccbAtomId2] == na_ and b2[self.__ccU.ccbAtomId1][0] != 'H' and b2[self.__ccU.ccbAtomId1] != na_atom_id:
+                        na__ = b2[self.__ccU.ccbAtomId1]
 
                     else:
                         continue
 
-                    for b3 in self.__last_chem_comp_bonds:
+                    for b3 in self.__ccU.lastBonds:
 
-                        if b3[self.__ccb_aromatic_flag] != 'Y':
+                        if b3[self.__ccU.ccbAromaticFlag] != 'Y':
                             continue
 
-                        if b3[self.__ccb_atom_id_1] == na__ and b3[self.__ccb_atom_id_2][0] != 'H' and b3[self.__ccb_atom_id_2] != na_:
-                            na___ = b3[self.__ccb_atom_id_2]
+                        if b3[self.__ccU.ccbAtomId1] == na__ and b3[self.__ccU.ccbAtomId2][0] != 'H' and b3[self.__ccU.ccbAtomId2] != na_:
+                            na___ = b3[self.__ccU.ccbAtomId2]
 
-                        elif b3[self.__ccb_atom_id_2] == na__ and b3[self.__ccb_atom_id_1][0] != 'H' and b3[self.__ccb_atom_id_1] != na_:
-                            na___ = b3[self.__ccb_atom_id_1]
+                        elif b3[self.__ccU.ccbAtomId2] == na__ and b3[self.__ccU.ccbAtomId1][0] != 'H' and b3[self.__ccU.ccbAtomId1] != na_:
+                            na___ = b3[self.__ccU.ccbAtomId1]
 
                         else:
                             continue

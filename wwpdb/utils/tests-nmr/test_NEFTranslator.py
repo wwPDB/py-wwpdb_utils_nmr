@@ -308,10 +308,12 @@ class TestNEFTranslator(unittest.TestCase):
     #     self.assertTrue(len(self.neft.atomDict) > 0, "Can't read atomDict.json or its empty")
     # """
 
-    def test_get_one_letter_code(self):
-        self.assertTrue(self.neft.get_one_letter_code("ALA") == "A")
-        self.assertTrue(self.neft.get_one_letter_code("Ala") == "A")
-        self.assertTrue(self.neft.get_one_letter_code("Axy") == "X")
+    # """
+    # def test_get_one_letter_code(self):
+    #     self.assertTrue(self.neft.get_one_letter_code("ALA") == "A")
+    #     self.assertTrue(self.neft.get_one_letter_code("Ala") == "A")
+    #     self.assertTrue(self.neft.get_one_letter_code("Axy") == "X")
+    # """
 
     # """
     # def test_get_readable_time_stamp(self):

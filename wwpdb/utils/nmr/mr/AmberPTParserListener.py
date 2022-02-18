@@ -20,311 +20,16 @@ from wwpdb.utils.config.ConfigInfo import getSiteId
 from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommon
 from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
 from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
-
-
-empty_value = (None, '', '.', '?')
-
-
-# taken from wwpdb.utils.align.SequenceReferenceData.py
-monDict3 = {'ALA': 'A',
-            'ARG': 'R',
-            'ASN': 'N',
-            'ASP': 'D',
-            'ASX': 'B',
-            'CYS': 'C',
-            'GLN': 'Q',
-            'GLU': 'E',
-            'GLX': 'Z',
-            'GLY': 'G',
-            'HIS': 'H',
-            'ILE': 'I',
-            'LEU': 'L',
-            'LYS': 'K',
-            'MET': 'M',
-            'PHE': 'F',
-            'PRO': 'P',
-            'SER': 'S',
-            'THR': 'T',
-            'TRP': 'W',
-            'TYR': 'Y',
-            'VAL': 'V',
-            'DA': 'A',
-            'DC': 'C',
-            'DG': 'G',
-            'DT': 'T',
-            'DU': 'U',
-            'DI': 'I',
-            'A': 'A',
-            'C': 'C',
-            'G': 'G',
-            'I': 'I',
-            'T': 'T',
-            'U': 'U'
-            }
+from wwpdb.utils.nmr.AlignUtil import (hasLargeSeqGap,
+                                       fillBlankCompIdWithOffset, beautifyPolySeq,
+                                       getMiddleCode, getGaugeCode, getScoreOfSeqAlign,
+                                       getOneLetterCodeSequence)
 
 
 def chunk_string(string, length=4):
     """ Split a string into fixed length chunks.
     """
     return [string[i:i + length] for i in range(0, len(string), length)]
-
-
-def has_large_seq_gap(s1, s2):
-    """ Return whether large gap in sequence ID.
-    """
-
-    seq_ids = sorted(set(s1['seq_id']) | set(s2['seq_id']))
-
-    for lp, i in enumerate(seq_ids):
-        if lp > 0 and i - seq_ids[lp - 1] > 20:
-            return True
-
-    return False
-
-
-def fill_blank_comp_id(s1, s2):
-    """ Fill blanked comp ID in s2 against s1.
-    """
-
-    seq_ids = sorted(set(s1['seq_id']) | set(s2['seq_id']))
-    comp_ids = []
-
-    for i in seq_ids:
-        if i in s2['seq_id']:
-            j = s2['seq_id'].index(i)
-            if j < len(s2['comp_id']):
-                comp_ids.append(s2['comp_id'][j])
-            else:
-                comp_ids.append('.')
-        else:
-            comp_ids.append('.')
-
-    return {'chain_id': s2['chain_id'], 'seq_id': seq_ids, 'comp_id': comp_ids}
-
-
-def fill_blank_comp_id_with_offset(s, offset):
-    """ Fill blanked comp ID with offset.
-    """
-
-    seq_ids = list(range(s['seq_id'][0] - offset, s['seq_id'][-1] + 1))
-    comp_ids = []
-
-    for i in seq_ids:
-        if i in s['seq_id']:
-            j = s['seq_id'].index(i)
-            if j < len(s['comp_id']):
-                comp_ids.append(s['comp_id'][j])
-            else:
-                comp_ids.append('.')
-        else:
-            comp_ids.append('.')
-
-    return {'chain_id': s['chain_id'], 'seq_id': seq_ids, 'comp_id': comp_ids}
-
-
-def beautify_seq_id(s1, s2):
-    """ Truncate negative sequence IDs of s1 and s2 and insert spacing between the large gap.
-    """
-
-    _s1 = fill_blank_comp_id(s2, s1)  # pylint: disable=arguments-out-of-order
-    _s2 = fill_blank_comp_id(s1, s2)  # pylint: disable=arguments-out-of-order
-
-    if _s1['seq_id'] != _s2['seq_id']:
-        return _s1, _s2
-
-    _seq_id = [seq_id for seq_id in _s1['seq_id'] if seq_id > 0]
-    _comp_id_1 = [comp_id for seq_id, comp_id in zip(_s1['seq_id'], _s1['comp_id']) if seq_id > 0]
-    _comp_id_2 = [comp_id for seq_id, comp_id in zip(_s1['seq_id'], _s2['comp_id']) if seq_id > 0]
-
-    gap_seq_id = []
-    gap_index = []
-
-    len_spacer = 5  # DAOTHER-7465, issue #2
-
-    for lp, i in enumerate(_seq_id):
-        if lp > 0 and i - _seq_id[lp - 1] > 20:
-            j = _seq_id[lp - 1]
-            for sp in range(1, len_spacer + 1):
-                gap_seq_id.append(j + sp)
-                gap_seq_id.append(i - sp)
-            gap_index.append(lp)
-
-    if len(gap_seq_id) == 0:
-        return {'chain_id': _s1['chain_id'], 'seq_id': _seq_id, 'comp_id': _comp_id_1}, {'chain_id': _s2['chain_id'], 'seq_id': _seq_id, 'comp_id': _comp_id_2}
-
-    _seq_id.extend(gap_seq_id)
-    _seq_id.sort()
-
-    for lp in reversed(gap_index):
-        for sp in range(1, len_spacer + 1):
-            _comp_id_1.insert(lp, '.')
-            _comp_id_2.insert(lp, '.')
-
-    return {'chain_id': _s1['chain_id'], 'seq_id': _seq_id, 'comp_id': _comp_id_1}, {'chain_id': _s2['chain_id'], 'seq_id': _seq_id, 'comp_id': _comp_id_2}
-
-
-def get_middle_code(ref_seq, test_seq):
-    """ Return array of middle code of sequence alignment.
-    """
-
-    array = ''
-
-    for i, rs in enumerate(ref_seq):
-        if i < len(test_seq):
-            array += '|' if rs == test_seq[i] and rs != '.' else ' '
-        else:
-            array += ' '
-
-    return array
-
-
-def get_gauge_code(seq_id, offset=0):
-    """ Return gauge code for seq ID.
-    """
-
-    if offset > 0:
-        _seq_id = list(range(1, offset + 1))
-        for lp, sid in enumerate(seq_id):
-            if lp < offset:
-                continue
-            _seq_id.append(sid)
-        seq_id = _seq_id
-
-    sid_len = len([sid for sid in seq_id if sid is not None])
-    code_len = 0
-
-    chars = []
-
-    for sid in seq_id:
-
-        if sid is None:
-            chars.append('-')
-            continue
-
-        if sid >= 0 and sid % 10 == 0 and code_len == 0:
-
-            code = str(sid)
-            code_len = len(code)
-
-            for j in range(code_len):
-                chars.append(code[j])
-
-        if code_len > 0:
-            code_len -= 1
-        else:
-            chars.append('-')
-
-    for lp, sid in enumerate(seq_id):
-
-        if sid is None or sid % 10 != 0:
-            continue
-
-        code = str(sid)
-        code_len = len(code)
-
-        if lp - code_len > 0:
-            for j in range(code_len):
-                chars[lp + j - code_len + 1] = chars[lp + j]
-                chars[lp + j] = '-'
-
-    if offset > 0:
-        for lp in range(offset):
-            chars[lp] = '-'
-
-    array = ''.join(chars)
-
-    if sid_len == len(seq_id):
-        return array[:sid_len]
-
-    _sid_len = len(seq_id)
-
-    offset = 0
-    for lp, sid in enumerate(seq_id):
-
-        if sid is None:
-            p = lp + offset
-            array = array[0:p] + ' ' + array[p:]
-            offset += 1
-
-    return array[:_sid_len]
-
-
-def score_of_seq_align(my_align):
-    """ Return score of sequence alignment.
-    """
-
-    length = len(my_align)
-
-    aligned = [True] * length
-
-    for i in range(length):
-        myPr = my_align[i]
-        myPr0 = str(myPr[0])
-        myPr1 = str(myPr[1])
-        if myPr0 == '.' or myPr1 == '.':
-            aligned[i] = False
-        elif myPr0 != myPr1:
-            pass
-        else:
-            break
-
-    not_aligned = True
-    offset_1 = 0
-    offset_2 = 0
-
-    unmapped = 0
-    conflict = 0
-    _matched = 0
-    for i in range(length):
-        myPr = my_align[i]
-        myPr0 = str(myPr[0])
-        myPr1 = str(myPr[1])
-        if myPr0 == '.' or myPr1 == '.':
-            if not_aligned and not aligned[i]:
-                if myPr0 == '.' and myPr1 != '.' and offset_2 == 0:  # DAOTHER-7421
-                    offset_1 += 1
-                if myPr0 != '.' and myPr1 == '.' and offset_1 == 0:  # DAOTHER-7421
-                    offset_2 += 1
-                if myPr0 == '.' and myPr1 == '.':  # DAOTHER-7465
-                    if offset_2 == 0:
-                        offset_1 += 1
-                    if offset_1 == 0:
-                        offset_2 += 1
-            unmapped += 1
-        elif myPr0 != myPr1:
-            conflict += 1
-        else:
-            not_aligned = False
-            _matched += 1
-
-    return _matched, unmapped, conflict, offset_1, offset_2
-
-
-def get_one_letter_code(comp_id):
-    """ Convert comp ID to 1-letter code.
-    """
-
-    comp_id = comp_id.upper()
-
-    if comp_id in monDict3:
-        return monDict3[comp_id]
-
-    if comp_id in empty_value:
-        return '.'
-
-    return 'X'
-
-
-def get_one_letter_code_sequence(comp_ids):
-    """ Convert array of comp ID to 1-letter code sequence.
-    """
-
-    array = ''
-
-    for comp_id in comp_ids:
-        array += get_one_letter_code(comp_id)
-
-    return array
 
 
 # This class defines a complete listener for a parse tree produced by AmberPTParser.
@@ -845,16 +550,16 @@ class AmberPTParserListener(ParseTreeListener):
                 if length == 0:
                     continue
 
-                _matched, unmapped, conflict, offset_1, offset_2 = score_of_seq_align(myAlign)
+                _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
                 if length == unmapped + conflict or _matched <= conflict:
                     continue
 
-                _s1 = s1 if offset_1 == 0 else fill_blank_comp_id_with_offset(s1, offset_1)
-                _s2 = s2 if offset_2 == 0 else fill_blank_comp_id_with_offset(s2, offset_2)
+                _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)
+                _s2 = s2 if offset_2 == 0 else fillBlankCompIdWithOffset(s2, offset_2)
 
-                if conflict > 0 and has_large_seq_gap(_s1, _s2):
-                    __s1, __s2 = beautify_seq_id(_s1, _s2)
+                if conflict > 0 and hasLargeSeqGap(_s1, _s2):
+                    __s1, __s2 = beautifyPolySeq(_s1, _s2)
                     _s1_ = __s1
                     _s2_ = __s2
 
@@ -866,7 +571,7 @@ class AmberPTParserListener(ParseTreeListener):
 
                     length = len(myAlign)
 
-                    _matched, unmapped, _conflict, _offset_1, _offset_2 = score_of_seq_align(myAlign)
+                    _matched, unmapped, _conflict, _offset_1, _offset_2 = getScoreOfSeqAlign(myAlign)
 
                     if _conflict == 0 and len(__s2['comp_id']) - len(s2['comp_id']) == conflict:
                         conflict = 0
@@ -877,11 +582,11 @@ class AmberPTParserListener(ParseTreeListener):
 
                 ref_length = len(s1['seq_id'])
 
-                ref_code = get_one_letter_code_sequence(_s1['comp_id'])
-                test_code = get_one_letter_code_sequence(_s2['comp_id'])
-                mid_code = get_middle_code(ref_code, test_code)
-                ref_gauge_code = get_gauge_code(_s1['seq_id'])
-                test_gauge_code = get_gauge_code(_s2['seq_id'])
+                ref_code = getOneLetterCodeSequence(_s1['comp_id'])
+                test_code = getOneLetterCodeSequence(_s2['comp_id'])
+                mid_code = getMiddleCode(ref_code, test_code)
+                ref_gauge_code = getGaugeCode(_s1['seq_id'])
+                test_gauge_code = getGaugeCode(_s2['seq_id'])
 
                 if any((__s1, __s2) for (__s1, __s2, __c1, __c2)
                        in zip(_s1['seq_id'], _s2['seq_id'], _s1['comp_id'], _s2['comp_id'])
@@ -918,11 +623,11 @@ class AmberPTParserListener(ParseTreeListener):
                         else:
                             seq_id2.append(None)
                             comp_id2.append('.')
-                    ref_code = get_one_letter_code_sequence(comp_id1)
-                    test_code = get_one_letter_code_sequence(comp_id2)
-                    mid_code = get_middle_code(ref_code, test_code)
-                    ref_gauge_code = get_gauge_code(seq_id1, offset_1)
-                    test_gauge_code = get_gauge_code(seq_id2, offset_2)
+                    ref_code = getOneLetterCodeSequence(comp_id1)
+                    test_code = getOneLetterCodeSequence(comp_id2)
+                    mid_code = getMiddleCode(ref_code, test_code)
+                    ref_gauge_code = getGaugeCode(seq_id1, offset_1)
+                    test_gauge_code = getGaugeCode(seq_id2, offset_2)
                     if ' ' in ref_gauge_code:
                         for p, g in enumerate(ref_gauge_code):
                             if g == ' ':
@@ -1016,13 +721,13 @@ class AmberPTParserListener(ParseTreeListener):
 
             length = len(myAlign)
 
-            _matched, unmapped, conflict, offset_1, offset_2 = score_of_seq_align(myAlign)
+            _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
-            _s1 = s1 if offset_1 == 0 else fill_blank_comp_id_with_offset(s1, offset_1)
-            _s2 = s2 if offset_2 == 0 else fill_blank_comp_id_with_offset(s2, offset_2)
+            _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)
+            _s2 = s2 if offset_2 == 0 else fillBlankCompIdWithOffset(s2, offset_2)
 
-            if conflict > 0 and has_large_seq_gap(_s1, _s2):
-                __s1, __s2 = beautify_seq_id(_s1, _s2)
+            if conflict > 0 and hasLargeSeqGap(_s1, _s2):
+                __s1, __s2 = beautifyPolySeq(_s1, _s2)
                 _s1 = __s1
                 _s2 = __s2
 
@@ -1034,7 +739,7 @@ class AmberPTParserListener(ParseTreeListener):
 
                 length = len(myAlign)
 
-                _matched, unmapped, _conflict, _, _ = score_of_seq_align(myAlign)
+                _matched, unmapped, _conflict, _, _ = getScoreOfSeqAlign(myAlign)
 
                 if _conflict == 0 and len(__s2['comp_id']) - len(s2['comp_id']) == conflict:
                     result['conflict'] = 0

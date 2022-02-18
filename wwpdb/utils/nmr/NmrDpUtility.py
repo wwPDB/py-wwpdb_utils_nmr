@@ -172,6 +172,11 @@ import numpy as np
 from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
 from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
 from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
+from wwpdb.utils.nmr.AlignUtil import (emptyValue, trueValue,
+                                       monDict3, hasLargeSeqGap,
+                                       fillBlankCompId, fillBlankCompIdWithOffset, beautifyPolySeq,
+                                       getMiddleCode, getGaugeCode, getScoreOfSeqAlign,
+                                       getOneLetterCode, getOneLetterCodeSequence)
 from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 from wwpdb.utils.config.ConfigInfo import getSiteId
 from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommon
@@ -249,237 +254,6 @@ def get_first_sf_tag(sf_data=None, tag=None):
         return ''
 
     return array[0]
-
-
-def has_large_seq_gap(s1, s2):
-    """ Return whether large gap in sequence ID.
-    """
-
-    seq_ids = sorted(set(s1['seq_id']) | set(s2['seq_id']))
-
-    for lp, i in enumerate(seq_ids):
-        if lp > 0 and i - seq_ids[lp - 1] > 20:
-            return True
-
-    return False
-
-
-def fill_blank_comp_id(s1, s2):
-    """ Fill blanked comp ID in s2 against s1.
-    """
-
-    seq_ids = sorted(set(s1['seq_id']) | set(s2['seq_id']))
-    comp_ids = []
-
-    for i in seq_ids:
-        if i in s2['seq_id']:
-            j = s2['seq_id'].index(i)
-            if j < len(s2['comp_id']):
-                comp_ids.append(s2['comp_id'][j])
-            else:
-                comp_ids.append('.')
-        else:
-            comp_ids.append('.')
-
-    return {'chain_id': s2['chain_id'], 'seq_id': seq_ids, 'comp_id': comp_ids}
-
-
-def fill_blank_comp_id_with_offset(s, offset):
-    """ Fill blanked comp ID with offset.
-    """
-
-    seq_ids = list(range(s['seq_id'][0] - offset, s['seq_id'][-1] + 1))
-    comp_ids = []
-
-    for i in seq_ids:
-        if i in s['seq_id']:
-            j = s['seq_id'].index(i)
-            if j < len(s['comp_id']):
-                comp_ids.append(s['comp_id'][j])
-            else:
-                comp_ids.append('.')
-        else:
-            comp_ids.append('.')
-
-    return {'chain_id': s['chain_id'], 'seq_id': seq_ids, 'comp_id': comp_ids}
-
-
-def beautify_seq_id(s1, s2):
-    """ Truncate negative sequence IDs of s1 and s2 and insert spacing between the large gap.
-    """
-
-    _s1 = fill_blank_comp_id(s2, s1)  # pylint: disable=arguments-out-of-order
-    _s2 = fill_blank_comp_id(s1, s2)  # pylint: disable=arguments-out-of-order
-
-    if _s1['seq_id'] != _s2['seq_id']:
-        return _s1, _s2
-
-    _seq_id = [seq_id for seq_id in _s1['seq_id'] if seq_id > 0]
-    _comp_id_1 = [comp_id for seq_id, comp_id in zip(_s1['seq_id'], _s1['comp_id']) if seq_id > 0]
-    _comp_id_2 = [comp_id for seq_id, comp_id in zip(_s1['seq_id'], _s2['comp_id']) if seq_id > 0]
-
-    gap_seq_id = []
-    gap_index = []
-
-    len_spacer = 5  # DAOTHER-7465, issue #2
-
-    for lp, i in enumerate(_seq_id):
-        if lp > 0 and i - _seq_id[lp - 1] > 20:
-            j = _seq_id[lp - 1]
-            for sp in range(1, len_spacer + 1):
-                gap_seq_id.append(j + sp)
-                gap_seq_id.append(i - sp)
-            gap_index.append(lp)
-
-    if len(gap_seq_id) == 0:
-        return {'chain_id': _s1['chain_id'], 'seq_id': _seq_id, 'comp_id': _comp_id_1}, {'chain_id': _s2['chain_id'], 'seq_id': _seq_id, 'comp_id': _comp_id_2}
-
-    _seq_id.extend(gap_seq_id)
-    _seq_id.sort()
-
-    for lp in reversed(gap_index):
-        for sp in range(1, len_spacer + 1):
-            _comp_id_1.insert(lp, '.')
-            _comp_id_2.insert(lp, '.')
-
-    return {'chain_id': _s1['chain_id'], 'seq_id': _seq_id, 'comp_id': _comp_id_1}, {'chain_id': _s2['chain_id'], 'seq_id': _seq_id, 'comp_id': _comp_id_2}
-
-
-def get_middle_code(ref_seq, test_seq):
-    """ Return array of middle code of sequence alignment.
-    """
-
-    array = ''
-
-    for i, rs in enumerate(ref_seq):
-        if i < len(test_seq):
-            array += '|' if rs == test_seq[i] and rs != '.' else ' '
-        else:
-            array += ' '
-
-    return array
-
-
-def get_gauge_code(seq_id, offset=0):
-    """ Return gauge code for seq ID.
-    """
-
-    if offset > 0:
-        _seq_id = list(range(1, offset + 1))
-        for lp, sid in enumerate(seq_id):
-            if lp < offset:
-                continue
-            _seq_id.append(sid)
-        seq_id = _seq_id
-
-    sid_len = len([sid for sid in seq_id if sid is not None])
-    code_len = 0
-
-    chars = []
-
-    for sid in seq_id:
-
-        if sid is None:
-            chars.append('-')
-            continue
-
-        if sid >= 0 and sid % 10 == 0 and code_len == 0:
-
-            code = str(sid)
-            code_len = len(code)
-
-            for j in range(code_len):
-                chars.append(code[j])
-
-        if code_len > 0:
-            code_len -= 1
-        else:
-            chars.append('-')
-
-    for lp, sid in enumerate(seq_id):
-
-        if sid is None or sid % 10 != 0:
-            continue
-
-        code = str(sid)
-        code_len = len(code)
-
-        if lp - code_len > 0:
-            for j in range(code_len):
-                chars[lp + j - code_len + 1] = chars[lp + j]
-                chars[lp + j] = '-'
-
-    if offset > 0:
-        for lp in range(offset):
-            chars[lp] = '-'
-
-    array = ''.join(chars)
-
-    if sid_len == len(seq_id):
-        return array[:sid_len]
-
-    _sid_len = len(seq_id)
-
-    offset = 0
-    for lp, sid in enumerate(seq_id):
-
-        if sid is None:
-            p = lp + offset
-            array = array[0:p] + ' ' + array[p:]
-            offset += 1
-
-    return array[:_sid_len]
-
-
-def score_of_seq_align(my_align):
-    """ Return score of sequence alignment.
-    """
-
-    length = len(my_align)
-
-    aligned = [True] * length
-
-    for i in range(length):
-        myPr = my_align[i]
-        myPr0 = str(myPr[0])
-        myPr1 = str(myPr[1])
-        if myPr0 == '.' or myPr1 == '.':
-            aligned[i] = False
-        elif myPr0 != myPr1:
-            pass
-        else:
-            break
-
-    not_aligned = True
-    offset_1 = 0
-    offset_2 = 0
-
-    unmapped = 0
-    conflict = 0
-    _matched = 0
-    for i in range(length):
-        myPr = my_align[i]
-        myPr0 = str(myPr[0])
-        myPr1 = str(myPr[1])
-        if myPr0 == '.' or myPr1 == '.':
-            if not_aligned and not aligned[i]:
-                if myPr0 == '.' and myPr1 != '.' and offset_2 == 0:  # DAOTHER-7421
-                    offset_1 += 1
-                if myPr0 != '.' and myPr1 == '.' and offset_1 == 0:  # DAOTHER-7421
-                    offset_2 += 1
-                if myPr0 == '.' and myPr1 == '.':  # DAOTHER-7465
-                    if offset_2 == 0:
-                        offset_1 += 1
-                    if offset_1 == 0:
-                        offset_2 += 1
-            unmapped += 1
-        elif myPr0 != myPr1:
-            conflict += 1
-        else:
-            not_aligned = False
-            _matched += 1
-
-    return _matched, unmapped, conflict, offset_1, offset_2
 
 
 def probability_density(value, mean, stddev):
@@ -1050,12 +824,6 @@ class NmrDpUtility:
 
         self.__alt_chain = False
         self.__valid_seq = False
-
-        # empty value
-        self.empty_value = (None, '', '.', '?')
-
-        # true value
-        self.true_value = ('true', 't', 'yes', 'y', '1')
 
         # NMR content types
         self.nmr_content_subtypes = ('entry_info', 'poly_seq', 'entity', 'chem_shift', 'chem_shift_ref',
@@ -3784,43 +3552,6 @@ class NmrDpUtility:
                                     'nmr-star': 'Chemical_shift_list'
                                     }
 
-        # taken from wwpdb.utils.align.SequenceReferenceData.py
-        self.monDict3 = {'ALA': 'A',
-                         'ARG': 'R',
-                         'ASN': 'N',
-                         'ASP': 'D',
-                         'ASX': 'B',
-                         'CYS': 'C',
-                         'GLN': 'Q',
-                         'GLU': 'E',
-                         'GLX': 'Z',
-                         'GLY': 'G',
-                         'HIS': 'H',
-                         'ILE': 'I',
-                         'LEU': 'L',
-                         'LYS': 'K',
-                         'MET': 'M',
-                         'PHE': 'F',
-                         'PRO': 'P',
-                         'SER': 'S',
-                         'THR': 'T',
-                         'TRP': 'W',
-                         'TYR': 'Y',
-                         'VAL': 'V',
-                         'DA': 'A',
-                         'DC': 'C',
-                         'DG': 'G',
-                         'DT': 'T',
-                         'DU': 'U',
-                         'DI': 'I',
-                         'A': 'A',
-                         'C': 'C',
-                         'G': 'G',
-                         'I': 'I',
-                         'T': 'T',
-                         'U': 'U'
-                         }
-
         # conventional dihedral angle names in standard residues
         self.dihed_ang_names = ('PHI', 'PSI', 'OMEGA', 'CHI1', 'CHI2', 'CHI3', 'CHI4', 'CHI5',
                                 'ALPHA', 'BETA', 'GAMMA', 'DELTA', 'EPSILON', 'ZETA',
@@ -4112,7 +3843,7 @@ class NmrDpUtility:
             if isinstance(self.__inputParamDict['bmrb_only'], bool):
                 self.__bmrb_only = self.__inputParamDict['bmrb_only']
             else:
-                self.__bmrb_only = self.__inputParamDict['bmrb_only'] in self.true_value
+                self.__bmrb_only = self.__inputParamDict['bmrb_only'] in trueValue
 
         if self.__bmrb_only:
             self.cs_anomalous_error_scaled_by_sigma = 4.0
@@ -4123,43 +3854,43 @@ class NmrDpUtility:
             if isinstance(self.__inputParamDict['nonblk_anomalous_cs'], bool):
                 self.__nonblk_anomalous_cs = self.__inputParamDict['nonblk_anomalous_cs']
             else:
-                self.__nonblk_anomalous_cs = self.__inputParamDict['nonblk_anomalous_cs'] in self.true_value
+                self.__nonblk_anomalous_cs = self.__inputParamDict['nonblk_anomalous_cs'] in trueValue
 
         if 'nonblk_bad_nterm' in self.__inputParamDict and self.__inputParamDict['nonblk_bad_nterm'] is not None:
             if isinstance(self.__inputParamDict['nonblk_bad_nterm'], bool):
                 self.__nonblk_bad_nterm = self.__inputParamDict['nonblk_bad_nterm']
             else:
-                self.__nonblk_bad_nterm = self.__inputParamDict['nonblk_bad_nterm'] in self.true_value
+                self.__nonblk_bad_nterm = self.__inputParamDict['nonblk_bad_nterm'] in trueValue
 
         if 'update_poly_seq' in self.__inputParamDict and self.__inputParamDict['update_poly_seq'] is not None:
             if isinstance(self.__inputParamDict['update_poly_seq'], bool):
                 self.__update_poly_seq = self.__inputParamDict['update_poly_seq']
             else:
-                self.__update_poly_seq = self.__inputParamDict['update_poly_seq'] in self.true_value
+                self.__update_poly_seq = self.__inputParamDict['update_poly_seq'] in trueValue
 
         if 'resolve_conflict' in self.__inputParamDict and self.__inputParamDict['resolve_conflict'] is not None:
             if isinstance(self.__inputParamDict['resolve_conflict'], bool):
                 self.__resolve_conflict = self.__inputParamDict['resolve_conflict']
             else:
-                self.__resolve_conflict = self.__inputParamDict['resolve_conflict'] in self.true_value
+                self.__resolve_conflict = self.__inputParamDict['resolve_conflict'] in trueValue
 
         if 'check_mandatory_tag' in self.__inputParamDict and self.__inputParamDict['check_mandatory_tag'] is not None:
             if isinstance(self.__inputParamDict['check_mandatory_tag'], bool):
                 self.__check_mandatory_tag = self.__inputParamDict['check_mandatory_tag']
             else:
-                self.__check_mandatory_tag = self.__inputParamDict['check_mandatory_tag'] in self.true_value
+                self.__check_mandatory_tag = self.__inputParamDict['check_mandatory_tag'] in trueValue
 
         if 'check_auth_seq' in self.__inputParamDict and self.__inputParamDict['check_auth_seq'] is not None:
             if isinstance(self.__inputParamDict['check_auth_seq'], bool):
                 self.__check_auth_seq = self.__inputParamDict['check_auth_seq']
             else:
-                self.__check_auth_seq = self.__inputParamDict['check_auth_seq'] in self.true_value
+                self.__check_auth_seq = self.__inputParamDict['check_auth_seq'] in trueValue
 
         if 'transl_pseudo_name' in self.__inputParamDict and self.__inputParamDict['transl_pseudo_name'] is not None:
             if isinstance(self.__inputParamDict['transl_pseudo_name'], bool):
                 self.__transl_pseudo_name = self.__inputParamDict['transl_pseudo_name']
             else:
-                self.__transl_pseudo_name = self.__inputParamDict['transl_pseudo_name'] in self.true_value
+                self.__transl_pseudo_name = self.__inputParamDict['transl_pseudo_name'] in trueValue
         elif op in ('nmr-str-consistency-check', 'nmr-str2str-deposit', 'nmr-str2nef-release'):
             self.__transl_pseudo_name = True
 
@@ -4167,13 +3898,13 @@ class NmrDpUtility:
             if isinstance(self.__inputParamDict['tolerant_seq_align'], bool):
                 self.__tolerant_seq_align = self.__inputParamDict['tolerant_seq_align']
             else:
-                self.__tolerant_seq_align = self.__inputParamDict['tolerant_seq_align'] in self.true_value
+                self.__tolerant_seq_align = self.__inputParamDict['tolerant_seq_align'] in trueValue
 
         if 'fix_format_issue' in self.__inputParamDict and self.__inputParamDict['fix_format_issue'] is not None:
             if isinstance(self.__inputParamDict['fix_format_issue'], bool):
                 self.__fix_format_issue = self.__inputParamDict['fix_format_issue']
             else:
-                self.__fix_format_issue = self.__inputParamDict['fix_format_issue'] in self.true_value
+                self.__fix_format_issue = self.__inputParamDict['fix_format_issue'] in trueValue
         elif not self.__combined_mode or self.__release_mode:
             self.__fix_format_issue = True
 
@@ -4181,7 +3912,7 @@ class NmrDpUtility:
             if isinstance(self.__inputParamDict['excl_missing_data'], bool):
                 self.__excl_missing_data = self.__inputParamDict['excl_missing_data']
             else:
-                self.__excl_missing_data = self.__inputParamDict['excl_missing_data'] in self.true_value
+                self.__excl_missing_data = self.__inputParamDict['excl_missing_data'] in trueValue
         elif not self.__combined_mode:
             self.__excl_missing_data = True
 
@@ -4189,7 +3920,7 @@ class NmrDpUtility:
             if isinstance(self.__inputParamDict['trust_pdbx_nmr_ens'], bool):
                 self.__trust_pdbx_nmr_ens = self.__inputParamDict['trust_pdbx_nmr_ens']
             else:
-                self.__trust_pdbx_nmr_ens = self.__inputParamDict['trust_pdbx_nmr_ens'] in self.true_value
+                self.__trust_pdbx_nmr_ens = self.__inputParamDict['trust_pdbx_nmr_ens'] in trueValue
         elif self.__release_mode:
             self.__trust_pdbx_nmr_ens = True
 
@@ -4208,25 +3939,25 @@ class NmrDpUtility:
             if isinstance(self.__outputParamDict['insert_entry_id_to_loops'], bool):
                 self.__insert_entry_id_to_loops = self.__outputParamDict['insert_entry_id_to_loops']
             else:
-                self.__insert_entry_id_to_loops = self.__outputParamDict['insert_entry_id_to_loops'] in self.true_value
+                self.__insert_entry_id_to_loops = self.__outputParamDict['insert_entry_id_to_loops'] in trueValue
 
         if 'retain_original' in self.__outputParamDict and self.__outputParamDict['retain_original'] is not None:
             if isinstance(self.__outputParamDict['retain_original'], bool):
                 self.__retain_original = self.__outputParamDict['retain_original']
             else:
-                self.__retain_original = self.__outputParamDict['retain_original'] in self.true_value
+                self.__retain_original = self.__outputParamDict['retain_original'] in trueValue
 
         if 'leave_intl_note' in self.__outputParamDict and self.__outputParamDict['leave_intl_note'] is not None:
             if isinstance(self.__outputParamDict['leave_intl_note'], bool):
                 self.__leave_intl_note = self.__outputParamDict['leave_intl_note']
             else:
-                self.__leave_intl_note = self.__outputParamDict['leave_intl_note'] in self.true_value
+                self.__leave_intl_note = self.__outputParamDict['leave_intl_note'] in trueValue
 
         if 'reduced_atom_notation' in self.__outputParamDict and self.__outputParamDict['reduced_atom_notation'] is not None:
             if isinstance(self.__outputParamDict['reduced_atom_notation'], bool):
                 self.__reduced_atom_notation = self.__outputParamDict['reduced_atom_notation']
             else:
-                self.__reduced_atom_notation = self.__outputParamDict['reduced_atom_notation'] in self.true_value
+                self.__reduced_atom_notation = self.__outputParamDict['reduced_atom_notation'] in trueValue
 
         self.__op = op
 
@@ -6033,7 +5764,7 @@ class NmrDpUtility:
                     atom_name_col = loop.tags.index('atom_name')
 
                     for row in loop:
-                        if row[atom_type_col] in self.empty_value:
+                        if row[atom_type_col] in emptyValue:
                             atom_type = row[atom_name_col][0]
                             if atom_type in ('Q', 'M'):
                                 atom_type = 'H'
@@ -6073,7 +5804,7 @@ class NmrDpUtility:
                     atom_name_col = loop.tags.index('atom_name')
 
                     for row in loop:
-                        if row[iso_num_col] in self.empty_value:
+                        if row[iso_num_col] in emptyValue:
                             atom_type = row[atom_name_col][0]
                             if atom_type in ('Q', 'M'):
                                 atom_type = 'H'
@@ -6321,7 +6052,7 @@ class NmrDpUtility:
                     atom_name_col = loop.tags.index('Atom_ID')
 
                     for row in loop:
-                        if row[atom_type_col] in self.empty_value:
+                        if row[atom_type_col] in emptyValue:
                             atom_type = row[atom_name_col][0]
                             if atom_type in ('Q', 'M'):
                                 atom_type = 'H'
@@ -6361,7 +6092,7 @@ class NmrDpUtility:
                     atom_name_col = loop.tags.index('Atom_ID')
 
                     for row in loop:
-                        if row[iso_num_col] in self.empty_value:
+                        if row[iso_num_col] in emptyValue:
                             atom_type = row[atom_name_col][0]
                             if atom_type in ('Q', 'M'):
                                 atom_type = 'H'
@@ -7208,8 +6939,8 @@ class NmrDpUtility:
                 atom_like_names_oth = self.__csStat.getAtomLikeNameSet(1)
                 cs_atom_like_names_oth = list(filter(self.__isHalfSpin, atom_like_names_oth))  # DAOTHER-7491
 
-                one_letter_codes = self.monDict3.values()
-                three_letter_codes = self.monDict3.keys()
+                one_letter_codes = monDict3.values()
+                three_letter_codes = monDict3.keys()
 
                 prohibited_col = set()
 
@@ -7839,7 +7570,7 @@ class NmrDpUtility:
 
                                     for _seq_id, _auth_asym_id, auth_seq_id, auth_comp_id in zip(_seq_ids, auth_asym_ids, auth_seq_ids, auth_comp_ids):
 
-                                        if _auth_asym_id != auth_asym_id or auth_seq_id in self.empty_value:
+                                        if _auth_asym_id != auth_asym_id or auth_seq_id in emptyValue:
                                             continue
 
                                         try:
@@ -7869,7 +7600,7 @@ class NmrDpUtility:
 
                                         for _seq_id, _auth_asym_id, auth_seq_id, auth_comp_id in zip(_seq_ids, auth_asym_ids, auth_seq_ids, auth_comp_ids):
 
-                                            if _auth_asym_id != auth_asym_id or auth_seq_id in self.empty_value:
+                                            if _auth_asym_id != auth_asym_id or auth_seq_id in emptyValue:
                                                 continue
 
                                             try:
@@ -8121,7 +7852,7 @@ class NmrDpUtility:
 
                                 for _seq_id, _auth_asym_id, auth_seq_id, auth_comp_id in zip(_seq_ids, auth_asym_ids, auth_seq_ids, auth_comp_ids):
 
-                                    if _auth_asym_id != auth_asym_id or auth_seq_id in self.empty_value:
+                                    if _auth_asym_id != auth_asym_id or auth_seq_id in emptyValue:
                                         continue
 
                                     try:
@@ -8151,7 +7882,7 @@ class NmrDpUtility:
 
                                     for _seq_id, _auth_asym_id, auth_seq_id, auth_comp_id in zip(_seq_ids, auth_asym_ids, auth_seq_ids, auth_comp_ids):
 
-                                        if _auth_asym_id != auth_asym_id or auth_seq_id in self.empty_value:
+                                        if _auth_asym_id != auth_asym_id or auth_seq_id in emptyValue:
                                             continue
 
                                         try:
@@ -8358,7 +8089,7 @@ class NmrDpUtility:
                                         i = s1['seq_id'].index(seq_id)
                                         _comp_id = s1['comp_id'][i]
 
-                                        if comp_id not in self.empty_value and _comp_id not in self.empty_value and comp_id != _comp_id:
+                                        if comp_id not in emptyValue and _comp_id not in emptyValue and comp_id != _comp_id:
                                             return False
 
                 #  brute force check
@@ -8391,7 +8122,7 @@ class NmrDpUtility:
                                             i = s1['seq_id'].index(seq_id)
                                             _comp_id = s1['comp_id'][i]
 
-                                            if comp_id not in self.empty_value and _comp_id not in self.empty_value and comp_id != _comp_id:
+                                            if comp_id not in emptyValue and _comp_id not in emptyValue and comp_id != _comp_id:
                                                 return False
 
                             # inverse check required for unverified sequences
@@ -8410,7 +8141,7 @@ class NmrDpUtility:
                                             j = s2['seq_id'].index(seq_id)
                                             _comp_id = s2['comp_id'][j]
 
-                                            if comp_id not in self.empty_value and _comp_id not in self.empty_value and comp_id != _comp_id:
+                                            if comp_id not in emptyValue and _comp_id not in emptyValue and comp_id != _comp_id:
                                                 return False
 
         return True
@@ -8519,7 +8250,7 @@ class NmrDpUtility:
 
                                             if comp_id != '.':
 
-                                                if self.__target_framecode not in self.empty_value:
+                                                if self.__target_framecode not in emptyValue:
                                                     print(sf_framecode2)
                                                     print(s1['chain_id'])
                                                     print(s1['seq_id'])
@@ -8547,9 +8278,9 @@ class NmrDpUtility:
                                             i = s1['seq_id'].index(seq_id)
                                             _comp_id = s1['comp_id'][i]
 
-                                            if comp_id not in self.empty_value and _comp_id not in self.empty_value and comp_id != _comp_id:
+                                            if comp_id not in emptyValue and _comp_id not in emptyValue and comp_id != _comp_id:
 
-                                                if self.__target_framecode not in self.empty_value:
+                                                if self.__target_framecode not in emptyValue:
                                                     print(sf_framecode2)
                                                     print(s1['chain_id'])
                                                     print(s1['seq_id'])
@@ -8574,7 +8305,7 @@ class NmrDpUtility:
                                                     if self.__verbose:
                                                         self.__lfh.write(f"+NmrDpUtility.__testSequenceConsistency() ++ Warning  - {err}\n")
 
-                                                elif self.__tolerant_seq_align and self.__get1LetterCode(comp_id) == self.__get1LetterCode(_comp_id):
+                                                elif self.__tolerant_seq_align and getOneLetterCode(comp_id) == getOneLetterCode(_comp_id):
                                                     self.report.warning.appendDescription('sequence_mismatch',
                                                                                           {'file_name': file_name, 'sf_framecode': sf_framecode2, 'category': lp_category2,
                                                                                            'description': err})
@@ -8628,7 +8359,7 @@ class NmrDpUtility:
                                             i = s1['seq_id'].index(seq_id)
                                             _comp_id = s1['comp_id'][i]
 
-                                            if comp_id not in self.empty_value and _comp_id not in self.empty_value and comp_id != _comp_id:
+                                            if comp_id not in emptyValue and _comp_id not in emptyValue and comp_id != _comp_id:
 
                                                 err = f"Unmatched comp_id {comp_id!r} vs {_comp_id!r} (seq_id {seq_id}, chain_id {chain_id}) exists "\
                                                     f"against {sf_framecode1!r} saveframe."
@@ -8667,7 +8398,7 @@ class NmrDpUtility:
                                             j = s2['seq_id'].index(seq_id)
                                             _comp_id = s2['comp_id'][j]
 
-                                            if comp_id not in self.empty_value and _comp_id not in self.empty_value and comp_id != _comp_id:
+                                            if comp_id not in emptyValue and _comp_id not in emptyValue and comp_id != _comp_id:
 
                                                 err = f"Unmatched comp_id {comp_id!r} vs {_comp_id!r} (seq_id {seq_id}, chain_id {chain_id}) exists "\
                                                     f"against {sf_framecode2!r} saveframe."
@@ -8701,15 +8432,15 @@ class NmrDpUtility:
             @return: True for representative comp IDs are matched, False otherwise
         """
 
-        if comp_id is self.empty_value or ref_comp_id in self.empty_value:
+        if comp_id is emptyValue or ref_comp_id in emptyValue:
             return False
 
         if '_' in comp_id:
             comp_id = comp_id.split('_')[0]
 
-        elif self.__get1LetterCode(comp_id) == 'X' and self.__updateChemCompDict(comp_id):
+        elif getOneLetterCode(comp_id) == 'X' and self.__updateChemCompDict(comp_id):
             if '_chem_comp.mon_nstd_parent_comp_id' in self.__last_chem_comp_dict:  # matches with comp_id in CCD
-                if self.__last_chem_comp_dict['_chem_comp.mon_nstd_parent_comp_id'] not in self.empty_value:
+                if self.__last_chem_comp_dict['_chem_comp.mon_nstd_parent_comp_id'] not in emptyValue:
                     comp_id = self.__last_chem_comp_dict['_chem_comp.mon_nstd_parent_comp_id']
                     if comp_id in ('A', 'C', 'G', 'T', 'I', 'U') and len(ref_comp_id) == 2 and ref_comp_id.startswith('D'):
                         comp_id = 'D' + comp_id
@@ -8719,9 +8450,9 @@ class NmrDpUtility:
         if '_' in ref_comp_id:
             ref_comp_id = ref_comp_id.split('_')[0]
 
-        elif self.__get1LetterCode(ref_comp_id) == 'X' and self.__updateChemCompDict(ref_comp_id):
+        elif getOneLetterCode(ref_comp_id) == 'X' and self.__updateChemCompDict(ref_comp_id):
             if '_chem_comp.mon_nstd_parent_comp_id' in self.__last_chem_comp_dict:  # matches with comp_id in CCD
-                if self.__last_chem_comp_dict['_chem_comp.mon_nstd_parent_comp_id'] not in self.empty_value:
+                if self.__last_chem_comp_dict['_chem_comp.mon_nstd_parent_comp_id'] not in emptyValue:
                     ref_comp_id = self.__last_chem_comp_dict['_chem_comp.mon_nstd_parent_comp_id']
                     if ref_comp_id in ('A', 'C', 'G', 'T', 'I', 'U') and len(comp_id) == 2 and comp_id.startswith('D'):
                         ref_comp_id = 'D' + ref_comp_id
@@ -8818,7 +8549,7 @@ class NmrDpUtility:
 
                 _seq_id = row[seq_id_col]
 
-                if _seq_id in self.empty_value or int(_seq_id) != seq_id:
+                if _seq_id in emptyValue or int(_seq_id) != seq_id:
                     continue
 
                 comp_id = row[comp_id_col]
@@ -8848,7 +8579,7 @@ class NmrDpUtility:
 
                     _seq_id = row[seq_id_col]
 
-                    if _seq_id in self.empty_value or int(_seq_id) != seq_id:
+                    if _seq_id in emptyValue or int(_seq_id) != seq_id:
                         continue
 
                     comp_id = row[comp_id_col]
@@ -8920,8 +8651,8 @@ class NmrDpUtility:
 
                 #             if s is not None:
 
-                #                 _s1 = fill_blank_comp_id_with_offset(primary_s, 0)
-                #                 _s2 = fill_blank_comp_id_with_offset(s, 0)
+                #                 _s1 = fillBlankCompIdWithOffset(primary_s, 0)
+                #                 _s2 = fillBlankCompIdWithOffset(s, 0)
 
                 #                 self.__pA.setReferenceSequence(_s1['comp_id'], 'REF' + chain_id)
                 #                 self.__pA.addTestSequence(_s2['comp_id'], chain_id)
@@ -8934,7 +8665,7 @@ class NmrDpUtility:
                 #                 if length == 0:
                 #                     continue
 
-                #                 _matched, unmapped, conflict, offset_1, offset_2 = score_of_seq_align(myAlign)
+                #                 _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
                 #                 if length == unmapped + conflict or _matched <= conflict or (len(polymer_sequence) > 1 and _matched < 4 and offset_1 > 0):
                 #                     chain_id_offset += 1
@@ -8982,7 +8713,7 @@ class NmrDpUtility:
                     if len(_comp_id) == 1:
                         comp_id_list.append(_comp_id[0])
                     else:
-                        comp_id_list.append(next(comp_id for comp_id in _comp_id if comp_id not in self.empty_value))
+                        comp_id_list.append(next(comp_id for comp_id in _comp_id if comp_id not in emptyValue))
 
                 if self.__combined_mode and self.__has_star_entity:
                     ent = self.__extractPolymerSequenceInEntityLoopOfChain(fileListId, chain_id)
@@ -9059,7 +8790,7 @@ class NmrDpUtility:
 
             for c in dat:
 
-                if c[0] in self.empty_value or c[1] in self.empty_value or c[2] in self.empty_value:
+                if c[0] in emptyValue or c[1] in emptyValue or c[2] in emptyValue:
                     return False
 
                 try:
@@ -9110,7 +8841,7 @@ class NmrDpUtility:
 
                 for s in _dat:
 
-                    if s[0] in self.empty_value or s[1] in self.empty_value or s[2] in self.empty_value:
+                    if s[0] in emptyValue or s[1] in emptyValue or s[2] in emptyValue:
                         return False
 
                     try:
@@ -9189,7 +8920,7 @@ class NmrDpUtility:
             if set(tags) & set(loop.tags) == set(tags):
                 dat = get_lp_tag(loop, tags)
                 for i in dat:
-                    if i[2] in self.empty_value:
+                    if i[2] in emptyValue:
                         i[2] = '1'
             elif set(tags_) & set(loop.tags) == set(tags_):  # No Entity_ID tag case
                 dat = get_lp_tag(loop, tags_)
@@ -9198,7 +8929,7 @@ class NmrDpUtility:
 
             for i in dat:
 
-                if i[0] in self.empty_value or i[1] in self.empty_value or i[2] in self.empty_value:
+                if i[0] in emptyValue or i[1] in emptyValue or i[2] in emptyValue:
                     return False
 
                 try:
@@ -9270,7 +9001,7 @@ class NmrDpUtility:
             if set(tags) & set(loop.tags) == set(tags):
                 dat = get_lp_tag(loop, tags)
                 for i in dat:
-                    if i[2] in self.empty_value:
+                    if i[2] in emptyValue:
                         i[2] = '1'
             elif set(tags_) & set(loop.tags) == set(tags_):  # No Entity_ID tag case
                 dat = get_lp_tag(loop, tags_)
@@ -9279,7 +9010,7 @@ class NmrDpUtility:
 
             for i in dat:
 
-                if i[0] in self.empty_value or i[1] in self.empty_value or i[2] in self.empty_value:
+                if i[0] in emptyValue or i[1] in emptyValue or i[2] in emptyValue:
                     return False
 
                 try:
@@ -9372,7 +9103,7 @@ class NmrDpUtility:
 
             for seq_id, comp_id in zip(s['seq_id'], s['comp_id']):
 
-                if self.__get1LetterCode(comp_id) == 'X':
+                if getOneLetterCode(comp_id) == 'X':
                     has_non_std_comp_id = True
 
                     ent['seq_id'].append(seq_id)
@@ -9478,7 +9209,7 @@ class NmrDpUtility:
                             if chain_id != chain_id2:
                                 continue
 
-                            _s2 = fill_blank_comp_id_with_offset(s2, 0)
+                            _s2 = fillBlankCompIdWithOffset(s2, 0)
 
                             if len(_s2['seq_id']) > len(s2['seq_id']) and len(_s2['seq_id']) < len(s1['seq_id']):
                                 s2 = _s2
@@ -9494,7 +9225,7 @@ class NmrDpUtility:
                             if length == 0:
                                 continue
 
-                            _matched, unmapped, conflict, offset_1, offset_2 = score_of_seq_align(myAlign)
+                            _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
                             alt_chain = False
 
@@ -9532,7 +9263,7 @@ class NmrDpUtility:
                                         if length == 0:
                                             continue
 
-                                        _matched, unmapped, conflict, offset_1, offset_2 = score_of_seq_align(myAlign)
+                                        _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
                                         if length == unmapped + conflict or _matched <= conflict:
                                             continue
@@ -9606,8 +9337,8 @@ class NmrDpUtility:
 
                                 alt_chain = True
 
-                            _s1 = s1 if offset_1 == 0 else fill_blank_comp_id_with_offset(s1, offset_1)
-                            _s2 = s2 if offset_2 == 0 else fill_blank_comp_id_with_offset(s2, offset_2)
+                            _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)
+                            _s2 = s2 if offset_2 == 0 else fillBlankCompIdWithOffset(s2, offset_2)
 
                             if conflict > 0 and _s1['seq_id'][0] < 0 and _s2['seq_id'][0] < 0:  # pylint: disable=chained-comparison
                                 continue
@@ -9636,11 +9367,11 @@ class NmrDpUtility:
 
                             ref_length = len(s1['seq_id'])
 
-                            ref_code = self.__get1LetterCodeSequence(_s1['comp_id'])
-                            test_code = self.__get1LetterCodeSequence(_s2['comp_id'])
-                            mid_code = get_middle_code(ref_code, test_code)
-                            ref_gauge_code = get_gauge_code(_s1['seq_id'])
-                            test_gauge_code = get_gauge_code(_s2['seq_id'])
+                            ref_code = getOneLetterCodeSequence(_s1['comp_id'])
+                            test_code = getOneLetterCodeSequence(_s2['comp_id'])
+                            mid_code = getMiddleCode(ref_code, test_code)
+                            ref_gauge_code = getGaugeCode(_s1['seq_id'])
+                            test_gauge_code = getGaugeCode(_s2['seq_id'])
 
                             self.__alt_chain |= alt_chain
 
@@ -9688,7 +9419,7 @@ class NmrDpUtility:
                                                         proc_chain_ids[sf_framecode2].add(chain_id2_)
 
                                         _s2['seq_id'] = _s1['seq_id']
-                                        mid_code = get_middle_code(ref_code, test_code)
+                                        mid_code = getMiddleCode(ref_code, test_code)
                                         test_gauge_code = ref_gauge_code
                                 else:
                                     if seq_mismatch:
@@ -9705,11 +9436,11 @@ class NmrDpUtility:
                                         test_code = _seq_align['test_code']
                                         test_gauge_code = _seq_align['test_gauge_code']
                                     else:
-                                        _s2 = fill_blank_comp_id(_s1, _s2)
+                                        _s2 = fillBlankCompId(_s1, _s2)
                                         if _s1['seq_id'][0] < 0 and _s2['seq_id'][0] < 0:
                                             continue
-                                        test_code = self.__get1LetterCodeSequence(_s2['comp_id'])
-                                        mid_code = get_middle_code(ref_code, test_code)
+                                        test_code = getOneLetterCodeSequence(_s2['comp_id'])
+                                        mid_code = getMiddleCode(ref_code, test_code)
                                         test_gauge_code = ref_gauge_code
 
                                 update_poly_seq = True
@@ -9722,7 +9453,7 @@ class NmrDpUtility:
 
                             #             s2_ = next(s2_ for s2_ in ps2 if s2_['chain_id'] == chain_id2_)
 
-                            #             _s2_ = fill_blank_comp_id_with_offset(s2_, 0)
+                            #             _s2_ = fillBlankCompIdWithOffset(s2_, 0)
 
                             #             if len(_s2_['seq_id']) > len(s2_['seq_id']) and len(_s2_['seq_id']) < len(s1['seq_id']):
                             #                 s2_ = _s2_
@@ -9738,7 +9469,7 @@ class NmrDpUtility:
                             #             if length == 0:
                             #                 continue
 
-                            #             _matched_, unmapped_, conflict_, offset_1_, offset_2_ = score_of_seq_align(myAlign)
+                            #             _matched_, unmapped_, conflict_, offset_1_, offset_2_ = getScoreOfSeqAlign(myAlign)
 
                             #             seq_mismatch = any((__s1, __s2) for (__s1, __s2, __c1, __c2)
                             #                                in zip(_s1['seq_id'], _s2_['seq_id'], _s1['comp_id'], _s2_['comp_id'])\
@@ -9800,7 +9531,7 @@ class NmrDpUtility:
                                     ent = {'chain_id': _s['chain_id'], 'seq_id': [], 'comp_id': [], 'chem_comp_name': [], 'exptl_data': []}
 
                                     for _seq_id, _comp_id in zip(_s['seq_id'], _s['comp_id']):
-                                        if self.__get1LetterCode(_comp_id) == 'X':
+                                        if getOneLetterCode(_comp_id) == 'X':
 
                                             ent['seq_id'].append(_seq_id)
                                             ent['comp_id'].append(_comp_id)
@@ -9847,7 +9578,7 @@ class NmrDpUtility:
                             if chain_id != chain_id2 and not self.__tolerant_seq_align:
                                 continue
 
-                            _s2 = fill_blank_comp_id_with_offset(s2, 0)
+                            _s2 = fillBlankCompIdWithOffset(s2, 0)
 
                             if len(_s2['seq_id']) > len(s2['seq_id']) and len(_s2['seq_id']) < len(s1['seq_id']):
                                 s2 = _s2
@@ -9863,7 +9594,7 @@ class NmrDpUtility:
                             if length == 0:
                                 continue
 
-                            _matched, unmapped, conflict, offset_1, offset_2 = score_of_seq_align(myAlign)
+                            _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
                             alt_chain = False
 
@@ -9901,7 +9632,7 @@ class NmrDpUtility:
                                         if length == 0:
                                             continue
 
-                                        _matched, unmapped, conflict, offset_1, offset_2 = score_of_seq_align(myAlign)
+                                        _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
                                         if length == unmapped + conflict or _matched <= conflict:
                                             continue
@@ -9974,8 +9705,8 @@ class NmrDpUtility:
 
                             #     alt_chain = True
                             # """
-                            _s1 = s1 if offset_1 == 0 else fill_blank_comp_id_with_offset(s1, offset_1)
-                            _s2 = s2 if offset_2 == 0 else fill_blank_comp_id_with_offset(s2, offset_2)
+                            _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)
+                            _s2 = s2 if offset_2 == 0 else fillBlankCompIdWithOffset(s2, offset_2)
 
                             if conflict > 0 and _s1['seq_id'][0] < 0 and _s2['seq_id'][0] < 0:  # pylint: disable=chained-comparison
                                 continue
@@ -10004,11 +9735,11 @@ class NmrDpUtility:
 
                             ref_length = len(s1['seq_id'])
 
-                            ref_code = self.__get1LetterCodeSequence(_s1['comp_id'])
-                            test_code = self.__get1LetterCodeSequence(_s2['comp_id'])
-                            mid_code = get_middle_code(ref_code, test_code)
-                            ref_gauge_code = get_gauge_code(_s1['seq_id'])
-                            test_gauge_code = get_gauge_code(_s2['seq_id'])
+                            ref_code = getOneLetterCodeSequence(_s1['comp_id'])
+                            test_code = getOneLetterCodeSequence(_s2['comp_id'])
+                            mid_code = getMiddleCode(ref_code, test_code)
+                            ref_gauge_code = getGaugeCode(_s1['seq_id'])
+                            test_gauge_code = getGaugeCode(_s2['seq_id'])
 
                             self.__alt_chain |= not alt_chain
                             # """
@@ -10064,7 +9795,7 @@ class NmrDpUtility:
                             #                             proc_chain_ids[sf_framecode2].add(chain_id2_)
 
                             #             _s2['seq_id'] = _s1['seq_id']
-                            #             mid_code = get_middle_code(ref_code, test_code)
+                            #             mid_code = getMiddleCode(ref_code, test_code)
                             #             test_gauge_code = ref_gauge_code
                             #     else:
                             #         if seq_mismatch:
@@ -10081,11 +9812,11 @@ class NmrDpUtility:
                             #             test_code = _seq_align['test_code']
                             #             test_gauge_code = _seq_align['test_gauge_code']
                             #         else:
-                            #             _s2 = fill_blank_comp_id(_s1, _s2)
+                            #             _s2 = fillBlankCompId(_s1, _s2)
                             #             if _s1['seq_id'][0] < 0 and _s2['seq_id'][0] < 0:
                             #                 continue
-                            #             test_code = self.__get1LetterCodeSequence(_s2['comp_id'])
-                            #             mid_code = get_middle_code(ref_code, test_code)
+                            #             test_code = getOneLetterCodeSequence(_s2['comp_id'])
+                            #             mid_code = getMiddleCode(ref_code, test_code)
                             #             test_gauge_code = ref_gauge_code
 
                             #     update_poly_seq = True
@@ -10121,7 +9852,7 @@ class NmrDpUtility:
                                     ent = {'chain_id': _s['chain_id'], 'seq_id': [], 'comp_id': [], 'chem_comp_name': [], 'exptl_data': []}
 
                                     for _seq_id, _comp_id in zip(_s['seq_id'], _s['comp_id']):
-                                        if self.__get1LetterCode(_comp_id) == 'X':
+                                        if getOneLetterCode(_comp_id) == 'X':
 
                                             ent['seq_id'].append(_seq_id)
                                             ent['comp_id'].append(_comp_id)
@@ -10194,7 +9925,7 @@ class NmrDpUtility:
                                     #         if chain_id != src_chain:
                                     #             continue
 
-                                    #         _s2 = fill_blank_comp_id_with_offset(s2, 0)
+                                    #         _s2 = fillBlankCompIdWithOffset(s2, 0)
 
                                     #         if len(_s2['seq_id']) > len(s2['seq_id']) and len(_s2['seq_id']) < len(s1['seq_id']):
                                     #             s2 = _s2
@@ -10210,7 +9941,7 @@ class NmrDpUtility:
                                     #         if length == 0:
                                     #             break
 
-                                    #         _matched, unmapped, conflict, offset_1, offset_2 = score_of_seq_align(myAlign)
+                                    #         _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
                                     #         if length == unmapped + conflict or _matched <= conflict:
                                     #             break
@@ -10233,7 +9964,7 @@ class NmrDpUtility:
                                             # if chain_id != dst_chain:
                                             #    continue
 
-                                            _s2 = fill_blank_comp_id_with_offset(s2, 0)
+                                            _s2 = fillBlankCompIdWithOffset(s2, 0)
 
                                             if len(_s2['seq_id']) > len(s2['seq_id']) and len(_s2['seq_id']) < len(s1['seq_id']):
                                                 s2 = _s2
@@ -10249,7 +9980,7 @@ class NmrDpUtility:
                                             if length == 0:
                                                 break
 
-                                            _matched, unmapped, conflict, offset_1, offset_2 = score_of_seq_align(myAlign)
+                                            _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
                                             if length == unmapped + conflict or _matched <= conflict:
                                                 break
@@ -10270,7 +10001,7 @@ class NmrDpUtility:
                                     if chain_id != s2['chain_id']:
                                         continue
 
-                                    _s2 = fill_blank_comp_id_with_offset(s2, 0)
+                                    _s2 = fillBlankCompIdWithOffset(s2, 0)
 
                                     if len(_s2['seq_id']) > len(s2['seq_id']) and len(_s2['seq_id']) < len(s1['seq_id']):
                                         s2 = _s2
@@ -10286,13 +10017,13 @@ class NmrDpUtility:
                                     if length == 0:
                                         continue
 
-                                    _matched, unmapped, conflict, offset_1, offset_2 = score_of_seq_align(myAlign)
+                                    _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
                                     if length == unmapped + conflict or _matched <= conflict:
                                         continue
 
-                                    _s1 = s1 if offset_1 == 0 else fill_blank_comp_id_with_offset(s1, offset_1)
-                                    _s2 = s2 if offset_2 == 0 else fill_blank_comp_id_with_offset(s2, offset_2)
+                                    _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)
+                                    _s2 = s2 if offset_2 == 0 else fillBlankCompIdWithOffset(s2, offset_2)
 
                                     if conflict > 0 and _s1['seq_id'][0] < 0 and _s2['seq_id'][0] < 0:  # pylint: disable=chained-comparison
                                         continue
@@ -10310,11 +10041,11 @@ class NmrDpUtility:
 
                                     ref_length = len(s1['seq_id'])
 
-                                    ref_code = self.__get1LetterCodeSequence(_s1['comp_id'])
-                                    test_code = self.__get1LetterCodeSequence(_s2['comp_id'])
-                                    mid_code = get_middle_code(ref_code, test_code)
-                                    ref_gauge_code = get_gauge_code(_s1['seq_id'])
-                                    test_gauge_code = get_gauge_code(_s2['seq_id'])
+                                    ref_code = getOneLetterCodeSequence(_s1['comp_id'])
+                                    test_code = getOneLetterCodeSequence(_s2['comp_id'])
+                                    mid_code = getMiddleCode(ref_code, test_code)
+                                    ref_gauge_code = getGaugeCode(_s1['seq_id'])
+                                    test_gauge_code = getGaugeCode(_s2['seq_id'])
 
                                     if self.__tolerant_seq_align and (seq_mismatch or comp_mismatch):
                                         if sf_framecode2 in map_seq_ids and chain_id in map_seq_ids[sf_framecode2]:
@@ -10358,7 +10089,7 @@ class NmrDpUtility:
                                                                 proc_chain_ids[sf_framecode2].add(chain_id2_)
 
                                                 _s2['seq_id'] = _s1['seq_id']
-                                                mid_code = get_middle_code(ref_code, test_code)
+                                                mid_code = getMiddleCode(ref_code, test_code)
                                                 test_gauge_code = ref_gauge_code
                                         else:
                                             if seq_mismatch:
@@ -10374,11 +10105,11 @@ class NmrDpUtility:
                                                 test_code = _seq_align['test_code']
                                                 test_gauge_code = _seq_align['test_gauge_code']
                                             else:
-                                                _s2 = fill_blank_comp_id(_s1, _s2)
+                                                _s2 = fillBlankCompId(_s1, _s2)
                                                 if _s1['seq_id'][0] < 0 and _s2['seq_id'][0] < 0:
                                                     continue
-                                                test_code = self.__get1LetterCodeSequence(_s2['comp_id'])
-                                                mid_code = get_middle_code(ref_code, test_code)
+                                                test_code = getOneLetterCodeSequence(_s2['comp_id'])
+                                                mid_code = getMiddleCode(ref_code, test_code)
                                                 test_gauge_code = ref_gauge_code
 
                                     matched = mid_code.count('|')
@@ -10495,7 +10226,7 @@ class NmrDpUtility:
            and not any(k for k in seq_id_conv_dict.keys() if seq_id_conv_dict[k] != k):
             s2['seq_id'] = s1['seq_id']
             ref_code = test_code
-            mid_code = get_middle_code(ref_code, test_code)
+            mid_code = getMiddleCode(ref_code, test_code)
             ref_gauge_code = test_gauge_code
         else:
             chain_id2 = chain_id
@@ -10503,10 +10234,10 @@ class NmrDpUtility:
                 chain_id2 = next(k for k, v in mapping.items() if v == chain_id)
             self.__fixSeqIdInLoop(file_list_id, file_type, content_subtype, sf_framecode, chain_id2, seq_id_conv_dict)
             s2['seq_id'] = s1['seq_id']
-            ref_code = self.__get1LetterCodeSequence(comp_id1)
-            test_code = self.__get1LetterCodeSequence(comp_id2)
-            mid_code = get_middle_code(ref_code, test_code)
-            ref_gauge_code = get_gauge_code(seq_id1)
+            ref_code = getOneLetterCodeSequence(comp_id1)
+            test_code = getOneLetterCodeSequence(comp_id2)
+            mid_code = getMiddleCode(ref_code, test_code)
+            ref_gauge_code = getGaugeCode(seq_id1)
             test_gauge_code = ref_gauge_code
             if ' ' in ref_gauge_code:
                 for p, g in enumerate(ref_gauge_code):
@@ -10775,31 +10506,6 @@ class NmrDpUtility:
                     if seq_id_alt in seq_id_conv_dict:
                         row[seq_id_alt_col] = seq_id_conv_dict[seq_id_alt]
 
-    def __get1LetterCode(self, comp_id):
-        """ Convert comp ID to 1-letter code.
-        """
-
-        comp_id = comp_id.upper()
-
-        if comp_id in self.monDict3:
-            return self.monDict3[comp_id]
-
-        if comp_id in self.empty_value:
-            return '.'
-
-        return 'X'
-
-    def __get1LetterCodeSequence(self, comp_ids):
-        """ Convert array of comp ID to 1-letter code sequence.
-        """
-
-        array = ''
-
-        for comp_id in comp_ids:
-            array += self.__get1LetterCode(comp_id)
-
-        return array
-
     def __validateAtomNomenclature(self):
         """ Validate atom nomenclature using NEFTranslator and CCD.
         """
@@ -10947,7 +10653,7 @@ class NmrDpUtility:
                 atom_ids = pair['atom_id']
 
                 # standard residue
-                if self.__get1LetterCode(comp_id) != 'X':
+                if getOneLetterCode(comp_id) != 'X':
 
                     if file_type == 'nef':
 
@@ -11122,7 +10828,7 @@ class NmrDpUtility:
                         auth_atom_ids = auth_pair['atom_id']
 
                         # standard residue
-                        if self.__get1LetterCode(comp_id) != 'X':
+                        if getOneLetterCode(comp_id) != 'X':
 
                             _auth_atom_ids = []
                             for auth_atom_id in auth_atom_ids:
@@ -13599,7 +13305,7 @@ class NmrDpUtility:
                 atom_id = i[atom_id_name]
                 value = i[value_name]
 
-                if value in self.empty_value:
+                if value in emptyValue:
                     continue
 
                 if file_type == 'nef' or self.__isNmrAtomName(comp_id, atom_id):
@@ -13635,7 +13341,7 @@ class NmrDpUtility:
                 has_cs_stat = False
 
                 # non-standard residue
-                if self.__get1LetterCode(comp_id) == 'X':
+                if getOneLetterCode(comp_id) == 'X':
 
                     neighbor_comp_ids = set(j[comp_id_name] for j in lp_data if j[chain_id_name] == chain_id and abs(j[seq_id_name] - seq_id) < 4 and j[seq_id_name] != seq_id)
 
@@ -13761,8 +13467,8 @@ class NmrDpUtility:
                                                     f"(avg {avg_value}, std {std_value}, min {min_value}, max {max_value}, Z_score {z_score:.2f}). "\
                                                     "Neither aromatic ring nor paramagnetic/ferromagnetic atom were found in the vicinity. "\
                                                     "Please check for folded/aliased signals.\n"
-                                                if _details in self.empty_value or (details not in _details):
-                                                    if _details in self.empty_value:
+                                                if _details in emptyValue or (details not in _details):
+                                                    if _details in emptyValue:
                                                         loop.data[l][details_col] = details
                                                     else:
                                                         loop.data[l][details_col] += ('' if '\n' in _details else '\n') + details
@@ -13817,8 +13523,8 @@ class NmrDpUtility:
                                                     f"The nearest aromatic ring {na['chain_id']}:{na['seq_id']}:{na['comp_id']}:{na['ring_atoms']} "\
                                                     f"is located at a distance of {na['ring_distance']}Å, "\
                                                     f"and has an elevation angle of {na['ring_angle']}° with the ring plane.\n"
-                                                if _details in self.empty_value or (details not in _details):
-                                                    if _details in self.empty_value:
+                                                if _details in emptyValue or (details not in _details):
+                                                    if _details in emptyValue:
                                                         loop.data[l][details_col] = details
                                                     else:
                                                         loop.data[l][details_col] += ('' if '\n' in _details else '\n') + details
@@ -13864,8 +13570,8 @@ class NmrDpUtility:
                                                 f"(avg {avg_value}, std {std_value}, min {min_value}, max {max_value}, Z_score {z_score:.2f}). "\
                                                 f"The nearest paramagnetic/ferromagnetic atom {pa['chain_id']}:{pa['seq_id']}:{pa['comp_id']}:{pa['atom_id']} "\
                                                 f"is located at a distance of {pa['distance']}Å.\n"
-                                            if _details in self.empty_value or (details not in _details):
-                                                if _details in self.empty_value:
+                                            if _details in emptyValue or (details not in _details):
+                                                if _details in emptyValue:
                                                     loop.data[l][details_col] = details
                                                 else:
                                                     loop.data[l][details_col] += ('' if '\n' in _details else '\n') + details
@@ -14053,8 +13759,8 @@ class NmrDpUtility:
                                                     f"(avg {avg_value}, std {std_value}, min {min_value}, max {max_value}, Z_score {z_score:.2f}). "\
                                                     "Neither aromatic ring nor paramagnetic/ferromagnetic atom were found in the vicinity. "\
                                                     "Please check for folded/aliased signals.\n"
-                                                if _details in self.empty_value or (details not in _details):
-                                                    if _details in self.empty_value:
+                                                if _details in emptyValue or (details not in _details):
+                                                    if _details in emptyValue:
                                                         loop.data[l][details_col] = details
                                                     else:
                                                         loop.data[l][details_col] += ('' if '\n' in _details else '\n') + details
@@ -14107,8 +13813,8 @@ class NmrDpUtility:
                                                         f"The nearest aromatic ring {na['chain_id']}:{na['seq_id']}:{na['comp_id']}:{na['ring_atoms']} "\
                                                         f"is located at a distance of {na['ring_distance']}Å, "\
                                                         f"and has an elevation angle of {na['ring_angle']}° with the ring plane.\n"
-                                                    if _details in self.empty_value or (details not in _details):
-                                                        if _details in self.empty_value:
+                                                    if _details in emptyValue or (details not in _details):
+                                                        if _details in emptyValue:
                                                             loop.data[l][details_col] = details
                                                         else:
                                                             loop.data[l][details_col] += ('' if '\n' in _details else '\n') + details
@@ -14156,8 +13862,8 @@ class NmrDpUtility:
                                                     f"(avg {avg_value}, std {std_value}, min {min_value}, max {max_value}, Z_score {z_score:.2f}). "\
                                                     f"The nearest paramagnetic/ferromagnetic atom {pa['chain_id']}:{pa['seq_id']}:{pa['comp_id']}:{pa['atom_id']} "\
                                                     f"is located at a distance of {pa['distance']}Å.\n"
-                                                if _details in self.empty_value or (details not in _details):
-                                                    if _details in self.empty_value:
+                                                if _details in emptyValue or (details not in _details):
+                                                    if _details in emptyValue:
                                                         loop.data[l][details_col] = details
                                                     else:
                                                         loop.data[l][details_col] += ('' if '\n' in _details else '\n') + details
@@ -14349,8 +14055,8 @@ class NmrDpUtility:
                                                 f"(avg {avg_value}, std {std_value}, min {min_value}, max {max_value}, Z_score {z_score:.2f}). "\
                                                 "Neither aromatic ring nor paramagnetic/ferromagnetic atom were found in the vicinity. "\
                                                 "Please check for folded/aliased signals.\n"
-                                            if _details in self.empty_value or (details not in _details):
-                                                if _details in self.empty_value:
+                                            if _details in emptyValue or (details not in _details):
+                                                if _details in emptyValue:
                                                     loop.data[l][details_col] = details
                                                 else:
                                                     loop.data[l][details_col] += ('' if '\n' in _details else '\n') + details
@@ -14403,8 +14109,8 @@ class NmrDpUtility:
                                                 f"The nearest aromatic ring {na['chain_id']}:{na['seq_id']}:{na['comp_id']}:{na['ring_atoms']} "\
                                                 f"is located at a distance of {na['ring_distance']}Å, "\
                                                 f"and has an elevation angle of {na['ring_angle']}° with the ring plane.\n"
-                                            if _details in self.empty_value or (details not in _details):
-                                                if _details in self.empty_value:
+                                            if _details in emptyValue or (details not in _details):
+                                                if _details in emptyValue:
                                                     loop.data[l][details_col] = details
                                                 else:
                                                     loop.data[l][details_col] += ('' if '\n' in _details else '\n') + details
@@ -14450,8 +14156,8 @@ class NmrDpUtility:
                                             f"(avg {avg_value}, std {std_value}, min {min_value}, max {max_value}, Z_score {z_score:.2f}). "\
                                             f"The nearest paramagnetic/ferromagnetic atom {pa['chain_id']}:{pa['seq_id']}:{pa['comp_id']}:{pa['atom_id']} "\
                                             f"is located at a distance of {pa['distance']}Å.\n"
-                                        if _details in self.empty_value or (details not in _details):
-                                            if _details in self.empty_value:
+                                        if _details in emptyValue or (details not in _details):
+                                            if _details in emptyValue:
                                                 loop.data[l][details_col] = details
                                             else:
                                                 loop.data[l][details_col] += ('' if '\n' in _details else '\n') + details
@@ -14619,7 +14325,7 @@ class NmrDpUtility:
                 if file_type == 'nmr-star' and ambig_code_name in i:
                     ambig_code = i[ambig_code_name]
 
-                    if ambig_code in self.empty_value or ambig_code == 1:
+                    if ambig_code in emptyValue or ambig_code == 1:
                         continue
 
                     _atom_id = atom_id
@@ -14729,7 +14435,7 @@ class NmrDpUtility:
 
                             ambig_set_id = i[ambig_set_id_name]
 
-                            if ambig_set_id in self.empty_value:
+                            if ambig_set_id in emptyValue:
 
                                 warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id)\
                                     + f"] {ambig_code_name} {str(ambig_code)!r} requires {ambig_set_id_name} value."
@@ -14981,7 +14687,7 @@ class NmrDpUtility:
 
                 except StopIteration:
 
-                    if cs_list not in self.empty_value:
+                    if cs_list not in emptyValue:
 
                         err = f"Assigned chemical shifts are mandatory. Referred {cs_list!r} saveframe does not exist."
 
@@ -15143,19 +14849,19 @@ class NmrDpUtility:
                                     continue
 
                                 chain_id = i[chain_id_names[d]]
-                                if chain_id in self.empty_value:
+                                if chain_id in emptyValue:
                                     continue
 
                                 seq_id = i[seq_id_names[d]]
-                                if seq_id in self.empty_value:
+                                if seq_id in emptyValue:
                                     continue
 
                                 comp_id = i[comp_id_names[d]]
-                                if comp_id in self.empty_value:
+                                if comp_id in emptyValue:
                                     continue
 
                                 atom_id = i[atom_id_names[d]]
-                                if atom_id in self.empty_value:
+                                if atom_id in emptyValue:
                                     continue
 
                                 position = i[position_names[d]]
@@ -15189,7 +14895,7 @@ class NmrDpUtility:
                                     value = cs[cs_value_name]
                                     error = cs[cs_error_name]
 
-                                    if value in self.empty_value:
+                                    if value in emptyValue:
                                         continue
 
                                     if error is None or error < 1.0e-3 or error * self.cs_diff_error_scaled_by_sigma > max_cs_err:
@@ -15281,7 +14987,7 @@ class NmrDpUtility:
                                                 _atom_id = '_' + (atom_id[1:-1] if atom_id.startswith('H') and diff else atom_id[1:])
                                                 _atom_id2 = '_' + (atom_id2[1:-1] if atom_id2.startswith('H') and diff else atom_id2[1:])
 
-                                            if chain_id2 in self.empty_value or seq_id2 in self.empty_value or comp_id2 in self.empty_value or atom_id2 in self.empty_value or\
+                                            if chain_id2 in emptyValue or seq_id2 in emptyValue or comp_id2 in emptyValue or atom_id2 in emptyValue or\
                                                (d < d2 and (chain_id2 != chain_id or seq_id2 != seq_id or comp_id2 != comp_id or _atom_id2 != _atom_id)):
 
                                                 err = f"[Check row of {index_tag} {i[index_tag]}] Coherence transfer type is onebond. "\
@@ -15309,7 +15015,7 @@ class NmrDpUtility:
                                             comp_id2 = i[comp_id_names[d2]]
                                             atom_id2 = i[atom_id_names[d2]]
 
-                                            if chain_id2 in self.empty_value or seq_id2 in self.empty_value or comp_id2 in self.empty_value or atom_id2 in self.empty_value or\
+                                            if chain_id2 in emptyValue or seq_id2 in emptyValue or comp_id2 in emptyValue or atom_id2 in emptyValue or\
                                                (d < d2 and (chain_id2 != chain_id or seq_id2 != seq_id or comp_id2 != comp_id)):  # DAOTHER-7389, issue #2
 
                                                 err = f"[Check row of {index_tag} {i[index_tag]}] Coherence transfer type is jcoupling. "\
@@ -15337,7 +15043,7 @@ class NmrDpUtility:
                                             comp_id2 = i[comp_id_names[d2]]
                                             atom_id2 = i[atom_id_names[d2]]
 
-                                            if chain_id2 in self.empty_value or seq_id2 in self.empty_value or comp_id2 in self.empty_value or atom_id2 in self.empty_value or\
+                                            if chain_id2 in emptyValue or seq_id2 in emptyValue or comp_id2 in emptyValue or atom_id2 in emptyValue or\
                                                (d < d2 and (chain_id2 != chain_id or abs(seq_id2 - seq_id) > 1)):  # DAOTHER-7389, issue #2
 
                                                 err = f"[Check row of {index_tag} {i[index_tag]}] Coherence transfer type is relayed. "\
@@ -15426,7 +15132,7 @@ class NmrDpUtility:
 
                     except StopIteration:
 
-                        if cs_list not in self.empty_value:
+                        if cs_list not in emptyValue:
 
                             err = f"Assigned chemical shifts are mandatory. Referred {cs_list!r} saveframe does not exist."
 
@@ -15574,19 +15280,19 @@ class NmrDpUtility:
                                 continue
 
                             chain_id = i[cs_chain_id_name]
-                            if chain_id in self.empty_value:
+                            if chain_id in emptyValue:
                                 continue
 
                             seq_id = i[cs_seq_id_name]
-                            if seq_id in self.empty_value:
+                            if seq_id in emptyValue:
                                 continue
 
                             comp_id = i[cs_comp_id_name]
-                            if comp_id in self.empty_value:
+                            if comp_id in emptyValue:
                                 continue
 
                             atom_id = i[cs_atom_id_name]
-                            if atom_id in self.empty_value:
+                            if atom_id in emptyValue:
                                 continue
 
                             cs_list_id = i['Assigned_chem_shift_list_ID']
@@ -15645,7 +15351,7 @@ class NmrDpUtility:
                                 value = cs[cs_value_name]
                                 error = cs[cs_error_name]
 
-                                if value in self.empty_value:
+                                if value in emptyValue:
                                     continue
 
                                 if error is None or error < 1.0e-3 or error * self.cs_diff_error_scaled_by_sigma > max_cs_err:
@@ -15743,7 +15449,7 @@ class NmrDpUtility:
                                             _atom_id = '_' + (atom_id[1:-1] if atom_id.startswith('H') and diff else atom_id[1:])
                                             _atom_id2 = '_' + (atom_id2[1:-1] if atom_id2.startswith('H') and diff else atom_id2[1:])
 
-                                        if chain_id2 in self.empty_value or seq_id2 in self.empty_value or comp_id2 in self.empty_value or atom_id2 in self.empty_value or\
+                                        if chain_id2 in emptyValue or seq_id2 in emptyValue or comp_id2 in emptyValue or atom_id2 in emptyValue or\
                                            (d < d2 and (chain_id2 != chain_id or seq_id2 != seq_id or comp_id2 != comp_id or _atom_id2 != _atom_id)):
 
                                             err = f"[Check row of {pk_id_name} {i[pk_id_name]}] Coherence transfer type is onebond. "\
@@ -15780,7 +15486,7 @@ class NmrDpUtility:
                                         comp_id2 = j[cs_comp_id_name]
                                         atom_id2 = j[cs_atom_id_name]
 
-                                        if chain_id2 in self.empty_value or seq_id2 in self.empty_value or comp_id2 in self.empty_value or atom_id2 in self.empty_value or\
+                                        if chain_id2 in emptyValue or seq_id2 in emptyValue or comp_id2 in emptyValue or atom_id2 in emptyValue or\
                                            (d < d2 and (chain_id2 != chain_id or seq_id2 != seq_id or comp_id2 != comp_id)):  # DAOTHER-7389, issue #2
 
                                             err = f"[Check row of {pk_id_name} {i[pk_id_name]}] Coherence transfer type is jcoupling. "\
@@ -15817,7 +15523,7 @@ class NmrDpUtility:
                                         comp_id2 = j[cs_comp_id_name]
                                         atom_id2 = j[cs_atom_id_name]
 
-                                        if chain_id2 in self.empty_value or seq_id2 in self.empty_value or comp_id2 in self.empty_value or atom_id2 in self.empty_value or\
+                                        if chain_id2 in emptyValue or seq_id2 in emptyValue or comp_id2 in emptyValue or atom_id2 in emptyValue or\
                                            (d < d2 and (chain_id2 != chain_id or abs(seq_id2 - seq_id) > 1)):  # DAOTHER-7389, issue #2
 
                                             err = f"[Check row of {pk_id_name} {i[pk_id_name]}] Coherence transfer type is relayed. "\
@@ -16442,7 +16148,7 @@ class NmrDpUtility:
 
                     if file_type == 'nef':
 
-                        if variant in self.empty_value:
+                        if variant in emptyValue:
                             continue
 
                         for _variant in variant.split(','):
@@ -16784,7 +16490,7 @@ class NmrDpUtility:
                 ent['exp_type'] = 'Unknown'
             else:
                 type = sf_data.get_tag('restraint_origin' if file_type == 'nef' else 'Constraint_type')  # pylint: disable=redefined-builtin
-                if len(type) > 0 and type[0] not in self.empty_value:
+                if len(type) > 0 and type[0] not in emptyValue:
                     ent['exp_type'] = type[0]
                 else:
                     ent['exp_type'] = 'Unknown'
@@ -16795,7 +16501,7 @@ class NmrDpUtility:
                 ent['exp_type'] = 'Unknown'
             else:
                 type = sf_data.get_tag('experiment_type' if file_type == 'nef' else 'Experiment_type')
-                if len(type) > 0 and type[0] not in self.empty_value:
+                if len(type) > 0 and type[0] not in emptyValue:
                     ent['exp_type'] = type[0]
                 else:
                     ent['exp_type'] = 'Unknown'
@@ -17058,7 +16764,7 @@ class NmrDpUtility:
 
             for i in lp_data:
 
-                if i[atom_type] in self.empty_value or i[iso_number] in self.empty_value or value_name in self.empty_value:
+                if i[atom_type] in emptyValue or i[iso_number] in emptyValue or value_name in emptyValue:
                     continue
 
                 data_type = str(i[iso_number]) + i[atom_type].lower() + '_chemical_shifts'
@@ -17161,7 +16867,7 @@ class NmrDpUtility:
                                 for j in lp_data:
 
                                     if j[chain_id_name] != _chain_id or j[seq_id_name] != seq_id or j[comp_id_name] != comp_id\
-                                       or j[value_name] in self.empty_value:
+                                       or j[value_name] in emptyValue:
                                         continue
 
                                     atom_id = j[atom_id_name]
@@ -17300,7 +17006,7 @@ class NmrDpUtility:
                                 for j in lp_data:
 
                                     if j[chain_id_name] != _chain_id or j[seq_id_name] != seq_id or j[comp_id_name] != comp_id\
-                                       or j[value_name] in self.empty_value:
+                                       or j[value_name] in emptyValue:
                                         continue
 
                                     atom_id = j[atom_id_name]
@@ -17426,7 +17132,7 @@ class NmrDpUtility:
                                 for j in lp_data:
 
                                     if j[chain_id_name] != _chain_id or j[seq_id_name] != seq_id or j[comp_id_name] != comp_id\
-                                       or j[value_name] in self.empty_value:
+                                       or j[value_name] in emptyValue:
                                         continue
 
                                     atom_id = j[atom_id_name]
@@ -17541,7 +17247,7 @@ class NmrDpUtility:
                                 for j in lp_data:
 
                                     if j[chain_id_name] != _chain_id or j[seq_id_name] != seq_id or j[comp_id_name] != comp_id\
-                                       or j[value_name] in self.empty_value:
+                                       or j[value_name] in emptyValue:
                                         continue
 
                                     atom_id = j[atom_id_name]
@@ -17648,7 +17354,7 @@ class NmrDpUtility:
                                 for j in lp_data:
 
                                     if j[chain_id_name] != _chain_id or j[seq_id_name] != seq_id or j[comp_id_name] != comp_id\
-                                       or j[value_name] in self.empty_value:
+                                       or j[value_name] in emptyValue:
                                         continue
 
                                     atom_id = j[atom_id_name]
@@ -17718,7 +17424,7 @@ class NmrDpUtility:
 
             for i in lp_data:
 
-                if i[atom_type] in self.empty_value or i[iso_number] in self.empty_value or value_name in self.empty_value:
+                if i[atom_type] in emptyValue or i[iso_number] in emptyValue or value_name in emptyValue:
                     continue
 
                 data_type = str(i[iso_number]) + i[atom_type].lower() + '_chemical_shifts'
@@ -17731,7 +17437,7 @@ class NmrDpUtility:
 
                 _chain_id = chain_id if file_type == 'nef' else str(self.__nefT.letter_to_int(chain_id))
 
-                if value in self.empty_value:
+                if value in emptyValue:
                     continue
 
                 if file_type == 'nef' or self.__isNmrAtomName(comp_id, atom_id):
@@ -17755,7 +17461,7 @@ class NmrDpUtility:
                 has_cs_stat = False
 
                 # non-standard residue
-                if self.__get1LetterCode(comp_id) == 'X':
+                if getOneLetterCode(comp_id) == 'X':
 
                     neighbor_comp_ids = set(j[comp_id_name] for j in lp_data if j[chain_id_name] == _chain_id
                                             and abs(j[seq_id_name] - seq_id) < 4 and j[seq_id_name] != seq_id)
@@ -18478,8 +18184,8 @@ class NmrDpUtility:
 
                         for seq_id, comp_id in zip(s['seq_id'], s['comp_id']):
 
-                            if comp_id not in self.empty_value:
-                                if comp_id not in self.monDict3.keys():
+                            if comp_id not in emptyValue:
+                                if comp_id not in monDict3.keys():
                                     continue
                                 if not self.__csStat.getTypeOfCompId(comp_id)[0]:
                                     continue
@@ -18487,7 +18193,7 @@ class NmrDpUtility:
                             else:
                                 _comp_id = self.__getCoordCompId(chain_id, seq_id)
                                 if _comp_id is not None:
-                                    if _comp_id not in self.monDict3.keys():
+                                    if _comp_id not in monDict3.keys():
                                         continue
                                     if not self.__csStat.getTypeOfCompId(_comp_id)[0]:
                                         continue
@@ -18500,7 +18206,7 @@ class NmrDpUtility:
                             for j in lp_data:
 
                                 if j[chain_id_name] != _chain_id or j[seq_id_name] != seq_id or j[comp_id_name] != comp_id\
-                                   or j[value_name] in self.empty_value:
+                                   or j[value_name] in emptyValue:
                                     continue
 
                                 atom_id = j[atom_id_name]
@@ -18844,7 +18550,7 @@ class NmrDpUtility:
                 else:
                     count[data_type] = 1
 
-                if (comb_id is not None) and (comb_id not in self.empty_value):
+                if (comb_id is not None) and (comb_id not in emptyValue):
                     if data_type in comb_count:
                         comb_count[data_type] += 1
                     else:
@@ -20477,7 +20183,7 @@ class NmrDpUtility:
                 else:
                     count[data_type] = 1
 
-                if (comb_id is not None) and (comb_id not in self.empty_value):
+                if (comb_id is not None) and (comb_id not in emptyValue):
                     if data_type in comb_count:
                         comb_count[data_type] += 1
                     else:
@@ -21084,7 +20790,7 @@ class NmrDpUtility:
         seq_id_common = collections.Counter(seq_ids).most_common()
         comp_id_common = collections.Counter(comp_ids).most_common()
 
-        if data_type in self.empty_value:
+        if data_type in emptyValue:
 
             data_type = 'undefined'
 
@@ -21304,7 +21010,7 @@ class NmrDpUtility:
                 else:
                     count[data_type] = 1
 
-                if (comb_id is not None) and (comb_id not in self.empty_value):
+                if (comb_id is not None) and (comb_id not in emptyValue):
                     if data_type in comb_count:
                         comb_count[data_type] += 1
                     else:
@@ -21875,28 +21581,28 @@ class NmrDpUtility:
                                 under_sampling_type = sp_dim['Under_sampling_type']
                             if 'Center_frequency_offset' in sp_dim:
                                 center_point = sp_dim['Center_frequency_offset']
-                                if center_point in self.empty_value:
+                                if center_point in emptyValue:
                                     center_point = None
                             if 'Encoding_code' in sp_dim:
                                 encoding_code = sp_dim['Encoding_code']
-                                if encoding_code in self.empty_value:
+                                if encoding_code in emptyValue:
                                     encoding_code = None
                             if 'Encoded_reduced_dimension_ID' in sp_dim:
                                 encoded_src_dim_id = sp_dim['Encoded_reduced_dimension_ID']
-                                if encoded_src_dim_id in self.empty_value:
+                                if encoded_src_dim_id in emptyValue:
                                     encoded_src_dim_id = None
                             if 'Magnetization_linkage_ID' in sp_dim:
                                 mag_link_id = sp_dim['Magnetization_linkage_ID']
-                                if mag_link_id in self.empty_value:
+                                if mag_link_id in emptyValue:
                                     mag_link_id = None
 
-                        if sp_freq is not None and sp_freq in self.empty_value:
+                        if sp_freq is not None and sp_freq in emptyValue:
                             sp_freq = None
 
                         if center_point is None:
                             center_point = None if first_point is None or sp_width is None else (first_point - sp_width / 2.0)
 
-                        if under_sampling_type is not None and under_sampling_type in self.empty_value:
+                        if under_sampling_type is not None and under_sampling_type in emptyValue:
                             under_sampling_type = None
 
                         if under_sampling_type is not None and under_sampling_type in ('circular', 'mirror', 'none'):
@@ -21963,10 +21669,10 @@ class NmrDpUtility:
                                                 _sp_freq = _sp_dim['Spectrometer_frequency']
                                             if 'Center_frequency_offset' in _sp_dim:
                                                 _center_point = _sp_dim['Center_frequency_offset']
-                                                if _center_point in self.empty_value:
+                                                if _center_point in emptyValue:
                                                     _center_point = None
 
-                                        if _sp_freq is not None and _sp_freq in self.empty_value:
+                                        if _sp_freq is not None and _sp_freq in emptyValue:
                                             _sp_freq = None
 
                                         if _center_point is None:
@@ -22039,7 +21745,7 @@ class NmrDpUtility:
                     comp_id = i[comp_id_names[j]]
                     atom_id = i[atom_id_names[j]]
 
-                    if chain_id in self.empty_value or seq_id in self.empty_value or comp_id in self.empty_value or atom_id in self.empty_value:
+                    if chain_id in emptyValue or seq_id in emptyValue or comp_id in emptyValue or atom_id in emptyValue:
                         has_assignment = False
                         break
 
@@ -22127,28 +21833,28 @@ class NmrDpUtility:
                             under_sampling_type = sp_dim['Under_sampling_type']
                         if 'Center_frequency_offset' in sp_dim:
                             center_point = sp_dim['Center_frequency_offset']
-                            if center_point in self.empty_value:
+                            if center_point in emptyValue:
                                 center_point = None
                         if 'Encoding_code' in sp_dim:
                             encoding_code = sp_dim['Encoding_code']
-                            if encoding_code in self.empty_value:
+                            if encoding_code in emptyValue:
                                 encoding_code = None
                         if 'Encoded_reduced_dimension_ID' in sp_dim:
                             encoded_src_dim_id = sp_dim['Encoded_reduced_dimension_ID']
-                            if encoded_src_dim_id in self.empty_value:
+                            if encoded_src_dim_id in emptyValue:
                                 encoded_src_dim_id = None
                         if 'Magnetization_linkage_ID' in sp_dim:
                             mag_link_id = sp_dim['Magnetization_linkage_ID']
-                            if mag_link_id in self.empty_value:
+                            if mag_link_id in emptyValue:
                                 mag_link_id = None
 
-                        if sp_freq is not None and sp_freq in self.empty_value:
+                        if sp_freq is not None and sp_freq in emptyValue:
                             sp_freq = None
 
                         if center_point is None:
                             center_point = None if first_point is None or sp_width is None else (first_point - sp_width / 2.0)
 
-                        if under_sampling_type is not None and under_sampling_type in self.empty_value:
+                        if under_sampling_type is not None and under_sampling_type in emptyValue:
                             under_sampling_type = None
 
                         if under_sampling_type is not None and under_sampling_type in ('circular', 'mirror', 'none'):
@@ -22202,10 +21908,10 @@ class NmrDpUtility:
                                             _sp_freq = _sp_dim['Spectrometer_frequency']
                                         if 'Center_frequency_offset' in _sp_dim:
                                             _center_point = _sp_dim['Center_frequency_offset']
-                                            if _center_point in self.empty_value:
+                                            if _center_point in emptyValue:
                                                 _center_point = None
 
-                                        if _sp_freq is not None and _sp_freq in self.empty_value:
+                                        if _sp_freq is not None and _sp_freq in emptyValue:
                                             _sp_freq = None
 
                                         if _center_point is None:
@@ -22294,7 +22000,7 @@ class NmrDpUtility:
                         comp_id = k[comp_id_name]
                         atom_id = k[atom_id_name]
 
-                        if chain_id in self.empty_value or seq_id in self.empty_value or comp_id in self.empty_value or atom_id in self.empty_value:
+                        if chain_id in emptyValue or seq_id in emptyValue or comp_id in emptyValue or atom_id in emptyValue:
                             has_assignment = False
                             break
 
@@ -23170,7 +22876,7 @@ class NmrDpUtility:
                     if len(_comp_id) == 1:
                         comp_id_list.append(_comp_id[0])
                     else:
-                        comp_id_list.append(next(comp_id for comp_id in _comp_id if comp_id not in self.empty_value))
+                        comp_id_list.append(next(comp_id for comp_id in _comp_id if comp_id not in emptyValue))
 
                 asm.append({'chain_id': chain_id, 'seq_id': seq_id_list, 'comp_id': comp_id_list})
 
@@ -23211,7 +22917,7 @@ class NmrDpUtility:
 
             for seq_id, comp_id in zip(s['seq_id'], s['comp_id']):
 
-                if self.__get1LetterCode(comp_id) == 'X':
+                if getOneLetterCode(comp_id) == 'X':
                     has_non_std_comp_id = True
 
                     ent['seq_id'].append(seq_id)
@@ -23293,21 +22999,21 @@ class NmrDpUtility:
                             if length == 0:
                                 continue
 
-                            _matched, unmapped, conflict, offset_1, offset_2 = score_of_seq_align(myAlign)
+                            _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
                             if length == unmapped + conflict or _matched <= conflict:
                                 continue
 
-                            _s1 = s1 if offset_1 == 0 else fill_blank_comp_id_with_offset(s1, offset_1)
-                            _s2 = s2 if offset_2 == 0 else fill_blank_comp_id_with_offset(s2, offset_2)
+                            _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)
+                            _s2 = s2 if offset_2 == 0 else fillBlankCompIdWithOffset(s2, offset_2)
 
                             ref_length = len(s1['seq_id'])
 
-                            ref_code = self.__get1LetterCodeSequence(_s1['comp_id'])
-                            test_code = self.__get1LetterCodeSequence(_s2['comp_id'])
-                            mid_code = get_middle_code(ref_code, test_code)
-                            ref_gauge_code = get_gauge_code(_s1['seq_id'])
-                            test_gauge_code = get_gauge_code(_s2['seq_id'])
+                            ref_code = getOneLetterCodeSequence(_s1['comp_id'])
+                            test_code = getOneLetterCodeSequence(_s2['comp_id'])
+                            mid_code = getMiddleCode(ref_code, test_code)
+                            ref_gauge_code = getGaugeCode(_s1['seq_id'])
+                            test_gauge_code = getGaugeCode(_s2['seq_id'])
 
                             matched = mid_code.count('|')
 
@@ -23354,16 +23060,16 @@ class NmrDpUtility:
                 if length == 0:
                     continue
 
-                _matched, unmapped, conflict, offset_1, offset_2 = score_of_seq_align(myAlign)
+                _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
                 if length == unmapped + conflict or _matched <= conflict:
                     continue
 
-                _s1 = s1 if offset_1 == 0 else fill_blank_comp_id_with_offset(s1, offset_1)
-                _s2 = s2 if offset_2 == 0 else fill_blank_comp_id_with_offset(s2, offset_2)
+                _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)
+                _s2 = s2 if offset_2 == 0 else fillBlankCompIdWithOffset(s2, offset_2)
 
-                if conflict > 0 and has_large_seq_gap(_s1, _s2):  # DAOTHER-7465
-                    __s1, __s2 = beautify_seq_id(_s1, _s2)
+                if conflict > 0 and hasLargeSeqGap(_s1, _s2):  # DAOTHER-7465
+                    __s1, __s2 = beautifyPolySeq(_s1, _s2)
                     _s1_ = __s1
                     _s2_ = __s2
 
@@ -23375,7 +23081,7 @@ class NmrDpUtility:
 
                     length = len(myAlign)
 
-                    _matched, unmapped, _conflict, _offset_1, _offset_2 = score_of_seq_align(myAlign)
+                    _matched, unmapped, _conflict, _offset_1, _offset_2 = getScoreOfSeqAlign(myAlign)
 
                     if _conflict == 0 and len(__s2['comp_id']) - len(s2['comp_id']) == conflict:
                         conflict = 0
@@ -23386,11 +23092,11 @@ class NmrDpUtility:
 
                 ref_length = len(s1['seq_id'])
 
-                ref_code = self.__get1LetterCodeSequence(_s1['comp_id'])
-                test_code = self.__get1LetterCodeSequence(_s2['comp_id'])
-                mid_code = get_middle_code(ref_code, test_code)
-                ref_gauge_code = get_gauge_code(_s1['seq_id'])
-                test_gauge_code = get_gauge_code(_s2['seq_id'])
+                ref_code = getOneLetterCodeSequence(_s1['comp_id'])
+                test_code = getOneLetterCodeSequence(_s2['comp_id'])
+                mid_code = getMiddleCode(ref_code, test_code)
+                ref_gauge_code = getGaugeCode(_s1['seq_id'])
+                test_gauge_code = getGaugeCode(_s2['seq_id'])
 
                 if any((__s1, __s2) for (__s1, __s2, __c1, __c2)
                        in zip(_s1['seq_id'], _s2['seq_id'], _s1['comp_id'], _s2['comp_id'])
@@ -23427,11 +23133,11 @@ class NmrDpUtility:
                         else:
                             seq_id2.append(None)
                             comp_id2.append('.')
-                    ref_code = self.__get1LetterCodeSequence(comp_id1)
-                    test_code = self.__get1LetterCodeSequence(comp_id2)
-                    mid_code = get_middle_code(ref_code, test_code)
-                    ref_gauge_code = get_gauge_code(seq_id1, offset_1)
-                    test_gauge_code = get_gauge_code(seq_id2, offset_2)
+                    ref_code = getOneLetterCodeSequence(comp_id1)
+                    test_code = getOneLetterCodeSequence(comp_id2)
+                    mid_code = getMiddleCode(ref_code, test_code)
+                    ref_gauge_code = getGaugeCode(seq_id1, offset_1)
+                    test_gauge_code = getGaugeCode(seq_id2, offset_2)
                     if ' ' in ref_gauge_code:
                         for p, g in enumerate(ref_gauge_code):
                             if g == ' ':
@@ -23474,16 +23180,16 @@ class NmrDpUtility:
                 if length == 0:
                     continue
 
-                _matched, unmapped, conflict, offset_1, offset_2 = score_of_seq_align(myAlign)
+                _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
                 if length == unmapped + conflict or _matched <= conflict:
                     continue
 
-                _s1 = s1 if offset_1 == 0 else fill_blank_comp_id_with_offset(s1, offset_1)
-                _s2 = s2 if offset_2 == 0 else fill_blank_comp_id_with_offset(s2, offset_2)
+                _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)
+                _s2 = s2 if offset_2 == 0 else fillBlankCompIdWithOffset(s2, offset_2)
 
-                if conflict > 0 and has_large_seq_gap(_s1, _s2):  # DAOTHER-7465
-                    __s1, __s2 = beautify_seq_id(_s1, _s2)
+                if conflict > 0 and hasLargeSeqGap(_s1, _s2):  # DAOTHER-7465
+                    __s1, __s2 = beautifyPolySeq(_s1, _s2)
                     _s1_ = __s1
                     _s2_ = __s2
 
@@ -23495,7 +23201,7 @@ class NmrDpUtility:
 
                     length = len(myAlign)
 
-                    _matched, unmapped, _conflict, _offset_1, _offset_2 = score_of_seq_align(myAlign)
+                    _matched, unmapped, _conflict, _offset_1, _offset_2 = getScoreOfSeqAlign(myAlign)
 
                     if _conflict == 0 and len(__s1['comp_id']) - len(s1['comp_id']) == conflict:
                         conflict = 0
@@ -23506,11 +23212,11 @@ class NmrDpUtility:
 
                 ref_length = len(s1['seq_id'])
 
-                ref_code = self.__get1LetterCodeSequence(_s1['comp_id'])
-                test_code = self.__get1LetterCodeSequence(_s2['comp_id'])
-                mid_code = get_middle_code(ref_code, test_code)
-                ref_gauge_code = get_gauge_code(_s1['seq_id'])
-                test_gauge_code = get_gauge_code(_s2['seq_id'])
+                ref_code = getOneLetterCodeSequence(_s1['comp_id'])
+                test_code = getOneLetterCodeSequence(_s2['comp_id'])
+                mid_code = getMiddleCode(ref_code, test_code)
+                ref_gauge_code = getGaugeCode(_s1['seq_id'])
+                test_gauge_code = getGaugeCode(_s2['seq_id'])
 
                 if any((__s1, __s2) for (__s1, __s2, __c1, __c2)
                        in zip(_s1['seq_id'], _s2['seq_id'], _s1['comp_id'], _s2['comp_id'])
@@ -23547,11 +23253,11 @@ class NmrDpUtility:
                         else:
                             seq_id2.append(None)
                             comp_id2.append('.')
-                    ref_code = self.__get1LetterCodeSequence(comp_id1)
-                    test_code = self.__get1LetterCodeSequence(comp_id2)
-                    mid_code = get_middle_code(ref_code, test_code)
-                    ref_gauge_code = get_gauge_code(seq_id1, offset_1)
-                    test_gauge_code = get_gauge_code(seq_id2, offset_2)
+                    ref_code = getOneLetterCodeSequence(comp_id1)
+                    test_code = getOneLetterCodeSequence(comp_id2)
+                    mid_code = getMiddleCode(ref_code, test_code)
+                    ref_gauge_code = getGaugeCode(seq_id1, offset_1)
+                    test_gauge_code = getGaugeCode(seq_id2, offset_2)
                     if ' ' in ref_gauge_code:
                         for p, g in enumerate(ref_gauge_code):
                             if g == ' ':
@@ -23710,13 +23416,13 @@ class NmrDpUtility:
 
                     length = len(myAlign)
 
-                    _matched, unmapped, conflict, offset_1, offset_2 = score_of_seq_align(myAlign)
+                    _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
-                    _s1 = s1 if offset_1 == 0 else fill_blank_comp_id_with_offset(s1, offset_1)
-                    _s2 = s2 if offset_2 == 0 else fill_blank_comp_id_with_offset(s2, offset_2)
+                    _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)
+                    _s2 = s2 if offset_2 == 0 else fillBlankCompIdWithOffset(s2, offset_2)
 
-                    if conflict > 0 and has_large_seq_gap(_s1, _s2):  # DAOTHER-7465
-                        __s1, __s2 = beautify_seq_id(_s1, _s2)
+                    if conflict > 0 and hasLargeSeqGap(_s1, _s2):  # DAOTHER-7465
+                        __s1, __s2 = beautifyPolySeq(_s1, _s2)
                         _s1 = __s1
                         _s2 = __s2
 
@@ -23728,14 +23434,14 @@ class NmrDpUtility:
 
                         length = len(myAlign)
 
-                        _matched, unmapped, _conflict, _, _ = score_of_seq_align(myAlign)
+                        _matched, unmapped, _conflict, _, _ = getScoreOfSeqAlign(myAlign)
 
                         if _conflict == 0 and len(__s2['comp_id']) - len(s2['comp_id']) == conflict:
                             result['conflict'] = 0
                             s2 = __s2
 
-                    ref_code = self.__get1LetterCodeSequence(s1['comp_id'])
-                    test_code = self.__get1LetterCodeSequence(s2['comp_id'])
+                    ref_code = getOneLetterCodeSequence(s1['comp_id'])
+                    test_code = getOneLetterCodeSequence(s2['comp_id'])
 
                     for r_code, t_code, seq_id, seq_id2 in zip(ref_code, test_code, s1['seq_id'], s2['seq_id']):
                         if r_code == 'X' and t_code == 'X':
@@ -23920,14 +23626,14 @@ class NmrDpUtility:
 
                                 #     result['ref_code'] = ref_code
                                 #     result['ref_gauge_code'] = ref_gauge_code
-                                #     result['mid_code'] = get_middle_code(ref_code, test_code)
+                                #     result['mid_code'] = getMiddleCode(ref_code, test_code)
 
                                 #     _test_code = _test_code[0:p] + '-' + _test_code[p:]
                                 #     _test_gauge_code = _test_gauge_code[0:p] + ' ' + _test_gauge_code[p:]
 
                                 #     _result['test_code'] = _test_code
                                 #     _result['test_gauge_code'] = _test_gauge_code
-                                #     _result['mid_code'] = get_middle_code(_ref_code, _test_code)
+                                #     _result['mid_code'] = getMiddleCode(_ref_code, _test_code)
 
                                 #     offset_1 += 1
 
@@ -23952,14 +23658,14 @@ class NmrDpUtility:
 
                                 #     result['test_code'] = test_code
                                 #     result['test_gauge_code'] = test_gauge_code
-                                #     result['mid_code'] = get_middle_code(ref_code, test_code)
+                                #     result['mid_code'] = getMiddleCode(ref_code, test_code)
 
                                 #     _ref_code = _ref_code[0:p] + '-' + _ref_code[p:]
                                 #     _ref_gauge_code = _ref_gauge_code[0:p] + ' ' + _ref_gauge_code[p:]
 
                                 #     _result['ref_code'] = _ref_code
                                 #     _result['ref_gauge_code'] = _ref_gauge_code
-                                #     _result['mid_code'] = get_middle_code(_ref_code, _test_code)
+                                #     _result['mid_code'] = getMiddleCode(_ref_code, _test_code)
 
                                 #     offset_2 += 1
                                 # """
@@ -24076,13 +23782,13 @@ class NmrDpUtility:
 
                     length = len(myAlign)
 
-                    _matched, unmapped, conflict, offset_1, offset_2 = score_of_seq_align(myAlign)
+                    _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
-                    _s1 = s1 if offset_1 == 0 else fill_blank_comp_id_with_offset(s1, offset_1)
-                    _s2 = s2 if offset_2 == 0 else fill_blank_comp_id_with_offset(s2, offset_2)
+                    _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)
+                    _s2 = s2 if offset_2 == 0 else fillBlankCompIdWithOffset(s2, offset_2)
 
-                    if conflict > 0 and has_large_seq_gap(_s1, _s2):  # DAOTHER-7465
-                        __s1, __s2 = beautify_seq_id(_s1, _s2)
+                    if conflict > 0 and hasLargeSeqGap(_s1, _s2):  # DAOTHER-7465
+                        __s1, __s2 = beautifyPolySeq(_s1, _s2)
                         _s1 = __s1
                         _s2 = __s2
 
@@ -24094,7 +23800,7 @@ class NmrDpUtility:
 
                         length = len(myAlign)
 
-                        _matched, unmapped, _conflict, _, _ = score_of_seq_align(myAlign)
+                        _matched, unmapped, _conflict, _, _ = getScoreOfSeqAlign(myAlign)
 
                         if _conflict == 0 and len(__s1['comp_id']) - len(s1['comp_id']) == conflict:
                             result['conflict'] = 0
@@ -24230,7 +23936,7 @@ class NmrDpUtility:
 
                                     #     result['test_code'] = test_code
                                     #     result['test_gauge_code'] = test_gauge_code
-                                    #     result['mid_code'] = get_middle_code(ref_code, test_code)
+                                    #     result['mid_code'] = getMiddleCode(ref_code, test_code)
                                     # """
                             elif cif_comp_id != nmr_comp_id and aligned[i]:
 
@@ -24305,14 +24011,14 @@ class NmrDpUtility:
 
                                 #     result['ref_code'] = ref_code
                                 #     result['ref_gauge_code'] = ref_gauge_code
-                                #     result['mid_code'] = get_middle_code(ref_code, test_code)
+                                #     result['mid_code'] = getMiddleCode(ref_code, test_code)
 
                                 #     _test_code = _test_code[0:p] + '-' + _test_code[p:]
                                 #     _test_gauge_code = _test_gauge_code[0:p] + ' ' + _test_gauge_code[p:]
 
                                 #     _result['test_code'] = _test_code
                                 #     _result['test_gauge_code'] = _test_gauge_code
-                                #     _result['mid_code'] = get_middle_code(_ref_code, _test_code)
+                                #     _result['mid_code'] = getMiddleCode(_ref_code, _test_code)
 
                                 #     offset_1 += 1
 
@@ -24337,14 +24043,14 @@ class NmrDpUtility:
 
                                 #     result['test_code'] = test_code
                                 #     result['test_gauge_code'] = test_gauge_code
-                                #     result['mid_code'] = get_middle_code(ref_code, test_code)
+                                #     result['mid_code'] = getMiddleCode(ref_code, test_code)
 
                                 #     _ref_code = _ref_code[0:p] + '-' + _ref_code[p:]
                                 #     _ref_gauge_code = _ref_gauge_code[0:p] + ' ' + _ref_gauge_code[p:]
 
                                 #     _result['ref_code'] = _ref_code
                                 #     _result['ref_gauge_code'] = _ref_gauge_code
-                                #     _result['mid_code'] = get_middle_code(_ref_code, _test_code)
+                                #     _result['mid_code'] = getMiddleCode(_ref_code, _test_code)
 
                                 #     offset_2 += 1
                                 # """
@@ -24757,7 +24463,7 @@ class NmrDpUtility:
                 atom_id = i[atom_id_names[j]]
 
                 if content_subtype.startswith('spectral_peak')\
-                   and (chain_id in self.empty_value or seq_id in self.empty_value or comp_id in self.empty_value or atom_id in self.empty_value):
+                   and (chain_id in emptyValue or seq_id in emptyValue or comp_id in emptyValue or atom_id in emptyValue):
                     continue
 
                 if chain_id not in nmr2ca:
@@ -24857,8 +24563,8 @@ class NmrDpUtility:
                             _details = loop.data[l][details_col]
                             details = f"{chain_id}:{seq_id}:{comp_id}:{atom_name} is not present in the coordinate. "\
                                 "However, it is acceptable if an appropriate atom name, H1, is given because of a cyclic-peptide.\n"
-                            if _details in self.empty_value or (details not in _details):
-                                if _details in self.empty_value:
+                            if _details in emptyValue or (details not in _details):
+                                if _details in emptyValue:
                                     loop.data[l][details_col] = details
                                 else:
                                     loop.data[l][details_col] += ('' if '\n' in _details else '\n') + details
@@ -24866,7 +24572,7 @@ class NmrDpUtility:
 
                     elif ca['conflict'] == 0:  # no conflict in sequenc alignment
 
-                        if self.__get1LetterCode(comp_id) != 'X':
+                        if getOneLetterCode(comp_id) != 'X':
 
                             self.report.error.appendDescription('atom_not_found',
                                                                 {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
@@ -25459,28 +25165,28 @@ class NmrDpUtility:
 
                 if file_type == 'nef':
                     if 'residue_variant' in orig_lp_data[0]:
-                        if any(i for i in orig_lp_data if i['residue_variant'] not in self.empty_value):
+                        if any(i for i in orig_lp_data if i['residue_variant'] not in emptyValue):
                             has_res_var_dat = True
 
                 else:
                     if 'Auth_variant_ID' in orig_lp_data[0]:
-                        if any(i for i in orig_lp_data if i['Auth_variant_ID'] not in self.empty_value):
+                        if any(i for i in orig_lp_data if i['Auth_variant_ID'] not in emptyValue):
                             has_res_var_dat = True
 
                     if 'Auth_asym_ID' in orig_lp_data[0]:
-                        if any(i for i in orig_lp_data if i['Auth_asym_ID'] not in self.empty_value):
+                        if any(i for i in orig_lp_data if i['Auth_asym_ID'] not in emptyValue):
                             has_auth_asym_id = True
 
                     if 'Auth_seq_ID' in orig_lp_data[0]:
-                        if any(i for i in orig_lp_data if i['Auth_seq_ID'] not in self.empty_value):
+                        if any(i for i in orig_lp_data if i['Auth_seq_ID'] not in emptyValue):
                             has_auth_seq_id = True
 
                     if 'Auth_comp_ID' in orig_lp_data[0]:
-                        if any(i for i in orig_lp_data if i['Auth_comp_ID'] not in self.empty_value):
+                        if any(i for i in orig_lp_data if i['Auth_comp_ID'] not in emptyValue):
                             has_auth_comp_id = True
 
                     if 'NEF_index' in orig_lp_data[0]:
-                        if any(i for i in orig_lp_data if i['NEF_index'] not in self.empty_value):
+                        if any(i for i in orig_lp_data if i['NEF_index'] not in emptyValue):
                             has_nef_index = True
 
                     if 'Assembly_ID' in orig_lp_data[0]:
@@ -25589,15 +25295,15 @@ class NmrDpUtility:
                     _seq_id_ = auth_seq_id + seq_id_offset
                     comp_id = auth_comp_id.upper()
                     # """
-                    # if comp_id in self.empty_value and 'identical_chain_id' in s:
+                    # if comp_id in emptyValue and 'identical_chain_id' in s:
                     #     for s_ in polymer_sequence:
                     #         if s_['chain_id'] in s['identical_chain_id']:
                     #             auth_comp_id = s_['comp_id'][j]
                     #             comp_id = auth_comp_id.upper()
-                    #         if comp_id not in self.empty_value:
+                    #         if comp_id not in emptyValue:
                     #             break
 
-                    # if comp_id in self.empty_value:
+                    # if comp_id in emptyValue:
                     #     chain_assign_dic = self.report.chain_assignment.get()
                     #     if 'model_poly_seq_vs_nmr_poly_seq' in chain_assign_dic:
                     #         try:
@@ -26130,7 +25836,7 @@ class NmrDpUtility:
             star_chain = row[star_chain_index]
             star_seq = row[star_seq_index]
 
-            if star_chain in self.empty_value or star_seq in self.empty_value:
+            if star_chain in emptyValue or star_seq in emptyValue:
                 continue
 
             seq_key = (star_chain, star_seq)
@@ -28063,10 +27769,10 @@ class NmrDpUtility:
 
                         atom_id = row[atomIdCol]
 
-                        if row[atomTypeCol] in self.empty_value:
+                        if row[atomTypeCol] in emptyValue:
                             row[atomTypeCol] = atom_id[0]
 
-                        if row[isoNumCol] is self.empty_value:
+                        if row[isoNumCol] is emptyValue:
 
                             try:
                                 row[isoNumCol] = self.atom_isotopes[atom_id[0]][0]
@@ -28081,7 +27787,7 @@ class NmrDpUtility:
 
                         atom_id = row[atomIdCol]
 
-                        if row[atomTypeCol] in self.empty_value:
+                        if row[atomTypeCol] in emptyValue:
                             row[atomTypeCol] = atom_id[0]
 
                         try:
@@ -28100,7 +27806,7 @@ class NmrDpUtility:
 
                         atom_id = row[atomIdCol]
 
-                        if row[isoNumCol] is self.empty_value:
+                        if row[isoNumCol] is emptyValue:
 
                             try:
                                 row[isoNumCol] = self.atom_isotopes[atom_id[0]][0]
@@ -28399,7 +28105,7 @@ class NmrDpUtility:
                             atom_ids.append(i[atom_id_4_name])
                             angle_type = i[angle_type_name]
 
-                            if angle_type not in self.empty_value:
+                            if angle_type not in emptyValue:
                                 continue
 
                             if chain_id_1 != chain_id_2 or chain_id_2 != chain_id_3 or chain_id_3 != chain_id_4:
@@ -28734,7 +28440,7 @@ class NmrDpUtility:
 
                                 val = row[itCol]
 
-                                if val is self.empty_value:
+                                if val is emptyValue:
                                     continue
 
                                 try:
@@ -28846,7 +28552,7 @@ class NmrDpUtility:
 
                                 val = row[itCol]
 
-                                if val is self.empty_value:
+                                if val is emptyValue:
                                     continue
 
                                 try:
@@ -28945,7 +28651,7 @@ class NmrDpUtility:
                 mandatory_tag = False
 
             itName = g[0]
-            itValue = None if g[1] in self.empty_value else g[1]
+            itValue = None if g[1] in emptyValue else g[1]
             itEnum = [str(e.strip("'")) for e in re.sub(r"\', \'", "\',\'", g[2]).split(',')]
 
             if self.__star_data_type[0] == 'Entry' or self.__star_data_type[0] == 'Saveframe':
@@ -28995,7 +28701,7 @@ class NmrDpUtility:
                             itCol = tagNames.index(itName)
 
                             val = sf_data.tags[itCol][1]
-                            if val in self.empty_value:
+                            if val in emptyValue:
                                 val = None
 
                             if val is itValue or val == itValue:
@@ -29169,7 +28875,7 @@ class NmrDpUtility:
 
                                 val = row[itCol]
 
-                                if val is self.empty_value:
+                                if val is emptyValue:
                                     continue
 
                                 if val == itValue:
@@ -29583,7 +29289,7 @@ class NmrDpUtility:
                 atom_ids.append(i[atom_id_4_name])
                 angle_type = i[angle_type_name]
 
-                if angle_type in self.empty_value:
+                if angle_type in emptyValue:
                     continue
 
                 angle_type = angle_type.lower()
@@ -30313,7 +30019,7 @@ class NmrDpUtility:
 
                             val = row[itCol]
 
-                            if val is self.empty_value:
+                            if val is emptyValue:
                                 continue
 
                             if (file_type == 'nef' and itName.startswith('atom_name'))\
@@ -30340,7 +30046,7 @@ class NmrDpUtility:
 
                             val = row[itCol]
 
-                            if val is self.empty_value:
+                            if val is emptyValue:
                                 continue
 
                             if (file_type == 'nef' and itName.startswith('atom_name'))\
@@ -30459,10 +30165,10 @@ class NmrDpUtility:
 
                                     val = row[itCol]
 
-                                    if val is self.empty_value:
+                                    if val is emptyValue:
                                         continue
 
-                                    if val.lower() in self.true_value:
+                                    if val.lower() in trueValue:
                                         row[itCol] = yes_value
                                     else:
                                         row[itCol] = no_value
@@ -30479,10 +30185,10 @@ class NmrDpUtility:
 
                                     val = row[itCol]
 
-                                    if val is self.empty_value:
+                                    if val is emptyValue:
                                         continue
 
-                                    if val.lower() in self.true_value:
+                                    if val.lower() in trueValue:
                                         row[itCol] = yes_value
                                     else:
                                         row[itCol] = no_value
@@ -30564,10 +30270,10 @@ class NmrDpUtility:
 
                                             val = row[itCol]
 
-                                            if val is self.empty_value:
+                                            if val is emptyValue:
                                                 continue
 
-                                            if val.lower() in self.true_value:
+                                            if val.lower() in trueValue:
                                                 row[itCol] = yes_value
                                             else:
                                                 row[itCol] = no_value
@@ -30584,10 +30290,10 @@ class NmrDpUtility:
 
                                             val = row[itCol]
 
-                                            if val is self.empty_value:
+                                            if val is emptyValue:
                                                 continue
 
-                                            if val.lower() in self.true_value:
+                                            if val.lower() in trueValue:
                                                 row[itCol] = yes_value
                                             else:
                                                 row[itCol] = no_value
@@ -30659,7 +30365,7 @@ class NmrDpUtility:
 
                             val = row[itCol]
 
-                            if val is self.empty_value:
+                            if val is emptyValue:
                                 continue
 
                             list_ids.append(val)
@@ -30711,7 +30417,7 @@ class NmrDpUtility:
 
         if self.__star_data_type[0] == 'Entry':
             if self.__release_mode:
-                self.__star_data[0].entry_id = self.__entry_id + ('' if self.release_type[file_type] in self.empty_value else ('_' + self.release_type[file_type]))
+                self.__star_data[0].entry_id = self.__entry_id + ('' if self.release_type[file_type] in emptyValue else ('_' + self.release_type[file_type]))
             else:
                 self.__star_data[0].entry_id = self.__entry_id + '_' + self.content_type[file_type]
 
@@ -31033,7 +30739,7 @@ class NmrDpUtility:
 
                     ambig_set_id = row[ambig_set_id_col]
 
-                    if ambig_set_id not in self.empty_value:
+                    if ambig_set_id not in emptyValue:
                         ambig_set_ids.append(str(ambig_set_id))
 
                 if len(ambig_set_ids) > 0:
@@ -31057,7 +30763,7 @@ class NmrDpUtility:
                 for row in loop:
                     ambig_set_id = row[ambig_set_id_col]
 
-                    if ambig_set_id not in self.empty_value:
+                    if ambig_set_id not in emptyValue:
                         row[ambig_set_id_col] = int(ambig_set_id_dic[str(ambig_set_id)])
 
             if 'ID' in loop.tags:
@@ -31156,7 +30862,7 @@ class NmrDpUtility:
 
                 for i in lp_data:
 
-                    if ambig_set_id_name in i and i[ambig_set_id_name] not in self.empty_value:
+                    if ambig_set_id_name in i and i[ambig_set_id_name] not in emptyValue:
                         has_ambig_set_id = True
                         break
 
@@ -31180,7 +30886,7 @@ class NmrDpUtility:
 
                     for l, i in enumerate(lp_data, start=1):  # noqa: E741
 
-                        if ambig_set_id_name in i and i[ambig_set_id_name] not in self.empty_value:
+                        if ambig_set_id_name in i and i[ambig_set_id_name] not in emptyValue:
 
                             row = []
 

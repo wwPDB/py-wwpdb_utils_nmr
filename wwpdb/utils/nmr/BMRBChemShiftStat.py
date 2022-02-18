@@ -36,8 +36,8 @@ def load_stat_from_pickle(file_name):
 
     if os.path.exists(file_name):
 
-        with open(file_name, 'rb') as f:
-            return pickle.load(f)
+        with open(file_name, 'rb') as ifp:
+            return pickle.load(ifp)
 
     return []
 
@@ -46,8 +46,8 @@ def write_stat_as_pickle(atm_list, file_name):
     """ Write BMRB chemical shift statistics as pickle file.
     """
 
-    with open(file_name, 'wb') as f:
-        pickle.dump(atm_list, f)
+    with open(file_name, 'wb') as ofp:
+        pickle.dump(atm_list, ofp)
 
 
 class BMRBChemShiftStat:
@@ -721,8 +721,8 @@ class BMRBChemShiftStat:
 
         atm_list = []
 
-        with open(file_name, 'r', encoding='UTF-8') as f:
-            reader = csv.DictReader(f)
+        with open(file_name, 'r', encoding='UTF-8') as ifp:
+            reader = csv.DictReader(ifp)
 
             for row in reader:
 

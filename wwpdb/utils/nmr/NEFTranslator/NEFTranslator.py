@@ -98,6 +98,9 @@ from packaging import version
 
 from wwpdb.utils.config.ConfigInfo import getSiteId
 from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommon
+from wwpdb.utils.nmr.AlignUtil import (emptyValue, trueValue,
+                                       intPattern, badPattern,
+                                       getOneLetterCode)
 from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
 from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 
@@ -262,6 +265,33 @@ def get_sf_tag_values_with_empty_loop(star_data, lp_category, sf_category):
     return sf_framecodes
 
 
+def is_empty(data):
+    """ Check if given data has empty code.
+        @author: Masashi Yokochi
+        @return: True for empty data, False otherwise
+    """
+
+    return any(d in emptyValue for d in data)
+
+
+def is_data(data):
+    """ Check if given data has no empty code.
+        @author: Masashi Yokochi
+        @return: True for non-empty data, False for empty data
+    """
+
+    return not any(d in emptyValue for d in data)
+
+
+def is_good_data(data):
+    """ Check if given data has either no empty or bad pattern.
+        @author: Masashi Yokochi
+        @return: True for good data, False otherwise
+    """
+
+    return not any(d in emptyValue or badPattern.match(d) for d in data)
+
+
 class NEFTranslator:
     """ Bi-directional translator between NEF and NMR-STAR
     """
@@ -290,12 +320,6 @@ class NEFTranslator:
 
         # format name
         self.nef_format_name = 'nmr_exchange_format'
-
-        # empty value
-        self.empty_value = (None, '', '.', '?')
-
-        # true value
-        self.true_value = ('true', 't', 'yes', 'y', '1')
 
         # NEF boolean values
         self.nef_boolean = ('true', 'false')
@@ -415,43 +439,6 @@ class NEFTranslator:
                          #
                          "N": ["OP3", "P", "OP1", "OP2", "O5'", "C5'", "C4'", "O4'", "C3'", "O3'", "C2'", "O2'", "C1'", "HOP3", "HOP2",
                                "H5'", "H5''", "H4'", "H3'", "HO3'", "H2'", "HO2'", "H1'", "H1'2"],
-                         }
-
-        # taken from wwpdb.utils.align.SequenceReferenceData.py
-        self.monDict3 = {'ALA': 'A',
-                         'ARG': 'R',
-                         'ASN': 'N',
-                         'ASP': 'D',
-                         'ASX': 'B',
-                         'CYS': 'C',
-                         'GLN': 'Q',
-                         'GLU': 'E',
-                         'GLX': 'Z',
-                         'GLY': 'G',
-                         'HIS': 'H',
-                         'ILE': 'I',
-                         'LEU': 'L',
-                         'LYS': 'K',
-                         'MET': 'M',
-                         'PHE': 'F',
-                         'PRO': 'P',
-                         'SER': 'S',
-                         'THR': 'T',
-                         'TRP': 'W',
-                         'TYR': 'Y',
-                         'VAL': 'V',
-                         'DA': 'A',
-                         'DC': 'C',
-                         'DG': 'G',
-                         'DT': 'T',
-                         'DU': 'U',
-                         'DI': 'I',
-                         'A': 'A',
-                         'C': 'C',
-                         'G': 'G',
-                         'I': 'I',
-                         'T': 'T',
-                         'U': 'U'
                          }
 
         # limit number of dimensions
@@ -799,10 +786,6 @@ class NEFTranslator:
         self.entity_del_atom_row = ['ID', 'Entity_assembly_ID', 'Comp_index_ID', 'Comp_ID', 'Atom_ID',
                                     'Auth_entity_assembly_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_atom_ID', 'Assembly_ID']
 
-        self.int_pattern = re.compile(r'^([+-]?[1-9]\d*|0)$')
-
-        self.bad_pattern = re.compile(r'.*[\!\$\&\(\)\=\~\^\\\|\`\@\{\}\[\]\;\:\<\>\,\/].*')
-
     def read_input_file(self, in_file):  # pylint: disable=no-self-use
         """ Read input NEF/NMR-STAR file.
             @param in_file: input NEF/NMR-STAR file path
@@ -860,23 +843,6 @@ class NEFTranslator:
         #     msg = str(e)
         #
         return is_ok, msg, star_data
-
-    def get_one_letter_code(self, comp_id):
-        """ Convert comp ID to 1-letter code.
-            @change: support empty value by Masashi Yokochi
-            @param comp_id: chemical component id
-            @return: 1-letter code for a given comp_id
-        """
-
-        comp_id = comp_id.upper()
-
-        if comp_id in self.monDict3:
-            return self.monDict3[comp_id]
-
-        if comp_id in self.empty_value:
-            return '.'
-
-        return 'X'
 
     def check_mandatory_tags(self, in_file=None, file_type=None):
         """ Returns list of missing mandatory saveframe/loop tags of the input file.
@@ -1277,30 +1243,6 @@ class NEFTranslator:
 
         return is_valid, {'info': info, 'warning': warning, 'error': error, 'file_type': file_type}
 
-    def is_empty(self, data):
-        """ Check if given data has empty code.
-            @author: Masashi Yokochi
-            @return: True for empty data, False otherwise
-        """
-
-        return any(d in self.empty_value for d in data)
-
-    def is_data(self, data):
-        """ Check if given data has no empty code.
-            @author: Masashi Yokochi
-            @return: True for non-empty data, False for empty data
-        """
-
-        return not any(d in self.empty_value for d in data)
-
-    def is_good_data(self, data):
-        """ Check if given data has either no empty or bad pattern.
-            @author: Masashi Yokochi
-            @return: True for good data, False otherwise
-        """
-
-        return not any(d in self.empty_value or self.bad_pattern.match(d) for d in data)
-
     def resolve_sf_names_for_cif(self, star_data, data_type):  # pylint: disable=no-self-use # DAOTHER-7389, issue #4
         """ Resolve saveframe names to prevent case-insensitive name collisions occur in CIF format.
             @return: status, list of correction messages, dictionary of saveframe name corrections
@@ -1451,7 +1393,7 @@ class NEFTranslator:
             if set(tags) & set(loop.tags) == set(tags):
                 seq_data = get_lp_tag(loop, tags)
                 for i in seq_data:
-                    if i[2] in self.empty_value:
+                    if i[2] in emptyValue:
                         i[2] = 1
             else:
                 _tags_exist = False
@@ -1466,13 +1408,13 @@ class NEFTranslator:
                     raise LookupError(f"Missing mandatory {missing_tags} loop tag(s).")
 
             if allow_empty:
-                # seq_data = list(filter(self.is_data, seq_data))
-                seq_data = list(filter(self.is_good_data, seq_data))  # DAOTHER-7389, issue #3
+                # seq_data = list(filter(is_data, seq_data))
+                seq_data = list(filter(is_good_data, seq_data))  # DAOTHER-7389, issue #3
                 if len(seq_data) == 0:
                     continue
             else:
                 for l, i in enumerate(seq_data):  # noqa: E741
-                    if self.is_empty(i) and l < len_loop_data:
+                    if is_empty(i) and l < len_loop_data:
                         r = {}
                         for j, t in enumerate(loop.tags):
                             r[t] = loop.data[l][j]
@@ -1631,12 +1573,12 @@ class NEFTranslator:
             if set(tags) & set(loop.tags) == set(tags):
                 seq_data = get_lp_tag(loop, tags)
                 for i in seq_data:
-                    if i[2] in self.empty_value:
+                    if i[2] in emptyValue:
                         i[2] = '1'
             elif set(tags__) & set(loop.tags) == set(tags__):  # DAOTHER-7421
                 seq_data = get_lp_tag(loop, tags__)
                 for i in seq_data:
-                    i[2] = '1' if i[2] in self.empty_value else str(self.letter_to_int(i[2], 1))
+                    i[2] = '1' if i[2] in emptyValue else str(self.letter_to_int(i[2], 1))
             elif set(tags_) & set(loop.tags) == set(tags_):  # No Entity_assembly_ID tag case
                 seq_data = get_lp_tag(loop, tags_)
                 for i in seq_data:
@@ -1651,14 +1593,14 @@ class NEFTranslator:
                         _tags_exist = True
                         seq_data_ = get_lp_tag(loop, _tags)
                         for i in seq_data_:
-                            if i[2] in self.empty_value:
+                            if i[2] in emptyValue:
                                 i[2] = '1'
                         seq_data += seq_data_
                     elif set(_tags__) & set(loop.tags) == set(_tags__):  # DAOTHER-7421
                         _tags_exist = True
                         seq_data_ = get_lp_tag(loop, _tags__)
                         for i in seq_data_:
-                            i[2] = '1' if i[2] in self.empty_value else str(self.letter_to_int(i[2], 1))
+                            i[2] = '1' if i[2] in emptyValue else str(self.letter_to_int(i[2], 1))
                         seq_data += seq_data_
                     elif set(_tags_) & set(loop.tags) == set(_tags_):
                         _tags_exist = True
@@ -1672,13 +1614,13 @@ class NEFTranslator:
                     raise LookupError(f"Missing mandatory {missing_tags} loop tag(s).")
 
             if allow_empty:
-                # seq_data = list(filter(self.is_data, seq_data))
-                seq_data = list(filter(self.is_good_data, seq_data))  # DAOTHER-7389, issue #3
+                # seq_data = list(filter(is_data, seq_data))
+                seq_data = list(filter(is_good_data, seq_data))  # DAOTHER-7389, issue #3
                 if len(seq_data) == 0:
                     continue
             else:
                 for l, i in enumerate(seq_data):  # noqa: E741
-                    if self.is_empty(i) and l < len_loop_data:
+                    if is_empty(i) and l < len_loop_data:
                         r = {}
                         for j, t in enumerate(loop.tags):
                             r[t] = loop.data[l][j]
@@ -1862,13 +1804,13 @@ class NEFTranslator:
                     raise LookupError(f"Missing mandatory {missing_tags} loop tag(s).")
 
             if allow_empty:
-                # seq_data = list(filter(self.is_data, seq_data))
-                seq_data = list(filter(self.is_good_data, seq_data))  # DAOTHER-7389, issue #3
+                # seq_data = list(filter(is_data, seq_data))
+                seq_data = list(filter(is_good_data, seq_data))  # DAOTHER-7389, issue #3
                 if len(seq_data) == 0:
                     continue
             else:
                 for l, i in enumerate(seq_data):  # noqa: E741
-                    if self.is_empty(i) and l < len_loop_data:
+                    if is_empty(i) and l < len_loop_data:
                         r = {}
                         for j, t in enumerate(loop.tags):
                             r[t] = loop.data[l][j]
@@ -2027,13 +1969,13 @@ class NEFTranslator:
                     raise LookupError(f"Missing mandatory {missing_tags} loop tag(s).")
 
             if allow_empty:
-                # pair_data = list(filter(self.is_data, pair_data))
-                pair_data = list(filter(self.is_good_data, pair_data))  # DAOTHER-7389, issue #3
+                # pair_data = list(filter(is_data, pair_data))
+                pair_data = list(filter(is_good_data, pair_data))  # DAOTHER-7389, issue #3
                 if len(pair_data) == 0:
                     continue
             else:
                 for l, i in enumerate(pair_data):  # noqa: E741
-                    if self.is_empty(i) and l < len_loop_data:
+                    if is_empty(i) and l < len_loop_data:
                         r = {}
                         for j, t in enumerate(loop.tags):
                             r[t] = loop.data[l][j]
@@ -2043,7 +1985,7 @@ class NEFTranslator:
             if len(user_warn_msg) > 0:
                 raise UserWarning(user_warn_msg)
 
-            comps = sorted(set(i[0].upper() for i in pair_data if i[0] not in self.empty_value))
+            comps = sorted(set(i[0].upper() for i in pair_data if i[0] not in emptyValue))
             sorted_comp_atom = sorted(set(f"{i[0].upper()} {i[1]}" for i in pair_data))
 
             for c in comps:
@@ -2084,7 +2026,7 @@ class NEFTranslator:
 
         return self.get_atom_type_from_cs_loop(star_data, lp_category, atom_type, isotope_number, atom_id, allow_empty)
 
-    def get_atom_type_from_cs_loop(self, star_data, lp_category, atom_type, isotope_number, atom_id, allow_empty):
+    def get_atom_type_from_cs_loop(self, star_data, lp_category, atom_type, isotope_number, atom_id, allow_empty):  # pylint: disable=no-self-use
         """ Extract unique pairs of atom_type, isotope number, and atom_id from assigned chemical shifts in n NEF/NMR-SAR file.
             @author: Masashi Yokochi
             @return: list of unique pairs of atom_type, isotope number, and atom_id for each CS loop
@@ -2122,13 +2064,13 @@ class NEFTranslator:
             a_type_data = get_lp_tag(loop, tags)
 
             if allow_empty:
-                # a_type_data = list(filter(self.is_data, a_type_data))
-                a_type_data = list(filter(self.is_good_data, a_type_data))  # DAOTHER-7389, issue #3
+                # a_type_data = list(filter(is_data, a_type_data))
+                a_type_data = list(filter(is_good_data, a_type_data))  # DAOTHER-7389, issue #3
                 if len(a_type_data) == 0:
                     continue
             else:
                 for l, i in enumerate(a_type_data):  # noqa: E741
-                    if self.is_empty(i) and l < len_loop_data:
+                    if is_empty(i) and l < len_loop_data:
                         r = {}
                         for j, t in enumerate(loop.tags):
                             r[t] = loop.data[l][j]
@@ -2154,7 +2096,7 @@ class NEFTranslator:
                 a_types = sorted(set(i[0] for i in a_type_data))
                 sorted_ist = sorted(set(f"{i[0]} {i[1]}" for i in a_type_data))
                 sorted_atm = sorted(set(f"{i[0]} {i[2]}" for i in a_type_data
-                                        if not (i[2] in self.empty_value or self.bad_pattern.match(i[2]))))  # DAOTHER-7389, issue #3
+                                        if not (i[2] in emptyValue or badPattern.match(i[2]))))  # DAOTHER-7389, issue #3
 
                 for t in a_types:
                     ist_dict[t] = [int(i.split(' ')[1]) for i in sorted_ist if i.split(' ')[0] == t]
@@ -2224,11 +2166,11 @@ class NEFTranslator:
 
             for l, i in enumerate(ambig_data):  # noqa: E741
                 # already checked elsewhere
-                # if i[0] in self.empty_value:
+                # if i[0] in emptyValue:
                 #   raise ValueError(f"{comp_id} must not be empty.")
-                # if i[1] in self.empty_value:
+                # if i[1] in emptyValue:
                 #    raise ValueError(f"{comp_id} must not be empty.")
-                if i[2] not in self.empty_value:
+                if i[2] not in emptyValue:
 
                     try:
                         code = int(i[2])
@@ -2249,7 +2191,7 @@ class NEFTranslator:
                                 f"#_of_row {l + 1}, data_of_row {r}.\n"
 
                     if code >= 4:
-                        if i[3] in self.empty_value and l < len_loop_data:
+                        if i[3] in emptyValue and l < len_loop_data:
                             r = {}
                             for j, t in enumerate(loop.tags):
                                 r[t] = loop.data[l][j]
@@ -2266,9 +2208,9 @@ class NEFTranslator:
                                     user_warn_msg += f"[Invalid data] {ambig_set_id} must be an integer. "\
                                         f"#_of_row {l + 1}, data_of_row {r}.\n"
 
-                if i[3] not in self.empty_value:
+                if i[3] not in emptyValue:
 
-                    if i[2] in self.empty_value or i[2] not in ('4', '5', '6', '9'):
+                    if i[2] in emptyValue or i[2] not in ('4', '5', '6', '9'):
                         if l < len_loop_data:
                             r = {}
                             for j, t in enumerate(loop.tags):
@@ -2280,8 +2222,8 @@ class NEFTranslator:
                 raise UserWarning(user_warn_msg)
 
             _ambig_data = [i for i in ambig_data
-                           if not (i[0] in self.empty_value or self.bad_pattern.match(i[0]))
-                           and not (i[1] in self.empty_value or self.bad_pattern.match(i[1]))]  # DAOTHER-7389, issue #3
+                           if not (i[0] in emptyValue or badPattern.match(i[0]))
+                           and not (i[1] in emptyValue or badPattern.match(i[1]))]  # DAOTHER-7389, issue #3
 
             if len(_ambig_data) == 0:
                 continue
@@ -2300,7 +2242,7 @@ class NEFTranslator:
                 split_a = a.split(':')
 
                 ent['comp_id'] = split_a[0]
-                ent['ambig_code'] = None if split_a[1] in self.empty_value else int(split_a[1])
+                ent['ambig_code'] = None if split_a[1] in emptyValue else int(split_a[1])
                 ent['atom_id'] = atm_dict[a]
 
                 asm.append(ent)
@@ -2326,7 +2268,7 @@ class NEFTranslator:
 
         return self.get_index(star_data, lp_category, index_id)
 
-    def get_index(self, star_data, lp_category, index_id):
+    def get_index(self, star_data, lp_category, index_id):  # pylint: disable=no-self-use
         """ Extract index_id from any given loops in an NEF/NMR-STAR file.
             @author: Masashi Yokochi
             @return: list of index for each loop
@@ -2360,7 +2302,7 @@ class NEFTranslator:
                 raise LookupError(f"Missing mandatory {index_id} loop tag.")
 
             for l, i in enumerate(index_data):  # noqa: E741
-                if self.is_empty(i) and l < len_loop_data:
+                if is_empty(i) and l < len_loop_data:
                     r = {}
                     for j, t in enumerate(loop.tags):
                         r[t] = loop.data[l][j]
@@ -2648,7 +2590,7 @@ class NEFTranslator:
             if not excl_missing_data:
                 for l, i in enumerate(tag_data):  # noqa: E741
                     for j in range(tag_len):
-                        if i[j] in self.empty_value:
+                        if i[j] in emptyValue:
                             name = tags[j]
                             if name in key_names:
                                 k = key_items[key_names.index(name)]
@@ -2686,7 +2628,7 @@ class NEFTranslator:
 
                         if len(relax_key_ids) > 0:
                             for j in relax_key_ids:
-                                if i[j] is not self.empty_value:
+                                if i[j] is not emptyValue:
                                     relax_key = True
                                     break
 
@@ -2741,7 +2683,7 @@ class NEFTranslator:
                             for j in range(key_len):
                                 msg += key_names[j] + ' ' + i[j] + ', '
                             for j in relax_key_ids:
-                                if i[j] not in self.empty_value:
+                                if i[j] not in emptyValue:
                                     msg += tags[j] + ' ' + i[j] + ', '
 
                             idx_msg = ''
@@ -2788,7 +2730,7 @@ class NEFTranslator:
                         type = k['type']  # pylint: disable=redefined-builtin
                         if type == 'bool':
                             try:
-                                ent[name] = val.lower() in self.true_value
+                                ent[name] = val.lower() in trueValue
                             except ValueError:
                                 if excl_missing_data:
                                     missing_mandatory_data = True
@@ -3051,11 +2993,11 @@ class NEFTranslator:
                                 raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
                                                  + f"{name} {val!r} must be {self.readable_item_type[type]}.")
                         else:
-                            if val in self.empty_value:
+                            if val in emptyValue:
                                 missing_mandatory_data = True
                                 continue
                             if ('remove-bad-pattern' in k and k['remove-bad-pattern']) or ('clear-bad-pattern' in k and k['clear-bad-pattern']):
-                                if self.bad_pattern.match(val):
+                                if badPattern.match(val):
                                     if 'remove-bad-pattern' in k and k['remove-bad-pattern']:
                                         remove_bad_pattern = True
                                         continue
@@ -3071,14 +3013,14 @@ class NEFTranslator:
                         for d in data_items:
                             if d['name'] == name:
                                 type = d['type']
-                                if val in self.empty_value and ('enum' in type or ('default-from' not in d and 'default' not in d)):
+                                if val in emptyValue and ('enum' in type or ('default-from' not in d and 'default' not in d)):
                                     if d['mandatory'] and excl_missing_data:
                                         missing_mandatory_data = True
                                         continue
                                     ent[name] = None
                                 elif type == 'bool':
                                     try:
-                                        ent[name] = val.lower() in self.true_value
+                                        ent[name] = val.lower() in trueValue
                                     except ValueError:
                                         if excl_missing_data:
                                             ent[name] = None
@@ -3354,7 +3296,7 @@ class NEFTranslator:
                                                          + f"{name} {val!r} must be {self.readable_item_type[type]}.")
                                 else:
                                     if ('remove-bad-pattern' in d and d['remove-bad-pattern']) or ('clear-bad-pattern' in d and d['clear-bad-pattern']):
-                                        if self.bad_pattern.match(val):
+                                        if badPattern.match(val):
                                             if 'remove-bad-pattern' in d and d['remove-bad-pattern']:
                                                 remove_bad_pattern = True
                                                 continue
@@ -3698,7 +3640,7 @@ class NEFTranslator:
 
         return data
 
-    def get_bad_pattern_id(self, star_data, lp_category, key_items, data_items):
+    def get_bad_pattern_id(self, star_data, lp_category, key_items, data_items):  # pylint: disable=no-self-use
         """ Return list of row IDs with bad patterns
             @author: Masashi Yokochi
             @return: list of row IDs in reverse order for each loop
@@ -3728,7 +3670,7 @@ class NEFTranslator:
 
             for tag, i in enumerate(get_lp_tag(loop, key_names)):
 
-                if any(self.bad_pattern.match(d) for d in i):
+                if any(badPattern.match(d) for d in i):
                     bad_ids.add(tag)
 
             data.append(sorted(list(bad_ids), reverse=True))
@@ -3803,7 +3745,7 @@ class NEFTranslator:
                         raise LookupError(f"Missing mandatory {missing_tags} saveframe tag(s).")
 
         for name, val in sf_tags.items():
-            if val in self.empty_value:
+            if val in emptyValue:
                 for t in tag_items:
                     if t['name'] == name and t['mandatory'] and 'default' not in t:
                         raise ValueError(f"{name} must not be empty.")
@@ -3814,11 +3756,11 @@ class NEFTranslator:
             for t in tag_items:
                 if t['name'] == name:
                     type = t['type']  # pylint: disable=redefined-builtin
-                    if val in self.empty_value and 'enum' not in type and 'default-from' not in t and 'default' not in t:
+                    if val in emptyValue and 'enum' not in type and 'default-from' not in t and 'default' not in t:
                         ent[name] = None
                     elif type == 'bool':
                         try:
-                            ent[name] = val.lower() in self.true_value
+                            ent[name] = val.lower() in trueValue
                         except ValueError:
                             raise ValueError(f"{name} {val!r} must be {self.readable_item_type[type]}.")
                     elif type == 'int':
@@ -3929,7 +3871,7 @@ class NEFTranslator:
                             else:
                                 user_warn_msg += f"[Range value error] {name} {val} must be within range {_range}.\n"
                     elif type == 'enum':
-                        if val in self.empty_value:
+                        if val in emptyValue:
                             val = '?'  # '.' raises internal error in NmrDpUtility
                         try:
                             enum = t['enum']
@@ -3956,7 +3898,7 @@ class NEFTranslator:
                                     raise ValueError(f"{name} {val!r} must be one of {enum}.")
                                 elif enforce_enum:
                                     user_warn_msg += f"[Enumeration error] {name} {val!r} should be one of {enum}.\n"
-                            ent[name] = None if val in self.empty_value else val
+                            ent[name] = None if val in emptyValue else val
                         except KeyError:
                             raise ValueError(f"Enumeration of tag item {name} is not defined.")
                     elif type == 'enum-int':
@@ -4049,7 +3991,7 @@ class NEFTranslator:
 
         comp_id = comp_id.upper()
 
-        if comp_id in self.empty_value:
+        if comp_id in emptyValue:
             return False
 
         atoms = []
@@ -4097,7 +4039,7 @@ class NEFTranslator:
                     _comp_id = j[0].upper()
                     _atom_id = j[1].upper()
 
-                    if _comp_id in self.empty_value:
+                    if _comp_id in emptyValue:
                         valid_row.append(j)
 
                     elif _comp_id in self.atomDict:
@@ -4386,10 +4328,10 @@ class NEFTranslator:
 
         comp_id = comp_id.upper()
 
-        if comp_id in self.empty_value:
+        if comp_id in emptyValue:
             return [], None, None
 
-        comp_code = self.get_one_letter_code(comp_id)
+        comp_code = getOneLetterCode(comp_id)
 
         atom_list = []
         ambiguity_code = 1
@@ -4538,7 +4480,7 @@ class NEFTranslator:
 
         comp_id = comp_id.upper()
 
-        if comp_id in self.empty_value:
+        if comp_id in emptyValue:
             return [], None, None
 
         atom_list = []
@@ -4614,7 +4556,7 @@ class NEFTranslator:
 
                     atom_id = _atom_id
 
-                if _ambig_code in self.empty_value:
+                if _ambig_code in emptyValue:
                     ambig_code = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
                     if atom_id.endswith("'"):
                         ambig_code = 1
@@ -5097,7 +5039,7 @@ class NEFTranslator:
                             out[star_tags.index(auth_tag)] = str(_cif_seq)
                     else:
                         out[star_tags.index(auth_tag)] = data
-                        if j == '_nef_sequence.residue_variant' and data not in self.empty_value and '-' in data:
+                        if j == '_nef_sequence.residue_variant' and data not in emptyValue and '-' in data:
                             variant = data
 
                     if auth_tag != data_tag:
@@ -5109,7 +5051,7 @@ class NEFTranslator:
                         elif j == '_nef_sequence.sequence_code':
                             out[data_index] = _star_seq
                         elif data in self.nef_boolean:
-                            out[data_index] = 'yes' if data in self.true_value else 'no'
+                            out[data_index] = 'yes' if data in trueValue else 'no'
                         else:
                             out[data_index] = data
 
@@ -5283,9 +5225,9 @@ class NEFTranslator:
                         else:
                             out[data_index] = _cif_seq
                     elif data in self.star_boolean:
-                        out[data_index] = 'true' if data in self.true_value else 'false'
+                        out[data_index] = 'true' if data in trueValue else 'false'
                     elif nef_tag == '_nef_sequence.residue_variant':
-                        if data not in self.empty_value or entity_del_atom_loop is None:
+                        if data not in emptyValue or entity_del_atom_loop is None:
                             out[data_index] = data
                         else:
                             star_atom_list = [{'atom_id': k[aux_atom_index], 'ambig_code': None, 'value': None} for k in entity_del_atom_loop
@@ -5393,7 +5335,7 @@ class NEFTranslator:
                             out[star_tags.index(auth_tag)] = str(_cif_seq)
                     else:
                         out[star_tags.index(auth_tag)] = data
-                        if data_tag == '_Chem_comp_assembly.Auth_variant_ID' and data not in self.empty_value and '-' in data:
+                        if data_tag == '_Chem_comp_assembly.Auth_variant_ID' and data not in emptyValue and '-' in data:
                             variant = data
 
                     if auth_tag != data_tag:
@@ -5505,7 +5447,7 @@ class NEFTranslator:
 
                 nef_chain = i[nef_tags.index(chain_tag)]
                 _nef_seq = i[nef_tags.index(seq_tag)]
-                if isinstance(_nef_seq, str) and _nef_seq not in self.empty_value:
+                if isinstance(_nef_seq, str) and _nef_seq not in emptyValue:
                     _nef_seq = int(_nef_seq)
 
                 seq_key = (nef_chain, _nef_seq)
@@ -5669,7 +5611,7 @@ class NEFTranslator:
 
                 in_star_chain = i[in_star_tags.index(chain_tag)]
                 _in_star_seq = i[in_star_tags.index(seq_tag)]
-                if isinstance(_in_star_seq, str) and _in_star_seq not in self.empty_value:
+                if isinstance(_in_star_seq, str) and _in_star_seq not in emptyValue:
                     _in_star_seq = int(_in_star_seq)
 
                 seq_key = (in_star_chain, _in_star_seq)
@@ -5819,8 +5761,8 @@ class NEFTranslator:
             mapped_seq_id = [s for c, s in self.authSeqMap if c == nef_chain]
             unmapped_seq_id = sorted(set(int(i[seq_index]) for i in loop_data
                                          if i[chain_index] == nef_chain
-                                         and i[seq_index] not in self.empty_value
-                                         and self.int_pattern.match(i[seq_index]) is not None
+                                         and i[seq_index] not in emptyValue
+                                         and intPattern.match(i[seq_index]) is not None
                                          and int(i[seq_index]) not in mapped_seq_id))
 
             if len(unmapped_seq_id) > 0:
@@ -5840,7 +5782,7 @@ class NEFTranslator:
                     _cif_seq = _nef_seq
 
                 in_row = [i for i in loop_data
-                          if i[chain_index] == nef_chain and i[seq_index] == nef_seq and i[value_index] not in self.empty_value]
+                          if i[chain_index] == nef_chain and i[seq_index] == nef_seq and i[value_index] not in emptyValue]
 
                 if len(in_row) == 0:
                     continue
@@ -5929,8 +5871,8 @@ class NEFTranslator:
             mapped_seq_id = [s for c, s in self.authSeqMap if c == _star_chain]
             unmapped_seq_id = set(int(i[seq_index]) for i in loop_data
                                   if i[chain_index] == star_chain
-                                  and i[seq_index] not in self.empty_value
-                                  and self.int_pattern.match(i[seq_index]) is not None
+                                  and i[seq_index] not in emptyValue
+                                  and intPattern.match(i[seq_index]) is not None
                                   and int(i[seq_index]) not in mapped_seq_id)
 
             if len(unmapped_seq_id) > 0:
@@ -5941,7 +5883,7 @@ class NEFTranslator:
                 star_seq = str(_star_seq)
 
                 in_row = [i for i in loop_data
-                          if i[chain_index] == star_chain and i[seq_index] == star_seq and i[value_index] not in self.empty_value]
+                          if i[chain_index] == star_chain and i[seq_index] == star_seq and i[value_index] not in emptyValue]
 
                 if len(in_row) == 0:
                     continue
@@ -5962,7 +5904,7 @@ class NEFTranslator:
                         cif_chain = self.selfSeqMap[(_star_chain, 1)][0]
                         _cif_seq = _star_seq
                     except KeyError:
-                        if _star_chain in self.empty_value or _star_chain not in self.authChainId:
+                        if _star_chain in emptyValue or _star_chain not in self.authChainId:
                             nef_chain = _star_chain
                         else:
                             cid = self.authChainId.index(_star_chain)
@@ -6055,8 +5997,8 @@ class NEFTranslator:
             mapped_seq_id = [s for c, s in self.authSeqMap if c == in_star_chain]
             unmapped_seq_id = sorted(set(int(i[seq_index]) for i in loop_data
                                          if i[chain_index] == in_star_chain
-                                         and i[seq_index] not in self.empty_value
-                                         and self.int_pattern.match(i[seq_index]) is not None
+                                         and i[seq_index] not in emptyValue
+                                         and intPattern.match(i[seq_index]) is not None
                                          and int(i[seq_index]) not in mapped_seq_id))
 
             if len(unmapped_seq_id) > 0:
@@ -6076,9 +6018,9 @@ class NEFTranslator:
                     _cif_seq = _in_star_seq
 
                 in_row = [i for i in loop_data
-                          if (i[chain_index] == in_star_chain or i[chain_index] in self.empty_value)
+                          if (i[chain_index] == in_star_chain or i[chain_index] in emptyValue)
                           and i[seq_index] == in_star_seq
-                          and i[value_index] not in self.empty_value]
+                          and i[value_index] not in emptyValue]
 
                 if len(in_row) == 0:
                     continue
@@ -6275,7 +6217,7 @@ class NEFTranslator:
 
                     nef_chain = i[nef_tags.index(chain_tag)]
                     _nef_seq = i[nef_tags.index(seq_tag)]
-                    if isinstance(_nef_seq, str) and _nef_seq not in self.empty_value:
+                    if isinstance(_nef_seq, str) and _nef_seq not in emptyValue:
                         _nef_seq = int(_nef_seq)
 
                     seq_key = (nef_chain, _nef_seq)
@@ -6432,11 +6374,11 @@ class NEFTranslator:
 
                     star_chain = i[star_tags.index(chain_tag)]
                     _star_chain = star_chain
-                    if isinstance(star_chain, str) and star_chain not in self.empty_value:
+                    if isinstance(star_chain, str) and star_chain not in emptyValue:
                         _star_chain = int(star_chain)
 
                     _star_seq = i[star_tags.index(seq_tag)]
-                    if isinstance(_star_seq, str) and _star_seq not in self.empty_value:
+                    if isinstance(_star_seq, str) and _star_seq not in emptyValue:
                         _star_seq = int(_star_seq)
 
                     seq_key = (_star_chain, _star_seq)
@@ -6447,7 +6389,7 @@ class NEFTranslator:
                         try:
                             nef_chain = self.selfSeqMap[(_star_chain, 1)][0]
                         except KeyError:
-                            if _star_chain in self.empty_value or _star_chain not in self.authChainId:
+                            if _star_chain in emptyValue or _star_chain not in self.authChainId:
                                 nef_chain = _star_chain
                             else:
                                 cid = self.authChainId.index(_star_chain)
@@ -6592,7 +6534,7 @@ class NEFTranslator:
 
                     in_star_chain = i[in_star_tags.index(chain_tag)]
                     _in_star_seq = i[in_star_tags.index(seq_tag)]
-                    if isinstance(_in_star_seq, str) and _in_star_seq not in self.empty_value:
+                    if isinstance(_in_star_seq, str) and _in_star_seq not in emptyValue:
                         _in_star_seq = int(_in_star_seq)
 
                     seq_key = (in_star_chain, _in_star_seq)
@@ -6760,7 +6702,7 @@ class NEFTranslator:
 
                     nef_chain = i[nef_tags.index(chain_tag)]
                     _nef_seq = i[nef_tags.index(seq_tag)]
-                    if isinstance(_nef_seq, str) and _nef_seq not in self.empty_value:
+                    if isinstance(_nef_seq, str) and _nef_seq not in emptyValue:
                         _nef_seq = int(_nef_seq)
 
                     seq_key = (nef_chain, _nef_seq)
@@ -6947,7 +6889,7 @@ class NEFTranslator:
 
                     in_star_chain = i[in_star_tags.index(chain_tag)]
                     _in_star_seq = i[in_star_tags.index(seq_tag)]
-                    if isinstance(_in_star_seq, str) and _in_star_seq not in self.empty_value:
+                    if isinstance(_in_star_seq, str) and _in_star_seq not in emptyValue:
                         _in_star_seq = int(_in_star_seq)
 
                     seq_key = (in_star_chain, _in_star_seq)
@@ -7120,7 +7062,7 @@ class NEFTranslator:
 
                     nef_chain = i[nef_tags.index(chain_tag)]
                     _nef_seq = i[nef_tags.index(seq_tag)]
-                    if isinstance(_nef_seq, str) and _nef_seq not in self.empty_value:
+                    if isinstance(_nef_seq, str) and _nef_seq not in emptyValue:
                         _nef_seq = int(_nef_seq)
 
                     seq_key = (nef_chain, _nef_seq)
@@ -7265,7 +7207,7 @@ class NEFTranslator:
 
                     in_star_chain = i[in_star_tags.index(chain_tag)]
                     _in_star_seq = i[in_star_tags.index(seq_tag)]
-                    if isinstance(_in_star_seq, str) and _in_star_seq not in self.empty_value:
+                    if isinstance(_in_star_seq, str) and _in_star_seq not in emptyValue:
                         _in_star_seq = int(_in_star_seq)
 
                     seq_key = (in_star_chain, _in_star_seq)
@@ -7402,7 +7344,7 @@ class NEFTranslator:
 
                     nef_chain = i[nef_tags.index(chain_tag)]
                     _nef_seq = i[nef_tags.index(seq_tag)]
-                    if isinstance(_nef_seq, str) and _nef_seq not in self.empty_value:
+                    if isinstance(_nef_seq, str) and _nef_seq not in emptyValue:
                         _nef_seq = int(_nef_seq)
 
                     seq_key = (nef_chain, _nef_seq)
@@ -7619,11 +7561,11 @@ class NEFTranslator:
 
                     star_chain = i[star_tags.index(chain_tag)]
                     _star_chain = star_chain
-                    if isinstance(star_chain, str) and star_chain not in self.empty_value:
+                    if isinstance(star_chain, str) and star_chain not in emptyValue:
                         _star_chain = int(star_chain)
 
                     _star_seq = i[star_tags.index(seq_tag)]
-                    if isinstance(_star_seq, str) and _star_seq not in self.empty_value:
+                    if isinstance(_star_seq, str) and _star_seq not in emptyValue:
                         _star_seq = int(_star_seq)
 
                     seq_key = (_star_chain, _star_seq)
@@ -7634,7 +7576,7 @@ class NEFTranslator:
                         try:
                             nef_chain = self.selfSeqMap[(_star_chain, 1)][0]
                         except KeyError:
-                            if _star_chain in self.empty_value or _star_chain not in self.authChainId:
+                            if _star_chain in emptyValue or _star_chain not in self.authChainId:
                                 nef_chain = _star_chain
                             else:
                                 cid = self.authChainId.index(_star_chain)
@@ -7755,7 +7697,7 @@ class NEFTranslator:
 
                     in_star_chain = i[in_star_tags.index(chain_tag)]
                     _in_star_seq = i[in_star_tags.index(seq_tag)]
-                    if isinstance(_in_star_seq, str) and _in_star_seq not in self.empty_value:
+                    if isinstance(_in_star_seq, str) and _in_star_seq not in emptyValue:
                         _in_star_seq = int(_in_star_seq)
 
                     seq_key = (in_star_chain, _in_star_seq)
@@ -7940,7 +7882,7 @@ class NEFTranslator:
 
             nef_chain = in_row[nef_tags.index(chain_tag)]
             _nef_seq = in_row[nef_tags.index(seq_tag)]
-            if isinstance(_nef_seq, str) and _nef_seq not in self.empty_value:
+            if isinstance(_nef_seq, str) and _nef_seq not in emptyValue:
                 _nef_seq = int(_nef_seq)
 
             seq_key = (nef_chain, _nef_seq)
@@ -7979,7 +7921,7 @@ class NEFTranslator:
                     if 'chain_code' in j or 'sequence_code' in j:
                         out[data_index] = tag_map[j]
                     elif data in self.nef_boolean:
-                        out[data_index] = 'yes' if data in self.true_value else 'no'
+                        out[data_index] = 'yes' if data in trueValue else 'no'
                     else:
                         out[data_index] = data
 
@@ -8009,11 +7951,11 @@ class NEFTranslator:
 
             star_chain = in_row[star_tags.index(chain_tag)]
             _star_chain = star_chain
-            if isinstance(star_chain, str) and star_chain not in self.empty_value:
+            if isinstance(star_chain, str) and star_chain not in emptyValue:
                 _star_chain = int(star_chain)
 
             _star_seq = in_row[star_tags.index(seq_tag)]
-            if isinstance(_star_seq, str) and _star_seq not in self.empty_value:
+            if isinstance(_star_seq, str) and _star_seq not in emptyValue:
                 _star_seq = int(_star_seq)
 
             try:
@@ -8022,7 +7964,7 @@ class NEFTranslator:
                 try:
                     nef_chain = self.selfSeqMap[(_star_chain, 1)][0]
                 except KeyError:
-                    if _star_chain in self.empty_value or _star_chain not in self.authChainId:
+                    if _star_chain in emptyValue or _star_chain not in self.authChainId:
                         nef_chain = _star_chain
                     else:
                         cid = self.authChainId.index(_star_chain)
@@ -8049,7 +7991,7 @@ class NEFTranslator:
             if 'chain_code' in nef_tag or 'sequence_code' in nef_tag:
                 out[data_index] = tag_map[j]
             elif data in self.star_boolean:
-                out[data_index] = 'true' if data in self.true_value else 'false'
+                out[data_index] = 'true' if data in trueValue else 'false'
             else:
                 out[data_index] = data
 
@@ -8077,7 +8019,7 @@ class NEFTranslator:
 
             in_star_chain = in_row[in_star_tags.index(chain_tag)]
             _in_star_seq = in_row[in_star_tags.index(seq_tag)]
-            if isinstance(_in_star_seq, str) and _in_star_seq not in self.empty_value:
+            if isinstance(_in_star_seq, str) and _in_star_seq not in emptyValue:
                 _in_star_seq = int(_in_star_seq)
 
             seq_key = (in_star_chain, _in_star_seq)
@@ -8255,11 +8197,11 @@ class NEFTranslator:
                     if pk_assign is not None:
 
                         _star_chain = pk_assign[pk_assign_chain_id_col]
-                        if isinstance(_star_chain, str) and _star_chain not in self.empty_value:
+                        if isinstance(_star_chain, str) and _star_chain not in emptyValue:
                             _star_chain = int(_star_chain)
 
                         _star_seq = pk_assign[pk_assign_seq_id_col]
-                        if isinstance(_star_seq, str) and _star_seq not in self.empty_value:
+                        if isinstance(_star_seq, str) and _star_seq not in emptyValue:
                             _star_seq = int(_star_seq)
 
                         seq_key = (_star_chain, _star_seq)
@@ -8270,7 +8212,7 @@ class NEFTranslator:
                             try:
                                 nef_chain = self.selfSeqMap[(_star_chain, 1)][0]
                             except KeyError:
-                                if _star_chain in self.empty_value or _star_chain not in self.authChainId:
+                                if _star_chain in emptyValue or _star_chain not in self.authChainId:
                                     nef_chain = _star_chain
                                 else:
                                     cid = self.authChainId.index(_star_chain)
@@ -8302,7 +8244,7 @@ class NEFTranslator:
 
                         cs_list_id = pk_assign[pk_assign_cs_list_id_col]
 
-                        if cs_list_id not in self.empty_value:
+                        if cs_list_id not in emptyValue:
                             cs_list_id_set.add(cs_list_id)
 
                     l = l + 4  # noqa: E741
@@ -9025,9 +8967,9 @@ class NEFTranslator:
 
                 if saveframe.category == 'spectral_peak_list' and has_pk_can_format and not has_pk_row_format:
                     cs_list_id = self.star2nef_peak_can(saveframe, sf)
-                    if cs_list_id is not None and (len(sf.get_tag('chemical_shift_list')) == 0 or sf.get_tag('chemical_shift_list') in self.empty_value):
+                    if cs_list_id is not None and (len(sf.get_tag('chemical_shift_list')) == 0 or sf.get_tag('chemical_shift_list') in emptyValue):
                         for cs_sf in star_data:
-                            if cs_sf.get_tag('Sf_category')[0] == 'assigned_chemical_shifts' and cs_sf.get_tag('ID')[0] == cs_list_id and cs_sf.name not in self.empty_value:
+                            if cs_sf.get_tag('Sf_category')[0] == 'assigned_chemical_shifts' and cs_sf.get_tag('ID')[0] == cs_list_id and cs_sf.name not in emptyValue:
                                 if len(sf.get_tag('chemical_shift_list')) == 0:
                                     sf.add_tag('chemical_shift_list', cs_sf.name)
                                 else:
@@ -9229,9 +9171,9 @@ class NEFTranslator:
             if sf.category == 'spectral_peak_list' and has_pk_can_format and not has_pk_row_format:
                 cs_list_id = self.star2nef_peak_can(saveframe, sf)
                 if cs_list_id is not None and (len(sf.get_tag('chemical_shift_list')) == 0
-                                               or sf.get_tag('chemical_shift_list') in self.empty_value):
+                                               or sf.get_tag('chemical_shift_list') in emptyValue):
                     for cs_sf in star_data:
-                        if cs_sf.get_tag('Sf_category')[0] == 'assigned_chemical_shifts' and cs_sf.get_tag('ID')[0] == cs_list_id and cs_sf.name not in self.empty_value:
+                        if cs_sf.get_tag('Sf_category')[0] == 'assigned_chemical_shifts' and cs_sf.get_tag('ID')[0] == cs_list_id and cs_sf.name not in emptyValue:
                             if len(sf.get_tag('chemical_shift_list')) == 0:
                                 sf.add_tag('chemical_shift_list', cs_sf.name)
                             else:

@@ -13,6 +13,7 @@ import copy
 
 from antlr4 import ParseTreeListener
 from wwpdb.utils.nmr.mr.AmberPTParser import AmberPTParser
+from wwpdb.utils.nmr.mr.ParserListenerUtil import check_coordinates
 
 from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
 from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
@@ -32,9 +33,6 @@ def chunk_string(string, length=4):
 
 # This class defines a complete listener for a parse tree produced by AmberPTParser.
 class AmberPTParserListener(ParseTreeListener):
-
-    __verbose = None
-    __lfh = None
 
     versionStatements = 0
     amberAtomTypeStatements = 0
@@ -85,59 +83,6 @@ class AmberPTParserListener(ParseTreeListener):
     titleStatements = 0
     treeChainClassificationStatements = 0
 
-    # loop categories
-    lpCategories = {'poly_seq': 'pdbx_poly_seq_scheme',
-                    'non_poly': 'pdbx_nonpoly_scheme',
-                    'coordinate': 'atom_site',
-                    'poly_seq_alias': 'ndb_poly_seq_scheme',
-                    'non_poly_alias': 'ndb_nonpoly_scheme'
-                    }
-
-    # key items of loop
-    keyItems = {'poly_seq': [{'name': 'asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                             {'name': 'seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                             {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
-                             {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_chain_id'}
-                             ],
-                'poly_seq_alias': [{'name': 'id', 'type': 'str', 'alt_name': 'chain_id'},
-                                   {'name': 'seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                   {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'}
-                                   ],
-                'non_poly': [{'name': 'asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                             {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'seq_id'},
-                             {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
-                             {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_chain_id'}
-                             ],
-                'non_poly_alias': [{'name': 'asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                   {'name': 'pdb_num', 'type': 'int', 'alt_name': 'seq_id'},
-                                   {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'}
-                                   ],
-                'coordinate': [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                               {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                               {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                               {'name': 'pdbx_PDB_model_num', 'type': 'int', 'alt_name': 'model_id'}
-                               ],
-                'coordinate_alias': [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                     {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                     {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                     {'name': 'ndb_model', 'type': 'int', 'alt_name': 'model_id'}
-                                     ],
-                'coordinate_ins': [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                   {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                   {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                   {'name': 'pdbx_PDB_ins_code', 'type': 'str', 'alt_name': 'ins_code', 'default': '?'},
-                                   {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'label_seq_id', 'default': '.'},
-                                   {'name': 'pdbx_PDB_model_num', 'type': 'int', 'alt_name': 'model_id'}
-                                   ],
-                'coordinate_ins_alias': [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                         {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                         {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                         {'name': 'ndb_ins_code', 'type': 'str', 'alt_name': 'ins_code', 'default': '?'},
-                                         {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'label_seq_id', 'default': '.'},
-                                         {'name': 'ndb_model', 'type': 'int', 'alt_name': 'model_id'}
-                                         ]
-                }
-
     # criterion for minimum sequence coverage when conflict occurs (NMR separated deposition)
     min_seq_coverage_w_conflict = 0.95
 
@@ -152,9 +97,6 @@ class AmberPTParserListener(ParseTreeListener):
 
     # CCD accessing utility
     __ccU = None
-
-    # CIF reader
-    __cR = None
 
     # polymer sequences of the coordinate file generated by NmrDpUtility.__extractCoordPolymerSequence()
     __polySeqModel = None
@@ -199,42 +141,9 @@ class AmberPTParserListener(ParseTreeListener):
     warningMessage = ''
 
     def __init__(self, verbose=True, log=sys.stdout, cR=None, polySeqModel=None):
-        self.__verbose = verbose
-        self.__lfh = log
-        self.__cR = cR
 
-        if polySeqModel is not None:
-            self.__polySeqModel = polySeqModel
-
-        else:
-
-            contetSubtype = 'poly_seq'
-
-            alias = False
-            lpCategory = self.lpCategories[contetSubtype]
-            keyItems = self.keyItems[contetSubtype]
-
-            if not self.__cR.hasCategory(lpCategory):
-                alias = True
-                lpCategory = self.lpCategories[contetSubtype + '_alias']
-                keyItems = self.keyItems[contetSubtype + '_alias']
-
-            try:
-
-                try:
-                    self.__polySeqModel = self.__cR.getPolymerSequence(lpCategory, keyItems,
-                                                                       withStructConf=True, alias=alias)
-                except KeyError:  # pdbx_PDB_ins_code throws KeyError
-                    if contetSubtype + ('_ins_alias' if alias else '_ins') in self.keyItems:
-                        keyItems = self.keyItems[contetSubtype + ('_ins_alias' if alias else '_ins')]
-                        self.__polySeqModel = self.__cR.getPolymerSequence(lpCategory, keyItems,
-                                                                           withStructConf=True, alias=alias)
-                    else:
-                        self.__polySeqModel = []
-
-            except Exception as e:
-                if self.__verbose:
-                    self.__lfh.write(f"+AmberPTParserListener.__init__() ++ Error - {str(e)}\n")
+        dict = check_coordinates(verbose, log, cR, polySeqModel)
+        self.__polySeqModel = dict['polymer_sequence']
 
         # NEFTranslator
         self.__nefT = NEFTranslator()
@@ -250,7 +159,7 @@ class AmberPTParserListener(ParseTreeListener):
 
         # Pairwise align
         self.__pA = PairwiseAlign()
-        self.__pA.setVerbose(self.__verbose)
+        self.__pA.setVerbose(verbose)
 
         # CCD accessing utility
         self.__ccU = ChemCompUtil(verbose, log)

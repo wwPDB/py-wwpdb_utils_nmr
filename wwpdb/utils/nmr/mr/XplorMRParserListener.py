@@ -13,33 +13,12 @@ import numpy as np
 
 from antlr4 import ParseTreeListener
 from wwpdb.utils.nmr.mr.XplorMRParser import XplorMRParser
+from wwpdb.utils.nmr.mr.ParserListenerUtil import to_np_array, to_re_exp, check_coordinates
 
 from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
 from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
 from rmsd.calculate_rmsd import (int_atom, ELEMENT_WEIGHTS)  # noqa: F401 pylint: disable=no-name-in-module, import-error
-
-
-def to_np_array(atom):
-    """ Return Numpy array of a given Cartesian coordinate in {'x': float, 'y': float, 'z': float} format.
-    """
-
-    return np.asarray([atom['x'], atom['y'], atom['z']], dtype=float)
-
-
-def to_re_exp(string):
-    """ Return regular expression for a given string including XPLOR-NIH wildcard format.
-    """
-
-    if '*' in string:  # any string
-        return string.replace('*', '.*')
-    if '%' in string:  # a single character
-        return string.replace('%', '.')
-    if '#' in string:  # any number
-        return string.replace('#', '[+-]?[0-9][0-9\\.]?')
-    if '+' in string:  # any digit
-        return string.replace('+', '[0-9]+')
-    return string
 
 
 # This class defines a complete listener for a parse tree produced by XplorMRParser.
@@ -90,59 +69,6 @@ class XplorMRParserListener(ParseTreeListener):
     pccrStatements = 0      # XPLOR-NIH: Paramagnetic cross-correlation rate statements
     hbondStatements = 0     # XPLOR-NIH: Hydrogen bond geometry statements
 
-    # loop categories
-    lpCategories = {'poly_seq': 'pdbx_poly_seq_scheme',
-                    'non_poly': 'pdbx_nonpoly_scheme',
-                    'coordinate': 'atom_site',
-                    'poly_seq_alias': 'ndb_poly_seq_scheme',
-                    'non_poly_alias': 'ndb_nonpoly_scheme'
-                    }
-
-    # key items of loop
-    keyItems = {'poly_seq': [{'name': 'asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                             {'name': 'seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                             {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
-                             {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_chain_id'}
-                             ],
-                'poly_seq_alias': [{'name': 'id', 'type': 'str', 'alt_name': 'chain_id'},
-                                   {'name': 'seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                   {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'}
-                                   ],
-                'non_poly': [{'name': 'asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                             {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'seq_id'},
-                             {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
-                             {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_chain_id'}
-                             ],
-                'non_poly_alias': [{'name': 'asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                   {'name': 'pdb_num', 'type': 'int', 'alt_name': 'seq_id'},
-                                   {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'}
-                                   ],
-                'coordinate': [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                               {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                               {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                               {'name': 'pdbx_PDB_model_num', 'type': 'int', 'alt_name': 'model_id'}
-                               ],
-                'coordinate_alias': [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                     {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                     {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                     {'name': 'ndb_model', 'type': 'int', 'alt_name': 'model_id'}
-                                     ],
-                'coordinate_ins': [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                   {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                   {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                   {'name': 'pdbx_PDB_ins_code', 'type': 'str', 'alt_name': 'ins_code', 'default': '?'},
-                                   {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'label_seq_id', 'default': '.'},
-                                   {'name': 'pdbx_PDB_model_num', 'type': 'int', 'alt_name': 'model_id'}
-                                   ],
-                'coordinate_ins_alias': [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                         {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                         {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                         {'name': 'ndb_ins_code', 'type': 'str', 'alt_name': 'ins_code', 'default': '?'},
-                                         {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'label_seq_id', 'default': '.'},
-                                         {'name': 'ndb_model', 'type': 'int', 'alt_name': 'model_id'}
-                                         ]
-                }
-
     # NEFTranslator
     __nefT = None
 
@@ -159,8 +85,6 @@ class XplorMRParserListener(ParseTreeListener):
     __modelNumName = None
     # representative model id
     __representativeModelId = 1
-    # total number of models
-    # __totalModels = 0
 
     # data item names for auth_asym_id, auth_seq_id, auth_atom_id in 'atom_site' category
     __authAsymId = None
@@ -198,61 +122,12 @@ class XplorMRParserListener(ParseTreeListener):
         self.__lfh = log
         self.__cR = cR
 
-        try:
-
-            self.__modelNumName = 'pdbx_PDB_model_num' if self.__cR.hasItem('atom_site', 'pdbx_PDB_model_num') else 'ndb_model'
-
-            modelIds = self.__cR.getDictListWithFilter('atom_site',
-                                                       [{'name': self.__modelNumName, 'type': 'int', 'alt_name': 'model_id'}
-                                                        ])
-
-            if len(modelIds) > 0:
-                modelIds = set(dict['model_id'] for dict in modelIds)
-
-                self.__representativeModelId = min(modelIds)
-                # self.__totalModels = len(modelIds)
-
-            self.__authAsymId = 'pdbx_auth_asym_id' if self.__cR.hasItem('atom_site', 'pdbx_auth_asym_id') else 'auth_asym_id'
-            self.__authSeqId = 'pdbx_auth_seq_id' if self.__cR.hasItem('atom_site', 'pdbx_auth_seq_id') else 'auth_seq_id'
-            self.__authAtomId = 'pdbx_auth_atom_name' if self.__cR.hasItem('atom_site', 'pdbx_auth_atom_name') else 'auth_atom_id'
-
-        except Exception as e:
-
-            if self.__verbose:
-                self.__lfh.write(f"+XplorMRParserListener.__init__() ++ Error  - {str(e)}\n")
-
-        if polySeq is not None:
-            self.__polySeq = polySeq
-
-        else:
-
-            contetSubtype = 'poly_seq'
-
-            alias = False
-            lpCategory = self.lpCategories[contetSubtype]
-            keyItems = self.keyItems[contetSubtype]
-
-            if not self.__cR.hasCategory(lpCategory):
-                alias = True
-                lpCategory = self.lpCategories[contetSubtype + '_alias']
-                keyItems = self.keyItems[contetSubtype + '_alias']
-
-            try:
-
-                try:
-                    self.__polySeq = self.__cR.getPolymerSequence(lpCategory, keyItems,
-                                                                  withStructConf=True, alias=alias)
-                except KeyError:  # pdbx_PDB_ins_code throws KeyError
-                    if contetSubtype + ('_ins_alias' if alias else '_ins') in self.keyItems:
-                        keyItems = self.keyItems[contetSubtype + ('_ins_alias' if alias else '_ins')]
-                        self.__polySeq = self.__cR.getPolymerSequence(lpCategory, keyItems,
-                                                                      withStructConf=True, alias=alias)
-                    else:
-                        self.__polySeq = []
-
-            except Exception as e:
-                if self.__verbose:
-                    self.__lfh.write(f"+XplorMRParserListener.__init__() ++ Error - {str(e)}\n")
+        dict = check_coordinates(verbose, log, cR, polySeq)
+        self.__modelNumName = dict['model_num_name']
+        self.__authAsymId = dict['auth_asym_id']
+        self.__authSeqId = dict['auth_seq_id']
+        self.__authAtomId = dict['auth_atom_id']
+        self.__polySeq = dict['polymer_sequence']
 
         # NEFTranslator
         self.__nefT = NEFTranslator()

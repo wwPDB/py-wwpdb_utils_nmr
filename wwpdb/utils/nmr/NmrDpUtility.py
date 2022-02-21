@@ -147,6 +147,7 @@
 # 14-Jan-2022  M. Yokochi - report exactly overlaid models in the coordinate file (DAOTHER-7544)
 # 17-Feb-2022  M. Yokochi - aware of presence of _atom_site.pdbx_auth_atom_name for N-terminal protonation change while upload-conversion of the coordinate file (DAOTHER-7665)
 # 17-Feb-2022  M. Yokochi - do report incompletely assigned chemical shifts for conventional deposition (DAOTHER-7662)
+# 21-Feb-2022  M. Yokochi - verify 'onebond' coherence transfer type using CCD (DAOTHER-7681, issue #2)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -14906,6 +14907,16 @@ class NmrDpUtility:
                                             if chain_id2 in emptyValue or seq_id2 in emptyValue or comp_id2 in emptyValue or atom_id2 in emptyValue or\
                                                (d < d2 and (chain_id2 != chain_id or seq_id2 != seq_id or comp_id2 != comp_id or _atom_id2 != _atom_id)):
 
+                                                # DAOTHER-7681, issue #2
+                                                if d < d2 and chain_id2 == chain_id and seq_id2 == seq_id and comp_id2 == comp_id and _atom_id2 != _atom_id and\
+                                                   self.__ccU.updateChemCompDict(comp_id):
+                                                    _atom_id = self.__getAtomIdList(file_type, comp_id, atom_id)
+                                                    _atom_id2 = self.__getAtomIdList(file_type, comp_id, atom_id2)
+                                                    if any(b for b in self.__ccU.lastBonds
+                                                           if ((b[self.__ccU.ccbAtomId1] in _atom_id and b[self.__ccU.ccbAtomId2] in _atom_id2)
+                                                               or (b[self.__ccU.ccbAtomId1] in _atom_id2 and b[self.__ccU.ccbAtomId2] in _atom_id))):
+                                                        continue
+
                                                 err = f"[Check row of {index_tag} {i[index_tag]}] Coherence transfer type is onebond. "\
                                                     "However, assignment of spectral peak is inconsistent with the type, ("\
                                                     + self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id,
@@ -15367,6 +15378,16 @@ class NmrDpUtility:
 
                                         if chain_id2 in emptyValue or seq_id2 in emptyValue or comp_id2 in emptyValue or atom_id2 in emptyValue or\
                                            (d < d2 and (chain_id2 != chain_id or seq_id2 != seq_id or comp_id2 != comp_id or _atom_id2 != _atom_id)):
+
+                                            # DAOTHER-7681, issue #2
+                                            if d < d2 and chain_id2 == chain_id and seq_id2 == seq_id and comp_id2 == comp_id and _atom_id2 != _atom_id and\
+                                               self.__ccU.updateChemCompDict(comp_id):
+                                                _atom_id = self.__getAtomIdList(file_type, comp_id, atom_id)
+                                                _atom_id2 = self.__getAtomIdList(file_type, comp_id, atom_id2)
+                                                if any(b for b in self.__ccU.lastBonds
+                                                       if ((b[self.__ccU.ccbAtomId1] in _atom_id and b[self.__ccU.ccbAtomId2] in _atom_id2)
+                                                           or (b[self.__ccU.ccbAtomId1] in _atom_id2 and b[self.__ccU.ccbAtomId2] in _atom_id))):
+                                                    continue
 
                                             err = f"[Check row of {pk_id_name} {i[pk_id_name]}] Coherence transfer type is onebond. "\
                                                 "However, assignment of spectral peak is inconsistent with the type, ("\

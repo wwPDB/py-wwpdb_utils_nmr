@@ -109,7 +109,7 @@ class ChemCompUtil:
                 if compId in self.__cache:
                     self.lastChemCompDict = self.__cache[compId]['chem_comp']
                     self.lastAtomList = self.__cache[compId]['chem_comp_atom']
-                    self.lastBonds = self.__cache[compId['chem_comp_bond']]
+                    self.lastBonds = self.__cache[compId]['chem_comp_bond']
                 else:
                     self.lastChemCompDict = self.__ccR.getChemCompDict()
                     self.lastAtomList = self.__ccR.getAtomList()

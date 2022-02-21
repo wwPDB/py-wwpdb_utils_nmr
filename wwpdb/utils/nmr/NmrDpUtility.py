@@ -690,7 +690,7 @@ class NmrDpUtility:
                            self.__appendSfTagItem,
                            self.__testSfTagConsistency,
                            # self.__validateCSValue,
-                           self.__testCSValueConsistencyInMrLoop,
+                           self.__testCSPseudoAtomNameConsistencyInMrLoop,
                            self.__testCSValueConsistencyInPkLoop,
                            self.__testCSValueConsistencyInPkAltLoop,
                            self.__testRDCVector
@@ -14549,7 +14549,7 @@ class NmrDpUtility:
 
         return add_details
 
-    def __testCSValueConsistencyInMrLoop(self):
+    def __testCSPseudoAtomNameConsistencyInMrLoop(self):
         """ Perform consistency test on pseudo atom names between assigned chemical shifts and NMR restraints. (DAOTHER-7681, issue #1)
         """
 
@@ -14593,6 +14593,7 @@ class NmrDpUtility:
 
                         try:
                             cs_data = next(l['data'] for l in self.__lp_data['chem_shift'] if l['file_name'] == file_name)  # noqa: E741
+                            cs_list = next(l['sf_framecode'] for l in self.__lp_data['chem_shift'] if l['file_name'] == file_name)  # noqa: E741
                         except StopIteration:
                             continue
 
@@ -14670,9 +14671,10 @@ class NmrDpUtility:
                                         if self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id_) < 2:
                                             continue
 
+                                        _atom_id_ = atom_id_
+
                                         if file_type == 'nmr-star' and self.__isNmrAtomName(comp_id, atom_id):
                                             pass
-
                                         else:
                                             atom_id_ = atom_id
 
@@ -14686,6 +14688,27 @@ class NmrDpUtility:
 
                                         except StopIteration:
 
+                                            gem_atom_id = self.__csStat.getGeminalAtom(comp_id, _atom_id_)
+
+                                            if gem_atom_id is None:
+                                                continue
+
+                                            gem_atom_id_w_cs = None
+
+                                            atom_ids_w_cs = [j[cs_atom_id_name] for j in cs_data
+                                                             if j[cs_chain_id_name] == chain_id
+                                                             and j[cs_seq_id_name] == seq_id
+                                                             and j[cs_comp_id_name] == comp_id]
+
+                                            for atom_id_w_cs in atom_ids_w_cs:
+                                                _atom_id_w_cs = self.__getAtomIdList(file_type, comp_id, atom_id_w_cs)
+                                                if gem_atom_id in _atom_id_w_cs:
+                                                    gem_atom_id_w_cs = atom_id_w_cs
+                                                    break
+
+                                            if gem_atom_id_w_cs is None:
+                                                continue
+
                                             if content_subtype == 'dist_restraint':
                                                 subtype_name = "distance restraint"
                                             elif content_subtype == 'dihed_restraint':
@@ -14696,7 +14719,10 @@ class NmrDpUtility:
                                             err = f"[Check row of {index_tag} {i[index_tag]}] Assignment of {subtype_name} "\
                                                 + self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id,
                                                                                 comp_id_names[d], comp_id, atom_id_names[d], atom_id)\
-                                                + f" was not found in assigned chemical shifts."
+                                                + " was not found in assigned chemical shifts. In contrast, "\
+                                                + self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id,
+                                                                                comp_id_names[d], comp_id, atom_id_names[d], gem_atom_id_w_cs)\
+                                                + f" is in the assgined chemical shifts of {cs_list!r} saveframe."
 
                                             self.report.error.appendDescription('invalid_data',
                                                                                 {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
@@ -14704,15 +14730,15 @@ class NmrDpUtility:
                                             self.report.setError()
 
                                             if self.__verbose:
-                                                self.__lfh.write(f"+NmrDpUtility.__testCSValueConsistencyInMrLoop() ++ ValueError  - {err}\n")
+                                                self.__lfh.write(f"+NmrDpUtility.__testCSPseudoAtomNameConsistencyInMrLoop() ++ ValueError  - {err}\n")
 
                         except Exception as e:
 
-                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testCSValueConsistencyInMrLoop() ++ Error  - " + str(e))
+                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testCSPseudoAtomNameConsistencyInMrLoop() ++ Error  - " + str(e))
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__testCSValueConsistencyInMrLoop() ++ Error  - {str(e)}\n")
+                                self.__lfh.write(f"+NmrDpUtility.__testCSPseudoAtomNameConsistencyInMrLoop() ++ Error  - {str(e)}\n")
 
         return self.report.getTotalErrors() == __errors
 
@@ -15050,7 +15076,7 @@ class NmrDpUtility:
                                     err = f"[Check row of {index_tag} {i[index_tag]}] Assignment of spectral peak "\
                                         + self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id,
                                                                         comp_id_names[d], comp_id, atom_id_names[d], atom_id)\
-                                        + f" was not found in assigned chemical shifts in {cs_list!r} saveframe."
+                                        + f" was not found in assigned chemical shifts of {cs_list!r} saveframe."
 
                                     self.report.error.appendDescription('invalid_data',
                                                                         {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
@@ -15513,7 +15539,7 @@ class NmrDpUtility:
 
                                 err = f"[Check row of {pk_id_name} {i[pk_id_name]}] Assignment of spectral peak "\
                                     + self.__getReducedAtomNotation(cs_chain_id_name, chain_id, cs_seq_id_name, seq_id, cs_comp_id_name, comp_id, cs_atom_id_name, atom_id)\
-                                    + f" was not found in assigned chemical shifts in {cs_list!r} saveframe."
+                                    + f" was not found in assigned chemical shifts of {cs_list!r} saveframe."
 
                                 self.report.error.appendDescription('invalid_data',
                                                                     {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,

@@ -15078,13 +15078,13 @@ class NmrDpUtility:
                                                                         comp_id_names[d], comp_id, atom_id_names[d], atom_id)\
                                         + f" was not found in assigned chemical shifts of {cs_list!r} saveframe."
 
-                                    self.report.error.appendDescription('invalid_data',
-                                                                        {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                         'description': err})
-                                    self.report.setError()
+                                    self.report.warning.appendDescription('insufficient_data',
+                                                                          {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                                           'description': err})
+                                    self.report.setWarning()
 
                                     if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__testCSValueConsistencyInPkLoop() ++ ValueError  - {err}\n")
+                                        self.__lfh.write(f"+NmrDpUtility.__testCSValueConsistencyInPkLoop() ++ Warning  - {err}\n")
 
                                 if True in onebond[d]:
                                     for d2 in range(num_dim):
@@ -15541,13 +15541,13 @@ class NmrDpUtility:
                                     + self.__getReducedAtomNotation(cs_chain_id_name, chain_id, cs_seq_id_name, seq_id, cs_comp_id_name, comp_id, cs_atom_id_name, atom_id)\
                                     + f" was not found in assigned chemical shifts of {cs_list!r} saveframe."
 
-                                self.report.error.appendDescription('invalid_data',
-                                                                    {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                     'description': err})
-                                self.report.setError()
+                                self.report.warning.appendDescription('insufficient_data',
+                                                                      {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                                       'description': err})
+                                self.report.setWarning()
 
                                 if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__testCSValueConsistencyInPkAltLoop() ++ ValueError  - {err}\n")
+                                    self.__lfh.write(f"+NmrDpUtility.__testCSValueConsistencyInPkAltLoop() ++ Warning  - {err}\n")
 
                             if d < num_dim and True in onebond[d]:
                                 for d2 in range(num_dim):

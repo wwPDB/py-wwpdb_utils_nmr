@@ -148,6 +148,7 @@
 # 17-Feb-2022  M. Yokochi - aware of presence of _atom_site.pdbx_auth_atom_name for N-terminal protonation change while upload-conversion of the coordinate file (DAOTHER-7665)
 # 17-Feb-2022  M. Yokochi - do report incompletely assigned chemical shifts for conventional deposition (DAOTHER-7662)
 # 21-Feb-2022  M. Yokochi - verify 'onebond' coherence transfer type using CCD (DAOTHER-7681, issue #2)
+# 21-Feb-2022  M. Yokochi - verify pseudo atom names in NMR restraints are in assigned chemical shifts (DAOTHER-7681, issue #1)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -689,6 +690,7 @@ class NmrDpUtility:
                            self.__appendSfTagItem,
                            self.__testSfTagConsistency,
                            # self.__validateCSValue,
+                           self.__testCSValueConsistencyInMrLoop,
                            self.__testCSValueConsistencyInPkLoop,
                            self.__testCSValueConsistencyInPkAltLoop,
                            self.__testRDCVector
@@ -14547,6 +14549,173 @@ class NmrDpUtility:
 
         return add_details
 
+    def __testCSValueConsistencyInMrLoop(self):
+        """ Perform consistency test on pseudo atom names between assigned chemical shifts and NMR restraints. (DAOTHER-7681, issue #1)
+        """
+
+        # if not self.__combined_mode:
+        #    return False
+
+        __errors = self.report.getTotalErrors()
+
+        for fileListId in range(self.__file_path_list_len):
+
+            if fileListId >= len(self.__star_data_type) or self.__star_data_type[fileListId] != 'Entry':
+                continue
+
+            input_source = self.report.input_sources[fileListId]
+            input_source_dic = input_source.get()
+
+            file_name = input_source_dic['file_name']
+            file_type = input_source_dic['file_type']
+
+            if input_source_dic['content_subtype'] is None\
+               or 'chem_shift' not in input_source_dic['content_subtype']\
+               or input_source_dic['content_subtype']['chem_shift'] != 1:
+                continue
+
+            for content_subtype in input_source_dic['content_subtype'].keys():
+
+                if content_subtype in ('dist_restraint', 'dihed_restraint', 'rdc_restraint'):
+
+                    sf_category = self.sf_categories[file_type][content_subtype]
+                    lp_category = self.lp_categories[file_type][content_subtype]
+
+                    cs_item_names = self.item_names_in_cs_loop[file_type]
+                    cs_chain_id_name = cs_item_names['chain_id']
+                    cs_seq_id_name = cs_item_names['seq_id']
+                    cs_comp_id_name = cs_item_names['comp_id']
+                    cs_atom_id_name = cs_item_names['atom_id']
+
+                    for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
+
+                        sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
+
+                        try:
+                            cs_data = next(l['data'] for l in self.__lp_data['chem_shift'] if l['file_name'] == file_name)  # noqa: E741
+                        except StopIteration:
+                            continue
+
+                        max_dim = 3 if content_subtype in ('dist_restraint', 'rdc_restraint') else 5
+
+                        item_names = []
+                        for j in range(1, max_dim):
+                            _item_names = {}
+                            for k, v in self.item_names_in_pk_loop[file_type].items():
+                                if '%s' in v:
+                                    v = v % j
+                                _item_names[k] = v
+                            item_names.append(_item_names)
+
+                        num_dim = max_dim - 1
+
+                        chain_id_names = []
+                        seq_id_names = []
+                        comp_id_names = []
+                        atom_id_names = []
+
+                        for d in range(num_dim):
+
+                            chain_id_names.append(item_names[d]['chain_id'])
+                            seq_id_names.append(item_names[d]['seq_id'])
+                            comp_id_names.append(item_names[d]['comp_id'])
+                            atom_id_names.append(item_names[d]['atom_id'])
+
+                        index_tag = self.index_tags[file_type][content_subtype]
+
+                        try:
+
+                            lp_data = next((l['data'] for l in self.__lp_data[content_subtype]
+                                            if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode), None)  # noqa: E741
+
+                            if lp_data is not None:
+
+                                for i in lp_data:
+                                    for d in range(num_dim):
+
+                                        if __pynmrstar_v3__\
+                                           and not (chain_id_names[d] in i and seq_id_names[d] in i and comp_id_names[d] in i and atom_id_names[d] in i):
+                                            continue
+
+                                        chain_id = i[chain_id_names[d]]
+                                        if chain_id in emptyValue:
+                                            continue
+
+                                        seq_id = i[seq_id_names[d]]
+                                        if seq_id in emptyValue:
+                                            continue
+
+                                        comp_id = i[comp_id_names[d]]
+                                        if comp_id in emptyValue:
+                                            continue
+
+                                        atom_id = i[atom_id_names[d]]
+                                        if atom_id in emptyValue:
+                                            continue
+
+                                        _atom_id = self.__getAtomIdList(file_type, comp_id, atom_id)
+
+                                        len_atom_id = len(_atom_id)
+
+                                        if len_atom_id == 0:
+                                            atom_id_ = atom_id
+
+                                        elif len_atom_id == 1 and atom_id == _atom_id[0]:
+                                            atom_id_ = atom_id
+
+                                        else:
+                                            # representative atom id
+                                            atom_id_ = _atom_id[0]
+
+                                        if self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id_) < 2:
+                                            continue
+
+                                        if file_type == 'nmr-star' and self.__isNmrAtomName(comp_id, atom_id):
+                                            pass
+
+                                        else:
+                                            atom_id_ = atom_id
+
+                                        try:
+
+                                            next(j for j in cs_data
+                                                 if j[cs_chain_id_name] == chain_id
+                                                 and j[cs_seq_id_name] == seq_id
+                                                 and j[cs_comp_id_name] == comp_id
+                                                 and j[cs_atom_id_name] == atom_id_)
+
+                                        except StopIteration:
+
+                                            if content_subtype == 'dist_restraint':
+                                                subtype_name = "distance restraint"
+                                            elif content_subtype == 'dihed_restraint':
+                                                subtype_name = "dihedral angle restraint"
+                                            else:
+                                                subtype_name = "RDC restraint"
+
+                                            err = f"[Check row of {index_tag} {i[index_tag]}] Assignment of {subtype_name} "\
+                                                + self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id,
+                                                                                comp_id_names[d], comp_id, atom_id_names[d], atom_id)\
+                                                + f" was not found in assigned chemical shifts."
+
+                                            self.report.error.appendDescription('invalid_data',
+                                                                                {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                                                 'description': err})
+                                            self.report.setError()
+
+                                            if self.__verbose:
+                                                self.__lfh.write(f"+NmrDpUtility.__testCSValueConsistencyInMrLoop() ++ ValueError  - {err}\n")
+
+                        except Exception as e:
+
+                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testCSValueConsistencyInMrLoop() ++ Error  - " + str(e))
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+NmrDpUtility.__testCSValueConsistencyInMrLoop() ++ Error  - {str(e)}\n")
+
+        return self.report.getTotalErrors() == __errors
+
     def __testCSValueConsistencyInPkLoop(self):
         """ Perform consistency test on peak position and assignment of spectral peaks.
         """
@@ -14786,7 +14955,7 @@ class NmrDpUtility:
                                 try:
 
                                     if file_type == 'nmr-star' and self.__isNmrAtomName(comp_id, atom_id):
-                                        _atom_id = self.__getAtomIdListWithAmbigCode(file_type, comp_id, atom_id)[0]
+                                        _atom_id = self.__getAtomIdList(file_type, comp_id, atom_id)
 
                                         len_atom_id = len(_atom_id)
 
@@ -15252,7 +15421,7 @@ class NmrDpUtility:
                             try:
 
                                 if file_type == 'nmr-star' and self.__isNmrAtomName(comp_id, atom_id):
-                                    _atom_id = self.__getAtomIdListWithAmbigCode(file_type, comp_id, atom_id)[0]
+                                    _atom_id = self.__getAtomIdList(file_type, comp_id, atom_id)
 
                                     len_atom_id = len(_atom_id)
 
@@ -17378,7 +17547,7 @@ class NmrDpUtility:
                     continue
 
                 if file_type == 'nef' or self.__isNmrAtomName(comp_id, atom_id):
-                    _atom_id = self.__getAtomIdListWithAmbigCode(file_type, comp_id, atom_id)[0]
+                    _atom_id = self.__getAtomIdList(file_type, comp_id, atom_id)
 
                     len_atom_id = len(_atom_id)
 
@@ -18149,7 +18318,7 @@ class NmrDpUtility:
                                 atom_id = j[atom_id_name]
 
                                 if file_type == 'nef' or self.__isNmrAtomName(comp_id, atom_id):
-                                    _atom_id = self.__getAtomIdListWithAmbigCode(file_type, comp_id, atom_id)[0]
+                                    _atom_id = self.__getAtomIdList(file_type, comp_id, atom_id)
 
                                     len_atom_id = len(_atom_id)
 

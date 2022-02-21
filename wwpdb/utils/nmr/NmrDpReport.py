@@ -64,6 +64,8 @@ import json
 import copy
 import re
 
+from wwpdb.utils.nmr.AlignUtil import emptyValue, monDict3
+
 
 def get_value_safe(d=None, key=None):
     """ Return value of a given dictionary for a key.
@@ -108,46 +110,6 @@ class NmrDpReport:
         self.error = NmrDpReportError()
         self.warning = NmrDpReportWarning()
         self.corrected_warning = None
-
-        # taken from wwpdb.utils.align.SequenceReferenceData.py
-        self.monDict3 = {'ALA': 'A',
-                         'ARG': 'R',
-                         'ASN': 'N',
-                         'ASP': 'D',
-                         'ASX': 'B',
-                         'CYS': 'C',
-                         'GLN': 'Q',
-                         'GLU': 'E',
-                         'GLX': 'Z',
-                         'GLY': 'G',
-                         'HIS': 'H',
-                         'ILE': 'I',
-                         'LEU': 'L',
-                         'LYS': 'K',
-                         'MET': 'M',
-                         'PHE': 'F',
-                         'PRO': 'P',
-                         'SER': 'S',
-                         'THR': 'T',
-                         'TRP': 'W',
-                         'TYR': 'Y',
-                         'VAL': 'V',
-                         'DA': 'A',
-                         'DC': 'C',
-                         'DG': 'G',
-                         'DT': 'T',
-                         'DU': 'U',
-                         'DI': 'I',
-                         'A': 'A',
-                         'C': 'C',
-                         'G': 'G',
-                         'I': 'I',
-                         'T': 'T',
-                         'U': 'U'
-                         }
-
-        # empty value
-        self.empty_value = (None, '', '.', '?')
 
     def appendInputSource(self):
         """ Append empty input source.
@@ -1066,9 +1028,9 @@ class NmrDpReport:
             if not fullSequence and unmappedSeqId is not None and seq_id in unmappedSeqId:
                 continue
 
-            if comp_id in self.monDict3:
-                code += self.monDict3[comp_id]
-            elif comp_id in self.empty_value:
+            if comp_id in monDict3:
+                code += monDict3[comp_id]
+            elif comp_id in emptyValue:
                 code += ' '
             else:
                 code += '(' + comp_id + ')'
@@ -1091,9 +1053,9 @@ class NmrDpReport:
 
         code = ''
         for comp_id in ps['comp_id']:
-            if comp_id in self.monDict3:
-                code += self.monDict3[comp_id]
-            elif comp_id in self.empty_value:
+            if comp_id in monDict3:
+                code += monDict3[comp_id]
+            elif comp_id in emptyValue:
                 code += ' '
             else:
                 code += '(' + comp_id + ')'

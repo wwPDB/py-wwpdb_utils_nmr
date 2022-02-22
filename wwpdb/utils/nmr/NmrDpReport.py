@@ -55,7 +55,7 @@
 # 16-Nov-2021  M. Yokochi - revised error message for malformed XPLOR-NIH RDC restraints (DAOTHER-7478)
 # 18-Nov-2021  M. Yokochi - detect content type of XPLOR-NIH hydrogen bond geometry restraints (DAOTHER-7478)
 # 21 Dec-2021  M. Yokochi - add 'exactly_overlaid_model' warning type (DAOTHER-7544)
-# 22 Feb-2022  M. Yokochi - add 'complemented_missing_data' warning type (DAOTHER-7681, issue #1)
+# 22 Feb-2022  M. Yokochi - add 'complemented_chemical_shift' warning type (DAOTHER-7681, issue #1)
 ##
 """ Wrapper class for NMR data processing report.
     @author: Masashi Yokochi
@@ -1580,7 +1580,7 @@ class NmrDpReport:
             ignorable_warning_types = ['auth_atom_nomenclature_mismatch', 'ccd_mismatch', 'disordered_index', 'enum_mismatch_ignorable',
                                        'skipped_saveframe_category', 'skipped_loop_category',
                                        'anomalous_chemical_shift', 'unusual_chemical_shift',
-                                       'complemented_missing_data', 'incompletely_assigned_chemical_shift', 'incompletely_assigned_spectral_peak',
+                                       'complemented_chemical_shift', 'incompletely_assigned_chemical_shift', 'incompletely_assigned_spectral_peak',
                                        'anomalous_data', 'unusual_data', 'unusual/rare_data', 'insufficient_data', 'conflicted_data', 'inconsistent_data',
                                        'total']
 
@@ -2031,7 +2031,7 @@ class NmrDpReportWarning:
                       'skipped_saveframe_category', 'skipped_loop_category',
                       'anomalous_bond_length',
                       'anomalous_chemical_shift', 'unusual_chemical_shift',
-                      'complemented_missing_data', 'incompletely_assigned_chemical_shift', 'incompletely_assigned_spectral_peak',
+                      'complemented_chemical_shift', 'incompletely_assigned_chemical_shift', 'incompletely_assigned_spectral_peak',
                       'anomalous_data', 'unusual_data', 'unusual/rare_data', 'insufficient_data',
                       'conflicted_data', 'inconsistent_data', 'redundant_data',
                       'concatenated_sequence', 'not_superimposed_model', 'exactly_overlaid_model')
@@ -2039,7 +2039,7 @@ class NmrDpReportWarning:
         self.group_items = ('sequence_mismatch',
                             'atom_nomenclature_mismatch', 'auth_atom_nomenclature_mismatch', 'ccd_mismatch', 'ambiguity_code_mismatch',
                             'anomalous_bond_length',
-                            'complemented_missing_data', 'incompletely_assigned_chemical_shift', 'incompletely_assigned_spectral_peak',
+                            'complemented_chemical_shift', 'incompletely_assigned_chemical_shift', 'incompletely_assigned_spectral_peak',
                             'unusual/rare_data', 'insufficient_data',
                             'conflicted_data', 'inconsistent_data', 'redundant_data')
 

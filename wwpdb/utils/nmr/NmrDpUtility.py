@@ -14647,40 +14647,23 @@ class NmrDpUtility:
 
                                 for i in lp_data:
                                     for d in range(num_dim):
-
-                                        if __pynmrstar_v3__\
-                                           and not (chain_id_names[d] in i and seq_id_names[d] in i and comp_id_names[d] in i and atom_id_names[d] in i):
-                                            continue
-
                                         chain_id = i[chain_id_names[d]]
-                                        if chain_id in emptyValue:
-                                            continue
-
                                         seq_id = i[seq_id_names[d]]
-                                        if seq_id in emptyValue:
-                                            continue
-
                                         comp_id = i[comp_id_names[d]]
-                                        if comp_id in emptyValue:
-                                            continue
-
                                         atom_id = i[atom_id_names[d]]
-                                        if atom_id in emptyValue:
-                                            continue
 
-                                        _atom_id = self.__getAtomIdList(file_type, comp_id, atom_id)
+                                        _atom_ids = self.__getAtomIdList(file_type, comp_id, atom_id)
 
-                                        len_atom_id = len(_atom_id)
+                                        len_atom_id = len(_atom_ids)
 
                                         if len_atom_id == 0:
                                             atom_id_ = atom_id
 
-                                        elif len_atom_id == 1 and atom_id == _atom_id[0]:
+                                        elif len_atom_id == 1 and atom_id == _atom_ids[0]:
                                             atom_id_ = atom_id
 
-                                        else:
-                                            # representative atom id
-                                            atom_id_ = _atom_id[0]
+                                        else:  # representative atom id
+                                            atom_id_ = _atom_ids[0]
 
                                         if self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id_) < 2:
                                             continue
@@ -14692,43 +14675,54 @@ class NmrDpUtility:
                                         else:
                                             atom_id_ = atom_id
 
-                                        try:
+                                        atom_ids_w_cs = [j[cs_atom_id_name] for j in cs_data
+                                                         if j[cs_chain_id_name] == chain_id
+                                                         and j[cs_seq_id_name] == seq_id
+                                                         and j[cs_comp_id_name] == comp_id]
 
-                                            next(j for j in cs_data
-                                                 if j[cs_chain_id_name] == chain_id
-                                                 and j[cs_seq_id_name] == seq_id
-                                                 and j[cs_comp_id_name] == comp_id
-                                                 and j[cs_atom_id_name] == atom_id_)
+                                        if atom_id_ in atom_ids_w_cs:
+                                            continue
 
-                                        except StopIteration:
+                                        has_chem_shift = False
 
-                                            gem_atom_id = self.__csStat.getGeminalAtom(comp_id, _atom_id_)
+                                        for atom_id_w_cs in atom_ids_w_cs:
+                                            _atom_id_w_cs = self.__getAtomIdList(file_type, comp_id, atom_id_w_cs)
+                                            if any(_atom_id for _atom_id in _atom_ids if _atom_id in _atom_id_w_cs):
+                                                has_chem_shift = True
+                                                break
 
-                                            if gem_atom_id is None:
-                                                continue
+                                        if has_chem_shift:
+                                            continue
 
-                                            gem_atom_id_w_cs = None
+                                        gem_atom_id = self.__csStat.getGeminalAtom(comp_id, _atom_id_)
 
-                                            atom_ids_w_cs = [j[cs_atom_id_name] for j in cs_data
-                                                             if j[cs_chain_id_name] == chain_id
-                                                             and j[cs_seq_id_name] == seq_id
-                                                             and j[cs_comp_id_name] == comp_id]
+                                        if gem_atom_id is None:
+                                            continue
 
-                                            for atom_id_w_cs in atom_ids_w_cs:
-                                                _atom_id_w_cs = self.__getAtomIdList(file_type, comp_id, atom_id_w_cs)
-                                                if gem_atom_id in _atom_id_w_cs:
-                                                    gem_atom_id_w_cs = atom_id_w_cs
-                                                    break
+                                        gem_atom_id_w_cs = None
 
-                                            if gem_atom_id_w_cs is None:
-                                                continue
+                                        atom_ids_w_cs = [j[cs_atom_id_name] for j in cs_data
+                                                         if j[cs_chain_id_name] == chain_id
+                                                         and j[cs_seq_id_name] == seq_id
+                                                         and j[cs_comp_id_name] == comp_id]
 
-                                            if content_subtype == 'dist_restraint':
-                                                subtype_name = "distance restraint"
-                                            elif content_subtype == 'dihed_restraint':
-                                                subtype_name = "dihedral angle restraint"
-                                            else:
-                                                subtype_name = "RDC restraint"
+                                        for atom_id_w_cs in atom_ids_w_cs:
+                                            _atom_id_w_cs = self.__getAtomIdList(file_type, comp_id, atom_id_w_cs)
+                                            if gem_atom_id in _atom_id_w_cs:
+                                                gem_atom_id_w_cs = atom_id_w_cs
+                                                break
+
+                                        if gem_atom_id_w_cs is None:
+                                            continue
+
+                                        if content_subtype == 'dist_restraint':
+                                            subtype_name = "distance restraint"
+                                        elif content_subtype == 'dihed_restraint':
+                                            subtype_name = "dihedral angle restraint"
+                                        else:
+                                            subtype_name = "RDC restraint"
+
+                                        if _atom_id_ in self.__csStat.getMethylAtoms(comp_id):
 
                                             cs_atom_id_map = {'chain_id': chain_id, 'seq_id': seq_id, 'comp_id': comp_id,
                                                               'src_atom_id': gem_atom_id_w_cs, 'dst_atom_id': atom_id,
@@ -14755,6 +14749,24 @@ class NmrDpUtility:
 
                                             if self.__verbose:
                                                 self.__lfh.write(f"+NmrDpUtility.__testCSPseudoAtomNameConsistencyInMrLoop() ++ ValueError  - {err}\n")
+
+                                        else:
+
+                                            warn = f"[Check row of {index_tag} {i[index_tag]}] Assignment of {subtype_name} "\
+                                                + self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id,
+                                                                                comp_id_names[d], comp_id, atom_id_names[d], atom_id)\
+                                                + " was not found in assigned chemical shifts. In contrast, "\
+                                                + self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id,
+                                                                                comp_id_names[d], comp_id, atom_id_names[d], gem_atom_id_w_cs)\
+                                                + f" is in the assgined chemical shifts of {cs_list!r} saveframe."
+
+                                            self.report.warning.appendDescription('missing_data',
+                                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                                                   'description': warn})
+                                            self.report.setWarning()
+
+                                            if self.__verbose:
+                                                self.__lfh.write(f"+NmrDpUtility.__testCSPseudoAtomNameConsistencyInMrLoop() ++ Warning  - {warn}\n")
 
                         except Exception as e:
 
@@ -14824,12 +14836,12 @@ class NmrDpUtility:
                         warn = "The unbound resonance assignment "\
                             + self.__getReducedAtomNotation(cs_chain_id_name, chain_id, cs_seq_id_name, seq_id,
                                                             cs_comp_id_name, comp_id, cs_atom_id_name, map['dst_atom_id'])\
-                            + f" in {_subtype_name} has been added to the assigned chemical shift list by referring to "\
+                            + f" in {_subtype_name} has been added to the assigned chemical shifts by referring to "\
                             + self.__getReducedAtomNotation(cs_chain_id_name, chain_id, cs_seq_id_name, seq_id,
                                                             cs_comp_id_name, comp_id, cs_atom_id_name, map['src_atom_id'])\
                             + f", {value} ppm."
 
-                        self.report.warning.appendDescription('complemented_missing_data',
+                        self.report.warning.appendDescription('complemented_chemical_shift',
                                                               {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
                                                                'description': warn})
                         self.report.setWarning()
@@ -15110,31 +15122,64 @@ class NmrDpUtility:
 
                                 position = i[position_names[d]]
 
-                                try:
+                                _atom_ids = self.__getAtomIdList(file_type, comp_id, atom_id)
 
-                                    if file_type == 'nmr-star' and self.__isNmrAtomName(comp_id, atom_id):
-                                        _atom_id = self.__getAtomIdList(file_type, comp_id, atom_id)
+                                len_atom_id = len(_atom_ids)
 
-                                        len_atom_id = len(_atom_id)
+                                if len_atom_id == 0:
+                                    atom_id_ = atom_id
 
-                                        if len_atom_id == 0:
-                                            atom_id_ = atom_id
+                                elif len_atom_id == 1 and atom_id == _atom_ids[0]:
+                                    atom_id_ = atom_id
 
-                                        elif len_atom_id == 1 and atom_id == _atom_id[0]:
-                                            atom_id_ = atom_id
+                                else:  # representative atom id
+                                    atom_id_ = _atom_ids[0]
 
-                                        else:
-                                            # representative atom id
-                                            atom_id_ = _atom_id[0]
+                                cs_idx = -1
 
-                                    else:
-                                        atom_id_ = atom_id
+                                if file_type == 'nmr-star' and self.__isNmrAtomName(comp_id, atom_id):
+                                    pass
+                                else:
+                                    atom_id_ = atom_id
 
-                                    cs = next(j for j in cs_data
-                                              if j[cs_chain_id_name] == chain_id
-                                              and j[cs_seq_id_name] == seq_id
-                                              and j[cs_comp_id_name] == comp_id
-                                              and j[cs_atom_id_name] == atom_id_)
+                                atom_ids_w_cs = [j[cs_atom_id_name] for j in cs_data
+                                                 if j[cs_chain_id_name] == chain_id
+                                                 and j[cs_seq_id_name] == seq_id
+                                                 and j[cs_comp_id_name] == comp_id]
+
+                                if atom_id_ in atom_ids_w_cs:
+                                    cs_idx = atom_ids_w_cs.index(atom_id_)
+
+                                else:
+                                    for atom_id_w_cs in atom_ids_w_cs:
+                                        _atom_id_w_cs = self.__getAtomIdList(file_type, comp_id, atom_id_w_cs)
+                                        if any(_atom_id for _atom_id in _atom_ids if _atom_id in _atom_id_w_cs):
+                                            cs_idx = atom_ids_w_cs.index(atom_id_w_cs)
+                                            break
+
+                                if cs_idx == -1:
+
+                                    err = f"[Check row of {index_tag} {i[index_tag]}] Assignment of spectral peak "\
+                                        + self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id,
+                                                                        comp_id_names[d], comp_id, atom_id_names[d], atom_id)\
+                                        + f" was not found in assigned chemical shifts of {cs_list!r} saveframe."
+
+                                    self.report.warning.appendDescription('insufficient_data',
+                                                                          {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                                           'description': err})
+                                    self.report.setWarning()
+
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__testCSValueConsistencyInPkLoop() ++ Warning  - {err}\n")
+
+                                else:
+
+                                    cs_intra = [j for j in cs_data
+                                                if j[cs_chain_id_name] == chain_id
+                                                and j[cs_seq_id_name] == seq_id
+                                                and j[cs_comp_id_name] == comp_id]
+
+                                    cs = cs_intra[cs_idx]
 
                                     value = cs[cs_value_name]
                                     error = cs[cs_error_name]
@@ -15202,21 +15247,6 @@ class NmrDpUtility:
 
                                         if self.__verbose:
                                             self.__lfh.write(f"+NmrDpUtility.__testCSValueConsistencyInPkLoop() ++ ValueError  - {err}\n")
-
-                                except StopIteration:
-
-                                    err = f"[Check row of {index_tag} {i[index_tag]}] Assignment of spectral peak "\
-                                        + self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id,
-                                                                        comp_id_names[d], comp_id, atom_id_names[d], atom_id)\
-                                        + f" was not found in assigned chemical shifts of {cs_list!r} saveframe."
-
-                                    self.report.warning.appendDescription('insufficient_data',
-                                                                          {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                           'description': err})
-                                    self.report.setWarning()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__testCSValueConsistencyInPkLoop() ++ Warning  - {err}\n")
 
                                 if True in onebond[d]:
                                     for d2 in range(num_dim):
@@ -15576,31 +15606,64 @@ class NmrDpUtility:
 
                             position = i[cs_value_name]
 
-                            try:
+                            _atom_ids = self.__getAtomIdList(file_type, comp_id, atom_id)
 
-                                if file_type == 'nmr-star' and self.__isNmrAtomName(comp_id, atom_id):
-                                    _atom_id = self.__getAtomIdList(file_type, comp_id, atom_id)
+                            len_atom_id = len(_atom_ids)
 
-                                    len_atom_id = len(_atom_id)
+                            if len_atom_id == 0:
+                                atom_id_ = atom_id
 
-                                    if len_atom_id == 0:
-                                        atom_id_ = atom_id
+                            elif len_atom_id == 1 and atom_id == _atom_ids[0]:
+                                atom_id_ = atom_id
 
-                                    elif len_atom_id == 1 and atom_id == _atom_id[0]:
-                                        atom_id_ = atom_id
+                            else:  # representative atom id
+                                atom_id_ = _atom_ids[0]
 
-                                    else:
-                                        # representative atom id
-                                        atom_id_ = _atom_id[0]
+                            cs_idx = -1
 
-                                else:
-                                    atom_id_ = atom_id
+                            if file_type == 'nmr-star' and self.__isNmrAtomName(comp_id, atom_id):
+                                pass
+                            else:
+                                atom_id_ = atom_id
 
-                                cs = next(j for j in cs_data
-                                          if j[cs_chain_id_name] == chain_id
-                                          and j[cs_seq_id_name] == seq_id
-                                          and j[cs_comp_id_name] == comp_id
-                                          and j[cs_atom_id_name] == atom_id_)
+                            atom_ids_w_cs = [j[cs_atom_id_name] for j in cs_data
+                                             if j[cs_chain_id_name] == chain_id
+                                             and j[cs_seq_id_name] == seq_id
+                                             and j[cs_comp_id_name] == comp_id]
+
+                            if atom_id_ in atom_ids_w_cs:
+                                cs_idx = atom_ids_w_cs.index(atom_id_)
+
+                            else:
+                                for atom_id_w_cs in atom_ids_w_cs:
+                                    _atom_id_w_cs = self.__getAtomIdList(file_type, comp_id, atom_id_w_cs)
+                                    if any(_atom_id for _atom_id in _atom_ids if _atom_id in _atom_id_w_cs):
+                                        cs_idx = atom_ids_w_cs.index(atom_id_w_cs)
+                                        break
+
+                            if cs_idx == -1:
+
+                                err = f"[Check row of {pk_id_name} {i[pk_id_name]}] Assignment of spectral peak "\
+                                    + self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id,
+                                                                    comp_id_names[d], comp_id, atom_id_names[d], atom_id)\
+                                    + f" was not found in assigned chemical shifts of {cs_list!r} saveframe."
+
+                                self.report.warning.appendDescription('insufficient_data',
+                                                                      {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                                       'description': err})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__testCSValueConsistencyInPkAltLoop() ++ Warning  - {err}\n")
+
+                            else:
+
+                                cs_intra = [j for j in cs_data
+                                            if j[cs_chain_id_name] == chain_id
+                                            and j[cs_seq_id_name] == seq_id
+                                            and j[cs_comp_id_name] == comp_id]
+
+                                cs = cs_intra[cs_idx]
 
                                 value = cs[cs_value_name]
                                 error = cs[cs_error_name]
@@ -15667,21 +15730,6 @@ class NmrDpUtility:
 
                                     if self.__verbose:
                                         self.__lfh.write(f"+NmrDpUtility.__testCSValueConsistencyInPkAltLoop() ++ ValueError  - {err}\n")
-
-                            except StopIteration:
-
-                                err = f"[Check row of {pk_id_name} {i[pk_id_name]}] Assignment of spectral peak "\
-                                    + self.__getReducedAtomNotation(cs_chain_id_name, chain_id, cs_seq_id_name, seq_id,
-                                                                    cs_comp_id_name, comp_id, cs_atom_id_name, atom_id)\
-                                    + f" was not found in assigned chemical shifts of {cs_list!r} saveframe."
-
-                                self.report.warning.appendDescription('insufficient_data',
-                                                                      {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                       'description': err})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__testCSValueConsistencyInPkAltLoop() ++ Warning  - {err}\n")
 
                             if d < num_dim and True in onebond[d]:
                                 for d2 in range(num_dim):
@@ -17717,8 +17765,7 @@ class NmrDpUtility:
                     if len_atom_id == 1 and atom_id == _atom_id[0]:
                         atom_id_ = atom_id
 
-                    else:
-                        # representative atom id
+                    else:  # representative atom id
                         atom_id_ = _atom_id[0]
 
                 else:
@@ -18488,8 +18535,7 @@ class NmrDpUtility:
                                     if len_atom_id == 1 and atom_id == _atom_id[0]:
                                         atom_id_ = atom_id
 
-                                    else:
-                                        # representative atom id
+                                    else:  # representative atom id
                                         atom_id_ = _atom_id[0]
 
                                 else:

@@ -6,7 +6,6 @@
 """ Utilities for pairwise alignment.
     @author: Masashi Yokochi
 """
-import re
 
 
 # empty value
@@ -15,14 +14,6 @@ emptyValue = (None, '', '.', '?')
 
 # true value
 trueValue = ('true', 't', 'yes', 'y', '1')
-
-
-# integer pattern
-intPattern = re.compile(r'^([+-]?[1-9]\d*|0)$')
-
-
-# bad pattern
-badPattern = re.compile(r'.*[\!\$\&\(\)\=\~\^\\\|\`\@\{\}\[\]\;\:\<\>\,\/].*')
 
 
 # taken from wwpdb.utils.align.SequenceReferenceData.py

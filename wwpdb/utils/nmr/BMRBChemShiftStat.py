@@ -1433,7 +1433,7 @@ class BMRBChemShiftStat:
 
             if self.__ccU.updateChemCompDict(comp_id):
 
-                for a in self.__ccU.lastAromList:
+                for a in self.__ccU.lastAtomList:
 
                     if a[self.__ccU.ccaLeavingAtomFlag] == 'Y':
                         continue

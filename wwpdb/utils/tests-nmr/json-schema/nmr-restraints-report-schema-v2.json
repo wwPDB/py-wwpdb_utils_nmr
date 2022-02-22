@@ -3812,6 +3812,9 @@
         "unusual_chemical_shift": {
           "$ref": "#/definitions/common_message"
         },
+       "complemented_chemical_shift": {
+          "$ref": "#/definitions/common_message"
+        },
        "incompletely_assigned_chemical_shift": {
           "$ref": "#/definitions/common_message"
         },

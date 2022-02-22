@@ -92,6 +92,8 @@ class ChemCompUtil:
         aromaticFlag = next(d for d in _chemCompBondDict if d[0] == '_chem_comp_bond.pdbx_aromatic_flag')
         self.ccbAromaticFlag = _chemCompBondDict.index(aromaticFlag)
 
+        self.__cache = {}
+
     def updateChemCompDict(self, compId):
         """ Update CCD information for a given comp_id.
             @return: True for successfully update CCD information or False for the case a given comp_id does not exist in CCD
@@ -104,8 +106,16 @@ class ChemCompUtil:
             self.lastCompId = compId
 
             if self.lastStatus:
-                self.lastChemCompDict = self.__ccR.getChemCompDict()
-                self.lastAtomList = self.__ccR.getAtomList()
-                self.lastBonds = self.__ccR.getBonds()
+                if compId in self.__cache:
+                    self.lastChemCompDict = self.__cache[compId]['chem_comp']
+                    self.lastAtomList = self.__cache[compId]['chem_comp_atom']
+                    self.lastBonds = self.__cache[compId]['chem_comp_bond']
+                else:
+                    self.lastChemCompDict = self.__ccR.getChemCompDict()
+                    self.lastAtomList = self.__ccR.getAtomList()
+                    self.lastBonds = self.__ccR.getBonds()
+                    self.__cache[compId] = {'chem_comp': self.lastChemCompDict,
+                                            'chem_comp_atom': self.lastAtomList,
+                                            'chem_comp_bond': self.lastBonds}
 
         return self.lastStatus

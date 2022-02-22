@@ -612,6 +612,8 @@ class NmrDpUtility:
         self.__fix_format_issue = False
         # whether to exclude missing mandatory data (enabled if NMR separated deposition)
         self.__excl_missing_data = False
+        # whether to complement missing data (add missing pseudo atoms in NMR restraints, DAOTHER-7681, issue #1)
+        self.__cmpl_missing_data = False
         # whether to detect empty row in a loop # NEFTranslator.validate_file() already prompts the empty low error
         # self.__check_empty_loop = False
         # whether to trust pdbx_nmr_ensemble to get total number of models
@@ -3852,6 +3854,14 @@ class NmrDpUtility:
                 self.__excl_missing_data = self.__inputParamDict['excl_missing_data'] in trueValue
         elif not self.__combined_mode:
             self.__excl_missing_data = True
+
+        if 'cmpl_missing_data' in self.__inputParamDict and self.__inputParamDict['cmpl_missing_data'] is not None:
+            if isinstance(self.__inputParamDict['cmpl_missing_data'], bool):
+                self.__cmpl_missing_data = self.__inputParamDict['cmpl_missing_data']
+            else:
+                self.__cmpl_missing_data = self.__inputParamDict['cmpl_missing_data'] in trueValue
+        elif not self.__combined_mode:
+            self.__cmpl_missing_data = True
 
         if 'trust_pdbx_nmr_ens' in self.__inputParamDict and self.__inputParamDict['trust_pdbx_nmr_ens'] is not None:
             if isinstance(self.__inputParamDict['trust_pdbx_nmr_ens'], bool):
@@ -14573,7 +14583,7 @@ class NmrDpUtility:
                or 'chem_shift' not in input_source_dic['content_subtype']:
                 continue
 
-            rescue_mode = self.__rescue_mode and input_source_dic['content_subtype']['chem_shift'] == 1
+            rescue_mode = self.__cmpl_missing_data and input_source_dic['content_subtype']['chem_shift'] == 1
 
             cs_item_names = self.item_names_in_cs_loop[file_type]
             cs_chain_id_name = cs_item_names['chain_id']
@@ -14713,21 +14723,22 @@ class NmrDpUtility:
                                             if gem_atom_id_w_cs is None:
                                                 continue
 
-                                            cs_atom_id_map = {'chain_id': chain_id, 'seq_id': seq_id, 'comp_id': comp_id,
-                                                              'src_atom_id': gem_atom_id_w_cs, 'dst_atom_id': atom_id}
-
-                                            if cs_atom_id_map not in missing_cs_atoms:
-                                                missing_cs_atoms.append(cs_atom_id_map)
-
-                                            if rescue_mode:
-                                                continue
-
                                             if content_subtype == 'dist_restraint':
                                                 subtype_name = "distance restraint"
                                             elif content_subtype == 'dihed_restraint':
                                                 subtype_name = "dihedral angle restraint"
                                             else:
                                                 subtype_name = "RDC restraint"
+
+                                            cs_atom_id_map = {'chain_id': chain_id, 'seq_id': seq_id, 'comp_id': comp_id,
+                                                              'src_atom_id': gem_atom_id_w_cs, 'dst_atom_id': atom_id,
+                                                              'content_subtype_name': subtype_name + 's'}
+
+                                            if cs_atom_id_map not in missing_cs_atoms:
+                                                missing_cs_atoms.append(cs_atom_id_map)
+
+                                            if rescue_mode:
+                                                continue
 
                                             err = f"[Check row of {index_tag} {i[index_tag]}] Assignment of {subtype_name} "\
                                                 + self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id,
@@ -14760,7 +14771,9 @@ class NmrDpUtility:
                 sf_category = self.sf_categories[file_type][content_subtype]
                 lp_category = self.lp_categories[file_type][content_subtype]
 
-                for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
+                star_data = copy.copy(self.__star_data[fileListId])
+
+                for sf_data in star_data.get_saveframes_by_category(sf_category):
 
                     sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
@@ -14769,6 +14782,11 @@ class NmrDpUtility:
                     else:
                         loop = sf_data.get_loop_by_category(lp_category)
 
+                    new_loop = pynmrstar.Loop.from_scratch(lp_category)
+
+                    for tag in loop.tags:
+                        new_loop.add_tag(lp_category + '.' + tag)
+
                     chain_id_col = loop.tags.index(cs_chain_id_name)
                     seq_id_col = loop.tags.index(cs_seq_id_name)
                     comp_id_col = loop.tags.index(cs_comp_id_name)
@@ -14776,6 +14794,7 @@ class NmrDpUtility:
                     value_col = loop.tags.index(cs_value_name)
 
                     for row in loop.data:
+                        new_loop.add_data(row)
                         chain_id = row[chain_id_col]
                         try:
                             seq_id = int(row[seq_id_col])
@@ -14785,30 +14804,42 @@ class NmrDpUtility:
                         atom_id = row[atom_id_col]
                         value = row[value_col]
 
-                        for map in missing_cs_atoms:
-                            if map['chain_id'] == chain_id\
-                               and map['seq_id'] == seq_id\
-                               and map['comp_id'] == comp_id\
-                               and map['src_atom_id'] == atom_id:
-                                _row = copy.copy(row)
-                                _row[atom_id_col] = map['dst_atom_id']
-                                loop.data.append(_row)
+                        _missing_cs_atoms = [map for map in missing_cs_atoms
+                                             if map['chain_id'] == chain_id
+                                             and map['seq_id'] == seq_id
+                                             and map['comp_id'] == comp_id
+                                             and map['src_atom_id'] == atom_id]
 
-                                warn = "The unbound resonance assignment "\
-                                    + self.__getReducedAtomNotation(cs_chain_id_name, chain_id, cs_seq_id_name, seq_id,
-                                                                    cs_comp_id_name, comp_id, cs_atom_id_name, map['dst_atom_id'])\
-                                    + " that appears in NMR restraint data has been added to the assigned chemical shift list by referring to "\
-                                    + self.__getReducedAtomNotation(cs_chain_id_name, chain_id, cs_seq_id_name, seq_id,
-                                                                    cs_comp_id_name, comp_id, cs_atom_id_name, map['src_atom_id'])\
-                                    + f", {value} ppm."
+                        if len(_missing_cs_atoms) == 0:
+                            continue
 
-                                self.report.warning.appendDescription('missing_data',
-                                                                      {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                       'description': warn})
-                                self.report.setWarning()
+                        _subtype_name = ' and '.join([map['content_subtype_name'] for map in _missing_cs_atoms])
 
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__testCSPseudoAtomNameConsistencyInMrLoop() ++ Warning  - {warn}\n")
+                        map = _missing_cs_atoms[0]
+
+                        _row = copy.copy(row)
+                        _row[atom_id_col] = map['dst_atom_id']
+                        new_loop.data.append(_row)
+
+                        warn = "The unbound resonance assignment "\
+                            + self.__getReducedAtomNotation(cs_chain_id_name, chain_id, cs_seq_id_name, seq_id,
+                                                            cs_comp_id_name, comp_id, cs_atom_id_name, map['dst_atom_id'])\
+                            + f" in {_subtype_name} has been added to the assigned chemical shift list by referring to "\
+                            + self.__getReducedAtomNotation(cs_chain_id_name, chain_id, cs_seq_id_name, seq_id,
+                                                            cs_comp_id_name, comp_id, cs_atom_id_name, map['src_atom_id'])\
+                            + f", {value} ppm."
+
+                        self.report.warning.appendDescription('complemented_missing_data',
+                                                              {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                               'description': warn})
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__testCSPseudoAtomNameConsistencyInMrLoop() ++ Warning  - {warn}\n")
+
+                    del sf_data[loop]
+
+                    sf_data.add_loop(new_loop)
 
                     parent_pointer = 1
                     for l, lp_data in enumerate(self.__lp_data[content_subtype]):
@@ -14838,6 +14869,8 @@ class NmrDpUtility:
 
                         if self.__verbose:
                             self.__lfh.write(f"+NmrDpUtility.__testCSPseudoAtomNameConsistencyInMrLoop() ++ Error  - {str(e)}\n")
+
+                self.__depositNmrData()
 
         return self.report.getTotalErrors() == __errors
 
@@ -15623,7 +15656,8 @@ class NmrDpUtility:
                                 if aux_data is not None and d < num_dim and axis_code != axis_codes[d]:
 
                                     err = f"[Check row of {pk_id_name} {i[pk_id_name]}] Assignment of spectral peak "\
-                                        + self.__getReducedAtomNotation(cs_chain_id_name, chain_id, cs_seq_id_name, seq_id, cs_comp_id_name, comp_id, cs_atom_id_name, atom_id)\
+                                        + self.__getReducedAtomNotation(cs_chain_id_name, chain_id, cs_seq_id_name, seq_id,
+                                                                        cs_comp_id_name, comp_id, cs_atom_id_name, atom_id)\
                                         + f" is inconsistent with axis code {axis_code} vs {axis_codes[d]}."
 
                                     self.report.error.appendDescription('invalid_data',
@@ -15637,7 +15671,8 @@ class NmrDpUtility:
                             except StopIteration:
 
                                 err = f"[Check row of {pk_id_name} {i[pk_id_name]}] Assignment of spectral peak "\
-                                    + self.__getReducedAtomNotation(cs_chain_id_name, chain_id, cs_seq_id_name, seq_id, cs_comp_id_name, comp_id, cs_atom_id_name, atom_id)\
+                                    + self.__getReducedAtomNotation(cs_chain_id_name, chain_id, cs_seq_id_name, seq_id,
+                                                                    cs_comp_id_name, comp_id, cs_atom_id_name, atom_id)\
                                     + f" was not found in assigned chemical shifts of {cs_list!r} saveframe."
 
                                 self.report.warning.appendDescription('insufficient_data',

@@ -3778,7 +3778,7 @@ class NmrDpUtility:
         if op not in self.__workFlowOps:
             raise KeyError(f"+NmrDpUtility.op() ++ Error  - Unknown workflow operation {op}.")
 
-        if 'bmrb_only' in self.__inputParamDict and self.__inputParamDict['bmrb_only'] is not None:
+        if has_key_value(self.__inputParamDict, 'bmrb_only'):
             if isinstance(self.__inputParamDict['bmrb_only'], bool):
                 self.__bmrb_only = self.__inputParamDict['bmrb_only']
             else:
@@ -3789,43 +3789,43 @@ class NmrDpUtility:
             self.cs_unusual_error_scaled_by_sigma = 3.5
             self.cs_diff_error_scaled_by_sigma = 5.0
 
-        if 'nonblk_anomalous_cs' in self.__inputParamDict and self.__inputParamDict['nonblk_anomalous_cs'] is not None:
+        if has_key_value(self.__inputParamDict, 'nonblk_anomalous_cs'):
             if isinstance(self.__inputParamDict['nonblk_anomalous_cs'], bool):
                 self.__nonblk_anomalous_cs = self.__inputParamDict['nonblk_anomalous_cs']
             else:
                 self.__nonblk_anomalous_cs = self.__inputParamDict['nonblk_anomalous_cs'] in trueValue
 
-        if 'nonblk_bad_nterm' in self.__inputParamDict and self.__inputParamDict['nonblk_bad_nterm'] is not None:
+        if has_key_value(self.__inputParamDict, 'nonblk_bad_nterm'):
             if isinstance(self.__inputParamDict['nonblk_bad_nterm'], bool):
                 self.__nonblk_bad_nterm = self.__inputParamDict['nonblk_bad_nterm']
             else:
                 self.__nonblk_bad_nterm = self.__inputParamDict['nonblk_bad_nterm'] in trueValue
 
-        if 'update_poly_seq' in self.__inputParamDict and self.__inputParamDict['update_poly_seq'] is not None:
+        if has_key_value(self.__inputParamDict, 'update_poly_seq'):
             if isinstance(self.__inputParamDict['update_poly_seq'], bool):
                 self.__update_poly_seq = self.__inputParamDict['update_poly_seq']
             else:
                 self.__update_poly_seq = self.__inputParamDict['update_poly_seq'] in trueValue
 
-        if 'resolve_conflict' in self.__inputParamDict and self.__inputParamDict['resolve_conflict'] is not None:
+        if has_key_value(self.__inputParamDict, 'resolve_conflict'):
             if isinstance(self.__inputParamDict['resolve_conflict'], bool):
                 self.__resolve_conflict = self.__inputParamDict['resolve_conflict']
             else:
                 self.__resolve_conflict = self.__inputParamDict['resolve_conflict'] in trueValue
 
-        if 'check_mandatory_tag' in self.__inputParamDict and self.__inputParamDict['check_mandatory_tag'] is not None:
+        if has_key_value(self.__inputParamDict, 'check_mandatory_tag'):
             if isinstance(self.__inputParamDict['check_mandatory_tag'], bool):
                 self.__check_mandatory_tag = self.__inputParamDict['check_mandatory_tag']
             else:
                 self.__check_mandatory_tag = self.__inputParamDict['check_mandatory_tag'] in trueValue
 
-        if 'check_auth_seq' in self.__inputParamDict and self.__inputParamDict['check_auth_seq'] is not None:
+        if has_key_value(self.__inputParamDict, 'check_auth_seq'):
             if isinstance(self.__inputParamDict['check_auth_seq'], bool):
                 self.__check_auth_seq = self.__inputParamDict['check_auth_seq']
             else:
                 self.__check_auth_seq = self.__inputParamDict['check_auth_seq'] in trueValue
 
-        if 'transl_pseudo_name' in self.__inputParamDict and self.__inputParamDict['transl_pseudo_name'] is not None:
+        if has_key_value(self.__inputParamDict, 'transl_pseudo_name'):
             if isinstance(self.__inputParamDict['transl_pseudo_name'], bool):
                 self.__transl_pseudo_name = self.__inputParamDict['transl_pseudo_name']
             else:
@@ -3833,13 +3833,13 @@ class NmrDpUtility:
         elif op in ('nmr-str-consistency-check', 'nmr-str2str-deposit', 'nmr-str2nef-release'):
             self.__transl_pseudo_name = True
 
-        if 'tolerant_seq_align' in self.__inputParamDict and self.__inputParamDict['tolerant_seq_align'] is not None:
+        if has_key_value(self.__inputParamDict, 'tolerant_seq_align'):
             if isinstance(self.__inputParamDict['tolerant_seq_align'], bool):
                 self.__tolerant_seq_align = self.__inputParamDict['tolerant_seq_align']
             else:
                 self.__tolerant_seq_align = self.__inputParamDict['tolerant_seq_align'] in trueValue
 
-        if 'fix_format_issue' in self.__inputParamDict and self.__inputParamDict['fix_format_issue'] is not None:
+        if has_key_value(self.__inputParamDict, 'fix_format_issue'):
             if isinstance(self.__inputParamDict['fix_format_issue'], bool):
                 self.__fix_format_issue = self.__inputParamDict['fix_format_issue']
             else:
@@ -3847,7 +3847,7 @@ class NmrDpUtility:
         elif not self.__combined_mode or self.__release_mode:
             self.__fix_format_issue = True
 
-        if 'excl_missing_data' in self.__inputParamDict and self.__inputParamDict['excl_missing_data'] is not None:
+        if has_key_value(self.__inputParamDict, 'excl_missing_data'):
             if isinstance(self.__inputParamDict['excl_missing_data'], bool):
                 self.__excl_missing_data = self.__inputParamDict['excl_missing_data']
             else:
@@ -3855,7 +3855,7 @@ class NmrDpUtility:
         elif not self.__combined_mode:
             self.__excl_missing_data = True
 
-        if 'cmpl_missing_data' in self.__inputParamDict and self.__inputParamDict['cmpl_missing_data'] is not None:
+        if has_key_value(self.__inputParamDict, 'cmpl_missing_data'):
             if isinstance(self.__inputParamDict['cmpl_missing_data'], bool):
                 self.__cmpl_missing_data = self.__inputParamDict['cmpl_missing_data']
             else:
@@ -3863,7 +3863,7 @@ class NmrDpUtility:
         elif not self.__combined_mode:
             self.__cmpl_missing_data = True
 
-        if 'trust_pdbx_nmr_ens' in self.__inputParamDict and self.__inputParamDict['trust_pdbx_nmr_ens'] is not None:
+        if has_key_value(self.__inputParamDict, 'trust_pdbx_nmr_ens'):
             if isinstance(self.__inputParamDict['trust_pdbx_nmr_ens'], bool):
                 self.__trust_pdbx_nmr_ens = self.__inputParamDict['trust_pdbx_nmr_ens']
             else:
@@ -3871,36 +3871,36 @@ class NmrDpUtility:
         elif self.__release_mode:
             self.__trust_pdbx_nmr_ens = True
 
-        if 'rmsd_not_superimposed' in self.__inputParamDict and self.__inputParamDict['rmsd_not_superimposed'] is not None:
+        if has_key_value(self.__inputParamDict, 'rmsd_not_superimposed'):
             if isinstance(self.__inputParamDict['rmsd_not_superimposed'], float):
                 self.rmsd_not_superimposed = self.__inputParamDict['rmsd_not_superimposed']
 
-        if 'rmsd_overlaid_exactly' in self.__inputParamDict and self.__inputParamDict['rmsd_overlaid_exactly'] is not None:
+        if has_key_value(self.__inputParamDict, 'rmsd_overlaid_exactly'):
             if isinstance(self.__inputParamDict['rmsd_overlaid_exactly'], float):
                 self.rmsd_overlaid_exactly = self.__inputParamDict['rmsd_overlaid_exactly']
 
-        if 'entry_id' in self.__outputParamDict and self.__outputParamDict['entry_id'] is not None:
+        if has_key_value(self.__outputParamDict, 'entry_id'):
             self.__entry_id = self.__outputParamDict['entry_id']
 
-        if 'insert_entry_id_to_loops' in self.__outputParamDict and self.__outputParamDict['insert_entry_id_to_loops'] is not None:
+        if has_key_value(self.__outputParamDict, 'insert_entry_id_to_loops'):
             if isinstance(self.__outputParamDict['insert_entry_id_to_loops'], bool):
                 self.__insert_entry_id_to_loops = self.__outputParamDict['insert_entry_id_to_loops']
             else:
                 self.__insert_entry_id_to_loops = self.__outputParamDict['insert_entry_id_to_loops'] in trueValue
 
-        if 'retain_original' in self.__outputParamDict and self.__outputParamDict['retain_original'] is not None:
+        if has_key_value(self.__outputParamDict, 'retain_original'):
             if isinstance(self.__outputParamDict['retain_original'], bool):
                 self.__retain_original = self.__outputParamDict['retain_original']
             else:
                 self.__retain_original = self.__outputParamDict['retain_original'] in trueValue
 
-        if 'leave_intl_note' in self.__outputParamDict and self.__outputParamDict['leave_intl_note'] is not None:
+        if has_key_value(self.__outputParamDict, 'leave_intl_note'):
             if isinstance(self.__outputParamDict['leave_intl_note'], bool):
                 self.__leave_intl_note = self.__outputParamDict['leave_intl_note']
             else:
                 self.__leave_intl_note = self.__outputParamDict['leave_intl_note'] in trueValue
 
-        if 'reduced_atom_notation' in self.__outputParamDict and self.__outputParamDict['reduced_atom_notation'] is not None:
+        if has_key_value(self.__outputParamDict, 'reduced_atom_notation'):
             if isinstance(self.__outputParamDict['reduced_atom_notation'], bool):
                 self.__reduced_atom_notation = self.__outputParamDict['reduced_atom_notation']
             else:
@@ -5528,7 +5528,7 @@ class NmrDpUtility:
 
             for sf_data in self.__star_data[file_list_id].get_saveframes_by_category(sf_category):
 
-                format_version = sf_data.get_tag('format_version')[0]
+                format_version = get_first_sf_tag(sf_data, 'format_version')
 
                 if not format_version.startswith('0.'):
                     sf_data.format_version = '1.1'
@@ -5787,7 +5787,7 @@ class NmrDpUtility:
 
                 try:
 
-                    _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
+                    _num_dim = get_first_sf_tag(sf_data, self.num_dim_items[file_type])
                     num_dim = int(_num_dim)
 
                     if num_dim not in range(1, self.lim_num_dim):
@@ -8446,7 +8446,7 @@ class NmrDpUtility:
 
             try:
 
-                _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
+                _num_dim = get_first_sf_tag(sf_data, self.num_dim_items[file_type])
                 num_dim = int(_num_dim)
 
                 if num_dim not in range(1, self.lim_num_dim):
@@ -10238,7 +10238,7 @@ class NmrDpUtility:
 
             try:
 
-                _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
+                _num_dim = get_first_sf_tag(sf_data, self.num_dim_items[file_type])
                 num_dim = int(_num_dim)
 
                 if num_dim not in range(1, self.lim_num_dim):
@@ -10355,7 +10355,7 @@ class NmrDpUtility:
 
             try:
 
-                _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
+                _num_dim = get_first_sf_tag(sf_data, self.num_dim_items[file_type])
                 num_dim = int(_num_dim)
 
                 if num_dim not in range(1, self.lim_num_dim):
@@ -11046,7 +11046,7 @@ class NmrDpUtility:
 
             try:
 
-                _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
+                _num_dim = get_first_sf_tag(sf_data, self.num_dim_items[file_type])
                 num_dim = int(_num_dim)
 
                 if num_dim not in range(1, self.lim_num_dim):
@@ -11694,7 +11694,7 @@ class NmrDpUtility:
 
             try:
 
-                _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
+                _num_dim = get_first_sf_tag(sf_data, self.num_dim_items[file_type])
                 num_dim = int(_num_dim)
 
                 if num_dim not in range(1, self.lim_num_dim):
@@ -12239,7 +12239,7 @@ class NmrDpUtility:
 
                         try:
 
-                            _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
+                            _num_dim = get_first_sf_tag(sf_data, self.num_dim_items[file_type])
                             num_dim = int(_num_dim)
 
                             if num_dim not in range(1, self.lim_num_dim):
@@ -12981,7 +12981,7 @@ class NmrDpUtility:
                                         except AttributeError:
                                             g = self.chk_desc_pat_one.search(warn).groups()
 
-                                    if self._sf_tag_items[file_type][content_subtype] is not None:
+                                    if has_key_value(self._sf_tag_items[file_type], content_subtype):
 
                                         if any(i for i in self._sf_tag_items[file_type][content_subtype] if i == g[0]):
                                             if not self.__nefT.is_mandatory_tag('_' + sf_category + '.' + g[0], file_type):
@@ -14932,7 +14932,7 @@ class NmrDpUtility:
                 sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
                 try:
-                    cs_list = sf_data.get_tag(self.cs_list_sf_tag_name[file_type])[0]
+                    cs_list = get_first_sf_tag(sf_data, self.cs_list_sf_tag_name[file_type])
                 except:  # noqa: E722 pylint: disable=bare-except
                     continue
 
@@ -14964,7 +14964,7 @@ class NmrDpUtility:
 
                 try:
 
-                    _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
+                    _num_dim = get_first_sf_tag(sf_data, self.num_dim_items[file_type])
                     num_dim = int(_num_dim)
 
                     if num_dim not in range(1, self.lim_num_dim):
@@ -15406,8 +15406,8 @@ class NmrDpUtility:
 
                 try:
 
-                    cs_list = sf_data.get_tag(self.cs_list_sf_tag_name[file_type])[0]
-                    _cs_list_id = sf_data.get_tag('ID')[0]
+                    cs_list = get_first_sf_tag(sf_data, self.cs_list_sf_tag_name[file_type])
+                    _cs_list_id = get_first_sf_tag(sf_data, 'ID')
 
                     try:
 
@@ -15450,11 +15450,11 @@ class NmrDpUtility:
                     if cs_sf_data is None:
                         continue
 
-                    _cs_list_id = cs_sf_data.get_tag('ID')[0]
+                    _cs_list_id = get_first_sf_tag(sf_data, 'ID')
 
                 try:
 
-                    _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
+                    _num_dim = get_first_sf_tag(sf_data, self.num_dim_items[file_type])
                     num_dim = int(_num_dim)
 
                     if num_dim not in range(1, self.lim_num_dim):
@@ -15595,7 +15595,7 @@ class NmrDpUtility:
                                         if cs_sf_data is None:
                                             continue
 
-                                        _cs_list_id = cs_sf_data.get_tag('ID')[0]
+                                        _cs_list_id = get_first_sf_tag(sf_data, 'ID')
 
                                         if cs_list_id == _cs_list_id:
                                             break
@@ -16777,10 +16777,10 @@ class NmrDpUtility:
 
         _list_id = list_id
         if file_type == 'nmr-star' and self.__combined_mode:
-            val = sf_data.get_tag('ID')
+            val = get_first_sf_tag(sf_data, 'ID')
             if len(val) > 0:
                 try:
-                    _list_id = int(val[0])
+                    _list_id = int(val)
                 except ValueError:
                     return
 
@@ -16803,9 +16803,9 @@ class NmrDpUtility:
             if len(sf_framecode) == 0:
                 ent['exp_type'] = 'Unknown'
             else:
-                type = sf_data.get_tag('restraint_origin' if file_type == 'nef' else 'Constraint_type')  # pylint: disable=redefined-builtin
-                if len(type) > 0 and type[0] not in emptyValue:
-                    ent['exp_type'] = type[0]
+                type = get_first_sf_tag(sf_data, 'restraint_origin' if file_type == 'nef' else 'Constraint_type')
+                if len(type) > 0:
+                    ent['exp_type'] = type
                 else:
                     ent['exp_type'] = 'Unknown'
 
@@ -16814,9 +16814,9 @@ class NmrDpUtility:
             if len(sf_framecode) == 0:
                 ent['exp_type'] = 'Unknown'
             else:
-                type = sf_data.get_tag('experiment_type' if file_type == 'nef' else 'Experiment_type')
-                if len(type) > 0 and type[0] not in emptyValue:
-                    ent['exp_type'] = type[0]
+                type = get_first_sf_tag(sf_data, 'experiment_type' if file_type == 'nef' else 'Experiment_type')
+                if len(type) > 0:
+                    ent['exp_type'] = type
                 else:
                     ent['exp_type'] = 'Unknown'
 
@@ -16824,7 +16824,7 @@ class NmrDpUtility:
 
             sa_name = 'nmr_poly_seq_vs_' + content_subtype
 
-            if sa_name in seq_align_dic and seq_align_dic[sa_name] is not None:
+            if has_key_value(seq_align_dic, sa_name):
 
                 low_seq_coverage = ''
 
@@ -17002,7 +17002,7 @@ class NmrDpUtility:
 
                 try:
 
-                    _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
+                    _num_dim = get_first_sf_tag(sf_data, self.num_dim_items[file_type])
                     num_dim = int(_num_dim)
 
                     if num_dim not in range(1, self.lim_num_dim):
@@ -17945,14 +17945,14 @@ class NmrDpUtility:
                                     cys['redox_state_pred'] = f"oxidized {oxi:.1%}, reduced {red:.1%}"
 
                             cys['in_disulfide_bond'] = False
-                            if input_source_dic['disulfide_bond'] is not None:
+                            if has_key_value(input_source_dic, 'disulfide_bond'):
                                 if any(b for b in input_source_dic['disulfide_bond']
                                        if (b['chain_id_1'] == chain_id and b['seq_id_1'] == seq_id)
                                        or (b['chain_id_2'] == chain_id and b['seq_id_2'] == seq_id)):
                                     cys['in_disulfide_bond'] = True
 
                             cys['in_other_bond'] = False
-                            if input_source_dic['other_bond'] is not None:
+                            if has_key_value(input_source_dic, 'other_bond'):
                                 if any(b for b in input_source_dic['other_bond']
                                        if (b['chain_id_1'] == chain_id and b['seq_id_1'] == seq_id)
                                        or (b['chain_id_2'] == chain_id and b['seq_id_2'] == seq_id)):
@@ -18717,27 +18717,27 @@ class NmrDpUtility:
 
                 if target_value is None:
 
-                    if lower_limit_name in i and (i[lower_limit_name] is not None)\
-                            and upper_limit_name in i and (i[upper_limit_name] is not None):
+                    if has_key_value(i, lower_limit_name)\
+                            and has_key_value(i, upper_limit_name):
                         target_value = (i[lower_limit_name] + i[upper_limit_name]) / 2.0
 
-                    elif lower_linear_limit_name in i and (i[lower_linear_limit_name] is not None)\
-                            and upper_linear_limit_name is i and (i[upper_linear_limit_name] is not None):
+                    elif has_key_value(i, lower_linear_limit_name)\
+                            and has_key_value(i, upper_linear_limit_name):
                         target_value = (i[lower_linear_limit_name] + i[upper_linear_limit_name]) / 2.0
 
-                    elif upper_linear_limit_name in i and (i[upper_linear_limit_name] is not None):
+                    elif has_key_value(i, upper_linear_limit_name):
                         target_value = i[upper_linear_limit_name]
                         upper_limit_value = target_value
 
-                    elif upper_limit_name in i and (i[upper_limit_name] is not None):
+                    elif has_key_value(i, upper_limit_name):
                         target_value = i[upper_limit_name]
                         upper_limit_value = target_value
 
-                    elif lower_linear_limit_name in i and (i[lower_linear_limit_name] is not None):
+                    elif has_key_value(i, lower_linear_limit_name):
                         target_value = i[lower_linear_limit_name]
                         lower_limit_value = target_value
 
-                    elif lower_limit_name in i and (i[lower_limit_name] is not None):
+                    elif has_key_value(i, lower_limit_name):
                         target_value = i[lower_limit_name]
                         lower_limit_value = target_value
 
@@ -18756,15 +18756,15 @@ class NmrDpUtility:
                 if 'hydrogen_bonds' in data_type and ('too close!' in data_type or 'too far!' in data_type):
 
                     values = ''
-                    if target_value_name in i and i[target_value_name] is not None:
+                    if has_key_value(i, target_value_name):
                         values += f"{target_value_name} {i[target_value_name]}, "
-                    if lower_limit_name in i and i[lower_limit_name] is not None:
+                    if has_key_value(i, lower_limit_name):
                         values += f"{lower_limit_name} {i[lower_limit_name]}, "
-                    if upper_limit_name in i and i[upper_limit_name] is not None:
+                    if has_key_value(i, upper_limit_name):
                         values += f"{upper_limit_name} {i[upper_limit_name]}, "
-                    if lower_linear_limit_name in i and i[lower_linear_limit_name] is not None:
+                    if has_key_value(i, lower_linear_limit_name):
                         values += f"{lower_linear_limit_name} {i[lower_linear_limit_name]}, "
-                    if upper_linear_limit_name in i and i[upper_linear_limit_name] is not None:
+                    if has_key_value(i, upper_linear_limit_name):
                         values += f"{upper_linear_limit_name} {i[upper_linear_limit_name]}, "
 
                     warn = "Hydrogen bond constraint "\
@@ -18782,15 +18782,15 @@ class NmrDpUtility:
                 elif 'disulfide_bonds' in data_type and ('too close!' in data_type or 'too far!' in data_type):
 
                     values = ''
-                    if target_value_name in i and i[target_value_name] is not None:
+                    if has_key_value(i, target_value_name):
                         values += f"{target_value_name} {i[target_value_name]}, "
-                    if lower_limit_name in i and i[lower_limit_name] is not None:
+                    if has_key_value(i, lower_limit_name):
                         values += f"{lower_limit_name} {i[lower_limit_name]}, "
-                    if upper_limit_name in i and i[upper_limit_name] is not None:
+                    if has_key_value(i, upper_limit_name):
                         values += f"{upper_limit_name} {i[upper_limit_name]}, "
-                    if lower_linear_limit_name in i and i[lower_linear_limit_name] is not None:
+                    if has_key_value(i, lower_linear_limit_name):
                         values += f"{lower_linear_limit_name} {i[lower_linear_limit_name]}, "
-                    if upper_linear_limit_name in i and i[upper_linear_limit_name] is not None:
+                    if has_key_value(i, upper_linear_limit_name):
                         values += f"{upper_linear_limit_name} {i[upper_linear_limit_name]}, "
 
                     warn = "Disulfide bond constraint "\
@@ -18808,15 +18808,15 @@ class NmrDpUtility:
                 elif 'diselenide_bonds' in data_type and ('too close!' in data_type or 'too far!' in data_type):
 
                     values = ''
-                    if target_value_name in i and i[target_value_name] is not None:
+                    if has_key_value(i, target_value_name):
                         values += f"{target_value_name} {i[target_value_name]}, "
-                    if lower_limit_name in i and i[lower_limit_name] is not None:
+                    if has_key_value(i, lower_limit_name):
                         values += f"{lower_limit_name} {i[lower_limit_name]}, "
-                    if upper_limit_name in i and i[upper_limit_name] is not None:
+                    if has_key_value(i, upper_limit_name):
                         values += f"{upper_limit_name} {i[upper_limit_name]}, "
-                    if lower_linear_limit_name in i and i[lower_linear_limit_name] is not None:
+                    if has_key_value(i, lower_linear_limit_name):
                         values += f"{lower_linear_limit_name} {i[lower_linear_limit_name]}, "
-                    if upper_linear_limit_name in i and i[upper_linear_limit_name] is not None:
+                    if has_key_value(i, upper_linear_limit_name):
                         values += f"{upper_linear_limit_name} {i[upper_linear_limit_name]}, "
 
                     warn = "Diselenide bond constraint "\
@@ -18834,15 +18834,15 @@ class NmrDpUtility:
                 elif 'other_bonds' in data_type and ('too close!' in data_type or 'too far!' in data_type):
 
                     values = ''
-                    if target_value_name in i and i[target_value_name] is not None:
+                    if has_key_value(i, target_value_name):
                         values += f"{target_value_name} {i[target_value_name]}, "
-                    if lower_limit_name in i and i[lower_limit_name] is not None:
+                    if has_key_value(i, lower_limit_name):
                         values += f"{lower_limit_name} {i[lower_limit_name]}, "
-                    if upper_limit_name in i and i[upper_limit_name] is not None:
+                    if has_key_value(i, upper_limit_name):
                         values += f"{upper_limit_name} {i[upper_limit_name]}, "
-                    if lower_linear_limit_name in i and i[lower_linear_limit_name] is not None:
+                    if has_key_value(i, lower_linear_limit_name):
                         values += f"{lower_linear_limit_name} {i[lower_linear_limit_name]}, "
-                    if upper_linear_limit_name in i and i[upper_linear_limit_name] is not None:
+                    if has_key_value(i, upper_linear_limit_name):
                         values += f"{upper_linear_limit_name} {i[upper_linear_limit_name]}, "
 
                     warn = "Other bond constraint "\
@@ -19050,27 +19050,27 @@ class NmrDpUtility:
 
                     if target_value is None:
 
-                        if lower_limit_name in i and (i[lower_limit_name] is not None)\
-                                and upper_limit_name in i and (i[upper_limit_name] is not None):
+                        if has_key_value(i, lower_limit_name)\
+                                and has_key_value(i, upper_limit_name):
                             target_value = (i[lower_limit_name] + i[upper_limit_name]) / 2.0
 
-                        elif lower_linear_limit_name in i and (i[lower_linear_limit_name] is not None)\
-                                and upper_linear_limit_name is i and (i[upper_linear_limit_name] is not None):
+                        elif has_key_value(i, lower_linear_limit_name)\
+                                and has_key_value(i, upper_linear_limit_name):
                             target_value = (i[lower_linear_limit_name] + i[upper_linear_limit_name]) / 2.0
 
-                        elif upper_linear_limit_name in i and (i[upper_linear_limit_name] is not None):
+                        elif has_key_value(i, upper_linear_limit_name):
                             target_value = i[upper_linear_limit_name]
                             upper_limit_value = target_value
 
-                        elif upper_limit_name in i and (i[upper_limit_name] is not None):
+                        elif has_key_value(i, upper_limit_name):
                             target_value = i[upper_limit_name]
                             upper_limit_value = target_value
 
-                        elif lower_linear_limit_name in i and (i[lower_linear_limit_name] is not None):
+                        elif has_key_value(i, lower_linear_limit_name):
                             target_value = i[lower_linear_limit_name]
                             lower_limit_value = target_value
 
-                        elif lower_limit_name in i and (i[lower_limit_name] is not None):
+                        elif has_key_value(i, lower_limit_name):
                             target_value = i[lower_limit_name]
                             lower_limit_value = target_value
 
@@ -19138,48 +19138,48 @@ class NmrDpUtility:
 
                             if target_value_1 is None:
 
-                                if lower_limit_name in row_1 and (row_1[lower_limit_name] is not None)\
-                                        and upper_limit_name in row_1 and (row_1[upper_limit_name] is not None):
+                                if has_key_value(row_1, lower_limit_name)\
+                                        and has_key_value(row_1, upper_limit_name):
                                     target_value_1 = (row_1[lower_limit_name] + row_1[upper_limit_name]) / 2.0
 
-                                elif lower_linear_limit_name in row_1 and (row_1[lower_linear_limit_name] is not None)\
-                                        and upper_linear_limit_name is i and (row_1[upper_linear_limit_name] is not None):
+                                elif has_key_value(row_1, lower_linear_limit_name)\
+                                        and has_key_value(row_1, upper_linear_limit_name):
                                     target_value_1 = (row_1[lower_linear_limit_name] + row_1[upper_linear_limit_name]) / 2.0
 
-                                elif upper_linear_limit_name in row_1 and (row_1[upper_linear_limit_name] is not None):
+                                elif has_key_value(row_1, upper_linear_limit_name):
                                     target_value_1 = row_1[upper_linear_limit_name]
 
-                                elif upper_limit_name in row_1 and (row_1[upper_limit_name] is not None):
+                                elif has_key_value(row_1, upper_limit_name):
                                     target_value_1 = row_1[upper_limit_name]
 
-                                elif lower_linear_limit_name in row_1 and (row_1[lower_linear_limit_name] is not None):
+                                elif has_key_value(row_1, lower_linear_limit_name):
                                     target_value_1 = row_1[lower_linear_limit_name]
 
-                                elif lower_limit_name in row_1 and (row_1[lower_limit_name] is not None):
+                                elif has_key_value(row_1, lower_limit_name):
                                     target_value_1 = row_1[lower_limit_name]
 
                             target_value_2 = row_2[target_value_name] if target_value_name in row_2 else None
 
                             if target_value_2 is None:
 
-                                if lower_limit_name in row_2 and (row_2[lower_limit_name] is not None)\
-                                        and upper_limit_name in row_2 and (row_2[upper_limit_name] is not None):
+                                if has_key_value(row_2, lower_limit_name)\
+                                        and has_key_value(row_2, upper_limit_name):
                                     target_value_2 = (row_2[lower_limit_name] + row_2[upper_limit_name]) / 2.0
 
-                                elif lower_linear_limit_name in row_2 and (row_2[lower_linear_limit_name] is not None)\
-                                        and upper_linear_limit_name is i and (row_2[upper_linear_limit_name] is not None):
+                                elif has_key_value(row_2, lower_linear_limit_name)\
+                                        and has_key_value(row_2, upper_linear_limit_name):
                                     target_value_2 = (row_2[lower_linear_limit_name] + row_2[upper_linear_limit_name]) / 2.0
 
-                                elif upper_linear_limit_name in row_2 and (row_2[upper_linear_limit_name] is not None):
+                                elif has_key_value(row_2, upper_linear_limit_name):
                                     target_value_2 = row_2[upper_linear_limit_name]
 
-                                elif upper_limit_name in row_2 and (row_2[upper_limit_name] is not None):
+                                elif has_key_value(row_2, upper_limit_name):
                                     target_value_2 = row_2[upper_limit_name]
 
-                                elif lower_linear_limit_name in row_2 and (row_2[lower_linear_limit_name] is not None):
+                                elif has_key_value(row_2, lower_linear_limit_name):
                                     target_value_2 = row_2[lower_linear_limit_name]
 
-                                elif lower_limit_name in row_2 and (row_2[lower_limit_name] is not None):
+                                elif has_key_value(row_2, lower_limit_name):
                                     target_value_2 = row_2[lower_limit_name]
 
                             if target_value_1 is None or target_value_2 is None:
@@ -19259,48 +19259,48 @@ class NmrDpUtility:
 
                                     if target_value_1 is None:
 
-                                        if lower_limit_name in row_1 and (row_1[lower_limit_name] is not None)\
-                                                and upper_limit_name in row_1 and (row_1[upper_limit_name] is not None):
+                                        if has_key_value(row_1, lower_limit_name)\
+                                                and has_key_value(row_1, upper_limit_name):
                                             target_value_1 = (row_1[lower_limit_name] + row_1[upper_limit_name]) / 2.0
 
-                                        elif lower_linear_limit_name in row_1 and (row_1[lower_linear_limit_name] is not None)\
-                                                and upper_linear_limit_name is i and (row_1[upper_linear_limit_name] is not None):
+                                        elif has_key_value(row_1, lower_linear_limit_name)\
+                                                and has_key_value(row_1, upper_linear_limit_name):
                                             target_value_1 = (row_1[lower_linear_limit_name] + row_1[upper_linear_limit_name]) / 2.0
 
-                                        elif upper_linear_limit_name in row_1 and (row_1[upper_linear_limit_name] is not None):
+                                        elif has_key_value(row_1, upper_linear_limit_name):
                                             target_value_1 = row_1[upper_linear_limit_name]
 
-                                        elif upper_limit_name in row_1 and (row_1[upper_limit_name] is not None):
+                                        elif has_key_value(row_1, upper_limit_name):
                                             target_value_1 = row_1[upper_limit_name]
 
-                                        elif lower_linear_limit_name in row_1 and (row_1[lower_linear_limit_name] is not None):
+                                        elif has_key_value(row_1, lower_linear_limit_name):
                                             target_value_1 = row_1[lower_linear_limit_name]
 
-                                        elif lower_limit_name in row_1 and (row_1[lower_limit_name] is not None):
+                                        elif has_key_value(row_1, lower_limit_name):
                                             target_value_1 = row_1[lower_limit_name]
 
                                     target_value_2 = row_2[target_value_name] if target_value_name in row_2 else None
 
                                     if target_value_2 is None:
 
-                                        if lower_limit_name in row_2 and (row_2[lower_limit_name] is not None)\
-                                                and upper_limit_name in row_2 and (row_2[upper_limit_name] is not None):
+                                        if has_key_value(row_2, lower_limit_name)\
+                                                and has_key_value(row_2, upper_limit_name):
                                             target_value_2 = (row_2[lower_limit_name] + row_2[upper_limit_name]) / 2.0
 
-                                        elif lower_linear_limit_name in row_2 and (row_2[lower_linear_limit_name] is not None)\
-                                                and upper_linear_limit_name is i and (row_2[upper_linear_limit_name] is not None):
+                                        elif has_key_value(row_2, lower_linear_limit_name)\
+                                                and has_key_value(row_2, upper_linear_limit_name):
                                             target_value_2 = (row_2[lower_linear_limit_name] + row_2[upper_linear_limit_name]) / 2.0
 
-                                        elif upper_linear_limit_name in row_2 and (row_2[upper_linear_limit_name] is not None):
+                                        elif has_key_value(row_2, upper_linear_limit_name):
                                             target_value_2 = row_2[upper_linear_limit_name]
 
-                                        elif upper_limit_name in row_2 and (row_2[upper_limit_name] is not None):
+                                        elif has_key_value(row_2, upper_limit_name):
                                             target_value_2 = row_2[upper_limit_name]
 
-                                        elif lower_linear_limit_name in row_2 and (row_2[lower_linear_limit_name] is not None):
+                                        elif has_key_value(row_2, lower_linear_limit_name):
                                             target_value_2 = row_2[lower_linear_limit_name]
 
-                                        elif lower_limit_name in row_2 and (row_2[lower_limit_name] is not None):
+                                        elif has_key_value(row_2, lower_limit_name):
                                             target_value_2 = row_2[lower_limit_name]
 
                                     if target_value_1 is None and target_value_2 is None:
@@ -19327,27 +19327,27 @@ class NmrDpUtility:
 
                                     if target_value is None:
 
-                                        if lower_limit_name in row_1 and (row_1[lower_limit_name] is not None)\
-                                                and upper_limit_name in row_1 and (row_1[upper_limit_name] is not None):
+                                        if has_key_value(row_1, lower_limit_name)\
+                                                and has_key_value(row_1, upper_limit_name):
                                             target_value = (row_1[lower_limit_name] + row_1[upper_limit_name]) / 2.0
 
-                                        elif lower_linear_limit_name in row_1 and (row_1[lower_linear_limit_name] is not None)\
-                                                and upper_linear_limit_name is i and (row_1[upper_linear_limit_name] is not None):
+                                        elif has_key_value(row_1, lower_linear_limit_name)\
+                                                and has_key_value(row_1, upper_linear_limit_name):
                                             target_value = (row_1[lower_linear_limit_name] + row_1[upper_linear_limit_name]) / 2.0
 
-                                        elif upper_linear_limit_name in row_1 and (row_1[upper_linear_limit_name] is not None):
+                                        elif has_key_value(row_1, upper_linear_limit_name):
                                             target_value = row_1[upper_linear_limit_name]
                                             upper_limit_value = target_value
 
-                                        elif upper_limit_name in row_1 and (row_1[upper_limit_name] is not None):
+                                        elif has_key_value(row_1, upper_limit_name):
                                             target_value = row_1[upper_limit_name]
                                             upper_limit_value = target_value
 
-                                        elif lower_linear_limit_name in row_1 and (row_1[lower_linear_limit_name] is not None):
+                                        elif has_key_value(row_1, lower_linear_limit_name):
                                             target_value = row_1[lower_linear_limit_name]
                                             lower_limit_value = target_value
 
-                                        elif lower_limit_name in row_1 and (row_1[lower_limit_name] is not None):
+                                        elif has_key_value(row_1, lower_limit_name):
                                             target_value = row_1[lower_limit_name]
                                             lower_limit_value = target_value
 
@@ -19377,27 +19377,27 @@ class NmrDpUtility:
 
                                 if target_value is None:
 
-                                    if lower_limit_name in row_1 and (row_1[lower_limit_name] is not None)\
-                                            and upper_limit_name in row_1 and (row_1[upper_limit_name] is not None):
+                                    if has_key_value(row_1, lower_limit_name)\
+                                            and has_key_value(row_1, upper_limit_name):
                                         target_value = (row_1[lower_limit_name] + row_1[upper_limit_name]) / 2.0
 
-                                    elif lower_linear_limit_name in row_1 and (row_1[lower_linear_limit_name] is not None)\
-                                            and upper_linear_limit_name is i and (row_1[upper_linear_limit_name] is not None):
+                                    elif has_key_value(row_1, lower_linear_limit_name)\
+                                            and has_key_value(row_1, upper_linear_limit_name):
                                         target_value = (row_1[lower_linear_limit_name] + row_1[upper_linear_limit_name]) / 2.0
 
-                                    elif upper_linear_limit_name in row_1 and (row_1[upper_linear_limit_name] is not None):
+                                    elif has_key_value(row_1, upper_linear_limit_name):
                                         target_value = row_1[upper_linear_limit_name]
                                         upper_limit_value = target_value
 
-                                    elif upper_limit_name in row_1 and (row_1[upper_limit_name] is not None):
+                                    elif has_key_value(row_1, upper_limit_name):
                                         target_value = row_1[upper_limit_name]
                                         upper_limit_value = target_value
 
-                                    elif lower_linear_limit_name in row_1 and (row_1[lower_linear_limit_name] is not None):
+                                    elif has_key_value(row_1, lower_linear_limit_name):
                                         target_value = row_1[lower_linear_limit_name]
                                         lower_limit_value = target_value
 
-                                    elif lower_limit_name in row_1 and (row_1[lower_limit_name] is not None):
+                                    elif has_key_value(row_1, lower_limit_name):
                                         target_value = row_1[lower_limit_name]
                                         lower_limit_value = target_value
 
@@ -20413,12 +20413,12 @@ class NmrDpUtility:
 
                 if target_value is None:
 
-                    if lower_limit_name in i and (i[lower_limit_name] is not None)\
-                            and upper_limit_name in i and (i[upper_limit_name] is not None):
+                    if has_key_value(i, lower_limit_name)\
+                            and has_key_value(i, upper_limit_name):
                         target_value = (i[lower_limit_name] + i[upper_limit_name]) / 2.0
 
-                    elif lower_linear_limit_name in i and (i[lower_linear_limit_name] is not None)\
-                            and upper_linear_limit_name in i and (i[upper_linear_limit_name] is not None):
+                    elif has_key_value(i, lower_linear_limit_name)\
+                            and has_key_value(i, upper_linear_limit_name):
                         target_value = (i[lower_linear_limit_name] + i[upper_linear_limit_name]) / 2.0
 
                     else:
@@ -20431,8 +20431,8 @@ class NmrDpUtility:
                 while target_value < -180.0:
                     target_value += 360.0
 
-                if lower_limit_name in i and (i[lower_limit_name] is not None)\
-                        and upper_limit_name in i and (i[upper_limit_name] is not None):
+                if has_key_value(i, lower_limit_name)\
+                        and has_key_value(i, upper_limit_name):
                     lower_limit = i[lower_limit_name]
                     upper_limit = i[upper_limit_name]
 
@@ -20446,8 +20446,8 @@ class NmrDpUtility:
                     while upper_limit - target_value < -180.0:
                         upper_limit += 360.0
 
-                elif lower_linear_limit_name in i and (i[lower_linear_limit_name] is not None)\
-                        and upper_linear_limit_name in i and (i[upper_linear_limit_name] is not None):
+                elif has_key_value(i, lower_linear_limit_name)\
+                        and has_key_value(i, upper_linear_limit_name):
                     lower_limit = i[lower_linear_limit_name]
                     upper_limit = i[upper_linear_limit_name]
 
@@ -20767,48 +20767,48 @@ class NmrDpUtility:
 
                             if target_value_1 is None:
 
-                                if lower_limit_name in row_1 and (row_1[lower_limit_name] is not None)\
-                                        and upper_limit_name in row_1 and (row_1[upper_limit_name] is not None):
+                                if has_key_value(row_1, lower_limit_name)\
+                                        and has_key_value(row_1, upper_limit_name):
                                     target_value_1 = (row_1[lower_limit_name] + row_1[upper_limit_name]) / 2.0
 
-                                elif lower_linear_limit_name in row_1 and (row_1[lower_linear_limit_name] is not None)\
-                                        and upper_linear_limit_name is i and (row_1[upper_linear_limit_name] is not None):
+                                elif has_key_value(row_1, lower_linear_limit_name)\
+                                        and has_key_value(row_1, upper_linear_limit_name):
                                     target_value_1 = (row_1[lower_linear_limit_name] + row_1[upper_linear_limit_name]) / 2.0
 
-                                elif upper_linear_limit_name in row_1 and (row_1[upper_linear_limit_name] is not None):
+                                elif has_key_value(row_1, upper_linear_limit_name):
                                     target_value_1 = row_1[upper_linear_limit_name]
 
-                                elif upper_limit_name in row_1 and (row_1[upper_limit_name] is not None):
+                                elif has_key_value(row_1, upper_limit_name):
                                     target_value_1 = row_1[upper_limit_name]
 
-                                elif lower_linear_limit_name in row_1 and (row_1[lower_linear_limit_name] is not None):
+                                elif has_key_value(row_1, lower_linear_limit_name):
                                     target_value_1 = row_1[lower_linear_limit_name]
 
-                                elif lower_limit_name in row_1 and (row_1[lower_limit_name] is not None):
+                                elif has_key_value(row_1, lower_limit_name):
                                     target_value_1 = row_1[lower_limit_name]
 
                             target_value_2 = row_2[target_value_name] if target_value_name in row_2 else None
 
                             if target_value_2 is None:
 
-                                if lower_limit_name in row_2 and (row_2[lower_limit_name] is not None)\
-                                        and upper_limit_name in row_2 and (row_2[upper_limit_name] is not None):
+                                if has_key_value(row_2, lower_limit_name)\
+                                        and has_key_value(row_2, upper_limit_name):
                                     target_value_2 = (row_2[lower_limit_name] + row_2[upper_limit_name]) / 2.0
 
-                                elif lower_linear_limit_name in row_2 and (row_2[lower_linear_limit_name] is not None)\
-                                        and upper_linear_limit_name is i and (row_2[upper_linear_limit_name] is not None):
+                                elif has_key_value(row_2, lower_linear_limit_name)\
+                                        and has_key_value(row_2, upper_linear_limit_name):
                                     target_value_2 = (row_2[lower_linear_limit_name] + row_2[upper_linear_limit_name]) / 2.0
 
-                                elif upper_linear_limit_name in row_2 and (row_2[upper_linear_limit_name] is not None):
+                                elif has_key_value(row_2, upper_linear_limit_name):
                                     target_value_2 = row_2[upper_linear_limit_name]
 
-                                elif upper_limit_name in row_2 and (row_2[upper_limit_name] is not None):
+                                elif has_key_value(row_2, upper_limit_name):
                                     target_value_2 = row_2[upper_limit_name]
 
-                                elif lower_linear_limit_name in row_2 and (row_2[lower_linear_limit_name] is not None):
+                                elif has_key_value(row_2, lower_linear_limit_name):
                                     target_value_2 = row_2[lower_linear_limit_name]
 
-                                elif lower_limit_name in row_2 and (row_2[lower_limit_name] is not None):
+                                elif has_key_value(row_2, lower_limit_name):
                                     target_value_2 = row_2[lower_limit_name]
 
                             if target_value_1 is None or target_value_2 is None:
@@ -20922,48 +20922,48 @@ class NmrDpUtility:
 
                                     if target_value_1 is None:
 
-                                        if lower_limit_name in row_1 and (row_1[lower_limit_name] is not None)\
-                                                and upper_limit_name in row_1 and (row_1[upper_limit_name] is not None):
+                                        if has_key_value(row_1, lower_limit_name)\
+                                                and has_key_value(row_1, upper_limit_name):
                                             target_value_1 = (row_1[lower_limit_name] + row_1[upper_limit_name]) / 2.0
 
-                                        elif lower_linear_limit_name in row_1 and (row_1[lower_linear_limit_name] is not None)\
-                                                and upper_linear_limit_name is i and (row_1[upper_linear_limit_name] is not None):
+                                        elif has_key_value(row_1, lower_linear_limit_name)\
+                                                and has_key_value(row_1, upper_linear_limit_name):
                                             target_value_1 = (row_1[lower_linear_limit_name] + row_1[upper_linear_limit_name]) / 2.0
 
-                                        elif upper_linear_limit_name in row_1 and (row_1[upper_linear_limit_name] is not None):
+                                        elif has_key_value(row_1, upper_linear_limit_name):
                                             target_value_1 = row_1[upper_linear_limit_name]
 
-                                        elif upper_limit_name in row_1 and (row_1[upper_limit_name] is not None):
+                                        elif has_key_value(row_1, upper_limit_name):
                                             target_value_1 = row_1[upper_limit_name]
 
-                                        elif lower_linear_limit_name in row_1 and (row_1[lower_linear_limit_name] is not None):
+                                        elif has_key_value(row_1, lower_linear_limit_name):
                                             target_value_1 = row_1[lower_linear_limit_name]
 
-                                        elif lower_limit_name in row_1 and (row_1[lower_limit_name] is not None):
+                                        elif has_key_value(row_1, lower_limit_name):
                                             target_value_1 = row_1[lower_limit_name]
 
                                     target_value_2 = row_2[target_value_name] if target_value_name in row_2 else None
 
                                     if target_value_2 is None:
 
-                                        if lower_limit_name in row_2 and (row_2[lower_limit_name] is not None)\
-                                                and upper_limit_name in row_2 and (row_2[upper_limit_name] is not None):
+                                        if has_key_value(row_2, lower_limit_name)\
+                                                and has_key_value(row_2, upper_limit_name):
                                             target_value_2 = (row_2[lower_limit_name] + row_2[upper_limit_name]) / 2.0
 
-                                        elif lower_linear_limit_name in row_2 and (row_2[lower_linear_limit_name] is not None)\
-                                                and upper_linear_limit_name is i and (row_2[upper_linear_limit_name] is not None):
+                                        elif has_key_value(row_2, lower_linear_limit_name)\
+                                                and has_key_value(row_2, upper_linear_limit_name):
                                             target_value_2 = (row_2[lower_linear_limit_name] + row_2[upper_linear_limit_name]) / 2.0
 
-                                        elif upper_linear_limit_name in row_2 and (row_2[upper_linear_limit_name] is not None):
+                                        elif has_key_value(row_2, upper_linear_limit_name):
                                             target_value_2 = row_2[upper_linear_limit_name]
 
-                                        elif upper_limit_name in row_2 and (row_2[upper_limit_name] is not None):
+                                        elif has_key_value(row_2, upper_limit_name):
                                             target_value_2 = row_2[upper_limit_name]
 
-                                        elif lower_linear_limit_name in row_2 and (row_2[lower_linear_limit_name] is not None):
+                                        elif has_key_value(row_2, lower_linear_limit_name):
                                             target_value_2 = row_2[lower_linear_limit_name]
 
-                                        elif lower_limit_name in row_2 and (row_2[lower_limit_name] is not None):
+                                        elif has_key_value(row_2, lower_limit_name):
                                             target_value_2 = row_2[lower_limit_name]
 
                                     if target_value_1 is None and target_value_2 is None:
@@ -21237,24 +21237,24 @@ class NmrDpUtility:
 
                 if target_value is None:
 
-                    if lower_limit_name in i and (i[lower_limit_name] is not None)\
-                            and upper_limit_name in i and (i[upper_limit_name] is not None):
+                    if has_key_value(i, lower_limit_name)\
+                            and has_key_value(i, upper_limit_name):
                         target_value = (i[lower_limit_name] + i[upper_limit_name]) / 2.0
 
-                    elif lower_linear_limit_name in i and (i[lower_linear_limit_name] is not None)\
-                            and upper_linear_limit_name is i and (i[upper_linear_limit_name] is not None):
+                    elif has_key_value(i, lower_linear_limit_name)\
+                            and has_key_value(i, upper_linear_limit_name):
                         target_value = (i[lower_linear_limit_name] + i[upper_linear_limit_name]) / 2.0
 
-                    elif upper_linear_limit_name in i and (i[upper_linear_limit_name] is not None):
+                    elif has_key_value(i, upper_linear_limit_name):
                         target_value = i[upper_linear_limit_name]
 
-                    elif upper_limit_name in i and (i[upper_limit_name] is not None):
+                    elif has_key_value(i, upper_limit_name):
                         target_value = i[upper_limit_name]
 
-                    elif lower_linear_limit_name in i and (i[lower_linear_limit_name] is not None):
+                    elif has_key_value(i, lower_linear_limit_name):
                         target_value = i[lower_linear_limit_name]
 
-                    elif lower_limit_name in i and (i[lower_limit_name] is not None):
+                    elif has_key_value(i, lower_limit_name):
                         target_value = i[lower_limit_name]
 
                     else:
@@ -21468,24 +21468,24 @@ class NmrDpUtility:
 
                     if target_value is None:
 
-                        if lower_limit_name in i and (i[lower_limit_name] is not None)\
-                                and upper_limit_name in i and (i[upper_limit_name] is not None):
+                        if has_key_value(i, lower_limit_name)\
+                                and has_key_value(i, upper_limit_name):
                             target_value = (i[lower_limit_name] + i[upper_limit_name]) / 2.0
 
-                        elif lower_linear_limit_name in i and (i[lower_linear_limit_name] is not None)\
-                                and upper_linear_limit_name is i and (i[upper_linear_limit_name] is not None):
+                        elif has_key_value(i, lower_linear_limit_name)\
+                                and has_key_value(i, upper_linear_limit_name):
                             target_value = (i[lower_linear_limit_name] + i[upper_linear_limit_name]) / 2.0
 
-                        elif upper_linear_limit_name in i and (i[upper_linear_limit_name] is not None):
+                        elif has_key_value(i, upper_linear_limit_name):
                             target_value = i[upper_linear_limit_name]
 
-                        elif upper_limit_name in i and (i[upper_limit_name] is not None):
+                        elif has_key_value(i, upper_limit_name):
                             target_value = i[upper_limit_name]
 
-                        elif lower_linear_limit_name in i and (i[lower_linear_limit_name] is not None):
+                        elif has_key_value(i, lower_linear_limit_name):
                             target_value = i[lower_linear_limit_name]
 
-                        elif lower_limit_name in i and (i[lower_limit_name] is not None):
+                        elif has_key_value(i, lower_limit_name):
                             target_value = i[lower_limit_name]
 
                         else:
@@ -21554,48 +21554,48 @@ class NmrDpUtility:
 
                             if target_value_1 is None:
 
-                                if lower_limit_name in row_1 and (row_1[lower_limit_name] is not None)\
-                                        and upper_limit_name in row_1 and (row_1[upper_limit_name] is not None):
+                                if has_key_value(row_1, lower_limit_name)\
+                                        and has_key_value(row_1, upper_limit_name):
                                     target_value_1 = (row_1[lower_limit_name] + row_1[upper_limit_name]) / 2.0
 
-                                elif lower_linear_limit_name in row_1 and (row_1[lower_linear_limit_name] is not None)\
-                                        and upper_linear_limit_name is i and (row_1[upper_linear_limit_name] is not None):
+                                elif has_key_value(row_1, lower_linear_limit_name)\
+                                        and has_key_value(row_1, upper_linear_limit_name):
                                     target_value_1 = (row_1[lower_linear_limit_name] + row_1[upper_linear_limit_name]) / 2.0
 
-                                elif upper_linear_limit_name in row_1 and (row_1[upper_linear_limit_name] is not None):
+                                elif has_key_value(row_1, upper_linear_limit_name):
                                     target_value_1 = row_1[upper_linear_limit_name]
 
-                                elif upper_limit_name in row_1 and (row_1[upper_limit_name] is not None):
+                                elif has_key_value(row_1, upper_limit_name):
                                     target_value_1 = row_1[upper_limit_name]
 
-                                elif lower_linear_limit_name in row_1 and (row_1[lower_linear_limit_name] is not None):
+                                elif has_key_value(row_1, lower_linear_limit_name):
                                     target_value_1 = row_1[lower_linear_limit_name]
 
-                                elif lower_limit_name in row_1 and (row_1[lower_limit_name] is not None):
+                                elif has_key_value(row_1, lower_limit_name):
                                     target_value_1 = row_1[lower_limit_name]
 
                             target_value_2 = row_2[target_value_name] if target_value_name in row_2 else None
 
                             if target_value_2 is None:
 
-                                if lower_limit_name in row_2 and (row_2[lower_limit_name] is not None)\
-                                        and upper_limit_name in row_2 and (row_2[upper_limit_name] is not None):
+                                if has_key_value(row_2, lower_limit_name)\
+                                        and has_key_value(row_2, upper_limit_name):
                                     target_value_2 = (row_2[lower_limit_name] + row_2[upper_limit_name]) / 2.0
 
-                                elif lower_linear_limit_name in row_2 and (row_2[lower_linear_limit_name] is not None)\
-                                        and upper_linear_limit_name is i and (row_2[upper_linear_limit_name] is not None):
+                                elif has_key_value(row_2, lower_linear_limit_name)\
+                                        and has_key_value(row_2, upper_linear_limit_name):
                                     target_value_2 = (row_2[lower_linear_limit_name] + row_2[upper_linear_limit_name]) / 2.0
 
-                                elif upper_linear_limit_name in row_2 and (row_2[upper_linear_limit_name] is not None):
+                                elif has_key_value(row_2, upper_linear_limit_name):
                                     target_value_2 = row_2[upper_linear_limit_name]
 
-                                elif upper_limit_name in row_2 and (row_2[upper_limit_name] is not None):
+                                elif has_key_value(row_2, upper_limit_name):
                                     target_value_2 = row_2[upper_limit_name]
 
-                                elif lower_linear_limit_name in row_2 and (row_2[lower_linear_limit_name] is not None):
+                                elif has_key_value(row_2, lower_linear_limit_name):
                                     target_value_2 = row_2[lower_linear_limit_name]
 
-                                elif lower_limit_name in row_2 and (row_2[lower_limit_name] is not None):
+                                elif has_key_value(row_2, lower_limit_name):
                                     target_value_2 = row_2[lower_limit_name]
 
                             if target_value_1 is None or target_value_2 is None:
@@ -21667,48 +21667,48 @@ class NmrDpUtility:
 
                                     if target_value_1 is None:
 
-                                        if lower_limit_name in row_1 and (row_1[lower_limit_name] is not None)\
-                                                and upper_limit_name in row_1 and (row_1[upper_limit_name] is not None):
+                                        if has_key_value(row_1, lower_limit_name)\
+                                                and has_key_value(row_1, upper_limit_name):
                                             target_value_1 = (row_1[lower_limit_name] + row_1[upper_limit_name]) / 2.0
 
-                                        elif lower_linear_limit_name in row_1 and (row_1[lower_linear_limit_name] is not None)\
-                                                and upper_linear_limit_name is i and (row_1[upper_linear_limit_name] is not None):
+                                        elif has_key_value(row_1, lower_linear_limit_name)\
+                                                and has_key_value(row_1, upper_linear_limit_name):
                                             target_value_1 = (row_1[lower_linear_limit_name] + row_1[upper_linear_limit_name]) / 2.0
 
-                                        elif upper_linear_limit_name in row_1 and (row_1[upper_linear_limit_name] is not None):
+                                        elif has_key_value(row_1, upper_linear_limit_name):
                                             target_value_1 = row_1[upper_linear_limit_name]
 
-                                        elif upper_limit_name in row_1 and (row_1[upper_limit_name] is not None):
+                                        elif has_key_value(row_1, upper_limit_name):
                                             target_value_1 = row_1[upper_limit_name]
 
-                                        elif lower_linear_limit_name in row_1 and (row_1[lower_linear_limit_name] is not None):
+                                        elif has_key_value(row_1, lower_linear_limit_name):
                                             target_value_1 = row_1[lower_linear_limit_name]
 
-                                        elif lower_limit_name in row_1 and (row_1[lower_limit_name] is not None):
+                                        elif has_key_value(row_1, lower_limit_name):
                                             target_value_1 = row_1[lower_limit_name]
 
                                     target_value_2 = row_2[target_value_name] if target_value_name in row_2 else None
 
                                     if target_value_2 is None:
 
-                                        if lower_limit_name in row_2 and (row_2[lower_limit_name] is not None)\
-                                                and upper_limit_name in row_2 and (row_2[upper_limit_name] is not None):
+                                        if has_key_value(row_2, lower_limit_name)\
+                                                and has_key_value(row_2, upper_limit_name):
                                             target_value_2 = (row_2[lower_limit_name] + row_2[upper_limit_name]) / 2.0
 
-                                        elif lower_linear_limit_name in row_2 and (row_2[lower_linear_limit_name] is not None)\
-                                                and upper_linear_limit_name is i and (row_2[upper_linear_limit_name] is not None):
+                                        elif has_key_value(row_2, lower_linear_limit_name)\
+                                                and has_key_value(row_2, upper_linear_limit_name):
                                             target_value_2 = (row_2[lower_linear_limit_name] + row_2[upper_linear_limit_name]) / 2.0
 
-                                        elif upper_linear_limit_name in row_2 and (row_2[upper_linear_limit_name] is not None):
+                                        elif has_key_value(row_2, upper_linear_limit_name):
                                             target_value_2 = row_2[upper_linear_limit_name]
 
-                                        elif upper_limit_name in row_2 and (row_2[upper_limit_name] is not None):
+                                        elif has_key_value(row_2, upper_limit_name):
                                             target_value_2 = row_2[upper_limit_name]
 
-                                        elif lower_linear_limit_name in row_2 and (row_2[lower_linear_limit_name] is not None):
+                                        elif has_key_value(row_2, lower_linear_limit_name):
                                             target_value_2 = row_2[lower_linear_limit_name]
 
-                                        elif lower_limit_name in row_2 and (row_2[lower_limit_name] is not None):
+                                        elif has_key_value(row_2, lower_limit_name):
                                             target_value_2 = row_2[lower_limit_name]
 
                                     if target_value_1 is None and target_value_2 is None:
@@ -23630,7 +23630,8 @@ class NmrDpUtility:
 
             seq_align_dic = self.report.sequence_alignment.get()
 
-            if has_key_value(seq_align_dic, 'model_poly_seq_vs_nmr_poly_seq') and has_key_value(seq_align_dic, 'nmr_poly_seq_vs_model_poly_seq'):
+            if has_key_value(seq_align_dic, 'model_poly_seq_vs_nmr_poly_seq')\
+                    and has_key_value(seq_align_dic, 'nmr_poly_seq_vs_model_poly_seq'):
 
                 cif_polymer_sequence = cif_input_source_dic['polymer_sequence']
                 nmr_polymer_sequence = nmr_input_source_dic['polymer_sequence']
@@ -24638,7 +24639,7 @@ class NmrDpUtility:
 
                 try:
 
-                    _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
+                    _num_dim = get_first_sf_tag(sf_data, self.num_dim_items[file_type])
                     num_dim = int(_num_dim)
 
                     if num_dim not in range(1, self.lim_num_dim):
@@ -24692,7 +24693,7 @@ class NmrDpUtility:
 
         sa_name = 'nmr_poly_seq_vs_' + content_subtype
 
-        if sa_name in seq_align_dic and seq_align_dic[sa_name] is not None:
+        if has_key_value(seq_align_dic, sa_name):
 
             for seq_align in seq_align_dic[sa_name]:
 
@@ -24722,7 +24723,7 @@ class NmrDpUtility:
 
                 try:
 
-                    _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
+                    _num_dim = get_first_sf_tag(sf_data, self.num_dim_items[file_type])
                     num_dim = int(_num_dim)
 
                     if num_dim not in range(1, self.lim_num_dim):
@@ -24994,7 +24995,7 @@ class NmrDpUtility:
 
                     try:
 
-                        _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
+                        _num_dim = get_first_sf_tag(sf_data, self.num_dim_items[file_type])
                         num_dim = int(_num_dim)
 
                         if num_dim not in range(1, self.lim_num_dim):
@@ -25083,7 +25084,7 @@ class NmrDpUtility:
 
                     try:
 
-                        _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
+                        _num_dim = get_first_sf_tag(sf_data, self.num_dim_items[file_type])
                         num_dim = int(_num_dim)
 
                         if num_dim not in range(1, self.lim_num_dim):
@@ -29028,7 +29029,7 @@ class NmrDpUtility:
                                 # specific remediation follows
                                 else:
 
-                                    sf_category = sf_data.get_tag('sf_category')[0]
+                                    sf_category = get_first_sf_tag(sf_data, 'sf_category')
 
                                     try:
 
@@ -29279,27 +29280,27 @@ class NmrDpUtility:
 
                 if target_value is None:
 
-                    if lower_limit_name in i and (i[lower_limit_name] is not None)\
-                            and upper_limit_name in i and (i[upper_limit_name] is not None):
+                    if has_key_value(i, lower_limit_name)\
+                            and has_key_value(i, upper_limit_name):
                         target_value = (i[lower_limit_name] + i[upper_limit_name]) / 2.0
 
-                    elif lower_linear_limit_name in i and (i[lower_linear_limit_name] is not None)\
-                            and upper_linear_limit_name is i and (i[upper_linear_limit_name] is not None):
+                    elif has_key_value(i, lower_linear_limit_name)\
+                            and has_key_value(i, upper_linear_limit_name):
                         target_value = (i[lower_linear_limit_name] + i[upper_linear_limit_name]) / 2.0
 
-                    elif upper_linear_limit_name in i and (i[upper_linear_limit_name] is not None):
+                    elif has_key_value(i, upper_linear_limit_name):
                         target_value = i[upper_linear_limit_name]
                         upper_limit_value = target_value
 
-                    elif upper_limit_name in i and (i[upper_limit_name] is not None):
+                    elif has_key_value(i, upper_limit_name):
                         target_value = i[upper_limit_name]
                         upper_limit_value = target_value
 
-                    elif lower_linear_limit_name in i and (i[lower_linear_limit_name] is not None):
+                    elif has_key_value(i, lower_linear_limit_name):
                         target_value = i[lower_linear_limit_name]
                         lower_limit_value = target_value
 
-                    elif lower_limit_name in i and (i[lower_limit_name] is not None):
+                    elif has_key_value(i, lower_limit_name):
                         target_value = i[lower_limit_name]
                         lower_limit_value = target_value
 
@@ -29412,27 +29413,27 @@ class NmrDpUtility:
 
                 if target_value is None:
 
-                    if lower_limit_name in i and (i[lower_limit_name] is not None)\
-                            and upper_limit_name in i and (i[upper_limit_name] is not None):
+                    if has_key_value(i, lower_limit_name)\
+                            and has_key_value(i, upper_limit_name):
                         target_value = (i[lower_limit_name] + i[upper_limit_name]) / 2.0
 
-                    elif lower_linear_limit_name in i and (i[lower_linear_limit_name] is not None)\
-                            and upper_linear_limit_name is i and (i[upper_linear_limit_name] is not None):
+                    elif has_key_value(i, lower_linear_limit_name)\
+                            and has_key_value(i, upper_linear_limit_name):
                         target_value = (i[lower_linear_limit_name] + i[upper_linear_limit_name]) / 2.0
 
-                    elif upper_linear_limit_name in i and (i[upper_linear_limit_name] is not None):
+                    elif has_key_value(i, upper_linear_limit_name):
                         target_value = i[upper_linear_limit_name]
                         upper_limit_value = target_value
 
-                    elif upper_limit_name in i and (i[upper_limit_name] is not None):
+                    elif has_key_value(i, upper_limit_name):
                         target_value = i[upper_limit_name]
                         upper_limit_value = target_value
 
-                    elif lower_linear_limit_name in i and (i[lower_linear_limit_name] is not None):
+                    elif has_key_value(i, lower_linear_limit_name):
                         target_value = i[lower_linear_limit_name]
                         lower_limit_value = target_value
 
-                    elif lower_limit_name in i and (i[lower_limit_name] is not None):
+                    elif has_key_value(i, lower_limit_name):
                         target_value = i[lower_limit_name]
                         lower_limit_value = target_value
 
@@ -29765,10 +29766,10 @@ class NmrDpUtility:
             upper_linear_limit_name = item_names['upper_linear_limit']
 
             for i in lp_data:
-                if (lower_limit_name in i and i[lower_limit_name] is not None) and\
-                   (upper_limit_name in i and i[upper_limit_name] is not None) and\
-                   ((lower_linear_limit_name not in i) or i[lower_linear_limit_name] is None) and\
-                   ((upper_linear_limit_name not in i) or i[upper_linear_limit_name] is None):
+                if has_key_value(i, lower_limit_name) and\
+                   has_key_value(i, upper_limit_name) and\
+                   (not has_key_value(i, lower_linear_limit_name)) and\
+                   (not has_key_value(i, upper_linear_limit_name)):
                     continue
 
                 return False
@@ -29809,10 +29810,10 @@ class NmrDpUtility:
             upper_linear_limit_name = item_names['upper_linear_limit']
 
             for i in lp_data:
-                if (lower_limit_name in i and i[lower_limit_name] is not None) and\
-                   (upper_limit_name in i and i[upper_limit_name] is not None) and\
-                   (lower_linear_limit_name in i and i[lower_linear_limit_name] is not None) and\
-                   (upper_linear_limit_name in i and i[upper_linear_limit_name] is not None):
+                if has_key_value(i, lower_limit_name) and\
+                   has_key_value(i, upper_limit_name) and\
+                   has_key_value(i, lower_linear_limit_name) and\
+                   has_key_value(i, upper_linear_limit_name):
                     continue
 
                 return False
@@ -29853,10 +29854,10 @@ class NmrDpUtility:
             upper_linear_limit_name = item_names['upper_linear_limit']
 
             for i in lp_data:
-                if ((lower_limit_name not in i) or i[lower_limit_name] is None) and\
-                   (upper_limit_name in i and i[upper_limit_name] is not None) and\
-                   ((lower_linear_limit_name not in i) or i[lower_linear_limit_name] is None) and\
-                   ((upper_linear_limit_name not in i) or i[upper_linear_limit_name] is None):
+                if (not has_key_value(i, lower_limit_name)) and\
+                   has_key_value(i, upper_limit_name) and\
+                   (not has_key_value(i, lower_linear_limit_name)) and\
+                   (not has_key_value(i, upper_linear_limit_name)):
                     continue
 
                 return False
@@ -29897,10 +29898,10 @@ class NmrDpUtility:
             upper_linear_limit_name = item_names['upper_linear_limit']
 
             for i in lp_data:
-                if (lower_limit_name in i and i[lower_limit_name] is not None) and\
-                   ((upper_limit_name not in i) or i[upper_limit_name] is None) and\
-                   ((lower_linear_limit_name not in i) or i[lower_linear_limit_name] is None) and\
-                   ((upper_linear_limit_name not in i) or i[upper_linear_limit_name] is None):
+                if has_key_value(i, lower_limit_name) and\
+                   (not has_key_value(i, upper_limit_name)) and\
+                   (not has_key_value(i, lower_linear_limit_name)) and\
+                   (not has_key_value(i, upper_linear_limit_name)):
                     continue
 
                 return False
@@ -29941,10 +29942,10 @@ class NmrDpUtility:
             upper_linear_limit_name = item_names['upper_linear_limit']
 
             for i in lp_data:
-                if ((lower_limit_name not in i) or i[lower_limit_name] is None) and\
-                   (upper_limit_name in i and i[upper_limit_name] is not None) and\
-                   ((lower_linear_limit_name not in i) or i[lower_linear_limit_name] is None) and\
-                   (upper_linear_limit_name in i and i[upper_linear_limit_name] is not None):
+                if (not has_key_value(i, lower_limit_name)) and\
+                   has_key_value(i, upper_limit_name) and\
+                   (not has_key_value(i, lower_linear_limit_name)) and\
+                   has_key_value(i, upper_linear_limit_name):
                     continue
 
                 return False
@@ -29985,10 +29986,10 @@ class NmrDpUtility:
             upper_linear_limit_name = item_names['upper_linear_limit']
 
             for i in lp_data:
-                if (lower_limit_name in i and i[lower_limit_name] is not None) and\
-                   ((upper_limit_name not in i) or i[upper_limit_name] is None) and\
-                   (lower_linear_limit_name in i and i[lower_linear_limit_name] is not None) and\
-                   ((upper_linear_limit_name not in i) or i[upper_linear_limit_name] is None):
+                if has_key_value(i, lower_limit_name) and\
+                   (not has_key_value(i, upper_limit_name)) and\
+                   has_key_value(i, lower_linear_limit_name) and\
+                   (not has_key_value(i, upper_linear_limit_name)):
                     continue
 
                 return False
@@ -30032,11 +30033,11 @@ class NmrDpUtility:
             upper_linear_limit_name = item_names['upper_linear_limit']
 
             for i in lp_data:
-                if (target_value_name in i and i[target_value_name] is not None) and\
-                   ((lower_limit_name not in i) or i[lower_limit_name] is None) and\
-                   ((upper_limit_name not in i) or i[upper_limit_name] is None) and\
-                   ((lower_linear_limit_name not in i) or i[lower_linear_limit_name] is None) and\
-                   ((upper_linear_limit_name not in i) or i[upper_linear_limit_name] is None):
+                if has_key_value(i, target_value_name) and\
+                   (not has_key_value(i, lower_limit_name)) and\
+                   (not has_key_value(i, upper_limit_name)) and\
+                   (not has_key_value(i, lower_linear_limit_name)) and\
+                   (not has_key_value(i, upper_linear_limit_name)):
                     continue
 
                 return False
@@ -30264,7 +30265,7 @@ class NmrDpUtility:
 
                     try:
 
-                        _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
+                        _num_dim = get_first_sf_tag(sf_data, self.num_dim_items[file_type])
                         num_dim = int(_num_dim)
 
                         if num_dim not in range(1, self.lim_num_dim):
@@ -30404,7 +30405,7 @@ class NmrDpUtility:
 
                     try:
 
-                        _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
+                        _num_dim = get_first_sf_tag(sf_data, self.num_dim_items[file_type])
                         num_dim = int(_num_dim)
 
                         if num_dim not in range(1, self.lim_num_dim):
@@ -30684,7 +30685,7 @@ class NmrDpUtility:
 
                         list_id = collections.Counter(list_ids).most_common()[0][0]
 
-                        if len(sf_data.get_tag('ID')) > 0:
+                        if len(get_first_sf_tag(sf_data, 'ID')) > 0:
                             tagNames = [t[0] for t in sf_data.tags]
                             itCol = tagNames.index('ID')
 
@@ -30744,7 +30745,7 @@ class NmrDpUtility:
         proc_sf_categories = set()
 
         # supported sf_categories
-        if input_source_dic['content_subtype'] is not None:
+        if has_key_value(input_source_dic, 'content_subtype'):
 
             for content_subtype in input_source_dic['content_subtype'].keys():
 
@@ -30762,7 +30763,7 @@ class NmrDpUtility:
 
                     if entryIdTag in self.sf_allowed_tags[file_type][content_subtype]:
 
-                        if len(sf_data.get_tag(entryIdTag)) == 0:
+                        if len(get_first_sf_tag(sf_data, entryIdTag)) == 0:
                             sf_data.add_tag(entryIdTag, self.__entry_id)
 
                         else:
@@ -30844,7 +30845,7 @@ class NmrDpUtility:
 
                 entryIdTag = 'ID' if sf_category == 'entry_information' else 'Entry_ID'
 
-                if len(sf_data.get_tag(entryIdTag)) == 0:
+                if len(get_first_sf_tag(sf_data, entryIdTag)) == 0:
                     sf_data.add_tag(entryIdTag, self.__entry_id)
 
                 else:

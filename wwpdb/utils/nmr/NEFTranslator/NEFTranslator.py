@@ -97,36 +97,26 @@ import pynmrstar
 from packaging import version
 
 from wwpdb.utils.nmr.AlignUtil import (emptyValue, trueValue,
-                                       intPattern, badPattern,
                                        getOneLetterCode)
 from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
 from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 
-__version__ = '3.0.7'
+__version__ = '3.0.8'
 
 __pynmrstar_v3_2__ = version.parse(pynmrstar.__version__) >= version.parse("3.2.0")
 __pynmrstar_v3_1__ = version.parse(pynmrstar.__version__) >= version.parse("3.1.0")
 __pynmrstar_v3__ = version.parse(pynmrstar.__version__) >= version.parse("3.0.0")
 
+
 logging.getLogger().setLevel(logging.ERROR)
-#
-# def load_json_data(json_file):
-#     "" Load JSON data to dictionary.
-#         @param json_file: input JSON file path
-#         @return: dictionary object
-#     ""
 
-#     data_dict = []
 
-#     try:
-#         with open(json_file, 'r') as file:
-#             data_dict = json.loads(file.read())
+# integer pattern
+intPattern = re.compile(r'^([+-]?[1-9]\d*|0)$')
 
-#     except Exception as e:
-#         logging.error(str(e))
 
-#     return data_dict
-#
+# bad pattern
+badPattern = re.compile(r'.*[\!\$\&\(\)\=\~\^\\\|\`\@\{\}\[\]\;\:\<\>\,\/].*')
 
 
 def load_csv_data(csv_file, transpose=False):
@@ -302,11 +292,7 @@ class NEFTranslator:
         self.nef_mandatory_tag = load_csv_data(self.lib_dir + 'NEF_mandatory.csv')
 
         self.star_mandatory_tag = load_csv_data(self.lib_dir + 'NMR-STAR_mandatory.csv')
-        """
-        self.atomDict = load_json_data(self.lib_dir + 'atomDict.json')
 
-        self.codeDict = load_json_data(self.lib_di + 'codeDict.json')
-        """
         # whether to replace zero by empty if 'void-zero' is set
         self.replace_zero_by_null_in_case = False
         # whether to insert _Atom_chem_shift.Original_PDB_* items
@@ -353,91 +339,6 @@ class NEFTranslator:
                               'CD': [113, 111],
                               'CA': [43]
                               }
-
-        # list of atom_id of known residues
-        self.atomDict = {"ALA": ["N", "CA", "C", "O", "CB", "OXT", "H", "H2", "HA", "HB1", "HB2", "HB3", "HXT"],
-                         "ARG": ["N", "CA", "C", "O", "CB", "CG", "CD", "NE", "CZ", "NH1", "NH2", "OXT", "H", "H2", "HA",
-                                 "HB2", "HB3", "HG2", "HG3", "HD2", "HD3", "HE", "HH11", "HH12", "HH21", "HH22", "HXT"],
-                         "ASN": ["N", "CA", "C", "O", "CB", "CG", "OD1", "ND2", "OXT",
-                                 "H", "H2", "HA", "HB2", "HB3", "HD21", "HD22", "HXT"],
-                         "ASP": ["N", "CA", "C", "O", "CB", "CG", "OD1", "OD2", "OXT",
-                                 "H", "H2", "HA", "HB2", "HB3", "HD2", "HXT"],
-                         "ASX": ["N", "CA", "C", "O", "CB", "CG", "XD1", "XD2",
-                                 "OXT", "H", "H2", "HA", "HB1", "HB2", "HXT"],
-                         "CYS": ["N", "CA", "C", "O", "CB", "SG", "OXT", "H",
-                                 "H2", "HA", "HB2", "HB3", "HG", "HXT"],
-                         "GLN": ["N", "CA", "C", "O", "CB", "CG", "CD", "OE1",
-                                 "NE2", "OXT", "H", "H2", "HA", "HB2", "HB3", "HG2", "HG3", "HE21", "HE22", "HXT"],
-                         "GLU": ["N", "CA", "C", "O", "CB", "CG", "CD", "OE1",
-                                 "OE2", "OXT", "H", "H2", "HA", "HB2", "HB3", "HG2", "HG3", "HE2", "HXT"],
-                         "GLX": ["N", "CA", "C", "O", "CB", "CG", "CD", "XE1", "XE2", "HA", "OXT", "HXT",
-                                 "HB1", "HB2", "HG1", "HG2", "H", "H2"],
-                         "GLY": ["N", "CA", "C", "O", "OXT", "H", "H2", "HA2", "HA3", "HXT"],
-                         "HIS": ["N", "CA", "C", "O", "CB", "CG", "ND1", "CD2", "CE1", "NE2", "OXT", "H",
-                                 "H2", "HA", "HB2", "HB3", "HD1", "HD2", "HE1", "HE2", "HXT"],
-                         "ILE": ["N", "CA", "C", "O", "CB", "CG1", "CG2", "CD1", "OXT", "H", "H2", "HA", "HB",
-                                 "HG12", "HG13", "HG21", "HG22", "HG23", "HD11", "HD12", "HD13", "HXT"],
-                         "LEU": ["N", "CA", "C", "O", "CB", "CG", "CD1", "CD2", "OXT", "H", "H2", "HA", "HB2",
-                                 "HB3", "HG", "HD11", "HD12", "HD13", "HD21", "HD22", "HD23", "HXT"],
-                         "LYS": ["N", "CA", "C", "O", "CB", "CG", "CD", "CE", "NZ", "OXT", "H", "H2", "HA", "HB2",
-                                 "HB3", "HG2", "HG3", "HD2", "HD3", "HE2", "HE3", "HZ1", "HZ2", "HZ3", "HXT"],
-                         "MET": ["N", "CA", "C", "O", "CB", "CG", "SD", "CE", "OXT", "H", "H2", "HA", "HB2", "HB3",
-                                 "HG2", "HG3", "HE1", "HE2", "HE3", "HXT"],
-                         "PHE": ["N", "CA", "C", "O", "CB", "CG", "CD1", "CD2", "CE1", "CE2", "CZ", "OXT", "H", "H2",
-                                 "HA", "HB2", "HB3", "HD1", "HD2", "HE1", "HE2", "HZ", "HXT"],
-                         "PRO": ["N", "CA", "C", "O", "CB", "CG", "CD", "OXT", "H", "HA", "HB2", "HB3", "HG2", "HG3",
-                                 "HD2", "HD3", "HXT"],
-                         "SER": ["N", "CA", "C", "O", "CB", "OG", "OXT", "H", "H2", "HA", "HB2", "HB3", "HG", "HXT"],
-                         "THR": ["N", "CA", "C", "O", "CB", "OG1", "CG2", "OXT", "H", "H2", "HA", "HB", "HG1", "HG21",
-                                 "HG22", "HG23", "HXT"],
-                         "TRP": ["N", "CA", "C", "O", "CB", "CG", "CD1", "CD2", "NE1", "CE2", "CE3", "CZ2", "CZ3", "CH2",
-                                 "OXT", "H", "H2", "HA", "HB2", "HB3", "HD1", "HE1", "HE3", "HZ2", "HZ3", "HH2", "HXT"],
-                         "TYR": ["N", "CA", "C", "O", "CB", "CG", "CD1", "CD2", "CE1", "CE2", "CZ", "OH", "OXT", "H", "H2", "HA",
-                                 "HB2", "HB3", "HD1", "HD2", "HE1", "HE2", "HH", "HXT"],
-                         "VAL": ["N", "CA", "C", "O", "CB", "CG1", "CG2", "OXT", "H", "H2", "HA", "HB", "HG11", "HG12",
-                                 "HG13", "HG21", "HG22", "HG23", "HXT"],
-                         "DA": ["OP3", "P", "OP1", "OP2", "O5'", "C5'", "C4'", "O4'", "C3'", "O3'", "C2'", "C1'", "N9",
-                                "C8", "N7", "C5", "C6", "N6", "N1", "C2", "N3", "C4",
-                                "HOP3", "HOP2", "H5'", "H5''", "H4'", "H3'", "HO3'", "H2'", "H2''", "H1'", "H8", "H61", "H62", "H2"],
-                         "DC": ["OP3", "P", "OP1", "OP2", "O5'", "C5'", "C4'", "O4'", "C3'", "O3'", "C2'", "C1'", "N1",
-                                "C2", "O2", "N3", "C4", "N4", "C5", "C6",
-                                "HOP3", "HOP2", "H5'", "H5''", "H4'", "H3'", "HO3'", "H2'", "H2''", "H1'", "H41", "H42", "H5", "H6"],
-                         "DG": ["OP3", "P", "OP1", "OP2", "O5'", "C5'", "C4'", "O4'", "C3'", "O3'", "C2'", "C1'", "N9",
-                                "C8", "N7", "C5", "C6", "O6", "N1", "C2", "N2", "N3", "C4", "HOP3", "HOP2", "H5'", "H5''",
-                                "H4'", "H3'", "HO3'", "H2'", "H2''", "H1'", "H8", "H1", "H21", "H22"],
-                         "DT": ["OP3", "P", "OP1", "OP2", "O5'", "C5'", "C4'", "O4'", "C3'", "O3'", "C2'", "C1'", "N1",
-                                "C2", "O2", "N3", "C4", "O4", "C5", "C7", "C6", "HOP3", "HOP2", "H5'", "H5''", "H4'", "H3'",
-                                "HO3'", "H2'", "H2''", "H1'", "H3", "H71", "H72", "H73", "H6"],
-                         "DU": ["OP3", "P", "OP1", "OP2", "O5'", "C5'", "C4'", "O4'", "C3'", "O3'", "C2'", "C1'", "N1",
-                                "C2", "O2", "N3", "C4", "O4", "C5", "C6", "HOP3", "HOP2", "H5'", "H5''", "H4'", "H3'", "HO3'",
-                                "H2'", "H2''", "H1'", "H3", "H5", "H6"],
-                         "A": ["OP3", "P", "OP1", "OP2", "O5'", "C5'", "C4'", "O4'", "C3'", "O3'", "C2'", "O2'", "C1'",
-                               "N9", "C8", "N7", "C5", "C6", "N6", "N1",
-                               "C2", "N3", "C4", "HOP3", "HOP2", "H5'", "H5''", "H4'", "H3'", "HO3'", "H2'", "HO2'",
-                               "H1'", "H8", "H61", "H62", "H2"],
-                         "C": ["OP3", "P", "OP1", "OP2", "O5'", "C5'", "C4'", "O4'", "C3'", "O3'", "C2'", "O2'", "C1'",
-                               "N1", "C2", "O2", "N3", "C4", "N4", "C5",
-                               "C6", "HOP3", "HOP2", "H5'", "H5''", "H4'", "H3'", "HO3'", "H2'", "HO2'", "H1'", "H41",
-                               "H42", "H5", "H6"],
-                         "G": ["OP3", "P", "OP1", "OP2", "O5'", "C5'", "C4'", "O4'", "C3'", "O3'", "C2'", "O2'", "C1'",
-                               "N9", "C8", "N7", "C5", "C6", "O6", "N1",
-                               "C2", "N2", "N3", "C4", "HOP3", "HOP2", "H5'", "H5''", "H4'", "H3'", "HO3'", "H2'", "HO2'",
-                               "H1'", "H8", "H1", "H21", "H22"],
-                         "T": ["OP3", "P", "OP1", "OP2", "O5'", "C5'", "C4'", "O4'", "C3'", "O3'", "C2'", "C1'", "N1", "C2",
-                               "O2", "N3", "C4", "O4", "C5", "C7",
-                               "C6", "HOP3", "HOP2", "H5'", "H5''", "H4'", "H3'", "HO3'", "H2'", "H2''", "H1'", "H3", "H71", "H72", "H73", "H6"],
-                         "U": ["OP3", "P", "OP1", "OP2", "O5'", "C5'", "C4'", "O4'", "C3'", "O3'", "C2'", "O2'", "C1'",
-                               "N1", "C2", "O2", "N3", "C4", "O4", "C5", "C6", "HOP3", "HOP2", "H5'", "H5''", "H4'", "H3'",
-                               "HO3'", "H2'", "HO2'", "H1'", "H3", "H5", "H6"],
-                         #
-                         "PYL": ["CB2", "CG2", "CD2", "CE2", "N2", "CA2", "C2", "O2", "NZ", "CE", "CD", "CG", "CB", "CA", "C", "OXT", "O", "N", "HXT",
-                                 "HA", "H", "H2", "HB3", "HB2", "HG3", "HG2", "HD3", "HD2", "HE3", "HE2", "HZ", "HA2", "HE22", "HD32", "HD22", "HG22", "HB12", "HB22", "HB32"],
-                         "SEC": ["N", "CA", "CB", "SE", "C", "O", "OXT", "H", "H2", "HA", "HB2", "HB3", "HE", "HXT"],
-                         "UNK": ["N", "CA", "C", "O", "CB", "CG", "OXT", "H", "H2", "HA", "HB1", "HB2", "HG1", "HG2", "HG3", "HXT"],
-                         #
-                         "N": ["OP3", "P", "OP1", "OP2", "O5'", "C5'", "C4'", "O4'", "C3'", "O3'", "C2'", "O2'", "C1'", "HOP3", "HOP2",
-                               "H5'", "H5''", "H4'", "H3'", "HO3'", "H2'", "HO2'", "H1'", "H1'2"],
-                         }
 
         # limit number of dimensions
         self.lim_num_dim = 16
@@ -2277,33 +2178,7 @@ class NEFTranslator:
             data.append([])
 
         return data
-    #
-    # def check_nef_data(self, star_data, lp_category='nef_chemical_shift',
-    #                    key_items=[{'name': 'chain_code', 'type': 'str'},
-    #                               {'name': 'sequence_code', 'type': 'int'},
-    #                               {'name': 'residue_name', 'type': 'str'},
-    #                               {'name': 'atom_name', 'type': 'str'}],
-    #                    data_items=[{'name': 'value', 'type': 'float', 'mandatory': True},
-    #                                {'name': 'value_uncertainty', 'type': 'positive-float', 'mandatory': False}]):
-    #     "" Wrapper function of check_data() for an NEF file.
-    #         @author: Masashi Yokochi
-    #     ""
 
-    #     return self.check_data(star_data, lp_category, key_items, data_items)
-
-    # def check_star_data(self, star_data, lp_category='Atom_chem_shift',
-    #                     key_items=[{'name': 'Entity_assembly_ID', 'type': 'int'},
-    #                                {'name': 'Comp_index_ID', 'type': 'int'},
-    #                                {'name': 'Comp_ID', 'type': 'str'},
-    #                                {'name': 'Atom_ID', 'type': 'str'}],
-    #                     data_items=[{'name': 'Val', 'type': 'float', 'mandatory': True},
-    #                                 {'name': 'Val_err', 'type': 'positive-float', 'mandatory': False}]):
-    #     "" Wrapper function of check_data() for an NMR-STAR file.
-    #         @author: Masashi Yokochi
-    #     ""
-
-    #     return self.check_data(star_data, lp_category, key_items, data_items)
-    #
     def check_data(self, star_data, lp_category, key_items, data_items,
                    allowed_tags=None, disallowed_tags=None, parent_pointer=None,
                    test_on_index=False, enforce_non_zero=False, enforce_sign=False, enforce_range=False,
@@ -3912,20 +3787,10 @@ class NEFTranslator:
         if comp_id in emptyValue:
             return False
 
-        atoms = []
+        if self.__ccU.updateChemCompDict(comp_id):
+            return atom_id in [a[self.__ccU.ccaAtomId] for a in self.__ccU.lastAtomList]
 
-        if comp_id in self.atomDict:
-            atoms = self.atomDict[comp_id]
-
-        else:
-            self.__ccU.updateChemCompDict(comp_id)
-
-            if self.__ccU.lastStatus:  # matches with comp_id in CCD
-                atoms = [a[self.__ccU.ccaAtomId] for a in self.__ccU.lastAtomList]
-            else:
-                return False
-
-        return atom_id in atoms
+        return False
 
     def validate_atom(self, star_data, lp_category='Atom_chem_shift', comp_id='Comp_ID', atom_id='Atom_ID'):
         """ Validate atom_id in a given loop against CCD.
@@ -3960,14 +3825,8 @@ class NEFTranslator:
                     if _comp_id in emptyValue:
                         valid_row.append(j)
 
-                    elif _comp_id in self.atomDict:
-                        if _atom_id not in self.atomDict[_comp_id]:
-                            valid_row.append(j)
-
                     else:
-                        self.__ccU.updateChemCompDict(_comp_id)
-
-                        if self.__ccU.lastStatus:  # matches with comp_id in CCD
+                        if self.__ccU.updateChemCompDict(_comp_id):
                             if _atom_id not in [a[self.__ccU.ccaAtomId] for a in self.__ccU.lastAtomList]:
                                 valid_row.append(j)
                         else:
@@ -4253,24 +4112,17 @@ class NEFTranslator:
 
         atom_list = []
         ambiguity_code = 1
-
         atoms = []
 
-        if comp_id in self.atomDict:
-            atoms = self.atomDict[comp_id]
+        if self.__ccU.updateChemCompDict(comp_id):
+            atoms = [a[self.__ccU.ccaAtomId] for a in self.__ccU.lastAtomList]
 
         else:
-            self.__ccU.updateChemCompDict(comp_id)
 
-            if self.__ccU.lastStatus:  # matches with comp_id in CCD
-                atoms = [a[self.__ccU.ccaAtomId] for a in self.__ccU.lastAtomList]
-
+            if leave_unmatched:
+                details = f"Unknown non-standard residue {comp_id} found."
             else:
-
-                if leave_unmatched:
-                    details = f"Unknown non-standard residue {comp_id} found."
-                else:
-                    logging.critical('Unknown non-standard residue %s found.', comp_id)
+                logging.critical('Unknown non-standard residue %s found.', comp_id)
 
         try:
 
@@ -4361,7 +4213,7 @@ class NEFTranslator:
             if nef_atom == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]:
                 return self.get_star_atom(comp_id, 'H', 'HN converted to H.' if leave_unmatched else None, leave_unmatched)
 
-            if comp_id in self.atomDict:
+            if self.__csStat.hasCompId(comp_id):
 
                 methyl_atoms = self.__csStat.getMethylAtoms(comp_id)
 
@@ -4403,15 +4255,9 @@ class NEFTranslator:
 
         atom_list = []
         atom_id_map = {}
-
-        self.__ccU.updateChemCompDict(comp_id)
-
         atoms = []
 
-        if comp_id in self.atomDict:
-            atoms = self.atomDict[comp_id]
-
-        elif self.__ccU.lastStatus:  # matches with comp_id in CCD
+        if self.__ccU.updateChemCompDict(comp_id):
             atoms = [a[self.__ccU.ccaAtomId] for a in self.__ccU.lastAtomList]
 
         methyl_atoms = self.__csStat.getMethylAtoms(comp_id)
@@ -4816,9 +4662,10 @@ class NEFTranslator:
             @return: heavy atom name and list of proton names
         """
 
-        self.__ccU.updateChemCompDict(comp_id)
+        if atom_id is None or atom_id[0] not in ('H', 'C', 'N', 'O'):
+            return None, None
 
-        if not self.__ccU.lastStatus or atom_id is None or atom_id[0] not in ('H', 'C', 'N', 'O'):
+        if not self.__ccU.updateChemCompDict(comp_id):
             return None, None
 
         try:
@@ -4843,9 +4690,10 @@ class NEFTranslator:
             @return: geminal heavy atom name and list of geminal proton names
         """
 
-        self.__ccU.updateChemCompDict(comp_id)
+        if atom_id is None or atom_id[0] not in ('H', 'C', 'N', 'O'):
+            return None, None
 
-        if not self.__ccU.lastStatus or atom_id is None or atom_id[0] not in ('H', 'C', 'N', 'O'):
+        if not self.__ccU.updateChemCompDict(comp_id):
             return None, None
 
         atom_id, h_list = self.get_group(comp_id, atom_id)

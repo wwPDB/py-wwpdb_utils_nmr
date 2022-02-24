@@ -4072,7 +4072,7 @@ class NEFTranslator:
         if atom_id.startswith('Q') or atom_id.startswith('M'):
             return self.get_star_atom(comp_id, 'H' + atom_id[1:] + '%', details, leave_unmatched)
 
-        if atom_id + '2' in self.__csStat.getAllAtoms(comp_id):
+        if (atom_id + '2' in self.__csStat.getAllAtoms(comp_id)) or (atom_id + '22' in self.__csStat.getAllAtoms(comp_id)):
             return self.get_star_atom(comp_id, atom_id + '%', details, leave_unmatched)
 
         if '#' in atom_id:

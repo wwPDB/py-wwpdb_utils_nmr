@@ -10269,6 +10269,7 @@ class NmrDpUtility:
 
     def __getAtomIdListWithAmbigCode(self, file_type, comp_id, atom_id, leave_unmatched=True):
         """ Return lists of atom ID, ambiguity_code, details in IUPAC atom nomenclature for a given conventional NMR atom name.
+            @see: NEFTranslator.get_valid_star_atom()
         """
 
         if file_type == 'nef' or atom_id == 'HN' or atom_id.endswith('%') or atom_id.endswith('*'):
@@ -10293,6 +10294,9 @@ class NmrDpUtility:
 
         if (atom_id + '2' in self.__csStat.getAllAtoms(comp_id)) or (atom_id + '22' in self.__csStat.getAllAtoms(comp_id)):
             return self.__nefT.get_star_atom(comp_id, atom_id + '%', leave_unmatched=leave_unmatched)
+
+        if '#' in atom_id:
+            return self.__nefT.get_star_atom(comp_id, atom_id.replace('#', '%'))
 
         return self.__nefT.get_star_atom(comp_id, atom_id, leave_unmatched=leave_unmatched)
 

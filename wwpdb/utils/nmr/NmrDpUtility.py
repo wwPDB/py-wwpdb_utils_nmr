@@ -14827,7 +14827,7 @@ class NmrDpUtility:
 
                         _subtype_name = ' and '.join([map['content_subtype_name'] for map in _missing_cs_atoms])
 
-                        map = _missing_cs_atoms[0]
+                        map = _missing_cs_atoms[0]  # pylint: disable=redefined-builtin
 
                         _row = copy.copy(row)
                         _row[atom_id_col] = map['dst_atom_id']
@@ -16803,9 +16803,9 @@ class NmrDpUtility:
             if len(sf_framecode) == 0:
                 ent['exp_type'] = 'Unknown'
             else:
-                type = get_first_sf_tag(sf_data, 'restraint_origin' if file_type == 'nef' else 'Constraint_type')
-                if len(type) > 0:
-                    ent['exp_type'] = type
+                ctype = get_first_sf_tag(sf_data, 'restraint_origin' if file_type == 'nef' else 'Constraint_type')
+                if len(ctype) > 0:
+                    ent['exp_type'] = ctype
                 else:
                     ent['exp_type'] = 'Unknown'
 
@@ -16814,9 +16814,9 @@ class NmrDpUtility:
             if len(sf_framecode) == 0:
                 ent['exp_type'] = 'Unknown'
             else:
-                type = get_first_sf_tag(sf_data, 'experiment_type' if file_type == 'nef' else 'Experiment_type')
-                if len(type) > 0:
-                    ent['exp_type'] = type
+                ctype = get_first_sf_tag(sf_data, 'experiment_type' if file_type == 'nef' else 'Experiment_type')
+                if len(ctype) > 0:
+                    ent['exp_type'] = ctype
                 else:
                     ent['exp_type'] = 'Unknown'
 

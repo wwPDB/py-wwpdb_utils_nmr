@@ -10,6 +10,7 @@ import json
 
 from wwpdb.utils.nmr.NmrDpUtility import NmrDpUtility
 
+
 class TestNmrDpUtility(unittest.TestCase):
 
     def setUp(self):
@@ -17,7 +18,7 @@ class TestNmrDpUtility(unittest.TestCase):
         self.data_dir_path = os.path.join(here, 'mock-data-daother-7681/')
         self.data_file_path = {'h1gl': {'nef': 'aria2_run1_it8_fix_issue_#3.nef',
                                         'cif': 'fitted_h1gl_e2_water.cif'}
-                              }
+                               }
         self.utility = NmrDpUtility()
 
     def tearDown(self):
@@ -49,7 +50,7 @@ class TestNmrDpUtility(unittest.TestCase):
         elif 'missing_mandatory_content' in report['error']:
             print('%s: %s\n missing_mandatory_content: %s' % (entry_id, report['information']['status'], report['error']['missing_mandatory_content'][0]['description']))
         else:
-            error_type = {str(k): len(v) for k, v in report['error'].items() if not v is None and str(k) != 'total'}
+            error_type = {str(k): len(v) for k, v in report['error'].items() if v is not None and str(k) != 'total'}
             print('%s: %s, %s' % (entry_id, report['information']['status'], error_type))
 
     def __test_nmr_nef2str_deposit(self, entry_id):
@@ -79,7 +80,7 @@ class TestNmrDpUtility(unittest.TestCase):
 
             if not report['error'] is None:
                 self.assertNotIn('internal_error', report['error'])
-        except:
+        except:  # noqa: E722 pylint: disable=bare-except
             pass
 
     def __test_nmr_str_consistency(self, entry_id):
@@ -106,10 +107,10 @@ class TestNmrDpUtility(unittest.TestCase):
         elif 'missing_mandatory_content' in report['error']:
             print('%s: %s\n missing_mandatory_content: %s' % (entry_id, report['information']['status'], report['error']['missing_mandatory_content'][0]['description']))
         else:
-            error_type = {str(k): len(v) for k, v in report['error'].items() if not v is None and str(k) != 'total'}
+            error_type = {str(k): len(v) for k, v in report['error'].items() if v is not None and str(k) != 'total'}
             print('%s: %s, %s' % (entry_id.lower(), report['information']['status'], error_type))
 
-    def __test_nmr_str2nef_release(self, entry_id):
+    def __test_nmr_str2nef_release(self, entry_id):  # pylint: disable=unused-private-member   # No longer tested ???.
         if not os.access(self.data_dir_path + entry_id + '-str2nef-consistency-log.json', os.F_OK):
             self.__test_nmr_str_consistency(entry_id)
 
@@ -142,11 +143,12 @@ class TestNmrDpUtility(unittest.TestCase):
         elif 'missing_mandatory_content' in report['error']:
             print('%s: %s\n missing_mandatory_content: %s' % (entry_id, report['information']['status'], report['error']['missing_mandatory_content'][0]['description']))
         else:
-            error_type = {str(k): len(v) for k, v in report['error'].items() if not v is None and str(k) != 'total'}
+            error_type = {str(k): len(v) for k, v in report['error'].items() if v is not None and str(k) != 'total'}
             print('%s: %s, %s' % (entry_id, report['information']['status'], error_type))
 
     def test_nmr_nef2str_deposit_h1gl(self):
         self.__test_nmr_nef2str_deposit('h1gl')
+
 
 if __name__ == '__main__':
     unittest.main()

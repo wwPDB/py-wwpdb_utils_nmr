@@ -20,7 +20,7 @@
 # 05-Mar-2020  M. Yokochi - bidirectional convert between restraint_origin (NEF) and Content_type (NMR-STAR) (v2.0.6, DAOTHER-5485)
 # 06-Mar-2020  M. Yokochi - fix ambiguity_code mapping from NEF atom nomenclature (v2.0.7)
 # 17-Mar-2020  M. Yokochi - fill default value for mandatory saveframe tag (v2.0.8, DAOTHER-5508)
-# 18-Mar-2020  M. Yokochi - convert NEF atom nomenclature in dihedral angle/rdc restraint (v2.0.9)
+# 18-Mar-2020  M. Yokochi - convert NEF atom nomenclature in dihedral angle/RDC restraint (v2.0.9)
 # 18-Mar-2020  M. Yokochi - remove invalid NMR-STAR's Details tag in restraint (v2.0.9)
 # 03-Apr-2020  M. Yokochi - remove dependency of lib/atomDict.json and lib/codeDict.json (v2.1.0)
 # 03-Apr-2020  M. Yokochi - fill _Atom_chem_shift.Original_PDB_* items (v2.1.0)
@@ -6389,7 +6389,7 @@ class NEFTranslator:
         return out_row
 
     def nef2star_dihed_row(self, nef_tags, star_tags, loop_data):
-        """ Translate rows of data in dihedral restraint loop from NEF into NMR-STAR.
+        """ Translate rows of data in dihedral angle restraint loop from NEF into NMR-STAR.
             @author: Masashi Yokochi
             @param nef_tags: list of NEF tags
             @param star_tags: list of NMR-STAR tags
@@ -6576,7 +6576,7 @@ class NEFTranslator:
         return out_row
 
     def star2star_dihed_row(self, in_star_tags, star_tags, loop_data):
-        """ Translate rows of data in dihedral restraint loop from PyNMRSTAR data into NMR-STAR.
+        """ Translate rows of data in dihedral angle restraint loop from PyNMRSTAR data into NMR-STAR.
             @author: Masashi Yokochi
             @param in_star_tags: list of input NMR-STAR tags
             @param star_tags: list of NMR-STAR tags
@@ -6765,7 +6765,7 @@ class NEFTranslator:
         return out_row
 
     def nef2star_rdc_row(self, nef_tags, star_tags, loop_data):
-        """ Translate rows of data in rdc restraint loop from NEF into NMR-STAR.
+        """ Translate rows of data in RDC restraint loop from NEF into NMR-STAR.
             @author: Masashi Yokochi
             @param nef_tags: list of NEF tags
             @param star_tags: list of NMR-STAR tags
@@ -6910,7 +6910,7 @@ class NEFTranslator:
         return out_row
 
     def star2star_rdc_row(self, in_star_tags, star_tags, loop_data):
-        """ Translate rows of data in rdc restraint loop from PyNMRSTAR data into NMR-STAR.
+        """ Translate rows of data in RDC restraint loop from PyNMRSTAR data into NMR-STAR.
             @author: Masashi Yokochi
             @param in_star_tags: list of input NMR-STAR tags
             @param star_tags: list of NMR-STAR tags

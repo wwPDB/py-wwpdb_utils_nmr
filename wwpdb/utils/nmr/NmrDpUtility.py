@@ -419,7 +419,7 @@ def predict_tautomer_state_of_histidine(cg_chem_shift, cd2_chem_shift, nd1_chem_
 
 
 def predict_rotamer_state_of_leucine(cd1_chem_shift, cd2_chem_shift):
-    """ Return prediction of romermeric state of Leucine using assigned CD1 and CD2 chemical shifts.
+    """ Return prediction of rotermeric state of Leucine using assigned CD1 and CD2 chemical shifts.
         @return: probability of gauche+, trans, gauche-
         Reference:
           Dependence of Amino Acid Side Chain 13C Shifts on Dihedral Angle: Application to Conformational Analysis.
@@ -463,7 +463,7 @@ def predict_rotamer_state_of_leucine(cd1_chem_shift, cd2_chem_shift):
 
 
 def predict_rotamer_state_of_valine(cg1_chem_shift, cg2_chem_shift):
-    """ Return prediction of romermeric state of Valine using assigned CG1 and CG2 chemical shifts.
+    """ Return prediction of rotermeric state of Valine using assigned CG1 and CG2 chemical shifts.
         @return: probability of gauche+, trans, gauche-
         Reference:
           Dependence of Amino Acid Side Chain 13C Shifts on Dihedral Angle: Application to Conformational Analysis.
@@ -504,7 +504,7 @@ def predict_rotamer_state_of_valine(cg1_chem_shift, cg2_chem_shift):
 
 
 def predict_rotamer_state_of_isoleucine(cd1_chem_shift):
-    """ Return prediction of romermeric state of Isoleucine using assigned CD1 chemical shift.
+    """ Return prediction of rotermeric state of Isoleucine using assigned CD1 chemical shift.
         @return: probability of gauche+, trans, gauche-
         Reference:
           Determination of Isoleucine Side-Chain Conformations in Ground and Excited States of Proteins from Chemical Shifts.
@@ -944,19 +944,19 @@ class NmrDpUtility:
                                        }
                               }
 
-        # allowed chem shift range
+        # allowed chemical shift range in ppm
         self.chem_shift_range = {'min_exclusive': -300.0, 'max_exclusive': 300.0}
         self.chem_shift_error = {'min_inclusive': 0.0, 'max_inclusive': 3.0}
 
-        # allowed distance range
+        # allowed distance range in Angstromes
         self.dist_restraint_range = {'min_inclusive': 0.5, 'max_inclusive': 50.0}
         self.dist_restraint_error = {'min_inclusive': 0.0, 'max_inclusive': 5.0}
 
-        # allowed dihed range
+        # allowed dihedral angle range in degrees
         self.dihed_restraint_range = {'min_inclusive': -360.0, 'max_inclusive': 360.0}
         self.dihed_restraint_error = {'min_inclusive': 0.0, 'max_inclusive': 90.0}
 
-        # allowed rdc range
+        # allowed RDC range in Hz
         self.rdc_restraint_range = {'min_exclusive': -100.0, 'max_exclusive': 100.0}
         self.rdc_restraint_error = {'min_inclusive': 0.0, 'max_inclusive': 5.0}
 
@@ -3486,7 +3486,7 @@ class NmrDpUtility:
                                                    }
                                       }
 
-        # item name in dihedral restraint loop
+        # item name in dihedral angle restraint loop
         self.item_names_in_dh_loop = {'nef': {'combination_id': 'restraint_combination_id',
                                               'chain_id_1': 'chain_code_1',
                                               'seq_id_1': 'sequence_code_1',
@@ -3527,7 +3527,7 @@ class NmrDpUtility:
                                                    }
                                       }
 
-        # item name in rdc restraint loop
+        # item name in RDC restraint loop
         self.item_names_in_rdc_loop = {'nef': {'combination_id': 'restraint_combination_id',
                                                'chain_id_1': 'chain_code_1',
                                                'seq_id_1': 'sequence_code_1',
@@ -6206,7 +6206,7 @@ class NmrDpUtility:
                         if file_type == 'nef':
                             warn = f"Ignored third party software's saveframe {sf_category!r}."
                         else:
-                            warn = f"Ignored saveframe category {sf_category!r}%r."
+                            warn = f"Ignored saveframe category {sf_category!r}."
 
                         self.report.warning.appendDescription('skipped_saveframe_category',
                                                               {'file_name': file_name, 'sf_category': sf_category,
@@ -21080,7 +21080,7 @@ class NmrDpUtility:
     def __getTypeOfDihedralRestraint(self, data_type,
                                      chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2,
                                      chain_id_3, seq_id_3, comp_id_3, atom_id_3, chain_id_4, seq_id_4, comp_id_4, atom_id_4):
-        """ Return type of dihedral restraint.
+        """ Return type of dihedral angle restraint.
         """
 
         seq_ids = []
@@ -29546,7 +29546,7 @@ class NmrDpUtility:
         return True
 
     def __testDihedRestraintAsBackBoneChemShifts(self, lp_data):
-        """ Detect whether given dihedral restraints are derived from backbone chemical shifts.
+        """ Detect whether given dihedral angle restraints are derived from backbone chemical shifts.
         """
 
         if not self.__combined_mode:

@@ -14,6 +14,7 @@
 # 29-Jun-2021  M. Yokochi - support NEFTranslator v2.10.3
 # 13-Oct-2021  M. Yokochi - code refactoring according to PEP8 using Pylint (NEFTranslator v2.11.0, DAOTHER-7389, issue #5)
 # 28-Oct-2021  M. Yokochi - support NEFTranslator v3.0.2
+# 24-Feb-2022  M. Yokochi - support NEFTranslator v3.0.9
 ##
 import unittest
 import os
@@ -302,24 +303,6 @@ class TestNEFTranslator(unittest.TestCase):
         self.assertTrue(len(self.neft.nef_mandatory_tag) > 0, "Can't read NEF_mandatory.csv or its empty")
         self.assertTrue(len(self.neft.star_mandatory_tag) > 0, "Can't read NMR-STAR_mandatory.csv or its empty")
 
-    # """
-    # def test_load_json_data(self):
-    #     self.assertTrue(len(self.neft.codeDict) > 0, "Can't read codeDict.json or its empty")
-    #     self.assertTrue(len(self.neft.atomDict) > 0, "Can't read atomDict.json or its empty")
-    # """
-
-    # """
-    # def test_get_one_letter_code(self):
-    #     self.assertTrue(self.neft.get_one_letter_code("ALA") == "A")
-    #     self.assertTrue(self.neft.get_one_letter_code("Ala") == "A")
-    #     self.assertTrue(self.neft.get_one_letter_code("Axy") == "X")
-    # """
-
-    # """
-    # def test_get_readable_time_stamp(self):
-    #     self.assertEqual(self.neft.get_readable_time_stamp(1556036192.7247672), '2019-04-23 16:16:32') # CDT to UTC
-    # """
-
     def test_validate_file(self):
         self.assertEqual(self.neft.validate_file(os.path.join(self.data_dir_path, "xxx.xx"), "A")[0], False)  # File not found
         self.assertEqual(self.neft.validate_file(os.path.join(self.data_dir_path, "2l9r.nef"), "A")[0], True)
@@ -363,10 +346,10 @@ class TestNEFTranslator(unittest.TestCase):
     #     self.assertEqual(self.neft.is_empty_loop(dat, "_Gen_dist_constraint", "Entry"), True)
     #
 
-    def test_get_data_content(self):
+    def test_get_audit_list(self):
         (isValid, content, data) = self.neft.read_input_file(os.path.join(self.data_dir_path, "2mqq.nef"))
         self.assertTrue(isValid)
-        datacontent = self.neft.get_data_content(data, content)
+        datacontent = self.neft.get_audit_list(data, content)
         self.assertEqual(
             datacontent[0],
             [
@@ -395,7 +378,7 @@ class TestNEFTranslator(unittest.TestCase):
         )
         (isValid, content, data) = self.neft.read_input_file(os.path.join(self.data_dir_path, "2mqq.str"))
         self.assertTrue(isValid)
-        datacontent = self.neft.get_data_content(data, content)
+        datacontent = self.neft.get_audit_list(data, content)
         self.assertEqual(
             datacontent[0],
             [
@@ -3412,45 +3395,6 @@ class TestNEFTranslator(unittest.TestCase):
 
     def test_is_mandatory_tag(self):
         self.assertEqual(self.neft.is_mandatory_tag("_nef_rdc_restraint_list.potential_type", "nef"), True)
-
-    def test_letter_to_int(self):
-        self.assertEqual(self.neft.letter_to_int("A"), 1)
-        self.assertEqual(self.neft.letter_to_int("AA"), 28)
-        self.assertEqual(self.neft.letter_to_int("Z"), 26)
-        self.assertEqual(self.neft.letter_to_int("ZA"), 27 * 26 + 1)
-        self.assertEqual(self.neft.letter_to_int("a"), 1)
-        self.assertEqual(self.neft.letter_to_int("Aa"), 28)
-        self.assertEqual(self.neft.letter_to_int("z"), 26)
-        self.assertEqual(self.neft.letter_to_int("zA"), 27 * 26 + 1)
-        self.assertEqual(self.neft.letter_to_int("1"), 1)
-        self.assertEqual(self.neft.letter_to_int("0"), 0)
-        self.assertEqual(self.neft.letter_to_int("0", 1), 1)
-        self.assertEqual(self.neft.letter_to_int("Z*A"), 27 * 26 + 1)
-        self.assertEqual(self.neft.index_to_letter(self.neft.letter_to_int("A") - 1), "A")
-        self.assertEqual(self.neft.index_to_letter(self.neft.letter_to_int("Z") - 1), "Z")
-        self.assertEqual(self.neft.index_to_letter(self.neft.letter_to_int("AA") - 1), "AA")
-        self.assertEqual(self.neft.index_to_letter(self.neft.letter_to_int("ZA") - 1), "ZA")
-        self.assertEqual(self.neft.index_to_letter(self.neft.letter_to_int("AZ") - 1), "AZ")
-        self.assertEqual(self.neft.index_to_letter(self.neft.letter_to_int("ZZ") - 1), "ZZ")
-        self.assertEqual(self.neft.index_to_letter(self.neft.letter_to_int("AAA") - 1), "AAA")
-        self.assertEqual(self.neft.index_to_letter(self.neft.letter_to_int("AAZ") - 1), "AAZ")
-        self.assertEqual(self.neft.index_to_letter(self.neft.letter_to_int("AZA") - 1), "AZA")
-        self.assertEqual(self.neft.index_to_letter(self.neft.letter_to_int("AZZ") - 1), "AZZ")
-        self.assertEqual(self.neft.index_to_letter(self.neft.letter_to_int("ZAA") - 1), "ZAA")
-        self.assertEqual(self.neft.index_to_letter(self.neft.letter_to_int("ZAZ") - 1), "ZAZ")
-        self.assertEqual(self.neft.index_to_letter(self.neft.letter_to_int("ZZA") - 1), "ZZA")
-        self.assertEqual(self.neft.index_to_letter(self.neft.letter_to_int("ZZZ") - 1), "ZZZ")
-        self.assertEqual(self.neft.index_to_letter(self.neft.letter_to_int("B") - 1), "B")
-        self.assertEqual(self.neft.index_to_letter(self.neft.letter_to_int("BB") - 1), "BB")
-        self.assertEqual(self.neft.index_to_letter(self.neft.letter_to_int("BBB") - 1), "BBB")
-        self.assertEqual(self.neft.index_to_letter(self.neft.letter_to_int("ABC") - 1), "ABC")
-        self.assertEqual(self.neft.index_to_letter(self.neft.letter_to_int("CBA") - 1), "CBA")
-        self.assertEqual(self.neft.index_to_letter(0), "A")
-        self.assertEqual(self.neft.index_to_letter(1), "B")
-        self.assertEqual(self.neft.index_to_letter(-1), ".")
-        self.assertEqual(self.neft.index_to_letter(self.neft.letter_to_int("AABC") - 1), "ABC")
-        self.assertEqual(self.neft.index_to_letter(self.neft.letter_to_int("ZABC") - 1), "ABC")
-
 
 if __name__ == "__main__":
     unittest.main()

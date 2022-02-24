@@ -15,14 +15,14 @@ from antlr4 import ParseTreeListener
 from wwpdb.utils.nmr.mr.AmberPTParser import AmberPTParser
 from wwpdb.utils.nmr.mr.ParserListenerUtil import check_coordinates
 
-from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
 from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
 from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
 from wwpdb.utils.nmr.AlignUtil import (hasLargeSeqGap,
                                        fillBlankCompIdWithOffset, beautifyPolySeq,
                                        getMiddleCode, getGaugeCode, getScoreOfSeqAlign,
-                                       getOneLetterCodeSequence)
+                                       getOneLetterCodeSequence,
+                                       letterToDigit, indexToLetter)
 
 
 def chunk_string(string, length=4):
@@ -86,9 +86,6 @@ class AmberPTParserListener(ParseTreeListener):
     # criterion for minimum sequence coverage when conflict occurs (NMR separated deposition)
     min_seq_coverage_w_conflict = 0.95
 
-    # NEFTranslator
-    __nefT = None
-
     # BMRB chemical shift statistics
     __csStat = None
 
@@ -145,12 +142,6 @@ class AmberPTParserListener(ParseTreeListener):
         dict = check_coordinates(verbose, log, cR, polySeqModel)
         self.__polySeqModel = dict['polymer_sequence']
 
-        # NEFTranslator
-        self.__nefT = NEFTranslator()
-
-        if self.__nefT is None:
-            raise IOError("+AmberPTParserListener.__init__() ++ Error  - NEFTranslator is not available.")
-
         # BMRB chemical shift statistics
         self.__csStat = BMRBChemShiftStat()
 
@@ -175,8 +166,8 @@ class AmberPTParserListener(ParseTreeListener):
         del residuePointer2[0]
         residuePointer2.append(self.__residuePointer[-1] + 1000)
 
-        chainIndex = self.__nefT.letter_to_int(self.__polySeqModel[0]['chain_id']) - 1
-        chainId = self.__nefT.index_to_letter(chainIndex)
+        chainIndex = letterToDigit(self.__polySeqModel[0]['chain_id']) - 1
+        chainId = indexToLetter(chainIndex)
 
         terminus = [atomName.endswith('T') for atomName in self.__atomName]
         atomTotal = len(self.__atomName)
@@ -205,7 +196,7 @@ class AmberPTParserListener(ParseTreeListener):
                 seqIdList = []
                 compIdList = []
                 chainIndex += 1
-                chainId = self.__nefT.index_to_letter(chainIndex)
+                chainId = indexToLetter(chainIndex)
                 offset = 1 - _seqId
             seqId = _seqId + offset
             if seqId not in seqIdList:

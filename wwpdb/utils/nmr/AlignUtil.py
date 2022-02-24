@@ -316,3 +316,48 @@ def getOneLetterCodeSequence(compIdList):
         compCode += getOneLetterCode(compId)
 
     return compCode
+
+
+def letterToDigit(code, minDigit=0):
+    """ Return digit from a given chain code.
+    """
+
+    alphabet = 'abcdefghijklmnopqrstuvwxyz'
+
+    unit = 1
+    digit = 0
+
+    for char in ''.join(reversed(code.lower())):
+
+        if char.isdigit():
+            digit += unit * int(char)
+        elif char.isalpha():
+            digit += unit * (alphabet.index(char) + 1)
+        else:
+            continue
+
+        unit *= 27
+
+    return digit if digit > minDigit else minDigit
+
+
+def indexToLetter(index):
+    """ Return chain code from a given index (0 based).
+    """
+
+    if index < 0:
+        return '.'
+
+    if index > 19683:
+        index = index % 19683
+
+    if index < 27:
+        return str(chr(65 + index))
+
+    if index < 729:
+        return str(chr(64 + (index // 27)))\
+            + str(chr(65 + (index % 27)))
+
+    return str(chr(64 + (index // 729)))\
+        + str(chr(64 + ((index % 729) // 27)))\
+        + str(chr(65 + (index % 27)))

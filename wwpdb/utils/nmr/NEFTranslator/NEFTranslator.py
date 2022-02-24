@@ -20,7 +20,7 @@
 # 05-Mar-2020  M. Yokochi - bidirectional convert between restraint_origin (NEF) and Content_type (NMR-STAR) (v2.0.6, DAOTHER-5485)
 # 06-Mar-2020  M. Yokochi - fix ambiguity_code mapping from NEF atom nomenclature (v2.0.7)
 # 17-Mar-2020  M. Yokochi - fill default value for mandatory saveframe tag (v2.0.8, DAOTHER-5508)
-# 18-Mar-2020  M. Yokochi - convert NEF atom nomenclature in dihedral angle/rdc restraint (v2.0.9)
+# 18-Mar-2020  M. Yokochi - convert NEF atom nomenclature in dihedral angle/RDC restraint (v2.0.9)
 # 18-Mar-2020  M. Yokochi - remove invalid NMR-STAR's Details tag in restraint (v2.0.9)
 # 03-Apr-2020  M. Yokochi - remove dependency of lib/atomDict.json and lib/codeDict.json (v2.1.0)
 # 03-Apr-2020  M. Yokochi - fill _Atom_chem_shift.Original_PDB_* items (v2.1.0)
@@ -97,11 +97,12 @@ import pynmrstar
 from packaging import version
 
 from wwpdb.utils.nmr.AlignUtil import (emptyValue, trueValue,
-                                       getOneLetterCode)
+                                       getOneLetterCode,
+                                       letterToDigit, indexToLetter)
 from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
 from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 
-__version__ = '3.0.8'
+__version__ = '3.0.9'
 
 __pynmrstar_v3_2__ = version.parse(pynmrstar.__version__) >= version.parse("3.2.0")
 __pynmrstar_v3_1__ = version.parse(pynmrstar.__version__) >= version.parse("3.1.0")
@@ -111,12 +112,328 @@ __pynmrstar_v3__ = version.parse(pynmrstar.__version__) >= version.parse("3.0.0"
 logging.getLogger().setLevel(logging.ERROR)
 
 
+# supported version
+NEF_VERSION = '1.1'
+
+
+NMR_STAR_VERSION = '3.2.6.0'
+
+# format name
+NEF_FORMAT_NAME = 'nmr_exchange_format'
+
+
+# NEF boolean values
+nefBooleanVals = ('true', 'false')
+
+
+# NMR-STAR boolean values
+starBooleanVals = ('yes', 'no')
+
+
+# paramagnetic elements, except for Oxygen
+paramagElements = ('LI', 'NA', 'MG', 'AL', 'K', 'CA', 'SC', 'TI', 'V', 'MN', 'RB', 'SR',
+                   'Y', 'ZR', 'NB', 'MO', 'TC', 'RU', 'RH', 'PD', 'SN', 'CS', 'BA', 'LA',
+                   'CE', 'PR', 'ND', 'PM', 'SM', 'EU', 'GD', 'TB', 'DY', 'HO', 'ER', 'TM',
+                   'YB', 'LU', 'HF', 'TA', 'W', 'RE', 'OS', 'IR', 'PT', 'FR', 'RA', 'AC')
+
+
+# ferromagnetic elements
+ferromagElements = ('CR', 'FE', 'CO', 'NI')
+
+
+# non-metal elements
+nonMetalElements = ('H', 'C', 'N', 'O', 'P', 'S', 'SE')
+
+
+# isotope numbers of NMR observable nucleus
+isotopeNumsOfNmrObsNucs = {'H': [1, 2, 3],
+                           'C': [13],
+                           'N': [15, 14],
+                           'O': [17],
+                           'P': [31],
+                           'S': [33],
+                           'F': [19],
+                           'CD': [113, 111],
+                           'CA': [43]
+                           }
+
+
+# nucleus with half spin
+halfSpinNucs = ('H', 'C', 'N', 'P', 'F', 'CD')
+
+
+# allowed BMRB ambiguity codes
+allowedAmbiguityCodes = (1, 2, 3, 4, 5, 6, 9)
+
+
+allowedIsotopeNums = []
+for isotopeNums in isotopeNumsOfNmrObsNucs.values():
+    allowedIsotopeNums.extend(isotopeNums)
+
+
+# limit number of dimensions
+MAX_DIM_NUM_OF_SPECTRA = 16
+
+
 # integer pattern
 intPattern = re.compile(r'^([+-]?[1-9]\d*|0)$')
 
 
 # bad pattern
 badPattern = re.compile(r'.*[\!\$\&\(\)\=\~\^\\\|\`\@\{\}\[\]\;\:\<\>\,\/].*')
+
+
+# alternative dictionary of constraint type
+altDistanceConstraintType = {'nef': {'NOE': 'noe',
+                                     'NOE build-up': 'noe_build_up',
+                                     'noe build-up': 'noe_build_up',
+                                     'NOE buildup': 'noe_build_up',
+                                     'noe buildup': 'noe_build_up',
+                                     'NOE build up': 'noe_build_up',
+                                     'noe build up': 'noe_build_up',
+                                     'noe not seen': 'noe_not_seen',
+                                     'ROE': 'roe',
+                                     'roe build-up': 'roe_build_up',
+                                     'ROE buildup': 'roe_build_up',
+                                     'roe buildup': 'roe_build_up',
+                                     'ROE build up': 'roe_build_up',
+                                     'roe build up': 'roe_build_up',
+                                     'hydrogen bond': 'hbond',
+                                     'Hbond': 'hbond',
+                                     'HBond': 'hbond',
+                                     'H-bond': 'hbond',
+                                     'h-bond': 'hbond',
+                                     'H-Bond': 'hbond',
+                                     'Hydrogen bond': 'hbond',
+                                     'disulfide bond': 'disulfide_bond',
+                                     'Disulfide bond': 'disulfide_bond',
+                                     'S-S bond': 'disulfide_bond',
+                                     'SS bond': 'disulfide_bond',
+                                     'SS-bond': 'disulfide_bond',
+                                     'disulfide bridge': 'disulfide_bond',
+                                     'Disulfide bridge': 'disulfide_bond',
+                                     'paramagnetic relaxation': 'pre',
+                                     'PRE': 'pre',
+                                     'Paramagnetic relaxation': 'pre',
+                                     'paramagnetic relaxation enhancement': 'pre',
+                                     'Paramagnetic relaxation enhancement': 'pre',
+                                     'general distance': 'undefined',
+                                     'distance': 'undefined',
+                                     'Mutation': 'mutation',
+                                     'chemical shift perturbation': 'shift_perturbation',
+                                     'shift perturbation': 'shift_perturbation',
+                                     'chem shift perturbation': 'shift_perturbation',
+                                     'CS perturbation': 'shift_perturbation',
+                                     'csp': 'shift_perturbation',
+                                     'CSP': 'shift_perturbation'
+                                     },
+                             'nmr-star': {'noe': 'NOE',
+                                          'noe_build_up': 'NOE build-up',
+                                          'noe build-up': 'NOE build-up',
+                                          'NOE buildup': 'NOE build-up',
+                                          'noe buildup': 'NOE build-up',
+                                          'NOE build up': 'NOE build-up',
+                                          'noe build up': 'NOE build-up',
+                                          'noe_not_seen': 'NOE not seen',
+                                          'noe not seen': 'NOE not seen',
+                                          'roe': 'ROE',
+                                          'roe_build_up': 'ROE build-up',
+                                          'roe build-up': 'ROE build-up',
+                                          'ROE buildup': 'ROE build-up',
+                                          'roe buildup': 'ROE build-up',
+                                          'ROE build up': 'ROE build-up',
+                                          'roe build up': 'ROE build-up',
+                                          'hbond': 'hydrogen bond',
+                                          'Hbond': 'hydrogen bond',
+                                          'HBond': 'hydrogen bond',
+                                          'H-bond': 'hydrogen bond',
+                                          'h-bond': 'hydrogen bond',
+                                          'H-Bond': 'hydrogen bond',
+                                          'Hydrogen bond': 'hydrogen bond',
+                                          'disulfide_bond': 'disulfide bond',
+                                          'Disulfide bond': 'disulfide bond',
+                                          'S-S bond': 'disulfide bond',
+                                          'SS bond': 'disulfide bond',
+                                          'SS-bond': 'disulfide bond',
+                                          'disulfide bridge': 'disulfide bond',
+                                          'Disulfide bridge': 'disulfide bond',
+                                          'PRE': 'paramagnetic relaxation',
+                                          'pre': 'paramagnetic relaxation',
+                                          'Paramagnetic relaxation': 'paramagnetic relaxation',
+                                          'paramagnetic relaxation enhancement': 'paramagnetic relaxation',
+                                          'Paramagnetic relaxation enhancement': 'paramagnetic relaxation',
+                                          'Mutation': 'mutation',
+                                          'unknown': 'general distance',
+                                          'undefined': 'general distance',
+                                          'shift_perturbation': 'chemical shift perturbation',
+                                          'shift perturbation': 'chemical shift perturbation',
+                                          'chem shift perturbation': 'chemical shift perturbation',
+                                          'CS perturbation': 'chemical shift perturbation',
+                                          'csp': 'chemical shift perturbation',
+                                          'CSP': 'chemical shift perturbation'
+                                          }
+                             }
+
+
+altDihedralAngleConstraintType = {'nef': {'J-couplings': 'jcoupling',
+                                          'j-couplings': 'jcoupling',
+                                          'J couplings': 'jcoupling',
+                                          'j couplings': 'jcoupling',
+                                          'Jcouplings': 'jcoupling',
+                                          'jcouplings': 'jcoupling',
+                                          'J-coupling': 'jcoupling',
+                                          'j-coupling': 'jcoupling',
+                                          'J coupling': 'jcoupling',
+                                          'j coupling': 'jcoupling',
+                                          'Jcoupling': 'jcoupling',
+                                          'chemical shift': 'chemical_shift',
+                                          'Chemical shift': 'chemical_shift',
+                                          'Chemical_shift': 'chemical_shift',
+                                          'chemical shifts': 'chemical_shift',
+                                          'Chemical shifts': 'chemical_shift',
+                                          'Chemical_shifts': 'chemical_shift',
+                                          'backbone chemical shifts': 'chemical_shift',
+                                          'Backbone chemical shifts': 'chemical_shift',
+                                          'Mainchain chemical shifts': 'chemical_shift',
+                                          'mainchain chemical shifts': 'chemical_shift',
+                                          'Main chain chemical shifts': 'chemical_shift',
+                                          'main chain chemical shifts': 'chemical_shift',
+                                          'bb chemical shifts': 'chemical_shift',
+                                          'BB chemical shifts': 'chemical_shift',
+                                          'backbone chemical shift': 'chemical_shift',
+                                          'Backbone chemical shift': 'chemical_shift',
+                                          'Mainchain chemical shift': 'chemical_shift',
+                                          'mainchain chemical shift': 'chemical_shift',
+                                          'Main chain chemical shift': 'chemical_shift',
+                                          'main chain chemical shift': 'chemical_shift',
+                                          'bb chemical shift': 'chemical_shift',
+                                          'BB chemical shift': 'chemical_shift',
+                                          'backbone chem shifts': 'chemical_shift',
+                                          'Backbone chem shifts': 'chemical_shift',
+                                          'Mainchain chem shifts': 'chemical_shift',
+                                          'mainchain chem shifts': 'chemical_shift',
+                                          'Main chain chem shifts': 'chemical_shift',
+                                          'main chain chem shifts': 'chemical_shift',
+                                          'bb chem shifts': 'chemical_shift',
+                                          'BB chem shifts': 'chemical_shift',
+                                          'backbone chem shift': 'chemical_shift',
+                                          'Backbone chem shift': 'chemical_shift',
+                                          'Mainchain chem shift': 'chemical_shift',
+                                          'mainchain chem shift': 'chemical_shift',
+                                          'Main chain chem shift': 'chemical_shift',
+                                          'main chain chem shift': 'chemical_shift',
+                                          'bb chem shift': 'chemical_shift',
+                                          'BB chem shift': 'chemical_shift',
+                                          'backbone cs': 'chemical_shift',
+                                          'Backbone cs': 'chemical_shift',
+                                          'Mainchain cs': 'chemical_shift',
+                                          'mainchain cs': 'chemical_shift',
+                                          'Main chain cs': 'chemical_shift',
+                                          'main chain cs': 'chemical_shift',
+                                          'bb cs': 'chemical_shift',
+                                          'BB cs': 'chemical_shift',
+                                          'backbone CS': 'chemical_shift',
+                                          'Backbone CS': 'chemical_shift',
+                                          'Mainchain CS': 'chemical_shift',
+                                          'mainchain CS': 'chemical_shift',
+                                          'Main chain CS': 'chemical_shift',
+                                          'main chain CS': 'chemical_shift',
+                                          'bb CS': 'chemical_shift',
+                                          'BB CS': 'chemical_shift',
+                                          'TALOS': 'chemical_shift',
+                                          'talos': 'chemical_shift',
+                                          'TALOS+': 'chemical_shift',
+                                          'talos+': 'chemical_shift',
+                                          'TALOS-N': 'chemical_shift',
+                                          'talos-n': 'chemical_shift'
+                                          },
+                                  'nmr-star': {'jcoupling': 'J-couplings',
+                                               'Jcoupling': 'J-couplings',
+                                               'jcouplings': 'J-couplings',
+                                               'Jcouplings': 'J-couplings',
+                                               'j-couplings': 'J-couplings',
+                                               'J couplings': 'J-couplings',
+                                               'j couplings': 'J-couplings',
+                                               'J-coupling': 'J-couplings',
+                                               'j-coupling': 'J-couplings',
+                                               'J coupling': 'J-couplings',
+                                               'j coupling': 'J-couplings',
+                                               'chemical_shift': 'backbone chemical shifts',
+                                               'Chemical_shift': 'backbone chemical shifts',
+                                               'chemical_shifts': 'backbone chemical shifts',
+                                               'Chemical_shifts': 'backbone chemical shifts',
+                                               'chemical shift': 'backbone chemical shifts',
+                                               'Chemical shift': 'backbone chemical shifts',
+                                               'chemical shifts': 'backbone chemical shifts',
+                                               'Chemical shifts': 'backbone chemical shifts',
+                                               'Backbone chemical shifts': 'backbone chemical shifts',
+                                               'Mainchain chemical shifts': 'backbone chemical shifts',
+                                               'mainchain chemical shifts': 'backbone chemical shifts',
+                                               'Main chain chemical shifts': 'backbone chemical shifts',
+                                               'main chain chemical shifts': 'backbone chemical shifts',
+                                               'bb chemical shifts': 'backbone chemical shifts',
+                                               'BB chemical shifts': 'backbone chemical shifts',
+                                               'backbone chemical shift': 'backbone chemical shifts',
+                                               'Backbone chemical shift': 'backbone chemical shifts',
+                                               'Mainchain chemical shift': 'backbone chemical shifts',
+                                               'mainchain chemical shift': 'backbone chemical shifts',
+                                               'Main chain chemical shift': 'backbone chemical shifts',
+                                               'main chain chemical shift': 'backbone chemical shifts',
+                                               'bb chemical shift': 'backbone chemical shifts',
+                                               'BB chemical shift': 'backbone chemical shifts',
+                                               'backbone chem shifts': 'backbone chemical shifts',
+                                               'Backbone chem shifts': 'backbone chemical shifts',
+                                               'Mainchain chem shifts': 'backbone chemical shifts',
+                                               'mainchain chem shifts': 'backbone chemical shifts',
+                                               'Main chain chem shifts': 'backbone chemical shifts',
+                                               'main chain chem shifts': 'backbone chemical shifts',
+                                               'bb chem shifts': 'backbone chemical shifts',
+                                               'BB chem shifts': 'backbone chemical shifts',
+                                               'backbone chem shift': 'backbone chemical shifts',
+                                               'Backbone chem shift': 'backbone chemical shifts',
+                                               'Mainchain chem shift': 'backbone chemical shifts',
+                                               'mainchain chem shift': 'backbone chemical shifts',
+                                               'Main chain chem shift': 'backbone chemical shifts',
+                                               'main chain chem shift': 'backbone chemical shifts',
+                                               'bb chem shift': 'backbone chemical shifts',
+                                               'BB chem shift': 'backbone chemical shifts',
+                                               'backbone cs': 'backbone chemical shifts',
+                                               'Backbone cs': 'backbone chemical shifts',
+                                               'Mainchain cs': 'backbone chemical shifts',
+                                               'mainchain cs': 'backbone chemical shifts',
+                                               'Main chain cs': 'backbone chemical shifts',
+                                               'main chain cs': 'backbone chemical shifts',
+                                               'bb cs': 'backbone chemical shifts',
+                                               'BB cs': 'backbone chemical shifts',
+                                               'backbone CS': 'backbone chemical shifts',
+                                               'Backbone CS': 'backbone chemical shifts',
+                                               'Mainchain CS': 'backbone chemical shifts',
+                                               'mainchain CS': 'backbone chemical shifts',
+                                               'Main chain CS': 'backbone chemical shifts',
+                                               'main chain CS': 'backbone chemical shifts',
+                                               'bb CS': 'backbone chemical shifts',
+                                               'BB CS': 'backbone chemical shifts',
+                                               'TALOS': 'backbone chemical shifts',
+                                               'talos': 'backbone chemical shifts',
+                                               'TALOS+': 'backbone chemical shifts',
+                                               'talos+': 'backbone chemical shifts',
+                                               'TALOS-N': 'backbone chemical shifts',
+                                               'talos-n': 'backbone chemical shifts'
+                                               }
+                                  }
+
+
+altRdcConstraintType = {'nef': {'RDC': 'measured',
+                                'rdc': 'measured'
+                                },
+                        'nmr-star': {'rdc': 'RDC',
+                                     'measured': 'RDC'
+                                     }
+                        }
+
+
+entityDelAtomItems = ['ID', 'Entity_assembly_ID', 'Comp_index_ID', 'Comp_ID', 'Atom_ID',
+                      'Auth_entity_assembly_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_atom_ID', 'Assembly_ID']
 
 
 def load_csv_data(csv_file, transpose=False):
@@ -298,51 +615,6 @@ class NEFTranslator:
         # whether to insert _Atom_chem_shift.Original_PDB_* items
         self.insert_original_pdb_cs_items = True
 
-        # supported version
-        self.nef_version = '1.1'
-        self.star_version = '3.2.6.0'
-
-        # format name
-        self.nef_format_name = 'nmr_exchange_format'
-
-        # NEF boolean values
-        self.nef_boolean = ('true', 'false')
-
-        # NMR-STAR boolean values
-        self.star_boolean = ('yes', 'no')
-
-        # paramagnetic elements, except for Oxygen
-        self.paramag_elems = ('LI', 'NA', 'MG', 'AL', 'K', 'CA', 'SC', 'TI',
-                              'V', 'MN', 'RB', 'SR', 'Y', 'ZR', 'NB', 'MO',
-                              'TC', 'RU', 'RH', 'PD', 'SN', 'CS', 'BA', 'LA',
-                              'CE', 'PR', 'ND', 'PM', 'SM', 'EU', 'GD', 'TB',
-                              'DY', 'HO', 'ER', 'TM', 'YB', 'LU', 'HF', 'TA',
-                              'W', 'RE', 'OS', 'IR', 'PT', 'FR', 'RA', 'AC')
-
-        # ferromagnetic elements
-        self.ferromag_elems = ('CR', 'FE', 'CO', 'NI')
-
-        # non-metal elements
-        self.non_metal_elems = ('H', 'C', 'N', 'O', 'P', 'S', 'SE')
-
-        # ambiguity codes
-        self.bmrb_ambiguity_codes = (1, 2, 3, 4, 5, 6, 9)
-
-        # isotope numbers of NMR observable atoms
-        self.atom_isotopes = {'H': [1, 2, 3],
-                              'C': [13],
-                              'N': [15, 14],
-                              'O': [17],
-                              'P': [31],
-                              'S': [33],
-                              'F': [19],
-                              'CD': [113, 111],
-                              'CA': [43]
-                              }
-
-        # limit number of dimensions
-        self.lim_num_dim = 16
-
         # temporary dictionaries used in translation
         self.authChainId = None
         self.authSeqMap = None
@@ -371,255 +643,6 @@ class NEFTranslator:
                                    'range-float': 'a floating point number in a specific range',
                                    'enum': 'an enumeration value',
                                    'enum-int': 'an enumeration value restricted to integers'}
-
-        # alternative dictionary of constraint type
-        self.dist_alt_constraint_type = {'nef': {'NOE': 'noe',
-                                                 'NOE build-up': 'noe_build_up',
-                                                 'noe build-up': 'noe_build_up',
-                                                 'NOE buildup': 'noe_build_up',
-                                                 'noe buildup': 'noe_build_up',
-                                                 'NOE build up': 'noe_build_up',
-                                                 'noe build up': 'noe_build_up',
-                                                 'noe not seen': 'noe_not_seen',
-                                                 'ROE': 'roe',
-                                                 'roe build-up': 'roe_build_up',
-                                                 'ROE buildup': 'roe_build_up',
-                                                 'roe buildup': 'roe_build_up',
-                                                 'ROE build up': 'roe_build_up',
-                                                 'roe build up': 'roe_build_up',
-                                                 'hydrogen bond': 'hbond',
-                                                 'Hbond': 'hbond',
-                                                 'HBond': 'hbond',
-                                                 'H-bond': 'hbond',
-                                                 'h-bond': 'hbond',
-                                                 'H-Bond': 'hbond',
-                                                 'Hydrogen bond': 'hbond',
-                                                 'disulfide bond': 'disulfide_bond',
-                                                 'Disulfide bond': 'disulfide_bond',
-                                                 'S-S bond': 'disulfide_bond',
-                                                 'SS bond': 'disulfide_bond',
-                                                 'SS-bond': 'disulfide_bond',
-                                                 'disulfide bridge': 'disulfide_bond',
-                                                 'Disulfide bridge': 'disulfide_bond',
-                                                 'paramagnetic relaxation': 'pre',
-                                                 'PRE': 'pre',
-                                                 'Paramagnetic relaxation': 'pre',
-                                                 'paramagnetic relaxation enhancement': 'pre',
-                                                 'Paramagnetic relaxation enhancement': 'pre',
-                                                 'general distance': 'undefined',
-                                                 'distance': 'undefined',
-                                                 'Mutation': 'mutation',
-                                                 'chemical shift perturbation': 'shift_perturbation',
-                                                 'shift perturbation': 'shift_perturbation',
-                                                 'chem shift perturbation': 'shift_perturbation',
-                                                 'CS perturbation': 'shift_perturbation',
-                                                 'csp': 'shift_perturbation',
-                                                 'CSP': 'shift_perturbation'
-                                                 },
-                                         'nmr-star': {'noe': 'NOE',
-                                                      'noe_build_up': 'NOE build-up',
-                                                      'noe build-up': 'NOE build-up',
-                                                      'NOE buildup': 'NOE build-up',
-                                                      'noe buildup': 'NOE build-up',
-                                                      'NOE build up': 'NOE build-up',
-                                                      'noe build up': 'NOE build-up',
-                                                      'noe_not_seen': 'NOE not seen',
-                                                      'noe not seen': 'NOE not seen',
-                                                      'roe': 'ROE',
-                                                      'roe_build_up': 'ROE build-up',
-                                                      'roe build-up': 'ROE build-up',
-                                                      'ROE buildup': 'ROE build-up',
-                                                      'roe buildup': 'ROE build-up',
-                                                      'ROE build up': 'ROE build-up',
-                                                      'roe build up': 'ROE build-up',
-                                                      'hbond': 'hydrogen bond',
-                                                      'Hbond': 'hydrogen bond',
-                                                      'HBond': 'hydrogen bond',
-                                                      'H-bond': 'hydrogen bond',
-                                                      'h-bond': 'hydrogen bond',
-                                                      'H-Bond': 'hydrogen bond',
-                                                      'Hydrogen bond': 'hydrogen bond',
-                                                      'disulfide_bond': 'disulfide bond',
-                                                      'Disulfide bond': 'disulfide bond',
-                                                      'S-S bond': 'disulfide bond',
-                                                      'SS bond': 'disulfide bond',
-                                                      'SS-bond': 'disulfide bond',
-                                                      'disulfide bridge': 'disulfide bond',
-                                                      'Disulfide bridge': 'disulfide bond',
-                                                      'PRE': 'paramagnetic relaxation',
-                                                      'pre': 'paramagnetic relaxation',
-                                                      'Paramagnetic relaxation': 'paramagnetic relaxation',
-                                                      'paramagnetic relaxation enhancement': 'paramagnetic relaxation',
-                                                      'Paramagnetic relaxation enhancement': 'paramagnetic relaxation',
-                                                      'Mutation': 'mutation',
-                                                      'unknown': 'general distance',
-                                                      'undefined': 'general distance',
-                                                      'shift_perturbation': 'chemical shift perturbation',
-                                                      'shift perturbation': 'chemical shift perturbation',
-                                                      'chem shift perturbation': 'chemical shift perturbation',
-                                                      'CS perturbation': 'chemical shift perturbation',
-                                                      'csp': 'chemical shift perturbation',
-                                                      'CSP': 'chemical shift perturbation'
-                                                      }
-                                         }
-
-        self.dihed_alt_constraint_type = {'nef': {'J-couplings': 'jcoupling',
-                                                  'j-couplings': 'jcoupling',
-                                                  'J couplings': 'jcoupling',
-                                                  'j couplings': 'jcoupling',
-                                                  'Jcouplings': 'jcoupling',
-                                                  'jcouplings': 'jcoupling',
-                                                  'J-coupling': 'jcoupling',
-                                                  'j-coupling': 'jcoupling',
-                                                  'J coupling': 'jcoupling',
-                                                  'j coupling': 'jcoupling',
-                                                  'Jcoupling': 'jcoupling',
-                                                  'chemical shift': 'chemical_shift',
-                                                  'Chemical shift': 'chemical_shift',
-                                                  'Chemical_shift': 'chemical_shift',
-                                                  'chemical shifts': 'chemical_shift',
-                                                  'Chemical shifts': 'chemical_shift',
-                                                  'Chemical_shifts': 'chemical_shift',
-                                                  'backbone chemical shifts': 'chemical_shift',
-                                                  'Backbone chemical shifts': 'chemical_shift',
-                                                  'Mainchain chemical shifts': 'chemical_shift',
-                                                  'mainchain chemical shifts': 'chemical_shift',
-                                                  'Main chain chemical shifts': 'chemical_shift',
-                                                  'main chain chemical shifts': 'chemical_shift',
-                                                  'bb chemical shifts': 'chemical_shift',
-                                                  'BB chemical shifts': 'chemical_shift',
-                                                  'backbone chemical shift': 'chemical_shift',
-                                                  'Backbone chemical shift': 'chemical_shift',
-                                                  'Mainchain chemical shift': 'chemical_shift',
-                                                  'mainchain chemical shift': 'chemical_shift',
-                                                  'Main chain chemical shift': 'chemical_shift',
-                                                  'main chain chemical shift': 'chemical_shift',
-                                                  'bb chemical shift': 'chemical_shift',
-                                                  'BB chemical shift': 'chemical_shift',
-                                                  'backbone chem shifts': 'chemical_shift',
-                                                  'Backbone chem shifts': 'chemical_shift',
-                                                  'Mainchain chem shifts': 'chemical_shift',
-                                                  'mainchain chem shifts': 'chemical_shift',
-                                                  'Main chain chem shifts': 'chemical_shift',
-                                                  'main chain chem shifts': 'chemical_shift',
-                                                  'bb chem shifts': 'chemical_shift',
-                                                  'BB chem shifts': 'chemical_shift',
-                                                  'backbone chem shift': 'chemical_shift',
-                                                  'Backbone chem shift': 'chemical_shift',
-                                                  'Mainchain chem shift': 'chemical_shift',
-                                                  'mainchain chem shift': 'chemical_shift',
-                                                  'Main chain chem shift': 'chemical_shift',
-                                                  'main chain chem shift': 'chemical_shift',
-                                                  'bb chem shift': 'chemical_shift',
-                                                  'BB chem shift': 'chemical_shift',
-                                                  'backbone cs': 'chemical_shift',
-                                                  'Backbone cs': 'chemical_shift',
-                                                  'Mainchain cs': 'chemical_shift',
-                                                  'mainchain cs': 'chemical_shift',
-                                                  'Main chain cs': 'chemical_shift',
-                                                  'main chain cs': 'chemical_shift',
-                                                  'bb cs': 'chemical_shift',
-                                                  'BB cs': 'chemical_shift',
-                                                  'backbone CS': 'chemical_shift',
-                                                  'Backbone CS': 'chemical_shift',
-                                                  'Mainchain CS': 'chemical_shift',
-                                                  'mainchain CS': 'chemical_shift',
-                                                  'Main chain CS': 'chemical_shift',
-                                                  'main chain CS': 'chemical_shift',
-                                                  'bb CS': 'chemical_shift',
-                                                  'BB CS': 'chemical_shift',
-                                                  'TALOS': 'chemical_shift',
-                                                  'talos': 'chemical_shift',
-                                                  'TALOS+': 'chemical_shift',
-                                                  'talos+': 'chemical_shift',
-                                                  'TALOS-N': 'chemical_shift',
-                                                  'talos-n': 'chemical_shift'
-                                                  },
-                                          'nmr-star': {'jcoupling': 'J-couplings',
-                                                       'Jcoupling': 'J-couplings',
-                                                       'jcouplings': 'J-couplings',
-                                                       'Jcouplings': 'J-couplings',
-                                                       'j-couplings': 'J-couplings',
-                                                       'J couplings': 'J-couplings',
-                                                       'j couplings': 'J-couplings',
-                                                       'J-coupling': 'J-couplings',
-                                                       'j-coupling': 'J-couplings',
-                                                       'J coupling': 'J-couplings',
-                                                       'j coupling': 'J-couplings',
-                                                       'chemical_shift': 'backbone chemical shifts',
-                                                       'Chemical_shift': 'backbone chemical shifts',
-                                                       'chemical_shifts': 'backbone chemical shifts',
-                                                       'Chemical_shifts': 'backbone chemical shifts',
-                                                       'chemical shift': 'backbone chemical shifts',
-                                                       'Chemical shift': 'backbone chemical shifts',
-                                                       'chemical shifts': 'backbone chemical shifts',
-                                                       'Chemical shifts': 'backbone chemical shifts',
-                                                       'Backbone chemical shifts': 'backbone chemical shifts',
-                                                       'Mainchain chemical shifts': 'backbone chemical shifts',
-                                                       'mainchain chemical shifts': 'backbone chemical shifts',
-                                                       'Main chain chemical shifts': 'backbone chemical shifts',
-                                                       'main chain chemical shifts': 'backbone chemical shifts',
-                                                       'bb chemical shifts': 'backbone chemical shifts',
-                                                       'BB chemical shifts': 'backbone chemical shifts',
-                                                       'backbone chemical shift': 'backbone chemical shifts',
-                                                       'Backbone chemical shift': 'backbone chemical shifts',
-                                                       'Mainchain chemical shift': 'backbone chemical shifts',
-                                                       'mainchain chemical shift': 'backbone chemical shifts',
-                                                       'Main chain chemical shift': 'backbone chemical shifts',
-                                                       'main chain chemical shift': 'backbone chemical shifts',
-                                                       'bb chemical shift': 'backbone chemical shifts',
-                                                       'BB chemical shift': 'backbone chemical shifts',
-                                                       'backbone chem shifts': 'backbone chemical shifts',
-                                                       'Backbone chem shifts': 'backbone chemical shifts',
-                                                       'Mainchain chem shifts': 'backbone chemical shifts',
-                                                       'mainchain chem shifts': 'backbone chemical shifts',
-                                                       'Main chain chem shifts': 'backbone chemical shifts',
-                                                       'main chain chem shifts': 'backbone chemical shifts',
-                                                       'bb chem shifts': 'backbone chemical shifts',
-                                                       'BB chem shifts': 'backbone chemical shifts',
-                                                       'backbone chem shift': 'backbone chemical shifts',
-                                                       'Backbone chem shift': 'backbone chemical shifts',
-                                                       'Mainchain chem shift': 'backbone chemical shifts',
-                                                       'mainchain chem shift': 'backbone chemical shifts',
-                                                       'Main chain chem shift': 'backbone chemical shifts',
-                                                       'main chain chem shift': 'backbone chemical shifts',
-                                                       'bb chem shift': 'backbone chemical shifts',
-                                                       'BB chem shift': 'backbone chemical shifts',
-                                                       'backbone cs': 'backbone chemical shifts',
-                                                       'Backbone cs': 'backbone chemical shifts',
-                                                       'Mainchain cs': 'backbone chemical shifts',
-                                                       'mainchain cs': 'backbone chemical shifts',
-                                                       'Main chain cs': 'backbone chemical shifts',
-                                                       'main chain cs': 'backbone chemical shifts',
-                                                       'bb cs': 'backbone chemical shifts',
-                                                       'BB cs': 'backbone chemical shifts',
-                                                       'backbone CS': 'backbone chemical shifts',
-                                                       'Backbone CS': 'backbone chemical shifts',
-                                                       'Mainchain CS': 'backbone chemical shifts',
-                                                       'mainchain CS': 'backbone chemical shifts',
-                                                       'Main chain CS': 'backbone chemical shifts',
-                                                       'main chain CS': 'backbone chemical shifts',
-                                                       'bb CS': 'backbone chemical shifts',
-                                                       'BB CS': 'backbone chemical shifts',
-                                                       'TALOS': 'backbone chemical shifts',
-                                                       'talos': 'backbone chemical shifts',
-                                                       'TALOS+': 'backbone chemical shifts',
-                                                       'talos+': 'backbone chemical shifts',
-                                                       'TALOS-N': 'backbone chemical shifts',
-                                                       'talos-n': 'backbone chemical shifts'
-                                                       }
-                                          }
-
-        self.rdc_alt_constraint_type = {'nef': {'RDC': 'measured',
-                                                'rdc': 'measured'
-                                                },
-                                        'nmr-star': {'rdc': 'RDC',
-                                                     'measured': 'RDC'
-                                                     }
-                                        }
-
-        self.entity_del_atom_row = ['ID', 'Entity_assembly_ID', 'Comp_index_ID', 'Comp_ID', 'Atom_ID',
-                                    'Auth_entity_assembly_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_atom_ID', 'Assembly_ID']
 
     def read_input_file(self, in_file):  # pylint: disable=no-self-use
         """ Read input NEF/NMR-STAR file.
@@ -672,11 +695,6 @@ class NEFTranslator:
                         else:
                             msg = str(e1)
 
-        #
-        # except Exception as e:
-        #     is_ok = False
-        #     msg = str(e)
-        #
         return is_ok, msg, star_data
 
     def check_mandatory_tags(self, in_file=None, file_type=None):
@@ -800,7 +818,7 @@ class NEFTranslator:
                 minimal_sf_category_star_r = ['general_distance_constraints']
                 allowed_sf_category_star_o = ['general_distance_constraints', 'torsion_angle_constraints', 'RDC_constraints']
 
-                sf_list, lp_list = self.get_data_content(star_data, data_type)
+                sf_list, lp_list = self.get_audit_list(star_data, data_type)
 
                 info.append(f"{len(sf_list)} saveframes and {len(lp_list)} loops found")
 
@@ -1116,7 +1134,7 @@ class NEFTranslator:
 
         return len(messages) == 0, messages, corrections
 
-    def get_data_content(self, star_data, data_type):  # pylint: disable=no-self-use
+    def get_audit_list(self, star_data, data_type):  # pylint: disable=no-self-use
         """ Extract saveframe categories and loop categories from star data object.
             @return: list of saveframe categories, list of loop categories
         """
@@ -1193,7 +1211,7 @@ class NEFTranslator:
 
         return is_ok, {'info': info, 'warning': warning, 'error': error, 'file_type': file_type, 'data': seq}
 
-    def get_nef_seq(self, star_data, lp_category='nef_chemical_shift', seq_id='sequence_code', comp_id='residue_name',
+    def get_nef_seq(self, star_data, lp_category='nef_chemical_shift', seq_id='sequence_code', comp_id='residue_name',  # pylint: disable=no-self-use
                     chain_id='chain_code', allow_empty=False, allow_gap=False):
         """ Extract sequence from any given loops in an NEF file.
             @change: re-written by Masashi Yokochi
@@ -1232,7 +1250,7 @@ class NEFTranslator:
                         i[2] = 1
             else:
                 _tags_exist = False
-                for i in range(1, self.lim_num_dim):
+                for i in range(1, MAX_DIM_NUM_OF_SPECTRA):
                     _tags = [seq_id + '_' + str(i), comp_id + '_' + str(i), chain_id + '_' + str(i)]
                     if set(_tags) & set(loop.tags) == set(_tags):
                         _tags_exist = True
@@ -1371,7 +1389,7 @@ class NEFTranslator:
 
         return data
 
-    def get_star_seq(self, star_data, lp_category='Atom_chem_shift', seq_id='Comp_index_ID', comp_id='Comp_ID',
+    def get_star_seq(self, star_data, lp_category='Atom_chem_shift', seq_id='Comp_index_ID', comp_id='Comp_ID',  # pylint: disable=no-self-use
                      chain_id='Entity_assembly_ID', alt_chain_id='Auth_asym_ID', allow_empty=False, allow_gap=False):
         """ Extract sequence from any given loops in an NMR-STAR file.
             @change: re-written by Masashi Yokochi
@@ -1413,14 +1431,14 @@ class NEFTranslator:
             elif set(tags__) & set(loop.tags) == set(tags__):  # DAOTHER-7421
                 seq_data = get_lp_tag(loop, tags__)
                 for i in seq_data:
-                    i[2] = '1' if i[2] in emptyValue else str(self.letter_to_int(i[2], 1))
+                    i[2] = '1' if i[2] in emptyValue else str(letterToDigit(i[2], 1))
             elif set(tags_) & set(loop.tags) == set(tags_):  # No Entity_assembly_ID tag case
                 seq_data = get_lp_tag(loop, tags_)
                 for i in seq_data:
                     i.append('1')
             else:
                 _tags_exist = False
-                for j in range(1, self.lim_num_dim):
+                for j in range(1, MAX_DIM_NUM_OF_SPECTRA):
                     _tags = [seq_id + '_' + str(j), comp_id + '_' + str(j), chain_id + '_' + str(j)]
                     _tags_ = [seq_id + '_' + str(j), comp_id + '_' + str(j)]
                     _tags__ = [seq_id + '_' + str(j), comp_id + '_' + str(j), alt_chain_id + '_' + str(j)]  # DAOTHER-7421
@@ -1435,7 +1453,7 @@ class NEFTranslator:
                         _tags_exist = True
                         seq_data_ = get_lp_tag(loop, _tags__)
                         for i in seq_data_:
-                            i[2] = '1' if i[2] in emptyValue else str(self.letter_to_int(i[2], 1))
+                            i[2] = '1' if i[2] in emptyValue else str(letterToDigit(i[2], 1))
                         seq_data += seq_data_
                     elif set(_tags_) & set(loop.tags) == set(_tags_):
                         _tags_exist = True
@@ -1518,7 +1536,8 @@ class NEFTranslator:
                 for c in chains:
                     ent = {}  # entity
 
-                    ent['chain_id'] = str(c)
+                    str_c = str(c)
+                    ent['chain_id'] = str_c if str_c.isdigit() else str(letterToDigit(str_c, 1))
 
                     if allow_gap:
                         ent['seq_id'] = []
@@ -1548,7 +1567,8 @@ class NEFTranslator:
                                 continue
                             if seq_dict[_c] == seq_dict[c]:
                                 if cmp_dict[_c] == cmp_dict[c]:
-                                    identity.append(_c)
+                                    _str_c = str(_c)
+                                    identity.append(_str_c if _str_c.isdigit() else str(letterToDigit(_str_c, 1)))
                             else:
                                 common_seq_id = set(seq_dict[_c]) & set(seq_dict[c])
                                 if len(common_seq_id) == 0:
@@ -1561,7 +1581,8 @@ class NEFTranslator:
                                            if s in seq_dict[_c] and s in seq_dict[c]
                                            and cmp_dict[_c][seq_dict[_c].index(s)] == cmp_dict[c][seq_dict[c].index(s)]):
                                     continue
-                                identity.append(_c)
+                                _str_c = str(_c)
+                                identity.append(_str_c if _str_c.isdigit() else str(letterToDigit(_str_c, 1)))
                         if len(identity) > 0:
                             ent['identical_chain_id'] = identity
 
@@ -1577,7 +1598,7 @@ class NEFTranslator:
 
         return data
 
-    def get_star_auth_seq(self, star_data, lp_category='Atom_chem_shift', aseq_id='Auth_seq_ID', acomp_id='Auth_comp_ID',
+    def get_star_auth_seq(self, star_data, lp_category='Atom_chem_shift', aseq_id='Auth_seq_ID', acomp_id='Auth_comp_ID',  # pylint: disable=no-self-use
                           asym_id='Auth_asym_ID', seq_id='Comp_index_ID', chain_id='Entity_assembly_ID', allow_empty=True):
         """ Extract author sequence from any given loops in an NMR-STAR file.
             @author: Masashi Yokochi
@@ -1620,7 +1641,7 @@ class NEFTranslator:
                     i.append('1')
             else:
                 _tags_exist = False
-                for j in range(1, self.lim_num_dim):
+                for j in range(1, MAX_DIM_NUM_OF_SPECTRA):
                     _tags = [aseq_id + '_' + str(j), acomp_id + '_' + str(j), asym_id + '_' + str(j),
                              seq_id + '_' + str(j), chain_id + '_' + str(j)]
                     _tags_ = [aseq_id + '_' + str(j), acomp_id + '_' + str(j), asym_id + '_' + str(j), seq_id + '_' + str(j)]
@@ -1759,7 +1780,7 @@ class NEFTranslator:
 
         return self.get_comp_atom_pair(star_data, lp_category, comp_id, atom_id, allow_empty)
 
-    def get_comp_atom_pair(self, star_data, lp_category, comp_id, atom_id, allow_empty):
+    def get_comp_atom_pair(self, star_data, lp_category, comp_id, atom_id, allow_empty):  # pylint: disable=no-self-use
         """ Extract unique pairs of comp_id and atom_id from any given loops in an NEF/NMR-STAR file.
             @author: Masashi Yokochi
             @return: list of unique pairs of comp_id and atom_id for each loop
@@ -1793,7 +1814,7 @@ class NEFTranslator:
                 pair_data = get_lp_tag(loop, tags)
             else:
                 _tags_exist = False
-                for i in range(1, self.lim_num_dim):
+                for i in range(1, MAX_DIM_NUM_OF_SPECTRA):
                     _tags = [comp_id + '_' + str(i), atom_id + '_' + str(i)]
                     if set(_tags) & set(loop.tags) == set(_tags):
                         _tags_exist = True
@@ -1958,7 +1979,7 @@ class NEFTranslator:
 
         return data
 
-    def get_star_ambig_code_from_cs_loop(self, star_data, lp_category='Atom_chem_shift', comp_id='Comp_ID', atom_id='Atom_ID',
+    def get_star_ambig_code_from_cs_loop(self, star_data, lp_category='Atom_chem_shift', comp_id='Comp_ID', atom_id='Atom_ID',  # pylint: disable=no-self-use
                                          ambig_code='Ambiguity_code', ambig_set_id='Ambiguity_set_ID'):
         """ Extract unique pairs of comp_id, atom_id, and ambiguity code from assigned chemical shifts in an NMR-SAR file.
             @author: Masashi Yokochi
@@ -2014,15 +2035,15 @@ class NEFTranslator:
                             r = {}
                             for j, t in enumerate(loop.tags):
                                 r[t] = loop.data[l][j]
-                            user_warn_msg += f"[Invalid data] {ambig_code} must be one of {self.bmrb_ambiguity_codes}. "\
+                            user_warn_msg += f"[Invalid data] {ambig_code} must be one of {allowedAmbiguityCodes}. "\
                                 f"#_of_row {l + 1}, data_of_row {r}.\n"
 
-                    if code not in self.bmrb_ambiguity_codes:
+                    if code not in allowedAmbiguityCodes:
                         if l < len_loop_data:
                             r = {}
                             for j, t in enumerate(loop.tags):
                                 r[t] = loop.data[l][j]
-                            user_warn_msg += f"[Invalid data] {ambig_code} must be one of {self.bmrb_ambiguity_codes}. "\
+                            user_warn_msg += f"[Invalid data] {ambig_code} must be one of {allowedAmbiguityCodes}. "\
                                 f"#_of_row {l + 1}, data_of_row {r}.\n"
 
                     if code >= 4:
@@ -2303,7 +2324,7 @@ class NEFTranslator:
                                         if ref.startswith('H') or ref.startswith('Q') or ref.startswith('M'):
                                             row.append(1)
                                         else:
-                                            row.append(self.atom_isotopes[ref[0]][0])
+                                            row.append(isotopeNumsOfNmrObsNucs[ref[0]][0])
                                     loop.add_tag(d['name'])
                                 elif 'Entity_assembly_ID' in d['name']:
                                     for row in loop.data:
@@ -2557,9 +2578,9 @@ class NEFTranslator:
                                 ent[name] = int(val)
                             except ValueError:
                                 if 'default-from' in k and k['default-from'] == 'self':
-                                    i[j] = ent[name] = self.letter_to_int(val)
+                                    i[j] = ent[name] = letterToDigit(val)
                                 elif 'default-from' in k and k['default-from'] in tags:
-                                    i[j] = ent[name] = self.letter_to_int(i[tags.index(k['default-from'])])
+                                    i[j] = ent[name] = letterToDigit(i[tags.index(k['default-from'])])
                                 elif 'default' in k:
                                     i[j] = ent[name] = int(k['default'])
                                 elif excl_missing_data:
@@ -2579,11 +2600,11 @@ class NEFTranslator:
                                 ent[name] = int(val)
                             except ValueError:
                                 if 'default-from' in k and k['default-from'] == 'self':
-                                    i[j] = ent[name] = self.letter_to_int(val, 1)
-                                elif 'default-from' in k and k['default-from'] in tags:
-                                    i[j] = ent[name] = self.letter_to_int(i[tags.index(k['default-from'])], 1)
+                                    i[j] = ent[name] = letterToDigit(val, 1)
+                                elif 'default-from' in k and k['default-from'] in tags and i[tags.index(k['default-from'])] not in emptyValue:
+                                    i[j] = ent[name] = letterToDigit(i[tags.index(k['default-from'])], 1)
                                 elif 'default-from' in k and k['default-from'].startswith('Auth_asym_ID'):
-                                    i[j] = ent[name] = self.letter_to_int(val, 1)
+                                    i[j] = ent[name] = letterToDigit(val, 1)
                                 elif 'default' in k:
                                     i[j] = ent[name] = int(k['default'])
                                 elif excl_missing_data:
@@ -2618,9 +2639,9 @@ class NEFTranslator:
                                 ent[name] = int(val)
                             except ValueError:
                                 if 'default-from' in k and k['default-from'] == 'self':
-                                    i[j] = ent[name] = self.letter_to_int(val, 1)
+                                    i[j] = ent[name] = letterToDigit(val, 1)
                                 elif 'default-from' in k and k['default-from'] in tags:
-                                    i[j] = ent[name] = self.letter_to_int(i[tags.index(k['default-from'])], 1)
+                                    i[j] = ent[name] = letterToDigit(i[tags.index(k['default-from'])], 1)
                                 elif 'default-from' in k and k['default-from'] == 'parent' and parent_pointer is not None:
                                     i[j] = ent[name] = parent_pointer
                                 elif 'default' in k:
@@ -2847,9 +2868,9 @@ class NEFTranslator:
                                         ent[name] = int(val)
                                     except ValueError:
                                         if 'default-from' in d and d['default-from'] == 'self':
-                                            i[j] = ent[name] = self.letter_to_int(val)
+                                            i[j] = ent[name] = letterToDigit(val)
                                         elif 'default-from' in d and d['default-from'] in tags:
-                                            i[j] = ent[name] = self.letter_to_int(i[tags.index(d['default-from'])])
+                                            i[j] = ent[name] = letterToDigit(i[tags.index(d['default-from'])])
                                         elif 'default' in d:
                                             i[j] = ent[name] = int(d['default'])
                                         elif excl_missing_data:
@@ -2869,11 +2890,11 @@ class NEFTranslator:
                                         ent[name] = int(val)
                                     except ValueError:
                                         if 'default-from' in d and d['default-from'] == 'self':
-                                            i[j] = ent[name] = self.letter_to_int(val, 1)
-                                        elif 'default-from' in d and d['default-from'] in tags:
-                                            i[j] = ent[name] = self.letter_to_int(i[tags.index(d['default-from'])], 1)
+                                            i[j] = ent[name] = letterToDigit(val, 1)
+                                        elif 'default-from' in d and d['default-from'] in tags and i[tags.index(d['default-from'])] not in emptyValue:
+                                            i[j] = ent[name] = letterToDigit(i[tags.index(d['default-from'])], 1)
                                         elif 'default-from' in d and d['default-from'].startswith('Auth_asym_ID'):
-                                            i[j] = ent[name] = self.letter_to_int(val, 1)
+                                            i[j] = ent[name] = letterToDigit(val, 1)
                                         elif 'default' in d:
                                             i[j] = ent[name] = int(d['default'])
                                         elif excl_missing_data:
@@ -2908,9 +2929,9 @@ class NEFTranslator:
                                         ent[name] = int(val)
                                     except ValueError:
                                         if 'default-from' in d and d['default-from'] == 'self':
-                                            i[j] = ent[name] = self.letter_to_int(val, 1)
+                                            i[j] = ent[name] = letterToDigit(val, 1)
                                         elif 'default-from' in d and d['default-from'] in tags:
-                                            i[j] = ent[name] = self.letter_to_int(i[tags.index(d['default-from'])], 1)
+                                            i[j] = ent[name] = letterToDigit(i[tags.index(d['default-from'])], 1)
                                         elif 'default-from' in d and d['default-from'] == 'parent' and parent_pointer is not None:
                                             i[j] = ent[name] = parent_pointer
                                         elif 'default' in d:
@@ -3204,46 +3225,6 @@ class NEFTranslator:
             data.append([])
 
         return data
-
-    def letter_to_int(self, code, min=0):  # pylint: disable=redefined-builtin, disable=no-self-use
-        """ Return digit from a given chain code.
-        """
-
-        alphabet = 'abcdefghijklmnopqrstuvwxyz'
-
-        unit = 1
-        ret = 0
-
-        for c in ''.join(reversed(code.lower())):
-
-            if c.isdigit():
-                ret += unit * int(c)
-            elif c.isalpha():
-                ret += unit * (alphabet.index(c) + 1)
-            else:
-                continue
-
-            unit *= 27
-
-        return ret if ret >= min else min
-
-    def index_to_letter(self, index):  # pylint: disable=no-self-use
-        """ Return chain code from a given index (0 based).
-        """
-
-        if index < 0:
-            return '.'
-
-        if index > 19683:
-            index = index % 19683
-
-        if index < 27:
-            return str(chr(65 + index))
-
-        if index < 729:
-            return str(chr(64 + (index // 27))) + str(chr(65 + (index % 27)))
-
-        return str(chr(64 + (index // 729))) + str(chr(64 + ((index % 729) // 27))) + str(chr(65 + (index % 27)))
 
     def get_conflict_id(self, star_data, lp_category, key_items):  # pylint: disable=no-self-use
         """ Return list of conflicted row IDs except for rows of the first occurrence.
@@ -3577,9 +3558,9 @@ class NEFTranslator:
                             ent[name] = int(val)
                         except ValueError:
                             if 'default-from' in t and t['default-from'] == 'self':
-                                ent[name] = self.letter_to_int(val)
+                                ent[name] = letterToDigit(val)
                             elif 'default-from' in t and t['default-from'] in sf_tags.keys():
-                                ent[name] = self.letter_to_int(sf_tags[t['default-from']])
+                                ent[name] = letterToDigit(sf_tags[t['default-from']])
                             elif 'default' in t:
                                 ent[name] = int(t['default'])
                             else:
@@ -3589,11 +3570,11 @@ class NEFTranslator:
                             ent[name] = int(val)
                         except ValueError:
                             if 'default-from' in t and t['default-from'] == 'self':
-                                ent[name] = self.letter_to_int(val, 1)
-                            elif 'default-from' in t and t['default-from'] in sf_tags.keys():
-                                ent[name] = self.letter_to_int(sf_tags[t['default-from']], 1)
+                                ent[name] = letterToDigit(val, 1)
+                            elif 'default-from' in t and t['default-from'] in sf_tags.keys() and sf_tags[t['default-from']] not in emptyValue:
+                                ent[name] = letterToDigit(sf_tags[t['default-from']], 1)
                             elif 'default-from' in t and t['default-from'].startswith('Auth_asym_ID'):
-                                ent[name] = self.letter_to_int(val, 1)
+                                ent[name] = letterToDigit(val, 1)
                             elif 'default' in t:
                                 ent[name] = int(t['default'])
                             else:
@@ -4091,8 +4072,11 @@ class NEFTranslator:
         if atom_id.startswith('Q') or atom_id.startswith('M'):
             return self.get_star_atom(comp_id, 'H' + atom_id[1:] + '%', details, leave_unmatched)
 
-        if atom_id + '2' in self.__csStat.getAllAtoms(comp_id):
+        if (atom_id + '2' in self.__csStat.getAllAtoms(comp_id)) or (atom_id + '22' in self.__csStat.getAllAtoms(comp_id)):
             return self.get_star_atom(comp_id, atom_id + '%', details, leave_unmatched)
+
+        if '#' in atom_id:
+            return self.get_star_atom(comp_id, atom_id.replace('#', '%'))
 
         return self.get_star_atom(comp_id, atom_id, details, leave_unmatched)
 
@@ -4327,7 +4311,7 @@ class NEFTranslator:
                 else:
                     ambig_code = int(_ambig_code)
 
-                if ambig_code not in self.bmrb_ambiguity_codes:
+                if ambig_code not in allowedAmbiguityCodes:
 
                     if leave_unmatched:
                         atom_list.append(atom_id)
@@ -4756,7 +4740,7 @@ class NEFTranslator:
                     cif_chain = seq_align['test_chain_id']
 
             if cif_chain is not None:
-                _star_chain = str(self.letter_to_int(cif_chain))
+                _star_chain = str(letterToDigit(cif_chain))
 
             offset = None
 
@@ -4816,7 +4800,7 @@ class NEFTranslator:
                             out[data_index] = _star_chain
                         elif j == '_nef_sequence.sequence_code':
                             out[data_index] = _star_seq
-                        elif data in self.nef_boolean:
+                        elif data in nefBooleanVals:
                             out[data_index] = 'yes' if data in trueValue else 'no'
                         else:
                             out[data_index] = data
@@ -4828,8 +4812,8 @@ class NEFTranslator:
                                                           _nef_seq if _cif_seq is None else _cif_seq)
 
                 if variant is not None:
-                    aux = [None] * len(self.entity_del_atom_row)
-                    for l, aux_tag in enumerate(self.entity_del_atom_row):  # noqa: E741
+                    aux = [None] * len(entityDelAtomItems)
+                    for l, aux_tag in enumerate(entityDelAtomItems):  # noqa: E741
                         if aux_tag == 'Entity_assembly_ID':
                             aux[l] = _star_chain
                         elif aux_tag == 'Comp_index_ID':
@@ -4848,7 +4832,7 @@ class NEFTranslator:
                             if len(atom_list) > 0:
                                 for atom in atom_list:
                                     _aux = copy.copy(aux)
-                                    for l, aux_tag in enumerate(self.entity_del_atom_row):  # noqa: E741
+                                    for l, aux_tag in enumerate(entityDelAtomItems):  # noqa: E741
                                         if aux_tag == 'ID':
                                             _aux[l] = len(aux_row) + 1
                                         elif aux_tag == 'Atom_ID':
@@ -4896,7 +4880,7 @@ class NEFTranslator:
             if len(seq_list[star_chain]) == 0:
                 continue
 
-            nef_chain = self.index_to_letter(cid)
+            nef_chain = indexToLetter(cid)
 
             self.star2nef_chain_mapping[star_chain] = nef_chain
 
@@ -4990,7 +4974,7 @@ class NEFTranslator:
                             out[data_index] = _nef_seq
                         else:
                             out[data_index] = _cif_seq
-                    elif data in self.star_boolean:
+                    elif data in starBooleanVals:
                         out[data_index] = 'true' if data in trueValue else 'false'
                     elif nef_tag == '_nef_sequence.residue_variant':
                         if data not in emptyValue or entity_del_atom_loop is None:
@@ -5052,7 +5036,7 @@ class NEFTranslator:
                     cif_chain = seq_align['test_chain_id']
 
             if cif_chain is not None:
-                _star_chain = str(self.letter_to_int(cif_chain))
+                _star_chain = str(letterToDigit(cif_chain))
 
             offset = None
 
@@ -5121,11 +5105,11 @@ class NEFTranslator:
                 #
                 # self.authSeqMap[(in_star_chain, _in_star_seq)] = (_star_chain, _star_seq)
                 # self.selfSeqMap[(in_star_chain, _in_star_seq)] = (in_star_chain if cif_chain is None else cif_chain,
-                #                                           _in_star_seq if _cif_seq is None else _cif_seq)
+                #                                                   _in_star_seq if _cif_seq is None else _cif_seq)
                 #
                 if variant is not None:
-                    aux = [None] * len(self.entity_del_atom_row)
-                    for l, aux_tag in enumerate(self.entity_del_atom_row):  # noqa: E741
+                    aux = [None] * len(entityDelAtomItems)
+                    for l, aux_tag in enumerate(entityDelAtomItems):  # noqa: E741
                         if aux_tag == 'Entity_assembly_ID':
                             aux[l] = _star_chain
                         elif aux_tag == 'Comp_index_ID':
@@ -5146,7 +5130,7 @@ class NEFTranslator:
                             if len(atom_list) > 0:
                                 for atom in atom_list:
                                     _aux = copy.copy(aux)
-                                    for l, aux_tag in enumerate(self.entity_del_atom_row):  # noqa: E741
+                                    for l, aux_tag in enumerate(entityDelAtomItems):  # noqa: E741
                                         if aux_tag == 'ID':
                                             _aux[l] = len(aux_row) + 1
                                         elif aux_tag == 'Atom_ID':
@@ -5288,8 +5272,8 @@ class NEFTranslator:
                         buf[star_type_index] = 'disulfide'
                     elif k == 'SE' and l == 'SE':  # noqa: E741
                         buf[star_type_index] = 'diselenide'
-                    elif (k in self.non_metal_elems and (l in self.paramag_elems or l in self.ferromag_elems)) or\
-                         (l in self.non_metal_elems and (k in self.paramag_elems or k in self.ferromag_elems)):
+                    elif (k in nonMetalElements and (l in paramagElements or l in ferromagElements)) or\
+                         (l in nonMetalElements and (k in paramagElements or k in ferromagElements)):
                         buf[star_type_index] = 'metal coordination'
                     elif ((k == 'C' and l == 'N') or (l == 'C' and k == 'N'))\
                             and i[nef_tags.index(chain_tag_1)] == i[nef_tags.index(chain_tag_2)]\
@@ -5454,8 +5438,8 @@ class NEFTranslator:
                         buf[star_type_index] = 'disulfide'
                     elif k == 'SE' and l == 'SE':  # noqa: E741
                         buf[star_type_index] = 'diselenide'
-                    elif (k in self.non_metal_elems and (l in self.paramag_elems or l in self.ferromag_elems)) or\
-                         (l in self.non_metal_elems and (k in self.paramag_elems or k in self.ferromag_elems)):
+                    elif (k in nonMetalElements and (l in paramagElements or l in ferromagElements)) or\
+                         (l in nonMetalElements and (k in paramagElements or k in ferromagElements)):
                         buf[star_type_index] = 'metal coordination'
                     elif ((k == 'C' and l == 'N') or (l == 'C' and k == 'N'))\
                             and i[in_star_tags.index(chain_tag_1)] == i[in_star_tags.index(chain_tag_2)]\
@@ -5674,7 +5658,7 @@ class NEFTranslator:
                             nef_chain = _star_chain
                         else:
                             cid = self.authChainId.index(_star_chain)
-                            nef_chain = self.index_to_letter(cid)
+                            nef_chain = indexToLetter(cid)
                         cif_chain = nef_chain
                         _cif_seq = _star_seq
 
@@ -5849,7 +5833,7 @@ class NEFTranslator:
 
         return out_row
 
-    def get_seq_ident_tags(self, in_tags, file_type):
+    def get_seq_ident_tags(self, in_tags, file_type):  # pylint: disable=no-self-use
         """ Return list of tags utilized for sequence identification.
             @change: rename from original get_residue_identifier() to get_seq_ident_tags() by Masashi Yokochi
             @change: return list of dictionary
@@ -5860,7 +5844,7 @@ class NEFTranslator:
 
         out_tags = []
 
-        for j in range(1, self.lim_num_dim):
+        for j in range(1, MAX_DIM_NUM_OF_SPECTRA):
 
             chain_tag_suffix = f".chain_code_{j}" if file_type == 'nef' else f".Entity_assembly_ID_{j}"
 
@@ -5880,7 +5864,7 @@ class NEFTranslator:
 
         return out_tags
 
-    def get_atom_keys(self, in_tags, file_type):
+    def get_atom_keys(self, in_tags, file_type):  # pylint: disable=no-self-use
         """ Return list of keys utilized for atom identification.
             @change: return list of dictionary
             @param in_tags: list of tags
@@ -5890,7 +5874,7 @@ class NEFTranslator:
 
         out_tags = []
 
-        for j in range(1, self.lim_num_dim):
+        for j in range(1, MAX_DIM_NUM_OF_SPECTRA):
 
             chain_tag_suffix = f".chain_code_{j}" if file_type == 'nef' else f".Entity_assembly_ID_{j}"
 
@@ -6159,7 +6143,7 @@ class NEFTranslator:
                                 nef_chain = _star_chain
                             else:
                                 cid = self.authChainId.index(_star_chain)
-                                nef_chain = self.index_to_letter(cid)
+                                nef_chain = indexToLetter(cid)
                         tag_map[chain_tag] = nef_chain
                         tag_map[seq_tag] = _star_seq
 
@@ -6389,7 +6373,7 @@ class NEFTranslator:
         return out_row
 
     def nef2star_dihed_row(self, nef_tags, star_tags, loop_data):
-        """ Translate rows of data in dihedral restraint loop from NEF into NMR-STAR.
+        """ Translate rows of data in dihedral angle restraint loop from NEF into NMR-STAR.
             @author: Masashi Yokochi
             @param nef_tags: list of NEF tags
             @param star_tags: list of NMR-STAR tags
@@ -6576,7 +6560,7 @@ class NEFTranslator:
         return out_row
 
     def star2star_dihed_row(self, in_star_tags, star_tags, loop_data):
-        """ Translate rows of data in dihedral restraint loop from PyNMRSTAR data into NMR-STAR.
+        """ Translate rows of data in dihedral angle restraint loop from PyNMRSTAR data into NMR-STAR.
             @author: Masashi Yokochi
             @param in_star_tags: list of input NMR-STAR tags
             @param star_tags: list of NMR-STAR tags
@@ -6765,7 +6749,7 @@ class NEFTranslator:
         return out_row
 
     def nef2star_rdc_row(self, nef_tags, star_tags, loop_data):
-        """ Translate rows of data in rdc restraint loop from NEF into NMR-STAR.
+        """ Translate rows of data in RDC restraint loop from NEF into NMR-STAR.
             @author: Masashi Yokochi
             @param nef_tags: list of NEF tags
             @param star_tags: list of NMR-STAR tags
@@ -6910,7 +6894,7 @@ class NEFTranslator:
         return out_row
 
     def star2star_rdc_row(self, in_star_tags, star_tags, loop_data):
-        """ Translate rows of data in rdc restraint loop from PyNMRSTAR data into NMR-STAR.
+        """ Translate rows of data in RDC restraint loop from PyNMRSTAR data into NMR-STAR.
             @author: Masashi Yokochi
             @param in_star_tags: list of input NMR-STAR tags
             @param star_tags: list of NMR-STAR tags
@@ -7346,7 +7330,7 @@ class NEFTranslator:
                                 nef_chain = _star_chain
                             else:
                                 cid = self.authChainId.index(_star_chain)
-                                nef_chain = self.index_to_letter(cid)
+                                nef_chain = indexToLetter(cid)
                         tag_map[chain_tag] = nef_chain
                         tag_map[seq_tag] = _star_seq
 
@@ -7686,7 +7670,7 @@ class NEFTranslator:
 
                     if 'chain_code' in j or 'sequence_code' in j:
                         out[data_index] = tag_map[j]
-                    elif data in self.nef_boolean:
+                    elif data in nefBooleanVals:
                         out[data_index] = 'yes' if data in trueValue else 'no'
                     else:
                         out[data_index] = data
@@ -7734,7 +7718,7 @@ class NEFTranslator:
                         nef_chain = _star_chain
                     else:
                         cid = self.authChainId.index(_star_chain)
-                        nef_chain = self.index_to_letter(cid)
+                        nef_chain = indexToLetter(cid)
                 tag_map[chain_tag] = nef_chain
                 tag_map[seq_tag] = _star_seq
 
@@ -7756,7 +7740,7 @@ class NEFTranslator:
 
             if 'chain_code' in nef_tag or 'sequence_code' in nef_tag:
                 out[data_index] = tag_map[j]
-            elif data in self.star_boolean:
+            elif data in starBooleanVals:
                 out[data_index] = 'true' if data in trueValue else 'false'
             else:
                 out[data_index] = data
@@ -7982,7 +7966,7 @@ class NEFTranslator:
                                     nef_chain = _star_chain
                                 else:
                                     cid = self.authChainId.index(_star_chain)
-                                    nef_chain = self.index_to_letter(cid)
+                                    nef_chain = indexToLetter(cid)
                             nef_seq = _star_seq
 
                         if _star_chain in self.star2cif_chain_mapping:
@@ -8122,17 +8106,17 @@ class NEFTranslator:
                         nef_tag = f"{saveframe.tag_prefix}.{tag[0]}"
                         auth_tag = self.get_star_tag(nef_tag)[0]
                         if auth_tag is not None:
-                            sf.add_tag(auth_tag, tag[1] if tag[1] not in self.dist_alt_constraint_type['nmr-star'] else self.dist_alt_constraint_type['nmr-star'][tag[1]])
+                            sf.add_tag(auth_tag, tag[1] if tag[1] not in altDistanceConstraintType['nmr-star'] else altDistanceConstraintType['nmr-star'][tag[1]])
                     elif saveframe.category == 'nef_dihedral_restraint_list' and tag[0] == 'restraint_origin':
                         nef_tag = f"{saveframe.tag_prefix}.{tag[0]}"
                         auth_tag = self.get_star_tag(nef_tag)[0]
                         if auth_tag is not None:
-                            sf.add_tag(auth_tag, tag[1] if tag[1] not in self.dihed_alt_constraint_type['nmr-star'] else self.dihed_alt_constraint_type['nmr-star'][tag[1]])
+                            sf.add_tag(auth_tag, tag[1] if tag[1] not in altDihedralAngleConstraintType['nmr-star'] else altDihedralAngleConstraintType['nmr-star'][tag[1]])
                     elif saveframe.category == 'nef_rdc_restraint_list' and tag[0] == 'restraint_origin':
                         nef_tag = f"{saveframe.tag_prefix}.{tag[0]}"
                         auth_tag = self.get_star_tag(nef_tag)[0]
                         if auth_tag is not None:
-                            sf.add_tag(auth_tag, tag[1] if tag[1] not in self.rdc_alt_constraint_type['nmr-star'] else self.rdc_alt_constraint_type['nmr-star'][tag[1]])
+                            sf.add_tag(auth_tag, tag[1] if tag[1] not in altRdcConstraintType['nmr-star'] else altRdcConstraintType['nmr-star'][tag[1]])
                     else:
                         nef_tag = f"{saveframe.tag_prefix}.{tag[0]}"
                         auth_tag = self.get_star_tag(nef_tag)[0]
@@ -8224,7 +8208,7 @@ class NEFTranslator:
                     if len(aux_rows) > 0 and ((loop.category == '_nef_sequence' and not has_covalent_links)
                                               or (loop.category == '_nef_covalent_links' and has_covalent_links)):
                         lp = pynmrstar.Loop.from_scratch()
-                        for _tag in self.entity_del_atom_row:
+                        for _tag in entityDelAtomItems:
                             lp.add_tag('_Entity_deleted_atom.' + _tag)
                         for d in aux_rows:
                             d[lp.get_tag_names().index('_Entity_deleted_atom.Assembly_ID')] = asm_id
@@ -8232,7 +8216,7 @@ class NEFTranslator:
                         sf.add_loop(lp)
 
                 if saveframe.category == 'nef_nmr_meta_data':
-                    sf.add_tag('NMR_STAR_version', self.star_version)
+                    sf.add_tag('NMR_STAR_version', NMR_STAR_VERSION)
 
                     try:
                         if __pynmrstar_v3_2__:
@@ -8317,17 +8301,17 @@ class NEFTranslator:
                         nef_tag = f"{saveframe.tag_prefix}.{tag[0]}"
                         auth_tag = self.get_star_tag(nef_tag)[0]
                         if auth_tag is not None:
-                            sf.add_tag(auth_tag, tag[1] if tag[1] not in self.dist_alt_constraint_type['nmr-star'] else self.dist_alt_constraint_type['nmr-star'][tag[1]])
+                            sf.add_tag(auth_tag, tag[1] if tag[1] not in altDistanceConstraintType['nmr-star'] else altDistanceConstraintType['nmr-star'][tag[1]])
                     elif saveframe.category == 'nef_dihedral_restraint_list' and tag[0] == 'restraint_origin':
                         nef_tag = f"{saveframe.tag_prefix}.{tag[0]}"
                         auth_tag = self.get_star_tag(nef_tag)[0]
                         if auth_tag is not None:
-                            sf.add_tag(auth_tag, tag[1] if tag[1] not in self.dihed_alt_constraint_type['nmr-star'] else self.dihed_alt_constraint_type['nmr-star'][tag[1]])
+                            sf.add_tag(auth_tag, tag[1] if tag[1] not in altDihedralAngleConstraintType['nmr-star'] else altDihedralAngleConstraintType['nmr-star'][tag[1]])
                     elif saveframe.category == 'nef_rdc_restraint_list' and tag[0] == 'restraint_origin':
                         nef_tag = f"{saveframe.tag_prefix}.{tag[0]}"
                         auth_tag = self.get_star_tag(nef_tag)[0]
                         if auth_tag is not None:
-                            sf.add_tag(auth_tag, tag[1] if tag[1] not in self.rdc_alt_constraint_type['nmr-star'] else self.rdc_alt_constraint_type['nmr-star'][tag[1]])
+                            sf.add_tag(auth_tag, tag[1] if tag[1] not in altRdcConstraintType['nmr-star'] else altRdcConstraintType['nmr-star'][tag[1]])
                     else:
                         nef_tag = f"{saveframe.tag_prefix}.{tag[0]}"
                         auth_tag = self.get_star_tag(nef_tag)[0]
@@ -8475,7 +8459,7 @@ class NEFTranslator:
                 if len(aux_rows) > 0 and ((loop.category == '_nef_sequence' and not has_covalent_links)
                                           or (loop.category == '_nef_covalent_links' and has_covalent_links)):
                     lp = pynmrstar.Loop.from_scratch()
-                    for _tag in self.entity_del_atom_row:
+                    for _tag in entityDelAtomItems:
                         lp.add_tag('_Entity_deleted_atom.' + _tag)
                     for d in aux_rows:
                         d[lp.get_tag_names().index('_Entity_deleted_atom.Assembly_ID')] = asm_id
@@ -8483,7 +8467,7 @@ class NEFTranslator:
                     sf.add_loop(lp)
 
             if sf.category == 'nef_nmr_meta_data':
-                sf.add_tag('NMR_STAR_version', self.star_version)
+                sf.add_tag('NMR_STAR_version', NMR_STAR_VERSION)
 
                 try:
                     if __pynmrstar_v3_2__:
@@ -8613,9 +8597,9 @@ class NEFTranslator:
                         continue
                     if saveframe.category == 'entry_information':
                         if tag_name == 'source_data_format':
-                            sf.add_tag('format_name', self.nef_format_name)
+                            sf.add_tag('format_name', NEF_FORMAT_NAME)
                         elif tag_name == 'source_data_format_version':
-                            sf.add_tag('format_version', self.nef_version)
+                            sf.add_tag('format_version', NEF_VERSION)
                         else:
                             nef_tag, _ = self.get_nef_tag(saveframe.tag_prefix + '.' + tag[0])
                             if nef_tag is not None:
@@ -8623,15 +8607,15 @@ class NEFTranslator:
                     elif saveframe.category == 'general_distance_constraints' and tag_name == 'constraint_type':
                         nef_tag, _ = self.get_nef_tag(saveframe.tag_prefix + '.' + tag[0])
                         if nef_tag is not None:
-                            sf.add_tag(nef_tag, tag[1] if tag[1] not in self.dist_alt_constraint_type['nef'] else self.dist_alt_constraint_type['nef'][tag[1]])
+                            sf.add_tag(nef_tag, tag[1] if tag[1] not in altDistanceConstraintType['nef'] else altDistanceConstraintType['nef'][tag[1]])
                     elif saveframe.category == 'torsion_angle_constraints' and tag_name == 'constraint_type':
                         nef_tag, _ = self.get_nef_tag(saveframe.tag_prefix + '.' + tag[0])
                         if nef_tag is not None:
-                            sf.add_tag(nef_tag, tag[1] if tag[1] not in self.dihed_alt_constraint_type['nef'] else self.dihed_alt_constraint_type['nef'][tag[1]])
+                            sf.add_tag(nef_tag, tag[1] if tag[1] not in altDihedralAngleConstraintType['nef'] else altDihedralAngleConstraintType['nef'][tag[1]])
                     elif saveframe.category == 'RDC_constraints' and tag_name == 'constraint_type':
                         nef_tag, _ = self.get_nef_tag(saveframe.tag_prefix + '.' + tag[0])
                         if nef_tag is not None:
-                            sf.add_tag(nef_tag, tag[1] if tag[1] not in self.rdc_alt_constraint_type['nef'] else self.rdc_alt_constraint_type['nef'][tag[1]])
+                            sf.add_tag(nef_tag, tag[1] if tag[1] not in altRdcConstraintType['nef'] else altRdcConstraintType['nef'][tag[1]])
                     else:
                         nef_tag, _ = self.get_nef_tag(saveframe.tag_prefix + '.' + tag[0])
                         if nef_tag is not None:
@@ -8710,9 +8694,9 @@ class NEFTranslator:
                             has_format_ver = True
 
                     if not has_format_name:
-                        sf.add_tag('format_name', self.nef_format_name)
+                        sf.add_tag('format_name', NEF_FORMAT_NAME)
                     if not has_format_ver:
-                        sf.add_tag('format_version', self.nef_version)
+                        sf.add_tag('format_version', NEF_VERSION)
 
                     try:
                         if __pynmrstar_v3_2__:
@@ -8765,9 +8749,9 @@ class NEFTranslator:
                             continue
                         if saveframe.category == 'entry_information':
                             if tag_name == 'source_data_format':
-                                sf.add_tag('format_name', self.nef_format_name)
+                                sf.add_tag('format_name', NEF_FORMAT_NAME)
                             elif tag_name == 'source_data_format_version':
-                                sf.add_tag('format_version', self.nef_version)
+                                sf.add_tag('format_version', NEF_VERSION)
                             else:
                                 nef_tag, _ = self.get_nef_tag(saveframe.tag_prefix + '.' + tag[0])
                                 if nef_tag is not None:
@@ -8775,15 +8759,15 @@ class NEFTranslator:
                         elif saveframe.category == 'general_distance_constraints' and tag_name == 'constraint_type':
                             nef_tag, _ = self.get_nef_tag(saveframe.tag_prefix + '.' + tag[0])
                             if nef_tag is not None:
-                                sf.add_tag(nef_tag, tag[1] if tag[1] not in self.dist_alt_constraint_type['nef'] else self.dist_alt_constraint_type['nef'][tag[1]])
+                                sf.add_tag(nef_tag, tag[1] if tag[1] not in altDistanceConstraintType['nef'] else altDistanceConstraintType['nef'][tag[1]])
                         elif saveframe.category == 'torsion_angle_constraints' and tag_name == 'constraint_type':
                             nef_tag, _ = self.get_nef_tag(saveframe.tag_prefix + '.' + tag[0])
                             if nef_tag is not None:
-                                sf.add_tag(nef_tag, tag[1] if tag[1] not in self.dihed_alt_constraint_type['nef'] else self.dihed_alt_constraint_type['nef'][tag[1]])
+                                sf.add_tag(nef_tag, tag[1] if tag[1] not in altDihedralAngleConstraintType['nef'] else altDihedralAngleConstraintType['nef'][tag[1]])
                         elif saveframe.category == 'RDC_constraints' and tag_name == 'constraint_type':
                             nef_tag, _ = self.get_nef_tag(saveframe.tag_prefix + '.' + tag[0])
                             if nef_tag is not None:
-                                sf.add_tag(nef_tag, tag[1] if tag[1] not in self.rdc_alt_constraint_type['nef'] else self.rdc_alt_constraint_type['nef'][tag[1]])
+                                sf.add_tag(nef_tag, tag[1] if tag[1] not in altRdcConstraintType['nef'] else altRdcConstraintType['nef'][tag[1]])
                         else:
                             nef_tag, _ = self.get_nef_tag(saveframe.tag_prefix + '.' + tag[0])
                             if nef_tag is not None:
@@ -8913,9 +8897,9 @@ class NEFTranslator:
                         has_format_ver = True
 
                 if not has_format_name:
-                    sf.add_tag('format_name', self.nef_format_name)
+                    sf.add_tag('format_name', NEF_FORMAT_NAME)
                 if not has_format_ver:
-                    sf.add_tag('format_version', self.nef_version)
+                    sf.add_tag('format_version', NEF_VERSION)
 
                 try:
                     if __pynmrstar_v3_2__:
@@ -9066,17 +9050,17 @@ class NEFTranslator:
                         star_tag = f"{saveframe.tag_prefix}.{tag[0]}"
                         auth_tag = self.get_star_auth_tag(star_tag)[0]
                         if auth_tag is not None:
-                            sf.add_tag(auth_tag, tag[1] if tag[1] not in self.dist_alt_constraint_type['nmr-star'] else self.dist_alt_constraint_type['nmr-star'][tag[1]])
+                            sf.add_tag(auth_tag, tag[1] if tag[1] not in altDistanceConstraintType['nmr-star'] else altDistanceConstraintType['nmr-star'][tag[1]])
                     elif saveframe.tag_prefix == '_Torsion_angle_constraint_list' and tag[0] == 'Constraint_type':
                         star_tag = f"{saveframe.tag_prefix}.{tag[0]}"
                         auth_tag = self.get_star_auth_tag(star_tag)[0]
                         if auth_tag is not None:
-                            sf.add_tag(auth_tag, tag[1] if tag[1] not in self.dihed_alt_constraint_type['nmr-star'] else self.dihed_alt_constraint_type['nmr-star'][tag[1]])
+                            sf.add_tag(auth_tag, tag[1] if tag[1] not in altDihedralAngleConstraintType['nmr-star'] else altDihedralAngleConstraintType['nmr-star'][tag[1]])
                     elif saveframe.tag_prefix == '_RDC_constraint_list' and tag[0] == 'Constraint_type':
                         star_tag = f"{saveframe.tag_prefix}.{tag[0]}"
                         auth_tag = self.get_star_auth_tag(star_tag)[0]
                         if auth_tag is not None:
-                            sf.add_tag(auth_tag, tag[1] if tag[1] not in self.rdc_alt_constraint_type['nmr-star'] else self.rdc_alt_constraint_type['nmr-star'][tag[1]])
+                            sf.add_tag(auth_tag, tag[1] if tag[1] not in altRdcConstraintType['nmr-star'] else altRdcConstraintType['nmr-star'][tag[1]])
                     else:
                         star_tag = f"{saveframe.tag_prefix}.{tag[0]}"
                         auth_tag = self.get_star_auth_tag(star_tag)[0]
@@ -9160,7 +9144,7 @@ class NEFTranslator:
                     sf.add_loop(lp)
 
                 if saveframe.tag_prefix == '_Entry':
-                    sf.add_tag('NMR_STAR_version', self.star_version)
+                    sf.add_tag('NMR_STAR_version', NMR_STAR_VERSION)
 
                     try:
                         if __pynmrstar_v3_2__:
@@ -9245,17 +9229,17 @@ class NEFTranslator:
                         star_tag = f"{saveframe.tag_prefix}.{tag[0]}"
                         auth_tag = self.get_star_auth_tag(star_tag)[0]
                         if auth_tag is not None:
-                            sf.add_tag(auth_tag, tag[1] if tag[1] not in self.dist_alt_constraint_type['nmr-star'] else self.dist_alt_constraint_type['nmr-star'][tag[1]])
+                            sf.add_tag(auth_tag, tag[1] if tag[1] not in altDistanceConstraintType['nmr-star'] else altDistanceConstraintType['nmr-star'][tag[1]])
                     elif saveframe.tag_prefix == '_Torsion_angle_constraint_list' and tag[0] == 'Constraint_type':
                         star_tag = f"{saveframe.tag_prefix}.{tag[0]}"
                         auth_tag = self.get_star_auth_tag(star_tag)[0]
                         if auth_tag is not None:
-                            sf.add_tag(auth_tag, tag[1] if tag[1] not in self.dihed_alt_constraint_type['nmr-star'] else self.dihed_alt_constraint_type['nmr-star'][tag[1]])
+                            sf.add_tag(auth_tag, tag[1] if tag[1] not in altDihedralAngleConstraintType['nmr-star'] else altDihedralAngleConstraintType['nmr-star'][tag[1]])
                     elif saveframe.tag_prefix == '_RDC_constraint_list' and tag[0] == 'Constraint_type':
                         star_tag = f"{saveframe.tag_prefix}.{tag[0]}"
                         auth_tag = self.get_star_auth_tag(star_tag)[0]
                         if auth_tag is not None:
-                            sf.add_tag(auth_tag, tag[1] if tag[1] not in self.rdc_alt_constraint_type['nmr-star'] else self.rdc_alt_constraint_type['nmr-star'][tag[1]])
+                            sf.add_tag(auth_tag, tag[1] if tag[1] not in altRdcConstraintType['nmr-star'] else altRdcConstraintType['nmr-star'][tag[1]])
                     else:
                         star_tag = f"{saveframe.tag_prefix}.{tag[0]}"
                         auth_tag = self.get_star_auth_tag(star_tag)[0]
@@ -9400,7 +9384,7 @@ class NEFTranslator:
                 if len(aux_rows) > 0 and ((loop.category == '_Chem_comp_assembly' and not has_covalent_links)
                                           or (loop.category == '_Bond' and has_covalent_links)):
                     lp = pynmrstar.Loop.from_scratch()
-                    for _tag in self.entity_del_atom_row:
+                    for _tag in entityDelAtomItems:
                         lp.add_tag('_Entity_deleted_atom.' + _tag)
                     for d in aux_rows:
                         d[lp.get_tag_names().index('_Entity_deleted_atom.Assembly_ID')] = asm_id
@@ -9408,7 +9392,7 @@ class NEFTranslator:
                     sf.add_loop(lp)
 
             if sf.tag_prefix == '_Entry':
-                sf.add_tag('NMR_STAR_version', self.star_version)
+                sf.add_tag('NMR_STAR_version', NMR_STAR_VERSION)
 
                 try:
                     if __pynmrstar_v3_2__:

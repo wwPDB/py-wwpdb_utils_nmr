@@ -14,7 +14,7 @@ class TestNmrDpUtility(unittest.TestCase):
 
     def setUp(self):
         self.data_dir_path = './'
-        self.cs_file_path = {'daother-6302': ['D_1000245727_cs-upload_P1.str.V1']
+        self.cs_file_path = {'daother-6302': ['D_1000245727_cs-upload_P1.str.V1-rev']
                              }
         self.model_file = {'daother-6302': 'D_1000245727_model_P1.cif.V1'}
         self.nmr_dp_util = NmrDpUtility()

@@ -30,7 +30,7 @@
 # 17-Mar-2020  M. Yokochi - check total number of models (DAOTHER-436)
 # 17-Mar-2020  M. Yokochi - check consistency between saveframe name and sf_framecode value
 # 18-Mar-2020  M. Yokochi - rename warning type from skipped_sf/lp_category to skipped_saveframe/loop_category
-# 18-Mar-2020  M. Yokochi - support 'Saveframe' data type as separated NMR data (DAOTHER-2737)
+# 18-Mar-2020  M. Yokochi - support 'Saveframe' data type as conventional NMR data (DAOTHER-2737)
 # 19-Mar-2020  M. Yokochi - atom nomenclature should not become a blocker (DAOTHER-5527)
 # 24-Mar-2020  M. Yokochi - add support for chemical shift reference (DAOTHER-1682)
 # 24-Mar-2020  M. Yokochi - revise chain assignment for identical dimer case (DAOTHER-3343)
@@ -40,8 +40,8 @@
 # 06-Apr-2020  M. Yokochi - synchronize with coordinates' auth_asym_id and auth_seq_id for combined NMR-STAR deposition
 # 10-Apr-2020  M. Yokochi - fix crash in case of format issue
 # 14-Apr-2020  M. Yokochi - fix dependency on label_seq_id, instead of using auth_seq_id in case (DAOTHER-5584)
-# 18-Apr-2020  M. Yokochi - fix no model error in coordinate and allow missing 'sf_framecode' in NMR separated deposition (DAOTHER-5594)
-# 19-Apr-2020  M. Yokochi - support concatenated CS data in NMR separated deposition (DAOTHER-5594)
+# 18-Apr-2020  M. Yokochi - fix no model error in coordinate and allow missing 'sf_framecode' in NMR conventional deposition (DAOTHER-5594)
+# 19-Apr-2020  M. Yokochi - support concatenated CS data in NMR conventional deposition (DAOTHER-5594)
 # 19-Apr-2020  M. Yokochi - report warning against not superimposed models (DAOTHER-4060)
 # 22-Apr-2020  M. Yokochi - convert comp_id in capital letters (DAOTHER-5600)
 # 22-Apr-2020  M. Yokochi - fix GLY:HA1/HA2 to GLY:HA2/HA3 (DAOTHER-5600)
@@ -53,7 +53,7 @@
 # 23-Apr-2020  M. Yokochi - implement automatic format correction (DAOTHER-5603, 5610)
 # 24-Apr-2020  M. Yokochi - separate format_issue error and missing_mandatory_content error (DAOTHER-5611)
 # 24-Apr-2020  M. Yokochi - support 'QR' pseudo atom name (DAOTHER-5611)
-# 24-Apr-2020  M. Yokochi - allow mandatory value is missing in NMR separated deposition (DAOTHER-5611)
+# 24-Apr-2020  M. Yokochi - allow mandatory value is missing in NMR conventional deposition (DAOTHER-5611)
 # 25-Apr-2020  M. Yokochi - implement automatic format correction for 6NZN, 6PQF, 6PSI entry (DAOTHE-5611)
 # 25-Apr-2020  M. Yokochi - add 'entity' content subtype (DAOTHER-5611)
 # 25-Apr-2020  M. Yokochi - add 'corrected_format_issue' warning type (DAOTHER-5611)
@@ -171,14 +171,24 @@ from packaging import version
 from munkres import Munkres
 import numpy as np
 
-from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
+from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import (NEFTranslator,
+                                                         NEF_VERSION,
+                                                         altDistanceConstraintType,
+                                                         altDihedralAngleConstraintType,
+                                                         altRdcConstraintType,
+                                                         paramagElements, ferromagElements, nonMetalElements,
+                                                         isotopeNumsOfNmrObsNucs, halfSpinNucs,
+                                                         allowedAmbiguityCodes,
+                                                         allowedIsotopeNums,
+                                                         MAX_DIM_NUM_OF_SPECTRA)
 from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
 from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
 from wwpdb.utils.nmr.AlignUtil import (emptyValue, trueValue,
                                        monDict3, hasLargeSeqGap,
                                        fillBlankCompId, fillBlankCompIdWithOffset, beautifyPolySeq,
                                        getMiddleCode, getGaugeCode, getScoreOfSeqAlign,
-                                       getOneLetterCode, getOneLetterCodeSequence)
+                                       getOneLetterCode, getOneLetterCodeSequence,
+                                       letterToDigit, indexToLetter)
 from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
 from wwpdb.utils.nmr.io.CifReader import CifReader
@@ -254,6 +264,22 @@ def get_first_sf_tag(sf_data=None, tag=None):
         return ''
 
     return array[0]
+
+
+def is_non_metal_element(atom_id):
+    """ Return whether a given atom_id is non metal element.
+        @return: True for non metal element, False otherwise
+    """
+
+    return any(elem for elem in nonMetalElements if atom_id.startswith(elem))
+
+
+def is_half_spin_nuclei(atom_id):
+    """ Check if nuclei of a given atom_id has a spin 1/2.
+        @return: True for spin 1/2 nuclei, False otherwise
+    """
+
+    return any(nucl for nucl in halfSpinNucs if atom_id.startswith(nucl))
 
 
 def probability_density(value, mean, stddev):
@@ -419,7 +445,7 @@ def predict_tautomer_state_of_histidine(cg_chem_shift, cd2_chem_shift, nd1_chem_
 
 
 def predict_rotamer_state_of_leucine(cd1_chem_shift, cd2_chem_shift):
-    """ Return prediction of romermeric state of Leucine using assigned CD1 and CD2 chemical shifts.
+    """ Return prediction of rotermeric state of Leucine using assigned CD1 and CD2 chemical shifts.
         @return: probability of gauche+, trans, gauche-
         Reference:
           Dependence of Amino Acid Side Chain 13C Shifts on Dihedral Angle: Application to Conformational Analysis.
@@ -463,7 +489,7 @@ def predict_rotamer_state_of_leucine(cd1_chem_shift, cd2_chem_shift):
 
 
 def predict_rotamer_state_of_valine(cg1_chem_shift, cg2_chem_shift):
-    """ Return prediction of romermeric state of Valine using assigned CG1 and CG2 chemical shifts.
+    """ Return prediction of rotermeric state of Valine using assigned CG1 and CG2 chemical shifts.
         @return: probability of gauche+, trans, gauche-
         Reference:
           Dependence of Amino Acid Side Chain 13C Shifts on Dihedral Angle: Application to Conformational Analysis.
@@ -504,7 +530,7 @@ def predict_rotamer_state_of_valine(cg1_chem_shift, cg2_chem_shift):
 
 
 def predict_rotamer_state_of_isoleucine(cd1_chem_shift):
-    """ Return prediction of romermeric state of Isoleucine using assigned CD1 chemical shift.
+    """ Return prediction of rotermeric state of Isoleucine using assigned CD1 chemical shift.
         @return: probability of gauche+, trans, gauche-
         Reference:
           Determination of Isoleucine Side-Chain Conformations in Ground and Excited States of Proteins from Chemical Shifts.
@@ -584,7 +610,7 @@ class NmrDpUtility:
 
         # whether to run initial rescue routine
         self.__rescue_mode = True
-        # whether NMR combined deposition or not (NMR separated deposition)
+        # whether NMR combined deposition or not (NMR conventional deposition)
         self.__combined_mode = True
         # whether to use datablock name of public release
         self.__release_mode = False
@@ -608,9 +634,9 @@ class NmrDpUtility:
         # whether to enable tolerant sequence alignment for residue variants
         self.__tolerant_seq_align = False
 
-        # whether to fix format issue (enabled if NMR separated deposition or release mode)
+        # whether to fix format issue (enabled if NMR conventional deposition or release mode)
         self.__fix_format_issue = False
-        # whether to exclude missing mandatory data (enabled if NMR separated deposition)
+        # whether to exclude missing mandatory data (enabled if NMR conventional deposition)
         self.__excl_missing_data = False
         # whether to complement missing data (add missing pseudo atoms in NMR restraints, DAOTHER-7681, issue #1)
         self.__cmpl_missing_data = False
@@ -695,7 +721,7 @@ class NmrDpUtility:
                            self.__testCSPseudoAtomNameConsistencyInMrLoop,
                            self.__testCSValueConsistencyInPkLoop,
                            self.__testCSValueConsistencyInPkAltLoop,
-                           self.__testRDCVector
+                           self.__testRdcVector
                            ]
 
         # validation tasks for coordinate file only
@@ -854,40 +880,6 @@ class NmrDpUtility:
                              'pdbx': None
                              }
 
-        # paramagnetic elements, except for Oxygen
-        self.paramag_elems = ('LI', 'NA', 'MG', 'AL', 'K', 'CA', 'SC', 'TI', 'V', 'MN', 'RB', 'SR',
-                              'Y', 'ZR', 'NB', 'MO', 'TC', 'RU', 'RH', 'PD', 'SN', 'CS', 'BA', 'LA',
-                              'CE', 'PR', 'ND', 'PM', 'SM', 'EU', 'GD', 'TB', 'DY', 'HO', 'ER', 'TM',
-                              'YB', 'LU', 'HF', 'TA', 'W', 'RE', 'OS', 'IR', 'PT', 'FR', 'RA', 'AC')
-
-        # ferromagnetic elements
-        self.ferromag_elems = ('CR', 'FE', 'CO', 'NI')
-
-        # non-metal elements
-        self.non_metal_elems = ('H', 'C', 'N', 'O', 'P', 'S', 'SE')
-
-        # isotope numbers of NMR observable atoms
-        self.atom_isotopes = {'H': [1, 2, 3],
-                              'C': [13],
-                              'N': [15, 14],
-                              'O': [17],
-                              'P': [31],
-                              'S': [33],
-                              'F': [19],
-                              'CD': [113, 111],
-                              'CA': [43]
-                              }
-
-        # nucleus with half spin
-        self.half_spin_nucleus = ('H', 'C', 'N', 'P', 'F', 'CD')
-
-        # ambiguity codes
-        self.bmrb_ambiguity_codes = (1, 2, 3, 4, 5, 6, 9)
-
-        isotope_nums = []
-        for i in self.atom_isotopes.values():
-            isotope_nums.extend(list(i))
-
         # saveframe categories
         self.sf_categories = {'nef': {'entry_info': 'nef_nmr_meta_data',
                                       'poly_seq': 'nef_molecular_system',
@@ -944,19 +936,19 @@ class NmrDpUtility:
                                        }
                               }
 
-        # allowed chem shift range
+        # allowed chemical shift range in ppm
         self.chem_shift_range = {'min_exclusive': -300.0, 'max_exclusive': 300.0}
         self.chem_shift_error = {'min_inclusive': 0.0, 'max_inclusive': 3.0}
 
-        # allowed distance range
+        # allowed distance range in Angstromes
         self.dist_restraint_range = {'min_inclusive': 0.5, 'max_inclusive': 50.0}
         self.dist_restraint_error = {'min_inclusive': 0.0, 'max_inclusive': 5.0}
 
-        # allowed dihed range
+        # allowed dihedral angle range in degrees
         self.dihed_restraint_range = {'min_inclusive': -360.0, 'max_inclusive': 360.0}
         self.dihed_restraint_error = {'min_inclusive': 0.0, 'max_inclusive': 90.0}
 
-        # allowed rdc range
+        # allowed RDC range in Hz
         self.rdc_restraint_range = {'min_exclusive': -100.0, 'max_exclusive': 100.0}
         self.rdc_restraint_error = {'min_inclusive': 0.0, 'max_inclusive': 5.0}
 
@@ -968,7 +960,7 @@ class NmrDpUtility:
         # criterion for low sequence coverage
         self.low_seq_coverage = 0.3
 
-        # criterion for minimum sequence coverage when conflict occurs (NMR separated deposition)
+        # criterion for minimum sequence coverage when conflict occurs (NMR conventional deposition)
         self.min_seq_coverage_w_conflict = 0.95
 
         # cutoff value for detection of aromatic atoms
@@ -1159,9 +1151,9 @@ class NmrDpUtility:
                                                       {'name': 'Atom_ID', 'type': 'str',
                                                        'remove-bad-pattern': True}
                                                       ],
-                                       'chem_shift_ref': [{'name': 'Atom_type', 'type': 'enum', 'enum': set(self.atom_isotopes.keys()),
+                                       'chem_shift_ref': [{'name': 'Atom_type', 'type': 'enum', 'enum': set(isotopeNumsOfNmrObsNucs.keys()),
                                                            'enforce-enum': True},
-                                                          {'name': 'Atom_isotope_number', 'type': 'enum-int', 'enum': set(isotope_nums),
+                                                          {'name': 'Atom_isotope_number', 'type': 'enum-int', 'enum': set(allowedIsotopeNums),
                                                            'enforce-enum': True},
                                                           {'name': 'Mol_common_name', 'type': 'str'}],
                                        'dist_restraint': [{'name': 'ID', 'type': 'positive-int'},
@@ -1339,9 +1331,6 @@ class NmrDpUtility:
                                                }
                                   }
 
-        # limit number of dimensions
-        self.lim_num_dim = 16
-
         # key items for spectral peak
         self.pk_key_items = {'nef': [{'name': 'position_%s', 'type': 'float'}
                                      ],
@@ -1362,10 +1351,10 @@ class NmrDpUtility:
                                                   {'name': 'value_uncertainty', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
                                                    'range': self.chem_shift_error},
                                                   {'name': 'element', 'type': 'enum', 'mandatory': True, 'default-from': 'atom_name',
-                                                   'enum': set(self.atom_isotopes.keys()),
+                                                   'enum': set(isotopeNumsOfNmrObsNucs.keys()),
                                                    'enforce-enum': True},
                                                   {'name': 'isotope_number', 'type': 'enum-int', 'mandatory': True, 'default-from': 'atom_name',
-                                                   'enum': set(isotope_nums),
+                                                   'enum': set(allowedIsotopeNums),
                                                    'enforce-enum': True}
                                                   ],
                                    'chem_shift_ref': None,
@@ -1526,17 +1515,17 @@ class NmrDpUtility:
                                                      ],
                                         'entity': None,
                                         'chem_shift': [{'name': 'Atom_type', 'type': 'enum', 'mandatory': True, 'default-from': 'Atom_ID',
-                                                        'enum': set(self.atom_isotopes.keys()),
+                                                        'enum': set(isotopeNumsOfNmrObsNucs.keys()),
                                                         'enforce-enum': True},
                                                        {'name': 'Atom_isotope_number', 'type': 'enum-int', 'mandatory': True, 'default-from': 'Atom_ID',
-                                                        'enum': set(isotope_nums),
+                                                        'enum': set(allowedIsotopeNums),
                                                         'enforce-enum': True},
                                                        {'name': 'Val', 'type': 'range-float', 'mandatory': True,
                                                         'range': self.chem_shift_range},
                                                        {'name': 'Val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
                                                         'range': self.chem_shift_error},
                                                        {'name': 'Ambiguity_code', 'type': 'enum-int', 'mandatory': False,
-                                                        'enum': self.bmrb_ambiguity_codes,
+                                                        'enum': allowedAmbiguityCodes,
                                                         'enforce-enum': True},
                                                        {'name': 'Ambiguity_set_ID', 'type': 'positive-int', 'mandatory': False,
                                                         'enforce-non-zero': True},
@@ -2384,259 +2373,7 @@ class NmrDpUtility:
                                              }
                                 }
 
-        self.alt_potential_type = {'?': 'undefined'}
-
-        # alternative dictionary of constraint type
-        self.dist_alt_constraint_type = {'nef': {'NOE': 'noe',
-                                                 'NOE build-up': 'noe_build_up',
-                                                 'noe build-up': 'noe_build_up',
-                                                 'NOE buildup': 'noe_build_up',
-                                                 'noe buildup': 'noe_build_up',
-                                                 'NOE build up': 'noe_build_up',
-                                                 'noe build up': 'noe_build_up',
-                                                 'noe not seen': 'noe_not_seen',
-                                                 'ROE': 'roe',
-                                                 'roe build-up': 'roe_build_up',
-                                                 'ROE buildup': 'roe_build_up',
-                                                 'roe buildup': 'roe_build_up',
-                                                 'ROE build up': 'roe_build_up',
-                                                 'roe build up': 'roe_build_up',
-                                                 'hydrogen bond': 'hbond',
-                                                 'Hbond': 'hbond',
-                                                 'HBond': 'hbond',
-                                                 'H-bond': 'hbond',
-                                                 'h-bond': 'hbond',
-                                                 'H-Bond': 'hbond',
-                                                 'Hydrogen bond': 'hbond',
-                                                 'disulfide bond': 'disulfide_bond',
-                                                 'Disulfide bond': 'disulfide_bond',
-                                                 'S-S bond': 'disulfide_bond',
-                                                 'SS bond': 'disulfide_bond',
-                                                 'SS-bond': 'disulfide_bond',
-                                                 'disulfide bridge': 'disulfide_bond',
-                                                 'Disulfide bridge': 'disulfide_bond',
-                                                 'paramagnetic relaxation': 'pre',
-                                                 'PRE': 'pre',
-                                                 'Paramagnetic relaxation': 'pre',
-                                                 'paramagnetic relaxation enhancement': 'pre',
-                                                 'Paramagnetic relaxation enhancement': 'pre',
-                                                 'general distance': 'undefined',
-                                                 'distance': 'undefined',
-                                                 'Mutation': 'mutation',
-                                                 'chemical shift perturbation': 'shift_perturbation',
-                                                 'shift perturbation': 'shift_perturbation',
-                                                 'chem shift perturbation': 'shift_perturbation',
-                                                 'CS perturbation': 'shift_perturbation',
-                                                 'csp': 'shift_perturbation',
-                                                 'CSP': 'shift_perturbation',
-                                                 '?': 'undefined'
-                                                 },
-                                         'nmr-star': {'noe': 'NOE',
-                                                      'noe_build_up': 'NOE build-up',
-                                                      'noe build-up': 'NOE build-up',
-                                                      'NOE buildup': 'NOE build-up',
-                                                      'noe buildup': 'NOE build-up',
-                                                      'NOE build up': 'NOE build-up',
-                                                      'noe build up': 'NOE build-up',
-                                                      'noe_not_seen': 'NOE not seen',
-                                                      'noe not seen': 'NOE not seen',
-                                                      'roe': 'ROE',
-                                                      'roe_build_up': 'ROE build-up',
-                                                      'roe build-up': 'ROE build-up',
-                                                      'ROE buildup': 'ROE build-up',
-                                                      'roe buildup': 'ROE build-up',
-                                                      'ROE build up': 'ROE build-up',
-                                                      'roe build up': 'ROE build-up',
-                                                      'hbond': 'hydrogen bond',
-                                                      'Hbond': 'hydrogen bond',
-                                                      'HBond': 'hydrogen bond',
-                                                      'H-bond': 'hydrogen bond',
-                                                      'h-bond': 'hydrogen bond',
-                                                      'H-Bond': 'hydrogen bond',
-                                                      'Hydrogen bond': 'hydrogen bond',
-                                                      'disulfide_bond': 'disulfide bond',
-                                                      'Disulfide bond': 'disulfide bond',
-                                                      'S-S bond': 'disulfide bond',
-                                                      'SS bond': 'disulfide bond',
-                                                      'SS-bond': 'disulfide bond',
-                                                      'disulfide bridge': 'disulfide bond',
-                                                      'Disulfide bridge': 'disulfide bond',
-                                                      'PRE': 'paramagnetic relaxation',
-                                                      'pre': 'paramagnetic relaxation',
-                                                      'Paramagnetic relaxation': 'paramagnetic relaxation',
-                                                      'paramagnetic relaxation enhancement': 'paramagnetic relaxation',
-                                                      'Paramagnetic relaxation enhancement': 'paramagnetic relaxation',
-                                                      'Mutation': 'mutation',
-                                                      'unknown': 'general distance',
-                                                      'undefined': 'general distance',
-                                                      'shift_perturbation': 'chemical shift perturbation',
-                                                      'shift perturbation': 'chemical shift perturbation',
-                                                      'chem shift perturbation': 'chemical shift perturbation',
-                                                      'CS perturbation': 'chemical shift perturbation',
-                                                      'csp': 'chemical shift perturbation',
-                                                      'CSP': 'chemical shift perturbation',
-                                                      '?': 'undefined'
-                                                      }
-                                         }
-
-        self.dihed_alt_constraint_type = {'nef': {'J-couplings': 'jcoupling',
-                                                  'j-couplings': 'jcoupling',
-                                                  'J couplings': 'jcoupling',
-                                                  'j couplings': 'jcoupling',
-                                                  'Jcouplings': 'jcoupling',
-                                                  'jcouplings': 'jcoupling',
-                                                  'J-coupling': 'jcoupling',
-                                                  'j-coupling': 'jcoupling',
-                                                  'J coupling': 'jcoupling',
-                                                  'j coupling': 'jcoupling',
-                                                  'Jcoupling': 'jcoupling',
-                                                  'chemical shift': 'chemical_shift',
-                                                  'Chemical shift': 'chemical_shift',
-                                                  'Chemical_shift': 'chemical_shift',
-                                                  'chemical shifts': 'chemical_shift',
-                                                  'Chemical shifts': 'chemical_shift',
-                                                  'Chemical_shifts': 'chemical_shift',
-                                                  'backbone chemical shifts': 'chemical_shift',
-                                                  'Backbone chemical shifts': 'chemical_shift',
-                                                  'Mainchain chemical shifts': 'chemical_shift',
-                                                  'mainchain chemical shifts': 'chemical_shift',
-                                                  'Main chain chemical shifts': 'chemical_shift',
-                                                  'main chain chemical shifts': 'chemical_shift',
-                                                  'bb chemical shifts': 'chemical_shift',
-                                                  'BB chemical shifts': 'chemical_shift',
-                                                  'backbone chemical shift': 'chemical_shift',
-                                                  'Backbone chemical shift': 'chemical_shift',
-                                                  'Mainchain chemical shift': 'chemical_shift',
-                                                  'mainchain chemical shift': 'chemical_shift',
-                                                  'Main chain chemical shift': 'chemical_shift',
-                                                  'main chain chemical shift': 'chemical_shift',
-                                                  'bb chemical shift': 'chemical_shift',
-                                                  'BB chemical shift': 'chemical_shift',
-                                                  'backbone chem shifts': 'chemical_shift',
-                                                  'Backbone chem shifts': 'chemical_shift',
-                                                  'Mainchain chem shifts': 'chemical_shift',
-                                                  'mainchain chem shifts': 'chemical_shift',
-                                                  'Main chain chem shifts': 'chemical_shift',
-                                                  'main chain chem shifts': 'chemical_shift',
-                                                  'bb chem shifts': 'chemical_shift',
-                                                  'BB chem shifts': 'chemical_shift',
-                                                  'backbone chem shift': 'chemical_shift',
-                                                  'Backbone chem shift': 'chemical_shift',
-                                                  'Mainchain chem shift': 'chemical_shift',
-                                                  'mainchain chem shift': 'chemical_shift',
-                                                  'Main chain chem shift': 'chemical_shift',
-                                                  'main chain chem shift': 'chemical_shift',
-                                                  'bb chem shift': 'chemical_shift',
-                                                  'BB chem shift': 'chemical_shift',
-                                                  'backbone cs': 'chemical_shift',
-                                                  'Backbone cs': 'chemical_shift',
-                                                  'Mainchain cs': 'chemical_shift',
-                                                  'mainchain cs': 'chemical_shift',
-                                                  'Main chain cs': 'chemical_shift',
-                                                  'main chain cs': 'chemical_shift',
-                                                  'bb cs': 'chemical_shift',
-                                                  'BB cs': 'chemical_shift',
-                                                  'backbone CS': 'chemical_shift',
-                                                  'Backbone CS': 'chemical_shift',
-                                                  'Mainchain CS': 'chemical_shift',
-                                                  'mainchain CS': 'chemical_shift',
-                                                  'Main chain CS': 'chemical_shift',
-                                                  'main chain CS': 'chemical_shift',
-                                                  'bb CS': 'chemical_shift',
-                                                  'BB CS': 'chemical_shift',
-                                                  'TALOS': 'chemical_shift',
-                                                  'talos': 'chemical_shift',
-                                                  'TALOS+': 'chemical_shift',
-                                                  'talos+': 'chemical_shift',
-                                                  'TALOS-N': 'chemical_shift',
-                                                  'talos-n': 'chemical_shift',
-                                                  '?': 'undefined'
-                                                  },
-                                          'nmr-star': {'jcoupling': 'J-couplings',
-                                                       'Jcoupling': 'J-couplings',
-                                                       'jcouplings': 'J-couplings',
-                                                       'Jcouplings': 'J-couplings',
-                                                       'j-couplings': 'J-couplings',
-                                                       'J couplings': 'J-couplings',
-                                                       'j couplings': 'J-couplings',
-                                                       'J-coupling': 'J-couplings',
-                                                       'j-coupling': 'J-couplings',
-                                                       'J coupling': 'J-couplings',
-                                                       'j coupling': 'J-couplings',
-                                                       'chemical_shift': 'backbone chemical shifts',
-                                                       'Chemical_shift': 'backbone chemical shifts',
-                                                       'chemical_shifts': 'backbone chemical shifts',
-                                                       'Chemical_shifts': 'backbone chemical shifts',
-                                                       'chemical shift': 'backbone chemical shifts',
-                                                       'Chemical shift': 'backbone chemical shifts',
-                                                       'chemical shifts': 'backbone chemical shifts',
-                                                       'Chemical shifts': 'backbone chemical shifts',
-                                                       'Backbone chemical shifts': 'backbone chemical shifts',
-                                                       'Mainchain chemical shifts': 'backbone chemical shifts',
-                                                       'mainchain chemical shifts': 'backbone chemical shifts',
-                                                       'Main chain chemical shifts': 'backbone chemical shifts',
-                                                       'main chain chemical shifts': 'backbone chemical shifts',
-                                                       'bb chemical shifts': 'backbone chemical shifts',
-                                                       'BB chemical shifts': 'backbone chemical shifts',
-                                                       'backbone chemical shift': 'backbone chemical shifts',
-                                                       'Backbone chemical shift': 'backbone chemical shifts',
-                                                       'Mainchain chemical shift': 'backbone chemical shifts',
-                                                       'mainchain chemical shift': 'backbone chemical shifts',
-                                                       'Main chain chemical shift': 'backbone chemical shifts',
-                                                       'main chain chemical shift': 'backbone chemical shifts',
-                                                       'bb chemical shift': 'backbone chemical shifts',
-                                                       'BB chemical shift': 'backbone chemical shifts',
-                                                       'backbone chem shifts': 'backbone chemical shifts',
-                                                       'Backbone chem shifts': 'backbone chemical shifts',
-                                                       'Mainchain chem shifts': 'backbone chemical shifts',
-                                                       'mainchain chem shifts': 'backbone chemical shifts',
-                                                       'Main chain chem shifts': 'backbone chemical shifts',
-                                                       'main chain chem shifts': 'backbone chemical shifts',
-                                                       'bb chem shifts': 'backbone chemical shifts',
-                                                       'BB chem shifts': 'backbone chemical shifts',
-                                                       'backbone chem shift': 'backbone chemical shifts',
-                                                       'Backbone chem shift': 'backbone chemical shifts',
-                                                       'Mainchain chem shift': 'backbone chemical shifts',
-                                                       'mainchain chem shift': 'backbone chemical shifts',
-                                                       'Main chain chem shift': 'backbone chemical shifts',
-                                                       'main chain chem shift': 'backbone chemical shifts',
-                                                       'bb chem shift': 'backbone chemical shifts',
-                                                       'BB chem shift': 'backbone chemical shifts',
-                                                       'backbone cs': 'backbone chemical shifts',
-                                                       'Backbone cs': 'backbone chemical shifts',
-                                                       'Mainchain cs': 'backbone chemical shifts',
-                                                       'mainchain cs': 'backbone chemical shifts',
-                                                       'Main chain cs': 'backbone chemical shifts',
-                                                       'main chain cs': 'backbone chemical shifts',
-                                                       'bb cs': 'backbone chemical shifts',
-                                                       'BB cs': 'backbone chemical shifts',
-                                                       'backbone CS': 'backbone chemical shifts',
-                                                       'Backbone CS': 'backbone chemical shifts',
-                                                       'Mainchain CS': 'backbone chemical shifts',
-                                                       'mainchain CS': 'backbone chemical shifts',
-                                                       'Main chain CS': 'backbone chemical shifts',
-                                                       'main chain CS': 'backbone chemical shifts',
-                                                       'bb CS': 'backbone chemical shifts',
-                                                       'BB CS': 'backbone chemical shifts',
-                                                       'TALOS': 'backbone chemical shifts',
-                                                       'talos': 'backbone chemical shifts',
-                                                       'TALOS+': 'backbone chemical shifts',
-                                                       'talos+': 'backbone chemical shifts',
-                                                       'TALOS-N': 'backbone chemical shifts',
-                                                       'talos-n': 'backbone chemical shifts',
-                                                       '?': 'undefined'
-                                                       }
-                                          }
-
-        self.rdc_alt_constraint_type = {'nef': {'RDC': 'measured',
-                                                'rdc': 'measured',
-                                                '?': 'undefined'
-                                                },
-                                        'nmr-star': {'rdc': 'RDC',
-                                                     'measured': 'RDC',
-                                                     '?': 'undefined'
-                                                     }
-                                        }
+        altPotentialType = {'?': 'undefined'}
 
         # saveframe tag items
         self.sf_tag_items = {'nef': {'entry_info': [{'name': 'sf_category', 'type': 'str', 'mandatory': True},
@@ -2664,13 +2401,13 @@ class NmrDpUtility:
                                                                   'square-well-parabolic-linear', 'upper-bound-parabolic',
                                                                   'lower-bound-parabolic', 'upper-bound-parabolic-linear',
                                                                   'lower-bound-parabolic-linear', 'undefined', 'unknown'),
-                                                         'enum-alt': self.alt_potential_type},
+                                                         'enum-alt': altPotentialType},
                                                         {'name': 'restraint_origin', 'type': 'enum', 'mandatory': False,
                                                          'enum': ('noe', 'noe_build_up', 'noe_not_seen', 'roe',
                                                                   'roe_build_up', 'hbond', 'disulfide_bond', 'pre',
                                                                   'symmetry', 'mutation', 'shift_perturbation',
                                                                   'undefined', 'unknown'),
-                                                         'enum-alt': self.dist_alt_constraint_type['nef']}
+                                                         'enum-alt': altDistanceConstraintType['nef']}
                                                         ],
                                      'dihed_restraint': [{'name': 'sf_category', 'type': 'str', 'mandatory': True},
                                                          {'name': 'sf_framecode', 'type': 'str', 'mandatory': True},
@@ -2678,10 +2415,10 @@ class NmrDpUtility:
                                                           'enum': ('parabolic', 'square-well-parabolic', 'square-well-parabolic-linear',
                                                                    'upper-bound-parabolic', 'lower-bound-parabolic', 'upper-bound-parabolic-linear',
                                                                    'lower-bound-parabolic-linear', 'undefined', 'unknown'),
-                                                          'enum-alt': self.alt_potential_type},
+                                                          'enum-alt': altPotentialType},
                                                          {'name': 'restraint_origin', 'type': 'enum', 'mandatory': False,
                                                           'enum': ('jcoupling', 'chemical_shift', 'undefined', 'unknown'),
-                                                          'enum-alt': self.dihed_alt_constraint_type['nef']}
+                                                          'enum-alt': altDihedralAngleConstraintType['nef']}
                                                          ],
                                      'rdc_restraint': [{'name': 'sf_category', 'type': 'str', 'mandatory': True},
                                                        {'name': 'sf_framecode', 'type': 'str', 'mandatory': True},
@@ -2689,10 +2426,10 @@ class NmrDpUtility:
                                                         'enum': ('parabolic', 'square-well-parabolic', 'square-well-parabolic-linear',
                                                                  'upper-bound-parabolic', 'lower-bound-parabolic', 'upper-bound-parabolic-linear',
                                                                  'lower-bound-parabolic-linear', 'undefined', 'unknown'),
-                                                        'enum-alt': self.alt_potential_type},
+                                                        'enum-alt': altPotentialType},
                                                        {'name': 'restraint_origin', 'type': 'enum', 'mandatory': False,
                                                         'enum': ('measured', 'undefined', 'unknown'),
-                                                        'enum-alt': self.rdc_alt_constraint_type['nef']},
+                                                        'enum-alt': altRdcConstraintType['nef']},
                                                        {'name': 'tensor_magnitude', 'type': 'float', 'mandatory': False},
                                                        {'name': 'tensor_rhombicity', 'type': 'positive-float', 'mandatory': False},
                                                        {'name': 'tensor_chain_code', 'type': 'str', 'mandatory': False},
@@ -2702,7 +2439,7 @@ class NmrDpUtility:
                                      'spectral_peak': [{'name': 'sf_category', 'type': 'str', 'mandatory': True},
                                                        {'name': 'sf_framecode', 'type': 'str', 'mandatory': True},
                                                        {'name': 'num_dimensions', 'type': 'enum-int', 'mandatory': True,
-                                                        'enum': set(range(1, self.lim_num_dim)),
+                                                        'enum': set(range(1, MAX_DIM_NUM_OF_SPECTRA)),
                                                         'enforce-enum': True},
                                                        {'name': 'chemical_shift_list', 'type': 'str', 'mandatory': False},
                                                        {'name': 'experiment_classification', 'type': 'str', 'mandatory': False},
@@ -2750,35 +2487,35 @@ class NmrDpUtility:
                                                                        'hydrogen bond', 'disulfide bond', 'paramagnetic relaxation',
                                                                        'symmetry', 'general distance', 'mutation', 'chemical shift perturbation',
                                                                        'undefined', 'unknown'),
-                                                              'enum-alt': self.dist_alt_constraint_type['nmr-star']},
+                                                              'enum-alt': altDistanceConstraintType['nmr-star']},
                                                              {'name': 'Potential_type', 'type': 'enum', 'mandatory': False,
                                                               'enum': ('log-harmonic', 'parabolic', 'square-well-parabolic',
                                                                        'square-well-parabolic-linear', 'upper-bound-parabolic',
                                                                        'lower-bound-parabolic', 'upper-bound-parabolic-linear',
                                                                        'lower-bound-parabolic-linear', 'undefined', 'unknown'),
-                                                              'enum-alt': self.alt_potential_type}
+                                                              'enum-alt': altPotentialType}
                                                              ],
                                           'dihed_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
                                                               {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
                                                               {'name': 'Constraint_type', 'type': 'enum', 'mandatory': False,
                                                                'enum': ('J-couplings', 'backbone chemical shifts', 'undefined', 'unknown'),
-                                                               'enum-alt': self.dihed_alt_constraint_type['nmr-star']},
+                                                               'enum-alt': altDihedralAngleConstraintType['nmr-star']},
                                                               {'name': 'Potential_type', 'type': 'enum', 'mandatory': False,
                                                                'enum': ('parabolic', 'square-well-parabolic', 'square-well-parabolic-linear',
                                                                         'upper-bound-parabolic', 'lower-bound-parabolic', 'upper-bound-parabolic-linear',
                                                                         'lower-bound-parabolic-linear', 'undefined', 'unknown'),
-                                                               'enum-alt': self.alt_potential_type}
+                                                               'enum-alt': altPotentialType}
                                                               ],
                                           'rdc_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
                                                             {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
                                                             {'name': 'Constraint_type', 'type': 'enum', 'mandatory': False,
                                                              'enum': ('RDC', 'undefined', 'unknown'),
-                                                             'enum-alt': self.rdc_alt_constraint_type['nmr-star']},
+                                                             'enum-alt': altRdcConstraintType['nmr-star']},
                                                             {'name': 'Potential_type', 'type': 'enum', 'mandatory': False,
                                                              'enum': ('parabolic', 'square-well-parabolic', 'square-well-parabolic-linear',
                                                                       'upper-bound-parabolic', 'lower-bound-parabolic', 'upper-bound-parabolic-linear',
                                                                       'lower-bound-parabolic-linear', 'undefined', 'unknown'),
-                                                             'enum-alt': self.alt_potential_type},
+                                                             'enum-alt': altPotentialType},
                                                             {'name': 'Tensor_magnitude', 'type': 'float', 'mandatory': False},
                                                             {'name': 'Tensor_rhombicity', 'type': 'positive-float', 'mandatory': False},
                                                             {'name': 'Tensor_auth_asym_ID', 'type': 'str', 'mandatory': False},
@@ -2790,7 +2527,7 @@ class NmrDpUtility:
                                                             {'name': 'Experiment_class', 'type': 'str', 'mandatory': False},
                                                             {'name': 'Experiment_type', 'type': 'str', 'mandatory': False},
                                                             {'name': 'Number_of_spectral_dimensions', 'type': 'enum-int', 'mandatory': True,
-                                                             'enum': set(range(1, self.lim_num_dim)),
+                                                             'enum': set(range(1, MAX_DIM_NUM_OF_SPECTRA)),
                                                              'enforce-enum': True},
                                                             {'name': 'Chemical_shift_list', 'type': 'str', 'mandatory': True}
                                                             ],
@@ -2799,7 +2536,7 @@ class NmrDpUtility:
                                                                 {'name': 'Experiment_class', 'type': 'str', 'mandatory': False},
                                                                 {'name': 'Experiment_type', 'type': 'str', 'mandatory': False},
                                                                 {'name': 'Number_of_spectral_dimensions', 'type': 'enum-int', 'mandatory': True,
-                                                                 'enum': set(range(1, self.lim_num_dim)),
+                                                                 'enum': set(range(1, MAX_DIM_NUM_OF_SPECTRA)),
                                                                  'enforce-enum': True}
                                                                 ]
                                           }
@@ -3296,7 +3033,7 @@ class NmrDpUtility:
                                                                        ],
                                                 '_Peak_char': [{'name': 'Peak_ID', 'type': 'positive-int', 'mandatory': True},
                                                                {'name': 'Spectral_dim_ID', 'type': 'enum-int', 'mandatory': True,
-                                                                'enum': set(range(1, self.lim_num_dim)),
+                                                                'enum': set(range(1, MAX_DIM_NUM_OF_SPECTRA)),
                                                                 'enforce-enum': True},
                                                                {'name': 'Chem_shift_val', 'type': 'range-float', 'mandatory': True,
                                                                 'range': self.chem_shift_range},
@@ -3310,7 +3047,7 @@ class NmrDpUtility:
                                                                ],
                                                 '_Assigned_peak_chem_shift': [{'name': 'Peak_ID', 'type': 'positive-int', 'mandatory': True},
                                                                               {'name': 'Spectral_dim_ID', 'type': 'enum-int', 'mandatory': True,
-                                                                               'enum': set(range(1, self.lim_num_dim)),
+                                                                               'enum': set(range(1, MAX_DIM_NUM_OF_SPECTRA)),
                                                                                'enforce-enum': True},
                                                                               {'name': 'Set_ID', 'type': 'positive-int', 'mandatory': False},
                                                                               {'name': 'Magnetization_linkage_ID', 'type': 'positive-int', 'mandatory': False},
@@ -3326,7 +3063,7 @@ class NmrDpUtility:
                                                                               {'name': 'Comp_ID', 'type': 'str', 'mandatory': False, 'uppercase': True},
                                                                               {'name': 'Atom_ID', 'type': 'str', 'mandatory': False},
                                                                               {'name': 'Ambiguity_code', 'type': 'enum-int', 'mandatory': False,
-                                                                               'enum': self.bmrb_ambiguity_codes},
+                                                                               'enum': allowedAmbiguityCodes},
                                                                               {'name': 'Ambiguity_set_ID', 'type': 'positive-int', 'mandatory': False},
                                                                               {'name': 'Auth_seq_ID', 'type': 'int', 'mandatory': False},
                                                                               {'name': 'Auth_comp_ID', 'type': 'str', 'mandatory': False},
@@ -3486,7 +3223,7 @@ class NmrDpUtility:
                                                    }
                                       }
 
-        # item name in dihedral restraint loop
+        # item name in dihedral angle restraint loop
         self.item_names_in_dh_loop = {'nef': {'combination_id': 'restraint_combination_id',
                                               'chain_id_1': 'chain_code_1',
                                               'seq_id_1': 'sequence_code_1',
@@ -3527,7 +3264,7 @@ class NmrDpUtility:
                                                    }
                                       }
 
-        # item name in rdc restraint loop
+        # item name in RDC restraint loop
         self.item_names_in_rdc_loop = {'nef': {'combination_id': 'restraint_combination_id',
                                                'chain_id_1': 'chain_code_1',
                                                'seq_id_1': 'sequence_code_1',
@@ -3638,6 +3375,8 @@ class NmrDpUtility:
         self.__total_models = 0
         # atom id list in model
         self.__coord_atom_id = None
+        # residues not observed in the coordinates (DAOTHER-7665)
+        self.__coord_unobs_res = None
         # tautomer state in model
         self.__coord_tautomer = {}
         # rotamer state in model
@@ -4104,7 +3843,7 @@ class NmrDpUtility:
                     ref_elems = set(a[self.__ccU.ccaTypeSymbol] for a in self.__ccU.lastAtomList if a[self.__ccU.ccaLeavingAtomFlag] != 'Y')
 
                     for elem in ref_elems:
-                        if elem in self.paramag_elems or elem in self.ferromag_elems:
+                        if elem in paramagElements or elem in ferromagElements:
                             self.report.setDiamagnetic(False)
                             break
 
@@ -5531,11 +5270,11 @@ class NmrDpUtility:
                 format_version = get_first_sf_tag(sf_data, 'format_version')
 
                 if not format_version.startswith('0.'):
-                    sf_data.format_version = '1.1'
+                    sf_data.format_version = NEF_VERSION
 
         else:
 
-            self.__sf_category_list, self.__lp_category_list = self.__nefT.get_data_content(self.__star_data[file_list_id], self.__star_data_type[file_list_id])
+            self.__sf_category_list, self.__lp_category_list = self.__nefT.get_audit_list(self.__star_data[file_list_id], self.__star_data_type[file_list_id])
 
             # initialize loop counter
             lp_counts = {t: 0 for t in self.nmr_content_subtypes}
@@ -5720,7 +5459,7 @@ class NmrDpUtility:
                             atom_type = row[atom_name_col][0]
                             if atom_type in ('Q', 'M'):
                                 atom_type = 'H'
-                            row.append(str(self.atom_isotopes[atom_type][0]))
+                            row.append(str(isotopeNumsOfNmrObsNucs[atom_type][0]))
 
                         loop.add_tag(lp_category + '.isotope_number')
 
@@ -5737,7 +5476,7 @@ class NmrDpUtility:
                             atom_type = row[atom_name_col][0]
                             if atom_type in ('Q', 'M'):
                                 atom_type = 'H'
-                            row[iso_num_col] = str(self.atom_isotopes[atom_type][0])
+                            row[iso_num_col] = str(isotopeNumsOfNmrObsNucs[atom_type][0])
 
             elif content_subtype == 'dihed_restraint':
 
@@ -5790,7 +5529,7 @@ class NmrDpUtility:
                     _num_dim = get_first_sf_tag(sf_data, self.num_dim_items[file_type])
                     num_dim = int(_num_dim)
 
-                    if num_dim not in range(1, self.lim_num_dim):
+                    if num_dim not in range(1, MAX_DIM_NUM_OF_SPECTRA):
                         raise ValueError()
 
                 except ValueError:  # raised error already at __testIndexConsistency()
@@ -5875,7 +5614,7 @@ class NmrDpUtility:
         if not self.__rescue_mode:
             return True
 
-        self.__sf_category_list, self.__lp_category_list = self.__nefT.get_data_content(self.__star_data[file_list_id], self.__star_data_type[file_list_id])
+        self.__sf_category_list, self.__lp_category_list = self.__nefT.get_audit_list(self.__star_data[file_list_id], self.__star_data_type[file_list_id])
 
         # initialize loop counter
         lp_counts = {t: 0 for t in self.nmr_content_subtypes}
@@ -6008,7 +5747,7 @@ class NmrDpUtility:
                             atom_type = row[atom_name_col][0]
                             if atom_type in ('Q', 'M'):
                                 atom_type = 'H'
-                            row.append(str(self.atom_isotopes[atom_type][0]))
+                            row.append(str(isotopeNumsOfNmrObsNucs[atom_type][0]))
 
                         loop.add_tag(lp_category + '.Atom_isotope_number')
 
@@ -6025,7 +5764,7 @@ class NmrDpUtility:
                             atom_type = row[atom_name_col][0]
                             if atom_type in ('Q', 'M'):
                                 atom_type = 'H'
-                            row[iso_num_col] = str(self.atom_isotopes[atom_type][0])
+                            row[iso_num_col] = str(isotopeNumsOfNmrObsNucs[atom_type][0])
 
             elif content_subtype == 'dihed_restraint':
 
@@ -6100,7 +5839,7 @@ class NmrDpUtility:
 
                         for row in loop:
                             atom_type = re.sub(r'\d+', '', row[axis_code_name_col])
-                            row.append(str(self.atom_isotopes[atom_type][0]))
+                            row.append(str(isotopeNumsOfNmrObsNucs[atom_type][0]))
 
                         loop.add_tag(lp_category + '.Atom_isotope_number')
 
@@ -6157,7 +5896,7 @@ class NmrDpUtility:
             file_type = input_source_dic['file_type']
             content_type = input_source_dic['content_type']
 
-            self.__sf_category_list, self.__lp_category_list = self.__nefT.get_data_content(self.__star_data[fileListId], self.__star_data_type[fileListId])
+            self.__sf_category_list, self.__lp_category_list = self.__nefT.get_audit_list(self.__star_data[fileListId], self.__star_data_type[fileListId])
 
             is_valid, messages, corrections = self.__nefT.resolve_sf_names_for_cif(self.__star_data[fileListId], self.__star_data_type[fileListId])  # DAOTHER-7389, issue #4
             self.__sf_name_corr.append(corrections)
@@ -6206,7 +5945,7 @@ class NmrDpUtility:
                         if file_type == 'nef':
                             warn = f"Ignored third party software's saveframe {sf_category!r}."
                         else:
-                            warn = f"Ignored saveframe category {sf_category!r}%r."
+                            warn = f"Ignored saveframe category {sf_category!r}."
 
                         self.report.warning.appendDescription('skipped_saveframe_category',
                                                               {'file_name': file_name, 'sf_category': sf_category,
@@ -6428,7 +6167,7 @@ class NmrDpUtility:
                 mr_format_name = 'other format'
 
             atom_like_names = self.__csStat.getAtomLikeNameSet(minimum_len=(2 if file_type == 'nm-res-oth' or is_aux_amb else 1))
-            cs_atom_like_names = list(filter(self.__isHalfSpin, atom_like_names))  # DAOTHER-7491
+            cs_atom_like_names = list(filter(is_half_spin_nuclei, atom_like_names))  # DAOTHER-7491
 
             has_chem_shift = False
             has_dist_restraint = False
@@ -6866,7 +6605,7 @@ class NmrDpUtility:
                     residue_pointers = []
 
                 atom_like_names_oth = self.__csStat.getAtomLikeNameSet(1)
-                cs_atom_like_names_oth = list(filter(self.__isHalfSpin, atom_like_names_oth))  # DAOTHER-7491
+                cs_atom_like_names_oth = list(filter(is_half_spin_nuclei, atom_like_names_oth))  # DAOTHER-7491
 
                 one_letter_codes = monDict3.values()
                 three_letter_codes = monDict3.keys()
@@ -7403,13 +7142,6 @@ class NmrDpUtility:
                         self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMR() ++ Error  - {err}\n")
 
         return not self.report.isError()
-
-    def __isHalfSpin(self, name):
-        """ Check if nuclei of a given atom name has a spin 1/2.
-            @return: True for spin 1/2 nuclei, False otherwise
-        """
-
-        return any(nucl for nucl in self.half_spin_nucleus if name.startswith(nucl))
 
     def __getPolymerSequence(self, file_list_id, sf_data, content_subtype):
         """ Wrapper function to retrieve polymer sequence from loop of a specified saveframe and content subtype via NEFTranslator.
@@ -8449,7 +8181,7 @@ class NmrDpUtility:
                 _num_dim = get_first_sf_tag(sf_data, self.num_dim_items[file_type])
                 num_dim = int(_num_dim)
 
-                if num_dim not in range(1, self.lim_num_dim):
+                if num_dim not in range(1, MAX_DIM_NUM_OF_SPECTRA):
                     raise ValueError()
 
             except ValueError:  # raised error already at __testIndexConsistency()
@@ -8570,7 +8302,7 @@ class NmrDpUtility:
                 #         for primary_s in primary_ps:
                 #             last_chain_id = primary_s['chain_id']
 
-                #     chain_id_offset = self.__nefT.letter_to_int(last_chain_id);
+                #     chain_id_offset = letterToDigit(last_chain_id);
 
                 #     for primary_ps in primary_ps_list:
                 #         for primary_s in primary_ps:
@@ -8598,7 +8330,7 @@ class NmrDpUtility:
 
                 #                 if length == unmapped + conflict or _matched <= conflict or (len(polymer_sequence) > 1 and _matched < 4 and offset_1 > 0):
                 #                     chain_id_offset += 1
-                #                     s['chain_id'] = self.__nefT.index_to_letter(chain_id_offset) if file_type == 'nef' else str(chain_id_offset)
+                #                     s['chain_id'] = indexToLetter(chain_id_offset) if file_type == 'nef' else str(chain_id_offset)
                 #                     if fileListId in self.__remapped_def_chain_id:
                 #                         self.__remapped_def_chain_id[fileListId] = {}
                 #                     self.__remapped_def_chain_id[fileListId] = {chain_id: s['chain_id']}
@@ -8800,7 +8532,7 @@ class NmrDpUtility:
         return False
 
     def __extractPolymerSequenceInEntityLoop(self, file_list_id):
-        """ Extract polymer sequence in entity loops. (NMR separated deposition)
+        """ Extract polymer sequence in entity loops. (NMR conventional deposition)
         """
 
         input_source = self.report.input_sources[file_list_id]
@@ -10241,7 +9973,7 @@ class NmrDpUtility:
                 _num_dim = get_first_sf_tag(sf_data, self.num_dim_items[file_type])
                 num_dim = int(_num_dim)
 
-                if num_dim not in range(1, self.lim_num_dim):
+                if num_dim not in range(1, MAX_DIM_NUM_OF_SPECTRA):
                     raise ValueError()
 
             except ValueError:  # raised error already at __testIndexConsistency()
@@ -10358,7 +10090,7 @@ class NmrDpUtility:
                 _num_dim = get_first_sf_tag(sf_data, self.num_dim_items[file_type])
                 num_dim = int(_num_dim)
 
-                if num_dim not in range(1, self.lim_num_dim):
+                if num_dim not in range(1, MAX_DIM_NUM_OF_SPECTRA):
                     raise ValueError()
 
             except ValueError:  # raised error already at __testIndexConsistency()
@@ -10537,6 +10269,7 @@ class NmrDpUtility:
 
     def __getAtomIdListWithAmbigCode(self, file_type, comp_id, atom_id, leave_unmatched=True):
         """ Return lists of atom ID, ambiguity_code, details in IUPAC atom nomenclature for a given conventional NMR atom name.
+            @see: NEFTranslator.get_valid_star_atom()
         """
 
         if file_type == 'nef' or atom_id == 'HN' or atom_id.endswith('%') or atom_id.endswith('*'):
@@ -10559,8 +10292,11 @@ class NmrDpUtility:
         if atom_id.startswith('Q') or atom_id.startswith('M'):
             return self.__nefT.get_star_atom(comp_id, 'H' + atom_id[1:] + '%', leave_unmatched=leave_unmatched)
 
-        if atom_id + '2' in self.__csStat.getAllAtoms(comp_id):
+        if (atom_id + '2' in self.__csStat.getAllAtoms(comp_id)) or (atom_id + '22' in self.__csStat.getAllAtoms(comp_id)):
             return self.__nefT.get_star_atom(comp_id, atom_id + '%', leave_unmatched=leave_unmatched)
+
+        if '#' in atom_id:
+            return self.__nefT.get_star_atom(comp_id, atom_id.replace('#', '%'))
 
         return self.__nefT.get_star_atom(comp_id, atom_id, leave_unmatched=leave_unmatched)
 
@@ -10713,7 +10449,7 @@ class NmrDpUtility:
                         ref_elems = set(a[self.__ccU.ccaTypeSymbol] for a in self.__ccU.lastAtomList if a[self.__ccU.ccaLeavingAtomFlag] != 'Y')
 
                         for elem in ref_elems:
-                            if elem in self.paramag_elems or elem in self.ferromag_elems:
+                            if elem in paramagElements or elem in ferromagElements:
                                 self.report.setDiamagnetic(False)
                                 break
 
@@ -11049,7 +10785,7 @@ class NmrDpUtility:
                 _num_dim = get_first_sf_tag(sf_data, self.num_dim_items[file_type])
                 num_dim = int(_num_dim)
 
-                if num_dim not in range(1, self.lim_num_dim):
+                if num_dim not in range(1, MAX_DIM_NUM_OF_SPECTRA):
                     raise ValueError()
 
             except ValueError:  # raised error already at __testIndexConsistency()
@@ -11180,7 +10916,7 @@ class NmrDpUtility:
                 isotope_nums = a_type['isotope_number']
                 atom_ids = a_type['atom_id']
 
-                if atom_type not in self.atom_isotopes.keys():
+                if atom_type not in isotopeNumsOfNmrObsNucs.keys():
 
                     err = f"Invalid atom_type {atom_type!r} in a loop {lp_category}."
 
@@ -11195,10 +10931,10 @@ class NmrDpUtility:
                 else:
 
                     for isotope_num in isotope_nums:
-                        if isotope_num not in self.atom_isotopes[atom_type]:
+                        if isotope_num not in isotopeNumsOfNmrObsNucs[atom_type]:
 
                             err = f"Invalid isotope number {str(isotope_num)!r} (atom_type {atom_type}, "\
-                                f"allowed isotope number {self.atom_isotopes[atom_type]}) in a loop {lp_category}."
+                                f"allowed isotope number {isotopeNumsOfNmrObsNucs[atom_type]}) in a loop {lp_category}."
 
                             self.report.error.appendDescription('invalid_isotope_number',
                                                                 {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
@@ -11697,7 +11433,7 @@ class NmrDpUtility:
                 _num_dim = get_first_sf_tag(sf_data, self.num_dim_items[file_type])
                 num_dim = int(_num_dim)
 
-                if num_dim not in range(1, self.lim_num_dim):
+                if num_dim not in range(1, MAX_DIM_NUM_OF_SPECTRA):
                     raise ValueError()
 
             except ValueError:  # raised error already at __testIndexConsistency()
@@ -11725,9 +11461,9 @@ class NmrDpUtility:
                         _d['default-from'] = d['default-from'] % dim
                     data_items.append(_d)
 
-            if max_dim < self.lim_num_dim:
+            if max_dim < MAX_DIM_NUM_OF_SPECTRA:
                 disallowed_tags = []
-                for dim in range(max_dim, self.lim_num_dim):
+                for dim in range(max_dim, MAX_DIM_NUM_OF_SPECTRA):
                     for t in self.spectral_peak_disallowed_tags[file_type]:
                         if '%s' in t:
                             t = t % dim
@@ -12242,12 +11978,12 @@ class NmrDpUtility:
                             _num_dim = get_first_sf_tag(sf_data, self.num_dim_items[file_type])
                             num_dim = int(_num_dim)
 
-                            if num_dim not in range(1, self.lim_num_dim):
+                            if num_dim not in range(1, MAX_DIM_NUM_OF_SPECTRA):
                                 raise ValueError()
 
                         except ValueError:
 
-                            err = f"{self.num_dim_items[file_type]} {str(_num_dim)!r} must be in {set(range(1, self.lim_num_dim))}."
+                            err = f"{self.num_dim_items[file_type]} {str(_num_dim)!r} must be in {set(range(1, MAX_DIM_NUM_OF_SPECTRA))}."
 
                             self.report.error.appendDescription('invalid_data',
                                                                 {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
@@ -12892,6 +12628,7 @@ class NmrDpUtility:
                 sf_category = self.sf_categories[file_type][content_subtype]
 
                 parent_keys = set()
+                sf_framecode_dict = {}
 
                 list_id = 1  # tentative parent key if not exists
 
@@ -12921,7 +12658,7 @@ class NmrDpUtility:
                         sf_tag_data = self.__nefT.check_sf_tag(sf_data, file_type, sf_category, sf_tag_items, self.sf_allowed_tags[file_type][content_subtype],
                                                                enforce_non_zero=True, enforce_sign=True, enforce_range=True, enforce_enum=True)
 
-                        self.__testParentChildRelation(file_name, file_type, content_subtype, parent_keys, list_id, sf_framecode, sf_tag_data)
+                        self.__testParentChildRelation(file_name, file_type, content_subtype, parent_keys, list_id, sf_framecode, sf_framecode_dict, sf_tag_data)
 
                         self.__sf_tag_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'data': sf_tag_data})
 
@@ -13012,7 +12749,7 @@ class NmrDpUtility:
                             sf_tag_data = self.__nefT.check_sf_tag(sf_data, file_type, sf_category, sf_tag_items, self.sf_allowed_tags[file_type][content_subtype],
                                                                    enforce_non_zero=False, enforce_sign=False, enforce_range=False, enforce_enum=False)
 
-                            self.__testParentChildRelation(file_name, file_type, content_subtype, parent_keys, list_id, sf_framecode, sf_tag_data)
+                            self.__testParentChildRelation(file_name, file_type, content_subtype, parent_keys, list_id, sf_framecode, sf_framecode_dict, sf_tag_data)
 
                             self.__sf_tag_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'data': sf_tag_data})
 
@@ -13027,11 +12764,15 @@ class NmrDpUtility:
                         if self.__verbose:
                             self.__lfh.write(f"+NmrDpUtility.__testSfTagConsistency() ++ Error  - {str(e)}\n")
 
+                    parent_keys.add(list_id)
+                    if str(list_id) not in sf_framecode_dict:
+                        sf_framecode_dict = {list_id: sf_framecode}
+
                     list_id += 1
 
         return self.report.getTotalErrors() == __errors
 
-    def __testParentChildRelation(self, file_name, file_type, content_subtype, parent_keys, list_id, sf_framecode, sf_tag_data):
+    def __testParentChildRelation(self, file_name, file_type, content_subtype, parent_keys, list_id, sf_framecode, sf_framecode_dict, sf_tag_data):
         """ Perform consistency test on saveframe category and loop category relationship of interesting loops.
         """
 
@@ -13054,7 +12795,7 @@ class NmrDpUtility:
 
             if parent_key in parent_keys:
 
-                err = f"{parent_key_name} {parent_key!r} must be unique."
+                err = f"{parent_key_name} {str(parent_key)!r} must be unique."
 
                 self.report.error.appendDescription('duplicated_index',
                                                     {'file_name': file_name, 'sf_framecode': sf_framecode,
@@ -13076,9 +12817,13 @@ class NmrDpUtility:
                     if child_key_name in i and i[child_key_name] != parent_key:
 
                         if index_tag is None:
-                            err = f"{child_key_name} {i[child_key_name]!r} must be {parent_key}."
+                            err = f"{child_key_name} {str(i[child_key_name])!r} must be {parent_key}."
                         else:
                             err = f"[Check row of {index_tag} {i[index_tag]}] {child_key_name} {i[child_key_name]!r} must be {parent_key}."
+
+                        if i[child_key_name] in sf_framecode_dict:
+                            err = err[0:-1] + f" to point the parent {sf_framecode!r} saveframe. "\
+                                f"The pointer has been reserved for the {sf_framecode_dict[i[child_key_name]]!r} saveframe."
 
                         self.report.error.appendDescription('invalid_data',
                                                             {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
@@ -13087,6 +12832,8 @@ class NmrDpUtility:
 
                         if self.__verbose:
                             self.__lfh.write(f"+NmrDpUtility.__testParentChildRelation() ++ ValueError  - {err}\n")
+
+                        break
 
             for lp_category in self.aux_lp_categories[file_type][content_subtype]:
 
@@ -13102,6 +12849,10 @@ class NmrDpUtility:
                             else:
                                 err = f"[Check row of {index_tag} {i[index_tag]}] {child_key_name} {i[child_key_name]!r} must be {parent_key}."
 
+                            if i[child_key_name] in sf_framecode_dict:
+                                err = err[0:-1] + f" to point the parent {sf_framecode!r} saveframe. "\
+                                    f"The pointer has been reserved for the {sf_framecode_dict[i[child_key_name]]!r} saveframe."
+
                             self.report.error.appendDescription('invalid_data',
                                                                 {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
                                                                  'description': err})
@@ -13109,6 +12860,8 @@ class NmrDpUtility:
 
                             if self.__verbose:
                                 self.__lfh.write(f"+NmrDpUtility.__testParentChildRelation() ++ ValueError  - {err}\n")
+
+                            break
 
         except Exception as e:
 
@@ -14528,7 +14281,7 @@ class NmrDpUtility:
                     else:
 
                         err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id)\
-                            + f"] Invalid ambiguity code {str(ambig_code)!r} (allowed ambig_code {self.bmrb_ambiguity_codes}) in a loop."
+                            + f"] Invalid ambiguity code {str(ambig_code)!r} (allowed ambig_code {allowedAmbiguityCodes}) in a loop."
 
                         self.report.error.appendDescription('invalid_ambiguity_code',
                                                             {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
@@ -14967,7 +14720,7 @@ class NmrDpUtility:
                     _num_dim = get_first_sf_tag(sf_data, self.num_dim_items[file_type])
                     num_dim = int(_num_dim)
 
-                    if num_dim not in range(1, self.lim_num_dim):
+                    if num_dim not in range(1, MAX_DIM_NUM_OF_SPECTRA):
                         raise ValueError()
 
                 except ValueError:  # raised error already at __testIndexConsistency()
@@ -15457,7 +15210,7 @@ class NmrDpUtility:
                     _num_dim = get_first_sf_tag(sf_data, self.num_dim_items[file_type])
                     num_dim = int(_num_dim)
 
-                    if num_dim not in range(1, self.lim_num_dim):
+                    if num_dim not in range(1, MAX_DIM_NUM_OF_SPECTRA):
                         raise ValueError()
 
                 except ValueError:  # raised error already at __testIndexConsistency()
@@ -15867,7 +15620,7 @@ class NmrDpUtility:
 
         return self.report.getTotalErrors() == __errors
 
-    def __testRDCVector(self):
+    def __testRdcVector(self):
         """ Perform consistency test on RDC bond vectors.
         """
 
@@ -15897,14 +15650,14 @@ class NmrDpUtility:
                 sf_data = self.__star_data[fileListId]
                 sf_framecode = ''
 
-                self.__testRDCVector__(file_name, file_type, content_subtype, sf_framecode, lp_category)
+                self.__testRdcVector__(file_name, file_type, content_subtype, sf_framecode, lp_category)
 
             elif self.__star_data_type[fileListId] == 'Saveframe':
 
                 sf_data = self.__star_data[fileListId]
                 sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
-                self.__testRDCVector__(file_name, file_type, content_subtype, sf_framecode, lp_category)
+                self.__testRdcVector__(file_name, file_type, content_subtype, sf_framecode, lp_category)
 
             else:
 
@@ -15915,11 +15668,11 @@ class NmrDpUtility:
                     if not any(loop for loop in sf_data.loops if loop.category == lp_category):
                         continue
 
-                    self.__testRDCVector__(file_name, file_type, content_subtype, sf_framecode, lp_category)
+                    self.__testRdcVector__(file_name, file_type, content_subtype, sf_framecode, lp_category)
 
         return self.report.getTotalErrors() == __errors
 
-    def __testRDCVector__(self, file_name, file_type, content_subtype, sf_framecode, lp_category):
+    def __testRdcVector__(self, file_name, file_type, content_subtype, sf_framecode, lp_category):
         """ Perform consistency test on RDC bond vectors.
         """
 
@@ -15951,7 +15704,7 @@ class NmrDpUtility:
                     comp_id_2 = i[comp_id_2_name]
                     atom_id_2 = i[atom_id_2_name]
 
-                    if (atom_id_1[0] not in self.atom_isotopes) or (atom_id_2[0] not in self.atom_isotopes):
+                    if (atom_id_1[0] not in isotopeNumsOfNmrObsNucs) or (atom_id_2[0] not in isotopeNumsOfNmrObsNucs):
 
                         idx_msg = f"[Check row of {index_tag} {i[index_tag]}] "
 
@@ -15965,7 +15718,7 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__testRDCVector() ++ Error  - {err}\n")
+                            self.__lfh.write(f"+NmrDpUtility.__testRdcVector() ++ Error  - {err}\n")
 
                     if chain_id_1 != chain_id_2:
 
@@ -15980,7 +15733,7 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__testRDCVector() ++ Error  - {err}\n")
+                            self.__lfh.write(f"+NmrDpUtility.__testRdcVector() ++ Error  - {err}\n")
 
                     elif abs(seq_id_1 - seq_id_2) > 1:
 
@@ -15995,7 +15748,7 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__testRDCVector() ++ Error  - {err}\n")
+                            self.__lfh.write(f"+NmrDpUtility.__testRdcVector() ++ Error  - {err}\n")
 
                     elif abs(seq_id_1 - seq_id_2) == 1:
 
@@ -16016,7 +15769,7 @@ class NmrDpUtility:
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__testRDCVector() ++ Error  - {err}\n")
+                                self.__lfh.write(f"+NmrDpUtility.__testRdcVector() ++ Error  - {err}\n")
 
                     elif atom_id_1 == atom_id_2:
 
@@ -16031,7 +15784,7 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__testRDCVector() ++ Error  - {err}\n")
+                            self.__lfh.write(f"+NmrDpUtility.__testRdcVector() ++ Error  - {err}\n")
 
                     else:
 
@@ -16054,7 +15807,7 @@ class NmrDpUtility:
                                     self.report.setWarning()
 
                                     if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__testRDCVector() ++ Warning  - {warn}\n")
+                                        self.__lfh.write(f"+NmrDpUtility.__testRdcVector() ++ Warning  - {warn}\n")
 
                                 else:  # raised error already somewhere because of invalid atom nomenclature
                                     pass
@@ -16064,11 +15817,11 @@ class NmrDpUtility:
 
         except Exception as e:
 
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testRDCVector() ++ Error  - " + str(e))
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testRdcVector() ++ Error  - " + str(e))
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__testRDCVector() ++ Error  - {str(e)}\n")
+                self.__lfh.write(f"+NmrDpUtility.__testRdcVector() ++ Error  - {str(e)}\n")
 
     def __testCovalentBond(self):
         """ Perform consistency test on covalent bonds.
@@ -16455,6 +16208,9 @@ class NmrDpUtility:
                         continue
 
                     seq_key = (cif_chain_id, cif_seq_id)
+
+                    if seq_key in self.__coord_unobs_res:  # DAOTHER-7655
+                        continue
 
                     coord_atom_id_ = None if seq_key not in self.__coord_atom_id else self.__coord_atom_id[seq_key]
 
@@ -17005,7 +16761,7 @@ class NmrDpUtility:
                     _num_dim = get_first_sf_tag(sf_data, self.num_dim_items[file_type])
                     num_dim = int(_num_dim)
 
-                    if num_dim not in range(1, self.lim_num_dim):
+                    if num_dim not in range(1, MAX_DIM_NUM_OF_SPECTRA):
                         raise ValueError()
 
                 except ValueError:  # raised error already at __testIndexConsistency()
@@ -17106,7 +16862,7 @@ class NmrDpUtility:
 
                     chain_id = sc['chain_id']
 
-                    _chain_id = chain_id if file_type == 'nef' else str(self.__nefT.letter_to_int(chain_id))
+                    _chain_id = chain_id if file_type == 'nef' else str(letterToDigit(chain_id))
 
                     cc['chain_id'] = chain_id
 
@@ -17749,7 +17505,7 @@ class NmrDpUtility:
                 atom_id = i[atom_id_name]
                 value = i[value_name]
 
-                _chain_id = chain_id if file_type == 'nef' else str(self.__nefT.letter_to_int(chain_id))
+                _chain_id = chain_id if file_type == 'nef' else str(letterToDigit(chain_id))
 
                 if value in emptyValue:
                     continue
@@ -17888,7 +17644,7 @@ class NmrDpUtility:
 
                     chain_id = sc['chain_id']
 
-                    _chain_id = chain_id if file_type == 'nef' else str(self.__nefT.letter_to_int(chain_id))
+                    _chain_id = chain_id if file_type == 'nef' else str(letterToDigit(chain_id))
 
                     s = next((s for s in polymer_sequence if s['chain_id'] == chain_id), None)
 
@@ -17971,7 +17727,7 @@ class NmrDpUtility:
 
                     chain_id = sc['chain_id']
 
-                    _chain_id = chain_id if file_type == 'nef' else str(self.__nefT.letter_to_int(chain_id))
+                    _chain_id = chain_id if file_type == 'nef' else str(letterToDigit(chain_id))
 
                     s = next((s for s in polymer_sequence if s['chain_id'] == chain_id), None)
 
@@ -18077,7 +17833,7 @@ class NmrDpUtility:
 
                     chain_id = sc['chain_id']
 
-                    _chain_id = chain_id if file_type == 'nef' else str(self.__nefT.letter_to_int(chain_id))
+                    _chain_id = chain_id if file_type == 'nef' else str(letterToDigit(chain_id))
 
                     s = next((s for s in polymer_sequence if s['chain_id'] == chain_id), None)
 
@@ -18187,7 +17943,7 @@ class NmrDpUtility:
 
                     chain_id = sc['chain_id']
 
-                    _chain_id = chain_id if file_type == 'nef' else str(self.__nefT.letter_to_int(chain_id))
+                    _chain_id = chain_id if file_type == 'nef' else str(letterToDigit(chain_id))
 
                     s = next((s for s in polymer_sequence if s['chain_id'] == chain_id), None)
 
@@ -18484,7 +18240,7 @@ class NmrDpUtility:
 
                     chain_id = sc['chain_id']
 
-                    _chain_id = chain_id if file_type == 'nef' else str(self.__nefT.letter_to_int(chain_id))
+                    _chain_id = chain_id if file_type == 'nef' else str(letterToDigit(chain_id))
 
                     s = next((s for s in polymer_sequence if s['chain_id'] == chain_id), None)
 
@@ -19781,10 +19537,10 @@ class NmrDpUtility:
                     diselenide_bond_type = 'Se...Se (too far!)'
                     diselenide_bond = True
 
-            elif (atom_id_1_ == 'N' and not self.__isNonMetalElement(atom_id_2))\
-                    or (atom_id_2_ == 'N' and not self.__isNonMetalElement(atom_id_1)):
+            elif (atom_id_1_ == 'N' and not is_non_metal_element(atom_id_2))\
+                    or (atom_id_2_ == 'N' and not is_non_metal_element(atom_id_1)):
 
-                metal = atom_id_2 if self.__isNonMetalElement(atom_id_1) else atom_id_1
+                metal = atom_id_2 if is_non_metal_element(atom_id_1) else atom_id_1
                 metal = metal.title()
 
                 if 1.9 <= target_value <= 2.1:
@@ -19797,10 +19553,10 @@ class NmrDpUtility:
                     other_bond_type = 'N...' + metal + ' (too far!)'
                     other_bond = True
 
-            elif (atom_id_1_ == 'O' and not self.__isNonMetalElement(atom_id_2))\
-                    or (atom_id_2_ == 'O' and not self.__isNonMetalElement(atom_id_1)):
+            elif (atom_id_1_ == 'O' and not is_non_metal_element(atom_id_2))\
+                    or (atom_id_2_ == 'O' and not is_non_metal_element(atom_id_1)):
 
-                metal = atom_id_2 if self.__isNonMetalElement(atom_id_1) else atom_id_1
+                metal = atom_id_2 if is_non_metal_element(atom_id_1) else atom_id_1
                 metal = metal.title()
 
                 if 2.0 <= target_value <= 2.2:
@@ -19813,10 +19569,10 @@ class NmrDpUtility:
                     other_bond_type = 'O...' + metal + ' (too far!)'
                     other_bond = True
 
-            elif (atom_id_1_ == 'P' and not self.__isNonMetalElement(atom_id_2))\
-                    or (atom_id_2_ == 'P' and not self.__isNonMetalElement(atom_id_1)):
+            elif (atom_id_1_ == 'P' and not is_non_metal_element(atom_id_2))\
+                    or (atom_id_2_ == 'P' and not is_non_metal_element(atom_id_1)):
 
-                metal = atom_id_2 if self.__isNonMetalElement(atom_id_1) else atom_id_1
+                metal = atom_id_2 if is_non_metal_element(atom_id_1) else atom_id_1
                 metal = metal.title()
 
                 if 2.1 <= target_value <= 2.5:
@@ -19829,10 +19585,10 @@ class NmrDpUtility:
                     other_bond_type = 'P...' + metal + ' (too far!)'
                     other_bond = True
 
-            elif (atom_id_1_ == 'S' and not atom_id_1.startswith('SE') and not self.__isNonMetalElement(atom_id_2)) or\
-                 (atom_id_2_ == 'S' and not atom_id_2.startswith('SE') and not self.__isNonMetalElement(atom_id_1)):
+            elif (atom_id_1_ == 'S' and not atom_id_1.startswith('SE') and not is_non_metal_element(atom_id_2)) or\
+                 (atom_id_2_ == 'S' and not atom_id_2.startswith('SE') and not is_non_metal_element(atom_id_1)):
 
-                metal = atom_id_2 if self.__isNonMetalElement(atom_id_1) else atom_id_1
+                metal = atom_id_2 if is_non_metal_element(atom_id_1) else atom_id_1
                 metal = metal.title()
 
                 if 2.2 <= target_value <= 2.6:
@@ -19845,10 +19601,10 @@ class NmrDpUtility:
                     other_bond_type = 'S...' + metal + ' (too far!)'
                     other_bond = True
 
-            elif (atom_id_1.startswith('SE') and not self.__isNonMetalElement(atom_id_2)) or\
-                 (atom_id_2.startswith('SE') and not self.__isNonMetalElement(atom_id_1)):
+            elif (atom_id_1.startswith('SE') and not is_non_metal_element(atom_id_2)) or\
+                 (atom_id_2.startswith('SE') and not is_non_metal_element(atom_id_1)):
 
-                metal = atom_id_2 if self.__isNonMetalElement(atom_id_1) else atom_id_1
+                metal = atom_id_2 if is_non_metal_element(atom_id_1) else atom_id_1
                 metal = metal.title()
 
                 if 2.3 <= target_value <= 2.7:
@@ -20123,10 +19879,10 @@ class NmrDpUtility:
                     diselenide_bond_type = 'Se...Se (too far!)'
                     diselenide_bond = True
 
-            elif (atom_id_1_ == 'N' and not self.__isNonMetalElement(atom_id_2))\
-                    or (atom_id_2_ == 'N' and not self.__isNonMetalElement(atom_id_1)):
+            elif (atom_id_1_ == 'N' and not is_non_metal_element(atom_id_2))\
+                    or (atom_id_2_ == 'N' and not is_non_metal_element(atom_id_1)):
 
-                metal = atom_id_2 if self.__isNonMetalElement(atom_id_1) else atom_id_1
+                metal = atom_id_2 if is_non_metal_element(atom_id_1) else atom_id_1
                 metal = metal.title()
 
                 if 1.9 <= target_value <= 2.1:
@@ -20139,10 +19895,10 @@ class NmrDpUtility:
                     other_bond_type = 'N...' + metal + ' (too far!)'
                     other_bond = True
 
-            elif (atom_id_1_ == 'O' and not self.__isNonMetalElement(atom_id_2))\
-                    or (atom_id_2_ == 'O' and not self.__isNonMetalElement(atom_id_1)):
+            elif (atom_id_1_ == 'O' and not is_non_metal_element(atom_id_2))\
+                    or (atom_id_2_ == 'O' and not is_non_metal_element(atom_id_1)):
 
-                metal = atom_id_2 if self.__isNonMetalElement(atom_id_1) else atom_id_1
+                metal = atom_id_2 if is_non_metal_element(atom_id_1) else atom_id_1
                 metal = metal.title()
 
                 if 2.0 <= target_value <= 2.2:
@@ -20155,10 +19911,10 @@ class NmrDpUtility:
                     other_bond_type = 'O...' + metal + ' (too far!)'
                     other_bond = True
 
-            elif (atom_id_1_ == 'P' and not self.__isNonMetalElement(atom_id_2))\
-                    or (atom_id_2_ == 'P' and not self.__isNonMetalElement(atom_id_1)):
+            elif (atom_id_1_ == 'P' and not is_non_metal_element(atom_id_2))\
+                    or (atom_id_2_ == 'P' and not is_non_metal_element(atom_id_1)):
 
-                metal = atom_id_2 if self.__isNonMetalElement(atom_id_1) else atom_id_1
+                metal = atom_id_2 if is_non_metal_element(atom_id_1) else atom_id_1
                 metal = metal.title()
 
                 if 2.1 <= target_value <= 2.5:
@@ -20171,10 +19927,10 @@ class NmrDpUtility:
                     other_bond_type = 'P...' + metal + ' (too far!)'
                     other_bond = True
 
-            elif (atom_id_1_ == 'S' and not atom_id_1.startswith('SE') and not self.__isNonMetalElement(atom_id_2)) or\
-                 (atom_id_2_ == 'S' and not atom_id_2.startswith('SE') and not self.__isNonMetalElement(atom_id_1)):
+            elif (atom_id_1_ == 'S' and not atom_id_1.startswith('SE') and not is_non_metal_element(atom_id_2)) or\
+                 (atom_id_2_ == 'S' and not atom_id_2.startswith('SE') and not is_non_metal_element(atom_id_1)):
 
-                metal = atom_id_2 if self.__isNonMetalElement(atom_id_1) else atom_id_1
+                metal = atom_id_2 if is_non_metal_element(atom_id_1) else atom_id_1
                 metal = metal.title()
 
                 if 2.2 <= target_value <= 2.6:
@@ -20187,10 +19943,10 @@ class NmrDpUtility:
                     other_bond_type = 'S...' + metal + ' (too far!)'
                     other_bond = True
 
-            elif (atom_id_1.startswith('SE') and not self.__isNonMetalElement(atom_id_2)) or\
-                 (atom_id_2.startswith('SE') and not self.__isNonMetalElement(atom_id_1)):
+            elif (atom_id_1.startswith('SE') and not is_non_metal_element(atom_id_2)) or\
+                 (atom_id_2.startswith('SE') and not is_non_metal_element(atom_id_1)):
 
-                metal = atom_id_2 if self.__isNonMetalElement(atom_id_1) else atom_id_1
+                metal = atom_id_2 if is_non_metal_element(atom_id_1) else atom_id_1
                 metal = metal.title()
 
                 if 2.3 <= target_value <= 2.7:
@@ -20328,17 +20084,6 @@ class NmrDpUtility:
             data_type = 'long_range_constraints'
 
         return data_type
-
-    def __isNonMetalElement(self, atom_id):
-        """ Return whether a given atom_id is non metal element.
-            @return: True for non metal element, False otherwise
-        """
-
-        for elem in self.non_metal_elems:
-            if atom_id.startswith(elem):
-                return True
-
-        return False
 
     def __calculateStatsOfDihedralRestraint(self, file_list_id, lp_data, conflict_id_set, inconsistent, redundant, ent):
         """ Calculate statistics of dihedral angle restraints.
@@ -21080,7 +20825,7 @@ class NmrDpUtility:
     def __getTypeOfDihedralRestraint(self, data_type,
                                      chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2,
                                      chain_id_3, seq_id_3, comp_id_3, atom_id_3, chain_id_4, seq_id_4, comp_id_4, atom_id_4):
-        """ Return type of dihedral restraint.
+        """ Return type of dihedral angle restraint.
         """
 
         seq_ids = []
@@ -21780,13 +21525,13 @@ class NmrDpUtility:
             if self.__verbose:
                 self.__lfh.write(f"+NmrDpUtility.__calculateStatsOfRdcRestraint() ++ Error  - {str(e)}\n")
 
-    def __getTypeOfRdcRestraint(self, atom_id_1, atom_id_2):
+    def __getTypeOfRdcRestraint(self, atom_id_1, atom_id_2):  # pylint: disable=no-self-use
         """ Return type of RDC restraint.
         """
 
         try:
-            iso_number_1 = self.atom_isotopes[atom_id_1[0]][0]
-            iso_number_2 = self.atom_isotopes[atom_id_2[0]][0]
+            iso_number_1 = isotopeNumsOfNmrObsNucs[atom_id_1[0]][0]
+            iso_number_2 = isotopeNumsOfNmrObsNucs[atom_id_2[0]][0]
         except KeyError:
             pass
 
@@ -24464,7 +24209,7 @@ class NmrDpUtility:
                                                              {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'auth_seq_id'},  # non-polymer
                                                              {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
                                                              {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'},
-                                                             {'name': 'pdbx_auth_atom_name', 'type': 'str', 'alt_name': 'auth_atom_id'}
+                                                             {'name': 'pdbx_auth_atom_name', 'type': 'str', 'alt_name': 'auth_atom_id'}  # DAOTHER-7665
                                                              ],
                                                             [{'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id}
                                                              ])
@@ -24497,6 +24242,23 @@ class NmrDpUtility:
                                              if c['chain_id'] == chain_id and ((c['seq_id'] is not None and int(c['seq_id']) == seq_id)
                                                                                or (c['seq_id'] is None and c['auth_seq_id'] == seq_id))]
                             self.__coord_atom_id[seq_key]['auth_atom_id'] = auth_atom_ids
+
+                # DAOTHER-7655
+                self.__coord_unobs_res = []
+                unobs_res = self.__cR.getDictListWithFilter('pdbx_unobs_or_zero_occ_residues',
+                                                            [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                             {'name': 'auth_seq_id', 'type': 'str', 'alt_name': 'seq_id'},
+                                                             {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'}
+                                                             ],
+                                                            [{'name': 'PDB_model_num', 'type': 'int', 'value': self.__representative_model_id}
+                                                             ])
+
+                if len(unobs_res) > 0:
+                    chain_ids = set(u['chain_id'] for u in unobs_res)
+                    for chain_id in chain_ids:
+                        seq_ids = set(int(u['seq_id']) for u in unobs_res if u['chain_id'] == chain_id and u['seq_id'] is not None)
+                        for seq_id in seq_ids:
+                            self.__coord_unobs_res.append((chain_id, seq_id))
 
             except Exception as e:
 
@@ -24642,7 +24404,7 @@ class NmrDpUtility:
                     _num_dim = get_first_sf_tag(sf_data, self.num_dim_items[file_type])
                     num_dim = int(_num_dim)
 
-                    if num_dim not in range(1, self.lim_num_dim):
+                    if num_dim not in range(1, MAX_DIM_NUM_OF_SPECTRA):
                         raise ValueError()
 
                 except ValueError:  # raised error already at __testIndexConsistency()
@@ -24726,7 +24488,7 @@ class NmrDpUtility:
                     _num_dim = get_first_sf_tag(sf_data, self.num_dim_items[file_type])
                     num_dim = int(_num_dim)
 
-                    if num_dim not in range(1, self.lim_num_dim):
+                    if num_dim not in range(1, MAX_DIM_NUM_OF_SPECTRA):
                         raise ValueError()
 
                 except ValueError:  # raised error already at __testIndexConsistency()
@@ -24838,6 +24600,9 @@ class NmrDpUtility:
 
                 seq_key = (cif_chain_id, cif_seq_id)
 
+                if seq_key in self.__coord_unobs_res:  # DAOTHER-7665
+                    continue
+
                 coord_atom_id_ = None if seq_key not in self.__coord_atom_id else self.__coord_atom_id[seq_key]
 
                 if coord_atom_id_ is None or coord_atom_id_['comp_id'] != cif_comp_id\
@@ -24855,14 +24620,17 @@ class NmrDpUtility:
 
                     cyclic = self.__isCyclicPolymer(ref_chain_id)
 
-                    if self.__nonblk_bad_nterm and seq_id == 1 and atom_id_ == 'H' and (cyclic or comp_id == 'PRO'):
+                    if self.__nonblk_bad_nterm and (seq_id == 1 or cif_seq_id == 1) and atom_id_ == 'H'\
+                       and (cyclic or comp_id == 'PRO' or 'auth_atom_id' not in coord_atom_id_):  # DAOTHER-7665
 
-                        err += " However, it is acceptable if an appropriate atom name, H1, is given "
+                        err += " However, it is acceptable if corresponding atom name, H1, is given during biocuration "
 
                         if cyclic:
                             err += "because of a cyclic-peptide."
-                        else:
-                            err += f"because sequence (chain_id {ref_chain_id}) starts with Proline residue."
+                        elif comp_id == 'PRO':
+                            err += "because polymer sequence starts with the Proline residue."
+                        else:  # DAOTHER-7665
+                            err += "because polymer sequence starts with the residue in the coordinates."
 
                         self.report.warning.appendDescription('auth_atom_nomenclature_mismatch',
                                                               {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
@@ -24919,7 +24687,7 @@ class NmrDpUtility:
 
             _, star_data_type, star_data = self.__nefT.read_input_file(self.__srcPath)
 
-            self.__sf_category_list, self.__lp_category_list = self.__nefT.get_data_content(star_data, star_data_type)
+            self.__sf_category_list, self.__lp_category_list = self.__nefT.get_audit_list(star_data, star_data_type)
 
             if len(self.__star_data_type) == 0:
                 self.__star_data_type.append(star_data_type)
@@ -24998,7 +24766,7 @@ class NmrDpUtility:
                         _num_dim = get_first_sf_tag(sf_data, self.num_dim_items[file_type])
                         num_dim = int(_num_dim)
 
-                        if num_dim not in range(1, self.lim_num_dim):
+                        if num_dim not in range(1, MAX_DIM_NUM_OF_SPECTRA):
                             raise ValueError()
 
                     except ValueError:  # raised error already at __testIndexConsistency()
@@ -25087,7 +24855,7 @@ class NmrDpUtility:
                         _num_dim = get_first_sf_tag(sf_data, self.num_dim_items[file_type])
                         num_dim = int(_num_dim)
 
-                        if num_dim not in range(1, self.lim_num_dim):
+                        if num_dim not in range(1, MAX_DIM_NUM_OF_SPECTRA):
                             raise ValueError()
 
                     except ValueError:  # raised error already at __testIndexConsistency()
@@ -25642,7 +25410,7 @@ class NmrDpUtility:
                     # """
                     if file_type == 'nef':
 
-                        row.append(self.__nefT.index_to_letter(self.__nefT.letter_to_int(chain_id) - 1 + cid_offset))  # chain_code
+                        row.append(indexToLetter(letterToDigit(chain_id) - 1 + cid_offset))  # chain_code
                         row.append(seq_id)  # sequence_code
                         row.append(comp_id)  # residue_name
 
@@ -25816,7 +25584,7 @@ class NmrDpUtility:
 
                                     if file_type == 'nef':
 
-                                        row.append(self.__nefT.index_to_letter(self.__nefT.letter_to_int(chain_id) - 1 + cid_offset))  # chain_code
+                                        row.append(indexToLetter(letterToDigit(chain_id) - 1 + cid_offset))  # chain_code
                                         row.append(seq_id)  # sequence_code
                                         row.append(comp_id)  # residue_name
 
@@ -26122,7 +25890,7 @@ class NmrDpUtility:
                     self.__updateAuthSequence__(loop, tags)
 
                 else:
-                    for i in range(1, self.lim_num_dim):
+                    for i in range(1, MAX_DIM_NUM_OF_SPECTRA):
                         _tags = [t + '_' + str(i) for t in tags]
 
                         if set(_tags) & set(loop.tags) == set(_tags):
@@ -27970,8 +27738,8 @@ class NmrDpUtility:
             neighbor = [n for n in _neighbor
                         if n['seq_id'] != cif_seq_id
                         and np.linalg.norm(to_np_array(n) - o) < cutoff
-                        and (n['type_symbol'] in self.paramag_elems
-                             or n['type_symbol'] in self.ferromag_elems)]
+                        and (n['type_symbol'] in paramagElements
+                             or n['type_symbol'] in ferromagElements)]
 
             if len(neighbor) == 0:
                 self.__coord_near_para_ferro[seq_key] = None
@@ -28088,7 +27856,7 @@ class NmrDpUtility:
                         if row[isoNumCol] is emptyValue:
 
                             try:
-                                row[isoNumCol] = self.atom_isotopes[atom_id[0]][0]
+                                row[isoNumCol] = isotopeNumsOfNmrObsNucs[atom_id[0]][0]
                             except KeyError:
                                 pass
 
@@ -28104,7 +27872,7 @@ class NmrDpUtility:
                             row[atomTypeCol] = atom_id[0]
 
                         try:
-                            iso_num = self.atom_isotopes[atom_id[0]][0]
+                            iso_num = isotopeNumsOfNmrObsNucs[atom_id[0]][0]
                             row.append(iso_num)
                         except KeyError:
                             row.append('.')
@@ -28122,11 +27890,11 @@ class NmrDpUtility:
                         if row[isoNumCol] is emptyValue:
 
                             try:
-                                row[isoNumCol] = self.atom_isotopes[atom_id[0]][0]
+                                row[isoNumCol] = isotopeNumsOfNmrObsNucs[atom_id[0]][0]
                             except KeyError:
                                 pass
 
-                        row.append(atom_id[0] if atom_id[0] in self.atom_isotopes else '.')
+                        row.append(atom_id[0] if atom_id[0] in isotopeNumsOfNmrObsNucs else '.')
 
                     loop.add_tag(cs_atom_type)
 
@@ -28136,10 +27904,10 @@ class NmrDpUtility:
 
                         atom_id = row[atomIdCol]
 
-                        row.append(atom_id[0] if atom_id[0] in self.atom_isotopes else '.')
+                        row.append(atom_id[0] if atom_id[0] in isotopeNumsOfNmrObsNucs else '.')
 
                         try:
-                            iso_num = self.atom_isotopes[atom_id[0]][0]
+                            iso_num = isotopeNumsOfNmrObsNucs[atom_id[0]][0]
                             row.append(iso_num)
                         except KeyError:
                             row.append('.')
@@ -29546,7 +29314,7 @@ class NmrDpUtility:
         return True
 
     def __testDihedRestraintAsBackBoneChemShifts(self, lp_data):
-        """ Detect whether given dihedral restraints are derived from backbone chemical shifts.
+        """ Detect whether given dihedral angle restraints are derived from backbone chemical shifts.
         """
 
         if not self.__combined_mode:
@@ -30268,7 +30036,7 @@ class NmrDpUtility:
                         _num_dim = get_first_sf_tag(sf_data, self.num_dim_items[file_type])
                         num_dim = int(_num_dim)
 
-                        if num_dim not in range(1, self.lim_num_dim):
+                        if num_dim not in range(1, MAX_DIM_NUM_OF_SPECTRA):
                             raise ValueError()
 
                     except ValueError:  # raised error already at __testIndexConsistency()
@@ -30296,9 +30064,9 @@ class NmrDpUtility:
                                 _d['default-from'] = d['default-from'] % dim
                             data_items.append(_d)
 
-                    if max_dim < self.lim_num_dim:
+                    if max_dim < MAX_DIM_NUM_OF_SPECTRA:
                         disallowed_tags = []
-                        for dim in range(max_dim, self.lim_num_dim):
+                        for dim in range(max_dim, MAX_DIM_NUM_OF_SPECTRA):
                             for t in self.spectral_peak_disallowed_tags[file_type]:
                                 if '%s' in t:
                                     t = t % dim
@@ -30408,7 +30176,7 @@ class NmrDpUtility:
                         _num_dim = get_first_sf_tag(sf_data, self.num_dim_items[file_type])
                         num_dim = int(_num_dim)
 
-                        if num_dim not in range(1, self.lim_num_dim):
+                        if num_dim not in range(1, MAX_DIM_NUM_OF_SPECTRA):
                             raise ValueError()
 
                     except ValueError:  # raised error already at __testIndexConsistency()
@@ -30436,9 +30204,9 @@ class NmrDpUtility:
                                 _d['default-from'] = d['default-from'] % dim
                             data_items.append(_d)
 
-                    if max_dim < self.lim_num_dim:
+                    if max_dim < MAX_DIM_NUM_OF_SPECTRA:
                         disallowed_tags = []
-                        for dim in range(max_dim, self.lim_num_dim):
+                        for dim in range(max_dim, MAX_DIM_NUM_OF_SPECTRA):
                             for t in self.spectral_peak_disallowed_tags[file_type]:
                                 if '%s' in t:
                                     t = t % dim

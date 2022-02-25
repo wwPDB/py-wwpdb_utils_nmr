@@ -130,13 +130,13 @@ class XplorMRParserListener(ParseTreeListener):
         self.__polySeq = dict['polymer_sequence']
 
         # NEFTranslator
-        self.__nefT = NEFTranslator()
+        self.__nefT = NEFTranslator(verbose, log)
 
         if self.__nefT is None:
             raise IOError("+XplorMRParserListener.__init__() ++ Error  - NEFTranslator is not available.")
 
         # BMRB chemical shift statistics
-        self.__csStat = BMRBChemShiftStat()
+        self.__csStat = BMRBChemShiftStat(verbose, log)
 
         if not self.__csStat.isOk():
             raise IOError("+XplorMRParserListener.__init__() ++ Error  - BMRBChemShiftStat is not available.")

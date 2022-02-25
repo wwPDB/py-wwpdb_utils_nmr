@@ -39,7 +39,7 @@ class mmCIFUtil:
             return
         #
         try:
-            with open(self.__filePath, 'r', encoding='UTF-8') as ifh:
+            with open(self.__filePath, 'r', encoding='utf-8') as ifh:
                 pRd = PdbxReader(ifh)
                 pRd.read(self.__dataList)
 
@@ -291,7 +291,7 @@ class mmCIFUtil:
         if not outputFilePath:
             return
         #
-        with open(outputFilePath, 'w', encoding='UTF-8') as ofh:
+        with open(outputFilePath, 'w', encoding='utf-8') as ofh:
             pdbxW = PdbxWriter(ofh)
             pdbxW.write(self.__dataList)
 

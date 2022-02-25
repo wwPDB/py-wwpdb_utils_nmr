@@ -186,7 +186,7 @@ class ChemCompReader:
             If no blockId is provided return the first data block.
         """
         try:
-            with open(filePath, 'r', encoding='UTF-8') as ifh:
+            with open(filePath, 'r', encoding='utf-8') as ifh:
                 myBlockList = []
                 pRd = PdbxReader(ifh)
                 pRd.read(myBlockList)

@@ -25,10 +25,6 @@ class AmberMRReader:
         self.__verbose = verbose
         self.__lfh = log
 
-        self.__mrFilePath = None
-        self.__ptFilePath = None
-        self.__cifFilePath = None
-
         # CIF reader
         self.__cR = CifReader(verbose, log)
 
@@ -36,9 +32,6 @@ class AmberMRReader:
         """ Parse AMBER MR file.
             @return: True for success or False otherwise.
         """
-
-        self.__mrFilePath = mrFilePath
-        self.__cifFilePath = cifFilePath
 
         try:
 
@@ -62,7 +55,7 @@ class AmberMRReader:
                 lexer = AmberMRLexer(ifs)
                 lexer.removeErrorListeners()
 
-                lexer_error_listener = LexerErrorListener(self.__mrFilePath)
+                lexer_error_listener = LexerErrorListener(mrFilePath)
                 lexer.addErrorListener(lexer_error_listener)
 
                 messageList = lexer_error_listener.getMessageList()
@@ -77,7 +70,7 @@ class AmberMRReader:
                 stream = CommonTokenStream(lexer)
                 parser = AmberMRParser(stream)
                 parser.removeErrorListeners()
-                parser_error_listener = ParserErrorListener(self.__mrFilePath)
+                parser_error_listener = ParserErrorListener(mrFilePath)
                 parser.addErrorListener(parser_error_listener)
                 tree = parser.amber_mr()
 

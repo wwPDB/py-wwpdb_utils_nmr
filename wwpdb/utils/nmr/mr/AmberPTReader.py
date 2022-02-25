@@ -25,9 +25,6 @@ class AmberPTReader:
         self.__verbose = verbose
         self.__lfh = log
 
-        self.__ptFilePath = None
-        self.__cifFilePath = None
-
         # CIF reader
         self.__cR = CifReader(verbose, log)
 
@@ -35,9 +32,6 @@ class AmberPTReader:
         """ Parse AMBER PT file.
             @return: True for success or False otherwise.
         """
-
-        self.__ptFilePath = ptFilePath
-        self.__cifFilePath = cifFilePath
 
         try:
 
@@ -61,7 +55,7 @@ class AmberPTReader:
                 lexer = AmberPTLexer(ifs)
                 lexer.removeErrorListeners()
 
-                lexer_error_listener = LexerErrorListener(self.__ptFilePath)
+                lexer_error_listener = LexerErrorListener(ptFilePath)
                 lexer.addErrorListener(lexer_error_listener)
 
                 messageList = lexer_error_listener.getMessageList()
@@ -76,7 +70,7 @@ class AmberPTReader:
                 stream = CommonTokenStream(lexer)
                 parser = AmberPTParser(stream)
                 parser.removeErrorListeners()
-                parser_error_listener = ParserErrorListener(self.__ptFilePath)
+                parser_error_listener = ParserErrorListener(ptFilePath)
                 parser.addErrorListener(parser_error_listener)
                 tree = parser.amber_pt()
 

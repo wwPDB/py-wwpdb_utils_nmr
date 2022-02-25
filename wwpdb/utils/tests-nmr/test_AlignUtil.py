@@ -8,9 +8,10 @@ import unittest
 
 from wwpdb.utils.nmr.AlignUtil import (letterToDigit, indexToLetter)
 
+
 class TestAlignUtil(unittest.TestCase):
     def setUp(self):
-	    pass
+        pass
 
     def tearDown(self):
         pass

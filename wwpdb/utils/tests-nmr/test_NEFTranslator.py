@@ -19,19 +19,17 @@
 import unittest
 import os
 import sys
+import pynmrstar
+from packaging import version
+from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
 
 if __package__ is None or __package__ == "":
     from os import path
 
     sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
-    from commonsetup import TESTOUTPUT  # noqa:  F401 pylint: disable=import-error,unused-import
+    from commonsetup import TESTOUTPUT  # noqa: F401, pylint: disable=import-error,unused-import
 else:
-    from .commonsetup import TESTOUTPUT  # noqa: F401
-
-import pynmrstar
-from packaging import version
-
-from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
+    from .commonsetup import TESTOUTPUT  # noqa: F401, pylint: disable=relative-beyond-top-level
 
 __pynmrstar_v3_2__ = version.parse(pynmrstar.__version__) >= version.parse("3.2.0")
 __pynmrstar_v3_1__ = version.parse(pynmrstar.__version__) >= version.parse("3.1.0")
@@ -300,8 +298,8 @@ class TestNEFTranslator(unittest.TestCase):
 
     def test_load_csv_data(self):
         self.assertTrue(len(self.neft.tagMap) > 0, "Can't read NEF-NMRSTAR_equivalence.csv or its empty")
-        self.assertTrue(len(self.neft.nef_mandatory_tag) > 0, "Can't read NEF_mandatory.csv or its empty")
-        self.assertTrue(len(self.neft.star_mandatory_tag) > 0, "Can't read NMR-STAR_mandatory.csv or its empty")
+        self.assertTrue(len(self.neft.nefMandatoryTag) > 0, "Can't read NEF_mandatory.csv or its empty")
+        self.assertTrue(len(self.neft.starMandatoryTag) > 0, "Can't read NMR-STAR_mandatory.csv or its empty")
 
     def test_validate_file(self):
         self.assertEqual(self.neft.validate_file(os.path.join(self.data_dir_path, "xxx.xx"), "A")[0], False)  # File not found
@@ -862,8 +860,8 @@ class TestNEFTranslator(unittest.TestCase):
                         ],
                     }
                 ],
-                [{"chain_id": "B", "seq_id": [i for i in range(1, 6)], "comp_id": ["A", "C", "A", "C", "A"]}],
-                [{"chain_id": "C", "seq_id": [i for i in range(1, 6)], "comp_id": ["A", "C", "A", "C", "A"]}],
+                [{"chain_id": "B", "seq_id": list(range(1, 6)), "comp_id": ["A", "C", "A", "C", "A"]}],
+                [{"chain_id": "C", "seq_id": list(range(1, 6)), "comp_id": ["A", "C", "A", "C", "A"]}],
             ],
         )
         self.assertEqual(
@@ -872,7 +870,7 @@ class TestNEFTranslator(unittest.TestCase):
                 [
                     {
                         "chain_id": "A",
-                        "seq_id": [i for i in range(372, 587)],
+                        "seq_id": list(range(372, 587)),
                         "comp_id": [
                             "TYR",
                             "GLY",
@@ -1091,8 +1089,8 @@ class TestNEFTranslator(unittest.TestCase):
                             "SER",
                         ],
                     },
-                    {"chain_id": "B", "seq_id": [i for i in range(1, 6)], "comp_id": ["A", "C", "A", "C", "A"], "identical_chain_id": ["C"]},
-                    {"chain_id": "C", "seq_id": [i for i in range(1, 6)], "comp_id": ["A", "C", "A", "C", "A"], "identical_chain_id": ["B"]},
+                    {"chain_id": "B", "seq_id": list(range(1, 6)), "comp_id": ["A", "C", "A", "C", "A"], "identical_chain_id": ["C"]},
+                    {"chain_id": "C", "seq_id": list(range(1, 6)), "comp_id": ["A", "C", "A", "C", "A"], "identical_chain_id": ["B"]},
                 ]
             ],
         )
@@ -1103,7 +1101,7 @@ class TestNEFTranslator(unittest.TestCase):
                 [
                     {
                         "chain_id": "A",
-                        "seq_id": [i for i in range(10, 70)],
+                        "seq_id": list(range(10, 70)),
                         "comp_id": [
                             "HIS",
                             "MET",
@@ -1177,7 +1175,7 @@ class TestNEFTranslator(unittest.TestCase):
                 [
                     {
                         "chain_id": "A",
-                        "seq_id": [i for i in range(10, 120)],
+                        "seq_id": list(range(10, 120)),
                         "comp_id": [
                             "HIS",
                             "MET",
@@ -1302,7 +1300,7 @@ class TestNEFTranslator(unittest.TestCase):
                 [
                     {
                         "chain_id": "A",
-                        "seq_id": [i for i in range(1, 70)],
+                        "seq_id": list(range(1, 70)),
                         "comp_id": [
                             "MET",
                             "GLY",
@@ -1387,7 +1385,7 @@ class TestNEFTranslator(unittest.TestCase):
                 [
                     {
                         "chain_id": "A",
-                        "seq_id": [i for i in range(10, 70)],
+                        "seq_id": list(range(10, 70)),
                         "comp_id": [
                             "HIS",
                             "MET",
@@ -1461,7 +1459,7 @@ class TestNEFTranslator(unittest.TestCase):
                 [
                     {
                         "chain_id": "A",
-                        "seq_id": [i for i in range(10, 70)],
+                        "seq_id": list(range(10, 70)),
                         "comp_id": [
                             "HIS",
                             "MET",
@@ -1971,8 +1969,8 @@ class TestNEFTranslator(unittest.TestCase):
                         ],
                     }
                 ],
-                [{"chain_id": "2", "seq_id": [i for i in range(1, 6)], "comp_id": ["A", "C", "A", "C", "A"]}],
-                [{"chain_id": "3", "seq_id": [i for i in range(1, 6)], "comp_id": ["A", "C", "A", "C", "A"]}],
+                [{"chain_id": "2", "seq_id": list(range(1, 6)), "comp_id": ["A", "C", "A", "C", "A"]}],
+                [{"chain_id": "3", "seq_id": list(range(1, 6)), "comp_id": ["A", "C", "A", "C", "A"]}],
             ],
         )
         self.assertEqual(
@@ -1981,7 +1979,7 @@ class TestNEFTranslator(unittest.TestCase):
                 [
                     {
                         "chain_id": "1",
-                        "seq_id": [i for i in range(1, 216)],
+                        "seq_id": list(range(1, 216)),
                         "comp_id": [
                             "TYR",
                             "GLY",
@@ -2200,8 +2198,8 @@ class TestNEFTranslator(unittest.TestCase):
                             "SER",
                         ],
                     },
-                    {"chain_id": "2", "seq_id": [i for i in range(1, 6)], "comp_id": ["A", "C", "A", "C", "A"], "identical_chain_id": ["3"]},
-                    {"chain_id": "3", "seq_id": [i for i in range(1, 6)], "comp_id": ["A", "C", "A", "C", "A"], "identical_chain_id": ["2"]},
+                    {"chain_id": "2", "seq_id": list(range(1, 6)), "comp_id": ["A", "C", "A", "C", "A"], "identical_chain_id": ["3"]},
+                    {"chain_id": "3", "seq_id": list(range(1, 6)), "comp_id": ["A", "C", "A", "C", "A"], "identical_chain_id": ["2"]},
                 ]
             ],
         )
@@ -2213,7 +2211,7 @@ class TestNEFTranslator(unittest.TestCase):
                 [
                     {
                         "chain_id": "1",
-                        "seq_id": [i for i in range(1, 70)],
+                        "seq_id": list(range(1, 70)),
                         "comp_id": [
                             "MET",
                             "GLY",
@@ -2298,7 +2296,7 @@ class TestNEFTranslator(unittest.TestCase):
                 [
                     {
                         "chain_id": "1",
-                        "seq_id": [i for i in range(10, 70)],
+                        "seq_id": list(range(10, 70)),
                         "comp_id": [
                             "HIS",
                             "MET",
@@ -2372,7 +2370,7 @@ class TestNEFTranslator(unittest.TestCase):
                 [
                     {
                         "chain_id": "1",
-                        "seq_id": [i for i in range(10, 70)],
+                        "seq_id": list(range(10, 70)),
                         "comp_id": [
                             "HIS",
                             "MET",
@@ -2449,7 +2447,7 @@ class TestNEFTranslator(unittest.TestCase):
                 [
                     {
                         "chain_id": "1",
-                        "seq_id": [i for i in range(1, 70)],
+                        "seq_id": list(range(1, 70)),
                         "auth_asym_id": ["A" for i in range(1, 70)],
                         "auth_seq_id": ["%s" % i for i in range(1, 70)],
                         "auth_comp_id": [
@@ -2801,11 +2799,11 @@ class TestNEFTranslator(unittest.TestCase):
 
     def test_get_nef_index(self):
         dat = pynmrstar.Entry.from_file(os.path.join(self.data_dir_path, "2l9r.nef"))
-        self.assertEqual(self.neft.get_nef_index(dat), [[i for i in range(1, 70)]])
+        self.assertEqual(self.neft.get_nef_index(dat), [list(range(1, 70))])
 
     def test_get_star_index(self):
         dat = pynmrstar.Entry.from_file(os.path.join(self.data_dir_path, "2l9r.str"))
-        self.assertEqual(self.neft.get_star_index(dat), [[i for i in range(1, 70)]])
+        self.assertEqual(self.neft.get_star_index(dat), [list(range(1, 70))])
     #
     # def test_check_nef_data(self):
     #     dat = pynmrstar.Entry.from_file(self.data_dir_path + "2l9r.nef")
@@ -3395,6 +3393,7 @@ class TestNEFTranslator(unittest.TestCase):
 
     def test_is_mandatory_tag(self):
         self.assertEqual(self.neft.is_mandatory_tag("_nef_rdc_restraint_list.potential_type", "nef"), True)
+
 
 if __name__ == "__main__":
     unittest.main()

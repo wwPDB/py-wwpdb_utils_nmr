@@ -52,7 +52,10 @@ class BMRBChemShiftStat:
     """ Wrapper class for retrieving BMRB chemical shift statistics.
     """
 
-    def __init__(self):
+    def __init__(self, verbose=False, log=sys.stderr):
+        self.__verbose = verbose
+        self.__lfh = log
+
         # lazy import of others (non-standard residues)
         self.lazy_others = True
 
@@ -88,9 +91,6 @@ class BMRBChemShiftStat:
         self.max_count_th = 10
 
         # CCD accessing utility
-        self.__verbose = False
-        self.__lfh = sys.stderr
-
         self.__ccU = ChemCompUtil(self.__verbose, self.__lfh)
 
         if not self.loadStatFromPickleFiles():
@@ -655,7 +655,7 @@ class BMRBChemShiftStat:
 
         atm_list = []
 
-        with open(file_name, 'r', encoding='UTF-8') as ifp:
+        with open(file_name, 'r', encoding='utf-8') as ifp:
             reader = csv.DictReader(ifp)
 
             for row in reader:

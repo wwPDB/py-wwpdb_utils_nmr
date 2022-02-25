@@ -8,17 +8,16 @@
 import unittest
 import os
 import sys
+from shutil import copyfile
+from wwpdb.utils.nmr.NmrStarToCif import NmrStarToCif
 
 if __package__ is None or __package__ == "":
     from os import path
 
     sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
-    from commonsetup import TESTOUTPUT  # noqa:  F401 pylint: disable=import-error,unused-import
+    from commonsetup import TESTOUTPUT  # noqa: F401, pylint: disable=import-error,unused-import
 else:
-    from .commonsetup import TESTOUTPUT  # noqa: F401
-
-from wwpdb.utils.nmr.NmrStarToCif import NmrStarToCif
-from shutil import copyfile
+    from .commonsetup import TESTOUTPUT  # noqa: F401, pylint: disable=relative-beyond-top-level
 
 
 class TestNmrStarToCif(unittest.TestCase):

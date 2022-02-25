@@ -43,6 +43,9 @@ class AmberMRParserListener(ParseTreeListener):
     # NEFTranslator
     __nefT = None
 
+    # AmberPTParserListener
+    __ptPL = None
+
     # CIF reader
     __cR = None
 
@@ -68,7 +71,7 @@ class AmberMRParserListener(ParseTreeListener):
     warningMessage = ''
 
     def __init__(self, verbose=True, log=sys.stdout, cR=None, polySeq=None,
-                 ccU=None, csStat=None, nefT=None):
+                 ccU=None, csStat=None, nefT=None, ptPL=None):
         self.__verbose = verbose
         self.__lfh = log
         self.__cR = cR
@@ -88,6 +91,9 @@ class AmberMRParserListener(ParseTreeListener):
 
         # NEFTranslator
         self.__nefT = NEFTranslator(verbose, log, self.__ccU, self.__csStat) if nefT is None else nefT
+
+        # AmberPTParserListener
+        self.__ptPL = ptPL
 
     # Enter a parse tree produced by AmberMRParser#amber_mr.
     def enterAmber_mr(self, ctx: AmberMRParser.Amber_mrContext):  # pylint: disable=unused-argument

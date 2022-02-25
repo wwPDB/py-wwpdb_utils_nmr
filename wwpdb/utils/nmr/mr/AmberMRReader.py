@@ -47,6 +47,9 @@ class AmberMRReader:
         # NEFTranslator
         self.__nefT = NEFTranslator(verbose, log, self.__ccU, self.__csStat) if nefT is None else nefT
 
+        # AmberPTParserListener
+        self.__ptPL = None
+
     def parse(self, mrFilePath, cifFilePath, ptFilePath=None):
         """ Parse AMBER MR file.
             @return: AmberMRParserListener for success or None otherwise.
@@ -70,8 +73,9 @@ class AmberMRReader:
                     return None
 
             if ptFilePath is not None:
-                topology_listener = AmberPTReader(self.__verbose, self.__lfh, self.__cR, self.__polySeqModel,
-                                                  self.__ccU, self.__csStat)
+                ptR = AmberPTReader(self.__verbose, self.__lfh, self.__cR, self.__polySeqModel,
+                                    self.__ccU, self.__csStat)
+                self.__ptPL = ptR.parse(ptFilePath, cifFilePath)
 
             with open(mrFilePath) as ifp:
 
@@ -101,7 +105,7 @@ class AmberMRReader:
 
                 walker = ParseTreeWalker()
                 listener = AmberMRParserListener(self.__verbose, self.__lfh, self.__cR, self.__polySeqModel,
-                                                 self.__ccU, self.__csStat, self.__nefT)
+                                                 self.__ccU, self.__csStat, self.__nefT, self.__ptPL)
                 walker.walk(listener, tree)
 
                 messageList = parser_error_listener.getMessageList()

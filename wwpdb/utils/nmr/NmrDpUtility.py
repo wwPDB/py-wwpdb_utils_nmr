@@ -601,9 +601,9 @@ class NmrDpUtility:
 
     def __init__(self, verbose=False, log=sys.stderr):
         self.__verbose = verbose
-        self.__debug = False
-
         self.__lfh = log
+
+        self.__debug = False
 
         # current workflow operation
         self.__op = None
@@ -827,13 +827,13 @@ class NmrDpUtility:
         self.report_prev = None
 
         # NEFTranslator
-        self.__nefT = NEFTranslator()
+        self.__nefT = NEFTranslator(self.__verbose, self.__lfh)
 
         if self.__nefT is None:
             raise IOError("+NmrDpUtility.__init__() ++ Error  - NEFTranslator is not available.")
 
         # BMRB chemical shift statistics
-        self.__csStat = BMRBChemShiftStat()
+        self.__csStat = BMRBChemShiftStat(self.__verbose, self.__lfh)
 
         if not self.__csStat.isOk():
             raise IOError("+NmrDpUtility.__init__() ++ Error  - BMRBChemShiftStat is not available.")
@@ -4267,8 +4267,8 @@ class NmrDpUtility:
             if self.__verbose:
                 self.__lfh.write(f"+NmrDpUtility.__validateInputSource() ++ Warning  - {warn}\n")
 
-            with open(_srcPath, 'r', encoding='UTF-8') as ifp:
-                with open(_srcPath + '~', 'w', encoding='UTF-8') as ofp:
+            with open(_srcPath, 'r', encoding='utf-8') as ifp:
+                with open(_srcPath + '~', 'w', encoding='utf-8') as ofp:
                     for line in ifp:
                         ofp.write(line)
 
@@ -4289,8 +4289,8 @@ class NmrDpUtility:
             if self.__verbose:
                 self.__lfh.write(f"+NmrDpUtility.__validateInputSource() ++ Warning  - {warn}\n")
 
-            with open(_srcPath, 'r', encoding='UTF-8') as ifp:
-                with open(_srcPath + '~', 'w', encoding='UTF-8') as ofp:
+            with open(_srcPath, 'r', encoding='utf-8') as ifp:
+                with open(_srcPath + '~', 'w', encoding='utf-8') as ofp:
                     for line in ifp:
                         ofp.write(line)
 
@@ -4317,7 +4317,7 @@ class NmrDpUtility:
             if self.__verbose:
                 self.__lfh.write(f"+NmrDpUtility.__fixFormatIssueOfInputSource() ++ Warning  - {warn}\n")
 
-            with open(_srcPath, 'r', encoding='UTF-8') as ifp:
+            with open(_srcPath, 'r', encoding='utf-8') as ifp:
                 lines = ifp.read().splitlines()
                 total = len(lines)
 
@@ -4331,8 +4331,8 @@ class NmrDpUtility:
             j += 1
             i = 1
 
-            with open(_srcPath, 'r', encoding='UTF-8') as ifp:
-                with open(_srcPath + '~', 'w', encoding='UTF-8') as ofp:
+            with open(_srcPath, 'r', encoding='utf-8') as ifp:
+                with open(_srcPath + '~', 'w', encoding='utf-8') as ofp:
                     ofp.write('data_' + os.path.basename(srcPath) + '\n\n')
                     for line in ifp:
                         if i <= j:
@@ -4356,8 +4356,8 @@ class NmrDpUtility:
 
             pass_datablock = False
 
-            with open(_srcPath, 'r', encoding='UTF-8') as ifp:
-                with open(_srcPath + '~', 'w', encoding='UTF-8') as ofp:
+            with open(_srcPath, 'r', encoding='utf-8') as ifp:
+                with open(_srcPath + '~', 'w', encoding='utf-8') as ofp:
                     for line in ifp:
                         if pass_datablock:
                             ofp.write(line)
@@ -4398,8 +4398,8 @@ class NmrDpUtility:
 
                 i = 1
 
-                with open(_srcPath, 'r', encoding='UTF-8') as ifp:
-                    with open(_srcPath + '~', 'w', encoding='UTF-8') as ofp:
+                with open(_srcPath, 'r', encoding='utf-8') as ifp:
+                    with open(_srcPath + '~', 'w', encoding='utf-8') as ofp:
                         for line in ifp:
                             if i == line_num:
                                 ofp.write('stop_\n')
@@ -4442,8 +4442,8 @@ class NmrDpUtility:
 
                 i = 1
 
-                with open(_srcPath, 'r', encoding='UTF-8') as ifp:
-                    with open(_srcPath + '~', 'w', encoding='UTF-8') as ofp:
+                with open(_srcPath, 'r', encoding='utf-8') as ifp:
+                    with open(_srcPath + '~', 'w', encoding='utf-8') as ofp:
                         for line in ifp:
                             if i == line_num - 1:
                                 ofp.write('loop_\n')
@@ -4477,7 +4477,7 @@ class NmrDpUtility:
 
                 try:
 
-                    with open(_srcPath, 'r', encoding='UTF-8') as ifp:
+                    with open(_srcPath, 'r', encoding='utf-8') as ifp:
                         for line in ifp:
                             if save_pattern.match(line) or stop_pattern.match(line):
                                 is_cs_cif = False
@@ -4489,7 +4489,7 @@ class NmrDpUtility:
                         has_sf_category = False
                         has_sf_framecode = False
 
-                        with open(_srcPath, 'r', encoding='UTF-8') as ifp:
+                        with open(_srcPath, 'r', encoding='utf-8') as ifp:
                             for line in ifp:
                                 if loop_pattern.match(line):
                                     loop_count += 1
@@ -4502,8 +4502,8 @@ class NmrDpUtility:
 
                             in_loop = False
 
-                            with open(_srcPath, 'r', encoding='UTF-8') as ifp:
-                                with open(_srcPath + '~', 'w', encoding='UTF-8') as ofp:
+                            with open(_srcPath, 'r', encoding='utf-8') as ifp:
+                                with open(_srcPath + '~', 'w', encoding='utf-8') as ofp:
                                     for line in ifp:
                                         if datablock_pattern.match(line):
                                             g = datablock_pattern.search(line).groups()
@@ -4561,8 +4561,8 @@ class NmrDpUtility:
 
                     tag_name_pattern = re.compile(r'\s*' + tag_name + r'\s*')
 
-                    with open(_srcPath, 'r', encoding='UTF-8') as ifp:
-                        with open(_srcPath + '~', 'w', encoding='UTF-8') as ofp:
+                    with open(_srcPath, 'r', encoding='utf-8') as ifp:
+                        with open(_srcPath + '~', 'w', encoding='utf-8') as ofp:
                             for line in ifp:
                                 if tag_name_pattern.match(line) is None:
                                     ofp.write(line)
@@ -4605,8 +4605,8 @@ class NmrDpUtility:
 
                 i = 1
 
-                with open(_srcPath, 'r', encoding='UTF-8') as ifp:
-                    with open(_srcPath + '~', 'w', encoding='UTF-8') as ofp:
+                with open(_srcPath, 'r', encoding='utf-8') as ifp:
+                    with open(_srcPath + '~', 'w', encoding='utf-8') as ofp:
                         for line in ifp:
                             if i != line_num:
                                 ofp.write(line)
@@ -4668,7 +4668,7 @@ class NmrDpUtility:
 
                     sf_framecode_pattern = re.compile(r'\s*save_' + sf_framecode + r'\s*')
 
-                    with open(_srcPath, 'r', encoding='UTF-8') as ifp:
+                    with open(_srcPath, 'r', encoding='utf-8') as ifp:
                         for line in ifp:
                             if pass_sf_framecode:
                                 if pass_sf_loop:
@@ -4698,8 +4698,8 @@ class NmrDpUtility:
 
                 sf_framecode_pattern = re.compile(r'\s*save_' + sf_framecode + r'\s*')
 
-                with open(_srcPath, 'r', encoding='UTF-8') as ifp:
-                    with open(_srcPath + '~', 'w', encoding='UTF-8') as ofp:
+                with open(_srcPath, 'r', encoding='utf-8') as ifp:
+                    with open(_srcPath + '~', 'w', encoding='utf-8') as ofp:
                         for line in ifp:
                             if pass_sf_loop:
                                 ofp.write(line)
@@ -4764,7 +4764,7 @@ class NmrDpUtility:
                         lp_loc = -1
                         i = 1
 
-                        with open(_srcPath, 'r', encoding='UTF-8') as ifp:
+                        with open(_srcPath, 'r', encoding='utf-8') as ifp:
                             for line in ifp:
                                 if pass_loop:
                                     if category_pattern.match(line):
@@ -4801,8 +4801,8 @@ class NmrDpUtility:
 
             i = 1
 
-            with open(_srcPath, 'r', encoding='UTF-8') as ifp:
-                with open(_srcPath + '~', 'w', encoding='UTF-8') as ofp:
+            with open(_srcPath, 'r', encoding='utf-8') as ifp:
+                with open(_srcPath + '~', 'w', encoding='utf-8') as ofp:
                     ofp.write('data_' + os.path.basename(srcPath) + '\n\n')
                     for line in ifp:
                         if i in target_loop_locations:
@@ -4866,7 +4866,7 @@ class NmrDpUtility:
 
                     i = 1
 
-                    with open(_srcPath, 'r', encoding='UTF-8') as ifp:
+                    with open(_srcPath, 'r', encoding='utf-8') as ifp:
                         for line in ifp:
                             if pass_sf_framecode:
                                 if save_pattern.match(line):
@@ -4949,8 +4949,8 @@ class NmrDpUtility:
 
                 i = 1
 
-                with open(_srcPath, 'r', encoding='UTF-8') as ifp:
-                    with open(_srcPath + '~', 'w', encoding='UTF-8') as ofp:
+                with open(_srcPath, 'r', encoding='utf-8') as ifp:
+                    with open(_srcPath + '~', 'w', encoding='utf-8') as ofp:
                         for line in ifp:
                             if i in target_category_begins:
                                 target = next(target for target in targets if target['category_2_begin'] == i)
@@ -5033,8 +5033,8 @@ class NmrDpUtility:
 
                 i = 1
 
-                with open(_srcPath, 'r', encoding='UTF-8') as ifp:
-                    with open(_srcPath + '~', 'w', encoding='UTF-8') as ofp:
+                with open(_srcPath, 'r', encoding='utf-8') as ifp:
+                    with open(_srcPath + '~', 'w', encoding='utf-8') as ofp:
                         for line in ifp:
                             if i == line_num:
                                 ofp.write(re.sub(sf_framecode + r'\s$', saveframe_name + r'\n', line))
@@ -6137,7 +6137,7 @@ class NmrDpUtility:
 
             file_path = ar['file_name']
 
-            with open(file_path, 'r', encoding='UTF-8') as ifp:
+            with open(file_path, 'r', encoding='utf-8') as ifp:
 
                 md5_list.append(hashlib.md5(ifp.read().encode('utf-8')).hexdigest())
 
@@ -6187,7 +6187,7 @@ class NmrDpUtility:
 
             if file_type in ('nm-res-cns', 'nm-res-xpl'):
 
-                with open(file_path, 'r', encoding='UTF-8') as ifp:
+                with open(file_path, 'r', encoding='utf-8') as ifp:
 
                     atom_likes = 0
                     atom_unlikes = 0
@@ -6306,7 +6306,7 @@ class NmrDpUtility:
 
                             _t_lower = t_lower
 
-                with open(file_path, 'r', encoding='UTF-8') as ifp:
+                with open(file_path, 'r', encoding='utf-8') as ifp:
 
                     atom_likes = 0
                     names = []
@@ -6382,7 +6382,7 @@ class NmrDpUtility:
                 ws_pattern = re.compile(r'\s+')
                 r_pattern = re.compile(r'r(\d+)=(.*)')
 
-                with open(file_path, 'r', encoding='UTF-8') as ifp:
+                with open(file_path, 'r', encoding='utf-8') as ifp:
 
                     in_rst = False
                     in_iat = False
@@ -6612,7 +6612,7 @@ class NmrDpUtility:
 
                 prohibited_col = set()
 
-                with open(file_path, 'r', encoding='UTF-8') as ifp:
+                with open(file_path, 'r', encoding='utf-8') as ifp:
 
                     pos = 0
 
@@ -6799,7 +6799,7 @@ class NmrDpUtility:
 
                 if file_type == 'nm-res-oth' and has_chem_shift and not has_dist_restraint and not has_dihed_restraint:
 
-                    with open(file_path, 'r', encoding='UTF-8') as ifp:
+                    with open(file_path, 'r', encoding='utf-8') as ifp:
 
                         for line in ifp:
 
@@ -6877,7 +6877,7 @@ class NmrDpUtility:
 
             if file_type in ('nm-res-cya', 'nm-res-oth') and not has_dist_restraint:  # DAOTHER-7491
 
-                with open(file_path, 'r', encoding='UTF-8') as ifp:
+                with open(file_path, 'r', encoding='utf-8') as ifp:
 
                     for line in ifp:
 
@@ -10250,55 +10250,28 @@ class NmrDpUtility:
 
         return ((atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0])
                 or atom_id.startswith('Q') or atom_id.startswith('M')
-                or atom_id.endswith('%') or atom_id.endswith('%')
+                or atom_id.endswith('%') or atom_id.endswith('#')
                 or self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0)
 
-    def __getRepresentativeAtomId(self, file_type, comp_id, atom_id):
+    def __getRepresentativeAtomId(self, comp_id, atom_id):
         """ Return a representative atom ID in IUPAC atom nomenclature for a given atom_id.
         """
 
-        _atom_id = self.__getAtomIdList(file_type, comp_id, atom_id)
+        _atom_id = self.__nefT.get_valid_star_atom(comp_id, atom_id, leave_unmatched=False)[0]
 
         return atom_id if len(_atom_id) == 0 else _atom_id[0]
 
-    def __getAtomIdList(self, file_type, comp_id, atom_id):
+    def __getAtomIdList(self, comp_id, atom_id):
         """ Return atom ID list in IUPAC atom nomenclature for a given atom_id.
         """
 
-        return self.__getAtomIdListWithAmbigCode(file_type, comp_id, atom_id, leave_unmatched=False)[0]
+        return self.__nefT.get_valid_star_atom(comp_id, atom_id, leave_unmatched=False)[0]
 
-    def __getAtomIdListWithAmbigCode(self, file_type, comp_id, atom_id, leave_unmatched=True):
+    def __getAtomIdListWithAmbigCode(self, comp_id, atom_id, leave_unmatched=True):
         """ Return lists of atom ID, ambiguity_code, details in IUPAC atom nomenclature for a given conventional NMR atom name.
-            @see: NEFTranslator.get_valid_star_atom()
         """
 
-        if file_type == 'nef' or atom_id == 'HN' or atom_id.endswith('%') or atom_id.endswith('*'):
-            return self.__nefT.get_star_atom(comp_id, atom_id, leave_unmatched=leave_unmatched)
-
-        if atom_id.startswith('QQ'):
-            return self.__nefT.get_star_atom(comp_id, 'H' + atom_id[2:] + '%', leave_unmatched=leave_unmatched)
-
-        if atom_id.startswith('QR'):
-            qr_atoms = sorted(set(atom_id[:-1] + '%' for atom_id in self.__csStat.getAromaticAtoms(comp_id)
-                                  if atom_id[0] == 'H' and self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 3))
-            if len(qr_atoms) == 0:
-                return [], None, None
-            atom_list = []
-            for qr_atom in qr_atoms:
-                _atom_list, ambiguity_code, details = self.__nefT.get_star_atom(comp_id, qr_atom, leave_unmatched=leave_unmatched)
-                atom_list.extend(_atom_list)
-            return atom_list, ambiguity_code, details
-
-        if atom_id.startswith('Q') or atom_id.startswith('M'):
-            return self.__nefT.get_star_atom(comp_id, 'H' + atom_id[1:] + '%', leave_unmatched=leave_unmatched)
-
-        if (atom_id + '2' in self.__csStat.getAllAtoms(comp_id)) or (atom_id + '22' in self.__csStat.getAllAtoms(comp_id)):
-            return self.__nefT.get_star_atom(comp_id, atom_id + '%', leave_unmatched=leave_unmatched)
-
-        if '#' in atom_id:
-            return self.__nefT.get_star_atom(comp_id, atom_id.replace('#', '%'))
-
-        return self.__nefT.get_star_atom(comp_id, atom_id, leave_unmatched=leave_unmatched)
+        return self.__nefT.get_valid_star_atom(comp_id, atom_id, leave_unmatched=leave_unmatched)
 
     def __validateAtomNomenclature__(self, file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category, first_comp_ids):
         """ Validate atom nomenclature using NEFTranslator and CCD.
@@ -10356,7 +10329,7 @@ class NmrDpUtility:
                         atom_id_ = atom_id
 
                         if (file_type == 'nef' or not self.__combined_mode or self.__transl_pseudo_name) and self.__isNmrAtomName(comp_id, atom_id):
-                            atom_id_ = self.__getRepresentativeAtomId(file_type, comp_id, atom_id)
+                            atom_id_ = self.__getRepresentativeAtomId(comp_id, atom_id)
 
                             if file_type == 'nmr-star' and self.__combined_mode and self.__transl_pseudo_name and atom_id != atom_id_:
 
@@ -10462,7 +10435,7 @@ class NmrDpUtility:
                             atom_id_ = atom_id
 
                             if (file_type == 'nef' or not self.__combined_mode or self.__transl_pseudo_name) and self.__isNmrAtomName(comp_id, atom_id):
-                                atom_id_ = self.__getRepresentativeAtomId(file_type, comp_id, atom_id)
+                                atom_id_ = self.__getRepresentativeAtomId(comp_id, atom_id)
 
                                 if file_type == 'nmr-star' and self.__combined_mode and self.__transl_pseudo_name and atom_id != atom_id_:
 
@@ -11057,14 +11030,14 @@ class NmrDpUtility:
                 sf_data = self.__star_data[fileListId]
                 sf_framecode = ''
 
-                self.__validateAmbigCodeOfCSLoop__(file_name, file_type, sf_data, sf_framecode, lp_category)
+                self.__validateAmbigCodeOfCSLoop__(file_name, sf_data, sf_framecode, lp_category)
 
             elif self.__star_data_type[fileListId] == 'Saveframe':
 
                 sf_data = self.__star_data[fileListId]
                 sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
-                self.__validateAmbigCodeOfCSLoop__(file_name, file_type, sf_data, sf_framecode, lp_category)
+                self.__validateAmbigCodeOfCSLoop__(file_name, sf_data, sf_framecode, lp_category)
 
             else:
 
@@ -11075,11 +11048,11 @@ class NmrDpUtility:
                     if not any(loop for loop in sf_data.loops if loop.category == lp_category):
                         continue
 
-                    self.__validateAmbigCodeOfCSLoop__(file_name, file_type, sf_data, sf_framecode, lp_category)
+                    self.__validateAmbigCodeOfCSLoop__(file_name, sf_data, sf_framecode, lp_category)
 
         return not self.report.isError()
 
-    def __validateAmbigCodeOfCSLoop__(self, file_name, file_type, sf_data, sf_framecode, lp_category):
+    def __validateAmbigCodeOfCSLoop__(self, file_name, sf_data, sf_framecode, lp_category):
         """ Validate ambiguity code on assigned chemical shifts.
         """
 
@@ -11108,7 +11081,7 @@ class NmrDpUtility:
                         _atom_id = atom_id
 
                         if self.__isNmrAtomName(comp_id, atom_id):
-                            _atom_id = self.__getRepresentativeAtomId(file_type, comp_id, atom_id)
+                            _atom_id = self.__getRepresentativeAtomId(comp_id, atom_id)
 
                         allowed_ambig_code = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, _atom_id)
 
@@ -12991,7 +12964,7 @@ class NmrDpUtility:
                     continue
 
                 if file_type == 'nef' or self.__isNmrAtomName(comp_id, atom_id):
-                    _atom_id, ambig_code, details = self.__getAtomIdListWithAmbigCode(file_type, comp_id, atom_id)
+                    _atom_id, ambig_code, details = self.__getAtomIdListWithAmbigCode(comp_id, atom_id)
 
                     len_atom_id = len(_atom_id)
 
@@ -13043,7 +13016,7 @@ class NmrDpUtility:
                             has_cs_stat = True
 
                             if atom_id_.startswith('H') and 'methyl' in cs_stat['desc']:
-                                _atom_id = self.__getRepresentativeAtomId(file_type, comp_id, atom_id)
+                                _atom_id = self.__getRepresentativeAtomId(comp_id, atom_id)
                                 _, methyl_h_list = self.__nefT.get_group(comp_id, _atom_id)
 
                                 name_len = [len(n) for n in methyl_h_list]
@@ -14013,7 +13986,7 @@ class NmrDpUtility:
                     _atom_id = atom_id
 
                     if self.__isNmrAtomName(comp_id, atom_id):
-                        _atom_id = self.__getRepresentativeAtomId(file_type, comp_id, atom_id)
+                        _atom_id = self.__getRepresentativeAtomId(comp_id, atom_id)
 
                     allowed_ambig_code = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, _atom_id)
 
@@ -14159,7 +14132,7 @@ class NmrDpUtility:
                                         _atom_id2 = atom_id2
 
                                         if self.__isNmrAtomName(comp_id2, atom_id2):
-                                            _atom_id2 = self.__getRepresentativeAtomId(file_type, comp_id2, atom_id2)
+                                            _atom_id2 = self.__getRepresentativeAtomId(comp_id2, atom_id2)
 
                                         if (chain_id2 != chain_id or seq_id2 != seq_id or comp_id2 != comp_id) and _atom_id < _atom_id2:
 
@@ -14188,7 +14161,7 @@ class NmrDpUtility:
                                         _atom_id2 = atom_id2
 
                                         if self.__isNmrAtomName(comp_id2, atom_id2):
-                                            _atom_id2 = self.__getRepresentativeAtomId(file_type, comp_id2, atom_id2)
+                                            _atom_id2 = self.__getRepresentativeAtomId(comp_id2, atom_id2)
 
                                         if ((chain_id2 != chain_id and chain_id < chain_id2) or (seq_id2 == seq_id and _atom_id < _atom_id2)):
 
@@ -14218,7 +14191,7 @@ class NmrDpUtility:
                                         _atom_id2 = atom_id2
 
                                         if self.__isNmrAtomName(comp_id2, atom_id2):
-                                            _atom_id2 = self.__getRepresentativeAtomId(file_type, comp_id2, atom_id2)
+                                            _atom_id2 = self.__getRepresentativeAtomId(comp_id2, atom_id2)
 
                                         if chain_id2 == chain_id and (seq_id < seq_id2 or (seq_id == seq_id2 and _atom_id < _atom_id2)):
 
@@ -14245,7 +14218,7 @@ class NmrDpUtility:
                                     _atom_id2 = atom_id2
 
                                     if self.__isNmrAtomName(comp_id2, atom_id2):
-                                        _atom_id2 = self.__getRepresentativeAtomId(file_type, comp_id2, atom_id2)
+                                        _atom_id2 = self.__getRepresentativeAtomId(comp_id2, atom_id2)
 
                                     if _atom_id[0] != _atom_id2[0] and _atom_id < _atom_id2:
 
@@ -14405,7 +14378,7 @@ class NmrDpUtility:
                                         comp_id = i[comp_id_names[d]]
                                         atom_id = i[atom_id_names[d]]
 
-                                        _atom_ids = self.__getAtomIdList(file_type, comp_id, atom_id)
+                                        _atom_ids = self.__getAtomIdList(comp_id, atom_id)
 
                                         len_atom_id = len(_atom_ids)
 
@@ -14439,7 +14412,7 @@ class NmrDpUtility:
                                         has_chem_shift = False
 
                                         for atom_id_w_cs in atom_ids_w_cs:
-                                            _atom_id_w_cs = self.__getAtomIdList(file_type, comp_id, atom_id_w_cs)
+                                            _atom_id_w_cs = self.__getAtomIdList(comp_id, atom_id_w_cs)
                                             if any(_atom_id for _atom_id in _atom_ids if _atom_id in _atom_id_w_cs):
                                                 has_chem_shift = True
                                                 break
@@ -14460,7 +14433,7 @@ class NmrDpUtility:
                                                          and j[cs_comp_id_name] == comp_id]
 
                                         for atom_id_w_cs in atom_ids_w_cs:
-                                            _atom_id_w_cs = self.__getAtomIdList(file_type, comp_id, atom_id_w_cs)
+                                            _atom_id_w_cs = self.__getAtomIdList(comp_id, atom_id_w_cs)
                                             if gem_atom_id in _atom_id_w_cs:
                                                 gem_atom_id_w_cs = atom_id_w_cs
                                                 break
@@ -14875,7 +14848,7 @@ class NmrDpUtility:
 
                                 position = i[position_names[d]]
 
-                                _atom_ids = self.__getAtomIdList(file_type, comp_id, atom_id)
+                                _atom_ids = self.__getAtomIdList(comp_id, atom_id)
 
                                 len_atom_id = len(_atom_ids)
 
@@ -14905,7 +14878,7 @@ class NmrDpUtility:
 
                                 else:
                                     for atom_id_w_cs in atom_ids_w_cs:
-                                        _atom_id_w_cs = self.__getAtomIdList(file_type, comp_id, atom_id_w_cs)
+                                        _atom_id_w_cs = self.__getAtomIdList(comp_id, atom_id_w_cs)
                                         if any(_atom_id for _atom_id in _atom_ids if _atom_id in _atom_id_w_cs):
                                             cs_idx = atom_ids_w_cs.index(atom_id_w_cs)
                                             break
@@ -15020,8 +14993,8 @@ class NmrDpUtility:
                                                 # DAOTHER-7681, issue #2
                                                 if d < d2 and chain_id2 == chain_id and seq_id2 == seq_id and comp_id2 == comp_id and _atom_id2 != _atom_id and\
                                                    self.__ccU.updateChemCompDict(comp_id):
-                                                    _atom_id = self.__getAtomIdList(file_type, comp_id, atom_id)
-                                                    _atom_id2 = self.__getAtomIdList(file_type, comp_id, atom_id2)
+                                                    _atom_id = self.__getAtomIdList(comp_id, atom_id)
+                                                    _atom_id2 = self.__getAtomIdList(comp_id, atom_id2)
                                                     if any(b for b in self.__ccU.lastBonds
                                                            if ((b[self.__ccU.ccbAtomId1] in _atom_id and b[self.__ccU.ccbAtomId2] in _atom_id2)
                                                                or (b[self.__ccU.ccbAtomId1] in _atom_id2 and b[self.__ccU.ccbAtomId2] in _atom_id))):
@@ -15359,7 +15332,7 @@ class NmrDpUtility:
 
                             position = i[cs_value_name]
 
-                            _atom_ids = self.__getAtomIdList(file_type, comp_id, atom_id)
+                            _atom_ids = self.__getAtomIdList(comp_id, atom_id)
 
                             len_atom_id = len(_atom_ids)
 
@@ -15389,7 +15362,7 @@ class NmrDpUtility:
 
                             else:
                                 for atom_id_w_cs in atom_ids_w_cs:
-                                    _atom_id_w_cs = self.__getAtomIdList(file_type, comp_id, atom_id_w_cs)
+                                    _atom_id_w_cs = self.__getAtomIdList(comp_id, atom_id_w_cs)
                                     if any(_atom_id for _atom_id in _atom_ids if _atom_id in _atom_id_w_cs):
                                         cs_idx = atom_ids_w_cs.index(atom_id_w_cs)
                                         break
@@ -15512,8 +15485,8 @@ class NmrDpUtility:
                                             # DAOTHER-7681, issue #2
                                             if d < d2 and chain_id2 == chain_id and seq_id2 == seq_id and comp_id2 == comp_id and _atom_id2 != _atom_id and\
                                                self.__ccU.updateChemCompDict(comp_id):
-                                                _atom_id = self.__getAtomIdList(file_type, comp_id, atom_id)
-                                                _atom_id2 = self.__getAtomIdList(file_type, comp_id, atom_id2)
+                                                _atom_id = self.__getAtomIdList(comp_id, atom_id)
+                                                _atom_id2 = self.__getAtomIdList(comp_id, atom_id2)
                                                 if any(b for b in self.__ccU.lastBonds
                                                        if ((b[self.__ccU.ccbAtomId1] in _atom_id and b[self.__ccU.ccbAtomId2] in _atom_id2)
                                                            or (b[self.__ccU.ccbAtomId1] in _atom_id2 and b[self.__ccU.ccbAtomId2] in _atom_id))):
@@ -16241,7 +16214,7 @@ class NmrDpUtility:
                             atom_id = _variant_[1:]
 
                             if file_type == 'nef' or self.__isNmrAtomName(comp_id, atom_id):
-                                _atom_id, _, details = self.__getAtomIdListWithAmbigCode(file_type, comp_id, atom_id)
+                                _atom_id, _, details = self.__getAtomIdListWithAmbigCode(comp_id, atom_id)
 
                                 len_atom_id = len(_atom_id)
 
@@ -16328,7 +16301,7 @@ class NmrDpUtility:
                         atom_id = variant
 
                         if file_type == 'nef' or self.__isNmrAtomName(comp_id, atom_id):
-                            _atom_id, _, details = self.__getAtomIdListWithAmbigCode(file_type, comp_id, atom_id)
+                            _atom_id, _, details = self.__getAtomIdListWithAmbigCode(comp_id, atom_id)
 
                             len_atom_id = len(_atom_id)
 
@@ -16944,7 +16917,7 @@ class NmrDpUtility:
                                     data_type = str(j[iso_number]) + j[atom_type]
 
                                     if file_type == 'nef' or self.__isNmrAtomName(comp_id, atom_id):
-                                        atom_ids = self.__getAtomIdList(file_type, comp_id, atom_id)
+                                        atom_ids = self.__getAtomIdList(comp_id, atom_id)
 
                                         if len(atom_ids) == 0:
                                             continue
@@ -17083,7 +17056,7 @@ class NmrDpUtility:
                                     data_type = str(j[iso_number]) + j[atom_type]
 
                                     if file_type == 'nef' or self.__isNmrAtomName(comp_id, atom_id):
-                                        atom_ids = self.__getAtomIdList(file_type, comp_id, atom_id)
+                                        atom_ids = self.__getAtomIdList(comp_id, atom_id)
 
                                         if len(atom_ids) == 0:
                                             continue
@@ -17209,7 +17182,7 @@ class NmrDpUtility:
                                     data_type = str(j[iso_number]) + j[atom_type]
 
                                     if file_type == 'nef' or self.__isNmrAtomName(comp_id, atom_id):
-                                        atom_ids = self.__getAtomIdList(file_type, comp_id, atom_id)
+                                        atom_ids = self.__getAtomIdList(comp_id, atom_id)
 
                                         if len(atom_ids) == 0:
                                             continue
@@ -17324,7 +17297,7 @@ class NmrDpUtility:
                                     data_type = str(j[iso_number]) + j[atom_type]
 
                                     if file_type == 'nef' or self.__isNmrAtomName(comp_id, atom_id):
-                                        atom_ids = self.__getAtomIdList(file_type, comp_id, atom_id)
+                                        atom_ids = self.__getAtomIdList(comp_id, atom_id)
 
                                         if len(atom_ids) == 0:
                                             continue
@@ -17431,7 +17404,7 @@ class NmrDpUtility:
                                     data_type = str(j[iso_number]) + j[atom_type]
 
                                     if file_type == 'nef' or self.__isNmrAtomName(comp_id, atom_id):
-                                        atom_ids = self.__getAtomIdList(file_type, comp_id, atom_id)
+                                        atom_ids = self.__getAtomIdList(comp_id, atom_id)
 
                                         if len(atom_ids) == 0:
                                             continue
@@ -17511,7 +17484,7 @@ class NmrDpUtility:
                     continue
 
                 if file_type == 'nef' or self.__isNmrAtomName(comp_id, atom_id):
-                    _atom_id = self.__getAtomIdList(file_type, comp_id, atom_id)
+                    _atom_id = self.__getAtomIdList(comp_id, atom_id)
 
                     len_atom_id = len(_atom_id)
 
@@ -17971,7 +17944,7 @@ class NmrDpUtility:
                                         _atom_id = atom_id
 
                                         if self.__isNmrAtomName(comp_id, atom_id):
-                                            _atom_id = self.__getRepresentativeAtomId(file_type, comp_id, atom_id)
+                                            _atom_id = self.__getRepresentativeAtomId(comp_id, atom_id)
 
                                         if _atom_id == 'CG1':
                                             cg1_chem_shift = j[value_name]
@@ -18065,7 +18038,7 @@ class NmrDpUtility:
                                         _atom_id = atom_id
 
                                         if self.__isNmrAtomName(comp_id, atom_id):
-                                            _atom_id = self.__getRepresentativeAtomId(file_type, comp_id, atom_id)
+                                            _atom_id = self.__getRepresentativeAtomId(comp_id, atom_id)
 
                                         if _atom_id == 'CD1':
                                             cd1_chem_shift = j[value_name]
@@ -18281,7 +18254,7 @@ class NmrDpUtility:
                                 atom_id = j[atom_id_name]
 
                                 if file_type == 'nef' or self.__isNmrAtomName(comp_id, atom_id):
-                                    _atom_id = self.__getAtomIdList(file_type, comp_id, atom_id)
+                                    _atom_id = self.__getAtomIdList(comp_id, atom_id)
 
                                     len_atom_id = len(_atom_id)
 
@@ -19686,8 +19659,8 @@ class NmrDpUtility:
         elif range_of_seq < 5:
 
             if file_type == 'nef' or (self.__isNmrAtomName(comp_id_1, atom_id_1) or self.__isNmrAtomName(comp_id_2, atom_id_2)):
-                _atom_id_1 = self.__getAtomIdList(file_type, comp_id_1, atom_id_1)
-                _atom_id_2 = self.__getAtomIdList(file_type, comp_id_2, atom_id_2)
+                _atom_id_1 = self.__getAtomIdList(comp_id_1, atom_id_1)
+                _atom_id_2 = self.__getAtomIdList(comp_id_2, atom_id_2)
 
                 if len(_atom_id_1) > 0 and len(_atom_id_2) > 0:
                     is_sc_atom_1 = _atom_id_1[0] in self.__csStat.getSideChainAtoms(comp_id_1)
@@ -20028,8 +20001,8 @@ class NmrDpUtility:
         elif range_of_seq < 5:
 
             if file_type == 'nef' or (self.__isNmrAtomName(comp_id_1, atom_id_1) or self.__isNmrAtomName(comp_id_2, atom_id_2)):
-                _atom_id_1 = self.__getAtomIdList(file_type, comp_id_1, atom_id_1)
-                _atom_id_2 = self.__getAtomIdList(file_type, comp_id_2, atom_id_2)
+                _atom_id_1 = self.__getAtomIdList(comp_id_1, atom_id_1)
+                _atom_id_2 = self.__getAtomIdList(comp_id_2, atom_id_2)
 
                 if len(_atom_id_1) > 0 and len(_atom_id_2) > 0:
                     is_sc_atom_1 = _atom_id_1[0] in self.__csStat.getSideChainAtoms(comp_id_1)
@@ -24569,7 +24542,7 @@ class NmrDpUtility:
                     continue
 
                 if file_type == 'nef' or self.__isNmrAtomName(comp_id, atom_id):
-                    _atom_id, _, details = self.__getAtomIdListWithAmbigCode(file_type, comp_id, atom_id)
+                    _atom_id, _, details = self.__getAtomIdListWithAmbigCode(comp_id, atom_id)
 
                     len_atom_id = len(_atom_id)
 

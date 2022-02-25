@@ -51,7 +51,6 @@ class TestNmrDpUtility(unittest.TestCase):
         self.model_file = {entry_id: entry_id.lower() + '.cif' for entry_id in self.entries}
         self.alt_model_file = {'6PVR': 'D_800299_model_P1.cif.V4'}
         self.nmr_dp_util = NmrDpUtility()
-        pass
 
     def tearDown(self):
         pass

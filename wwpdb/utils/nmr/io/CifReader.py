@@ -222,7 +222,7 @@ class CifReader:
             @return: target data block
         """
 
-        with open(self.__filePath, 'r', encoding='UTF-8') as ifh:
+        with open(self.__filePath, 'r', encoding='utf-8') as ifh:
             myBlockList = []
             pRd = PdbxReader(ifh)
             pRd.read(myBlockList)

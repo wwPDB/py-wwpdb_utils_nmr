@@ -80,6 +80,7 @@
 # 13-Dec-2021  M. Yokochi - fill list id (e.g. Assigned_chem_shift_list_ID) using a given saveframe counter (parent_pointer) just in case (v3.0.5, DAOTHER-7465, issue #2)
 # 15-Dec-2021  M. Yokochi - fix TypeError: unsupported operand type(s) for -: 'NoneType' and 'set' (v3.0.6, DAOTHER-7545)
 # 22-Dec-2021  M. Yokochi - extend validate_file() for uploading NMR restraint files in NMR-STAR format (v3.0.7, DAOTHER-7545, issue #2)
+# 25-Feb-2022  M. Yokochi - revise logging and overall code revision (v3.1.0)
 ##
 """ Bi-directional translator between NEF and NMR-STAR
     @author: Kumaran Baskaran, Masashi Yokochi
@@ -102,15 +103,13 @@ from wwpdb.utils.nmr.AlignUtil import (emptyValue, trueValue,
 from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
 from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 
-__version__ = '3.0.9'
+__version__ = '3.1.0'
 
 __pynmrstar_v3_2__ = version.parse(pynmrstar.__version__) >= version.parse("3.2.0")
 __pynmrstar_v3_1__ = version.parse(pynmrstar.__version__) >= version.parse("3.1.0")
 __pynmrstar_v3__ = version.parse(pynmrstar.__version__) >= version.parse("3.0.0")
 
-
-logging.getLogger().setLevel(logging.ERROR)
-
+logging.getLogger().setLevel(logging.ERROR)  # set level for pynmrstar
 
 # supported version
 NEF_VERSION = '1.1'
@@ -436,33 +435,6 @@ entityDelAtomItems = ['ID', 'Entity_assembly_ID', 'Comp_index_ID', 'Comp_ID', 'A
                       'Auth_entity_assembly_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_atom_ID', 'Assembly_ID']
 
 
-def load_csv_data(csv_file, transpose=False):
-    """ Load CSV data to list.
-        @param cvs_file: input CSV file path
-        @param transpose: transpose CSV data
-        @return: list object
-    """
-
-    data_map = []
-
-    try:
-        data = []
-
-        with open(csv_file, 'r', encoding='UTF-8') as file:
-            csv_reader = csv.reader(file, delimiter=',')
-
-            for r in csv_reader:
-                if r[0][0] != '#':
-                    data.append(r)
-
-        data_map = list(map(list, zip(*data))) if transpose else data
-
-    except Exception as e:
-        logging.error(str(e))
-
-    return data_map
-
-
 def get_lp_tag(lp_data, tags):
     """ Return the selected loop tags by row as a list of lists.
     """
@@ -601,14 +573,15 @@ class NEFTranslator:
     """ Bi-directional translator between NEF and NMR-STAR
     """
 
-    def __init__(self):
-        self.lib_dir = os.path.dirname(__file__) + '/lib/'
+    def __init__(self, verbose=False, log=sys.stderr):
+        self.__verbose = verbose
+        self.__lfh = log
 
-        self.tagMap = load_csv_data(self.lib_dir + 'NEF_NMRSTAR_equivalence.csv', transpose=True)
+        libDirPath = os.path.dirname(__file__) + '/lib/'
 
-        self.nef_mandatory_tag = load_csv_data(self.lib_dir + 'NEF_mandatory.csv')
-
-        self.star_mandatory_tag = load_csv_data(self.lib_dir + 'NMR-STAR_mandatory.csv')
+        self.tagMap = self.load_csv_data(libDirPath + 'NEF_NMRSTAR_equivalence.csv', transpose=True)
+        self.nefMandatoryTag = self.load_csv_data(libDirPath + 'NEF_mandatory.csv')
+        self.starMandatoryTag = self.load_csv_data(libDirPath + 'NMR-STAR_mandatory.csv')
 
         # whether to replace zero by empty if 'void-zero' is set
         self.replace_zero_by_null_in_case = False
@@ -621,28 +594,54 @@ class NEFTranslator:
         self.selfSeqMap = None
         self.atomIdMap = None
 
-        self.star2nef_chain_mapping = None
-        self.star2cif_chain_mapping = None
+        self.star2NefChainMapping = None
+        self.star2CifChainMapping = None
 
         # BMRB chemical shift statistics
-        self.__csStat = BMRBChemShiftStat()
+        self.__csStat = BMRBChemShiftStat(self.__verbose, self.__lfh)
 
         # CCD accessing utility
-        self.__ccU = ChemCompUtil(False, sys.stderr)
+        self.__ccU = ChemCompUtil(self.__verbose, self.__lfh)
 
         # readable item type
-        self.readable_item_type = {'str': 'a string',
-                                   'bool': 'a boolean value',
-                                   'int': 'an integer',
-                                   'index-int': 'an unique positive integer',
-                                   'positive-int': 'a positive integer',
-                                   'positive-int-as-str': 'a positive integer',
-                                   'pointer-index': 'an integer acting as a pointer to the parent item',
-                                   'float': 'a floating point number',
-                                   'positive-float': 'a positive floating point number',
-                                   'range-float': 'a floating point number in a specific range',
-                                   'enum': 'an enumeration value',
-                                   'enum-int': 'an enumeration value restricted to integers'}
+        self.readableItemType = {'str': 'a string',
+                                 'bool': 'a boolean value',
+                                 'int': 'an integer',
+                                 'index-int': 'an unique positive integer',
+                                 'positive-int': 'a positive integer',
+                                 'positive-int-as-str': 'a positive integer',
+                                 'pointer-index': 'an integer acting as a pointer to the parent item',
+                                 'float': 'a floating point number',
+                                 'positive-float': 'a positive floating point number',
+                                 'range-float': 'a floating point number in a specific range',
+                                 'enum': 'an enumeration value',
+                                 'enum-int': 'an enumeration value restricted to integers'}
+
+    def load_csv_data(self, csv_file, transpose=False):
+        """ Load CSV data to list.
+            @param cvs_file: input CSV file path
+            @param transpose: transpose CSV data
+            @return: list object
+        """
+
+        data_map = []
+
+        try:
+            data = []
+
+            with open(csv_file, 'r', encoding='utf-8') as file:
+                csv_reader = csv.reader(file, delimiter=',')
+
+                for r in csv_reader:
+                    if r[0][0] != '#':
+                        data.append(r)
+
+            data_map = list(map(list, zip(*data))) if transpose else data
+
+        except Exception as e:
+            self.__lfh.write(f"+NEFTranslator.load_csv_data() ++ Error  - {str(e)}\n")
+
+        return data_map
 
     def read_input_file(self, in_file):  # pylint: disable=no-self-use
         """ Read input NEF/NMR-STAR file.
@@ -705,7 +704,7 @@ class NEFTranslator:
             @return: list of missing mandatory saveframe tags, list of missing mandatory loop tags
         """
 
-        mandatory_tag = self.nef_mandatory_tag if file_type == 'nef' else self.star_mandatory_tag
+        mandatoryTag = self.nefMandatoryTag if file_type == 'nef' else self.starMandatoryTag
 
         missing_sf_tags = []
         missing_lp_tags = []
@@ -715,7 +714,7 @@ class NEFTranslator:
 
             sf_list = [sf.category for sf in star_data.frame_list]
 
-            for _tag in mandatory_tag:
+            for _tag in mandatoryTag:
 
                 if _tag[0][0] == '_' and _tag[1] == 'yes':
 
@@ -731,7 +730,7 @@ class NEFTranslator:
             try:
                 star_data = pynmrstar.Saveframe.from_file(in_file)
 
-                for _tag in mandatory_tag:
+                for _tag in mandatoryTag:
 
                     if _tag[0][0] == '_' and _tag[1] == 'yes':
 
@@ -747,7 +746,7 @@ class NEFTranslator:
                 try:
                     star_data = pynmrstar.Loop.from_file(in_file)
 
-                    for _tag in mandatory_tag:
+                    for _tag in mandatoryTag:
 
                         if _tag[0][0] == '_' and _tag[0][1:].split('.')[0] == star_data.category and _tag[1] == 'yes':
 
@@ -769,9 +768,9 @@ class NEFTranslator:
             @return: True for mandatory tag, False otherwise
         """
 
-        mandatory_tag = self.nef_mandatory_tag if file_type == 'nef' else self.star_mandatory_tag
+        mandatoryTag = self.nefMandatoryTag if file_type == 'nef' else self.starMandatoryTag
 
-        return any(t[0] == item and t[1] == 'yes' for t in mandatory_tag)
+        return any(t[0] == item and t[1] == 'yes' for t in mandatoryTag)
 
     def validate_file(self, in_file, file_subtype='A'):
         """ Validate input NEF/NMR-STAR file.
@@ -2572,7 +2571,7 @@ class NEFTranslator:
                                     clear_bad_pattern = True
                                     continue
                                 raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                 + f"{name} {val!r} must be {self.readable_item_type[type]}.")
+                                                 + f"{name} {val!r} must be {self.readableItemType[type]}.")
                         elif type == 'int':
                             try:
                                 ent[name] = int(val)
@@ -2594,7 +2593,7 @@ class NEFTranslator:
                                     continue
                                 else:
                                     raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                     + f"{name} {val!r} must be {self.readable_item_type[type]}.")
+                                                     + f"{name} {val!r} must be {self.readableItemType[type]}.")
                         elif type in ('index-int', 'positive-int', 'positive-int-as-str'):
                             try:
                                 ent[name] = int(val)
@@ -2618,11 +2617,11 @@ class NEFTranslator:
                                     continue
                                 else:
                                     raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                     + f"{name} {val!r} must be {self.readable_item_type[type]}.")
+                                                     + f"{name} {val!r} must be {self.readableItemType[type]}.")
                             if (type == 'index-int' and ent[name] <= 0)\
                                or (type == 'positive-int' and (ent[name] < 0 or (ent[name] == 0 and 'enforce-non-zero' in k and k['enforce-non-zero']))):
                                 raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                 + f"{name} {val!r} must be {self.readable_item_type[type]}.")
+                                                 + f"{name} {val!r} must be {self.readableItemType[type]}.")
                             if ent[name] == 0 and enforce_non_zero:
                                 if 'void-zero' in k:
                                     if self.replace_zero_by_null_in_case:
@@ -2631,7 +2630,7 @@ class NEFTranslator:
                                 else:
                                     user_warn_msg += f"[Zero value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
                                         f"{name} {val!r} should not be zero, "\
-                                        f"as defined by {self.readable_item_type[type]}.\n"
+                                        f"as defined by {self.readableItemType[type]}.\n"
                             if type == 'positive-int-as-str':
                                 i[j] = ent[name] = str(ent[name])
                         elif type == 'pointer-index':
@@ -2657,15 +2656,15 @@ class NEFTranslator:
                                     continue
                                 else:
                                     raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                     + f"{name} {val!r} must be {self.readable_item_type[type]}.")
+                                                     + f"{name} {val!r} must be {self.readableItemType[type]}.")
                             if ent[name] <= 0:
                                 raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                 + f"{name} {val!r} must be {self.readable_item_type[type]}.")
+                                                 + f"{name} {val!r} must be {self.readableItemType[type]}.")
                             if static_val[name] is None:
                                 static_val[name] = val
                             elif val != static_val[name] and test_on_index:
                                 raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                 + f"{name} {val} vs {static_val[name]} must be {self.readable_item_type[type]}.")
+                                                 + f"{name} {val} vs {static_val[name]} must be {self.readableItemType[type]}.")
                         elif type == 'float':
                             try:
                                 ent[name] = float(val)
@@ -2680,7 +2679,7 @@ class NEFTranslator:
                                     clear_bad_pattern = True
                                     continue
                                 raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                 + f"{name} {val!r} must be {self.readable_item_type[type]}.")
+                                                 + f"{name} {val!r} must be {self.readableItemType[type]}.")
                         elif type == 'positive-float':
                             try:
                                 ent[name] = float(val)
@@ -2695,10 +2694,10 @@ class NEFTranslator:
                                     clear_bad_pattern = True
                                     continue
                                 raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                 + f"{name} {val!r} must be {self.readable_item_type[type]}.")
+                                                 + f"{name} {val!r} must be {self.readableItemType[type]}.")
                             if ent[name] < 0.0 or (ent[name] == 0.0 and 'enforce-non-zero' in k and k['enforce-non-zero']):
                                 raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                 + f"{name} {val!r} must be {self.readable_item_type[type]}.")
+                                                 + f"{name} {val!r} must be {self.readableItemType[type]}.")
                             if ent[name] == 0.0 and enforce_non_zero:
                                 if 'void-zero' in k:
                                     if self.replace_zero_by_null_in_case:
@@ -2707,7 +2706,7 @@ class NEFTranslator:
                                 else:
                                     user_warn_msg += f"[Zero value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
                                         f"{name} {val!r} should not be zero, "\
-                                        f"as defined by {self.readable_item_type[type]}.\n"
+                                        f"as defined by {self.readableItemType[type]}.\n"
                         elif type == 'range-float':
                             try:
                                 _range = k['range']
@@ -2728,7 +2727,7 @@ class NEFTranslator:
                                     ent[name] = None
                                     continue
                                 user_warn_msg += f"[Range value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
-                                    f"{name} {val!r} must be {self.readable_item_type[type]}.\n"
+                                    f"{name} {val!r} must be {self.readableItemType[type]}.\n"
                             if ('min_exclusive' in _range and _range['min_exclusive'] == 0.0 and ent[name] <= 0.0)\
                                or ('min_inclusive' in _range and _range['min_inclusive'] == 0.0 and ent[name] < 0):
                                 if ent[name] < 0.0:
@@ -2743,7 +2742,7 @@ class NEFTranslator:
                                     elif enforce_sign:
                                         user_warn_msg += f"[Negative value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
                                             f"{name} {val!r} should not have "\
-                                            f"negative value for {self.readable_item_type[type]}, {_range}.\n"
+                                            f"negative value for {self.readableItemType[type]}, {_range}.\n"
                                 elif ent[name] == 0.0 and 'enforce-non-zero' in k and k['enforce-non-zero']:
                                     if not enforce_range:
                                         ent[name] = None
@@ -2758,7 +2757,7 @@ class NEFTranslator:
                                     else:
                                         user_warn_msg += f"[Zero value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
                                             f"{name} {val!r} should not be zero, "\
-                                            f"as defined by {self.readable_item_type[type]}, {_range}.\n"
+                                            f"as defined by {self.readableItemType[type]}, {_range}.\n"
                             elif ('min_exclusive' in _range and ent[name] <= _range['min_exclusive']) or\
                                  ('min_inclusive' in _range and ent[name] < _range['min_inclusive']) or\
                                  ('max_inclusive' in _range and ent[name] > _range['max_inclusive']) or\
@@ -2821,7 +2820,7 @@ class NEFTranslator:
                                     clear_bad_pattern = True
                                     continue
                                 raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                 + f"{name} {val!r} must be {self.readable_item_type[type]}.")
+                                                 + f"{name} {val!r} must be {self.readableItemType[type]}.")
                         else:
                             if val in emptyValue:
                                 missing_mandatory_data = True
@@ -2862,7 +2861,7 @@ class NEFTranslator:
                                             clear_bad_pattern = True
                                             continue
                                         raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                         + f"{name} {val!r} must be {self.readable_item_type[type]}.")
+                                                         + f"{name} {val!r} must be {self.readableItemType[type]}.")
                                 elif type == 'int':
                                     try:
                                         ent[name] = int(val)
@@ -2884,7 +2883,7 @@ class NEFTranslator:
                                             continue
                                         else:
                                             raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                             + f"{name} {val!r} must be {self.readable_item_type[type]}.")
+                                                             + f"{name} {val!r} must be {self.readableItemType[type]}.")
                                 elif type in ('index-int', 'positive-int', 'positive-int-as-str'):
                                     try:
                                         ent[name] = int(val)
@@ -2908,11 +2907,11 @@ class NEFTranslator:
                                             continue
                                         else:
                                             raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                             + f"{name} {val!r} must be {self.readable_item_type[type]}.")
+                                                             + f"{name} {val!r} must be {self.readableItemType[type]}.")
                                     if (type == 'index-int' and ent[name] <= 0)\
                                        or (type == 'positive-int' and (ent[name] < 0 or (ent[name] == 0 and 'enforce-non-zero' in d and d['enforce-non-zero']))):
                                         raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                         + f"{name} {val!r} must be {self.readable_item_type[type]}.")
+                                                         + f"{name} {val!r} must be {self.readableItemType[type]}.")
                                     if ent[name] == 0 and enforce_non_zero:
                                         if 'void-zero' in d:
                                             if self.replace_zero_by_null_in_case:
@@ -2921,7 +2920,7 @@ class NEFTranslator:
                                         else:
                                             user_warn_msg += f"[Zero value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
                                                 f"{name} {val!r} should not be zero, "\
-                                                f"as defined by {self.readable_item_type[type]}.\n"
+                                                f"as defined by {self.readableItemType[type]}.\n"
                                     if type == 'positive-int-as-str':
                                         i[j] = ent[name] = str(ent[name])
                                 elif type == 'pointer-index':
@@ -2947,15 +2946,15 @@ class NEFTranslator:
                                             continue
                                         else:
                                             raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                             + f"{name} {val!r} must be {self.readable_item_type[type]}.")
+                                                             + f"{name} {val!r} must be {self.readableItemType[type]}.")
                                     if ent[name] <= 0:
                                         raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                         + f"{name} {val!r} must be {self.readable_item_type[type]}.")
+                                                         + f"{name} {val!r} must be {self.readableItemType[type]}.")
                                     if static_val[name] is None:
                                         static_val[name] = val
                                     elif val != static_val[name] and test_on_index:
                                         raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                         + f"{name} {val} vs {static_val[name]} must be {self.readable_item_type[type]}.")
+                                                         + f"{name} {val} vs {static_val[name]} must be {self.readableItemType[type]}.")
                                 elif type == 'float':
                                     try:
                                         ent[name] = float(val)
@@ -2970,7 +2969,7 @@ class NEFTranslator:
                                             clear_bad_pattern = True
                                             continue
                                         raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                         + f"{name} {val!r} must be {self.readable_item_type[type]}.")
+                                                         + f"{name} {val!r} must be {self.readableItemType[type]}.")
                                 elif type == 'positive-float':
                                     try:
                                         ent[name] = float(val)
@@ -2985,10 +2984,10 @@ class NEFTranslator:
                                             clear_bad_pattern = True
                                             continue
                                         raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                         + f"{name} {val!r} must be {self.readable_item_type[type]}.")
+                                                         + f"{name} {val!r} must be {self.readableItemType[type]}.")
                                     if ent[name] < 0.0 or (ent[name] == 0.0 and 'enforce-non-zero' in d and d['enforce-non-zero']):
                                         raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                         + f"{name} {val!r} must be {self.readable_item_type[type]}.")
+                                                         + f"{name} {val!r} must be {self.readableItemType[type]}.")
                                     if ent[name] == 0.0 and enforce_non_zero:
                                         if 'void-zero' in d:
                                             if self.replace_zero_by_null_in_case:
@@ -2997,7 +2996,7 @@ class NEFTranslator:
                                         else:
                                             user_warn_msg += f"[Zero value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
                                                 f"{name} {val!r} should not be zero, "\
-                                                f"as defined by {self.readable_item_type[type]}.\n"
+                                                f"as defined by {self.readableItemType[type]}.\n"
                                 elif type == 'range-float':
                                     try:
                                         _range = d['range']
@@ -3018,7 +3017,7 @@ class NEFTranslator:
                                             clear_bad_pattern = True
                                             continue
                                         user_warn_msg += f"[Range value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
-                                            f"{name} {val!r} must be {self.readable_item_type[type]}.\n"
+                                            f"{name} {val!r} must be {self.readableItemType[type]}.\n"
                                     if ('min_exclusive' in _range and _range['min_exclusive'] == 0.0 and ent[name] <= 0.0)\
                                        or ('min_inclusive' in _range and _range['min_inclusive'] == 0.0 and ent[name] < 0):
                                         if ent[name] < 0.0:
@@ -3033,7 +3032,7 @@ class NEFTranslator:
                                             elif enforce_sign:
                                                 user_warn_msg += f"[Negative value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
                                                     f"{name} {val!r} should not have "\
-                                                    f"negative value for {self.readable_item_type[type]}, {_range}.\n"
+                                                    f"negative value for {self.readableItemType[type]}, {_range}.\n"
                                         elif ent[name] == 0.0 and 'enforce-non-zero' in d and d['enforce-non-zero']:
                                             if not enforce_range:
                                                 ent[name] = None
@@ -3048,7 +3047,7 @@ class NEFTranslator:
                                             else:
                                                 user_warn_msg += f"[Zero value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
                                                     f"{name} {val!r} should not be zero, "\
-                                                    f"as defined by {self.readable_item_type[type]}, {_range}.\n"
+                                                    f"as defined by {self.readableItemType[type]}, {_range}.\n"
                                         elif 'remove-bad-pattern' in d and d['remove-bad-pattern']:
                                             remove_bad_pattern = True
                                             continue
@@ -3123,7 +3122,7 @@ class NEFTranslator:
                                             ent[name] = None
                                             continue
                                         raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                         + f"{name} {val!r} must be {self.readable_item_type[type]}.")
+                                                         + f"{name} {val!r} must be {self.readableItemType[type]}.")
                                 else:
                                     if ('remove-bad-pattern' in d and d['remove-bad-pattern']) or ('clear-bad-pattern' in d and d['clear-bad-pattern']):
                                         if badPattern.match(val):
@@ -3552,7 +3551,7 @@ class NEFTranslator:
                         try:
                             ent[name] = val.lower() in trueValue
                         except ValueError:
-                            raise ValueError(f"{name} {val!r} must be {self.readable_item_type[type]}.")
+                            raise ValueError(f"{name} {val!r} must be {self.readableItemType[type]}.")
                     elif type == 'int':
                         try:
                             ent[name] = int(val)
@@ -3564,7 +3563,7 @@ class NEFTranslator:
                             elif 'default' in t:
                                 ent[name] = int(t['default'])
                             else:
-                                raise ValueError(f"{name} {val!r} must be {self.readable_item_type[type]}.")
+                                raise ValueError(f"{name} {val!r} must be {self.readableItemType[type]}.")
                     elif type in ('positive-int', 'positive-int-as-str'):
                         try:
                             ent[name] = int(val)
@@ -3578,9 +3577,9 @@ class NEFTranslator:
                             elif 'default' in t:
                                 ent[name] = int(t['default'])
                             else:
-                                raise ValueError(f"{name} {val!r} must be {self.readable_item_type[type]}.")
+                                raise ValueError(f"{name} {val!r} must be {self.readableItemType[type]}.")
                         if ent[name] < 0 or (ent[name] == 0 and 'enforce-non-zero' in t and t['enforce-non-zero']):
-                            raise ValueError(f"{name} {val!r} must be {self.readable_item_type[type]}.")
+                            raise ValueError(f"{name} {val!r} must be {self.readableItemType[type]}.")
                         if ent[name] == 0 and enforce_non_zero:
                             if 'void-zero' in t:
                                 if self.replace_zero_by_null_in_case:
@@ -3588,21 +3587,21 @@ class NEFTranslator:
                                 ent[name] = None
                             else:
                                 user_warn_msg += f"[Zero value error] {name} {val!r} should not be zero, "\
-                                    f"as defined by {self.readable_item_type[type]}.\n"
+                                    f"as defined by {self.readableItemType[type]}.\n"
                         if type == 'positive-int-as-str':
                             ent[name] = str(ent[name])
                     elif type == 'float':
                         try:
                             ent[name] = float(val)
                         except ValueError:
-                            raise ValueError(f"{name} {val!r} must be {self.readable_item_type[type]}.")
+                            raise ValueError(f"{name} {val!r} must be {self.readableItemType[type]}.")
                     elif type == 'positive-float':
                         try:
                             ent[name] = float(val)
                         except ValueError:
-                            raise ValueError(f"{name} {val!r} must be {self.readable_item_type[type]}.")
+                            raise ValueError(f"{name} {val!r} must be {self.readableItemType[type]}.")
                         if ent[name] < 0.0 or (ent[name] == 0.0 and 'enforce-non-zero' in t and t['enforce-non-zero']):
-                            raise ValueError(f"{name} {val!r} must be {self.readable_item_type[type]}.")
+                            raise ValueError(f"{name} {val!r} must be {self.readableItemType[type]}.")
                         if ent[name] == 0.0 and enforce_non_zero:
                             if 'void-zero' in t:
                                 if self.replace_zero_by_null_in_case:
@@ -3610,7 +3609,7 @@ class NEFTranslator:
                                 ent[name] = None
                             else:
                                 user_warn_msg += f"[Zero value error] {name} {val!r} should not be zero, "\
-                                    f"as defined by {self.readable_item_type[type]}.\n"
+                                    f"as defined by {self.readableItemType[type]}.\n"
                     elif type == 'range-float':
                         try:
                             _range = t['range']
@@ -3621,7 +3620,7 @@ class NEFTranslator:
                             if not enforce_range:
                                 ent[name] = None
                                 continue
-                            user_warn_msg += f"[Range value error] {name} {val!r} must be {self.readable_item_type[type]}.\n"
+                            user_warn_msg += f"[Range value error] {name} {val!r} must be {self.readableItemType[type]}.\n"
                         if ('min_exclusive' in _range and _range['min_exclusive'] == 0.0 and ent[name] <= 0.0)\
                            or ('min_inclusive' in _range and _range['min_inclusive'] == 0.0 and ent[name] < 0):
                             if ent[name] < 0.0:
@@ -3634,7 +3633,7 @@ class NEFTranslator:
                                         user_warn_msg += f"[Range value error] {name} {val!r} must be within range {_range}.\n"
                                 elif enforce_sign:
                                     user_warn_msg += f"[Negative value error] {name} {val!r} should not have "\
-                                        f"negative value for {self.readable_item_type[type]}, {_range}.\n"
+                                        f"negative value for {self.readableItemType[type]}, {_range}.\n"
                             elif ent[name] == 0.0 and 'enforce-non-zero' in t and t['enforce-non-zero']:
                                 if not enforce_range:
                                     ent[name] = None
@@ -3647,7 +3646,7 @@ class NEFTranslator:
                                     ent[name] = None
                                 else:
                                     user_warn_msg += f"[Zero value error] {name} {val!r} should not be zero, "\
-                                        f"as defined by {self.readable_item_type[type]}, {_range}.\n"
+                                        f"as defined by {self.readableItemType[type]}, {_range}.\n"
                         elif ('min_exclusive' in _range and ent[name] <= _range['min_exclusive']) or\
                              ('min_inclusive' in _range and ent[name] < _range['min_inclusive']) or\
                              ('max_inclusive' in _range and ent[name] > _range['max_inclusive']) or\
@@ -3703,7 +3702,7 @@ class NEFTranslator:
                         except KeyError:
                             raise ValueError(f"Enumeration of tag item {name} is not defined.")
                         except ValueError:
-                            raise ValueError(f"{name} {val!r} must be {self.readable_item_type[type]}.")
+                            raise ValueError(f"{name} {val!r} must be {self.readableItemType[type]}.")
                     else:
                         ent[name] = val
 
@@ -3814,7 +3813,7 @@ class NEFTranslator:
                             valid_row.append(j)
 
             except ValueError as e:
-                logging.error(str(e))
+                self.__lfh.write(f"+NEFTranslator.validate_atom() ++ ValueError  - {str(e)}\n")
 
         return valid_row
 
@@ -4105,8 +4104,8 @@ class NEFTranslator:
 
             if leave_unmatched:
                 details = f"Unknown non-standard residue {comp_id} found."
-            else:
-                logging.critical('Unknown non-standard residue %s found.', comp_id)
+            elif self.__verbose:
+                self.__lfh.write(f"+NEFTranslator.get_star_atom() ++ Error  - Unknown non-standard residue {comp_id} found.\n")
 
         try:
 
@@ -4154,8 +4153,8 @@ class NEFTranslator:
                         pattern = re.compile(fr'{atom_type}\d+')
                 elif wc_code == '*':
                     pattern = re.compile(fr'{atom_type}\S+')
-                else:
-                    logging.critical('Invalid NEF atom nomenclature %s found.', nef_atom)
+                elif self.__verbose:
+                    self.__lfh.write(f"+NEFTranslator.get_star_atom() ++ Error  - Invalid NEF atom nomenclature {nef_atom} found.\n")
 
                 atom_list = [i for i in atoms if re.search(pattern, i)]
 
@@ -4181,13 +4180,13 @@ class NEFTranslator:
                     atom_list = atom_list[-1:]
                 elif xy_code == 'x':
                     atom_list = atom_list[:1]
-                else:
-                    logging.critical('Invalid NEF atom nomenclature %s found.', nef_atom)
+                elif self.__verbose:
+                    self.__lfh.write(f"+NEFTranslator.get_star_atom() ++ Error  - Invalid NEF atom nomenclature {nef_atom} found.\n")
 
                 ambiguity_code = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_list[0])
 
-            else:
-                logging.critical('Invalid NEF atom nomenclature %s found.', nef_atom)
+            elif self.__verbose:
+                self.__lfh.write(f"+NEFTranslator.get_star_atom() ++ Error  - Invalid NEF atom nomenclature {nef_atom} found.\n")
 
         except IndexError:
             pass
@@ -4294,11 +4293,11 @@ class NEFTranslator:
                             else:
                                 details[atom_id] = f"{atom_id} is invalid atom_id in comp_id {comp_id}."
                             atom_id_map[atom_id] = atom_id
-                        else:
+                        elif self.__verbose:
                             if not self.__ccU.lastStatus:
-                                logging.critical('Unknown non-standard residue %s found.', comp_id)
+                                self.__lfh.write(f"+NEFTranslator.get_nef_atom() ++ Error  - Unknown non-standard residue {comp_id} found.\n")
                             else:
-                                logging.critical('Invalid atom nomenclature %s found.', atom_id)
+                                self.__lfh.write(f"+NEFTranslator.get_nef_atom() ++ Error  - Invalid atom nomenclature {atom_id} found.\n")
 
                         continue
 
@@ -4317,8 +4316,8 @@ class NEFTranslator:
                         atom_list.append(atom_id)
                         details[atom_id] = f"{atom_id} has invalid ambiguity code {ambig_code}."
                         atom_id_map[atom_id] = atom_id
-                    else:
-                        logging.critical('Invalid ambiguity code %s for atom_id %s found.', ambig_code, atom_id)
+                    elif self.__verbose:
+                        self.__lfh.write(f"+NEFTranslator.get_nef_atom() ++ Error  - Invalid ambiguity code {ambig_code} for atom_id {atom_id} found.\n")
 
                     continue
 
@@ -4334,8 +4333,8 @@ class NEFTranslator:
                                 atom_list.append(atom_id)
                                 details[atom_id] = f"{atom_id} is invalid atom_id in comp_id {comp_id}."
                                 atom_id_map[atom_id] = atom_id
-                            else:
-                                logging.critical('Invalid atom nomenclature %s found.', atom_id)
+                            elif self.__verbose:
+                                self.__lfh.write(f"+NEFTranslator.get_nef_atom() ++ Error  - Invalid atom nomenclature {atom_id} found.\n")
 
                         else:
 
@@ -4377,8 +4376,8 @@ class NEFTranslator:
                             atom_list.append(atom_id)
                             details[atom_id] = f"{atom_id} has invalid ambiguity code {ambig_code}."
                             atom_id_map[atom_id] = atom_id
-                        else:
-                            logging.critical('Invalid ambiguity code %s for atom_id %s found.', ambig_code, atom_id)
+                        elif self.__verbose:
+                            self.__lfh.write(f"+NEFTranslator.get_nef_atom() ++ Error  - Invalid ambiguity code {ambig_code} for atom_id {atom_id} found.\n")
 
                     elif atom_id[0] == 'H':
 
@@ -4393,8 +4392,8 @@ class NEFTranslator:
                                     atom_list.append(atom_id)
                                     details[atom_id] = f"{atom_id} is invalid atom_id in comp_id {comp_id}."
                                     atom_id_map[atom_id] = atom_id
-                                else:
-                                    logging.critical('Invalid atom nomenclature %s found.', atom_id)
+                                elif self.__verbose:
+                                    self.__lfh.write(f"+NEFTranslator.get_nef_atom() ++ Error  - Invalid atom nomenclature {atom_id} found.\n")
 
                             else:
 
@@ -4459,8 +4458,8 @@ class NEFTranslator:
                                     atom_list.append(atom_id)
                                     details[atom_id] = f"{atom_id} is invalid atom_id in comp_id {comp_id}."
                                     atom_id_map[atom_id] = atom_id
-                                else:
-                                    logging.critical('Invalid atom nomenclature %s found.', atom_id)
+                                elif self.__verbose:
+                                    self.__lfh.write(f"+NEFTranslator.get_nef_atom() ++ Error  - Invalid atom nomenclature {atom_id} found.\n")
 
                             else:
 
@@ -4520,8 +4519,8 @@ class NEFTranslator:
                                 atom_list.append(atom_id)
                                 details[atom_id] = f"{atom_id} is invalid atom_id in comp_id {comp_id}."
                                 atom_id_map[atom_id] = atom_id
-                            else:
-                                logging.critical('Invalid atom nomenclature %s found.', atom_id)
+                            elif self.__verbose:
+                                self.__lfh.write(f"+NEFTranslator.get_nef_atom() ++ Error  - Invalid atom nomenclature {atom_id} found.\n")
 
                         else:
 
@@ -4571,8 +4570,8 @@ class NEFTranslator:
                             atom_list.append(atom_id)
                             details[atom_id] = f"{atom_id} has invalid ambiguity code {ambig_code}."
                             atom_id_map[atom_id] = atom_id
-                        else:
-                            logging.critical('Invalid ambiguity code %s for atom_id %s found.', ambig_code, atom_id)
+                        elif self.__verbose:
+                            self.__lfh.write(f"+NEFTranslator.get_nef_atom() ++ Error  - Invalid ambiguity code {ambig_code} for atom_id {atom_id} found.\n")
 
                     else:
 
@@ -4584,8 +4583,8 @@ class NEFTranslator:
                                 atom_list.append(atom_id)
                                 details[atom_id] = f"{atom_id} is invalid atom_id in comp_id {comp_id}."
                                 atom_id_map[atom_id] = atom_id
-                            else:
-                                logging.critical('Invalid atom nomenclature %s found.', atom_id)
+                            elif self.__verbose:
+                                self.__lfh.write(f"+NEFTranslator.get_nef_atom() ++ Error  - Invalid atom nomenclature {atom_id} found.\n")
 
                         else:
 
@@ -4868,8 +4867,8 @@ class NEFTranslator:
             aux_seq_index = aux_tags.index('_Entity_deleted_atom.Comp_index_ID')
             aux_atom_index = aux_tags.index('_Entity_deleted_atom.Atom_ID')
 
-        self.star2nef_chain_mapping = {}
-        self.star2cif_chain_mapping = {}
+        self.star2NefChainMapping = {}
+        self.star2CifChainMapping = {}
 
         seq_list = {}
 
@@ -4882,7 +4881,7 @@ class NEFTranslator:
 
             nef_chain = indexToLetter(cid)
 
-            self.star2nef_chain_mapping[star_chain] = nef_chain
+            self.star2NefChainMapping[star_chain] = nef_chain
 
         if report is not None:
 
@@ -4897,18 +4896,18 @@ class NEFTranslator:
                     if seq_align is not None:
                         cif_chain = seq_align['test_chain_id']
 
-                self.star2cif_chain_mapping[star_chain] = cif_chain
+                self.star2CifChainMapping[star_chain] = cif_chain
 
-            for k, v in self.star2nef_chain_mapping.items():
-                if self.star2cif_chain_mapping[k] is None:
-                    for _k_ in [_k for _k, _v in self.star2nef_chain_mapping.items() if _v != v]:
-                        if self.star2nef_chain_mapping[_k_] not in self.star2cif_chain_mapping.values():
-                            self.star2cif_chain_mapping[k] = self.star2nef_chain_mapping[_k_]
+            for k, v in self.star2NefChainMapping.items():
+                if self.star2CifChainMapping[k] is None:
+                    for _k_ in [_k for _k, _v in self.star2NefChainMapping.items() if _v != v]:
+                        if self.star2NefChainMapping[_k_] not in self.star2CifChainMapping.values():
+                            self.star2CifChainMapping[k] = self.star2NefChainMapping[_k_]
                             break
 
-            for k, v in self.star2nef_chain_mapping.items():
-                if self.star2cif_chain_mapping[k] is None:
-                    self.star2cif_chain_mapping[k] = v
+            for k, v in self.star2NefChainMapping.items():
+                if self.star2CifChainMapping[k] is None:
+                    self.star2CifChainMapping[k] = v
 
         index = 1
 
@@ -4919,11 +4918,11 @@ class NEFTranslator:
             if len(seq_list[star_chain]) == 0:
                 continue
 
-            nef_chain = self.star2nef_chain_mapping[star_chain]
+            nef_chain = self.star2NefChainMapping[star_chain]
 
             cif_chain = None
             if report is not None:
-                cif_chain = self.star2cif_chain_mapping[star_chain]
+                cif_chain = self.star2CifChainMapping[star_chain]
                 seq_align = report.getSequenceAlignmentWithNmrChainId(star_chain)
 
             offset = None
@@ -5616,7 +5615,7 @@ class NEFTranslator:
         for star_chain in self.authChainId:
 
             _star_chain = int(star_chain)
-            _cif_chain = None if star_chain not in self.star2cif_chain_mapping else self.star2cif_chain_mapping[star_chain]
+            _cif_chain = None if star_chain not in self.star2CifChainMapping else self.star2CifChainMapping[star_chain]
 
             mapped_seq_id = [s for c, s in self.authSeqMap if c == _star_chain]
             unmapped_seq_id = set(int(i[seq_index]) for i in loop_data
@@ -6147,8 +6146,8 @@ class NEFTranslator:
                         tag_map[chain_tag] = nef_chain
                         tag_map[seq_tag] = _star_seq
 
-                    if star_chain in self.star2cif_chain_mapping:
-                        tag_map[chain_tag] = self.star2cif_chain_mapping[star_chain]
+                    if star_chain in self.star2CifChainMapping:
+                        tag_map[chain_tag] = self.star2CifChainMapping[star_chain]
 
                     if chain_tag == chain_tag_1:
                         seq_key_1 = seq_key
@@ -7334,8 +7333,8 @@ class NEFTranslator:
                         tag_map[chain_tag] = nef_chain
                         tag_map[seq_tag] = _star_seq
 
-                    if star_chain in self.star2cif_chain_mapping:
-                        tag_map[chain_tag] = self.star2cif_chain_mapping[star_chain]
+                    if star_chain in self.star2CifChainMapping:
+                        tag_map[chain_tag] = self.star2CifChainMapping[star_chain]
 
                     s.append(seq_key)
 
@@ -7722,8 +7721,8 @@ class NEFTranslator:
                 tag_map[chain_tag] = nef_chain
                 tag_map[seq_tag] = _star_seq
 
-            if star_chain in self.star2cif_chain_mapping:
-                tag_map[chain_tag] = self.star2cif_chain_mapping[star_chain]
+            if star_chain in self.star2CifChainMapping:
+                tag_map[chain_tag] = self.star2CifChainMapping[star_chain]
 
         out = [None] * len(nef_tags)
 
@@ -7969,8 +7968,8 @@ class NEFTranslator:
                                     nef_chain = indexToLetter(cid)
                             nef_seq = _star_seq
 
-                        if _star_chain in self.star2cif_chain_mapping:
-                            nef_chain = self.star2cif_chain_mapping[_star_chain]
+                        if _star_chain in self.star2CifChainMapping:
+                            nef_chain = self.star2CifChainMapping[_star_chain]
 
                         out[l] = nef_chain
                         out[l + 1] = nef_seq
@@ -8993,7 +8992,7 @@ class NEFTranslator:
             if seq_align is not None:
                 cif_chain = seq_align['test_chain_id']
 
-            # self.star2cif_chain_mapping[star_chain] = cif_chain
+            # self.star2CifChainMapping[star_chain] = cif_chain
 
             for star_seq in ps['seq_id']:
 

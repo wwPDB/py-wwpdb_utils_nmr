@@ -18,7 +18,6 @@ class TestNmrDpUtility(unittest.TestCase):
                              }
         self.model_file = {'daother-6366': '6wqe.cif'}
         self.nmr_dp_util = NmrDpUtility()
-        pass
 
     def tearDown(self):
         pass

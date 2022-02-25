@@ -1430,7 +1430,7 @@ class NmrDpReport:
         if self.get() is None:
             return False
 
-        with open(out_path, 'w', encoding='UTF-8') as file:
+        with open(out_path, 'w', encoding='utf-8') as file:
             file.write(json.dumps(self.get(), indent=2))
 
         return True
@@ -1440,7 +1440,7 @@ class NmrDpReport:
             @return: True for success or False otherwise
         """
 
-        with open(in_path, 'r', encoding='UTF-8') as file:
+        with open(in_path, 'r', encoding='utf-8') as file:
 
             report = json.loads(file.read())
 

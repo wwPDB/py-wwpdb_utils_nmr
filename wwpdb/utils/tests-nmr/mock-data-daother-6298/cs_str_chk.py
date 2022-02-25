@@ -18,7 +18,6 @@ class TestNmrDpUtility(unittest.TestCase):
                              }
         self.model_file = {'5ZKV': '5zkvfull.cif'}
         self.nmr_dp_util = NmrDpUtility()
-        pass
 
     def tearDown(self):
         pass

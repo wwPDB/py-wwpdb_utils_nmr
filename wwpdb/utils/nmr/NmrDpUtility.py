@@ -16182,7 +16182,7 @@ class NmrDpUtility:
 
                     seq_key = (cif_chain_id, cif_seq_id)
 
-                    if seq_key in self.__coord_unobs_res:  # DAOTHER-7655
+                    if seq_key in self.__coord_unobs_res:  # DAOTHER-7665
                         continue
 
                     coord_atom_id_ = None if seq_key not in self.__coord_atom_id else self.__coord_atom_id[seq_key]
@@ -24216,7 +24216,7 @@ class NmrDpUtility:
                                                                                or (c['seq_id'] is None and c['auth_seq_id'] == seq_id))]
                             self.__coord_atom_id[seq_key]['auth_atom_id'] = auth_atom_ids
 
-                # DAOTHER-7655
+                # DAOTHER-7665
                 self.__coord_unobs_res = []
                 unobs_res = self.__cR.getDictListWithFilter('pdbx_unobs_or_zero_occ_residues',
                                                             [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},

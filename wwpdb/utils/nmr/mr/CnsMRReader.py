@@ -14,23 +14,41 @@ from wwpdb.utils.nmr.mr.ParserErrorListener import ParserErrorListener
 from wwpdb.utils.nmr.mr.CnsMRLexer import CnsMRLexer
 from wwpdb.utils.nmr.mr.CnsMRParser import CnsMRParser
 from wwpdb.utils.nmr.mr.CnsMRParserListener import CnsMRParserListener
+from wwpdb.utils.nmr.mr.ParserListenerUtil import checkCoordinates
 from wwpdb.utils.nmr.io.CifReader import CifReader
+from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
+from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
+from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
 
 
 class CnsMRReader:
     """ Accessor methods for parsing CNS MR files.
     """
 
-    def __init__(self, verbose=True, log=sys.stdout):
+    def __init__(self, verbose=True, log=sys.stdout, cR=None, polySeqModel=None,
+                 ccU=None, csStat=None, nefT=None):
         self.__verbose = verbose
         self.__lfh = log
 
-        # CIF reader
-        self.__cR = CifReader(verbose, log)
+        if cR is not None:
+            dict = checkCoordinates(verbose, log, cR, polySeqModel, False)
+            polySeqModel = dict['polymer_sequence']
+
+        self.__cR = cR
+        self.__polySeqModel = polySeqModel
+
+        # CCD accessing utility
+        self.__ccU = ChemCompUtil(verbose, log) if ccU is None else ccU
+
+        # BMRB chemical shift statistics
+        self.__csStat = BMRBChemShiftStat(verbose, log, self.__ccU) if csStat is None else csStat
+
+        # NEFTranslator
+        self.__nefT = NEFTranslator(verbose, log, self.__ccU, self.__csStat) if nefT is None else nefT
 
     def parse(self, mrFilePath, cifFilePath):
         """ Parse CNS MR file.
-            @return: True for success or False otherwise.
+            @return: CnsMRParserListener for success or None otherwise.
         """
 
         try:
@@ -38,15 +56,17 @@ class CnsMRReader:
             if not os.access(mrFilePath, os.R_OK):
                 if self.__verbose:
                     self.__lfh.write(f"CnsMRReader.parse() {mrFilePath} is not accessible.\n")
-                return False
+                return None
 
             if not os.access(cifFilePath, os.R_OK):
                 if self.__verbose:
                     self.__lfh.write(f"CnsMRReader.parse() {cifFilePath} is not accessible.\n")
-                return False
+                return None
 
-            if not self.__cR.parse(cifFilePath):
-                return False
+            if self.__cR is None:
+                self.__cR = CifReader(self.__verbose, self.__lfh)
+                if not self.__cR.parse(cifFilePath):
+                    return None
 
             with open(mrFilePath) as ifp:
 
@@ -75,7 +95,8 @@ class CnsMRReader:
                 tree = parser.cns_mr()
 
                 walker = ParseTreeWalker()
-                listener = CnsMRParserListener(self.__verbose, self.__lfh, self.__cR)
+                listener = CnsMRParserListener(self.__verbose, self.__lfh, self.__cR, self.__polySeqModel,
+                                               self.__ccU, self.__csStat, self.__nefT)
                 walker.walk(listener, tree)
 
                 messageList = parser_error_listener.getMessageList()
@@ -91,12 +112,12 @@ class CnsMRReader:
                     print(listener.warningMessage)
                 print(listener.getContentSubtype())
 
-            return True
+            return listener
 
         except IOError as e:
             if self.__verbose:
                 self.__lfh.write(f"+CnsMRReader.parse() ++ Error - {str(e)}\n")
-            return False
+            return None
 
 
 if __name__ == "__main__":

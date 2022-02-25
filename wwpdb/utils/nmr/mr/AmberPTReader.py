@@ -14,23 +14,37 @@ from wwpdb.utils.nmr.mr.ParserErrorListener import ParserErrorListener
 from wwpdb.utils.nmr.mr.AmberPTLexer import AmberPTLexer
 from wwpdb.utils.nmr.mr.AmberPTParser import AmberPTParser
 from wwpdb.utils.nmr.mr.AmberPTParserListener import AmberPTParserListener
+from wwpdb.utils.nmr.mr.ParserListenerUtil import checkCoordinates
 from wwpdb.utils.nmr.io.CifReader import CifReader
+from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
+from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 
 
 class AmberPTReader:
     """ Accessor methods for parsing AMBER PT files.
     """
 
-    def __init__(self, verbose=True, log=sys.stdout):
+    def __init__(self, verbose=True, log=sys.stdout, cR=None, polySeqModel=None,
+                 ccU=None, csStat=None):
         self.__verbose = verbose
         self.__lfh = log
 
-        # CIF reader
-        self.__cR = CifReader(verbose, log)
+        if cR is not None:
+            dict = checkCoordinates(verbose, log, cR, polySeqModel, False)
+            polySeqModel = dict['polymer_sequence']
+
+        self.__cR = cR
+        self.__polySeqModel = polySeqModel
+
+        # CCD accessing utility
+        self.__ccU = ChemCompUtil(verbose, log) if ccU is None else ccU
+
+        # BMRB chemical shift statistics
+        self.__csStat = BMRBChemShiftStat(verbose, log, self.__ccU) if csStat is None else csStat
 
     def parse(self, ptFilePath, cifFilePath):
         """ Parse AMBER PT file.
-            @return: True for success or False otherwise.
+            @return: AmberPTParserListener for success or None otherwise.
         """
 
         try:
@@ -38,15 +52,17 @@ class AmberPTReader:
             if not os.access(ptFilePath, os.R_OK):
                 if self.__verbose:
                     self.__lfh.write(f"AmberPTReader.parse() {ptFilePath} is not accessible.\n")
-                return False
+                return None
 
             if not os.access(cifFilePath, os.R_OK):
                 if self.__verbose:
                     self.__lfh.write(f"AmberPTReader.parse() {cifFilePath} is not accessible.\n")
-                return False
+                return None
 
-            if not self.__cR.parse(cifFilePath):
-                return False
+            if self.__cR is None:
+                self.__cR = CifReader(self.__verbose, self.__lfh)
+                if not self.__cR.parse(cifFilePath):
+                    return None
 
             with open(ptFilePath) as ifp:
 
@@ -75,7 +91,8 @@ class AmberPTReader:
                 tree = parser.amber_pt()
 
                 walker = ParseTreeWalker()
-                listener = AmberPTParserListener(self.__verbose, self.__lfh, self.__cR)
+                listener = AmberPTParserListener(self.__verbose, self.__lfh, self.__cR, self.__polySeqModel,
+                                                 self.__ccU, self.__csStat)
                 walker.walk(listener, tree)
 
                 messageList = parser_error_listener.getMessageList()
@@ -91,12 +108,12 @@ class AmberPTReader:
                     print(listener.warningMessage)
                 print(listener.getContentSubtype())
 
-            return True
+            return listener
 
         except IOError as e:
             if self.__verbose:
                 self.__lfh.write(f"+AmberPTReader.parse() ++ Error - {str(e)}\n")
-            return False
+            return None
 
 
 if __name__ == "__main__":

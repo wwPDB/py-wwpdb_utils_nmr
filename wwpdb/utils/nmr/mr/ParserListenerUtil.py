@@ -10,14 +10,14 @@ import sys
 import numpy as np
 
 
-def to_np_array(atom):
+def toNpArray(atom):
     """ Return Numpy array of a given Cartesian coordinate in {'x': float, 'y': float, 'z': float} format.
     """
 
     return np.asarray([atom['x'], atom['y'], atom['z']], dtype=float)
 
 
-def to_re_exp(string):
+def toRegEx(string):
     """ Return regular expression for a given string including XPLOR-NIH wildcard format.
     """
 
@@ -32,21 +32,9 @@ def to_re_exp(string):
     return string
 
 
-def check_coordinates(verbose=True, log=sys.stdout, cR=None, polySeq=None):
+def checkCoordinates(verbose=True, log=sys.stdout, cR=None, polySeq=None, testTag=True):
     """ Examine the coordinates for MR/PT parser listener.
     """
-
-    try:
-
-        modelNumName = 'pdbx_PDB_model_num' if cR.hasItem('atom_site', 'pdbx_PDB_model_num') else 'ndb_model'
-        authAsymId = 'pdbx_auth_asym_id' if cR.hasItem('atom_site', 'pdbx_auth_asym_id') else 'auth_asym_id'
-        authSeqId = 'pdbx_auth_seq_id' if cR.hasItem('atom_site', 'pdbx_auth_seq_id') else 'auth_seq_id'
-        authAtomId = 'pdbx_auth_atom_name' if cR.hasItem('atom_site', 'pdbx_auth_atom_name') else 'auth_atom_id'
-
-    except Exception as e:
-
-        if verbose:
-            log.write(f"+ParserListenerUtil.examineCoordinates() ++ Error  - {str(e)}\n")
 
     if polySeq is None:
 
@@ -129,7 +117,22 @@ def check_coordinates(verbose=True, log=sys.stdout, cR=None, polySeq=None):
 
         except Exception as e:
             if verbose:
-                log.write(f"+ParserListenerUtil.examineCoordinates() ++ Error - {str(e)}\n")
+                log.write(f"+ParserListenerUtil.checkCoordinates() ++ Error - {str(e)}\n")
+
+    if not testTag:
+        return {'polymer_sequence': polySeq}
+
+    try:
+
+        modelNumName = 'pdbx_PDB_model_num' if cR.hasItem('atom_site', 'pdbx_PDB_model_num') else 'ndb_model'
+        authAsymId = 'pdbx_auth_asym_id' if cR.hasItem('atom_site', 'pdbx_auth_asym_id') else 'auth_asym_id'
+        authSeqId = 'pdbx_auth_seq_id' if cR.hasItem('atom_site', 'pdbx_auth_seq_id') else 'auth_seq_id'
+        authAtomId = 'pdbx_auth_atom_name' if cR.hasItem('atom_site', 'pdbx_auth_atom_name') else 'auth_atom_id'
+
+    except Exception as e:
+
+        if verbose:
+            log.write(f"+ParserListenerUtil.checkCoordinates() ++ Error  - {str(e)}\n")
 
     return {'model_num_name': modelNumName,
             'auth_asym_id': authAsymId,

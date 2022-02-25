@@ -13,11 +13,11 @@ import numpy as np
 
 from antlr4 import ParseTreeListener
 from wwpdb.utils.nmr.mr.CnsMRParser import CnsMRParser
-from wwpdb.utils.nmr.mr.ParserListenerUtil import to_np_array, to_re_exp, check_coordinates
+from wwpdb.utils.nmr.mr.ParserListenerUtil import toNpArray, toRegEx, checkCoordinates
 
-from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
-from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
+from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
+from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
 from rmsd.calculate_rmsd import (int_atom, ELEMENT_WEIGHTS)  # noqa: F401 pylint: disable=no-name-in-module, import-error
 
 
@@ -51,14 +51,14 @@ class CnsMRParserListener(ParseTreeListener):
     nbaseStatements = 0     # CNS: Residue-residue position/orientation database statements
     angStatements = 0       # CNS: Angle database statements
 
-    # NEFTranslator
-    __nefT = None
+    # CCD accessing utility
+    __ccU = None
 
     # BMRB chemical shift statistics
     __csStat = None
 
-    # CCD accessing utility
-    __ccU = None
+    # NEFTranslator
+    __nefT = None
 
     # CIF reader
     __cR = None
@@ -105,7 +105,7 @@ class CnsMRParserListener(ParseTreeListener):
         self.__lfh = log
         self.__cR = cR
 
-        dict = check_coordinates(verbose, log, cR, polySeq)
+        dict = checkCoordinates(verbose, log, cR, polySeq)
         self.__modelNumName = dict['model_num_name']
         self.__authAsymId = dict['auth_asym_id']
         self.__authSeqId = dict['auth_seq_id']
@@ -672,7 +672,7 @@ class CnsMRParserListener(ParseTreeListener):
                             if realCompId not in _factor['comp_id']:
                                 continue
                         seqId = _factor['seq_ids'][0]
-                        _seqId = to_re_exp(seqId)
+                        _seqId = toRegEx(seqId)
                         if re.match(_seqId, str(realSeqId)):
                             seqIds.append(realSeqId)
             _factor['seq_id'] = list(set(seqIds))
@@ -990,7 +990,7 @@ class CnsMRParserListener(ParseTreeListener):
                         if len(_origin) != 1:
                             continue
 
-                        origin = to_np_array(_origin[0])
+                        origin = toNpArray(_origin[0])
 
                         _neighbor =\
                             self.__cR.getDictListWithFilter('atom_site',
@@ -1018,7 +1018,7 @@ class CnsMRParserListener(ParseTreeListener):
                         if len(_neighbor) == 0:
                             continue
 
-                        neighbor = [atom for atom in _neighbor if np.linalg.norm(to_np_array(atom) - origin) < around]
+                        neighbor = [atom for atom in _neighbor if np.linalg.norm(toNpArray(atom) - origin) < around]
 
                         for atom in neighbor:
                             del atom['x']
@@ -1067,7 +1067,7 @@ class CnsMRParserListener(ParseTreeListener):
                                     if len(_origin) != 1:
                                         continue
 
-                                    origin = np.dot(inv_matrix, np.subtract(to_np_array(_origin[0]), vector))
+                                    origin = np.dot(inv_matrix, np.subtract(toNpArray(_origin[0]), vector))
 
                                     _neighbor =\
                                         self.__cR.getDictListWithFilter('atom_site',
@@ -1095,7 +1095,7 @@ class CnsMRParserListener(ParseTreeListener):
                                     if len(_neighbor) == 0:
                                         continue
 
-                                    neighbor = [atom for atom in _neighbor if np.linalg.norm(to_np_array(atom) - origin) < around]
+                                    neighbor = [atom for atom in _neighbor if np.linalg.norm(toNpArray(atom) - origin) < around]
 
                                     for atom in neighbor:
                                         del atom['x']
@@ -1133,7 +1133,7 @@ class CnsMRParserListener(ParseTreeListener):
 
             if simpleNameIndex == 0 and ctx.Simple_names(0):
                 chainId = str(ctx.Simple_names(0))
-                _chainId = to_re_exp(chainId)
+                _chainId = toRegEx(chainId)
                 self.factor['chain_id'] = [ps['chain_id'] for ps in self.__polySeq
                                            if re.match(_chainId, ps['chain_id'])]
                 simpleNamesIndex += 1
@@ -1149,7 +1149,7 @@ class CnsMRParserListener(ParseTreeListener):
 
             if ctx.Integers():
                 seqId = str(ctx.Integers())
-                _seqId = to_re_exp(seqId)
+                _seqId = toRegEx(seqId)
                 _seqIdSelect = set()
                 for chainId in self.factor['chain_id']:
                     ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chainId), None)
@@ -1175,7 +1175,7 @@ class CnsMRParserListener(ParseTreeListener):
 
             elif ctx.Simple_names(simpleNamesIndex):
                 atomId = str(ctx.Simple_names(simpleNamesIndex))
-                _atomId = to_re_exp(atomId)
+                _atomId = toRegEx(atomId)
                 for chainId in self.factor['chain_id']:
                     ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chainId), None)
                     if ps is None:
@@ -1490,7 +1490,7 @@ class CnsMRParserListener(ParseTreeListener):
                                                                  ])
 
                             if len(_origin) == 1:
-                                origin = to_np_array(_origin[0])
+                                origin = toNpArray(_origin[0])
 
                                 ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chainId), None)
                                 if ps is not None:
@@ -1528,7 +1528,7 @@ class CnsMRParserListener(ParseTreeListener):
                                                     if len(_neighbor) != 1:
                                                         continue
 
-                                                    if np.linalg.norm(to_np_array(_neighbor[0]) - origin) < 2.5:
+                                                    if np.linalg.norm(toNpArray(_neighbor[0]) - origin) < 2.5:
                                                         _atomSelection.append({'chain_id': chainId, 'seq_id': _seqId, 'comp_id': _compId, 'atom_id': _atomId})
 
                     # struct_conn category
@@ -1633,7 +1633,7 @@ class CnsMRParserListener(ParseTreeListener):
                                                                  ])
 
                             if len(_origin) == 1:
-                                origin = to_np_array(_origin[0])
+                                origin = toNpArray(_origin[0])
 
                                 for _atomId in _nonBondedAtomIdSelect:
                                     _neighbor =\
@@ -1652,21 +1652,21 @@ class CnsMRParserListener(ParseTreeListener):
                                     if len(_neighbor) != 1:
                                         continue
 
-                                    if np.linalg.norm(to_np_array(_neighbor[0]) - origin) < 2.0:
+                                    if np.linalg.norm(toNpArray(_neighbor[0]) - origin) < 2.0:
                                         _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId})
 
                             else:
                                 cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId), None)
                                 if cca is not None:
                                     _origin = {'x': float(cca[self.__ccU.ccaCartnX]), 'y': float(cca[self.__ccU.ccaCartnY]), 'z': float(cca[self.__ccU.ccaCartnZ])}
-                                    origin = to_np_array(_origin)
+                                    origin = toNpArray(_origin)
 
                                     for _atomId in _nonBondedAtomIdSelect:
                                         _cca = next((_cca for _cca in self.__ccU.lastAtomList if _cca[self.__ccU.ccaAtomId] == _atomId), None)
                                         if _cca is not None:
                                             _neighbor = {'x': float(_cca[self.__ccU.ccaCartnX]), 'y': float(_cca[self.__ccU.ccaCartnY]), 'z': float(_cca[self.__ccU.ccaCartnZ])}
 
-                                            if np.linalg.norm(to_np_array(_neighbor) - origin) < 2.0:
+                                            if np.linalg.norm(toNpArray(_neighbor) - origin) < 2.0:
                                                 _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId})
 
                 atomSelection = []
@@ -1844,7 +1844,7 @@ class CnsMRParserListener(ParseTreeListener):
                                                                  ])
 
                             for atom in __atomSelection:
-                                origin = to_np_array(atom)
+                                origin = toNpArray(atom)
                                 mv = np.dot(matrix, np.add(origin, vector))
 
                                 if xmin < mv[0] < xmax\
@@ -1948,7 +1948,7 @@ class CnsMRParserListener(ParseTreeListener):
                                                              ])
 
                         if len(_tail) == 1:
-                            tail = to_np_array(_tail[0])
+                            tail = toNpArray(_tail[0])
 
                             if self.inVector3D_head is None:
                                 self.vector3D = tail
@@ -1969,7 +1969,7 @@ class CnsMRParserListener(ParseTreeListener):
                                                                      ])
 
                                 if len(_head) == 1:
-                                    head = to_np_array(_head[0])
+                                    head = toNpArray(_head[0])
                                     self.vector3D = np.subtract(tail, head, dtype=float)
 
                     except Exception as e:
@@ -2017,7 +2017,7 @@ class CnsMRParserListener(ParseTreeListener):
                                                          ])
 
                     if len(_neighbor) > 0:
-                        neighbor = [atom for atom in _neighbor if np.linalg.norm(to_np_array(atom) - self.vector3D) < cut]
+                        neighbor = [atom for atom in _neighbor if np.linalg.norm(toNpArray(atom) - self.vector3D) < cut]
 
                         for atom in neighbor:
                             del atom['x']
@@ -2144,7 +2144,7 @@ class CnsMRParserListener(ParseTreeListener):
                                                if ps['chain_id'] == chainId]
                 if ctx.Simple_names(0):
                     chainId = str(ctx.Simple_names(0))
-                    _chainId = to_re_exp(chainId)
+                    _chainId = toRegEx(chainId)
                     self.factor['chain_id'] = [ps['chain_id'] for ps in self.__polySeq
                                                if re.match(_chainId, ps['chain_id'])]
                 if len(self.factor['chain_id']) == 0:

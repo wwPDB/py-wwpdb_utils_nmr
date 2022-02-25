@@ -11,11 +11,11 @@ import sys
 
 from antlr4 import ParseTreeListener
 from wwpdb.utils.nmr.mr.CyanaMRParser import CyanaMRParser
-from wwpdb.utils.nmr.mr.ParserListenerUtil import check_coordinates
+from wwpdb.utils.nmr.mr.ParserListenerUtil import checkCoordinates
 
-from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
-from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
+from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
+from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
 
 
 # This class defines a complete listener for a parse tree produced by CyanaMRParser.
@@ -29,14 +29,14 @@ class CyanaMRParserListener(ParseTreeListener):
     rdcRestraints = 0       # CYANA: Residual dipolar coupling restraint file
     pcsRestraints = 0       # CYANA: Pseudocontact shift restraint file
 
-    # NEFTranslator
-    __nefT = None
+    # CCD accessing utility
+    __ccU = None
 
     # BMRB chemical shift statistics
     __csStat = None
 
-    # CCD accessing utility
-    __ccU = None
+    # NEFTranslator
+    __nefT = None
 
     __assumeUpperLimit = None
 
@@ -64,14 +64,13 @@ class CyanaMRParserListener(ParseTreeListener):
 
     warningMessage = ''
 
-    def __init__(self, verbose=True, log=sys.stdout, cR=None, polySeq=None, assumeUpperLimit=True,
-                 ccU=None, csStat=None, nefT=None):
+    def __init__(self, verbose=True, log=sys.stdout, cR=None, polySeq=None,
+                 ccU=None, csStat=None, nefT=None, assumeUpperLimit=True):
         self.__verbose = verbose
         self.__lfh = log
         self.__cR = cR
-        self.__assumeUpperLimit = assumeUpperLimit
 
-        dict = check_coordinates(verbose, log, cR, polySeq)
+        dict = checkCoordinates(verbose, log, cR, polySeq)
         self.__modelNumName = dict['model_num_name']
         self.__authAsymId = dict['auth_asym_id']
         self.__authSeqId = dict['auth_seq_id']
@@ -86,6 +85,8 @@ class CyanaMRParserListener(ParseTreeListener):
 
         # NEFTranslator
         self.__nefT = NEFTranslator(verbose, log, self.__ccU, self.__csStat) if nefT is None else nefT
+
+        self.__assumeUpperLimit = assumeUpperLimit
 
     # Enter a parse tree produced by CyanaMRParser#cyana_mr.
     def enterCyana_mr(self, ctx: CyanaMRParser.Cyana_mrContext):  # pylint: disable=unused-argument

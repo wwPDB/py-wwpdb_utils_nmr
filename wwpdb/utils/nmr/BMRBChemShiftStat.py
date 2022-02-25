@@ -53,7 +53,7 @@ class BMRBChemShiftStat:
     """ Wrapper class for retrieving BMRB chemical shift statistics.
     """
 
-    def __init__(self, verbose=False, log=sys.stderr):
+    def __init__(self, verbose=False, log=sys.stderr, ccU=None):
         self.__verbose = verbose
         self.__lfh = log
 
@@ -92,18 +92,18 @@ class BMRBChemShiftStat:
         self.max_count_th = 10
 
         # CCD accessing utility
-        self.__ccU = ChemCompUtil(self.__verbose, self.__lfh)
+        self.__ccU = ChemCompUtil(self.__verbose, self.__lfh) if ccU is None else ccU
 
         if not self.loadStatFromPickleFiles():
             self.loadStatFromCsvFiles()
+    # """
+    # def isOk(self):
+    #     """ Return whether all BMRB chemical shift statistics are available.
+    #     """
 
-    def isOk(self):
-        """ Return whether all BMRB chemical shift statistics are available.
-        """
-
-        return len(self.aa_filt) > 0 and len(self.aa_full) > 0 and len(self.dna_filt) > 0 and len(self.dna_full) > 0 and \
-            len(self.rna_filt) > 0 and len(self.rna_full) and (len(self.others) > 0 or self.lazy_others)
-
+    #     return len(self.aa_filt) > 0 and len(self.aa_full) > 0 and len(self.dna_filt) > 0 and len(self.dna_full) > 0 and \
+    #         len(self.rna_filt) > 0 and len(self.rna_full) and (len(self.others) > 0 or self.lazy_others)
+    # """
     def hasCompId(self, comp_id):
         """ Return whether a given comp_id has BMRB chemical shift statistics.
         """

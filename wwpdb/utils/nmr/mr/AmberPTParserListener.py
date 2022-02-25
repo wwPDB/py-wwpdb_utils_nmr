@@ -137,23 +137,21 @@ class AmberPTParserListener(ParseTreeListener):
 
     warningMessage = ''
 
-    def __init__(self, verbose=True, log=sys.stdout, cR=None, polySeqModel=None):
+    def __init__(self, verbose=True, log=sys.stdout, cR=None, polySeqModel=None,
+                 ccU=None, csStat=None, pA=None):
 
         dict = check_coordinates(verbose, log, cR, polySeqModel)
         self.__polySeqModel = dict['polymer_sequence']
 
-        # BMRB chemical shift statistics
-        self.__csStat = BMRBChemShiftStat()
+        # CCD accessing utility
+        self.__ccU = ChemCompUtil(verbose, log) if ccU is None else ccU
 
-        if not self.__csStat.isOk():
-            raise IOError("+AmberPTParserListener.__init__() ++ Error  - BMRBChemShiftStat is not available.")
+        # BMRB chemical shift statistics
+        self.__csStat = BMRBChemShiftStat(verbose, log, self.__ccU) if csStat is None else csStat
 
         # Pairwise align
-        self.__pA = PairwiseAlign()
+        self.__pA = PairwiseAlign() if pA is None else pA
         self.__pA.setVerbose(verbose)
-
-        # CCD accessing utility
-        self.__ccU = ChemCompUtil(verbose, log)
 
     # Enter a parse tree produced by AmberPTParser#amber_pt.
     def enterAmber_pt(self, ctx: AmberPTParser.Amber_ptContext):  # pylint: disable=unused-argument

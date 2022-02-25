@@ -826,17 +826,14 @@ class NmrDpUtility:
         self.report = None
         self.report_prev = None
 
-        # NEFTranslator
-        self.__nefT = NEFTranslator(self.__verbose, self.__lfh)
-
-        if self.__nefT is None:
-            raise IOError("+NmrDpUtility.__init__() ++ Error  - NEFTranslator is not available.")
+        # CCD accessing utility
+        self.__ccU = ChemCompUtil(self.__verbose, self.__lfh)
 
         # BMRB chemical shift statistics
-        self.__csStat = BMRBChemShiftStat(self.__verbose, self.__lfh)
+        self.__csStat = BMRBChemShiftStat(self.__verbose, self.__lfh, self.__ccU)
 
-        if not self.__csStat.isOk():
-            raise IOError("+NmrDpUtility.__init__() ++ Error  - BMRBChemShiftStat is not available.")
+        # NEFTranslator
+        self.__nefT = NEFTranslator(self.__verbose, self.__lfh, self.__ccU, self.__csStat)
 
         # PyNMRSTAR data
         self.__file_path_list_len = 1
@@ -3365,9 +3362,6 @@ class NmrDpUtility:
         # Pairwise align
         self.__pA = PairwiseAlign()
         self.__pA.setVerbose(self.__verbose)
-
-        # CCD accessing utility
-        self.__ccU = ChemCompUtil(self.__verbose, self.__lfh)
 
         # representative model id
         self.__representative_model_id = 1

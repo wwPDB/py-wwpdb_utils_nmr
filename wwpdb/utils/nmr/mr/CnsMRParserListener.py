@@ -99,7 +99,8 @@ class CnsMRParserListener(ParseTreeListener):
 
     warningMessage = ''
 
-    def __init__(self, verbose=True, log=sys.stdout, cR=None, polySeq=None):
+    def __init__(self, verbose=True, log=sys.stdout, cR=None, polySeq=None,
+                 ccU=None, csStat=None, nefT=None):
         self.__verbose = verbose
         self.__lfh = log
         self.__cR = cR
@@ -111,20 +112,14 @@ class CnsMRParserListener(ParseTreeListener):
         self.__authAtomId = dict['auth_atom_id']
         self.__polySeq = dict['polymer_sequence']
 
-        # NEFTranslator
-        self.__nefT = NEFTranslator(verbose, log)
-
-        if self.__nefT is None:
-            raise IOError("+CnsMRParserListener.__init__() ++ Error  - NEFTranslator is not available.")
+        # CCD accessing utility
+        self.__ccU = ChemCompUtil(verbose, log) if ccU is None else ccU
 
         # BMRB chemical shift statistics
-        self.__csStat = BMRBChemShiftStat(verbose, log)
+        self.__csStat = BMRBChemShiftStat(verbose, log, self.__ccU) if csStat is None else csStat
 
-        if not self.__csStat.isOk():
-            raise IOError("+CnsMRParserListener.__init__() ++ Error  - BMRBChemShiftStat is not available.")
-
-        # CCD accessing utility
-        self.__ccU = ChemCompUtil(verbose, log)
+        # NEFTranslator
+        self.__nefT = NEFTranslator(verbose, log, self.__ccU, self.__csStat) if nefT is None else nefT
 
     # Enter a parse tree produced by CnsMRParser#cns_mr.
     def enterCns_mr(self, ctx: CnsMRParser.Cns_mrContext):  # pylint: disable=unused-argument

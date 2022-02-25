@@ -573,7 +573,7 @@ class NEFTranslator:
     """ Bi-directional translator between NEF and NMR-STAR
     """
 
-    def __init__(self, verbose=False, log=sys.stderr):
+    def __init__(self, verbose=False, log=sys.stderr, ccU=None, csStat=None):
         self.__verbose = verbose
         self.__lfh = log
 
@@ -597,11 +597,11 @@ class NEFTranslator:
         self.star2NefChainMapping = None
         self.star2CifChainMapping = None
 
-        # BMRB chemical shift statistics
-        self.__csStat = BMRBChemShiftStat(self.__verbose, self.__lfh)
-
         # CCD accessing utility
-        self.__ccU = ChemCompUtil(self.__verbose, self.__lfh)
+        self.__ccU = ChemCompUtil(self.__verbose, self.__lfh) if ccU is None else ccU
+
+        # BMRB chemical shift statistics
+        self.__csStat = BMRBChemShiftStat(self.__verbose, self.__lfh) if csStat is None else csStat
 
         # readable item type
         self.readableItemType = {'str': 'a string',

@@ -10195,7 +10195,7 @@ class NmrDpUtility:
                 for s in polymer_sequence:
                     first_comp_id = s['comp_id'][0]
 
-                    if self.__csStat.getTypeOfCompId(first_comp_id)[0]:
+                    if self.__csStat.peptideLike(first_comp_id):
                         first_comp_ids.add(first_comp_id)
 
             polymer_sequence_in_loop = input_source_dic['polymer_sequence_in_loop']
@@ -10248,7 +10248,7 @@ class NmrDpUtility:
         """ Return whether a given atom_id uses NMR conventional atom name.
         """
 
-        return ((atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0])
+        return ((atom_id == 'HN' and self.__csStat.peptideLike(comp_id))
                 or atom_id.startswith('Q') or atom_id.startswith('M')
                 or atom_id.endswith('%') or atom_id.endswith('#')
                 or self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0)
@@ -10323,7 +10323,7 @@ class NmrDpUtility:
 
                     for atom_id in atom_ids:
 
-                        if atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]:
+                        if atom_id == 'HN' and self.__csStat.peptideLike(comp_id):
                             self.__fixAtomNomenclature(comp_id, {'HN': 'H'})
                             continue
 
@@ -10349,7 +10349,7 @@ class NmrDpUtility:
 
                         if not self.__nefT.validate_comp_atom(comp_id, atom_id_):
 
-                            if self.__csStat.getTypeOfCompId(comp_id)[0] and atom_id_.startswith('H') and atom_id_.endswith('1') and\
+                            if self.__csStat.peptideLike(comp_id) and atom_id_.startswith('H') and atom_id_.endswith('1') and\
                                self.__nefT.validate_comp_atom(comp_id, atom_id_[:-1] + '2') and self.__nefT.validate_comp_atom(comp_id, atom_id_[:-1] + '3'):
 
                                 _atom_id_ = atom_id_[:-1]
@@ -10429,7 +10429,7 @@ class NmrDpUtility:
 
                         for atom_id in atom_ids:
 
-                            if atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]:
+                            if atom_id == 'HN' and self.__csStat.peptideLike(comp_id):
                                 self.__fixAtomNomenclature(comp_id, {'HN': 'H'})
                                 continue
 
@@ -13004,7 +13004,7 @@ class NmrDpUtility:
                     polypeptide_like = False
 
                     for comp_id2 in neighbor_comp_ids:
-                        polypeptide_like |= self.__csStat.getTypeOfCompId(comp_id2)[0]
+                        polypeptide_like |= self.__csStat.peptideLike(comp_id2)
 
                     for cs_stat in self.__csStat.get(comp_id):
 
@@ -15726,7 +15726,7 @@ class NmrDpUtility:
 
                     elif abs(seq_id_1 - seq_id_2) == 1:
 
-                        if self.__csStat.getTypeOfCompId(comp_id_1)[0] and self.__csStat.getTypeOfCompId(comp_id_2)[0] and\
+                        if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
                            ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H')) or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H') and atom_id_2 == 'C')):
                             pass
 
@@ -16620,7 +16620,7 @@ class NmrDpUtility:
                                 comp_id = ann['comp_id']
                                 atom_id = ann['atom_id'].split(' ')[0]
 
-                                polypeptide_like = self.__csStat.getTypeOfCompId(comp_id)[0]
+                                polypeptide_like = self.__csStat.peptideLike(comp_id)
 
                                 if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
                                     non_rep_methyl_pros = self.__csStat.getNonRepresentativeMethylProtons(comp_id, excl_minor_atom=True, primary=polypeptide_like)
@@ -16645,7 +16645,7 @@ class NmrDpUtility:
                                 comp_id = ann['comp_id']
                                 atom_id = ann['atom_id'].split(' ')[0]
 
-                                polypeptide_like = self.__csStat.getTypeOfCompId(comp_id)[0]
+                                polypeptide_like = self.__csStat.peptideLike(comp_id)
 
                                 if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
                                     non_rep_methyl_pros = self.__csStat.getNonRepresentativeMethylProtons(comp_id, excl_minor_atom=True, primary=polypeptide_like)
@@ -16670,7 +16670,7 @@ class NmrDpUtility:
                                 comp_id = ann['comp_id']
                                 atom_id = ann['atom_id'].split(' ')[0]
 
-                                polypeptide_like = self.__csStat.getTypeOfCompId(comp_id)[0]
+                                polypeptide_like = self.__csStat.peptideLike(comp_id)
 
                                 if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
                                     non_rep_methyl_pros = self.__csStat.getNonRepresentativeMethylProtons(comp_id, excl_minor_atom=True, primary=polypeptide_like)
@@ -16884,7 +16884,7 @@ class NmrDpUtility:
 
                         for seq_id, comp_id in zip(s['seq_id'], s['comp_id']):
 
-                            polypeptide_like = self.__csStat.getTypeOfCompId(comp_id)[0]
+                            polypeptide_like = self.__csStat.peptideLike(comp_id)
 
                             if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
 
@@ -17024,7 +17024,7 @@ class NmrDpUtility:
 
                         for seq_id, comp_id in zip(s['seq_id'], s['comp_id']):
 
-                            polypeptide_like = self.__csStat.getTypeOfCompId(comp_id)[0]
+                            polypeptide_like = self.__csStat.peptideLike(comp_id)
 
                             if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
 
@@ -17150,7 +17150,7 @@ class NmrDpUtility:
 
                         for seq_id, comp_id in zip(s['seq_id'], s['comp_id']):
 
-                            polypeptide_like = self.__csStat.getTypeOfCompId(comp_id)[0]
+                            polypeptide_like = self.__csStat.peptideLike(comp_id)
 
                             if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
 
@@ -17271,7 +17271,7 @@ class NmrDpUtility:
 
                         for seq_id, comp_id in zip(s['seq_id'], s['comp_id']):
 
-                            polypeptide_like = self.__csStat.getTypeOfCompId(comp_id)[0]
+                            polypeptide_like = self.__csStat.peptideLike(comp_id)
 
                             if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
 
@@ -17375,7 +17375,7 @@ class NmrDpUtility:
 
                         for seq_id, comp_id in zip(s['seq_id'], s['comp_id']):
 
-                            polypeptide_like = self.__csStat.getTypeOfCompId(comp_id)[0]
+                            polypeptide_like = self.__csStat.peptideLike(comp_id)
 
                             if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
 
@@ -17512,7 +17512,7 @@ class NmrDpUtility:
                     polypeptide_like = False
 
                     for comp_id2 in neighbor_comp_ids:
-                        polypeptide_like |= self.__csStat.getTypeOfCompId(comp_id2)[0]
+                        polypeptide_like |= self.__csStat.peptideLike(comp_id2)
 
                     for cs_stat in self.__csStat.get(comp_id):
 
@@ -18230,7 +18230,7 @@ class NmrDpUtility:
                             if comp_id not in emptyValue:
                                 if comp_id not in monDict3.keys():
                                     continue
-                                if not self.__csStat.getTypeOfCompId(comp_id)[0]:
+                                if not self.__csStat.peptideLike(comp_id):
                                     continue
                                 rci_residues.append([comp_id, seq_id])
                             else:
@@ -18238,7 +18238,7 @@ class NmrDpUtility:
                                 if _comp_id is not None:
                                     if _comp_id not in monDict3.keys():
                                         continue
-                                    if not self.__csStat.getTypeOfCompId(_comp_id)[0]:
+                                    if not self.__csStat.peptideLike(_comp_id):
                                         continue
                                     rci_residues.append([_comp_id, seq_id])
                                 else:
@@ -20827,7 +20827,7 @@ class NmrDpUtility:
 
             if chain_id_1 == chain_id_2 and chain_id_2 == chain_id_3 and chain_id_3 == chain_id_4:
 
-                polypeptide_like = self.__csStat.getTypeOfCompId(comp_id_1)[0]
+                polypeptide_like = self.__csStat.peptideLike(comp_id_1)
 
                 if polypeptide_like:
 
@@ -28166,7 +28166,7 @@ class NmrDpUtility:
                             if chain_id_1 != chain_id_2 or chain_id_2 != chain_id_3 or chain_id_3 != chain_id_4:
                                 continue
 
-                            polypeptide_like = self.__csStat.getTypeOfCompId(comp_id)[0]
+                            polypeptide_like = self.__csStat.peptideLike(comp_id)
 
                             if not polypeptide_like:
                                 continue
@@ -29355,7 +29355,7 @@ class NmrDpUtility:
                 if chain_id_1 != chain_id_2 or chain_id_2 != chain_id_3 or chain_id_3 != chain_id_4:
                     return False
 
-                polypeptide_like = self.__csStat.getTypeOfCompId(comp_id)[0]
+                polypeptide_like = self.__csStat.peptideLike(comp_id)
 
                 if not polypeptide_like:
                     return False

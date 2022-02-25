@@ -4193,7 +4193,7 @@ class NEFTranslator:
 
         if len(atom_list) == 0:
 
-            if nef_atom == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]:
+            if nef_atom == 'HN' and self.__csStat.peptideLike(comp_id):
                 return self.get_star_atom(comp_id, 'H', 'HN converted to H.' if leave_unmatched else None, leave_unmatched)
 
             if self.__csStat.hasCompId(comp_id):
@@ -4265,7 +4265,7 @@ class NEFTranslator:
 
                     _atom_id = None
 
-                    if atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]:
+                    if atom_id == 'HN' and self.__csStat.peptideLike(comp_id):
                         _atom_id = 'H'
                     elif atom_id.startswith('QQ'):
                         _atom_id = 'H' + atom_id[2:] + '%'

@@ -12,6 +12,7 @@
 # 03-Dec-2021  M. Yokochi - optimize loading performance of other chemical shift statistics (DAOTHER-7514)
 # 04-Feb-2022  M. Yokochi - add getPseudoAtoms() (nmr-restraint-remediation)
 # 14-Feb-2022  M. Yokochi - add getSimilarCompIdFromAtomIds() (nmr-restraint-remediation)
+# 25-Feb-2022  M. Yokochi - add peptideLike() (nmr-restraint-remediation)
 ##
 """ Wrapper class for retrieving BMRB chemical shift statistics.
     @author: Masashi Yokochi
@@ -113,6 +114,31 @@ class BMRBChemShiftStat:
         self.loadOtherStatFromCsvFiles(comp_id)
 
         return comp_id in self.__all_comp_ids
+
+    def peptideLike(self, comp_id):
+        """ Return whether a given comp_id is peptide-like component.
+        """
+
+        if comp_id in self.__aa_comp_ids:
+            return True
+
+        if comp_id in self.__dna_comp_ids or comp_id in self.__rna_comp_ids:
+            return False
+
+        if self.__ccU.updateChemCompDict(comp_id):
+            ctype = self.__ccU.lastChemCompDict['_chem_comp.type']
+
+            if 'PEPTIDE' in ctype:
+                return True
+
+            if 'DNA' in ctype or 'RNA' in ctype or 'SACCHARIDE' in ctype:
+                return False
+
+        peptide_like = len(self.getBackBoneAtoms(comp_id, True, True, False, False))
+        nucleotide_like = len(self.getBackBoneAtoms(comp_id, True, False, True, False))
+        carbohydrate_like = len(self.getBackBoneAtoms(comp_id, True, False, False, True))
+
+        return peptide_like > nucleotide_like and peptide_like > carbohydrate_like
 
     def getTypeOfCompId(self, comp_id):
         """ Return type of a given comp_id.

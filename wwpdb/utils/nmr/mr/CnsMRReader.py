@@ -30,7 +30,7 @@ class CnsMRReader:
         self.__verbose = verbose
         self.__lfh = log
 
-        if cR is not None:
+        if cR is not None and polySeqModel is None:
             dict = checkCoordinates(verbose, log, cR, polySeqModel, False)
             polySeqModel = dict['polymer_sequence']
 

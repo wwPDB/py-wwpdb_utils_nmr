@@ -27,11 +27,11 @@ class AmberMRReader:
     """
 
     def __init__(self, verbose=True, log=sys.stdout, cR=None, polySeqModel=None,
-                 ccU=None, csStat=None, nefT=None):
+                 ccU=None, csStat=None, nefT=None, ptPL=None):
         self.__verbose = verbose
         self.__lfh = log
 
-        if cR is not None:
+        if cR is not None and polySeqModel is None:
             dict = checkCoordinates(verbose, log, cR, polySeqModel, False)
             polySeqModel = dict['polymer_sequence']
 
@@ -48,7 +48,7 @@ class AmberMRReader:
         self.__nefT = NEFTranslator(verbose, log, self.__ccU, self.__csStat) if nefT is None else nefT
 
         # AmberPTParserListener
-        self.__ptPL = None
+        self.__ptPL = ptPL
 
     def parse(self, mrFilePath, cifFilePath, ptFilePath=None):
         """ Parse AMBER MR file.
@@ -72,7 +72,7 @@ class AmberMRReader:
                 if not self.__cR.parse(cifFilePath):
                     return None
 
-            if ptFilePath is not None:
+            if ptFilePath is not None and self.__ptPL is None:
                 ptR = AmberPTReader(self.__verbose, self.__lfh, self.__cR, self.__polySeqModel,
                                     self.__ccU, self.__csStat)
                 self.__ptPL = ptR.parse(ptFilePath, cifFilePath)

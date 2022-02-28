@@ -72,11 +72,12 @@ class AmberMRReader:
                 if not self.__cR.parse(cifFilePath):
                     return None
 
+            """
             if ptFilePath is not None and self.__ptPL is None:
                 ptR = AmberPTReader(self.__verbose, self.__lfh, self.__cR, self.__polySeqModel,
                                     self.__ccU, self.__csStat)
                 self.__ptPL = ptR.parse(ptFilePath, cifFilePath)
-
+            """
             with open(mrFilePath) as ifp:
 
                 ifs = InputStream(ifp.read())
@@ -131,6 +132,6 @@ class AmberMRReader:
 
 if __name__ == "__main__":
     reader = AmberMRReader(False)
-    reader.parse('../../tests-nmr/mock-data-daother-7421/D_1292118884_mr-upload_P1.amber.V1',
+    reader.parse('../../tests-nmr/mock-data-daother-7421/test', # D_1292118884_mr-upload_P1.amber.V1',
                  '../../tests-nmr/mock-data-daother-7421/D_800450_model_P1.cif.V1',
                  '../../tests-nmr/mock-data-daother-7421/D_1292118884_mr-upload_P1.dat.V1')

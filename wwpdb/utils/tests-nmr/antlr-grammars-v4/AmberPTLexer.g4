@@ -163,20 +163,20 @@ FLAG_V:			'%FLAG' -> popMode;
 mode FORMAT_MODE;
 
 Fortran_format_A:	'(' DECIMAL A DECIMAL ')'
-			-> pushMode(STRING_ARRAY_MODE);
+			-> pushMode(STR_ARRAY_MODE);
 Fortran_format_I:	'(' DECIMAL I DECIMAL ')'
-			-> pushMode(INTEGER_ARRAY_MODE);
+			-> pushMode(INT_ARRAY_MODE);
 Fortran_format_E:	'(' DECIMAL E DECIMAL ('.' DECIMAL)? ')'
 			-> pushMode(REAL_ARRAY_MODE);
 
-mode STRING_ARRAY_MODE;
+mode STR_ARRAY_MODE;
 
 Simple_name:		SIMPLE_NAME;
 
 SPACE_A:		[ \t\r\n]+ -> skip;
 FLAG_A:			'%FLAG' -> mode(DEFAULT_MODE);
 
-mode INTEGER_ARRAY_MODE;
+mode INT_ARRAY_MODE;
 
 Integer:		('+' | '-')? DECIMAL;
 

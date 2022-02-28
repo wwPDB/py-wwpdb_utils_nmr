@@ -578,8 +578,8 @@ class AmberPTLexer(Lexer):
 
     VERSION_MODE = 1
     FORMAT_MODE = 2
-    STRING_ARRAY_MODE = 3
-    INTEGER_ARRAY_MODE = 4
+    STR_ARRAY_MODE = 3
+    INT_ARRAY_MODE = 4
     REAL_ARRAY_MODE = 5
 
     VERSION = 1
@@ -657,8 +657,8 @@ class AmberPTLexer(Lexer):
 
     channelNames = [ u"DEFAULT_TOKEN_CHANNEL", u"HIDDEN" ]
 
-    modeNames = [ "DEFAULT_MODE", "VERSION_MODE", "FORMAT_MODE", "STRING_ARRAY_MODE", 
-                  "INTEGER_ARRAY_MODE", "REAL_ARRAY_MODE" ]
+    modeNames = [ "DEFAULT_MODE", "VERSION_MODE", "FORMAT_MODE", "STR_ARRAY_MODE", 
+                  "INT_ARRAY_MODE", "REAL_ARRAY_MODE" ]
 
     literalNames = [ "<INVALID>",
             "'%VERSION'", "'AMBER_ATOM_TYPE'", "'ANGLE_EQUIL_VALUE'", "'ANGLE_FORCE_CONSTANT'", 

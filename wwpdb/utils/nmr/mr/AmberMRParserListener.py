@@ -280,6 +280,78 @@ class AmberMRParserListener(ParseTreeListener):
     def exitCsa_statement(self, ctx: AmberMRParser.Csa_statementContext):  # pylint: disable=unused-argument
         pass
 
+    # Enter a parse tree produced by AmberMRParser#distance_rst_func_call.
+    def enterDistance_rst_func_call(self, ctx: AmberMRParser.Distance_rst_func_callContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by AmberMRParser#distance_rst_func_call.
+    def exitDistance_rst_func_call(self, ctx: AmberMRParser.Distance_rst_func_callContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by AmberMRParser#angle_rst_func_call.
+    def enterAngle_rst_func_call(self, ctx: AmberMRParser.Angle_rst_func_callContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by AmberMRParser#angle_rst_func_call.
+    def exitAngle_rst_func_call(self, ctx: AmberMRParser.Angle_rst_func_callContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by AmberMRParser#torsion_rst_func_call.
+    def enterTorsion_rst_func_call(self, ctx: AmberMRParser.Torsion_rst_func_callContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by AmberMRParser#torsion_rst_func_call.
+    def exitTorsion_rst_func_call(self, ctx: AmberMRParser.Torsion_rst_func_callContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by AmberMRParser#coordinate2_rst_func_call.
+    def enterCoordinate2_rst_func_call(self, ctx: AmberMRParser.Coordinate2_rst_func_callContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by AmberMRParser#coordinate2_rst_func_call.
+    def exitCoordinate2_rst_func_call(self, ctx: AmberMRParser.Coordinate2_rst_func_callContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by AmberMRParser#coordinate3_rst_func_call.
+    def enterCoordinate3_rst_func_call(self, ctx: AmberMRParser.Coordinate3_rst_func_callContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by AmberMRParser#coordinate3_rst_func_call.
+    def exitCoordinate3_rst_func_call(self, ctx: AmberMRParser.Coordinate3_rst_func_callContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by AmberMRParser#coordinate4_rst_func_call.
+    def enterCoordinate4_rst_func_call(self, ctx: AmberMRParser.Coordinate4_rst_func_callContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by AmberMRParser#coordinate4_rst_func_call.
+    def exitCoordinate4_rst_func_call(self, ctx: AmberMRParser.Coordinate4_rst_func_callContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by AmberMRParser#restraint_func_expr.
+    def enterRestraint_func_expr(self, ctx: AmberMRParser.Restraint_func_exprContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by AmberMRParser#restraint_func_expr.
+    def exitRestraint_func_expr(self, ctx: AmberMRParser.Restraint_func_exprContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by AmberMRParser#plane_rst_func_call.
+    def enterPlane_rst_func_call(self, ctx: AmberMRParser.Plane_rst_func_callContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by AmberMRParser#plane_rst_func_call.
+    def exitPlane_rst_func_call(self, ctx: AmberMRParser.Plane_rst_func_callContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by AmberMRParser#com_rst_fun_call.
+    def enterCom_rst_fun_call(self, ctx: AmberMRParser.Com_rst_fun_callContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by AmberMRParser#com_rst_fun_call.
+    def exitCom_rst_fun_call(self, ctx: AmberMRParser.Com_rst_fun_callContext):  # pylint: disable=unused-argument
+        pass
+
     def __getCurrentRestraint(self):
         if self.__cur_subtype == 'dist':
             return f"[Check the {self.distRestraints}th row of distance restraints] "

@@ -386,11 +386,11 @@ Equ_op:			'=';
 L_QUOT:			'"' -> pushMode(FUNC_CALL_MODE);
 SPACE:			[ \t\r\n]+ -> skip;
 HIDDEN_COMMENT:		'{*' (HIDDEN_COMMENT | .)*? '*}' -> channel(HIDDEN);
-EMPTY_LINE_COMMENT:	COMMENT [\r\n]+ -> channel(HIDDEN);
+EMPTY_COMMENT:		('#' | '!') [\r\n]+ -> channel(HIDDEN);
 
 mode COMMENT_MODE;
 
-Simple_name:		SIMPLE_NAME;
+Any_name:		~[ \t\r\n]+;
 
 SPACE_C:		[ \t]+ -> skip;
 RETURN_C:		[\r\n]+ -> mode(DEFAULT_MODE);
@@ -430,46 +430,50 @@ SPACE_BP:		[ \t\r\n]+ -> skip;
 mode INT_ARRAY_MODE;
 
 L_paren_IA:		'(' -> pushMode(ARG_MODE);
-Equ_op_IA:		'=';
+Equ_op_IA:		SPACE_IA '=' SPACE_IA;
 Comma_IA:		',' -> popMode;
-Asterisk_IA:		'*';
+Asterisk_IA:		SPACE_IA '*' SPACE_IA;
 
-Integers:		[ \t]* INTEGER [ \t]* (Comma_IA [ \t]* INTEGER [ \t]*)* [ \t]*;
-MultiplicativeInt:	[ \t]* INTEGER [ \t]* Asterisk_IA [ \t]* INTEGER [ \t]*;
+Integers:		SPACE_IA INTEGER SPACE_IA (Comma_IA SPACE_IA INTEGER SPACE_IA)* SPACE_IA;
+MultiplicativeInt:	SPACE_IA INTEGER Asterisk_IA INTEGER SPACE_IA;
 
-SPACE_IA:		[\r\n]+ -> skip;
+fragment SPACE_IA:	[ \t]*;
+RETURN_IA:		[\r\n]+ -> skip;
 
 mode REAL_ARRAY_MODE;
 
 L_paren_RA:		'(' -> pushMode(ARG_MODE);
-Equ_op_RA:		'=';
+Equ_op_RA:		SPACE_RA '=' SPACE_RA;
 Comma_RA:		',' -> popMode;
-Asterisk_RA:		'*';
+Asterisk_RA:		SPACE_RA '*' SPACE_RA;
 
-Reals:			[ \t]* REAL [ \t]* (Comma_RA [ \t]* REAL [ \t]*)* [ \t]*;
-MultiplicativeReal:	[ \t]* INTEGER [ \t]* Asterisk_RA [ \t]* REAL [ \t]*;
+Reals:			SPACE_RA REAL SPACE_RA (Comma_RA SPACE_RA REAL SPACE_RA)* SPACE_RA;
+MultiplicativeReal:	SPACE_RA INTEGER Asterisk_RA REAL SPACE_RA;
 
-SPACE_RA:		[\r\n]+ -> skip;
+fragment SPACE_RA:	[ \t]*;
+RETURN_RA:		[\r\n]+ -> skip;
 
 mode BINT_ARRAY_MODE;
 
-Equ_op_BA:		'=';
+Equ_op_BA:		SPACE_BA '=' SPACE_BA;
 Comma_BA:		',' -> popMode;
 
-BoolInts:		[ \t]* ONE_OR_ZERO [ \t]* (Comma_BA [ \t]* ONE_OR_ZERO [ \t]*)* [ \t]*;
+BoolInts:		SPACE_BA ONE_OR_ZERO SPACE_BA (Comma_BA SPACE_BA ONE_OR_ZERO SPACE_BA)* SPACE_BA;
 
-SPACE_BA:		[\r\n]+ -> skip;
+fragment SPACE_BA:	[ \t]*;
+RETURN_BA:		[\r\n]+ -> skip;
 
 mode QSTR_ARRAY_MODE;
 
 L_paren_QA:		'(' -> pushMode(ARG_MODE);
-Equ_op_QA:		'=';
+Equ_op_QA:		SPACE_QA '=' SPACE_QA;
 Comma_QA:		',' -> popMode;
 
 fragment QSTRING:	('\'' | '"')? SIMPLE_NAME ('\'' | '"')?;
-Qstrings:		[ \t]* QSTRING [ \t]* (Comma_QA [ \t]* QSTRING [ \t]*)* [ \t]*;
+Qstrings:		SPACE_QA QSTRING SPACE_QA (Comma_QA SPACE_QA QSTRING SPACE_QA)* SPACE_QA;
 
-SPACE_QA:		[\r\n]+ -> skip;
+fragment SPACE_QA:	[ \t]*;
+RETURN_QA:		[\r\n]+ -> skip;
 
 mode ARG_MODE;
 

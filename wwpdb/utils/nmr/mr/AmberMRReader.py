@@ -72,12 +72,11 @@ class AmberMRReader:
                 if not self.__cR.parse(cifFilePath):
                     return None
 
-            """
             if ptFilePath is not None and self.__ptPL is None:
                 ptR = AmberPTReader(self.__verbose, self.__lfh, self.__cR, self.__polySeqModel,
                                     self.__ccU, self.__csStat)
                 self.__ptPL = ptR.parse(ptFilePath, cifFilePath)
-            """
+
             with open(mrFilePath) as ifp:
 
                 ifs = InputStream(ifp.read())

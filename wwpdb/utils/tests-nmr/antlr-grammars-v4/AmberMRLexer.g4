@@ -359,6 +359,8 @@ CCUT:			C C U T
 Comma:			',' -> mode(DEFAULT_MODE);
 Ampersand:		'&';
 
+COMMENT:		('#' | '!') -> mode(COMMENT_MODE);
+
 fragment INTEGER:	('+' | '-')? DECIMAL;
 fragment REAL:		('+' | '-')? (DECIMAL | DEC_DOT_DEC) (E ('+' | '-')? DECIMAL)?;
 Logical:		'.'? T R U E '.'? | '.'? F A L S E '.'?;
@@ -373,8 +375,6 @@ fragment START_CHAR:	ALPHA_NUM | '_';
 fragment NAME_CHAR:	START_CHAR | '\'' | '-' | '+' | '.';
 fragment SIMPLE_NAME:	START_CHAR NAME_CHAR*;
 
-Simple_name:		SIMPLE_NAME;
-
 L_paren:		'(';
 R_paren:		')';
 L_brace:		'{';
@@ -385,8 +385,15 @@ Equ_op:			'=';
 
 L_QUOT:			'"' -> pushMode(FUNC_CALL_MODE);
 SPACE:			[ \t\r\n]+ -> skip;
-COMMENT:		'{*' (COMMENT | .)*? '*}' -> channel(HIDDEN);
-LINE_COMMENT:		('#' | '!') ~[\r\n]* -> channel(HIDDEN);
+HIDDEN_COMMENT:		'{*' (HIDDEN_COMMENT | .)*? '*}' -> channel(HIDDEN);
+EMPTY_LINE_COMMENT:	COMMENT [\r\n]+ -> channel(HIDDEN);
+
+mode COMMENT_MODE;
+
+Simple_name:		SIMPLE_NAME;
+
+SPACE_C:		[ \t]+ -> skip;
+RETURN_C:		[\r\n]+ -> mode(DEFAULT_MODE);
 
 mode INT_PARAM_MODE;
 

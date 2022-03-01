@@ -19,6 +19,7 @@ parser grammar AmberMRParser;
 options { tokenVocab=AmberMRLexer; }
 
 amber_mr:
+	comment*
 	nmr_restraint*
 	noesy_volume_restraint*
 	chemical_shift_restraint*
@@ -26,6 +27,9 @@ amber_mr:
 	dipolar_coupling_restraint*
 	csa_restraint*
 	EOF;
+
+comment:
+	COMMENT Simple_name+ RETURN_C;
 
 nmr_restraint:
 	RST restraint_statement END;
@@ -49,7 +53,14 @@ csa_restraint:
  See also https://ambermd.org/Manuals.php (Amber 2021 Reference Manual)
 */
 restraint_statement:
-	distance_statement*;
+	distance_statement* |
+	angle_statement* |
+	torsion_statement* |
+	plane_point_angle_statement* |
+	plane_plane_angle_statement* |
+	general_distance2_statement* |
+	general_distance3_statement* |
+	general_distance4_statement*;
 
 distance_statement:
 	(IAT | IGR1 | IGR2) Equ_op_IA (Integers | MultiplicativeInt) Comma_IA |

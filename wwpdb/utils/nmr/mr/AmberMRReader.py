@@ -132,6 +132,6 @@ class AmberMRReader:
 
 if __name__ == "__main__":
     reader = AmberMRReader(False)
-    reader.parse('../../tests-nmr/mock-data-daother-7421/test', # D_1292118884_mr-upload_P1.amber.V1',
+    reader.parse('../../tests-nmr/mock-data-daother-7421/D_1292118884_mr-upload_P1.amber.V1',
                  '../../tests-nmr/mock-data-daother-7421/D_800450_model_P1.cif.V1',
                  '../../tests-nmr/mock-data-daother-7421/D_1292118884_mr-upload_P1.dat.V1')

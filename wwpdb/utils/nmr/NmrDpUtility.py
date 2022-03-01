@@ -275,7 +275,7 @@ def is_non_metal_element(atom_id):
 
 
 def is_half_spin_nuclei(atom_id):
-    """ Check if nuclei of a given atom_id has a spin 1/2.
+    """ Return whether nuclei of a given atom_id has a spin 1/2.
         @return: True for spin 1/2 nuclei, False otherwise
     """
 

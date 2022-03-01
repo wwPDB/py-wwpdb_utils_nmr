@@ -481,8 +481,8 @@ def get_idx_msg(idx_tag_ids, tags, ent):
 
 
 def is_empty_loop(star_data, lp_category, data_type):
-    """ Check if at least one of given loops is empty.
-        @return: True for empty loop, False otherwise
+    """ Return whether one of specified loops is empty loop.
+        @return: True for empty loop exists, False otherwise
     """
 
     if data_type == 'Entry':
@@ -502,8 +502,8 @@ def is_empty_loop(star_data, lp_category, data_type):
 
 
 def count_non_empty_loops(star_data, lp_category, data_type):
-    """ Return the number of loops that are not empty.
-        @return: the number of loops that are not empty.
+    """ Return the number of non-empty loops.
+        @return: the number of non-empty loops.
     """
 
     if data_type == 'Entry':
@@ -523,7 +523,7 @@ def count_non_empty_loops(star_data, lp_category, data_type):
 
 
 def get_sf_tag_values_with_empty_loop(star_data, lp_category, sf_category):
-    """ Return list of saveframe tag values having empty loop.
+    """ Return list of saveframe tag values with empty loop.
         @return: list of saveframe tag values
     """
 
@@ -542,31 +542,31 @@ def get_sf_tag_values_with_empty_loop(star_data, lp_category, sf_category):
     return sf_framecodes
 
 
-def is_empty(data):
-    """ Check if given data has empty code.
+def is_empty(array):
+    """ Return whether the array contains empty data.
         @author: Masashi Yokochi
-        @return: True for empty data, False otherwise
+        @return: True for empty data in the array, False otherwise
     """
 
-    return any(d in emptyValue for d in data)
+    return any(d in emptyValue for d in array)
 
 
-def is_data(data):
-    """ Check if given data has no empty code.
+def is_data(array):
+    """ Return whether the array consists of no empty data.
         @author: Masashi Yokochi
-        @return: True for non-empty data, False for empty data
+        @return: True for no empty data in the array, False for empty data
     """
 
-    return not any(d in emptyValue for d in data)
+    return not any(d in emptyValue for d in array)
 
 
-def is_good_data(data):
-    """ Check if given data has either no empty or bad pattern.
+def is_good_data(array):
+    """ Return whether the array consists of good pattern data (neither empty nor bad pattern).
         @author: Masashi Yokochi
-        @return: True for good data, False otherwise
+        @return: True for good data in the array, False otherwise
     """
 
-    return not any(d in emptyValue or badPattern.match(d) for d in data)
+    return not any(d in emptyValue or badPattern.match(d) for d in array)
 
 
 class NEFTranslator:
@@ -761,7 +761,7 @@ class NEFTranslator:
         return missing_sf_tags, missing_lp_tags
 
     def is_mandatory_tag(self, item, file_type):
-        """ Check if a given tag is mandatory.
+        """ Return whether a given tag is mandatory.
             @author: Masashi Yokochi
             @param item: item name
             @param file_type: input file type either 'nef' or 'nmr-star'
@@ -1134,8 +1134,9 @@ class NEFTranslator:
         return len(messages) == 0, messages, corrections
 
     def get_audit_list(self, star_data, data_type):  # pylint: disable=no-self-use
-        """ Extract saveframe categories and loop categories from star data object.
-            @return: list of saveframe categories, list of loop categories
+        """ Return lists of saveframe category names and loop category names in an NEF/NMR-STAR file.
+            @change: rename the original get_data_content() to get_audit_list() by Masashi Yokochi
+            @return: list of saveframe category names, list of loop category names
         """
 
         sf_list = []
@@ -4709,7 +4710,7 @@ class NEFTranslator:
             return None, None
 
     def nef2star_seq_row(self, nef_tags, star_tags, loop_data, report=None):
-        """ Translate rows of data in sequence loop from NEF into NMR-STAR.
+        """ Translate data in sequence loop from NEF into NMR-STAR.
             @change: rename the original translate_seq_row() to nef2star_seq_row() by Masashi Yokochi
             @param nef_tags: list of NEF tags
             @param star_tags: list of NMR-STAR tags
@@ -4844,7 +4845,7 @@ class NEFTranslator:
         return out_row, aux_row
 
     def star2nef_seq_row(self, star_tags, nef_tags, loop_data, report=None, entity_del_atom_loop=None):
-        """ Translate rows of data in sequence loop from NMR-STAR into NEF.
+        """ Translate data in sequence loop from NMR-STAR into NEF.
             @author: Masashi Yokochi
             @param star_tags: list of NMR-STAR tags
             @param nef_tags: list of NEF tags
@@ -5005,7 +5006,7 @@ class NEFTranslator:
         return out_row
 
     def star2star_seq_row(self, in_star_tags, star_tags, loop_data, report=None):
-        """ Translate rows of data in sequence loop from PyNMRSTAR data into NMR-STAR.
+        """ Translate rows in sequence loop from PyNMRSTAR data object into NMR-STAR.
             @author: Masashi Yokochi
             @param in_star_tags: list of input NMR-STAR tags
             @param star_tags: list of NMR-STAR tags
@@ -5142,7 +5143,7 @@ class NEFTranslator:
         return out_row, aux_row
 
     def nef2star_bond_row(self, nef_tags, star_tags, loop_data):
-        """ Translate rows of data in bond loop from NEF into NMR-STAR.
+        """ Translate data in bond loop from NEF into NMR-STAR.
             @author: Masashi Yokochi
             @param nef_tags: list of NEF tags
             @param star_tags: list of NMR-STAR tags
@@ -5306,7 +5307,7 @@ class NEFTranslator:
         return out_row
 
     def star2star_bond_row(self, in_star_tags, star_tags, loop_data):
-        """ Translate rows of data in bond loop from PyNMRSTAR data into NMR-STAR.
+        """ Translate rows in bond loop from PyNMRSTAR data object into NMR-STAR.
             @author: Masashi Yokochi
             @param in_star_tags: list of input NMR-STAR tags
             @param star_tags: list of NMR-STAR tags
@@ -5708,7 +5709,7 @@ class NEFTranslator:
         return out_row
 
     def star2star_cs_row(self, in_star_tags, star_tags, loop_data, leave_unmatched=False):
-        """ Translate data in chemical shift loop from PyNMRSTAR data into NMR-STAR.
+        """ Translate rows in chemical shift loop from PyNMRSTAR data object into NMR-STAR.
             @author: Masashi Yokochi
             @param in_star_tags: list of input NMR-STAR tags
             @param star_tags: list of NMR-STAR tags
@@ -5901,7 +5902,7 @@ class NEFTranslator:
         return out_tags
 
     def nef2star_dist_row(self, nef_tags, star_tags, loop_data):
-        """ Translate rows of data in distance restraint loop from NEF into NMR-STAR.
+        """ Translate data in distance restraint loop from NEF into NMR-STAR.
             @change: rename the original translate_restraint_row() to nef2star_dist_row() by Masashi Yokochi
             @param nef_tags: list of NEF tags
             @param star_tags: list of NMR-STAR tags
@@ -6062,7 +6063,7 @@ class NEFTranslator:
         return out_row
 
     def star2nef_dist_row(self, star_tags, nef_tags, loop_data):
-        """ Translate rows of data in distance restraint loop from NMR-STAR into NEF.
+        """ Translate data in distance restraint loop from NMR-STAR into NEF.
             @author: Masashi Yokochi
             @param star_tags: list of NMR-STAR tags
             @param nef_tags: list of NEF tags
@@ -6218,7 +6219,7 @@ class NEFTranslator:
         return out_row
 
     def star2star_dist_row(self, in_star_tags, star_tags, loop_data):
-        """ Translate rows of data in distance restraint loop from PyNMRSTAR data into NMR-STAR.
+        """ Translate rows in distance restraint loop from PyNMRSTAR data object into NMR-STAR.
             @author: Masashi Yokochi
             @param in_star_tags: list of input NMR-STAR tags
             @param star_tags: list of NMR-STAR tags
@@ -6372,7 +6373,7 @@ class NEFTranslator:
         return out_row
 
     def nef2star_dihed_row(self, nef_tags, star_tags, loop_data):
-        """ Translate rows of data in dihedral angle restraint loop from NEF into NMR-STAR.
+        """ Translate data in dihedral angle restraint loop from NEF into NMR-STAR.
             @author: Masashi Yokochi
             @param nef_tags: list of NEF tags
             @param star_tags: list of NMR-STAR tags
@@ -6559,7 +6560,7 @@ class NEFTranslator:
         return out_row
 
     def star2star_dihed_row(self, in_star_tags, star_tags, loop_data):
-        """ Translate rows of data in dihedral angle restraint loop from PyNMRSTAR data into NMR-STAR.
+        """ Translate rows in dihedral angle restraint loop from PyNMRSTAR data object into NMR-STAR.
             @author: Masashi Yokochi
             @param in_star_tags: list of input NMR-STAR tags
             @param star_tags: list of NMR-STAR tags
@@ -6748,7 +6749,7 @@ class NEFTranslator:
         return out_row
 
     def nef2star_rdc_row(self, nef_tags, star_tags, loop_data):
-        """ Translate rows of data in RDC restraint loop from NEF into NMR-STAR.
+        """ Translate data in RDC restraint loop from NEF into NMR-STAR.
             @author: Masashi Yokochi
             @param nef_tags: list of NEF tags
             @param star_tags: list of NMR-STAR tags
@@ -6893,7 +6894,7 @@ class NEFTranslator:
         return out_row
 
     def star2star_rdc_row(self, in_star_tags, star_tags, loop_data):
-        """ Translate rows of data in RDC restraint loop from PyNMRSTAR data into NMR-STAR.
+        """ Translate rows in RDC restraint loop from PyNMRSTAR data object into NMR-STAR.
             @author: Masashi Yokochi
             @param in_star_tags: list of input NMR-STAR tags
             @param star_tags: list of NMR-STAR tags
@@ -7040,7 +7041,7 @@ class NEFTranslator:
         return out_row
 
     def nef2star_peak_row(self, nef_tags, star_tags, loop_data, leave_unmatched=False):
-        """ Translate rows of data in spectral peak loop from NEF into NMR-STAR.
+        """ Translate data in spectral peak loop from NEF into NMR-STAR.
             @param nef_tags: list of NEF tags
             @param star_tags: list of NMR-STAR tags
             @param loop_data: loop data of NEF
@@ -7219,7 +7220,7 @@ class NEFTranslator:
         return out_row
 
     def __nef2star_peak_row(self, nef_tags, star_tags, tag_map, self_tag_map, row, details, comb):
-        """ Translate rows of data in spectral peak loop from NEF into NMR-STAR.
+        """ Translate data in spectral peak loop from NEF into NMR-STAR.
         """
 
         buf = [None] * len(star_tags)
@@ -7257,7 +7258,7 @@ class NEFTranslator:
         return buf
 
     def star2nef_peak_row(self, star_tags, nef_tags, loop_data):
-        """ Translate rows of data in spectral peak loop from NMR-STAR into NEF.
+        """ Translate data in spectral peak loop from NMR-STAR into NEF.
             @author: Masashi Yokochi
             @param star_tags: list of NMR-STAR tags
             @param nef_tags: list of NEF tags
@@ -7393,7 +7394,7 @@ class NEFTranslator:
         return out_row
 
     def star2star_peak_row(self, in_star_tags, star_tags, loop_data, leave_unmatched=False):
-        """ Translate rows of data in spectral peak loop from PyNMRSTAR data into NMR-STAR.
+        """ Translate rows in spectral peak loop from PyNMRSTAR data object into NMR-STAR.
             @param in_star_tags: list of input NMR-STAR tags
             @param star_tags: list of NMR-STAR tags
             @param loop_data: loop data of input NMR-STAR
@@ -7572,7 +7573,7 @@ class NEFTranslator:
         return out_row
 
     def __star2star_peak_row(self, in_star_tags, star_tags, tag_map, self_tag_map, row, details, comb):
-        """ Translate rows of data in spectral peak loop from PyNMRSTAR data into NMR-STAR.
+        """ Translate rows in spectral peak loop from PyNMRSTAR data object into NMR-STAR.
         """
 
         buf = [None] * len(star_tags)
@@ -7612,7 +7613,7 @@ class NEFTranslator:
         return buf
 
     def nef2star_row(self, nef_tags, star_tags, in_row):
-        """ Translate rows of data in a loop from NEF into NMR-STAR.
+        """ Translate data in a loop from NEF into NMR-STAR.
             @change: rename from original translate_row() to nef2star_row() by Masashi Yokochi
             @param nef_tags: list of NEF tags
             @param star_tags: list of NMR-STAR tags
@@ -7682,7 +7683,7 @@ class NEFTranslator:
         return out_row
 
     def star2nef_row(self, star_tags, nef_tags, in_row):
-        """ Translate rows of data in a loop from NMR-STAR into NEF.
+        """ Translate data in a loop from NMR-STAR into NEF.
             @author: Masashi Yokochi
             @param star_tags: list of NMR-STAR tags
             @param nef_tags: list of NEF tags
@@ -7749,7 +7750,7 @@ class NEFTranslator:
         return out_row
 
     def star2star_row(self, in_star_tags, star_tags, in_row):
-        """ Translate rows of data in a loop from PyNMRSTAR data into NMR-STAR.
+        """ Translate rows in a loop from PyNMRSTAR data object into NMR-STAR.
             @author: Masashi Yokochi
             @param in_star_tags: list of input NMR-STAR tags
             @param star_tags: list of NMR-STAR tags

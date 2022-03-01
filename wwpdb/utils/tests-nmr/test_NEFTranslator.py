@@ -344,10 +344,10 @@ class TestNEFTranslator(unittest.TestCase):
     #     self.assertEqual(self.neft.is_empty_loop(dat, "_Gen_dist_constraint", "Entry"), True)
     #
 
-    def test_get_audit_list(self):
+    def test_get_inventory_list(self):
         (isValid, content, data) = self.neft.read_input_file(os.path.join(self.data_dir_path, "2mqq.nef"))
         self.assertTrue(isValid)
-        datacontent = self.neft.get_audit_list(data, content)
+        datacontent = self.neft.get_inventory_list(data, content)
         self.assertEqual(
             datacontent[0],
             [
@@ -376,7 +376,7 @@ class TestNEFTranslator(unittest.TestCase):
         )
         (isValid, content, data) = self.neft.read_input_file(os.path.join(self.data_dir_path, "2mqq.str"))
         self.assertTrue(isValid)
-        datacontent = self.neft.get_audit_list(data, content)
+        datacontent = self.neft.get_inventory_list(data, content)
         self.assertEqual(
             datacontent[0],
             [

@@ -80,7 +80,7 @@
 # 13-Dec-2021  M. Yokochi - fill list id (e.g. Assigned_chem_shift_list_ID) using a given saveframe counter (parent_pointer) just in case (v3.0.5, DAOTHER-7465, issue #2)
 # 15-Dec-2021  M. Yokochi - fix TypeError: unsupported operand type(s) for -: 'NoneType' and 'set' (v3.0.6, DAOTHER-7545)
 # 22-Dec-2021  M. Yokochi - extend validate_file() for uploading NMR restraint files in NMR-STAR format (v3.0.7, DAOTHER-7545, issue #2)
-# 25-Feb-2022  M. Yokochi - revise logging and overall code revision (v3.1.0)
+# 02-Mar-2022  M. Yokochi - revise logging and overall code revision (v3.1.0)
 ##
 """ Bi-directional translator between NEF and NMR-STAR
     @author: Kumaran Baskaran, Masashi Yokochi
@@ -817,7 +817,7 @@ class NEFTranslator:
                 minimal_sf_category_star_r = ['general_distance_constraints']
                 allowed_sf_category_star_o = ['general_distance_constraints', 'torsion_angle_constraints', 'RDC_constraints']
 
-                sf_list, lp_list = self.get_audit_list(star_data, data_type)
+                sf_list, lp_list = self.get_inventory_list(star_data, data_type)
 
                 info.append(f"{len(sf_list)} saveframes and {len(lp_list)} loops found")
 
@@ -1133,9 +1133,9 @@ class NEFTranslator:
 
         return len(messages) == 0, messages, corrections
 
-    def get_audit_list(self, star_data, data_type):  # pylint: disable=no-self-use
+    def get_inventory_list(self, star_data, data_type):  # pylint: disable=no-self-use
         """ Return lists of saveframe category names and loop category names in an NEF/NMR-STAR file.
-            @change: rename the original get_data_content() to get_audit_list() by Masashi Yokochi
+            @change: rename the original get_data_content() to get_inventory_list() by Masashi Yokochi
             @return: list of saveframe category names, list of loop category names
         """
 

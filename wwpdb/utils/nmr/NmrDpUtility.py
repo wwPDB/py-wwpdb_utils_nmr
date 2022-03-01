@@ -5268,7 +5268,7 @@ class NmrDpUtility:
 
         else:
 
-            self.__sf_category_list, self.__lp_category_list = self.__nefT.get_audit_list(self.__star_data[file_list_id], self.__star_data_type[file_list_id])
+            self.__sf_category_list, self.__lp_category_list = self.__nefT.get_inventory_list(self.__star_data[file_list_id], self.__star_data_type[file_list_id])
 
             # initialize loop counter
             lp_counts = {t: 0 for t in self.nmr_content_subtypes}
@@ -5608,7 +5608,7 @@ class NmrDpUtility:
         if not self.__rescue_mode:
             return True
 
-        self.__sf_category_list, self.__lp_category_list = self.__nefT.get_audit_list(self.__star_data[file_list_id], self.__star_data_type[file_list_id])
+        self.__sf_category_list, self.__lp_category_list = self.__nefT.get_inventory_list(self.__star_data[file_list_id], self.__star_data_type[file_list_id])
 
         # initialize loop counter
         lp_counts = {t: 0 for t in self.nmr_content_subtypes}
@@ -5890,7 +5890,7 @@ class NmrDpUtility:
             file_type = input_source_dic['file_type']
             content_type = input_source_dic['content_type']
 
-            self.__sf_category_list, self.__lp_category_list = self.__nefT.get_audit_list(self.__star_data[fileListId], self.__star_data_type[fileListId])
+            self.__sf_category_list, self.__lp_category_list = self.__nefT.get_inventory_list(self.__star_data[fileListId], self.__star_data_type[fileListId])
 
             is_valid, messages, corrections = self.__nefT.resolve_sf_names_for_cif(self.__star_data[fileListId], self.__star_data_type[fileListId])  # DAOTHER-7389, issue #4
             self.__sf_name_corr.append(corrections)
@@ -24655,7 +24655,7 @@ class NmrDpUtility:
 
             _, star_data_type, star_data = self.__nefT.read_input_file(self.__srcPath)
 
-            self.__sf_category_list, self.__lp_category_list = self.__nefT.get_audit_list(star_data, star_data_type)
+            self.__sf_category_list, self.__lp_category_list = self.__nefT.get_inventory_list(star_data, star_data_type)
 
             if len(self.__star_data_type) == 0:
                 self.__star_data_type.append(star_data_type)

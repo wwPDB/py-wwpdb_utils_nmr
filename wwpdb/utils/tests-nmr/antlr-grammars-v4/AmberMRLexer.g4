@@ -46,7 +46,7 @@ fragment X:		[xX];
 fragment Y:		[yY];
 fragment Z:		[zZ];
 
-END:			(Ampersand E N D) | '/';
+END:			((Ampersand E N D) | '/') -> mode(DEFAULT_MODE);
 
 /* Amber: NMR restraints - 29.1 Distance, angle and torsional restraints - Syntax
  See also https://ambermd.org/Manuals.php (Amber 2021 Reference Manual)
@@ -54,11 +54,12 @@ END:			(Ampersand E N D) | '/';
 RST:			Ampersand R S T;
 
 IAT:			I A T
-			-> pushMode(INT_ARRAY_MODE);		// = Integer [ , Integer ] [ , Integer ] [ , Integer ] [ , Integer ] [ , Integer ] [ , Integer ] [ , Integer ]
+			-> pushMode(INT_ARRAY_MODE);		// = Integer [ , Integer ]*
 RSTWT:			R S T W T
 			-> pushMode(REAL_ARRAY_MODE);		// = Real [ , Real ] [ , Real ] [ , Real ]
 RESTRAINT:		R E S T R A I N T;			// = " RestraintFunctionCall " [ , " RestraintFunctionCall " ]*
-ATNAM:			A T N A M;				// = Quoted_atom_name [ , Quoted_atom_name ] [ , Quoted_atom_name ] [ , Quoted_atom_name ] [ , Quoted_atom_name ] [ , Quoted_atom_name ] [ , Quoted_atom_name ] [ , Quoted_atom_name ]
+ATNAM:			A T N A M
+			-> pushMode(QSTR_ARRAY_MODE);		// = Quoted_atom_name [ , Quoted_atom_name ]*
 
 IRESID:			I R E S I D
 			-> pushMode(BINT_PARAM_MODE);		// = Boolint
@@ -133,14 +134,14 @@ OUTXYZ:			O U T X Y Z
 			-> pushMode(BINT_PARAM_MODE);		// = Boolint
 
 fragment GRNAM:		G R N A M;				// = Quoted_atom_name [ , Quoted_atom_name ]*
-GRNAM1:			GRNAM '1';
-GRNAM2:			GRNAM '2';
-GRNAM3:			GRNAM '3';
-GRNAM4:			GRNAM '4';
-GRNAM5:			GRNAM '5';
-GRNAM6:			GRNAM '6';
-GRNAM7:			GRNAM '7';
-GRNAM8:			GRNAM '8';
+GRNAM1:			GRNAM '1' -> pushMode(QSTR_ARRAY_MODE);
+GRNAM2:			GRNAM '2' -> pushMode(QSTR_ARRAY_MODE);
+GRNAM3:			GRNAM '3' -> pushMode(QSTR_ARRAY_MODE);
+GRNAM4:			GRNAM '4' -> pushMode(QSTR_ARRAY_MODE);
+GRNAM5:			GRNAM '5' -> pushMode(QSTR_ARRAY_MODE);
+GRNAM6:			GRNAM '6' -> pushMode(QSTR_ARRAY_MODE);
+GRNAM7:			GRNAM '7' -> pushMode(QSTR_ARRAY_MODE);
+GRNAM8:			GRNAM '8' -> pushMode(QSTR_ARRAY_MODE);
 
 IR6:			I R '6'
 			-> pushMode(BINT_PARAM_MODE);		// = Boolint
@@ -211,7 +212,8 @@ NATR:			N A T R
 			-> pushMode(INT_ARRAY_MODE);		// natr(Integer) = Integer [ , Integer ]*
 IATR:			I A T R
 			-> pushMode(INT_PARAM_MODE);		// iatr(Integer) = Integer
-NAMR:			N A M R;				// namr(Integer) = Quoted_atom_name [ , Quoted_atom_name ]*
+NAMR:			N A M R
+			-> pushMode(QSTR_ARRAY_MODE);		// namr(Integer) = Quoted_atom_name [ , Quoted_atom_name ]*
 STR:			S T R
 			-> pushMode(REAL_ARRAY_MODE);		// str(Integer) = Real [ , Real ]*
 IPROT:			I P R O T
@@ -240,7 +242,8 @@ PCSHF:			Ampersand P C S H F;
 //NPROT:		N P R O T;				// = Integer
 NME:			N M E
 			-> pushMode(INT_PARAM_MODE);		// = Integer
-NMPMC:			N M P M C;				// = Quoted_atom_name [ , Quoted_atom_name ]*
+NMPMC:			N M P M C
+			-> pushMode(QSTR_ARRAY_MODE);		// = Quoted_atom_name [ , Quoted_atom_name ]*
 
 OPTPHI:			O P T P H I
 			-> pushMode(REAL_ARRAY_MODE);		// optphi(Integer) = Real [ , Real ]*
@@ -353,17 +356,12 @@ SIGMA23:		S I G M A '23'
 CCUT:			C C U T
 			-> pushMode(REAL_PARAM_MODE);		// = Real
 
-Comma:			',';
+Comma:			',' -> mode(DEFAULT_MODE);
 Ampersand:		'&';
 
 fragment INTEGER:	('+' | '-')? DECIMAL;
 fragment REAL:		('+' | '-')? (DECIMAL | DEC_DOT_DEC) (E ('+' | '-')? DECIMAL)?;
-Integer:		INTEGER;
 Logical:		'.'? T R U E '.'? | '.'? F A L S E '.'?;
-fragment MultiplicativeInteger:
-			INTEGER '*' INTEGER;
-fragment MultiplicativeReal:
-			INTEGER '*' REAL;
 fragment DEC_DOT_DEC:	DECIMAL '.' DECIMAL | DECIMAL '.' | '.' DECIMAL;
 fragment DEC_DIGIT:	[0-9];
 fragment DECIMAL:	DEC_DIGIT+;
@@ -377,8 +375,6 @@ fragment SIMPLE_NAME:	START_CHAR NAME_CHAR*;
 
 Simple_name:		SIMPLE_NAME;
 
-Quoted_atom_name:	('\'' | '"')? Simple_name Simple_name* ('\'' | '"')?;
-
 L_paren:		'(';
 R_paren:		')';
 L_brace:		'{';
@@ -387,7 +383,7 @@ L_brakt:		'[';
 R_brakt:		']';
 Equ_op:			'=';
 
-R_QUOT:			'"' -> pushMode(FUNC_CALL_MODE);
+L_QUOT:			'"' -> pushMode(FUNC_CALL_MODE);
 SPACE:			[ \t\r\n]+ -> skip;
 COMMENT:		'{*' (COMMENT | .)*? '*}' -> channel(HIDDEN);
 LINE_COMMENT:		('#' | '!') ~[\r\n]* -> channel(HIDDEN);
@@ -397,7 +393,7 @@ mode INT_PARAM_MODE;
 Equ_op_IP:		'=';
 L_paren_IP:		'(' -> pushMode(ARG_MODE);
 
-Int:			INTEGER -> popMode;
+Integer:		INTEGER -> popMode;
 
 SPACE_IP:		[ \t\r\n]+ -> skip;
 
@@ -415,7 +411,7 @@ mode BINT_PARAM_MODE;
 
 Equ_op_BP:		'=';
 
-Bint:			ONE_OR_ZERO -> popMode;	// IRESID = 0 for the IAT points to the atoms, IRESID = 1 for the the IAT points to the residues
+BoolInt:		ONE_OR_ZERO -> popMode;	// IRESID = 0 for the IAT points to the atoms, IRESID = 1 for the the IAT points to the residues
 						// IRSTYP = 0 for target values are used directly, IRSTYP = 1 for target values are relatively displacement from the initial coordinates
 						// IALTD = 0 for the penalty energy continues to rise in case of large distance violations, IALTD = 1 for the penalty energy is flattened out in that case
 						// IMULT = 0 for R2A->RK2A, R3A->RK3A change linearly, IMULT = 1 for R2A->RK2A, R3A->RK3A change multicatively
@@ -426,35 +422,47 @@ SPACE_BP:		[ \t\r\n]+ -> skip;
 
 mode INT_ARRAY_MODE;
 
-Equ_op_IA:		'=';
-Comma_IA:		',';
 L_paren_IA:		'(' -> pushMode(ARG_MODE);
+Equ_op_IA:		'=';
+Comma_IA:		',' -> popMode;
+Asterisk_IA:		'*';
 
-IntArray:		(INTEGER (Comma_IA INTEGER)* | MultiplicativeInteger)
-			-> popMode;
+Integers:		[ \t]* INTEGER [ \t]* (Comma_IA [ \t]* INTEGER [ \t]*)* [ \t]*;
+MultiplicativeInt:	[ \t]* INTEGER [ \t]* Asterisk_IA [ \t]* INTEGER [ \t]*;
 
-SPACE_IA:		[ \t\r\n]+ -> skip;
+SPACE_IA:		[\r\n]+ -> skip;
 
 mode REAL_ARRAY_MODE;
 
-Equ_op_RA:		'=';
-Comma_RA:		',';
 L_paren_RA:		'(' -> pushMode(ARG_MODE);
+Equ_op_RA:		'=';
+Comma_RA:		',' -> popMode;
+Asterisk_RA:		'*';
 
-RealArray:		(REAL (Comma_RA REAL)* | MultiplicativeReal)
-			-> popMode;
+Reals:			[ \t]* REAL [ \t]* (Comma_RA [ \t]* REAL [ \t]*)* [ \t]*;
+MultiplicativeReal:	[ \t]* INTEGER [ \t]* Asterisk_RA [ \t]* REAL [ \t]*;
 
-SPACE_RA:		[ \t\r\n]+ -> skip;
+SPACE_RA:		[\r\n]+ -> skip;
 
 mode BINT_ARRAY_MODE;
 
 Equ_op_BA:		'=';
-Comma_BA:		',';
+Comma_BA:		',' -> popMode;
 
-BintArray:		ONE_OR_ZERO (Comma_BA ONE_OR_ZERO)*
-			-> popMode;
+BoolInts:		[ \t]* ONE_OR_ZERO [ \t]* (Comma_BA [ \t]* ONE_OR_ZERO [ \t]*)* [ \t]*;
 
-SPACE_BA:		[ \t\r\n]+ -> skip;
+SPACE_BA:		[\r\n]+ -> skip;
+
+mode QSTR_ARRAY_MODE;
+
+L_paren_QA:		'(' -> pushMode(ARG_MODE);
+Equ_op_QA:		'=';
+Comma_QA:		',' -> popMode;
+
+fragment QSTRING:	('\'' | '"')? SIMPLE_NAME ('\'' | '"')?;
+Qstrings:		[ \t]* QSTRING [ \t]* (Comma_QA [ \t]* QSTRING [ \t]*)* [ \t]*;
+
+SPACE_QA:		[\r\n]+ -> skip;
 
 mode ARG_MODE;
 
@@ -480,7 +488,7 @@ R_brace_F:		'}';
 L_brakt_F:		'[';
 R_brakt_F:		']';
 
-L_QUOT:			'"' -> popMode;
+R_QUOT:			'"' -> popMode;
 
 SPACE_F:		[ \t\r\n]+ -> skip;
 

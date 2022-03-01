@@ -8,6 +8,7 @@
     @author: Masashi Yokochi
 """
 import sys
+import re
 
 from antlr4 import ParseTreeListener
 from wwpdb.utils.nmr.mr.AmberMRParser import AmberMRParser
@@ -95,6 +96,9 @@ class AmberMRParserListener(ParseTreeListener):
         # AmberPTParserListener
         self.__ptPL = ptPL
 
+        self.__maxArgDec = 0
+        self.__distLike = None
+
     # Enter a parse tree produced by AmberMRParser#amber_mr.
     def enterAmber_mr(self, ctx: AmberMRParser.Amber_mrContext):  # pylint: disable=unused-argument
         pass
@@ -117,11 +121,40 @@ class AmberMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by AmberMRParser#nmr_restraint.
     def enterNmr_restraint(self, ctx: AmberMRParser.Nmr_restraintContext):  # pylint: disable=unused-argument
-        pass
+        self.__cur_subtype = None
+        self.__maxArgDec = 0
+        self.__distLike = False
 
     # Exit a parse tree produced by AmberMRParser#nmr_restraint.
     def exitNmr_restraint(self, ctx: AmberMRParser.Nmr_restraintContext):  # pylint: disable=unused-argument
-        pass
+        if self.__cur_subtype is not None:
+            pass
+        elif self.__maxArgDec == 2:
+            self.distRestraints += 1
+            self.__cur_subtype = 'dist'
+        elif self.__maxArgDec == 3:
+            self.angRestraints += 1
+            self.__cur_subtype = 'ang'
+        elif self.__maxArgDec == 4:  # torsional angle or general distance 2
+            if self.__distLike:
+                self.distRestraints += 1
+                self.__cur_subtype = 'dist'
+            else:
+                self.dihedRestraints += 1
+                self.__cur_subtype = 'dihed'
+        elif self.__maxArgDec == 5:
+            self.planeRestraints += 1
+            self.__cur_subtype = 'plane'
+        elif self.__maxArgDec == 6:  # general distance 3
+            self.distRestraints += 1
+            self.__cur_subtype = 'dist'
+        elif self.__maxArgDec == 8:  # plane-plane angle or general distance 4
+            if self.__distLike:
+                self.distRestraints += 1
+                self.__cur_subtype = 'dist'
+            else:
+                self.planeRestraints += 1
+                self.__cur_subtype = 'plane'
 
     # Enter a parse tree produced by AmberMRParser#noesy_volume_restraint.
     def enterNoesy_volume_restraint(self, ctx: AmberMRParser.Noesy_volume_restraintContext):  # pylint: disable=unused-argument
@@ -171,76 +204,33 @@ class AmberMRParserListener(ParseTreeListener):
     def exitRestraint_statement(self, ctx: AmberMRParser.Restraint_statementContext):  # pylint: disable=unused-argument
         pass
 
-    # Enter a parse tree produced by AmberMRParser#distance_statement.
-    def enterDistance_statement(self, ctx: AmberMRParser.Distance_statementContext):  # pylint: disable=unused-argument
-        self.distRestraints += 1
-        self.__cur_subtype = 'dist'
+    # Enter a parse tree produced by AmberMRParser#restraint_factor.
+    def enterRestraint_factor(self, ctx: AmberMRParser.Restraint_factorContext):
+        if ctx.IAT():
+            if ctx.Decimal():
+                decimal = int(str(ctx.Decimal))
+                if decimal > self.__maxArgDec:
+                    self.__maxArgDec = decimal
+            else:
+                if ctx.Integers():
+                    rowIntArray = str(ctx.Integers()).split(',')
+                    self.__maxArgDec = len(rowIntArray)
+                elif ctx.MultiplicativeInt():
+                    rowMultInt = str(ctx.MultiplicativeInt()).split('*')
+                    self.__maxArgDec = int(re.sub(r"[\s]*", "", rowMultInt[0]))
 
-    # Exit a parse tree produced by AmberMRParser#distance_statement.
-    def exitDistance_statement(self, ctx: AmberMRParser.Distance_statementContext):  # pylint: disable=unused-argument
-        pass
+        if ctx.RSTWT():
+            if ctx.Real(1):
+                self.__distLike = True
 
-    # Enter a parse tree produced by AmberMRParser#angle_statement.
-    def enterAngle_statement(self, ctx: AmberMRParser.Angle_statementContext):  # pylint: disable=unused-argument
-        self.angRestraints += 1
-        self.__cur_subtype = 'ang'
+        if ctx.IALTD():
+            self.__distLike = True
 
-    # Exit a parse tree produced by AmberMRParser#angle_statement.
-    def exitAngle_statement(self, ctx: AmberMRParser.Angle_statementContext):  # pylint: disable=unused-argument
-        pass
+        if ctx.RJCOEF():
+            self.__distLike = False
 
-    # Enter a parse tree produced by AmberMRParser#torsion_statement.
-    def enterTorsion_statement(self, ctx: AmberMRParser.Torsion_statementContext):  # pylint: disable=unused-argument
-        self.dihedRestraints += 1
-        self.__cur_subtype = 'dihed'
-
-    # Exit a parse tree produced by AmberMRParser#torsion_statement.
-    def exitTorsion_statement(self, ctx: AmberMRParser.Torsion_statementContext):  # pylint: disable=unused-argument
-        pass
-
-    # Enter a parse tree produced by AmberMRParser#plane_point_angle_statement.
-    def enterPlane_point_angle_statement(self, ctx: AmberMRParser.Plane_point_angle_statementContext):  # pylint: disable=unused-argument
-        self.planeRestraints += 1
-        self.__cur_subtype = 'plane'
-
-    # Exit a parse tree produced by AmberMRParser#plane_point_angle_statement.
-    def exitPlane_point_angle_statement(self, ctx: AmberMRParser.Plane_point_angle_statementContext):  # pylint: disable=unused-argument
-        pass
-
-    # Enter a parse tree produced by AmberMRParser#plane_plane_angle_statement.
-    def enterPlane_plane_angle_statement(self, ctx: AmberMRParser.Plane_plane_angle_statementContext):  # pylint: disable=unused-argument
-        self.planeRestraints += 1
-        self.__cur_subtype = 'plane'
-
-    # Exit a parse tree produced by AmberMRParser#plane_plane_angle_statement.
-    def exitPlane_plane_angle_statement(self, ctx: AmberMRParser.Plane_plane_angle_statementContext):  # pylint: disable=unused-argument
-        pass
-
-    # Enter a parse tree produced by AmberMRParser#general_distance2_statement.
-    def enterGeneral_distance2_statement(self, ctx: AmberMRParser.General_distance2_statementContext):  # pylint: disable=unused-argument
-        self.distRestraints += 1
-        self.__cur_subtype = 'dist'
-
-    # Exit a parse tree produced by AmberMRParser#general_distance2_statement.
-    def exitGeneral_distance2_statement(self, ctx: AmberMRParser.General_distance2_statementContext):  # pylint: disable=unused-argument
-        pass
-
-    # Enter a parse tree produced by AmberMRParser#general_distance3_statement.
-    def enterGeneral_distance3_statement(self, ctx: AmberMRParser.General_distance3_statementContext):  # pylint: disable=unused-argument
-        self.distRestraints += 1
-        self.__cur_subtype = 'dist'
-
-    # Exit a parse tree produced by AmberMRParser#general_distance3_statement.
-    def exitGeneral_distance3_statement(self, ctx: AmberMRParser.General_distance3_statementContext):  # pylint: disable=unused-argument
-        pass
-
-    # Enter a parse tree produced by AmberMRParser#general_distance4_statement.
-    def enterGeneral_distance4_statement(self, ctx: AmberMRParser.General_distance4_statementContext):  # pylint: disable=unused-argument
-        self.distRestraints += 1
-        self.__cur_subtype = 'dist'
-
-    # Exit a parse tree produced by AmberMRParser#general_distance4_statement.
-    def exitGeneral_distance4_statement(self, ctx: AmberMRParser.General_distance4_statementContext):  # pylint: disable=unused-argument
+    # Exit a parse tree produced by AmberMRParser#restraint_factor.
+    def exitRestraint_factor(self, ctx: AmberMRParser.Restraint_factorContext):
         pass
 
     # Enter a parse tree produced by AmberMRParser#noeexp_statement.
@@ -252,6 +242,14 @@ class AmberMRParserListener(ParseTreeListener):
     def exitNoeexp_statement(self, ctx: AmberMRParser.Noeexp_statementContext):  # pylint: disable=unused-argument
         pass
 
+    # Enter a parse tree produced by AmberMRParser#noeexp_factor.
+    def enterNoeexp_factor(self, ctx: AmberMRParser.Noeexp_factorContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by AmberMRParser#noeexp_factor.
+    def exitNoeexp_factor(self, ctx: AmberMRParser.Noeexp_factorContext):  # pylint: disable=unused-argument
+        pass
+
     # Enter a parse tree produced by AmberMRParser#shf_statement.
     def enterShf_statement(self, ctx: AmberMRParser.Shf_statementContext):  # pylint: disable=unused-argument
         self.hvycsRestraints += 1
@@ -259,6 +257,14 @@ class AmberMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by AmberMRParser#shf_statement.
     def exitShf_statement(self, ctx: AmberMRParser.Shf_statementContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by AmberMRParser#shf_factor.
+    def enterShf_factor(self, ctx: AmberMRParser.Shf_factorContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by AmberMRParser#shf_factor.
+    def exitShf_factor(self, ctx: AmberMRParser.Shf_factorContext):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by AmberMRParser#pcshf_statement.
@@ -270,6 +276,14 @@ class AmberMRParserListener(ParseTreeListener):
     def exitPcshf_statement(self, ctx: AmberMRParser.Pcshf_statementContext):  # pylint: disable=unused-argument
         pass
 
+    # Enter a parse tree produced by AmberMRParser#pcshf_factor.
+    def enterPcshf_factor(self, ctx: AmberMRParser.Pcshf_factorContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by AmberMRParser#pcshf_factor.
+    def exitPcshf_factor(self, ctx: AmberMRParser.Pcshf_factorContext):  # pylint: disable=unused-argument
+        pass
+
     # Enter a parse tree produced by AmberMRParser#align_statement.
     def enterAlign_statement(self, ctx: AmberMRParser.Align_statementContext):  # pylint: disable=unused-argument
         self.rdcRestraints += 1
@@ -277,6 +291,14 @@ class AmberMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by AmberMRParser#align_statement.
     def exitAlign_statement(self, ctx: AmberMRParser.Align_statementContext):  # pylint: disable=unused-argument
+        pass
+
+        # Enter a parse tree produced by AmberMRParser#align_factor.
+    def enterAlign_factor(self, ctx: AmberMRParser.Align_factorContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by AmberMRParser#align_factor.
+    def exitAlign_factor(self, ctx: AmberMRParser.Align_factorContext):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by AmberMRParser#csa_statement.
@@ -288,9 +310,18 @@ class AmberMRParserListener(ParseTreeListener):
     def exitCsa_statement(self, ctx: AmberMRParser.Csa_statementContext):  # pylint: disable=unused-argument
         pass
 
+    # Enter a parse tree produced by AmberMRParser#csa_factor.
+    def enterCsa_factor(self, ctx: AmberMRParser.Csa_factorContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by AmberMRParser#csa_factor.
+    def exitCsa_factor(self, ctx: AmberMRParser.Csa_factorContext):  # pylint: disable=unused-argument
+        pass
+
     # Enter a parse tree produced by AmberMRParser#distance_rst_func_call.
     def enterDistance_rst_func_call(self, ctx: AmberMRParser.Distance_rst_func_callContext):  # pylint: disable=unused-argument
-        pass
+        self.distRestraints += 1
+        self.__cur_subtype = 'dist'
 
     # Exit a parse tree produced by AmberMRParser#distance_rst_func_call.
     def exitDistance_rst_func_call(self, ctx: AmberMRParser.Distance_rst_func_callContext):  # pylint: disable=unused-argument
@@ -298,7 +329,8 @@ class AmberMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by AmberMRParser#angle_rst_func_call.
     def enterAngle_rst_func_call(self, ctx: AmberMRParser.Angle_rst_func_callContext):  # pylint: disable=unused-argument
-        pass
+        self.angRestraints += 1
+        self.__cur_subtype = 'ang'
 
     # Exit a parse tree produced by AmberMRParser#angle_rst_func_call.
     def exitAngle_rst_func_call(self, ctx: AmberMRParser.Angle_rst_func_callContext):  # pylint: disable=unused-argument
@@ -306,7 +338,8 @@ class AmberMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by AmberMRParser#torsion_rst_func_call.
     def enterTorsion_rst_func_call(self, ctx: AmberMRParser.Torsion_rst_func_callContext):  # pylint: disable=unused-argument
-        pass
+        self.dihedRestraints += 1
+        self.__cur_subtype = 'dihed'
 
     # Exit a parse tree produced by AmberMRParser#torsion_rst_func_call.
     def exitTorsion_rst_func_call(self, ctx: AmberMRParser.Torsion_rst_func_callContext):  # pylint: disable=unused-argument
@@ -314,7 +347,8 @@ class AmberMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by AmberMRParser#coordinate2_rst_func_call.
     def enterCoordinate2_rst_func_call(self, ctx: AmberMRParser.Coordinate2_rst_func_callContext):  # pylint: disable=unused-argument
-        pass
+        self.distRestraints += 1
+        self.__cur_subtype = 'dist'
 
     # Exit a parse tree produced by AmberMRParser#coordinate2_rst_func_call.
     def exitCoordinate2_rst_func_call(self, ctx: AmberMRParser.Coordinate2_rst_func_callContext):  # pylint: disable=unused-argument
@@ -322,7 +356,8 @@ class AmberMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by AmberMRParser#coordinate3_rst_func_call.
     def enterCoordinate3_rst_func_call(self, ctx: AmberMRParser.Coordinate3_rst_func_callContext):  # pylint: disable=unused-argument
-        pass
+        self.distRestraints += 1
+        self.__cur_subtype = 'dist'
 
     # Exit a parse tree produced by AmberMRParser#coordinate3_rst_func_call.
     def exitCoordinate3_rst_func_call(self, ctx: AmberMRParser.Coordinate3_rst_func_callContext):  # pylint: disable=unused-argument
@@ -330,7 +365,8 @@ class AmberMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by AmberMRParser#coordinate4_rst_func_call.
     def enterCoordinate4_rst_func_call(self, ctx: AmberMRParser.Coordinate4_rst_func_callContext):  # pylint: disable=unused-argument
-        pass
+        self.distRestraints += 1
+        self.__cur_subtype = 'dist'
 
     # Exit a parse tree produced by AmberMRParser#coordinate4_rst_func_call.
     def exitCoordinate4_rst_func_call(self, ctx: AmberMRParser.Coordinate4_rst_func_callContext):  # pylint: disable=unused-argument
@@ -352,12 +388,12 @@ class AmberMRParserListener(ParseTreeListener):
     def exitPlane_rst_func_call(self, ctx: AmberMRParser.Plane_rst_func_callContext):  # pylint: disable=unused-argument
         pass
 
-    # Enter a parse tree produced by AmberMRParser#com_rst_fun_call.
-    def enterCom_rst_fun_call(self, ctx: AmberMRParser.Com_rst_fun_callContext):  # pylint: disable=unused-argument
+    # Enter a parse tree produced by AmberMRParser#com_rst_func_call.
+    def enterCom_rst_func_call(self, ctx: AmberMRParser.Com_rst_func_callContext):  # pylint: disable=unused-argument
         pass
 
-    # Exit a parse tree produced by AmberMRParser#com_rst_fun_call.
-    def exitCom_rst_fun_call(self, ctx: AmberMRParser.Com_rst_fun_callContext):  # pylint: disable=unused-argument
+    # Exit a parse tree produced by AmberMRParser#com_rst_func_call.
+    def exitCom_rst_func_call(self, ctx: AmberMRParser.Com_rst_func_callContext):  # pylint: disable=unused-argument
         pass
 
     def __getCurrentRestraint(self):

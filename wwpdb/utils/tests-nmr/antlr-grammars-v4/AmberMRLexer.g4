@@ -398,7 +398,7 @@ RETURN_C:		[\r\n]+ -> mode(DEFAULT_MODE);
 mode INT_PARAM_MODE;
 
 Equ_op_IP:		'=';
-L_paren_IP:		'(' -> pushMode(ARG_MODE);
+L_paren_IP:		'(' -> pushMode(ARGUMENT_MODE);
 
 Integer:		INTEGER -> popMode;
 
@@ -407,7 +407,7 @@ SPACE_IP:		[ \t\r\n]+ -> skip;
 mode REAL_PARAM_MODE;
 
 Equ_op_RP:		'=';
-L_paren_RP:		'(' -> pushMode(ARG_MODE);
+L_paren_RP:		'(' -> pushMode(ARGUMENT_MODE);
 
 
 Real:			REAL -> popMode;
@@ -429,7 +429,7 @@ SPACE_BP:		[ \t\r\n]+ -> skip;
 
 mode INT_ARRAY_MODE;
 
-L_paren_IA:		'(' -> pushMode(ARG_MODE);
+L_paren_IA:		'(' -> pushMode(ARGUMENT_MODE);
 Equ_op_IA:		SPACE_IA '=' SPACE_IA;
 Comma_IA:		',' -> popMode;
 Asterisk_IA:		SPACE_IA '*' SPACE_IA;
@@ -442,7 +442,7 @@ RETURN_IA:		[\r\n]+ -> skip;
 
 mode REAL_ARRAY_MODE;
 
-L_paren_RA:		'(' -> pushMode(ARG_MODE);
+L_paren_RA:		'(' -> pushMode(ARGUMENT_MODE);
 Equ_op_RA:		SPACE_RA '=' SPACE_RA;
 Comma_RA:		',' -> popMode;
 Asterisk_RA:		SPACE_RA '*' SPACE_RA;
@@ -465,7 +465,7 @@ RETURN_BA:		[\r\n]+ -> skip;
 
 mode QSTR_ARRAY_MODE;
 
-L_paren_QA:		'(' -> pushMode(ARG_MODE);
+L_paren_QA:		'(' -> pushMode(ARGUMENT_MODE);
 Equ_op_QA:		SPACE_QA '=' SPACE_QA;
 Comma_QA:		',' -> popMode;
 
@@ -475,14 +475,14 @@ Qstrings:		SPACE_QA QSTRING SPACE_QA (Comma_QA SPACE_QA QSTRING SPACE_QA)* SPACE
 fragment SPACE_QA:	[ \t]*;
 RETURN_QA:		[\r\n]+ -> skip;
 
-mode ARG_MODE;
+mode ARGUMENT_MODE;
 
-Comma_ARG:		',';
-R_paren_ARG:		')' -> popMode;
+Comma_A:		',';
+R_paren_A:		')' -> popMode;
 
 Decimal:		DECIMAL;
 
-SPACE_ARG:		[ \t\r\n]+ -> skip;
+SPACE_A:		[ \t\r\n]+ -> skip;
 
 mode FUNC_CALL_MODE; // function call
 

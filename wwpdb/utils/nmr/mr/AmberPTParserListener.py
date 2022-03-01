@@ -803,7 +803,6 @@ class AmberPTParserListener(ParseTreeListener):
                 chunk = chunk_string(str(ctx.Simple_name(i)).upper(), self.__cur_word_len)
                 atomIdList.extend(chunk)
                 i += 1
-
             self.__atomName = atomIdList
             return
         self.atomNameStatements -= 1

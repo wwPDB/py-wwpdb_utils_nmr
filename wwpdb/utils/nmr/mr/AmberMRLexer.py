@@ -999,7 +999,7 @@ class AmberMRLexer(Lexer):
     REAL_ARRAY_MODE = 6
     BINT_ARRAY_MODE = 7
     QSTR_ARRAY_MODE = 8
-    ARG_MODE = 9
+    ARGUMENT_MODE = 9
     FUNC_CALL_MODE = 10
 
     END = 1
@@ -1188,10 +1188,10 @@ class AmberMRLexer(Lexer):
     Comma_QA = 184
     Qstrings = 185
     RETURN_QA = 186
-    Comma_ARG = 187
-    R_paren_ARG = 188
+    Comma_A = 187
+    R_paren_A = 188
     Decimal = 189
-    SPACE_ARG = 190
+    SPACE_A = 190
     Int_F = 191
     Real_F = 192
     Ambmask_F = 193
@@ -1209,7 +1209,8 @@ class AmberMRLexer(Lexer):
 
     modeNames = [ "DEFAULT_MODE", "COMMENT_MODE", "INT_PARAM_MODE", "REAL_PARAM_MODE", 
                   "BINT_PARAM_MODE", "INT_ARRAY_MODE", "REAL_ARRAY_MODE", 
-                  "BINT_ARRAY_MODE", "QSTR_ARRAY_MODE", "ARG_MODE", "FUNC_CALL_MODE" ]
+                  "BINT_ARRAY_MODE", "QSTR_ARRAY_MODE", "ARGUMENT_MODE", 
+                  "FUNC_CALL_MODE" ]
 
     literalNames = [ "<INVALID>",
             "'&'" ]
@@ -1243,8 +1244,8 @@ class AmberMRLexer(Lexer):
             "RETURN_IA", "L_paren_RA", "Equ_op_RA", "Comma_RA", "Asterisk_RA", 
             "Reals", "MultiplicativeReal", "RETURN_RA", "Equ_op_BA", "Comma_BA", 
             "BoolInts", "RETURN_BA", "L_paren_QA", "Equ_op_QA", "Comma_QA", 
-            "Qstrings", "RETURN_QA", "Comma_ARG", "R_paren_ARG", "Decimal", 
-            "SPACE_ARG", "Int_F", "Real_F", "Ambmask_F", "Comma_F", "L_paren_F", 
+            "Qstrings", "RETURN_QA", "Comma_A", "R_paren_A", "Decimal", 
+            "SPACE_A", "Int_F", "Real_F", "Ambmask_F", "Comma_F", "L_paren_F", 
             "R_paren_F", "L_brace_F", "R_brace_F", "L_brakt_F", "R_brakt_F", 
             "R_QUOT", "SPACE_F" ]
 
@@ -1285,8 +1286,8 @@ class AmberMRLexer(Lexer):
                   "Reals", "MultiplicativeReal", "SPACE_RA", "RETURN_RA", 
                   "Equ_op_BA", "Comma_BA", "BoolInts", "SPACE_BA", "RETURN_BA", 
                   "L_paren_QA", "Equ_op_QA", "Comma_QA", "QSTRING", "Qstrings", 
-                  "SPACE_QA", "RETURN_QA", "Comma_ARG", "R_paren_ARG", "Decimal", 
-                  "SPACE_ARG", "Int_F", "Real_F", "Ambmask_F", "Comma_F", 
+                  "SPACE_QA", "RETURN_QA", "Comma_A", "R_paren_A", "Decimal", 
+                  "SPACE_A", "Int_F", "Real_F", "Ambmask_F", "Comma_F", 
                   "L_paren_F", "R_paren_F", "L_brace_F", "R_brace_F", "L_brakt_F", 
                   "R_brakt_F", "R_QUOT", "SPACE_F" ]
 

@@ -309,7 +309,7 @@ class AmberMRParserListener(ParseTreeListener):
                         atomSelection.append(self.__atomNumberDict[iat])
                     else:
                         self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            f"'iat({col+1})={iat}' is not defined in the AMBER paramter/topology file.\n"
+                            f"'iat({col+1})={iat}' is not defined in the AMBER parameter/topology file.\n"
                 elif iat < 0:
                     varNum = col + 1
                     if varNum in self.igr:
@@ -318,22 +318,27 @@ class AmberMRParserListener(ParseTreeListener):
                                 atomSelection.append(self.__atomNumberDict[igr])
                             else:
                                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                    f"'igr({varNum})={igr}' is not defined in the AMBER paramter/topology file.\n"
+                                    f"'igr({varNum})={igr}' is not defined in the AMBER parameter/topology file.\n"
 
                 self.atomSelectionSet.append(atomSelection)
 
-        else:  # retrieve from Sander's comment
-            pass
+        # try to retrieve from Sander's comment
+        else:
+            if self.lastComment is None:
+                raise KeyError(f"[Fatal error] {self.__getCurrentRestraint()}"
+                               "Couldn't recognize AMBER atom numbers "
+                               "because neither AMBER parameter/topology file nor Sander's comment are available.")
 
         if self.__cur_subtype == 'dist' and len(self.iat) == 2:
             if self.lastComment is not None:
                 print('# ' + ' '.join(self.lastComment))
-            for atom_1 in self.atomSelectionSet[0]:
-                for atom_2 in self.atomSelectionSet[1]:
-                    print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
-                          f"atom_1={atom_1} atom_2={atom_2} "
-                          f"lower_linear_limit={self.lowerLinearLimit:.3} lower_limit={self.lowerLimit:.3} "
-                          f"upper_limit={self.upperLimit:.3} upper_linear_limit={self.upperLinearLimit: .3}")
+            if len(self.atomSelectionSet) == 2:
+                for atom_1 in self.atomSelectionSet[0]:
+                    for atom_2 in self.atomSelectionSet[1]:
+                        print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
+                              f"atom_1={atom_1} atom_2={atom_2} "
+                              f"lower_linear_limit={self.lowerLinearLimit:.3} lower_limit={self.lowerLimit:.3} "
+                              f"upper_limit={self.upperLimit:.3} upper_linear_limit={self.upperLinearLimit: .3}")
 
         self.lastComment = None
 

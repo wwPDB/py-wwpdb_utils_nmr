@@ -520,7 +520,7 @@ class AmberPTParserListener(ParseTreeListener):
                     chain_id2 = self.__polySeqPrmTop[column]['chain_id']
                     concatenated_prmtop_chain[chain_id2] = _cif_chains
 
-                    self.warningMessage += f"[Warning] The chain ID {chain_id2!r} of the sequences in the AMBER paramter/topology file "\
+                    self.warningMessage += f"[Warning] The chain ID {chain_id2!r} of the sequences in the AMBER parameter/topology file "\
                         f"will be re-assigned to the chain IDs {_cif_chains} in the coordinates during biocuration.\n"
 
             chain_id = self.__polySeqModel[row]['chain_id']

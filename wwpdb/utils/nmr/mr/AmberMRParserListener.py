@@ -96,10 +96,16 @@ class AmberMRParserListener(ParseTreeListener):
         # AmberPTParserListener
         self.__ptPL = ptPL
 
+        # IAT
         self.__numIatCol = 0
         self.__setIatCol = None
         self.__distLike = None
         self.__iat = None
+
+        # IGR#
+        self.__numIgrCol = None
+        self.__setIgrCol = None
+        self.__igr = None
 
     # Enter a parse tree produced by AmberMRParser#amber_mr.
     def enterAmber_mr(self, ctx: AmberMRParser.Amber_mrContext):  # pylint: disable=unused-argument
@@ -174,10 +180,15 @@ class AmberMRParserListener(ParseTreeListener):
         self.nmrRestraints += 1
 
         self.__cur_subtype = None
+
         self.__numIatCol = 0
         self.__setIatCol = None
         self.__distLike = False
         self.__iat = [0] * 8
+
+        self.__numIgrCol = None
+        self.__setIgrCol = None
+        self.__igr = None
 
     # Exit a parse tree produced by AmberMRParser#restraint_statement.
     def exitRestraint_statement(self, ctx: AmberMRParser.Restraint_statementContext):  # pylint: disable=unused-argument
@@ -195,38 +206,83 @@ class AmberMRParserListener(ParseTreeListener):
         if self.__cur_subtype is None:
             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                 "Couldn't specify NMR restraint type because the number of columns in the 'iat' clause did not match.\n"
+            return
+
+        for col in range(0, self.__numIatCol):
+            varNum = col + 1
+            iat = self.__iat[col]
+
+            maxCols = 200
+            varName = 'igr' + str(varNum)
+            if iat > 0 and self.__igr is not None and varNum in self.__igr:
+                if len(self.__igr[varNum]) > 0:
+                    nonpCols = [col for col, val in enumerate(self.__igr[varNum]) if val <= 0]
+                    maxCol = maxCols if len(nonpCols) == 0 else min(nonpCols)
+                    valArray = ','.join([str(val) for col, val in enumerate(self.__igr[varNum]) if val > 0 and col < maxCol])
+                    if len(valArray) > 0:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            f"'{varName}={valArray}' has no effect because 'iat({varNum})={iat}'.\n"
+                del self.__igr[varNum]
+
+            elif iat < 0:
+                if varNum not in self.__igr or len(self.__igr[varNum]) == 0:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"'{varName}' is missing in spite of 'iat({varNum})={iat}'.\n"
+                else:
+                    nonpCols = [col for col, val in enumerate(self.__igr[varNum]) if val <= 0]
+                    maxCol = maxCols if len(nonpCols) == 0 else min(nonpCols)
+                    valArray = ','.join([str(val) for col, val in enumerate(self.__igr[varNum]) if val > 0 and col < maxCol])
+                    if len(valArray) == 0:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            f"'{varName}' includes non-positive integers.\n"
+                        del self.__igr[varNum]
+                    else:
+                        nonp = [val for col, val in enumerate(self.__igr[varNum]) if val > 0 and col < maxCol]
+                        if len(nonp) != len(set(nonp)):
+                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                f"'{varName}={valArray}' includes redundant integers.\n"
+                        elif len(nonp) < 2:
+                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                f"Surprisingly '{varName}={valArray}' is consist of a single integer.\n"
+                        self.__igr[varNum] = list(set(nonp))  # trimming default zero/redundant values
+
+        self.__iat = self.__iat[0:self.__numIatCol]  # trimming default zero values
 
     # Enter a parse tree produced by AmberMRParser#restraint_factor.
     def enterRestraint_factor(self, ctx: AmberMRParser.Restraint_factorContext):
         if ctx.IAT():
+            maxCols = 8
+            varName = 'iat'
+
             if ctx.Decimal():
                 decimal = int(str(ctx.Decimal()))
-                if decimal <= 0 or decimal > 8:
+                if decimal <= 0 or decimal > maxCols:
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"The argument value of 'iat({decimal})' must be in the range 1-8.\n"
+                        f"The argument value of '{varName}({decimal})' must be in the range 1-{maxCols}.\n"
                     return
                 if self.__numIatCol > 0:
-                    zeroIatCols = [col for col, iat in enumerate(self.__iat) if iat == 0]
-                    maxCol = 8 if len(zeroIatCols) == 0 else min(zeroIatCols)
-                    iatArray = ','.join([str(iat) for col, iat in enumerate(self.__iat) if iat != 0 and col < maxCol])
+                    zeroCols = [col for col, val in enumerate(self.__iat) if val == 0]
+                    maxCol = maxCols if len(zeroCols) == 0 else min(zeroCols)
+                    valArray = ','.join([str(val) for col, val in enumerate(self.__iat) if val != 0 and col < maxCol])
                     self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
-                        f"You have mixed different syntaxes for the 'iat' variable, 'iat={iatArray}' "\
-                        f"and 'iat({decimal})={str(ctx.Integers())}', which will overwrite.\n"
+                        f"You have mixed different syntaxes for the '{varName}' variable, '{varName}={valArray}' "\
+                        f"and '{varName}({decimal})={str(ctx.Integers())}', which will overwrite.\n"
                 if self.__setIatCol is None:
                     self.__setIatCol = []
                 if decimal in self.__setIatCol:
                     self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
-                        f"The argument value of 'iat({decimal})' must be unique. "\
-                        f"'iat({decimal})={str(ctx.Integers())}' will overwrite.\n"
-                self.__setIatCol.append(decimal)
+                        f"The argument value of '{varName}({decimal})' must be unique. "\
+                        f"'{varName}({decimal})={str(ctx.Integers())}' will overwrite.\n"
+                else:
+                    self.__setIatCol.append(decimal)
                 rawIntArray = str(ctx.Integers()).split(',')
-                iat = int(rawIntArray[0])
+                val = int(rawIntArray[0])
                 if len(rawIntArray) > 1:
                     self.warningMessage += f"[Multiple data] {self.__getCurrentRestraint()}"\
-                        f"The 'iat({decimal})={str(ctx.Integers())}' can not be an array of integers. "\
-                        f"Only the first value 'iat({decimal})={iat}' is valid.\n"
-                self.__iat[decimal - 1] = iat
-                if iat == 0:
+                        f"The '{varName}({decimal})={str(ctx.Integers())}' can not be an array of integers, "\
+                        f"hence the first value '{varName}({decimal})={val}' will be evaluated as a valid value.\n"
+                self.__iat[decimal - 1] = val
+                if val == 0:
                     self.__setIatCol.remove(decimal)
                     if self.__numIatCol >= decimal:
                         self.__numIatCol = decimal - 1
@@ -235,56 +291,183 @@ class AmberMRParserListener(ParseTreeListener):
             else:
                 if ctx.Integers():
                     if self.__setIatCol is not None and len(self.__setIatCol) > 0:
-                        iatArray = ','.join([f"iat({iatCol})={self.__iat[iatCol - 1]}" for iatCol in self.__setIatCol if self.__iat[iatCol - 1] != 0])
+                        valArray = ','.join([f"{varName}({valCol})={self.__iat[valCol - 1]}"
+                                             for valCol in self.__setIatCol if self.__iat[valCol - 1] != 0])
                         self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
-                            f"You have mixed different syntaxes for the 'iat' variable, 'iat={iatArray}' "\
-                            f"and 'iat={str(ctx.Integers())}', which will overwrite.\n"
+                            f"You have mixed different syntaxes for the '{varName}' variable, '{varName}={valArray}' "\
+                            f"and '{varName}={str(ctx.Integers())}', which will overwrite.\n"
                     if self.__numIatCol > 0:
-                        zeroIatCols = [col for col, iat in enumerate(self.__iat) if iat == 0]
-                        maxCol = 8 if len(zeroIatCols) == 0 else min(zeroIatCols)
-                        iatArray = ','.join([str(iat) for col, iat in enumerate(self.__iat) if iat != 0 and col < maxCol])
+                        zeroCols = [col for col, val in enumerate(self.__iat) if val == 0]
+                        maxCol = maxCols if len(zeroCols) == 0 else min(zeroCols)
+                        valArray = ','.join([str(val) for col, val in enumerate(self.__iat) if val != 0 and col < maxCol])
                         self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
-                            f"You have overwritten the 'iat' variable, 'iat={iatArray}' "\
-                            f"and 'iat={str(ctx.Integers())}', which will overwrite.\n"
+                            f"You have overwritten the '{varName}' variable, '{varName}={valArray}' "\
+                            f"and '{varName}={str(ctx.Integers())}', which will overwrite.\n"
                     rawIntArray = str(ctx.Integers()).split(',')
                     numIatCol = 0
                     for col, rawInt in enumerate(rawIntArray):
-                        iat = int(rawInt)
-                        if iat == 0:
+                        val = int(rawInt)
+                        if val == 0:
                             break
-                        self.__iat[col] = iat
+                        self.__iat[col] = val
                         numIatCol += 1
                     self.__numIatCol = numIatCol
                 elif ctx.MultiplicativeInt():
                     if self.__setIatCol is not None and len(self.__setIatCol) > 0:
-                        iatArray = ','.join([f"iat({iatCol})={self.__iat[iatCol - 1]}" for iatCol in self.__setIatCol if self.__iat[iatCol - 1] != 0])
+                        valArray = ','.join([f"{varName}({valCol})={self.__iat[valCol - 1]}"
+                                             for valCol in self.__setIatCol if self.__iat[valCol - 1] != 0])
                         self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
-                            f"You have mixed different syntaxes for the 'iat' variable, 'iat={iatArray}' "\
-                            f"and 'iat={str(ctx.MultiplicativeInt())}', which will overwrite.\n"
+                            f"You have mixed different syntaxes for the '{varName}' variable, '{varName}={valArray}' "\
+                            f"and '{varName}={str(ctx.MultiplicativeInt())}', which will overwrite.\n"
                     if self.__numIatCol > 0:
-                        zeroIatCols = [col for col, iat in enumerate(self.__iat) if iat == 0]
-                        maxCol = 8 if len(zeroIatCols) == 0 else min(zeroIatCols)
-                        iatArray = ','.join([str(iat) for col, iat in enumerate(self.__iat) if iat != 0 and col < maxCol])
+                        zeroCols = [col for col, val in enumerate(self.__iat) if val == 0]
+                        maxCol = maxCols if len(zeroCols) == 0 else min(zeroCols)
+                        valArray = ','.join([str(val) for col, val in enumerate(self.__iat) if val != 0 and col < maxCol])
                         self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
-                            f"You have overwritten the 'iat' variable, 'iat={iatArray}' "\
-                            f"and 'iat={str(ctx.MultiplicativeInt())}', which will overwrite.\n"
+                            f"You have overwritten the '{varName}' variable, '{varName}={valArray}' "\
+                            f"and '{varName}={str(ctx.MultiplicativeInt())}', which will overwrite.\n"
                     rawMultInt = str(ctx.MultiplicativeInt()).split('*')
                     numIatCol = int(rawMultInt[0])
-                    if numIatCol <= 0 or numIatCol > 8:
+                    if numIatCol <= 0 or numIatCol > maxCols:
                         self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            f"The argument value of 'iat({numIatCol})' derived from '{str(ctx.MultiplicativeInt())}' must be in the range 1-8.\n"
+                            f"The argument value of '{varName}({numIatCol})' derived from "\
+                            f"'{str(ctx.MultiplicativeInt())}' must be in the range 1-{maxCols}.\n"
                         return
-                    iat = int(rawMultInt[1])
+                    val = int(rawMultInt[1])
                     for col in range(0, numIatCol):
-                        self.__iat[col] = iat
-                    if iat != 0:
+                        self.__iat[col] = val
+                    if val != 0:
                         self.__numIatCol = numIatCol
                     else:
                         self.__numIatCol = 0
                         self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            f"The 'iat' values '{iat}' derived from '{str(ctx.MultiplicativeInt())}' must be non-zero.\n"
+                            f"The '{varName}' values '{val}' derived from "\
+                            f"'{str(ctx.MultiplicativeInt())}' must be non-zero integer.\n"
                 if self.__numIatCol in (2, 3, 5, 6):  # possible to specify restraint type, see also detectRestraintType()
                     self.detectRestraintType(self.__numIatCol in (2, 6))
+
+        if ctx.IGR1() or ctx.IGR2() or ctx.IGR3() or ctx.IGR4() or\
+           ctx.IGR5() or ctx.IGR6() or ctx.IGR7() or ctx.IGR8():
+            maxCols = 200
+
+            varNum = 0
+            if ctx.IGR1():
+                varNum = 1
+            if ctx.IGR2():
+                varNum = 2
+            if ctx.IGR3():
+                varNum = 3
+            if ctx.IGR4():
+                varNum = 4
+            if ctx.IGR5():
+                varNum = 5
+            if ctx.IGR6():
+                varNum = 6
+            if ctx.IGR7():
+                varNum = 7
+            if ctx.IGR8():
+                varNum = 8
+
+            varName = 'igr' + str(varNum)
+
+            if self.__igr is None:
+                self.__igr = {}
+                self.__numIgrCol = {}
+                self.__setIgrCol = {}
+
+            if varNum not in self.__igr:
+                self.__igr[varNum] = [0] * maxCols
+                self.__numIgrCol[varNum] = 0
+                self.__setIgrCol[varNum] = None
+
+            if ctx.Decimal():
+                decimal = int(str(ctx.Decimal()))
+                if decimal <= 0 or decimal > maxCols:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"The argument value of '{varName}({decimal})' must be in the range 1-{maxCols}.\n"
+                    return
+                if self.__numIgrCol[varNum] > 0:
+                    nonpCols = [col for col, val in enumerate(self.__igr[varNum]) if val <= 0]
+                    maxCol = maxCols if len(nonpCols) == 0 else min(nonpCols)
+                    valArray = ','.join([str(val) for col, val in enumerate(self.__igr[varNum]) if val > 0 and col < maxCol])
+                    self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
+                        f"You have mixed different syntaxes for the '{varName}' variable, '{varName}={valArray}' "\
+                        f"and '{varName}({decimal})={str(ctx.Integers())}', which will overwrite.\n"
+                if self.__setIgrCol[varNum] is None:
+                    self.__setIgrCol[varNum] = []
+                if decimal in self.__setIgrCol[varNum]:
+                    self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
+                        f"The argument value of '{varName}({decimal})' must be unique. "\
+                        f"'{varName}({decimal})={str(ctx.Integers())}' will overwrite.\n"
+                else:
+                    self.__setIgrCol[varNum].append(decimal)
+                rawIntArray = str(ctx.Integers()).split(',')
+                val = int(rawIntArray[0])
+                if len(rawIntArray) > 1:
+                    self.warningMessage += f"[Multiple data] {self.__getCurrentRestraint()}"\
+                        f"The '{varName}({decimal})={str(ctx.Integers())}' can not be an array of integers, "\
+                        f"hence the first value '{varName}({decimal})={val}' will be evaluated as a valid value.\n"
+                self.__igr[varNum][decimal - 1] = val
+                if val == 0:
+                    self.__setIgrCol[varNum].remove(decimal)
+                    if self.__numIgrCol[varNum] >= decimal:
+                        self.__numIgrCol[varNum] = decimal - 1
+
+            else:
+                if ctx.Integers():
+                    if self.__setIgrCol[varNum] is not None and len(self.__setIgrCol[varNum]) > 0:
+                        valArray = ','.join([f"{varName}({valCol})={self.__igr[varNum][valCol - 1]}"
+                                             for valCol in self.__setIgrCol[varNum] if self.__igr[varNum][valCol - 1] > 0])
+                        self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
+                            f"You have mixed different syntaxes for the '{varName}' variable, '{varName}={valArray}' "\
+                            f"and '{varName}={str(ctx.Integers())}', which will overwrite.\n"
+                    if self.__numIgrCol[varNum] > 0:
+                        nonpCols = [col for col, val in enumerate(self.__igr[varNum]) if val <= 0]
+                        maxCol = maxCols if len(nonpCols) == 0 else min(nonpCols)
+                        valArray = ','.join([str(val) for col, val in enumerate(self.__igr[varNum]) if val > 0 and col < maxCol])
+                        self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
+                            f"You have overwritten the '{varName}' variable, '{varName}={valArray}' "\
+                            f"and '{varName}={str(ctx.Integers())}', which will overwrite.\n"
+                    rawIntArray = str(ctx.Integers()).split(',')
+                    numIgrCol = 0
+                    for col, rawInt in enumerate(rawIntArray):
+                        val = int(rawInt)
+                        if val <= 0:
+                            break
+                        self.__igr[varNum][col] = val
+                        numIgrCol += 1
+                    self.__numIgrCol[varNum] = numIgrCol
+                elif ctx.MultiplicativeInt():
+                    if self.__setIgrCol[varNum] is not None and len(self.__setIgrCol[varNum]) > 0:
+                        valArray = ','.join([f"{varName}({valCol})={self.__igr[varNum][valCol - 1]}"
+                                             for valCol in self.__setIgrCol[varNum] if self.__igr[varNum][valCol - 1] > 0])
+                        self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
+                            f"You have mixed different syntaxes for the '{varName}' variable, '{varName}={valArray}' "\
+                            f"and '{varName}={str(ctx.MultiplicativeInt())}', which will overwrite.\n"
+                    if self.__numIgrCol[varNum] > 0:
+                        nonpCols = [col for col, val in enumerate(self.__igr[varNum]) if val <= 0]
+                        maxCol = maxCols if len(nonpCols) == 0 else min(nonpCols)
+                        valArray = ','.join([str(val) for col, val in enumerate(self.__igr[varNum]) if val > 0 and col < maxCol])
+                        self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
+                            f"You have overwritten the '{varName}' variable, '{varName}={valArray}' "\
+                            f"and '{varName}={str(ctx.MultiplicativeInt())}', which will overwrite.\n"
+                    rawMultInt = str(ctx.MultiplicativeInt()).split('*')
+                    numIgrCol = int(rawMultInt[0])
+                    if numIgrCol <= 0 or numIgrCol > maxCols:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            f"The argument value of '{varName}({numIgrCol})' derived from "\
+                            f"'{str(ctx.MultiplicativeInt())}' must be in the range 1-{maxCols}.\n"
+                        return
+                    val = int(rawMultInt[1])
+                    for col in range(0, numIgrCol):
+                        self.__igr[varNum][col] = val
+                    if val > 0:
+                        self.__numIgrCol[varNum] = numIgrCol
+                    else:
+                        self.__numIgrCol[varNum] = 0
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            f"The '{varName}' values '{val}' derived from "\
+                            f"'{str(ctx.MultiplicativeInt())}' must be positive integer.\n"
 
         if ctx.RSTWT():
             self.detectRestraintType(bool(ctx.Real(1)))

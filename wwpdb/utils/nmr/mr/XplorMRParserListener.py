@@ -2353,7 +2353,7 @@ class XplorMRParserListener(ParseTreeListener):
                 if len(self.factor['chain_id']) == 0:
                     self.factor['atom_id'] = [None]
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        "Couldn't specify segment name {begChainId:!r}:{endChainId:!r} in the coordinates.\n"
+                        f"Couldn't specify segment name {begChainId:!r}:{endChainId:!r} in the coordinates.\n"
 
             else:
                 if ctx.Simple_name(0) or ctx.Double_quote_string(0):

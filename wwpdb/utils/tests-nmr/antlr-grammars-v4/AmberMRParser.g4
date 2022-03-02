@@ -71,8 +71,7 @@ restraint_factor:
 	(NSTEP1 | NSTEP2 | IFVARI | NINC | IXPK | NXPK | ICONSTR ) Equ_op_IP Integer Comma |
 	(R1 | R2 | R3 | R4 | RK2 | RK3 | R1A | R2A | R3A | R4A | RK2A | RK3A | R0 | K0 | R0A | K0A) Equ_op_RP Real Comma |
 	FXYZ Equ_op_BA BoolInts Comma_BA |
-	IAT L_paren_IP Decimal R_paren_A Equ_op_IP Integer Comma |
-	(IGR1 | IGR2 | IGR3 | IGR4 | IGR5 | IGR6 | IGR7 | IGR8) L_paren_IA Decimal R_paren_A Equ_op_IA (Integers | MultiplicativeInt) Comma_IA |
+	(IAT | IGR1 | IGR2 | IGR3 | IGR4 | IGR5 | IGR6 | IGR7 | IGR8) L_paren_IA Decimal R_paren_A Equ_op_IA (Integers | MultiplicativeInt) Comma_IA |
 	RSTWT L_paren_RP Decimal R_paren_A Equ_op_RP Real Comma |
 	(ATNAM | GRNAM1 | GRNAM2 | GRNAM3 | GRNAM4 | GRNAM5 | GRNAM6 | GRNAM7 | GRNAM8) L_paren_QA Decimal R_paren_A Equ_op_QA Qstrings Comma_QA;
 

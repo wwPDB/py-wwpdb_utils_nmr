@@ -8,7 +8,6 @@
     @author: Masashi Yokochi
 """
 import sys
-import re
 
 from antlr4 import ParseTreeListener
 from wwpdb.utils.nmr.mr.AmberMRParser import AmberMRParser
@@ -25,6 +24,7 @@ class AmberMRParserListener(ParseTreeListener):
     __verbose = None
     __lfh = None
 
+    nmrRestraints = 0       # AMBER: NMR restraints
     distRestraints = 0      # AMBER: Distance restraints
     angRestraints = 0       # AMBER: Angle restraints
     dihedRestraints = 0     # AMBER: Torsional restraints
@@ -96,8 +96,10 @@ class AmberMRParserListener(ParseTreeListener):
         # AmberPTParserListener
         self.__ptPL = ptPL
 
-        self.__maxArgDec = 0
+        self.__numIatCol = 0
+        self.__setIatCol = None
         self.__distLike = None
+        self.__iat = None
 
     # Enter a parse tree produced by AmberMRParser#amber_mr.
     def enterAmber_mr(self, ctx: AmberMRParser.Amber_mrContext):  # pylint: disable=unused-argument
@@ -121,40 +123,11 @@ class AmberMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by AmberMRParser#nmr_restraint.
     def enterNmr_restraint(self, ctx: AmberMRParser.Nmr_restraintContext):  # pylint: disable=unused-argument
-        self.__cur_subtype = None
-        self.__maxArgDec = 0
-        self.__distLike = False
+        pass
 
     # Exit a parse tree produced by AmberMRParser#nmr_restraint.
     def exitNmr_restraint(self, ctx: AmberMRParser.Nmr_restraintContext):  # pylint: disable=unused-argument
-        if self.__cur_subtype is not None:
-            pass
-        elif self.__maxArgDec == 2:
-            self.distRestraints += 1
-            self.__cur_subtype = 'dist'
-        elif self.__maxArgDec == 3:
-            self.angRestraints += 1
-            self.__cur_subtype = 'ang'
-        elif self.__maxArgDec == 4:  # torsional angle or general distance 2
-            if self.__distLike:
-                self.distRestraints += 1
-                self.__cur_subtype = 'dist'
-            else:
-                self.dihedRestraints += 1
-                self.__cur_subtype = 'dihed'
-        elif self.__maxArgDec == 5:
-            self.planeRestraints += 1
-            self.__cur_subtype = 'plane'
-        elif self.__maxArgDec == 6:  # general distance 3
-            self.distRestraints += 1
-            self.__cur_subtype = 'dist'
-        elif self.__maxArgDec == 8:  # plane-plane angle or general distance 4
-            if self.__distLike:
-                self.distRestraints += 1
-                self.__cur_subtype = 'dist'
-            else:
-                self.planeRestraints += 1
-                self.__cur_subtype = 'plane'
+        pass
 
     # Enter a parse tree produced by AmberMRParser#noesy_volume_restraint.
     def enterNoesy_volume_restraint(self, ctx: AmberMRParser.Noesy_volume_restraintContext):  # pylint: disable=unused-argument
@@ -198,36 +171,167 @@ class AmberMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by AmberMRParser#restraint_statement.
     def enterRestraint_statement(self, ctx: AmberMRParser.Restraint_statementContext):  # pylint: disable=unused-argument
-        pass
+        self.nmrRestraints += 1
+
+        self.__cur_subtype = None
+        self.__numIatCol = 0
+        self.__setIatCol = None
+        self.__distLike = False
+        self.__iat = [0] * 8
 
     # Exit a parse tree produced by AmberMRParser#restraint_statement.
     def exitRestraint_statement(self, ctx: AmberMRParser.Restraint_statementContext):  # pylint: disable=unused-argument
-        pass
+        if self.__setIatCol is not None and len(self.__setIatCol) > 0:
+            setIatCol = sorted(self.__setIatCol)
+            self.__numIatCol = max(setIatCol)
+            if list(range(1, self.__numIatCol + 1)) != setIatCol:
+                misIatCol = ','.join([str(col) for col in set(range(1, self.__numIatCol + 1)) - set(setIatCol)])
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"Couldn't specify NMR restraint type because of missing 'iat({misIatCol})' clause(s).\n"
+                return
+
+        self.detectRestraintType(self.__distLike)
+
+        if self.__cur_subtype is None:
+            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                "Couldn't specify NMR restraint type because the number of columns in the 'iat' clause did not match.\n"
 
     # Enter a parse tree produced by AmberMRParser#restraint_factor.
     def enterRestraint_factor(self, ctx: AmberMRParser.Restraint_factorContext):
         if ctx.IAT():
             if ctx.Decimal():
-                decimal = int(str(ctx.Decimal))
-                if decimal > self.__maxArgDec:
-                    self.__maxArgDec = decimal
+                decimal = int(str(ctx.Decimal()))
+                if decimal <= 0 or decimal > 8:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"The argument value of 'iat({decimal})' must be in the range 1-8.\n"
+                    return
+                if self.__numIatCol > 0:
+                    zeroIatCols = [col for col, iat in enumerate(self.__iat) if iat == 0]
+                    maxCol = 8 if len(zeroIatCols) == 0 else min(zeroIatCols)
+                    iatArray = ','.join([str(iat) for col, iat in enumerate(self.__iat) if iat != 0 and col < maxCol])
+                    self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
+                        f"You have mixed different syntaxes for the 'iat' variable, 'iat={iatArray}' "\
+                        f"and 'iat({decimal})={str(ctx.Integers())}', which will overwrite.\n"
+                if self.__setIatCol is None:
+                    self.__setIatCol = []
+                if decimal in self.__setIatCol:
+                    self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
+                        f"The argument value of 'iat({decimal})' must be unique. "\
+                        f"'iat({decimal})={str(ctx.Integers())}' will overwrite.\n"
+                self.__setIatCol.append(decimal)
+                rawIntArray = str(ctx.Integers()).split(',')
+                iat = int(rawIntArray[0])
+                if len(rawIntArray) > 1:
+                    self.warningMessage += f"[Multiple data] {self.__getCurrentRestraint()}"\
+                        f"The 'iat({decimal})={str(ctx.Integers())}' can not be an array of integers. "\
+                        f"Only the first value 'iat({decimal})={iat}' is valid.\n"
+                self.__iat[decimal - 1] = iat
+                if iat == 0:
+                    self.__setIatCol.remove(decimal)
+                    if self.__numIatCol >= decimal:
+                        self.__numIatCol = decimal - 1
+                        self.__cur_subtype = None
+
             else:
                 if ctx.Integers():
-                    rowIntArray = str(ctx.Integers()).split(',')
-                    self.__maxArgDec = len(rowIntArray)
+                    if self.__setIatCol is not None and len(self.__setIatCol) > 0:
+                        iatArray = ','.join([f"iat({iatCol})={self.__iat[iatCol - 1]}" for iatCol in self.__setIatCol if self.__iat[iatCol - 1] != 0])
+                        self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
+                            f"You have mixed different syntaxes for the 'iat' variable, 'iat={iatArray}' "\
+                            f"and 'iat={str(ctx.Integers())}', which will overwrite.\n"
+                    if self.__numIatCol > 0:
+                        zeroIatCols = [col for col, iat in enumerate(self.__iat) if iat == 0]
+                        maxCol = 8 if len(zeroIatCols) == 0 else min(zeroIatCols)
+                        iatArray = ','.join([str(iat) for col, iat in enumerate(self.__iat) if iat != 0 and col < maxCol])
+                        self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
+                            f"You have overwritten the 'iat' variable, 'iat={iatArray}' "\
+                            f"and 'iat={str(ctx.Integers())}', which will overwrite.\n"
+                    rawIntArray = str(ctx.Integers()).split(',')
+                    numIatCol = 0
+                    for col, rawInt in enumerate(rawIntArray):
+                        iat = int(rawInt)
+                        if iat == 0:
+                            break
+                        self.__iat[col] = iat
+                        numIatCol += 1
+                    self.__numIatCol = numIatCol
                 elif ctx.MultiplicativeInt():
-                    rowMultInt = str(ctx.MultiplicativeInt()).split('*')
-                    self.__maxArgDec = int(re.sub(r"[\s]*", "", rowMultInt[0]))
+                    if self.__setIatCol is not None and len(self.__setIatCol) > 0:
+                        iatArray = ','.join([f"iat({iatCol})={self.__iat[iatCol - 1]}" for iatCol in self.__setIatCol if self.__iat[iatCol - 1] != 0])
+                        self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
+                            f"You have mixed different syntaxes for the 'iat' variable, 'iat={iatArray}' "\
+                            f"and 'iat={str(ctx.MultiplicativeInt())}', which will overwrite.\n"
+                    if self.__numIatCol > 0:
+                        zeroIatCols = [col for col, iat in enumerate(self.__iat) if iat == 0]
+                        maxCol = 8 if len(zeroIatCols) == 0 else min(zeroIatCols)
+                        iatArray = ','.join([str(iat) for col, iat in enumerate(self.__iat) if iat != 0 and col < maxCol])
+                        self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
+                            f"You have overwritten the 'iat' variable, 'iat={iatArray}' "\
+                            f"and 'iat={str(ctx.MultiplicativeInt())}', which will overwrite.\n"
+                    rawMultInt = str(ctx.MultiplicativeInt()).split('*')
+                    numIatCol = int(rawMultInt[0])
+                    if numIatCol <= 0 or numIatCol > 8:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            f"The argument value of 'iat({numIatCol})' derived from '{str(ctx.MultiplicativeInt())}' must be in the range 1-8.\n"
+                        return
+                    iat = int(rawMultInt[1])
+                    for col in range(0, numIatCol):
+                        self.__iat[col] = iat
+                    if iat != 0:
+                        self.__numIatCol = numIatCol
+                    else:
+                        self.__numIatCol = 0
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            f"The 'iat' values '{iat}' derived from '{str(ctx.MultiplicativeInt())}' must be non-zero.\n"
+                if self.__numIatCol in (2, 3, 5, 6):  # possible to specify restraint type, see also detectRestraintType()
+                    self.detectRestraintType(self.__numIatCol in (2, 6))
 
         if ctx.RSTWT():
-            if ctx.Real(1):
-                self.__distLike = True
+            self.detectRestraintType(bool(ctx.Real(1)))
 
         if ctx.IALTD():
-            self.__distLike = True
+            self.detectRestraintType(True)
 
         if ctx.RJCOEF():
-            self.__distLike = False
+            self.detectRestraintType(False)
+
+    def detectRestraintType(self, distLike):
+        self.__distLike = distLike
+
+        if self.__cur_subtype is not None:
+            return
+
+        if self.__numIatCol == 2:
+            self.distRestraints += 1
+            self.__cur_subtype = 'dist'
+
+        elif self.__numIatCol == 3:
+            self.angRestraints += 1
+            self.__cur_subtype = 'ang'
+
+        elif self.__numIatCol == 4:  # torsional angle or general distance 2
+            if distLike:
+                self.distRestraints += 1
+                self.__cur_subtype = 'dist'
+            else:
+                self.dihedRestraints += 1
+                self.__cur_subtype = 'dihed'
+
+        elif self.__numIatCol == 5:
+            self.planeRestraints += 1
+            self.__cur_subtype = 'plane'
+
+        elif self.__numIatCol == 6:  # general distance 3
+            self.distRestraints += 1
+            self.__cur_subtype = 'dist'
+
+        elif self.__numIatCol == 8:  # plane-plane angle or general distance 4
+            if distLike:
+                self.distRestraints += 1
+                self.__cur_subtype = 'dist'
+            else:
+                self.planeRestraints += 1
+                self.__cur_subtype = 'plane'
 
     # Exit a parse tree produced by AmberMRParser#restraint_factor.
     def exitRestraint_factor(self, ctx: AmberMRParser.Restraint_factorContext):
@@ -413,7 +517,7 @@ class AmberMRParserListener(ParseTreeListener):
             return f"[Check the {self.pcsRestraints}th row of pseudocontact shift restraints] "
         if self.__cur_subtype == 'csa':
             return f"[Check the {self.csaRestraints}th row of residual CSA or pseudo-CSA restraints] "
-        return ''
+        return f"[Check the {self.nmrRestraints}th row of NMR restraints] "
 
     def getContentSubtype(self):
         """ Return content subtype of AMBER MR file.

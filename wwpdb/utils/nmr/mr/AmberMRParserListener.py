@@ -18,6 +18,14 @@ from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
 
 
+# maximum column size of IAT
+MAX_COL_IAT = 8
+
+
+# maximum column size of IGRn
+MAX_COL_IGR = 200
+
+
 # This class defines a complete listener for a parse tree produced by AmberMRParser.
 class AmberMRParserListener(ParseTreeListener):
 
@@ -78,7 +86,7 @@ class AmberMRParserListener(ParseTreeListener):
     iat = None
     distLike = None
 
-    # IGR#
+    # IGRn
     numIgrCol = None
     setIgrCol = None
     igr = None
@@ -131,7 +139,7 @@ class AmberMRParserListener(ParseTreeListener):
         self.iat = None
         self.distLike = None
 
-        # IGR#
+        # IGRn
         self.numIgrCol = None
         self.setIgrCol = None
         self.igr = None
@@ -250,18 +258,16 @@ class AmberMRParserListener(ParseTreeListener):
                 "Couldn't specify NMR restraint type because the number of columns in the 'iat' clause did not match.\n"
             return
 
-        # cross-check between 'iat' and 'igr#' variables
-        maxCols = 200
-
+        # cross-check between IAT and IGRn variables
         for col in range(0, self.numIatCol):
-            varNum = col + 1
             iat = self.iat[col]
 
+            varNum = col + 1
             varName = 'igr' + str(varNum)
             if iat > 0 and self.igr is not None and varNum in self.igr:
                 if len(self.igr[varNum]) > 0:
                     nonpCols = [col for col, val in enumerate(self.igr[varNum]) if val <= 0]
-                    maxCol = maxCols if len(nonpCols) == 0 else min(nonpCols)
+                    maxCol = MAX_COL_IGR if len(nonpCols) == 0 else min(nonpCols)
                     valArray = ','.join([str(val) for col, val in enumerate(self.igr[varNum]) if val > 0 and col < maxCol])
                     if len(valArray) > 0:
                         self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
@@ -274,7 +280,7 @@ class AmberMRParserListener(ParseTreeListener):
                         f"'{varName}' is missing in spite of 'iat({varNum})={iat}'.\n"
                 else:
                     nonpCols = [col for col, val in enumerate(self.igr[varNum]) if val <= 0]
-                    maxCol = maxCols if len(nonpCols) == 0 else min(nonpCols)
+                    maxCol = MAX_COL_IGR if len(nonpCols) == 0 else min(nonpCols)
                     valArray = ','.join([str(val) for col, val in enumerate(self.igr[varNum]) if val > 0 and col < maxCol])
                     if len(valArray) == 0:
                         self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
@@ -331,18 +337,17 @@ class AmberMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by AmberMRParser#restraint_factor.
     def enterRestraint_factor(self, ctx: AmberMRParser.Restraint_factorContext):
         if ctx.IAT():
-            maxCols = 8
             varName = 'iat'
 
             if ctx.Decimal():
                 decimal = int(str(ctx.Decimal()))
-                if decimal <= 0 or decimal > maxCols:
+                if decimal <= 0 or decimal > MAX_COL_IAT:
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"The argument value of '{varName}({decimal})' must be in the range 1-{maxCols}.\n"
+                        f"The argument value of '{varName}({decimal})' must be in the range 1-{MAX_COL_IAT}.\n"
                     return
                 if self.numIatCol > 0:
                     zeroCols = [col for col, val in enumerate(self.iat) if val == 0]
-                    maxCol = maxCols if len(zeroCols) == 0 else min(zeroCols)
+                    maxCol = MAX_COL_IAT if len(zeroCols) == 0 else min(zeroCols)
                     valArray = ','.join([str(val) for col, val in enumerate(self.iat) if val != 0 and col < maxCol])
                     self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
                         f"You have mixed different syntaxes for the '{varName}' variable, '{varName}={valArray}' "\
@@ -378,7 +383,7 @@ class AmberMRParserListener(ParseTreeListener):
                             f"and '{varName}={str(ctx.Integers())}', which will overwrite.\n"
                     if self.numIatCol > 0:
                         zeroCols = [col for col, val in enumerate(self.iat) if val == 0]
-                        maxCol = maxCols if len(zeroCols) == 0 else min(zeroCols)
+                        maxCol = MAX_COL_IAT if len(zeroCols) == 0 else min(zeroCols)
                         valArray = ','.join([str(val) for col, val in enumerate(self.iat) if val != 0 and col < maxCol])
                         self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
                             f"You have overwritten the '{varName}' variable, '{varName}={valArray}' "\
@@ -401,17 +406,17 @@ class AmberMRParserListener(ParseTreeListener):
                             f"and '{varName}={str(ctx.MultiplicativeInt())}', which will overwrite.\n"
                     if self.numIatCol > 0:
                         zeroCols = [col for col, val in enumerate(self.iat) if val == 0]
-                        maxCol = maxCols if len(zeroCols) == 0 else min(zeroCols)
+                        maxCol = MAX_COL_IAT if len(zeroCols) == 0 else min(zeroCols)
                         valArray = ','.join([str(val) for col, val in enumerate(self.iat) if val != 0 and col < maxCol])
                         self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
                             f"You have overwritten the '{varName}' variable, '{varName}={valArray}' "\
                             f"and '{varName}={str(ctx.MultiplicativeInt())}', which will overwrite.\n"
                     rawMultInt = str(ctx.MultiplicativeInt()).split('*')
                     numIatCol = int(rawMultInt[0])
-                    if numIatCol <= 0 or numIatCol > maxCols:
+                    if numIatCol <= 0 or numIatCol > MAX_COL_IAT:
                         self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                             f"The argument value of '{varName}({numIatCol})' derived from "\
-                            f"'{str(ctx.MultiplicativeInt())}' must be in the range 1-{maxCols}.\n"
+                            f"'{str(ctx.MultiplicativeInt())}' must be in the range 1-{MAX_COL_IAT}.\n"
                         return
                     val = int(rawMultInt[1])
                     for col in range(0, numIatCol):
@@ -428,8 +433,6 @@ class AmberMRParserListener(ParseTreeListener):
 
         elif ctx.IGR1() or ctx.IGR2() or ctx.IGR3() or ctx.IGR4()\
                 or ctx.IGR5() or ctx.IGR6() or ctx.IGR7() or ctx.IGR8():
-            maxCols = 200
-
             varNum = 0
             if ctx.IGR1():
                 varNum = 1
@@ -456,19 +459,19 @@ class AmberMRParserListener(ParseTreeListener):
                 self.setIgrCol = {}
 
             if varNum not in self.igr:
-                self.igr[varNum] = [0] * maxCols
+                self.igr[varNum] = [0] * MAX_COL_IGR
                 self.numIgrCol[varNum] = 0
                 self.setIgrCol[varNum] = None
 
             if ctx.Decimal():
                 decimal = int(str(ctx.Decimal()))
-                if decimal <= 0 or decimal > maxCols:
+                if decimal <= 0 or decimal > MAX_COL_IGR:
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"The argument value of '{varName}({decimal})' must be in the range 1-{maxCols}.\n"
+                        f"The argument value of '{varName}({decimal})' must be in the range 1-{MAX_COL_IGR}.\n"
                     return
                 if self.numIgrCol[varNum] > 0:
                     nonpCols = [col for col, val in enumerate(self.igr[varNum]) if val <= 0]
-                    maxCol = maxCols if len(nonpCols) == 0 else min(nonpCols)
+                    maxCol = MAX_COL_IGR if len(nonpCols) == 0 else min(nonpCols)
                     valArray = ','.join([str(val) for col, val in enumerate(self.igr[varNum]) if val > 0 and col < maxCol])
                     self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
                         f"You have mixed different syntaxes for the '{varName}' variable, '{varName}={valArray}' "\
@@ -503,7 +506,7 @@ class AmberMRParserListener(ParseTreeListener):
                             f"and '{varName}={str(ctx.Integers())}', which will overwrite.\n"
                     if self.numIgrCol[varNum] > 0:
                         nonpCols = [col for col, val in enumerate(self.igr[varNum]) if val <= 0]
-                        maxCol = maxCols if len(nonpCols) == 0 else min(nonpCols)
+                        maxCol = MAX_COL_IGR if len(nonpCols) == 0 else min(nonpCols)
                         valArray = ','.join([str(val) for col, val in enumerate(self.igr[varNum]) if val > 0 and col < maxCol])
                         self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
                             f"You have overwritten the '{varName}' variable, '{varName}={valArray}' "\
@@ -526,17 +529,17 @@ class AmberMRParserListener(ParseTreeListener):
                             f"and '{varName}={str(ctx.MultiplicativeInt())}', which will overwrite.\n"
                     if self.numIgrCol[varNum] > 0:
                         nonpCols = [col for col, val in enumerate(self.igr[varNum]) if val <= 0]
-                        maxCol = maxCols if len(nonpCols) == 0 else min(nonpCols)
+                        maxCol = MAX_COL_IGR if len(nonpCols) == 0 else min(nonpCols)
                         valArray = ','.join([str(val) for col, val in enumerate(self.igr[varNum]) if val > 0 and col < maxCol])
                         self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
                             f"You have overwritten the '{varName}' variable, '{varName}={valArray}' "\
                             f"and '{varName}={str(ctx.MultiplicativeInt())}', which will overwrite.\n"
                     rawMultInt = str(ctx.MultiplicativeInt()).split('*')
                     numIgrCol = int(rawMultInt[0])
-                    if numIgrCol <= 0 or numIgrCol > maxCols:
+                    if numIgrCol <= 0 or numIgrCol > MAX_COL_IGR:
                         self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                             f"The argument value of '{varName}({numIgrCol})' derived from "\
-                            f"'{str(ctx.MultiplicativeInt())}' must be in the range 1-{maxCols}.\n"
+                            f"'{str(ctx.MultiplicativeInt())}' must be in the range 1-{MAX_COL_IGR}.\n"
                         return
                     val = int(rawMultInt[1])
                     for col in range(0, numIgrCol):

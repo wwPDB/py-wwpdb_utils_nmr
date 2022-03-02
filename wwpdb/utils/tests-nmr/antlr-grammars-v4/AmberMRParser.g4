@@ -185,10 +185,10 @@ coordinate4_rst_func_call:
 				distance_rst_func_call Comma_F? Real_F Comma_F? distance_rst_func_call Comma_F? Real_F R_brakt_F;
 
 restraint_func_expr:
-	Int_F |
-	L_paren_F Int_F R_paren_F |
-	L_brace_F Int_F R_brace_F |
-	L_brakt_F Int_F R_brakt_F |
+	Integer_F |
+	L_paren_F Integer_F R_paren_F |
+	L_brace_F Integer_F R_brace_F |
+	L_brakt_F Integer_F R_brakt_F |
 	Ambmask_F |
 	L_paren_F Ambmask_F R_paren_F |
 	L_brace_F Ambmask_F R_brace_F |

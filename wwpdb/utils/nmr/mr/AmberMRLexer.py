@@ -1192,7 +1192,7 @@ class AmberMRLexer(Lexer):
     R_paren_A = 188
     Decimal = 189
     SPACE_A = 190
-    Int_F = 191
+    Integer_F = 191
     Real_F = 192
     Ambmask_F = 193
     Comma_F = 194
@@ -1245,7 +1245,7 @@ class AmberMRLexer(Lexer):
             "Reals", "MultiplicativeReal", "RETURN_RA", "Equ_op_BA", "Comma_BA", 
             "BoolInts", "RETURN_BA", "L_paren_QA", "Equ_op_QA", "Comma_QA", 
             "Qstrings", "RETURN_QA", "Comma_A", "R_paren_A", "Decimal", 
-            "SPACE_A", "Int_F", "Real_F", "Ambmask_F", "Comma_F", "L_paren_F", 
+            "SPACE_A", "Integer_F", "Real_F", "Ambmask_F", "Comma_F", "L_paren_F", 
             "R_paren_F", "L_brace_F", "R_brace_F", "L_brakt_F", "R_brakt_F", 
             "R_QUOT", "SPACE_F" ]
 
@@ -1287,7 +1287,7 @@ class AmberMRLexer(Lexer):
                   "Equ_op_BA", "Comma_BA", "BoolInts", "SPACE_BA", "RETURN_BA", 
                   "L_paren_QA", "Equ_op_QA", "Comma_QA", "QSTRING", "Qstrings", 
                   "SPACE_QA", "RETURN_QA", "Comma_A", "R_paren_A", "Decimal", 
-                  "SPACE_A", "Int_F", "Real_F", "Ambmask_F", "Comma_F", 
+                  "SPACE_A", "Integer_F", "Real_F", "Ambmask_F", "Comma_F", 
                   "L_paren_F", "R_paren_F", "L_brace_F", "R_brace_F", "L_brakt_F", 
                   "R_brakt_F", "R_QUOT", "SPACE_F" ]
 

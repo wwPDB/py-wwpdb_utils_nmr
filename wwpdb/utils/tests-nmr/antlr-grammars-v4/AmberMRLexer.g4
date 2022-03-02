@@ -486,7 +486,7 @@ SPACE_A:		[ \t\r\n]+ -> skip;
 
 mode FUNC_CALL_MODE; // function call
 
-Int_F:			INTEGER;
+Integer_F:		INTEGER;
 Real_F:			REAL;
 Ambmask_F:		':' INTEGER '@' SIMPLE_NAME; // ambmask format
 

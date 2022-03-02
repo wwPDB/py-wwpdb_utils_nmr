@@ -569,7 +569,7 @@ class AmberMRParser ( Parser ):
                       "RETURN_RA", "Equ_op_BA", "Comma_BA", "BoolInts", 
                       "RETURN_BA", "L_paren_QA", "Equ_op_QA", "Comma_QA", 
                       "Qstrings", "RETURN_QA", "Comma_A", "R_paren_A", "Decimal", 
-                      "SPACE_A", "Int_F", "Real_F", "Ambmask_F", "Comma_F", 
+                      "SPACE_A", "Integer_F", "Real_F", "Ambmask_F", "Comma_F", 
                       "L_paren_F", "R_paren_F", "L_brace_F", "R_brace_F", 
                       "L_brakt_F", "R_brakt_F", "R_QUOT", "SPACE_F" ]
 
@@ -804,7 +804,7 @@ class AmberMRParser ( Parser ):
     R_paren_A=188
     Decimal=189
     SPACE_A=190
-    Int_F=191
+    Integer_F=191
     Real_F=192
     Ambmask_F=193
     Comma_F=194
@@ -4772,8 +4772,8 @@ class AmberMRParser ( Parser ):
             super().__init__(parent, invokingState)
             self.parser = parser
 
-        def Int_F(self):
-            return self.getToken(AmberMRParser.Int_F, 0)
+        def Integer_F(self):
+            return self.getToken(AmberMRParser.Integer_F, 0)
 
         def L_paren_F(self):
             return self.getToken(AmberMRParser.L_paren_F, 0)
@@ -4829,7 +4829,7 @@ class AmberMRParser ( Parser ):
             if la_ == 1:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 737
-                self.match(AmberMRParser.Int_F)
+                self.match(AmberMRParser.Integer_F)
                 pass
 
             elif la_ == 2:
@@ -4837,7 +4837,7 @@ class AmberMRParser ( Parser ):
                 self.state = 738
                 self.match(AmberMRParser.L_paren_F)
                 self.state = 739
-                self.match(AmberMRParser.Int_F)
+                self.match(AmberMRParser.Integer_F)
                 self.state = 740
                 self.match(AmberMRParser.R_paren_F)
                 pass
@@ -4847,7 +4847,7 @@ class AmberMRParser ( Parser ):
                 self.state = 741
                 self.match(AmberMRParser.L_brace_F)
                 self.state = 742
-                self.match(AmberMRParser.Int_F)
+                self.match(AmberMRParser.Integer_F)
                 self.state = 743
                 self.match(AmberMRParser.R_brace_F)
                 pass
@@ -4857,7 +4857,7 @@ class AmberMRParser ( Parser ):
                 self.state = 744
                 self.match(AmberMRParser.L_brakt_F)
                 self.state = 745
-                self.match(AmberMRParser.Int_F)
+                self.match(AmberMRParser.Integer_F)
                 self.state = 746
                 self.match(AmberMRParser.R_brakt_F)
                 pass
@@ -5193,7 +5193,7 @@ class AmberMRParser ( Parser ):
                 self.state = 823
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==AmberMRParser.PLANE_F or _la==AmberMRParser.COM_F or ((((_la - 191)) & ~0x3f) == 0 and ((1 << (_la - 191)) & ((1 << (AmberMRParser.Int_F - 191)) | (1 << (AmberMRParser.Ambmask_F - 191)) | (1 << (AmberMRParser.Comma_F - 191)) | (1 << (AmberMRParser.L_paren_F - 191)) | (1 << (AmberMRParser.L_brace_F - 191)) | (1 << (AmberMRParser.L_brakt_F - 191)))) != 0):
+                while _la==AmberMRParser.PLANE_F or _la==AmberMRParser.COM_F or ((((_la - 191)) & ~0x3f) == 0 and ((1 << (_la - 191)) & ((1 << (AmberMRParser.Integer_F - 191)) | (1 << (AmberMRParser.Ambmask_F - 191)) | (1 << (AmberMRParser.Comma_F - 191)) | (1 << (AmberMRParser.L_paren_F - 191)) | (1 << (AmberMRParser.L_brace_F - 191)) | (1 << (AmberMRParser.L_brakt_F - 191)))) != 0):
                     self.state = 818
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
@@ -5223,7 +5223,7 @@ class AmberMRParser ( Parser ):
                 self.state = 837
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==AmberMRParser.PLANE_F or _la==AmberMRParser.COM_F or ((((_la - 191)) & ~0x3f) == 0 and ((1 << (_la - 191)) & ((1 << (AmberMRParser.Int_F - 191)) | (1 << (AmberMRParser.Ambmask_F - 191)) | (1 << (AmberMRParser.Comma_F - 191)) | (1 << (AmberMRParser.L_paren_F - 191)) | (1 << (AmberMRParser.L_brace_F - 191)) | (1 << (AmberMRParser.L_brakt_F - 191)))) != 0):
+                while _la==AmberMRParser.PLANE_F or _la==AmberMRParser.COM_F or ((((_la - 191)) & ~0x3f) == 0 and ((1 << (_la - 191)) & ((1 << (AmberMRParser.Integer_F - 191)) | (1 << (AmberMRParser.Ambmask_F - 191)) | (1 << (AmberMRParser.Comma_F - 191)) | (1 << (AmberMRParser.L_paren_F - 191)) | (1 << (AmberMRParser.L_brace_F - 191)) | (1 << (AmberMRParser.L_brakt_F - 191)))) != 0):
                     self.state = 832
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
@@ -5253,7 +5253,7 @@ class AmberMRParser ( Parser ):
                 self.state = 851
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==AmberMRParser.PLANE_F or _la==AmberMRParser.COM_F or ((((_la - 191)) & ~0x3f) == 0 and ((1 << (_la - 191)) & ((1 << (AmberMRParser.Int_F - 191)) | (1 << (AmberMRParser.Ambmask_F - 191)) | (1 << (AmberMRParser.Comma_F - 191)) | (1 << (AmberMRParser.L_paren_F - 191)) | (1 << (AmberMRParser.L_brace_F - 191)) | (1 << (AmberMRParser.L_brakt_F - 191)))) != 0):
+                while _la==AmberMRParser.PLANE_F or _la==AmberMRParser.COM_F or ((((_la - 191)) & ~0x3f) == 0 and ((1 << (_la - 191)) & ((1 << (AmberMRParser.Integer_F - 191)) | (1 << (AmberMRParser.Ambmask_F - 191)) | (1 << (AmberMRParser.Comma_F - 191)) | (1 << (AmberMRParser.L_paren_F - 191)) | (1 << (AmberMRParser.L_brace_F - 191)) | (1 << (AmberMRParser.L_brakt_F - 191)))) != 0):
                     self.state = 846
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)

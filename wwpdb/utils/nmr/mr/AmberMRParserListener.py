@@ -325,7 +325,7 @@ class AmberMRParserListener(ParseTreeListener):
         else:  # retrieve from Sander's comment
             pass
 
-        if self.__cur_subtype == 'dist':
+        if self.__cur_subtype == 'dist' and len(self.iat) == 2:
             print('# ' + ' '.join(self.lastComment))
             for atom_1 in self.atomSelectionSet[0]:
                 for atom_2 in self.atomSelectionSet[1]:
@@ -781,6 +781,8 @@ class AmberMRParserListener(ParseTreeListener):
     def __getCurrentRestraint(self):
         if self.__cur_subtype == 'dist':
             return f"[Check the {self.distRestraints}th row of distance restraints] "
+        if self.__cur_subtype == 'ang':
+            return f"[Check the {self.angRestraints}th row of angle restraints] "
         if self.__cur_subtype == 'dihed':
             return f"[Check the {self.dihedRestraints}th row of torsional angle restraints] "
         if self.__cur_subtype == 'rdc':
@@ -802,6 +804,7 @@ class AmberMRParserListener(ParseTreeListener):
         """
 
         contentSubtype = {'dist_restraint': self.distRestraints,
+                          'ang_restraint': self.angRestraints,
                           'dihed_restraint': self.dihedRestraints,
                           'rdc_restraint': self.rdcRestraints,
                           'plane_restraint': self.planeRestraints,

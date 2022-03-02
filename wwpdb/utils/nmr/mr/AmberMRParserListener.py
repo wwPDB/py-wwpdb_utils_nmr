@@ -26,6 +26,38 @@ MAX_COL_IAT = 8
 MAX_COL_IGR = 200
 
 
+# column sizes of distance restraint
+COL_DIST = 2
+
+
+# column sizes of angle restraint
+COL_ANG = 3
+
+
+# column sizes of torsional angle restraint
+COL_DIHED = 4
+
+
+# column sizes of plane-point angle restraint
+COL_PLANE_POINT = 5
+
+
+# column sizes of plane-plane angle restraint
+COL_PLANE_PLANE = 8
+
+
+# column sizes of generalized distance restraint (2 coordinate vectors)
+COL_DIST_COORD2 = 4
+
+
+# column sizes of generalized distance restraint (3 coordinate vectors)
+COL_DIST_COORD3 = 6
+
+
+# column sizes of generalized distance restraint (4 coordinate vectors)
+COL_DIST_COORD4 = 8
+
+
 # This class defines a complete listener for a parse tree produced by AmberMRParser.
 class AmberMRParserListener(ParseTreeListener):
 
@@ -35,7 +67,7 @@ class AmberMRParserListener(ParseTreeListener):
     nmrRestraints = 0       # AMBER: NMR restraints
     distRestraints = 0      # AMBER: Distance restraints
     angRestraints = 0       # AMBER: Angle restraints
-    dihedRestraints = 0     # AMBER: Torsional restraints
+    dihedRestraints = 0     # AMBER: Torsional angle restraints
     planeRestraints = 0     # AMBER: Plane-point/plane angle restraints
     noepkRestraints = 0     # AMBER: NOESY volume restraints
     hvycsRestraints = 0     # AMBER: Chemical shift restraints
@@ -53,10 +85,13 @@ class AmberMRParserListener(ParseTreeListener):
     __nefT = None
 
     # AmberPTParserListener
-    __ptPL = None
+    __ptPL = None  # pylint: disable=unused-private-member
 
     # AmberPTParserListener.getAtomNumberDict()
     __atomNumberDict = None
+
+    # AMBER atom number dictionary reconstructing from Sander's comments
+    __sanderAtomNumberDict = None
 
     # CIF reader
     __cR = None
@@ -125,10 +160,12 @@ class AmberMRParserListener(ParseTreeListener):
         self.__nefT = NEFTranslator(verbose, log, self.__ccU, self.__csStat) if nefT is None else nefT
 
         # AmberPTParserListener
-        self.__ptPL = ptPL
+        self.__ptPL = ptPL  # pylint: disable=unused-private-member
 
         if ptPL is not None:
             self.__atomNumberDict = ptPL.getAtomNumberDict()
+        else:
+            self.__sanderAtomNumberDict = {}
 
         # last Sander's comment
         self.lastComment = None
@@ -298,7 +335,7 @@ class AmberMRParserListener(ParseTreeListener):
 
         self.iat = self.iat[0:self.numIatCol]  # trimming default zero integer
 
-        # convert Amber atomic number to coordinate's atom_id
+        # convert AMBER atom numbers to corresponding coordinate atoms based on AMBER parameter/topology file
         if self.__atomNumberDict is not None:
 
             for col, iat in enumerate(self.iat):
@@ -322,17 +359,37 @@ class AmberMRParserListener(ParseTreeListener):
 
                 self.atomSelectionSet.append(atomSelection)
 
-        # try to retrieve from Sander's comment
+        # try to map AMBER atom numbers based on Sander's comment
         else:
-            if self.lastComment is None:
-                raise KeyError(f"[Fatal error] {self.__getCurrentRestraint()}"
-                               "Couldn't recognize AMBER atom numbers "
-                               "because neither AMBER parameter/topology file nor Sander's comment are available.")
+            if self.__cur_subtype == 'dist' and len(self.iat) == COL_DIST:
+                if self.lastComment is None:
+                    raise KeyError(f"[Fatal error] {self.__getCurrentRestraint()}"
+                                   "Couldn't recognize AMBER atom numbers "
+                                   "because neither AMBER parameter/topology file nor Sander's comment are available.")
 
-        if self.__cur_subtype == 'dist' and len(self.iat) == 2:
+                for col, iat in enumerate(self.iat):
+                    atomSelection = []
+
+                    if iat > 0:
+                        if iat in self.__sanderAtomNumberDict:
+                            atomSelection.append(self.__sanderAtomNumberDict[iat])
+                        else:  # i.g. 90 ARG HG2 92 PHE QE 4.56nnn
+                            pass
+                    elif iat < 0:
+                        varNum = col + 1
+                        if varNum in self.igr:
+                            for igr in self.igr[varNum]:
+                                if igr in self.__sanderAtomNumberDict:
+                                    atomSelection.append(self.__sanderAtomNumberDict[igr])
+                                else:
+                                    pass
+
+                    self.atomSelectionSet.append(atomSelection)
+
+        if self.__cur_subtype == 'dist' and len(self.iat) == COL_DIST:
             if self.lastComment is not None:
                 print('# ' + ' '.join(self.lastComment))
-            if len(self.atomSelectionSet) == 2:
+            if len(self.atomSelectionSet) == COL_DIST:
                 for atom_1 in self.atomSelectionSet[0]:
                     for atom_2 in self.atomSelectionSet[1]:
                         print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
@@ -587,15 +644,15 @@ class AmberMRParserListener(ParseTreeListener):
         if self.__cur_subtype is not None:
             return
 
-        if self.numIatCol == 2:
+        if self.numIatCol == COL_DIST:
             self.distRestraints += 1
             self.__cur_subtype = 'dist'
 
-        elif self.numIatCol == 3:
+        elif self.numIatCol == COL_ANG:
             self.angRestraints += 1
             self.__cur_subtype = 'ang'
 
-        elif self.numIatCol == 4:  # torsional angle or general distance 2
+        elif self.numIatCol == COL_DIHED:  # torsional angle or generalized distance 2
             if distLike:
                 self.distRestraints += 1
                 self.__cur_subtype = 'dist'
@@ -603,15 +660,15 @@ class AmberMRParserListener(ParseTreeListener):
                 self.dihedRestraints += 1
                 self.__cur_subtype = 'dihed'
 
-        elif self.numIatCol == 5:
+        elif self.numIatCol == COL_PLANE_POINT:
             self.planeRestraints += 1
             self.__cur_subtype = 'plane'
 
-        elif self.numIatCol == 6:  # general distance 3
+        elif self.numIatCol == COL_DIST_COORD3:  # generalized distance 3
             self.distRestraints += 1
             self.__cur_subtype = 'dist'
 
-        elif self.numIatCol == 8:  # plane-plane angle or general distance 4
+        elif self.numIatCol == COL_PLANE_PLANE:  # plane-plane angle or generalized distance 4
             if distLike:
                 self.distRestraints += 1
                 self.__cur_subtype = 'dist'

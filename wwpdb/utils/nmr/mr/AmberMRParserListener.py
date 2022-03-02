@@ -326,13 +326,16 @@ class AmberMRParserListener(ParseTreeListener):
             pass
 
         if self.__cur_subtype == 'dist' and len(self.iat) == 2:
-            print('# ' + ' '.join(self.lastComment))
+            if self.lastComment is not None:
+                print('# ' + ' '.join(self.lastComment))
             for atom_1 in self.atomSelectionSet[0]:
                 for atom_2 in self.atomSelectionSet[1]:
                     print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
                           f"atom_1={atom_1} atom_2={atom_2} "
                           f"lower_linear_limit={self.lowerLinearLimit:.3} lower_limit={self.lowerLimit:.3} "
                           f"upper_limit={self.upperLimit:.3} upper_linear_limit={self.upperLinearLimit: .3}")
+
+        self.lastComment = None
 
     # Enter a parse tree produced by AmberMRParser#restraint_factor.
     def enterRestraint_factor(self, ctx: AmberMRParser.Restraint_factorContext):

@@ -374,17 +374,34 @@ class AmberMRParserListener(ParseTreeListener):
             if self.__cur_subtype == 'dist' and len(self.iat) == COL_DIST:
                 if self.lastComment is None:
                     raise KeyError(f"[Fatal error] {self.__getCurrentRestraint()}"
-                                   "Couldn't recognize AMBER atom numbers "
+                                   "Failed to recognize AMBER atom numbers "
                                    "because neither AMBER parameter/topology file nor Sander's comment are available.")
 
                 for col, iat in enumerate(self.iat):
                     atomSelection = []
 
+                    offset = col * 3
+
                     if iat > 0:
                         if iat in self.__sanderAtomNumberDict:
                             atomSelection.append(self.__sanderAtomNumberDict[iat])
-                        else:  # i.g. 90 ARG HG2 92 PHE QE 4.56nnn
-                            pass
+                        else:  # i.g. 90 ARG HG2 92 PHE QE 4.56
+                            try:
+                                factor = {'auth_seq_id': int(self.lastComment[offset + 0]),
+                                          'auth_comp_id': self.lastComment[offset + 1],
+                                          'auth_atom_id': self.lastComment[offset + 2],
+                                          'iat_atom_number': iat
+                                          }
+                                if not self.updateSanderAtomNumberDict(factor):
+                                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                        f"Couldn't specify 'iat({varNum})={iat}' in the coordinates "\
+                                        f"based on Sander's comment {' '.join(self.lastComment[offset:offset+3])!r}.\n"
+                            except ValueError:
+                                raise ValueError(f"[Fatal error] {self.__getCurrentRestraint()}"
+                                                 f"Failed to recognize Sander's comment {' '.join(self.lastComment[offset:offset+3])!r} as a distance restraint.")
+                            except IndexError:
+                                raise IndexError(f"[Fatal error] {self.__getCurrentRestraint()}"
+                                                 f"Failed to recognize Sander's comment {' '.join(self.lastComment[offset:offset+3])!r} as a distance restraint.")
                     elif iat < 0:
                         varNum = col + 1
                         if varNum in self.igr:
@@ -392,11 +409,32 @@ class AmberMRParserListener(ParseTreeListener):
                                 if igr in self.__sanderAtomNumberDict:
                                     atomSelection.append(self.__sanderAtomNumberDict[igr])
                                 else:
-                                    pass
+                                    try:
+                                        factor = {'auth_seq_id': int(self.lastComment[offset + 0]),
+                                                  'auth_comp_id': self.lastComment[offset + 1],
+                                                  'auth_atom_id': self.lastComment[offset + 2],
+                                                  'igr_atom_number': self.igr[varNum]
+                                                  }
+                                        if not self.updateSanderAtomNumberDict(factor):
+                                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                                f"Couldn't specify 'iat({varNum})={iat}' in the coordinates "\
+                                                f"based on Sander's comment {' '.join(self.lastComment[offset:offset+3])!r}.\n"
+                                    except ValueError:
+                                        raise ValueError(f"[Fatal error] {self.__getCurrentRestraint()}"
+                                                         f"Failed to recognize Sander's comment {' '.join(self.lastComment[offset:offset+3])!r} as a distance restraint.")
+                                    except IndexError:
+                                        raise IndexError(f"[Fatal error] {self.__getCurrentRestraint()}"
+                                                         f"Failed to recognize Sander's comment {' '.join(self.lastComment[offset:offset+3])!r} as a distance restraint.")
 
                     self.atomSelectionSet.append(atomSelection)
 
         self.lastComment = None
+
+    def updateSanderAtomNumberDict(self, factor):
+        """ Try to update Sander atom number dictionary.
+        """
+
+        return False
 
     # Enter a parse tree produced by AmberMRParser#restraint_factor.
     def enterRestraint_factor(self, ctx: AmberMRParser.Restraint_factorContext):
@@ -879,5 +917,10 @@ class AmberMRParserListener(ParseTreeListener):
                           }
 
         return {k: 1 for k, v in contentSubtype.items() if v > 0}
+
+    def getSanderAtomNumberDict(self):
+        """ Return AMBER atomic number dictionary based on Sander's comments.
+        """
+        return self.__sanderAtomNumberDict
 
 # del AmberMRParser

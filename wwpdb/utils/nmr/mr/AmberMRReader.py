@@ -127,6 +127,18 @@ class AmberMRReader:
             if self.__verbose:
                 self.__lfh.write(f"+AmberMRReader.parse() ++ Error - {str(e)}\n")
             return None
+        except KeyError as e:
+            if self.__verbose:
+                self.__lfh.write(f"+AmberMRReader.parse() ++ KeyError - {str(e)}\n")
+            return None
+        except ValueError as e:
+            if self.__verbose:
+                self.__lfh.write(f"+AmberMRReader.parse() ++ ValueError - {str(e)}\n")
+            return None
+        except IndexError as e:
+            if self.__verbose:
+                self.__lfh.write(f"+AmberMRReader.parse() ++ IndexError - {str(e)}\n")
+            return None
 
 
 if __name__ == "__main__":

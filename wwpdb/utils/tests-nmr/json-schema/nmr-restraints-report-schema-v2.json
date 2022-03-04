@@ -185,6 +185,11 @@
               "type": "integer",
               "minimum": 1
             },
+            "geo_restraint": {
+              "description": "The number of lists associated with coordinate geometry restraints.",
+              "type": "integer",
+              "minimum": 1
+            },
             "noepk_restraint": {
               "description": "The number of lists associated with NOESY peak volume restraints.",
               "type": "integer",
@@ -367,6 +372,13 @@
             },
             "hbond_restraint": {
               "description": "The array provides the polymer sequences in data loops for hydrogen bond geometry restraints.",
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/polymer_sequence_in_loop"
+              }
+            },
+            "geo_restraint": {
+              "description": "The array provides the polymer sequences in data loops for coordinate geometry restraints.",
               "type": "array",
               "items": {
                 "$ref": "#/definitions/polymer_sequence_in_loop"
@@ -4237,6 +4249,23 @@
             },
             "model_poly_seq_vs_hbond_restraint": {
               "description": "The object provides sequence alignment between sequence of the coordinates and sequence in data loops for hydrogen bond geometry restraints.",
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "allOf": [
+                  {
+                    "$ref": "#/definitions/sequence_alignment_in_coord"
+                  },
+                  {
+                    "$ref": "#/definitions/common_sequence_alignment"
+                  }
+                ]
+              }
+            },
+            "model_poly_seq_vs_geo_restraint": {
+              "description": "The object provides sequence alignment between sequence of the coordinates and sequence in data loops for coordinate geometry restraints.",
               "type": [
                 "array",
                 "null"

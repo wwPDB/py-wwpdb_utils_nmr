@@ -126,8 +126,8 @@ any_restraint:
 */
 func_type_def:
 	(CIRCULARHARMONIC | HARMONIC | SIGMOID | SQUARE_WELL) Float Float |
-	(PERIODICBOUNDED | BOUNDED) Float Float Float Float Simple_name? |
-	OFFSETPERIODICBOUNDED Float Float Float Float Float Float Simple_name? |
+	(PERIODICBOUNDED | BOUNDED) Float Float Float Float? Simple_name? |
+	OFFSETPERIODICBOUNDED Float Float Float Float Float Float? Simple_name? |
 	(AMBERPERIODIC | CHARMMPERIODIC) Float Integer Float |
 	(CIRCULARSIGMOIDAL | LINEAR_PENALTY) Float Float Float Float |
 	CIRCULARSPLINE Float+ |

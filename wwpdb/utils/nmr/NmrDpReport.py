@@ -57,6 +57,7 @@
 # 21 Dec-2021  M. Yokochi - add 'exactly_overlaid_model' warning type (DAOTHER-7544)
 # 27-Jan-2022  M. Yokochi - add restraint types described by XPLOR-NIH, CNS, CYANA, and AMBER systems (NMR restraint remediation)
 # 22 Feb-2022  M. Yokochi - add 'complemented_chemical_shift' warning type (DAOTHER-7681, issue #1)
+# 04-Mar-2022  M. Yokochi - add coordinate geometry restraints (DAOTHER-7690, NMR restraint remediation)
 ##
 """ Wrapper class for NMR data processing report.
     @author: Masashi Yokochi
@@ -1647,7 +1648,7 @@ class NmrDpReportInputSource:
                                  'procs_restraint', 'rama_restraint', 'radi_restraint', 'diff_restraint',
                                  'nbase_restraint', 'csa_restraint', 'ang_restraint', 'pre_restraint',
                                  'pcs_restraint', 'prdc_restraint', 'pang_restraint', 'pccr_restraint',
-                                 'hbond_restraint', 'noepk_restraint',
+                                 'hbond_restraint', 'geo_restraint', 'noepk_restraint',
                                  'spectral_peak', 'spectral_peak_alt', 'topology')
 
         self.__contents = {item: None for item in self.items}
@@ -1736,7 +1737,8 @@ class NmrDpReportSequenceAlignment:
                       'model_poly_seq_vs_radi_restraint', 'model_poly_seq_vs_diff_restraint', 'model_poly_seq_vs_nbase_restraint',
                       'model_poly_seq_vs_csa_restraint', 'model_poly_seq_vs_ang_restraint', 'model_poly_seq_vs_pre_restraint',
                       'model_poly_seq_vs_pcs_restraint', 'model_poly_seq_vs_prdc_restraint', 'model_poly_seq_vs_pang_restraint',
-                      'model_poly_seq_vs_pccr_restraint', 'model_poly_seq_vs_hbond_restraint', 'model_poly_seq_vs_noepk_restraint',
+                      'model_poly_seq_vs_pccr_restraint', 'model_poly_seq_vs_hbond_restraint', 'model_poly_seq_vs_geo_restraint',
+                      'model_poly_seq_vs_noepk_restraint',
                       'nmr_poly_seq_vs_chem_shift', 'nmr_poly_seq_vs_dist_restraint', 'nmr_poly_seq_vs_dihed_restraint',
                       'nmr_poly_seq_vs_rdc_restraint', 'nmr_poly_seq_vs_spectral_peak', 'nmr_poly_seq_vs_spectral_peak_alt')
 

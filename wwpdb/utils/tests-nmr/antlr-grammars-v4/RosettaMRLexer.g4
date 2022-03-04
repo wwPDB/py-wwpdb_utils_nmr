@@ -51,15 +51,15 @@ END:			'END';
  See also https://www.rosettacommons.org/docs/latest/rosetta_basics/file_types/constraint-file
 */
 CIRCULARHARMONIC:	'CIRCULARHARMONIC';	// x0 sd
-PERIODICBOUNDED:	'PERIODICBOUNDED';	// period lb ub sd rswitch tag (rswith and tag is not optional, tag is not numeric for ROSETTA, but tag may be optional for CS-ROSETTA)
-OFFSETPERIODICBOUNDED:	'OFFSETPERIODICBOUNDED';// offset period lb ub sd rswitch tag (rswith and tag is not optional, tag is not numeric for ROSETTA, but tag may be optional for CS-ROSETTA)
+PERIODICBOUNDED:	'PERIODICBOUNDED';	// period lb ub sd rswitch tag (rswith and tag is not optional, tag is not numeric)
+OFFSETPERIODICBOUNDED:	'OFFSETPERIODICBOUNDED';// offset period lb ub sd rswitch tag (rswith and tag is not optional, tag is not numeric)
 AMBERPERIODIC:		'AMBERPERIODIC';	// x0 n_period k
 CHARMMPERIODIC:		'CHARMMPERIODIC';	// x0 n_period k
 CIRCULARSIGMOIDAL:	'CIRCULARSIGMOIDAL';	// xC m o1 o2
 CIRCULARSPLINE:		'CIRCULARSPLINE';	// weight [36 energy values]
 HARMONIC:		'HARMONIC';		// x0 sd
 FLAT_HARMONIC:		'FLAT_HARMONIC';	// x0 sd tol
-BOUNDED:		'BOUNDED';		// lb ub sd rswitch tag (if tag is not numeric, rswitch will be omitted and set 0.5 by default, tag is not optional for ROSETTA, but tag is optional for CS-ROSETTA)
+BOUNDED:		'BOUNDED';		// lb ub sd rswitch tag (if tag is not numeric, rswitch will be omitted and set 0.5 by default)
 GAUSSIANFUNC:		'GAUSSIANFUNC';		// mean sd tag WEIGHT weight
 WEIGHT:			'WEIGHT';
 SOGFUNC:		'SOGFUNC';		// n_funcs [mean1 sdev1 weight1 [mean2 sdev2 weight2 [...]]] (repeat n_funcs times)
@@ -107,5 +107,5 @@ fragment SIMPLE_NAME:	START_CHAR NAME_CHAR*;
 
 SPACE:			[ \t\r\n]+ -> skip;
 COMMENT:		'{*' (COMMENT | .)*? '*}' -> channel(HIDDEN);
-LINE_COMMENT:		('#' | '!') ~[\r\n]* -> channel(HIDDEN);
+LINE_COMMENT:		('#' | '!' | ';' | '/') ~[\r\n]* -> channel(HIDDEN);
 

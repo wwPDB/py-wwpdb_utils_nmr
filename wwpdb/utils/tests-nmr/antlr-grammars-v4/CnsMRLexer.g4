@@ -387,8 +387,6 @@ fragment SIMPLE_NAME:	START_CHAR NAME_CHAR*;
 
 L_paren:		'(';
 R_paren:		')';
-L_brace:		'{';
-R_brace:		'}';
 Colon:			':';
 Equ_op:			'=';
 Lt_op:			'<';

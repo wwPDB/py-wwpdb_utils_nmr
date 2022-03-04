@@ -49,74 +49,74 @@ xplor_nih_mr:
 	EOF;
 
 distance_restraint:
-	Noe L_brace noe_statement R_brace End;
+	Noe noe_statement End;
 
 dihedral_angle_restraint:
-	Restraints Dihedral L_brace dihedral_statement R_brace End;
+	Restraints Dihedral dihedral_statement End;
 
 rdc_restraint:
-	Sanisotropy L_brace sani_statement R_brace End |
-	(Xdipolar | Dipolar) L_brace xdip_statement R_brace End |
-	VectorAngle L_brace vean_statement R_brace End |
-	Tensor L_brace tens_statement R_brace End |
-	Anisotropy L_brace anis_statement R_brace End;
+	Sanisotropy sani_statement End |
+	(Xdipolar | Dipolar) xdip_statement End |
+	VectorAngle vean_statement End |
+	Tensor tens_statement End |
+	Anisotropy anis_statement End;
 
 planar_restraint:
-	Restraints Planar L_brace planar_statement R_brace End;
+	Restraints Planar planar_statement End;
 
 antidistance_restraint:
-	Xadc L_brace antidistance_statement R_brace End;
+	Xadc antidistance_statement End;
 
 coupling_restraint:
-	Coupling L_brace coupling_statement R_brace End;
+	Coupling coupling_statement End;
 
 carbon_shift_restraint:
-	Carbon L_brace carbon_shift_statement R_brace End;
+	Carbon carbon_shift_statement End;
 
 proton_shift_restraint:
-	Proton L_brace proton_shift_statement R_brace End;
+	Proton proton_shift_statement End;
 
 dihedral_angle_db_restraint:
-	Ramachandran L_brace ramachandran_statement R_brace End;
+	Ramachandran ramachandran_statement End;
 
 radius_of_gyration_restraint:
-	Collapse L_brace collapse_statement R_brace End;
+	Collapse collapse_statement End;
 
 diffusion_anisotropy_restraint:
-	Danisotropy L_brace diffusion_statement R_brace End;
+	Danisotropy diffusion_statement End;
 
 orientation_db_restraint:
-	Orient L_brace orientation_statement R_brace End;
+	Orient orientation_statement End;
 
 csa_restraint:
-	Dcsa L_brace csa_statement R_brace End;
+	Dcsa csa_statement End;
 
 pcsa_restraint:
-	Pcsa L_brace pcsa_statement R_brace End;
+	Pcsa pcsa_statement End;
 
 one_bond_coupling_restraint:
-	OneBond L_brace one_bond_coupling_statement R_brace End;
+	OneBond one_bond_coupling_statement End;
 
 angle_db_restraint:
-	AngleDb L_brace angle_db_statement R_brace End;
+	AngleDb angle_db_statement End;
 
 pre_restraint:
-	Paramagnetic L_brace pre_statement R_brace End;
+	Paramagnetic pre_statement End;
 
 pcs_restraint:
-	Xpcs L_brace pcs_statement R_brace End;
+	Xpcs pcs_statement End;
 
 prdc_restraint:
-	Xrdcoupling L_brace prdc_statement R_brace End;
+	Xrdcoupling prdc_statement End;
 
 porientation_restraint:
-	Xangle L_brace porientation_statement R_brace End;
+	Xangle porientation_statement End;
 
 pccr_restraint:
-	Xccr L_brace pccr_statement R_brace End;
+	Xccr pccr_statement End;
 
 hbond_restraint:
-	Hbda L_brace hbond_statement R_brace End;
+	Hbda hbond_statement End;
 
 /* XPLOR-NIH: Distance restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node377.html
@@ -134,7 +134,7 @@ noe_statement:
 	Ncount Simple_names Integer |
 	Nrestraints Equ_op Integer |
 	Potential Simple_names Noe_potential |
-	Predict L_brace predict_statement R_brace End |
+	Predict predict_statement End |
 	Print Threshold Equ_op? Real |
 	Reset |
 	Rswitch Simple_names Real |
@@ -251,7 +251,7 @@ anis_assign:
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/plan_syntax.html
 */
 planar_statement:
-	Group L_brace group_statement R_brace |
+	Group group_statement |
 	Initialize;
 
 group_statement:

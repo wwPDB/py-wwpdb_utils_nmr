@@ -38,40 +38,40 @@ cns_mr:
 	EOF;
 
 distance_restraint:
-	Noe L_brace noe_statement R_brace End;
+	Noe noe_statement End;
 
 dihedral_angle_restraint:
-	Restraints Dihedral L_brace dihedral_statement R_brace End;
+	Restraints Dihedral dihedral_statement End;
 
 plane_restraint:
-	Restraints Plane L_brace plane_statement R_brace End;
+	Restraints Plane plane_statement End;
 
 harmonic_restraint:
-	Restraints Harmonic L_brace harmonic_statement R_brace End;
+	Restraints Harmonic harmonic_statement End;
 
 rdc_restraint:
-	Sanisotropy L_brace sani_statement R_brace End;
+	Sanisotropy sani_statement End;
 
 coupling_restraint:
-	Coupling L_brace coupling_statement R_brace End;
+	Coupling coupling_statement End;
 
 carbon_shift_restraint:
-	Carbon L_brace carbon_shift_statement R_brace End;
+	Carbon carbon_shift_statement End;
 
 proton_shift_restraint:
-	Proton L_brace proton_shift_statement R_brace End;
+	Proton proton_shift_statement End;
 
 conformation_db_restraint:
-	Conformation L_brace conformation_statement R_brace End;
+	Conformation conformation_statement End;
 
 diffusion_anisotropy_restraint:
-	Danisotropy L_brace diffusion_statement R_brace End;
+	Danisotropy diffusion_statement End;
 
 one_bond_coupling_restraint:
-	OneBond L_brace one_bond_coupling_statement R_brace End;
+	OneBond one_bond_coupling_statement End;
 
 angle_db_restraint:
-	AngleDb L_brace angle_db_statement R_brace End;
+	AngleDb angle_db_statement End;
 
 /* CNS: Distance restraints - Syntax - noe
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
@@ -89,16 +89,16 @@ noe_statement:
 	Den Initialize |
 	Den Update Gamma Equ_op Real Kappa Equ_op Real |
 	Distribute Simple_name Simple_name Real |
-	Ensemble L_brace *? R_brace End |
+	Ensemble *? End |
 	Monomers Simple_names Integer |
 	Ncount Simple_names Integer |
 	Nrestraints Equ_op Integer |
 	Outd |
 	Partition Equ_op Integer |
 	Potential Simple_names Noe_potential |
-	Predict L_brace predict_statement R_brace End |
+	Predict predict_statement End |
 	Print Threshold Equ_op Real |
-	Raverage Simple_name L_brace *? R_brace End |
+	Raverage Simple_name *? End |
 	Reset |
 	Rswitch Simple_names Real |
 	Scale Simple_names Real |
@@ -106,7 +106,7 @@ noe_statement:
 	SqConstant Simple_names Real |
 	SqExponent Simple_names Real |
 	SqOffset Simple_names Real |
-	Taverage Simple_name L_brace *? R_brace End |
+	Taverage Simple_name *? End |
 	Temperature Equ_op Real;
 
 noe_assign:
@@ -134,7 +134,7 @@ dihedral_assign:
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
 */
 plane_statement:
-	Group L_brace group_statement R_brace |
+	Group group_statement |
 	Initialize |
 	Print_any;
 

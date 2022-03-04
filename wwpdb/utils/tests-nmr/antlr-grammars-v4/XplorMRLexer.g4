@@ -579,7 +579,7 @@ Not_op:			N O T;
 */
 Comma:			',';
 Complex:		L_paren Real Comma Real R_paren;
-Integer:		('+' | '-')? DECIMAL;
+Integer:		DECIMAL;
 Logical:		'TRUE' | 'FALSE' | 'ON' | 'OFF';
 Real:			('+' | '-')? (DECIMAL | DEC_DOT_DEC) (E ('+' | '-')? DECIMAL)?;
 Double_quote_string:	'"' ~'"'+ '"';

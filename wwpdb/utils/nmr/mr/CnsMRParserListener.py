@@ -71,6 +71,7 @@ class CnsMRParserListener(ParseTreeListener):
 
     # CIF reader
     __cR = None
+    __hasCoord = False
 
     # data item name for model ID in 'atom_site' category
     __modelNumName = None
@@ -113,13 +114,15 @@ class CnsMRParserListener(ParseTreeListener):
         self.__verbose = verbose
         self.__lfh = log
         self.__cR = cR
+        self.__hasCoord = cR is not None
 
-        dict = checkCoordinates(verbose, log, cR, polySeq)
-        self.__modelNumName = dict['model_num_name']
-        self.__authAsymId = dict['auth_asym_id']
-        self.__authSeqId = dict['auth_seq_id']
-        self.__authAtomId = dict['auth_atom_id']
-        self.__polySeq = dict['polymer_sequence']
+        if self.__hasCoord:
+            dict = checkCoordinates(verbose, log, cR, polySeq)
+            self.__modelNumName = dict['model_num_name']
+            self.__authAsymId = dict['auth_asym_id']
+            self.__authSeqId = dict['auth_seq_id']
+            self.__authAtomId = dict['auth_atom_id']
+            self.__polySeq = dict['polymer_sequence']
 
         # CCD accessing utility
         self.__ccU = ChemCompUtil(verbose, log) if ccU is None else ccU
@@ -642,6 +645,9 @@ class CnsMRParserListener(ParseTreeListener):
         """ Consume factor expressions as atom selection if possible.
         """
 
+        if not self.__hasCoord:
+            cifCheck = False
+
         if ('atom_id' in _factor and _factor['atom_id'][0] is None)\
            or ('atom_selection' in _factor and len(_factor['atom_selection']) == 0):
             _factor = {'atom_selection': []}
@@ -924,6 +930,8 @@ class CnsMRParserListener(ParseTreeListener):
             clauseName = 'all' if ctx.All() else 'known'
             if self.__verbose:
                 print("  " * self.depth + f"--> {clauseName}")
+            if not self.__hasCoord:
+                return
             try:
 
                 atomSelection =\
@@ -972,6 +980,8 @@ class CnsMRParserListener(ParseTreeListener):
             clauseName = 'around' if ctx.Around() else 'saround'
             if self.__verbose:
                 print("  " * self.depth + f"--> {clauseName}")
+            if not self.__hasCoord:
+                return
             around = float(str(ctx.Real(0)))
             _atomSelection = []
 
@@ -1206,6 +1216,8 @@ class CnsMRParserListener(ParseTreeListener):
         elif ctx.Attribute():
             if self.__verbose:
                 print("  " * self.depth + "--> attribute")
+            if not self.__hasCoord:
+                return
             absolute = bool(ctx.Abs())
             _attr_prop = str(ctx.Attr_properties())
             attr_prop = _attr_prop.lower()
@@ -1435,6 +1447,8 @@ class CnsMRParserListener(ParseTreeListener):
         elif ctx.BondedTo():
             if self.__verbose:
                 print("  " * self.depth + "--> bondedto")
+            if not self.__hasCoord:
+                return
             if 'atom_selection' in self.factor and len(self.factor['atom_selection']) > 0:
                 _atomSelection = []
 
@@ -1593,6 +1607,8 @@ class CnsMRParserListener(ParseTreeListener):
         elif ctx.ByGroup():
             if self.__verbose:
                 print("  " * self.depth + "--> bygroup")
+            if not self.__hasCoord:
+                return
             if 'atom_selection' in self.factor and len(self.factor['atom_selection']) > 0:
                 _atomSelection = []
 
@@ -1698,6 +1714,8 @@ class CnsMRParserListener(ParseTreeListener):
         elif ctx.ByRes():
             if self.__verbose:
                 print("  " * self.depth + "--> byres")
+            if not self.__hasCoord:
+                return
             if 'atom_selection' in self.factor and len(self.factor['atom_selection']) > 0:
                 _atomSelection = []
 
@@ -1788,6 +1806,8 @@ class CnsMRParserListener(ParseTreeListener):
             clauseName = 'fbox' if ctx.Fbox() else 'sfbox'
             if self.__verbose:
                 print("  " * self.depth + f"--> {clauseName}")
+            if not self.__hasCoord:
+                return
             xmin = float(str(ctx.Real(0)))
             xmax = float(str(ctx.Real(1)))
             ymin = float(str(ctx.Real(2)))
@@ -1908,7 +1928,8 @@ class CnsMRParserListener(ParseTreeListener):
         elif ctx.Not_op():
             if self.__verbose:
                 print("  " * self.depth + "--> not")
-
+            if not self.__hasCoord:
+                return
             try:
 
                 _atomSelection =\
@@ -1937,6 +1958,8 @@ class CnsMRParserListener(ParseTreeListener):
         elif ctx.Point():
             if self.__verbose:
                 print("  " * self.depth + "--> point")
+            if not self.__hasCoord:
+                return
             if ctx.Tail():
 
                 if self.inVector3D_tail is not None:
@@ -2059,6 +2082,8 @@ class CnsMRParserListener(ParseTreeListener):
         elif ctx.Pseudo():
             if self.__verbose:
                 print("  " * self.depth + "--> pseudo")
+            if not self.__hasCoord:
+                return
             atomSelection = []
 
             try:
@@ -2178,6 +2203,8 @@ class CnsMRParserListener(ParseTreeListener):
         elif ctx.Tag():
             if self.__verbose:
                 print("  " * self.depth + "--> tag")
+            if not self.__hasCoord:
+                return
             atomSelection = []
             _sequenceSelect = []
 

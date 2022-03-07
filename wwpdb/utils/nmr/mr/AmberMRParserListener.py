@@ -105,6 +105,7 @@ class AmberMRParserListener(ParseTreeListener):
 
     # CIF reader
     __cR = None
+    __hasCoord = False
 
     # data item name for model ID in 'atom_site' category
     __modelNumName = None
@@ -152,13 +153,15 @@ class AmberMRParserListener(ParseTreeListener):
         self.__verbose = verbose
         self.__lfh = log
         self.__cR = cR
+        self.__hasCoord = cR is not None
 
-        dict = checkCoordinates(verbose, log, cR, polySeq)
-        self.__modelNumName = dict['model_num_name']
-        self.__authAsymId = dict['auth_asym_id']
-        self.__authSeqId = dict['auth_seq_id']
-        self.__authAtomId = dict['auth_atom_id']
-        self.__polySeq = dict['polymer_sequence']
+        if self.__hasCoord:
+            dict = checkCoordinates(verbose, log, cR, polySeq)
+            self.__modelNumName = dict['model_num_name']
+            self.__authAsymId = dict['auth_asym_id']
+            self.__authSeqId = dict['auth_seq_id']
+            self.__authAtomId = dict['auth_atom_id']
+            self.__polySeq = dict['polymer_sequence']
 
         # CCD accessing utility
         self.__ccU = ChemCompUtil(verbose, log) if ccU is None else ccU
@@ -443,6 +446,9 @@ class AmberMRParserListener(ParseTreeListener):
     def updateSanderAtomNumberDict(self, factor, cifCheck=True):
         """ Try to update Sander atom number dictionary.
         """
+
+        if not self.__hasCoord:
+            citCheck = False
 
         for ps in self.__polySeq:
             if factor['auth_seq_id'] in ps['seq_id']:

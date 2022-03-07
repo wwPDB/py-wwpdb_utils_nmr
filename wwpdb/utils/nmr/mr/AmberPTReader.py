@@ -53,7 +53,7 @@ class AmberPTReader:
         # BMRB chemical shift statistics
         self.__csStat = BMRBChemShiftStat(verbose, log, self.__ccU) if csStat is None else csStat
 
-    def parse(self, ptFilePath, cifFilePath):
+    def parse(self, ptFilePath, cifFilePath=None):
         """ Parse AMBER PT file.
             @return: AmberPTParserListener for success or None otherwise.
         """
@@ -65,15 +65,16 @@ class AmberPTReader:
                     self.__lfh.write(f"AmberPTReader.parse() {ptFilePath} is not accessible.\n")
                 return None
 
-            if not os.access(cifFilePath, os.R_OK):
-                if self.__verbose:
-                    self.__lfh.write(f"AmberPTReader.parse() {cifFilePath} is not accessible.\n")
-                return None
-
-            if self.__cR is None:
-                self.__cR = CifReader(self.__verbose, self.__lfh)
-                if not self.__cR.parse(cifFilePath):
+            if cifFilePath is not None:
+                if not os.access(cifFilePath, os.R_OK):
+                    if self.__verbose:
+                        self.__lfh.write(f"AmberPTReader.parse() {cifFilePath} is not accessible.\n")
                     return None
+
+                if self.__cR is None:
+                    self.__cR = CifReader(self.__verbose, self.__lfh)
+                    if not self.__cR.parse(cifFilePath):
+                        return None
 
             with open(ptFilePath) as ifp:
 

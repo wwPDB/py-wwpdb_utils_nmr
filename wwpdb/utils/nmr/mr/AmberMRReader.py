@@ -63,7 +63,7 @@ class AmberMRReader:
         # AmberPTParserListener
         self.__ptPL = ptPL
 
-    def parse(self, mrFilePath, cifFilePath, ptFilePath=None):
+    def parse(self, mrFilePath, cifFilePath=None, ptFilePath=None):
         """ Parse AMBER MR file.
             @return: AmberMRParserListener for success or None otherwise.
         """
@@ -75,15 +75,16 @@ class AmberMRReader:
                     self.__lfh.write(f"AmberMRReader.parse() {mrFilePath} is not accessible.\n")
                 return None
 
-            if not os.access(cifFilePath, os.R_OK):
-                if self.__verbose:
-                    self.__lfh.write(f"AmberMRReader.parse() {cifFilePath} is not accessible.\n")
-                return None
-
-            if self.__cR is None:
-                self.__cR = CifReader(self.__verbose, self.__lfh)
-                if not self.__cR.parse(cifFilePath):
+            if cifFilePath is not None:
+                if not os.access(cifFilePath, os.R_OK):
+                    if self.__verbose:
+                        self.__lfh.write(f"AmberMRReader.parse() {cifFilePath} is not accessible.\n")
                     return None
+
+                if self.__cR is None:
+                    self.__cR = CifReader(self.__verbose, self.__lfh)
+                    if not self.__cR.parse(cifFilePath):
+                        return None
 
             if ptFilePath is not None and self.__ptPL is None:
                 ptR = AmberPTReader(self.__verbose, self.__lfh, self.__cR, self.__polySeqModel,

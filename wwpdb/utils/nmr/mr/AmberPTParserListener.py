@@ -154,8 +154,9 @@ class AmberPTParserListener(ParseTreeListener):
     def __init__(self, verbose=True, log=sys.stdout, cR=None, polySeqModel=None,
                  ccU=None, csStat=None):
 
-        dict = checkCoordinates(verbose, log, cR, polySeqModel)
-        self.__polySeqModel = dict['polymer_sequence']
+        if cR is not None:
+            dict = checkCoordinates(verbose, log, cR, polySeqModel)
+            self.__polySeqModel = dict['polymer_sequence']
 
         # CCD accessing utility
         self.__ccU = ChemCompUtil(verbose, log) if ccU is None else ccU

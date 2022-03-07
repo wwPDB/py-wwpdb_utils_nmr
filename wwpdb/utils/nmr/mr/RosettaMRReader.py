@@ -58,7 +58,7 @@ class RosettaMRReader:
         # NEFTranslator
         self.__nefT = NEFTranslator(verbose, log, self.__ccU, self.__csStat) if nefT is None else nefT
 
-    def parse(self, mrFilePath, cifFilePath):
+    def parse(self, mrFilePath, cifFilePath=None):
         """ Parse ROSETTA MR file.
             @return: RosettaMRParserListener for success or None otherwise.
         """
@@ -70,15 +70,16 @@ class RosettaMRReader:
                     self.__lfh.write(f"RosettaMRReader.parse() {mrFilePath} is not accessible.\n")
                 return None
 
-            if not os.access(cifFilePath, os.R_OK):
-                if self.__verbose:
-                    self.__lfh.write(f"RosettaMRReader.parse() {cifFilePath} is not accessible.\n")
-                return None
-
-            if self.__cR is None:
-                self.__cR = CifReader(self.__verbose, self.__lfh)
-                if not self.__cR.parse(cifFilePath):
+            if cifFilePath is not None:
+                if not os.access(cifFilePath, os.R_OK):
+                    if self.__verbose:
+                        self.__lfh.write(f"RosettaMRReader.parse() {cifFilePath} is not accessible.\n")
                     return None
+
+                if self.__cR is None:
+                    self.__cR = CifReader(self.__verbose, self.__lfh)
+                    if not self.__cR.parse(cifFilePath):
+                        return None
 
             with open(mrFilePath) as ifp:
 

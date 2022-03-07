@@ -51,6 +51,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
     # CIF reader
     __cR = None
+    __hasCoord = False
 
     # data item name for model ID in 'atom_site' category
     __modelNumName = None
@@ -78,13 +79,15 @@ class CyanaMRParserListener(ParseTreeListener):
         self.__verbose = verbose
         self.__lfh = log
         self.__cR = cR
+        self.__hasCoord = cR is not None
 
-        dict = checkCoordinates(verbose, log, cR, polySeq)
-        self.__modelNumName = dict['model_num_name']
-        self.__authAsymId = dict['auth_asym_id']
-        self.__authSeqId = dict['auth_seq_id']
-        self.__authAtomId = dict['auth_atom_id']
-        self.__polySeq = dict['polymer_sequence']
+        if self.__hasCoord:
+            dict = checkCoordinates(verbose, log, cR, polySeq)
+            self.__modelNumName = dict['model_num_name']
+            self.__authAsymId = dict['auth_asym_id']
+            self.__authSeqId = dict['auth_seq_id']
+            self.__authAtomId = dict['auth_atom_id']
+            self.__polySeq = dict['polymer_sequence']
 
         # CCD accessing utility
         self.__ccU = ChemCompUtil(verbose, log) if ccU is None else ccU
@@ -187,25 +190,26 @@ class CyanaMRParserListener(ParseTreeListener):
                 for atomId in _atomId1:
                     atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': atomId})
 
-                    _atom =\
-                        self.__cR.getDictListWithFilter('atom_site',
-                                                        [{'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                         {'name': 'type_symbol', 'type': 'str'},
-                                                         ],
-                                                        [{'name': self.__authAsymId, 'type': 'str', 'value': chainId},
-                                                         {'name': self.__authSeqId, 'type': 'int', 'value': seqId},
-                                                         {'name': self.__authAtomId, 'type': 'str', 'value': atomId},
-                                                         {'name': self.__modelNumName, 'type': 'int',
-                                                          'value': self.__representativeModelId}
-                                                         ])
+                    if self.__hasCoord:
+                        _atom =\
+                            self.__cR.getDictListWithFilter('atom_site',
+                                                            [{'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                             {'name': 'type_symbol', 'type': 'str'},
+                                                             ],
+                                                            [{'name': self.__authAsymId, 'type': 'str', 'value': chainId},
+                                                             {'name': self.__authSeqId, 'type': 'int', 'value': seqId},
+                                                             {'name': self.__authAtomId, 'type': 'str', 'value': atomId},
+                                                             {'name': self.__modelNumName, 'type': 'int',
+                                                              'value': self.__representativeModelId}
+                                                             ])
 
-                    if len(_atom) == 1:
-                        pass
-                    elif self.__ccU.updateChemCompDict(compId):
-                        cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId), None)
-                        if cca is not None:
-                            self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinate.\n"
+                        if len(_atom) == 1:
+                            pass
+                        elif self.__ccU.updateChemCompDict(compId):
+                            cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId), None)
+                            if cca is not None:
+                                self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                                    f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinate.\n"
 
             self.atomSelectionSet.append(atomSelection)
 
@@ -217,25 +221,26 @@ class CyanaMRParserListener(ParseTreeListener):
                 for atomId in _atomId2:
                     atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': atomId})
 
-                    _atom =\
-                        self.__cR.getDictListWithFilter('atom_site',
-                                                        [{'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                         {'name': 'type_symbol', 'type': 'str'},
-                                                         ],
-                                                        [{'name': self.__authAsymId, 'type': 'str', 'value': chainId},
-                                                         {'name': self.__authSeqId, 'type': 'int', 'value': seqId},
-                                                         {'name': self.__authAtomId, 'type': 'str', 'value': atomId},
-                                                         {'name': self.__modelNumName, 'type': 'int',
-                                                          'value': self.__representativeModelId}
-                                                         ])
+                    if self.__hasCoord:
+                        _atom =\
+                            self.__cR.getDictListWithFilter('atom_site',
+                                                            [{'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                             {'name': 'type_symbol', 'type': 'str'},
+                                                             ],
+                                                            [{'name': self.__authAsymId, 'type': 'str', 'value': chainId},
+                                                             {'name': self.__authSeqId, 'type': 'int', 'value': seqId},
+                                                             {'name': self.__authAtomId, 'type': 'str', 'value': atomId},
+                                                             {'name': self.__modelNumName, 'type': 'int',
+                                                              'value': self.__representativeModelId}
+                                                             ])
 
-                    if len(_atom) == 1:
-                        pass
-                    elif self.__ccU.updateChemCompDict(compId):
-                        cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId), None)
-                        if cca is not None:
-                            self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinate.\n"
+                        if len(_atom) == 1:
+                            pass
+                        elif self.__ccU.updateChemCompDict(compId):
+                            cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId), None)
+                            if cca is not None:
+                                self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                                    f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinate.\n"
 
             self.atomSelectionSet.append(atomSelection)
 

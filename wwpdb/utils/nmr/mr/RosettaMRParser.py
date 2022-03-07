@@ -12,7 +12,7 @@ else:
 def serializedATN():
     with StringIO() as buf:
         buf.write("\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\39")
-        buf.write("\u01a2\4\2\t\2\4\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7")
+        buf.write("\u01ad\4\2\t\2\4\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7")
         buf.write("\4\b\t\b\4\t\t\t\4\n\t\n\4\13\t\13\4\f\t\f\4\r\t\r\4\16")
         buf.write("\t\16\4\17\t\17\4\20\t\20\4\21\t\21\4\22\t\22\4\23\t\23")
         buf.write("\4\24\t\24\4\25\t\25\4\26\t\26\4\27\t\27\4\30\t\30\4\31")
@@ -37,34 +37,35 @@ def serializedATN():
         buf.write("\30\3\30\3\31\3\31\3\31\3\31\3\31\3\31\3\31\3\31\3\31")
         buf.write("\3\31\5\31\u00fa\n\31\3\32\3\32\3\32\3\32\3\32\3\32\3")
         buf.write("\32\3\32\5\32\u0104\n\32\3\32\5\32\u0107\n\32\3\32\3\32")
-        buf.write("\3\32\3\32\3\32\3\32\3\32\5\32\u0110\n\32\3\32\5\32\u0113")
-        buf.write("\n\32\3\32\3\32\3\32\3\32\3\32\3\32\3\32\3\32\3\32\3\32")
-        buf.write("\3\32\6\32\u0120\n\32\r\32\16\32\u0121\3\32\3\32\3\32")
-        buf.write("\3\32\3\32\3\32\3\32\3\32\3\32\3\32\5\32\u012e\n\32\3")
-        buf.write("\32\3\32\3\32\3\32\3\32\6\32\u0135\n\32\r\32\16\32\u0136")
-        buf.write("\3\32\3\32\3\32\3\32\3\32\3\32\3\32\3\32\3\32\3\32\3\32")
-        buf.write("\3\32\3\32\3\32\3\32\3\32\6\32\u0149\n\32\r\32\16\32\u014a")
-        buf.write("\3\32\3\32\3\32\3\32\3\32\3\32\3\32\3\32\3\32\3\32\3\32")
-        buf.write("\7\32\u0158\n\32\f\32\16\32\u015b\13\32\5\32\u015d\n\32")
-        buf.write("\3\32\3\32\3\32\3\32\3\32\3\32\5\32\u0165\n\32\3\32\3")
-        buf.write("\32\3\32\3\32\3\32\5\32\u016c\n\32\3\32\3\32\3\32\3\32")
-        buf.write("\7\32\u0172\n\32\f\32\16\32\u0175\13\32\3\32\3\32\3\32")
-        buf.write("\3\32\3\32\3\32\6\32\u017d\n\32\r\32\16\32\u017e\3\32")
-        buf.write("\3\32\3\32\3\32\3\32\3\32\3\32\3\32\6\32\u0189\n\32\r")
-        buf.write("\32\16\32\u018a\5\32\u018d\n\32\3\33\6\33\u0190\n\33\r")
-        buf.write("\33\16\33\u0191\3\34\3\34\3\34\3\34\3\34\3\34\3\35\6\35")
-        buf.write("\u019b\n\35\r\35\16\35\u019c\3\36\3\36\3\36\3\36\2\2\37")
-        buf.write("\2\4\6\b\n\f\16\20\22\24\26\30\32\34\36 \"$&(*,.\60\62")
-        buf.write("\64\668:\2\n\4\2\3\4\13\13\3\2\5\6\5\2\24\24\33\33)*\4")
-        buf.write("\2\25\25\35\35\3\2\27\30\4\2\31\31--\4\2\34\34\60\60\4")
-        buf.write("\2!!./\2\u01cc\2K\3\2\2\2\4Q\3\2\2\2\6U\3\2\2\2\b]\3\2")
-        buf.write("\2\2\na\3\2\2\2\fk\3\2\2\2\16o\3\2\2\2\20{\3\2\2\2\22")
-        buf.write("\177\3\2\2\2\24\u0093\3\2\2\2\26\u0097\3\2\2\2\30\u00a2")
-        buf.write("\3\2\2\2\32\u00a6\3\2\2\2\34\u00b3\3\2\2\2\36\u00b7\3")
-        buf.write("\2\2\2 \u00be\3\2\2\2\"\u00c2\3\2\2\2$\u00ca\3\2\2\2&")
-        buf.write("\u00ce\3\2\2\2(\u00d4\3\2\2\2*\u00d8\3\2\2\2,\u00de\3")
-        buf.write("\2\2\2.\u00e6\3\2\2\2\60\u00f9\3\2\2\2\62\u018c\3\2\2")
-        buf.write("\2\64\u018f\3\2\2\2\66\u0193\3\2\2\28\u019a\3\2\2\2:\u019e")
+        buf.write("\3\32\3\32\3\32\3\32\5\32\u010f\n\32\3\32\5\32\u0112\n")
+        buf.write("\32\3\32\3\32\3\32\3\32\3\32\3\32\3\32\5\32\u011b\n\32")
+        buf.write("\3\32\5\32\u011e\n\32\3\32\3\32\3\32\3\32\3\32\3\32\3")
+        buf.write("\32\3\32\3\32\3\32\3\32\6\32\u012b\n\32\r\32\16\32\u012c")
+        buf.write("\3\32\3\32\3\32\3\32\3\32\3\32\3\32\3\32\3\32\3\32\5\32")
+        buf.write("\u0139\n\32\3\32\3\32\3\32\3\32\3\32\6\32\u0140\n\32\r")
+        buf.write("\32\16\32\u0141\3\32\3\32\3\32\3\32\3\32\3\32\3\32\3\32")
+        buf.write("\3\32\3\32\3\32\3\32\3\32\3\32\3\32\3\32\6\32\u0154\n")
+        buf.write("\32\r\32\16\32\u0155\3\32\3\32\3\32\3\32\3\32\3\32\3\32")
+        buf.write("\3\32\3\32\3\32\3\32\7\32\u0163\n\32\f\32\16\32\u0166")
+        buf.write("\13\32\5\32\u0168\n\32\3\32\3\32\3\32\3\32\3\32\3\32\5")
+        buf.write("\32\u0170\n\32\3\32\3\32\3\32\3\32\3\32\5\32\u0177\n\32")
+        buf.write("\3\32\3\32\3\32\3\32\7\32\u017d\n\32\f\32\16\32\u0180")
+        buf.write("\13\32\3\32\3\32\3\32\3\32\3\32\3\32\6\32\u0188\n\32\r")
+        buf.write("\32\16\32\u0189\3\32\3\32\3\32\3\32\3\32\3\32\3\32\3\32")
+        buf.write("\6\32\u0194\n\32\r\32\16\32\u0195\5\32\u0198\n\32\3\33")
+        buf.write("\6\33\u019b\n\33\r\33\16\33\u019c\3\34\3\34\3\34\3\34")
+        buf.write("\3\34\3\34\3\35\6\35\u01a6\n\35\r\35\16\35\u01a7\3\36")
+        buf.write("\3\36\3\36\3\36\2\2\37\2\4\6\b\n\f\16\20\22\24\26\30\32")
+        buf.write("\34\36 \"$&(*,.\60\62\64\668:\2\t\4\2\3\4\13\13\3\2\5")
+        buf.write("\6\5\2\24\24\33\33)*\3\2\27\30\4\2\31\31--\4\2\34\34\60")
+        buf.write("\60\4\2!!./\2\u01da\2K\3\2\2\2\4Q\3\2\2\2\6U\3\2\2\2\b")
+        buf.write("]\3\2\2\2\na\3\2\2\2\fk\3\2\2\2\16o\3\2\2\2\20{\3\2\2")
+        buf.write("\2\22\177\3\2\2\2\24\u0093\3\2\2\2\26\u0097\3\2\2\2\30")
+        buf.write("\u00a2\3\2\2\2\32\u00a6\3\2\2\2\34\u00b3\3\2\2\2\36\u00b7")
+        buf.write("\3\2\2\2 \u00be\3\2\2\2\"\u00c2\3\2\2\2$\u00ca\3\2\2\2")
+        buf.write("&\u00ce\3\2\2\2(\u00d4\3\2\2\2*\u00d8\3\2\2\2,\u00de\3")
+        buf.write("\2\2\2.\u00e6\3\2\2\2\60\u00f9\3\2\2\2\62\u0197\3\2\2")
+        buf.write("\2\64\u019a\3\2\2\2\66\u019e\3\2\2\28\u01a5\3\2\2\2:\u01a9")
         buf.write("\3\2\2\2<J\5\4\3\2=J\5\b\5\2>J\5\f\7\2?J\5\20\t\2@J\5")
         buf.write("\24\13\2AJ\5\30\r\2BJ\5\34\17\2CJ\5 \21\2DJ\5$\23\2EJ")
         buf.write("\5(\25\2FJ\5,\27\2GJ\5\64\33\2HJ\58\35\2I<\3\2\2\2I=\3")
@@ -134,85 +135,90 @@ def serializedATN():
         buf.write("\3\2\2\2\u00f9\u00f2\3\2\2\2\u00f9\u00f3\3\2\2\2\u00f9")
         buf.write("\u00f4\3\2\2\2\u00f9\u00f5\3\2\2\2\u00f9\u00f6\3\2\2\2")
         buf.write("\u00f9\u00f7\3\2\2\2\u00f9\u00f8\3\2\2\2\u00fa\61\3\2")
-        buf.write("\2\2\u00fb\u00fc\t\4\2\2\u00fc\u00fd\7\65\2\2\u00fd\u018d")
-        buf.write("\7\65\2\2\u00fe\u00ff\t\5\2\2\u00ff\u0100\7\65\2\2\u0100")
+        buf.write("\2\2\u00fb\u00fc\t\4\2\2\u00fc\u00fd\7\65\2\2\u00fd\u0198")
+        buf.write("\7\65\2\2\u00fe\u00ff\7\35\2\2\u00ff\u0100\7\65\2\2\u0100")
         buf.write("\u0101\7\65\2\2\u0101\u0103\7\65\2\2\u0102\u0104\7\65")
         buf.write("\2\2\u0103\u0102\3\2\2\2\u0103\u0104\3\2\2\2\u0104\u0106")
         buf.write("\3\2\2\2\u0105\u0107\7\66\2\2\u0106\u0105\3\2\2\2\u0106")
-        buf.write("\u0107\3\2\2\2\u0107\u018d\3\2\2\2\u0108\u0109\7\26\2")
+        buf.write("\u0107\3\2\2\2\u0107\u0198\3\2\2\2\u0108\u0109\7\25\2")
         buf.write("\2\u0109\u010a\7\65\2\2\u010a\u010b\7\65\2\2\u010b\u010c")
-        buf.write("\7\65\2\2\u010c\u010d\7\65\2\2\u010d\u010f\7\65\2\2\u010e")
-        buf.write("\u0110\7\65\2\2\u010f\u010e\3\2\2\2\u010f\u0110\3\2\2")
-        buf.write("\2\u0110\u0112\3\2\2\2\u0111\u0113\7\66\2\2\u0112\u0111")
-        buf.write("\3\2\2\2\u0112\u0113\3\2\2\2\u0113\u018d\3\2\2\2\u0114")
-        buf.write("\u0115\t\6\2\2\u0115\u0116\7\65\2\2\u0116\u0117\7\64\2")
-        buf.write("\2\u0117\u018d\7\65\2\2\u0118\u0119\t\7\2\2\u0119\u011a")
-        buf.write("\7\65\2\2\u011a\u011b\7\65\2\2\u011b\u011c\7\65\2\2\u011c")
-        buf.write("\u018d\7\65\2\2\u011d\u011f\7\32\2\2\u011e\u0120\7\65")
-        buf.write("\2\2\u011f\u011e\3\2\2\2\u0120\u0121\3\2\2\2\u0121\u011f")
-        buf.write("\3\2\2\2\u0121\u0122\3\2\2\2\u0122\u018d\3\2\2\2\u0123")
-        buf.write("\u0124\t\b\2\2\u0124\u0125\7\65\2\2\u0125\u0126\7\65\2")
-        buf.write("\2\u0126\u018d\7\65\2\2\u0127\u0128\7\36\2\2\u0128\u0129")
-        buf.write("\7\65\2\2\u0129\u012a\7\65\2\2\u012a\u012d\7\66\2\2\u012b")
-        buf.write("\u012c\7\37\2\2\u012c\u012e\7\65\2\2\u012d\u012b\3\2\2")
-        buf.write("\2\u012d\u012e\3\2\2\2\u012e\u018d\3\2\2\2\u012f\u0130")
-        buf.write("\7 \2\2\u0130\u0134\7\64\2\2\u0131\u0132\7\65\2\2\u0132")
-        buf.write("\u0133\7\65\2\2\u0133\u0135\7\65\2\2\u0134\u0131\3\2\2")
-        buf.write("\2\u0135\u0136\3\2\2\2\u0136\u0134\3\2\2\2\u0136\u0137")
-        buf.write("\3\2\2\2\u0137\u018d\3\2\2\2\u0138\u0139\t\t\2\2\u0139")
-        buf.write("\u013a\7\65\2\2\u013a\u013b\7\65\2\2\u013b\u013c\7\65")
-        buf.write("\2\2\u013c\u013d\7\65\2\2\u013d\u013e\7\65\2\2\u013e\u018d")
-        buf.write("\7\65\2\2\u013f\u0140\7\"\2\2\u0140\u018d\7\65\2\2\u0141")
-        buf.write("\u018d\7#\2\2\u0142\u0143\7$\2\2\u0143\u0144\7\65\2\2")
-        buf.write("\u0144\u018d\5\62\32\2\u0145\u0146\7%\2\2\u0146\u0148")
-        buf.write("\7\64\2\2\u0147\u0149\5\62\32\2\u0148\u0147\3\2\2\2\u0149")
-        buf.write("\u014a\3\2\2\2\u014a\u0148\3\2\2\2\u014a\u014b\3\2\2\2")
-        buf.write("\u014b\u018d\3\2\2\2\u014c\u014d\7&\2\2\u014d\u015c\7")
-        buf.write("\66\2\2\u014e\u014f\7\65\2\2\u014f\u0150\7\65\2\2\u0150")
-        buf.write("\u015d\7\64\2\2\u0151\u0152\7\'\2\2\u0152\u0153\7\65\2")
-        buf.write("\2\u0153\u0154\7\65\2\2\u0154\u0155\7\64\2\2\u0155\u0159")
-        buf.write("\7\66\2\2\u0156\u0158\7\65\2\2\u0157\u0156\3\2\2\2\u0158")
-        buf.write("\u015b\3\2\2\2\u0159\u0157\3\2\2\2\u0159\u015a\3\2\2\2")
-        buf.write("\u015a\u015d\3\2\2\2\u015b\u0159\3\2\2\2\u015c\u014e\3")
-        buf.write("\2\2\2\u015c\u0151\3\2\2\2\u015d\u018d\3\2\2\2\u015e\u015f")
-        buf.write("\7(\2\2\u015f\u0160\7\65\2\2\u0160\u0161\7\65\2\2\u0161")
-        buf.write("\u0162\7\65\2\2\u0162\u0164\7\65\2\2\u0163\u0165\7\65")
-        buf.write("\2\2\u0164\u0163\3\2\2\2\u0164\u0165\3\2\2\2\u0165\u018d")
-        buf.write("\3\2\2\2\u0166\u0167\7+\2\2\u0167\u0168\7\65\2\2\u0168")
-        buf.write("\u0169\7\65\2\2\u0169\u016b\7\65\2\2\u016a\u016c\7,\2")
-        buf.write("\2\u016b\u016a\3\2\2\2\u016b\u016c\3\2\2\2\u016c\u018d")
-        buf.write("\3\2\2\2\u016d\u016e\7\61\2\2\u016e\u016f\7\65\2\2\u016f")
-        buf.write("\u0173\7\65\2\2\u0170\u0172\7\65\2\2\u0171\u0170\3\2\2")
-        buf.write("\2\u0172\u0175\3\2\2\2\u0173\u0171\3\2\2\2\u0173\u0174")
-        buf.write("\3\2\2\2\u0174\u018d\3\2\2\2\u0175\u0173\3\2\2\2\u0176")
-        buf.write("\u0177\7\62\2\2\u0177\u017c\7\64\2\2\u0178\u0179\7\65")
-        buf.write("\2\2\u0179\u017a\7\65\2\2\u017a\u017b\7\65\2\2\u017b\u017d")
-        buf.write("\7\65\2\2\u017c\u0178\3\2\2\2\u017d\u017e\3\2\2\2\u017e")
-        buf.write("\u017c\3\2\2\2\u017e\u017f\3\2\2\2\u017f\u018d\3\2\2\2")
-        buf.write("\u0180\u0181\7\63\2\2\u0181\u0188\7\64\2\2\u0182\u0183")
-        buf.write("\7\65\2\2\u0183\u0184\7\65\2\2\u0184\u0185\7\65\2\2\u0185")
-        buf.write("\u0186\7\65\2\2\u0186\u0187\7\65\2\2\u0187\u0189\7\65")
-        buf.write("\2\2\u0188\u0182\3\2\2\2\u0189\u018a\3\2\2\2\u018a\u0188")
-        buf.write("\3\2\2\2\u018a\u018b\3\2\2\2\u018b\u018d\3\2\2\2\u018c")
-        buf.write("\u00fb\3\2\2\2\u018c\u00fe\3\2\2\2\u018c\u0108\3\2\2\2")
-        buf.write("\u018c\u0114\3\2\2\2\u018c\u0118\3\2\2\2\u018c\u011d\3")
-        buf.write("\2\2\2\u018c\u0123\3\2\2\2\u018c\u0127\3\2\2\2\u018c\u012f")
-        buf.write("\3\2\2\2\u018c\u0138\3\2\2\2\u018c\u013f\3\2\2\2\u018c")
-        buf.write("\u0141\3\2\2\2\u018c\u0142\3\2\2\2\u018c\u0145\3\2\2\2")
-        buf.write("\u018c\u014c\3\2\2\2\u018c\u015e\3\2\2\2\u018c\u0166\3")
-        buf.write("\2\2\2\u018c\u016d\3\2\2\2\u018c\u0176\3\2\2\2\u018c\u0180")
-        buf.write("\3\2\2\2\u018d\63\3\2\2\2\u018e\u0190\5\66\34\2\u018f")
-        buf.write("\u018e\3\2\2\2\u0190\u0191\3\2\2\2\u0191\u018f\3\2\2\2")
-        buf.write("\u0191\u0192\3\2\2\2\u0192\65\3\2\2\2\u0193\u0194\7\64")
-        buf.write("\2\2\u0194\u0195\7\66\2\2\u0195\u0196\7\64\2\2\u0196\u0197")
-        buf.write("\7\66\2\2\u0197\u0198\7\65\2\2\u0198\67\3\2\2\2\u0199")
-        buf.write("\u019b\5:\36\2\u019a\u0199\3\2\2\2\u019b\u019c\3\2\2\2")
-        buf.write("\u019c\u019a\3\2\2\2\u019c\u019d\3\2\2\2\u019d9\3\2\2")
-        buf.write("\2\u019e\u019f\7\64\2\2\u019f\u01a0\7\64\2\2\u01a0;\3")
-        buf.write("\2\2\2$IKS_m}\u0095\u00a4\u00b5\u00c0\u00cc\u00d6\u00e0")
-        buf.write("\u00e6\u00eb\u00f9\u0103\u0106\u010f\u0112\u0121\u012d")
-        buf.write("\u0136\u014a\u0159\u015c\u0164\u016b\u0173\u017e\u018a")
-        buf.write("\u018c\u0191\u019c")
+        buf.write("\7\65\2\2\u010c\u010e\7\65\2\2\u010d\u010f\7\65\2\2\u010e")
+        buf.write("\u010d\3\2\2\2\u010e\u010f\3\2\2\2\u010f\u0111\3\2\2\2")
+        buf.write("\u0110\u0112\7\66\2\2\u0111\u0110\3\2\2\2\u0111\u0112")
+        buf.write("\3\2\2\2\u0112\u0198\3\2\2\2\u0113\u0114\7\26\2\2\u0114")
+        buf.write("\u0115\7\65\2\2\u0115\u0116\7\65\2\2\u0116\u0117\7\65")
+        buf.write("\2\2\u0117\u0118\7\65\2\2\u0118\u011a\7\65\2\2\u0119\u011b")
+        buf.write("\7\65\2\2\u011a\u0119\3\2\2\2\u011a\u011b\3\2\2\2\u011b")
+        buf.write("\u011d\3\2\2\2\u011c\u011e\7\66\2\2\u011d\u011c\3\2\2")
+        buf.write("\2\u011d\u011e\3\2\2\2\u011e\u0198\3\2\2\2\u011f\u0120")
+        buf.write("\t\5\2\2\u0120\u0121\7\65\2\2\u0121\u0122\7\64\2\2\u0122")
+        buf.write("\u0198\7\65\2\2\u0123\u0124\t\6\2\2\u0124\u0125\7\65\2")
+        buf.write("\2\u0125\u0126\7\65\2\2\u0126\u0127\7\65\2\2\u0127\u0198")
+        buf.write("\7\65\2\2\u0128\u012a\7\32\2\2\u0129\u012b\7\65\2\2\u012a")
+        buf.write("\u0129\3\2\2\2\u012b\u012c\3\2\2\2\u012c\u012a\3\2\2\2")
+        buf.write("\u012c\u012d\3\2\2\2\u012d\u0198\3\2\2\2\u012e\u012f\t")
+        buf.write("\7\2\2\u012f\u0130\7\65\2\2\u0130\u0131\7\65\2\2\u0131")
+        buf.write("\u0198\7\65\2\2\u0132\u0133\7\36\2\2\u0133\u0134\7\65")
+        buf.write("\2\2\u0134\u0135\7\65\2\2\u0135\u0138\7\66\2\2\u0136\u0137")
+        buf.write("\7\37\2\2\u0137\u0139\7\65\2\2\u0138\u0136\3\2\2\2\u0138")
+        buf.write("\u0139\3\2\2\2\u0139\u0198\3\2\2\2\u013a\u013b\7 \2\2")
+        buf.write("\u013b\u013f\7\64\2\2\u013c\u013d\7\65\2\2\u013d\u013e")
+        buf.write("\7\65\2\2\u013e\u0140\7\65\2\2\u013f\u013c\3\2\2\2\u0140")
+        buf.write("\u0141\3\2\2\2\u0141\u013f\3\2\2\2\u0141\u0142\3\2\2\2")
+        buf.write("\u0142\u0198\3\2\2\2\u0143\u0144\t\b\2\2\u0144\u0145\7")
+        buf.write("\65\2\2\u0145\u0146\7\65\2\2\u0146\u0147\7\65\2\2\u0147")
+        buf.write("\u0148\7\65\2\2\u0148\u0149\7\65\2\2\u0149\u0198\7\65")
+        buf.write("\2\2\u014a\u014b\7\"\2\2\u014b\u0198\7\65\2\2\u014c\u0198")
+        buf.write("\7#\2\2\u014d\u014e\7$\2\2\u014e\u014f\7\65\2\2\u014f")
+        buf.write("\u0198\5\62\32\2\u0150\u0151\7%\2\2\u0151\u0153\7\64\2")
+        buf.write("\2\u0152\u0154\5\62\32\2\u0153\u0152\3\2\2\2\u0154\u0155")
+        buf.write("\3\2\2\2\u0155\u0153\3\2\2\2\u0155\u0156\3\2\2\2\u0156")
+        buf.write("\u0198\3\2\2\2\u0157\u0158\7&\2\2\u0158\u0167\7\66\2\2")
+        buf.write("\u0159\u015a\7\65\2\2\u015a\u015b\7\65\2\2\u015b\u0168")
+        buf.write("\7\64\2\2\u015c\u015d\7\'\2\2\u015d\u015e\7\65\2\2\u015e")
+        buf.write("\u015f\7\65\2\2\u015f\u0160\7\64\2\2\u0160\u0164\7\66")
+        buf.write("\2\2\u0161\u0163\7\65\2\2\u0162\u0161\3\2\2\2\u0163\u0166")
+        buf.write("\3\2\2\2\u0164\u0162\3\2\2\2\u0164\u0165\3\2\2\2\u0165")
+        buf.write("\u0168\3\2\2\2\u0166\u0164\3\2\2\2\u0167\u0159\3\2\2\2")
+        buf.write("\u0167\u015c\3\2\2\2\u0168\u0198\3\2\2\2\u0169\u016a\7")
+        buf.write("(\2\2\u016a\u016b\7\65\2\2\u016b\u016c\7\65\2\2\u016c")
+        buf.write("\u016d\7\65\2\2\u016d\u016f\7\65\2\2\u016e\u0170\7\65")
+        buf.write("\2\2\u016f\u016e\3\2\2\2\u016f\u0170\3\2\2\2\u0170\u0198")
+        buf.write("\3\2\2\2\u0171\u0172\7+\2\2\u0172\u0173\7\65\2\2\u0173")
+        buf.write("\u0174\7\65\2\2\u0174\u0176\7\65\2\2\u0175\u0177\7,\2")
+        buf.write("\2\u0176\u0175\3\2\2\2\u0176\u0177\3\2\2\2\u0177\u0198")
+        buf.write("\3\2\2\2\u0178\u0179\7\61\2\2\u0179\u017a\7\65\2\2\u017a")
+        buf.write("\u017e\7\65\2\2\u017b\u017d\7\65\2\2\u017c\u017b\3\2\2")
+        buf.write("\2\u017d\u0180\3\2\2\2\u017e\u017c\3\2\2\2\u017e\u017f")
+        buf.write("\3\2\2\2\u017f\u0198\3\2\2\2\u0180\u017e\3\2\2\2\u0181")
+        buf.write("\u0182\7\62\2\2\u0182\u0187\7\64\2\2\u0183\u0184\7\65")
+        buf.write("\2\2\u0184\u0185\7\65\2\2\u0185\u0186\7\65\2\2\u0186\u0188")
+        buf.write("\7\65\2\2\u0187\u0183\3\2\2\2\u0188\u0189\3\2\2\2\u0189")
+        buf.write("\u0187\3\2\2\2\u0189\u018a\3\2\2\2\u018a\u0198\3\2\2\2")
+        buf.write("\u018b\u018c\7\63\2\2\u018c\u0193\7\64\2\2\u018d\u018e")
+        buf.write("\7\65\2\2\u018e\u018f\7\65\2\2\u018f\u0190\7\65\2\2\u0190")
+        buf.write("\u0191\7\65\2\2\u0191\u0192\7\65\2\2\u0192\u0194\7\65")
+        buf.write("\2\2\u0193\u018d\3\2\2\2\u0194\u0195\3\2\2\2\u0195\u0193")
+        buf.write("\3\2\2\2\u0195\u0196\3\2\2\2\u0196\u0198\3\2\2\2\u0197")
+        buf.write("\u00fb\3\2\2\2\u0197\u00fe\3\2\2\2\u0197\u0108\3\2\2\2")
+        buf.write("\u0197\u0113\3\2\2\2\u0197\u011f\3\2\2\2\u0197\u0123\3")
+        buf.write("\2\2\2\u0197\u0128\3\2\2\2\u0197\u012e\3\2\2\2\u0197\u0132")
+        buf.write("\3\2\2\2\u0197\u013a\3\2\2\2\u0197\u0143\3\2\2\2\u0197")
+        buf.write("\u014a\3\2\2\2\u0197\u014c\3\2\2\2\u0197\u014d\3\2\2\2")
+        buf.write("\u0197\u0150\3\2\2\2\u0197\u0157\3\2\2\2\u0197\u0169\3")
+        buf.write("\2\2\2\u0197\u0171\3\2\2\2\u0197\u0178\3\2\2\2\u0197\u0181")
+        buf.write("\3\2\2\2\u0197\u018b\3\2\2\2\u0198\63\3\2\2\2\u0199\u019b")
+        buf.write("\5\66\34\2\u019a\u0199\3\2\2\2\u019b\u019c\3\2\2\2\u019c")
+        buf.write("\u019a\3\2\2\2\u019c\u019d\3\2\2\2\u019d\65\3\2\2\2\u019e")
+        buf.write("\u019f\7\64\2\2\u019f\u01a0\7\66\2\2\u01a0\u01a1\7\64")
+        buf.write("\2\2\u01a1\u01a2\7\66\2\2\u01a2\u01a3\7\65\2\2\u01a3\67")
+        buf.write("\3\2\2\2\u01a4\u01a6\5:\36\2\u01a5\u01a4\3\2\2\2\u01a6")
+        buf.write("\u01a7\3\2\2\2\u01a7\u01a5\3\2\2\2\u01a7\u01a8\3\2\2\2")
+        buf.write("\u01a89\3\2\2\2\u01a9\u01aa\7\64\2\2\u01aa\u01ab\7\64")
+        buf.write("\2\2\u01ab;\3\2\2\2&IKS_m}\u0095\u00a4\u00b5\u00c0\u00cc")
+        buf.write("\u00d6\u00e0\u00e6\u00eb\u00f9\u0103\u0106\u010e\u0111")
+        buf.write("\u011a\u011d\u012c\u0138\u0141\u0155\u0164\u0167\u016f")
+        buf.write("\u0176\u017e\u0189\u0195\u0197\u019c\u01a7")
         return buf.getvalue()
 
 
@@ -2146,9 +2152,6 @@ class RosettaMRParser ( Parser ):
         def SQUARE_WELL(self):
             return self.getToken(RosettaMRParser.SQUARE_WELL, 0)
 
-        def PERIODICBOUNDED(self):
-            return self.getToken(RosettaMRParser.PERIODICBOUNDED, 0)
-
         def BOUNDED(self):
             return self.getToken(RosettaMRParser.BOUNDED, 0)
 
@@ -2157,6 +2160,9 @@ class RosettaMRParser ( Parser ):
                 return self.getTokens(RosettaMRParser.Simple_name)
             else:
                 return self.getToken(RosettaMRParser.Simple_name, i)
+
+        def PERIODICBOUNDED(self):
+            return self.getToken(RosettaMRParser.PERIODICBOUNDED, 0)
 
         def OFFSETPERIODICBOUNDED(self):
             return self.getToken(RosettaMRParser.OFFSETPERIODICBOUNDED, 0)
@@ -2266,7 +2272,7 @@ class RosettaMRParser ( Parser ):
         self.enterRule(localctx, 48, self.RULE_func_type_def)
         self._la = 0 # Token type
         try:
-            self.state = 394
+            self.state = 405
             self._errHandler.sync(self)
             token = self._input.LA(1)
             if token in [RosettaMRParser.CIRCULARHARMONIC, RosettaMRParser.HARMONIC, RosettaMRParser.SIGMOID, RosettaMRParser.SQUARE_WELL]:
@@ -2283,15 +2289,10 @@ class RosettaMRParser ( Parser ):
                 self.state = 251
                 self.match(RosettaMRParser.Float)
                 pass
-            elif token in [RosettaMRParser.PERIODICBOUNDED, RosettaMRParser.BOUNDED]:
+            elif token in [RosettaMRParser.BOUNDED]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 252
-                _la = self._input.LA(1)
-                if not(_la==RosettaMRParser.PERIODICBOUNDED or _la==RosettaMRParser.BOUNDED):
-                    self._errHandler.recoverInline(self)
-                else:
-                    self._errHandler.reportMatch(self)
-                    self.consume()
+                self.match(RosettaMRParser.BOUNDED)
                 self.state = 253
                 self.match(RosettaMRParser.Float)
                 self.state = 254
@@ -2315,10 +2316,10 @@ class RosettaMRParser ( Parser ):
 
 
                 pass
-            elif token in [RosettaMRParser.OFFSETPERIODICBOUNDED]:
+            elif token in [RosettaMRParser.PERIODICBOUNDED]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 262
-                self.match(RosettaMRParser.OFFSETPERIODICBOUNDED)
+                self.match(RosettaMRParser.PERIODICBOUNDED)
                 self.state = 263
                 self.match(RosettaMRParser.Float)
                 self.state = 264
@@ -2327,81 +2328,75 @@ class RosettaMRParser ( Parser ):
                 self.match(RosettaMRParser.Float)
                 self.state = 266
                 self.match(RosettaMRParser.Float)
-                self.state = 267
-                self.match(RosettaMRParser.Float)
-                self.state = 269
+                self.state = 268
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 if _la==RosettaMRParser.Float:
-                    self.state = 268
+                    self.state = 267
                     self.match(RosettaMRParser.Float)
 
 
-                self.state = 272
+                self.state = 271
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 if _la==RosettaMRParser.Simple_name:
-                    self.state = 271
+                    self.state = 270
+                    self.match(RosettaMRParser.Simple_name)
+
+
+                pass
+            elif token in [RosettaMRParser.OFFSETPERIODICBOUNDED]:
+                self.enterOuterAlt(localctx, 4)
+                self.state = 273
+                self.match(RosettaMRParser.OFFSETPERIODICBOUNDED)
+                self.state = 274
+                self.match(RosettaMRParser.Float)
+                self.state = 275
+                self.match(RosettaMRParser.Float)
+                self.state = 276
+                self.match(RosettaMRParser.Float)
+                self.state = 277
+                self.match(RosettaMRParser.Float)
+                self.state = 278
+                self.match(RosettaMRParser.Float)
+                self.state = 280
+                self._errHandler.sync(self)
+                _la = self._input.LA(1)
+                if _la==RosettaMRParser.Float:
+                    self.state = 279
+                    self.match(RosettaMRParser.Float)
+
+
+                self.state = 283
+                self._errHandler.sync(self)
+                _la = self._input.LA(1)
+                if _la==RosettaMRParser.Simple_name:
+                    self.state = 282
                     self.match(RosettaMRParser.Simple_name)
 
 
                 pass
             elif token in [RosettaMRParser.AMBERPERIODIC, RosettaMRParser.CHARMMPERIODIC]:
-                self.enterOuterAlt(localctx, 4)
-                self.state = 274
+                self.enterOuterAlt(localctx, 5)
+                self.state = 285
                 _la = self._input.LA(1)
                 if not(_la==RosettaMRParser.AMBERPERIODIC or _la==RosettaMRParser.CHARMMPERIODIC):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
                     self.consume()
-                self.state = 275
+                self.state = 286
                 self.match(RosettaMRParser.Float)
-                self.state = 276
+                self.state = 287
                 self.match(RosettaMRParser.Integer)
-                self.state = 277
+                self.state = 288
                 self.match(RosettaMRParser.Float)
                 pass
             elif token in [RosettaMRParser.CIRCULARSIGMOIDAL, RosettaMRParser.LINEAR_PENALTY]:
-                self.enterOuterAlt(localctx, 5)
-                self.state = 278
-                _la = self._input.LA(1)
-                if not(_la==RosettaMRParser.CIRCULARSIGMOIDAL or _la==RosettaMRParser.LINEAR_PENALTY):
-                    self._errHandler.recoverInline(self)
-                else:
-                    self._errHandler.reportMatch(self)
-                    self.consume()
-                self.state = 279
-                self.match(RosettaMRParser.Float)
-                self.state = 280
-                self.match(RosettaMRParser.Float)
-                self.state = 281
-                self.match(RosettaMRParser.Float)
-                self.state = 282
-                self.match(RosettaMRParser.Float)
-                pass
-            elif token in [RosettaMRParser.CIRCULARSPLINE]:
                 self.enterOuterAlt(localctx, 6)
-                self.state = 283
-                self.match(RosettaMRParser.CIRCULARSPLINE)
-                self.state = 285 
-                self._errHandler.sync(self)
-                _la = self._input.LA(1)
-                while True:
-                    self.state = 284
-                    self.match(RosettaMRParser.Float)
-                    self.state = 287 
-                    self._errHandler.sync(self)
-                    _la = self._input.LA(1)
-                    if not (_la==RosettaMRParser.Float):
-                        break
-
-                pass
-            elif token in [RosettaMRParser.FLAT_HARMONIC, RosettaMRParser.TOPOUT]:
-                self.enterOuterAlt(localctx, 7)
                 self.state = 289
                 _la = self._input.LA(1)
-                if not(_la==RosettaMRParser.FLAT_HARMONIC or _la==RosettaMRParser.TOPOUT):
+                if not(_la==RosettaMRParser.CIRCULARSIGMOIDAL or _la==RosettaMRParser.LINEAR_PENALTY):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -2412,45 +2407,80 @@ class RosettaMRParser ( Parser ):
                 self.match(RosettaMRParser.Float)
                 self.state = 292
                 self.match(RosettaMRParser.Float)
+                self.state = 293
+                self.match(RosettaMRParser.Float)
+                pass
+            elif token in [RosettaMRParser.CIRCULARSPLINE]:
+                self.enterOuterAlt(localctx, 7)
+                self.state = 294
+                self.match(RosettaMRParser.CIRCULARSPLINE)
+                self.state = 296 
+                self._errHandler.sync(self)
+                _la = self._input.LA(1)
+                while True:
+                    self.state = 295
+                    self.match(RosettaMRParser.Float)
+                    self.state = 298 
+                    self._errHandler.sync(self)
+                    _la = self._input.LA(1)
+                    if not (_la==RosettaMRParser.Float):
+                        break
+
+                pass
+            elif token in [RosettaMRParser.FLAT_HARMONIC, RosettaMRParser.TOPOUT]:
+                self.enterOuterAlt(localctx, 8)
+                self.state = 300
+                _la = self._input.LA(1)
+                if not(_la==RosettaMRParser.FLAT_HARMONIC or _la==RosettaMRParser.TOPOUT):
+                    self._errHandler.recoverInline(self)
+                else:
+                    self._errHandler.reportMatch(self)
+                    self.consume()
+                self.state = 301
+                self.match(RosettaMRParser.Float)
+                self.state = 302
+                self.match(RosettaMRParser.Float)
+                self.state = 303
+                self.match(RosettaMRParser.Float)
                 pass
             elif token in [RosettaMRParser.GAUSSIANFUNC]:
-                self.enterOuterAlt(localctx, 8)
-                self.state = 293
+                self.enterOuterAlt(localctx, 9)
+                self.state = 304
                 self.match(RosettaMRParser.GAUSSIANFUNC)
-                self.state = 294
+                self.state = 305
                 self.match(RosettaMRParser.Float)
-                self.state = 295
+                self.state = 306
                 self.match(RosettaMRParser.Float)
-                self.state = 296
+                self.state = 307
                 self.match(RosettaMRParser.Simple_name)
-                self.state = 299
+                self.state = 310
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 if _la==RosettaMRParser.WEIGHT:
-                    self.state = 297
+                    self.state = 308
                     self.match(RosettaMRParser.WEIGHT)
-                    self.state = 298
+                    self.state = 309
                     self.match(RosettaMRParser.Float)
 
 
                 pass
             elif token in [RosettaMRParser.SOGFUNC]:
-                self.enterOuterAlt(localctx, 9)
-                self.state = 301
+                self.enterOuterAlt(localctx, 10)
+                self.state = 312
                 self.match(RosettaMRParser.SOGFUNC)
-                self.state = 302
+                self.state = 313
                 self.match(RosettaMRParser.Integer)
-                self.state = 306 
+                self.state = 317 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 while True:
-                    self.state = 303
+                    self.state = 314
                     self.match(RosettaMRParser.Float)
-                    self.state = 304
+                    self.state = 315
                     self.match(RosettaMRParser.Float)
-                    self.state = 305
+                    self.state = 316
                     self.match(RosettaMRParser.Float)
-                    self.state = 308 
+                    self.state = 319 
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
                     if not (_la==RosettaMRParser.Float):
@@ -2458,104 +2488,104 @@ class RosettaMRParser ( Parser ):
 
                 pass
             elif token in [RosettaMRParser.MIXTUREFUNC, RosettaMRParser.KARPLUS, RosettaMRParser.SOEDINGFUNC]:
-                self.enterOuterAlt(localctx, 10)
-                self.state = 310
+                self.enterOuterAlt(localctx, 11)
+                self.state = 321
                 _la = self._input.LA(1)
                 if not((((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << RosettaMRParser.MIXTUREFUNC) | (1 << RosettaMRParser.KARPLUS) | (1 << RosettaMRParser.SOEDINGFUNC))) != 0)):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
                     self.consume()
-                self.state = 311
+                self.state = 322
                 self.match(RosettaMRParser.Float)
-                self.state = 312
+                self.state = 323
                 self.match(RosettaMRParser.Float)
-                self.state = 313
+                self.state = 324
                 self.match(RosettaMRParser.Float)
-                self.state = 314
+                self.state = 325
                 self.match(RosettaMRParser.Float)
-                self.state = 315
+                self.state = 326
                 self.match(RosettaMRParser.Float)
-                self.state = 316
+                self.state = 327
                 self.match(RosettaMRParser.Float)
                 pass
             elif token in [RosettaMRParser.CONSTANTFUNC]:
-                self.enterOuterAlt(localctx, 11)
-                self.state = 317
+                self.enterOuterAlt(localctx, 12)
+                self.state = 328
                 self.match(RosettaMRParser.CONSTANTFUNC)
-                self.state = 318
+                self.state = 329
                 self.match(RosettaMRParser.Float)
                 pass
             elif token in [RosettaMRParser.IDENTITY]:
-                self.enterOuterAlt(localctx, 12)
-                self.state = 319
+                self.enterOuterAlt(localctx, 13)
+                self.state = 330
                 self.match(RosettaMRParser.IDENTITY)
                 pass
             elif token in [RosettaMRParser.SCALARWEIGHTEDFUNC]:
-                self.enterOuterAlt(localctx, 13)
-                self.state = 320
+                self.enterOuterAlt(localctx, 14)
+                self.state = 331
                 self.match(RosettaMRParser.SCALARWEIGHTEDFUNC)
-                self.state = 321
+                self.state = 332
                 self.match(RosettaMRParser.Float)
-                self.state = 322
+                self.state = 333
                 self.func_type_def()
                 pass
             elif token in [RosettaMRParser.SUMFUNC]:
-                self.enterOuterAlt(localctx, 14)
-                self.state = 323
+                self.enterOuterAlt(localctx, 15)
+                self.state = 334
                 self.match(RosettaMRParser.SUMFUNC)
-                self.state = 324
+                self.state = 335
                 self.match(RosettaMRParser.Integer)
-                self.state = 326 
+                self.state = 337 
                 self._errHandler.sync(self)
                 _alt = 1
                 while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                     if _alt == 1:
-                        self.state = 325
+                        self.state = 336
                         self.func_type_def()
 
                     else:
                         raise NoViableAltException(self)
-                    self.state = 328 
+                    self.state = 339 
                     self._errHandler.sync(self)
-                    _alt = self._interp.adaptivePredict(self._input,23,self._ctx)
+                    _alt = self._interp.adaptivePredict(self._input,25,self._ctx)
 
                 pass
             elif token in [RosettaMRParser.SPLINE]:
-                self.enterOuterAlt(localctx, 15)
-                self.state = 330
+                self.enterOuterAlt(localctx, 16)
+                self.state = 341
                 self.match(RosettaMRParser.SPLINE)
-                self.state = 331
+                self.state = 342
                 self.match(RosettaMRParser.Simple_name)
-                self.state = 346
+                self.state = 357
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
                 if token in [RosettaMRParser.Float]:
-                    self.state = 332
+                    self.state = 343
                     self.match(RosettaMRParser.Float)
-                    self.state = 333
+                    self.state = 344
                     self.match(RosettaMRParser.Float)
-                    self.state = 334
+                    self.state = 345
                     self.match(RosettaMRParser.Integer)
                     pass
                 elif token in [RosettaMRParser.NONE]:
-                    self.state = 335
+                    self.state = 346
                     self.match(RosettaMRParser.NONE)
-                    self.state = 336
+                    self.state = 347
                     self.match(RosettaMRParser.Float)
-                    self.state = 337
+                    self.state = 348
                     self.match(RosettaMRParser.Float)
-                    self.state = 338
+                    self.state = 349
                     self.match(RosettaMRParser.Integer)
-                    self.state = 339
+                    self.state = 350
                     self.match(RosettaMRParser.Simple_name)
-                    self.state = 343
+                    self.state = 354
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
                     while _la==RosettaMRParser.Float:
-                        self.state = 340
+                        self.state = 351
                         self.match(RosettaMRParser.Float)
-                        self.state = 345
+                        self.state = 356
                         self._errHandler.sync(self)
                         _la = self._input.LA(1)
 
@@ -2565,101 +2595,74 @@ class RosettaMRParser ( Parser ):
 
                 pass
             elif token in [RosettaMRParser.FADE]:
-                self.enterOuterAlt(localctx, 16)
-                self.state = 348
+                self.enterOuterAlt(localctx, 17)
+                self.state = 359
                 self.match(RosettaMRParser.FADE)
-                self.state = 349
+                self.state = 360
                 self.match(RosettaMRParser.Float)
-                self.state = 350
+                self.state = 361
                 self.match(RosettaMRParser.Float)
-                self.state = 351
+                self.state = 362
                 self.match(RosettaMRParser.Float)
-                self.state = 352
+                self.state = 363
                 self.match(RosettaMRParser.Float)
-                self.state = 354
+                self.state = 365
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 if _la==RosettaMRParser.Float:
-                    self.state = 353
+                    self.state = 364
                     self.match(RosettaMRParser.Float)
 
 
                 pass
             elif token in [RosettaMRParser.SQUARE_WELL2]:
-                self.enterOuterAlt(localctx, 17)
-                self.state = 356
+                self.enterOuterAlt(localctx, 18)
+                self.state = 367
                 self.match(RosettaMRParser.SQUARE_WELL2)
-                self.state = 357
+                self.state = 368
                 self.match(RosettaMRParser.Float)
-                self.state = 358
+                self.state = 369
                 self.match(RosettaMRParser.Float)
-                self.state = 359
+                self.state = 370
                 self.match(RosettaMRParser.Float)
-                self.state = 361
+                self.state = 372
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 if _la==RosettaMRParser.DEGREES:
-                    self.state = 360
+                    self.state = 371
                     self.match(RosettaMRParser.DEGREES)
 
 
                 pass
             elif token in [RosettaMRParser.ETABLE]:
-                self.enterOuterAlt(localctx, 18)
-                self.state = 363
+                self.enterOuterAlt(localctx, 19)
+                self.state = 374
                 self.match(RosettaMRParser.ETABLE)
-                self.state = 364
+                self.state = 375
                 self.match(RosettaMRParser.Float)
-                self.state = 365
+                self.state = 376
                 self.match(RosettaMRParser.Float)
-                self.state = 369
+                self.state = 380
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 while _la==RosettaMRParser.Float:
-                    self.state = 366
+                    self.state = 377
                     self.match(RosettaMRParser.Float)
-                    self.state = 371
+                    self.state = 382
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
 
                 pass
             elif token in [RosettaMRParser.USOG]:
-                self.enterOuterAlt(localctx, 19)
-                self.state = 372
-                self.match(RosettaMRParser.USOG)
-                self.state = 373
-                self.match(RosettaMRParser.Integer)
-                self.state = 378 
-                self._errHandler.sync(self)
-                _la = self._input.LA(1)
-                while True:
-                    self.state = 374
-                    self.match(RosettaMRParser.Float)
-                    self.state = 375
-                    self.match(RosettaMRParser.Float)
-                    self.state = 376
-                    self.match(RosettaMRParser.Float)
-                    self.state = 377
-                    self.match(RosettaMRParser.Float)
-                    self.state = 380 
-                    self._errHandler.sync(self)
-                    _la = self._input.LA(1)
-                    if not (_la==RosettaMRParser.Float):
-                        break
-
-                pass
-            elif token in [RosettaMRParser.SOG]:
                 self.enterOuterAlt(localctx, 20)
-                self.state = 382
-                self.match(RosettaMRParser.SOG)
                 self.state = 383
+                self.match(RosettaMRParser.USOG)
+                self.state = 384
                 self.match(RosettaMRParser.Integer)
-                self.state = 390 
+                self.state = 389 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 while True:
-                    self.state = 384
-                    self.match(RosettaMRParser.Float)
                     self.state = 385
                     self.match(RosettaMRParser.Float)
                     self.state = 386
@@ -2668,9 +2671,36 @@ class RosettaMRParser ( Parser ):
                     self.match(RosettaMRParser.Float)
                     self.state = 388
                     self.match(RosettaMRParser.Float)
-                    self.state = 389
+                    self.state = 391 
+                    self._errHandler.sync(self)
+                    _la = self._input.LA(1)
+                    if not (_la==RosettaMRParser.Float):
+                        break
+
+                pass
+            elif token in [RosettaMRParser.SOG]:
+                self.enterOuterAlt(localctx, 21)
+                self.state = 393
+                self.match(RosettaMRParser.SOG)
+                self.state = 394
+                self.match(RosettaMRParser.Integer)
+                self.state = 401 
+                self._errHandler.sync(self)
+                _la = self._input.LA(1)
+                while True:
+                    self.state = 395
                     self.match(RosettaMRParser.Float)
-                    self.state = 392 
+                    self.state = 396
+                    self.match(RosettaMRParser.Float)
+                    self.state = 397
+                    self.match(RosettaMRParser.Float)
+                    self.state = 398
+                    self.match(RosettaMRParser.Float)
+                    self.state = 399
+                    self.match(RosettaMRParser.Float)
+                    self.state = 400
+                    self.match(RosettaMRParser.Float)
+                    self.state = 403 
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
                     if not (_la==RosettaMRParser.Float):
@@ -2722,19 +2752,19 @@ class RosettaMRParser ( Parser ):
         self.enterRule(localctx, 50, self.RULE_rdc_restraints)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 397 
+            self.state = 408 
             self._errHandler.sync(self)
             _alt = 1
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt == 1:
-                    self.state = 396
+                    self.state = 407
                     self.rdc_restraint()
 
                 else:
                     raise NoViableAltException(self)
-                self.state = 399 
+                self.state = 410 
                 self._errHandler.sync(self)
-                _alt = self._interp.adaptivePredict(self._input,32,self._ctx)
+                _alt = self._interp.adaptivePredict(self._input,34,self._ctx)
 
         except RecognitionException as re:
             localctx.exception = re
@@ -2786,15 +2816,15 @@ class RosettaMRParser ( Parser ):
         self.enterRule(localctx, 52, self.RULE_rdc_restraint)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 401
+            self.state = 412
             self.match(RosettaMRParser.Integer)
-            self.state = 402
+            self.state = 413
             self.match(RosettaMRParser.Simple_name)
-            self.state = 403
+            self.state = 414
             self.match(RosettaMRParser.Integer)
-            self.state = 404
+            self.state = 415
             self.match(RosettaMRParser.Simple_name)
-            self.state = 405
+            self.state = 416
             self.match(RosettaMRParser.Float)
         except RecognitionException as re:
             localctx.exception = re
@@ -2838,19 +2868,19 @@ class RosettaMRParser ( Parser ):
         self.enterRule(localctx, 54, self.RULE_disulfide_bond_linkages)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 408 
+            self.state = 419 
             self._errHandler.sync(self)
             _alt = 1
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt == 1:
-                    self.state = 407
+                    self.state = 418
                     self.disulfide_bond_linkage()
 
                 else:
                     raise NoViableAltException(self)
-                self.state = 410 
+                self.state = 421 
                 self._errHandler.sync(self)
-                _alt = self._interp.adaptivePredict(self._input,33,self._ctx)
+                _alt = self._interp.adaptivePredict(self._input,35,self._ctx)
 
         except RecognitionException as re:
             localctx.exception = re
@@ -2893,9 +2923,9 @@ class RosettaMRParser ( Parser ):
         self.enterRule(localctx, 56, self.RULE_disulfide_bond_linkage)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 412
+            self.state = 423
             self.match(RosettaMRParser.Integer)
-            self.state = 413
+            self.state = 424
             self.match(RosettaMRParser.Integer)
         except RecognitionException as re:
             localctx.exception = re

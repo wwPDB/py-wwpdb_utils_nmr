@@ -205,7 +205,7 @@ class RosettaMRParserListener(ParseTreeListener):
 
                     if self.__hasCoord:
                         if coordAtomSite is not None and (atomId in coordAtomSite['atom_id']
-                                                          or ('alt_atom_id' in coordAtomSite and atomId in coordAtomSite['alt_atom_id'])):
+                                                          or ('auth_atom_id' in coordAtomSite and atomId in coordAtomSite['auth_atom_id'])):
                             pass
                         elif self.__ccU.updateChemCompDict(compId):
                             cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId), None)
@@ -397,8 +397,158 @@ class RosettaMRParserListener(ParseTreeListener):
         pass
 
     # Exit a parse tree produced by RosettaMRParser#func_type_def.
-    def exitFunc_type_def(self, ctx: RosettaMRParser.Func_type_defContext):  # pylint: disable=unused-argument
-        pass
+    def exitFunc_type_def(self, ctx: RosettaMRParser.Func_type_defContext):
+        """
+        (CIRCULARHARMONIC | HARMONIC | SIGMOID | SQUARE_WELL) Float Float |
+        BOUNDED Float Float Float Float? Simple_name? |
+        PERIODICBOUNDED Float Float Float Float Float? Simple_name? |
+        OFFSETPERIODICBOUNDED Float Float Float Float Float Float? Simple_name? |
+        (AMBERPERIODIC | CHARMMPERIODIC) Float Integer Float |
+        (CIRCULARSIGMOIDAL | LINEAR_PENALTY) Float Float Float Float |
+        CIRCULARSPLINE Float+ |
+        (FLAT_HARMONIC | TOPOUT) Float Float Float |
+        GAUSSIANFUNC Float Float Simple_name (WEIGHT Float)? |
+        SOGFUNC Integer (Float Float Float)+ |
+        (MIXTUREFUNC | KARPLUS | SOEDINGFUNC) Float Float Float Float Float Float |
+        CONSTANTFUNC Float |
+        IDENTITY |
+        SCALARWEIGHTEDFUNC Float func_type_def |
+        SUMFUNC Integer func_type_def+ |
+        SPLINE Simple_name (Float Float Integer | NONE Float Float Integer Simple_name Float*) | // histogram_file_path can not be evaluated
+        FADE Float Float Float Float Float? |
+        SQUARE_WELL2 Float Float Float DEGREES? |
+        ETABLE Float Float Float* |
+        USOG Integer (Float Float Float Float)+ |
+        SOG Integer (Float Float Float Float Float Float)+;
+        """
+
+        if ctx.CIRCULARHARMONIC() or ctx.HARMONIC() or ctx.SIGMOID() or ctx.SQUARE_WELL():
+            if ctx.CIRCULARHARMONIC():  # x0 sd
+                funcType = 'CIRCULARHARMONIC'
+                if float(str(ctx.Float(1))) <= 0.0:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"{funcType} standard deviation 'sd={float(str(ctx.Float(1)))}' is invalid.\n"
+            elif ctx.HARMONIC():  # x0 sd
+                funcType = 'HARMONIC'
+                if float(str(ctx.Float(1))) <= 0.0:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"{funcType} standard deviation 'sd={float(str(ctx.Float(1)))}' is invalid.\n"
+            elif ctx.SIGMOID():  # x0 m
+                funcType = 'SIGMOID'
+                if float(str(ctx.Float(1))) <= 0.0:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"{funcType} slope 'm={float(str(ctx.Float(1)))}' is invalid.\n"
+            else:  # x0 depth
+                funcType = 'SQUARE_WELL'
+                if float(str(ctx.Float(1))) <= 0.0:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"{funcType} depth 'depth={float(str(ctx.Float(1)))}' is invalid.\n"
+
+        elif ctx.BOUNDED():  # lb ub sd rswitch tag
+            funcType = 'BOUNDED'
+            lb = float(str(ctx.Float(0)))
+            ub = float(str(ctx.Float(1)))
+            sd = float(str(ctx.Float(2)))
+
+            if lb >= ub:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"{funcType} lower boundary 'lb={lb}' is grater than or equal to upper boundary'ub={ub}'.\n"
+            if sd <= 0.0:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"{funcType} standard deviation 'sd={sd}' is invalid.\n"
+
+        elif ctx.PERIODICBOUNDED():  # period lb ub sd rswitch tag
+            funcType = 'PERIODICBOUNDED'
+
+            period = float(str(ctx.Float(0)))
+            lb = float(str(ctx.Float(1)))
+            ub = float(str(ctx.Float(2)))
+            sd = float(str(ctx.Float(3)))
+
+            if period <= 0.0:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"{funcType} 'period={period}' is invalid.\n"
+            if lb >= ub:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"{funcType} lower boundary 'lb={lb}' is grater than or equal to upper boundary 'ub={ub}'.\n"
+            if sd <= 0.0:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"{funcType} standard deviation 'sd={sd}' is invalid.\n"
+
+        elif ctx.OFFSETPERIODICBOUNDED():  # offset period lb ub sd rswitch tag
+            funcType = 'OFFSETPERIODICBOUNDED'
+
+            # offset = float(str(ctx.Float(0)))
+            period = float(str(ctx.Float(1)))
+            lb = float(str(ctx.Float(2)))
+            ub = float(str(ctx.Float(3)))
+            sd = float(str(ctx.Float(4)))
+
+            if period <= 0.0:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"{funcType} 'period={period}' is invalid.\n"
+            if lb >= ub:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"{funcType} lower boundary 'lb={lb}' is grater than or equal to upper boundary 'ub={ub}'.\n"
+            if sd <= 0.0:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"{funcType} standard deviation 'sd={sd}' is invalid.\n"
+
+        elif ctx.AMBERPERIODIC() or ctx.CHARMMPERIODIC():
+            funcType = 'AMBERPERIODIC' if ctx.AMBERPERIODIC() else 'CHARMMPERIODIC'
+
+        elif ctx.CIRCULARSIGMOIDAL() or ctx.LINEAR_PENALTY():
+            funcType = 'CIRCULARSIGMOIDAL' if ctx.CIRCULARSIGMOIDAL() else 'LINEAR_PENALTY'
+
+        elif ctx.CIRCULARSPLINE():
+            pass
+
+        elif ctx.FLAT_HARMONIC() or ctx.TOPOUT():
+            funcType = 'FLAT_HARMONIC' if ctx.FLAT_HARMONIC() else 'TOPOUT'
+
+        elif ctx.GAUSSIANFUNC():
+            pass
+
+        elif ctx.SOGFUNC():
+            pass
+
+        elif ctx.MIXTUREFUNC() or ctx.KARPLUS() or ctx.SOEDINGFUNC():
+            if ctx.MIXTUREFUNC():
+                funcType = 'MIXTUREFUNC'
+            elif ctx.KARPLUS():
+                funcType = 'KARPLUS'
+            else:
+                funcType = 'SOEDINGFUNC'
+
+        elif ctx.CONSTANTFUNC():
+            pass
+
+        elif ctx.IDENTITY():
+            pass
+
+        elif ctx.SCALARWEIGHTEDFUNC():
+            pass
+
+        elif ctx.SUMFUNC():
+            pass
+
+        elif ctx.SPLINE():
+            pass
+
+        elif ctx.FADE():
+            pass
+
+        elif ctx.SQUARE_WELL2():
+            pass
+
+        elif ctx.ETABLE():
+            pass
+
+        elif ctx.USOG():
+            pass
+
+        elif ctx.SOG():
+            pass
 
     # Enter a parse tree produced by RosettaMRParser#rdc_restraints.
     def enterRdc_restraints(self, ctx: RosettaMRParser.Rdc_restraintsContext):  # pylint: disable=unused-argument

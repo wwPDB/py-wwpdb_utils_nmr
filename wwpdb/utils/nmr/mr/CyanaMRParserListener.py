@@ -202,7 +202,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
                     if self.__hasCoord:
                         if coordAtomSite is not None and (atomId in coordAtomSite['atom_id']
-                                                          or ('alt_atom_id' in coordAtomSite and atomId in coordAtomSite['alt_atom_id'])):
+                                                          or ('auth_atom_id' in coordAtomSite and atomId in coordAtomSite['auth_atom_id'])):
                             pass
                         elif self.__ccU.updateChemCompDict(compId1):
                             cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId), None)
@@ -223,7 +223,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
                     if self.__hasCoord:
                         if coordAtomSite is not None and (atomId in coordAtomSite['atom_id']
-                                                          or ('alt_atom_id' in coordAtomSite and atomId in coordAtomSite['alt_atom_id'])):
+                                                          or ('auth_atom_id' in coordAtomSite and atomId in coordAtomSite['auth_atom_id'])):
                             pass
                         elif self.__ccU.updateChemCompDict(compId2):
                             cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId), None)

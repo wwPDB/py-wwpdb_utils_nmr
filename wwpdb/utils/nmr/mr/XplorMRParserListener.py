@@ -1163,10 +1163,10 @@ class XplorMRParserListener(ParseTreeListener):
                                             _atom = {}
                                             _atom['comp_id'] = coordAtomSite['comp_id']
                                             _atom['type_symbol'] = coordAtomSite['type_symbol'][coordAtomSite['atom_id'].index(_atomId)]
-                                        elif 'alt_atom_id' in coordAtomSite and _atomId in coordAtomSite['alt_atom_id']:
+                                        elif 'auth_atom_id' in coordAtomSite and _atomId in coordAtomSite['auth_atom_id']:
                                             _atom = {}
                                             _atom['comp_id'] = coordAtomSite['comp_id']
-                                            _atom['type_symbol'] = coordAtomSite['type_symbol'][coordAtomSite['alt_atom_id'].index(_atomId)]
+                                            _atom['type_symbol'] = coordAtomSite['type_symbol'][coordAtomSite['auth_atom_id'].index(_atomId)]
 
                                     if _atom is not None:
                                         if ('comp_id' not in _factor or _atom['comp_id'] in _factor['comp_id'])\
@@ -1821,7 +1821,7 @@ class XplorMRParserListener(ParseTreeListener):
                                 if _atomId in coordAtomSite['atom_id']:
                                     _atom = {}
                                     _atom['comp_id'] = coordAtomSite['comp_id']
-                                elif 'alt_atom_id' in coordAtomSite and _atomId in coordAtomSite['alt_atom_id']:
+                                elif 'auth_atom_id' in coordAtomSite and _atomId in coordAtomSite['auth_atom_id']:
                                     _atom = {}
                                     _atom['comp_id'] = coordAtomSite['comp_id']
 

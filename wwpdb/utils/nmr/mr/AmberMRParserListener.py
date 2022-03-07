@@ -512,7 +512,7 @@ class AmberMRParserListener(ParseTreeListener):
 
                                 if cifCheck:
                                     if coordAtomSite is not None and (_atomId in coordAtomSite['atom_id']
-                                                                      or ('alt_atom_id' in coordAtomSite and _atomId in coordAtomSite['alt_atom_id'])):
+                                                                      or ('auth_atom_id' in coordAtomSite and _atomId in coordAtomSite['auth_atom_id'])):
                                         factor['chain_id'] = chainId
                                         factor['seq_id'] = seqId
                                         factor['comp_id'] = compId
@@ -543,7 +543,7 @@ class AmberMRParserListener(ParseTreeListener):
 
                                 if cifCheck:
                                     if coordAtomSite is not None and (_atomId in coordAtomSite['atom_id']
-                                                                      or ('alt_atom_id' in coordAtomSite and _atomId in coordAtomSite['alt_atom_id'])):
+                                                                      or ('auth_atom_id' in coordAtomSite and _atomId in coordAtomSite['auth_atom_id'])):
                                         _factor['chain_id'] = chainId
                                         _factor['seq_id'] = seqId
                                         _factor['comp_id'] = compId

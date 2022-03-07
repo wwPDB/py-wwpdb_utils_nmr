@@ -75,6 +75,8 @@ class TestNmrDpUtility(unittest.TestCase):
             print('%s: %s, %s' % (cs_type, report['information']['status'], error_type))
 
         self.assertNotEqual(report['information']['status'], 'Error')
+        if report['warning'] is not None:
+            self.assertNotIn('missing_content', report['warning'])
 
     def test_nmr_cs_str_consistency_check_daother_7690(self):
         self.__test_nmr_cs_str_consistency('daother-7690')

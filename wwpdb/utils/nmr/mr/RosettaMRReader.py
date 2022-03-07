@@ -38,16 +38,19 @@ class RosettaMRReader:
     """
 
     def __init__(self, verbose=True, log=sys.stdout, cR=None, polySeqModel=None,
+                 coordAtomSite=None, coordUnobsRes=None,
                  ccU=None, csStat=None, nefT=None):
         self.__verbose = verbose
         self.__lfh = log
 
         if cR is not None and polySeqModel is None:
-            dict = checkCoordinates(verbose, log, cR, polySeqModel, False)
+            dict = checkCoordinates(verbose, log, cR, polySeqModel, testTag=False)
             polySeqModel = dict['polymer_sequence']
 
         self.__cR = cR
         self.__polySeqModel = polySeqModel
+        self.__coordAtomSite = coordAtomSite
+        self.__coordUnobsRes = coordUnobsRes
 
         # CCD accessing utility
         self.__ccU = ChemCompUtil(verbose, log) if ccU is None else ccU
@@ -109,6 +112,7 @@ class RosettaMRReader:
 
                 walker = ParseTreeWalker()
                 listener = RosettaMRParserListener(self.__verbose, self.__lfh, self.__cR, self.__polySeqModel,
+                                                   self.__coordAtomSite, self.__coordUnobsRes,
                                                    self.__ccU, self.__csStat, self.__nefT)
                 walker.walk(listener, tree)
 
@@ -136,4 +140,4 @@ class RosettaMRReader:
 if __name__ == "__main__":
     reader = RosettaMRReader(False)
     reader.parse('../../tests-nmr/mock-data-daother-7690/Sa1_v90t_30C_noe.txt',
-                 '../../tests-nmr/mock-data-daother-7690/pdb_extract_17960.cif')
+                 '../../tests-nmr/mock-data-daother-7690/D_800470_model_P1.cif.V4')

@@ -3395,7 +3395,7 @@ class NmrDpUtility:
         # total number of models
         self.__total_models = 0
         # atom id list in model
-        self.__coord_atom_id = None
+        self.__coord_atom_site = None
         # residues not observed in the coordinates (DAOTHER-7665)
         self.__coord_unobs_res = None
         # tautomer state in model
@@ -16207,7 +16207,7 @@ class NmrDpUtility:
                     if seq_key in self.__coord_unobs_res:  # DAOTHER-7665
                         continue
 
-                    coord_atom_id_ = None if seq_key not in self.__coord_atom_id else self.__coord_atom_id[seq_key]
+                    coord_atom_site_ = None if seq_key not in self.__coord_atom_site else self.__coord_atom_site[seq_key]
 
                     self.__ccU.updateChemCompDict(comp_id)
 
@@ -16283,9 +16283,9 @@ class NmrDpUtility:
                                         if self.__verbose:
                                             self.__lfh.write(f"+NmrDpUtility.__textResidueVariant() ++ Warning  - {warn}\n")
 
-                                if coord_atom_id_ is not None and coord_atom_id_['comp_id'] == cif_comp_id\
-                                   and (atom_id_ in coord_atom_id_['atom_id']
-                                        or ('auth_atom_id' in coord_atom_id_ and atom_id_ in coord_atom_id_['auth_atom_id'])):
+                                if coord_atom_site_ is not None and coord_atom_site_['comp_id'] == cif_comp_id\
+                                   and (atom_id_ in coord_atom_site_['atom_id']
+                                        or ('auth_atom_id' in coord_atom_site_ and atom_id_ in coord_atom_site_['auth_atom_id'])):
 
                                     err = "Atom ("\
                                         + self.__getReducedAtomNotation(chain_id_name, chain_id, seq_id_name, seq_id, comp_id_name, comp_id, atom_id_name, atom_name)\
@@ -16301,10 +16301,10 @@ class NmrDpUtility:
 
                             else:
 
-                                if coord_atom_id_ is not None and coord_atom_id_['comp_id'] == cif_comp_id\
-                                   and (atom_id_ not in coord_atom_id_['atom_id']
-                                        and (('auth_atom_id' in coord_atom_id_ and atom_id_ not in coord_atom_id_['auth_atom_id'])
-                                             or 'auth_atom_id' not in coord_atom_id_)):
+                                if coord_atom_site_ is not None and coord_atom_site_['comp_id'] == cif_comp_id\
+                                   and (atom_id_ not in coord_atom_site_['atom_id']
+                                        and (('auth_atom_id' in coord_atom_site_ and atom_id_ not in coord_atom_site_['auth_atom_id'])
+                                             or 'auth_atom_id' not in coord_atom_site_)):
 
                                     err = "Atom ("\
                                         + self.__getReducedAtomNotation(chain_id_name, chain_id, seq_id_name, seq_id, comp_id_name, comp_id, atom_id_name, atom_name)\
@@ -16368,10 +16368,10 @@ class NmrDpUtility:
                                     if self.__verbose:
                                         self.__lfh.write(f"+NmrDpUtility.__textResidueVariant() ++ Warning  - {warn}\n")
 
-                            if coord_atom_id_ is not None and coord_atom_id_['comp_id'] == cif_comp_id\
-                               and (atom_id_ in coord_atom_id_['atom_id']
-                                    and (('auth_atom_id' in coord_atom_id_ and atom_id_ in coord_atom_id_['auth_atom_id'])
-                                         or 'auth_atom_id' not in coord_atom_id_)):
+                            if coord_atom_site_ is not None and coord_atom_site_['comp_id'] == cif_comp_id\
+                               and (atom_id_ in coord_atom_site_['atom_id']
+                                    and (('auth_atom_id' in coord_atom_site_ and atom_id_ in coord_atom_site_['auth_atom_id'])
+                                         or 'auth_atom_id' not in coord_atom_site_)):
 
                                 err = "Atom ("\
                                     + self.__getReducedAtomNotation(chain_id_name, chain_id, seq_id_name, seq_id, comp_id_name, comp_id, atom_id_name, atom_name)\
@@ -24190,7 +24190,7 @@ class NmrDpUtility:
 
         __errors = self.report.getTotalErrors()
 
-        if self.__coord_atom_id is None:
+        if self.__coord_atom_site is None:
 
             try:
 
@@ -24219,7 +24219,7 @@ class NmrDpUtility:
                                                             [{'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id}
                                                              ])
 
-                self.__coord_atom_id = {}
+                self.__coord_atom_site = {}
                 chain_ids = set(c['chain_id'] for c in coord)
                 for chain_id in chain_ids:
                     seq_ids = set((int(c['seq_id']) if c['seq_id'] is not None else c['auth_seq_id']) for c in coord if c['chain_id'] == chain_id)
@@ -24231,12 +24231,12 @@ class NmrDpUtility:
                         atom_ids = [c['atom_id'] for c in coord
                                     if c['chain_id'] == chain_id and ((c['seq_id'] is not None and int(c['seq_id']) == seq_id)
                                                                       or (c['seq_id'] is None and c['auth_seq_id'] == seq_id))]
-                        self.__coord_atom_id[seq_key] = {'comp_id': comp_id, 'atom_id': atom_ids}
+                        self.__coord_atom_site[seq_key] = {'comp_id': comp_id, 'atom_id': atom_ids}
                         if has_pdbx_auth_atom_name:
                             auth_atom_ids = [c['auth_atom_id'] for c in coord
                                              if c['chain_id'] == chain_id and ((c['seq_id'] is not None and int(c['seq_id']) == seq_id)
                                                                                or (c['seq_id'] is None and c['auth_seq_id'] == seq_id))]
-                            self.__coord_atom_id[seq_key]['auth_atom_id'] = auth_atom_ids
+                            self.__coord_atom_site[seq_key]['auth_atom_id'] = auth_atom_ids
 
                 # DAOTHER-7665
                 self.__coord_unobs_res = []
@@ -24598,12 +24598,12 @@ class NmrDpUtility:
                 if seq_key in self.__coord_unobs_res:  # DAOTHER-7665
                     continue
 
-                coord_atom_id_ = None if seq_key not in self.__coord_atom_id else self.__coord_atom_id[seq_key]
+                coord_atom_site_ = None if seq_key not in self.__coord_atom_site else self.__coord_atom_site[seq_key]
 
-                if coord_atom_id_ is None or coord_atom_id_['comp_id'] != cif_comp_id\
-                   or (atom_id_ not in coord_atom_id_['atom_id']
-                       and (('auth_atom_id' in coord_atom_id_ and atom_id_ not in coord_atom_id_['auth_atom_id'])
-                            or 'auth_atom_id' not in coord_atom_id_)):
+                if coord_atom_site_ is None or coord_atom_site_['comp_id'] != cif_comp_id\
+                   or (atom_id_ not in coord_atom_site_['atom_id']
+                       and (('auth_atom_id' in coord_atom_site_ and atom_id_ not in coord_atom_site_['auth_atom_id'])
+                            or 'auth_atom_id' not in coord_atom_site_)):
 
                     idx_msg = ''
                     if index_tag is not None:
@@ -24616,7 +24616,7 @@ class NmrDpUtility:
                     cyclic = self.__isCyclicPolymer(ref_chain_id)
 
                     if self.__nonblk_bad_nterm and (seq_id == 1 or cif_seq_id == 1) and atom_id_ == 'H'\
-                       and (cyclic or comp_id == 'PRO' or 'auth_atom_id' not in coord_atom_id_):  # DAOTHER-7665
+                       and (cyclic or comp_id == 'PRO' or 'auth_atom_id' not in coord_atom_site_):  # DAOTHER-7665
 
                         err += " However, it is acceptable if corresponding atom name, H1, is given during biocuration "
 

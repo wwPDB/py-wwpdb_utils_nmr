@@ -38,13 +38,19 @@ class XplorMRReader:
     """
 
     def __init__(self, verbose=True, log=sys.stdout, cR=None, polySeqModel=None,
+                 coordAtomSite=None, coordUnobsRes=None,
                  ccU=None, csStat=None, nefT=None):
         self.__verbose = verbose
         self.__lfh = log
 
         if cR is not None and polySeqModel is None:
-            dict = checkCoordinates(verbose, log, cR, polySeqModel, False)
+            dict = checkCoordinates(verbose, log, cR, polySeqModel, testTag=False)
             polySeqModel = dict['polymer_sequence']
+
+        self.__cR = cR
+        self.__polySeqModel = polySeqModel
+        self.__coordAtomSite = coordAtomSite
+        self.__coordUnobsRes = coordUnobsRes
 
         self.__cR = cR
         self.__polySeqModel = polySeqModel
@@ -109,6 +115,7 @@ class XplorMRReader:
 
                 walker = ParseTreeWalker()
                 listener = XplorMRParserListener(self.__verbose, self.__lfh, self.__cR, self.__polySeqModel,
+                                                 self.__coordAtomSite, self.__coordUnobsRes,
                                                  self.__ccU, self.__csStat, self.__nefT)
                 walker.walk(listener, tree)
 

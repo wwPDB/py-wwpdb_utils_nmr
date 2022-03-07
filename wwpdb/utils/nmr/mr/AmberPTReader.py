@@ -41,7 +41,7 @@ class AmberPTReader:
         self.__lfh = log
 
         if cR is not None and polySeqModel is None:
-            dict = checkCoordinates(verbose, log, cR, polySeqModel, False)
+            dict = checkCoordinates(verbose, log, cR, polySeqModel, testTag=False)
             polySeqModel = dict['polymer_sequence']
 
         self.__cR = cR

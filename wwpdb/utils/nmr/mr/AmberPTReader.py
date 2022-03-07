@@ -9,15 +9,26 @@ import sys
 import os
 from antlr4 import InputStream, CommonTokenStream, ParseTreeWalker
 
-from wwpdb.utils.nmr.mr.LexerErrorListener import LexerErrorListener
-from wwpdb.utils.nmr.mr.ParserErrorListener import ParserErrorListener
-from wwpdb.utils.nmr.mr.AmberPTLexer import AmberPTLexer
-from wwpdb.utils.nmr.mr.AmberPTParser import AmberPTParser
-from wwpdb.utils.nmr.mr.AmberPTParserListener import AmberPTParserListener
-from wwpdb.utils.nmr.mr.ParserListenerUtil import checkCoordinates
-from wwpdb.utils.nmr.io.CifReader import CifReader
-from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
-from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
+try:
+    from wwpdb.utils.nmr.mr.LexerErrorListener import LexerErrorListener
+    from wwpdb.utils.nmr.mr.ParserErrorListener import ParserErrorListener
+    from wwpdb.utils.nmr.mr.AmberPTLexer import AmberPTLexer
+    from wwpdb.utils.nmr.mr.AmberPTParser import AmberPTParser
+    from wwpdb.utils.nmr.mr.AmberPTParserListener import AmberPTParserListener
+    from wwpdb.utils.nmr.mr.ParserListenerUtil import checkCoordinates
+    from wwpdb.utils.nmr.io.CifReader import CifReader
+    from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
+    from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
+except ImportError:
+    from nmr.mr.LexerErrorListener import LexerErrorListener
+    from nmr.mr.ParserErrorListener import ParserErrorListener
+    from nmr.mr.AmberPTLexer import AmberPTLexer
+    from nmr.mr.AmberPTParser import AmberPTParser
+    from nmr.mr.AmberPTParserListener import AmberPTParserListener
+    from nmr.mr.ParserListenerUtil import checkCoordinates
+    from nmr.io.CifReader import CifReader
+    from nmr.ChemCompUtil import ChemCompUtil
+    from nmr.BMRBChemShiftStat import BMRBChemShiftStat
 
 
 class AmberPTReader:

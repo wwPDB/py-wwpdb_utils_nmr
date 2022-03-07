@@ -9,16 +9,28 @@ import sys
 import os
 from antlr4 import InputStream, CommonTokenStream, ParseTreeWalker
 
-from wwpdb.utils.nmr.mr.LexerErrorListener import LexerErrorListener
-from wwpdb.utils.nmr.mr.ParserErrorListener import ParserErrorListener
-from wwpdb.utils.nmr.mr.XplorMRLexer import XplorMRLexer
-from wwpdb.utils.nmr.mr.XplorMRParser import XplorMRParser
-from wwpdb.utils.nmr.mr.XplorMRParserListener import XplorMRParserListener
-from wwpdb.utils.nmr.mr.ParserListenerUtil import checkCoordinates
-from wwpdb.utils.nmr.io.CifReader import CifReader
-from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
-from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
-from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
+try:
+    from wwpdb.utils.nmr.mr.LexerErrorListener import LexerErrorListener
+    from wwpdb.utils.nmr.mr.ParserErrorListener import ParserErrorListener
+    from wwpdb.utils.nmr.mr.XplorMRLexer import XplorMRLexer
+    from wwpdb.utils.nmr.mr.XplorMRParser import XplorMRParser
+    from wwpdb.utils.nmr.mr.XplorMRParserListener import XplorMRParserListener
+    from wwpdb.utils.nmr.mr.ParserListenerUtil import checkCoordinates
+    from wwpdb.utils.nmr.io.CifReader import CifReader
+    from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
+    from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
+    from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
+except ImportError:
+    from nmr.mr.LexerErrorListener import LexerErrorListener
+    from nmr.mr.ParserErrorListener import ParserErrorListener
+    from nmr.mr.XplorMRLexer import XplorMRLexer
+    from nmr.mr.XplorMRParser import XplorMRParser
+    from nmr.mr.XplorMRParserListener import XplorMRParserListener
+    from nmr.mr.ParserListenerUtil import checkCoordinates
+    from nmr.io.CifReader import CifReader
+    from nmr.ChemCompUtil import ChemCompUtil
+    from nmr.BMRBChemShiftStat import BMRBChemShiftStat
+    from nmr.NEFTranslator.NEFTranslator import NEFTranslator
 
 
 class XplorMRReader:

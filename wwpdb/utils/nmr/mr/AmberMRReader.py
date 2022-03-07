@@ -9,17 +9,30 @@ import sys
 import os
 from antlr4 import InputStream, CommonTokenStream, ParseTreeWalker
 
-from wwpdb.utils.nmr.mr.LexerErrorListener import LexerErrorListener
-from wwpdb.utils.nmr.mr.ParserErrorListener import ParserErrorListener
-from wwpdb.utils.nmr.mr.AmberMRLexer import AmberMRLexer
-from wwpdb.utils.nmr.mr.AmberMRParser import AmberMRParser
-from wwpdb.utils.nmr.mr.AmberMRParserListener import AmberMRParserListener
-from wwpdb.utils.nmr.mr.AmberPTReader import AmberPTReader
-from wwpdb.utils.nmr.mr.ParserListenerUtil import checkCoordinates
-from wwpdb.utils.nmr.io.CifReader import CifReader
-from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
-from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
-from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
+try:
+    from wwpdb.utils.nmr.mr.LexerErrorListener import LexerErrorListener
+    from wwpdb.utils.nmr.mr.ParserErrorListener import ParserErrorListener
+    from wwpdb.utils.nmr.mr.AmberMRLexer import AmberMRLexer
+    from wwpdb.utils.nmr.mr.AmberMRParser import AmberMRParser
+    from wwpdb.utils.nmr.mr.AmberMRParserListener import AmberMRParserListener
+    from wwpdb.utils.nmr.mr.AmberPTReader import AmberPTReader
+    from wwpdb.utils.nmr.mr.ParserListenerUtil import checkCoordinates
+    from wwpdb.utils.nmr.io.CifReader import CifReader
+    from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
+    from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
+    from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
+except ImportError:
+    from nmr.mr.LexerErrorListener import LexerErrorListener
+    from nmr.mr.ParserErrorListener import ParserErrorListener
+    from nmr.mr.AmberMRLexer import AmberMRLexer
+    from nmr.mr.AmberMRParser import AmberMRParser
+    from nmr.mr.AmberMRParserListener import AmberMRParserListener
+    from nmr.mr.AmberPTReader import AmberPTReader
+    from nmr.mr.ParserListenerUtil import checkCoordinates
+    from nmr.io.CifReader import CifReader
+    from nmr.ChemCompUtil import ChemCompUtil
+    from nmr.BMRBChemShiftStat import BMRBChemShiftStat
+    from nmr.NEFTranslator.NEFTranslator import NEFTranslator
 
 
 class AmberMRReader:

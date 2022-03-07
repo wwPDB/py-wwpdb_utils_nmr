@@ -9,16 +9,28 @@ import sys
 import os
 from antlr4 import InputStream, CommonTokenStream, ParseTreeWalker
 
-from wwpdb.utils.nmr.mr.LexerErrorListener import LexerErrorListener
-from wwpdb.utils.nmr.mr.ParserErrorListener import ParserErrorListener
-from wwpdb.utils.nmr.mr.CyanaMRLexer import CyanaMRLexer
-from wwpdb.utils.nmr.mr.CyanaMRParser import CyanaMRParser
-from wwpdb.utils.nmr.mr.CyanaMRParserListener import CyanaMRParserListener
-from wwpdb.utils.nmr.mr.ParserListenerUtil import checkCoordinates
-from wwpdb.utils.nmr.io.CifReader import CifReader
-from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
-from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
-from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
+try:
+    from wwpdb.utils.nmr.mr.LexerErrorListener import LexerErrorListener
+    from wwpdb.utils.nmr.mr.ParserErrorListener import ParserErrorListener
+    from wwpdb.utils.nmr.mr.CyanaMRLexer import CyanaMRLexer
+    from wwpdb.utils.nmr.mr.CyanaMRParser import CyanaMRParser
+    from wwpdb.utils.nmr.mr.CyanaMRParserListener import CyanaMRParserListener
+    from wwpdb.utils.nmr.mr.ParserListenerUtil import checkCoordinates
+    from wwpdb.utils.nmr.io.CifReader import CifReader
+    from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
+    from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
+    from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
+except ImportError:
+    from nmr.mr.LexerErrorListener import LexerErrorListener
+    from nmr.mr.ParserErrorListener import ParserErrorListener
+    from nmr.mr.CyanaMRLexer import CyanaMRLexer
+    from nmr.mr.CyanaMRParser import CyanaMRParser
+    from nmr.mr.CyanaMRParserListener import CyanaMRParserListener
+    from nmr.mr.ParserListenerUtil import checkCoordinates
+    from nmr.io.CifReader import CifReader
+    from nmr.ChemCompUtil import ChemCompUtil
+    from nmr.BMRBChemShiftStat import BMRBChemShiftStat
+    from nmr.NEFTranslator.NEFTranslator import NEFTranslator
 
 
 class CyanaMRReader:

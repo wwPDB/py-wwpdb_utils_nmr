@@ -12,17 +12,31 @@ import re
 import copy
 
 from antlr4 import ParseTreeListener
-from wwpdb.utils.nmr.mr.AmberPTParser import AmberPTParser
-from wwpdb.utils.nmr.mr.ParserListenerUtil import checkCoordinates
 
-from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
-from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
-from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
-from wwpdb.utils.nmr.AlignUtil import (hasLargeSeqGap,
-                                       fillBlankCompIdWithOffset, beautifyPolySeq,
-                                       getMiddleCode, getGaugeCode, getScoreOfSeqAlign,
-                                       getOneLetterCodeSequence,
-                                       letterToDigit, indexToLetter)
+try:
+    from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
+    from wwpdb.utils.nmr.mr.AmberPTParser import AmberPTParser
+    from wwpdb.utils.nmr.mr.ParserListenerUtil import checkCoordinates
+
+    from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
+    from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
+    from wwpdb.utils.nmr.AlignUtil import (hasLargeSeqGap,
+                                           fillBlankCompIdWithOffset, beautifyPolySeq,
+                                           getMiddleCode, getGaugeCode, getScoreOfSeqAlign,
+                                           getOneLetterCodeSequence,
+                                           letterToDigit, indexToLetter)
+except ImportError:
+    from nmr.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
+    from nmr.mr.AmberPTParser import AmberPTParser
+    from nmr.mr.ParserListenerUtil import checkCoordinates
+
+    from nmr.ChemCompUtil import ChemCompUtil
+    from nmr.BMRBChemShiftStat import BMRBChemShiftStat
+    from nmr.AlignUtil import (hasLargeSeqGap,
+                               fillBlankCompIdWithOffset, beautifyPolySeq,
+                               getMiddleCode, getGaugeCode, getScoreOfSeqAlign,
+                               getOneLetterCodeSequence,
+                               letterToDigit, indexToLetter)
 
 
 def chunk_string(string, length=4):

@@ -26,7 +26,10 @@ import copy
 import pickle
 import collections
 
-from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
+try:
+    from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
+except ImportError:
+    from nmr.ChemCompUtil import ChemCompUtil
 
 
 def load_stat_from_pickle(file_name):

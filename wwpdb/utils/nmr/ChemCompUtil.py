@@ -9,9 +9,15 @@
 """
 import sys
 
-from wwpdb.utils.config.ConfigInfo import getSiteId
-from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommon
-from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
+try:
+    from wwpdb.utils.config.ConfigInfo import getSiteId
+    from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommon
+    from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
+    cICommon = ConfigInfoAppCommon(getSiteId())
+    CC_CVS_PATH = cICommon.get_site_cc_cvs_path()
+except ImportError:
+    from nmr.io.ChemCompIo import ChemCompReader
+    CC_CVS_PATH = './ligand_dict'  # need to setup 'ligand_dict' CCD resource for NMR restraint processing
 
 
 class ChemCompUtil:
@@ -19,11 +25,8 @@ class ChemCompUtil:
     """
 
     def __init__(self, verbose=False, log=sys.stderr):
-        _cICommon = ConfigInfoAppCommon(getSiteId())
-        _ccCvsPath = _cICommon.get_site_cc_cvs_path()
-
         self.__ccR = ChemCompReader(verbose, log)
-        self.__ccR.setCachePath(_ccCvsPath)
+        self.__ccR.setCachePath(CC_CVS_PATH)
 
         self.lastCompId = None
         self.lastStatus = False

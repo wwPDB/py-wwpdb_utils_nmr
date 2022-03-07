@@ -171,30 +171,57 @@ from packaging import version
 from munkres import Munkres
 import numpy as np
 
-from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import (NEFTranslator,
-                                                         NEF_VERSION,
-                                                         altDistanceConstraintType,
-                                                         altDihedralAngleConstraintType,
-                                                         altRdcConstraintType,
-                                                         paramagElements, ferromagElements, nonMetalElements,
-                                                         isotopeNumsOfNmrObsNucs, halfSpinNucs,
-                                                         allowedAmbiguityCodes,
-                                                         allowedIsotopeNums,
-                                                         MAX_DIM_NUM_OF_SPECTRA)
-from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
-from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
-from wwpdb.utils.nmr.AlignUtil import (emptyValue, trueValue,
-                                       monDict3, hasLargeSeqGap,
-                                       fillBlankCompId, fillBlankCompIdWithOffset, beautifyPolySeq,
-                                       getMiddleCode, getGaugeCode, getScoreOfSeqAlign,
-                                       getOneLetterCode, getOneLetterCodeSequence,
-                                       letterToDigit, indexToLetter)
-from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
-from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
-from wwpdb.utils.nmr.io.CifReader import CifReader
-from wwpdb.utils.nmr.rci.RCI import RCI
-from wwpdb.utils.nmr.CifToNmrStar import CifToNmrStar
-from wwpdb.utils.nmr.NmrStarToCif import NmrStarToCif
+try:
+    from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
+    from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import (NEFTranslator,
+                                                             NEF_VERSION,
+                                                             altDistanceConstraintType,
+                                                             altDihedralAngleConstraintType,
+                                                             altRdcConstraintType,
+                                                             paramagElements, ferromagElements, nonMetalElements,
+                                                             isotopeNumsOfNmrObsNucs, halfSpinNucs,
+                                                             allowedAmbiguityCodes,
+                                                             allowedIsotopeNums,
+                                                             MAX_DIM_NUM_OF_SPECTRA)
+    from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
+    from wwpdb.utils.nmr.AlignUtil import (emptyValue, trueValue,
+                                           monDict3, hasLargeSeqGap,
+                                           fillBlankCompId, fillBlankCompIdWithOffset, beautifyPolySeq,
+                                           getMiddleCode, getGaugeCode, getScoreOfSeqAlign,
+                                           getOneLetterCode, getOneLetterCodeSequence,
+                                           letterToDigit, indexToLetter)
+    from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
+    from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
+    from wwpdb.utils.nmr.io.CifReader import CifReader
+    from wwpdb.utils.nmr.rci.RCI import RCI
+    from wwpdb.utils.nmr.CifToNmrStar import CifToNmrStar
+    from wwpdb.utils.nmr.NmrStarToCif import NmrStarToCif
+except ImportError:
+    from nmr.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
+    from nmr.NEFTranslator.NEFTranslator import (NEFTranslator,
+                                                 NEF_VERSION,
+                                                 altDistanceConstraintType,
+                                                 altDihedralAngleConstraintType,
+                                                 altRdcConstraintType,
+                                                 paramagElements, ferromagElements, nonMetalElements,
+                                                 isotopeNumsOfNmrObsNucs, halfSpinNucs,
+                                                 allowedAmbiguityCodes,
+                                                 allowedIsotopeNums,
+                                                 MAX_DIM_NUM_OF_SPECTRA)
+    from nmr.NmrDpReport import NmrDpReport
+    from nmr.AlignUtil import (emptyValue, trueValue,
+                               monDict3, hasLargeSeqGap,
+                               fillBlankCompId, fillBlankCompIdWithOffset, beautifyPolySeq,
+                               getMiddleCode, getGaugeCode, getScoreOfSeqAlign,
+                               getOneLetterCode, getOneLetterCodeSequence,
+                               letterToDigit, indexToLetter)
+    from nmr.BMRBChemShiftStat import BMRBChemShiftStat
+    from nmr.ChemCompUtil import ChemCompUtil
+    from nmr.io.CifReader import CifReader
+    from nmr.rci.RCI import RCI
+    from nmr.CifToNmrStar import CifToNmrStar
+    from nmr.NmrStarToCif import NmrStarToCif
+
 
 __pynmrstar_v3_3__ = version.parse(pynmrstar.__version__) >= version.parse("3.3.0")
 __pynmrstar_v3_2__ = version.parse(pynmrstar.__version__) >= version.parse("3.2.0")

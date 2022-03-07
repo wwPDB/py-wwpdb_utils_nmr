@@ -13,7 +13,10 @@ import os
 import os.path
 import pynmrstar
 
-from wwpdb.utils.nmr.io.mmCIFUtil import mmCIFUtil
+try:
+    from wwpdb.utils.nmr.io.mmCIFUtil import mmCIFUtil
+except ImportError:
+    from nmr.io.mmCIFUtil import mmCIFUtil
 
 
 class CifToNmrStar:

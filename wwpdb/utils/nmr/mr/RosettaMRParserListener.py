@@ -10,12 +10,21 @@
 import sys
 
 from antlr4 import ParseTreeListener
-from wwpdb.utils.nmr.mr.RosettaMRParser import RosettaMRParser
-from wwpdb.utils.nmr.mr.ParserListenerUtil import checkCoordinates
 
-from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
-from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
-from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
+try:
+    from wwpdb.utils.nmr.mr.RosettaMRParser import RosettaMRParser
+    from wwpdb.utils.nmr.mr.ParserListenerUtil import checkCoordinates
+
+    from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
+    from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
+    from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
+except ImportError:
+    from nmr.mr.RosettaMRParser import RosettaMRParser
+    from nmr.mr.ParserListenerUtil import checkCoordinates
+
+    from nmr.ChemCompUtil import ChemCompUtil
+    from nmr.BMRBChemShiftStat import BMRBChemShiftStat
+    from nmr.NEFTranslator.NEFTranslator import NEFTranslator
 
 
 # This class defines a complete listener for a parse tree produced by RosettaMRParser.

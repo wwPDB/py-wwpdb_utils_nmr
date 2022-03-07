@@ -22,8 +22,8 @@ __version__ = "V0.01"
 import sys
 import os
 import traceback
+
 from mmcif.io.PdbxReader import PdbxReader
-# from mmcif.api.PdbxContainers import *
 
 
 class ChemCompReader:

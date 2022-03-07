@@ -57,7 +57,7 @@ class LexerErrorListener(ErrorListener):
                 _dict['message'] = _dict['message'][0:p] + 'error at:'
             except ValueError:
                 pass
-            
+
         print(msg)
 
         self.__messageList.append(_dict)

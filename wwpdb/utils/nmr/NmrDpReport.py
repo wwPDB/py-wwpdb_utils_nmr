@@ -67,7 +67,10 @@ import json
 import copy
 import re
 
-from wwpdb.utils.nmr.AlignUtil import emptyValue, monDict3
+try:
+    from wwpdb.utils.nmr.AlignUtil import emptyValue, monDict3
+except ImportError:
+    from nmr.AlignUtil import emptyValue, monDict3
 
 
 def get_value_safe(d=None, key=None):

@@ -9,16 +9,28 @@ import sys
 import os
 from antlr4 import InputStream, CommonTokenStream, ParseTreeWalker
 
-from wwpdb.utils.nmr.mr.LexerErrorListener import LexerErrorListener
-from wwpdb.utils.nmr.mr.ParserErrorListener import ParserErrorListener
-from wwpdb.utils.nmr.mr.CnsMRLexer import CnsMRLexer
-from wwpdb.utils.nmr.mr.CnsMRParser import CnsMRParser
-from wwpdb.utils.nmr.mr.CnsMRParserListener import CnsMRParserListener
-from wwpdb.utils.nmr.mr.ParserListenerUtil import checkCoordinates
-from wwpdb.utils.nmr.io.CifReader import CifReader
-from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
-from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
-from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
+try:
+    from wwpdb.utils.nmr.mr.LexerErrorListener import LexerErrorListener
+    from wwpdb.utils.nmr.mr.ParserErrorListener import ParserErrorListener
+    from wwpdb.utils.nmr.mr.CnsMRLexer import CnsMRLexer
+    from wwpdb.utils.nmr.mr.CnsMRParser import CnsMRParser
+    from wwpdb.utils.nmr.mr.CnsMRParserListener import CnsMRParserListener
+    from wwpdb.utils.nmr.mr.ParserListenerUtil import checkCoordinates
+    from wwpdb.utils.nmr.io.CifReader import CifReader
+    from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
+    from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
+    from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
+except ImportError:
+    from nmr.mr.LexerErrorListener import LexerErrorListener
+    from nmr.mr.ParserErrorListener import ParserErrorListener
+    from nmr.mr.CnsMRLexer import CnsMRLexer
+    from nmr.mr.CnsMRParser import CnsMRParser
+    from nmr.mr.CnsMRParserListener import CnsMRParserListener
+    from nmr.mr.ParserListenerUtil import checkCoordinates
+    from nmr.io.CifReader import CifReader
+    from nmr.ChemCompUtil import ChemCompUtil
+    from nmr.BMRBChemShiftStat import BMRBChemShiftStat
+    from nmr.NEFTranslator.NEFTranslator import NEFTranslator
 
 
 class CnsMRReader:

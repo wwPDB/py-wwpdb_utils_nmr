@@ -97,11 +97,18 @@ import pynmrstar
 
 from packaging import version
 
-from wwpdb.utils.nmr.AlignUtil import (emptyValue, trueValue,
-                                       getOneLetterCode,
-                                       letterToDigit, indexToLetter)
-from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
-from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
+try:
+    from wwpdb.utils.nmr.AlignUtil import (emptyValue, trueValue,
+                                           getOneLetterCode,
+                                           letterToDigit, indexToLetter)
+    from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
+    from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
+except ImportError:
+    from nmr.AlignUtil import (emptyValue, trueValue,
+                               getOneLetterCode,
+                               letterToDigit, indexToLetter)
+    from nmr.ChemCompUtil import ChemCompUtil
+    from nmr.BMRBChemShiftStat import BMRBChemShiftStat
 
 __version__ = '3.1.0'
 

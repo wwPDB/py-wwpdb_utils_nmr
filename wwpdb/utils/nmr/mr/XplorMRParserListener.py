@@ -12,13 +12,22 @@ import re
 import numpy as np
 
 from antlr4 import ParseTreeListener
-from wwpdb.utils.nmr.mr.XplorMRParser import XplorMRParser
-from wwpdb.utils.nmr.mr.ParserListenerUtil import toNpArray, toRegEx, checkCoordinates
-
-from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
-from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
-from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
 from rmsd.calculate_rmsd import (int_atom, ELEMENT_WEIGHTS)  # noqa: F401 pylint: disable=no-name-in-module, import-error
+
+try:
+    from wwpdb.utils.nmr.mr.XplorMRParser import XplorMRParser
+    from wwpdb.utils.nmr.mr.ParserListenerUtil import toNpArray, toRegEx, checkCoordinates
+
+    from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
+    from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
+    from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
+except ImportError:
+    from nmr.mr.XplorMRParser import XplorMRParser
+    from nmr.mr.ParserListenerUtil import toNpArray, toRegEx, checkCoordinates
+
+    from nmr.ChemCompUtil import ChemCompUtil
+    from nmr.BMRBChemShiftStat import BMRBChemShiftStat
+    from nmr.NEFTranslator.NEFTranslator import NEFTranslator
 
 
 # This class defines a complete listener for a parse tree produced by XplorMRParser.

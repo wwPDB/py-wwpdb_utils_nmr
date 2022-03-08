@@ -14,18 +14,29 @@ from antlr4 import ParseTreeListener
 
 try:
     from wwpdb.utils.nmr.mr.AmberMRParser import AmberMRParser
-    from wwpdb.utils.nmr.mr.ParserListenerUtil import checkCoordinates
+    from wwpdb.utils.nmr.mr.ParserListenerUtil import (checkCoordinates,
+                                                       DIST_RESTRAINT_RANGE,
+                                                       DIST_RESTRAINT_ERROR)
 
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
 except ImportError:
     from nmr.mr.AmberMRParser import AmberMRParser
-    from nmr.mr.ParserListenerUtil import checkCoordinates
+    from nmr.mr.ParserListenerUtil import (checkCoordinates,
+                                           DIST_RESTRAINT_RANGE,
+                                           DIST_RESTRAINT_ERROR)
 
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.NEFTranslator.NEFTranslator import NEFTranslator
+
+
+DIST_RANGE_MIN = DIST_RESTRAINT_RANGE['min_inclusive']
+DIST_RANGE_MAX = DIST_RESTRAINT_RANGE['max_inclusive']
+
+DIST_ERROR_MIN = DIST_RESTRAINT_ERROR['min_exclusive']
+DIST_ERROR_MAX = DIST_RESTRAINT_ERROR['max_exclusive']
 
 
 # maximum column size of IAT
@@ -383,12 +394,77 @@ class AmberMRParserListener(ParseTreeListener):
             if self.__cur_subtype == 'dist' and len(self.iat) == COL_DIST:
                 if self.lastComment is not None:
                     print('# ' + ' '.join(self.lastComment))
+
+                validRange = True
+                dstFunc = {}
+
+                if self.lowerLimit is not None:
+                    if DIST_ERROR_MIN < self.lowerLimit < DIST_ERROR_MAX:
+                        dstFunc['lower_limit'] = f"{self.lowerLimit:.3}"
+                    else:
+                        validRange = False
+                        self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                            f"The lower limit value 'r2={self.lowerLimit}' must be within range {DIST_RESTRAINT_ERROR}.\n"
+
+                if self.upperLimit is not None:
+                    if DIST_ERROR_MIN < self.upperLimit < DIST_ERROR_MAX:
+                        dstFunc['upper_limit'] = f"{self.upperLimit:.3}"
+                    else:
+                        validRange = False
+                        self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                            f"The upper limit value 'r3={self.upperLimit}' must be within range {DIST_RESTRAINT_ERROR}.\n"
+
+                if self.lowerLinearLimit is not None:
+                    if DIST_ERROR_MIN < self.lowerLinearLimit < DIST_ERROR_MAX:
+                        dstFunc['lower_linear_limit'] = f"{self.lowerLinearLimit:.3}"
+                    else:
+                        validRange = False
+                        self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                            f"The lower linear limit value 'r1={self.lowerLinearLimit}' must be within range {DIST_RESTRAINT_ERROR}.\n"
+
+                if self.upperLinearLimit is not None:
+                    if DIST_ERROR_MIN < self.upperLinearLimit < DIST_ERROR_MAX:
+                        dstFunc['upper_linear_limit'] = f"{self.upperLinearLimit:.3}"
+                    else:
+                        validRange = False
+                        self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                            f"The upper linear limit value 'r4={self.upperLinearLimit}' must be within range {DIST_RESTRAINT_ERROR}.\n"
+
+                if not validRange:
+                    return
+
+                if self.lowerLimit is not None:
+                    if DIST_RANGE_MIN <= self.lowerLimit <= DIST_RANGE_MAX:
+                        pass
+                    else:
+                        self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                            f"The lower limit value 'r2={self.lowerLimit}' should be within range {DIST_RESTRAINT_RANGE}.\n"
+
+                if self.upperLimit is not None:
+                    if DIST_RANGE_MIN <= self.upperLimit <= DIST_RANGE_MAX:
+                        pass
+                    else:
+                        self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                            f"The upper limit value 'r3={self.upperLimit}' should be within range {DIST_RESTRAINT_RANGE}.\n"
+
+                if self.lowerLinearLimit is not None:
+                    if DIST_RANGE_MIN <= self.lowerLinearLimit <= DIST_RANGE_MAX:
+                        pass
+                    else:
+                        self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                            f"The lower linear limit value 'r1={self.lowerLinearLimit}' should be within range {DIST_RESTRAINT_RANGE}.\n"
+
+                if self.upperLinearLimit is not None:
+                    if DIST_RANGE_MIN <= self.upperLinearLimit <= DIST_RANGE_MAX:
+                        pass
+                    else:
+                        self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                            f"The upper linear limit value 'r4={self.upperLinearLimit}' should be within range {DIST_RESTRAINT_RANGE}.\n"
+
                 for atom_1 in self.atomSelectionSet[0]:
                     for atom_2 in self.atomSelectionSet[1]:
                         print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
-                              f"atom_1={atom_1} atom_2={atom_2} "
-                              f"lower_linear_limit={self.lowerLinearLimit:.3} lower_limit={self.lowerLimit:.3} "
-                              f"upper_limit={self.upperLimit:.3} upper_linear_limit={self.upperLinearLimit: .3}")
+                              f"atom_1={atom_1} atom_2={atom_2} {dstFunc}")
 
         # try to update AMBER atom number dictionary based on Sander comments
         else:

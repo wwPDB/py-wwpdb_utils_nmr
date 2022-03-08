@@ -13,6 +13,16 @@ import numpy as np
 REPRESENTATIVE_MODEL_ID = 1
 
 
+DIST_RESTRAINT_RANGE = {'min_inclusive': 0.5, 'max_inclusive': 50.0}
+DIST_RESTRAINT_ERROR = {'min_exclusive': 0.0, 'max_exclusive': 150.0}
+
+
+ANGLE_RESTRAINT_RANGE = {'min_inclusive': -360.0, 'max_inclusive': 360.0}
+
+
+RDC_RESTRAINT_RANGE = {'min_exclusive': -100.0, 'max_exclusive': 100.0}
+
+
 def toNpArray(atom):
     """ Return Numpy array of a given Cartesian coordinate in {'x': float, 'y': float, 'z': float} format.
     """

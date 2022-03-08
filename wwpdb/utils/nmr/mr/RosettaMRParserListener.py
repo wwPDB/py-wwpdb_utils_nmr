@@ -8,23 +8,36 @@
     @author: Masashi Yokochi
 """
 import sys
+import copy
+import numpy as np
 
 from antlr4 import ParseTreeListener
 
 try:
     from wwpdb.utils.nmr.mr.RosettaMRParser import RosettaMRParser
-    from wwpdb.utils.nmr.mr.ParserListenerUtil import checkCoordinates
+    from wwpdb.utils.nmr.mr.ParserListenerUtil import (checkCoordinates,
+                                                       DIST_RESTRAINT_RANGE,
+                                                       DIST_RESTRAINT_ERROR)
 
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
 except ImportError:
     from nmr.mr.RosettaMRParser import RosettaMRParser
-    from nmr.mr.ParserListenerUtil import checkCoordinates
+    from nmr.mr.ParserListenerUtil import (checkCoordinates,
+                                           DIST_RESTRAINT_RANGE,
+                                           DIST_RESTRAINT_ERROR)
 
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.NEFTranslator.NEFTranslator import NEFTranslator
+
+
+DIST_RANGE_MIN = DIST_RESTRAINT_RANGE['min_inclusive']
+DIST_RANGE_MAX = DIST_RESTRAINT_RANGE['max_inclusive']
+
+DIST_ERROR_MIN = DIST_RESTRAINT_ERROR['min_exclusive']
+DIST_ERROR_MAX = DIST_RESTRAINT_ERROR['max_exclusive']
 
 
 # This class defines a complete listener for a parse tree produced by RosettaMRParser.
@@ -144,6 +157,139 @@ class RosettaMRParserListener(ParseTreeListener):
         seqId2 = int(str(ctx.Integer(1)))
         atomId2 = str(ctx.Simple_name(1)).upper()
 
+        target_value = None
+        lower_limit = None
+        upper_limit = None
+        lower_linear_limit = None
+        upper_linear_limit = None
+
+        firstFunc = None
+        srcFunc = None
+
+        level = 0
+        while self.stackFuncs:
+            func = self.stackFuncs.pop()
+            if func is not None:
+                if firstFunc is None:
+                    firstFunc = copy.copy(func)
+                if func['name'] in ('SCALARWEIGHTEDFUNC', 'SUMFUNC'):
+                    continue
+                if 'func_types' in firstFunc:
+                    firstFunc['func_types'].append(func['name'])
+                if srcFunc is None:
+                    srcFunc = copy.copy(func)
+                if 'target_value' in func:
+                    target_value = func['target_value']
+                    del srcFunc['target_value']
+                if 'lower_limit' in func:
+                    lower_limit = func['lower_limit']
+                    del srcFunc['lower_limit']
+                if 'upper_limit' in func:
+                    upper_limit = func['upper_limit']
+                    del srcFunc['upper_limit']
+                if 'lower_linear_limit' in func:
+                    lower_linear_limit = func['lower_linear_limit']
+                    del srcFunc['lower_linear_limit']
+                if 'upper_linear_limit' in func:
+                    upper_linear_limit = func['upper_linear_limit']
+                    del srcFunc['upper_linear_limit']
+                level += 1
+
+        if srcFunc is None:  # errors are already caught
+            return
+
+        if level > 1:
+            self.warningMessage += f"[Complex data] {self.__getCurrentRestraint()}"\
+                f"Too complex constraint function {firstFunc} can not be converted to NEF/NMR-STAR data.\n"
+            return
+
+        if target_value is None and lower_limit is None and upper_limit is None\
+           and lower_linear_limit is None and upper_linear_limit is None:
+            self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
+                f"The constraint function {srcFunc} can not be converted to NEF/NMR-STAR data.\n"
+            return
+
+        validRange = True
+        dstFunc = {}
+
+        if target_value is not None:
+            if DIST_ERROR_MIN < target_value < DIST_ERROR_MAX:
+                dstFunc['target_value'] = f"{target_value:.3}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"{srcFunc}, the target value='{target_value}' must be within range {DIST_RESTRAINT_ERROR}.\n"
+
+        if lower_limit is not None:
+            if DIST_ERROR_MIN < lower_limit < DIST_ERROR_MAX:
+                dstFunc['lower_limit'] = f"{lower_limit:.3}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"{srcFunc}, the lower limit value='{lower_limit}' must be within range {DIST_RESTRAINT_ERROR}.\n"
+
+        if upper_limit is not None:
+            if DIST_ERROR_MIN < upper_limit < DIST_ERROR_MAX:
+                dstFunc['upper_limit'] = f"{upper_limit:.3}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"{srcFunc}, the upper limit value='{upper_limit}' must be within range {DIST_RESTRAINT_ERROR}.\n"
+
+        if lower_linear_limit is not None:
+            if DIST_ERROR_MIN < lower_linear_limit < DIST_ERROR_MAX:
+                dstFunc['lower_linear_limit'] = f"{lower_linear_limit:.3}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"{srcFunc}, the lower linear limit value='{lower_linear_limit}' must be within range {DIST_RESTRAINT_ERROR}.\n"
+
+        if upper_linear_limit is not None:
+            if DIST_ERROR_MIN < upper_linear_limit < DIST_ERROR_MAX:
+                dstFunc['upper_linear_limit'] = f"{upper_linear_limit:.3}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"{srcFunc}, the upper linear limit value='{upper_linear_limit}' must be within range {DIST_RESTRAINT_ERROR}.\n"
+
+        if not validRange:
+            return
+
+        if target_value is not None:
+            if DIST_RANGE_MIN <= target_value <= DIST_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"{srcFunc}, the target value='{target_value}' should be within range {DIST_RESTRAINT_RANGE}.\n"
+
+        if lower_limit is not None:
+            if DIST_RANGE_MIN <= lower_limit <= DIST_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"{srcFunc}, the lower limit value='{lower_limit}' should be within range {DIST_RESTRAINT_RANGE}.\n"
+
+        if upper_limit is not None:
+            if DIST_RANGE_MIN <= upper_limit <= DIST_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"{srcFunc}, the upper limit value='{upper_limit}' should be within range {DIST_RESTRAINT_RANGE}.\n"
+
+        if lower_linear_limit is not None:
+            if DIST_RANGE_MIN <= lower_linear_limit <= DIST_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"{srcFunc}, the lower linear limit value='{lower_linear_limit}' should be within range {DIST_RESTRAINT_RANGE}.\n"
+
+        if upper_linear_limit is not None:
+            if DIST_RANGE_MIN <= upper_linear_limit <= DIST_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"{srcFunc}, the upper linear limit value='{upper_linear_limit}' should be within range {DIST_RESTRAINT_RANGE}.\n"
+
         chainId1 = []
         chainId2 = []
 
@@ -225,7 +371,7 @@ class RosettaMRParserListener(ParseTreeListener):
         for atom_1 in self.atomSelectionSet[0]:
             for atom_2 in self.atomSelectionSet[1]:
                 print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
-                      f"atom_1={atom_1} atom_2={atom_2}")
+                      f"atom_1={atom_1} atom_2={atom_2} {dstFunc}")
 
     # Enter a parse tree produced by RosettaMRParser#angle_restraints.
     def enterAngle_restraints(self, ctx: RosettaMRParser.Angle_restraintsContext):  # pylint: disable=unused-argument
@@ -425,8 +571,13 @@ class RosettaMRParserListener(ParseTreeListener):
         """
 
         func = {}
+        valid = True
 
         if ctx.CIRCULARHARMONIC() or ctx.HARMONIC() or ctx.SIGMOID() or ctx.SQUARE_WELL():
+            x0 = float(str(ctx.Float(0)))
+
+            func['x0'] = x0
+
             if ctx.CIRCULARHARMONIC():  # x0 sd
                 funcType = 'CIRCULARHARMONIC'
 
@@ -435,8 +586,13 @@ class RosettaMRParserListener(ParseTreeListener):
                 func['sd'] = sd
 
                 if sd <= 0.0:
+                    valid = False
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                         f"{funcType} standard deviation 'sd={sd}' must be a positive value.\n"
+
+                func['target_value'] = x0
+                func['lower_limit'] = x0 - sd
+                func['upper_limit'] = x0 + sd
 
             elif ctx.HARMONIC():  # x0 sd
                 funcType = 'HARMONIC'
@@ -446,8 +602,13 @@ class RosettaMRParserListener(ParseTreeListener):
                 func['sd'] = sd
 
                 if sd <= 0.0:
+                    valid = False
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                         f"{funcType} standard deviation 'sd={sd}' must be a positive value.\n"
+
+                func['target_value'] = x0
+                func['lower_limit'] = x0 - sd
+                func['upper_limit'] = x0 + sd
 
             elif ctx.SIGMOID():  # x0 m
                 funcType = 'SIGMOID'
@@ -456,9 +617,10 @@ class RosettaMRParserListener(ParseTreeListener):
 
                 func['m'] = m
 
-                if m < 0.0:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"{funcType} slope 'm={m}' must not be a negative value.\n"
+                if m > 0.0:
+                    func['upper_linear_limit'] = x0
+                else:
+                    func['lower_lienar_limit'] = x0
 
             else:  # x0 depth
                 funcType = 'SQUARE_WELL'
@@ -467,14 +629,19 @@ class RosettaMRParserListener(ParseTreeListener):
 
                 func['depth'] = depth
 
+                if depth > 0.0:
+                    func['lower_linear_limit'] = x0
+                elif depth < 0.0:
+                    func['upper_linear_limit'] = x0
+
             func['name'] = funcType
-            func['x0'] = float(str(ctx.Float(0)))
 
         elif ctx.BOUNDED():  # lb ub sd rswitch tag
             funcType = 'BOUNDED'
             lb = float(str(ctx.Float(0)))
             ub = float(str(ctx.Float(1)))
             sd = float(str(ctx.Float(2)))
+            rswitch = 0.5
 
             func['name'] = funcType
             func['lb'] = lb
@@ -482,9 +649,11 @@ class RosettaMRParserListener(ParseTreeListener):
             func['sd'] = sd
 
             if lb > ub:
+                valid = False
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                     f"{funcType} lower boundary 'lb={lb}' must be less than or equal to upper boundary 'ub={ub}'.\n"
             if sd <= 0.0:
+                valid = False
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                     f"{funcType} standard deviation 'sd={sd}' must be a positive value.\n"
 
@@ -494,11 +663,17 @@ class RosettaMRParserListener(ParseTreeListener):
                 func['rswitch'] = rswitch
 
                 if rswitch < 0.0:
+                    valid = False
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                         f"{funcType} additional value for switching from the upper limit to the upper linear limit 'rswitch={rswitch}' must not be a negative value.\n"
 
             if ctx.Simple_name(0):
                 func['tag'] = str(ctx.Simple_name(0))
+
+            func['lower_limit'] = lb
+            func['upper_limit'] = ub
+            func['upper_linear_limit'] = ub + rswitch
+            func['lower_linear_limit'] = lb - rswitch
 
         elif ctx.PERIODICBOUNDED():  # period lb ub sd rswitch tag
             funcType = 'PERIODICBOUNDED'
@@ -507,6 +682,7 @@ class RosettaMRParserListener(ParseTreeListener):
             lb = float(str(ctx.Float(1)))
             ub = float(str(ctx.Float(2)))
             sd = float(str(ctx.Float(3)))
+            rswitch = 0.5
 
             func['name'] = funcType
             func['period'] = period
@@ -515,12 +691,15 @@ class RosettaMRParserListener(ParseTreeListener):
             func['sd'] = sd
 
             if period < 0.0:
+                valid = False
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                     f"{funcType} 'period={period}' must not be a negative value.\n"
             if lb > ub:
+                valid = False
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                     f"{funcType} lower boundary 'lb={lb}' must be less than or equal to upper boundary 'ub={ub}'.\n"
             if sd <= 0.0:
+                valid = False
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                     f"{funcType} standard deviation 'sd={sd}' must be a positive value.\n"
 
@@ -530,11 +709,17 @@ class RosettaMRParserListener(ParseTreeListener):
                 func['rswitch'] = rswitch
 
                 if rswitch < 0.0:
+                    valid = False
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                         f"{funcType} additional value for switching from the upper limit to the upper linear limit 'rswitch={rswitch}' must not be a negative value.\n"
 
             if ctx.Simple_name(0):
                 func['tag'] = str(ctx.Simple_name(0))
+
+            func['lower_limit'] = lb
+            func['upper_limit'] = ub
+            func['upper_linear_limit'] = ub + rswitch
+            func['lower_linear_limit'] = lb - rswitch
 
         elif ctx.OFFSETPERIODICBOUNDED():  # offset period lb ub sd rswitch tag
             funcType = 'OFFSETPERIODICBOUNDED'
@@ -544,6 +729,7 @@ class RosettaMRParserListener(ParseTreeListener):
             lb = float(str(ctx.Float(2)))
             ub = float(str(ctx.Float(3)))
             sd = float(str(ctx.Float(4)))
+            rswitch = 0.5
 
             func['name'] = funcType
             func['offset'] = offset
@@ -553,12 +739,15 @@ class RosettaMRParserListener(ParseTreeListener):
             func['sd'] = sd
 
             if period < 0.0:
+                valid = False
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                     f"{funcType} 'period={period}' must not be a negative value.\n"
             if lb > ub:
+                valid = False
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                     f"{funcType} lower boundary 'lb={lb}' must be less than or equal to upper boundary 'ub={ub}'.\n"
             if sd <= 0.0:
+                valid = False
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                     f"{funcType} standard deviation 'sd={sd}' must be a positive value.\n"
 
@@ -568,11 +757,17 @@ class RosettaMRParserListener(ParseTreeListener):
                 func['rswitch'] = rswitch
 
                 if rswitch < 0.0:
+                    valid = False
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                         f"{funcType} additional value for switching from the upper limit to the upper linear limit 'rswitch={rswitch}' must not be a negative value.\n"
 
             if ctx.Simple_name(0):
                 func['tag'] = str(ctx.Simple_name(0))
+
+            func['lower_limit'] = lb + offset
+            func['upper_limit'] = ub + offset
+            func['upper_linear_limit'] = ub + rswitch + offset
+            func['lower_linear_limit'] = lb - rswitch + offset
 
         elif ctx.AMBERPERIODIC() or ctx.CHARMMPERIODIC():  # x0 n_period k
             funcType = 'AMBERPERIODIC' if ctx.AMBERPERIODIC() else 'CHARMMPERIODIC'
@@ -586,6 +781,7 @@ class RosettaMRParserListener(ParseTreeListener):
             func['k'] = k
 
             if period < 0.0:
+                valid = False
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                     f"{funcType} periodicity 'n_period={n_period}' must not be a negative value.\n"
 
@@ -602,11 +798,17 @@ class RosettaMRParserListener(ParseTreeListener):
                 func['tol'] = tol
 
                 if sd <= 0.0:
+                    valid = False
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                         f"{funcType} standard deviation 'sd={sd}' must be a positive value.\n"
                 if tol < 0.0:
+                    valid = False
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                         f"{funcType} tolerance 'tol={tol}' must not be a negative value.\n"
+
+                func['target_value'] = x0
+                func['lower_limit'] = x0 - tol - sd
+                func['upper_limit'] = x0 + tol + sd
 
             else:  # weight x0 limit
                 weight = float(str(ctx.Float(0)))
@@ -618,11 +820,17 @@ class RosettaMRParserListener(ParseTreeListener):
                 func['limit'] = limit
 
                 if weight < 0.0:
+                    valid = False
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                         f"{funcType} 'weight={weight}' must not be a negative value.\n"
                 if limit <= 0.0:
+                    valid = False
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                         f"{funcType} 'limit={limit}' must be a positive value.\n"
+
+                func['target_value'] = x0
+                func['lower_limit'] = x0 - limit
+                func['upper_limit'] = x0 + limit
 
             func['name'] = funcType
 
@@ -641,6 +849,7 @@ class RosettaMRParserListener(ParseTreeListener):
                 func['o2'] = o2
 
                 if m < 0.0:
+                    valid = False
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                         f"{funcType} periodicity 'm={m}' must not be a negative value.\n"
 
@@ -650,17 +859,22 @@ class RosettaMRParserListener(ParseTreeListener):
                 width = float(str(ctx.Float(2)))
                 slope = float(str(ctx.Float(3)))
 
-                func['x0'] = float(str(ctx.Float(0)))
+                func['x0'] = x0
                 func['depth'] = depth
                 func['width'] = width
                 func['slope'] = slope
 
                 if width < 0.0:
+                    valid = False
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                         f"{funcType} 'width={width}' must not be a negative value.\n"
                 if slope < 0.0:
+                    valid = False
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                         f"{funcType} 'slope={slope}' must not be a negative value.\n"
+
+                func['lower_linear_limit'] = x0 - width
+                func['upper_linear_limit'] = x0 + width
 
             func['name'] = funcType
 
@@ -672,6 +886,7 @@ class RosettaMRParserListener(ParseTreeListener):
             func['weight'] = weight
 
             if weight < 0.0:
+                valid = False
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                     f"{funcType} 'weight={weight}' must not be a negative value.\n"
 
@@ -680,6 +895,7 @@ class RosettaMRParserListener(ParseTreeListener):
                 for i in range(36):
                     func['energy'].append(float(str(ctx.Float(i + 1))))
             else:
+                valid = False
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                     f"{funcType} requires consecutive 36 energy values, following the first weight value.\n"
 
@@ -694,6 +910,7 @@ class RosettaMRParserListener(ParseTreeListener):
             func['tag'] = str(ctx.Simple_name(0))
 
             if sd <= 0.0:
+                valid = False
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                     f"{funcType} standard deviation 'sd={sd}' must be a positive value.\n"
 
@@ -703,8 +920,13 @@ class RosettaMRParserListener(ParseTreeListener):
                 func['weight'] = weight
 
                 if weight < 0.0:
+                    valid = False
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                         f"{funcType} 'weight={weight}' must not be a negative value.\n"
+
+            func['target_value'] = mean
+            func['lower_limit'] = mean - sd
+            func['upper_limit'] = mean + sd
 
         elif ctx.SOGFUNC():  # n_funcs [mean1 sdev1 weight1 [mean2 sdev2 weight2 [...]]]
             funcType = 'SOGFUNC'
@@ -714,6 +936,7 @@ class RosettaMRParserListener(ParseTreeListener):
             func['n_funcs'] = n_funcs
 
             if n_funcs <= 0:
+                valid = False
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                     f"{funcType} the number of Gaussian functions 'n_funcs={n_funcs}' must be a positive value.\n"
             elif ctx.Float(n_funcs * 3 - 1):
@@ -730,13 +953,21 @@ class RosettaMRParserListener(ParseTreeListener):
                     func['sdev'].append(sdev)
                     func['weight'].append(weight)
 
+                    if n_funcs == 1:
+                        func['target_value'] = mean
+                        func['lower_limit'] = mean - sdev
+                        func['upper_limit'] = mean + sdev
+
                     if sdev <= 0.0:
+                        valid = False
                         self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                             f"{funcType} standard deviation 'sdev={sdev}' of {n+1}th function must be a positive value.\n"
                     if weight < 0.0:
+                        valid = False
                         self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                             f"{funcType} 'weight={weight}' of {n+1}th function must not be a negative value.\n"
             else:
+                valid = False
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                     f"{funcType} requires consecutive 3 parameters (mean, sdev, weight) for each Gaussian function after the first 'n_funcs' value.\n"
 
@@ -759,15 +990,19 @@ class RosettaMRParserListener(ParseTreeListener):
                 func['bg_sd'] = bg_sd
 
                 if gaussian_param <= 0.0:
+                    valid = False
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                         f"{funcType} standard deviation of a Gaussian distribution 'gaussian_param={gaussian_param}' must be a positive value.\n"
                 if exp_param <= 0.0:
+                    valid = False
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                         f"{funcType} rate at which the exponential distribution drops off 'exp_param={exp_param}' must be a positive value.\n"
                 if mixture_param <= 0.0:
+                    valid = False
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                         f"{funcType} mixture of the Gaussian and Exponential functions 'mixture_param={mixture_param}' that make up g(r) function must be a positive value.\n"
                 if bg_sd <= 0.0:
+                    valid = False
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                         f"{funcType} standard deviation 'bg_sd={bg_sd}' of h(r) function must be a positive value.\n"
 
@@ -788,6 +1023,7 @@ class RosettaMRParserListener(ParseTreeListener):
                 func['sd'] = sd
 
                 if sd <= 0.0:
+                    valid = False
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                         f"{funcType} standard deviation 'sd={sd}' must be a positive value.\n"
 
@@ -808,15 +1044,19 @@ class RosettaMRParserListener(ParseTreeListener):
                 func['sd2'] = sd2
 
                 if w1 < 0.0:
+                    valid = False
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                         f"{funcType} weight of the 1st Gaussian function 'w1={w1}' must not be a negative value.\n"
                 if w2 < 0.0:
+                    valid = False
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                         f"{funcType} weight of the 2nd Gaussian function 'w2={w2}' must not be a negative value.\n"
                 if sd1 <= 0.0:
+                    valid = False
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                         f"{funcType} standard deviation of the 1st Gaussian function 'sd1={sd1}' must be a positive value.\n"
                 if sd2 <= 0.0:
+                    valid = False
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                         f"{funcType} standard deviation of the 2nd Gaussian function 'sd2={sd2}' must be a positive value.\n"
 
@@ -838,8 +1078,11 @@ class RosettaMRParserListener(ParseTreeListener):
             func['weight'] = weight
 
             if weight < 0.0:
+                valid = False
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                     f"{funcType} 'weight={weight}' of {n+1}th function must not be a negative value.\n"
+
+            func['func_types'] = []
 
         elif ctx.SUMFUNC():  # n_funcs Func_Type1 Func_Def1 [Func_Type2 Func_Def2 [...]]
             funcType = 'SUMFUNC'
@@ -849,13 +1092,17 @@ class RosettaMRParserListener(ParseTreeListener):
             func['n_funcs'] = n_funcs
 
             if n_funcs <= 0:
+                valid = False
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                     f"{funcType} the number of functions 'n_funcs={n_funcs}' must be a positive value.\n"
             elif ctx.func_type_def(n_funcs - 1):
                 pass
             else:
+                valid = False
                 self.warningMessage += f"[Syntax error] {self.__getCurrentRestraint()}"\
                     f"{funcType} requires {n_funcs} function definitions after the first 'n_funcs' value.\n"
+
+            func['func_types'] = []
 
         elif ctx.SPLINE():  # description (NONE) experimental_value weight bin_size (x_axis val*)+
             funcType = 'SPLINE'
@@ -871,9 +1118,11 @@ class RosettaMRParserListener(ParseTreeListener):
             func['bin_size'] = bin_size
 
             if weight < 0.0:
+                valid = False
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                     f"{funcType} 'weight={weight}' must not be a negative value.\n"
             if bin_size <= 0.0:
+                valid = False
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                     f"{funcType} 'bin_size={bin_size}' must be a positive value.\n"
 
@@ -883,6 +1132,7 @@ class RosettaMRParserListener(ParseTreeListener):
             ub = float(str(ctx.Float(1)))
             d = float(str(ctx.Float(2)))
             wd = float(str(ctx.Float(3)))
+            wo = 0.0
 
             func['name'] = funcType
             func['lb'] = lb
@@ -891,17 +1141,19 @@ class RosettaMRParserListener(ParseTreeListener):
             func['wd'] = wd  # well depth
 
             if lb > ub:
+                valid = False
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                     f"{funcType} lower boundary 'lb={lb}' must be less than or equal to upper boundary 'ub={ub}'.\n"
 
             if d < 0.0:
+                valid = False
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                     f"{funcType} fade zone 'd={d}' must not be a negative value.\n"
 
             if ctx.Float(4):
                 wo = float(str(ctx.Float(4)))
 
-                func['wo'] = wo  # well offset
+                func['wo'] = wo  # well add_offsetboxes
 
         elif ctx.SQUARE_WELL2():  # x0 width depth [DEGREES]
             funcType = 'SQUARE_WELL2'
@@ -915,13 +1167,18 @@ class RosettaMRParserListener(ParseTreeListener):
             func['depth'] = depth
 
             if weight < 0.0:
+                valid = False
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                     f"{funcType} 'weight={weight}' must not be a negative value.\n"
 
             if ctx.DEGREES():
                 func['unit'] = 'degrees'
+                func['lower_linear_limit'] = x0 - width
+                func['upper_linear_limit'] = x0 + width
             else:
                 func['unit'] = 'radians'
+                func['lower_linear_limit'] = np.degrees(x0 - width)
+                func['upper_linear_limit'] = np.degrees(x0 + width)
 
         elif ctx.ETABLE():  # min max [many numbers]
             funcType = 'ETABLE'
@@ -933,12 +1190,14 @@ class RosettaMRParserListener(ParseTreeListener):
             func['max'] = max
 
             if min > max:
+                valid = False
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                     f"{funcType} 'min={min}' must be less than or equal to 'max={max}'.\n"
 
             if ctx.Float(2):
                 pass
             else:
+                valid = False
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                     f"{funcType} requires parameters after the first 'min' and the second 'max' values.\n"
 
@@ -950,6 +1209,7 @@ class RosettaMRParserListener(ParseTreeListener):
             func['num_gaussians'] = num_gaussians
 
             if num_gaussians <= 0:
+                valid = False
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                     f"{funcType} the number of Gaussian functions 'num_gaussians={num_gaussians}' must be a positive value.\n"
             elif ctx.Float(num_gaussians * 2 - 1):
@@ -963,10 +1223,17 @@ class RosettaMRParserListener(ParseTreeListener):
                     func['mean'].append(mean)
                     func['sd'].append(sd)
 
+                    if num_gaussians == 1:
+                        func['target_value'] = mean
+                        func['lower_limit'] = mean - sd
+                        func['upper_limit'] = mean + sd
+
                     if sd <= 0.0:
+                        valid = False
                         self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                             f"{funcType} standard deviation 'sd={sd}' of {n+1}th function must be a positive value.\n"
             else:
+                valid = False
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                     f"{funcType} requires consecutive 2 parameters (mean, sd) for each Gaussian function after the first 'num_gaussians' value.\n"
 
@@ -978,6 +1245,7 @@ class RosettaMRParserListener(ParseTreeListener):
             func['num_gaussians'] = num_gaussians
 
             if num_gaussians <= 0:
+                valid = False
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                     f"{funcType} the number of Gaussian functions 'num_gaussians={num_gaussians}' must be a positive value.\n"
             elif ctx.Float(num_gaussians * 3 - 1):
@@ -994,17 +1262,26 @@ class RosettaMRParserListener(ParseTreeListener):
                     func['sd'].append(sd)
                     func['weight'].append(weight)
 
+                    if num_gaussians == 1:
+                        func['target_value'] = mean
+                        func['lower_limit'] = mean - sd
+                        func['upper_limit'] = mean + sd
+
                     if sd <= 0.0:
+                        valid = False
                         self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                             f"{funcType} standard deviation 'sd={sd}' of {n+1}th function must be a positive value.\n"
                     if weight < 0.0:
+                        valid = False
                         self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                             f"{funcType} 'weight={weight}' of {n+1}th function must not be a negative value.\n"
             else:
+                valid = False
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                     f"{funcType} requires consecutive 3 parameters (mean, sd, weight) for each Gaussian function after the first 'num_gaussians' value.\n"
 
-        self.stackFuncs.append(func)
+        if valid:
+            self.stackFuncs.append(func)
 
     # Enter a parse tree produced by RosettaMRParser#rdc_restraints.
     def enterRdc_restraints(self, ctx: RosettaMRParser.Rdc_restraintsContext):  # pylint: disable=unused-argument

@@ -16,18 +16,35 @@ from rmsd.calculate_rmsd import (int_atom, ELEMENT_WEIGHTS)  # noqa: F401 pylint
 
 try:
     from wwpdb.utils.nmr.mr.XplorMRParser import XplorMRParser
-    from wwpdb.utils.nmr.mr.ParserListenerUtil import toNpArray, toRegEx, checkCoordinates, REPRESENTATIVE_MODEL_ID
+    from wwpdb.utils.nmr.mr.ParserListenerUtil import (toNpArray,
+                                                       toRegEx,
+                                                       checkCoordinates,
+                                                       REPRESENTATIVE_MODEL_ID,
+                                                       DIST_RESTRAINT_RANGE,
+                                                       DIST_RESTRAINT_ERROR)
 
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
 except ImportError:
     from nmr.mr.XplorMRParser import XplorMRParser
-    from nmr.mr.ParserListenerUtil import toNpArray, toRegEx, checkCoordinates, REPRESENTATIVE_MODEL_ID
+    from nmr.mr.ParserListenerUtil import (toNpArray,
+                                           toRegEx,
+                                           checkCoordinates,
+                                           REPRESENTATIVE_MODEL_ID,
+                                           DIST_RESTRAINT_RANGE,
+                                           DIST_RESTRAINT_ERROR)
 
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.NEFTranslator.NEFTranslator import NEFTranslator
+
+
+DIST_RANGE_MIN = DIST_RESTRAINT_RANGE['min_inclusive']
+DIST_RANGE_MAX = DIST_RESTRAINT_RANGE['max_inclusive']
+
+DIST_ERROR_MIN = DIST_RESTRAINT_ERROR['min_exclusive']
+DIST_ERROR_MAX = DIST_RESTRAINT_ERROR['max_exclusive']
 
 
 # This class defines a complete listener for a parse tree produced by XplorMRParser.
@@ -366,17 +383,72 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#noe_assign.
     def exitNoe_assign(self, ctx: XplorMRParser.Noe_assignContext):
-        target = float(str(ctx.Real(0)))
+        target_value = float(str(ctx.Real(0)))
         dminus = float(str(ctx.Real(1)))
         dplus = float(str(ctx.Real(2)))
+
+        lower_limit = target_value - dminus
+        upper_limit = target_value + dplus
+
+        target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+
+        validRange = True
+        dstFunc = {}
+
+        if target_value is not None:
+            if DIST_ERROR_MIN < target_value < DIST_ERROR_MAX:
+                dstFunc['target_value'] = f"{target_value:.3}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The target value='{target_value}' must be within range {DIST_RESTRAINT_ERROR}.\n"
+
+        if lower_limit is not None:
+            if DIST_ERROR_MIN < lower_limit < DIST_ERROR_MAX:
+                dstFunc['lower_limit'] = f"{lower_limit:.3}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The lower limit value='{lower_limit}' must be within range {DIST_RESTRAINT_ERROR}.\n"
+
+        if upper_limit is not None:
+            if DIST_ERROR_MIN < upper_limit < DIST_ERROR_MAX:
+                dstFunc['upper_limit'] = f"{upper_limit:.3}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The upper limit value='{upper_limit}' must be within range {DIST_RESTRAINT_ERROR}.\n"
+
+        if not validRange:
+            return
+
+        if target_value is not None:
+            if DIST_RANGE_MIN <= target_value <= DIST_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The target value='{target_value}' should be within range {DIST_RESTRAINT_RANGE}.\n"
+
+        if lower_limit is not None:
+            if DIST_RANGE_MIN <= lower_limit <= DIST_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The lower limit value='{lower_limit}' should be within range {DIST_RESTRAINT_RANGE}.\n"
+
+        if upper_limit is not None:
+            if DIST_RANGE_MIN <= upper_limit <= DIST_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The upper limit value='{upper_limit}' should be within range {DIST_RESTRAINT_RANGE}.\n"
 
         for i in range(0, len(self.atomSelectionSet), 2):
             j = i + 1
             for atom_1 in self.atomSelectionSet[i]:
                 for atom_2 in self.atomSelectionSet[j]:
                     print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
-                          f"atom_1={atom_1} atom_2={atom_2} "
-                          f"target_value={target:.3} lower_limit={target-dminus:.3} upper_limit={target+dplus:.3}")
+                          f"atom_1={atom_1} atom_2={atom_2} {dstFunc}")
 
     # Enter a parse tree produced by XplorMRParser#predict_statement.
     def enterPredict_statement(self, ctx: XplorMRParser.Predict_statementContext):  # pylint: disable=unused-argument

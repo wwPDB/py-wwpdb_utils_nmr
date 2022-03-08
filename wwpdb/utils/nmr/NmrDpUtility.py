@@ -969,7 +969,7 @@ class NmrDpUtility:
         self.dist_restraint_error = {'min_inclusive': 0.0, 'max_inclusive': 5.0}
 
         # allowed dihedral angle range in degrees
-        self.dihed_restraint_range = {'min_inclusive': -360.0, 'max_inclusive': 360.0}
+        self.dihed_restraint_range = {'min_inclusive': -180.0, 'max_inclusive': 180.0}
         self.dihed_restraint_error = {'min_inclusive': 0.0, 'max_inclusive': 90.0}
 
         # allowed RDC range in Hz

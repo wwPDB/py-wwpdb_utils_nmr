@@ -134,6 +134,14 @@ class XplorMRParserListener(ParseTreeListener):
 
     factor = None
 
+    noePotential = None
+    squareExponent = None
+    squareOffset = None
+    rSwitch = None
+    symmTarget = None
+    symmDminus = None
+    symmDplus = None
+
     # 3D vectors in point clause
     inVector3D = False
     inVector3D_columnSel = -1
@@ -367,8 +375,32 @@ class XplorMRParserListener(ParseTreeListener):
         pass
 
     # Enter a parse tree produced by XplorMRParser#noe_statement.
-    def enterNoe_statement(self, ctx: XplorMRParser.Noe_statementContext):  # pylint: disable=unused-argument
-        pass
+    def enterNoe_statement(self, ctx: XplorMRParser.Noe_statementContext):
+        if ctx.Noe_potential():
+            code = str(ctx.Noe_potential()).upper()[0:4]
+            if code == 'BIHA':
+                self.noePotential = 'biharmonic'
+            elif code == 'LOGN':
+                self.noePotential = 'lognormal'
+            elif code == 'SQUA':
+                self.noePotential = 'square'
+            elif code == 'SOFT':
+                self.noePotential = 'softsquare'
+            elif code == 'SYMM':
+                self.noePotential = 'symmetry'
+            elif code == 'HIGH':
+                self.noePotential = 'high'
+            else:
+                self.noePotential = '3dpo'
+
+        elif ctx.SqExponent():
+            self.squareExponent = float(ctx.Real(0))
+
+        elif ctx.SqOffset():
+            self.squareOffset = float(ctx.Real(0))
+
+        elif ctx.Rswitch():
+            self.rSwitch = float(ctx.Real(0))
 
     # Exit a parse tree produced by XplorMRParser#noe_statement.
     def exitNoe_statement(self, ctx: XplorMRParser.Noe_statementContext):  # pylint: disable=unused-argument
@@ -383,14 +415,74 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#noe_assign.
     def exitNoe_assign(self, ctx: XplorMRParser.Noe_assignContext):
-        target_value = float(str(ctx.Real(0)))
+        target = float(str(ctx.Real(0)))
         dminus = float(str(ctx.Real(1)))
         dplus = float(str(ctx.Real(2)))
 
-        lower_limit = target_value - dminus
-        upper_limit = target_value + dplus
+        target_value = None
+        lower_limit = None
+        upper_limit = None
+        lower_linear_limit = None
+        upper_linear_limit = None
 
-        target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+        if self.noePotential == 'biharmonic':
+            target_value = target
+            lower_limit = target - dminus
+            upper_limit = target + dplus
+        elif self.noePotential == 'lognormal':
+            target_value = target
+        elif self.noePotential == 'square':
+            target_value = target
+            if abs(self.squareExponent - 2.0) < abs(self.squareExponent - 1.0):
+                lower_linear = target - dminus
+                upper_linear = target + dplus - self.squareOffset
+            else:
+                lower_linear_limit = target - dminus
+                upper_linear_limit = target + dplus - self.squareOffset
+        elif self.noePotential == 'softsquare':
+            target_value = target
+            if abs(self.squareExponent - 2.0) < abs(self.squareExponent - 1.0):
+                lower_linear = target - dminus
+                upper_linear = target + dplus - self.squareOffset
+                upper_linear_limit = target + dplus - self.squareOffset + self.rSwitch
+            else:
+                lower_linear_limit = target - dminus
+                upper_linear_limit = target + dplus - self.squareOffset
+        elif self.noePotential == 'symmetry':
+            if target == 0.0:
+                target = self.symmTarget
+                dminus = self.symmDminus
+                dplus = self.symmDplus
+            else:
+                self.symmTarget = target
+                self.symmDminus = dminus
+                self.symmDplus = dplus
+            target_value = target
+            if abs(self.squareExponent - 2.0) < abs(self.squareExponent - 1.0):
+                lower_linear = target - dminus
+                upper_linear = target + dplus - self.squareOffset
+                upper_linear_limit = target + dplus - self.squareOffset + self.rSwitch
+            else:
+                lower_linear_limit = target - dminus
+                upper_linear_limit = target + dplus - self.squareOffset
+        elif self.noePotential == 'high':
+            target_value = target
+            lower_linear = target - dminus
+            upper_linear = target + dplus
+            lower_linear_limit = lower_linear - 0.1
+            upper_linear_limit = upper_linear + 0.1
+        else:  # 3dpo
+            if target == 0.0:
+                target = self.symmTarget
+                dminus = self.symmDminus
+                dplus = self.symmDplus
+            else:
+                self.symmTarget = target
+                self.symmDminus = dminus
+                self.symmDplus = dplus
+            target_value = target
+            lower_limit = target - dminus
+            upper_limit = target + dplus
 
         validRange = True
         dstFunc = {}
@@ -419,6 +511,22 @@ class XplorMRParserListener(ParseTreeListener):
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
                     f"The upper limit value='{upper_limit}' must be within range {DIST_RESTRAINT_ERROR}.\n"
 
+        if lower_linear_limit is not None:
+            if DIST_ERROR_MIN < lower_linear_limit < DIST_ERROR_MAX:
+                dstFunc['lower_linear_limit'] = f"{lower_linear_limit:.3}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The lower linear limit value='{lower_linear_limit}' must be within range {DIST_RESTRAINT_ERROR}.\n"
+
+        if upper_linear_limit is not None:
+            if DIST_ERROR_MIN < upper_linear_limit < DIST_ERROR_MAX:
+                dstFunc['upper_linear_limit'] = f"{upper_linear_limit:.3}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The upper linear limit value='{upper_linear_limit}' must be within range {DIST_RESTRAINT_ERROR}.\n"
+
         if not validRange:
             return
 
@@ -442,6 +550,20 @@ class XplorMRParserListener(ParseTreeListener):
             else:
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
                     f"The upper limit value='{upper_limit}' should be within range {DIST_RESTRAINT_RANGE}.\n"
+
+        if lower_linear_limit is not None:
+            if DIST_RANGE_MIN <= lower_linear_limit <= DIST_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The lower linear limit value='{lower_linear_limit}' should be within range {DIST_RESTRAINT_RANGE}.\n"
+
+        if upper_linear_limit is not None:
+            if DIST_RANGE_MIN <= upper_linear_limit <= DIST_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The upper linear limit value='{upper_linear_limit}' should be within range {DIST_RESTRAINT_RANGE}.\n"
 
         for i in range(0, len(self.atomSelectionSet), 2):
             j = i + 1

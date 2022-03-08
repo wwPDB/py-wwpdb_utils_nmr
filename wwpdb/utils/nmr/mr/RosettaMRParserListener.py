@@ -1153,7 +1153,7 @@ class RosettaMRParserListener(ParseTreeListener):
             if ctx.Float(4):
                 wo = float(str(ctx.Float(4)))
 
-                func['wo'] = wo  # well add_offsetboxes
+                func['wo'] = wo  # well offset
 
         elif ctx.SQUARE_WELL2():  # x0 width depth [DEGREES]
             funcType = 'SQUARE_WELL2'

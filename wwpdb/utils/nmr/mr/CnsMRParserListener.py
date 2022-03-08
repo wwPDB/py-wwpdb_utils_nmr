@@ -382,6 +382,14 @@ class CnsMRParserListener(ParseTreeListener):
             lower_linear_limit = lower_linear - 0.1
             upper_linear_limit = upper_linear + 0.1
         else:  # 3dpo
+            if target == 0.0:
+                target = self.symmTarget
+                dminus = self.symmDminus
+                dplus = self.symmDplus
+            else:
+                self.symmTarget = target
+                self.symmDminus = dminus
+                self.symmDplus = dplus
             target_value = target
             lower_limit = target - dminus
             upper_limit = target + dplus

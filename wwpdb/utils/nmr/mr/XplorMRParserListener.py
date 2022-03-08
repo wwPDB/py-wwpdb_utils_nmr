@@ -134,10 +134,11 @@ class XplorMRParserListener(ParseTreeListener):
 
     factor = None
 
-    noePotential = None
-    squareExponent = None
-    squareOffset = None
-    rSwitch = None
+    noePotential = 'biharmonic'
+    squareExponent = 2.0
+    squareOffset = 0.0
+    rSwitch = 10.0
+    scale = 1.0
     symmTarget = None
     symmDminus = None
     symmDplus = None
@@ -207,6 +208,15 @@ class XplorMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by XplorMRParser#dihedral_angle_restraint.
     def enterDihedral_angle_restraint(self, ctx: XplorMRParser.Dihedral_angle_restraintContext):  # pylint: disable=unused-argument
         self.dihedStatements += 1
+
+        self.noePotential = 'biharmonic'  # default potential
+        self.squareExponent = 2.0
+        self.squareOffset = 0.0
+        self.rSwitch = 10.0
+        self.scale = 1.0
+        self.symmTarget = None
+        self.symmDminus = None
+        self.symmDplus = None
 
     # Exit a parse tree produced by XplorMRParser#dihedral_angle_restraint.
     def exitDihedral_angle_restraint(self, ctx: XplorMRParser.Dihedral_angle_restraintContext):  # pylint: disable=unused-argument
@@ -394,13 +404,16 @@ class XplorMRParserListener(ParseTreeListener):
                 self.noePotential = '3dpo'
 
         elif ctx.SqExponent():
-            self.squareExponent = float(ctx.Real(0))
+            self.squareExponent = float(ctx.Real())
 
         elif ctx.SqOffset():
-            self.squareOffset = float(ctx.Real(0))
+            self.squareOffset = float(ctx.Real())
 
         elif ctx.Rswitch():
-            self.rSwitch = float(ctx.Real(0))
+            self.rSwitch = float(ctx.Real())
+
+        elif ctx.Scale():
+            self.scale = float(ctx.Real())
 
     # Exit a parse tree produced by XplorMRParser#noe_statement.
     def exitNoe_statement(self, ctx: XplorMRParser.Noe_statementContext):  # pylint: disable=unused-argument
@@ -1096,7 +1109,7 @@ class XplorMRParserListener(ParseTreeListener):
                 self.inVector3D_tail = atomSelection[0]
                 if len(atomSelection) > 1:
                     self.warningMessage += f"[Multiple selections] {self.__getCurrentRestraint()}"\
-                        f"{atomSelection}The first atom has been selected to create a 3d-vector in the 'tail' clause.\n"
+                        "The first atom has been selected to create a 3d-vector in the 'tail' clause.\n"
             elif self.inVector3D_columnSel == 1:
                 self.inVector3D_head = atomSelection[0]
                 if len(atomSelection) > 1:
@@ -2778,29 +2791,29 @@ class XplorMRParserListener(ParseTreeListener):
         if self.hbondStatements == 0 and self.hbondRestraints > 0:
             self.hbondStatements = 1
 
-        contetSubtype = {'dist_restraint': self.distStatements,
-                         'dihed_restraint': self.dihedStatements,
-                         'rdc_restraint': self.rdcStatements,
-                         'plane_restraint': self.planeStatements,
-                         'adist_restraint': self.adistStatements,
-                         'jcoup_restraint': self.jcoupStatements,
-                         'hvycs_restraint': self.hvycsStatements,
-                         'procs_restraint': self.procsStatements,
-                         'rama_restraint': self.ramaStatements,
-                         'radi_restraint': self.radiStatements,
-                         'diff_restraint': self.diffStatements,
-                         'nbase_restraint': self.nbaseStatements,
-                         'csa_restraint': self.csaStatements,
-                         'ang_restraint': self.angStatements,
-                         'pre_restraint': self.preStatements,
-                         'pcs_restraint': self.pcsStatements,
-                         'prdc_restraint': self.prdcStatements,
-                         'pang_restraint': self.pangStatements,
-                         'pccr_restraint': self.pccrStatements,
-                         'hbond_restraint': self.hbondStatements
-                         }
+        contentSubtype = {'dist_restraint': self.distStatements,
+                          'dihed_restraint': self.dihedStatements,
+                          'rdc_restraint': self.rdcStatements,
+                          'plane_restraint': self.planeStatements,
+                          'adist_restraint': self.adistStatements,
+                          'jcoup_restraint': self.jcoupStatements,
+                          'hvycs_restraint': self.hvycsStatements,
+                          'procs_restraint': self.procsStatements,
+                          'rama_restraint': self.ramaStatements,
+                          'radi_restraint': self.radiStatements,
+                          'diff_restraint': self.diffStatements,
+                          'nbase_restraint': self.nbaseStatements,
+                          'csa_restraint': self.csaStatements,
+                          'ang_restraint': self.angStatements,
+                          'pre_restraint': self.preStatements,
+                          'pcs_restraint': self.pcsStatements,
+                          'prdc_restraint': self.prdcStatements,
+                          'pang_restraint': self.pangStatements,
+                          'pccr_restraint': self.pccrStatements,
+                          'hbond_restraint': self.hbondStatements
+                          }
 
-        return {k: v for k, v in contetSubtype.items() if v > 0}
+        return {k: v for k, v in contentSubtype.items() if v > 0}
 
     def getCoordAtomSite(self):
         """ Return coordinates' atom name dictionary of each residue.

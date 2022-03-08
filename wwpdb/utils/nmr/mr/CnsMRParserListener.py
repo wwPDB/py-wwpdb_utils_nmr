@@ -116,10 +116,11 @@ class CnsMRParserListener(ParseTreeListener):
 
     factor = None
 
-    noePotential = None
-    squareExponent = None
-    squareOffset = None
-    rSwitch = None
+    noePotential = 'biharmonic'
+    squareExponent = 2.0
+    squareOffset = 0.0
+    rSwitch = 10.0
+    scale = 1.0
     symmTarget = None
     symmDminus = None
     symmDplus = None
@@ -185,7 +186,8 @@ class CnsMRParserListener(ParseTreeListener):
         self.noePotential = 'biharmonic'  # default potential
         self.squareExponent = 2.0
         self.squareOffset = 0.0
-        self.rSwitch = 0.0
+        self.rSwitch = 10.0
+        self.scale = 1.0
         self.symmTarget = None
         self.symmDminus = None
         self.symmDplus = None
@@ -304,13 +306,16 @@ class CnsMRParserListener(ParseTreeListener):
                 self.noePotential = '3dpo'
 
         elif ctx.SqExponent():
-            self.squareExponent = float(ctx.Real(0))
+            self.squareExponent = float(ctx.Real())
 
         elif ctx.SqOffset():
-            self.squareOffset = float(ctx.Real(0))
+            self.squareOffset = float(ctx.Real())
 
         elif ctx.Rswitch():
-            self.rSwitch = float(ctx.Real(0))
+            self.rSwitch = float(ctx.Real())
+
+        elif ctx.Scale():
+            self.scale = float(ctx.Real())
 
     # Exit a parse tree produced by CnsMRParser#noe_statement.
     def exitNoe_statement(self, ctx: CnsMRParser.Noe_statementContext):  # pylint: disable=unused-argument

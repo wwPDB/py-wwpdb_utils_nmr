@@ -79,6 +79,9 @@ COL_DIST_COORD3 = 6
 COL_DIST_COORD4 = 8
 
 
+COL_RSTWT = 4
+
+
 # This class defines a complete listener for a parse tree produced by AmberMRParser.
 class AmberMRParserListener(ParseTreeListener):
 
@@ -155,6 +158,7 @@ class AmberMRParserListener(ParseTreeListener):
     lowerLimit = None
     upperLimit = None
     upperLinearLimit = None
+    scale = [1.0, 1.0, 1.0, 1.0]
 
     # collection of atom selection
     atomSelectionSet = None
@@ -396,7 +400,7 @@ class AmberMRParserListener(ParseTreeListener):
                     print('# ' + ' '.join(self.lastComment))
 
                 validRange = True
-                dstFunc = {}
+                dstFunc = {'weight': self.scale[0]}
 
                 if self.lowerLimit is not None:
                     if DIST_ERROR_MIN < self.lowerLimit < DIST_ERROR_MAX:
@@ -881,6 +885,52 @@ class AmberMRParserListener(ParseTreeListener):
 
         elif ctx.RSTWT():
             self.detectRestraintType(bool(ctx.Real(1)))
+
+            varName = 'rstwt'
+
+            if ctx.Decimal():
+                decimal = int(str(ctx.Decimal()))
+                if decimal <= 0 or decimal > COL_RSTWT:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"The argument value of '{varName}({decimal})' must be in the range 1-{COL_RSTWT}.\n"
+                    return
+                rawRealArray = str(ctx.Reals()).split(',')
+                val = float(rawRealArray[0])
+                if val <= 0.0:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"The scale value '{varName}({decimal})={val}'must be a positive value.\n"
+                    return
+                self.scale[decimal - 1] = val
+            else:
+
+                if ctx.Reals():
+                    rawRealArray = str(ctx.Reals()).split(',')
+                    if len(rawRealArray) > COL_RSTWT:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            f"The argument value of '{varName}' must be in the range 1-{COL_RSTWT}.\n"
+                        return
+                    for col, rawReal in enumerate(rawRealArray):
+                        val = float(rawReal)
+                        if val <= 0.0:
+                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                f"The scale value '{varName}({col+1})={val}'must be a positive value.\n"
+                            return
+                        self.scale[col] = val
+                elif ctx.MultiplicativeReal():
+                    rawMultReal = str(ctx.MultiplicativeReal()).split('*')
+                    numCol = int(rawMultReal[0])
+                    if numCol <= 0 or numCol > COL_RSTWT:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            f"The argument value of '{varName}({numCol})' derived from "\
+                            f"'{str(ctx.MultiplicativeReal())}' must be in the range 1-{COL_RSTWT}.\n"
+                        return
+                    val = float(rawMultReal[1])
+                    if val <= 0.0:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            f"The scale value '{varName}={val}'must be a positive value.\n"
+                        return
+                    for col in range(0, numCol):
+                        self.scale[col] = val
 
         elif ctx.IALTD():
             self.detectRestraintType(True)

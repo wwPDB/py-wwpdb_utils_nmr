@@ -167,7 +167,7 @@ class CyanaMRParserListener(ParseTreeListener):
         target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
 
         validRange = True
-        dstFunc = {}
+        dstFunc = {'weight': 1.0}
 
         if target_value is not None:
             if DIST_ERROR_MIN < target_value < DIST_ERROR_MAX:

@@ -210,7 +210,7 @@ class RosettaMRParserListener(ParseTreeListener):
             return
 
         validRange = True
-        dstFunc = {}
+        dstFunc = {'weight': 1.0}
 
         if target_value is not None:
             if DIST_ERROR_MIN < target_value < DIST_ERROR_MAX:

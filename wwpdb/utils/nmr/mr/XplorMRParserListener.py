@@ -405,15 +405,30 @@ class XplorMRParserListener(ParseTreeListener):
 
         elif ctx.SqExponent():
             self.squareExponent = float(ctx.Real())
+            if self.squareExponent <= 0.0:
+                self.warningMessage += f"[Invalid data] "\
+                    "The exponent value of square-well or soft-square function "\
+                    f"NOE {str(ctx.SqExponent())} {str(ctx.Simple_names())} {self.squareExponent} END' must be a positive value.\n"
 
         elif ctx.SqOffset():
             self.squareOffset = float(ctx.Real())
+            if self.squareOffset < 0.0:
+                self.warningMessage += f"[Invalid data] "\
+                    "The offset value of square-well or soft-square function "\
+                    f"NOE {str(ctx.SqOffset())} {str(ctx.Simple_names())} {self.squareOffset} END' must not be a negative value.\n"
 
         elif ctx.Rswitch():
             self.rSwitch = float(ctx.Real())
+            if self.rSwitch < 0.0:
+                self.warningMessage += f"[Invalid data] "\
+                    "The smoothing parameter of soft-square function "\
+                    f"NOE {str(ctx.Rswitch())} {str(ctx.Simple_names())} {self.rSwitch} END' must not be a negative value.\n"
 
         elif ctx.Scale():
             self.scale = float(ctx.Real())
+            if self.scale <= 0.0:
+                self.warningMessage += f"[Invalid data] "\
+                    f"The scale value 'NOE {str(ctx.Scale())} {str(ctx.Simple_names())} {self.scale} END' must be a positive value.\n"
 
     # Exit a parse tree produced by XplorMRParser#noe_statement.
     def exitNoe_statement(self, ctx: XplorMRParser.Noe_statementContext):  # pylint: disable=unused-argument
@@ -498,7 +513,7 @@ class XplorMRParserListener(ParseTreeListener):
             upper_limit = target + dplus
 
         validRange = True
-        dstFunc = {}
+        dstFunc = {'weight': self.scale}
 
         if target_value is not None:
             if DIST_ERROR_MIN < target_value < DIST_ERROR_MAX:

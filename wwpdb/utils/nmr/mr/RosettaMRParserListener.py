@@ -70,6 +70,8 @@ class RosettaMRParserListener(ParseTreeListener):
     # current restraint subtype
     __cur_subtype = None
 
+    stackFuncs = None  # stack of function
+
     # collection of atom selection
     atomSelectionSet = None
 
@@ -129,6 +131,7 @@ class RosettaMRParserListener(ParseTreeListener):
     def enterAtom_pair_restraint(self, ctx: RosettaMRParser.Atom_pair_restraintContext):  # pylint: disable=unused-argument
         self.distRestraints += 1
 
+        self.stackFuncs = []
         self.atomSelectionSet = []
 
     # Exit a parse tree produced by RosettaMRParser#atom_pair_restraint.
@@ -403,10 +406,9 @@ class RosettaMRParserListener(ParseTreeListener):
         BOUNDED Float Float Float Float? Simple_name? |
         PERIODICBOUNDED Float Float Float Float Float? Simple_name? |
         OFFSETPERIODICBOUNDED Float Float Float Float Float Float? Simple_name? |
-        (AMBERPERIODIC | CHARMMPERIODIC) Float Integer Float |
+        (AMBERPERIODIC | CHARMMPERIODIC | FLAT_HARMONIC | TOPOUT) Float Float Float |
         (CIRCULARSIGMOIDAL | LINEAR_PENALTY) Float Float Float Float |
         CIRCULARSPLINE Float+ |
-        (FLAT_HARMONIC | TOPOUT) Float Float Float |
         GAUSSIANFUNC Float Float Simple_name (WEIGHT Float)? |
         SOGFUNC Integer (Float Float Float)+ |
         (MIXTUREFUNC | KARPLUS | SOEDINGFUNC) Float Float Float Float Float Float |
@@ -414,7 +416,7 @@ class RosettaMRParserListener(ParseTreeListener):
         IDENTITY |
         SCALARWEIGHTEDFUNC Float func_type_def |
         SUMFUNC Integer func_type_def+ |
-        SPLINE Simple_name (Float Float Integer | NONE Float Float Integer Simple_name Float*) | // histogram_file_path can not be evaluated
+        SPLINE Simple_name (Float Float Float | NONE Float Float Float (Simple_name Float*)+) // histogram_file_path can not be evaluated
         FADE Float Float Float Float Float? |
         SQUARE_WELL2 Float Float Float DEGREES? |
         ETABLE Float Float Float* |
@@ -422,27 +424,51 @@ class RosettaMRParserListener(ParseTreeListener):
         SOG Integer (Float Float Float Float Float Float)+;
         """
 
+        func = {}
+
         if ctx.CIRCULARHARMONIC() or ctx.HARMONIC() or ctx.SIGMOID() or ctx.SQUARE_WELL():
             if ctx.CIRCULARHARMONIC():  # x0 sd
                 funcType = 'CIRCULARHARMONIC'
-                if float(str(ctx.Float(1))) <= 0.0:
+
+                sd = float(str(ctx.Float(1)))
+
+                func['sd'] = sd
+
+                if sd <= 0.0:
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"{funcType} standard deviation 'sd={float(str(ctx.Float(1)))}' is invalid.\n"
+                        f"{funcType} standard deviation 'sd={sd}' must be a positive value.\n"
+
             elif ctx.HARMONIC():  # x0 sd
                 funcType = 'HARMONIC'
-                if float(str(ctx.Float(1))) <= 0.0:
+
+                sd = float(str(ctx.Float(1)))
+
+                func['sd'] = sd
+
+                if sd <= 0.0:
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"{funcType} standard deviation 'sd={float(str(ctx.Float(1)))}' is invalid.\n"
+                        f"{funcType} standard deviation 'sd={sd}' must be a positive value.\n"
+
             elif ctx.SIGMOID():  # x0 m
                 funcType = 'SIGMOID'
-                if float(str(ctx.Float(1))) <= 0.0:
+
+                m = float(str(ctx.Float(1)))
+
+                func['m'] = m
+
+                if m < 0.0:
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"{funcType} slope 'm={float(str(ctx.Float(1)))}' is invalid.\n"
+                        f"{funcType} slope 'm={m}' must not be a negative value.\n"
+
             else:  # x0 depth
                 funcType = 'SQUARE_WELL'
-                if float(str(ctx.Float(1))) <= 0.0:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"{funcType} depth 'depth={float(str(ctx.Float(1)))}' is invalid.\n"
+
+                depth = float(str(ctx.Float(1)))
+
+                func['depth'] = depth
+
+            func['name'] = funcType
+            func['x0'] = float(str(ctx.Float(0)))
 
         elif ctx.BOUNDED():  # lb ub sd rswitch tag
             funcType = 'BOUNDED'
@@ -450,12 +476,29 @@ class RosettaMRParserListener(ParseTreeListener):
             ub = float(str(ctx.Float(1)))
             sd = float(str(ctx.Float(2)))
 
-            if lb >= ub:
+            func['name'] = funcType
+            func['lb'] = lb
+            func['ub'] = ub
+            func['sd'] = sd
+
+            if lb > ub:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"{funcType} lower boundary 'lb={lb}' is grater than or equal to upper boundary'ub={ub}'.\n"
+                    f"{funcType} lower boundary 'lb={lb}' must be less than or equal to upper boundary 'ub={ub}'.\n"
             if sd <= 0.0:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"{funcType} standard deviation 'sd={sd}' is invalid.\n"
+                    f"{funcType} standard deviation 'sd={sd}' must be a positive value.\n"
+
+            if ctx.Float(3):
+                rswitch = float(str(ctx.Float(3)))
+
+                func['rswitch'] = rswitch
+
+                if rswitch < 0.0:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"{funcType} additional value for switching from the upper limit to the upper linear limit 'rswitch={rswitch}' must not be a negative value.\n"
+
+            if ctx.Simple_name(0):
+                func['tag'] = str(ctx.Simple_name(0))
 
         elif ctx.PERIODICBOUNDED():  # period lb ub sd rswitch tag
             funcType = 'PERIODICBOUNDED'
@@ -465,90 +508,503 @@ class RosettaMRParserListener(ParseTreeListener):
             ub = float(str(ctx.Float(2)))
             sd = float(str(ctx.Float(3)))
 
-            if period <= 0.0:
+            func['name'] = funcType
+            func['period'] = period
+            func['lb'] = lb
+            func['ub'] = ub
+            func['sd'] = sd
+
+            if period < 0.0:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"{funcType} 'period={period}' is invalid.\n"
-            if lb >= ub:
+                    f"{funcType} 'period={period}' must not be a negative value.\n"
+            if lb > ub:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"{funcType} lower boundary 'lb={lb}' is grater than or equal to upper boundary 'ub={ub}'.\n"
+                    f"{funcType} lower boundary 'lb={lb}' must be less than or equal to upper boundary 'ub={ub}'.\n"
             if sd <= 0.0:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"{funcType} standard deviation 'sd={sd}' is invalid.\n"
+                    f"{funcType} standard deviation 'sd={sd}' must be a positive value.\n"
+
+            if ctx.Float(4):
+                rswitch = float(str(ctx.Float(4)))
+
+                func['rswitch'] = rswitch
+
+                if rswitch < 0.0:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"{funcType} additional value for switching from the upper limit to the upper linear limit 'rswitch={rswitch}' must not be a negative value.\n"
+
+            if ctx.Simple_name(0):
+                func['tag'] = str(ctx.Simple_name(0))
 
         elif ctx.OFFSETPERIODICBOUNDED():  # offset period lb ub sd rswitch tag
             funcType = 'OFFSETPERIODICBOUNDED'
 
-            # offset = float(str(ctx.Float(0)))
+            offset = float(str(ctx.Float(0)))
             period = float(str(ctx.Float(1)))
             lb = float(str(ctx.Float(2)))
             ub = float(str(ctx.Float(3)))
             sd = float(str(ctx.Float(4)))
 
-            if period <= 0.0:
+            func['name'] = funcType
+            func['offset'] = offset
+            func['period'] = period
+            func['lb'] = lb
+            func['ub'] = ub
+            func['sd'] = sd
+
+            if period < 0.0:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"{funcType} 'period={period}' is invalid.\n"
-            if lb >= ub:
+                    f"{funcType} 'period={period}' must not be a negative value.\n"
+            if lb > ub:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"{funcType} lower boundary 'lb={lb}' is grater than or equal to upper boundary 'ub={ub}'.\n"
+                    f"{funcType} lower boundary 'lb={lb}' must be less than or equal to upper boundary 'ub={ub}'.\n"
             if sd <= 0.0:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"{funcType} standard deviation 'sd={sd}' is invalid.\n"
+                    f"{funcType} standard deviation 'sd={sd}' must be a positive value.\n"
 
-        elif ctx.AMBERPERIODIC() or ctx.CHARMMPERIODIC():
+            if ctx.Float(5):
+                rswitch = float(str(ctx.Float(5)))
+
+                func['rswitch'] = rswitch
+
+                if rswitch < 0.0:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"{funcType} additional value for switching from the upper limit to the upper linear limit 'rswitch={rswitch}' must not be a negative value.\n"
+
+            if ctx.Simple_name(0):
+                func['tag'] = str(ctx.Simple_name(0))
+
+        elif ctx.AMBERPERIODIC() or ctx.CHARMMPERIODIC():  # x0 n_period k
             funcType = 'AMBERPERIODIC' if ctx.AMBERPERIODIC() else 'CHARMMPERIODIC'
+            x0 = float(str(ctx.Float(0)))
+            n_period = float(str(ctx.Float(1)))
+            k = float(str(ctx.Float(2)))
 
-        elif ctx.CIRCULARSIGMOIDAL() or ctx.LINEAR_PENALTY():
-            funcType = 'CIRCULARSIGMOIDAL' if ctx.CIRCULARSIGMOIDAL() else 'LINEAR_PENALTY'
+            func['name'] = funcType
+            func['x0'] = x0
+            func['n_period'] = n_period
+            func['k'] = k
 
-        elif ctx.CIRCULARSPLINE():
-            pass
+            if period < 0.0:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"{funcType} periodicity 'n_period={n_period}' must not be a negative value.\n"
 
         elif ctx.FLAT_HARMONIC() or ctx.TOPOUT():
             funcType = 'FLAT_HARMONIC' if ctx.FLAT_HARMONIC() else 'TOPOUT'
 
-        elif ctx.GAUSSIANFUNC():
-            pass
+            if ctx.FLAT_HARMONIC():  # x0 sd tol
+                x0 = float(str(ctx.Float(0)))
+                sd = float(str(ctx.Float(1)))
+                tol = float(str(ctx.Float(2)))
 
-        elif ctx.SOGFUNC():
-            pass
+                func['x0'] = x0
+                func['sd'] = sd
+                func['tol'] = tol
+
+                if sd <= 0.0:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"{funcType} standard deviation 'sd={sd}' must be a positive value.\n"
+                if tol < 0.0:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"{funcType} tolerance 'tol={tol}' must not be a negative value.\n"
+
+            else:  # weight x0 limit
+                weight = float(str(ctx.Float(0)))
+                x0 = float(str(ctx.Float(1)))
+                limit = float(str(ctx.Float(2)))
+
+                func['weight'] = weight
+                func['x0'] = x0
+                func['limit'] = limit
+
+                if weight < 0.0:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"{funcType} 'weight={weight}' must not be a negative value.\n"
+                if limit <= 0.0:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"{funcType} 'limit={limit}' must be a positive value.\n"
+
+            func['name'] = funcType
+
+        elif ctx.CIRCULARSIGMOIDAL() or ctx.LINEAR_PENALTY():
+            funcType = 'CIRCULARSIGMOIDAL' if ctx.CIRCULARSIGMOIDAL() else 'LINEAR_PENALTY'
+
+            if ctx.CIRCULARSIGMOIDAL():  # xC m o1 o2
+                xC = float(str(ctx.Float(0)))
+                m = float(str(ctx.Float(1)))
+                o1 = float(str(ctx.Float(2)))
+                o2 = float(str(ctx.Float(3)))
+
+                func['xC'] = xC
+                func['m'] = m
+                func['o1'] = o1
+                func['o2'] = o2
+
+                if m < 0.0:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"{funcType} periodicity 'm={m}' must not be a negative value.\n"
+
+            else:  # x0 depth width slope
+                x0 = float(str(ctx.Float(0)))
+                depth = float(str(ctx.Float(1)))
+                width = float(str(ctx.Float(2)))
+                slope = float(str(ctx.Float(3)))
+
+                func['x0'] = float(str(ctx.Float(0)))
+                func['depth'] = depth
+                func['width'] = width
+                func['slope'] = slope
+
+                if width < 0.0:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"{funcType} 'width={width}' must not be a negative value.\n"
+                if slope < 0.0:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"{funcType} 'slope={slope}' must not be a negative value.\n"
+
+            func['name'] = funcType
+
+        elif ctx.CIRCULARSPLINE():  # weight [36 energy values]
+            funcType = 'CIRCULARSPLINE'
+            weight = float(str(ctx.Float(0)))
+
+            func['name'] = funcType
+            func['weight'] = weight
+
+            if weight < 0.0:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"{funcType} 'weight={weight}' must not be a negative value.\n"
+
+            if ctx.Float(36):
+                func['energy'] = []
+                for i in range(36):
+                    func['energy'].append(float(str(ctx.Float(i + 1))))
+            else:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"{funcType} requires consecutive 36 energy values, following the first weight value.\n"
+
+        elif ctx.GAUSSIANFUNC():  # mean sd tag WEIGHT weight
+            funcType = 'GAUSSIANFUNC'
+            mean = float(str(ctx.Float(0)))
+            sd = float(str(ctx.Float(1)))
+
+            func['name'] = funcType
+            func['mean'] = mean
+            func['sd'] = sd
+            func['tag'] = str(ctx.Simple_name(0))
+
+            if sd <= 0.0:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"{funcType} standard deviation 'sd={sd}' must be a positive value.\n"
+
+            if ctx.WEIGHT():
+                weight = float(str(ctx.Float(2)))
+
+                func['weight'] = weight
+
+                if weight < 0.0:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"{funcType} 'weight={weight}' must not be a negative value.\n"
+
+        elif ctx.SOGFUNC():  # n_funcs [mean1 sdev1 weight1 [mean2 sdev2 weight2 [...]]]
+            funcType = 'SOGFUNC'
+            n_funcs = int(str(ctx.Integer()))
+
+            func['name'] = funcType
+            func['n_funcs'] = n_funcs
+
+            if n_funcs <= 0:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"{funcType} the number of Gaussian functions 'n_funcs={n_funcs}' must be a positive value.\n"
+            elif ctx.Float(n_funcs * 3 - 1):
+                func['mean'] = []
+                func['sdev'] = []
+                func['weight'] = []
+                for n in range(n_funcs):
+                    p = n * 3
+                    mean = float(str(ctx.Float(p)))
+                    sdev = float(str(ctx.Float(p + 1)))
+                    weight = float(str(ctx.Float(p + 2)))
+
+                    func['mean'].append(mean)
+                    func['sdev'].append(sdev)
+                    func['weight'].append(weight)
+
+                    if sdev <= 0.0:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            f"{funcType} standard deviation 'sdev={sdev}' of {n+1}th function must be a positive value.\n"
+                    if weight < 0.0:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            f"{funcType} 'weight={weight}' of {n+1}th function must not be a negative value.\n"
+            else:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"{funcType} requires consecutive 3 parameters (mean, sdev, weight) for each Gaussian function after the first 'n_funcs' value.\n"
 
         elif ctx.MIXTUREFUNC() or ctx.KARPLUS() or ctx.SOEDINGFUNC():
-            if ctx.MIXTUREFUNC():
+            if ctx.MIXTUREFUNC():  # anchor gaussian_param exp_param mixture_param bg_mean bg_sd
                 funcType = 'MIXTUREFUNC'
-            elif ctx.KARPLUS():
-                funcType = 'KARPLUS'
-            else:
-                funcType = 'SOEDINGFUNC'
+                anchor = float(str(ctx.Float(0)))
+                gaussian_param = float(str(ctx.Float(1)))
+                exp_param = float(str(ctx.Float(2)))
+                mixture_param = float(str(ctx.Float(3)))
+                bg_mean = float(str(ctx.Float(4)))
+                bg_sd = float(str(ctx.Float(5)))
 
-        elif ctx.CONSTANTFUNC():
-            pass
+                func['name'] = funcType
+                func['anchor'] = anchor
+                func['gaussian_param'] = gaussian_param
+                func['exp_param'] = exp_param
+                func['mixture_param'] = mixture_param
+                func['bg_mean'] = bg_mean
+                func['bg_sd'] = bg_sd
+
+                if gaussian_param <= 0.0:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"{funcType} standard deviation of a Gaussian distribution 'gaussian_param={gaussian_param}' must be a positive value.\n"
+                if exp_param <= 0.0:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"{funcType} rate at which the exponential distribution drops off 'exp_param={exp_param}' must be a positive value.\n"
+                if mixture_param <= 0.0:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"{funcType} mixture of the Gaussian and Exponential functions 'mixture_param={mixture_param}' that make up g(r) function must be a positive value.\n"
+                if bg_sd <= 0.0:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"{funcType} standard deviation 'bg_sd={bg_sd}' of h(r) function must be a positive value.\n"
+
+            elif ctx.KARPLUS():  # A B C D x0 sd
+                funcType = 'KARPLUS'
+                A = float(str(ctx.Float(0)))
+                B = float(str(ctx.Float(1)))
+                C = float(str(ctx.Float(2)))
+                D = float(str(ctx.Float(3)))
+                x0 = float(str(ctx.Float(4)))
+                sd = float(str(ctx.Float(5)))
+
+                func['A'] = A
+                func['B'] = B
+                func['C'] = C
+                func['D'] = D
+                func['x0'] = x0
+                func['sd'] = sd
+
+                if sd <= 0.0:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"{funcType} standard deviation 'sd={sd}' must be a positive value.\n"
+
+            else:  # w1 mean1 sd1 w2 mean2 sd2
+                funcType = 'SOEDINGFUNC'
+                w1 = float(str(ctx.Float(0)))
+                mean1 = float(str(ctx.Float(1)))
+                sd1 = float(str(ctx.Float(2)))
+                w2 = float(str(ctx.Float(3)))
+                mean2 = float(str(ctx.Float(4)))
+                sd2 = float(str(ctx.Float(5)))
+
+                func['w1'] = w1
+                func['mean1'] = mean1
+                func['sd1'] = sd1
+                func['w2'] = w2
+                func['mean2'] = mean2
+                func['sd2'] = sd2
+
+                if w1 < 0.0:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"{funcType} weight of the 1st Gaussian function 'w1={w1}' must not be a negative value.\n"
+                if w2 < 0.0:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"{funcType} weight of the 2nd Gaussian function 'w2={w2}' must not be a negative value.\n"
+                if sd1 <= 0.0:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"{funcType} standard deviation of the 1st Gaussian function 'sd1={sd1}' must be a positive value.\n"
+                if sd2 <= 0.0:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"{funcType} standard deviation of the 2nd Gaussian function 'sd2={sd2}' must be a positive value.\n"
+
+        elif ctx.CONSTANTFUNC():  # return_val
+            funcType = 'CONSTANTFUNC'
+            return_val = float(str(ctx.Float(0)))
+
+            func['name'] = funcType
+            func['return_val'] = return_val
 
         elif ctx.IDENTITY():
-            pass
+            func['name'] = 'IDENTITY'
 
-        elif ctx.SCALARWEIGHTEDFUNC():
-            pass
+        elif ctx.SCALARWEIGHTEDFUNC():  # weight func_type_def
+            funcType = 'SCALARWEIGHTEDFUNC'
+            weight = float(str(ctx.Float(0)))
 
-        elif ctx.SUMFUNC():
-            pass
+            func['name'] = funcType
+            func['weight'] = weight
 
-        elif ctx.SPLINE():
-            pass
+            if weight < 0.0:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"{funcType} 'weight={weight}' of {n+1}th function must not be a negative value.\n"
 
-        elif ctx.FADE():
-            pass
+        elif ctx.SUMFUNC():  # n_funcs Func_Type1 Func_Def1 [Func_Type2 Func_Def2 [...]]
+            funcType = 'SUMFUNC'
+            n_funcs = int(str(ctx.Integer()))
 
-        elif ctx.SQUARE_WELL2():
-            pass
+            func['name'] = funcType
+            func['n_funcs'] = n_funcs
 
-        elif ctx.ETABLE():
-            pass
+            if n_funcs <= 0:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"{funcType} the number of functions 'n_funcs={n_funcs}' must be a positive value.\n"
+            elif ctx.func_type_def(n_funcs - 1):
+                pass
+            else:
+                self.warningMessage += f"[Syntax error] {self.__getCurrentRestraint()}"\
+                    f"{funcType} requires {n_funcs} function definitions after the first 'n_funcs' value.\n"
 
-        elif ctx.USOG():
-            pass
+        elif ctx.SPLINE():  # description (NONE) experimental_value weight bin_size (x_axis val*)+
+            funcType = 'SPLINE'
+            description = str(ctx.Simple_name(0))
+            experimental_value = float(str(ctx.Float(0)))
+            weight = float(str(ctx.Float(1)))
+            bin_size = float(str(ctx.Float(2)))
 
-        elif ctx.SOG():
-            pass
+            func['name'] = funcType
+            func['description'] = description
+            func['experimental_value'] = experimental_value
+            func['weight'] = weight
+            func['bin_size'] = bin_size
+
+            if weight < 0.0:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"{funcType} 'weight={weight}' must not be a negative value.\n"
+            if bin_size <= 0.0:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"{funcType} 'bin_size={bin_size}' must be a positive value.\n"
+
+        elif ctx.FADE():  # lb ub d wd [ wo ]
+            funcType = 'FADE'
+            lb = float(str(ctx.Float(0)))
+            ub = float(str(ctx.Float(1)))
+            d = float(str(ctx.Float(2)))
+            wd = float(str(ctx.Float(3)))
+
+            func['name'] = funcType
+            func['lb'] = lb
+            func['ub'] = ub
+            func['d'] = d  # fade zone
+            func['wd'] = wd  # well depth
+
+            if lb > ub:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"{funcType} lower boundary 'lb={lb}' must be less than or equal to upper boundary 'ub={ub}'.\n"
+
+            if d < 0.0:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"{funcType} fade zone 'd={d}' must not be a negative value.\n"
+
+            if ctx.Float(4):
+                wo = float(str(ctx.Float(4)))
+
+                func['wo'] = wo  # well offset
+
+        elif ctx.SQUARE_WELL2():  # x0 width depth [DEGREES]
+            funcType = 'SQUARE_WELL2'
+            x0 = float(str(ctx.Float(0)))
+            width = float(str(ctx.Float(2)))
+            depth = float(str(ctx.Float(1)))
+
+            func['name'] = funcType
+            func['x0'] = x0
+            func['width'] = width
+            func['depth'] = depth
+
+            if weight < 0.0:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"{funcType} 'weight={weight}' must not be a negative value.\n"
+
+            if ctx.DEGREES():
+                func['unit'] = 'degrees'
+            else:
+                func['unit'] = 'radians'
+
+        elif ctx.ETABLE():  # min max [many numbers]
+            funcType = 'ETABLE'
+            min = float(str(ctx.Float(0)))
+            max = float(str(ctx.Float(1)))
+
+            func['name'] = funcType
+            func['min'] = min
+            func['max'] = max
+
+            if min > max:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"{funcType} 'min={min}' must be less than or equal to 'max={max}'.\n"
+
+            if ctx.Float(2):
+                pass
+            else:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"{funcType} requires parameters after the first 'min' and the second 'max' values.\n"
+
+        elif ctx.USOG():  # num_gaussians mean1 sd1 mean2 sd2...
+            funcType = 'USOG'
+            num_gaussians = int(str(ctx.Integer()))
+
+            func['name'] = funcType
+            func['num_gaussians'] = num_gaussians
+
+            if num_gaussians <= 0:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"{funcType} the number of Gaussian functions 'num_gaussians={num_gaussians}' must be a positive value.\n"
+            elif ctx.Float(num_gaussians * 2 - 1):
+                func['mean'] = []
+                func['sd'] = []
+                for n in range(num_gaussians):
+                    p = n * 2
+                    mean = float(str(ctx.Float(p)))
+                    sd = float(str(ctx.Float(p + 1)))
+
+                    func['mean'].append(mean)
+                    func['sd'].append(sd)
+
+                    if sd <= 0.0:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            f"{funcType} standard deviation 'sd={sd}' of {n+1}th function must be a positive value.\n"
+            else:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"{funcType} requires consecutive 2 parameters (mean, sd) for each Gaussian function after the first 'num_gaussians' value.\n"
+
+        elif ctx.SOG():  # num_gaussians mean1 sd1 weight1 mean2 sd2 weight2...
+            funcType = 'SOG'
+            num_gaussians = int(str(ctx.Integer()))
+
+            func['name'] = funcType
+            func['num_gaussians'] = num_gaussians
+
+            if num_gaussians <= 0:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"{funcType} the number of Gaussian functions 'num_gaussians={num_gaussians}' must be a positive value.\n"
+            elif ctx.Float(num_gaussians * 3 - 1):
+                func['mean'] = []
+                func['sd'] = []
+                func['weight'] = []
+                for n in range(num_gaussians):
+                    p = n * 3
+                    mean = float(str(ctx.Float(p)))
+                    sd = float(str(ctx.Float(p + 1)))
+                    weight = float(str(ctx.Float(p + 2)))
+
+                    func['mean'].append(mean)
+                    func['sd'].append(sd)
+                    func['weight'].append(weight)
+
+                    if sd <= 0.0:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            f"{funcType} standard deviation 'sd={sd}' of {n+1}th function must be a positive value.\n"
+                    if weight < 0.0:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            f"{funcType} 'weight={weight}' of {n+1}th function must not be a negative value.\n"
+            else:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"{funcType} requires consecutive 3 parameters (mean, sd, weight) for each Gaussian function after the first 'num_gaussians' value.\n"
+
+        self.stackFuncs.append(func)
 
     # Enter a parse tree produced by RosettaMRParser#rdc_restraints.
     def enterRdc_restraints(self, ctx: RosettaMRParser.Rdc_restraintsContext):  # pylint: disable=unused-argument

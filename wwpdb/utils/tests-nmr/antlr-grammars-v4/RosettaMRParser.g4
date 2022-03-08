@@ -129,10 +129,9 @@ func_type_def:
 	BOUNDED Float Float Float Float? Simple_name? |
 	PERIODICBOUNDED Float Float Float Float Float? Simple_name? |
 	OFFSETPERIODICBOUNDED Float Float Float Float Float Float? Simple_name? |
-	(AMBERPERIODIC | CHARMMPERIODIC) Float Integer Float |
+	(AMBERPERIODIC | CHARMMPERIODIC | FLAT_HARMONIC | TOPOUT) Float Float Float |
 	(CIRCULARSIGMOIDAL | LINEAR_PENALTY) Float Float Float Float |
 	CIRCULARSPLINE Float+ |
-	(FLAT_HARMONIC | TOPOUT) Float Float Float |
 	GAUSSIANFUNC Float Float Simple_name (WEIGHT Float)? |
 	SOGFUNC Integer (Float Float Float)+ |
 	(MIXTUREFUNC | KARPLUS | SOEDINGFUNC) Float Float Float Float Float Float |
@@ -140,7 +139,7 @@ func_type_def:
 	IDENTITY |
 	SCALARWEIGHTEDFUNC Float func_type_def |
 	SUMFUNC Integer func_type_def+ |
-	SPLINE Simple_name (Float Float Integer | NONE Float Float Integer Simple_name Float*) | // histogram_file_path can not be evaluated
+	SPLINE Simple_name (Float Float Float | NONE Float Float Float (Simple_name Float*)+) | // histogram_file_path can not be evaluated
 	FADE Float Float Float Float Float? |
 	SQUARE_WELL2 Float Float Float DEGREES? |
 	ETABLE Float Float Float* |

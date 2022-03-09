@@ -138,23 +138,6 @@ class AmberMRParserListener(ParseTreeListener):
     # current restraint subtype
     __cur_subtype = None
 
-    depth = 0
-
-    hasFuncExprs = False
-    funcExprs = None
-
-    inGenDist = False
-    inGenDist_funcExprs = None
-    inGenDist_weight = None
-
-    inPlane = False
-    inPlane_columnSel = -1
-    inPlane_funcExprs = None
-    inPlane_funcExprs2 = None
-
-    inCom = False
-    inCom_funcExprs = None
-
     # last Sander comment
     lastComment = None
 
@@ -174,9 +157,26 @@ class AmberMRParserListener(ParseTreeListener):
     lowerLimit = None
     upperLimit = None
     upperLinearLimit = None
-    rstwt = [0.0, 0.0, 0.0, 0.0]
 
-    stackRstFuncExpr = None  # stack of restraint function expression
+    rstwt = [0.0, 0.0, 0.0, 0.0]  # generalized distance 2/3/4
+
+    # Amber 10: ambmask
+    depth = 0
+
+    hasFuncExprs = False
+    funcExprs = None
+
+    inGenDist = False
+    inGenDist_funcExprs = None
+    inGenDist_weight = None
+
+    inPlane = False
+    inPlane_columnSel = -1
+    inPlane_funcExprs = None
+    inPlane_funcExprs2 = None
+
+    inCom = False
+    inCom_funcExprs = None
 
     # collection of atom selection
     atomSelectionSet = None
@@ -323,12 +323,17 @@ class AmberMRParserListener(ParseTreeListener):
 
         self.numIatCol = 0
         self.setIatCol = None
-        self.distLike = False
         self.iat = [0] * 8
+        self.distLike = False
 
         self.numIgrCol = None
         self.setIgrCol = None
         self.igr = None
+
+        self.lowerLinearLimit = None
+        self.lowerLimit = None
+        self.upperLimit = None
+        self.upperLinearLimit = None
 
         self.hasFuncExprs = False
 
@@ -420,22 +425,37 @@ class AmberMRParserListener(ParseTreeListener):
 
                     self.atomSelectionSet.append(atomSelection)
 
-                if self.__cur_subtype == 'dist' and len(self.iat) == COL_DIST:
-                    if self.lastComment is not None:
-                        print('# ' + ' '.join(self.lastComment))
+                if self.lastComment is not None:
+                    print('# ' + ' '.join(self.lastComment))
 
-                    dstFunc = self.valiateDistanceRange()
+                if self.__cur_subtype == 'dist':
 
-                    if dstFunc is None:
-                        return
+                    if len(self.iat) == COL_DIST:
+                        dstFunc = self.valiateDistanceRange()
 
-                    for atom_1 in self.atomSelectionSet[0]:
-                        for atom_2 in self.atomSelectionSet[1]:
-                            print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
-                                  f"atom_1={atom_1} atom_2={atom_2} {dstFunc}")
+                        if dstFunc is None:
+                            return
+
+                        for atom_1 in self.atomSelectionSet[0]:
+                            for atom_2 in self.atomSelectionSet[1]:
+                                print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
+                                      f"atom_1={atom_1} atom_2={atom_2} {dstFunc}")
+
+                    else:  # generalized distance 2/3/4
+                        self.rstwt = [0.0, 0.0, 0.0, 0.0]
+
+                elif self.__cur_subtype == 'ang':
+                    pass
+
+                elif self.__cur_subtype == 'dihed':
+                    pass
+
+                else:  # plane-(point/plane)
+                    pass
 
             # try to update AMBER atom number dictionary based on Sander comments
             else:
+
                 if self.__cur_subtype == 'dist' and len(self.iat) == COL_DIST:
                     if self.lastComment is None:
                         self.warningMessage += f"[Fatal error] {self.__getCurrentRestraint()}"\
@@ -487,51 +507,51 @@ class AmberMRParserListener(ParseTreeListener):
                                         self.warningMessage += f"[Fatal error] {self.__getCurrentRestraint()}"\
                                             f"Failed to recognize Sander comment {' '.join(self.lastComment[offset:offset+3])!r} as a distance restraint."
 
-        # Amber 10 (ambmask)
+        # Amber 10: ambmask
         else:
-            if self.__cur_subtype == 'dist':
 
-                # distance
-                if not self.inGenDist:
+            # convert AMBER atom numbers to corresponding coordinate atoms based on AMBER parameter/topology file
+            if self.__atomNumberDict is not None:
 
-                    # convert AMBER atom numbers to corresponding coordinate atoms based on AMBER parameter/topology file
-                    if self.__atomNumberDict is not None:
+                for col, funcExp in enumerate(self.funcExprs):
 
-                        for col, funcExp in enumerate(self.funcExprs):
+                    atomSelection = []
 
-                            atomSelection = []
+                    if isinstance(funcExp, dict):
+                        if 'iat' in funcExp:
+                            iat = funcExp['iat']
+                            if iat in self.__atomNumberDict:
+                                atomSelection.append(self.__atomNumberDict[iat])
+                            else:
+                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                    f"'iat({col+1})={iat}' is not defined in the AMBER parameter/topology file.\n"
+                        else:  # ambmask format
+                            factor = self.convertAmbMask(funcExp['seq_id'], funcExp['atom_id'])
+                            if factor is not None:
+                                atomSelection.append(factor)
+                    else:  # list
+                        for _funcExp in funcExp:
+                            if 'iat' in _funcExp:
+                                igr = _funcExp['iat']
+                                if igr in self.__atomNumberDict:
+                                    atomSelection.append(self.__atomNumberDict[igr])
+                                else:
+                                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                        f"'igr({col+1})={igr}' is not defined in the AMBER parameter/topology file.\n"
+                            else:  # ambmask format
+                                factor = self.convertAmbMask(funcExp['seq_id'], funcExp['atom_id'])
+                                if factor is not None:
+                                    atomSelection.append(factor)
 
-                            if isinstance(funcExp, dict):
-                                if 'iat' in funcExp:
-                                    iat = funcExp['iat']
-                                    if iat in self.__atomNumberDict:
-                                        atomSelection.append(self.__atomNumberDict[iat])
-                                    else:
-                                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                            f"'iat({col+1})={iat}' is not defined in the AMBER parameter/topology file.\n"
-                                else:  # ambmask format
-                                    factor = self.convertAmbMask(funcExp['seq_id'], funcExp['atom_id'])
-                                    if factor is not None:
-                                        atomSelection.append(factor)
-                            else:  # list
-                                for _funcExp in funcExp:
-                                    if 'iat' in _funcExp:
-                                        igr = _funcExp['iat']
-                                        if igr in self.__atomNumberDict:
-                                            atomSelection.append(self.__atomNumberDict[igr])
-                                        else:
-                                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                                f"'igr({col+1})={igr}' is not defined in the AMBER parameter/topology file.\n"
-                                    else:  # ambmask format
-                                        factor = self.convertAmbMask(funcExp['seq_id'], funcExp['atom_id'])
-                                        if factor is not None:
-                                            atomSelection.append(factor)
+                    self.atomSelectionSet.append(atomSelection)
 
-                            self.atomSelectionSet.append(atomSelection)
+                if self.lastComment is not None:
+                    print('# ' + ' '.join(self.lastComment))
 
-                        if self.lastComment is not None:
-                            print('# ' + ' '.join(self.lastComment))
+                if self.__cur_subtype == 'dist':
 
+                    # distance
+                    if not self.inGenDist:
                         dstFunc = self.valiateDistanceRange()
 
                         if dstFunc is None:
@@ -542,85 +562,88 @@ class AmberMRParserListener(ParseTreeListener):
                                 print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
                                       f"atom_1={atom_1} atom_2={atom_2} {dstFunc}")
 
-                    # try to update AMBER atom number dictionary based on Sander comments
+                    # generalized distance 2/3/4
                     else:
-                        if self.lastComment is None:
-                            self.warningMessage += f"[Fatal error] {self.__getCurrentRestraint()}"\
-                                "Failed to recognize AMBER atom numbers "\
-                                "because neither AMBER parameter/topology file nor Sander comment are available."
+                        for funcExp in self.inGenDist_funcExprs:
+                            pass
+                        self.rstwt = [0.0, 0.0, 0.0, 0.0]
 
-                        for col, funcExp in enumerate(self.funcExprs):
-                            offset = col * 3
-
-                            if isinstance(funcExp, dict):
-                                if 'iat' in funcExp:
-                                    iat = funcExp['iat']
-                                    if iat in self.__sanderAtomNumberDict:
-                                        pass
-                                    else:
-                                        try:
-                                            factor = {'auth_seq_id': int(self.lastComment[offset + 0]),
-                                                      'auth_comp_id': self.lastComment[offset + 1],
-                                                      'auth_atom_id': self.lastComment[offset + 2],
-                                                      'iat': iat
-                                                      }
-                                            if not self.updateSanderAtomNumberDict(factor):
-                                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                                    f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "\
-                                                    f"based on Sander comment {' '.join(self.lastComment[offset:offset+3])!r}.\n"
-                                        except ValueError:
-                                            self.warningMessage += f"[Fatal error] {self.__getCurrentRestraint()}"\
-                                                f"Failed to recognize Sander comment {' '.join(self.lastComment[offset:offset+3])!r} as a distance restraint."
-                                        except IndexError:
-                                            self.warningMessage += f"[Fatal error] {self.__getCurrentRestraint()}"\
-                                                f"Failed to recognize Sander comment {' '.join(self.lastComment[offset:offset+3])!r} as a distance restraint."
-
-                            else:  # list
-                                igr = [_funcExp['iat'] for _funcExp in funcExp if 'iat' in _funcExp]
-                                mask = [_funcExp['atom_id'] for _funcExp in funcExp if 'atom_id' in _funcExp]
-                                if len(igr) > 0 and len(mask) == 0:
-                                    if igr[0] not in self.__sanderAtomNumberDict:
-                                        try:
-                                            factor = {'auth_seq_id': int(self.lastComment[offset + 0]),
-                                                      'auth_comp_id': self.lastComment[offset + 1],
-                                                      'auth_atom_id': self.lastComment[offset + 2],
-                                                      'igr': igr
-                                                      }
-                                            if not self.updateSanderAtomNumberDict(factor):
-                                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                                    f"Couldn't specify 'igr({col+1})={igr}' in the coordinates "\
-                                                    f"based on Sander comment {' '.join(self.lastComment[offset:offset+3])!r}.\n"
-                                        except ValueError:
-                                            self.warningMessage += f"[Fatal error] {self.__getCurrentRestraint()}"\
-                                                f"Failed to recognize Sander comment {' '.join(self.lastComment[offset:offset+3])!r} as a distance restraint."
-                                        except IndexError:
-                                            self.warningMessage += f"[Fatal error] {self.__getCurrentRestraint()}"\
-                                                f"Failed to recognize Sander comment {' '.join(self.lastComment[offset:offset+3])!r} as a distance restraint."
-
-                # generalized distance 2/3/4
-                else:
-                    for funcExp in self.inGenDist_funcExprs:
-                        pass
-
-            elif self.__cur_subtype == 'ang':
-                for funcExp in self.funcExprs:
-                    pass
-
-            elif self.__cur_subtype == 'dihed':
-                for funcExp in self.funcExprs:
-                    pass
-
-            else:
-                for funcExp in self.inPlane_funcExprs:
-                    pass
-
-                if self.inPlane_columnSel == 0:  # plane-point angle
+                elif self.__cur_subtype == 'ang':
                     for funcExp in self.funcExprs:
                         pass
 
-                else:  # plane-plane angle
-                    for funcExp in self.inPlane_funcExprs2:
+                elif self.__cur_subtype == 'dihed':
+                    for funcExp in self.funcExprs:
                         pass
+
+                else:
+                    for funcExp in self.inPlane_funcExprs:
+                        pass
+
+                    if self.inPlane_columnSel == 0:  # plane-point angle
+                        for funcExp in self.funcExprs:
+                            pass
+
+                    else:  # plane-plane angle
+                        for funcExp in self.inPlane_funcExprs2:
+                            pass
+
+            # try to update AMBER atom number dictionary based on Sander comments
+            else:
+
+                if self.__cur_subtype == 'dist' and not self.inGenDist:
+                    if self.lastComment is None:
+                        self.warningMessage += f"[Fatal error] {self.__getCurrentRestraint()}"\
+                            "Failed to recognize AMBER atom numbers "\
+                            "because neither AMBER parameter/topology file nor Sander comment are available."
+
+                    for col, funcExp in enumerate(self.funcExprs):
+                        offset = col * 3
+
+                        if isinstance(funcExp, dict):
+                            if 'iat' in funcExp:
+                                iat = funcExp['iat']
+                                if iat in self.__sanderAtomNumberDict:
+                                    pass
+                                else:
+                                    try:
+                                        factor = {'auth_seq_id': int(self.lastComment[offset + 0]),
+                                                  'auth_comp_id': self.lastComment[offset + 1],
+                                                  'auth_atom_id': self.lastComment[offset + 2],
+                                                  'iat': iat
+                                                  }
+                                        if not self.updateSanderAtomNumberDict(factor):
+                                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                                f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "\
+                                                f"based on Sander comment {' '.join(self.lastComment[offset:offset+3])!r}.\n"
+                                    except ValueError:
+                                        self.warningMessage += f"[Fatal error] {self.__getCurrentRestraint()}"\
+                                            f"Failed to recognize Sander comment {' '.join(self.lastComment[offset:offset+3])!r} as a distance restraint."
+                                    except IndexError:
+                                        self.warningMessage += f"[Fatal error] {self.__getCurrentRestraint()}"\
+                                            f"Failed to recognize Sander comment {' '.join(self.lastComment[offset:offset+3])!r} as a distance restraint."
+
+                        else:  # list
+                            igr = [_funcExp['iat'] for _funcExp in funcExp if 'iat' in _funcExp]
+                            mask = [_funcExp['atom_id'] for _funcExp in funcExp if 'atom_id' in _funcExp]
+                            if len(igr) > 0 and len(mask) == 0:
+                                if igr[0] not in self.__sanderAtomNumberDict:
+                                    try:
+                                        factor = {'auth_seq_id': int(self.lastComment[offset + 0]),
+                                                  'auth_comp_id': self.lastComment[offset + 1],
+                                                  'auth_atom_id': self.lastComment[offset + 2],
+                                                  'igr': igr
+                                                  }
+                                        if not self.updateSanderAtomNumberDict(factor):
+                                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                                f"Couldn't specify 'igr({col+1})={igr}' in the coordinates "\
+                                                f"based on Sander comment {' '.join(self.lastComment[offset:offset+3])!r}.\n"
+                                    except ValueError:
+                                        self.warningMessage += f"[Fatal error] {self.__getCurrentRestraint()}"\
+                                            f"Failed to recognize Sander comment {' '.join(self.lastComment[offset:offset+3])!r} as a distance restraint."
+                                    except IndexError:
+                                        self.warningMessage += f"[Fatal error] {self.__getCurrentRestraint()}"\
+                                            f"Failed to recognize Sander comment {' '.join(self.lastComment[offset:offset+3])!r} as a distance restraint."
 
         self.lastComment = None
 
@@ -698,7 +721,7 @@ class AmberMRParserListener(ParseTreeListener):
         return dstFunc
 
     def convertAmbMask(self, seqId, atomId):
-        """ Return similar component of atom number dictionary from ambmask information.
+        """ Return similar component of atom number dictionary from Amber 10 ambmask information.
         """
         if not self.__hasPolySeq:
             return None

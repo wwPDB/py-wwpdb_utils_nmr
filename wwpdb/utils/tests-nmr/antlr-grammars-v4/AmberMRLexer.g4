@@ -359,7 +359,7 @@ CCUT:			C C U T
 Comma:			',' -> mode(DEFAULT_MODE);
 Ampersand:		'&';
 
-COMMENT:		('#' | '!') -> mode(COMMENT_MODE);
+COMMENT:		('#' | '!')* -> mode(COMMENT_MODE);
 
 fragment INTEGER:	('+' | '-')? DECIMAL;
 fragment REAL:		('+' | '-')? (DECIMAL | DEC_DOT_DEC) (E ('+' | '-')? DECIMAL)?;

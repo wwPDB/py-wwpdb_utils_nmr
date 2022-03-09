@@ -41,7 +41,7 @@ class AmberMRReader:
 
     def __init__(self, verbose=True, log=sys.stdout, cR=None, polySeqModel=None,
                  coordAtomSite=None, coordUnobsRes=None,
-                 ccU=None, csStat=None, nefT=None, ptPL=None):
+                 ccU=None, csStat=None, nefT=None, atomNumberDict=None):
         self.__verbose = verbose
         self.__lfh = log
 
@@ -63,8 +63,8 @@ class AmberMRReader:
         # NEFTranslator
         self.__nefT = NEFTranslator(verbose, log, self.__ccU, self.__csStat) if nefT is None else nefT
 
-        # AmberPTParserListener
-        self.__ptPL = ptPL
+        # AmberPTParserListener.getAtomNumberDict()
+        self.__atomNumberDict = atomNumberDict
 
     def parse(self, mrFilePath, cifFilePath=None, ptFilePath=None):
         """ Parse AMBER MR file.
@@ -89,73 +89,74 @@ class AmberMRReader:
                     if not self.__cR.parse(cifFilePath):
                         return None
 
-            if ptFilePath is not None and self.__ptPL is None:
+            if ptFilePath is not None and self.__atomNumberDict is None:
                 ptR = AmberPTReader(self.__verbose, self.__lfh, self.__cR, self.__polySeqModel,
                                     self.__ccU, self.__csStat)
-                self.__ptPL = ptR.parse(ptFilePath, cifFilePath)
+                ptPL = ptR.parse(ptFilePath, cifFilePath)
+                if ptPL is not None:
+                    self.__atomNumberDict = ptPL.getAtomNumberDict()
 
-            with open(mrFilePath) as ifp:
+            while True:
 
-                ifs = InputStream(ifp.read())
+                with open(mrFilePath) as ifp:
 
-                lexer = AmberMRLexer(ifs)
-                lexer.removeErrorListeners()
+                    ifs = InputStream(ifp.read())
 
-                lexer_error_listener = LexerErrorListener(mrFilePath)
-                lexer.addErrorListener(lexer_error_listener)
+                    lexer = AmberMRLexer(ifs)
+                    lexer.removeErrorListeners()
 
-                messageList = lexer_error_listener.getMessageList()
+                    lexer_error_listener = LexerErrorListener(mrFilePath)
+                    lexer.addErrorListener(lexer_error_listener)
 
-                if messageList is not None:
-                    for description in messageList:
-                        self.__lfh.write(f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n")
-                        if 'input' in description:
-                            self.__lfh.write(f"{description['input']}\n")
-                            self.__lfh.write(f"{description['marker']}\n")
+                    messageList = lexer_error_listener.getMessageList()
 
-                stream = CommonTokenStream(lexer)
-                parser = AmberMRParser(stream)
-                parser.removeErrorListeners()
-                parser_error_listener = ParserErrorListener(mrFilePath)
-                parser.addErrorListener(parser_error_listener)
-                tree = parser.amber_mr()
+                    if messageList is not None:
+                        for description in messageList:
+                            self.__lfh.write(f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n")
+                            if 'input' in description:
+                                self.__lfh.write(f"{description['input']}\n")
+                                self.__lfh.write(f"{description['marker']}\n")
 
-                walker = ParseTreeWalker()
-                listener = AmberMRParserListener(self.__verbose, self.__lfh, self.__cR, self.__polySeqModel,
-                                                 self.__coordAtomSite, self.__coordUnobsRes,
-                                                 self.__ccU, self.__csStat, self.__nefT, self.__ptPL)
-                walker.walk(listener, tree)
+                    stream = CommonTokenStream(lexer)
+                    parser = AmberMRParser(stream)
+                    parser.removeErrorListeners()
+                    parser_error_listener = ParserErrorListener(mrFilePath)
+                    parser.addErrorListener(parser_error_listener)
+                    tree = parser.amber_mr()
 
-                messageList = parser_error_listener.getMessageList()
+                    walker = ParseTreeWalker()
+                    listener = AmberMRParserListener(self.__verbose, self.__lfh, self.__cR, self.__polySeqModel,
+                                                     self.__coordAtomSite, self.__coordUnobsRes,
+                                                     self.__ccU, self.__csStat, self.__nefT, self.__atomNumberDict)
+                    walker.walk(listener, tree)
 
-                if messageList is not None:
-                    for description in messageList:
-                        self.__lfh.write(f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n")
-                        if 'input' in description:
-                            self.__lfh.write(f"{description['input']}\n")
-                            self.__lfh.write(f"{description['marker']}\n")
+                    messageList = parser_error_listener.getMessageList()
 
-                if listener.warningMessage is not None:
-                    print(listener.warningMessage)
-                print(listener.getContentSubtype())
+                    if messageList is not None:
+                        for description in messageList:
+                            self.__lfh.write(f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n")
+                            if 'input' in description:
+                                self.__lfh.write(f"{description['input']}\n")
+                                self.__lfh.write(f"{description['marker']}\n")
+
+                    if listener.warningMessage is not None:
+                        print(listener.warningMessage)
+
+                    if self.__atomNumberDict is not None:
+                        print(listener.getContentSubtype())
+                        break
+
+                    sanderAtomNumberDict = listener.getSanderAtomNumberDict()
+                    if len(sanderAtomNumberDict) > 0:
+                        self.__atomNumberDict = sanderAtomNumberDict
+                    else:
+                        break
 
             return listener
 
         except IOError as e:
             if self.__verbose:
                 self.__lfh.write(f"+AmberMRReader.parse() ++ Error - {str(e)}\n")
-            return None
-        except KeyError as e:
-            if self.__verbose:
-                self.__lfh.write(f"+AmberMRReader.parse() ++ KeyError - {str(e)}\n")
-            return None
-        except ValueError as e:
-            if self.__verbose:
-                self.__lfh.write(f"+AmberMRReader.parse() ++ ValueError - {str(e)}\n")
-            return None
-        except IndexError as e:
-            if self.__verbose:
-                self.__lfh.write(f"+AmberMRReader.parse() ++ IndexError - {str(e)}\n")
             return None
 
 

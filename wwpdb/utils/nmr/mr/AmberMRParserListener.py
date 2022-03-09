@@ -108,9 +108,6 @@ class AmberMRParserListener(ParseTreeListener):
     # NEFTranslator
     __nefT = None
 
-    # AmberPTParserListener
-    __ptPL = None  # pylint: disable=unused-private-member
-
     # AmberPTParserListener.getAtomNumberDict()
     __atomNumberDict = None
 
@@ -167,7 +164,7 @@ class AmberMRParserListener(ParseTreeListener):
 
     def __init__(self, verbose=True, log=sys.stdout, cR=None,
                  polySeq=None, coordAtomSite=None, coordUnobsRes=None,
-                 ccU=None, csStat=None, nefT=None, ptPL=None):
+                 ccU=None, csStat=None, nefT=None, atomNumberDict=None):
         self.__verbose = verbose
         self.__lfh = log
         self.__cR = cR
@@ -195,11 +192,8 @@ class AmberMRParserListener(ParseTreeListener):
         # NEFTranslator
         self.__nefT = NEFTranslator(verbose, log, self.__ccU, self.__csStat) if nefT is None else nefT
 
-        # AmberPTParserListener
-        self.__ptPL = ptPL  # pylint: disable=unused-private-member
-
-        if ptPL is not None:
-            self.__atomNumberDict = ptPL.getAtomNumberDict()
+        if atomNumberDict is not None:
+            self.__atomNumberDict = atomNumberDict
         else:
             self.__sanderAtomNumberDict = {}
 
@@ -474,9 +468,9 @@ class AmberMRParserListener(ParseTreeListener):
         else:
             if self.__cur_subtype == 'dist' and len(self.iat) == COL_DIST:
                 if self.lastComment is None:
-                    raise KeyError(f"[Fatal error] {self.__getCurrentRestraint()}"
-                                   "Failed to recognize AMBER atom numbers "
-                                   "because neither AMBER parameter/topology file nor Sander comment are available.")
+                    self.warningMessage += f"[Fatal error] {self.__getCurrentRestraint()}"\
+                        "Failed to recognize AMBER atom numbers "\
+                        "because neither AMBER parameter/topology file nor Sander comment are available."
 
                 for col, iat in enumerate(self.iat):
                     atomSelection = []
@@ -498,11 +492,11 @@ class AmberMRParserListener(ParseTreeListener):
                                         f"Couldn't specify 'iat({varNum})={iat}' in the coordinates "\
                                         f"based on Sander comment {' '.join(self.lastComment[offset:offset+3])!r}.\n"
                             except ValueError:
-                                raise ValueError(f"[Fatal error] {self.__getCurrentRestraint()}"
-                                                 f"Failed to recognize Sander comment {' '.join(self.lastComment[offset:offset+3])!r} as a distance restraint.")
+                                self.warningMessage += f"[Fatal error] {self.__getCurrentRestraint()}"\
+                                    f"Failed to recognize Sander comment {' '.join(self.lastComment[offset:offset+3])!r} as a distance restraint."
                             except IndexError:
-                                raise IndexError(f"[Fatal error] {self.__getCurrentRestraint()}"
-                                                 f"Failed to recognize Sander comment {' '.join(self.lastComment[offset:offset+3])!r} as a distance restraint.")
+                                self.warningMessage += f"[Fatal error] {self.__getCurrentRestraint()}"\
+                                    f"Failed to recognize Sander comment {' '.join(self.lastComment[offset:offset+3])!r} as a distance restraint."
                     elif iat < 0:
                         varNum = col + 1
                         if varNum in self.igr:
@@ -521,11 +515,11 @@ class AmberMRParserListener(ParseTreeListener):
                                                 f"Couldn't specify 'iat({varNum})={iat}' in the coordinates "\
                                                 f"based on Sander comment {' '.join(self.lastComment[offset:offset+3])!r}.\n"
                                     except ValueError:
-                                        raise ValueError(f"[Fatal error] {self.__getCurrentRestraint()}"
-                                                         f"Failed to recognize Sander comment {' '.join(self.lastComment[offset:offset+3])!r} as a distance restraint.")
+                                        self.warningMessage += f"[Fatal error] {self.__getCurrentRestraint()}"\
+                                            f"Failed to recognize Sander comment {' '.join(self.lastComment[offset:offset+3])!r} as a distance restraint."
                                     except IndexError:
-                                        raise IndexError(f"[Fatal error] {self.__getCurrentRestraint()}"
-                                                         f"Failed to recognize Sander comment {' '.join(self.lastComment[offset:offset+3])!r} as a distance restraint.")
+                                        self.warningMessage += f"[Fatal error] {self.__getCurrentRestraint()}"\
+                                            f"Failed to recognize Sander comment {' '.join(self.lastComment[offset:offset+3])!r} as a distance restraint."
 
                     self.atomSelectionSet.append(atomSelection)
 

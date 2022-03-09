@@ -104,6 +104,8 @@ class CnsMRParserListener(ParseTreeListener):
     __polySeq = None
     __coordAtomSite = None
     __coordUnobsRes = None
+    __labelToAuthSeq = None
+    __preferAuthSeq = True
 
     # current restraint subtype
     __cur_subtype = None
@@ -137,8 +139,8 @@ class CnsMRParserListener(ParseTreeListener):
 
     warningMessage = ''
 
-    def __init__(self, verbose=True, log=sys.stdout, cR=None,
-                 polySeq=None, coordAtomSite=None, coordUnobsRes=None,
+    def __init__(self, verbose=True, log=sys.stdout, cR=None, polySeq=None,
+                 coordAtomSite=None, coordUnobsRes=None, labelToAuthSeq=None,
                  ccU=None, csStat=None, nefT=None):
         self.__verbose = verbose
         self.__lfh = log
@@ -146,7 +148,8 @@ class CnsMRParserListener(ParseTreeListener):
         self.__hasCoord = cR is not None
 
         if self.__hasCoord:
-            dict = checkCoordinates(verbose, log, cR, polySeq, coordAtomSite, coordUnobsRes)
+            dict = checkCoordinates(verbose, log, cR, polySeq,
+                                    coordAtomSite, coordUnobsRes, labelToAuthSeq)
             self.__modelNumName = dict['model_num_name']
             self.__authAsymId = dict['auth_asym_id']
             self.__authSeqId = dict['auth_seq_id']
@@ -155,6 +158,7 @@ class CnsMRParserListener(ParseTreeListener):
             self.__polySeq = dict['polymer_sequence']
             self.__coordAtomSite = dict['coord_atom_site']
             self.__coordUnobsRes = dict['coord_unobs_res']
+            self.__labelToAuthSeq = dict['label_to_auth_seq']
 
         self.__hasPolySeq = self.__polySeq is not None and len(self.__polySeq) > 0
 
@@ -1041,8 +1045,7 @@ class CnsMRParserListener(ParseTreeListener):
                         else:
                             compId = None
 
-                        seqKey = (chainId, seqId)
-                        coordAtomSite = None if not cifCheck or seqKey not in self.__coordAtomSite else self.__coordAtomSite[seqKey]
+                        seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck)
 
                         for atomId in _factor['atom_id']:
                             atomIds = self.__nefT.get_valid_star_atom(compId, atomId.upper())[0]
@@ -1057,10 +1060,47 @@ class CnsMRParserListener(ParseTreeListener):
                                             _atom = {}
                                             _atom['comp_id'] = coordAtomSite['comp_id']
                                             _atom['type_symbol'] = coordAtomSite['type_symbol'][coordAtomSite['atom_id'].index(_atomId)]
-                                        elif 'auth_atom_id' in coordAtomSite and _atomId in coordAtomSite['auth_atom_id']:
+                                        elif 'alt_atom_id' in coordAtomSite and _atomId in coordAtomSite['alt_atom_id']:
                                             _atom = {}
                                             _atom['comp_id'] = coordAtomSite['comp_id']
-                                            _atom['type_symbol'] = coordAtomSite['type_symbol'][coordAtomSite['auth_atom_id'].index(_atomId)]
+                                            _atom['type_symbol'] = coordAtomSite['type_symbol'][coordAtomSite['alt_atom_id'].index(_atomId)]
+                                            self.__authAtomId = 'auth_atom_id'
+                                        elif self.__preferAuthSeq:
+                                            _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck, asis=False)
+                                            if _atomId in _coordAtomSite['atom_id']:
+                                                _atom = {}
+                                                _atom['comp_id'] = _coordAtomSite['comp_id']
+                                                _atom['type_symbol'] = _coordAtomSite['type_symbol'][_coordAtomSite['atom_id'].index(_atomId)]
+                                                self.__preferAuthSeq = False
+                                                self.__authSeqId = 'label_seq_id'
+                                                seqKey = _seqKey
+                                            elif 'alt_atom_id' in _coordAtomSite and _atomId in _coordAtomSite['alt_atom_id']:
+                                                _atom = {}
+                                                _atom['comp_id'] = _coordAtomSite['comp_id']
+                                                _atom['type_symbol'] = _coordAtomSite['type_symbol'][_coordAtomSite['alt_atom_id'].index(_atomId)]
+                                                self.__preferAuthSeq = False
+                                                self.__authSeqId = 'label_seq_id'
+                                                self.__authAtomId = 'auth_atom_id'
+                                                seqKey = _seqKey
+
+                                    elif self.__preferAuthSeq:
+                                        _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck, asis=False)
+                                        if _coordAtomSite is not None:
+                                            if _atomId in _coordAtomSite['atom_id']:
+                                                _atom = {}
+                                                _atom['comp_id'] = _coordAtomSite['comp_id']
+                                                _atom['type_symbol'] = _coordAtomSite['type_symbol'][_coordAtomSite['atom_id'].index(_atomId)]
+                                                self.__preferAuthSeq = False
+                                                self.__authSeqId = 'label_seq_id'
+                                                seqKey = _seqKey
+                                            elif 'alt_atom_id' in _coordAtomSite and _atomId in _coordAtomSite['alt_atom_id']:
+                                                _atom = {}
+                                                _atom['comp_id'] = _coordAtomSite['comp_id']
+                                                _atom['type_symbol'] = _coordAtomSite['type_symbol'][_coordAtomSite['alt_atom_id'].index(_atomId)]
+                                                self.__preferAuthSeq = False
+                                                self.__authSeqId = 'label_seq_id'
+                                                self.__authAtomId = 'auth_atom_id'
+                                                seqKey = _seqKey
 
                                     if _atom is not None:
                                         if ('comp_id' not in _factor or _atom['comp_id'] in _factor['comp_id'])\
@@ -1112,6 +1152,21 @@ class CnsMRParserListener(ParseTreeListener):
             del _factor['atom_id']
 
         return _factor
+
+    def getCoordAtomSiteOf(self, chainId, seqId, cifCheck=True, asis=True):
+        seqKey = (chainId, seqId)
+        coordAtomSite = None
+        if cifCheck:
+            preferAuthSeq = self.__preferAuthSeq if asis else not self.__preferAuthSeq
+            if preferAuthSeq:
+                if seqKey in self.__coordAtomSite:
+                    coordAtomSite = self.__coordAtomSite[seqKey]
+            else:
+                if seqKey in self.__labelToAuthSeq:
+                    seqKey = self.__labelToAuthSeq[seqKey]
+                    if seqKey in self.__coordAtomSite:
+                        coordAtomSite = self.__coordAtomSite[seqKey]
+        return seqKey, coordAtomSite
 
     def intersectionFactor_expressions(self, atomSelection=None):
         self.consumeFactor_expressions(cifCheck=False)
@@ -1694,8 +1749,7 @@ class CnsMRParserListener(ParseTreeListener):
                     seqId = _atom['seq_id']
                     atomId = _atom['atom_id']
 
-                    seqKey = (chainId, seqId)
-                    coordAtomSite = None if seqKey not in self.__coordAtomSite else self.__coordAtomSite[seqKey]
+                    _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId)
 
                     # intra
                     if self.__ccU.updateChemCompDict(compId):
@@ -1721,7 +1775,7 @@ class CnsMRParserListener(ParseTreeListener):
                                 if _atomId in coordAtomSite['atom_id']:
                                     _atom = {}
                                     _atom['comp_id'] = coordAtomSite['comp_id']
-                                elif 'auth_atom_id' in coordAtomSite and _atomId in coordAtomSite['auth_atom_id']:
+                                elif 'alt_atom_id' in coordAtomSite and _atomId in coordAtomSite['alt_atom_id']:
                                     _atom = {}
                                     _atom['comp_id'] = coordAtomSite['comp_id']
 
@@ -2568,5 +2622,10 @@ class CnsMRParserListener(ParseTreeListener):
         """ Return catalog of unobserved residues of the coordinates.
         """
         return self.__coordUnobsRes
+
+    def getLabelToAuthSeq(self):
+        """ Return dictionary of differences between label_seq_id (as key) to auth_seq_id (as value).
+        """
+        return self.__labelToAuthSeq
 
 # del CnsMRParser

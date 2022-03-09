@@ -48,7 +48,8 @@ def toRegEx(string):
 
 
 def checkCoordinates(verbose=True, log=sys.stdout, cR=None, polySeq=None,
-                     coordAtomSite=None, coordUnobsRes=None, testTag=True):
+                     coordAtomSite=None, coordUnobsRes=None, labelToAuthSeq=None,
+                     testTag=True):
     """ Examine the coordinates for MR/PT parser listener.
     """
 
@@ -146,15 +147,16 @@ def checkCoordinates(verbose=True, log=sys.stdout, cR=None, polySeq=None,
         authAtomId = 'pdbx_auth_atom_name' if cR.hasItem('atom_site', 'pdbx_auth_atom_name') else 'auth_atom_id'
         altAuthAtomId = None if authAtomId == 'auth_atom_id' else 'auth_atom_id'
 
-        if coordAtomSite is None:
+        if coordAtomSite is None or labelToAuthSeq is None:
 
             if altAuthAtomId is not None:
                 coord = cR.getDictListWithFilter('atom_site',
                                                  [{'name': authAsymId, 'type': 'str', 'alt_name': 'chain_id'},
                                                   {'name': authSeqId, 'type': 'int', 'alt_name': 'seq_id'},
+                                                  {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'alt_seq_id'},
                                                   {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
                                                   {'name': authAtomId, 'type': 'str', 'alt_name': 'atom_id'},
-                                                  {'name': altAuthAtomId, 'type': 'str', 'alt_name': 'auth_atom_id'},
+                                                  {'name': altAuthAtomId, 'type': 'str', 'alt_name': 'alt_atom_id'},
                                                   {'name': 'type_symbol', 'type': 'str'}
                                                   ],
                                                  [{'name': modelNumName, 'type': 'int', 'value': REPRESENTATIVE_MODEL_ID}
@@ -163,6 +165,7 @@ def checkCoordinates(verbose=True, log=sys.stdout, cR=None, polySeq=None,
                 coord = cR.getDictListWithFilter('atom_site',
                                                  [{'name': authAsymId, 'type': 'str', 'alt_name': 'chain_id'},
                                                   {'name': authSeqId, 'type': 'int', 'alt_name': 'seq_id'},
+                                                  {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'alt_seq_id'},
                                                   {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
                                                   {'name': authAtomId, 'type': 'str', 'alt_name': 'atom_id'},
                                                   {'name': 'type_symbol', 'type': 'str'}
@@ -171,44 +174,44 @@ def checkCoordinates(verbose=True, log=sys.stdout, cR=None, polySeq=None,
                                                   ])
 
             coordAtomSite = {}
+            labelToAuthSeq = {}
             chainIds = set(c['chain_id'] for c in coord)
             for chainId in chainIds:
-                seqIds = set((int(c['seq_id']) if c['seq_id'] is not None else c['auth_seq_id']) for c in coord if c['chain_id'] == chainId)
+                seqIds = set(c['seq_id'] for c in coord if c['chain_id'] == chainId)
                 for seqId in seqIds:
                     seqKey = (chainId, seqId)
                     compId = next(c['comp_id'] for c in coord
-                                  if c['chain_id'] == chainId and ((c['seq_id'] is not None and int(c['seq_id']) == seqId)
-                                                                   or (c['seq_id'] is None and c['auth_seq_id'] == seqId)))
-                    atom_ids = [c['atom_id'] for c in coord
-                                if c['chain_id'] == chainId and ((c['seq_id'] is not None and int(c['seq_id']) == seqId)
-                                                                 or (c['seq_id'] is None and c['auth_seq_id'] == seqId))]
-                    type_symbols = [c['type_symbol'] for c in coord
-                                    if c['chain_id'] == chainId and ((c['seq_id'] is not None and int(c['seq_id']) == seqId)
-                                                                     or (c['seq_id'] is None and c['auth_seq_id'] == seqId))]
-                    coordAtomSite[seqKey] = {'comp_id': compId, 'atom_id': atom_ids, 'type_symbol': type_symbols}
+                                  if c['chain_id'] == chainId and c['seq_id'] is not None and c['seq_id'] == seqId)
+                    atomIds = [c['atom_id'] for c in coord
+                               if c['chain_id'] == chainId and c['seq_id'] is not None and c['seq_id'] == seqId]
+                    typeSymbols = [c['type_symbol'] for c in coord
+                                   if c['chain_id'] == chainId and c['seq_id'] is not None and c['seq_id'] == seqId]
+                    coordAtomSite[seqKey] = {'comp_id': compId, 'atom_id': atomIds, 'type_symbol': typeSymbols}
                     if altAuthAtomId is not None:
-                        auth_atom_ids = [c['auth_atom_id'] for c in coord
-                                         if c['chain_id'] == chainId and ((c['seq_id'] is not None and int(c['seq_id']) == seqId)
-                                                                          or (c['seq_id'] is None and c['auth_seq_id'] == seqId))]
-                        coordAtomSite[seqKey]['auth_atom_id'] = auth_atom_ids
+                        altAtomIds = [c['alt_atom_id'] for c in coord
+                                        if c['chain_id'] == chainId and c['seq_id'] is not None and c['seq_id'] == seqId]
+                        coordAtomSite[seqKey]['alt_atom_id'] = altAtomIds
+                    altSeqId = next((c['alt_seq_id'] for c in coord if c['chain_id'] == chainId and c['seq_id'] == seqId), None)
+                    if altSeqId is not None and altSeqId.isdigit():
+                        labelToAuthSeq[(chainId, int(altSeqId))] = seqKey
 
         if coordUnobsRes is None:
             coordUnobsRes = {}
-            unobs_res = cR.getDictListWithFilter('pdbx_unobs_or_zero_occ_residues',
-                                                 [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                                  {'name': 'auth_seq_id', 'type': 'str', 'alt_name': 'seq_id'},
-                                                  {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'}
-                                                  ],
-                                                 [{'name': 'PDB_model_num', 'type': 'int', 'value': REPRESENTATIVE_MODEL_ID}
-                                                  ])
+            unobs = cR.getDictListWithFilter('pdbx_unobs_or_zero_occ_residues',
+                                             [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                              {'name': 'auth_seq_id', 'type': 'str', 'alt_name': 'seq_id'},
+                                              {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'}
+                                              ],
+                                             [{'name': 'PDB_model_num', 'type': 'int', 'value': REPRESENTATIVE_MODEL_ID}
+                                              ])
 
-            if len(unobs_res) > 0:
-                chainIds = set(u['chain_id'] for u in unobs_res)
+            if len(unobs) > 0:
+                chainIds = set(u['chain_id'] for u in unobs)
                 for chainId in chainIds:
-                    seqIds = set(int(u['seq_id']) for u in unobs_res if u['chain_id'] == chainId and u['seq_id'] is not None)
+                    seqIds = set(int(u['seq_id']) for u in unobs if u['chain_id'] == chainId and u['seq_id'] is not None)
                     for seqId in seqIds:
                         seqKey = (chainId, seqId)
-                        compId = next(u['comp_id'] for u in unobs_res
+                        compId = next(u['comp_id'] for u in unobs
                                       if u['chain_id'] == chainId and u['seq_id'] is not None and int(u['seq_id']) == seqId)
                         coordUnobsRes[seqKey] = {'comp_id': compId}
 
@@ -223,4 +226,5 @@ def checkCoordinates(verbose=True, log=sys.stdout, cR=None, polySeq=None,
             'alt_auth_atom_id': altAuthAtomId,
             'polymer_sequence': polySeq,
             'coord_atom_site': coordAtomSite,
-            'coord_unobs_res': coordUnobsRes}
+            'coord_unobs_res': coordUnobsRes,
+            'label_to_auth_seq': labelToAuthSeq}

@@ -38,7 +38,7 @@ class CnsMRReader:
     """
 
     def __init__(self, verbose=True, log=sys.stdout, cR=None, polySeqModel=None,
-                 coordAtomSite=None, coordUnobsRes=None,
+                 coordAtomSite=None, coordUnobsRes=None, labelToAuthSeq=None,
                  ccU=None, csStat=None, nefT=None):
         self.__verbose = verbose
         self.__lfh = log
@@ -51,6 +51,7 @@ class CnsMRReader:
         self.__polySeqModel = polySeqModel
         self.__coordAtomSite = coordAtomSite
         self.__coordUnobsRes = coordUnobsRes
+        self.__labelToAuthSeq = labelToAuthSeq
 
         # CCD accessing utility
         self.__ccU = ChemCompUtil(verbose, log) if ccU is None else ccU
@@ -112,7 +113,7 @@ class CnsMRReader:
 
                 walker = ParseTreeWalker()
                 listener = CnsMRParserListener(self.__verbose, self.__lfh, self.__cR, self.__polySeqModel,
-                                               self.__coordAtomSite, self.__coordUnobsRes,
+                                               self.__coordAtomSite, self.__coordUnobsRes, self.__labelToAuthSeq,
                                                self.__ccU, self.__csStat, self.__nefT)
                 walker.walk(listener, tree)
 

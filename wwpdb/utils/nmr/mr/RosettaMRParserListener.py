@@ -79,6 +79,8 @@ class RosettaMRParserListener(ParseTreeListener):
     __polySeq = None
     __coordAtomSite = None
     __coordUnobsRes = None
+    __labelToAuthSeq = None
+    __preferAuthSeq = True
 
     # current restraint subtype
     __cur_subtype = None
@@ -90,8 +92,8 @@ class RosettaMRParserListener(ParseTreeListener):
 
     warningMessage = ''
 
-    def __init__(self, verbose=True, log=sys.stdout, cR=None,
-                 polySeq=None, coordAtomSite=None, coordUnobsRes=None,
+    def __init__(self, verbose=True, log=sys.stdout, cR=None, polySeq=None,
+                 coordAtomSite=None, coordUnobsRes=None, labelToAuthSeq=None,
                  ccU=None, csStat=None, nefT=None):
         self.__verbose = verbose
         self.__lfh = log
@@ -99,7 +101,8 @@ class RosettaMRParserListener(ParseTreeListener):
         self.__hasCoord = cR is not None
 
         if self.__hasCoord:
-            dict = checkCoordinates(verbose, log, cR, polySeq, coordAtomSite, coordUnobsRes)
+            dict = checkCoordinates(verbose, log, cR, polySeq,
+                                    coordAtomSite, coordUnobsRes, labelToAuthSeq)
             self.__modelNumName = dict['model_num_name']
             self.__authAsymId = dict['auth_asym_id']
             self.__authSeqId = dict['auth_seq_id']
@@ -108,6 +111,7 @@ class RosettaMRParserListener(ParseTreeListener):
             self.__polySeq = dict['polymer_sequence']
             self.__coordAtomSite = dict['coord_atom_site']
             self.__coordUnobsRes = dict['coord_unobs_res']
+            self.__labelToAuthSeq = dict['label_to_auth_seq']
 
         self.__hasPolySeq = self.__polySeq is not None and len(self.__polySeq) > 0
 
@@ -319,8 +323,7 @@ class RosettaMRParserListener(ParseTreeListener):
             atomSelection = []
 
             for chainId, compId in chainId1:
-                seqKey = (chainId, seqId1)
-                coordAtomSite = None if not self.__hasCoord or seqKey not in self.__coordAtomSite else self.__coordAtomSite[seqKey]
+                seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId1, self.__hasCoord)
                 _atomId1 = self.__nefT.get_valid_star_atom(compId, atomId1)[0]
                 if len(_atomId1) == 0:
                     self.warningMessage += f"[Invalid atom nomenclature] {self.__getCurrentRestraint()}"\
@@ -329,10 +332,42 @@ class RosettaMRParserListener(ParseTreeListener):
                     atomSelection.append({'chain_id': chainId, 'seq_id': seqId1, 'comp_id': compId, 'atom_id': atomId})
 
                     if self.__hasCoord:
-                        if coordAtomSite is not None and (atomId in coordAtomSite['atom_id']
-                                                          or ('alt_atom_id' in coordAtomSite and atomId in coordAtomSite['alt_atom_id'])):
-                            pass
-                        elif self.__ccU.updateChemCompDict(compId):
+                        found = False
+                        if coordAtomSite is not None:
+                            if atomId in coordAtomSite['atom_id']:
+                                found = True
+                            elif 'alt_atom_id' in coordAtomSite and atomId in coordAtomSite['alt_atom_id']:
+                                found = True
+                                self.__authAtomId = 'auth_atom_id'
+                            elif self.__preferAuthSeq:
+                                _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId1, self.__hasCoord, asis=False)
+                                if atomId in _coordAtomSite['atom_id']:
+                                    found = True
+                                    self.__preferAuthSeq = False
+                                    self.__authSeqId = 'label_seq_id'
+                                    seqKey = _seqKey
+                                elif 'alt_atom_id' in _coordAtomSite and atomId in _coordAtomSite['alt_atom_id']:
+                                    found = True
+                                    self.__preferAuthSeq = False
+                                    self.__authSeqId = 'label_seq_id'
+                                    self.__authAtomId = 'auth_atom_id'
+                                    seqKey = _seqKey
+
+                        elif self.__preferAuthSeq:
+                            _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId1, self.__hasCoord, asis=False)
+                            if atomId in _coordAtomSite['atom_id']:
+                                found = True
+                                self.__preferAuthSeq = False
+                                self.__authSeqId = 'label_seq_id'
+                                seqKey = _seqKey
+                            elif 'alt_atom_id' in _coordAtomSite and atomId in _coordAtomSite['alt_atom_id']:
+                                found = True
+                                self.__preferAuthSeq = False
+                                self.__authSeqId = 'label_seq_id'
+                                self.__authAtomId = 'auth_atom_id'
+                                seqKey = _seqKey
+
+                        if not found and self.__ccU.updateChemCompDict(compId):
                             cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId), None)
                             if cca is not None and seqKey not in self.__coordUnobsRes:
                                 self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
@@ -343,8 +378,7 @@ class RosettaMRParserListener(ParseTreeListener):
             atomSelection = []
 
             for chainId, compId in chainId2:
-                seqKey = (chainId, seqId2)
-                coordAtomSite = None if not self.__hasCoord or seqKey not in self.__coordAtomSite else self.__coordAtomSite[seqKey]
+                seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId2, self.__hasCoord)
                 _atomId2 = self.__nefT.get_valid_star_atom(compId, atomId2)[0]
                 if len(_atomId2) == 0:
                     self.warningMessage += f"[Invalid atom nomenclature] {self.__getCurrentRestraint()}"\
@@ -353,10 +387,42 @@ class RosettaMRParserListener(ParseTreeListener):
                     atomSelection.append({'chain_id': chainId, 'seq_id': seqId2, 'comp_id': compId, 'atom_id': atomId})
 
                     if self.__hasCoord:
-                        if coordAtomSite is not None and (atomId in coordAtomSite['atom_id']
-                                                          or ('auth_atom_id' in coordAtomSite and atomId in coordAtomSite['auth_atom_id'])):
-                            pass
-                        elif self.__ccU.updateChemCompDict(compId):
+                        found = False
+                        if coordAtomSite is not None:
+                            if atomId in coordAtomSite['atom_id']:
+                                found = True
+                            elif 'alt_atom_id' in coordAtomSite and atomId in coordAtomSite['alt_atom_id']:
+                                found = True
+                                self.__authAtomId = 'auth_atom_id'
+                            elif self.__preferAuthSeq:
+                                _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId2, self.__hasCoord, asis=False)
+                                if atomId in _coordAtomSite['atom_id']:
+                                    found = True
+                                    self.__preferAuthSeq = False
+                                    self.__authSeqId = 'label_seq_id'
+                                    seqKey = _seqKey
+                                elif 'alt_atom_id' in _coordAtomSite and atomId in _coordAtomSite['alt_atom_id']:
+                                    found = True
+                                    self.__preferAuthSeq = False
+                                    self.__authSeqId = 'label_seq_id'
+                                    self.__authAtomId = 'auth_atom_id'
+                                    seqKey = _seqKey
+
+                        elif self.__preferAuthSeq:
+                            _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId2, self.__hasCoord, asis=False)
+                            if atomId in _coordAtomSite['atom_id']:
+                                found = True
+                                self.__preferAuthSeq = False
+                                self.__authSeqId = 'label_seq_id'
+                                seqKey = _seqKey
+                            elif 'alt_atom_id' in _coordAtomSite and atomId in _coordAtomSite['alt_atom_id']:
+                                found = True
+                                self.__preferAuthSeq = False
+                                self.__authSeqId = 'label_seq_id'
+                                self.__authAtomId = 'auth_atom_id'
+                                seqKey = _seqKey
+
+                        if not found and self.__ccU.updateChemCompDict(compId):
                             cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId), None)
                             if cca is not None and seqKey not in self.__coordUnobsRes:
                                 self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
@@ -372,6 +438,21 @@ class RosettaMRParserListener(ParseTreeListener):
             for atom_2 in self.atomSelectionSet[1]:
                 print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
                       f"atom_1={atom_1} atom_2={atom_2} {dstFunc}")
+
+    def getCoordAtomSiteOf(self, chainId, seqId, cifCheck=True, asis=True):
+        seqKey = (chainId, seqId)
+        coordAtomSite = None
+        if cifCheck:
+            preferAuthSeq = self.__preferAuthSeq if asis else not self.__preferAuthSeq
+            if preferAuthSeq:
+                if seqKey in self.__coordAtomSite:
+                    coordAtomSite = self.__coordAtomSite[seqKey]
+            else:
+                if seqKey in self.__labelToAuthSeq:
+                    seqKey = self.__labelToAuthSeq[seqKey]
+                    if seqKey in self.__coordAtomSite:
+                        coordAtomSite = self.__coordAtomSite[seqKey]
+        return seqKey, coordAtomSite
 
     # Enter a parse tree produced by RosettaMRParser#angle_restraints.
     def enterAngle_restraints(self, ctx: RosettaMRParser.Angle_restraintsContext):  # pylint: disable=unused-argument
@@ -1350,5 +1431,10 @@ class RosettaMRParserListener(ParseTreeListener):
         """ Return catalog of unobserved residues of the coordinates.
         """
         return self.__coordUnobsRes
+
+    def getLabelToAuthSeq(self):
+        """ Return dictionary of differences between label_seq_id (as key) to auth_seq_id (as value).
+        """
+        return self.__labelToAuthSeq
 
 # del RosettaMRParser

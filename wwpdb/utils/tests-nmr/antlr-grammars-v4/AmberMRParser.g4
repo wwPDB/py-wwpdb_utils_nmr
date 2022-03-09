@@ -62,6 +62,8 @@ restraint_factor:
 		(distance_rst_func_call |
 		angle_rst_func_call |
 		torsion_rst_func_call |
+		plane_point_angle_rst_func_call |
+		plane_plane_angle_rst_func_call |
 		coordinate2_rst_func_call |
 		coordinate3_rst_func_call |
 		coordinate4_rst_func_call)
@@ -158,6 +160,19 @@ angle_rst_func_call:
 	ANGLE_F L_brace_F restraint_func_expr Comma_F? restraint_func_expr Comma_F? restraint_func_expr R_brace_F |
 	ANGLE_F L_brakt_F restraint_func_expr Comma_F? restraint_func_expr Comma_F? restraint_func_expr R_brakt_F;
 
+plane_point_angle_rst_func_call:
+	ANGLE_F L_paren_F restraint_func_expr Comma_F? plane_rst_func_call R_paren_F |
+	ANGLE_F L_brace_F restraint_func_expr Comma_F? plane_rst_func_call R_brace_F |
+	ANGLE_F L_brakt_F restraint_func_expr Comma_F? plane_rst_func_call R_brakt_F |
+	ANGLE_F L_paren_F plane_rst_func_call Comma_F? restraint_func_expr R_paren_F |
+	ANGLE_F L_brace_F plane_rst_func_call Comma_F? restraint_func_expr R_brace_F |
+	ANGLE_F L_brakt_F plane_rst_func_call Comma_F? restraint_func_expr R_brakt_F;
+
+plane_plane_angle_rst_func_call:
+	ANGLE_F L_paren_F plane_rst_func_call Comma_F? plane_rst_func_call R_paren_F |
+	ANGLE_F L_brace_F plane_rst_func_call Comma_F? plane_rst_func_call R_brace_F |
+	ANGLE_F L_brakt_F plane_rst_func_call Comma_F? plane_rst_func_call R_brakt_F;
+
 torsion_rst_func_call:
 	TORSION_F L_paren_F restraint_func_expr Comma_F? restraint_func_expr Comma_F? restraint_func_expr Comma_F? restraint_func_expr R_paren_F |
 	TORSION_F L_brace_F restraint_func_expr Comma_F? restraint_func_expr Comma_F? restraint_func_expr Comma_F? restraint_func_expr R_brace_F |
@@ -193,7 +208,6 @@ restraint_func_expr:
 	L_paren_F Ambmask_F R_paren_F |
 	L_brace_F Ambmask_F R_brace_F |
 	L_brakt_F Ambmask_F R_brakt_F |
-	plane_rst_func_call |
 	com_rst_func_call;
 
 plane_rst_func_call:

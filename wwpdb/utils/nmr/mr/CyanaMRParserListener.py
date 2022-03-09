@@ -255,38 +255,22 @@ class CyanaMRParserListener(ParseTreeListener):
             self.warningMessage += f"[Invalid atom nomenclature] {self.__getCurrentRestraint()}"\
                 f"{seqId2}:{compId2}:{atomId2} is invalid atom nomenclature.\n"
 
-        try:
+        atomSelection = []
 
-            atomSelection = []
+        for chainId in chainId1:
+            seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId1, self.__hasCoord)
 
-            for chainId in chainId1:
-                seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId1, self.__hasCoord)
+            for atomId in _atomId1:
+                atomSelection.append({'chain_id': chainId, 'seq_id': seqId1, 'comp_id': compId1, 'atom_id': atomId})
 
-                for atomId in _atomId1:
-                    atomSelection.append({'chain_id': chainId, 'seq_id': seqId1, 'comp_id': compId1, 'atom_id': atomId})
-
-                    if self.__hasCoord:
-                        found = False
-                        if coordAtomSite is not None:
-                            if atomId in coordAtomSite['atom_id']:
-                                found = True
-                            elif 'alt_atom_id' in coordAtomSite and atomId in coordAtomSite['alt_atom_id']:
-                                found = True
-                                self.__authAtomId = 'auth_atom_id'
-                            elif self.__preferAuthSeq:
-                                _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId1, self.__hasCoord, asis=False)
-                                if atomId in _coordAtomSite['atom_id']:
-                                    found = True
-                                    self.__preferAuthSeq = False
-                                    self.__authSeqId = 'label_seq_id'
-                                    seqKey = _seqKey
-                                elif 'alt_atom_id' in _coordAtomSite and atomId in _coordAtomSite['alt_atom_id']:
-                                    found = True
-                                    self.__preferAuthSeq = False
-                                    self.__authSeqId = 'label_seq_id'
-                                    self.__authAtomId = 'auth_atom_id'
-                                    seqKey = _seqKey
-
+                if self.__hasCoord:
+                    found = False
+                    if coordAtomSite is not None:
+                        if atomId in coordAtomSite['atom_id']:
+                            found = True
+                        elif 'alt_atom_id' in coordAtomSite and atomId in coordAtomSite['alt_atom_id']:
+                            found = True
+                            self.__authAtomId = 'auth_atom_id'
                         elif self.__preferAuthSeq:
                             _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId1, self.__hasCoord, asis=False)
                             if atomId in _coordAtomSite['atom_id']:
@@ -301,44 +285,44 @@ class CyanaMRParserListener(ParseTreeListener):
                                 self.__authAtomId = 'auth_atom_id'
                                 seqKey = _seqKey
 
-                        if not found and self.__ccU.updateChemCompDict(compId1):
-                            cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId), None)
-                            if cca is not None and seqKey not in self.__coordUnobsRes:
-                                self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                    f"{chainId}:{seqId1}:{compId1}:{atomId} is not present in the coordinate.\n"
+                    elif self.__preferAuthSeq:
+                        _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId1, self.__hasCoord, asis=False)
+                        if atomId in _coordAtomSite['atom_id']:
+                            found = True
+                            self.__preferAuthSeq = False
+                            self.__authSeqId = 'label_seq_id'
+                            seqKey = _seqKey
+                        elif 'alt_atom_id' in _coordAtomSite and atomId in _coordAtomSite['alt_atom_id']:
+                            found = True
+                            self.__preferAuthSeq = False
+                            self.__authSeqId = 'label_seq_id'
+                            self.__authAtomId = 'auth_atom_id'
+                            seqKey = _seqKey
 
-            self.atomSelectionSet.append(atomSelection)
+                    if not found and self.__ccU.updateChemCompDict(compId1):
+                        cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId), None)
+                        if cca is not None and seqKey not in self.__coordUnobsRes:
+                            self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                                f"{chainId}:{seqId1}:{compId1}:{atomId} is not present in the coordinate.\n"
 
-            atomSelection = []
+        self.atomSelectionSet.append(atomSelection)
 
-            for chainId in chainId2:
-                seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId2, self.__hasCoord)
+        atomSelection = []
 
-                for atomId in _atomId2:
-                    atomSelection.append({'chain_id': chainId, 'seq_id': seqId2, 'comp_id': compId2, 'atom_id': atomId})
+        for chainId in chainId2:
+            seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId2, self.__hasCoord)
 
-                    if self.__hasCoord:
-                        found = False
-                        if coordAtomSite is not None:
-                            if atomId in coordAtomSite['atom_id']:
-                                found = True
-                            elif 'alt_atom_id' in coordAtomSite and atomId in coordAtomSite['alt_atom_id']:
-                                found = True
-                                self.__authAtomId = 'auth_atom_id'
-                            elif self.__preferAuthSeq:
-                                _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId2, self.__hasCoord, asis=False)
-                                if atomId in _coordAtomSite['atom_id']:
-                                    found = True
-                                    self.__preferAuthSeq = False
-                                    self.__authSeqId = 'label_seq_id'
-                                    seqKey = _seqKey
-                                elif 'alt_atom_id' in _coordAtomSite and atomId in _coordAtomSite['alt_atom_id']:
-                                    found = True
-                                    self.__preferAuthSeq = False
-                                    self.__authSeqId = 'label_seq_id'
-                                    self.__authAtomId = 'auth_atom_id'
-                                    seqKey = _seqKey
+            for atomId in _atomId2:
+                atomSelection.append({'chain_id': chainId, 'seq_id': seqId2, 'comp_id': compId2, 'atom_id': atomId})
 
+                if self.__hasCoord:
+                    found = False
+                    if coordAtomSite is not None:
+                        if atomId in coordAtomSite['atom_id']:
+                            found = True
+                        elif 'alt_atom_id' in coordAtomSite and atomId in coordAtomSite['alt_atom_id']:
+                            found = True
+                            self.__authAtomId = 'auth_atom_id'
                         elif self.__preferAuthSeq:
                             _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId2, self.__hasCoord, asis=False)
                             if atomId in _coordAtomSite['atom_id']:
@@ -353,17 +337,27 @@ class CyanaMRParserListener(ParseTreeListener):
                                 self.__authAtomId = 'auth_atom_id'
                                 seqKey = _seqKey
 
-                        if not found and self.__ccU.updateChemCompDict(compId2):
-                            cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId), None)
-                            if cca is not None and seqKey not in self.__coordUnobsRes:
-                                self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                    f"{chainId}:{seqId2}:{compId2}:{atomId} is not present in the coordinate.\n"
+                    elif self.__preferAuthSeq:
+                        _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId2, self.__hasCoord, asis=False)
+                        if atomId in _coordAtomSite['atom_id']:
+                            found = True
+                            self.__preferAuthSeq = False
+                            self.__authSeqId = 'label_seq_id'
+                            seqKey = _seqKey
+                        elif 'alt_atom_id' in _coordAtomSite and atomId in _coordAtomSite['alt_atom_id']:
+                            found = True
+                            self.__preferAuthSeq = False
+                            self.__authSeqId = 'label_seq_id'
+                            self.__authAtomId = 'auth_atom_id'
+                            seqKey = _seqKey
 
-            self.atomSelectionSet.append(atomSelection)
+                    if not found and self.__ccU.updateChemCompDict(compId2):
+                        cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId), None)
+                        if cca is not None and seqKey not in self.__coordUnobsRes:
+                            self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                                f"{chainId}:{seqId2}:{compId2}:{atomId} is not present in the coordinate.\n"
 
-        except Exception as e:
-            if self.__verbose:
-                self.__lfh.write(f"+CyanaMRParserListener.exitDistance_restraint() ++ Error  - {str(e)}\n")
+        self.atomSelectionSet.append(atomSelection)
 
         for atom_1 in self.atomSelectionSet[0]:
             for atom_2 in self.atomSelectionSet[1]:

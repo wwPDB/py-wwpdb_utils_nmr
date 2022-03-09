@@ -138,6 +138,23 @@ class AmberMRParserListener(ParseTreeListener):
     # current restraint subtype
     __cur_subtype = None
 
+    depth = 0
+
+    hasFuncExprs = False
+    funcExprs = None
+
+    inGenDist = False
+    inGenDist_funcExprs = None
+    inGenDist_weight = None
+
+    inPlane = False
+    inPlane_columnSel = -1
+    inPlane_funcExprs = None
+    inPlane_funcExprs2 = None
+
+    inCom = False
+    inCom_funcExprs = None
+
     # last Sander comment
     lastComment = None
 
@@ -157,7 +174,9 @@ class AmberMRParserListener(ParseTreeListener):
     lowerLimit = None
     upperLimit = None
     upperLinearLimit = None
-    scale = [1.0, 1.0, 1.0, 1.0]
+    rstwt = [0.0, 0.0, 0.0, 0.0]
+
+    stackRstFuncExpr = None  # stack of restraint function expression
 
     # collection of atom selection
     atomSelectionSet = None
@@ -311,19 +330,12 @@ class AmberMRParserListener(ParseTreeListener):
         self.setIgrCol = None
         self.igr = None
 
+        self.hasFuncExprs = False
+
         self.atomSelectionSet = []
 
     # Exit a parse tree produced by AmberMRParser#restraint_statement.
     def exitRestraint_statement(self, ctx: AmberMRParser.Restraint_statementContext):  # pylint: disable=unused-argument
-        if self.setIatCol is not None and len(self.setIatCol) > 0:
-            setIatCol = sorted(self.setIatCol)
-            self.numIatCol = max(setIatCol)
-            if list(range(1, self.numIatCol + 1)) != setIatCol:
-                misIatCol = ','.join([str(col) for col in set(range(1, self.numIatCol + 1)) - set(setIatCol)])
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Couldn't specify NMR restraint type because of missing 'iat({misIatCol})' clause(s).\n"
-                return
-
         self.detectRestraintType(self.distLike)
 
         if self.__cur_subtype is None:
@@ -331,194 +343,142 @@ class AmberMRParserListener(ParseTreeListener):
                 "Couldn't specify NMR restraint type because the number of columns in the 'iat' clause did not match.\n"
             return
 
-        # cross-check between IAT and IGRn variables
-        for col in range(0, self.numIatCol):
-            iat = self.iat[col]
+        # conventional restraint
+        if not self.hasFuncExprs:
 
-            varNum = col + 1
-            varName = 'igr' + str(varNum)
-            if iat > 0 and self.igr is not None and varNum in self.igr:
-                if len(self.igr[varNum]) > 0:
-                    nonpCols = [col for col, val in enumerate(self.igr[varNum]) if val <= 0]
-                    maxCol = MAX_COL_IGR if len(nonpCols) == 0 else min(nonpCols)
-                    valArray = ','.join([str(val) for col, val in enumerate(self.igr[varNum]) if val > 0 and col < maxCol])
-                    if len(valArray) > 0:
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            f"'{varName}={valArray}' has no effect because 'iat({varNum})={iat}'.\n"
-                del self.igr[varNum]
-
-            elif iat < 0:
-                if varNum not in self.igr or len(self.igr[varNum]) == 0:
+            if self.setIatCol is not None and len(self.setIatCol) > 0:
+                setIatCol = sorted(self.setIatCol)
+                self.numIatCol = max(setIatCol)
+                if list(range(1, self.numIatCol + 1)) != setIatCol:
+                    misIatCol = ','.join([str(col) for col in set(range(1, self.numIatCol + 1)) - set(setIatCol)])
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"'{varName}' is missing in spite of 'iat({varNum})={iat}'.\n"
-                else:
-                    nonpCols = [col for col, val in enumerate(self.igr[varNum]) if val <= 0]
-                    maxCol = MAX_COL_IGR if len(nonpCols) == 0 else min(nonpCols)
-                    valArray = ','.join([str(val) for col, val in enumerate(self.igr[varNum]) if val > 0 and col < maxCol])
-                    if len(valArray) == 0:
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            f"'{varName}' includes non-positive integers.\n"
-                        del self.igr[varNum]
-                    else:
-                        nonp = [val for col, val in enumerate(self.igr[varNum]) if val > 0 and col < maxCol]
-                        if len(nonp) != len(set(nonp)):
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                f"'{varName}={valArray}' includes redundant integers.\n"
-                        elif len(nonp) < 2:
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                f"Surprisingly '{varName}={valArray}' is consist of a single integer.\n"
-                        self.igr[varNum] = list(set(nonp))  # trimming non-positive/redundant integer
-
-        self.iat = self.iat[0:self.numIatCol]  # trimming default zero integer
-
-        # convert AMBER atom numbers to corresponding coordinate atoms based on AMBER parameter/topology file
-        if self.__atomNumberDict is not None:
-
-            for col, iat in enumerate(self.iat):
-                atomSelection = []
-
-                if iat > 0:
-                    if iat in self.__atomNumberDict:
-                        atomSelection.append(self.__atomNumberDict[iat])
-                    else:
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            f"'iat({col+1})={iat}' is not defined in the AMBER parameter/topology file.\n"
-                elif iat < 0:
-                    varNum = col + 1
-                    if varNum in self.igr:
-                        for igr in self.igr[varNum]:
-                            if igr in self.__atomNumberDict:
-                                atomSelection.append(self.__atomNumberDict[igr])
-                            else:
-                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                    f"'igr({varNum})={igr}' is not defined in the AMBER parameter/topology file.\n"
-
-                self.atomSelectionSet.append(atomSelection)
-
-            if self.__cur_subtype == 'dist' and len(self.iat) == COL_DIST:
-                if self.lastComment is not None:
-                    print('# ' + ' '.join(self.lastComment))
-
-                validRange = True
-                dstFunc = {'weight': self.scale[0]}
-
-                if self.lowerLimit is not None:
-                    if DIST_ERROR_MIN < self.lowerLimit < DIST_ERROR_MAX:
-                        dstFunc['lower_limit'] = f"{self.lowerLimit:.3}"
-                    else:
-                        validRange = False
-                        self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                            f"The lower limit value 'r2={self.lowerLimit}' must be within range {DIST_RESTRAINT_ERROR}.\n"
-
-                if self.upperLimit is not None:
-                    if DIST_ERROR_MIN < self.upperLimit < DIST_ERROR_MAX:
-                        dstFunc['upper_limit'] = f"{self.upperLimit:.3}"
-                    else:
-                        validRange = False
-                        self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                            f"The upper limit value 'r3={self.upperLimit}' must be within range {DIST_RESTRAINT_ERROR}.\n"
-
-                if self.lowerLinearLimit is not None:
-                    if DIST_ERROR_MIN < self.lowerLinearLimit < DIST_ERROR_MAX:
-                        dstFunc['lower_linear_limit'] = f"{self.lowerLinearLimit:.3}"
-                    else:
-                        validRange = False
-                        self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                            f"The lower linear limit value 'r1={self.lowerLinearLimit}' must be within range {DIST_RESTRAINT_ERROR}.\n"
-
-                if self.upperLinearLimit is not None:
-                    if DIST_ERROR_MIN < self.upperLinearLimit < DIST_ERROR_MAX:
-                        dstFunc['upper_linear_limit'] = f"{self.upperLinearLimit:.3}"
-                    else:
-                        validRange = False
-                        self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                            f"The upper linear limit value 'r4={self.upperLinearLimit}' must be within range {DIST_RESTRAINT_ERROR}.\n"
-
-                if not validRange:
+                        f"Couldn't specify NMR restraint type because of missing 'iat({misIatCol})' clause(s).\n"
                     return
 
-                if self.lowerLimit is not None:
-                    if DIST_RANGE_MIN <= self.lowerLimit <= DIST_RANGE_MAX:
-                        pass
+            # cross-check between IAT and IGRn variables
+            for col in range(0, self.numIatCol):
+                iat = self.iat[col]
+
+                varNum = col + 1
+                varName = 'igr' + str(varNum)
+
+                if iat > 0 and self.igr is not None and varNum in self.igr:
+                    if len(self.igr[varNum]) > 0:
+                        nonpCols = [col for col, val in enumerate(self.igr[varNum]) if val <= 0]
+                        maxCol = MAX_COL_IGR if len(nonpCols) == 0 else min(nonpCols)
+                        valArray = ','.join([str(val) for col, val in enumerate(self.igr[varNum]) if val > 0 and col < maxCol])
+                        if len(valArray) > 0:
+                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                f"'{varName}={valArray}' has no effect because 'iat({varNum})={iat}'.\n"
+                    del self.igr[varNum]
+
+                elif iat < 0:
+                    if varNum not in self.igr or len(self.igr[varNum]) == 0:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            f"'{varName}' is missing in spite of 'iat({varNum})={iat}'.\n"
                     else:
-                        self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                            f"The lower limit value 'r2={self.lowerLimit}' should be within range {DIST_RESTRAINT_RANGE}.\n"
+                        nonpCols = [col for col, val in enumerate(self.igr[varNum]) if val <= 0]
+                        maxCol = MAX_COL_IGR if len(nonpCols) == 0 else min(nonpCols)
+                        valArray = ','.join([str(val) for col, val in enumerate(self.igr[varNum]) if val > 0 and col < maxCol])
+                        if len(valArray) == 0:
+                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                f"'{varName}' includes non-positive integers.\n"
+                            del self.igr[varNum]
+                        else:
+                            nonp = [val for col, val in enumerate(self.igr[varNum]) if val > 0 and col < maxCol]
+                            if len(nonp) != len(set(nonp)):
+                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                    f"'{varName}={valArray}' includes redundant integers.\n"
+                            elif len(nonp) < 2:
+                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                    f"Surprisingly '{varName}={valArray}' is consist of a single integer.\n"
+                            self.igr[varNum] = list(set(nonp))  # trimming non-positive/redundant integer
 
-                if self.upperLimit is not None:
-                    if DIST_RANGE_MIN <= self.upperLimit <= DIST_RANGE_MAX:
-                        pass
-                    else:
-                        self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                            f"The upper limit value 'r3={self.upperLimit}' should be within range {DIST_RESTRAINT_RANGE}.\n"
+            self.iat = self.iat[0:self.numIatCol]  # trimming default zero integer
 
-                if self.lowerLinearLimit is not None:
-                    if DIST_RANGE_MIN <= self.lowerLinearLimit <= DIST_RANGE_MAX:
-                        pass
-                    else:
-                        self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                            f"The lower linear limit value 'r1={self.lowerLinearLimit}' should be within range {DIST_RESTRAINT_RANGE}.\n"
-
-                if self.upperLinearLimit is not None:
-                    if DIST_RANGE_MIN <= self.upperLinearLimit <= DIST_RANGE_MAX:
-                        pass
-                    else:
-                        self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                            f"The upper linear limit value 'r4={self.upperLinearLimit}' should be within range {DIST_RESTRAINT_RANGE}.\n"
-
-                for atom_1 in self.atomSelectionSet[0]:
-                    for atom_2 in self.atomSelectionSet[1]:
-                        print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
-                              f"atom_1={atom_1} atom_2={atom_2} {dstFunc}")
-
-        # try to update AMBER atom number dictionary based on Sander comments
-        else:
-            if self.__cur_subtype == 'dist' and len(self.iat) == COL_DIST:
-                if self.lastComment is None:
-                    self.warningMessage += f"[Fatal error] {self.__getCurrentRestraint()}"\
-                        "Failed to recognize AMBER atom numbers "\
-                        "because neither AMBER parameter/topology file nor Sander comment are available."
+            # convert AMBER atom numbers to corresponding coordinate atoms based on AMBER parameter/topology file
+            if self.__atomNumberDict is not None:
 
                 for col, iat in enumerate(self.iat):
                     atomSelection = []
 
-                    offset = col * 3
-
                     if iat > 0:
-                        if iat in self.__sanderAtomNumberDict:
-                            atomSelection.append(self.__sanderAtomNumberDict[iat])
-                        else:  # i.g. 90 ARG HG2 92 PHE QE 4.56
-                            try:
-                                factor = {'auth_seq_id': int(self.lastComment[offset + 0]),
-                                          'auth_comp_id': self.lastComment[offset + 1],
-                                          'auth_atom_id': self.lastComment[offset + 2],
-                                          'iat': iat
-                                          }
-                                if not self.updateSanderAtomNumberDict(factor):
-                                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                        f"Couldn't specify 'iat({varNum})={iat}' in the coordinates "\
-                                        f"based on Sander comment {' '.join(self.lastComment[offset:offset+3])!r}.\n"
-                            except ValueError:
-                                self.warningMessage += f"[Fatal error] {self.__getCurrentRestraint()}"\
-                                    f"Failed to recognize Sander comment {' '.join(self.lastComment[offset:offset+3])!r} as a distance restraint."
-                            except IndexError:
-                                self.warningMessage += f"[Fatal error] {self.__getCurrentRestraint()}"\
-                                    f"Failed to recognize Sander comment {' '.join(self.lastComment[offset:offset+3])!r} as a distance restraint."
+                        if iat in self.__atomNumberDict:
+                            atomSelection.append(self.__atomNumberDict[iat])
+                        else:
+                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                f"'iat({col+1})={iat}' is not defined in the AMBER parameter/topology file.\n"
                     elif iat < 0:
                         varNum = col + 1
                         if varNum in self.igr:
                             for igr in self.igr[varNum]:
-                                if igr in self.__sanderAtomNumberDict:
-                                    atomSelection.append(self.__sanderAtomNumberDict[igr])
+                                if igr in self.__atomNumberDict:
+                                    atomSelection.append(self.__atomNumberDict[igr])
                                 else:
+                                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                        f"'igr({varNum})={igr}' is not defined in the AMBER parameter/topology file.\n"
+
+                    self.atomSelectionSet.append(atomSelection)
+
+                if self.__cur_subtype == 'dist' and len(self.iat) == COL_DIST:
+                    if self.lastComment is not None:
+                        print('# ' + ' '.join(self.lastComment))
+
+                    dstFunc = self.valiateDistanceRange()
+
+                    if dstFunc is None:
+                        return
+
+                    for atom_1 in self.atomSelectionSet[0]:
+                        for atom_2 in self.atomSelectionSet[1]:
+                            print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
+                                  f"atom_1={atom_1} atom_2={atom_2} {dstFunc}")
+
+            # try to update AMBER atom number dictionary based on Sander comments
+            else:
+                if self.__cur_subtype == 'dist' and len(self.iat) == COL_DIST:
+                    if self.lastComment is None:
+                        self.warningMessage += f"[Fatal error] {self.__getCurrentRestraint()}"\
+                            "Failed to recognize AMBER atom numbers "\
+                            "because neither AMBER parameter/topology file nor Sander comment are available."
+
+                    for col, iat in enumerate(self.iat):
+                        offset = col * 3
+
+                        if iat > 0:
+                            if iat in self.__sanderAtomNumberDict:
+                                pass
+                            else:  # i.g. 90 ARG HG2 92 PHE QE 4.56
+                                try:
+                                    factor = {'auth_seq_id': int(self.lastComment[offset + 0]),
+                                              'auth_comp_id': self.lastComment[offset + 1],
+                                              'auth_atom_id': self.lastComment[offset + 2],
+                                              'iat': iat
+                                              }
+                                    if not self.updateSanderAtomNumberDict(factor):
+                                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                            f"Couldn't specify 'iat({varNum})={iat}' in the coordinates "\
+                                            f"based on Sander comment {' '.join(self.lastComment[offset:offset+3])!r}.\n"
+                                except ValueError:
+                                    self.warningMessage += f"[Fatal error] {self.__getCurrentRestraint()}"\
+                                        f"Failed to recognize Sander comment {' '.join(self.lastComment[offset:offset+3])!r} as a distance restraint."
+                                except IndexError:
+                                    self.warningMessage += f"[Fatal error] {self.__getCurrentRestraint()}"\
+                                        f"Failed to recognize Sander comment {' '.join(self.lastComment[offset:offset+3])!r} as a distance restraint."
+                        elif iat < 0:
+                            varNum = col + 1
+                            if varNum in self.igr:
+                                igr = self.igr[varNum]
+                                if igr[0] not in self.__sanderAtomNumberDict:
                                     try:
                                         factor = {'auth_seq_id': int(self.lastComment[offset + 0]),
                                                   'auth_comp_id': self.lastComment[offset + 1],
                                                   'auth_atom_id': self.lastComment[offset + 2],
-                                                  'igr': self.igr[varNum]
+                                                  'igr': igr
                                                   }
                                         if not self.updateSanderAtomNumberDict(factor):
                                             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                                f"Couldn't specify 'iat({varNum})={iat}' in the coordinates "\
+                                                f"Couldn't specify 'igr({varNum})={igr}' in the coordinates "\
                                                 f"based on Sander comment {' '.join(self.lastComment[offset:offset+3])!r}.\n"
                                     except ValueError:
                                         self.warningMessage += f"[Fatal error] {self.__getCurrentRestraint()}"\
@@ -527,9 +487,332 @@ class AmberMRParserListener(ParseTreeListener):
                                         self.warningMessage += f"[Fatal error] {self.__getCurrentRestraint()}"\
                                             f"Failed to recognize Sander comment {' '.join(self.lastComment[offset:offset+3])!r} as a distance restraint."
 
-                    self.atomSelectionSet.append(atomSelection)
+        # Amber 10 (ambmask)
+        else:
+            if self.__cur_subtype == 'dist':
+
+                # distance
+                if not self.inGenDist:
+
+                    # convert AMBER atom numbers to corresponding coordinate atoms based on AMBER parameter/topology file
+                    if self.__atomNumberDict is not None:
+
+                        for col, funcExp in enumerate(self.funcExprs):
+
+                            atomSelection = []
+
+                            if isinstance(funcExp, dict):
+                                if 'iat' in funcExp:
+                                    iat = funcExp['iat']
+                                    if iat in self.__atomNumberDict:
+                                        atomSelection.append(self.__atomNumberDict[iat])
+                                    else:
+                                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                            f"'iat({col+1})={iat}' is not defined in the AMBER parameter/topology file.\n"
+                                else:  # ambmask format
+                                    factor = self.convertAmbMask(funcExp['seq_id'], funcExp['atom_id'])
+                                    if factor is not None:
+                                        atomSelection.append(factor)
+                            else:  # list
+                                for _funcExp in funcExp:
+                                    if 'iat' in _funcExp:
+                                        igr = _funcExp['iat']
+                                        if igr in self.__atomNumberDict:
+                                            atomSelection.append(self.__atomNumberDict[igr])
+                                        else:
+                                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                                f"'igr({col+1})={igr}' is not defined in the AMBER parameter/topology file.\n"
+                                    else:  # ambmask format
+                                        factor = self.convertAmbMask(funcExp['seq_id'], funcExp['atom_id'])
+                                        if factor is not None:
+                                            atomSelection.append(factor)
+
+                            self.atomSelectionSet.append(atomSelection)
+
+                        if self.lastComment is not None:
+                            print('# ' + ' '.join(self.lastComment))
+
+                        dstFunc = self.valiateDistanceRange()
+
+                        if dstFunc is None:
+                            return
+
+                        for atom_1 in self.atomSelectionSet[0]:
+                            for atom_2 in self.atomSelectionSet[1]:
+                                print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
+                                      f"atom_1={atom_1} atom_2={atom_2} {dstFunc}")
+
+                    # try to update AMBER atom number dictionary based on Sander comments
+                    else:
+                        if self.lastComment is None:
+                            self.warningMessage += f"[Fatal error] {self.__getCurrentRestraint()}"\
+                                "Failed to recognize AMBER atom numbers "\
+                                "because neither AMBER parameter/topology file nor Sander comment are available."
+
+                        for col, funcExp in enumerate(self.funcExprs):
+                            offset = col * 3
+
+                            if isinstance(funcExp, dict):
+                                if 'iat' in funcExp:
+                                    iat = funcExp['iat']
+                                    if iat in self.__sanderAtomNumberDict:
+                                        pass
+                                    else:
+                                        try:
+                                            factor = {'auth_seq_id': int(self.lastComment[offset + 0]),
+                                                      'auth_comp_id': self.lastComment[offset + 1],
+                                                      'auth_atom_id': self.lastComment[offset + 2],
+                                                      'iat': iat
+                                                      }
+                                            if not self.updateSanderAtomNumberDict(factor):
+                                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                                    f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "\
+                                                    f"based on Sander comment {' '.join(self.lastComment[offset:offset+3])!r}.\n"
+                                        except ValueError:
+                                            self.warningMessage += f"[Fatal error] {self.__getCurrentRestraint()}"\
+                                                f"Failed to recognize Sander comment {' '.join(self.lastComment[offset:offset+3])!r} as a distance restraint."
+                                        except IndexError:
+                                            self.warningMessage += f"[Fatal error] {self.__getCurrentRestraint()}"\
+                                                f"Failed to recognize Sander comment {' '.join(self.lastComment[offset:offset+3])!r} as a distance restraint."
+
+                            else:  # list
+                                igr = [_funcExp['iat'] for _funcExp in funcExp if 'iat' in _funcExp]
+                                mask = [_funcExp['atom_id'] for _funcExp in funcExp if 'atom_id' in _funcExp]
+                                if len(igr) > 0 and len(mask) == 0:
+                                    if igr[0] not in self.__sanderAtomNumberDict:
+                                        try:
+                                            factor = {'auth_seq_id': int(self.lastComment[offset + 0]),
+                                                      'auth_comp_id': self.lastComment[offset + 1],
+                                                      'auth_atom_id': self.lastComment[offset + 2],
+                                                      'igr': igr
+                                                      }
+                                            if not self.updateSanderAtomNumberDict(factor):
+                                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                                    f"Couldn't specify 'igr({col+1})={igr}' in the coordinates "\
+                                                    f"based on Sander comment {' '.join(self.lastComment[offset:offset+3])!r}.\n"
+                                        except ValueError:
+                                            self.warningMessage += f"[Fatal error] {self.__getCurrentRestraint()}"\
+                                                f"Failed to recognize Sander comment {' '.join(self.lastComment[offset:offset+3])!r} as a distance restraint."
+                                        except IndexError:
+                                            self.warningMessage += f"[Fatal error] {self.__getCurrentRestraint()}"\
+                                                f"Failed to recognize Sander comment {' '.join(self.lastComment[offset:offset+3])!r} as a distance restraint."
+
+                # generalized distance 2/3/4
+                else:
+                    for funcExp in self.inGenDist_funcExprs:
+                        pass
+
+            elif self.__cur_subtype == 'ang':
+                for funcExp in self.funcExprs:
+                    pass
+
+            elif self.__cur_subtype == 'dihed':
+                for funcExp in self.funcExprs:
+                    pass
+
+            else:
+                for funcExp in self.inPlane_funcExprs:
+                    pass
+
+                if self.inPlane_columnSel == 0:  # plane-point angle
+                    for funcExp in self.funcExprs:
+                        pass
+
+                else:  # plane-plane angle
+                    for funcExp in self.inPlane_funcExprs2:
+                        pass
 
         self.lastComment = None
+
+    def valiateDistanceRange(self):
+        """ Validate distance value range.
+        """
+
+        validRange = True
+        dstFunc = {'weight': 1.0}
+
+        if self.lowerLimit is not None:
+            if DIST_ERROR_MIN < self.lowerLimit < DIST_ERROR_MAX:
+                dstFunc['lower_limit'] = f"{self.lowerLimit:.3}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The lower limit value 'r2={self.lowerLimit}' must be within range {DIST_RESTRAINT_ERROR}.\n"
+
+        if self.upperLimit is not None:
+            if DIST_ERROR_MIN < self.upperLimit < DIST_ERROR_MAX:
+                dstFunc['upper_limit'] = f"{self.upperLimit:.3}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The upper limit value 'r3={self.upperLimit}' must be within range {DIST_RESTRAINT_ERROR}.\n"
+
+        if self.lowerLinearLimit is not None:
+            if DIST_ERROR_MIN < self.lowerLinearLimit < DIST_ERROR_MAX:
+                dstFunc['lower_linear_limit'] = f"{self.lowerLinearLimit:.3}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The lower linear limit value 'r1={self.lowerLinearLimit}' must be within range {DIST_RESTRAINT_ERROR}.\n"
+
+        if self.upperLinearLimit is not None:
+            if DIST_ERROR_MIN < self.upperLinearLimit < DIST_ERROR_MAX:
+                dstFunc['upper_linear_limit'] = f"{self.upperLinearLimit:.3}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The upper linear limit value 'r4={self.upperLinearLimit}' must be within range {DIST_RESTRAINT_ERROR}.\n"
+
+        if not validRange:
+            self.lastComment = None
+            return None
+
+        if self.lowerLimit is not None:
+            if DIST_RANGE_MIN <= self.lowerLimit <= DIST_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                    f"The lower limit value 'r2={self.lowerLimit}' should be within range {DIST_RESTRAINT_RANGE}.\n"
+
+        if self.upperLimit is not None:
+            if DIST_RANGE_MIN <= self.upperLimit <= DIST_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                    f"The upper limit value 'r3={self.upperLimit}' should be within range {DIST_RESTRAINT_RANGE}.\n"
+
+        if self.lowerLinearLimit is not None:
+            if DIST_RANGE_MIN <= self.lowerLinearLimit <= DIST_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                    f"The lower linear limit value 'r1={self.lowerLinearLimit}' should be within range {DIST_RESTRAINT_RANGE}.\n"
+
+        if self.upperLinearLimit is not None:
+            if DIST_RANGE_MIN <= self.upperLinearLimit <= DIST_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                    f"The upper linear limit value 'r4={self.upperLinearLimit}' should be within range {DIST_RESTRAINT_RANGE}.\n"
+
+        return dstFunc
+
+    def convertAmbMask(self, seqId, atomId):
+        """ Return similar component of atom number dictionary from ambmask information.
+        """
+        if not self.__hasPolySeq:
+            return None
+
+        if not self.__hasCoord:
+            cifCheck = False
+
+        authAtomId = atomId
+
+        factor = {}
+
+        found = False
+
+        for ps in self.__polySeq:
+            if seqId in ps['seq_id']:
+                chainId = ps['chain_id']
+                compId = ps['comp_id'][ps['seq_id'].index(seqId)]
+
+                seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck)
+
+                atomId = atomId.upper()
+                if atomId.endswith("O'1"):
+                    atomId = atomId[0:len(atomId) - 3] + "O1'"
+                elif atomId.endswith("O'2"):
+                    atomId = atomId[0:len(atomId) - 3] + "O2'"
+                elif atomId.endswith("O'3"):
+                    atomId = atomId[0:len(atomId) - 3] + "O3'"
+                elif atomId.endswith("O'4"):
+                    atomId = atomId[0:len(atomId) - 3] + "O4'"
+                elif atomId.endswith("O'5"):
+                    atomId = atomId[0:len(atomId) - 3] + "O5'"
+                elif atomId.endswith("O'6"):
+                    atomId = atomId[0:len(atomId) - 3] + "O6'"
+                elif atomId.endswith("'1"):
+                    atomId = atomId.rstrip('1')
+                elif atomId.endswith("'2"):
+                    atomId = atomId.rstrip('2') + "'"
+                elif atomId == 'O1P':
+                    atomId = 'OP1'
+                elif atomId == 'O2P':
+                    atomId = 'OP2'
+                elif atomId == 'O3P':
+                    atomId = 'OP3'
+                elif atomId == 'H3T':
+                    atomId = "HO3'"
+                elif atomId == 'H5T':
+                    atomId = 'HOP2'
+
+                atomIds = self.__nefT.get_valid_star_atom(compId, atomId)[0]
+
+                for _atomId in atomIds:
+                    ccdCheck = not cifCheck
+
+                    if cifCheck:
+                        if coordAtomSite is not None:
+                            if _atomId in coordAtomSite['atom_id']:
+                                found = True
+                            elif 'alt_atom_id' in coordAtomSite and _atomId in coordAtomSite['alt_atom_id']:
+                                found = True
+                                self.__authAtomId = 'auth_atom_id'
+                            elif self.__preferAuthSeq:
+                                _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck, asis=False)
+                                if _atomId in _coordAtomSite['atom_id']:
+                                    found = True
+                                    self.__preferAuthSeq = False
+                                    self.__authSeqId = 'label_seq_id'
+                                    seqKey = _seqKey
+                                elif 'alt_atom_id' in _coordAtomSite and _atomId in _coordAtomSite['alt_atom_id']:
+                                    found = True
+                                    self.__preferAuthSeq = False
+                                    self.__authSeqId = 'label_seq_id'
+                                    self.__authAtomId = 'auth_atom_id'
+                                    seqKey = _seqKey
+
+                        elif self.__preferAuthSeq:
+                            _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck, asis=False)
+                            if _atomId in _coordAtomSite['atom_id']:
+                                found = True
+                                self.__preferAuthSeq = False
+                                self.__authSeqId = 'label_seq_id'
+                                seqKey = _seqKey
+                            elif 'alt_atom_id' in _coordAtomSite and _atomId in _coordAtomSite['alt_atom_id']:
+                                found = True
+                                self.__preferAuthSeq = False
+                                self.__authSeqId = 'label_seq_id'
+                                self.__authAtomId = 'auth_atom_id'
+                                seqKey = _seqKey
+
+                        if found:
+                            factor['chain_id'] = chainId
+                            factor['seq_id'] = seqId
+                            factor['comp_id'] = compId
+                            factor['atom_id'] = _atomId
+                            factor['auth_seq_id'] = seqId
+                            factor['auth_atom_id'] = authAtomId
+                        else:
+                            ccdCheck = True
+
+                    if ccdCheck:
+                        if self.__ccU.updateChemCompDict(compId):
+                            cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId), None)
+                            if cca is not None:
+                                found = True
+                                factor['chain_id'] = chainId
+                                factor['seq_id'] = seqId
+                                factor['comp_id'] = compId
+                                factor['atom_id'] = _atomId
+                                factor['auth_seq_id'] = seqId
+                                factor['auth_atom_id'] = authAtomId
+                                if cifCheck and seqKey not in self.__coordUnobsRes:
+                                    self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                                        f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinate.\n"
+
+        return None if not found else factor
 
     def updateSanderAtomNumberDict(self, factor, cifCheck=True):
         """ Try to update Sander atom number dictionary.
@@ -584,34 +867,18 @@ class AmberMRParserListener(ParseTreeListener):
 
                     atomIds = self.__nefT.get_valid_star_atom(compId, authAtomId)[0]
 
-                    try:
+                    if 'iat' in factor:
+                        iat = factor['iat']
+                        for _atomId in atomIds:
+                            ccdCheck = not cifCheck
 
-                        if 'iat' in factor:
-                            iat = factor['iat']
-                            for _atomId in atomIds:
-                                ccdCheck = not cifCheck
-
-                                if cifCheck:
-                                    if coordAtomSite is not None:
-                                        if _atomId in coordAtomSite['atom_id']:
-                                            found = True
-                                        elif 'alt_atom_id' in coordAtomSite and _atomId in coordAtomSite['alt_atom_id']:
-                                            found = True
-                                            self.__authAtomId = 'auth_atom_id'
-                                        elif self.__preferAuthSeq:
-                                            _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck, asis=False)
-                                            if _atomId in _coordAtomSite['atom_id']:
-                                                found = True
-                                                self.__preferAuthSeq = False
-                                                self.__authSeqId = 'label_seq_id'
-                                                seqKey = _seqKey
-                                            elif 'alt_atom_id' in _coordAtomSite and _atomId in _coordAtomSite['alt_atom_id']:
-                                                found = True
-                                                self.__preferAuthSeq = False
-                                                self.__authSeqId = 'label_seq_id'
-                                                self.__authAtomId = 'auth_atom_id'
-                                                seqKey = _seqKey
-
+                            if cifCheck:
+                                if coordAtomSite is not None:
+                                    if _atomId in coordAtomSite['atom_id']:
+                                        found = True
+                                    elif 'alt_atom_id' in coordAtomSite and _atomId in coordAtomSite['alt_atom_id']:
+                                        found = True
+                                        self.__authAtomId = 'auth_atom_id'
                                     elif self.__preferAuthSeq:
                                         _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck, asis=False)
                                         if _atomId in _coordAtomSite['atom_id']:
@@ -626,57 +893,57 @@ class AmberMRParserListener(ParseTreeListener):
                                             self.__authAtomId = 'auth_atom_id'
                                             seqKey = _seqKey
 
-                                    if found:
+                                elif self.__preferAuthSeq:
+                                    _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck, asis=False)
+                                    if _atomId in _coordAtomSite['atom_id']:
+                                        found = True
+                                        self.__preferAuthSeq = False
+                                        self.__authSeqId = 'label_seq_id'
+                                        seqKey = _seqKey
+                                    elif 'alt_atom_id' in _coordAtomSite and _atomId in _coordAtomSite['alt_atom_id']:
+                                        found = True
+                                        self.__preferAuthSeq = False
+                                        self.__authSeqId = 'label_seq_id'
+                                        self.__authAtomId = 'auth_atom_id'
+                                        seqKey = _seqKey
+
+                                if found:
+                                    factor['chain_id'] = chainId
+                                    factor['seq_id'] = seqId
+                                    factor['comp_id'] = compId
+                                    factor['atom_id'] = _atomId
+                                    del factor['iat']
+                                    self.__sanderAtomNumberDict[iat] = factor
+                                else:
+                                    ccdCheck = True
+
+                            if ccdCheck:
+                                if self.__ccU.updateChemCompDict(compId):
+                                    cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId), None)
+                                    if cca is not None:
+                                        found = True
                                         factor['chain_id'] = chainId
                                         factor['seq_id'] = seqId
                                         factor['comp_id'] = compId
                                         factor['atom_id'] = _atomId
                                         del factor['iat']
                                         self.__sanderAtomNumberDict[iat] = factor
-                                    else:
-                                        ccdCheck = True
+                                        if cifCheck and seqKey not in self.__coordUnobsRes:
+                                            self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                                                f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinate.\n"
 
-                                if ccdCheck:
-                                    if self.__ccU.updateChemCompDict(compId):
-                                        cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId), None)
-                                        if cca is not None:
-                                            found = True
-                                            factor['chain_id'] = chainId
-                                            factor['seq_id'] = seqId
-                                            factor['comp_id'] = compId
-                                            factor['atom_id'] = _atomId
-                                            del factor['iat']
-                                            self.__sanderAtomNumberDict[iat] = factor
-                                            if cifCheck and seqKey not in self.__coordUnobsRes:
-                                                self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                                    f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinate.\n"
+                    elif 'igr' in factor:
+                        for igr, _atomId in zip(factor['igr'], atomIds):
+                            _factor = copy.copy(factor)
+                            ccdCheck = not cifCheck
 
-                        elif 'igr' in factor:
-                            for igr, _atomId in zip(factor['igr'], atomIds):
-                                _factor = copy.copy(factor)
-                                ccdCheck = not cifCheck
-
-                                if cifCheck:
-                                    if coordAtomSite is not None:
-                                        if _atomId in coordAtomSite['atom_id']:
-                                            found = True
-                                        elif 'alt_atom_id' in coordAtomSite and _atomId in coordAtomSite['alt_atom_id']:
-                                            found = True
-                                            self.__authAtomId = 'auth_atom_id'
-                                        elif self.__preferAuthSeq:
-                                            _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck, asis=False)
-                                            if _atomId in _coordAtomSite['atom_id']:
-                                                found = True
-                                                self.__preferAuthSeq = False
-                                                self.__authSeqId = 'label_seq_id'
-                                                seqKey = _seqKey
-                                            elif 'alt_atom_id' in _coordAtomSite and _atomId in _coordAtomSite['alt_atom_id']:
-                                                found = True
-                                                self.__preferAuthSeq = False
-                                                self.__authSeqId = 'label_seq_id'
-                                                self.__authAtomId = 'auth_atom_id'
-                                                seqKey = _seqKey
-
+                            if cifCheck:
+                                if coordAtomSite is not None:
+                                    if _atomId in coordAtomSite['atom_id']:
+                                        found = True
+                                    elif 'alt_atom_id' in coordAtomSite and _atomId in coordAtomSite['alt_atom_id']:
+                                        found = True
+                                        self.__authAtomId = 'auth_atom_id'
                                     elif self.__preferAuthSeq:
                                         _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck, asis=False)
                                         if _atomId in _coordAtomSite['atom_id']:
@@ -691,34 +958,44 @@ class AmberMRParserListener(ParseTreeListener):
                                             self.__authAtomId = 'auth_atom_id'
                                             seqKey = _seqKey
 
-                                    if found:
+                                elif self.__preferAuthSeq:
+                                    _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck, asis=False)
+                                    if _atomId in _coordAtomSite['atom_id']:
+                                        found = True
+                                        self.__preferAuthSeq = False
+                                        self.__authSeqId = 'label_seq_id'
+                                        seqKey = _seqKey
+                                    elif 'alt_atom_id' in _coordAtomSite and _atomId in _coordAtomSite['alt_atom_id']:
+                                        found = True
+                                        self.__preferAuthSeq = False
+                                        self.__authSeqId = 'label_seq_id'
+                                        self.__authAtomId = 'auth_atom_id'
+                                        seqKey = _seqKey
+
+                                if found:
+                                    _factor['chain_id'] = chainId
+                                    _factor['seq_id'] = seqId
+                                    _factor['comp_id'] = compId
+                                    _factor['atom_id'] = _atomId
+                                    del _factor['igr']
+                                    self.__sanderAtomNumberDict[igr] = _factor
+                                else:
+                                    ccdCheck = True
+
+                            if ccdCheck:
+                                if self.__ccU.updateChemCompDict(compId):
+                                    cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId), None)
+                                    if cca is not None:
+                                        found = True
                                         _factor['chain_id'] = chainId
                                         _factor['seq_id'] = seqId
                                         _factor['comp_id'] = compId
                                         _factor['atom_id'] = _atomId
                                         del _factor['igr']
                                         self.__sanderAtomNumberDict[igr] = _factor
-                                    else:
-                                        ccdCheck = True
-
-                                if ccdCheck:
-                                    if self.__ccU.updateChemCompDict(compId):
-                                        cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId), None)
-                                        if cca is not None:
-                                            found = True
-                                            _factor['chain_id'] = chainId
-                                            _factor['seq_id'] = seqId
-                                            _factor['comp_id'] = compId
-                                            _factor['atom_id'] = _atomId
-                                            del _factor['igr']
-                                            self.__sanderAtomNumberDict[igr] = _factor
-                                            if cifCheck and seqKey not in self.__coordUnobsRes:
-                                                self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                                    f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinate.\n"
-
-                    except Exception as e:
-                        if self.__verbose:
-                            self.__lfh.write(f"+AmberMRParserListener.updateSanderAtomNumberDict() ++ Error  - {str(e)}\n")
+                                        if cifCheck and seqKey not in self.__coordUnobsRes:
+                                            self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                                                f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinate.\n"
 
         return found
 
@@ -980,13 +1257,9 @@ class AmberMRParserListener(ParseTreeListener):
                     return
                 rawRealArray = str(ctx.Reals()).split(',')
                 val = float(rawRealArray[0])
-                if val <= 0.0:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"The scale value '{varName}({decimal})={val}'must be a positive value.\n"
-                    return
-                self.scale[decimal - 1] = val
-            else:
+                self.rstwt[decimal - 1] = val
 
+            else:
                 if ctx.Reals():
                     rawRealArray = str(ctx.Reals()).split(',')
                     if len(rawRealArray) > COL_RSTWT:
@@ -995,11 +1268,7 @@ class AmberMRParserListener(ParseTreeListener):
                         return
                     for col, rawReal in enumerate(rawRealArray):
                         val = float(rawReal)
-                        if val <= 0.0:
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                f"The scale value '{varName}({col+1})={val}'must be a positive value.\n"
-                            return
-                        self.scale[col] = val
+                        self.rstwt[col] = val
                 elif ctx.MultiplicativeReal():
                     rawMultReal = str(ctx.MultiplicativeReal()).split('*')
                     numCol = int(rawMultReal[0])
@@ -1009,18 +1278,22 @@ class AmberMRParserListener(ParseTreeListener):
                             f"'{str(ctx.MultiplicativeReal())}' must be in the range 1-{COL_RSTWT}.\n"
                         return
                     val = float(rawMultReal[1])
-                    if val <= 0.0:
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            f"The scale value '{varName}={val}'must be a positive value.\n"
-                        return
                     for col in range(0, numCol):
-                        self.scale[col] = val
+                        self.rstwt[col] = val
 
         elif ctx.IALTD():
             self.detectRestraintType(True)
 
         elif ctx.RJCOEF():
             self.detectRestraintType(False)
+
+        elif ctx.RESTRAINT():
+            self.hasFuncExprs = True
+            self.inGenDist = False
+            self.inPlane = False
+            self.inPlane_columnSel = -1
+            self.inCom = False
+            self.funcExprs = []
 
     def detectRestraintType(self, distLike):
         self.distLike = distLike
@@ -1151,81 +1424,244 @@ class AmberMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by AmberMRParser#distance_rst_func_call.
     def enterDistance_rst_func_call(self, ctx: AmberMRParser.Distance_rst_func_callContext):  # pylint: disable=unused-argument
-        self.distRestraints += 1
-        self.__cur_subtype = 'dist'
+        if self.__verbose:
+            print("  " * self.depth + "enter_distance_rst_func")
+
+        if self.depth == 0:
+            self.distRestraints += 1
+            self.__cur_subtype = 'dist'
+
+        self.depth += 1
 
     # Exit a parse tree produced by AmberMRParser#distance_rst_func_call.
     def exitDistance_rst_func_call(self, ctx: AmberMRParser.Distance_rst_func_callContext):  # pylint: disable=unused-argument
-        pass
+        self.depth -= 1
+        if self.__verbose:
+            print("  " * self.depth + "exit_distance_rst_func")
 
     # Enter a parse tree produced by AmberMRParser#angle_rst_func_call.
     def enterAngle_rst_func_call(self, ctx: AmberMRParser.Angle_rst_func_callContext):  # pylint: disable=unused-argument
-        self.angRestraints += 1
-        self.__cur_subtype = 'ang'
+        if self.__verbose:
+            print("  " * self.depth + "enter_angle_rst_func")
+
+        if self.depth == 0:
+            self.angRestraints += 1
+            self.__cur_subtype = 'ang'
+
+        self.depth += 1
 
     # Exit a parse tree produced by AmberMRParser#angle_rst_func_call.
     def exitAngle_rst_func_call(self, ctx: AmberMRParser.Angle_rst_func_callContext):  # pylint: disable=unused-argument
-        pass
+        self.depth -= 1
+        if self.__verbose:
+            print("  " * self.depth + "exit_angle_rst_func")
+
+    # Enter a parse tree produced by AmberMRParser#plane_point_angle_rst_func_call.
+    def enterPlane_point_angle_rst_func_call(self, ctx: AmberMRParser.Plane_point_angle_rst_func_callContext):  # pylint: disable=unused-argument
+        if self.__verbose:
+            print("  " * self.depth + "enter_plane_point_angle_rst_func")
+
+        if self.depth == 0:
+            self.angRestraints += 1
+            self.__cur_subtype = 'plane'
+
+        self.depth += 1
+
+    # Exit a parse tree produced by AmberMRParser#plane_point_angle_rst_func_call.
+    def exitPlane_point_angle_rst_func_call(self, ctx: AmberMRParser.Plane_point_angle_rst_func_callContext):  # pylint: disable=unused-argument
+        self.depth -= 1
+        if self.__verbose:
+            print("  " * self.depth + "exit_plane_point_angle_rst_func")
+
+    # Enter a parse tree produced by AmberMRParser#plane_plane_angle_rst_func_call.
+    def enterPlane_plane_angle_rst_func_call(self, ctx: AmberMRParser.Plane_plane_angle_rst_func_callContext):  # pylint: disable=unused-argument
+        if self.__verbose:
+            print("  " * self.depth + "enter_plane_plane_angle_rst_func")
+
+        if self.depth == 0:
+            self.angRestraints += 1
+            self.__cur_subtype = 'plane'
+
+        self.depth += 1
+
+    # Exit a parse tree produced by AmberMRParser#plane_plane_angle_rst_func_call.
+    def exitPlane_plane_angle_rst_func_call(self, ctx: AmberMRParser.Plane_plane_angle_rst_func_callContext):  # pylint: disable=unused-argument
+        self.depth -= 1
+        if self.__verbose:
+            print("  " * self.depth + "exit_plane_plane_angle_rst_func")
 
     # Enter a parse tree produced by AmberMRParser#torsion_rst_func_call.
     def enterTorsion_rst_func_call(self, ctx: AmberMRParser.Torsion_rst_func_callContext):  # pylint: disable=unused-argument
-        self.dihedRestraints += 1
-        self.__cur_subtype = 'dihed'
+        if self.__verbose:
+            print("  " * self.depth + "enter_torsion_rst_func")
+
+        if self.depth == 0:
+            self.dihedRestraints += 1
+            self.__cur_subtype = 'dihed'
+
+        self.depth += 1
 
     # Exit a parse tree produced by AmberMRParser#torsion_rst_func_call.
     def exitTorsion_rst_func_call(self, ctx: AmberMRParser.Torsion_rst_func_callContext):  # pylint: disable=unused-argument
-        pass
+        self.depth -= 1
+        if self.__verbose:
+            print("  " * self.depth + "exit_torsion_rst_func")
 
     # Enter a parse tree produced by AmberMRParser#coordinate2_rst_func_call.
     def enterCoordinate2_rst_func_call(self, ctx: AmberMRParser.Coordinate2_rst_func_callContext):  # pylint: disable=unused-argument
-        self.distRestraints += 1
-        self.__cur_subtype = 'dist'
+        if self.__verbose:
+            print("  " * self.depth + "enter_coordinate2_rst_func")
+
+        if self.depth == 0:
+            self.distRestraints += 1
+            self.__cur_subtype = 'dist'
+
+        self.depth += 1
+
+        self.inGenDist = True
+        self.inGenDist_funcExprs = []
+        self.inGenDist_weight = [float(str(ctx.Real_F(0))),
+                                 float(str(ctx.Real_F(1)))]
 
     # Exit a parse tree produced by AmberMRParser#coordinate2_rst_func_call.
     def exitCoordinate2_rst_func_call(self, ctx: AmberMRParser.Coordinate2_rst_func_callContext):  # pylint: disable=unused-argument
-        pass
+        self.depth -= 1
+        if self.__verbose:
+            print("  " * self.depth + "exit_coordinate2_rst_func")
 
     # Enter a parse tree produced by AmberMRParser#coordinate3_rst_func_call.
     def enterCoordinate3_rst_func_call(self, ctx: AmberMRParser.Coordinate3_rst_func_callContext):  # pylint: disable=unused-argument
-        self.distRestraints += 1
-        self.__cur_subtype = 'dist'
+        if self.__verbose:
+            print("  " * self.depth + "enter_coordinate3_rst_func")
+
+        if self.depth == 0:
+            self.distRestraints += 1
+            self.__cur_subtype = 'dist'
+
+        self.depth += 1
+
+        self.inGenDist = True
+        self.inGenDist_funcExprs = []
+        self.inGenDist_weight = [float(str(ctx.Real_F(0))),
+                                 float(str(ctx.Real_F(1))),
+                                 float(str(ctx.Real_F(2)))]
 
     # Exit a parse tree produced by AmberMRParser#coordinate3_rst_func_call.
     def exitCoordinate3_rst_func_call(self, ctx: AmberMRParser.Coordinate3_rst_func_callContext):  # pylint: disable=unused-argument
-        pass
+        self.depth -= 1
+        if self.__verbose:
+            print("  " * self.depth + "exit_coordinate3_rst_func")
 
     # Enter a parse tree produced by AmberMRParser#coordinate4_rst_func_call.
     def enterCoordinate4_rst_func_call(self, ctx: AmberMRParser.Coordinate4_rst_func_callContext):  # pylint: disable=unused-argument
-        self.distRestraints += 1
-        self.__cur_subtype = 'dist'
+        if self.__verbose:
+            print("  " * self.depth + "enter_coordinate4_rst_func")
+
+        if self.depth == 0:
+            self.distRestraints += 1
+            self.__cur_subtype = 'dist'
+
+        self.depth += 1
+
+        self.inGenDist = True
+        self.inGenDist_funcExprs = []
+        self.inGenDist_weight = [float(str(ctx.Real_F(0))),
+                                 float(str(ctx.Real_F(1))),
+                                 float(str(ctx.Real_F(2))),
+                                 float(str(ctx.Real_F(3)))]
 
     # Exit a parse tree produced by AmberMRParser#coordinate4_rst_func_call.
     def exitCoordinate4_rst_func_call(self, ctx: AmberMRParser.Coordinate4_rst_func_callContext):  # pylint: disable=unused-argument
-        pass
+        self.depth -= 1
+        if self.__verbose:
+            print("  " * self.depth + "exit_coordinate4_rst_func")
 
     # Enter a parse tree produced by AmberMRParser#restraint_func_expr.
     def enterRestraint_func_expr(self, ctx: AmberMRParser.Restraint_func_exprContext):  # pylint: disable=unused-argument
         pass
 
     # Exit a parse tree produced by AmberMRParser#restraint_func_expr.
-    def exitRestraint_func_expr(self, ctx: AmberMRParser.Restraint_func_exprContext):  # pylint: disable=unused-argument
-        pass
+    def exitRestraint_func_expr(self, ctx: AmberMRParser.Restraint_func_exprContext):
+        funcExpr = {}
+
+        if ctx.Integer_F():
+            funcExpr['iat'] = int(str(ctx.Integer_F()))
+
+        if ctx.Ambmask_F():
+            ambmask = str(ctx.Ambmask_F())[1:].split('@')
+            funcExpr['seq_id'] = int(ambmask[0])
+            funcExpr['atom_id'] = ambmask[1]
+
+        if self.inCom:
+            self.inCom_funcExprs.append(funcExpr)
+            return
+
+        if self.inPlane:
+            if self.inPlane_columnSel == 0:
+                self.inPlane_funcExprs.append(funcExpr)
+            else:
+                self.inPlane_funcExprs2.append(funcExpr)
+            return
+
+        if self.inGenDist:
+            self.inGenDist_funcExprs.append(funcExpr)
+            return
+
+        self.funcExprs.append(funcExpr)
 
     # Enter a parse tree produced by AmberMRParser#plane_rst_func_call.
     def enterPlane_rst_func_call(self, ctx: AmberMRParser.Plane_rst_func_callContext):  # pylint: disable=unused-argument
-        pass
+        if self.__verbose:
+            print("  " * self.depth + "enter_plane_rst_func")
+
+        self.depth += 1
+
+        self.inPlane = True
+        self.inPlane_columnSel += 1
+
+        if self.inPlane_columnSel == 0:
+            self.inPlane_funcExprs = []
+        else:
+            self.inPlane_funcExprs2 = []
 
     # Exit a parse tree produced by AmberMRParser#plane_rst_func_call.
     def exitPlane_rst_func_call(self, ctx: AmberMRParser.Plane_rst_func_callContext):  # pylint: disable=unused-argument
-        pass
+        self.depth -= 1
+        if self.__verbose:
+            print("  " * self.depth + "exit_plane_rst_func")
+
+        self.inPlane = False
 
     # Enter a parse tree produced by AmberMRParser#com_rst_func_call.
     def enterCom_rst_func_call(self, ctx: AmberMRParser.Com_rst_func_callContext):  # pylint: disable=unused-argument
-        pass
+        if self.__verbose:
+            print("  " * self.depth + "enter_com_rst_func")
+
+        self.depth += 1
+
+        self.inCom = True
+        self.inCom_funcExprs = []
 
     # Exit a parse tree produced by AmberMRParser#com_rst_func_call.
     def exitCom_rst_func_call(self, ctx: AmberMRParser.Com_rst_func_callContext):  # pylint: disable=unused-argument
-        pass
+        self.depth -= 1
+        if self.__verbose:
+            print("  " * self.depth + "exit_com_rst_func")
+
+        self.inCom = False
+
+        if self.inPlane:
+            if self.inPlane_columnSel == 0:
+                self.inPlane_funcExprs.append(self.inCom_funcExprs)
+            else:
+                self.inPlane_funcExprs2.append(self.inCom_funcExprs)
+            return
+
+        if self.inGenDist:
+            self.inGenDist_funcExprs.append(self.inCom_funcExprs)
+            return
+
+        self.funcExprs.append(self.inCom_funcExprs)
 
     def __getCurrentRestraint(self):
         if self.__cur_subtype == 'dist':

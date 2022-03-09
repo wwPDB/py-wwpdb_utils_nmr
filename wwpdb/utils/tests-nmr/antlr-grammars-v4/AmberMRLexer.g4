@@ -156,13 +156,6 @@ NXPK:			N X P K
 ICONSTR:		I C O N S T R
 			-> pushMode(INT_PARAM_MODE);		// = Integer
 
-DISTANCE_F:		D I S T A N C E;
-ANGLE_F:		A N G L E;
-TORSION_F:		T O R S I O N;
-COORDINATE_F:		C O O R D I N A T E;
-PLANE_F:		P L A N E;
-COM_F:			C O M;
-
 /* Amber: NMR restraints - 29.2. NOESY volume restraints - Syntax
  See also https://ambermd.org/Manuals.php (Amber 2021 Reference Manual)
 */
@@ -359,7 +352,7 @@ CCUT:			C C U T
 Comma:			',' -> mode(DEFAULT_MODE);
 Ampersand:		'&';
 
-COMMENT:		('#' | '!')* -> mode(COMMENT_MODE);
+COMMENT:		('#' | '!')+ -> mode(COMMENT_MODE);
 
 fragment INTEGER:	('+' | '-')? DECIMAL;
 fragment REAL:		('+' | '-')? (DECIMAL | DEC_DOT_DEC) (E ('+' | '-')? DECIMAL)?;
@@ -485,6 +478,13 @@ Decimal:		DECIMAL;
 SPACE_A:		[ \t\r\n]+ -> skip;
 
 mode FUNC_CALL_MODE; // function call
+
+DISTANCE_F:		D I S T A N C E;
+ANGLE_F:		A N G L E;
+TORSION_F:		T O R S I O N;
+COORDINATE_F:		C O O R D I N A T E;
+PLANE_F:		P L A N E;
+COM_F:			C O M;
 
 Integer_F:		INTEGER;
 Real_F:			REAL;

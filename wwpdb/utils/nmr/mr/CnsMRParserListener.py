@@ -131,6 +131,7 @@ class CnsMRParserListener(ParseTreeListener):
 
     factor = None
 
+    # distance
     noePotential = 'biharmonic'
     squareExponent = 2.0
     squareOffset = 0.0
@@ -217,6 +218,8 @@ class CnsMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by CnsMRParser#dihedral_angle_restraint.
     def enterDihedral_angle_restraint(self, ctx: CnsMRParser.Dihedral_angle_restraintContext):  # pylint: disable=unused-argument
         self.dihedStatements += 1
+
+        self.scale = 1.0
 
     # Exit a parse tree produced by CnsMRParser#dihedral_angle_restraint.
     def exitDihedral_angle_restraint(self, ctx: CnsMRParser.Dihedral_angle_restraintContext):  # pylint: disable=unused-argument
@@ -349,6 +352,16 @@ class CnsMRParserListener(ParseTreeListener):
             if self.scale <= 0.0:
                 self.warningMessage += f"[Invalid data] "\
                     f"The scale value 'NOE {str(ctx.Scale())} {str(ctx.Simple_names())} {self.scale} END' must be a positive value.\n"
+
+        elif ctx.Reset():
+            self.noePotential = 'biharmonic'  # default potential
+            self.squareExponent = 2.0
+            self.squareOffset = 0.0
+            self.rSwitch = 10.0
+            self.scale = 1.0
+            self.symmTarget = None
+            self.symmDminus = None
+            self.symmDplus = None
 
     # Exit a parse tree produced by CnsMRParser#noe_statement.
     def exitNoe_statement(self, ctx: CnsMRParser.Noe_statementContext):  # pylint: disable=unused-argument
@@ -530,8 +543,15 @@ class CnsMRParserListener(ParseTreeListener):
         pass
 
     # Enter a parse tree produced by CnsMRParser#dihedral_statement.
-    def enterDihedral_statement(self, ctx: CnsMRParser.Dihedral_statementContext):  # pylint: disable=unused-argument
-        pass
+    def enterDihedral_statement(self, ctx: CnsMRParser.Dihedral_statementContext):
+        if ctx.Scale():
+            self.scale = float(ctx.Real())
+            if self.scale <= 0.0:
+                self.warningMessage += f"[Invalid data] "\
+                    f"The scale value 'RESTRAINT DIHEDRAL {str(ctx.Scale())} {self.scale} END' must be a positive value.\n"
+
+        elif ctx.Reset():
+            self.scale = 1.0
 
     # Exit a parse tree produced by CnsMRParser#dihedral_statement.
     def exitDihedral_statement(self, ctx: CnsMRParser.Dihedral_statementContext):  # pylint: disable=unused-argument
@@ -542,9 +562,123 @@ class CnsMRParserListener(ParseTreeListener):
         self.dihedRestraints += 1
         self.__cur_subtype = 'dihed'
 
+        self.atomSelectionSet = []
+
     # Exit a parse tree produced by CnsMRParser#dihedral_assign.
-    def exitDihedral_assign(self, ctx: CnsMRParser.Dihedral_assignContext):  # pylint: disable=unused-argument
-        pass
+    def exitDihedral_assign(self, ctx: CnsMRParser.Dihedral_assignContext):
+        energyConst = float(str(ctx.Real(0)))
+        target = float(str(ctx.Real(1)))
+        delta = float(str(ctx.Real(2)))
+        exponent = int(str(ctx.Integer()))
+
+        if exponent not in (1, 2):
+            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                f"The exponent value of dihedral angle restraint 'ed={exponent}' must be one (linear well) or two (square well).\n"
+            return
+
+        target_value = None
+        lower_limit = None
+        upper_limit = None
+        lower_linear_limit = None
+        upper_linear_limit = None
+
+        if exponent == 2:
+            target_value = target
+            lower_limit = target - delta
+            upper_limit = target + delta
+        else:
+            target_value = target
+            lower_linear_limit = target - delta
+            upper_linear_limit = target + delta
+
+        validRange = True
+        dstFunc = {'weight': self.scale}
+
+        if target_value is not None:
+            if ANGLE_ERROR_MIN < target_value < ANGLE_ERROR_MAX:
+                dstFunc['target_value'] = f"{target_value:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The target value='{target_value}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
+
+        if lower_limit is not None:
+            if ANGLE_ERROR_MIN < lower_limit < ANGLE_ERROR_MAX:
+                dstFunc['lower_limit'] = f"{lower_limit:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The lower limit value='{lower_limit}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
+
+        if upper_limit is not None:
+            if ANGLE_ERROR_MIN < upper_limit < ANGLE_ERROR_MAX:
+                dstFunc['upper_limit'] = f"{upper_limit:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The upper limit value='{upper_limit}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
+
+        if lower_linear_limit is not None:
+            if ANGLE_ERROR_MIN < lower_linear_limit < ANGLE_ERROR_MAX:
+                dstFunc['lower_linear_limit'] = f"{lower_linear_limit:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The lower linear limit value='{lower_linear_limit}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
+
+        if upper_linear_limit is not None:
+            if ANGLE_ERROR_MIN < upper_linear_limit < ANGLE_ERROR_MAX:
+                dstFunc['upper_linear_limit'] = f"{upper_linear_limit:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The upper linear limit value='{upper_linear_limit}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
+
+        if not validRange:
+            return
+
+        if target_value is not None:
+            if ANGLE_RANGE_MIN <= target_value <= ANGLE_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The target value='{target_value}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
+
+        if lower_limit is not None:
+            if ANGLE_RANGE_MIN <= lower_limit <= ANGLE_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The lower limit value='{lower_limit}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
+
+        if upper_limit is not None:
+            if ANGLE_RANGE_MIN <= upper_limit <= ANGLE_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The upper limit value='{upper_limit}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
+
+        if lower_linear_limit is not None:
+            if ANGLE_RANGE_MIN <= lower_linear_limit <= ANGLE_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The lower linear limit value='{lower_linear_limit}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
+
+        if upper_linear_limit is not None:
+            if ANGLE_RANGE_MIN <= upper_linear_limit <= ANGLE_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The upper linear limit value='{upper_linear_limit}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
+
+        for atom_1 in self.atomSelectionSet[0]:
+            for atom_2 in self.atomSelectionSet[1]:
+                for atom_3 in self.atomSelectionSet[2]:
+                    for atom_4 in self.atomSelectionSet[3]:
+                        if self.__verbose:
+                            print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} "
+                                  f"atom_1={atom_1} atom_2={atom_2} atom_3={atom_3} atom_4={atom_4} {dstFunc} energy_const={energyConst}")
 
     # Enter a parse tree produced by CnsMRParser#plane_statement.
     def enterPlane_statement(self, ctx: CnsMRParser.Plane_statementContext):  # pylint: disable=unused-argument

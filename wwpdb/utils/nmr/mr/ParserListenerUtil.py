@@ -91,6 +91,8 @@ def checkCoordinates(verbose=True, log=sys.stdout, cR=None, polySeq=None,
     """ Examine the coordinates for MR/PT parser listener.
     """
 
+    altPolySeq = None
+
     if polySeq is None:
 
         # loop categories
@@ -169,8 +171,6 @@ def checkCoordinates(verbose=True, log=sys.stdout, cR=None, polySeq=None,
                                                     withStructConf=True, alias=alias)
                 else:
                     polySeq = []
-
-            altPolySeq = None
 
             if len(polySeq) > 1:
                 ps = copy.copy(polySeq[0])

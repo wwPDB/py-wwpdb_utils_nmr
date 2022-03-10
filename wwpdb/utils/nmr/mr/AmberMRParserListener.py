@@ -519,7 +519,7 @@ class AmberMRParserListener(ParseTreeListener):
                         for atom_2 in self.atomSelectionSet[1]:
                             for atom_3 in self.atomSelectionSet[2]:
                                 if self.__verbose:
-                                    print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} "
+                                    print(f"subtype={self.__cur_subtype} id={self.angRestraints} "
                                           f"atom_1={atom_1} atom_2={atom_2} atom_3={atom_3} {dstFunc}")
 
                 # torsional angle

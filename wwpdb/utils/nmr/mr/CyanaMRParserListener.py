@@ -188,7 +188,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
         if target_value is not None:
             if DIST_ERROR_MIN < target_value < DIST_ERROR_MAX:
-                dstFunc['target_value'] = f"{target_value:.3}"
+                dstFunc['target_value'] = f"{target_value:.3f}"
             else:
                 validRange = False
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
@@ -196,7 +196,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
         if lower_limit is not None:
             if DIST_ERROR_MIN < lower_limit < DIST_ERROR_MAX:
-                dstFunc['lower_limit'] = f"{lower_limit:.3}"
+                dstFunc['lower_limit'] = f"{lower_limit:.3f}"
             else:
                 validRange = False
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
@@ -204,7 +204,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
         if upper_limit is not None:
             if DIST_ERROR_MIN < upper_limit < DIST_ERROR_MAX:
-                dstFunc['upper_limit'] = f"{upper_limit:.3}"
+                dstFunc['upper_limit'] = f"{upper_limit:.3f}"
             else:
                 validRange = False
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\

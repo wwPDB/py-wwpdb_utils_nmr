@@ -110,18 +110,18 @@ class CyanaMRParserListener(ParseTreeListener):
         self.__hasCoord = cR is not None
 
         if self.__hasCoord:
-            dict = checkCoordinates(verbose, log, cR, polySeq,
-                                    coordAtomSite, coordUnobsRes, labelToAuthSeq)
-            self.__modelNumName = dict['model_num_name']
-            self.__authAsymId = dict['auth_asym_id']
-            self.__authSeqId = dict['auth_seq_id']
-            self.__authAtomId = dict['auth_atom_id']
-            self.__altAuthAtomId = dict['alt_auth_atom_id']
-            self.__polySeq = dict['polymer_sequence']
-            self.__altPolySeq = dict['alt_polymer_sequence']
-            self.__coordAtomSite = dict['coord_atom_site']
-            self.__coordUnobsRes = dict['coord_unobs_res']
-            self.__labelToAuthSeq = dict['label_to_auth_seq']
+            ret = checkCoordinates(verbose, log, cR, polySeq,
+                                   coordAtomSite, coordUnobsRes, labelToAuthSeq)
+            self.__modelNumName = ret['model_num_name']
+            self.__authAsymId = ret['auth_asym_id']
+            self.__authSeqId = ret['auth_seq_id']
+            self.__authAtomId = ret['auth_atom_id']
+            self.__altAuthAtomId = ret['alt_auth_atom_id']
+            self.__polySeq = ret['polymer_sequence']
+            self.__altPolySeq = ret['alt_polymer_sequence']
+            self.__coordAtomSite = ret['coord_atom_site']
+            self.__coordUnobsRes = ret['coord_unobs_res']
+            self.__labelToAuthSeq = ret['label_to_auth_seq']
 
         self.__hasPolySeq = self.__polySeq is not None and len(self.__polySeq) > 0
 
@@ -135,6 +135,13 @@ class CyanaMRParserListener(ParseTreeListener):
         self.__nefT = NEFTranslator(verbose, log, self.__ccU, self.__csStat) if nefT is None else nefT
 
         self.__assumeUpperLimit = assumeUpperLimit
+
+        self.known_angle_names = ('PHI', 'PSI', 'OMEGA',
+                                  'CHI1', 'CHI2', 'CHI3', 'CHI4', 'CHI5',
+                                  'ALPHA', 'BETA', 'GAMMA', 'DELTA', 'EPSILON', 'ZETA',
+                                  'NU0', 'NU1', 'NU2', 'NU3', 'NU4',
+                                  'TAU0', 'TAU1', 'TAU2', 'TAU3', 'TAU4',
+                                  'CHI21', 'CHI22', 'CHI31', 'CHI32', 'CHI42')
 
     # Enter a parse tree produced by CyanaMRParser#cyana_mr.
     def enterCyana_mr(self, ctx: CyanaMRParser.Cyana_mrContext):  # pylint: disable=unused-argument
@@ -189,10 +196,6 @@ class CyanaMRParserListener(ParseTreeListener):
         if target_value is not None:
             if DIST_ERROR_MIN < target_value < DIST_ERROR_MAX:
                 dstFunc['target_value'] = f"{target_value:.3f}"
-            else:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The target value='{target_value}' must be within range {DIST_RESTRAINT_ERROR}.\n"
 
         if lower_limit is not None:
             if DIST_ERROR_MIN < lower_limit < DIST_ERROR_MAX:
@@ -216,9 +219,6 @@ class CyanaMRParserListener(ParseTreeListener):
         if target_value is not None:
             if DIST_RANGE_MIN <= target_value <= DIST_RANGE_MAX:
                 pass
-            else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The target value='{target_value}' should be within range {DIST_RESTRAINT_RANGE}.\n"
 
         if lower_limit is not None:
             if DIST_RANGE_MIN <= lower_limit <= DIST_RANGE_MAX:
@@ -240,17 +240,17 @@ class CyanaMRParserListener(ParseTreeListener):
         for ps in self.__polySeq:
             chainId = ps['chain_id']
             if seqId1 in ps['seq_id']:
-                compId = ps['comp_id'][ps['seq_id'].index(seqId1)]
-                if compId == compId1:
-                    chainAssign1.append((chainId, seqId1, compId))
-                elif len(self.__nefT.get_valid_star_atom(compId, atomId1)[0]) > 0:
-                    chainAssign1.append((chainId, seqId1, compId))
+                cifCompId = ps['comp_id'][ps['seq_id'].index(seqId1)]
+                if cifCompId == compId1:
+                    chainAssign1.append((chainId, seqId1, cifCompId))
+                elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId1)[0]) > 0:
+                    chainAssign1.append((chainId, seqId1, cifCompId))
             if seqId2 in ps['seq_id']:
-                compId = ps['comp_id'][ps['seq_id'].index(seqId2)]
-                if compId == compId2:
-                    chainAssign2.append((chainId, seqId2, compId))
-                elif len(self.__nefT.get_valid_star_atom(compId, atomId2)[0]) > 0:
-                    chainAssign1.append((chainId, seqId2, compId))
+                cifCompId = ps['comp_id'][ps['seq_id'].index(seqId2)]
+                if cifCompId == compId2:
+                    chainAssign2.append((chainId, seqId2, cifCompId))
+                elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId2)[0]) > 0:
+                    chainAssign1.append((chainId, seqId2, cifCompId))
 
         if len(chainAssign1) == 0 and self.__altPolySeq is not None:
             for ps in self.__altPolySeq:
@@ -404,9 +404,105 @@ class CyanaMRParserListener(ParseTreeListener):
     def enterTorsion_angle_restraint(self, ctx: CyanaMRParser.Torsion_angle_restraintContext):  # pylint: disable=unused-argument
         self.dihedRestraints += 1
 
+        self.atomSelectionSet = []
+
     # Exit a parse tree produced by CyanaMRParser#torsion_angle_restraint.
     def exitTorsion_angle_restraint(self, ctx: CyanaMRParser.Torsion_angle_restraintContext):  # pylint: disable=unused-argument
-        pass
+        if not self.__hasPolySeq:
+            return
+
+        seqId = int(str(ctx.Integer(0)))
+        compId = str(ctx.Simple_name(0)).upper()
+        angleName = str(ctx.Simple_name(1)).upper()
+        lower_limit = float(str(ctx.Float(0)))
+        upper_limit = float(str(ctx.Float(1)))
+
+        if lower_limit > upper_limit:
+            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                f"The angle's lower limit '{lower_limit}' must be less than or equal to the upper limit '{upper_limit}'.\n"
+            return
+
+        if angleName not in self.known_angle_names:
+            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                f"The angle identifier '{str(ctx.Simple_name(1))}' is unknown.\n"
+            return
+
+        target_value = (upper_limit + lower_limit) / 2.0
+
+        while target_value > 225.0:
+            target_value -= 360.0
+        while target_value < -225.0:
+            target_value += 360.0
+
+        validRange = True
+        dstFunc = {'weight': 1.0}
+
+        if target_value is not None:
+            if ANGLE_ERROR_MIN < target_value < ANGLE_ERROR_MAX:
+                dstFunc['target_value'] = f"{target_value:.3f}"
+
+        if lower_limit is not None:
+            if ANGLE_ERROR_MIN < lower_limit < ANGLE_ERROR_MAX:
+                dstFunc['lower_limit'] = f"{lower_limit:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The lower limit value='{lower_limit}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
+
+        if upper_limit is not None:
+            if ANGLE_ERROR_MIN < upper_limit < ANGLE_ERROR_MAX:
+                dstFunc['upper_limit'] = f"{upper_limit:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The upper limit value='{upper_limit}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
+
+        if not validRange:
+            return
+
+        if target_value is not None:
+            if ANGLE_RANGE_MIN <= target_value <= ANGLE_RANGE_MAX:
+                pass
+
+        if lower_limit is not None:
+            if ANGLE_RANGE_MIN <= lower_limit <= ANGLE_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The lower limit value='{lower_limit}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
+
+        if upper_limit is not None:
+            if ANGLE_RANGE_MIN <= upper_limit <= ANGLE_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The upper limit value='{upper_limit}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
+
+        chainAssign = []
+
+        atomId = ""
+
+        for ps in self.__polySeq:
+            chainId = ps['chain_id']
+            if seqId in ps['seq_id']:
+                cifCompId = ps['comp_id'][ps['seq_id'].index(seqId)]
+                if cifCompId == compId:
+                    chainAssign.append((chainId, seqId, cifCompId))
+                elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                    chainAssign.append((chainId, seqId, cifCompId))
+
+        if len(chainAssign) == 0 and self.__altPolySeq is not None:
+            for ps in self.__altPolySeq:
+                chainId = ps['chain_id']
+                if seqId in ps['auth_seq_id']:
+                    cifCompId = ps['comp_id'][ps['auth_seq_id'].index(seqId)]
+                    cifSeqId = ps['seq_id'][ps['auth_seq_id'].index(seqId)]
+                    chainAssign.append(chainId, cifSeqId, cifCompId)
+
+        if len(chainAssign) == 0:
+            self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                f"{seqId}:{compId} is not present in the coordinate.\n"
+            return
 
     # Enter a parse tree produced by CyanaMRParser#rdc_restraints.
     def enterRdc_restraints(self, ctx: CyanaMRParser.Rdc_restraintsContext):  # pylint: disable=unused-argument

@@ -44,8 +44,8 @@ class RosettaMRReader:
         self.__lfh = log
 
         if cR is not None and polySeqModel is None:
-            dict = checkCoordinates(verbose, log, cR, polySeqModel, testTag=False)
-            polySeqModel = dict['polymer_sequence']
+            ret = checkCoordinates(verbose, log, cR, polySeqModel, testTag=False)
+            polySeqModel = ret['polymer_sequence']
 
         self.__cR = cR
         self.__polySeqModel = polySeqModel

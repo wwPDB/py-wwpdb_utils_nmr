@@ -113,18 +113,18 @@ class RosettaMRParserListener(ParseTreeListener):
         self.__hasCoord = cR is not None
 
         if self.__hasCoord:
-            dict = checkCoordinates(verbose, log, cR, polySeq,
-                                    coordAtomSite, coordUnobsRes, labelToAuthSeq)
-            self.__modelNumName = dict['model_num_name']
-            self.__authAsymId = dict['auth_asym_id']
-            self.__authSeqId = dict['auth_seq_id']
-            self.__authAtomId = dict['auth_atom_id']
-            self.__altAuthAtomId = dict['alt_auth_atom_id']
-            self.__polySeq = dict['polymer_sequence']
-            self.__altPolySeq = dict['alt_polymer_sequence']
-            self.__coordAtomSite = dict['coord_atom_site']
-            self.__coordUnobsRes = dict['coord_unobs_res']
-            self.__labelToAuthSeq = dict['label_to_auth_seq']
+            ret = checkCoordinates(verbose, log, cR, polySeq,
+                                   coordAtomSite, coordUnobsRes, labelToAuthSeq)
+            self.__modelNumName = ret['model_num_name']
+            self.__authAsymId = ret['auth_asym_id']
+            self.__authSeqId = ret['auth_seq_id']
+            self.__authAtomId = ret['auth_atom_id']
+            self.__altAuthAtomId = ret['alt_auth_atom_id']
+            self.__polySeq = ret['polymer_sequence']
+            self.__altPolySeq = ret['alt_polymer_sequence']
+            self.__coordAtomSite = ret['coord_atom_site']
+            self.__coordUnobsRes = ret['coord_unobs_res']
+            self.__labelToAuthSeq = ret['label_to_auth_seq']
 
         self.__hasPolySeq = self.__polySeq is not None and len(self.__polySeq) > 0
 
@@ -313,13 +313,13 @@ class RosettaMRParserListener(ParseTreeListener):
         for ps in self.__polySeq:
             chainId = ps['chain_id']
             if seqId1 in ps['seq_id']:
-                compId = ps['comp_id'][ps['seq_id'].index(seqId1)]
-                if len(self.__nefT.get_valid_star_atom(compId, atomId1)[0]) > 0:
-                    chainAssign1.append((chainId, seqId1, compId))
+                cifCompId = ps['comp_id'][ps['seq_id'].index(seqId1)]
+                if len(self.__nefT.get_valid_star_atom(cifCompId, atomId1)[0]) > 0:
+                    chainAssign1.append((chainId, seqId1, cifCompId))
             if seqId2 in ps['seq_id']:
-                compId = ps['comp_id'][ps['seq_id'].index(seqId2)]
-                if len(self.__nefT.get_valid_star_atom(compId, atomId2)[0]) > 0:
-                    chainAssign2.append((chainId, seqId2, compId))
+                cifCompId = ps['comp_id'][ps['seq_id'].index(seqId2)]
+                if len(self.__nefT.get_valid_star_atom(cifCompId, atomId2)[0]) > 0:
+                    chainAssign2.append((chainId, seqId2, cifCompId))
 
         if len(chainAssign1) == 0 and self.__altPolySeq is not None:
             for ps in self.__altPolySeq:
@@ -1270,17 +1270,17 @@ class RosettaMRParserListener(ParseTreeListener):
 
         elif ctx.ETABLE():  # min max [many numbers]
             funcType = 'ETABLE'
-            min = float(str(ctx.Float(0)))
-            max = float(str(ctx.Float(1)))
+            _min = float(str(ctx.Float(0)))
+            _max = float(str(ctx.Float(1)))
 
             func['name'] = funcType
-            func['min'] = min
-            func['max'] = max
+            func['min'] = _min
+            func['max'] = _max
 
-            if min > max:
+            if _min > _max:
                 valid = False
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"{funcType} 'min={min}' must be less than or equal to 'max={max}'.\n"
+                    f"{funcType} 'min={_min}' must be less than or equal to 'max={_max}'.\n"
 
             if ctx.Float(2):
                 pass

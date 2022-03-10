@@ -20884,8 +20884,11 @@ class NmrDpUtility:
 
                         # omega
 
-                        if atom_ids[0] == 'O' and atom_ids[1] == 'C' and atom_ids[2] == 'N'\
-                           and (atom_ids[3] == 'H' or atom_ids[3] == 'CA')\
+                        if atom_ids[0] == 'CA' and atom_ids[1] == 'N' and atom_ids[2] == 'C' and atom_ids[3] == 'CA'\
+                           and seq_ids[0] == seq_ids[1] and seq_ids[1] - 1 == seq_ids[2] and seq_ids[2] == seq_ids[3]:
+                            data_type = 'omega'
+
+                        if atom_ids[0] == 'CA' and atom_ids[1] == 'C' and atom_ids[2] == 'N' and atom_ids[3] == 'CA'\
                            and seq_ids[0] == seq_ids[1] and seq_ids[1] + 1 == seq_ids[2] and seq_ids[2] == seq_ids[3]:
                             data_type = 'omega'
 
@@ -28226,8 +28229,11 @@ class NmrDpUtility:
 
                                 # omega
 
-                                if atom_ids[0] == 'O' and atom_ids[1] == 'C' and atom_ids[2] == 'N'\
-                                   and (atom_ids[3] == 'H' or atom_ids[3] == 'CA')\
+                                if atom_ids[0] == 'CA' and atom_ids[1] == 'N' and atom_ids[2] == 'C' and atom_ids[3] == 'CA'\
+                                   and seq_ids[0] == seq_ids[1] and seq_ids[1] - 1 == seq_ids[2] and seq_ids[2] == seq_ids[3]:
+                                    omega_index.append(index_id)
+
+                                if atom_ids[0] == 'CA' and atom_ids[1] == 'C' and atom_ids[2] == 'N' and atom_ids[3] == 'CA'\
                                    and seq_ids[0] == seq_ids[1] and seq_ids[1] + 1 == seq_ids[2] and seq_ids[2] == seq_ids[3]:
                                     omega_index.append(index_id)
 

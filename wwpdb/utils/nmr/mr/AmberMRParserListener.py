@@ -210,18 +210,18 @@ class AmberMRParserListener(ParseTreeListener):
         self.__hasCoord = cR is not None
 
         if self.__hasCoord:
-            dict = checkCoordinates(verbose, log, cR, polySeq,
-                                    coordAtomSite, coordUnobsRes, labelToAuthSeq)
-            self.__modelNumName = dict['model_num_name']
-            self.__authAsymId = dict['auth_asym_id']
-            self.__authSeqId = dict['auth_seq_id']
-            self.__authAtomId = dict['auth_atom_id']
-            self.__altAuthAtomId = dict['alt_auth_atom_id']
-            self.__polySeq = dict['polymer_sequence']
-            self.__altPolySeq = dict['alt_polymer_sequence']
-            self.__coordAtomSite = dict['coord_atom_site']
-            self.__coordUnobsRes = dict['coord_unobs_res']
-            self.__labelToAuthSeq = dict['label_to_auth_seq']
+            ret = checkCoordinates(verbose, log, cR, polySeq,
+                                   coordAtomSite, coordUnobsRes, labelToAuthSeq)
+            self.__modelNumName = ret['model_num_name']
+            self.__authAsymId = ret['auth_asym_id']
+            self.__authSeqId = ret['auth_seq_id']
+            self.__authAtomId = ret['auth_atom_id']
+            self.__altAuthAtomId = ret['alt_auth_atom_id']
+            self.__polySeq = ret['polymer_sequence']
+            self.__altPolySeq = ret['alt_polymer_sequence']
+            self.__coordAtomSite = ret['coord_atom_site']
+            self.__coordUnobsRes = ret['coord_unobs_res']
+            self.__labelToAuthSeq = ret['label_to_auth_seq']
 
         self.__hasPolySeq = self.__polySeq is not None and len(self.__polySeq) > 0
 

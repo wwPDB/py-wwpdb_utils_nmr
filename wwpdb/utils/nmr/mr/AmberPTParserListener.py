@@ -158,8 +158,8 @@ class AmberPTParserListener(ParseTreeListener):
                  ccU=None, csStat=None):
 
         if cR is not None:
-            dict = checkCoordinates(verbose, log, cR, polySeqModel, testTag=False)
-            self.__polySeqModel = dict['polymer_sequence']
+            ret = checkCoordinates(verbose, log, cR, polySeqModel, testTag=False)
+            self.__polySeqModel = ret['polymer_sequence']
 
         self.__hasPolySeqModel = self.__polySeqModel is not None and len(self.__polySeqModel) > 0
 

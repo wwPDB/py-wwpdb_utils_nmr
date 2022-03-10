@@ -482,19 +482,9 @@ class AmberMRParserListener(ParseTreeListener):
                 if self.__cur_subtype == 'dist' and len(self.iat) == COL_DIST:
                     subtype_name = 'distance restraint'
 
-                    if self.lastComment is None:
-                        self.warningMessage += f"[Fatal error] {self.__getCurrentRestraint()}"\
-                            "Failed to recognize AMBER atom numbers "\
-                            "because neither AMBER parameter/topology file nor Sander comment are available."
-                        return
-
-                    if not self.dist_sander_pat.match(self.lastComment):
-                        self.warningMessage += f"[Fatal error] {self.__getCurrentRestraint()}"\
-                            "Failed to recognize AMBER atom numbers "\
-                            f"because Sander comment {self.lastComment!r} couldn't be interpreted as a {subtype_name}."
-                        return
-
-                    g = self.dist_sander_pat.search(self.lastComment).groups()
+                    g = None\
+                        if self.lastComment is None or not self.dist_sander_pat.match(self.lastComment)\
+                        else self.dist_sander_pat.search(self.lastComment).groups()
 
                     for col, iat in enumerate(self.iat):
                         offset = col * 3
@@ -502,48 +492,37 @@ class AmberMRParserListener(ParseTreeListener):
                         if iat > 0:
                             if iat in self.__sanderAtomNumberDict:
                                 pass
-                            else:  # i.g. 90 ARG HG2 92 PHE QE 4.56
-                                try:
-                                    factor = {'auth_seq_id': int(g[offset + 0]),
-                                              'auth_comp_id': g[offset + 1],
-                                              'auth_atom_id': g[offset + 2],
-                                              'iat': iat
-                                              }
-                                    if not self.updateSanderAtomNumberDict(factor):
-                                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                            f"Couldn't specify 'iat({varNum})={iat}' in the coordinates "\
-                                            f"based on Sander comment {' '.join(g[offset:offset+3])!r}.\n"
-                                except ValueError:
-                                    self.warningMessage += f"[Fatal error] {self.__getCurrentRestraint()}"\
-                                        f"Failed to recognize Sander comment {' '.join(g[offset:offset+3])!r} "\
-                                        f"as an atom of {subtype_name}."
-                                except IndexError:
-                                    self.warningMessage += f"[Fatal error] {self.__getCurrentRestraint()}"\
-                                        f"Failed to recognize Sander comment {' '.join(g[offset:offset+3])!r} "\
-                                        f"as an atom of {subtype_name}."
+                            else:
+                                if g is None:
+                                    self.reportSanderCommentIssue(subtype_name)
+                                    return
+                                factor = {'auth_seq_id': int(g[offset + 0]),
+                                          'auth_comp_id': g[offset + 1],
+                                          'auth_atom_id': g[offset + 2],
+                                          'iat': iat
+                                          }
+                                if not self.updateSanderAtomNumberDict(factor):
+                                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                        f"Couldn't specify 'iat({varNum})={iat}' in the coordinates "\
+                                        f"based on Sander comment {' '.join(g[offset:offset+3])!r}.\n"
+
                         elif iat < 0:
                             varNum = col + 1
                             if varNum in self.igr:
                                 igr = self.igr[varNum]
                                 if igr[0] not in self.__sanderAtomNumberDict:
-                                    try:
-                                        factor = {'auth_seq_id': int(g[offset + 0]),
-                                                  'auth_comp_id': g[offset + 1],
-                                                  'auth_atom_id': g[offset + 2],
-                                                  'igr': igr
-                                                  }
-                                        if not self.updateSanderAtomNumberDict(factor):
-                                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                                f"Couldn't specify 'igr({varNum})={igr}' in the coordinates "\
-                                                f"based on Sander comment {' '.join(g[offset:offset+3])!r}.\n"
-                                    except ValueError:
-                                        self.warningMessage += f"[Fatal error] {self.__getCurrentRestraint()}"\
-                                            f"Failed to recognize Sander comment {' '.join(g[offset:offset+3])!r} "\
-                                            f"as an atom of {subtype_name}."
-                                    except IndexError:
-                                        self.warningMessage += f"[Fatal error] {self.__getCurrentRestraint()}"\
-                                            f"Failed to recognize Sander comment {' '.join(g[offset:offset+3])!r} "\
-                                            f"as an atom of {subtype_name}."
+                                    if g is None:
+                                        self.reportSanderCommentIssue(subtype_name)
+                                        return
+                                    factor = {'auth_seq_id': int(g[offset + 0]),
+                                              'auth_comp_id': g[offset + 1],
+                                              'auth_atom_id': g[offset + 2],
+                                              'igr': igr
+                                              }
+                                    if not self.updateSanderAtomNumberDict(factor):
+                                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                            f"Couldn't specify 'igr({varNum})={igr}' in the coordinates "\
+                                            f"based on Sander comment {' '.join(g[offset:offset+3])!r}.\n"
 
         # Amber 10: ambmask
         else:
@@ -639,19 +618,9 @@ class AmberMRParserListener(ParseTreeListener):
                 if self.__cur_subtype == 'dist' and not self.inGenDist:
                     subtype_name = 'distance restraint'
 
-                    if self.lastComment is None:
-                        self.warningMessage += f"[Fatal error] {self.__getCurrentRestraint()}"\
-                            "Failed to recognize AMBER atom numbers "\
-                            "because neither AMBER parameter/topology file nor Sander comment are available."
-                        return
-
-                    if not self.dist_sander_pat.match(self.lastComment):
-                        self.warningMessage += f"[Fatal error] {self.__getCurrentRestraint()}"\
-                            "Failed to recognize AMBER atom numbers "\
-                            f"because Sander comment {self.lastComment!r} couldn't be interpreted as a {subtype_name}."
-                        return
-
-                    g = self.dist_sander_pat.search(self.lastComment).groups()
+                    g = None\
+                        if self.lastComment is None or not self.dist_sander_pat.match(self.lastComment)\
+                        else self.dist_sander_pat.search(self.lastComment).groups()
 
                     for col, funcExp in enumerate(self.funcExprs):
                         offset = col * 3
@@ -662,48 +631,36 @@ class AmberMRParserListener(ParseTreeListener):
                                 if iat in self.__sanderAtomNumberDict:
                                     pass
                                 else:
-                                    try:
-                                        factor = {'auth_seq_id': int(g[offset + 0]),
-                                                  'auth_comp_id': g[offset + 1],
-                                                  'auth_atom_id': g[offset + 2],
-                                                  'iat': iat
-                                                  }
-                                        if not self.updateSanderAtomNumberDict(factor):
-                                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                                f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "\
-                                                f"based on Sander comment {' '.join(g[offset:offset+3])!r}.\n"
-                                    except ValueError:
-                                        self.warningMessage += f"[Fatal error] {self.__getCurrentRestraint()}"\
-                                            f"Failed to recognize Sander comment {' '.join(g[offset:offset+3])!r} "\
-                                            f"as an atom of {subtype_name}."
-                                    except IndexError:
-                                        self.warningMessage += f"[Fatal error] {self.__getCurrentRestraint()}"\
-                                            f"Failed to recognize Sander comment {' '.join(g[offset:offset+3])!r} "\
-                                            f"as an atom of {subtype_name}."
+                                    if g is None:
+                                        self.reportSanderCommentIssue(subtype_name)
+                                        return
+                                    factor = {'auth_seq_id': int(g[offset + 0]),
+                                              'auth_comp_id': g[offset + 1],
+                                              'auth_atom_id': g[offset + 2],
+                                              'iat': iat
+                                              }
+                                    if not self.updateSanderAtomNumberDict(factor):
+                                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                            f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "\
+                                            f"based on Sander comment {' '.join(g[offset:offset+3])!r}.\n"
 
                         else:  # list
                             igr = [_funcExp['igr'] for _funcExp in funcExp if 'igr' in _funcExp]
                             mask = [_funcExp['atom_id'] for _funcExp in funcExp if 'atom_id' in _funcExp]
                             if len(igr) > 0 and len(mask) == 0:  # support igr solely
                                 if igr[0] not in self.__sanderAtomNumberDict:
-                                    try:
-                                        factor = {'auth_seq_id': int(g[offset + 0]),
-                                                  'auth_comp_id': g[offset + 1],
-                                                  'auth_atom_id': g[offset + 2],
-                                                  'igr': igr
-                                                  }
-                                        if not self.updateSanderAtomNumberDict(factor):
-                                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                                f"Couldn't specify 'igr({col+1})={igr}' in the coordinates "\
-                                                f"based on Sander comment {' '.join(g[offset:offset+3])!r}.\n"
-                                    except ValueError:
-                                        self.warningMessage += f"[Fatal error] {self.__getCurrentRestraint()}"\
-                                            f"Failed to recognize Sander comment {' '.join(g[offset:offset+3])!r} "\
-                                            f"as an atom of {subtype_name}."
-                                    except IndexError:
-                                        self.warningMessage += f"[Fatal error] {self.__getCurrentRestraint()}"\
-                                            f"Failed to recognize Sander comment {' '.join(g[offset:offset+3])!r} "\
-                                            f"as an atom of {subtype_name}."
+                                    if g is None:
+                                        self.reportSanderCommentIssue(subtype_name)
+                                        return
+                                    factor = {'auth_seq_id': int(g[offset + 0]),
+                                              'auth_comp_id': g[offset + 1],
+                                              'auth_atom_id': g[offset + 2],
+                                              'igr': igr
+                                              }
+                                    if not self.updateSanderAtomNumberDict(factor):
+                                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                            f"Couldn't specify 'igr({col+1})={igr}' in the coordinates "\
+                                            f"based on Sander comment {' '.join(g[offset:offset+3])!r}.\n"
 
         self.lastComment = None
 
@@ -898,6 +855,18 @@ class AmberMRParserListener(ParseTreeListener):
                                         f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinate.\n"
 
         return None if not found else factor
+
+    def reportSanderCommentIssue(self, subtype_name):
+        """ Report Sander comment issue.
+        """
+        if self.lastComment is None:
+            self.warningMessage += f"[Fatal error] {self.__getCurrentRestraint()}"\
+                "Failed to recognize AMBER atom numbers "\
+                "because neither AMBER parameter/topology file nor Sander comment are available."
+        else:
+            self.warningMessage += f"[Fatal error] {self.__getCurrentRestraint()}"\
+                "Failed to recognize AMBER atom numbers "\
+                f"because Sander comment {self.lastComment!r} couldn't be interpreted as a {subtype_name}."
 
     def updateSanderAtomNumberDict(self, factor, cifCheck=True):
         """ Try to update Sander atom number dictionary.

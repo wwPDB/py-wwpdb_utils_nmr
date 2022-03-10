@@ -142,6 +142,6 @@ class XplorMRReader:
 
 
 if __name__ == "__main__":
-    reader = XplorMRReader(False)
+    reader = XplorMRReader(True)
     reader.parse('../../tests-nmr/mock-data-pdbstat/atom_sel_expr_example.txt',
                  '../../tests-nmr/mock-data-pdbstat/6pvr.cif')

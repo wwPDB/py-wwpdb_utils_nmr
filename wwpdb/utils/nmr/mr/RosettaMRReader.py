@@ -139,6 +139,6 @@ class RosettaMRReader:
 
 
 if __name__ == "__main__":
-    reader = RosettaMRReader(False)
+    reader = RosettaMRReader(True)
     reader.parse('../../tests-nmr/mock-data-daother-7690/Sa1_v90t_30C_noe.txt',
                  '../../tests-nmr/mock-data-daother-7690/D_800470_model_P1.cif.V4')

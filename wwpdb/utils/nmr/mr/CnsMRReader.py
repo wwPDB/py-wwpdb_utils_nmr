@@ -139,6 +139,6 @@ class CnsMRReader:
 
 
 if __name__ == "__main__":
-    reader = CnsMRReader(False)
+    reader = CnsMRReader(True)
     reader.parse('../../tests-nmr/mock-data-pdbstat/atom_sel_expr_example.txt',
                  '../../tests-nmr/mock-data-pdbstat/6pvr.cif')

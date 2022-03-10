@@ -87,6 +87,7 @@ class AmberMRParserListener(ParseTreeListener):
 
     __verbose = None
     __lfh = None
+    __debug = False
 
     nmrRestraints = 0       # AMBER: NMR restraints
     distRestraints = 0      # AMBER: Distance restraints
@@ -426,10 +427,12 @@ class AmberMRParserListener(ParseTreeListener):
                     self.atomSelectionSet.append(atomSelection)
 
                 if self.lastComment is not None:
-                    print('# ' + ' '.join(self.lastComment))
+                    if self.__verbose:
+                        print('# ' + ' '.join(self.lastComment))
 
                 if self.__cur_subtype == 'dist':
 
+                    # simple distance
                     if len(self.iat) == COL_DIST:
                         dstFunc = self.valiateDistanceRange()
 
@@ -438,19 +441,24 @@ class AmberMRParserListener(ParseTreeListener):
 
                         for atom_1 in self.atomSelectionSet[0]:
                             for atom_2 in self.atomSelectionSet[1]:
-                                print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
-                                      f"atom_1={atom_1} atom_2={atom_2} {dstFunc}")
+                                if self.__verbose:
+                                    print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
+                                          f"atom_1={atom_1} atom_2={atom_2} {dstFunc}")
 
-                    else:  # generalized distance 2/3/4
+                    # generalized distance
+                    else:
                         self.rstwt = [0.0, 0.0, 0.0, 0.0]
 
+                # angle
                 elif self.__cur_subtype == 'ang':
                     pass
 
+                # dihedral angle
                 elif self.__cur_subtype == 'dihed':
                     pass
 
-                else:  # plane-(point/plane)
+                # plane-(point/plane) angle
+                else:
                     pass
 
             # try to update AMBER atom number dictionary based on Sander comments
@@ -526,31 +534,32 @@ class AmberMRParserListener(ParseTreeListener):
                                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                                     f"'iat({col+1})={iat}' is not defined in the AMBER parameter/topology file.\n"
                         else:  # ambmask format
-                            factor = self.convertAmbMask(funcExp['seq_id'], funcExp['atom_id'])
+                            factor = self.getAtomNumberDictFromAmbmask(funcExp['seq_id'], funcExp['atom_id'])
                             if factor is not None:
                                 atomSelection.append(factor)
                     else:  # list
                         for _funcExp in funcExp:
-                            if 'iat' in _funcExp:
-                                igr = _funcExp['iat']
+                            if 'igr' in _funcExp:
+                                igr = _funcExp['igr']
                                 if igr in self.__atomNumberDict:
                                     atomSelection.append(self.__atomNumberDict[igr])
                                 else:
                                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                                         f"'igr({col+1})={igr}' is not defined in the AMBER parameter/topology file.\n"
                             else:  # ambmask format
-                                factor = self.convertAmbMask(funcExp['seq_id'], funcExp['atom_id'])
+                                factor = self.getAtomNumberDictFromAmbmask(funcExp['seq_id'], funcExp['atom_id'])
                                 if factor is not None:
                                     atomSelection.append(factor)
 
                     self.atomSelectionSet.append(atomSelection)
 
                 if self.lastComment is not None:
-                    print('# ' + ' '.join(self.lastComment))
+                    if self.__verbose:
+                        print('# ' + ' '.join(self.lastComment))
 
                 if self.__cur_subtype == 'dist':
 
-                    # distance
+                    # simple distance
                     if not self.inGenDist:
                         dstFunc = self.valiateDistanceRange()
 
@@ -559,33 +568,39 @@ class AmberMRParserListener(ParseTreeListener):
 
                         for atom_1 in self.atomSelectionSet[0]:
                             for atom_2 in self.atomSelectionSet[1]:
-                                print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
-                                      f"atom_1={atom_1} atom_2={atom_2} {dstFunc}")
+                                if self.__verbose:
+                                    print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
+                                          f"atom_1={atom_1} atom_2={atom_2} {dstFunc}")
 
-                    # generalized distance 2/3/4
+                    # generalized distance
                     else:
                         for funcExp in self.inGenDist_funcExprs:
                             pass
                         self.rstwt = [0.0, 0.0, 0.0, 0.0]
 
+                # angle
                 elif self.__cur_subtype == 'ang':
                     for funcExp in self.funcExprs:
                         pass
 
+                # dihedral angle
                 elif self.__cur_subtype == 'dihed':
                     for funcExp in self.funcExprs:
                         pass
 
+                # plane-(point/plane) angle
                 else:
-                    for funcExp in self.inPlane_funcExprs:
+                    for funcExp in self.inPlane_funcExprs:  # 1st plane
                         pass
 
-                    if self.inPlane_columnSel == 0:  # plane-point angle
+                    # plane-point angle
+                    if self.inPlane_columnSel == 0:  # point
                         for funcExp in self.funcExprs:
                             pass
 
-                    else:  # plane-plane angle
-                        for funcExp in self.inPlane_funcExprs2:
+                    # plane-plane angle
+                    else:
+                        for funcExp in self.inPlane_funcExprs2:  # 2nd plane
                             pass
 
             # try to update AMBER atom number dictionary based on Sander comments
@@ -624,9 +639,9 @@ class AmberMRParserListener(ParseTreeListener):
                                             f"Failed to recognize Sander comment {' '.join(self.lastComment[offset:offset+3])!r} as a distance restraint."
 
                         else:  # list
-                            igr = [_funcExp['iat'] for _funcExp in funcExp if 'iat' in _funcExp]
+                            igr = [_funcExp['igr'] for _funcExp in funcExp if 'igr' in _funcExp]
                             mask = [_funcExp['atom_id'] for _funcExp in funcExp if 'atom_id' in _funcExp]
-                            if len(igr) > 0 and len(mask) == 0:
+                            if len(igr) > 0 and len(mask) == 0:  # support igr solely
                                 if igr[0] not in self.__sanderAtomNumberDict:
                                     try:
                                         factor = {'auth_seq_id': int(self.lastComment[offset + 0]),
@@ -720,8 +735,8 @@ class AmberMRParserListener(ParseTreeListener):
 
         return dstFunc
 
-    def convertAmbMask(self, seqId, atomId):
-        """ Return similar component of atom number dictionary from Amber 10 ambmask information.
+    def getAtomNumberDictFromAmbmask(self, seqId, atomId):
+        """ Return atom number dictionary like component from Amber 10 ambmask information.
         """
         if not self.__hasPolySeq:
             return None
@@ -784,6 +799,22 @@ class AmberMRParserListener(ParseTreeListener):
                                 self.__authAtomId = 'auth_atom_id'
                             elif self.__preferAuthSeq:
                                 _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck, asis=False)
+                                if _coordAtomSite is not None:
+                                    if _atomId in _coordAtomSite['atom_id']:
+                                        found = True
+                                        self.__preferAuthSeq = False
+                                        self.__authSeqId = 'label_seq_id'
+                                        seqKey = _seqKey
+                                    elif 'alt_atom_id' in _coordAtomSite and _atomId in _coordAtomSite['alt_atom_id']:
+                                        found = True
+                                        self.__preferAuthSeq = False
+                                        self.__authSeqId = 'label_seq_id'
+                                        self.__authAtomId = 'auth_atom_id'
+                                        seqKey = _seqKey
+
+                        elif self.__preferAuthSeq:
+                            _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck, asis=False)
+                            if _coordAtomSite is not None:
                                 if _atomId in _coordAtomSite['atom_id']:
                                     found = True
                                     self.__preferAuthSeq = False
@@ -795,20 +826,6 @@ class AmberMRParserListener(ParseTreeListener):
                                     self.__authSeqId = 'label_seq_id'
                                     self.__authAtomId = 'auth_atom_id'
                                     seqKey = _seqKey
-
-                        elif self.__preferAuthSeq:
-                            _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck, asis=False)
-                            if _atomId in _coordAtomSite['atom_id']:
-                                found = True
-                                self.__preferAuthSeq = False
-                                self.__authSeqId = 'label_seq_id'
-                                seqKey = _seqKey
-                            elif 'alt_atom_id' in _coordAtomSite and _atomId in _coordAtomSite['alt_atom_id']:
-                                found = True
-                                self.__preferAuthSeq = False
-                                self.__authSeqId = 'label_seq_id'
-                                self.__authAtomId = 'auth_atom_id'
-                                seqKey = _seqKey
 
                         if found:
                             factor['chain_id'] = chainId
@@ -904,6 +921,22 @@ class AmberMRParserListener(ParseTreeListener):
                                         self.__authAtomId = 'auth_atom_id'
                                     elif self.__preferAuthSeq:
                                         _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck, asis=False)
+                                        if _coordAtomSite is not None:
+                                            if _atomId in _coordAtomSite['atom_id']:
+                                                found = True
+                                                self.__preferAuthSeq = False
+                                                self.__authSeqId = 'label_seq_id'
+                                                seqKey = _seqKey
+                                            elif 'alt_atom_id' in _coordAtomSite and _atomId in _coordAtomSite['alt_atom_id']:
+                                                found = True
+                                                self.__preferAuthSeq = False
+                                                self.__authSeqId = 'label_seq_id'
+                                                self.__authAtomId = 'auth_atom_id'
+                                                seqKey = _seqKey
+
+                                elif self.__preferAuthSeq:
+                                    _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck, asis=False)
+                                    if _coordAtomSite is not None:
                                         if _atomId in _coordAtomSite['atom_id']:
                                             found = True
                                             self.__preferAuthSeq = False
@@ -915,20 +948,6 @@ class AmberMRParserListener(ParseTreeListener):
                                             self.__authSeqId = 'label_seq_id'
                                             self.__authAtomId = 'auth_atom_id'
                                             seqKey = _seqKey
-
-                                elif self.__preferAuthSeq:
-                                    _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck, asis=False)
-                                    if _atomId in _coordAtomSite['atom_id']:
-                                        found = True
-                                        self.__preferAuthSeq = False
-                                        self.__authSeqId = 'label_seq_id'
-                                        seqKey = _seqKey
-                                    elif 'alt_atom_id' in _coordAtomSite and _atomId in _coordAtomSite['alt_atom_id']:
-                                        found = True
-                                        self.__preferAuthSeq = False
-                                        self.__authSeqId = 'label_seq_id'
-                                        self.__authAtomId = 'auth_atom_id'
-                                        seqKey = _seqKey
 
                                 if found:
                                     factor['chain_id'] = chainId
@@ -969,6 +988,22 @@ class AmberMRParserListener(ParseTreeListener):
                                         self.__authAtomId = 'auth_atom_id'
                                     elif self.__preferAuthSeq:
                                         _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck, asis=False)
+                                        if _coordAtomSite is not None:
+                                            if _atomId in _coordAtomSite['atom_id']:
+                                                found = True
+                                                self.__preferAuthSeq = False
+                                                self.__authSeqId = 'label_seq_id'
+                                                seqKey = _seqKey
+                                            elif 'alt_atom_id' in _coordAtomSite and _atomId in _coordAtomSite['alt_atom_id']:
+                                                found = True
+                                                self.__preferAuthSeq = False
+                                                self.__authSeqId = 'label_seq_id'
+                                                self.__authAtomId = 'auth_atom_id'
+                                                seqKey = _seqKey
+
+                                elif self.__preferAuthSeq:
+                                    _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck, asis=False)
+                                    if _coordAtomSite is not None:
                                         if _atomId in _coordAtomSite['atom_id']:
                                             found = True
                                             self.__preferAuthSeq = False
@@ -980,20 +1015,6 @@ class AmberMRParserListener(ParseTreeListener):
                                             self.__authSeqId = 'label_seq_id'
                                             self.__authAtomId = 'auth_atom_id'
                                             seqKey = _seqKey
-
-                                elif self.__preferAuthSeq:
-                                    _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck, asis=False)
-                                    if _atomId in _coordAtomSite['atom_id']:
-                                        found = True
-                                        self.__preferAuthSeq = False
-                                        self.__authSeqId = 'label_seq_id'
-                                        seqKey = _seqKey
-                                    elif 'alt_atom_id' in _coordAtomSite and _atomId in _coordAtomSite['alt_atom_id']:
-                                        found = True
-                                        self.__preferAuthSeq = False
-                                        self.__authSeqId = 'label_seq_id'
-                                        self.__authAtomId = 'auth_atom_id'
-                                        seqKey = _seqKey
 
                                 if found:
                                     _factor['chain_id'] = chainId
@@ -1310,6 +1331,7 @@ class AmberMRParserListener(ParseTreeListener):
         elif ctx.RJCOEF():
             self.detectRestraintType(False)
 
+        # Amber 10: ambmask
         elif ctx.RESTRAINT():
             self.hasFuncExprs = True
             self.inGenDist = False
@@ -1447,7 +1469,7 @@ class AmberMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by AmberMRParser#distance_rst_func_call.
     def enterDistance_rst_func_call(self, ctx: AmberMRParser.Distance_rst_func_callContext):  # pylint: disable=unused-argument
-        if self.__verbose:
+        if self.__debug:
             print("  " * self.depth + "enter_distance_rst_func")
 
         if self.depth == 0:
@@ -1459,12 +1481,12 @@ class AmberMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by AmberMRParser#distance_rst_func_call.
     def exitDistance_rst_func_call(self, ctx: AmberMRParser.Distance_rst_func_callContext):  # pylint: disable=unused-argument
         self.depth -= 1
-        if self.__verbose:
+        if self.__debug:
             print("  " * self.depth + "exit_distance_rst_func")
 
     # Enter a parse tree produced by AmberMRParser#angle_rst_func_call.
     def enterAngle_rst_func_call(self, ctx: AmberMRParser.Angle_rst_func_callContext):  # pylint: disable=unused-argument
-        if self.__verbose:
+        if self.__debug:
             print("  " * self.depth + "enter_angle_rst_func")
 
         if self.depth == 0:
@@ -1476,12 +1498,12 @@ class AmberMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by AmberMRParser#angle_rst_func_call.
     def exitAngle_rst_func_call(self, ctx: AmberMRParser.Angle_rst_func_callContext):  # pylint: disable=unused-argument
         self.depth -= 1
-        if self.__verbose:
+        if self.__debug:
             print("  " * self.depth + "exit_angle_rst_func")
 
     # Enter a parse tree produced by AmberMRParser#plane_point_angle_rst_func_call.
     def enterPlane_point_angle_rst_func_call(self, ctx: AmberMRParser.Plane_point_angle_rst_func_callContext):  # pylint: disable=unused-argument
-        if self.__verbose:
+        if self.__debug:
             print("  " * self.depth + "enter_plane_point_angle_rst_func")
 
         if self.depth == 0:
@@ -1493,12 +1515,12 @@ class AmberMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by AmberMRParser#plane_point_angle_rst_func_call.
     def exitPlane_point_angle_rst_func_call(self, ctx: AmberMRParser.Plane_point_angle_rst_func_callContext):  # pylint: disable=unused-argument
         self.depth -= 1
-        if self.__verbose:
+        if self.__debug:
             print("  " * self.depth + "exit_plane_point_angle_rst_func")
 
     # Enter a parse tree produced by AmberMRParser#plane_plane_angle_rst_func_call.
     def enterPlane_plane_angle_rst_func_call(self, ctx: AmberMRParser.Plane_plane_angle_rst_func_callContext):  # pylint: disable=unused-argument
-        if self.__verbose:
+        if self.__debug:
             print("  " * self.depth + "enter_plane_plane_angle_rst_func")
 
         if self.depth == 0:
@@ -1510,12 +1532,12 @@ class AmberMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by AmberMRParser#plane_plane_angle_rst_func_call.
     def exitPlane_plane_angle_rst_func_call(self, ctx: AmberMRParser.Plane_plane_angle_rst_func_callContext):  # pylint: disable=unused-argument
         self.depth -= 1
-        if self.__verbose:
+        if self.__debug:
             print("  " * self.depth + "exit_plane_plane_angle_rst_func")
 
     # Enter a parse tree produced by AmberMRParser#torsion_rst_func_call.
     def enterTorsion_rst_func_call(self, ctx: AmberMRParser.Torsion_rst_func_callContext):  # pylint: disable=unused-argument
-        if self.__verbose:
+        if self.__debug:
             print("  " * self.depth + "enter_torsion_rst_func")
 
         if self.depth == 0:
@@ -1527,12 +1549,12 @@ class AmberMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by AmberMRParser#torsion_rst_func_call.
     def exitTorsion_rst_func_call(self, ctx: AmberMRParser.Torsion_rst_func_callContext):  # pylint: disable=unused-argument
         self.depth -= 1
-        if self.__verbose:
+        if self.__debug:
             print("  " * self.depth + "exit_torsion_rst_func")
 
     # Enter a parse tree produced by AmberMRParser#coordinate2_rst_func_call.
     def enterCoordinate2_rst_func_call(self, ctx: AmberMRParser.Coordinate2_rst_func_callContext):  # pylint: disable=unused-argument
-        if self.__verbose:
+        if self.__debug:
             print("  " * self.depth + "enter_coordinate2_rst_func")
 
         if self.depth == 0:
@@ -1549,12 +1571,12 @@ class AmberMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by AmberMRParser#coordinate2_rst_func_call.
     def exitCoordinate2_rst_func_call(self, ctx: AmberMRParser.Coordinate2_rst_func_callContext):  # pylint: disable=unused-argument
         self.depth -= 1
-        if self.__verbose:
+        if self.__debug:
             print("  " * self.depth + "exit_coordinate2_rst_func")
 
     # Enter a parse tree produced by AmberMRParser#coordinate3_rst_func_call.
     def enterCoordinate3_rst_func_call(self, ctx: AmberMRParser.Coordinate3_rst_func_callContext):  # pylint: disable=unused-argument
-        if self.__verbose:
+        if self.__debug:
             print("  " * self.depth + "enter_coordinate3_rst_func")
 
         if self.depth == 0:
@@ -1572,12 +1594,12 @@ class AmberMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by AmberMRParser#coordinate3_rst_func_call.
     def exitCoordinate3_rst_func_call(self, ctx: AmberMRParser.Coordinate3_rst_func_callContext):  # pylint: disable=unused-argument
         self.depth -= 1
-        if self.__verbose:
+        if self.__debug:
             print("  " * self.depth + "exit_coordinate3_rst_func")
 
     # Enter a parse tree produced by AmberMRParser#coordinate4_rst_func_call.
     def enterCoordinate4_rst_func_call(self, ctx: AmberMRParser.Coordinate4_rst_func_callContext):  # pylint: disable=unused-argument
-        if self.__verbose:
+        if self.__debug:
             print("  " * self.depth + "enter_coordinate4_rst_func")
 
         if self.depth == 0:
@@ -1596,7 +1618,7 @@ class AmberMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by AmberMRParser#coordinate4_rst_func_call.
     def exitCoordinate4_rst_func_call(self, ctx: AmberMRParser.Coordinate4_rst_func_callContext):  # pylint: disable=unused-argument
         self.depth -= 1
-        if self.__verbose:
+        if self.__debug:
             print("  " * self.depth + "exit_coordinate4_rst_func")
 
     # Enter a parse tree produced by AmberMRParser#restraint_func_expr.
@@ -1608,12 +1630,15 @@ class AmberMRParserListener(ParseTreeListener):
         funcExpr = {}
 
         if ctx.Integer_F():
-            funcExpr['iat'] = int(str(ctx.Integer_F()))
+            funcExpr['igr' if self.inCom else 'iat'] = int(str(ctx.Integer_F()))
 
-        if ctx.Ambmask_F():
+        elif ctx.Ambmask_F():
             ambmask = str(ctx.Ambmask_F())[1:].split('@')
             funcExpr['seq_id'] = int(ambmask[0])
             funcExpr['atom_id'] = ambmask[1]
+
+        elif ctx.com_rst_func_call():
+            return
 
         if self.inCom:
             self.inCom_funcExprs.append(funcExpr)
@@ -1634,7 +1659,7 @@ class AmberMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by AmberMRParser#plane_rst_func_call.
     def enterPlane_rst_func_call(self, ctx: AmberMRParser.Plane_rst_func_callContext):  # pylint: disable=unused-argument
-        if self.__verbose:
+        if self.__debug:
             print("  " * self.depth + "enter_plane_rst_func")
 
         self.depth += 1
@@ -1650,14 +1675,14 @@ class AmberMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by AmberMRParser#plane_rst_func_call.
     def exitPlane_rst_func_call(self, ctx: AmberMRParser.Plane_rst_func_callContext):  # pylint: disable=unused-argument
         self.depth -= 1
-        if self.__verbose:
+        if self.__debug:
             print("  " * self.depth + "exit_plane_rst_func")
 
         self.inPlane = False
 
     # Enter a parse tree produced by AmberMRParser#com_rst_func_call.
     def enterCom_rst_func_call(self, ctx: AmberMRParser.Com_rst_func_callContext):  # pylint: disable=unused-argument
-        if self.__verbose:
+        if self.__debug:
             print("  " * self.depth + "enter_com_rst_func")
 
         self.depth += 1
@@ -1668,7 +1693,7 @@ class AmberMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by AmberMRParser#com_rst_func_call.
     def exitCom_rst_func_call(self, ctx: AmberMRParser.Com_rst_func_callContext):  # pylint: disable=unused-argument
         self.depth -= 1
-        if self.__verbose:
+        if self.__debug:
             print("  " * self.depth + "exit_com_rst_func")
 
         self.inCom = False

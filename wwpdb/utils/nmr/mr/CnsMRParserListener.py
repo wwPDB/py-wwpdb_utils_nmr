@@ -52,6 +52,7 @@ class CnsMRParserListener(ParseTreeListener):
 
     __verbose = None
     __lfh = None
+    __debug = False
 
     distRestraints = 0      # CNS: Distance restraints
     dihedRestraints = 0     # CNS: Dihedral angle restraints
@@ -503,8 +504,9 @@ class CnsMRParserListener(ParseTreeListener):
             j = i + 1
             for atom_1 in self.atomSelectionSet[i]:
                 for atom_2 in self.atomSelectionSet[j]:
-                    print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
-                          f"atom_1={atom_1} atom_2={atom_2} {dstFunc}")
+                    if self.__verbose:
+                        print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
+                              f"atom_1={atom_1} atom_2={atom_2} {dstFunc}")
 
     # Enter a parse tree produced by CnsMRParser#predict_statement.
     def enterPredict_statement(self, ctx: CnsMRParser.Predict_statementContext):  # pylint: disable=unused-argument
@@ -766,7 +768,7 @@ class CnsMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by CnsMRParser#selection.
     def enterSelection(self, ctx: CnsMRParser.SelectionContext):  # pylint: disable=unused-argument
-        if self.__verbose:
+        if self.__debug:
             print("  " * self.depth + "enter_selection")
 
         if self.inVector3D:
@@ -779,7 +781,7 @@ class CnsMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by CnsMRParser#selection.
     def exitSelection(self, ctx: CnsMRParser.SelectionContext):  # pylint: disable=unused-argument
-        if self.__verbose:
+        if self.__debug:
             print("  " * self.depth + "exit_selection")
 
         atomSelection = self.stackSelections.pop() if self.stackSelections else []
@@ -792,7 +794,7 @@ class CnsMRParserListener(ParseTreeListener):
                         _atomSelection.append(_atom)
             atomSelection = _atomSelection
 
-        if self.__verbose:
+        if self.__debug:
             print("  " * self.depth + f"atom selection: {atomSelection}")
 
         if self.inVector3D:
@@ -812,7 +814,7 @@ class CnsMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by CnsMRParser#selection_expression.
     def enterSelection_expression(self, ctx: CnsMRParser.Selection_expressionContext):
-        if self.__verbose:
+        if self.__debug:
             print("  " * self.depth + f"enter_sel_expr, union: {bool(ctx.Or_op(0))}")
 
         if self.depth > 0 and len(self.factor) > 0:
@@ -828,7 +830,7 @@ class CnsMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by CnsMRParser#selection_expression.
     def exitSelection_expression(self, ctx: CnsMRParser.Selection_expressionContext):  # pylint: disable=unused-argument
         self.depth -= 1
-        if self.__verbose:
+        if self.__debug:
             print("  " * self.depth + "exit_sel_expr")
 
         atomSelection = []
@@ -846,7 +848,7 @@ class CnsMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by CnsMRParser#term.
     def enterTerm(self, ctx: CnsMRParser.TermContext):
-        if self.__verbose:
+        if self.__debug:
             print("  " * self.depth + f"enter_term, intersection: {bool(ctx.And_op(0))}")
 
         self.stackFactors = []
@@ -857,7 +859,7 @@ class CnsMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by CnsMRParser#term.
     def exitTerm(self, ctx: CnsMRParser.TermContext):  # pylint: disable=unused-argument
         self.depth -= 1
-        if self.__verbose:
+        if self.__debug:
             print("  " * self.depth + "exit_term")
 
         while self.stackFactors:
@@ -1065,21 +1067,22 @@ class CnsMRParserListener(ParseTreeListener):
                                         self.__authAtomId = 'auth_atom_id'
                                     elif self.__preferAuthSeq:
                                         _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck, asis=False)
-                                        if _atomId in _coordAtomSite['atom_id']:
-                                            _atom = {}
-                                            _atom['comp_id'] = _coordAtomSite['comp_id']
-                                            _atom['type_symbol'] = _coordAtomSite['type_symbol'][_coordAtomSite['atom_id'].index(_atomId)]
-                                            self.__preferAuthSeq = False
-                                            self.__authSeqId = 'label_seq_id'
-                                            seqKey = _seqKey
-                                        elif 'alt_atom_id' in _coordAtomSite and _atomId in _coordAtomSite['alt_atom_id']:
-                                            _atom = {}
-                                            _atom['comp_id'] = _coordAtomSite['comp_id']
-                                            _atom['type_symbol'] = _coordAtomSite['type_symbol'][_coordAtomSite['alt_atom_id'].index(_atomId)]
-                                            self.__preferAuthSeq = False
-                                            self.__authSeqId = 'label_seq_id'
-                                            self.__authAtomId = 'auth_atom_id'
-                                            seqKey = _seqKey
+                                        if _coordAtomSite is not None:
+                                            if _atomId in _coordAtomSite['atom_id']:
+                                                _atom = {}
+                                                _atom['comp_id'] = _coordAtomSite['comp_id']
+                                                _atom['type_symbol'] = _coordAtomSite['type_symbol'][_coordAtomSite['atom_id'].index(_atomId)]
+                                                self.__preferAuthSeq = False
+                                                self.__authSeqId = 'label_seq_id'
+                                                seqKey = _seqKey
+                                            elif 'alt_atom_id' in _coordAtomSite and _atomId in _coordAtomSite['alt_atom_id']:
+                                                _atom = {}
+                                                _atom['comp_id'] = _coordAtomSite['comp_id']
+                                                _atom['type_symbol'] = _coordAtomSite['type_symbol'][_coordAtomSite['alt_atom_id'].index(_atomId)]
+                                                self.__preferAuthSeq = False
+                                                self.__authSeqId = 'label_seq_id'
+                                                self.__authAtomId = 'auth_atom_id'
+                                                seqKey = _seqKey
 
                                 elif self.__preferAuthSeq:
                                     _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck, asis=False)
@@ -1186,7 +1189,7 @@ class CnsMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by CnsMRParser#factor.
     def enterFactor(self, ctx: CnsMRParser.FactorContext):
-        if self.__verbose:
+        if self.__debug:
             print("  " * self.depth + f"enter_factor, concatenation: {bool(ctx.factor())}")
 
         if ctx.Point():
@@ -1201,7 +1204,7 @@ class CnsMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by CnsMRParser#factor.
     def exitFactor(self, ctx: CnsMRParser.FactorContext):
         self.depth -= 1
-        if self.__verbose:
+        if self.__debug:
             print("  " * self.depth + "exit_factor")
 
         # concatenation
@@ -1211,7 +1214,7 @@ class CnsMRParserListener(ParseTreeListener):
 
         if ctx.All() or ctx.Known():
             clauseName = 'all' if ctx.All() else 'known'
-            if self.__verbose:
+            if self.__debug:
                 print("  " * self.depth + f"--> {clauseName}")
             if not self.__hasCoord:
                 return
@@ -1261,7 +1264,7 @@ class CnsMRParserListener(ParseTreeListener):
 
         elif ctx.Around() or ctx.Saround():
             clauseName = 'around' if ctx.Around() else 'saround'
-            if self.__verbose:
+            if self.__debug:
                 print("  " * self.depth + f"--> {clauseName}")
             if not self.__hasCoord:
                 return
@@ -1423,7 +1426,7 @@ class CnsMRParserListener(ParseTreeListener):
                             f"The {clauseName!r} clause has no effect.\n"
 
         elif ctx.Atom():
-            if self.__verbose:
+            if self.__debug:
                 print("  " * self.depth + "--> atom")
             if not self.__hasPolySeq:
                 return
@@ -1499,7 +1502,7 @@ class CnsMRParserListener(ParseTreeListener):
             self.consumeFactor_expressions("'atom' clause", False)
 
         elif ctx.Attribute():
-            if self.__verbose:
+            if self.__debug:
                 print("  " * self.depth + "--> attribute")
             if not self.__hasCoord:
                 return
@@ -1730,7 +1733,7 @@ class CnsMRParserListener(ParseTreeListener):
                     f"The 'attribute' clause ('{_attr_prop}{_absolute} {opCode} {attr_value}') has no effect.\n"
 
         elif ctx.BondedTo():
-            if self.__verbose:
+            if self.__debug:
                 print("  " * self.depth + "--> bondedto")
             if not self.__hasCoord:
                 return
@@ -1890,7 +1893,7 @@ class CnsMRParserListener(ParseTreeListener):
                     "The 'bondedto' clause has no effect because no atom is selected.\n"
 
         elif ctx.ByGroup():
-            if self.__verbose:
+            if self.__debug:
                 print("  " * self.depth + "--> bygroup")
             if not self.__hasCoord:
                 return
@@ -1997,7 +2000,7 @@ class CnsMRParserListener(ParseTreeListener):
                     "The 'bygroup' clause has no effect because no atom is selected.\n"
 
         elif ctx.ByRes():
-            if self.__verbose:
+            if self.__debug:
                 print("  " * self.depth + "--> byres")
             if not self.__hasCoord:
                 return
@@ -2057,7 +2060,7 @@ class CnsMRParserListener(ParseTreeListener):
                     "The 'byres' clause has no effect because no atom is selected.\n"
 
         elif ctx.Chemical():
-            if self.__verbose:
+            if self.__debug:
                 print("  " * self.depth + "--> chemical")
             if ctx.Colon():  # range expression
                 self.factor['type_symbols'] = [str(ctx.Simple_name(0)), str(ctx.Simple_name(1))]
@@ -2071,7 +2074,7 @@ class CnsMRParserListener(ParseTreeListener):
             self.consumeFactor_expressions("'chemical' clause", False)
 
         elif ctx.Hydrogen():
-            if self.__verbose:
+            if self.__debug:
                 print("  " * self.depth + "--> hydrogen")
             _typeSymbolSelect = set()
             atomTypes = self.__cR.getDictList('atom_type')
@@ -2089,7 +2092,7 @@ class CnsMRParserListener(ParseTreeListener):
 
         elif ctx.Fbox() or ctx.Sfbox():
             clauseName = 'fbox' if ctx.Fbox() else 'sfbox'
-            if self.__verbose:
+            if self.__debug:
                 print("  " * self.depth + f"--> {clauseName}")
             if not self.__hasCoord:
                 return
@@ -2186,7 +2189,7 @@ class CnsMRParserListener(ParseTreeListener):
                     f"The {clauseName!r} clause has no effect.\n"
 
         elif ctx.Id():
-            if self.__verbose:
+            if self.__debug:
                 print("  " * self.depth + "--> id")
             self.factor['atom_id'] = [None]
             self.warningMessage += f"[Unavailable resource] {self.__getCurrentRestraint()}"\
@@ -2194,7 +2197,7 @@ class CnsMRParserListener(ParseTreeListener):
                 "because the internal atom number is not included in the coordinate file.\n"
 
         elif ctx.Name():
-            if self.__verbose:
+            if self.__debug:
                 print("  " * self.depth + "--> name")
             if ctx.Colon():  # range expression
                 self.factor['atom_ids'] = [str(ctx.Simple_name(0)), str(ctx.Simple_name(1))]
@@ -2206,12 +2209,12 @@ class CnsMRParserListener(ParseTreeListener):
                 self.factor['atom_ids'] = [str(ctx.Simple_names(0))]
 
         elif ctx.NONE():
-            if self.__verbose:
+            if self.__debug:
                 print("  " * self.depth + "--> none")
             self.factor['atom_selection'] = []
 
         elif ctx.Not_op():
-            if self.__verbose:
+            if self.__debug:
                 print("  " * self.depth + "--> not")
             if not self.__hasCoord:
                 return
@@ -2241,7 +2244,7 @@ class CnsMRParserListener(ParseTreeListener):
                     "The 'not' clause has no effect.\n"
 
         elif ctx.Point():
-            if self.__verbose:
+            if self.__debug:
                 print("  " * self.depth + "--> point")
             if not self.__hasCoord:
                 return
@@ -2357,7 +2360,7 @@ class CnsMRParserListener(ParseTreeListener):
             self.vector3D = None
 
         elif ctx.Previous():
-            if self.__verbose:
+            if self.__debug:
                 print("  " * self.depth + "--> previous")
             self.factor['atom_id'] = [None]
             self.warningMessage += f"[Unavailable resource] {self.__getCurrentRestraint()}"\
@@ -2365,7 +2368,7 @@ class CnsMRParserListener(ParseTreeListener):
                 "because the internal atom selection is fragile in the restraint file.\n"
 
         elif ctx.Pseudo():
-            if self.__verbose:
+            if self.__debug:
                 print("  " * self.depth + "--> pseudo")
             if not self.__hasCoord:
                 return
@@ -2410,7 +2413,7 @@ class CnsMRParserListener(ParseTreeListener):
                     "The 'pseudo' clause has no effect.\n"
 
         elif ctx.Residue():
-            if self.__verbose:
+            if self.__debug:
                 print("  " * self.depth + "--> residue")
             if ctx.Colon():  # range expression
                 self.factor['seq_id'] = list(range(int(str(ctx.Integer(0))), int(str(ctx.Integer(0))) + 1))
@@ -2422,7 +2425,7 @@ class CnsMRParserListener(ParseTreeListener):
                 self.factor['seq_ids'] = [str(ctx.Integers())]
 
         elif ctx.Resname():
-            if self.__verbose:
+            if self.__debug:
                 print("  " * self.depth + "--> resname")
             if ctx.Colon():  # range expression
                 self.factor['comp_ids'] = [str(ctx.Simple_name(0)), str(ctx.Simple_name(1))]
@@ -2434,7 +2437,7 @@ class CnsMRParserListener(ParseTreeListener):
                 self.factor['comp_ids'] = [str(ctx.Simple_names(0))]
 
         elif ctx.SegIdentifier():
-            if self.__verbose:
+            if self.__debug:
                 print("  " * self.depth + "--> segidentifier")
             if not self.__hasPolySeq:
                 return
@@ -2480,7 +2483,7 @@ class CnsMRParserListener(ParseTreeListener):
         elif ctx.Store_1() or ctx.Store_2() or ctx.Store_3()\
                 or ctx.Store_4() or ctx.Store_5() or ctx.Store_6()\
                 or ctx.Store_7() or ctx.Store_8() or ctx.Store_9():
-            if self.__verbose:
+            if self.__debug:
                 print("  " * self.depth + "--> store[1-9]")
             self.factor['atom_id'] = [None]
             self.warningMessage += f"[Unavailable resource] {self.__getCurrentRestraint()}"\
@@ -2488,7 +2491,7 @@ class CnsMRParserListener(ParseTreeListener):
                 "because the internal vector statement is fragile in the restraint file.\n"
 
         elif ctx.Tag():
-            if self.__verbose:
+            if self.__debug:
                 print("  " * self.depth + "--> tag")
             if not self.__hasCoord:
                 return

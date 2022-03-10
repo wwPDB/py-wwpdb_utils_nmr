@@ -139,6 +139,6 @@ class CyanaMRReader:
 
 
 if __name__ == "__main__":
-    reader = CyanaMRReader(False)
+    reader = CyanaMRReader(True)
     reader.parse('../../tests-nmr/mock-data-daother-5829/D_1000249951_mr-upload_P1.cyana.V1',
                  '../../tests-nmr/mock-data-daother-5829/D_800467_model_P1.cif.V3')

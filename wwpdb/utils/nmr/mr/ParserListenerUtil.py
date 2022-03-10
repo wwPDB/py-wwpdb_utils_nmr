@@ -7,6 +7,7 @@
     @author: Masashi Yokochi
 """
 import sys
+import copy
 import numpy as np
 
 
@@ -17,7 +18,7 @@ DIST_RESTRAINT_RANGE = {'min_inclusive': 0.5, 'max_inclusive': 50.0}
 DIST_RESTRAINT_ERROR = {'min_exclusive': 0.0, 'max_exclusive': 150.0}
 
 
-ANGLE_RESTRAINT_RANGE = {'min_inclusive': -180.0, 'max_inclusive': 180.0}
+ANGLE_RESTRAINT_RANGE = {'min_inclusive': -225.0, 'max_inclusive': 225.0}
 ANGLE_RESTRAINT_ERROR = {'min_exclusive': -360.0, 'max_exclusive': 360.0}
 
 
@@ -45,6 +46,43 @@ def toRegEx(string):
     if '+' in string:  # any digit
         return string.replace('+', '[0-9]+')
     return string
+
+
+def translateAmberAtomNomenclature(atomId):
+    """ Translate AMBER atom nomenclature to the IUPAC one.
+    """
+
+    atomId = atomId.upper()
+    if atomId.endswith("O'1"):
+        atomId = atomId[0:len(atomId) - 3] + "O1'"
+    elif atomId.endswith("O'2"):
+        atomId = atomId[0:len(atomId) - 3] + "O2'"
+    elif atomId.endswith("O'3"):
+        atomId = atomId[0:len(atomId) - 3] + "O3'"
+    elif atomId.endswith("O'4"):
+        atomId = atomId[0:len(atomId) - 3] + "O4'"
+    elif atomId.endswith("O'5"):
+        atomId = atomId[0:len(atomId) - 3] + "O5'"
+    elif atomId.endswith("O'6"):
+        atomId = atomId[0:len(atomId) - 3] + "O6'"
+    elif atomId.endswith("'1"):
+        atomId = atomId.rstrip('1')
+    elif atomId.endswith("'2"):
+        atomId = atomId.rstrip('2') + "'"
+    elif atomId == 'O1P':
+        atomId = 'OP1'
+    elif atomId == 'O2P':
+        atomId = 'OP2'
+    elif atomId == 'O3P':
+        atomId = 'OP3'
+    elif atomId == 'H3T':
+        atomId = "HO3'"
+    elif atomId == 'H5T':
+        atomId = 'HOP2'
+    elif atomId.endswith('"'):
+        atomId = atomId[0:len(atomId) - 1] + "''"
+
+    return atomId
 
 
 def checkCoordinates(verbose=True, log=sys.stdout, cR=None, polySeq=None,
@@ -132,12 +170,27 @@ def checkCoordinates(verbose=True, log=sys.stdout, cR=None, polySeq=None,
                 else:
                     polySeq = []
 
+            altPolySeq = None
+
+            if len(polySeq) > 1:
+                ps = copy.copy(polySeq[0])
+                ps['auth_seq_id'] = ps['seq_id']
+                altPolySeq = [ps]
+                lastSeqId = ps['auth_seq_id'][-1]
+
+                for chainId in range(1, len(polySeq)):
+                    ps = copy.copy(polySeq[chainId])
+                    offset = lastSeqId + 1 - ps['seq_id'][0]
+                    ps['auth_seq_id'] = [s + offset for s in ps['seq_id']]
+                    altPolySeq.append(ps)
+                    lastSeqId = ps['auth_seq_id'][-1]
+
         except Exception as e:
             if verbose:
                 log.write(f"+ParserListenerUtil.checkCoordinates() ++ Error - {str(e)}\n")
 
     if not testTag:
-        return {'polymer_sequence': polySeq}
+        return {'polymer_sequence': polySeq, 'alt_polymer_sequence': altPolySeq}
 
     try:
 
@@ -189,7 +242,7 @@ def checkCoordinates(verbose=True, log=sys.stdout, cR=None, polySeq=None,
                     coordAtomSite[seqKey] = {'comp_id': compId, 'atom_id': atomIds, 'type_symbol': typeSymbols}
                     if altAuthAtomId is not None:
                         altAtomIds = [c['alt_atom_id'] for c in coord
-                                        if c['chain_id'] == chainId and c['seq_id'] is not None and c['seq_id'] == seqId]
+                                      if c['chain_id'] == chainId and c['seq_id'] is not None and c['seq_id'] == seqId]
                         coordAtomSite[seqKey]['alt_atom_id'] = altAtomIds
                     altSeqId = next((c['alt_seq_id'] for c in coord if c['chain_id'] == chainId and c['seq_id'] == seqId), None)
                     if altSeqId is not None and altSeqId.isdigit():
@@ -225,6 +278,7 @@ def checkCoordinates(verbose=True, log=sys.stdout, cR=None, polySeq=None,
             'auth_atom_id': authAtomId,
             'alt_auth_atom_id': altAuthAtomId,
             'polymer_sequence': polySeq,
+            'alt_polymer_sequence': altPolySeq,
             'coord_atom_site': coordAtomSite,
             'coord_unobs_res': coordUnobsRes,
             'label_to_auth_seq': labelToAuthSeq}

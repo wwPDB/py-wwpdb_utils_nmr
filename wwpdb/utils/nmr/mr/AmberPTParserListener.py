@@ -16,7 +16,8 @@ from antlr4 import ParseTreeListener
 try:
     from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
     from wwpdb.utils.nmr.mr.AmberPTParser import AmberPTParser
-    from wwpdb.utils.nmr.mr.ParserListenerUtil import checkCoordinates
+    from wwpdb.utils.nmr.mr.ParserListenerUtil import (checkCoordinates,
+                                                       translateAmberAtomNomenclature)
 
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
@@ -28,7 +29,8 @@ try:
 except ImportError:
     from nmr.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
     from nmr.mr.AmberPTParser import AmberPTParser
-    from nmr.mr.ParserListenerUtil import checkCoordinates
+    from nmr.mr.ParserListenerUtil import (checkCoordinates,
+                                           translateAmberAtomNomenclature)
 
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
@@ -303,34 +305,8 @@ class AmberPTParserListener(ParseTreeListener):
                and 'atom_id' not in atomNum:
                 if self.__ccU.updateChemCompDict(atomNum['comp_id']):
                     chemCompAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]
-                    authAtomId = atomNum['auth_atom_id']
-                    atomId = None
-                    if authAtomId.endswith("O'1"):
-                        atomId = authAtomId[0:len(authAtomId) - 3] + "O1'"
-                    elif authAtomId.endswith("O'2"):
-                        atomId = authAtomId[0:len(authAtomId) - 3] + "O2'"
-                    elif authAtomId.endswith("O'3"):
-                        atomId = authAtomId[0:len(authAtomId) - 3] + "O3'"
-                    elif authAtomId.endswith("O'4"):
-                        atomId = authAtomId[0:len(authAtomId) - 3] + "O4'"
-                    elif authAtomId.endswith("O'5"):
-                        atomId = authAtomId[0:len(authAtomId) - 3] + "O5'"
-                    elif authAtomId.endswith("O'6"):
-                        atomId = authAtomId[0:len(authAtomId) - 3] + "O6'"
-                    elif authAtomId.endswith("'1"):
-                        atomId = authAtomId.rstrip('1')
-                    elif authAtomId.endswith("'2"):
-                        atomId = authAtomId.rstrip('2') + "'"
-                    elif authAtomId == 'O1P':
-                        atomId = 'OP1'
-                    elif authAtomId == 'O2P':
-                        atomId = 'OP2'
-                    elif authAtomId == 'O3P':
-                        atomId = 'OP3'
-                    elif authAtomId == 'H3T':
-                        atomId = "HO3'"
-                    elif authAtomId == 'H5T':
-                        atomId = 'HOP2'
+
+                    atomId = translateAmberAtomNomenclature(atomNum['auth_atom_id'])
 
                     if atomId is not None and atomId in chemCompAtomIds:
                         atomNum['atom_id'] = atomId

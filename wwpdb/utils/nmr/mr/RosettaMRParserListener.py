@@ -176,6 +176,33 @@ class RosettaMRParserListener(ParseTreeListener):
         seqId2 = int(str(ctx.Integer(1)))
         atomId2 = str(ctx.Simple_name(1)).upper()
 
+        dstFunc = self.valiateDistanceRange()
+
+        if dstFunc is None:
+            return
+
+        chainAssign1 = self.assignCoordPolymerSequence(seqId1, atomId1)
+        chainAssign2 = self.assignCoordPolymerSequence(seqId2, atomId2)
+
+        if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+            return
+
+        self.selectCoordAtoms(chainAssign1, seqId1, atomId1)
+        self.selectCoordAtoms(chainAssign2, seqId2, atomId2)
+
+        if len(self.atomSelectionSet) < 2:
+            return
+
+        for atom1 in self.atomSelectionSet[0]:
+            for atom2 in self.atomSelectionSet[1]:
+                if self.__verbose:
+                    print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
+                          f"atom1={atom1} atom2={atom2} {dstFunc}")
+
+    def valiateDistanceRange(self):
+        """ Validate distance value range.
+        """
+
         target_value = None
         lower_limit = None
         upper_limit = None
@@ -215,18 +242,18 @@ class RosettaMRParserListener(ParseTreeListener):
                 level += 1
 
         if srcFunc is None:  # errors are already caught
-            return
+            return None
 
         if level > 1:
             self.warningMessage += f"[Complex data] {self.__getCurrentRestraint()}"\
                 f"Too complex constraint function {firstFunc} can not be converted to NEF/NMR-STAR data.\n"
-            return
+            return None
 
         if target_value is None and lower_limit is None and upper_limit is None\
            and lower_linear_limit is None and upper_linear_limit is None:
             self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
                 f"The constraint function {srcFunc} can not be converted to NEF/NMR-STAR data.\n"
-            return
+            return None
 
         validRange = True
         dstFunc = {'weight': 1.0}
@@ -272,7 +299,7 @@ class RosettaMRParserListener(ParseTreeListener):
                     f"{srcFunc}, the upper linear limit value='{upper_linear_limit}' must be within range {DIST_RESTRAINT_ERROR}.\n"
 
         if not validRange:
-            return
+            return None
 
         if target_value is not None:
             if DIST_RANGE_MIN <= target_value <= DIST_RANGE_MAX:
@@ -309,93 +336,57 @@ class RosettaMRParserListener(ParseTreeListener):
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
                     f"{srcFunc}, the upper linear limit value='{upper_linear_limit}' should be within range {DIST_RESTRAINT_RANGE}.\n"
 
-        chainAssign1 = []
-        chainAssign2 = []
+        return dstFunc
+
+    def assignCoordPolymerSequence(self, seqId, atomId):
+        """ Assign polymer sequences of the coordinates.
+        """
+
+        chainAssign = []
 
         for ps in self.__polySeq:
             chainId = ps['chain_id']
-            if seqId1 in ps['seq_id']:
-                cifCompId = ps['comp_id'][ps['seq_id'].index(seqId1)]
-                if len(self.__nefT.get_valid_star_atom(cifCompId, atomId1)[0]) > 0:
-                    chainAssign1.append((chainId, seqId1, cifCompId))
-            if seqId2 in ps['seq_id']:
-                cifCompId = ps['comp_id'][ps['seq_id'].index(seqId2)]
-                if len(self.__nefT.get_valid_star_atom(cifCompId, atomId2)[0]) > 0:
-                    chainAssign2.append((chainId, seqId2, cifCompId))
+            if seqId in ps['seq_id']:
+                cifCompId = ps['comp_id'][ps['seq_id'].index(seqId)]
+                if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                    chainAssign.append((chainId, seqId, cifCompId))
 
-        if len(chainAssign1) == 0 and self.__altPolySeq is not None:
+        if len(chainAssign) == 0 and self.__altPolySeq is not None:
             for ps in self.__altPolySeq:
                 chainId = ps['chain_id']
-                if seqId1 in ps['auth_seq_id']:
-                    cifCompId = ps['comp_id'][ps['auth_seq_id'].index(seqId1)]
-                    cifSeqId = ps['seq_id'][ps['auth_seq_id'].index(seqId1)]
-                    chainAssign1.append(chainId, cifSeqId, cifCompId)
+                if seqId in ps['auth_seq_id']:
+                    cifCompId = ps['comp_id'][ps['auth_seq_id'].index(seqId)]
+                    cifSeqId = ps['seq_id'][ps['auth_seq_id'].index(seqId)]
+                    chainAssign.append(chainId, cifSeqId, cifCompId)
 
-        if len(chainAssign2) == 0 and self.__altPolySeq is not None:
-            for ps in self.__altPolySeq:
-                chainId = ps['chain_id']
-                if seqId2 in ps['auth_seq_id']:
-                    cifCompId = ps['comp_id'][ps['auth_seq_id'].index(seqId2)]
-                    cifSeqId = ps['seq_id'][ps['auth_seq_id'].index(seqId2)]
-                    chainAssign2.append(chainId, cifSeqId, cifCompId)
-
-        if len(chainAssign1) == 0:
+        if len(chainAssign) == 0:
             self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                f"{seqId1}:{atomId1} is not present in the coordinates.\n"
+                f"{seqId}:{atomId} is not present in the coordinates.\n"
 
-        if len(chainAssign2) == 0:
-            self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                f"{seqId2}:{atomId2} is not present in the coordinates.\n"
+        return chainAssign
 
-        if len(chainAssign1) == 0 or len(chainAssign2) == 0:
-            return
+    def selectCoordAtoms(self, chainAssign, seqId, atomId):
+        """ Select atoms of the coordinates.
+        """
 
         atomSelection = []
 
-        for chainId, cifSeqId, cifCompId in chainAssign1:
+        for chainId, cifSeqId, cifCompId in chainAssign:
             seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, self.__hasCoord)
 
-            _atomId1 = self.__nefT.get_valid_star_atom(cifCompId, atomId1)[0]
-            if len(_atomId1) == 0:
+            _atomId = self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]
+            if len(_atomId) == 0:
                 self.warningMessage += f"[Invalid atom nomenclature] {self.__getCurrentRestraint()}"\
-                    f"{seqId1}:{atomId1} is invalid atom nomenclature.\n"
+                    f"{seqId}:{atomId} is invalid atom nomenclature.\n"
                 continue
 
-            for cifAtomId in _atomId1:
+            for cifAtomId in _atomId:
                 atomSelection.append({'chain_id': chainId, 'seq_id': cifSeqId, 'comp_id': cifCompId, 'atom_id': cifAtomId})
 
                 self.testCoordAtomIdConsistency(chainId, cifSeqId, cifCompId, cifAtomId, seqKey, coordAtomSite)
 
         if len(atomSelection) > 0:
             self.atomSelectionSet.append(atomSelection)
-
-        atomSelection = []
-
-        for chainId, cifSeqId, cifCompId in chainAssign2:
-            seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, self.__hasCoord)
-
-            _atomId2 = self.__nefT.get_valid_star_atom(cifCompId, atomId2)[0]
-            if len(_atomId2) == 0:
-                self.warningMessage += f"[Invalid atom nomenclature] {self.__getCurrentRestraint()}"\
-                    f"{seqId2}:{atomId2} is invalid atom nomenclature.\n"
-                continue
-
-            for cifAtomId in _atomId2:
-                atomSelection.append({'chain_id': chainId, 'seq_id': cifSeqId, 'comp_id': cifCompId, 'atom_id': cifAtomId})
-
-                self.testCoordAtomIdConsistency(chainId, cifSeqId, cifCompId, cifAtomId, seqKey, coordAtomSite)
-
-        if len(atomSelection) > 0:
-            self.atomSelectionSet.append(atomSelection)
-
-        if len(self.atomSelectionSet) < 2:
-            return
-
-        for atom1 in self.atomSelectionSet[0]:
-            for atom2 in self.atomSelectionSet[1]:
-                if self.__verbose:
-                    print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
-                          f"atom1={atom1} atom2={atom2} {dstFunc}")
 
     def testCoordAtomIdConsistency(self, chainId, seqId, compId, atomId, seqKey, coordAtomSite):
         if not self.__hasCoord:
@@ -475,27 +466,11 @@ class RosettaMRParserListener(ParseTreeListener):
     def enterAngle_restraint(self, ctx: RosettaMRParser.Angle_restraintContext):  # pylint: disable=unused-argument
         self.angRestraints += 1
 
-    # Exit a parse tree produced by RosettaMRParser#angle_restraint.
-    def exitAngle_restraint(self, ctx: RosettaMRParser.Angle_restraintContext):  # pylint: disable=unused-argument
-        pass
-
-    # Enter a parse tree produced by RosettaMRParser#dihedral_restraints.
-    def enterDihedral_restraints(self, ctx: RosettaMRParser.Dihedral_restraintsContext):  # pylint: disable=unused-argument
-        self.__cur_subtype = 'dihed'
-
-    # Exit a parse tree produced by RosettaMRParser#dihedral_restraints.
-    def exitDihedral_restraints(self, ctx: RosettaMRParser.Dihedral_restraintsContext):  # pylint: disable=unused-argument
-        pass
-
-    # Enter a parse tree produced by RosettaMRParser#dihedral_restraint.
-    def enterDihedral_restraint(self, ctx: RosettaMRParser.Dihedral_restraintContext):  # pylint: disable=unused-argument
-        self.dihedRestraints += 1
-
         self.stackFuncs = []
         self.atomSelectionSet = []
 
-    # Exit a parse tree produced by RosettaMRParser#dihedral_restraint.
-    def exitDihedral_restraint(self, ctx: RosettaMRParser.Dihedral_restraintContext):
+    # Exit a parse tree produced by RosettaMRParser#angle_restraint.
+    def exitAngle_restraint(self, ctx: RosettaMRParser.Angle_restraintContext):  # pylint: disable=unused-argument
         if not self.__hasPolySeq:
             return
 
@@ -505,8 +480,36 @@ class RosettaMRParserListener(ParseTreeListener):
         atomId2 = str(ctx.Simple_name(1)).upper()
         seqId3 = int(str(ctx.Integer(2)))
         atomId3 = str(ctx.Simple_name(2)).upper()
-        seqId4 = int(str(ctx.Integer(3)))
-        atomId4 = str(ctx.Simple_name(3)).upper()
+
+        dstFunc = self.valiateAngleRange()
+
+        if dstFunc is None:
+            return
+
+        chainAssign1 = self.assignCoordPolymerSequence(seqId1, atomId1)
+        chainAssign2 = self.assignCoordPolymerSequence(seqId2, atomId2)
+        chainAssign3 = self.assignCoordPolymerSequence(seqId3, atomId3)
+
+        if len(chainAssign1) == 0 or len(chainAssign2) == 0 or len(chainAssign3) == 0:
+            return
+
+        self.selectCoordAtoms(chainAssign1, seqId1, atomId1)
+        self.selectCoordAtoms(chainAssign2, seqId2, atomId2)
+        self.selectCoordAtoms(chainAssign3, seqId3, atomId3)
+
+        if len(self.atomSelectionSet) < 3:
+            return
+
+        for atom1 in self.atomSelectionSet[0]:
+            for atom2 in self.atomSelectionSet[1]:
+                for atom3 in self.atomSelectionSet[2]:
+                    if self.__verbose:
+                        print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} "
+                              f"atom1={atom1} atom2={atom2} atom3={atom3} {dstFunc}")
+
+    def valiateAngleRange(self):
+        """ Validate angle value range.
+        """
 
         target_value = None
         lower_limit = None
@@ -547,18 +550,18 @@ class RosettaMRParserListener(ParseTreeListener):
                 level += 1
 
         if srcFunc is None:  # errors are already caught
-            return
+            return None
 
         if level > 1:
             self.warningMessage += f"[Complex data] {self.__getCurrentRestraint()}"\
                 f"Too complex constraint function {firstFunc} can not be converted to NEF/NMR-STAR data.\n"
-            return
+            return None
 
         if target_value is None and lower_limit is None and upper_limit is None\
            and lower_linear_limit is None and upper_linear_limit is None:
             self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
                 f"The constraint function {srcFunc} can not be converted to NEF/NMR-STAR data.\n"
-            return
+            return None
 
         validRange = True
         dstFunc = {'weight': 1.0}
@@ -604,7 +607,7 @@ class RosettaMRParserListener(ParseTreeListener):
                     f"{srcFunc}, the upper linear limit value='{upper_linear_limit}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
 
         if not validRange:
-            return
+            return None
 
         if target_value is not None:
             if ANGLE_RANGE_MIN <= target_value <= ANGLE_RANGE_MAX:
@@ -641,156 +644,55 @@ class RosettaMRParserListener(ParseTreeListener):
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
                     f"{srcFunc}, the upper linear limit value='{upper_linear_limit}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
 
-        chainAssign1 = []
-        chainAssign2 = []
-        chainAssign3 = []
-        chainAssign4 = []
+        return dstFunc
 
-        for ps in self.__polySeq:
-            chainId = ps['chain_id']
-            if seqId1 in ps['seq_id']:
-                cifCompId = ps['comp_id'][ps['seq_id'].index(seqId1)]
-                if len(self.__nefT.get_valid_star_atom(cifCompId, atomId1)[0]) > 0:
-                    chainAssign1.append((chainId, seqId1, cifCompId))
-            if seqId2 in ps['seq_id']:
-                cifCompId = ps['comp_id'][ps['seq_id'].index(seqId2)]
-                if len(self.__nefT.get_valid_star_atom(cifCompId, atomId2)[0]) > 0:
-                    chainAssign2.append((chainId, seqId2, cifCompId))
-            if seqId3 in ps['seq_id']:
-                cifCompId = ps['comp_id'][ps['seq_id'].index(seqId3)]
-                if len(self.__nefT.get_valid_star_atom(cifCompId, atomId3)[0]) > 0:
-                    chainAssign3.append((chainId, seqId3, cifCompId))
-            if seqId4 in ps['seq_id']:
-                cifCompId = ps['comp_id'][ps['seq_id'].index(seqId4)]
-                if len(self.__nefT.get_valid_star_atom(cifCompId, atomId4)[0]) > 0:
-                    chainAssign4.append((chainId, seqId4, cifCompId))
+    # Enter a parse tree produced by RosettaMRParser#dihedral_restraints.
+    def enterDihedral_restraints(self, ctx: RosettaMRParser.Dihedral_restraintsContext):  # pylint: disable=unused-argument
+        self.__cur_subtype = 'dihed'
 
-        if len(chainAssign1) == 0 and self.__altPolySeq is not None:
-            for ps in self.__altPolySeq:
-                chainId = ps['chain_id']
-                if seqId1 in ps['auth_seq_id']:
-                    cifCompId = ps['comp_id'][ps['auth_seq_id'].index(seqId1)]
-                    cifSeqId = ps['seq_id'][ps['auth_seq_id'].index(seqId1)]
-                    chainAssign1.append(chainId, cifSeqId, cifCompId)
+    # Exit a parse tree produced by RosettaMRParser#dihedral_restraints.
+    def exitDihedral_restraints(self, ctx: RosettaMRParser.Dihedral_restraintsContext):  # pylint: disable=unused-argument
+        pass
 
-        if len(chainAssign2) == 0 and self.__altPolySeq is not None:
-            for ps in self.__altPolySeq:
-                chainId = ps['chain_id']
-                if seqId2 in ps['auth_seq_id']:
-                    cifCompId = ps['comp_id'][ps['auth_seq_id'].index(seqId2)]
-                    cifSeqId = ps['seq_id'][ps['auth_seq_id'].index(seqId2)]
-                    chainAssign2.append(chainId, cifSeqId, cifCompId)
+    # Enter a parse tree produced by RosettaMRParser#dihedral_restraint.
+    def enterDihedral_restraint(self, ctx: RosettaMRParser.Dihedral_restraintContext):  # pylint: disable=unused-argument
+        self.dihedRestraints += 1
 
-        if len(chainAssign3) == 0 and self.__altPolySeq is not None:
-            for ps in self.__altPolySeq:
-                chainId = ps['chain_id']
-                if seqId3 in ps['auth_seq_id']:
-                    cifCompId = ps['comp_id'][ps['auth_seq_id'].index(seqId3)]
-                    cifSeqId = ps['seq_id'][ps['auth_seq_id'].index(seqId3)]
-                    chainAssign3.append(chainId, cifSeqId, cifCompId)
+        self.stackFuncs = []
+        self.atomSelectionSet = []
 
-        if len(chainAssign4) == 0 and self.__altPolySeq is not None:
-            for ps in self.__altPolySeq:
-                chainId = ps['chain_id']
-                if seqId4 in ps['auth_seq_id']:
-                    cifCompId = ps['comp_id'][ps['auth_seq_id'].index(seqId4)]
-                    cifSeqId = ps['seq_id'][ps['auth_seq_id'].index(seqId4)]
-                    chainAssign4.append(chainId, cifSeqId, cifCompId)
-
-        if len(chainAssign1) == 0:
-            self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                f"{seqId1}:{atomId1} is not present in the coordinates.\n"
-
-        if len(chainAssign2) == 0:
-            self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                f"{seqId2}:{atomId2} is not present in the coordinates.\n"
-
-        if len(chainAssign3) == 0:
-            self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                f"{seqId3}:{atomId3} is not present in the coordinates.\n"
-
-        if len(chainAssign4) == 0:
-            self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                f"{seqId4}:{atomId4} is not present in the coordinates.\n"
-
-        if len(chainAssign1) == 0 or len(chainAssign2) == 0 or len(chainAssign3) == 0 or len(chainAssign4) == 0:
+    # Exit a parse tree produced by RosettaMRParser#dihedral_restraint.
+    def exitDihedral_restraint(self, ctx: RosettaMRParser.Dihedral_restraintContext):
+        if not self.__hasPolySeq:
             return
 
-        atomSelection = []
+        seqId1 = int(str(ctx.Integer(0)))
+        atomId1 = str(ctx.Simple_name(0)).upper()
+        seqId2 = int(str(ctx.Integer(1)))
+        atomId2 = str(ctx.Simple_name(1)).upper()
+        seqId3 = int(str(ctx.Integer(2)))
+        atomId3 = str(ctx.Simple_name(2)).upper()
+        seqId4 = int(str(ctx.Integer(3)))
+        atomId4 = str(ctx.Simple_name(3)).upper()
 
-        for chainId, cifSeqId, cifCompId in chainAssign1:
-            seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, self.__hasCoord)
+        dstFunc = self.valiateAngleRange()
 
-            _atomId1 = self.__nefT.get_valid_star_atom(cifCompId, atomId1)[0]
-            if len(_atomId1) == 0:
-                self.warningMessage += f"[Invalid atom nomenclature] {self.__getCurrentRestraint()}"\
-                    f"{seqId1}:{atomId1} is invalid atom nomenclature.\n"
-                continue
+        if dstFunc is None:
+            return
 
-            for cifAtomId in _atomId1:
-                atomSelection.append({'chain_id': chainId, 'seq_id': cifSeqId, 'comp_id': cifCompId, 'atom_id': cifAtomId})
+        chainAssign1 = self.assignCoordPolymerSequence(seqId1, atomId1)
+        chainAssign2 = self.assignCoordPolymerSequence(seqId2, atomId2)
+        chainAssign3 = self.assignCoordPolymerSequence(seqId3, atomId3)
+        chainAssign4 = self.assignCoordPolymerSequence(seqId4, atomId4)
 
-                self.testCoordAtomIdConsistency(chainId, cifSeqId, cifCompId, cifAtomId, seqKey, coordAtomSite)
+        if len(chainAssign1) == 0 or len(chainAssign2) == 0\
+           or len(chainAssign3) == 0 or len(chainAssign4) == 0:
+            return
 
-        if len(atomSelection) > 0:
-            self.atomSelectionSet.append(atomSelection)
-
-        atomSelection = []
-
-        for chainId, cifSeqId, cifCompId in chainAssign2:
-            seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, self.__hasCoord)
-
-            _atomId2 = self.__nefT.get_valid_star_atom(cifCompId, atomId2)[0]
-            if len(_atomId2) == 0:
-                self.warningMessage += f"[Invalid atom nomenclature] {self.__getCurrentRestraint()}"\
-                    f"{seqId2}:{atomId2} is invalid atom nomenclature.\n"
-                continue
-
-            for cifAtomId in _atomId2:
-                atomSelection.append({'chain_id': chainId, 'seq_id': cifSeqId, 'comp_id': cifCompId, 'atom_id': cifAtomId})
-
-                self.testCoordAtomIdConsistency(chainId, cifSeqId, cifCompId, cifAtomId, seqKey, coordAtomSite)
-
-        if len(atomSelection) > 0:
-            self.atomSelectionSet.append(atomSelection)
-
-        atomSelection = []
-
-        for chainId, cifSeqId, cifCompId in chainAssign3:
-            seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, self.__hasCoord)
-
-            _atomId3 = self.__nefT.get_valid_star_atom(cifCompId, atomId3)[0]
-            if len(_atomId3) == 0:
-                self.warningMessage += f"[Invalid atom nomenclature] {self.__getCurrentRestraint()}"\
-                    f"{seqId3}:{atomId3} is invalid atom nomenclature.\n"
-                continue
-
-            for cifAtomId in _atomId3:
-                atomSelection.append({'chain_id': chainId, 'seq_id': cifSeqId, 'comp_id': cifCompId, 'atom_id': cifAtomId})
-
-                self.testCoordAtomIdConsistency(chainId, cifSeqId, cifCompId, cifAtomId, seqKey, coordAtomSite)
-
-        if len(atomSelection) > 0:
-            self.atomSelectionSet.append(atomSelection)
-
-        atomSelection = []
-
-        for chainId, cifSeqId, cifCompId in chainAssign4:
-            seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, self.__hasCoord)
-
-            _atomId4 = self.__nefT.get_valid_star_atom(cifCompId, atomId4)[0]
-            if len(_atomId4) == 0:
-                self.warningMessage += f"[Invalid atom nomenclature] {self.__getCurrentRestraint()}"\
-                    f"{seqId4}:{atomId4} is invalid atom nomenclature.\n"
-                continue
-
-            for cifAtomId in _atomId4:
-                atomSelection.append({'chain_id': chainId, 'seq_id': cifSeqId, 'comp_id': cifCompId, 'atom_id': cifAtomId})
-
-                self.testCoordAtomIdConsistency(chainId, cifSeqId, cifCompId, cifAtomId, seqKey, coordAtomSite)
-
-        if len(atomSelection) > 0:
-            self.atomSelectionSet.append(atomSelection)
+        self.selectCoordAtoms(chainAssign1, seqId1, atomId1)
+        self.selectCoordAtoms(chainAssign2, seqId2, atomId2)
+        self.selectCoordAtoms(chainAssign3, seqId3, atomId3)
+        self.selectCoordAtoms(chainAssign4, seqId4, atomId4)
 
         if len(self.atomSelectionSet) < 4:
             return
@@ -819,9 +721,87 @@ class RosettaMRParserListener(ParseTreeListener):
     def enterDihedral_pair_restraint(self, ctx: RosettaMRParser.Dihedral_pair_restraintContext):  # pylint: disable=unused-argument
         self.dihedRestraints += 1
 
+        self.stackFuncs = []
+        self.atomSelectionSet = []
+
     # Exit a parse tree produced by RosettaMRParser#dihedral_pair_restraint.
     def exitDihedral_pair_restraint(self, ctx: RosettaMRParser.Dihedral_pair_restraintContext):  # pylint: disable=unused-argument
-        pass
+        if not self.__hasPolySeq:
+            return
+
+        seqId1 = int(str(ctx.Integer(0)))
+        atomId1 = str(ctx.Simple_name(0)).upper()
+        seqId2 = int(str(ctx.Integer(1)))
+        atomId2 = str(ctx.Simple_name(1)).upper()
+        seqId3 = int(str(ctx.Integer(2)))
+        atomId3 = str(ctx.Simple_name(2)).upper()
+        seqId4 = int(str(ctx.Integer(3)))
+        atomId4 = str(ctx.Simple_name(3)).upper()
+
+        seqId5 = int(str(ctx.Integer(4)))
+        atomId5 = str(ctx.Simple_name(4)).upper()
+        seqId6 = int(str(ctx.Integer(5)))
+        atomId6 = str(ctx.Simple_name(5)).upper()
+        seqId7 = int(str(ctx.Integer(6)))
+        atomId7 = str(ctx.Simple_name(6)).upper()
+        seqId8 = int(str(ctx.Integer(7)))
+        atomId8 = str(ctx.Simple_name(7)).upper()
+
+        dstFunc = self.valiateAngleRange()
+
+        if dstFunc is None:
+            return
+
+        chainAssign1 = self.assignCoordPolymerSequence(seqId1, atomId1)
+        chainAssign2 = self.assignCoordPolymerSequence(seqId2, atomId2)
+        chainAssign3 = self.assignCoordPolymerSequence(seqId3, atomId3)
+        chainAssign4 = self.assignCoordPolymerSequence(seqId4, atomId4)
+        chainAssign5 = self.assignCoordPolymerSequence(seqId5, atomId5)
+        chainAssign6 = self.assignCoordPolymerSequence(seqId6, atomId6)
+        chainAssign7 = self.assignCoordPolymerSequence(seqId7, atomId7)
+        chainAssign8 = self.assignCoordPolymerSequence(seqId8, atomId8)
+
+        if len(chainAssign1) == 0 or len(chainAssign2) == 0\
+           or len(chainAssign3) == 0 or len(chainAssign4) == 0\
+           or len(chainAssign5) == 0 or len(chainAssign6) == 0\
+           or len(chainAssign7) == 0 or len(chainAssign8) == 0:
+            return
+
+        self.selectCoordAtoms(chainAssign1, seqId1, atomId1)
+        self.selectCoordAtoms(chainAssign2, seqId2, atomId2)
+        self.selectCoordAtoms(chainAssign3, seqId3, atomId3)
+        self.selectCoordAtoms(chainAssign4, seqId4, atomId4)
+        self.selectCoordAtoms(chainAssign5, seqId5, atomId5)
+        self.selectCoordAtoms(chainAssign6, seqId6, atomId6)
+        self.selectCoordAtoms(chainAssign7, seqId7, atomId7)
+        self.selectCoordAtoms(chainAssign8, seqId8, atomId8)
+
+        if len(self.atomSelectionSet) < 8:
+            return
+
+        compId = self.atomSelectionSet[0][0]['comp_id']
+        peptide, nucleotide, _ = self.__csStat.getTypeOfCompId(compId)
+
+        for atom1 in self.atomSelectionSet[0]:
+            for atom2 in self.atomSelectionSet[1]:
+                for atom3 in self.atomSelectionSet[2]:
+                    for atom4 in self.atomSelectionSet[3]:
+                        if self.__verbose:
+                            angleName = getTypeOfDihedralRestraint(peptide, nucleotide, [atom1, atom2, atom3, atom4])
+                            print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} "
+                                  f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
+
+        compId = self.atomSelectionSet[4][0]['comp_id']
+        peptide, nucleotide, _ = self.__csStat.getTypeOfCompId(compId)
+
+        for atom1 in self.atomSelectionSet[4]:
+            for atom2 in self.atomSelectionSet[5]:
+                for atom3 in self.atomSelectionSet[6]:
+                    for atom4 in self.atomSelectionSet[7]:
+                        if self.__verbose:
+                            angleName = getTypeOfDihedralRestraint(peptide, nucleotide, [atom1, atom2, atom3, atom4])
+                            print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} "
+                                  f"atom5={atom1} atom6={atom2} atom7={atom3} atom8={atom4} {dstFunc}")
 
     # Enter a parse tree produced by RosettaMRParser#coordinate_restraints.
     def enterCoordinate_restraints(self, ctx: RosettaMRParser.Coordinate_restraintsContext):  # pylint: disable=unused-argument

@@ -140,5 +140,5 @@ class RosettaMRReader:
 
 if __name__ == "__main__":
     reader = RosettaMRReader(True)
-    reader.parse('../../tests-nmr/mock-data-daother-7690/rosetta_dihed.test',  # rosetta_dist.test',
+    reader.parse('../../tests-nmr/mock-data-daother-7690/rosetta_angle.test',  # rosetta_dist.test',
                  '../../tests-nmr/mock-data-daother-7690/D_800470_model_P1.cif.V4')

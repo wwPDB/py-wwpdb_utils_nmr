@@ -114,7 +114,7 @@ class CyanaMRReader:
                 walker = ParseTreeWalker()
                 listener = CyanaMRParserListener(self.__verbose, self.__lfh, self.__cR, self.__polySeqModel,
                                                  self.__coordAtomSite, self.__coordUnobsRes, self.__labelToAuthSeq,
-                                                 self.__ccU, self.__csStat, self.__nefT)
+                                                 self.__ccU, self.__csStat, self.__nefT, 'upl_only')
                 walker.walk(listener, tree)
 
                 messageList = parser_error_listener.getMessageList()

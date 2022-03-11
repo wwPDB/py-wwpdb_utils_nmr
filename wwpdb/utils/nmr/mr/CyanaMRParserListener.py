@@ -69,7 +69,7 @@ class CyanaMRParserListener(ParseTreeListener):
     # NEFTranslator
     __nefT = None
 
-    __assumeUpperLimit = None
+    __upl_or_lol = None  # must be one of (None, 'upl_only', 'upl_w_lol', 'lol_only', 'lol_w_upl')
 
     # CIF reader
     __cR = None
@@ -103,7 +103,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
     def __init__(self, verbose=True, log=sys.stdout, cR=None, polySeq=None,
                  coordAtomSite=None, coordUnobsRes=None, labelToAuthSeq=None,
-                 ccU=None, csStat=None, nefT=None, assumeUpperLimit=True):
+                 ccU=None, csStat=None, nefT=None, upl_or_lol=None):
         self.__verbose = verbose
         self.__lfh = log
         self.__cR = cR
@@ -134,7 +134,12 @@ class CyanaMRParserListener(ParseTreeListener):
         # NEFTranslator
         self.__nefT = NEFTranslator(verbose, log, self.__ccU, self.__csStat) if nefT is None else nefT
 
-        self.__assumeUpperLimit = assumeUpperLimit
+        self.__upl_or_lol = upl_or_lol
+
+        if upl_or_lol not in (None, 'upl_only', 'upl_w_lol', 'lol_only', 'lol_w_upl'):
+            msg = f"The argument 'upl_or_lol' must be one of {(None, 'upl_only', 'upl_w_lol', 'lol_only', 'lol_w_upl')}"
+            self.__lfh.write(f"'+CyanaMRParserListener.__init__() ++ ValueError  -  {msg}\n")
+            raise ValueError(f"'+CyanaMRParserListener.__init__() ++ ValueError  -  {msg}")
 
         self.known_angle_names = ('PHI', 'PSI', 'OMEGA',
                                   'CHI1', 'CHI2', 'CHI3', 'CHI4', 'CHI5',
@@ -181,14 +186,30 @@ class CyanaMRParserListener(ParseTreeListener):
         compId2 = str(ctx.Simple_name(2)).upper()
         atomId2 = str(ctx.Simple_name(3)).upper()
 
-        if self.__assumeUpperLimit:
+        if self.__upl_or_lol is None:
+            msg = f"The 'upl_or_lol' argument must be chosen from {('upl_only', 'upl_w_lol', 'lol_only', 'lol_w_upl')}"
+            self.__lfh.write(f"'+CyanaMRParserListener.exitDistance_restraint() ++ ValueError  -  {msg}\n")
+            raise ValueError(f"'+CyanaMRParserListener.exitDistance_restraint() ++ ValueError  -  {msg}")
+
+        target_value = None
+        lower_limit = None
+        upper_limit = None
+
+        if self.__upl_or_lol == 'upl_only':
             upper_limit = float(str(ctx.Float()))
             lower_limit = 1.8  # default value of PDBStat
-        else:
-            lower_limit = float(str(ctx.Float()))
-            upper_limit = 5.5
+            target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
 
-        target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+        elif self.__upl_or_lol == 'upl_w_lol':
+            upper_limit = float(str(ctx.Float()))
+
+        elif self.__upl_or_lol == 'lol_only':
+            lower_limit = float(str(ctx.Float()))
+            upper_limit = 5.5  # default value of PDBStat
+            target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+
+        else:  # 'lol_w_upl'
+            lower_limit = float(str(ctx.Float()))
 
         validRange = True
         dstFunc = {'weight': 1.0}

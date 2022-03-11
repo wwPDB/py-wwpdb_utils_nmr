@@ -303,7 +303,9 @@ class CnsMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by CnsMRParser#angle_db_restraint.
     def enterAngle_db_restraint(self, ctx: CnsMRParser.Angle_db_restraintContext):  # pylint: disable=unused-argument
-        self.angStatements += 1
+        """
+        @deprecated:  This term has not proved useful in practice and is only here for historical reasons.
+        """
 
     # Exit a parse tree produced by CnsMRParser#angle_db_restraint.
     def exitAngle_db_restraint(self, ctx: CnsMRParser.Angle_db_restraintContext):  # pylint: disable=unused-argument
@@ -913,8 +915,9 @@ class CnsMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by CnsMRParser#angle_db_assign.
     def enterAngle_db_assign(self, ctx: CnsMRParser.Angle_db_assignContext):  # pylint: disable=unused-argument
-        self.angRestraints += 1
-        self.__cur_subtype = 'ang'
+        """
+        @deprecated:  This term has not proved useful in practice and is only here for historical reasons.
+        """
 
     # Exit a parse tree produced by CnsMRParser#angle_db_assign.
     def exitAngle_db_assign(self, ctx: CnsMRParser.Angle_db_assignContext):  # pylint: disable=unused-argument

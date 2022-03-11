@@ -19,6 +19,7 @@ try:
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (toNpArray,
                                                        toRegEx,
                                                        checkCoordinates,
+                                                       getTypeOfDihedralRestraint,
                                                        REPRESENTATIVE_MODEL_ID,
                                                        DIST_RESTRAINT_RANGE,
                                                        DIST_RESTRAINT_ERROR,
@@ -33,6 +34,7 @@ except ImportError:
     from nmr.mr.ParserListenerUtil import (toNpArray,
                                            toRegEx,
                                            checkCoordinates,
+                                           getTypeOfDihedralRestraint,
                                            REPRESENTATIVE_MODEL_ID,
                                            DIST_RESTRAINT_RANGE,
                                            DIST_RESTRAINT_ERROR,
@@ -626,11 +628,11 @@ class XplorMRParserListener(ParseTreeListener):
 
         for i in range(0, len(self.atomSelectionSet), 2):
             j = i + 1
-            for atom_1 in self.atomSelectionSet[i]:
-                for atom_2 in self.atomSelectionSet[j]:
+            for atom1 in self.atomSelectionSet[i]:
+                for atom2 in self.atomSelectionSet[j]:
                     if self.__verbose:
                         print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
-                              f"atom_1={atom_1} atom_2={atom_2} {dstFunc}")
+                              f"atom1={atom1} atom2={atom2} {dstFunc}")
 
     # Enter a parse tree produced by XplorMRParser#predict_statement.
     def enterPredict_statement(self, ctx: XplorMRParser.Predict_statementContext):  # pylint: disable=unused-argument
@@ -770,13 +772,18 @@ class XplorMRParserListener(ParseTreeListener):
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
                     f"The upper linear limit value='{upper_linear_limit}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
 
-        for atom_1 in self.atomSelectionSet[0]:
-            for atom_2 in self.atomSelectionSet[1]:
-                for atom_3 in self.atomSelectionSet[2]:
-                    for atom_4 in self.atomSelectionSet[3]:
+        compId = self.atomSelectionSet[0][0]['comp_id']
+        peptide, nucleotide, _ = self.__csStat.getTypeOfCompId(compId)
+
+        for atom1 in self.atomSelectionSet[0]:
+            for atom2 in self.atomSelectionSet[1]:
+                for atom3 in self.atomSelectionSet[2]:
+                    for atom4 in self.atomSelectionSet[3]:
                         if self.__verbose:
-                            print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} "
-                                  f"atom_1={atom_1} atom_2={atom_2} atom_3={atom_3} atom_4={atom_4} {dstFunc} energy_const={energyConst}")
+                            angleName = getTypeOfDihedralRestraint(peptide, nucleotide, [atom1, atom2, atom3, atom4])
+                            print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} "
+                                  f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc} "
+                                  f"energy_const={energyConst}")
 
     # Enter a parse tree produced by XplorMRParser#sani_statement.
     def enterSani_statement(self, ctx: XplorMRParser.Sani_statementContext):  # pylint: disable=unused-argument
@@ -1592,7 +1599,7 @@ class XplorMRParserListener(ParseTreeListener):
                                         _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId})
                                         if cifCheck and seqKey not in self.__coordUnobsRes:
                                             self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                                f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinate.\n"
+                                                f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.\n"
 
         atomSelection = []
         for atom in _atomSelection:

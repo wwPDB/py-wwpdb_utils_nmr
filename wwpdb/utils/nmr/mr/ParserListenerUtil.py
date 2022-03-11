@@ -7,7 +7,10 @@
     @author: Masashi Yokochi
 """
 import sys
+import re
 import copy
+import collections
+
 import numpy as np
 
 
@@ -24,6 +27,85 @@ ANGLE_RESTRAINT_ERROR = {'min_exclusive': -360.0, 'max_exclusive': 360.0}
 
 RDC_RESTRAINT_RANGE = {'min_exclusive': -100.0, 'max_exclusive': 100.0}
 RDC_RESTRAINT_RANGE = {'min_exclusive': -200.0, 'max_exclusive': 200.0}
+
+
+KNOWN_ANGLE_ATOM_NAMES = {'PHI': ['C', 'N', 'CA', 'C'],  # i-1, i, i, i
+                          'PSI': ['N', 'CA', 'C', 'N'],  # i, i, i, i+1
+                          'OMEGA': ['CA', 'C', 'N', 'CA'],  # i, i, i+1, i+1; different from CYANA's definition [O C N (H or CD for Proline residue)]
+                          'CHI1': ['N', 'CA', 'CB', re.compile(r'^[COS]G1?$')],
+                          'CHI2': ['CA', 'CB', re.compile(r'^CG1?$'), re.compile(r'^[CNOS]D1?$')],
+                          'CHI3': ['CB', 'CG', re.compile(r'^[CS]D$'), re.compile(r'^[CNO]E1?$')],
+                          'CHI4': ['CG', 'CD', re.compile(r'^[CN]E$'), re.compile(r'^[CN]Z$')],
+                          'CHI5': ['CD', 'NE', 'CZ', 'NH1'],
+                          'CHI21': ['CA', 'CB', re.compile(r'^[CO]G1$'), re.compile(r'^CD1|HG11?$')],  # ILE: (CG1, CD1), THR: (OG1, HG1), VAL: (CD1, HG11)
+                          'CHI22': ['CA', 'CB', 'CG2', 'HG21'],  # ILE or THR or VAL
+                          'CHI31': ['CB', re.compile(r'^CG1?$'), 'CD1', 'HD11'],  # ILE: CG1, LEU: CG
+                          'CHI32': ['CB', 'CG', re.compile(r'^[CO]D2$'), re.compile(r'^HD21?$')],  # ASP: (OD2, HD2), LEU: (CD2, HD21)
+                          'CHI42': ['CG', 'CD', 'OE2', 'HE2'],  # GLU
+                          'ALPHA': ["O3'", 'P', "O5'", "C5'"],  # i-1, i, i, i
+                          'BETA': ['P', "O5'", "C5'", "C4'"],
+                          'GAMMA': ["O5'", "C5'", "C4'", "C3'"],
+                          'DELTA': ["C5'", "C4'", "C3'", "O3'"],
+                          'EPSILON': ["C4'", "C3'", "O3'", 'P'],  # i, i, i, i+1
+                          'ZETA': ["C3'", "O3'", 'P', "O5'"],  # i, i, i+1, i+1
+                          'CHI': {'Y': ["O4'", "C1'", 'N1', 'C2'],  # pyrimidines (i.e. C, T, U) N1/3
+                                  'R': ["O4'", "C1'", 'N9', 'C4']  # purines (i.e. G, A) N1/3/7/9
+                                  },
+                          'ETA': ["C4'", 'P', "C4'", 'P'],  # i-1, i, i, i+1
+                          'THETA': ['P', "C4'", 'P', "C4'"],  # i, i, i+1, i+1
+                          "ETA'": ["C1'", 'P', "C1'", 'P'],  # i-1, i, i, i+1
+                          "THETA'": ['P', "C1'", 'P', "C1'"],  # i, i, i+1, i+1
+                          'NU0': ["C4'", "O4'", "C1'", "C2'"],
+                          'NU1': ["O4'", "C1'", "C2'", "C3'"],
+                          'NU2': ["C1'", "C2'", "C3'", "C4'"],
+                          'NU3': ["C2'", "C3'", "C4'", "O4'"],
+                          'NU4': ["C3'", "C4'", "O4'", "C1'"],
+                          'TAU0': ["C4'", "O4'", "C1'", "C2'"],  # identical to NU0
+                          'TAU1': ["O4'", "C1'", "C2'", "C3'"],  # identical to NU1
+                          'TAU2': ["C1'", "C2'", "C3'", "C4'"],  # identical to NU2
+                          'TAU3': ["C2'", "C3'", "C4'", "O4'"],  # identical to NU3
+                          'TAU4': ["C3'", "C4'", "O4'", "C1'"]  # identical to NU4
+                          }
+
+KNOWN_ANGLE_NAMES = KNOWN_ANGLE_ATOM_NAMES.keys()
+
+KNOWN_ANGLE_SEQ_OFFSET = {'PHI': [-1, 0, 0, 0],  # i-1, i, i, i
+                          'PSI': [0, 0, 0, 1],  # i, i, i, i+1
+                          'OMEGA': [0, 0, 1, 1],  # i, i, i+1, i+1; different from CYANA's definition [O C N (H or CD for Proline residue)]
+                          'CHI1': [0] * 4,
+                          'CHI2': [0] * 4,
+                          'CHI3': [0] * 4,
+                          'CHI4': [0] * 4,
+                          'CHI5': [0] * 4,
+                          'CHI21': [0] * 4,  # ILE: (CG1, CD1), THR: (OG1, HG1), VAL: (CD1, HG11)
+                          'CHI22': [0] * 4,  # ILE or THR or VAL
+                          'CHI31': [0] * 4,  # ILE: CG1, LEU: CG
+                          'CHI32': [0] * 4,  # ASP: (OD2, HD2), LEU: (CD2, HD21)
+                          'CHI42': [0] * 4,  # GLU
+                          'ALPHA': [-1, 0, 0, 0],  # i-1, i, i, i
+                          'BETA': [0] * 4,
+                          'GAMMA': [0] * 4,
+                          'DELTA': [0] * 4,
+                          'EPSILON': [0, 0, 0, 1],  # i, i, i, i+1
+                          'ZETA': [0, 0, 1, 1],  # i, i, i+1, i+1
+                          'CHI': {'Y': [0] * 4,  # pyrimidines (i.e. C, T, U) N1/3
+                                  'R': [0] * 4  # purines (i.e. G, A) N1/3/7/9
+                                  },
+                          'ETA': [-1, 0, 0, 1],  # i-1, i, i, i+1
+                          'THETA': [0, 0, 1, 1],  # i, i, i+1, i+1
+                          "ETA'": [-1, 0, 0, 1],  # i-1, i, i, i+1
+                          "THETA'": [0, 0, 1, 1],  # i, i, i+1, i+1
+                          'NU0': [0] * 4,
+                          'NU1': [0] * 4,
+                          'NU2': [0] * 4,
+                          'NU3': [0] * 4,
+                          'NU4': [0] * 4,
+                          'TAU0': [0] * 4,  # identical to NU0
+                          'TAU1': [0] * 4,  # identical to NU1
+                          'TAU2': [0] * 4,  # identical to NU2
+                          'TAU3': [0] * 4,  # identical to NU3
+                          'TAU4': [0] * 4  # identical to NU4
+                          }
 
 
 def toNpArray(atom):
@@ -180,7 +262,10 @@ def checkCoordinates(verbose=True, log=sys.stdout, cR=None, polySeq=None,
 
                 for chainId in range(1, len(polySeq)):
                     ps = copy.copy(polySeq[chainId])
-                    offset = lastSeqId + 1 - ps['seq_id'][0]
+                    if ps['seq_id'][0] <= lastSeqId:
+                        offset = lastSeqId + 1 - ps['seq_id'][0]
+                    else:
+                        offset = 0
                     ps['auth_seq_id'] = [s + offset for s in ps['seq_id']]
                     altPolySeq.append(ps)
                     lastSeqId = ps['auth_seq_id'][-1]
@@ -282,3 +367,180 @@ def checkCoordinates(verbose=True, log=sys.stdout, cR=None, polySeq=None,
             'coord_atom_site': coordAtomSite,
             'coord_unobs_res': coordUnobsRes,
             'label_to_auth_seq': labelToAuthSeq}
+
+
+def getTypeOfDihedralRestraint(polypeptide, nucleotide, atoms):
+    """ Return type of dihedral angle restraint.
+    """
+
+    seqIds = [a['seq_id'] for a in atoms]
+    atomIds = [a['atom_id'] for a in atoms]
+
+    commonSeqId = collections.Counter(seqIds).most_common()
+
+    lenCommonSeqId = len(commonSeqId)
+
+    if polypeptide:
+
+        if lenCommonSeqId == 2:
+
+            phiPsiCommonAtomIds = ['N', 'CA', 'C']
+
+            # PHI or PSI
+            if commonSeqId[0][1] == 3 and commonSeqId[1][1] == 1:
+
+                # PHI
+                prevSeqId = commonSeqId[1][0]
+
+                if commonSeqId[0][0] == prevSeqId + 1:
+
+                    j = 0
+                    if seqIds[j] == prevSeqId and atomIds[j] == 'C':
+                        atomIds.pop(j)
+                        if atomIds == phiPsiCommonAtomIds:
+                            return 'PHI'
+
+                # PSI
+                nextSeqId = commonSeqId[1][0]
+
+                if commonSeqId[0][0] == nextSeqId - 1:
+
+                    j = 3
+                    if seqIds[j] == nextSeqId and atomIds[j] == 'N':
+                        atomIds.pop(j)
+                        if atomIds == phiPsiCommonAtomIds:
+                            return 'PSI'
+
+            # OMEGA
+            if atomIds[0] == 'CA' and atomIds[1] == 'N' and atomIds[2] == 'C' and atomIds[3] == 'CA'\
+               and seqIds[0] == seqIds[1] and seqIds[1] - 1 == seqIds[2] and seqIds[2] == seqIds[3]:
+                return 'OMEGA'
+
+            if atomIds[0] == 'CA' and atomIds[1] == 'C' and atomIds[2] == 'N' and atomIds[3] == 'CA'\
+               and seqIds[0] == seqIds[1] and seqIds[1] + 1 == seqIds[2] and seqIds[2] == seqIds[3]:
+                return 'OMEGA'
+
+            # OMEGA - CYANA version
+            if atomIds[0] == 'O' and atomIds[1] == 'C' and atomIds[2] == 'N'\
+               and (atomIds[3] == 'H' or atomIds[3] == 'CD')\
+               and seqIds[0] == seqIds[1] and seqIds[1] + 1 == seqIds[2] and seqIds[2] == seqIds[3]:
+                return 'OMEGA'
+
+        elif lenCommonSeqId == 1:
+
+            testDataType = ['CHI1', 'CHI2', 'CHI3', 'CHI4', 'CHI5',
+                            'CHI21', 'CHI22', 'CHI31', 'CHI32', 'CHI42']
+
+            for dataType in testDataType:
+
+                found = True
+
+                for atomId, angAtomId in zip(atomIds, KNOWN_ANGLE_ATOM_NAMES[dataType]):
+
+                    if isinstance(angAtomId, str):
+                        if atomId != angAtomId:
+                            found = False
+                            break
+
+                    else:
+                        if not angAtomId.match(atomId):
+                            found = False
+                            break
+
+                if found:
+                    return dataType
+
+    elif nucleotide:
+
+        if lenCommonSeqId == 3:
+
+            # ETA or ETA'
+            _seqIds = [s - o for s, o in zip(seqIds, KNOWN_ANGLE_SEQ_OFFSET['ETA'])]
+            _commonSeqId = collections.Counter(_seqIds).most_common()
+
+            if len(_commonSeqId) == 1:
+
+                testDataType = ['ETA', "ETA'"]
+
+                for dataType in testDataType:
+
+                    found = True
+
+                    for atomId, angAtomId in zip(atomIds, KNOWN_ANGLE_ATOM_NAMES[dataType]):
+
+                        if atomId != angAtomId:
+                            found = False
+                            break
+
+                    if found:
+                        return dataType
+
+        elif lenCommonSeqId == 2:
+
+            # ALPHA or EPSILON or ZETA or THETA or or THETA'
+            testDataType = ['ALPHA', 'EPSILON', 'ZETA', 'THETA', "THETA'"]
+
+            for dataType in testDataType:
+                _seqIds = [s - o for s, o in zip(seqIds, KNOWN_ANGLE_SEQ_OFFSET[dataType])]
+                _commonSeqId = collections.Counter(_seqIds).most_common()
+
+                if len(_commonSeqId) == 1:
+
+                    found = True
+
+                    for atomId, angAtomId in zip(atomIds, KNOWN_ANGLE_ATOM_NAMES[dataType]):
+
+                        if atomId != angAtomId:
+                            found = False
+                            break
+
+                    if found:
+                        return dataType
+
+        elif lenCommonSeqId == 1:
+
+            if 'N1' in atomIds:
+
+                found = True
+
+                for atomId, angAtomId in zip(atomIds, KNOWN_ANGLE_ATOM_NAMES['CHI']['Y']):
+
+                    if atomId != angAtomId:
+                        found = False
+                        break
+
+                if found:
+                    return 'CHI'
+
+            elif 'N9' in atomIds:
+
+                found = True
+
+                for atomId, angAtomId in zip(atomIds, KNOWN_ANGLE_ATOM_NAMES['CHI']['R']):
+
+                    if atomId != angAtomId:
+                        found = False
+                        break
+
+                if found:
+                    return 'CHI'
+
+            else:
+
+                # BETA or GAMMA or DELTA or NU0 or NU1 or NU2 or NU4
+                testDataType = ['BETA', 'GAMMA', 'DELTA', 'NU0', 'NU1', 'NU2', 'NU3', 'NU4']
+
+                for dataType in testDataType:
+
+                    found = True
+
+                    for atomId, angAtomId in zip(atomIds, KNOWN_ANGLE_ATOM_NAMES[dataType]):
+
+                        if atomId != angAtomId:
+                            found = False
+                            break
+
+                    if found:
+                        return dataType
+
+    return '.'

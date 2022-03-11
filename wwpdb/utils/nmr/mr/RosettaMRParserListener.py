@@ -16,6 +16,7 @@ from antlr4 import ParseTreeListener
 try:
     from wwpdb.utils.nmr.mr.RosettaMRParser import RosettaMRParser
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (checkCoordinates,
+                                                       getTypeOfDihedralRestraint,
                                                        DIST_RESTRAINT_RANGE,
                                                        DIST_RESTRAINT_ERROR,
                                                        ANGLE_RESTRAINT_RANGE,
@@ -27,6 +28,7 @@ try:
 except ImportError:
     from nmr.mr.RosettaMRParser import RosettaMRParser
     from nmr.mr.ParserListenerUtil import (checkCoordinates,
+                                           getTypeOfDihedralRestraint,
                                            DIST_RESTRAINT_RANGE,
                                            DIST_RESTRAINT_ERROR,
                                            ANGLE_RESTRAINT_RANGE,
@@ -339,11 +341,11 @@ class RosettaMRParserListener(ParseTreeListener):
 
         if len(chainAssign1) == 0:
             self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                f"{seqId1}:{atomId1} is not present in the coordinate.\n"
+                f"{seqId1}:{atomId1} is not present in the coordinates.\n"
 
         if len(chainAssign2) == 0:
             self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                f"{seqId2}:{atomId2} is not present in the coordinate.\n"
+                f"{seqId2}:{atomId2} is not present in the coordinates.\n"
 
         if len(chainAssign1) == 0 or len(chainAssign2) == 0:
             return
@@ -389,11 +391,11 @@ class RosettaMRParserListener(ParseTreeListener):
         if len(self.atomSelectionSet) < 2:
             return
 
-        for atom_1 in self.atomSelectionSet[0]:
-            for atom_2 in self.atomSelectionSet[1]:
+        for atom1 in self.atomSelectionSet[0]:
+            for atom2 in self.atomSelectionSet[1]:
                 if self.__verbose:
                     print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
-                          f"atom_1={atom_1} atom_2={atom_2} {dstFunc}")
+                          f"atom1={atom1} atom2={atom2} {dstFunc}")
 
     def testCoordAtomIdConsistency(self, chainId, seqId, compId, atomId, seqKey, coordAtomSite):
         if not self.__hasCoord:
@@ -444,7 +446,7 @@ class RosettaMRParserListener(ParseTreeListener):
             cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId), None)
             if cca is not None and seqKey not in self.__coordUnobsRes:
                 self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                    f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinate.\n"
+                    f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.\n"
 
     def getCoordAtomSiteOf(self, chainId, seqId, cifCheck=True, asis=True):
         seqKey = (chainId, seqId)

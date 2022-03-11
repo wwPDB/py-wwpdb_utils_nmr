@@ -17,6 +17,7 @@ try:
     from wwpdb.utils.nmr.mr.AmberMRParser import AmberMRParser
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (checkCoordinates,
                                                        translateAmberAtomNomenclature,
+                                                       getTypeOfDihedralRestraint,
                                                        DIST_RESTRAINT_RANGE,
                                                        DIST_RESTRAINT_ERROR,
                                                        ANGLE_RESTRAINT_RANGE,
@@ -29,6 +30,7 @@ except ImportError:
     from nmr.mr.AmberMRParser import AmberMRParser
     from nmr.mr.ParserListenerUtil import (checkCoordinates,
                                            translateAmberAtomNomenclature,
+                                           getTypeOfDihedralRestraint,
                                            DIST_RESTRAINT_RANGE,
                                            DIST_RESTRAINT_ERROR,
                                            ANGLE_RESTRAINT_RANGE,
@@ -489,11 +491,11 @@ class AmberMRParserListener(ParseTreeListener):
                         if dstFunc is None:
                             return
 
-                        for atom_1 in self.atomSelectionSet[0]:
-                            for atom_2 in self.atomSelectionSet[1]:
+                        for atom1 in self.atomSelectionSet[0]:
+                            for atom2 in self.atomSelectionSet[1]:
                                 if self.__verbose:
                                     print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
-                                          f"atom_1={atom_1} atom_2={atom_2} {dstFunc}")
+                                          f"atom1={atom1} atom2={atom2} {dstFunc}")
 
                     # generalized distance
                     else:
@@ -515,12 +517,12 @@ class AmberMRParserListener(ParseTreeListener):
                     if dstFunc is None:
                         return
 
-                    for atom_1 in self.atomSelectionSet[0]:
-                        for atom_2 in self.atomSelectionSet[1]:
-                            for atom_3 in self.atomSelectionSet[2]:
+                    for atom1 in self.atomSelectionSet[0]:
+                        for atom2 in self.atomSelectionSet[1]:
+                            for atom3 in self.atomSelectionSet[2]:
                                 if self.__verbose:
                                     print(f"subtype={self.__cur_subtype} id={self.angRestraints} "
-                                          f"atom_1={atom_1} atom_2={atom_2} atom_3={atom_3} {dstFunc}")
+                                          f"atom1={atom1} atom2={atom2} atom3={atom3} {dstFunc}")
 
                 # torsional angle
                 elif self.__cur_subtype == 'dihed':
@@ -538,13 +540,17 @@ class AmberMRParserListener(ParseTreeListener):
                     if dstFunc is None:
                         return
 
-                    for atom_1 in self.atomSelectionSet[0]:
-                        for atom_2 in self.atomSelectionSet[1]:
-                            for atom_3 in self.atomSelectionSet[2]:
-                                for atom_4 in self.atomSelectionSet[3]:
+                    compId = self.atomSelectionSet[0][0]['comp_id']
+                    peptide, nucleotide, _ = self.__csStat.getTypeOfCompId(compId)
+
+                    for atom1 in self.atomSelectionSet[0]:
+                        for atom2 in self.atomSelectionSet[1]:
+                            for atom3 in self.atomSelectionSet[2]:
+                                for atom4 in self.atomSelectionSet[3]:
                                     if self.__verbose:
-                                        print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} "
-                                              f"atom_1={atom_1} atom_2={atom_2} atom_3={atom_3} atom_4={atom_4} {dstFunc}")
+                                        angleName = getTypeOfDihedralRestraint(peptide, nucleotide, [atom1, atom2, atom3, atom4])
+                                        print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} "
+                                              f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
 
                 # plane-(point/plane) angle
                 else:
@@ -826,11 +832,11 @@ class AmberMRParserListener(ParseTreeListener):
                         if dstFunc is None:
                             return
 
-                        for atom_1 in self.atomSelectionSet[0]:
-                            for atom_2 in self.atomSelectionSet[1]:
+                        for atom1 in self.atomSelectionSet[0]:
+                            for atom2 in self.atomSelectionSet[1]:
                                 if self.__verbose:
                                     print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
-                                          f"atom_1={atom_1} atom_2={atom_2} {dstFunc}")
+                                          f"atom1={atom1} atom2={atom2} {dstFunc}")
 
                     # generalized distance
                     else:
@@ -858,12 +864,12 @@ class AmberMRParserListener(ParseTreeListener):
                     if dstFunc is None:
                         return
 
-                    for atom_1 in self.atomSelectionSet[0]:
-                        for atom_2 in self.atomSelectionSet[1]:
-                            for atom_3 in self.atomSelectionSet[2]:
+                    for atom1 in self.atomSelectionSet[0]:
+                        for atom2 in self.atomSelectionSet[1]:
+                            for atom3 in self.atomSelectionSet[2]:
                                 if self.__verbose:
                                     print(f"subtype={self.__cur_subtype} id={self.angRestraints} "
-                                          f"atom_1={atom_1} atom_2={atom_2} atom_3={atom_3} {dstFunc}")
+                                          f"atom1={atom1} atom2={atom2} atom_3={atom3} {dstFunc}")
 
                 # torsional angle
                 elif self.__cur_subtype == 'dihed':
@@ -887,13 +893,17 @@ class AmberMRParserListener(ParseTreeListener):
                     if dstFunc is None:
                         return
 
-                    for atom_1 in self.atomSelectionSet[0]:
-                        for atom_2 in self.atomSelectionSet[1]:
-                            for atom_3 in self.atomSelectionSet[2]:
-                                for atom_4 in self.atomSelectionSet[3]:
+                    compId = self.atomSelectionSet[0][0]['comp_id']
+                    peptide, nucleotide, _ = self.__csStat.getTypeOfCompId(compId)
+
+                    for atom1 in self.atomSelectionSet[0]:
+                        for atom2 in self.atomSelectionSet[1]:
+                            for atom3 in self.atomSelectionSet[2]:
+                                for atom4 in self.atomSelectionSet[3]:
                                     if self.__verbose:
-                                        print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} "
-                                              f"atom_1={atom_1} atom_2={atom_2} atom_3={atom_3} atom_4={atom_4} {dstFunc}")
+                                        angleName = getTypeOfDihedralRestraint(peptide, nucleotide, [atom1, atom2, atom3, atom4])
+                                        print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} "
+                                              f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
 
                 # plane-(point/plane) angle
                 else:
@@ -1390,7 +1400,7 @@ class AmberMRParserListener(ParseTreeListener):
                                 factor['auth_atom_id'] = authAtomId
                                 if cifCheck and seqKey not in self.__coordUnobsRes:
                                     self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                        f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinate.\n"
+                                        f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
                                 return factor
 
         if not useDefault or self.__altPolySeq is None:
@@ -1503,7 +1513,7 @@ class AmberMRParserListener(ParseTreeListener):
                                         self.__sanderAtomNumberDict[iat] = factor
                                         if cifCheck and seqKey not in self.__coordUnobsRes:
                                             self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                                f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinate.\n"
+                                                f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
                                         return True
 
                     elif 'igr' in factor:
@@ -1571,7 +1581,7 @@ class AmberMRParserListener(ParseTreeListener):
                                         self.__sanderAtomNumberDict[igr] = _factor
                                         if cifCheck and seqKey not in self.__coordUnobsRes:
                                             self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                                f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinate.\n"
+                                                f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
 
                         if found:
                             return True

@@ -17,7 +17,10 @@ try:
                                                        DIST_RESTRAINT_RANGE,
                                                        DIST_RESTRAINT_ERROR,
                                                        ANGLE_RESTRAINT_RANGE,
-                                                       ANGLE_RESTRAINT_ERROR)
+                                                       ANGLE_RESTRAINT_ERROR,
+                                                       KNOWN_ANGLE_NAMES,
+                                                       KNOWN_ANGLE_ATOM_NAMES,
+                                                       KNOWN_ANGLE_SEQ_OFFSET)
 
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
@@ -28,7 +31,10 @@ except ImportError:
                                            DIST_RESTRAINT_RANGE,
                                            DIST_RESTRAINT_ERROR,
                                            ANGLE_RESTRAINT_RANGE,
-                                           ANGLE_RESTRAINT_ERROR)
+                                           ANGLE_RESTRAINT_ERROR,
+                                           KNOWN_ANGLE_NAMES,
+                                           KNOWN_ANGLE_ATOM_NAMES,
+                                           KNOWN_ANGLE_SEQ_OFFSET)
 
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
@@ -140,53 +146,6 @@ class CyanaMRParserListener(ParseTreeListener):
             msg = f"The argument 'upl_or_lol' must be one of {(None, 'upl_only', 'upl_w_lol', 'lol_only', 'lol_w_upl')}"
             self.__lfh.write(f"'+CyanaMRParserListener.__init__() ++ ValueError  -  {msg}\n")
             raise ValueError(f"'+CyanaMRParserListener.__init__() ++ ValueError  -  {msg}")
-
-        self.known_angle_names = ('PHI', 'PSI', 'OMEGA',
-                                  'CHI1', 'CHI2', 'CHI3', 'CHI4', 'CHI5',
-                                  'CHI21', 'CHI22', 'CHI31', 'CHI32', 'CHI42'
-                                  'ALPHA', 'BETA', 'GAMMA', 'DELTA', 'EPSILON', 'ZETA',
-                                  'CHI', 'ETA', 'THETA', "ETA'", "THETA'",
-                                  'NU0', 'NU1', 'NU2', 'NU3', 'NU4',
-                                  'TAU0', 'TAU1', 'TAU2', 'TAU3', 'TAU4')
-
-        # CYANA's angle identifier and its definitions using regular expression
-        self.known_angle_atom_names = {'PHI': ['C', 'N', 'CA', 'C'],  # i-1, i, i, i
-                                       'PSI': ['N', 'CA', 'C', 'N'],  # i, i, i, i+1
-                                       'OMEGA': ['CA', 'C', 'N', 'CA'],  # i, i, i+1, i+1; different from CYANA's definition [O C N (H or CD for Proline residue)]
-                                       'CHI1': ['N', 'CA', 'CB', r'^[COS]G1?$'],
-                                       'CHI2': ['CA', 'CB', r'^CG1?$', r'^[CNOS]D1?$'],
-                                       'CHI3': ['CB', 'CG', r'^[CS]D$', r'^[CNO]E1?$'],
-                                       'CHI4': ['CG', 'CD', r'^[CN]E$', r'^[CN]Z$'],
-                                       'CHI5': ['CD', 'NE', 'CZ', 'NH1'],
-                                       'CHI21': ['CA', 'CB', r'^[CO]G1$', r'^CD1|HG11?$'],  # ILE: (CG1, CD1), THR: (OG1, HG1), VAL: (CD1, HG11)
-                                       'CHI22': ['CA', 'CB', 'CG2', 'HG21'],  # ILE or THR or VAL
-                                       'CHI31': ['CB', r'^CG1?$', 'CD1', 'HD11'],  # ILE: CG1, LEU: CG
-                                       'CHI32': ['CB', 'CG', r'^[CO]D2$', r'^HD21?$'],  # ASP: (OD2, HD2), LEU: (CD2, HD21)
-                                       'CHI42': ['CG', 'CD', 'OE2', 'HE2'],  # GLU
-                                       'ALPHA': ["O3'", 'P', "O5'", "C5'"],  # i-1, i, i, i
-                                       'BETA': ['P', "O5'", "C5'", "C4'"],
-                                       'GAMMA': ["O5'", "C5'", "C4'", "C3'"],
-                                       'DELTA': ["C5'", "C4'", "C3'", "O3'"],
-                                       'EPSILON': ["C4'", "C3'", "O3'", 'P'],  # i, i, i, i+1
-                                       'ZETA': ["C3'", "O3'", 'P', "O5'"],  # i, i, i+1, i+1
-                                       'CHI': {'Y': ["O4'", "C1'", 'N1', 'C2'],  # pyrimidines (i.e. C, T, U) N1/3
-                                               'R': ["O4'", "C1'", 'N9', 'C4']  # purines (i.e. G, A) N1/3/7/9
-                                               },
-                                       'ETA': ["C4'", 'P', "C4'", 'P'],  # i-1, i, i, i+1
-                                       'THETA': ['P', "C4'", 'P', "C4'"],  # i, i, i+1, i+1
-                                       "ETA'": ["C1'", 'P', "C1'", 'P'],  # i-1, i, i, i+1
-                                       "THETA'": ['P', "C1'", 'P', "C1'"],  # i, i, i+1, i+1
-                                       'NU0': ["C4'", "O4'", "C1'", "C2'"],
-                                       'NU1': ["O4'", "C1'", "C2'", "C3'"],
-                                       'NU2': ["C1'", "C2'", "C3'", "C4'"],
-                                       'NU3': ["C2'", "C3'", "C4'", "O4'"],
-                                       'NU4': ["C3'", "C4'", "O4'", "C1'"],
-                                       'TAU0': ["C4'", "O4'", "C1'", "C2'"],  # identical to NU0
-                                       'TAU1': ["O4'", "C1'", "C2'", "C3'"],  # identical to NU1
-                                       'TAU2': ["C1'", "C2'", "C3'", "C4'"],  # identical to NU2
-                                       'TAU3': ["C2'", "C3'", "C4'", "O4'"],  # identical to NU3
-                                       'TAU4': ["C3'", "C4'", "O4'", "C1'"]  # identical to NU4
-                                       }
 
     # Enter a parse tree produced by CyanaMRParser#cyana_mr.
     def enterCyana_mr(self, ctx: CyanaMRParser.Cyana_mrContext):  # pylint: disable=unused-argument
@@ -331,11 +290,11 @@ class CyanaMRParserListener(ParseTreeListener):
 
         if len(chainAssign1) == 0:
             self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                f"{seqId1}:{compId1}:{atomId1} is not present in the coordinate.\n"
+                f"{seqId1}:{compId1}:{atomId1} is not present in the coordinates.\n"
 
         if len(chainAssign2) == 0:
             self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                f"{seqId2}:{compId2}:{atomId2} is not present in the coordinate.\n"
+                f"{seqId2}:{compId2}:{atomId2} is not present in the coordinates.\n"
 
         if len(chainAssign1) == 0 or len(chainAssign2) == 0:
             return
@@ -381,11 +340,11 @@ class CyanaMRParserListener(ParseTreeListener):
         if len(self.atomSelectionSet) < 2:
             return
 
-        for atom_1 in self.atomSelectionSet[0]:
-            for atom_2 in self.atomSelectionSet[1]:
+        for atom1 in self.atomSelectionSet[0]:
+            for atom2 in self.atomSelectionSet[1]:
                 if self.__verbose:
                     print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
-                          f"atom_1={atom_1} atom_2={atom_2} {dstFunc}")
+                          f"atom1={atom1} atom2={atom2} {dstFunc}")
 
     def testCoordAtomIdConsistency(self, chainId, seqId, compId, atomId, seqKey, coordAtomSite):
         if not self.__hasCoord:
@@ -436,7 +395,7 @@ class CyanaMRParserListener(ParseTreeListener):
             cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId), None)
             if cca is not None and seqKey not in self.__coordUnobsRes:
                 self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                    f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinate.\n"
+                    f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.\n"
 
     def getCoordAtomSiteOf(self, chainId, seqId, cifCheck=True, asis=True):
         seqKey = (chainId, seqId)
@@ -472,7 +431,7 @@ class CyanaMRParserListener(ParseTreeListener):
         if not self.__hasPolySeq:
             return
 
-        seqId = int(str(ctx.Integer(0)))
+        seqId = int(str(ctx.Integer()))
         compId = str(ctx.Simple_name(0)).upper()
         angleName = str(ctx.Simple_name(1)).upper()
         lower_limit = float(str(ctx.Float(0)))
@@ -483,8 +442,8 @@ class CyanaMRParserListener(ParseTreeListener):
                 f"The angle's lower limit '{lower_limit}' must be less than or equal to the upper limit '{upper_limit}'.\n"
             return
 
-        if angleName not in self.known_angle_names:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+        if angleName not in KNOWN_ANGLE_NAMES:
+            self.warningMessage += f"[Enumeration error] {self.__getCurrentRestraint()}"\
                 f"The angle identifier '{str(ctx.Simple_name(1))}' is unknown.\n"
             return
 
@@ -562,8 +521,95 @@ class CyanaMRParserListener(ParseTreeListener):
 
         if len(chainAssign) == 0:
             self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                f"{seqId}:{compId} is not present in the coordinate.\n"
+                f"{seqId}:{compId} is not present in the coordinates.\n"
             return
+
+        for chainId, cifSeqId, cifCompId in chainAssign:
+            ps = next(ps for ps in self.__polySeq if ps['chain_id'] == chainId)
+
+            peptide, nucleotide, _ = self.__csStat.getTypeOfCompId(cifCompId)
+
+            atomNames = None
+            seqOffset = None
+
+            if nucleotide and angleName == 'CHI':
+                if self.__ccU.updateChemCompDict(cifCompId):
+                    try:
+                        next(cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == 'N9')
+                        atomNames = KNOWN_ANGLE_ATOM_NAMES['CHI']['R']
+                        seqOffset = KNOWN_ANGLE_SEQ_OFFSET['CHI']['R']
+                    except StopIteration:
+                        atomNames = KNOWN_ANGLE_ATOM_NAMES['CHI']['Y']
+                        seqOffset = KNOWN_ANGLE_SEQ_OFFSET['CHI']['Y']
+            else:
+                atomNames = KNOWN_ANGLE_ATOM_NAMES[angleName]
+                seqOffset = KNOWN_ANGLE_SEQ_OFFSET[angleName]
+
+            if peptide and angleName in ('PHI', 'PSI', 'OMEGA',
+                                         'CHI1', 'CHI2', 'CHI3', 'CHI4', 'CHI5',
+                                         'CHI21', 'CHI22', 'CHI31', 'CHI32', 'CHI42'):
+                pass
+            elif nucleotide and angleName in ('ALPHA', 'BETA', 'GAMMA', 'DELTA', 'EPSILON', 'ZETA',
+                                              'CHI', 'ETA', 'THETA', "ETA'", "THETA'",
+                                              'NU0', 'NU1', 'NU2', 'NU3', 'NU4',
+                                              'TAU0', 'TAU1', 'TAU2', 'TAU3', 'TAU4'):
+                pass
+            else:
+                self.warningMessage += f"[Enumeration error] {self.__getCurrentRestraint()}"\
+                    f"The angle identifier {str(ctx.Simple_name(1))!r} did not match with residue {compId!r}.\n"
+                return
+
+            seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, self.__hasCoord)
+            if 1 in seqOffset:
+                nextSeqKey, nextCoordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId + 1, self.__hasCoord)
+            if -1 in seqOffset:
+                prevSeqKey, prevCoordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId - 1, self.__hasCoord)
+
+            for atomId, offset in zip(atomNames, seqOffset):
+
+                atomSelection = []
+
+                _cifSeqId = cifSeqId + offset
+                _cifCompId = cifCompId if offset == 0 else (ps['comp_id'][ps['seq_id'].index(_cifSeqId)] if _cifSeqId in ps['seq_id'] else None)
+
+                if _cifCompId is None:
+                    self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                        f"The sequence number '{seqId+offset}' is not present in polymer sequence of chain {chainId} of the coordinates.\n"
+                    return
+
+                self.__ccU.updateChemCompDict(_cifCompId)
+
+                if isinstance(atomId, str):
+                    cifAtomId = next((cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId), None)
+                else:
+                    cifAtomId = next((cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if atomId.match(cca[self.__ccU.ccaAtomId])), None)
+
+                if cifAtomId is None:
+                    self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                        f"{seqId+offset}:{compId}:{atomId} is not present in the coordinates.\n"
+                    return
+
+                atomSelection.append({'chain_id': chainId, 'seq_id': _cifSeqId, 'comp_id': _cifCompId, 'atom_id': cifAtomId})
+
+                self.testCoordAtomIdConsistency(chainId, _cifSeqId, _cifCompId, cifAtomId,
+                                                seqKey if offset == 0 else (nextSeqKey if offset == 1 else prevSeqKey),
+                                                coordAtomSite if offset == 0 else (nextCoordAtomSite if offset == 1 else prevCoordAtomSite))
+
+                if len(atomSelection) > 0:
+                    self.atomSelectionSet.append(atomSelection)
+
+            if len(self.atomSelectionSet) < 4:
+                return
+
+            for atom1 in self.atomSelectionSet[0]:
+                for atom2 in self.atomSelectionSet[1]:
+                    for atom3 in self.atomSelectionSet[2]:
+                        for atom4 in self.atomSelectionSet[3]:
+                            if self.__verbose:
+                                print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName}"
+                                      f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
+
+            self.atomSelectionSet = []
 
     # Enter a parse tree produced by CyanaMRParser#rdc_restraints.
     def enterRdc_restraints(self, ctx: CyanaMRParser.Rdc_restraintsContext):  # pylint: disable=unused-argument

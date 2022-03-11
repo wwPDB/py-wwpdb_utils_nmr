@@ -86,7 +86,7 @@ USOG:			'USOG';			// num_gaussians mean1 sd1 mean2 sd2...
 SOG:			'SOG';			// num_gaussians mean1 sd1 weight1 mean2 sd2 weight2...
 
 Integer:		DECIMAL;
-Float:			('+' | '-')? DECIMAL | DEC_DOT_DEC;
+Float:			('+' | '-')? (DECIMAL | DEC_DOT_DEC);
 fragment DEC_DOT_DEC:	DECIMAL '.' DECIMAL | DECIMAL '.' | '.' DECIMAL;
 fragment DEC_DIGIT:	[0-9];
 fragment DECIMAL:	DEC_DIGIT+;

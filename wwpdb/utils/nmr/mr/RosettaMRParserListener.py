@@ -491,9 +491,321 @@ class RosettaMRParserListener(ParseTreeListener):
     def enterDihedral_restraint(self, ctx: RosettaMRParser.Dihedral_restraintContext):  # pylint: disable=unused-argument
         self.dihedRestraints += 1
 
+        self.stackFuncs = []
+        self.atomSelectionSet = []
+
     # Exit a parse tree produced by RosettaMRParser#dihedral_restraint.
-    def exitDihedral_restraint(self, ctx: RosettaMRParser.Dihedral_restraintContext):  # pylint: disable=unused-argument
-        pass
+    def exitDihedral_restraint(self, ctx: RosettaMRParser.Dihedral_restraintContext):
+        if not self.__hasPolySeq:
+            return
+
+        seqId1 = int(str(ctx.Integer(0)))
+        atomId1 = str(ctx.Simple_name(0)).upper()
+        seqId2 = int(str(ctx.Integer(1)))
+        atomId2 = str(ctx.Simple_name(1)).upper()
+        seqId3 = int(str(ctx.Integer(2)))
+        atomId3 = str(ctx.Simple_name(2)).upper()
+        seqId4 = int(str(ctx.Integer(3)))
+        atomId4 = str(ctx.Simple_name(3)).upper()
+
+        target_value = None
+        lower_limit = None
+        upper_limit = None
+        lower_linear_limit = None
+        upper_linear_limit = None
+
+        firstFunc = None
+        srcFunc = None
+
+        level = 0
+        while self.stackFuncs:
+            func = self.stackFuncs.pop()
+            if func is not None:
+                if firstFunc is None:
+                    firstFunc = copy.copy(func)
+                if func['name'] in ('SCALARWEIGHTEDFUNC', 'SUMFUNC'):
+                    continue
+                if 'func_types' in firstFunc:
+                    firstFunc['func_types'].append(func['name'])
+                if srcFunc is None:
+                    srcFunc = copy.copy(func)
+                if 'target_value' in func:
+                    target_value = func['target_value']
+                    del srcFunc['target_value']
+                if 'lower_limit' in func:
+                    lower_limit = func['lower_limit']
+                    del srcFunc['lower_limit']
+                if 'upper_limit' in func:
+                    upper_limit = func['upper_limit']
+                    del srcFunc['upper_limit']
+                if 'lower_linear_limit' in func:
+                    lower_linear_limit = func['lower_linear_limit']
+                    del srcFunc['lower_linear_limit']
+                if 'upper_linear_limit' in func:
+                    upper_linear_limit = func['upper_linear_limit']
+                    del srcFunc['upper_linear_limit']
+                level += 1
+
+        if srcFunc is None:  # errors are already caught
+            return
+
+        if level > 1:
+            self.warningMessage += f"[Complex data] {self.__getCurrentRestraint()}"\
+                f"Too complex constraint function {firstFunc} can not be converted to NEF/NMR-STAR data.\n"
+            return
+
+        if target_value is None and lower_limit is None and upper_limit is None\
+           and lower_linear_limit is None and upper_linear_limit is None:
+            self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
+                f"The constraint function {srcFunc} can not be converted to NEF/NMR-STAR data.\n"
+            return
+
+        validRange = True
+        dstFunc = {'weight': 1.0}
+
+        if target_value is not None:
+            if ANGLE_ERROR_MIN < target_value < ANGLE_ERROR_MAX:
+                dstFunc['target_value'] = f"{target_value:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"{srcFunc}, the target value='{target_value}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
+
+        if lower_limit is not None:
+            if ANGLE_ERROR_MIN < lower_limit < ANGLE_ERROR_MAX:
+                dstFunc['lower_limit'] = f"{lower_limit:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"{srcFunc}, the lower limit value='{lower_limit}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
+
+        if upper_limit is not None:
+            if ANGLE_ERROR_MIN < upper_limit < ANGLE_ERROR_MAX:
+                dstFunc['upper_limit'] = f"{upper_limit:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"{srcFunc}, the upper limit value='{upper_limit}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
+
+        if lower_linear_limit is not None:
+            if ANGLE_ERROR_MIN < lower_linear_limit < ANGLE_ERROR_MAX:
+                dstFunc['lower_linear_limit'] = f"{lower_linear_limit:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"{srcFunc}, the lower linear limit value='{lower_linear_limit}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
+
+        if upper_linear_limit is not None:
+            if ANGLE_ERROR_MIN < upper_linear_limit < ANGLE_ERROR_MAX:
+                dstFunc['upper_linear_limit'] = f"{upper_linear_limit:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"{srcFunc}, the upper linear limit value='{upper_linear_limit}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
+
+        if not validRange:
+            return
+
+        if target_value is not None:
+            if ANGLE_RANGE_MIN <= target_value <= ANGLE_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"{srcFunc}, the target value='{target_value}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
+
+        if lower_limit is not None:
+            if ANGLE_RANGE_MIN <= lower_limit <= ANGLE_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"{srcFunc}, the lower limit value='{lower_limit}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
+
+        if upper_limit is not None:
+            if ANGLE_RANGE_MIN <= upper_limit <= ANGLE_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"{srcFunc}, the upper limit value='{upper_limit}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
+
+        if lower_linear_limit is not None:
+            if ANGLE_RANGE_MIN <= lower_linear_limit <= ANGLE_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"{srcFunc}, the lower linear limit value='{lower_linear_limit}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
+
+        if upper_linear_limit is not None:
+            if ANGLE_RANGE_MIN <= upper_linear_limit <= ANGLE_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"{srcFunc}, the upper linear limit value='{upper_linear_limit}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
+
+        chainAssign1 = []
+        chainAssign2 = []
+        chainAssign3 = []
+        chainAssign4 = []
+
+        for ps in self.__polySeq:
+            chainId = ps['chain_id']
+            if seqId1 in ps['seq_id']:
+                cifCompId = ps['comp_id'][ps['seq_id'].index(seqId1)]
+                if len(self.__nefT.get_valid_star_atom(cifCompId, atomId1)[0]) > 0:
+                    chainAssign1.append((chainId, seqId1, cifCompId))
+            if seqId2 in ps['seq_id']:
+                cifCompId = ps['comp_id'][ps['seq_id'].index(seqId2)]
+                if len(self.__nefT.get_valid_star_atom(cifCompId, atomId2)[0]) > 0:
+                    chainAssign2.append((chainId, seqId2, cifCompId))
+            if seqId3 in ps['seq_id']:
+                cifCompId = ps['comp_id'][ps['seq_id'].index(seqId3)]
+                if len(self.__nefT.get_valid_star_atom(cifCompId, atomId3)[0]) > 0:
+                    chainAssign3.append((chainId, seqId3, cifCompId))
+            if seqId4 in ps['seq_id']:
+                cifCompId = ps['comp_id'][ps['seq_id'].index(seqId4)]
+                if len(self.__nefT.get_valid_star_atom(cifCompId, atomId4)[0]) > 0:
+                    chainAssign4.append((chainId, seqId4, cifCompId))
+
+        if len(chainAssign1) == 0 and self.__altPolySeq is not None:
+            for ps in self.__altPolySeq:
+                chainId = ps['chain_id']
+                if seqId1 in ps['auth_seq_id']:
+                    cifCompId = ps['comp_id'][ps['auth_seq_id'].index(seqId1)]
+                    cifSeqId = ps['seq_id'][ps['auth_seq_id'].index(seqId1)]
+                    chainAssign1.append(chainId, cifSeqId, cifCompId)
+
+        if len(chainAssign2) == 0 and self.__altPolySeq is not None:
+            for ps in self.__altPolySeq:
+                chainId = ps['chain_id']
+                if seqId2 in ps['auth_seq_id']:
+                    cifCompId = ps['comp_id'][ps['auth_seq_id'].index(seqId2)]
+                    cifSeqId = ps['seq_id'][ps['auth_seq_id'].index(seqId2)]
+                    chainAssign2.append(chainId, cifSeqId, cifCompId)
+
+        if len(chainAssign3) == 0 and self.__altPolySeq is not None:
+            for ps in self.__altPolySeq:
+                chainId = ps['chain_id']
+                if seqId3 in ps['auth_seq_id']:
+                    cifCompId = ps['comp_id'][ps['auth_seq_id'].index(seqId3)]
+                    cifSeqId = ps['seq_id'][ps['auth_seq_id'].index(seqId3)]
+                    chainAssign3.append(chainId, cifSeqId, cifCompId)
+
+        if len(chainAssign4) == 0 and self.__altPolySeq is not None:
+            for ps in self.__altPolySeq:
+                chainId = ps['chain_id']
+                if seqId4 in ps['auth_seq_id']:
+                    cifCompId = ps['comp_id'][ps['auth_seq_id'].index(seqId4)]
+                    cifSeqId = ps['seq_id'][ps['auth_seq_id'].index(seqId4)]
+                    chainAssign4.append(chainId, cifSeqId, cifCompId)
+
+        if len(chainAssign1) == 0:
+            self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                f"{seqId1}:{atomId1} is not present in the coordinates.\n"
+
+        if len(chainAssign2) == 0:
+            self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                f"{seqId2}:{atomId2} is not present in the coordinates.\n"
+
+        if len(chainAssign3) == 0:
+            self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                f"{seqId3}:{atomId3} is not present in the coordinates.\n"
+
+        if len(chainAssign4) == 0:
+            self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                f"{seqId4}:{atomId4} is not present in the coordinates.\n"
+
+        if len(chainAssign1) == 0 or len(chainAssign2) == 0 or len(chainAssign3) == 0 or len(chainAssign4) == 0:
+            return
+
+        atomSelection = []
+
+        for chainId, cifSeqId, cifCompId in chainAssign1:
+            seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, self.__hasCoord)
+
+            _atomId1 = self.__nefT.get_valid_star_atom(cifCompId, atomId1)[0]
+            if len(_atomId1) == 0:
+                self.warningMessage += f"[Invalid atom nomenclature] {self.__getCurrentRestraint()}"\
+                    f"{seqId1}:{atomId1} is invalid atom nomenclature.\n"
+                continue
+
+            for cifAtomId in _atomId1:
+                atomSelection.append({'chain_id': chainId, 'seq_id': cifSeqId, 'comp_id': cifCompId, 'atom_id': cifAtomId})
+
+                self.testCoordAtomIdConsistency(chainId, cifSeqId, cifCompId, cifAtomId, seqKey, coordAtomSite)
+
+        if len(atomSelection) > 0:
+            self.atomSelectionSet.append(atomSelection)
+
+        atomSelection = []
+
+        for chainId, cifSeqId, cifCompId in chainAssign2:
+            seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, self.__hasCoord)
+
+            _atomId2 = self.__nefT.get_valid_star_atom(cifCompId, atomId2)[0]
+            if len(_atomId2) == 0:
+                self.warningMessage += f"[Invalid atom nomenclature] {self.__getCurrentRestraint()}"\
+                    f"{seqId2}:{atomId2} is invalid atom nomenclature.\n"
+                continue
+
+            for cifAtomId in _atomId2:
+                atomSelection.append({'chain_id': chainId, 'seq_id': cifSeqId, 'comp_id': cifCompId, 'atom_id': cifAtomId})
+
+                self.testCoordAtomIdConsistency(chainId, cifSeqId, cifCompId, cifAtomId, seqKey, coordAtomSite)
+
+        if len(atomSelection) > 0:
+            self.atomSelectionSet.append(atomSelection)
+
+        atomSelection = []
+
+        for chainId, cifSeqId, cifCompId in chainAssign3:
+            seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, self.__hasCoord)
+
+            _atomId3 = self.__nefT.get_valid_star_atom(cifCompId, atomId3)[0]
+            if len(_atomId3) == 0:
+                self.warningMessage += f"[Invalid atom nomenclature] {self.__getCurrentRestraint()}"\
+                    f"{seqId3}:{atomId3} is invalid atom nomenclature.\n"
+                continue
+
+            for cifAtomId in _atomId3:
+                atomSelection.append({'chain_id': chainId, 'seq_id': cifSeqId, 'comp_id': cifCompId, 'atom_id': cifAtomId})
+
+                self.testCoordAtomIdConsistency(chainId, cifSeqId, cifCompId, cifAtomId, seqKey, coordAtomSite)
+
+        if len(atomSelection) > 0:
+            self.atomSelectionSet.append(atomSelection)
+
+        atomSelection = []
+
+        for chainId, cifSeqId, cifCompId in chainAssign4:
+            seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, self.__hasCoord)
+
+            _atomId4 = self.__nefT.get_valid_star_atom(cifCompId, atomId4)[0]
+            if len(_atomId4) == 0:
+                self.warningMessage += f"[Invalid atom nomenclature] {self.__getCurrentRestraint()}"\
+                    f"{seqId4}:{atomId4} is invalid atom nomenclature.\n"
+                continue
+
+            for cifAtomId in _atomId4:
+                atomSelection.append({'chain_id': chainId, 'seq_id': cifSeqId, 'comp_id': cifCompId, 'atom_id': cifAtomId})
+
+                self.testCoordAtomIdConsistency(chainId, cifSeqId, cifCompId, cifAtomId, seqKey, coordAtomSite)
+
+        if len(atomSelection) > 0:
+            self.atomSelectionSet.append(atomSelection)
+
+        if len(self.atomSelectionSet) < 4:
+            return
+
+        compId = self.atomSelectionSet[0][0]['comp_id']
+        peptide, nucleotide, _ = self.__csStat.getTypeOfCompId(compId)
+
+        for atom1 in self.atomSelectionSet[0]:
+            for atom2 in self.atomSelectionSet[1]:
+                for atom3 in self.atomSelectionSet[2]:
+                    for atom4 in self.atomSelectionSet[3]:
+                        if self.__verbose:
+                            angleName = getTypeOfDihedralRestraint(peptide, nucleotide, [atom1, atom2, atom3, atom4])
+                            print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} "
+                                  f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
 
     # Enter a parse tree produced by RosettaMRParser#dihedral_pair_restraints.
     def enterDihedral_pair_restraints(self, ctx: RosettaMRParser.Dihedral_pair_restraintsContext):  # pylint: disable=unused-argument

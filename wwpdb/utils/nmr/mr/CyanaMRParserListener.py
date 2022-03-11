@@ -606,7 +606,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     for atom3 in self.atomSelectionSet[2]:
                         for atom4 in self.atomSelectionSet[3]:
                             if self.__verbose:
-                                print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName}"
+                                print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} "
                                       f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
 
             self.atomSelectionSet = []

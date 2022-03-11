@@ -143,10 +143,50 @@ class CyanaMRParserListener(ParseTreeListener):
 
         self.known_angle_names = ('PHI', 'PSI', 'OMEGA',
                                   'CHI1', 'CHI2', 'CHI3', 'CHI4', 'CHI5',
+                                  'CHI21', 'CHI22', 'CHI31', 'CHI32', 'CHI42'
                                   'ALPHA', 'BETA', 'GAMMA', 'DELTA', 'EPSILON', 'ZETA',
+                                  'CHI', 'ETA', 'THETA', "ETA'", "THETA'",
                                   'NU0', 'NU1', 'NU2', 'NU3', 'NU4',
-                                  'TAU0', 'TAU1', 'TAU2', 'TAU3', 'TAU4',
-                                  'CHI21', 'CHI22', 'CHI31', 'CHI32', 'CHI42')
+                                  'TAU0', 'TAU1', 'TAU2', 'TAU3', 'TAU4')
+
+        # CYANA's angle identifier and its definitions using regular expression
+        self.known_angle_atom_names = {'PHI': ['C', 'N', 'CA', 'C'],  # i-1, i, i, i
+                                       'PSI': ['N', 'CA', 'C', 'N'],  # i, i, i, i+1
+                                       'OMEGA': ['CA', 'C', 'N', 'CA'],  # i, i, i+1, i+1; different from CYANA's definition [O C N (H or CD for Proline residue)]
+                                       'CHI1': ['N', 'CA', 'CB', r'^[COS]G1?$'],
+                                       'CHI2': ['CA', 'CB', r'^CG1?$', r'^[CNOS]D1?$'],
+                                       'CHI3': ['CB', 'CG', r'^[CS]D$', r'^[CNO]E1?$'],
+                                       'CHI4': ['CG', 'CD', r'^[CN]E$', r'^[CN]Z$'],
+                                       'CHI5': ['CD', 'NE', 'CZ', 'NH1'],
+                                       'CHI21': ['CA', 'CB', r'^[CO]G1$', r'^CD1|HG11?$'],  # ILE: (CG1, CD1), THR: (OG1, HG1), VAL: (CD1, HG11)
+                                       'CHI22': ['CA', 'CB', 'CG2', 'HG21'],  # ILE or THR or VAL
+                                       'CHI31': ['CB', r'^CG1?$', 'CD1', 'HD11'],  # ILE: CG1, LEU: CG
+                                       'CHI32': ['CB', 'CG', r'^[CO]D2$', r'^HD21?$'],  # ASP: (OD2, HD2), LEU: (CD2, HD21)
+                                       'CHI42': ['CG', 'CD', 'OE2', 'HE2'],  # GLU
+                                       'ALPHA': ["O3'", 'P', "O5'", "C5'"],  # i-1, i, i, i
+                                       'BETA': ['P', "O5'", "C5'", "C4'"],
+                                       'GAMMA': ["O5'", "C5'", "C4'", "C3'"],
+                                       'DELTA': ["C5'", "C4'", "C3'", "O3'"],
+                                       'EPSILON': ["C4'", "C3'", "O3'", 'P'],  # i, i, i, i+1
+                                       'ZETA': ["C3'", "O3'", 'P', "O5'"],  # i, i, i+1, i+1
+                                       'CHI': {'Y': ["O4'", "C1'", 'N1', 'C2'],  # pyrimidines (i.e. C, T, U) N1/3
+                                               'R': ["O4'", "C1'", 'N9', 'C4']  # purines (i.e. G, A) N1/3/7/9
+                                               },
+                                       'ETA': ["C4'", 'P', "C4'", 'P'],  # i-1, i, i, i+1
+                                       'THETA': ['P', "C4'", 'P', "C4'"],  # i, i, i+1, i+1
+                                       "ETA'": ["C1'", 'P', "C1'", 'P'],  # i-1, i, i, i+1
+                                       "THETA'": ['P', "C1'", 'P', "C1'"],  # i, i, i+1, i+1
+                                       'NU0': ["C4'", "O4'", "C1'", "C2'"],
+                                       'NU1': ["O4'", "C1'", "C2'", "C3'"],
+                                       'NU2': ["C1'", "C2'", "C3'", "C4'"],
+                                       'NU3': ["C2'", "C3'", "C4'", "O4'"],
+                                       'NU4': ["C3'", "C4'", "O4'", "C1'"],
+                                       'TAU0': ["C4'", "O4'", "C1'", "C2'"],  # identical to NU0
+                                       'TAU1': ["O4'", "C1'", "C2'", "C3'"],  # identical to NU1
+                                       'TAU2': ["C1'", "C2'", "C3'", "C4'"],  # identical to NU2
+                                       'TAU3': ["C2'", "C3'", "C4'", "O4'"],  # identical to NU3
+                                       'TAU4': ["C3'", "C4'", "O4'", "C1'"]  # identical to NU4
+                                       }
 
     # Enter a parse tree produced by CyanaMRParser#cyana_mr.
     def enterCyana_mr(self, ctx: CyanaMRParser.Cyana_mrContext):  # pylint: disable=unused-argument

@@ -176,7 +176,7 @@ class RosettaMRParserListener(ParseTreeListener):
         seqId2 = int(str(ctx.Integer(1)))
         atomId2 = str(ctx.Simple_name(1)).upper()
 
-        dstFunc = self.valiateDistanceRange()
+        dstFunc = self.validateDistanceRange()
 
         if dstFunc is None:
             return
@@ -199,7 +199,7 @@ class RosettaMRParserListener(ParseTreeListener):
                     print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
                           f"atom1={atom1} atom2={atom2} {dstFunc}")
 
-    def valiateDistanceRange(self):
+    def validateDistanceRange(self):
         """ Validate distance value range.
         """
 
@@ -481,7 +481,7 @@ class RosettaMRParserListener(ParseTreeListener):
         seqId3 = int(str(ctx.Integer(2)))
         atomId3 = str(ctx.Simple_name(2)).upper()
 
-        dstFunc = self.valiateAngleRange()
+        dstFunc = self.validateAngleRange()
 
         if dstFunc is None:
             return
@@ -507,7 +507,7 @@ class RosettaMRParserListener(ParseTreeListener):
                         print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} "
                               f"atom1={atom1} atom2={atom2} atom3={atom3} {dstFunc}")
 
-    def valiateAngleRange(self):
+    def validateAngleRange(self):
         """ Validate angle value range.
         """
 
@@ -675,7 +675,7 @@ class RosettaMRParserListener(ParseTreeListener):
         seqId4 = int(str(ctx.Integer(3)))
         atomId4 = str(ctx.Simple_name(3)).upper()
 
-        dstFunc = self.valiateAngleRange()
+        dstFunc = self.validateAngleRange()
 
         if dstFunc is None:
             return
@@ -747,7 +747,7 @@ class RosettaMRParserListener(ParseTreeListener):
         seqId8 = int(str(ctx.Integer(7)))
         atomId8 = str(ctx.Simple_name(7)).upper()
 
-        dstFunc = self.valiateAngleRange()
+        dstFunc = self.validateAngleRange()
 
         if dstFunc is None:
             return

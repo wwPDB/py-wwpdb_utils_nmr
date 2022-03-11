@@ -254,88 +254,14 @@ class CyanaMRParserListener(ParseTreeListener):
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
                     f"The upper limit value='{upper_limit}' should be within range {DIST_RESTRAINT_RANGE}.\n"
 
-        chainAssign1 = []
-        chainAssign2 = []
-
-        for ps in self.__polySeq:
-            chainId = ps['chain_id']
-            if seqId1 in ps['seq_id']:
-                cifCompId = ps['comp_id'][ps['seq_id'].index(seqId1)]
-                if cifCompId == compId1:
-                    chainAssign1.append((chainId, seqId1, cifCompId))
-                elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId1)[0]) > 0:
-                    chainAssign1.append((chainId, seqId1, cifCompId))
-            if seqId2 in ps['seq_id']:
-                cifCompId = ps['comp_id'][ps['seq_id'].index(seqId2)]
-                if cifCompId == compId2:
-                    chainAssign2.append((chainId, seqId2, cifCompId))
-                elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId2)[0]) > 0:
-                    chainAssign1.append((chainId, seqId2, cifCompId))
-
-        if len(chainAssign1) == 0 and self.__altPolySeq is not None:
-            for ps in self.__altPolySeq:
-                chainId = ps['chain_id']
-                if seqId1 in ps['auth_seq_id']:
-                    cifCompId = ps['comp_id'][ps['auth_seq_id'].index(seqId1)]
-                    cifSeqId = ps['seq_id'][ps['auth_seq_id'].index(seqId1)]
-                    chainAssign1.append(chainId, cifSeqId, cifCompId)
-
-        if len(chainAssign2) == 0 and self.__altPolySeq is not None:
-            for ps in self.__altPolySeq:
-                chainId = ps['chain_id']
-                if seqId2 in ps['auth_seq_id']:
-                    cifCompId = ps['comp_id'][ps['auth_seq_id'].index(seqId2)]
-                    cifSeqId = ps['seq_id'][ps['auth_seq_id'].index(seqId2)]
-                    chainAssign2.append(chainId, cifSeqId, cifCompId)
-
-        if len(chainAssign1) == 0:
-            self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                f"{seqId1}:{compId1}:{atomId1} is not present in the coordinates.\n"
-
-        if len(chainAssign2) == 0:
-            self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                f"{seqId2}:{compId2}:{atomId2} is not present in the coordinates.\n"
+        chainAssign1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
+        chainAssign2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
 
         if len(chainAssign1) == 0 or len(chainAssign2) == 0:
             return
 
-        atomSelection = []
-
-        for chainId, cifSeqId, cifCompId in chainAssign1:
-            seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, self.__hasCoord)
-
-            _atomId1 = self.__nefT.get_valid_star_atom(cifCompId, atomId1)[0]
-            if len(_atomId1) == 0:
-                self.warningMessage += f"[Invalid atom nomenclature] {self.__getCurrentRestraint()}"\
-                    f"{seqId1}:{compId1}:{atomId1} is invalid atom nomenclature.\n"
-                continue
-
-            for cifAtomId in _atomId1:
-                atomSelection.append({'chain_id': chainId, 'seq_id': cifSeqId, 'comp_id': cifCompId, 'atom_id': cifAtomId})
-
-                self.testCoordAtomIdConsistency(chainId, cifSeqId, cifCompId, cifAtomId, seqKey, coordAtomSite)
-
-        if len(atomSelection) > 0:
-            self.atomSelectionSet.append(atomSelection)
-
-        atomSelection = []
-
-        for chainId, cifSeqId, cifCompId in chainAssign2:
-            seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, self.__hasCoord)
-
-            _atomId2 = self.__nefT.get_valid_star_atom(cifCompId, atomId2)[0]
-            if len(_atomId2) == 0:
-                self.warningMessage += f"[Invalid atom nomenclature] {self.__getCurrentRestraint()}"\
-                    f"{seqId2}:{compId2}:{atomId2} is invalid atom nomenclature.\n"
-                continue
-
-            for cifAtomId in _atomId2:
-                atomSelection.append({'chain_id': chainId, 'seq_id': cifSeqId, 'comp_id': cifCompId, 'atom_id': cifAtomId})
-
-                self.testCoordAtomIdConsistency(chainId, cifSeqId, cifCompId, cifAtomId, seqKey, coordAtomSite)
-
-        if len(atomSelection) > 0:
-            self.atomSelectionSet.append(atomSelection)
+        self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1)
+        self.selectCoordAtoms(chainAssign2, seqId2, compId2, atomId2)
 
         if len(self.atomSelectionSet) < 2:
             return
@@ -345,6 +271,58 @@ class CyanaMRParserListener(ParseTreeListener):
                 if self.__verbose:
                     print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
                           f"atom1={atom1} atom2={atom2} {dstFunc}")
+
+    def assignCoordPolymerSequence(self, seqId, compId, atomId):
+        """ Assign polymer sequences of the coordinates.
+        """
+
+        chainAssign = []
+
+        for ps in self.__polySeq:
+            chainId = ps['chain_id']
+            if seqId in ps['seq_id']:
+                cifCompId = ps['comp_id'][ps['seq_id'].index(seqId)]
+                if cifCompId == compId:
+                    chainAssign.append((chainId, seqId, cifCompId))
+                elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                    chainAssign.append((chainId, seqId, cifCompId))
+
+        if len(chainAssign) == 0 and self.__altPolySeq is not None:
+            for ps in self.__altPolySeq:
+                chainId = ps['chain_id']
+                if seqId in ps['auth_seq_id']:
+                    cifCompId = ps['comp_id'][ps['auth_seq_id'].index(seqId)]
+                    cifSeqId = ps['seq_id'][ps['auth_seq_id'].index(seqId)]
+                    chainAssign.append(chainId, cifSeqId, cifCompId)
+
+        if len(chainAssign) == 0:
+            self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                f"{seqId}:{compId}:{atomId} is not present in the coordinates.\n"
+
+        return chainAssign
+
+    def selectCoordAtoms(self, chainAssign, seqId, compId, atomId):
+        """ Select atoms of the coordinates.
+        """
+
+        atomSelection = []
+
+        for chainId, cifSeqId, cifCompId in chainAssign:
+            seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, self.__hasCoord)
+
+            _atomId = self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]
+            if len(_atomId) == 0:
+                self.warningMessage += f"[Invalid atom nomenclature] {self.__getCurrentRestraint()}"\
+                    f"{seqId}:{compId}:{atomId} is invalid atom nomenclature.\n"
+                continue
+
+            for cifAtomId in _atomId:
+                atomSelection.append({'chain_id': chainId, 'seq_id': cifSeqId, 'comp_id': cifCompId, 'atom_id': cifAtomId})
+
+                self.testCoordAtomIdConsistency(chainId, cifSeqId, cifCompId, cifAtomId, seqKey, coordAtomSite)
+
+        if len(atomSelection) > 0:
+            self.atomSelectionSet.append(atomSelection)
 
     def testCoordAtomIdConsistency(self, chainId, seqId, compId, atomId, seqKey, coordAtomSite):
         if not self.__hasCoord:
@@ -498,26 +476,15 @@ class CyanaMRParserListener(ParseTreeListener):
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
                     f"The upper limit value='{upper_limit}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
 
-        chainAssign = []
+        atomNames = KNOWN_ANGLE_ATOM_NAMES[angleName]
+        seqOffset = KNOWN_ANGLE_SEQ_OFFSET[angleName]
 
-        atomId = ""
+        if isinstance(atomNames, list):
+            atomId = next(name for name, offset in zip(atomNames, seqOffset) if offset == 0)
+        else:  # 'CHI'
+            atomId = next(name for name, offset in zip(atomNames['Y'], seqOffset['Y']) if offset == 0)
 
-        for ps in self.__polySeq:
-            chainId = ps['chain_id']
-            if seqId in ps['seq_id']:
-                cifCompId = ps['comp_id'][ps['seq_id'].index(seqId)]
-                if cifCompId == compId:
-                    chainAssign.append((chainId, seqId, cifCompId))
-                elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                    chainAssign.append((chainId, seqId, cifCompId))
-
-        if len(chainAssign) == 0 and self.__altPolySeq is not None:
-            for ps in self.__altPolySeq:
-                chainId = ps['chain_id']
-                if seqId in ps['auth_seq_id']:
-                    cifCompId = ps['comp_id'][ps['auth_seq_id'].index(seqId)]
-                    cifSeqId = ps['seq_id'][ps['auth_seq_id'].index(seqId)]
-                    chainAssign.append(chainId, cifSeqId, cifCompId)
+        chainAssign = self.assignCoordPolymerSequence(seqId, compId, atomId)
 
         if len(chainAssign) == 0:
             self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\

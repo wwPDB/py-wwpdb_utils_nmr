@@ -142,5 +142,6 @@ if __name__ == "__main__":
     reader = CyanaMRReader(True)
     reader.parse('../../tests-nmr/mock-data-daother-6830/2nd_test/cyana_dihed_restraints_exmaple',
                  '../../tests-nmr/mock-data-daother-6830/2nd_test/D_800411_model_P1.cif.V1')
+    # reader = CyanaMRReader(True)
     # reader.parse('../../tests-nmr/mock-data-daother-5829/D_1000249951_mr-upload_P1.cyana.V1',
     #              '../../tests-nmr/mock-data-daother-5829/D_800467_model_P1.cif.V3')

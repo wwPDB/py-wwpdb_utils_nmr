@@ -4094,6 +4094,9 @@ class NEFTranslator:
             @return: list of instanced atom_id of a given NEF atom, ambiguity_code, and description
         """
 
+        if comp_id is None:
+            return [], None, None
+
         comp_id = comp_id.upper()
 
         if comp_id in emptyValue:

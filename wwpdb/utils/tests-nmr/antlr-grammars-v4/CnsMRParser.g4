@@ -163,7 +163,7 @@ sani_statement:
 	Reset;
 
 sani_assign:
-	Assign selection selection selection selection selection selection Real Real;
+	Assign selection selection selection selection selection selection Real Real Real?;
 
 /* CNS: Scalar J-coupling restraints - Syntax
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html

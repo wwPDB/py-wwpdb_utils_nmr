@@ -26,11 +26,15 @@ try:
                                                        DIST_RESTRAINT_RANGE,
                                                        DIST_RESTRAINT_ERROR,
                                                        ANGLE_RESTRAINT_RANGE,
-                                                       ANGLE_RESTRAINT_ERROR)
+                                                       ANGLE_RESTRAINT_ERROR,
+                                                       RDC_RESTRAINT_RANGE,
+                                                       RDC_RESTRAINT_ERROR,
+                                                       XPLOR_RDC_PRINCIPAL_AXIS_NAMES)
 
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
-    from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
+    from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import (NEFTranslator,
+                                                             isotopeNumsOfNmrObsNucs)
 except ImportError:
     from nmr.mr.XplorMRParser import XplorMRParser
     from nmr.mr.ParserListenerUtil import (toNpArray,
@@ -41,11 +45,15 @@ except ImportError:
                                            DIST_RESTRAINT_RANGE,
                                            DIST_RESTRAINT_ERROR,
                                            ANGLE_RESTRAINT_RANGE,
-                                           ANGLE_RESTRAINT_ERROR)
+                                           ANGLE_RESTRAINT_ERROR,
+                                           RDC_RESTRAINT_RANGE,
+                                           RDC_RESTRAINT_ERROR,
+                                           XPLOR_RDC_PRINCIPAL_AXIS_NAMES)
 
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
-    from nmr.NEFTranslator.NEFTranslator import NEFTranslator
+    from nmr.NEFTranslator.NEFTranslator import (NEFTranslator,
+                                                 isotopeNumsOfNmrObsNucs)
 
 
 DIST_RANGE_MIN = DIST_RESTRAINT_RANGE['min_inclusive']
@@ -60,6 +68,13 @@ ANGLE_RANGE_MAX = ANGLE_RESTRAINT_RANGE['max_inclusive']
 
 ANGLE_ERROR_MIN = ANGLE_RESTRAINT_ERROR['min_exclusive']
 ANGLE_ERROR_MAX = ANGLE_RESTRAINT_ERROR['max_exclusive']
+
+
+RDC_RANGE_MIN = RDC_RESTRAINT_RANGE['min_exclusive']
+RDC_RANGE_MAX = RDC_RESTRAINT_RANGE['max_exclusive']
+
+RDC_ERROR_MIN = RDC_RESTRAINT_ERROR['min_exclusive']
+RDC_ERROR_MAX = RDC_RESTRAINT_ERROR['max_exclusive']
 
 
 # This class defines a complete listener for a parse tree produced by XplorMRParser.
@@ -170,6 +185,9 @@ class XplorMRParserListener(ParseTreeListener):
     inVector3D_head = None
     vector3D = None
 
+    # RDC
+    potential = 'square'
+
     # collection of atom selection
     atomSelectionSet = None
 
@@ -203,7 +221,7 @@ class XplorMRParserListener(ParseTreeListener):
         self.__ccU = ChemCompUtil(verbose, log) if ccU is None else ccU
 
         # BMRB chemical shift statistics
-        self.__csStat = BMRBChemShiftStat(verbose, log, self.__ccU) if csStat is None else csStat
+        self.__csStat = BMRBChemShiftStat(False, log, self.__ccU) if csStat is None else csStat
 
         # NEFTranslator
         self.__nefT = NEFTranslator(verbose, log, self.__ccU, self.__csStat) if nefT is None else nefT
@@ -250,6 +268,9 @@ class XplorMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by XplorMRParser#rdc_restraint.
     def enterRdc_restraint(self, ctx: XplorMRParser.Rdc_restraintContext):  # pylint: disable=unused-argument
         self.rdcStatements += 1
+
+        self.potential = 'square'  # default potential
+        self.scale = 1.0
 
     # Exit a parse tree produced by XplorMRParser#rdc_restraint.
     def exitRdc_restraint(self, ctx: XplorMRParser.Rdc_restraintContext):  # pylint: disable=unused-argument
@@ -814,8 +835,13 @@ class XplorMRParserListener(ParseTreeListener):
         return True
 
     # Enter a parse tree produced by XplorMRParser#sani_statement.
-    def enterSani_statement(self, ctx: XplorMRParser.Sani_statementContext):  # pylint: disable=unused-argument
-        pass
+    def enterSani_statement(self, ctx: XplorMRParser.Sani_statementContext):
+        if ctx.Rdc_potential():
+            code = str(ctx.Rdc_potential()).upper()[0:4]
+            if code == 'SQUA':
+                self.potential = 'square'
+            if code == 'HARM':
+                self.potential = 'harmonic'
 
     # Exit a parse tree produced by XplorMRParser#sani_statement.
     def exitSani_statement(self, ctx: XplorMRParser.Sani_statementContext):  # pylint: disable=unused-argument
@@ -826,9 +852,144 @@ class XplorMRParserListener(ParseTreeListener):
         self.rdcRestraints += 1
         self.__cur_subtype = 'rdc'
 
+        self.atomSelectionSet = []
+
     # Exit a parse tree produced by XplorMRParser#sani_assign.
-    def exitSani_assign(self, ctx: XplorMRParser.Sani_assignContext):  # pylint: disable=unused-argument
-        pass
+    def exitSani_assign(self, ctx: XplorMRParser.Sani_assignContext):
+        target = float(str(ctx.Real(0)))
+        delta = float(str(ctx.Real(1)))
+
+        target_value = None
+        lower_limit = None
+        upper_limit = None
+
+        if self.potential == 'square':
+            target_value = target
+            lower_limit = target - delta
+            upper_limit = target + delta
+        else:
+            target_value = target
+
+        validRange = True
+        dstFunc = {'weight': self.scale}
+
+        if target_value is not None:
+            if RDC_ERROR_MIN < target_value < RDC_ERROR_MAX:
+                dstFunc['target_value'] = f"{target_value:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The target value='{target_value}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+
+        if lower_limit is not None:
+            if RDC_ERROR_MIN < lower_limit < RDC_ERROR_MAX:
+                dstFunc['lower_limit'] = f"{lower_limit:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The lower limit value='{lower_limit}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+
+        if upper_limit is not None:
+            if RDC_ERROR_MIN < upper_limit < RDC_ERROR_MAX:
+                dstFunc['upper_limit'] = f"{upper_limit:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The upper limit value='{upper_limit}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+
+        if not validRange:
+            return
+
+        if target_value is not None:
+            if RDC_RANGE_MIN < target_value < RDC_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The target value='{target_value}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+
+        if lower_limit is not None:
+            if RDC_RANGE_MIN < lower_limit < RDC_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The lower limit value='{lower_limit}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+
+        if upper_limit is not None:
+            if RDC_RANGE_MIN < upper_limit < RDC_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The upper limit value='{upper_limit}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+
+        if not self.areUniqueCoordAtoms('an RDC'):
+            return
+
+        chain_id_1 = self.atomSelectionSet[4][0]['chain_id']
+        seq_id_1 = self.atomSelectionSet[4][0]['seq_id']
+        comp_id_1 = self.atomSelectionSet[4][0]['comp_id']
+        atom_id_1 = self.atomSelectionSet[4][0]['atom_id']
+
+        chain_id_2 = self.atomSelectionSet[5][0]['chain_id']
+        seq_id_2 = self.atomSelectionSet[5][0]['seq_id']
+        comp_id_2 = self.atomSelectionSet[5][0]['comp_id']
+        atom_id_2 = self.atomSelectionSet[5][0]['atom_id']
+
+        if (atom_id_1[0] not in isotopeNumsOfNmrObsNucs) or (atom_id_2[0] not in isotopeNumsOfNmrObsNucs):
+            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                f"Non-magnetic susceptible spin appears in RDC vector "\
+                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
+                f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+            return
+
+        if chain_id_1 != chain_id_2:
+            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                f"Invalid inter-chain RDC vector "\
+                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+            return
+
+        if abs(seq_id_1 - seq_id_2) > 1:
+            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                f"Invalid inter-residue RDC vector "\
+                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+            return
+
+        if abs(seq_id_1 - seq_id_2) == 1:
+
+            if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
+               ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H')) or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H') and atom_id_2 == 'C')):
+                pass
+
+            else:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    "Invalid inter-residue RDC vector "\
+                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                return
+
+        elif atom_id_1 == atom_id_2:
+            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                "Zero RDC vector "\
+                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+            return
+
+        else:
+
+            if self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
+
+                if not any(b for b in self.__ccU.lastBonds
+                           if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
+                               or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
+
+                    if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            "RDC vector over multiple covalent bonds "\
+                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                        return
+
+        for atom1, atom2 in itertools.product(self.atomSelectionSet[4],
+                                              self.atomSelectionSet[5]):
+            if self.__verbose:
+                print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
+                      f"atom1={atom1} atom2={atom2} {dstFunc}")
 
     # Enter a parse tree produced by XplorMRParser#xdip_statement.
     def enterXdip_statement(self, ctx: XplorMRParser.Xdip_statementContext):  # pylint: disable=unused-argument
@@ -842,6 +1003,8 @@ class XplorMRParserListener(ParseTreeListener):
     def enterXdip_assign(self, ctx: XplorMRParser.Xdip_assignContext):  # pylint: disable=unused-argument
         self.rdcRestraints += 1
         self.__cur_subtype = 'rdc'
+
+        self.atomSelectionSet = []
 
     # Exit a parse tree produced by XplorMRParser#xdip_assign.
     def exitXdip_assign(self, ctx: XplorMRParser.Xdip_assignContext):  # pylint: disable=unused-argument
@@ -860,6 +1023,8 @@ class XplorMRParserListener(ParseTreeListener):
         self.rdcRestraints += 1
         self.__cur_subtype = 'rdc'
 
+        self.atomSelectionSet = []
+
     # Exit a parse tree produced by XplorMRParser#vean_assign.
     def exitVean_assign(self, ctx: XplorMRParser.Vean_assignContext):  # pylint: disable=unused-argument
         pass
@@ -877,6 +1042,8 @@ class XplorMRParserListener(ParseTreeListener):
         self.rdcRestraints += 1
         self.__cur_subtype = 'rdc'
 
+        self.atomSelectionSet = []
+
     # Exit a parse tree produced by XplorMRParser#tens_assign.
     def exitTens_assign(self, ctx: XplorMRParser.Tens_assignContext):  # pylint: disable=unused-argument
         pass
@@ -893,6 +1060,8 @@ class XplorMRParserListener(ParseTreeListener):
     def enterAnis_assign(self, ctx: XplorMRParser.Anis_assignContext):  # pylint: disable=unused-argument
         self.rdcRestraints += 1
         self.__cur_subtype = 'rdc'
+
+        self.atomSelectionSet = []
 
     # Exit a parse tree produced by XplorMRParser#anis_assign.
     def exitAnis_assign(self, ctx: XplorMRParser.Anis_assignContext):  # pylint: disable=unused-argument
@@ -1559,6 +1728,8 @@ class XplorMRParserListener(ParseTreeListener):
                     seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck)
 
                     for atomId in _factor['atom_id']:
+                        if self.__cur_subtype == 'rdc' and atomId in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
+                            continue
                         atomIds = self.__nefT.get_valid_star_atom(compId, atomId.upper())[0]
 
                         for _atomId in atomIds:
@@ -1642,6 +1813,8 @@ class XplorMRParserListener(ParseTreeListener):
             _factor['atom_selection'] = _atomSelection
 
         if len(_factor['atom_selection']) == 0:
+            if self.__cur_subtype == 'rdc' and _factor['atom_id'][0] in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
+                return _factor
             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                 f"The {clauseName} has no effect.\n"
 

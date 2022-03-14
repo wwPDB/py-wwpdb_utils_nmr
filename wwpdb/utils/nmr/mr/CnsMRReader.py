@@ -140,5 +140,8 @@ class CnsMRReader:
 
 if __name__ == "__main__":
     reader = CnsMRReader(True)
-    reader.parse('../../tests-nmr/mock-data-pdbstat/D_1000243168_mr-upload_P2.xplor-nih.V1',  # atom_sel_expr_example.txt',
+    reader.parse('../../tests-nmr/mock-data-pdbstat/D_1000243168_mr-upload_P8.xplor-nih.V1',
                  '../../tests-nmr/mock-data-pdbstat/6pvr.cif')
+    # reader = CnsMRReader(True)
+    # reader.parse('../../tests-nmr/mock-data-pdbstat/D_1000243168_mr-upload_P2.xplor-nih.V1',  # atom_sel_expr_example.txt',
+    #              '../../tests-nmr/mock-data-pdbstat/6pvr.cif')

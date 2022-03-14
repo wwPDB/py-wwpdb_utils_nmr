@@ -68,9 +68,9 @@ KNOWN_ANGLE_ATOM_NAMES = {'PHI': ['C', 'N', 'CA', 'C'],  # i-1, i, i, i
                           }
 
 # @see: http://dx.doi.org/10.1107/S0907444909001905
-KNOWN_ANGLE_CARB_ATOM_NAMES = {'PHI': [re.compile(r'^H1|O5$'), 'C1', 'O1', re.compile(r'^C[46]$')],
-                               'PSI': ['C1', 'O1', re.compile(r'^C[46]$'), re.compile(r'^H4|C[35]$')],
-                               'OMEGA': ['O1', 'C6', 'C5', re.compile('^H5|C4|O5$')]}
+KNOWN_ANGLE_CARBO_ATOM_NAMES = {'PHI': [re.compile(r'^H1|O5$'), 'C1', 'O1', re.compile(r'^C[46]$')],
+                                'PSI': ['C1', 'O1', re.compile(r'^C[46]$'), re.compile(r'^H4|C[35]$')],
+                                'OMEGA': ['O1', 'C6', 'C5', re.compile('^H5|C4|O5$')]}
 
 KNOWN_ANGLE_NAMES = KNOWN_ANGLE_ATOM_NAMES.keys()
 
@@ -112,10 +112,10 @@ KNOWN_ANGLE_SEQ_OFFSET = {'PHI': [-1, 0, 0, 0],  # i-1, i, i, i
                           'TAU4': [0] * 4  # identical to NU4
                           }
 
-KNOWN_ANGLE_CARB_SEQ_OFFSET = {'PHI': [0, 0, 0, -1],  # i, i, i, i-n; for n > 0
-                               'PSI': [0, 0, -1, -1],  # i, i, i-n, i-n; for n > 0
-                               'OMEGA': [0, -1, -1, -1]  # i, i-n, i-n, i-n; for n > 0
-                               }
+KNOWN_ANGLE_CARBO_SEQ_OFFSET = {'PHI': [0, 0, 0, -1],  # i, i, i, i-n; for n > 0
+                                'PSI': [0, 0, -1, -1],  # i, i, i-n, i-n; for n > 0
+                                'OMEGA': [0, -1, -1, -1]  # i, i-n, i-n, i-n; for n > 0
+                                }
 
 
 def toNpArray(atom):
@@ -572,14 +572,14 @@ def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms
 
                 if seqId1 > seqId4:
                     m = seqId1 - seqId4
-                    _seqIds = [s - o * m for s, o in zip(seqIds, KNOWN_ANGLE_CARB_SEQ_OFFSET[dataType])]
+                    _seqIds = [s - o * m for s, o in zip(seqIds, KNOWN_ANGLE_CARBO_SEQ_OFFSET[dataType])]
                     _commonSeqId = collections.Counter(_seqIds).most_common()
 
                     if len(_commonSeqId) == 1:
 
                         found = True
 
-                        for atomId, angAtomId in zip(atomIds, KNOWN_ANGLE_CARB_ATOM_NAMES[dataType]):
+                        for atomId, angAtomId in zip(atomIds, KNOWN_ANGLE_CARBO_ATOM_NAMES[dataType]):
 
                             if isinstance(angAtomId, str):
                                 if atomId != angAtomId:

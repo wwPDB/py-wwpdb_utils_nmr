@@ -21,7 +21,9 @@ try:
                                                        ANGLE_RESTRAINT_ERROR,
                                                        KNOWN_ANGLE_NAMES,
                                                        KNOWN_ANGLE_ATOM_NAMES,
-                                                       KNOWN_ANGLE_SEQ_OFFSET)
+                                                       KNOWN_ANGLE_SEQ_OFFSET,
+                                                       KNOWN_ANGLE_CARBO_ATOM_NAMES,
+                                                       KNOWN_ANGLE_CARBO_SEQ_OFFSET)
 
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
@@ -35,7 +37,9 @@ except ImportError:
                                            ANGLE_RESTRAINT_ERROR,
                                            KNOWN_ANGLE_NAMES,
                                            KNOWN_ANGLE_ATOM_NAMES,
-                                           KNOWN_ANGLE_SEQ_OFFSET)
+                                           KNOWN_ANGLE_SEQ_OFFSET,
+                                           KNOWN_ANGLE_CARBO_ATOM_NAMES,
+                                           KNOWN_ANGLE_CARBO_SEQ_OFFSET)
 
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
@@ -482,8 +486,14 @@ class CyanaMRParserListener(ParseTreeListener):
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
                     f"The upper limit value='{upper_limit}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
 
-        atomNames = KNOWN_ANGLE_ATOM_NAMES[angleName]
-        seqOffset = KNOWN_ANGLE_SEQ_OFFSET[angleName]
+        peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
+
+        if carbohydrate:
+            atomNames = KNOWN_ANGLE_CARBO_ATOM_NAMES[angleName]
+            seqOffset = KNOWN_ANGLE_CARBO_SEQ_OFFSET[angleName]
+        else:
+            atomNames = KNOWN_ANGLE_ATOM_NAMES[angleName]
+            seqOffset = KNOWN_ANGLE_SEQ_OFFSET[angleName]
 
         if isinstance(atomNames, list):
             atomId = next(name for name, offset in zip(atomNames, seqOffset) if offset == 0)
@@ -505,7 +515,10 @@ class CyanaMRParserListener(ParseTreeListener):
             atomNames = None
             seqOffset = None
 
-            if nucleotide and angleName == 'CHI':
+            if carbohydrate:
+                atomNames = KNOWN_ANGLE_CARBO_ATOM_NAMES[angleName]
+                seqOffset = KNOWN_ANGLE_CARBO_SEQ_OFFSET[angleName]
+            elif nucleotide and angleName == 'CHI':
                 if self.__ccU.updateChemCompDict(cifCompId):
                     try:
                         next(cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == 'N9')
@@ -526,6 +539,8 @@ class CyanaMRParserListener(ParseTreeListener):
                                               'CHI', 'ETA', 'THETA', "ETA'", "THETA'",
                                               'NU0', 'NU1', 'NU2', 'NU3', 'NU4',
                                               'TAU0', 'TAU1', 'TAU2', 'TAU3', 'TAU4'):
+                pass
+            elif carbohydrate and angleName in ('PHI', 'PSI', 'OMEGA'):
                 pass
             else:
                 self.warningMessage += f"[Enumeration error] {self.__getCurrentRestraint()}"\

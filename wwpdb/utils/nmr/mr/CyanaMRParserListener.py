@@ -652,9 +652,14 @@ class CyanaMRParserListener(ParseTreeListener):
         compId2 = str(ctx.Simple_name(2)).upper()
         atomId2 = str(ctx.Simple_name(3)).upper()
         target = float(str(ctx.Float(0)))
-        error = float(str(ctx.Float(1)))
+        error = abs(float(str(ctx.Float(1))))
         weight = float(str(ctx.Float(2)))
         # dataSet = int(str(ctx.Integer(2)))
+
+        if weight <= 0.0:
+            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                f"The relative weight value of '{weight}' must be a positive value.\n"
+            return
 
         target_value = target
         lower_limit = target - error

@@ -783,7 +783,9 @@ class CnsMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by CnsMRParser#sani_assign.
     def exitSani_assign(self, ctx: CnsMRParser.Sani_assignContext):
         target = float(str(ctx.Real(0)))
-        delta = float(str(ctx.Real(1)))
+        delta = abs(float(str(ctx.Real(1))))
+
+        # ignore the third real value due to the original definition
 
         target_value = None
         lower_limit = None

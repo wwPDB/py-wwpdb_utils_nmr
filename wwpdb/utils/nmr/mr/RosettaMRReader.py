@@ -140,8 +140,11 @@ class RosettaMRReader:
 
 if __name__ == "__main__":
     reader = RosettaMRReader(True)
-    reader.parse('../../tests-nmr/mock-data-daother-7690/rosetta_angle.test',
+    reader.parse('../../tests-nmr/mock-data-daother-7690/rosetta_rdc.test',
                  '../../tests-nmr/mock-data-daother-7690/D_800470_model_P1.cif.V4')
+    # reader = RosettaMRReader(True)
+    # reader.parse('../../tests-nmr/mock-data-daother-7690/rosetta_angle.test',
+    #              '../../tests-nmr/mock-data-daother-7690/D_800470_model_P1.cif.V4')
     # reader = RosettaMRReader(True)
     # reader.parse('../../tests-nmr/mock-data-daother-7690/rosetta_dist.test',
     #              '../../tests-nmr/mock-data-daother-7690/D_800470_model_P1.cif.V4')

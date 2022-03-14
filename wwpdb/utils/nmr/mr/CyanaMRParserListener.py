@@ -19,6 +19,8 @@ try:
                                                        DIST_RESTRAINT_ERROR,
                                                        ANGLE_RESTRAINT_RANGE,
                                                        ANGLE_RESTRAINT_ERROR,
+                                                       RDC_RESTRAINT_RANGE,
+                                                       RDC_RESTRAINT_ERROR,
                                                        KNOWN_ANGLE_NAMES,
                                                        KNOWN_ANGLE_ATOM_NAMES,
                                                        KNOWN_ANGLE_SEQ_OFFSET,
@@ -27,7 +29,8 @@ try:
 
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
-    from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
+    from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import (NEFTranslator,
+                                                             isotopeNumsOfNmrObsNucs)
 except ImportError:
     from nmr.mr.CyanaMRParser import CyanaMRParser
     from nmr.mr.ParserListenerUtil import (checkCoordinates,
@@ -35,6 +38,8 @@ except ImportError:
                                            DIST_RESTRAINT_ERROR,
                                            ANGLE_RESTRAINT_RANGE,
                                            ANGLE_RESTRAINT_ERROR,
+                                           RDC_RESTRAINT_RANGE,
+                                           RDC_RESTRAINT_ERROR,
                                            KNOWN_ANGLE_NAMES,
                                            KNOWN_ANGLE_ATOM_NAMES,
                                            KNOWN_ANGLE_SEQ_OFFSET,
@@ -43,7 +48,8 @@ except ImportError:
 
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
-    from nmr.NEFTranslator.NEFTranslator import NEFTranslator
+    from nmr.NEFTranslator.NEFTranslator import (NEFTranslator,
+                                                 isotopeNumsOfNmrObsNucs)
 
 
 DIST_RANGE_MIN = DIST_RESTRAINT_RANGE['min_inclusive']
@@ -58,6 +64,13 @@ ANGLE_RANGE_MAX = ANGLE_RESTRAINT_RANGE['max_inclusive']
 
 ANGLE_ERROR_MIN = ANGLE_RESTRAINT_ERROR['min_exclusive']
 ANGLE_ERROR_MAX = ANGLE_RESTRAINT_ERROR['max_exclusive']
+
+
+RDC_RANGE_MIN = RDC_RESTRAINT_RANGE['min_exclusive']
+RDC_RANGE_MAX = RDC_RESTRAINT_RANGE['max_exclusive']
+
+RDC_ERROR_MIN = RDC_RESTRAINT_ERROR['min_exclusive']
+RDC_ERROR_MAX = RDC_RESTRAINT_ERROR['max_exclusive']
 
 
 # This class defines a complete listener for a parse tree produced by CyanaMRParser.
@@ -291,6 +304,9 @@ class CyanaMRParserListener(ParseTreeListener):
                     chainAssign.append((chainId, seqId, cifCompId))
                 elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                     chainAssign.append((chainId, seqId, cifCompId))
+                    if cifCompId != compId:
+                        self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
+                            f"The residue name {seqId}:{compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
 
         if len(chainAssign) == 0 and self.__altPolySeq is not None:
             for ps in self.__altPolySeq:
@@ -299,6 +315,9 @@ class CyanaMRParserListener(ParseTreeListener):
                     cifCompId = ps['comp_id'][ps['auth_seq_id'].index(seqId)]
                     cifSeqId = ps['seq_id'][ps['auth_seq_id'].index(seqId)]
                     chainAssign.append(chainId, cifSeqId, cifCompId)
+                    if cifCompId != compId:
+                        self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
+                            f"The residue name {seqId}:{compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
 
         if len(chainAssign) == 0:
             self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
@@ -619,9 +638,181 @@ class CyanaMRParserListener(ParseTreeListener):
     def enterRdc_restraint(self, ctx: CyanaMRParser.Rdc_restraintContext):  # pylint: disable=unused-argument
         self.rdcRestraints += 1
 
+        self.atomSelectionSet = []
+
     # Exit a parse tree produced by CyanaMRParser#rdc_restraint.
-    def exitRdc_restraint(self, ctx: CyanaMRParser.Rdc_restraintContext):  # pylint: disable=unused-argument
-        pass
+    def exitRdc_restraint(self, ctx: CyanaMRParser.Rdc_restraintContext):
+        if not self.__hasPolySeq:
+            return
+
+        seqId1 = int(str(ctx.Integer(0)))
+        compId1 = str(ctx.Simple_name(0)).upper()
+        atomId1 = str(ctx.Simple_name(1)).upper()
+        seqId2 = int(str(ctx.Integer(1)))
+        compId2 = str(ctx.Simple_name(2)).upper()
+        atomId2 = str(ctx.Simple_name(3)).upper()
+        target = float(str(ctx.Float(0)))
+        error = float(str(ctx.Float(1)))
+        weight = float(str(ctx.Float(2)))
+        # dataSet = int(str(ctx.Integer(2)))
+
+        target_value = target
+        lower_limit = target - error
+        upper_limit = target + error
+
+        validRange = True
+        dstFunc = {'weight': weight}
+
+        if target_value is not None:
+            if RDC_ERROR_MIN < target_value < RDC_ERROR_MAX:
+                dstFunc['target_value'] = f"{target_value:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The target value='{target_value}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+
+        if lower_limit is not None:
+            if RDC_ERROR_MIN < lower_limit < RDC_ERROR_MAX:
+                dstFunc['lower_limit'] = f"{lower_limit:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The lower limit value='{lower_limit}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+
+        if upper_limit is not None:
+            if RDC_ERROR_MIN < upper_limit < RDC_ERROR_MAX:
+                dstFunc['upper_limit'] = f"{upper_limit:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The upper limit value='{upper_limit}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+
+        if not validRange:
+            return
+
+        if target_value is not None:
+            if RDC_RANGE_MIN < target_value < RDC_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The target value='{target_value}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+
+        if lower_limit is not None:
+            if RDC_RANGE_MIN < lower_limit < RDC_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The lower limit value='{lower_limit}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+
+        if upper_limit is not None:
+            if RDC_RANGE_MIN < upper_limit < RDC_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The upper limit value='{upper_limit}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+
+        chainAssign1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
+        chainAssign2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
+
+        if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+            return
+
+        self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1)
+        self.selectCoordAtoms(chainAssign2, seqId2, compId2, atomId2)
+
+        if len(self.atomSelectionSet) < 2:
+            return
+
+        if not self.areUniqueCoordAtoms('an RDC'):
+            return
+
+        chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
+        seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
+        comp_id_1 = self.atomSelectionSet[0][0]['comp_id']
+        atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
+
+        chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
+        seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
+        comp_id_2 = self.atomSelectionSet[1][0]['comp_id']
+        atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+
+        if (atom_id_1[0] not in isotopeNumsOfNmrObsNucs) or (atom_id_2[0] not in isotopeNumsOfNmrObsNucs):
+            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                f"Non-magnetic susceptible spin appears in RDC vector "\
+                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
+                f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+            return
+
+        if chain_id_1 != chain_id_2:
+            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                f"Invalid inter-chain RDC vector "\
+                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+            return
+
+        if abs(seq_id_1 - seq_id_2) > 1:
+            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                f"Invalid inter-residue RDC vector "\
+                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+            return
+
+        if abs(seq_id_1 - seq_id_2) == 1:
+
+            if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
+               ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H')) or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H') and atom_id_2 == 'C')):
+                pass
+
+            else:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    "Invalid inter-residue RDC vector "\
+                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                return
+
+        elif atom_id_1 == atom_id_2:
+            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                "Zero RDC vector "\
+                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+            return
+
+        else:
+
+            if self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
+
+                if not any(b for b in self.__ccU.lastBonds
+                           if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
+                               or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
+
+                    if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            "RDC vector over multiple covalent bonds "\
+                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                        return
+
+        for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
+                                              self.atomSelectionSet[1]):
+            if self.__verbose:
+                print(f"subtype={self.__cur_subtype} id={self.rdcRestraints} "
+                      f"atom1={atom1} atom2={atom2} {dstFunc}")
+
+    def areUniqueCoordAtoms(self, subtype_name):
+        """ Check whether atom selection sets are uniquely assigned.
+        """
+
+        for _atomSelectionSet in self.atomSelectionSet:
+
+            if len(_atomSelectionSet) < 2:
+                continue
+
+            for atom1, atom2 in itertools.combinations(_atomSelectionSet, _atomSelectionSet):
+                if atom1['chain_id'] != atom2['chain_id']:
+                    continue
+                if atom1['seq_id'] != atom2['seq_id']:
+                    continue
+                self.warningMessage += f"[Invalid atom selection] {self.__getCurrentRestraint()}"\
+                    f"Ambiguous atom selection '{atom1['chain_id']}:{atom1['seq_id']}:{atom1['atom_id']} or "\
+                    f"{atom2['atom_id']}' is not allowed as {subtype_name} restraint.\n"
+                return False
+
+        return True
 
     # Enter a parse tree produced by CyanaMRParser#pcs_restraints.
     def enterPcs_restraints(self, ctx: CyanaMRParser.Pcs_restraintsContext):  # pylint: disable=unused-argument

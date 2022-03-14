@@ -914,7 +914,7 @@ class CnsMRParserListener(ParseTreeListener):
         for atom1, atom2 in itertools.product(self.atomSelectionSet[4],
                                               self.atomSelectionSet[5]):
             if self.__verbose:
-                print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
+                print(f"subtype={self.__cur_subtype} id={self.rdcRestraints} "
                       f"atom1={atom1} atom2={atom2} {dstFunc}")
 
     # Enter a parse tree produced by CnsMRParser#coupling_statement.

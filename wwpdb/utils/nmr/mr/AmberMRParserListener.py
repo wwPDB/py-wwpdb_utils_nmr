@@ -22,11 +22,14 @@ try:
                                                        DIST_RESTRAINT_RANGE,
                                                        DIST_RESTRAINT_ERROR,
                                                        ANGLE_RESTRAINT_RANGE,
-                                                       ANGLE_RESTRAINT_ERROR)
+                                                       ANGLE_RESTRAINT_ERROR,
+                                                       RDC_RESTRAINT_RANGE,
+                                                       RDC_RESTRAINT_ERROR)
 
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
-    from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
+    from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import (NEFTranslator,
+                                                             isotopeNumsOfNmrObsNucs)
 except ImportError:
     from nmr.mr.AmberMRParser import AmberMRParser
     from nmr.mr.ParserListenerUtil import (checkCoordinates,
@@ -35,11 +38,14 @@ except ImportError:
                                            DIST_RESTRAINT_RANGE,
                                            DIST_RESTRAINT_ERROR,
                                            ANGLE_RESTRAINT_RANGE,
-                                           ANGLE_RESTRAINT_ERROR)
+                                           ANGLE_RESTRAINT_ERROR,
+                                           RDC_RESTRAINT_RANGE,
+                                           RDC_RESTRAINT_ERROR)
 
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
-    from nmr.NEFTranslator.NEFTranslator import NEFTranslator
+    from nmr.NEFTranslator.NEFTranslator import (NEFTranslator,
+                                                 isotopeNumsOfNmrObsNucs)
 
 
 DIST_RANGE_MIN = DIST_RESTRAINT_RANGE['min_inclusive']
@@ -54,6 +60,13 @@ ANGLE_RANGE_MAX = ANGLE_RESTRAINT_RANGE['max_inclusive']
 
 ANGLE_ERROR_MIN = ANGLE_RESTRAINT_ERROR['min_exclusive']
 ANGLE_ERROR_MAX = ANGLE_RESTRAINT_ERROR['max_exclusive']
+
+
+RDC_RANGE_MIN = RDC_RESTRAINT_RANGE['min_exclusive']
+RDC_RANGE_MAX = RDC_RESTRAINT_RANGE['max_exclusive']
+
+RDC_ERROR_MIN = RDC_RESTRAINT_ERROR['min_exclusive']
+RDC_ERROR_MAX = RDC_RESTRAINT_ERROR['max_exclusive']
 
 
 # maximum column size of IAT
@@ -181,6 +194,16 @@ class AmberMRParserListener(ParseTreeListener):
 
     rstwt = [0.0, 0.0, 0.0, 0.0]  # generalized distance 2/3/4
 
+    # dipolar couplings
+    id = None
+    jd = None
+    dobsl = None
+    dobsu = None
+    dwt = None
+    ndip = None
+    dataset = None
+    numDataset = None
+
     # Amber 10: ambmask
     depth = 0
 
@@ -261,6 +284,16 @@ class AmberMRParserListener(ParseTreeListener):
         self.lowerLimit = None
         self.upperLimit = None
         self.upperLinearLimit = None
+
+        # dipolar couplings
+        self.id = None
+        self.jd = None
+        self.dobsl = None
+        self.dobsu = None
+        self.dwt = None
+        self.ndip = None
+        self.dataset = None
+        self.numDataset = None
 
         self.dist_sander_pat = re.compile(r'(\d+) (\S+) (\S+) '
                                           r'(\d+) (\S+) (\S+) '
@@ -487,7 +520,7 @@ class AmberMRParserListener(ParseTreeListener):
 
                     # simple distance
                     if len(self.iat) == COL_DIST:
-                        dstFunc = self.valiateDistanceRange()
+                        dstFunc = self.validateDistanceRange()
 
                         if dstFunc is None:
                             return
@@ -513,7 +546,7 @@ class AmberMRParserListener(ParseTreeListener):
                     if not valid:
                         return
 
-                    dstFunc = self.valiateAngleRange()
+                    dstFunc = self.validateAngleRange()
 
                     if dstFunc is None:
                         return
@@ -536,7 +569,7 @@ class AmberMRParserListener(ParseTreeListener):
                     if not valid:
                         return
 
-                    dstFunc = self.valiateAngleRange()
+                    dstFunc = self.validateAngleRange()
 
                     if dstFunc is None:
                         return
@@ -829,7 +862,7 @@ class AmberMRParserListener(ParseTreeListener):
 
                     # simple distance
                     if not self.inGenDist:
-                        dstFunc = self.valiateDistanceRange()
+                        dstFunc = self.validateDistanceRange()
 
                         if dstFunc is None:
                             return
@@ -861,7 +894,7 @@ class AmberMRParserListener(ParseTreeListener):
                     if not valid:
                         return
 
-                    dstFunc = self.valiateAngleRange()
+                    dstFunc = self.validateAngleRange()
 
                     if dstFunc is None:
                         return
@@ -890,7 +923,7 @@ class AmberMRParserListener(ParseTreeListener):
                     if not valid:
                         return
 
-                    dstFunc = self.valiateAngleRange()
+                    dstFunc = self.validateAngleRange()
 
                     if dstFunc is None:
                         return
@@ -1167,7 +1200,7 @@ class AmberMRParserListener(ParseTreeListener):
 
         self.lastComment = None
 
-    def valiateDistanceRange(self):
+    def validateDistanceRange(self):
         """ Validate distance value range.
         """
 
@@ -1240,7 +1273,7 @@ class AmberMRParserListener(ParseTreeListener):
 
         return dstFunc
 
-    def valiateAngleRange(self):
+    def validateAngleRange(self):
         """ Validate angle value range.
         """
 
@@ -1310,6 +1343,52 @@ class AmberMRParserListener(ParseTreeListener):
             else:
                 self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
                     f"The upper linear limit value 'r4={self.upperLinearLimit}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
+
+        return dstFunc
+
+    def validateRdcRange(self, n, dwt):
+        """ Validate RDC value range.
+        """
+
+        dobsl = self.dobsl[n]
+        dobsu = self.dobsu[n]
+
+        validRange = True
+        dstFunc = {'weight': dwt}
+
+        if dobsl is not None:
+            if RDC_ERROR_MIN < dobsl < RDC_ERROR_MAX:
+                dstFunc['lower_limit'] = f"{dobsl:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint(self.dataset,n)}"\
+                    f"The lower limit value 'dobsl({n})={dobsl}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+
+        if dobsu is not None:
+            if RDC_ERROR_MIN < dobsu < RDC_ERROR_MAX:
+                dstFunc['upper_limit'] = f"{dobsu:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint(self.dataset,n)}"\
+                    f"The upper limit value 'dobsu({n})={dobsu}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+
+        if not validRange:
+            self.lastComment = None
+            return None
+
+        if dobsl is not None:
+            if RDC_RANGE_MIN < dobsl < RDC_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint(self.dataset,n)}"\
+                    f"The lower limit value 'dobsl({n})={dobsl}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+
+        if dobsu is not None:
+            if RDC_RANGE_MIN < dobsu < RDC_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint(self.dataset,n)}"\
+                    f"The upper limit value 'dobsu({n})={dobsu}' should be within range {RDC_RESTRAINT_RANGE}.\n"
 
         return dstFunc
 
@@ -1859,7 +1938,7 @@ class AmberMRParserListener(ParseTreeListener):
                     rawRealArray = str(ctx.Reals()).split(',')
                     if len(rawRealArray) > MAX_COL_RSTWT:
                         self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            f"The argument value of '{varName}' must be in the range 1-{MAX_COL_RSTWT}.\n"
+                            f"The length of '{varName}={','.join(rawRealArray)}' must not exceed {MAX_COL_RSTWT}.\n"
                         return
                     for col, rawReal in enumerate(rawRealArray):
                         val = float(rawReal)
@@ -1870,7 +1949,7 @@ class AmberMRParserListener(ParseTreeListener):
                     if numCol <= 0 or numCol > MAX_COL_RSTWT:
                         self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                             f"The argument value of '{varName}({numCol})' derived from "\
-                            f"'{str(ctx.MultiplicativeReal())}' must be in the range 1-{MAX_COL_RSTWT}.\n"
+                            f"'{str(ctx.MultiplicativeReal())}' must not exceed {MAX_COL_RSTWT}.\n"
                         return
                     val = float(rawMultReal[1])
                     for col in range(0, numCol):
@@ -1930,7 +2009,7 @@ class AmberMRParserListener(ParseTreeListener):
                 self.__cur_subtype = 'plane'
 
     # Exit a parse tree produced by AmberMRParser#restraint_factor.
-    def exitRestraint_factor(self, ctx: AmberMRParser.Restraint_factorContext):
+    def exitRestraint_factor(self, ctx: AmberMRParser.Restraint_factorContext):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by AmberMRParser#noeexp_statement.
@@ -1989,17 +2068,292 @@ class AmberMRParserListener(ParseTreeListener):
         self.rdcRestraints += 1
         self.__cur_subtype = 'rdc'
 
+        self.id = {}
+        self.jd = {}
+        self.dobsl = {}
+        self.dobsu = {}
+        self.dwt = {}
+        self.ndip = -1
+        self.dataset = -1
+        self.numDataset = -1
+
     # Exit a parse tree produced by AmberMRParser#align_statement.
     def exitAlign_statement(self, ctx: AmberMRParser.Align_statementContext):  # pylint: disable=unused-argument
-        pass
+        if self.ndip <= 0:
+            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                f"The number of observed dipolar couplings 'ndip' is the mandatory variable.\n"
+            return
+
+        for n in range(1, self.ndip + 1):
+
+            if n not in self.id:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"\
+                    f"The first atom number involved in the dipolar coupling id({n}) was not set.\n"
+                continue
+
+            if n not in self.jd:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"\
+                    f"The second atom number involved in the dipolar coupling jd({n}) was not set.\n"
+                continue
+
+            if n not in self.dobsl:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"\
+                    f"The lower limit value for the observed dipolar coupling obsl({n}) was not set.\n"
+                continue
+
+            if n not in self.dobsu:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"\
+                    f"The upper limit value for the observed dipolar coupling obsu({n}) was not set.\n"
+                continue
+
+            _id = self.id[n]
+            _jd = self.jd[n]
+
+            if _id <= 0:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"\
+                    f"The first atom number involved in the dipolar coupling 'id({n})={_id}' should be a positive integer.\n"
+                continue
+
+            if _jd <= 0:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"\
+                    f"The second atom number involved in the dipolar coupling 'jd({n})={_jd}' should be a positive integer.\n"
+                continue
+
+            dwt = 1.0
+            if n in self.dwt:
+                dwt = self.dwt[n]
+                if dwt <= 0.0:
+                    dwt = 1.0
+
+            # convert AMBER atom numbers to corresponding coordinate atoms based on AMBER parameter/topology file
+            if self.__atomNumberDict is not None:
+
+                self.atomSelectionSet = []
+
+                atomSelection = []
+
+                if _id in self.__atomNumberDict:
+                    atomSelection.append(self.__atomNumberDict[_id])
+                else:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"\
+                        f"'id({n})={_id}' is not defined in the AMBER parameter/topology file.\n"
+                    continue
+
+                chain_id_1 = atomSelection[0]['chain_id']
+                seq_id_1 = atomSelection[0]['seq_id']
+                comp_id_1 = atomSelection[0]['comp_id']
+                atom_id_1 = atomSelection[0]['atom_id']
+
+                self.atomSelectionSet.append(atomSelection)
+
+                atomSelection = []
+
+                if _jd in self.__atomNumberDict:
+                    atomSelection.append(self.__atomNumberDict[_jd])
+                else:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"\
+                        f"'jd({n})={_jd}' is not defined in the AMBER parameter/topology file.\n"
+                    continue
+
+                chain_id_2 = atomSelection[0]['chain_id']
+                seq_id_2 = atomSelection[0]['seq_id']
+                comp_id_2 = atomSelection[0]['comp_id']
+                atom_id_2 = atomSelection[0]['atom_id']
+
+                self.atomSelectionSet.append(atomSelection)
+
+                if (atom_id_1[0] not in isotopeNumsOfNmrObsNucs) or (atom_id_2[0] not in isotopeNumsOfNmrObsNucs):
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"\
+                        f"Non-magnetic susceptible spin appears in RDC vector "\
+                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
+                        f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    continue
+
+                if chain_id_1 != chain_id_2:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"\
+                        f"Invalid inter-chain RDC vector "\
+                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    continue
+
+                if abs(seq_id_1 - seq_id_2) > 1:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"\
+                        f"Invalid inter-residue RDC vector "\
+                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    continue
+
+                if abs(seq_id_1 - seq_id_2) == 1:
+
+                    if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
+                       ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H')) or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H') and atom_id_2 == 'C')):
+                        pass
+
+                    else:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"\
+                            "Invalid inter-residue RDC vector "\
+                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                        continue
+
+                elif atom_id_1 == atom_id_2:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"\
+                        "Zero RDC vector "\
+                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    continue
+
+                else:
+
+                    if self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
+
+                        if not any(b for b in self.__ccU.lastBonds
+                                   if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
+                                       or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
+
+                            if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
+                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"\
+                                    "RDC vector over multiple covalent bonds "\
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                                continue
+
+                if self.lastComment is not None:
+                    if self.__verbose:
+                        print('# ' + self.lastComment)
+
+                dstFunc = self.validateRdcRange(n, dwt)
+
+                if dstFunc is None:
+                    return
+
+                for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
+                                                      self.atomSelectionSet[1]):
+                    if self.__verbose:
+                        print(f"subtype={self.__cur_subtype} dataset={self.dataset} n={n} "
+                              f"atom1={atom1} atom2={atom2} {dstFunc}")
 
         # Enter a parse tree produced by AmberMRParser#align_factor.
     def enterAlign_factor(self, ctx: AmberMRParser.Align_factorContext):  # pylint: disable=unused-argument
         pass
 
     # Exit a parse tree produced by AmberMRParser#align_factor.
-    def exitAlign_factor(self, ctx: AmberMRParser.Align_factorContext):  # pylint: disable=unused-argument
-        pass
+    def exitAlign_factor(self, ctx: AmberMRParser.Align_factorContext):
+        if ctx.ID():
+            varName = 'id'
+
+            if ctx.Decimal():
+                decimal = int(str(ctx.Decimal()))
+                if self.ndip > 0 and decimal > self.ndip:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,decimal)}"\
+                        f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ndip}, "\
+                        f"regulated by 'ndip={self.ndip}'.\n"
+                    return
+                self.id[decimal] = int(str(ctx.Integer()))
+
+        elif ctx.JD():
+            varName = 'jd'
+
+            if ctx.Decimal():
+                decimal = int(str(ctx.Decimal()))
+                if self.ndip > 0 and decimal > self.ndip:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,decimal)}"\
+                        f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ndip}, "\
+                        f"regulated by 'ndip={self.ndip}'.\n"
+                    return
+                self.jd[decimal] = int(str(ctx.Integer()))
+
+        elif ctx.DOBSL():
+            varName = 'dobsl'
+
+            if ctx.Decimal():
+                decimal = int(str(ctx.Decimal()))
+                if self.ndip > 0 and decimal > self.ndip:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,decimal)}"\
+                        f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ndip}, "\
+                        f"regulated by 'ndip={self.ndip}'.\n"
+                    return
+                self.dobsl[decimal] = float(str(ctx.Real()))
+
+        elif ctx.DOBSU():
+            varName = 'dobsu'
+
+            if ctx.Decimal():
+                decimal = int(str(ctx.Decimal()))
+                if self.ndip > 0 and decimal > self.ndip:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,decimal)}"\
+                        f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ndip}, "\
+                        f"regulated by 'ndip={self.ndip}'.\n"
+                    return
+                self.dobsu[decimal] = float(str(ctx.Real()))
+
+        elif ctx.DWT():
+            varName = 'dwt'
+
+            if ctx.Decimal():
+                decimal = int(str(ctx.Decimal()))
+                if self.ndip > 0 and decimal > self.ndip:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,decimal)}"\
+                        f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ndip}, "\
+                        f"regulated by 'ndip={self.ndip}'.\n"
+                    return
+                rawRealArray = str(ctx.Reals()).split(',')
+                val = float(rawRealArray[0])
+                if val <= 0.0:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,decimal)}"\
+                        f"The relative weight value of '{varName}({decimal})={val}' must be a positive value.\n"
+                    return
+                self.dwt[decimal] = val
+
+            else:
+                if ctx.Reals():
+                    rawRealArray = str(ctx.Reals()).split(',')
+                    if len(rawRealArray) > self.ndip:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            f"The length of '{varName}={ctx.Reals()}' must not exceed 'ndip={self.ndip}'.\n"
+                        return
+                    for col, rawReal in enumerate(rawRealArray):
+                        val = float(rawReal)
+                        if val <= 0.0:
+                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                f"The relative weight value of '{varName}({col+1})={val}' must be a positive value.\n"
+                            return
+                        self.dwt[col + 1] = val
+                elif ctx.MultiplicativeReal():
+                    rawMultReal = str(ctx.MultiplicativeReal()).split('*')
+                    numCol = int(rawMultReal[0])
+                    if numCol <= 0 or numCol > self.ndip:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            f"The argument value of '{varName}({numCol})' derived from "\
+                            f"'{str(ctx.MultiplicativeReal())}' must be in the range 1-{self.ndip}, "\
+                            f"regulated by 'ndip={self.ndip}'.\n"
+                        return
+                    val = float(rawMultReal[1])
+                    if val <= 0.0:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            f"The relative weight value of '{varName}={val}' derived from "\
+                            f"'{str(ctx.MultiplicativeReal())}' must be a positive value.\n"
+                        return
+                    for col in range(0, numCol):
+                        self.dwt[col + 1] = val
+
+        elif ctx.NDIP():
+            self.ndip = int(str(ctx.Integer()))
+            if self.ndip <= 0:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"The argument value of 'ndip={str(ctx.Integer())}' must be a positive integer.\n"
+
+        elif ctx.DATASET():
+            self.dataset = int(str(ctx.Integer()))
+            if self.dataset <= 0:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"The argument value of 'dataset={str(ctx.Integer())}' must be a positive integer.\n"
+                return
+            if self.dataset > self.numDataset:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"The argument value of 'dataset={str(ctx.Integer())}' must be in the range 1-{self.numDataset}, "\
+                    f"regulated by 'num_dataset={self.numDataset}'.\n"
+
+        elif ctx.NUM_DATASET():
+            self.numDataset = int(str(ctx.Integer()))
+            if self.numDataset <= 0:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"The argument value of 'num_dataset={str(ctx.Integer())}' must be a positive integer.\n"
 
     # Enter a parse tree produced by AmberMRParser#csa_statement.
     def enterCsa_statement(self, ctx: AmberMRParser.Csa_statementContext):  # pylint: disable=unused-argument
@@ -2262,7 +2616,7 @@ class AmberMRParserListener(ParseTreeListener):
 
         self.funcExprs.append(self.inCom_funcExprs)
 
-    def __getCurrentRestraint(self):
+    def __getCurrentRestraint(self, dataset=None, n=None):
         if self.__cur_subtype == 'dist':
             return f"[Check the {self.distRestraints}th row of distance restraints] "
         if self.__cur_subtype == 'ang':
@@ -2270,7 +2624,9 @@ class AmberMRParserListener(ParseTreeListener):
         if self.__cur_subtype == 'dihed':
             return f"[Check the {self.dihedRestraints}th row of torsional angle restraints] "
         if self.__cur_subtype == 'rdc':
-            return f"[Check the {self.rdcRestraints}th row of residual dipolar coupling restraints] "
+            if dataset is None or n is None:
+                return f"[Check the {self.rdcRestraints}th row of residual dipolar coupling restraints] "
+            return f"[Check the {n}th row of residual dipolar coupling restraints (dataset={dataset})] "
         if self.__cur_subtype == 'plane':
             return f"[Check the {self.planeRestraints}th row of plane-point/plane angle restraints] "
         if self.__cur_subtype == 'noepk':

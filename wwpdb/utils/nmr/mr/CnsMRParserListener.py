@@ -785,8 +785,6 @@ class CnsMRParserListener(ParseTreeListener):
         target = float(str(ctx.Real(0)))
         delta = abs(float(str(ctx.Real(1))))
 
-        # ignore the third real value due to the original definition
-
         target_value = None
         lower_limit = None
         upper_limit = None
@@ -795,6 +793,11 @@ class CnsMRParserListener(ParseTreeListener):
             target_value = target
             lower_limit = target - delta
             upper_limit = target + delta
+            if ctx.Real(2):
+                error_grater = delta
+                error_less = abs(float(str(ctx.Real(2))))
+                lower_limit = target - error_less
+                upper_limit = target + error_grater
         else:
             target_value = target
 

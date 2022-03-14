@@ -859,8 +859,6 @@ class XplorMRParserListener(ParseTreeListener):
         target = float(str(ctx.Real(0)))
         delta = abs(float(str(ctx.Real(1))))
 
-        # ignore the third real value due to the original definition
-
         target_value = None
         lower_limit = None
         upper_limit = None
@@ -869,6 +867,11 @@ class XplorMRParserListener(ParseTreeListener):
             target_value = target
             lower_limit = target - delta
             upper_limit = target + delta
+            if ctx.Real(2):
+                error_grater = delta
+                error_less = abs(float(str(ctx.Real(2))))
+                lower_limit = target - error_less
+                upper_limit = target + error_grater
         else:
             target_value = target
 
@@ -994,8 +997,13 @@ class XplorMRParserListener(ParseTreeListener):
                       f"atom1={atom1} atom2={atom2} {dstFunc}")
 
     # Enter a parse tree produced by XplorMRParser#xdip_statement.
-    def enterXdip_statement(self, ctx: XplorMRParser.Xdip_statementContext):  # pylint: disable=unused-argument
-        pass
+    def enterXdip_statement(self, ctx: XplorMRParser.Xdip_statementContext):
+        if ctx.Rdc_potential():
+            code = str(ctx.Rdc_potential()).upper()[0:4]
+            if code == 'SQUA':
+                self.potential = 'square'
+            if code == 'HARM':
+                self.potential = 'harmonic'
 
     # Exit a parse tree produced by XplorMRParser#xdip_statement.
     def exitXdip_statement(self, ctx: XplorMRParser.Xdip_statementContext):  # pylint: disable=unused-argument

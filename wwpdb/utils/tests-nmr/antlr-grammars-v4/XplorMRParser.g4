@@ -197,7 +197,7 @@ xdip_statement:
 	Reset;
 
 xdip_assign:
-	Assign selection selection selection selection selection selection Real Real Real (Real Real Real)?;
+	Assign selection selection selection selection selection selection Real Real (Real | Real Real Real Real)?;
 
 /* XPLOR-NIH: Residual Dipolar Couplings - Syntax (VEAN)
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node420.html

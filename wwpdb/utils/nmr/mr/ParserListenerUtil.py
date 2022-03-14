@@ -31,7 +31,7 @@ RDC_RESTRAINT_RANGE = {'min_exclusive': -200.0, 'max_exclusive': 200.0}
 # @see: https://x3dna.org/highlights/torsion-angles-of-nucleic-acid-structures for nucleic acids
 KNOWN_ANGLE_ATOM_NAMES = {'PHI': ['C', 'N', 'CA', 'C'],  # i-1, i, i, i
                           'PSI': ['N', 'CA', 'C', 'N'],  # i, i, i, i+1
-                          'OMEGA': ['CA', 'C', 'N', 'CA'],  # i, i, i+1, i+1; different from CYANA's definition [O C N (H or CD for Proline residue)]
+                          'OMEGA': ['CA', 'C', 'N', 'CA'],  # i, i, i+1, i+1; modified CYANA definition [O C N (H or CD for Proline residue)]
                           'CHI1': ['N', 'CA', 'CB', re.compile(r'^[COS]G1?$')],
                           'CHI2': ['CA', 'CB', re.compile(r'^CG1?$'), re.compile(r'^[CNOS]D1?$')],
                           'CHI3': ['CB', 'CG', re.compile(r'^[CS]D$'), re.compile(r'^[CNO]E1?$')],
@@ -48,8 +48,9 @@ KNOWN_ANGLE_ATOM_NAMES = {'PHI': ['C', 'N', 'CA', 'C'],  # i-1, i, i, i
                           'DELTA': ["C5'", "C4'", "C3'", "O3'"],
                           'EPSILON': ["C4'", "C3'", "O3'", 'P'],  # i, i, i, i+1
                           'ZETA': ["C3'", "O3'", 'P', "O5'"],  # i, i, i+1, i+1
-                          'CHI': {'Y': ["O4'", "C1'", 'N1', 'C2'],  # pyrimidines (i.e. C, T, U) N1/3
-                                  'R': ["O4'", "C1'", 'N9', 'C4']  # purines (i.e. G, A) N1/3/7/9
+                          # aka. CHIN (nucleic CHI angle)
+                          'CHI': {'Y': ["O4'", "C1'", 'N1', 'C2'],  # for pyrimidines (i.e. C, T, U) N1/3
+                                  'R': ["O4'", "C1'", 'N9', 'C4']  # for purines (i.e. G, A) N1/3/7/9
                                   },
                           'ETA': ["C4'", 'P', "C4'", 'P'],  # i-1, i, i, i+1
                           'THETA': ['P', "C4'", 'P', "C4'"],  # i, i, i+1, i+1
@@ -76,7 +77,7 @@ KNOWN_ANGLE_NAMES = KNOWN_ANGLE_ATOM_NAMES.keys()
 
 KNOWN_ANGLE_SEQ_OFFSET = {'PHI': [-1, 0, 0, 0],  # i-1, i, i, i
                           'PSI': [0, 0, 0, 1],  # i, i, i, i+1
-                          'OMEGA': [0, 0, 1, 1],  # i, i, i+1, i+1; different from CYANA's definition [O C N (H or CD for Proline residue)]
+                          'OMEGA': [0, 0, 1, 1],  # i, i, i+1, i+1; modified CYANA definition [O C N (H or CD for Proline residue)]
                           'CHI1': [0] * 4,
                           'CHI2': [0] * 4,
                           'CHI3': [0] * 4,
@@ -93,8 +94,9 @@ KNOWN_ANGLE_SEQ_OFFSET = {'PHI': [-1, 0, 0, 0],  # i-1, i, i, i
                           'DELTA': [0] * 4,
                           'EPSILON': [0, 0, 0, 1],  # i, i, i, i+1
                           'ZETA': [0, 0, 1, 1],  # i, i, i+1, i+1
-                          'CHI': {'Y': [0] * 4,  # pyrimidines (i.e. C, T, U) N1/3
-                                  'R': [0] * 4  # purines (i.e. G, A) N1/3/7/9
+                          # aka. CHIN (nucleic CHI angle)
+                          'CHI': {'Y': [0] * 4,  # for pyrimidines (i.e. C, T, U) N1/3
+                                  'R': [0] * 4  # for purines (i.e. G, A) N1/3/7/9
                                   },
                           'ETA': [-1, 0, 0, 1],  # i-1, i, i, i+1
                           'THETA': [0, 0, 1, 1],  # i, i, i+1, i+1
@@ -436,7 +438,7 @@ def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms
                and seqIds[0] == seqIds[1] and seqIds[1] + 1 == seqIds[2] and seqIds[2] == seqIds[3]:
                 return 'OMEGA'
 
-            # OMEGA - CYANA version
+            # OMEGA - modified CYANA definition
             if atomIds[0] == 'O' and atomIds[1] == 'C' and atomIds[2] == 'N'\
                and (atomIds[3] == 'H' or atomIds[3] == 'CD')\
                and seqIds[0] == seqIds[1] and seqIds[1] + 1 == seqIds[2] and seqIds[2] == seqIds[3]:

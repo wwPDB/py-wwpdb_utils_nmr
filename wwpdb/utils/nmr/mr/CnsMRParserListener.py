@@ -680,7 +680,7 @@ class CnsMRParserListener(ParseTreeListener):
         compId = self.atomSelectionSet[0][0]['comp_id']
         peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
 
-        if not self.areUniqueCoordAtoms():
+        if not self.areUniqueCoordAtoms('a dihedral angle'):
             return
 
         for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
@@ -694,7 +694,7 @@ class CnsMRParserListener(ParseTreeListener):
                       f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc} "
                       f"energy_const={energyConst}")
 
-    def areUniqueCoordAtoms(self):
+    def areUniqueCoordAtoms(self, subtype_name):
         """ Check whether atom selection sets are uniquely assigned.
         """
 
@@ -710,7 +710,7 @@ class CnsMRParserListener(ParseTreeListener):
                     continue
                 self.warningMessage += f"[Invalid atom selection] {self.__getCurrentRestraint()}"\
                     f"Ambiguous atom selection '{atom1['chain_id']}:{atom1['seq_id']}:{atom1['atom_id']} or "\
-                    f"{atom2['atom_id']}' is not allowed as a angle restraint.\n"
+                    f"{atom2['atom_id']}' is not allowed as {subtype_name} restraint.\n"
                 return False
 
         return True

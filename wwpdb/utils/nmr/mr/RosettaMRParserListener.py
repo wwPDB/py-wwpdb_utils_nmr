@@ -367,7 +367,7 @@ class RosettaMRParserListener(ParseTreeListener):
 
         return chainAssign
 
-    def selectCoordAtoms(self, chainAssign, seqId, atomId, allowAmbig=True):
+    def selectCoordAtoms(self, chainAssign, seqId, atomId, allowAmbig=True, subtype_name=None):
         """ Select atoms of the coordinates.
         """
 
@@ -384,7 +384,7 @@ class RosettaMRParserListener(ParseTreeListener):
                 continue
             if lenAtomId > 1 and not allowAmbig:
                 self.warningMessage += f"[Invalid atom selection] {self.__getCurrentRestraint()}"\
-                    f"Ambiguous atom selection '{seqId}:{atomId}' is not allowed as a angle restraint.\n"
+                    f"Ambiguous atom selection '{seqId}:{atomId}' is not allowed as {subtype_name} restraint.\n"
                 continue
 
             for cifAtomId in _atomId:
@@ -500,9 +500,9 @@ class RosettaMRParserListener(ParseTreeListener):
         if len(chainAssign1) == 0 or len(chainAssign2) == 0 or len(chainAssign3) == 0:
             return
 
-        self.selectCoordAtoms(chainAssign1, seqId1, atomId1, False)
-        self.selectCoordAtoms(chainAssign2, seqId2, atomId2, False)
-        self.selectCoordAtoms(chainAssign3, seqId3, atomId3, False)
+        self.selectCoordAtoms(chainAssign1, seqId1, atomId1, False, 'an angle')
+        self.selectCoordAtoms(chainAssign2, seqId2, atomId2, False, 'an angle')
+        self.selectCoordAtoms(chainAssign3, seqId3, atomId3, False, 'an angle')
 
         if len(self.atomSelectionSet) < 3:
             return
@@ -696,10 +696,10 @@ class RosettaMRParserListener(ParseTreeListener):
            or len(chainAssign3) == 0 or len(chainAssign4) == 0:
             return
 
-        self.selectCoordAtoms(chainAssign1, seqId1, atomId1, False)
-        self.selectCoordAtoms(chainAssign2, seqId2, atomId2, False)
-        self.selectCoordAtoms(chainAssign3, seqId3, atomId3, False)
-        self.selectCoordAtoms(chainAssign4, seqId4, atomId4, False)
+        self.selectCoordAtoms(chainAssign1, seqId1, atomId1, False, 'a dihedral angle')
+        self.selectCoordAtoms(chainAssign2, seqId2, atomId2, False, 'a dihedral angle')
+        self.selectCoordAtoms(chainAssign3, seqId3, atomId3, False, 'a dihedral angle')
+        self.selectCoordAtoms(chainAssign4, seqId4, atomId4, False, 'a dihedral angle')
 
         if len(self.atomSelectionSet) < 4:
             return
@@ -775,14 +775,14 @@ class RosettaMRParserListener(ParseTreeListener):
            or len(chainAssign7) == 0 or len(chainAssign8) == 0:
             return
 
-        self.selectCoordAtoms(chainAssign1, seqId1, atomId1, False)
-        self.selectCoordAtoms(chainAssign2, seqId2, atomId2, False)
-        self.selectCoordAtoms(chainAssign3, seqId3, atomId3, False)
-        self.selectCoordAtoms(chainAssign4, seqId4, atomId4, False)
-        self.selectCoordAtoms(chainAssign5, seqId5, atomId5, False)
-        self.selectCoordAtoms(chainAssign6, seqId6, atomId6, False)
-        self.selectCoordAtoms(chainAssign7, seqId7, atomId7, False)
-        self.selectCoordAtoms(chainAssign8, seqId8, atomId8, False)
+        self.selectCoordAtoms(chainAssign1, seqId1, atomId1, False, 'a dihedral angle pair')
+        self.selectCoordAtoms(chainAssign2, seqId2, atomId2, False, 'a dihedral angle pair')
+        self.selectCoordAtoms(chainAssign3, seqId3, atomId3, False, 'a dihedral angle pair')
+        self.selectCoordAtoms(chainAssign4, seqId4, atomId4, False, 'a dihedral angle pair')
+        self.selectCoordAtoms(chainAssign5, seqId5, atomId5, False, 'a dihedral angle pair')
+        self.selectCoordAtoms(chainAssign6, seqId6, atomId6, False, 'a dihedral angle pair')
+        self.selectCoordAtoms(chainAssign7, seqId7, atomId7, False, 'a dihedral angle pair')
+        self.selectCoordAtoms(chainAssign8, seqId8, atomId8, False, 'a dihedral angle pair')
 
         if len(self.atomSelectionSet) < 8:
             return

@@ -196,6 +196,8 @@ try:
     from wwpdb.utils.nmr.rci.RCI import RCI
     from wwpdb.utils.nmr.CifToNmrStar import CifToNmrStar
     from wwpdb.utils.nmr.NmrStarToCif import NmrStarToCif
+    from wwpdb.utils.nmr.mr.ParserListenerUtil import (getTypeOfDihedralRestraint,
+                                                       KNOWN_ANGLE_NAMES)
 except ImportError:
     from nmr.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
     from nmr.NEFTranslator.NEFTranslator import (NEFTranslator,
@@ -221,6 +223,8 @@ except ImportError:
     from nmr.rci.RCI import RCI
     from nmr.CifToNmrStar import CifToNmrStar
     from nmr.NmrStarToCif import NmrStarToCif
+    from nmr.mr.ParserListenerUtil import (getTypeOfDihedralRestraint,
+                                           KNOWN_ANGLE_NAMES)
 
 
 __pynmrstar_v3_3__ = version.parse(pynmrstar.__version__) >= version.parse("3.3.0")
@@ -3315,24 +3319,6 @@ class NmrDpUtility:
         self.cs_list_sf_tag_name = {'nef': 'chemical_shift_list',
                                     'nmr-star': 'Chemical_shift_list'
                                     }
-
-        # conventional dihedral angle names in standard residues
-        self.dihed_ang_names = ('PHI', 'PSI', 'OMEGA', 'CHI1', 'CHI2', 'CHI3', 'CHI4', 'CHI5',
-                                'ALPHA', 'BETA', 'GAMMA', 'DELTA', 'EPSILON', 'ZETA',
-                                'NU0', 'NU1', 'NU2', 'NU3', 'NU4',
-                                'TAU0', 'TAU1', 'TAU2', 'TAU3', 'TAU4',
-                                'CHI21', 'CHI22', 'CHI31', 'CHI32', 'CHI42')
-
-        # patterns for detection of dihedral angle type
-        self.dihed_atom_ids = ['N', 'CA', 'C']
-
-        self.chi1_atom_id_4_pat = re.compile(r'^[COS]G1?$')
-        self.chi2_atom_id_3_pat = re.compile(r'^CG1?$')
-        self.chi2_atom_id_4_pat = re.compile(r'^[CNOS]D1?$')
-        self.chi3_atom_id_3_pat = re.compile(r'^[CS]D$')
-        self.chi3_atom_id_4_pat = re.compile(r'^[CNO]E1?$')
-        self.chi4_atom_id_3_pat = re.compile(r'^[CN]E$')
-        self.chi4_atom_id_4_pat = re.compile(r'^[CN]Z$')
 
         # patterns for enum failure message
         self.chk_desc_pat = re.compile(r'^(.*) \'(.*)\' should be one of \((.*)\)\.(.*)$')
@@ -6806,7 +6792,7 @@ class NmrDpUtility:
                             elif name in three_letter_codes:
                                 res_like = True
 
-                            elif name in self.dihed_ang_names:
+                            elif name in KNOWN_ANGLE_NAMES:
                                 angle_like = True
 
                         if cs_atom_likes == 1 and cs_range_like:
@@ -6875,7 +6861,7 @@ class NmrDpUtility:
                                 elif name in three_letter_codes:
                                     res_like = True
 
-                                elif name in self.dihed_ang_names:
+                                elif name in KNOWN_ANGLE_NAMES:
                                     angle_like = True
 
                             if cs_atom_likes == 1 and cs_range_like:
@@ -11742,9 +11728,6 @@ class NmrDpUtility:
             seq_id_3_name = dh_item_names['seq_id_3']
             seq_id_4_name = dh_item_names['seq_id_4']
             comp_id_1_name = dh_item_names['comp_id_1']
-            comp_id_2_name = dh_item_names['comp_id_2']
-            comp_id_3_name = dh_item_names['comp_id_3']
-            comp_id_4_name = dh_item_names['comp_id_4']
             atom_id_1_name = dh_item_names['atom_id_1']
             atom_id_2_name = dh_item_names['atom_id_2']
             atom_id_3_name = dh_item_names['atom_id_3']
@@ -11834,18 +11817,17 @@ class NmrDpUtility:
                                 seq_id_3 = row_1[seq_id_3_name]
                                 seq_id_4 = row_1[seq_id_4_name]
                                 comp_id_1 = row_1[comp_id_1_name]
-                                comp_id_2 = row_1[comp_id_2_name]
-                                comp_id_3 = row_1[comp_id_3_name]
-                                comp_id_4 = row_1[comp_id_4_name]
                                 atom_id_1 = row_1[atom_id_1_name]
                                 atom_id_2 = row_1[atom_id_2_name]
                                 atom_id_3 = row_1[atom_id_3_name]
                                 atom_id_4 = row_1[atom_id_4_name]
                                 data_type = row_1[angle_type_name]
 
-                                data_type = self.__getTypeOfDihedralRestraint(data_type,
-                                                                              chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2,
-                                                                              chain_id_3, seq_id_3, comp_id_3, atom_id_3, chain_id_4, seq_id_4, comp_id_4, atom_id_4)[0]
+                                peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(comp_id_1)
+
+                                data_type = self.__getTypeOfDihedralRestraint(data_type, peptide, nucleotide, carbohydrate,
+                                                                              chain_id_1, seq_id_1, atom_id_1, chain_id_2, seq_id_2, atom_id_2,
+                                                                              chain_id_3, seq_id_3, atom_id_3, chain_id_4, seq_id_4, atom_id_4)[0]
 
                                 if not data_type.startswith('phi') and not data_type.startswith('psi') and not data_type.startswith('omega'):
                                     continue
@@ -20225,10 +20207,12 @@ class NmrDpUtility:
                 weight = None if weight_name not in i else i[weight_name]
                 set_id.add(i[id_tag])
 
-                data_type, seq_id_common, comp_id_common =\
-                    self.__getTypeOfDihedralRestraint(data_type,
-                                                      chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2,
-                                                      chain_id_3, seq_id_3, comp_id_3, atom_id_3, chain_id_4, seq_id_4, comp_id_4, atom_id_4)
+                peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(comp_id_1)
+
+                data_type =\
+                    self.__getTypeOfDihedralRestraint(data_type, peptide, nucleotide, carbohydrate,
+                                                      chain_id_1, seq_id_1, atom_id_1, chain_id_2, seq_id_2, atom_id_2,
+                                                      chain_id_3, seq_id_3, atom_id_3, chain_id_4, seq_id_4, atom_id_4)
 
                 if data_type in count:
                     count[data_type] += 1
@@ -20255,8 +20239,6 @@ class NmrDpUtility:
                         else:
                             redu_count[data_type] = 1
 
-                peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(comp_id_common[0][0])
-
                 if peptide:
                     if 'protein' in polymer_types:
                         polymer_types['protein'] += 1
@@ -20281,6 +20263,20 @@ class NmrDpUtility:
                     else:
                         polymer_types['other'] = 1
 
+                seq_ids = []
+                seq_ids.append(seq_id_1)
+                seq_ids.append(seq_id_2)
+                seq_ids.append(seq_id_3)
+                seq_ids.append(seq_id_4)
+                comp_ids = []
+                comp_ids.append(comp_id_1)
+                comp_ids.append(comp_id_2)
+                comp_ids.append(comp_id_3)
+                comp_ids.append(comp_id_4)
+
+                seq_id_common = collections.Counter(seq_ids).most_common()
+                comp_id_common = collections.Counter(comp_ids).most_common()
+
                 if data_type.startswith('phi_'):
                     phi = {}
                     phi['chain_id'] = chain_id_1
@@ -20302,8 +20298,8 @@ class NmrDpUtility:
                 elif data_type.startswith('chi1_'):
                     chi1 = {}
                     chi1['chain_id'] = chain_id_1
-                    chi1['seq_id'] = seq_id_common[0][0]
-                    chi1['comp_id'] = comp_id_common[0][0]
+                    chi1['seq_id'] = seq_id_1
+                    chi1['comp_id'] = comp_id_1
                     chi1['value'] = target_value
                     chi1['error'] = None if lower_limit is None or upper_limit is None else [lower_limit, upper_limit]
                     chi1_list.append(chi1)
@@ -20311,8 +20307,8 @@ class NmrDpUtility:
                 elif data_type.startswith('chi2_'):
                     chi2 = {}
                     chi2['chain_id'] = chain_id_1
-                    chi2['seq_id'] = seq_id_common[0][0]
-                    chi2['comp_id'] = comp_id_common[0][0]
+                    chi2['seq_id'] = seq_id_1
+                    chi2['comp_id'] = comp_id_1
                     chi2['value'] = target_value
                     chi2['error'] = None if lower_limit is None or upper_limit is None else [lower_limit, upper_limit]
                     chi2_list.append(chi2)
@@ -20584,18 +20580,17 @@ class NmrDpUtility:
                             seq_id_3 = row_1[seq_id_3_name]
                             seq_id_4 = row_1[seq_id_4_name]
                             comp_id_1 = row_1[comp_id_1_name]
-                            comp_id_2 = row_1[comp_id_2_name]
-                            comp_id_3 = row_1[comp_id_3_name]
-                            comp_id_4 = row_1[comp_id_4_name]
                             atom_id_1 = row_1[atom_id_1_name]
                             atom_id_2 = row_1[atom_id_2_name]
                             atom_id_3 = row_1[atom_id_3_name]
                             atom_id_4 = row_1[atom_id_4_name]
                             data_type = row_1[angle_type_name]
 
-                            data_type = self.__getTypeOfDihedralRestraint(data_type,
-                                                                          chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2,
-                                                                          chain_id_3, seq_id_3, comp_id_3, atom_id_3, chain_id_4, seq_id_4, comp_id_4, atom_id_4)[0]
+                            peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(comp_id_1)
+
+                            data_type = self.__getTypeOfDihedralRestraint(data_type, peptide, nucleotide, carbohydrate,
+                                                                          chain_id_1, seq_id_1, atom_id_1, chain_id_2, seq_id_2, atom_id_2,
+                                                                          chain_id_3, seq_id_3, atom_id_3, chain_id_4, seq_id_4, atom_id_4)[0]
 
                             if data_type.startswith('phi') or data_type.startswith('psi') or data_type.startswith('omega'):
 
@@ -20742,17 +20737,16 @@ class NmrDpUtility:
                                     seq_id_3 = row_1[seq_id_3_name]
                                     seq_id_4 = row_1[seq_id_4_name]
                                     comp_id_1 = row_1[comp_id_1_name]
-                                    comp_id_2 = row_1[comp_id_2_name]
-                                    comp_id_3 = row_1[comp_id_3_name]
-                                    comp_id_4 = row_1[comp_id_4_name]
                                     atom_id_1 = row_1[atom_id_1_name]
                                     atom_id_2 = row_1[atom_id_2_name]
                                     atom_id_3 = row_1[atom_id_3_name]
                                     atom_id_4 = row_1[atom_id_4_name]
 
-                                    data_type = self.__getTypeOfDihedralRestraint(data_type,
-                                                                                  chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2,
-                                                                                  chain_id_3, seq_id_3, comp_id_3, atom_id_3, chain_id_4, seq_id_4, comp_id_4, atom_id_4)[0]
+                                    peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(comp_id_1)
+
+                                    data_type = self.__getTypeOfDihedralRestraint(data_type, peptide, nucleotide, carbohydrate,
+                                                                                  chain_id_1, seq_id_1, atom_id_1, chain_id_2, seq_id_2, atom_id_2,
+                                                                                  chain_id_3, seq_id_3, atom_id_3, chain_id_4, seq_id_4, atom_id_4)[0]
 
                                     _count[data_type] += 1
 
@@ -20767,17 +20761,16 @@ class NmrDpUtility:
                                 seq_id_3 = row_1[seq_id_3_name]
                                 seq_id_4 = row_1[seq_id_4_name]
                                 comp_id_1 = row_1[comp_id_1_name]
-                                comp_id_2 = row_1[comp_id_2_name]
-                                comp_id_3 = row_1[comp_id_3_name]
-                                comp_id_4 = row_1[comp_id_4_name]
                                 atom_id_1 = row_1[atom_id_1_name]
                                 atom_id_2 = row_1[atom_id_2_name]
                                 atom_id_3 = row_1[atom_id_3_name]
                                 atom_id_4 = row_1[atom_id_4_name]
 
-                                data_type = self.__getTypeOfDihedralRestraint(data_type,
-                                                                              chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2,
-                                                                              chain_id_3, seq_id_3, comp_id_3, atom_id_3, chain_id_4, seq_id_4, comp_id_4, atom_id_4)[0]
+                                peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(comp_id_1)
+
+                                data_type = self.__getTypeOfDihedralRestraint(data_type, peptide, nucleotide, carbohydrate,
+                                                                              chain_id_1, seq_id_1, atom_id_1, chain_id_2, seq_id_2, atom_id_2,
+                                                                              chain_id_3, seq_id_3, atom_id_3, chain_id_4, seq_id_4, atom_id_4)[0]
 
                                 _count[data_type] += 1
 
@@ -20817,135 +20810,32 @@ class NmrDpUtility:
             if self.__verbose:
                 self.__lfh.write(f"+NmrDpUtility.__calculateStatsOfDihedralRestraint() ++ Error  - {str(e)}\n")
 
-    def __getTypeOfDihedralRestraint(self, data_type,
-                                     chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2,
-                                     chain_id_3, seq_id_3, comp_id_3, atom_id_3, chain_id_4, seq_id_4, comp_id_4, atom_id_4):
+    def __getTypeOfDihedralRestraint(self, data_type, peptide, nucleotide, carbohydrate,  # pylint: disable=no-self-use
+                                     chain_id_1, seq_id_1, atom_id_1, chain_id_2, seq_id_2, atom_id_2,
+                                     chain_id_3, seq_id_3, atom_id_3, chain_id_4, seq_id_4, atom_id_4):
         """ Return type of dihedral angle restraint.
         """
 
-        seq_ids = []
-        seq_ids.append(seq_id_1)
-        seq_ids.append(seq_id_2)
-        seq_ids.append(seq_id_3)
-        seq_ids.append(seq_id_4)
-        comp_ids = []
-        comp_ids.append(comp_id_1)
-        comp_ids.append(comp_id_2)
-        comp_ids.append(comp_id_3)
-        comp_ids.append(comp_id_4)
-        atom_ids = []
-        atom_ids.append(atom_id_1)
-        atom_ids.append(atom_id_2)
-        atom_ids.append(atom_id_3)
-        atom_ids.append(atom_id_4)
-
-        seq_id_common = collections.Counter(seq_ids).most_common()
-        comp_id_common = collections.Counter(comp_ids).most_common()
-
         if data_type in emptyValue:
+            atom1 = {'chain_id': chain_id_1,
+                     'seq_id': seq_id_1,
+                     'atom_id': atom_id_1}
+            atom2 = {'chain_id': chain_id_2,
+                     'seq_id': seq_id_2,
+                     'atom_id': atom_id_2}
+            atom3 = {'chain_id': chain_id_3,
+                     'seq_id': seq_id_3,
+                     'atom_id': atom_id_3}
+            atom4 = {'chain_id': chain_id_4,
+                     'seq_id': seq_id_4,
+                     'atom_id': atom_id_4}
 
-            data_type = 'undefined'
+            data_type = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate, [atom1, atom2, atom3, atom4])
 
-            if chain_id_1 == chain_id_2 and chain_id_2 == chain_id_3 and chain_id_3 == chain_id_4:
+            data_type = data_type.lower()
 
-                polypeptide_like = self.__csStat.peptideLike(comp_id_1)
-
-                if polypeptide_like:
-
-                    if len(seq_id_common) == 2:
-
-                        # phi or psi
-
-                        if seq_id_common[0][1] == 3 and seq_id_common[1][1] == 1:
-
-                            # phi
-
-                            seq_id_prev = seq_id_common[1][0]
-
-                            if seq_id_common[0][0] == seq_id_prev + 1:
-
-                                j = 0
-                                if seq_ids[j] == seq_id_prev and atom_ids[j] == 'C':
-                                    atom_ids.pop(j)
-                                    if atom_ids == self.dihed_atom_ids:
-                                        data_type = 'phi'
-
-                            # psi
-
-                            seq_id_next = seq_id_common[1][0]
-
-                            if seq_id_common[0][0] == seq_id_next - 1:
-
-                                j = 3
-                                if seq_ids[j] == seq_id_next and atom_ids[j] == 'N':
-                                    atom_ids.pop(j)
-                                    if atom_ids == self.dihed_atom_ids:
-                                        data_type = 'psi'
-
-                        # omega
-
-                        if atom_ids[0] == 'CA' and atom_ids[1] == 'N' and atom_ids[2] == 'C' and atom_ids[3] == 'CA'\
-                           and seq_ids[0] == seq_ids[1] and seq_ids[1] - 1 == seq_ids[2] and seq_ids[2] == seq_ids[3]:
-                            data_type = 'omega'
-
-                        if atom_ids[0] == 'CA' and atom_ids[1] == 'C' and atom_ids[2] == 'N' and atom_ids[3] == 'CA'\
-                           and seq_ids[0] == seq_ids[1] and seq_ids[1] + 1 == seq_ids[2] and seq_ids[2] == seq_ids[3]:
-                            data_type = 'omega'
-
-                        # omega - CYANA version
-
-                        if atom_ids[0] == 'O' and atom_ids[1] == 'C' and atom_ids[2] == 'N'\
-                           and (atom_ids[3] == 'H' or atom_ids[3] == 'CD')\
-                           and seq_ids[0] == seq_ids[1] and seq_ids[1] + 1 == seq_ids[2] and seq_ids[2] == seq_ids[3]:
-                            data_type = 'omega'
-
-                    elif len(seq_id_common) == 1:
-
-                        # chi1
-
-                        if atom_ids[0] == 'N' and atom_ids[1] == 'CA' and atom_ids[2] == 'CB'\
-                           and self.chi1_atom_id_4_pat.match(atom_ids[3]):
-                            # if (atom_ids[3] == 'CG' and comp_id in ('ARG', 'ASN', 'ASP', 'GLN', 'GLU', 'HIS', 'LEU', 'LYS', 'MET', 'PHE', 'PRO', 'TRP', 'TYR')) or\
-                            #   (atom_ids[3] == 'CG1' and comp_id in ('ILE', 'VAL')) or\
-                            #   (atom_ids[3] == 'OG' and comp_id == 'SER') or\
-                            #   (atom_ids[3] == 'OG1' and comp_id == 'THR') or\
-                            #   (atom_ids[3] == 'SG' and comp_id == 'CYS'):
-                            data_type = 'chi1'
-
-                        # chi2
-
-                        if atom_ids[0] == 'CA' and atom_ids[1] == 'CB'\
-                           and self.chi2_atom_id_3_pat.match(atom_ids[2]) and self.chi2_atom_id_4_pat.match(atom_ids[3]):
-                            # if (atom_ids[2] == 'CG' and atom_ids[3] == 'CD' and comp_id in ('ARG', 'GLN', 'GLU', 'LYS', 'PRO')) or\
-                            #   (atom_ids[2] == 'CG' and atom_ids[3] == 'CD1' and comp_id in ('LEU', 'PHE', 'TRP', 'TYR')) or\
-                            #   (atom_ids[2] == 'CG' and atom_ids[3] == 'ND1' and comp_id == 'HIS') or\
-                            #   (atom_ids[2] == 'CG' and atom_ids[3] == 'OD1' and comp_id in ('ASN', 'ASP')) or\
-                            #   (atom_ids[2] == 'CG' and atom_ids[3] == 'SD' and comp_id == 'MET') or\
-                            #   (atom_ids[2] == 'CG1' and atom_ids[3] == 'CD' and comp_id == 'ILE'):
-                            data_type = 'chi2'
-
-                        # chi3
-
-                        if atom_ids[0] == 'CB' and atom_ids[1] == 'CG'\
-                           and self.chi3_atom_id_3_pat.match(atom_ids[2]) and self.chi3_atom_id_4_pat.match(atom_ids[3]):
-                            # if (atom_ids[2] == 'CD' and atom_ids[3] == 'CE' and comp_id == 'LYS') or\
-                            #   (atom_ids[2] == 'CD' and atom_ids[3] == 'NE' and comp_id == 'ARG') or\
-                            #   (atom_ids[2] == 'CD' and atom_ids[3] == 'OE1' and comp_id in ('GLN', 'GLU')) or\
-                            #   (atom_ids[2] == 'SD' and atom_ids[3] == 'CE' and comp_id == 'MET'):
-                            data_type = 'chi3'
-
-                        # chi4
-
-                        if atom_ids[0] == 'CG' and atom_ids[1] == 'CD'\
-                           and self.chi4_atom_id_3_pat.match(atom_ids[2]) and self.chi4_atom_id_4_pat.match(atom_ids[3]):
-                            # if (atom_ids[2] == 'NE' and atom_ids[3] == 'CZ' and comp_id == 'ARG') or\
-                            #  (atom_ids[2] == 'CE' and atom_ids[3] == 'NZ' and comp_id == 'LYS'):
-                            data_type = 'chi4'
-
-                        # chi5
-
-                        if atom_ids == ['CD', 'NE', 'CZ', 'NH1']:  # and comp_id == 'ARG':
-                            data_type = 'chi5'
+            if data_type in emptyValue:
+                data_type = 'undefined'
 
         else:
             data_type = data_type.lower()
@@ -20953,7 +20843,7 @@ class NmrDpUtility:
         if not data_type.endswith('_angle_constraints'):
             data_type += '_angle_constraints'
 
-        return data_type, seq_id_common, comp_id_common
+        return data_type
 
     def __calculateStatsOfRdcRestraint(self, file_list_id, lp_data, conflict_id_set, inconsistent, redundant, ent):
         """ Calculate statistics of RDC restraints.
@@ -28097,7 +27987,7 @@ class NmrDpUtility:
         return True
 
     def __updateDihedralAngleType(self):
-        """ Update dihedral angle types (phi, psi, omega, chi[1-5] for polypeptide-like residue) if possible.
+        """ Update dihedral angle types if possible.
         """
 
         if not self.__combined_mode:
@@ -28161,14 +28051,8 @@ class NmrDpUtility:
 
                 if lp_data is not None:
 
-                    phi_index = []
-                    psi_index = []
-                    omega_index = []
-                    chi1_index = []
-                    chi2_index = []
-                    chi3_index = []
-                    chi4_index = []
-                    chi5_index = []
+                    update = False
+                    update_index = {}
 
                     try:
 
@@ -28178,126 +28062,45 @@ class NmrDpUtility:
                             chain_id_2 = i[chain_id_2_name]
                             chain_id_3 = i[chain_id_3_name]
                             chain_id_4 = i[chain_id_4_name]
-                            seq_ids = []
-                            seq_ids.append(i[seq_id_1_name])
-                            seq_ids.append(i[seq_id_2_name])
-                            seq_ids.append(i[seq_id_3_name])
-                            seq_ids.append(i[seq_id_4_name])
-                            comp_id = i[comp_id_1_name]
-                            atom_ids = []
-                            atom_ids.append(i[atom_id_1_name])
-                            atom_ids.append(i[atom_id_2_name])
-                            atom_ids.append(i[atom_id_3_name])
-                            atom_ids.append(i[atom_id_4_name])
+                            seq_id_1 = i[seq_id_1_name]
+                            seq_id_2 = i[seq_id_2_name]
+                            seq_id_3 = i[seq_id_3_name]
+                            seq_id_4 = i[seq_id_4_name]
+                            comp_id_1 = i[comp_id_1_name]
+                            atom_id_1 = i[atom_id_1_name]
+                            atom_id_2 = i[atom_id_2_name]
+                            atom_id_3 = i[atom_id_3_name]
+                            atom_id_4 = i[atom_id_4_name]
                             angle_type = i[angle_type_name]
 
                             if angle_type not in emptyValue:
                                 continue
 
-                            if chain_id_1 != chain_id_2 or chain_id_2 != chain_id_3 or chain_id_3 != chain_id_4:
+                            atom1 = {'chain_id': chain_id_1,
+                                     'seq_id': seq_id_1,
+                                     'atom_id': atom_id_1}
+                            atom2 = {'chain_id': chain_id_2,
+                                     'seq_id': seq_id_2,
+                                     'atom_id': atom_id_2}
+                            atom3 = {'chain_id': chain_id_3,
+                                     'seq_id': seq_id_3,
+                                     'atom_id': atom_id_3}
+                            atom4 = {'chain_id': chain_id_4,
+                                     'seq_id': seq_id_4,
+                                     'atom_id': atom_id_4}
+
+                            peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(comp_id_1)
+                            data_type = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate, [atom1, atom2, atom3, atom4])
+
+                            if data_type in emptyValue:
                                 continue
 
-                            polypeptide_like = self.__csStat.peptideLike(comp_id)
+                            update = True
 
-                            if not polypeptide_like:
-                                continue
+                            if data_type not in update_index:
+                                update_index[data_type] = []
 
-                            seq_id_common = collections.Counter(seq_ids).most_common()
-
-                            if len(seq_id_common) == 2:
-
-                                # phi or psi
-
-                                if seq_id_common[0][1] == 3 and seq_id_common[1][1] == 1:
-
-                                    # phi
-
-                                    seq_id_prev = seq_id_common[1][0]
-
-                                    if seq_id_common[0][0] == seq_id_prev + 1:
-
-                                        j = 0
-                                        if seq_ids[j] == seq_id_prev and atom_ids[j] == 'C':
-                                            atom_ids.pop(j)
-                                            if atom_ids == self.dihed_atom_ids:
-                                                phi_index.append(index_id)
-
-                                    # psi
-
-                                    seq_id_next = seq_id_common[1][0]
-
-                                    if seq_id_common[0][0] == seq_id_next - 1:
-
-                                        j = 3
-                                        if seq_ids[j] == seq_id_next and atom_ids[j] == 'N':
-                                            atom_ids.pop(j)
-                                            if atom_ids == self.dihed_atom_ids:
-                                                psi_index.append(index_id)
-
-                                # omega
-
-                                if atom_ids[0] == 'CA' and atom_ids[1] == 'N' and atom_ids[2] == 'C' and atom_ids[3] == 'CA'\
-                                   and seq_ids[0] == seq_ids[1] and seq_ids[1] - 1 == seq_ids[2] and seq_ids[2] == seq_ids[3]:
-                                    omega_index.append(index_id)
-
-                                if atom_ids[0] == 'CA' and atom_ids[1] == 'C' and atom_ids[2] == 'N' and atom_ids[3] == 'CA'\
-                                   and seq_ids[0] == seq_ids[1] and seq_ids[1] + 1 == seq_ids[2] and seq_ids[2] == seq_ids[3]:
-                                    omega_index.append(index_id)
-
-                                # omega - CYANA version
-
-                                if atom_ids[0] == 'O' and atom_ids[1] == 'C' and atom_ids[2] == 'N'\
-                                   and (atom_ids[3] == 'H' or atom_ids[3] == 'CD')\
-                                   and seq_ids[0] == seq_ids[1] and seq_ids[1] + 1 == seq_ids[2] and seq_ids[2] == seq_ids[3]:
-                                    omega_index.append(index_id)
-
-                            elif len(seq_id_common) == 1:
-
-                                # chi1
-
-                                if atom_ids[0] == 'N' and atom_ids[1] == 'CA' and atom_ids[2] == 'CB'\
-                                   and self.chi1_atom_id_4_pat.match(atom_ids[3]):
-                                    # if (atom_ids[3] == 'CG' and comp_id in ('ARG', 'ASN', 'ASP', 'GLN', 'GLU', 'HIS', 'LEU', 'LYS', 'MET', 'PHE', 'PRO', 'TRP', 'TYR')) or\
-                                    #   (atom_ids[3] == 'CG1' and comp_id in ('ILE', 'VAL')) or\
-                                    #   (atom_ids[3] == 'OG' and comp_id == 'SER') or\
-                                    #   (atom_ids[3] == 'OG1' and comp_id == 'THR') or\
-                                    #   (atom_ids[3] == 'SG' and comp_id == 'CYS'):
-                                    chi1_index.append(index_id)
-
-                                # chi2
-
-                                if atom_ids[0] == 'CA' and atom_ids[1] == 'CB'\
-                                   and self.chi2_atom_id_3_pat.match(atom_ids[2]) and self.chi2_atom_id_4_pat.match(atom_ids[3]):
-                                    # if (atom_ids[2] == 'CG' and atom_ids[3] == 'CD' and comp_id in ('ARG', 'GLN', 'GLU', 'LYS', 'PRO')) or\
-                                    #   (atom_ids[2] == 'CG' and atom_ids[3] == 'CD1' and comp_id in ('LEU', 'PHE', 'TRP', 'TYR')) or\
-                                    #   (atom_ids[2] == 'CG' and atom_ids[3] == 'ND1' and comp_id == 'HIS') or\
-                                    #   (atom_ids[2] == 'CG' and atom_ids[3] == 'OD1' and comp_id in ('ASN', 'ASP')) or\
-                                    #   (atom_ids[2] == 'CG' and atom_ids[3] == 'SD' and comp_id == 'MET') or\
-                                    #   (atom_ids[2] == 'CG1' and atom_ids[3] == 'CD1' and comp_id == 'ILE'):
-                                    chi2_index.append(index_id)
-
-                                # chi3
-
-                                if atom_ids[0] == 'CB' and atom_ids[1] == 'CG'\
-                                   and self.chi3_atom_id_3_pat.match(atom_ids[2]) and self.chi3_atom_id_4_pat.match(atom_ids[3]):
-                                    # if (atom_ids[2] == 'CD' and atom_ids[3] == 'CE' and comp_id == 'LYS') or\
-                                    #   (atom_ids[2] == 'CD' and atom_ids[3] == 'NE' and comp_id == 'ARG') or\
-                                    #   (atom_ids[2] == 'CD' and atom_ids[3] == 'OE1' and comp_id in ('GLN', 'GLU')) or\
-                                    #   (atom_ids[2] == 'SD' and atom_ids[3] == 'CE' and comp_id == 'MET'):
-                                    chi3_index.append(index_id)
-
-                                # chi4
-
-                                if atom_ids[0] == 'CG' and atom_ids[1] == 'CD'\
-                                   and self.chi4_atom_id_3_pat.match(atom_ids[2]) and self.chi4_atom_id_4_pat.match(atom_ids[3]):
-                                    # if (atom_ids[2] == 'NE' and atom_ids[3] == 'CZ' and comp_id == 'ARG') or\
-                                    #  (atom_ids[2] == 'CE' and atom_ids[3] == 'NZ' and comp_id == 'LYS'):
-                                    chi4_index.append(index_id)
-
-                                # chi5
-
-                                if atom_ids == ['CD', 'NE', 'CZ', 'NH1']:  # and comp_id == 'ARG':
-                                    chi5_index.append(index_id)
+                            update_index[data_type].append(index_id)
 
                     except Exception as e:
 
@@ -28309,9 +28112,7 @@ class NmrDpUtility:
 
                         continue
 
-                    if len(phi_index) + len(psi_index) + len(omega_index)\
-                            + len(chi1_index) + len(chi2_index) + len(chi3_index)\
-                            + len(chi4_index) + len(chi5_index) > 0:
+                    if update:
 
                         try:
                             if __pynmrstar_v3_2__:
@@ -28328,22 +28129,9 @@ class NmrDpUtility:
 
                             index_id = int(row[idxCol])
 
-                            if index_id in phi_index:
-                                row[aglCol] = 'PHI'
-                            elif index_id in psi_index:
-                                row[aglCol] = 'PSI'
-                            elif index_id in omega_index:
-                                row[aglCol] = 'OMEGA'
-                            elif index_id in chi1_index:
-                                row[aglCol] = 'CHI1'
-                            elif index_id in chi2_index:
-                                row[aglCol] = 'CHI2'
-                            elif index_id in chi3_index:
-                                row[aglCol] = 'CHI3'
-                            elif index_id in chi4_index:
-                                row[aglCol] = 'CHI4'
-                            elif index_id in chi5_index:
-                                row[aglCol] = 'CHI5'
+                            for k, v in update_index.items():
+                                if index_id in v:
+                                    row[aglCol] = k
 
         return True
 
@@ -29372,17 +29160,15 @@ class NmrDpUtility:
                 chain_id_2 = i[chain_id_2_name]
                 chain_id_3 = i[chain_id_3_name]
                 chain_id_4 = i[chain_id_4_name]
-                seq_ids = []
-                seq_ids.append(i[seq_id_1_name])
-                seq_ids.append(i[seq_id_2_name])
-                seq_ids.append(i[seq_id_3_name])
-                seq_ids.append(i[seq_id_4_name])
-                comp_id = i[comp_id_1_name]
-                atom_ids = []
-                atom_ids.append(i[atom_id_1_name])
-                atom_ids.append(i[atom_id_2_name])
-                atom_ids.append(i[atom_id_3_name])
-                atom_ids.append(i[atom_id_4_name])
+                seq_id_1 = i[seq_id_1_name]
+                seq_id_2 = i[seq_id_2_name]
+                seq_id_3 = i[seq_id_3_name]
+                seq_id_4 = i[seq_id_4_name]
+                comp_id_1 = i[comp_id_1_name]
+                atom_id_1 = i[atom_id_1_name]
+                atom_id_2 = i[atom_id_2_name]
+                atom_id_3 = i[atom_id_3_name]
+                atom_id_4 = i[atom_id_4_name]
                 angle_type = i[angle_type_name]
 
                 if angle_type in emptyValue:
@@ -29393,54 +29179,33 @@ class NmrDpUtility:
                 if angle_type not in ('phi', 'psi'):
                     return False
 
-                if chain_id_1 != chain_id_2 or chain_id_2 != chain_id_3 or chain_id_3 != chain_id_4:
+                atom1 = {'chain_id': chain_id_1,
+                         'seq_id': seq_id_1,
+                         'atom_id': atom_id_1}
+                atom2 = {'chain_id': chain_id_2,
+                         'seq_id': seq_id_2,
+                         'atom_id': atom_id_2}
+                atom3 = {'chain_id': chain_id_3,
+                         'seq_id': seq_id_3,
+                         'atom_id': atom_id_3}
+                atom4 = {'chain_id': chain_id_4,
+                         'seq_id': seq_id_4,
+                         'atom_id': atom_id_4}
+
+                peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(comp_id_1)
+
+                if not peptide:
                     return False
 
-                polypeptide_like = self.__csStat.peptideLike(comp_id)
+                data_type = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate, [atom1, atom2, atom3, atom4])
 
-                if not polypeptide_like:
+                if data_type.lower() not in ('phi', 'psi'):
                     return False
 
                 dh_chains.add(chain_id_1)
 
+                seq_ids = [seq_id_1, seq_id_2, seq_id_3, seq_id_4]
                 seq_id_common = collections.Counter(seq_ids).most_common()
-
-                if len(seq_id_common) != 2 or seq_id_common[0][1] != 3 or seq_id_common[1][1] != 1:
-                    return False
-
-                # phi
-
-                if angle_type == 'phi':
-
-                    seq_id_prev = seq_id_common[1][0]
-
-                    if seq_id_common[0][0] != seq_id_prev + 1:
-                        return False
-
-                    j = 0
-                    if seq_ids[j] == seq_id_prev:
-                        if atom_ids[j] != 'C':
-                            return False
-                        atom_ids.pop(j)
-                        if atom_ids != self.dihed_atom_ids:
-                            return False
-
-                # psi
-
-                else:
-
-                    seq_id_next = seq_id_common[1][0]
-
-                    if seq_id_common[0][0] != seq_id_next - 1:
-                        return False
-
-                    j = 3
-                    if seq_ids[j] == seq_id_next:
-                        if atom_ids[j] != 'N':
-                            return False
-                        atom_ids.pop(j)
-                        if atom_ids != self.dihed_atom_ids:
-                            return False
 
                 chain_id = chain_id_1
 

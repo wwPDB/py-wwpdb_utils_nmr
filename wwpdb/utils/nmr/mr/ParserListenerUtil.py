@@ -28,7 +28,7 @@ ANGLE_RESTRAINT_ERROR = {'min_exclusive': -360.0, 'max_exclusive': 360.0}
 RDC_RESTRAINT_RANGE = {'min_exclusive': -100.0, 'max_exclusive': 100.0}
 RDC_RESTRAINT_RANGE = {'min_exclusive': -200.0, 'max_exclusive': 200.0}
 
-
+# @see: https://x3dna.org/highlights/torsion-angles-of-nucleic-acid-structures for nucleic acids
 KNOWN_ANGLE_ATOM_NAMES = {'PHI': ['C', 'N', 'CA', 'C'],  # i-1, i, i, i
                           'PSI': ['N', 'CA', 'C', 'N'],  # i, i, i, i+1
                           'OMEGA': ['CA', 'C', 'N', 'CA'],  # i, i, i+1, i+1; different from CYANA's definition [O C N (H or CD for Proline residue)]
@@ -66,6 +66,11 @@ KNOWN_ANGLE_ATOM_NAMES = {'PHI': ['C', 'N', 'CA', 'C'],  # i-1, i, i, i
                           'TAU3': ["C2'", "C3'", "C4'", "O4'"],  # identical to NU3
                           'TAU4': ["C3'", "C4'", "O4'", "C1'"]  # identical to NU4
                           }
+
+# @see: http://dx.doi.org/10.1107/S0907444909001905
+KNOWN_ANGLE_CARB_ATOM_NAMES = {'PHI': [re.compile(r'^H1|O5$'), 'C1', 'O1', re.compile(r'^C[46]$')],
+                               'PSI': ['C1', 'O1', re.compile(r'^C[46]$'), re.compile(r'^H4|C[35]$')],
+                               'OMEGA': ['O1', 'C6', 'C5', re.compile('^H5|C4|O5$')]}
 
 KNOWN_ANGLE_NAMES = KNOWN_ANGLE_ATOM_NAMES.keys()
 
@@ -106,6 +111,11 @@ KNOWN_ANGLE_SEQ_OFFSET = {'PHI': [-1, 0, 0, 0],  # i-1, i, i, i
                           'TAU3': [0] * 4,  # identical to NU3
                           'TAU4': [0] * 4  # identical to NU4
                           }
+
+KNOWN_ANGLE_CARB_SEQ_OFFSET = {'PHI': [0, 0, 0, -1],  # i, i, i, i-n; for n > 0
+                               'PSI': [0, 0, -1, -1],  # i, i, i-n, i-n; for n > 0
+                               'OMEGA': [0, -1, -1, -1]  # i, i-n, i-n, i-n; for n > 0
+                               }
 
 
 def toNpArray(atom):
@@ -432,11 +442,6 @@ def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms
                and seqIds[0] == seqIds[1] and seqIds[1] + 1 == seqIds[2] and seqIds[2] == seqIds[3]:
                 return 'OMEGA'
 
-            if atomIds[0] == 'O' and atomIds[1] == 'C' and atomIds[2] == 'N'\
-               and (atomIds[3] == 'H' or atomIds[3] == 'CD')\
-               and seqIds[0] == seqIds[1] and seqIds[1] == seqIds[2] and seqIds[2] == seqIds[3]:
-                return 'OMEGA'
-
         elif lenCommonSeqId == 1:
 
             testDataType = ['CHI1', 'CHI2', 'CHI3', 'CHI4', 'CHI5',
@@ -557,9 +562,36 @@ def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms
     elif carbohydrates:
 
         if lenCommonSeqId == 2:
-            pass
 
-        elif lenCommonSeqId == 1:
-            pass
+            # PHI or PSI or OMEGA
+            testDataType = ['PHI', 'PSI', 'OMEGA']
+
+            for dataType in testDataType:
+                seqId1 = seqIds[0]
+                seqId4 = seqIds[3]
+
+                if seqId1 > seqId4:
+                    m = seqId1 - seqId4
+                    _seqIds = [s - o * m for s, o in zip(seqIds, KNOWN_ANGLE_CARB_SEQ_OFFSET[dataType])]
+                    _commonSeqId = collections.Counter(_seqIds).most_common()
+
+                    if len(_commonSeqId) == 1:
+
+                        found = True
+
+                        for atomId, angAtomId in zip(atomIds, KNOWN_ANGLE_CARB_ATOM_NAMES[dataType]):
+
+                            if isinstance(angAtomId, str):
+                                if atomId != angAtomId:
+                                    found = False
+                                    break
+
+                            else:
+                                if not angAtomId.match(atomId):
+                                    found = False
+                                    break
+
+                        if found:
+                            return dataType
 
     return '.'

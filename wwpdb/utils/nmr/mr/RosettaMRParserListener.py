@@ -9,6 +9,8 @@
 """
 import sys
 import copy
+import itertools
+
 import numpy as np
 
 from antlr4 import ParseTreeListener
@@ -193,11 +195,11 @@ class RosettaMRParserListener(ParseTreeListener):
         if len(self.atomSelectionSet) < 2:
             return
 
-        for atom1 in self.atomSelectionSet[0]:
-            for atom2 in self.atomSelectionSet[1]:
-                if self.__verbose:
-                    print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
-                          f"atom1={atom1} atom2={atom2} {dstFunc}")
+        for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
+                                              self.atomSelectionSet[1]):
+            if self.__verbose:
+                print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
+                      f"atom1={atom1} atom2={atom2} {dstFunc}")
 
     def validateDistanceRange(self):
         """ Validate distance value range.
@@ -365,7 +367,7 @@ class RosettaMRParserListener(ParseTreeListener):
 
         return chainAssign
 
-    def selectCoordAtoms(self, chainAssign, seqId, atomId):
+    def selectCoordAtoms(self, chainAssign, seqId, atomId, allowAmbig=True):
         """ Select atoms of the coordinates.
         """
 
@@ -375,9 +377,14 @@ class RosettaMRParserListener(ParseTreeListener):
             seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, self.__hasCoord)
 
             _atomId = self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]
-            if len(_atomId) == 0:
+            lenAtomId = len(_atomId)
+            if lenAtomId == 0:
                 self.warningMessage += f"[Invalid atom nomenclature] {self.__getCurrentRestraint()}"\
                     f"{seqId}:{atomId} is invalid atom nomenclature.\n"
+                continue
+            if lenAtomId > 1 and not allowAmbig:
+                self.warningMessage += f"[Invalid atom selection] {self.__getCurrentRestraint()}"\
+                    f"Ambiguous atom selection '{seqId}:{atomId}' is not allowed as a angle restraint.\n"
                 continue
 
             for cifAtomId in _atomId:
@@ -493,19 +500,19 @@ class RosettaMRParserListener(ParseTreeListener):
         if len(chainAssign1) == 0 or len(chainAssign2) == 0 or len(chainAssign3) == 0:
             return
 
-        self.selectCoordAtoms(chainAssign1, seqId1, atomId1)
-        self.selectCoordAtoms(chainAssign2, seqId2, atomId2)
-        self.selectCoordAtoms(chainAssign3, seqId3, atomId3)
+        self.selectCoordAtoms(chainAssign1, seqId1, atomId1, False)
+        self.selectCoordAtoms(chainAssign2, seqId2, atomId2, False)
+        self.selectCoordAtoms(chainAssign3, seqId3, atomId3, False)
 
         if len(self.atomSelectionSet) < 3:
             return
 
-        for atom1 in self.atomSelectionSet[0]:
-            for atom2 in self.atomSelectionSet[1]:
-                for atom3 in self.atomSelectionSet[2]:
-                    if self.__verbose:
-                        print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} "
-                              f"atom1={atom1} atom2={atom2} atom3={atom3} {dstFunc}")
+        for atom1, atom2, atom3 in itertools.product(self.atomSelectionSet[0],
+                                                     self.atomSelectionSet[1],
+                                                     self.atomSelectionSet[2]):
+            if self.__verbose:
+                print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} "
+                      f"atom1={atom1} atom2={atom2} atom3={atom3} {dstFunc}")
 
     def validateAngleRange(self):
         """ Validate angle value range.
@@ -689,25 +696,26 @@ class RosettaMRParserListener(ParseTreeListener):
            or len(chainAssign3) == 0 or len(chainAssign4) == 0:
             return
 
-        self.selectCoordAtoms(chainAssign1, seqId1, atomId1)
-        self.selectCoordAtoms(chainAssign2, seqId2, atomId2)
-        self.selectCoordAtoms(chainAssign3, seqId3, atomId3)
-        self.selectCoordAtoms(chainAssign4, seqId4, atomId4)
+        self.selectCoordAtoms(chainAssign1, seqId1, atomId1, False)
+        self.selectCoordAtoms(chainAssign2, seqId2, atomId2, False)
+        self.selectCoordAtoms(chainAssign3, seqId3, atomId3, False)
+        self.selectCoordAtoms(chainAssign4, seqId4, atomId4, False)
 
         if len(self.atomSelectionSet) < 4:
             return
 
         compId = self.atomSelectionSet[0][0]['comp_id']
-        peptide, nucleotide, _ = self.__csStat.getTypeOfCompId(compId)
+        peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
 
-        for atom1 in self.atomSelectionSet[0]:
-            for atom2 in self.atomSelectionSet[1]:
-                for atom3 in self.atomSelectionSet[2]:
-                    for atom4 in self.atomSelectionSet[3]:
-                        if self.__verbose:
-                            angleName = getTypeOfDihedralRestraint(peptide, nucleotide, [atom1, atom2, atom3, atom4])
-                            print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} "
-                                  f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
+        for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
+                                                            self.atomSelectionSet[1],
+                                                            self.atomSelectionSet[2],
+                                                            self.atomSelectionSet[3]):
+            if self.__verbose:
+                angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
+                                                       [atom1, atom2, atom3, atom4])
+                print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} "
+                      f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
 
     # Enter a parse tree produced by RosettaMRParser#dihedral_pair_restraints.
     def enterDihedral_pair_restraints(self, ctx: RosettaMRParser.Dihedral_pair_restraintsContext):  # pylint: disable=unused-argument
@@ -767,41 +775,43 @@ class RosettaMRParserListener(ParseTreeListener):
            or len(chainAssign7) == 0 or len(chainAssign8) == 0:
             return
 
-        self.selectCoordAtoms(chainAssign1, seqId1, atomId1)
-        self.selectCoordAtoms(chainAssign2, seqId2, atomId2)
-        self.selectCoordAtoms(chainAssign3, seqId3, atomId3)
-        self.selectCoordAtoms(chainAssign4, seqId4, atomId4)
-        self.selectCoordAtoms(chainAssign5, seqId5, atomId5)
-        self.selectCoordAtoms(chainAssign6, seqId6, atomId6)
-        self.selectCoordAtoms(chainAssign7, seqId7, atomId7)
-        self.selectCoordAtoms(chainAssign8, seqId8, atomId8)
+        self.selectCoordAtoms(chainAssign1, seqId1, atomId1, False)
+        self.selectCoordAtoms(chainAssign2, seqId2, atomId2, False)
+        self.selectCoordAtoms(chainAssign3, seqId3, atomId3, False)
+        self.selectCoordAtoms(chainAssign4, seqId4, atomId4, False)
+        self.selectCoordAtoms(chainAssign5, seqId5, atomId5, False)
+        self.selectCoordAtoms(chainAssign6, seqId6, atomId6, False)
+        self.selectCoordAtoms(chainAssign7, seqId7, atomId7, False)
+        self.selectCoordAtoms(chainAssign8, seqId8, atomId8, False)
 
         if len(self.atomSelectionSet) < 8:
             return
 
         compId = self.atomSelectionSet[0][0]['comp_id']
-        peptide, nucleotide, _ = self.__csStat.getTypeOfCompId(compId)
+        peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
 
-        for atom1 in self.atomSelectionSet[0]:
-            for atom2 in self.atomSelectionSet[1]:
-                for atom3 in self.atomSelectionSet[2]:
-                    for atom4 in self.atomSelectionSet[3]:
-                        if self.__verbose:
-                            angleName = getTypeOfDihedralRestraint(peptide, nucleotide, [atom1, atom2, atom3, atom4])
-                            print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} "
-                                  f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
+        for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
+                                                            self.atomSelectionSet[1],
+                                                            self.atomSelectionSet[2],
+                                                            self.atomSelectionSet[3]):
+            if self.__verbose:
+                angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
+                                                       [atom1, atom2, atom3, atom4])
+                print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} "
+                      f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4}")
 
         compId = self.atomSelectionSet[4][0]['comp_id']
-        peptide, nucleotide, _ = self.__csStat.getTypeOfCompId(compId)
+        peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
 
-        for atom1 in self.atomSelectionSet[4]:
-            for atom2 in self.atomSelectionSet[5]:
-                for atom3 in self.atomSelectionSet[6]:
-                    for atom4 in self.atomSelectionSet[7]:
-                        if self.__verbose:
-                            angleName = getTypeOfDihedralRestraint(peptide, nucleotide, [atom1, atom2, atom3, atom4])
-                            print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} "
-                                  f"atom5={atom1} atom6={atom2} atom7={atom3} atom8={atom4} {dstFunc}")
+        for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[4],
+                                                            self.atomSelectionSet[5],
+                                                            self.atomSelectionSet[6],
+                                                            self.atomSelectionSet[7]):
+            if self.__verbose:
+                angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
+                                                       [atom1, atom2, atom3, atom4])
+                print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} "
+                      f"atom5={atom1} atom6={atom2} atom7={atom3} atom8={atom4} {dstFunc}")
 
     # Enter a parse tree produced by RosettaMRParser#coordinate_restraints.
     def enterCoordinate_restraints(self, ctx: RosettaMRParser.Coordinate_restraintsContext):  # pylint: disable=unused-argument

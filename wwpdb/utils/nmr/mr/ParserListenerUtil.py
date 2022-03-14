@@ -21,7 +21,7 @@ DIST_RESTRAINT_RANGE = {'min_inclusive': 0.5, 'max_inclusive': 50.0}
 DIST_RESTRAINT_ERROR = {'min_exclusive': 0.0, 'max_exclusive': 150.0}
 
 
-ANGLE_RESTRAINT_RANGE = {'min_inclusive': -225.0, 'max_inclusive': 225.0}
+ANGLE_RESTRAINT_RANGE = {'min_inclusive': -240.0, 'max_inclusive': 240.0}
 ANGLE_RESTRAINT_ERROR = {'min_exclusive': -360.0, 'max_exclusive': 360.0}
 
 
@@ -369,12 +369,18 @@ def checkCoordinates(verbose=True, log=sys.stdout, cR=None, polySeq=None,
             'label_to_auth_seq': labelToAuthSeq}
 
 
-def getTypeOfDihedralRestraint(polypeptide, nucleotide, atoms):
+def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms):
     """ Return type of dihedral angle restraint.
     """
 
+    chainIds = [a['chain_id'] for a in atoms]
     seqIds = [a['seq_id'] for a in atoms]
     atomIds = [a['atom_id'] for a in atoms]
+
+    commonChainId = collections.Counter(chainIds).most_common()
+
+    if len(commonChainId) > 1:
+        return '.'
 
     commonSeqId = collections.Counter(seqIds).most_common()
 
@@ -426,6 +432,11 @@ def getTypeOfDihedralRestraint(polypeptide, nucleotide, atoms):
                and seqIds[0] == seqIds[1] and seqIds[1] + 1 == seqIds[2] and seqIds[2] == seqIds[3]:
                 return 'OMEGA'
 
+            if atomIds[0] == 'O' and atomIds[1] == 'C' and atomIds[2] == 'N'\
+               and (atomIds[3] == 'H' or atomIds[3] == 'CD')\
+               and seqIds[0] == seqIds[1] and seqIds[1] == seqIds[2] and seqIds[2] == seqIds[3]:
+                return 'OMEGA'
+
         elif lenCommonSeqId == 1:
 
             testDataType = ['CHI1', 'CHI2', 'CHI3', 'CHI4', 'CHI5',
@@ -450,7 +461,7 @@ def getTypeOfDihedralRestraint(polypeptide, nucleotide, atoms):
                 if found:
                     return dataType
 
-    elif nucleotide:
+    elif polynucleotide:
 
         if lenCommonSeqId == 3:
 
@@ -542,5 +553,13 @@ def getTypeOfDihedralRestraint(polypeptide, nucleotide, atoms):
 
                     if found:
                         return dataType
+
+    elif carbohydrates:
+
+        if lenCommonSeqId == 2:
+            pass
+
+        elif lenCommonSeqId == 1:
+            pass
 
     return '.'

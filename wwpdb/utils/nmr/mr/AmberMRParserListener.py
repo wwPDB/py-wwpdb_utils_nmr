@@ -10,6 +10,7 @@
 import sys
 import copy
 import re
+import itertools
 
 from antlr4 import ParseTreeListener
 
@@ -491,11 +492,11 @@ class AmberMRParserListener(ParseTreeListener):
                         if dstFunc is None:
                             return
 
-                        for atom1 in self.atomSelectionSet[0]:
-                            for atom2 in self.atomSelectionSet[1]:
-                                if self.__verbose:
-                                    print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
-                                          f"atom1={atom1} atom2={atom2} {dstFunc}")
+                        for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
+                                                              self.atomSelectionSet[1]):
+                            if self.__verbose:
+                                print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
+                                      f"atom1={atom1} atom2={atom2} {dstFunc}")
 
                     # generalized distance
                     else:
@@ -517,12 +518,12 @@ class AmberMRParserListener(ParseTreeListener):
                     if dstFunc is None:
                         return
 
-                    for atom1 in self.atomSelectionSet[0]:
-                        for atom2 in self.atomSelectionSet[1]:
-                            for atom3 in self.atomSelectionSet[2]:
-                                if self.__verbose:
-                                    print(f"subtype={self.__cur_subtype} id={self.angRestraints} "
-                                          f"atom1={atom1} atom2={atom2} atom3={atom3} {dstFunc}")
+                    for atom1, atom2, atom3 in itertools.product(self.atomSelectionSet[0],
+                                                                 self.atomSelectionSet[1],
+                                                                 self.atomSelectionSet[2]):
+                        if self.__verbose:
+                            print(f"subtype={self.__cur_subtype} id={self.angRestraints} "
+                                  f"atom1={atom1} atom2={atom2} atom3={atom3} {dstFunc}")
 
                 # torsional angle
                 elif self.__cur_subtype == 'dihed':
@@ -541,16 +542,17 @@ class AmberMRParserListener(ParseTreeListener):
                         return
 
                     compId = self.atomSelectionSet[0][0]['comp_id']
-                    peptide, nucleotide, _ = self.__csStat.getTypeOfCompId(compId)
+                    peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
 
-                    for atom1 in self.atomSelectionSet[0]:
-                        for atom2 in self.atomSelectionSet[1]:
-                            for atom3 in self.atomSelectionSet[2]:
-                                for atom4 in self.atomSelectionSet[3]:
-                                    if self.__verbose:
-                                        angleName = getTypeOfDihedralRestraint(peptide, nucleotide, [atom1, atom2, atom3, atom4])
-                                        print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} "
-                                              f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
+                    for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
+                                                                        self.atomSelectionSet[1],
+                                                                        self.atomSelectionSet[2],
+                                                                        self.atomSelectionSet[3]):
+                        if self.__verbose:
+                            angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
+                                                                   [atom1, atom2, atom3, atom4])
+                            print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} "
+                                  f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
 
                 # plane-(point/plane) angle
                 else:
@@ -832,11 +834,11 @@ class AmberMRParserListener(ParseTreeListener):
                         if dstFunc is None:
                             return
 
-                        for atom1 in self.atomSelectionSet[0]:
-                            for atom2 in self.atomSelectionSet[1]:
-                                if self.__verbose:
-                                    print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
-                                          f"atom1={atom1} atom2={atom2} {dstFunc}")
+                        for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
+                                                              self.atomSelectionSet[1]):
+                            if self.__verbose:
+                                print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
+                                      f"atom1={atom1} atom2={atom2} {dstFunc}")
 
                     # generalized distance
                     else:
@@ -864,12 +866,12 @@ class AmberMRParserListener(ParseTreeListener):
                     if dstFunc is None:
                         return
 
-                    for atom1 in self.atomSelectionSet[0]:
-                        for atom2 in self.atomSelectionSet[1]:
-                            for atom3 in self.atomSelectionSet[2]:
-                                if self.__verbose:
-                                    print(f"subtype={self.__cur_subtype} id={self.angRestraints} "
-                                          f"atom1={atom1} atom2={atom2} atom_3={atom3} {dstFunc}")
+                    for atom1, atom2, atom3 in itertools.product(self.atomSelectionSet[0],
+                                                                 self.atomSelectionSet[1],
+                                                                 self.atomSelectionSet[2]):
+                        if self.__verbose:
+                            print(f"subtype={self.__cur_subtype} id={self.angRestraints} "
+                                  f"atom1={atom1} atom2={atom2} atom_3={atom3} {dstFunc}")
 
                 # torsional angle
                 elif self.__cur_subtype == 'dihed':
@@ -894,16 +896,17 @@ class AmberMRParserListener(ParseTreeListener):
                         return
 
                     compId = self.atomSelectionSet[0][0]['comp_id']
-                    peptide, nucleotide, _ = self.__csStat.getTypeOfCompId(compId)
+                    peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
 
-                    for atom1 in self.atomSelectionSet[0]:
-                        for atom2 in self.atomSelectionSet[1]:
-                            for atom3 in self.atomSelectionSet[2]:
-                                for atom4 in self.atomSelectionSet[3]:
-                                    if self.__verbose:
-                                        angleName = getTypeOfDihedralRestraint(peptide, nucleotide, [atom1, atom2, atom3, atom4])
-                                        print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} "
-                                              f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
+                    for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
+                                                                        self.atomSelectionSet[1],
+                                                                        self.atomSelectionSet[2],
+                                                                        self.atomSelectionSet[3]):
+                        if self.__verbose:
+                            angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
+                                                                   [atom1, atom2, atom3, atom4])
+                            print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} "
+                                  f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
 
                 # plane-(point/plane) angle
                 else:

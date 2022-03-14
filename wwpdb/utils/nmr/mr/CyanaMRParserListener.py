@@ -8,6 +8,7 @@
     @author: Masashi Yokochi
 """
 import sys
+import itertools
 
 from antlr4 import ParseTreeListener
 
@@ -266,11 +267,11 @@ class CyanaMRParserListener(ParseTreeListener):
         if len(self.atomSelectionSet) < 2:
             return
 
-        for atom1 in self.atomSelectionSet[0]:
-            for atom2 in self.atomSelectionSet[1]:
-                if self.__verbose:
-                    print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
-                          f"atom1={atom1} atom2={atom2} {dstFunc}")
+        for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
+                                              self.atomSelectionSet[1]):
+            if self.__verbose:
+                print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
+                      f"atom1={atom1} atom2={atom2} {dstFunc}")
 
     def assignCoordPolymerSequence(self, seqId, compId, atomId):
         """ Assign polymer sequences of the coordinates.
@@ -301,7 +302,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
         return chainAssign
 
-    def selectCoordAtoms(self, chainAssign, seqId, compId, atomId):
+    def selectCoordAtoms(self, chainAssign, seqId, compId, atomId, allowAmbig=True):
         """ Select atoms of the coordinates.
         """
 
@@ -311,9 +312,14 @@ class CyanaMRParserListener(ParseTreeListener):
             seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, self.__hasCoord)
 
             _atomId = self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]
-            if len(_atomId) == 0:
+            lenAtomId = len(_atomId)
+            if lenAtomId == 0:
                 self.warningMessage += f"[Invalid atom nomenclature] {self.__getCurrentRestraint()}"\
                     f"{seqId}:{compId}:{atomId} is invalid atom nomenclature.\n"
+                continue
+            if lenAtomId > 1 and not allowAmbig:
+                self.warningMessage += f"[Invalid atom selection] {self.__getCurrentRestraint()}"\
+                    f"Ambiguous atom selection '{seqId}:{compId}:{atomId}' is not allowed as a angle restraint.\n"
                 continue
 
             for cifAtomId in _atomId:
@@ -427,9 +433,9 @@ class CyanaMRParserListener(ParseTreeListener):
 
         target_value = (upper_limit + lower_limit) / 2.0
 
-        while target_value > 225.0:
+        while target_value > ANGLE_RANGE_MAX:
             target_value -= 360.0
-        while target_value < -225.0:
+        while target_value < ANGLE_RANGE_MIN:
             target_value += 360.0
 
         validRange = True
@@ -494,7 +500,7 @@ class CyanaMRParserListener(ParseTreeListener):
         for chainId, cifSeqId, cifCompId in chainAssign:
             ps = next(ps for ps in self.__polySeq if ps['chain_id'] == chainId)
 
-            peptide, nucleotide, _ = self.__csStat.getTypeOfCompId(cifCompId)
+            peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(cifCompId)
 
             atomNames = None
             seqOffset = None
@@ -568,13 +574,13 @@ class CyanaMRParserListener(ParseTreeListener):
             if len(self.atomSelectionSet) < 4:
                 return
 
-            for atom1 in self.atomSelectionSet[0]:
-                for atom2 in self.atomSelectionSet[1]:
-                    for atom3 in self.atomSelectionSet[2]:
-                        for atom4 in self.atomSelectionSet[3]:
-                            if self.__verbose:
-                                print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} "
-                                      f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
+            for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
+                                                                self.atomSelectionSet[1],
+                                                                self.atomSelectionSet[2],
+                                                                self.atomSelectionSet[3]):
+                if self.__verbose:
+                    print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} "
+                          f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
 
             self.atomSelectionSet = []
 

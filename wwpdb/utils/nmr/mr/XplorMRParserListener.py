@@ -9,6 +9,8 @@
 """
 import sys
 import re
+import itertools
+
 import numpy as np
 
 from antlr4 import ParseTreeListener
@@ -629,12 +631,11 @@ class XplorMRParserListener(ParseTreeListener):
                     f"The upper linear limit value='{upper_linear_limit}' should be within range {DIST_RESTRAINT_RANGE}.\n"
 
         for i in range(0, len(self.atomSelectionSet), 2):
-            j = i + 1
-            for atom1 in self.atomSelectionSet[i]:
-                for atom2 in self.atomSelectionSet[j]:
-                    if self.__verbose:
-                        print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
-                              f"atom1={atom1} atom2={atom2} {dstFunc}")
+            for atom1, atom2 in itertools.product(self.atomSelectionSet[i],
+                                                  self.atomSelectionSet[i + 1]):
+                if self.__verbose:
+                    print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
+                          f"atom1={atom1} atom2={atom2} {dstFunc}")
 
     # Enter a parse tree produced by XplorMRParser#predict_statement.
     def enterPredict_statement(self, ctx: XplorMRParser.Predict_statementContext):  # pylint: disable=unused-argument
@@ -775,17 +776,42 @@ class XplorMRParserListener(ParseTreeListener):
                     f"The upper linear limit value='{upper_linear_limit}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
 
         compId = self.atomSelectionSet[0][0]['comp_id']
-        peptide, nucleotide, _ = self.__csStat.getTypeOfCompId(compId)
+        peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
 
-        for atom1 in self.atomSelectionSet[0]:
-            for atom2 in self.atomSelectionSet[1]:
-                for atom3 in self.atomSelectionSet[2]:
-                    for atom4 in self.atomSelectionSet[3]:
-                        if self.__verbose:
-                            angleName = getTypeOfDihedralRestraint(peptide, nucleotide, [atom1, atom2, atom3, atom4])
-                            print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} "
-                                  f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc} "
-                                  f"energy_const={energyConst}")
+        if not self.areUniqueCoordAtoms():
+            return
+
+        for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
+                                                            self.atomSelectionSet[1],
+                                                            self.atomSelectionSet[2],
+                                                            self.atomSelectionSet[3]):
+            if self.__verbose:
+                angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
+                                                       [atom1, atom2, atom3, atom4])
+                print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} "
+                      f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc} "
+                      f"energy_const={energyConst}")
+
+    def areUniqueCoordAtoms(self):
+        """ Check whether atom selection sets are uniquely assigned.
+        """
+
+        for _atomSelectionSet in self.atomSelectionSet:
+
+            if len(_atomSelectionSet) < 2:
+                continue
+
+            for atom1, atom2 in itertools.combinations(_atomSelectionSet, _atomSelectionSet):
+                if atom1['chain_id'] != atom2['chain_id']:
+                    continue
+                if atom1['seq_id'] != atom2['seq_id']:
+                    continue
+                self.warningMessage += f"[Invalid atom selection] {self.__getCurrentRestraint()}"\
+                    f"Ambiguous atom selection '{atom1['chain_id']}:{atom1['seq_id']}:{atom1['atom_id']} or "\
+                    f"{atom2['atom_id']}' is not allowed as a angle restraint.\n"
+                return False
+
+        return True
 
     # Enter a parse tree produced by XplorMRParser#sani_statement.
     def enterSani_statement(self, ctx: XplorMRParser.Sani_statementContext):  # pylint: disable=unused-argument
@@ -1604,10 +1630,7 @@ class XplorMRParserListener(ParseTreeListener):
                                             self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                                                 f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.\n"
 
-        atomSelection = []
-        for atom in _atomSelection:
-            if atom not in atomSelection:
-                atomSelection.append(atom)
+        atomSelection = [dict(s) for s in set(frozenset(atom.items()) for atom in _atomSelection)]
 
         if 'atom_selection' not in _factor:
             _factor['atom_selection'] = atomSelection
@@ -1898,12 +1921,7 @@ class XplorMRParserListener(ParseTreeListener):
                                         self.__lfh.write(f"+XplorMRParserListener.exitFactor() ++ Error  - {str(e)}\n")
 
                 if len(self.factor['atom_selection']) > 0:
-                    atomSelection = []
-                    for atom in _atomSelection:
-                        if atom not in atomSelection:
-                            atomSelection.append(atom)
-
-                    self.factor['atom_selection'] = atomSelection
+                    self.factor['atom_selection'] = [dict(s) for s in set(frozenset(atom.items()) for atom in _atomSelection)]
 
                     if len(self.factor['atom_selection']) == 0:
                         self.factor['atom_id'] = [None]
@@ -2354,12 +2372,7 @@ class XplorMRParserListener(ParseTreeListener):
                     if len(_atom) == 1:
                         _atomSelection.append(_atom[0])
 
-                atomSelection = []
-                for atom in _atomSelection:
-                    if atom not in atomSelection:
-                        atomSelection.append(atom)
-
-                self.factor['atom_selection'] = atomSelection
+                self.factor['atom_selection'] = [dict(s) for s in set(frozenset(atom.items()) for atom in _atomSelection)]
 
                 if len(self.factor['atom_selection']) == 0:
                     self.factor['atom_id'] = [None]
@@ -2461,10 +2474,7 @@ class XplorMRParserListener(ParseTreeListener):
                                             if np.linalg.norm(toNpArray(_neighbor) - origin) < 2.0:
                                                 _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId})
 
-                atomSelection = []
-                for atom in _atomSelection:
-                    if atom not in atomSelection:
-                        atomSelection.append(atom)
+                atomSelection = [dict(s) for s in set(frozenset(atom.items()) for atom in _atomSelection)]
 
                 if len(atomSelection) <= len(self.factor['atom_selection']):
                     self.factor['atom_id'] = [None]
@@ -2521,12 +2531,7 @@ class XplorMRParserListener(ParseTreeListener):
                                 for atomId in atomIds:
                                     _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': atomId})
 
-                atomSelection = []
-                for atom in _atomSelection:
-                    if atom not in atomSelection:
-                        atomSelection.append(atom)
-
-                self.factor['atom_selection'] = atomSelection
+                self.factor['atom_selection'] = [dict(s) for s in set(frozenset(atom.items()) for atom in _atomSelection)]
 
                 if len(self.factor['atom_selection']) == 0:
                     self.factor['atom_id'] = [None]

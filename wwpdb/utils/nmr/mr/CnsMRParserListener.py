@@ -29,6 +29,8 @@ try:
                                                        ANGLE_RESTRAINT_ERROR,
                                                        RDC_RESTRAINT_RANGE,
                                                        RDC_RESTRAINT_ERROR,
+                                                       T1T2_RESTRAINT_RANGE,
+                                                       T1T2_RESTRAINT_ERROR,
                                                        XPLOR_RDC_PRINCIPAL_AXIS_NAMES)
 
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
@@ -48,6 +50,8 @@ except ImportError:
                                            ANGLE_RESTRAINT_ERROR,
                                            RDC_RESTRAINT_RANGE,
                                            RDC_RESTRAINT_ERROR,
+                                           T1T2_RESTRAINT_RANGE,
+                                           T1T2_RESTRAINT_ERROR,
                                            XPLOR_RDC_PRINCIPAL_AXIS_NAMES)
 
     from nmr.ChemCompUtil import ChemCompUtil
@@ -75,6 +79,13 @@ RDC_RANGE_MAX = RDC_RESTRAINT_RANGE['max_exclusive']
 
 RDC_ERROR_MIN = RDC_RESTRAINT_ERROR['min_exclusive']
 RDC_ERROR_MAX = RDC_RESTRAINT_ERROR['max_exclusive']
+
+
+T1T2_RANGE_MIN = T1T2_RESTRAINT_RANGE['min_inclusive']
+T1T2_RANGE_MAX = T1T2_RESTRAINT_RANGE['max_inclusive']
+
+T1T2_ERROR_MIN = T1T2_RESTRAINT_ERROR['min_exclusive']
+T1T2_ERROR_MAX = T1T2_RESTRAINT_ERROR['max_exclusive']
 
 
 # This class defines a complete listener for a parse tree produced by CnsMRParser.
@@ -556,7 +567,7 @@ class CnsMRParserListener(ParseTreeListener):
             for atom1, atom2 in itertools.product(self.atomSelectionSet[i],
                                                   self.atomSelectionSet[i + 1]):
                 if self.__verbose:
-                    print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
+                    print(f"subtype={self.__cur_subtype} (NOE) id={self.distRestraints} "
                           f"atom1={atom1} atom2={atom2} {dstFunc}")
 
     # Enter a parse tree produced by CnsMRParser#predict_statement.
@@ -711,7 +722,7 @@ class CnsMRParserListener(ParseTreeListener):
             if self.__verbose:
                 angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
                                                        [atom1, atom2, atom3, atom4])
-                print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} "
+                print(f"subtype={self.__cur_subtype} (DIHE) id={self.dihedRestraints} angleName={angleName} "
                       f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc} "
                       f"energy_const={energyConst}")
 
@@ -1067,8 +1078,17 @@ class CnsMRParserListener(ParseTreeListener):
         pass
 
     # Enter a parse tree produced by CnsMRParser#diffusion_statement.
-    def enterDiffusion_statement(self, ctx: CnsMRParser.Diffusion_statementContext):  # pylint: disable=unused-argument
-        pass
+    def enterDiffusion_statement(self, ctx: CnsMRParser.Diffusion_statementContext):
+        if ctx.Rdc_potential():
+            code = str(ctx.Rdc_potential()).upper()
+            if code.startswith('SQUA'):
+                self.potential = 'square'
+            elif code.startswith('HARM'):
+                self.potential = 'harmonic'
+
+        elif ctx.Reset():
+            self.potential = 'square'
+            self.scale = 1.0
 
     # Exit a parse tree produced by CnsMRParser#diffusion_statement.
     def exitDiffusion_statement(self, ctx: CnsMRParser.Diffusion_statementContext):  # pylint: disable=unused-argument
@@ -1080,8 +1100,141 @@ class CnsMRParserListener(ParseTreeListener):
         self.__cur_subtype = 'diff'
 
     # Exit a parse tree produced by CnsMRParser#dani_assign.
-    def exitDani_assign(self, ctx: CnsMRParser.Dani_assignContext):  # pylint: disable=unused-argument
-        pass
+    def exitDani_assign(self, ctx: CnsMRParser.Dani_assignContext):
+        target = float(str(ctx.Real(0)))
+        delta = abs(float(str(ctx.Real(1))))
+
+        target_value = target
+        lower_limit = None
+        upper_limit = None
+
+        if self.potential == 'square':
+            lower_limit = target - delta
+            upper_limit = target + delta
+
+        validRange = True
+        dstFunc = {'weight': self.scale, 'potential': self.potential}
+
+        if target_value is not None:
+            if T1T2_ERROR_MIN < target_value < T1T2_ERROR_MAX:
+                dstFunc['target_value'] = f"{target_value:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The target value='{target_value}' must be within range {T1T2_RESTRAINT_ERROR}.\n"
+
+        if lower_limit is not None:
+            if T1T2_ERROR_MIN < lower_limit < T1T2_ERROR_MAX:
+                dstFunc['lower_limit'] = f"{lower_limit:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The lower limit value='{lower_limit}' must be within range {T1T2_RESTRAINT_ERROR}.\n"
+
+        if upper_limit is not None:
+            if T1T2_ERROR_MIN < upper_limit < T1T2_ERROR_MAX:
+                dstFunc['upper_limit'] = f"{upper_limit:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The upper limit value='{upper_limit}' must be within range {T1T2_RESTRAINT_ERROR}.\n"
+
+        if not validRange:
+            return
+
+        if target_value is not None:
+            if T1T2_RANGE_MIN <= target_value <= T1T2_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The target value='{target_value}' should be within range {T1T2_RESTRAINT_RANGE}.\n"
+
+        if lower_limit is not None:
+            if T1T2_RANGE_MIN <= lower_limit <= T1T2_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The lower limit value='{lower_limit}' should be within range {T1T2_RESTRAINT_RANGE}.\n"
+
+        if upper_limit is not None:
+            if T1T2_RANGE_MIN <= upper_limit <= T1T2_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The upper limit value='{upper_limit}' should be within range {T1T2_RESTRAINT_RANGE}.\n"
+
+        if not self.__hasPolySeq:
+            return
+
+        if not self.areUniqueCoordAtoms('a diffusion anisotropy'):
+            return
+
+        chain_id_1 = self.atomSelectionSet[4][0]['chain_id']
+        seq_id_1 = self.atomSelectionSet[4][0]['seq_id']
+        comp_id_1 = self.atomSelectionSet[4][0]['comp_id']
+        atom_id_1 = self.atomSelectionSet[4][0]['atom_id']
+
+        chain_id_2 = self.atomSelectionSet[5][0]['chain_id']
+        seq_id_2 = self.atomSelectionSet[5][0]['seq_id']
+        comp_id_2 = self.atomSelectionSet[5][0]['comp_id']
+        atom_id_2 = self.atomSelectionSet[5][0]['atom_id']
+
+        if (atom_id_1[0] not in isotopeNumsOfNmrObsNucs) or (atom_id_2[0] not in isotopeNumsOfNmrObsNucs):
+            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                f"Non-magnetic susceptible spin appears in diffusion anisotropy vector; "\
+                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
+                f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+            return
+
+        if chain_id_1 != chain_id_2:
+            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                f"Found inter-chain diffusion anisotropy vector; "\
+                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+            return
+
+        if abs(seq_id_1 - seq_id_2) > 1:
+            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                f"Found inter-residue diffusion anisotropy vector; "\
+                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+            return
+
+        if abs(seq_id_1 - seq_id_2) == 1:
+
+            if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
+               ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H')) or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H') and atom_id_2 == 'C')):
+                pass
+
+            else:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    "Found inter-residue diffusion anisotropy vector; "\
+                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                return
+
+        elif atom_id_1 == atom_id_2:
+            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                "Found zero diffusion anisotropy vector; "\
+                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+            return
+
+        else:
+
+            if self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
+
+                if not any(b for b in self.__ccU.lastBonds
+                           if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
+                               or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
+
+                    if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            "Found an diffusion anisotropy vector over multiple covalent bonds in the 'DANIsotropy' statement; "\
+                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                        return
+
+        for atom1, atom2 in itertools.product(self.atomSelectionSet[4],
+                                              self.atomSelectionSet[5]):
+            if self.__verbose:
+                print(f"subtype={self.__cur_subtype} (DANI) id={self.diffRestraints} "
+                      f"atom1={atom1} atom2={atom2} {dstFunc}")
 
     # Enter a parse tree produced by CnsMRParser#one_bond_coupling_statement.
     def enterOne_bond_coupling_statement(self, ctx: CnsMRParser.One_bond_coupling_statementContext):  # pylint: disable=unused-argument
@@ -1401,7 +1554,7 @@ class CnsMRParserListener(ParseTreeListener):
                     seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck)
 
                     for atomId in _factor['atom_id']:
-                        if self.__cur_subtype == 'rdc' and atomId in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
+                        if self.__cur_subtype in ('rdc', 'diff') and atomId in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
                             continue
                         atomIds = self.__nefT.get_valid_star_atom(compId, atomId.upper())[0]
 
@@ -1486,7 +1639,7 @@ class CnsMRParserListener(ParseTreeListener):
             _factor['atom_selection'] = _atomSelection
 
         if len(_factor['atom_selection']) == 0:
-            if self.__cur_subtype == 'rdc' and _factor['atom_id'][0] in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
+            if self.__cur_subtype in ('rdc', 'diff') and _factor['atom_id'][0] in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
                 return _factor
             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                 f"The {clauseName} has no effect.\n"

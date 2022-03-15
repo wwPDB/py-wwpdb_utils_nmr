@@ -28,6 +28,11 @@ ANGLE_RESTRAINT_ERROR = {'min_exclusive': -360.0, 'max_exclusive': 360.0}
 RDC_RESTRAINT_RANGE = {'min_exclusive': -100.0, 'max_exclusive': 100.0}
 RDC_RESTRAINT_ERROR = {'min_exclusive': -200.0, 'max_exclusive': 200.0}
 
+
+T1T2_RESTRAINT_RANGE = {'min_inclusive': 1.0, 'max_inclusive': 20.0}
+T1T2_RESTRAINT_ERROR = {'min_exclusive': 0.0, 'max_exclusive': 100.0}
+
+
 # @see: https://x3dna.org/highlights/torsion-angles-of-nucleic-acid-structures for nucleic acids
 KNOWN_ANGLE_ATOM_NAMES = {'PHI': ['C', 'N', 'CA', 'C'],  # i-1, i, i, i
                           'PSI': ['N', 'CA', 'C', 'N'],  # i, i, i, i+1

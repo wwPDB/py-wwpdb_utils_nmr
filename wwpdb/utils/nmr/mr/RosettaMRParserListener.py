@@ -356,7 +356,7 @@ class RosettaMRParserListener(ParseTreeListener):
 
         return dstFunc
 
-    def assignCoordPolymerSequence(self, seqId, atomId, fixedChainId=None):
+    def assignCoordPolymerSequence(self, seqId, atomId=None, fixedChainId=None):
         """ Assign polymer sequences of the coordinates.
         """
 
@@ -368,7 +368,8 @@ class RosettaMRParserListener(ParseTreeListener):
                 continue
             if seqId in ps['seq_id']:
                 cifCompId = ps['comp_id'][ps['seq_id'].index(seqId)]
-                if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                if atomId is None\
+                   or (atomId is not None and len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0):
                     chainAssign.append((chainId, seqId, cifCompId))
 
         if len(chainAssign) == 0 and self.__altPolySeq is not None:
@@ -382,8 +383,12 @@ class RosettaMRParserListener(ParseTreeListener):
                     chainAssign.append(chainId, cifSeqId, cifCompId)
 
         if len(chainAssign) == 0:
-            self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                f"{seqId}:{atomId} is not present in the coordinates.\n"
+            if atomId is not None:
+                self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                    f"{seqId}:{atomId} is not present in the coordinates.\n"
+            else:
+                self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                    f"{seqId} is not present in the coordinates.\n"
 
         return chainAssign
 
@@ -411,6 +416,19 @@ class RosettaMRParserListener(ParseTreeListener):
                 atomSelection.append({'chain_id': chainId, 'seq_id': cifSeqId, 'comp_id': cifCompId, 'atom_id': cifAtomId})
 
                 self.testCoordAtomIdConsistency(chainId, cifSeqId, cifCompId, cifAtomId, seqKey, coordAtomSite)
+
+        if len(atomSelection) > 0:
+            self.atomSelectionSet.append(atomSelection)
+
+    def selectCoordResidues(self, chainAssign, seqId):
+        """ Select residues of the coordinates.
+        """
+
+        atomSelection = []
+
+        for chainId, cifSeqId, cifCompId in chainAssign:
+            if cifSeqId == seqId:
+                atomSelection.append({'chain_id': chainId, 'seq_id': cifSeqId, 'comp_id': cifCompId})
 
         if len(atomSelection) > 0:
             self.atomSelectionSet.append(atomSelection)
@@ -983,7 +1001,7 @@ class RosettaMRParserListener(ParseTreeListener):
         if not self.__hasPolySeq:
             return
 
-        seqId1 = int(str(ctx.Integer(0)))
+        seqId1 = int(str(ctx.Integer()))
         atomId1 = str(ctx.Simple_name(0)).upper()
         opposingChainId = str(ctx.Simple_name(1)).upper()
 
@@ -1043,7 +1061,7 @@ class RosettaMRParserListener(ParseTreeListener):
             return
 
         seqId1 = int(str(ctx.Integer(0)))
-        atomId1 = str(ctx.Simple_name(0)).upper()
+        atomId1 = str(ctx.Simple_name()).upper()
         seqId2 = int(str(ctx.Integer(1)))
         seqId3 = int(str(ctx.Integer(2)))
 
@@ -1062,31 +1080,24 @@ class RosettaMRParserListener(ParseTreeListener):
         if len(self.atomSelectionSet) < 1:
             return
 
-        found2 = False
-        found3 = False
+        chainAssign2 = self.assignCoordPolymerSequence(seqId2)
+        chainAssign3 = self.assignCoordPolymerSequence(seqId3)
 
-        for ps in self.__polySeq:
-            if seqId2 in ps['seq_id']:
-                found2 = True
-            if seqId3 in ps['seq_id']:
-                found3 = True
-            if found2 and found3:
-                break
-
-        if not found2:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                f"The selected residue '{seqId2}' is not found in the coordinates.\n"
+        if len(chainAssign2) == 0 or len(chainAssign3) == 0:
             return
 
-        if not found3:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                f"The selected residue '{seqId3}' is not found in the coordinates.\n"
+        self.selectCoordResidues(chainAssign2, seqId2)
+        self.selectCoordResidues(chainAssign3, seqId3)
+
+        if len(self.atomSelectionSet) < 3:
             return
 
-        for atom1 in self.atomSelectionSet[0]:
+        for atom1, res2, res3 in itertools.product(self.atomSelectionSet[0],
+                                                   self.atomSelectionSet[1],
+                                                   self.atomSelectionSet[2]):
             if self.__verbose:
                 print(f"subtype={self.__cur_subtype} (Site-Residue) id={self.geoRestraints} "
-                      f"atom={atom1} interactingSeqId=({seqId2}, {seqId3}) {dstFunc}")
+                      f"atom1={atom1} residue2={res2} residue3={res3} {dstFunc}")
 
     # Enter a parse tree produced by RosettaMRParser#min_residue_atomic_distance_restraints.
     def enterMin_residue_atomic_distance_restraints(self, ctx: RosettaMRParser.Min_residue_atomic_distance_restraintsContext):  # pylint: disable=unused-argument
@@ -1111,25 +1122,16 @@ class RosettaMRParserListener(ParseTreeListener):
         seqId2 = int(str(ctx.Integer(1)))
         target_value = float(str(ctx.Float()))
 
-        found1 = False
-        found2 = False
+        chainAssign1 = self.assignCoordPolymerSequence(seqId1)
+        chainAssign2 = self.assignCoordPolymerSequence(seqId2)
 
-        for ps in self.__polySeq:
-            if seqId1 in ps['seq_id']:
-                found1 = True
-            if seqId2 in ps['seq_id']:
-                found2 = True
-            if found1 and found2:
-                break
-
-        if not found1:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                f"The selected residue '{seqId1}' is not found in the coordinates.\n"
+        if len(chainAssign1) == 0 or len(chainAssign2) == 0:
             return
 
-        if not found2:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                f"The selected residue '{seqId2}' is not found in the coordinates.\n"
+        self.selectCoordResidues(chainAssign1, seqId1)
+        self.selectCoordResidues(chainAssign2, seqId2)
+
+        if len(self.atomSelectionSet) < 2:
             return
 
         dstFunc = {}
@@ -1151,9 +1153,11 @@ class RosettaMRParserListener(ParseTreeListener):
             self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
                 f"The target value='{target_value}' should be within range {DIST_RESTRAINT_RANGE}.\n"
 
-        if self.__verbose:
-            print(f"subtype={self.__cur_subtype} (MinResidueAtomicDistance) id={self.geoRestraints} "
-                  f"seqId1={seqId1} seqId2={seqId2} {dstFunc}")
+        for res1, res2 in itertools.product(self.atomSelectionSet[0],
+                                            self.atomSelectionSet[1]):
+            if self.__verbose:
+                print(f"subtype={self.__cur_subtype} (MinResidueAtomicDistance) id={self.geoRestraints} "
+                      f"resudue1={res1} residue2={res2} {dstFunc}")
 
     # Enter a parse tree produced by RosettaMRParser#big_bin_restraints.
     def enterBig_bin_restraints(self, ctx: RosettaMRParser.Big_bin_restraintsContext):  # pylint: disable=unused-argument
@@ -1167,9 +1171,55 @@ class RosettaMRParserListener(ParseTreeListener):
     def enterBig_bin_restraint(self, ctx: RosettaMRParser.Big_bin_restraintContext):  # pylint: disable=unused-argument
         self.dihedRestraints += 1
 
+        self.atomSelectionSet = []
+
     # Exit a parse tree produced by RosettaMRParser#big_bin_restraint.
-    def exitBig_bin_restraint(self, ctx: RosettaMRParser.Big_bin_restraintContext):  # pylint: disable=unused-argument
-        pass
+    def exitBig_bin_restraint(self, ctx: RosettaMRParser.Big_bin_restraintContext):
+        if not self.__hasPolySeq:
+            return
+
+        seqId = int(str(ctx.Simple_name()))
+        binChar = str(ctx.Simple_name())
+        sDev = float(str(ctx.Float()))
+
+        chainAssign = self.assignCoordPolymerSequence(seqId)
+
+        if len(chainAssign) == 0:
+            return
+
+        self.selectCoordResidues(chainAssign, seqId)
+
+        if len(self.atomSelectionSet) < 1:
+            return
+
+        if binChar not in ('O', 'G', 'E', 'A', 'B'):
+            self.warningMessage += f"[Enumeration error] {self.__getCurrentRestraint()}"\
+                f"The BigBin identifier '{binChar}' must be one of {('O', 'G', 'E', 'A', 'B')}.\n"
+            return
+
+        dstFunc = {}
+        validRange = True
+
+        if DIST_ERROR_MIN < sDev < DIST_ERROR_MAX:
+            dstFunc['standard_deviation'] = f"{sDev:.3f}"
+        else:
+            validRange = False
+            self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                f"The 'sdev={sDev}' must be within range {DIST_RESTRAINT_ERROR}.\n"
+
+        if not validRange:
+            return
+
+        if DIST_RANGE_MIN <= sDev <= DIST_RANGE_MAX:
+            pass
+        else:
+            self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                f"The 'sdev={sDev}' should be within range {DIST_RESTRAINT_RANGE}.\n"
+
+        for res in self.atomSelectionSet[0]:
+            if self.__verbose:
+                print(f"subtype={self.__cur_subtype} (BigBin) id={self.geoRestraints} "
+                      f"residue={res} binChar={binChar} {dstFunc}")
 
     # Enter a parse tree produced by RosettaMRParser#nested_restraints.
     def enterNested_restraints(self, ctx: RosettaMRParser.Nested_restraintsContext):  # pylint: disable=unused-argument

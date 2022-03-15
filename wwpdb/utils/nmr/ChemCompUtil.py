@@ -95,8 +95,8 @@ class ChemCompUtil:
         aromaticFlag = next(d for d in _chemCompBondDict if d[0] == '_chem_comp_bond.pdbx_aromatic_flag')
         self.ccbAromaticFlag = _chemCompBondDict.index(aromaticFlag)
 
-        self.__cache = {}
-        self.__failed = []
+        self.__cachedDict = {}
+        self.__failedCompId = []
 
     def updateChemCompDict(self, compId):
         """ Update CCD information for a given comp_id.
@@ -108,7 +108,7 @@ class ChemCompUtil:
 
         compId = compId.upper()
 
-        if compId in self.__failed:
+        if compId in self.__failedCompId:
             return False
 
         if compId != self.lastCompId:
@@ -116,19 +116,19 @@ class ChemCompUtil:
             self.lastCompId = compId
 
             if self.lastStatus:
-                if compId in self.__cache:
-                    self.lastChemCompDict = self.__cache[compId]['chem_comp']
-                    self.lastAtomList = self.__cache[compId]['chem_comp_atom']
-                    self.lastBonds = self.__cache[compId]['chem_comp_bond']
+                if compId in self.__cachedDict:
+                    self.lastChemCompDict = self.__cachedDict[compId]['chem_comp']
+                    self.lastAtomList = self.__cachedDict[compId]['chem_comp_atom']
+                    self.lastBonds = self.__cachedDict[compId]['chem_comp_bond']
                 else:
                     self.lastChemCompDict = self.__ccR.getChemCompDict()
                     self.lastAtomList = self.__ccR.getAtomList()
                     self.lastBonds = self.__ccR.getBonds()
-                    self.__cache[compId] = {'chem_comp': self.lastChemCompDict,
-                                            'chem_comp_atom': self.lastAtomList,
-                                            'chem_comp_bond': self.lastBonds}
+                    self.__cachedDict[compId] = {'chem_comp': self.lastChemCompDict,
+                                                 'chem_comp_atom': self.lastAtomList,
+                                                 'chem_comp_bond': self.lastBonds}
 
             else:
-                self.__failed.append(compId)
+                self.__failedCompId.append(compId)
 
         return self.lastStatus

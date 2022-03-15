@@ -15685,7 +15685,7 @@ class NmrDpUtility:
 
                         idx_msg = f"[Check row of {index_tag} {i[index_tag]}] "
 
-                        err = idx_msg + "Non-magnetic susceptible spin appears in RDC vector "\
+                        err = idx_msg + "Non-magnetic susceptible spin appears in RDC vector; "\
                             f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
                             f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2})."
 
@@ -15701,7 +15701,7 @@ class NmrDpUtility:
 
                         idx_msg = f"[Check row of {index_tag} {i[index_tag]}] "
 
-                        err = idx_msg + "Invalid inter-chain RDC vector "\
+                        err = idx_msg + "Found inter-chain RDC vector; "\
                             f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}) in a loop {lp_category}."
 
                         self.report.error.appendDescription('invalid_data',
@@ -15716,7 +15716,7 @@ class NmrDpUtility:
 
                         idx_msg = f"[Check row of {index_tag} {i[index_tag]}] "
 
-                        err = idx_msg + "Invalid inter-residue RDC vector "\
+                        err = idx_msg + "Found inter-residue RDC vector; "\
                             f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}) in a loop {lp_category}."
 
                         self.report.error.appendDescription('invalid_data',
@@ -15737,7 +15737,7 @@ class NmrDpUtility:
 
                             idx_msg = f"[Check row of {index_tag} {i[index_tag]}] "
 
-                            err = idx_msg + "Invalid inter-residue RDC vector "\
+                            err = idx_msg + "Found inter-residue RDC vector; "\
                                 f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}) in a loop {lp_category}."
 
                             self.report.error.appendDescription('invalid_data',
@@ -15752,7 +15752,7 @@ class NmrDpUtility:
 
                         idx_msg = f"[Check row of {index_tag} {i[index_tag]}] "
 
-                        err = idx_msg + "Zero RDC vector "\
+                        err = idx_msg + "Found zero RDC vector; "\
                             f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2})."
 
                         self.report.error.appendDescription('invalid_data',
@@ -15775,7 +15775,7 @@ class NmrDpUtility:
 
                                     idx_msg = f"[Check row of {index_tag} {i[index_tag]}] "
 
-                                    warn = idx_msg + "RDC vector over multiple covalent bonds "\
+                                    warn = idx_msg + "Found an RDC vector over multiple covalent bonds; "\
                                         f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2})."
 
                                     self.report.warning.appendDescription('unusual/rare_data',

@@ -187,6 +187,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # RDC
     potential = 'square'
+    average = 'average'
 
     # collection of atom selection
     atomSelectionSet = None
@@ -435,20 +436,20 @@ class XplorMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by XplorMRParser#noe_statement.
     def enterNoe_statement(self, ctx: XplorMRParser.Noe_statementContext):
         if ctx.Noe_potential():
-            code = str(ctx.Noe_potential()).upper()[0:4]
-            if code == 'BIHA':
+            code = str(ctx.Noe_potential()).upper()
+            if code.startswith('BIHA'):
                 self.noePotential = 'biharmonic'
-            elif code == 'LOGN':
+            elif code.startswith('LOGN'):
                 self.noePotential = 'lognormal'
-            elif code == 'SQUA':
+            elif code.startswith('SQUA'):
                 self.noePotential = 'square'
-            elif code == 'SOFT':
+            elif code.startswith('SOFT'):
                 self.noePotential = 'softsquare'
-            elif code == 'SYMM':
+            elif code.startswith('SYMM'):
                 self.noePotential = 'symmetry'
-            elif code == 'HIGH':
+            elif code.startswith('HIGH'):
                 self.noePotential = 'high'
-            else:
+            else:  # 3DPO
                 self.noePotential = '3dpo'
 
         elif ctx.SqExponent():
@@ -941,20 +942,20 @@ class XplorMRParserListener(ParseTreeListener):
 
         if (atom_id_1[0] not in isotopeNumsOfNmrObsNucs) or (atom_id_2[0] not in isotopeNumsOfNmrObsNucs):
             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                f"Non-magnetic susceptible spin appears in RDC vector "\
+                f"Non-magnetic susceptible spin appears in RDC vector; "\
                 f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
                 f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
             return
 
         if chain_id_1 != chain_id_2:
             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                f"Invalid inter-chain RDC vector "\
+                f"Found inter-chain RDC vector; "\
                 f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
             return
 
         if abs(seq_id_1 - seq_id_2) > 1:
             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                f"Invalid inter-residue RDC vector "\
+                f"Found inter-residue RDC vector; "\
                 f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
             return
 
@@ -966,13 +967,13 @@ class XplorMRParserListener(ParseTreeListener):
 
             else:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    "Invalid inter-residue RDC vector "\
+                    "Found inter-residue RDC vector; "\
                     f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
                 return
 
         elif atom_id_1 == atom_id_2:
             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                "Zero RDC vector "\
+                "Found zero RDC vector; "\
                 f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
             return
 
@@ -986,7 +987,7 @@ class XplorMRParserListener(ParseTreeListener):
 
                     if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
                         self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            "RDC vector over multiple covalent bonds "\
+                            "Found an RDC vector over multiple covalent bonds in the 'SANIsotropy' statement; "\
                             f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
                         return
 
@@ -999,11 +1000,20 @@ class XplorMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by XplorMRParser#xdip_statement.
     def enterXdip_statement(self, ctx: XplorMRParser.Xdip_statementContext):
         if ctx.Rdc_potential():
-            code = str(ctx.Rdc_potential()).upper()[0:4]
-            if code == 'SQUA':
+            code = str(ctx.Rdc_potential()).upper()
+            if code.startswith('SQUA'):
                 self.potential = 'square'
-            if code == 'HARM':
+            elif code.startswith('HARM'):
                 self.potential = 'harmonic'
+
+        elif ctx.Rdc_avr_methods():
+            code = str(ctx.Rdc_avr_methods()).upper()
+            if code.startswith('SUMD'):
+                 self.average = 'sum_diff'
+            elif code == 'SUM':
+                self.average = 'sum'
+            elif code.startswith('AVER'):
+                self.average = 'average'
 
     # Exit a parse tree produced by XplorMRParser#xdip_statement.
     def exitXdip_statement(self, ctx: XplorMRParser.Xdip_statementContext):  # pylint: disable=unused-argument
@@ -1017,8 +1027,235 @@ class XplorMRParserListener(ParseTreeListener):
         self.atomSelectionSet = []
 
     # Exit a parse tree produced by XplorMRParser#xdip_assign.
-    def exitXdip_assign(self, ctx: XplorMRParser.Xdip_assignContext):  # pylint: disable=unused-argument
-        pass
+    def exitXdip_assign(self, ctx: XplorMRParser.Xdip_assignContext):
+        target = float(str(ctx.Real(0)))
+        delta = abs(float(str(ctx.Real(1))))
+
+        dstFunc = {'weight': self.scale, 'average': self.average}
+
+        if ctx.Real(3):
+            target_value_1 = float(str(ctx.Real(0)))
+            target_value_2 = float(str(ctx.Real(3)))
+            error_grater_1 = abs(float(str(ctx.Real(1))))
+            error_less_1 = abs(float(str(ctx.Real(2))))
+            error_grater_2 = abs(float(str(ctx.Real(4))))
+            error_less_2 = abs(float(str(ctx.Real(5))))
+            lower_limit_1 = target_value_1 - error_less_1
+            upper_limit_1 = target_value_1 + error_grater_1
+            lower_limit_2 = target_value_2 - error_less_2
+            upper_limit_2 = target_value_2 + error_grater_2
+
+            validRange = True
+
+            if RDC_ERROR_MIN < target_value_1 < RDC_ERROR_MAX:
+                dstFunc['target_value_1'] = f"{target_value_1:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The target value(1)='{target_value_1}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+
+            if RDC_ERROR_MIN < lower_limit_1 < RDC_ERROR_MAX:
+                dstFunc['lower_limit_1'] = f"{lower_limit_1:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The lower limit value(1)='{lower_limit_1}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+
+            if RDC_ERROR_MIN < upper_limit_1 < RDC_ERROR_MAX:
+                dstFunc['upper_limit_1'] = f"{upper_limit_1:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The upper limit value(1)='{upper_limit_1}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+
+            if RDC_ERROR_MIN < target_value_2 < RDC_ERROR_MAX:
+                dstFunc['target_value_2'] = f"{target_value_2:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The target value(2)='{target_value_2}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+
+            if RDC_ERROR_MIN < lower_limit_2 < RDC_ERROR_MAX:
+                dstFunc['lower_limit_2'] = f"{lower_limit_2:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The lower limit value(2)='{lower_limit_2}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+
+            if RDC_ERROR_MIN < upper_limit_2 < RDC_ERROR_MAX:
+                dstFunc['upper_limit_2'] = f"{upper_limit_2:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The upper limit value(2)='{upper_limit_2}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+
+            if not validRange:
+                return
+
+            if RDC_RANGE_MIN < target_value_1 < RDC_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The target value(1)='{target_value_1}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+
+            if RDC_RANGE_MIN < lower_limit_1 < RDC_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The lower limit value(1)='{lower_limit_1}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+
+            if RDC_RANGE_MIN < upper_limit_1 < RDC_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The upper limit value(1)='{upper_limit_1}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+
+            if RDC_RANGE_MIN < target_value_2 < RDC_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The target value(2)='{target_value_2}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+
+            if RDC_RANGE_MIN < lower_limit_2 < RDC_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The lower limit value(2)='{lower_limit_2}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+
+            if RDC_RANGE_MIN < upper_limit_2 < RDC_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The upper limit value(2)='{upper_limit_2}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+
+        else:
+            lower_limit = None
+            upper_limit = None
+
+            if self.potential == 'square':
+                target_value = target
+                lower_limit = target - delta
+                upper_limit = target + delta
+                if ctx.Real(2):
+                    error_grater = delta
+                    error_less = abs(float(str(ctx.Real(2))))
+                    lower_limit = target - error_less
+                    upper_limit = target + error_grater
+            else:
+                target_value = target
+
+            validRange = True
+
+            if target_value is not None:
+                if RDC_ERROR_MIN < target_value < RDC_ERROR_MAX:
+                    dstFunc['target_value'] = f"{target_value:.3f}"
+                else:
+                    validRange = False
+                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                        f"The target value='{target_value}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+
+            if lower_limit is not None:
+                if RDC_ERROR_MIN < lower_limit < RDC_ERROR_MAX:
+                    dstFunc['lower_limit'] = f"{lower_limit:.3f}"
+                else:
+                    validRange = False
+                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                        f"The lower limit value='{lower_limit}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+
+            if upper_limit is not None:
+                if RDC_ERROR_MIN < upper_limit < RDC_ERROR_MAX:
+                    dstFunc['upper_limit'] = f"{upper_limit:.3f}"
+                else:
+                    validRange = False
+                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                        f"The upper limit value='{upper_limit}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+
+            if not validRange:
+                return
+
+            if target_value is not None:
+                if RDC_RANGE_MIN < target_value < RDC_RANGE_MAX:
+                    pass
+                else:
+                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                        f"The target value='{target_value}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+
+            if lower_limit is not None:
+                if RDC_RANGE_MIN < lower_limit < RDC_RANGE_MAX:
+                    pass
+                else:
+                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                        f"The lower limit value='{lower_limit}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+
+            if upper_limit is not None:
+                if RDC_RANGE_MIN < upper_limit < RDC_RANGE_MAX:
+                    pass
+                else:
+                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                        f"The upper limit value='{upper_limit}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+
+        if not self.areUniqueCoordAtoms('an RDC'):
+            return
+
+        chain_id_1 = self.atomSelectionSet[4][0]['chain_id']
+        seq_id_1 = self.atomSelectionSet[4][0]['seq_id']
+        comp_id_1 = self.atomSelectionSet[4][0]['comp_id']
+        atom_id_1 = self.atomSelectionSet[4][0]['atom_id']
+
+        chain_id_2 = self.atomSelectionSet[5][0]['chain_id']
+        seq_id_2 = self.atomSelectionSet[5][0]['seq_id']
+        comp_id_2 = self.atomSelectionSet[5][0]['comp_id']
+        atom_id_2 = self.atomSelectionSet[5][0]['atom_id']
+
+        if (atom_id_1[0] not in isotopeNumsOfNmrObsNucs) or (atom_id_2[0] not in isotopeNumsOfNmrObsNucs):
+            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                f"Non-magnetic susceptible spin appears in 1H-1H dipolar coupling vector; "\
+                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
+                f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+            return
+
+        if chain_id_1 != chain_id_2:
+            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                f"Found inter-chain 1H-1H dipolar coupling vector; "\
+                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+            return
+
+        if abs(seq_id_1 - seq_id_2) > 1:
+            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                f"Found inter-residue 1H-1H dipolar coupling vector; "\
+                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+            return
+
+        if abs(seq_id_1 - seq_id_2) == 1:
+
+            if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
+               ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H')) or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H') and atom_id_2 == 'C')):
+                pass
+
+            else:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    "Found inter-residue 1H-1H dipolar coupling vector; "\
+                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                return
+
+        elif atom_id_1 == atom_id_2:
+            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                "Found zero 1H-1H dipolar coupling vector; "\
+                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+            return
+
+        else:
+            if atom_id_1[0] != 'H' or atom_id_2[0] != 'H':
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    "Not an 1H-1H dipolar coupling vector in the 'XDIPolar' statement; "\
+                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                return
+
+        for atom1, atom2 in itertools.product(self.atomSelectionSet[4],
+                                              self.atomSelectionSet[5]):
+            if self.__verbose:
+                print(f"subtype={self.__cur_subtype} id={self.rdcRestraints} "
+                      f"atom1={atom1} atom2={atom2} {dstFunc}")
 
     # Enter a parse tree produced by XplorMRParser#vean_statement.
     def enterVean_statement(self, ctx: XplorMRParser.Vean_statementContext):  # pylint: disable=unused-argument

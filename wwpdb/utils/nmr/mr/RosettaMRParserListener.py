@@ -1754,20 +1754,20 @@ class RosettaMRParserListener(ParseTreeListener):
 
         if (atom_id_1[0] not in isotopeNumsOfNmrObsNucs) or (atom_id_2[0] not in isotopeNumsOfNmrObsNucs):
             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                f"Non-magnetic susceptible spin appears in RDC vector "\
+                f"Non-magnetic susceptible spin appears in RDC vector; "\
                 f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
                 f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
             return
 
         if chain_id_1 != chain_id_2:
             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                f"Invalid inter-chain RDC vector "\
+                f"Found inter-chain RDC vector; "\
                 f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
             return
 
         if abs(seq_id_1 - seq_id_2) > 1:
             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                f"Invalid inter-residue RDC vector "\
+                f"Found inter-residue RDC vector; "\
                 f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
             return
 
@@ -1779,13 +1779,13 @@ class RosettaMRParserListener(ParseTreeListener):
 
             else:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    "Invalid inter-residue RDC vector "\
+                    "Found inter-residue RDC vector; "\
                     f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
                 return
 
         elif atom_id_1 == atom_id_2:
             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                "Zero RDC vector "\
+                "Found zero RDC vector; "\
                 f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
             return
 
@@ -1799,7 +1799,7 @@ class RosettaMRParserListener(ParseTreeListener):
 
                     if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
                         self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            "RDC vector over multiple covalent bonds "\
+                            "Found an RDC vector over multiple covalent bonds; "\
                             f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
                         return
 

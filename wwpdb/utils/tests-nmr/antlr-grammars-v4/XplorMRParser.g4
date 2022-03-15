@@ -58,7 +58,7 @@ rdc_restraint:
 	Sanisotropy sani_statement End |
 	(Xdipolar | Dipolar) xdip_statement End |
 	VectorAngle vean_statement End |
-	Tensor tens_statement End |
+	Tensor tenso_statement End |
 	Anisotropy anis_statement End;
 
 planar_restraint:
@@ -215,11 +215,11 @@ vean_statement:
 vean_assign:
 	Assign selection selection selection selection Real Real Real Real;
 
-/* XPLOR-NIH: Residual Dipolar Couplings - Syntax (TENS)
+/* XPLOR-NIH: Residual Dipolar Couplings - Syntax (TENSO)
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node421.html
 */
-tens_statement:
-	tens_assign* |
+tenso_statement:
+	tenso_assign* |
 	Classification Simple_name |
 	Coefficients Real |
 	Nrestraints Integer |
@@ -227,7 +227,7 @@ tens_statement:
 	Print Threshold Real |
 	Reset;
 
-tens_assign:
+tenso_assign:
 	Assign selection selection Real Real;
 
 /* XPLOR-NIH: Residual Dipolar Couplings - Syntax (ANIS)

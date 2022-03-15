@@ -1066,8 +1066,8 @@ class XplorMRParser ( Parser ):
     RULE_xdip_assign = 31
     RULE_vean_statement = 32
     RULE_vean_assign = 33
-    RULE_tens_statement = 34
-    RULE_tens_assign = 35
+    RULE_tenso_statement = 34
+    RULE_tenso_assign = 35
     RULE_anis_statement = 36
     RULE_anis_assign = 37
     RULE_planar_statement = 38
@@ -1131,7 +1131,7 @@ class XplorMRParser ( Parser ):
                    "hbond_restraint", "noe_statement", "noe_assign", "predict_statement", 
                    "dihedral_statement", "dihedral_assign", "sani_statement", 
                    "sani_assign", "xdip_statement", "xdip_assign", "vean_statement", 
-                   "vean_assign", "tens_statement", "tens_assign", "anis_statement", 
+                   "vean_assign", "tenso_statement", "tenso_assign", "anis_statement", 
                    "anis_assign", "planar_statement", "group_statement", 
                    "antidistance_statement", "xadc_assign", "coupling_statement", 
                    "coup_assign", "carbon_shift_statement", "carbon_shift_assign", 
@@ -1889,8 +1889,8 @@ class XplorMRParser ( Parser ):
         def Tensor(self):
             return self.getToken(XplorMRParser.Tensor, 0)
 
-        def tens_statement(self):
-            return self.getTypedRuleContext(XplorMRParser.Tens_statementContext,0)
+        def tenso_statement(self):
+            return self.getTypedRuleContext(XplorMRParser.Tenso_statementContext,0)
 
 
         def Anisotropy(self):
@@ -1960,7 +1960,7 @@ class XplorMRParser ( Parser ):
                 self.state = 254
                 self.match(XplorMRParser.Tensor)
                 self.state = 255
-                self.tens_statement()
+                self.tenso_statement()
                 self.state = 256
                 self.match(XplorMRParser.End)
                 pass
@@ -4402,17 +4402,17 @@ class XplorMRParser ( Parser ):
         return localctx
 
 
-    class Tens_statementContext(ParserRuleContext):
+    class Tenso_statementContext(ParserRuleContext):
 
         def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
             super().__init__(parent, invokingState)
             self.parser = parser
 
-        def tens_assign(self, i:int=None):
+        def tenso_assign(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(XplorMRParser.Tens_assignContext)
+                return self.getTypedRuleContexts(XplorMRParser.Tenso_assignContext)
             else:
-                return self.getTypedRuleContext(XplorMRParser.Tens_assignContext,i)
+                return self.getTypedRuleContext(XplorMRParser.Tenso_assignContext,i)
 
 
         def Classification(self):
@@ -4449,23 +4449,23 @@ class XplorMRParser ( Parser ):
             return self.getToken(XplorMRParser.Reset, 0)
 
         def getRuleIndex(self):
-            return XplorMRParser.RULE_tens_statement
+            return XplorMRParser.RULE_tenso_statement
 
         def enterRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "enterTens_statement" ):
-                listener.enterTens_statement(self)
+            if hasattr( listener, "enterTenso_statement" ):
+                listener.enterTenso_statement(self)
 
         def exitRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "exitTens_statement" ):
-                listener.exitTens_statement(self)
+            if hasattr( listener, "exitTenso_statement" ):
+                listener.exitTenso_statement(self)
 
 
 
 
-    def tens_statement(self):
+    def tenso_statement(self):
 
-        localctx = XplorMRParser.Tens_statementContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 68, self.RULE_tens_statement)
+        localctx = XplorMRParser.Tenso_statementContext(self, self._ctx, self.state)
+        self.enterRule(localctx, 68, self.RULE_tenso_statement)
         self._la = 0 # Token type
         try:
             self.state = 601
@@ -4478,7 +4478,7 @@ class XplorMRParser ( Parser ):
                 _la = self._input.LA(1)
                 while _la==XplorMRParser.Assign:
                     self.state = 583
-                    self.tens_assign()
+                    self.tenso_assign()
                     self.state = 588
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
@@ -4538,7 +4538,7 @@ class XplorMRParser ( Parser ):
         return localctx
 
 
-    class Tens_assignContext(ParserRuleContext):
+    class Tenso_assignContext(ParserRuleContext):
 
         def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
             super().__init__(parent, invokingState)
@@ -4561,23 +4561,23 @@ class XplorMRParser ( Parser ):
                 return self.getToken(XplorMRParser.Real, i)
 
         def getRuleIndex(self):
-            return XplorMRParser.RULE_tens_assign
+            return XplorMRParser.RULE_tenso_assign
 
         def enterRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "enterTens_assign" ):
-                listener.enterTens_assign(self)
+            if hasattr( listener, "enterTenso_assign" ):
+                listener.enterTenso_assign(self)
 
         def exitRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "exitTens_assign" ):
-                listener.exitTens_assign(self)
+            if hasattr( listener, "exitTenso_assign" ):
+                listener.exitTenso_assign(self)
 
 
 
 
-    def tens_assign(self):
+    def tenso_assign(self):
 
-        localctx = XplorMRParser.Tens_assignContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 70, self.RULE_tens_assign)
+        localctx = XplorMRParser.Tenso_assignContext(self, self._ctx, self.state)
+        self.enterRule(localctx, 70, self.RULE_tenso_assign)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 603

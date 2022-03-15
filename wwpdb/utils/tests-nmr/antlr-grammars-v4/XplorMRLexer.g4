@@ -155,10 +155,10 @@ Partition:		P A R T I? T? I? O? N?;			// = Integer
 //Threshold:		T H R E S? H? O? L? D?;			// Real
 //Reset:		R E S E T?;
 
-/* XPLOR-NIH: RDC - Syntax (TENS)
+/* XPLOR-NIH: RDC - Syntax (TENSO)
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node421.html
 */
-Tensor:			T E N S O? R?;				// Tensor { tens_statement } End
+Tensor:			T E N S O R?;				// Tensor { tens_statement } End
 //Assign:		A S S I G? N?;				// selection selection Real Real
 //Classification:	C L A S S? I? F? I? C? A? T? I? O? N?;	// Class_name
 //Coefficients:		C O E F F? I? C? I? E? N? T? S?;	// Real

@@ -886,6 +886,9 @@ class RosettaMRParserListener(ParseTreeListener):
         if len(chainAssign1) == 0 or len(chainAssign2) == 0:
             return
 
+        self.selectCoordAtoms(chainAssign1, seqId1, atomId1)
+        self.selectCoordAtoms(chainAssign2, seqId2, atomId2, False, 'a coordinate')  # refAtom
+
         if len(self.atomSelectionSet) < 2:
             return
 
@@ -893,7 +896,7 @@ class RosettaMRParserListener(ParseTreeListener):
                                               self.atomSelectionSet[1]):
             if self.__verbose:
                 print(f"subtype={self.__cur_subtype} (Coordinate) id={self.geoRestraints} "
-                      f"atom={atom1} ref_atom={atom2} coord=({cartX}, {cartY}, {cartZ}) {dstFunc}")
+                      f"atom={atom1} refAtom={atom2} coord=({cartX}, {cartY}, {cartZ}) {dstFunc}")
 
     # Enter a parse tree produced by RosettaMRParser#local_coordinate_restraints.
     def enterLocal_coordinate_restraints(self, ctx: RosettaMRParser.Local_coordinate_restraintsContext):  # pylint: disable=unused-argument
@@ -907,9 +910,52 @@ class RosettaMRParserListener(ParseTreeListener):
     def enterLocal_coordinate_restraint(self, ctx: RosettaMRParser.Local_coordinate_restraintContext):  # pylint: disable=unused-argument
         self.geoRestraints += 1
 
+        self.stackFuncs = []
+        self.atomSelectionSet = []
+
     # Exit a parse tree produced by RosettaMRParser#local_coordinate_restraint.
     def exitLocal_coordinate_restraint(self, ctx: RosettaMRParser.Local_coordinate_restraintContext):  # pylint: disable=unused-argument
-        pass
+        seqId1 = int(str(ctx.Integer(0)))
+        atomId1 = str(ctx.Simple_name(0)).upper()
+        seqId234 = int(str(ctx.Integer(1)))
+        atomId2 = str(ctx.Simple_name(1)).upper()
+        atomId3 = str(ctx.Simple_name(2)).upper()
+        atomId4 = str(ctx.Simple_name(3)).upper()
+
+        cartX = float(str(ctx.Float(0)))
+        cartY = float(str(ctx.Float(1)))
+        cartZ = float(str(ctx.Float(2)))
+
+        dstFunc = self.validateAngleRange()
+
+        if dstFunc is None:
+            return
+
+        chainAssign1 = self.assignCoordPolymerSequence(seqId1, atomId1)
+        chainAssign2 = self.assignCoordPolymerSequence(seqId234, atomId2)
+        chainAssign3 = self.assignCoordPolymerSequence(seqId234, atomId3)
+        chainAssign4 = self.assignCoordPolymerSequence(seqId234, atomId4)
+
+        if len(chainAssign1) == 0 or len(chainAssign2) == 0\
+           or len(chainAssign3) == 0 or len(chainAssign4) == 0:
+            return
+
+        self.selectCoordAtoms(chainAssign1, seqId1, atomId1)
+        self.selectCoordAtoms(chainAssign2, seqId234, atomId2, False, 'a local coordinate')  # originAtom1
+        self.selectCoordAtoms(chainAssign3, seqId234, atomId3, False, 'a local coordinate')  # originAtom2
+        self.selectCoordAtoms(chainAssign4, seqId234, atomId4, False, 'a local coordiante')  # originAtom3
+
+        if len(self.atomSelectionSet) < 4:
+            return
+
+        for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
+                                                            self.atomSelectionSet[1],
+                                                            self.atomSelectionSet[2],
+                                                            self.atomSelectionSet[3]):
+            if self.__verbose:
+                print(f"subtype={self.__cur_subtype} (LocalCoordinate) id={self.geoRestraints} "
+                      f"atom={atom1} originAtom1={atom2} originAtom2={atom3} originAtom3={atom4} "
+                      f"localCoord=({cartX}, {cartY}, {cartZ}) {dstFunc}")
 
     # Enter a parse tree produced by RosettaMRParser#site_restraints.
     def enterSite_restraints(self, ctx: RosettaMRParser.Site_restraintsContext):  # pylint: disable=unused-argument

@@ -86,7 +86,7 @@ site_residues_restraints:
 	site_residues_restraint+;
 
 site_residues_restraint:
-	SiteConstraintResidues Integer Simple_name Simple_name Simple_name func_type_def; // The 2nd and 3rd Simple_name represent Res2/3
+	SiteConstraintResidues Integer Simple_name Integer Integer func_type_def;
 
 min_residue_atomic_distance_restraints:
 	min_residue_atomic_distance_restraint+;

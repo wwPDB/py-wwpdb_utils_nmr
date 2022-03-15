@@ -110,7 +110,7 @@ def serializedATN():
         buf.write("\u00bd\u00bf\5\"\22\2\u00be\u00bd\3\2\2\2\u00bf\u00c0")
         buf.write("\3\2\2\2\u00c0\u00be\3\2\2\2\u00c0\u00c1\3\2\2\2\u00c1")
         buf.write("!\3\2\2\2\u00c2\u00c3\7\r\2\2\u00c3\u00c4\7\64\2\2\u00c4")
-        buf.write("\u00c5\7\66\2\2\u00c5\u00c6\7\66\2\2\u00c6\u00c7\7\66")
+        buf.write("\u00c5\7\66\2\2\u00c5\u00c6\7\64\2\2\u00c6\u00c7\7\64")
         buf.write("\2\2\u00c7\u00c8\5\62\32\2\u00c8#\3\2\2\2\u00c9\u00cb")
         buf.write("\5&\24\2\u00ca\u00c9\3\2\2\2\u00cb\u00cc\3\2\2\2\u00cc")
         buf.write("\u00ca\3\2\2\2\u00cc\u00cd\3\2\2\2\u00cd%\3\2\2\2\u00ce")
@@ -1575,14 +1575,14 @@ class RosettaMRParser ( Parser ):
         def SiteConstraintResidues(self):
             return self.getToken(RosettaMRParser.SiteConstraintResidues, 0)
 
-        def Integer(self):
-            return self.getToken(RosettaMRParser.Integer, 0)
-
-        def Simple_name(self, i:int=None):
+        def Integer(self, i:int=None):
             if i is None:
-                return self.getTokens(RosettaMRParser.Simple_name)
+                return self.getTokens(RosettaMRParser.Integer)
             else:
-                return self.getToken(RosettaMRParser.Simple_name, i)
+                return self.getToken(RosettaMRParser.Integer, i)
+
+        def Simple_name(self):
+            return self.getToken(RosettaMRParser.Simple_name, 0)
 
         def func_type_def(self):
             return self.getTypedRuleContext(RosettaMRParser.Func_type_defContext,0)
@@ -1615,9 +1615,9 @@ class RosettaMRParser ( Parser ):
             self.state = 194
             self.match(RosettaMRParser.Simple_name)
             self.state = 195
-            self.match(RosettaMRParser.Simple_name)
+            self.match(RosettaMRParser.Integer)
             self.state = 196
-            self.match(RosettaMRParser.Simple_name)
+            self.match(RosettaMRParser.Integer)
             self.state = 197
             self.func_type_def()
         except RecognitionException as re:

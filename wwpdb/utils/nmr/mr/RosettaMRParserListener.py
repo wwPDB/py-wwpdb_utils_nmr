@@ -1044,8 +1044,8 @@ class RosettaMRParserListener(ParseTreeListener):
 
         seqId1 = int(str(ctx.Integer(0)))
         atomId1 = str(ctx.Simple_name(0)).upper()
-        compId2 = str(ctx.Simple_name(1)).upper()
-        compId3 = str(ctx.Simple_name(2)).upper()
+        seqId2 = int(str(ctx.Integer(1)))
+        seqId3 = int(str(ctx.Integer(2)))
 
         dstFunc = self.validateDistanceRange()
 
@@ -1066,27 +1066,27 @@ class RosettaMRParserListener(ParseTreeListener):
         found3 = False
 
         for ps in self.__polySeq:
-            if compId2 in ps['comp_id']:
+            if seqId2 in ps['seq_id']:
                 found2 = True
-            if compId3 in ps['comp_id']:
+            if seqId3 in ps['seq_id']:
                 found3 = True
             if found2 and found3:
                 break
 
         if not found2:
             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                f"The selected residue {compId2!r} is not found in the coordinates.\n"
+                f"The selected residue '{seqId2}' is not found in the coordinates.\n"
             return
 
         if not found3:
             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                f"The selected residue {compId3!r} is not found in the coordinates.\n"
+                f"The selected residue '{seqId3}' is not found in the coordinates.\n"
             return
 
         for atom1 in self.atomSelectionSet[0]:
             if self.__verbose:
                 print(f"subtype={self.__cur_subtype} (Site-Residue) id={self.geoRestraints} "
-                      f"atom={atom1} compId=({compId2}, {compId3}) {dstFunc}")
+                      f"atom={atom1} interactingSeqId=({seqId2}, {seqId3}) {dstFunc}")
 
     # Enter a parse tree produced by RosettaMRParser#min_residue_atomic_distance_restraints.
     def enterMin_residue_atomic_distance_restraints(self, ctx: RosettaMRParser.Min_residue_atomic_distance_restraintsContext):  # pylint: disable=unused-argument
@@ -1100,9 +1100,60 @@ class RosettaMRParserListener(ParseTreeListener):
     def enterMin_residue_atomic_distance_restraint(self, ctx: RosettaMRParser.Min_residue_atomic_distance_restraintContext):  # pylint: disable=unused-argument
         self.geoRestraints += 1
 
+        self.atomSelectionSet = []
+
     # Exit a parse tree produced by RosettaMRParser#min_residue_atomic_distance_restraint.
-    def exitMin_residue_atomic_distance_restraint(self, ctx: RosettaMRParser.Min_residue_atomic_distance_restraintContext):  # pylint: disable=unused-argument
-        pass
+    def exitMin_residue_atomic_distance_restraint(self, ctx: RosettaMRParser.Min_residue_atomic_distance_restraintContext):
+        if not self.__hasPolySeq:
+            return
+
+        seqId1 = int(str(ctx.Integer(0)))
+        seqId2 = int(str(ctx.Integer(1)))
+        target_value = float(str(ctx.Float()))
+
+        found1 = False
+        found2 = False
+
+        for ps in self.__polySeq:
+            if seqId1 in ps['seq_id']:
+                found1 = True
+            if seqId2 in ps['seq_id']:
+                found2 = True
+            if found1 and found2:
+                break
+
+        if not found1:
+            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                f"The selected residue '{seqId1}' is not found in the coordinates.\n"
+            return
+
+        if not found2:
+            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                f"The selected residue '{seqId2}' is not found in the coordinates.\n"
+            return
+
+        dstFunc = {}
+        validRange = True
+
+        if DIST_ERROR_MIN < target_value < DIST_ERROR_MAX:
+            dstFunc['target_value'] = f"{target_value:.3f}"
+        else:
+            validRange = False
+            self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                f"The target value='{target_value}' must be within range {DIST_RESTRAINT_ERROR}.\n"
+
+        if not validRange:
+            return
+
+        if DIST_RANGE_MIN <= target_value <= DIST_RANGE_MAX:
+            pass
+        else:
+            self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                f"The target value='{target_value}' should be within range {DIST_RESTRAINT_RANGE}.\n"
+
+        if self.__verbose:
+            print(f"subtype={self.__cur_subtype} (MinResidueAtomicDistance) id={self.geoRestraints} "
+                  f"seqId1={seqId1} seqId2={seqId2} {dstFunc}")
 
     # Enter a parse tree produced by RosettaMRParser#big_bin_restraints.
     def enterBig_bin_restraints(self, ctx: RosettaMRParser.Big_bin_restraintsContext):  # pylint: disable=unused-argument

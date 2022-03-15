@@ -26,7 +26,9 @@ try:
                                                        RDC_RESTRAINT_RANGE,
                                                        RDC_RESTRAINT_ERROR,
                                                        CSA_RESTRAINT_RANGE,
-                                                       CSA_RESTRAINT_ERROR)
+                                                       CSA_RESTRAINT_ERROR,
+                                                       PCS_RESTRAINT_RANGE,
+                                                       PCS_RESTRAINT_ERROR)
 
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
@@ -44,7 +46,9 @@ except ImportError:
                                            RDC_RESTRAINT_RANGE,
                                            RDC_RESTRAINT_ERROR,
                                            CSA_RESTRAINT_RANGE,
-                                           CSA_RESTRAINT_ERROR)
+                                           CSA_RESTRAINT_ERROR,
+                                           PCS_RESTRAINT_RANGE,
+                                           PCS_RESTRAINT_ERROR)
 
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
@@ -79,6 +83,12 @@ CSA_RANGE_MAX = CSA_RESTRAINT_RANGE['max_inclusive']
 CSA_ERROR_MIN = CSA_RESTRAINT_ERROR['min_exclusive']
 CSA_ERROR_MAX = CSA_RESTRAINT_ERROR['max_exclusive']
 
+
+PCS_RANGE_MIN = PCS_RESTRAINT_RANGE['min_inclusive']
+PCS_RANGE_MAX = PCS_RESTRAINT_RANGE['max_inclusive']
+
+PCS_ERROR_MIN = PCS_RESTRAINT_ERROR['min_exclusive']
+PCS_ERROR_MAX = PCS_RESTRAINT_ERROR['max_exclusive']
 
 # maximum column size of IAT
 MAX_COL_IAT = 8
@@ -225,6 +235,21 @@ class AmberMRParserListener(ParseTreeListener):
     ncsa = None
     datasetc = None
 
+    # PCS
+    iprot = None
+    obs = None
+    wt = None
+    tolpro = None
+    mltpro = None
+    nprot = None
+    nmpmc = None
+    optphi = None
+    opttet = None
+    optomg = None
+    opta1 = None
+    opta2 = None
+    nme = None
+
     # Amber 10: ambmask
     depth = 0
 
@@ -325,6 +350,21 @@ class AmberMRParserListener(ParseTreeListener):
         self.cwt = None
         self.ncsa = None
         self.datasetc = None
+
+        # PCS
+        self.iprot = None
+        self.obs = None
+        self.wt = None
+        self.tolpro = None
+        self.mltpro = None
+        self.nprot = None
+        self.nmpmc = None
+        self.optphi = None
+        self.opttet = None
+        self.optomg = None
+        self.opta1 = None
+        self.opta2 = None
+        self.nme = None
 
         self.dist_sander_pat = re.compile(r'(\d+) (\S+) (\S+) '
                                           r'(\d+) (\S+) (\S+) '
@@ -1377,6 +1417,36 @@ class AmberMRParserListener(ParseTreeListener):
 
         return dstFunc
 
+    def validatePcsRange(self, n, wt, tolpro, mltpro):
+        """ Validate PCS value range.
+        """
+
+        obs = self.obs[n]
+
+        validRange = True
+        dstFunc = {'weight': wt, 'tolerance': tolpro, 'multiplicity': mltpro}
+
+        if obs is not None:
+            if PCS_ERROR_MIN < obs < PCS_ERROR_MAX:
+                dstFunc['target_value'] = f"{obs:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint(self.nmpmc,n)}"\
+                    f"The target value 'obs({n})={obs}' must be within range {PCS_RESTRAINT_ERROR}.\n"
+
+        if not validRange:
+            self.lastComment = None
+            return None
+
+        if obs is not None:
+            if PCS_RANGE_MIN <= obs <= PCS_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint(self.nmpmc,n)}"\
+                    f"The target value 'obs({n})={obs}' should be within range {PCS_RESTRAINT_RANGE}.\n"
+
+        return dstFunc
+
     def validateRdcRange(self, n, dwt):
         """ Validate RDC value range.
         """
@@ -2128,17 +2198,477 @@ class AmberMRParserListener(ParseTreeListener):
         self.pcsRestraints += 1
         self.__cur_subtype = 'pcs'
 
+        self.iprot = {}
+        self.obs = {}
+        self.wt = {}
+        self.tolpro = {}
+        self.mltpro = {}
+        self.nprot = -1
+        self.nmpmc = 'undefined'
+        self.optphi = {}
+        self.opttet = {}
+        self.optomg = {}
+        self.opta1 = {}
+        self.opta2 = {}
+        self.nme = -1
+
     # Exit a parse tree produced by AmberMRParser#pcshf_statement.
     def exitPcshf_statement(self, ctx: AmberMRParser.Pcshf_statementContext):  # pylint: disable=unused-argument
-        pass
+        if self.nprot <= 0:
+            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                f"The number of observed PCS values 'nprot' is the mandatory variable.\n"
+            return
+
+        if self.nme <= 0:
+            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                f"The number of paramagnetic centers 'nme' is the mandatory variable.\n"
+            return
+
+        for n in range(1, self.nprot + 1):
+
+            if n not in self.iprot:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,n)}"\
+                    f"The atom number involved in the PCS nprot({n}) was not set.\n"
+                continue
+
+            if n not in self.obs:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,n)}"\
+                    f"The observed PCS value obs({n}) was not set.\n"
+                continue
+
+            _iprot = self.iprot[n]
+
+            if _iprot <= 0:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,n)}"\
+                    f"The atom number involved in the PCS 'iprot({n})={_iprot}' should be a positive integer.\n"
+                continue
+
+            wt = 1.0
+            if n in self.wt:
+                wt = self.wt[n]
+                if wt <= 0.0:
+                    wt = 1.0
+
+            tolpro = 1.0
+            if n in self.tolpro:
+                tolpro = self.tolpro[n]
+                if tolpro <= 0.0:
+                    tolpro = 1.0
+
+            mltpro = 1
+            if n in self.mltpro:
+                mltpro = self.mltpro[n]
+                if mltpro <= 0:
+                    mltpro = 1
+
+            # convert AMBER atom numbers to corresponding coordinate atoms based on AMBER parameter/topology file
+            if self.__atomNumberDict is not None:
+
+                self.atomSelectionSet = []
+
+                atomSelection = []
+
+                if _iprot in self.__atomNumberDict:
+                    atomSelection.append(self.__atomNumberDict[_iprot])
+                else:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,n)}"\
+                        f"'iprot({n})={_iprot}' is not defined in the AMBER parameter/topology file.\n"
+                    continue
+
+                chain_id = atomSelection[0]['chain_id']
+                seq_id = atomSelection[0]['seq_id']
+                comp_id = atomSelection[0]['comp_id']
+                atom_id = atomSelection[0]['atom_id']
+
+                self.atomSelectionSet.append(atomSelection)
+
+                if atom_id[0] != 'H':
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,n)}"\
+                        f"({chain_id}:{seq_id}:{comp_id}:{atom_id} is not a proton.\n"
+
+                if self.lastComment is not None:
+                    if self.__verbose:
+                        print('# ' + self.lastComment)
+
+                dstFunc = self.validatePcsRange(n, wt, tolpro, mltpro)
+
+                if dstFunc is None:
+                    return
+
+                for atom in self.atomSelectionSet[0]:
+                    if self.__verbose:
+                        print(f"subtype={self.__cur_subtype} dataset={self.nmpmc} n={n} "
+                              f"atom={atom} {dstFunc}")
 
     # Enter a parse tree produced by AmberMRParser#pcshf_factor.
     def enterPcshf_factor(self, ctx: AmberMRParser.Pcshf_factorContext):  # pylint: disable=unused-argument
         pass
 
     # Exit a parse tree produced by AmberMRParser#pcshf_factor.
-    def exitPcshf_factor(self, ctx: AmberMRParser.Pcshf_factorContext):  # pylint: disable=unused-argument
-        pass
+    def exitPcshf_factor(self, ctx: AmberMRParser.Pcshf_factorContext):
+        if ctx.IPROT():
+            varName = 'iprot'
+
+            if ctx.Decimal():
+                decimal = int(str(ctx.Decimal()))
+                if self.nprot > 0 and decimal > self.nprot:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,decimal)}"\
+                        f"The argument value of '{varName}({decimal})' must be in the range 1-{self.nprot}, "\
+                        f"regulated by 'nprot={self.nprot}'.\n"
+                    return
+                self.iprot[decimal] = int(str(ctx.Integer()))
+
+        elif ctx.OBS():
+            varName = 'obs'
+
+            if ctx.Decimal():
+                decimal = int(str(ctx.Decimal()))
+                if self.nprot > 0 and decimal > self.nprot:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,decimal)}"\
+                        f"The argument value of '{varName}({decimal})' must be in the range 1-{self.nprot}, "\
+                        f"regulated by 'nprot={self.nprot}'.\n"
+                    return
+                self.obs[decimal] = float(str(ctx.Real()))
+
+        elif ctx.WT():
+            varName = 'wt'
+
+            if ctx.Decimal():
+                decimal = int(str(ctx.Decimal()))
+                if self.nprot > 0 and decimal > self.nprot:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,decimal)}"\
+                        f"The argument value of '{varName}({decimal})' must be in the range 1-{self.nprot}, "\
+                        f"regulated by 'nprot={self.nprot}'.\n"
+                    return
+                rawRealArray = str(ctx.Reals()).split(',')
+                val = float(rawRealArray[0])
+                if val <= 0.0:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,decimal)}"\
+                        f"The relative weight value of '{varName}({decimal})={val}' must be a positive value.\n"
+                    return
+                self.wt[decimal] = val
+
+            else:
+                if ctx.Reals():
+                    rawRealArray = str(ctx.Reals()).split(',')
+                    if len(rawRealArray) > self.nprot:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            f"The length of '{varName}={ctx.Reals()}' must not exceed 'nprot={self.nprot}'.\n"
+                        return
+                    for col, rawReal in enumerate(rawRealArray):
+                        val = float(rawReal)
+                        if val <= 0.0:
+                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                f"The relative weight value of '{varName}({col+1})={val}' must be a positive value.\n"
+                            return
+                        self.wt[col + 1] = val
+                elif ctx.MultiplicativeReal():
+                    rawMultReal = str(ctx.MultiplicativeReal()).split('*')
+                    numCol = int(rawMultReal[0])
+                    if numCol <= 0 or numCol > self.nprot:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            f"The argument value of '{varName}({numCol})' derived from "\
+                            f"'{str(ctx.MultiplicativeReal())}' must be in the range 1-{self.nprot}, "\
+                            f"regulated by 'nprot={self.nprot}'.\n"
+                        return
+                    val = float(rawMultReal[1])
+                    if val <= 0.0:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            f"The relative weight value of '{varName}={val}' derived from "\
+                            f"'{str(ctx.MultiplicativeReal())}' must be a positive value.\n"
+                        return
+                    for col in range(0, numCol):
+                        self.wt[col + 1] = val
+
+        elif ctx.TOLPRO():
+            varName = 'tolpro'
+
+            if ctx.Decimal():
+                decimal = int(str(ctx.Decimal()))
+                if self.nprot > 0 and decimal > self.nprot:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,decimal)}"\
+                        f"The argument value of '{varName}({decimal})' must be in the range 1-{self.nprot}, "\
+                        f"regulated by 'nprot={self.nprot}'.\n"
+                    return
+                rawRealArray = str(ctx.Reals()).split(',')
+                val = float(rawRealArray[0])
+                if val <= 0.0:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,decimal)}"\
+                        f"The relative tolerance value of '{varName}({decimal})={val}' must be a positive value.\n"
+                    return
+                self.tolpro[decimal] = val
+
+            else:
+                if ctx.Reals():
+                    rawRealArray = str(ctx.Reals()).split(',')
+                    if len(rawRealArray) > self.nprot:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            f"The length of '{varName}={ctx.Reals()}' must not exceed 'nprot={self.nprot}'.\n"
+                        return
+                    for col, rawReal in enumerate(rawRealArray):
+                        val = float(rawReal)
+                        if val <= 0.0:
+                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                f"The relative tolerance value of '{varName}({col+1})={val}' must be a positive value.\n"
+                            return
+                        self.tolpro[col + 1] = val
+                elif ctx.MultiplicativeReal():
+                    rawMultReal = str(ctx.MultiplicativeReal()).split('*')
+                    numCol = int(rawMultReal[0])
+                    if numCol <= 0 or numCol > self.nprot:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            f"The argument value of '{varName}({numCol})' derived from "\
+                            f"'{str(ctx.MultiplicativeReal())}' must be in the range 1-{self.nprot}, "\
+                            f"regulated by 'nprot={self.nprot}'.\n"
+                        return
+                    val = float(rawMultReal[1])
+                    if val <= 0.0:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            f"The relative tolerance value of '{varName}={val}' derived from "\
+                            f"'{str(ctx.MultiplicativeReal())}' must be a positive value.\n"
+                        return
+                    for col in range(0, numCol):
+                        self.tolpro[col + 1] = val
+
+        elif ctx.MLTPRO():
+            varName = 'mltpro'
+
+            if ctx.Decimal():
+                decimal = int(str(ctx.Decimal()))
+                if self.nprot > 0 and decimal > self.nprot:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,decimal)}"\
+                        f"The argument value of '{varName}({decimal})' must be in the range 1-{self.nprot}, "\
+                        f"regulated by 'nprot={self.nprot}'.\n"
+                    return
+                rawIntArray = str(ctx.Integers()).split(',')
+                val = int(rawIntArray[0])
+                if val <= 0:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,decimal)}"\
+                        f"The multiplicity of NMR signal of '{varName}({decimal})={val}' must be a positive integer.\n"
+                    return
+                self.mltpro[decimal] = val
+
+            else:
+                if ctx.Integers():
+                    rawIntArray = str(ctx.Integers()).split(',')
+                    if len(rawIntArray) > self.nprot:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            f"The length of '{varName}={ctx.Integers()}' must not exceed 'nprot={self.nprot}'.\n"
+                        return
+                    for col, rawInt in enumerate(rawIntArray):
+                        val = int(rawInt)
+                        if val <= 0:
+                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                f"The multiplicity of NMR signal of '{varName}({col+1})={val}' must be a positive integer.\n"
+                            return
+                        self.mltpro[col + 1] = val
+                elif ctx.MultiplicativeInt():
+                    rawMultInt = str(ctx.MultiplicativeInt()).split('*')
+                    numCol = int(rawMultInt[0])
+                    if numCol <= 0 or numCol > self.nprot:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            f"The argument value of '{varName}({numCol})' derived from "\
+                            f"'{str(ctx.MultiplicativeInt())}' must be in the range 1-{self.nprot}, "\
+                            f"regulated by 'nprot={self.nprot}'.\n"
+                        return
+                    val = int(rawMultInt[1])
+                    if val < 0.0:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            f"The multiplicity of NMR signal of '{varName}={val}' derived from "\
+                            f"'{str(ctx.MultiplicativeInt())}' must be a positive integer.\n"
+                        return
+                    for col in range(0, numCol):
+                        self.mltpro[col + 1] = val
+
+        elif ctx.NPROT():
+            self.nprot = int(str(ctx.Integer()))
+            if self.nprot <= 0:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"The argument value of 'nprot={str(ctx.Integer())}' must be a positive integer.\n"
+
+        elif ctx.OPTPHI():
+            varName = 'optphi'
+
+            if ctx.Decimal():
+                decimal = int(str(ctx.Decimal()))
+                if self.nme > 0 and decimal > self.nme:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,decimal)}"\
+                        f"The argument value of '{varName}({decimal})' must be in the range 1-{self.nme}, "\
+                        f"regulated by 'nme={self.nme}'.\n"
+                    return
+                rawRealArray = str(ctx.Reals()).split(',')
+                self.optphi[decimal] = float(rawRealArray[0])
+
+            else:
+                if ctx.Reals():
+                    rawRealArray = str(ctx.Reals()).split(',')
+                    if len(rawRealArray) > self.nme:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            f"The length of '{varName}={ctx.Reals()}' must not exceed 'nme={self.nme}'.\n"
+                        return
+                    for col, rawReal in enumerate(rawRealArray):
+                        self.optphi[col + 1] = float(rawReal)
+                elif ctx.MultiplicativeReal():
+                    rawMultReal = str(ctx.MultiplicativeReal()).split('*')
+                    numCol = int(rawMultReal[0])
+                    if numCol <= 0 or numCol > self.nme:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            f"The argument value of '{varName}({numCol})' derived from "\
+                            f"'{str(ctx.MultiplicativeReal())}' must be in the range 1-{self.nme}, "\
+                            f"regulated by 'nme={self.nme}'.\n"
+                        return
+                    val = float(rawMultReal[1])
+                    for col in range(0, numCol):
+                        self.optphi[col + 1] = val
+
+        elif ctx.OPTTET():
+            varName = 'opttet'
+
+            if ctx.Decimal():
+                decimal = int(str(ctx.Decimal()))
+                if self.nme > 0 and decimal > self.nme:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,decimal)}"\
+                        f"The argument value of '{varName}({decimal})' must be in the range 1-{self.nme}, "\
+                        f"regulated by 'nme={self.nme}'.\n"
+                    return
+                rawRealArray = str(ctx.Reals()).split(',')
+                self.opttet[decimal] = float(rawRealArray[0])
+
+            else:
+                if ctx.Reals():
+                    rawRealArray = str(ctx.Reals()).split(',')
+                    if len(rawRealArray) > self.nme:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            f"The length of '{varName}={ctx.Reals()}' must not exceed 'nme={self.nme}'.\n"
+                        return
+                    for col, rawReal in enumerate(rawRealArray):
+                        self.opttet[col + 1] = float(rawReal)
+                elif ctx.MultiplicativeReal():
+                    rawMultReal = str(ctx.MultiplicativeReal()).split('*')
+                    numCol = int(rawMultReal[0])
+                    if numCol <= 0 or numCol > self.nme:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            f"The argument value of '{varName}({numCol})' derived from "\
+                            f"'{str(ctx.MultiplicativeReal())}' must be in the range 1-{self.nme}, "\
+                            f"regulated by 'nme={self.nme}'.\n"
+                        return
+                    val = float(rawMultReal[1])
+                    for col in range(0, numCol):
+                        self.opttet[col + 1] = val
+
+        elif ctx.OPTOMG():
+            varName = 'optomg'
+
+            if ctx.Decimal():
+                decimal = int(str(ctx.Decimal()))
+                if self.nme > 0 and decimal > self.nme:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,decimal)}"\
+                        f"The argument value of '{varName}({decimal})' must be in the range 1-{self.nme}, "\
+                        f"regulated by 'nme={self.nme}'.\n"
+                    return
+                rawRealArray = str(ctx.Reals()).split(',')
+                self.optomg[decimal] = float(rawRealArray[0])
+
+            else:
+                if ctx.Reals():
+                    rawRealArray = str(ctx.Reals()).split(',')
+                    if len(rawRealArray) > self.nme:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            f"The length of '{varName}={ctx.Reals()}' must not exceed 'nme={self.nme}'.\n"
+                        return
+                    for col, rawReal in enumerate(rawRealArray):
+                        self.optomg[col + 1] = float(rawReal)
+                elif ctx.MultiplicativeReal():
+                    rawMultReal = str(ctx.MultiplicativeReal()).split('*')
+                    numCol = int(rawMultReal[0])
+                    if numCol <= 0 or numCol > self.nme:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            f"The argument value of '{varName}({numCol})' derived from "\
+                            f"'{str(ctx.MultiplicativeReal())}' must be in the range 1-{self.nme}, "\
+                            f"regulated by 'nme={self.nme}'.\n"
+                        return
+                    val = float(rawMultReal[1])
+                    for col in range(0, numCol):
+                        self.optomg[col + 1] = val
+
+        elif ctx.OPTA1():
+            varName = 'opta1'
+
+            if ctx.Decimal():
+                decimal = int(str(ctx.Decimal()))
+                if self.nme > 0 and decimal > self.nme:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,decimal)}"\
+                        f"The argument value of '{varName}({decimal})' must be in the range 1-{self.nme}, "\
+                        f"regulated by 'nme={self.nme}'.\n"
+                    return
+                rawRealArray = str(ctx.Reals()).split(',')
+                self.opta1[decimal] = float(rawRealArray[0])
+
+            else:
+                if ctx.Reals():
+                    rawRealArray = str(ctx.Reals()).split(',')
+                    if len(rawRealArray) > self.nme:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            f"The length of '{varName}={ctx.Reals()}' must not exceed 'nme={self.nme}'.\n"
+                        return
+                    for col, rawReal in enumerate(rawRealArray):
+                        self.opta1[col + 1] = float(rawReal)
+                elif ctx.MultiplicativeReal():
+                    rawMultReal = str(ctx.MultiplicativeReal()).split('*')
+                    numCol = int(rawMultReal[0])
+                    if numCol <= 0 or numCol > self.nme:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            f"The argument value of '{varName}({numCol})' derived from "\
+                            f"'{str(ctx.MultiplicativeReal())}' must be in the range 1-{self.nme}, "\
+                            f"regulated by 'nme={self.nme}'.\n"
+                        return
+                    val = float(rawMultReal[1])
+                    for col in range(0, numCol):
+                        self.opta1[col + 1] = val
+
+        elif ctx.OPTA2():
+            varName = 'opta2'
+
+            if ctx.Decimal():
+                decimal = int(str(ctx.Decimal()))
+                if self.nme > 0 and decimal > self.nme:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,decimal)}"\
+                        f"The argument value of '{varName}({decimal})' must be in the range 1-{self.nme}, "\
+                        f"regulated by 'nme={self.nme}'.\n"
+                    return
+                rawRealArray = str(ctx.Reals()).split(',')
+                self.opta2[decimal] = float(rawRealArray[0])
+
+            else:
+                if ctx.Reals():
+                    rawRealArray = str(ctx.Reals()).split(',')
+                    if len(rawRealArray) > self.nme:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            f"The length of '{varName}={ctx.Reals()}' must not exceed 'nme={self.nme}'.\n"
+                        return
+                    for col, rawReal in enumerate(rawRealArray):
+                        self.opta2[col + 1] = float(rawReal)
+                elif ctx.MultiplicativeReal():
+                    rawMultReal = str(ctx.MultiplicativeReal()).split('*')
+                    numCol = int(rawMultReal[0])
+                    if numCol <= 0 or numCol > self.nme:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            f"The argument value of '{varName}({numCol})' derived from "\
+                            f"'{str(ctx.MultiplicativeReal())}' must be in the range 1-{self.nme}, "\
+                            f"regulated by 'nme={self.nme}'.\n"
+                        return
+                    val = float(rawMultReal[1])
+                    for col in range(0, numCol):
+                        self.opta2[col + 1] = val
+
+        elif ctx.NME():
+            self.nme = int(str(ctx.Integer()))
+            if self.nme <= 0:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"The argument value of 'nme={str(ctx.Integer())}' must be a positive integer.\n"
+
+        elif ctx.NMPMC():
+            self.nmpmc = str(ctx.Qstrings()).strip()
 
     # Enter a parse tree produced by AmberMRParser#align_statement.
     def enterAlign_statement(self, ctx: AmberMRParser.Align_statementContext):  # pylint: disable=unused-argument
@@ -2455,34 +2985,34 @@ class AmberMRParserListener(ParseTreeListener):
     def exitCsa_statement(self, ctx: AmberMRParser.Csa_statementContext):  # pylint: disable=unused-argument
         if self.ncsa <= 0:
             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                f"The number of observed CSA peaks 'ncsa' is the mandatory variable.\n"
+                f"The number of observed CSA values 'ncsa' is the mandatory variable.\n"
             return
 
         for n in range(1, self.ncsa + 1):
 
             if n not in self.icsa:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
-                    f"The first atom number involved in the CSA peak icsa({n}) was not set.\n"
+                    f"The first atom number involved in the CSA icsa({n}) was not set.\n"
                 continue
 
             if n not in self.jcsa:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
-                    f"The second atom number involved in the CSA peak jcsa({n}) was not set.\n"
+                    f"The second atom number involved in the CSA jcsa({n}) was not set.\n"
                 continue
 
             if n not in self.kcsa:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
-                    f"The second atom number involved in the CSA peak kcsa({n}) was not set.\n"
+                    f"The second atom number involved in the CSA kcsa({n}) was not set.\n"
                 continue
 
             if n not in self.cobsl:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
-                    f"The lower limit value for the observed CSA peak cobsl({n}) was not set.\n"
+                    f"The lower limit value for the observed CSA cobsl({n}) was not set.\n"
                 continue
 
             if n not in self.cobsu:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
-                    f"The upper limit value for the observed CSA peak cobsu({n}) was not set.\n"
+                    f"The upper limit value for the observed CSA cobsu({n}) was not set.\n"
                 continue
 
             _icsa = self.icsa[n]
@@ -2491,17 +3021,17 @@ class AmberMRParserListener(ParseTreeListener):
 
             if _icsa <= 0:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
-                    f"The first atom number involved in the CSA peak 'icsa({n})={_icsa}' should be a positive integer.\n"
+                    f"The first atom number involved in the CSA 'icsa({n})={_icsa}' should be a positive integer.\n"
                 continue
 
             if _jcsa <= 0:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
-                    f"The second atom number involved in the CSA peak 'jcsa({n})={_jcsa}' should be a positive integer.\n"
+                    f"The second atom number involved in the CSA 'jcsa({n})={_jcsa}' should be a positive integer.\n"
                 continue
 
             if _kcsa <= 0:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
-                    f"The second atom number involved in the CSA peak 'kcsa({n})={_kcsa}' should be a positive integer.\n"
+                    f"The second atom number involved in the CSA 'kcsa({n})={_kcsa}' should be a positive integer.\n"
                 continue
 
             cwt = 1.0
@@ -3075,7 +3605,9 @@ class AmberMRParserListener(ParseTreeListener):
         if self.__cur_subtype == 'hvycs':
             return f"[Check the {self.hvycsRestraints}th row of chemical shift restraints] "
         if self.__cur_subtype == 'pcs':
-            return f"[Check the {self.pcsRestraints}th row of pseudocontact shift restraints] "
+            if dataset is None or n is None:
+                return f"[Check the {self.pcsRestraints}th row of pseudocontact shift restraints] "
+            return f"[Check the {n}th row of pseudocontact shift restraints (name of paramagnetic center={dataset})] "
         if self.__cur_subtype == 'csa':
             if dataset is None or n is None:
                 return f"[Check the {self.csaRestraints}th row of residual CSA or pseudo-CSA restraints] "

@@ -2146,7 +2146,7 @@ class XplorMRParserListener(ParseTreeListener):
 
                     if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
                         self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            "Found an diffusion anisotropy vector over multiple covalent bonds in the 'DANIsotropy' statement; "\
+                            "Found a diffusion anisotropy vector over multiple covalent bonds in the 'DANIsotropy' statement; "\
                             f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
                         return
 
@@ -2333,7 +2333,75 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#hbond_assign.
     def exitHbond_assign(self, ctx: XplorMRParser.Hbond_assignContext):  # pylint: disable=unused-argument
-        pass
+        if not self.__hasPolySeq:
+            return
+
+        if not self.areUniqueCoordAtoms('a hydrogen bond geometry'):
+            return
+
+        donor = self.atomSelectionSet[0][0]
+        hydrogen = self.atomSelectionSet[1][0]
+        acceptor = self.atomSelectionSet[2][0]
+
+        if donor['chain_id'] != hydrogen['chain_id']:
+            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                "The donor atom and its hygrogen are in different chains; "\
+                f"({donor['chain_id']}:{donor['seq_id']}:{donor['comp_id']}:{donor['atom_id']}, "\
+                f"{hydrogen['chain_id']}:{hydrogen['seq_id']}:{hydrogen['comp_id']}:{hydrogen['atom_id']}).\n"
+            return
+
+        if donor['seq_id'] != hydrogen['seq_id']:
+            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                "The donor atom and its hygrogen are in different residues; "\
+                f"({donor['chain_id']}:{donor['seq_id']}:{donor['comp_id']}:{donor['atom_id']}, "\
+                f"{hydrogen['chain_id']}:{hydrogen['seq_id']}:{hydrogen['comp_id']}:{hydrogen['atom_id']}).\n"
+            return
+
+        if donor['atom_id'][0] not in ('N', 'O', 'F'):
+            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                "The donor atom type should be one of Nitrogen, Oxygen, Fluorine; "\
+                f"{donor['chain_id']}:{donor['seq_id']}:{donor['comp_id']}:{donor['atom_id']}. "\
+                "The XPLOR-NIH atom selections for hydrogen bond geometry restraint must be in the order of donor, hydrogen, and acceptor.\n"
+            return
+
+        if acceptor['atom_id'][0] not in ('N', 'O', 'F'):
+            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                "The acceptor atom type should be one of Nitrogen, Oxygen, Fluorine; "\
+                f"{acceptor['chain_id']}:{acceptor['seq_id']}:{acceptor['comp_id']}:{acceptor['atom_id']}. "\
+                "The XPLOR-NIH atom selections for hydrogen bond geometry restraint must be in the order of donor, hydrogen, and acceptor.\n"
+            return
+
+        if hydrogen['atom_id'][0] != 'H':
+            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                "Not a hydrogen; "\
+                f"{hydrogen['chain_id']}:{hydrogen['seq_id']}:{hydrogen['comp_id']}:{hydrogen['atom_id']}. "\
+                "The XPLOR-NIH atom selections for hydrogen bond geometry restraint must be in the order of donor, hydrogen, and acceptor.\n"
+            return
+
+        comp_id = donor['comp_id']
+
+        if self.__ccU.updateChemCompDict(comp_id):  # matches with comp_id in CCD
+
+            atom_id_1 = donor['atom_id']
+            atom_id_2 = hydrogen['atom_id']
+
+            if not any(b for b in self.__ccU.lastBonds
+                       if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
+                           or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
+
+                if self.__nefT.validate_comp_atom(comp_id, atom_id_1) and self.__nefT.validate_comp_atom(comp_id, atom_id_2):
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        "Found a donor-hydrogen vector over multiple covalent bonds in the 'HBDA' statement; "\
+                        f"({donor['chain_id']}:{donor['seq_id']}:{donor['comp_id']}:{donor['atom_id']}, "\
+                        f"{hydrogen['chain_id']}:{hydrogen['seq_id']}:{hydrogen['comp_id']}:{hydrogen['atom_id']}).\n"
+                    return
+
+        for atom1, atom2, atom3 in itertools.product(self.atomSelectionSet[0],
+                                                     self.atomSelectionSet[1],
+                                                     self.atomSelectionSet[2]):
+            if self.__verbose:
+                print(f"subtype={self.__cur_subtype} (HBDA) id={self.hbondRestraints} "
+                      f"donor={atom1} hydrogen={atom2} acceptor={atom3}")
 
     # Enter a parse tree produced by XplorMRParser#selection.
     def enterSelection(self, ctx: XplorMRParser.SelectionContext):  # pylint: disable=unused-argument

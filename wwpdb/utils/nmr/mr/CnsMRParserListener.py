@@ -1226,7 +1226,7 @@ class CnsMRParserListener(ParseTreeListener):
 
                     if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
                         self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            "Found an diffusion anisotropy vector over multiple covalent bonds in the 'DANIsotropy' statement; "\
+                            "Found a diffusion anisotropy vector over multiple covalent bonds in the 'DANIsotropy' statement; "\
                             f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
                         return
 

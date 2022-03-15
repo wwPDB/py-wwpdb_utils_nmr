@@ -21,6 +21,8 @@ try:
                                                        ANGLE_RESTRAINT_ERROR,
                                                        RDC_RESTRAINT_RANGE,
                                                        RDC_RESTRAINT_ERROR,
+                                                       PCS_RESTRAINT_RANGE,
+                                                       PCS_RESTRAINT_ERROR,
                                                        KNOWN_ANGLE_NAMES,
                                                        KNOWN_ANGLE_ATOM_NAMES,
                                                        KNOWN_ANGLE_SEQ_OFFSET,
@@ -40,6 +42,8 @@ except ImportError:
                                            ANGLE_RESTRAINT_ERROR,
                                            RDC_RESTRAINT_RANGE,
                                            RDC_RESTRAINT_ERROR,
+                                           PCS_RESTRAINT_RANGE,
+                                           PCS_RESTRAINT_ERROR,
                                            KNOWN_ANGLE_NAMES,
                                            KNOWN_ANGLE_ATOM_NAMES,
                                            KNOWN_ANGLE_SEQ_OFFSET,
@@ -71,6 +75,13 @@ RDC_RANGE_MAX = RDC_RESTRAINT_RANGE['max_exclusive']
 
 RDC_ERROR_MIN = RDC_RESTRAINT_ERROR['min_exclusive']
 RDC_ERROR_MAX = RDC_RESTRAINT_ERROR['max_exclusive']
+
+
+PCS_RANGE_MIN = PCS_RESTRAINT_RANGE['min_inclusive']
+PCS_RANGE_MAX = PCS_RESTRAINT_RANGE['max_inclusive']
+
+PCS_ERROR_MIN = PCS_RESTRAINT_ERROR['min_exclusive']
+PCS_ERROR_MAX = PCS_RESTRAINT_ERROR['max_exclusive']
 
 
 # This class defines a complete listener for a parse tree produced by CyanaMRParser.
@@ -654,7 +665,7 @@ class CyanaMRParserListener(ParseTreeListener):
         target = float(str(ctx.Float(0)))
         error = abs(float(str(ctx.Float(1))))
         weight = float(str(ctx.Float(2)))
-        # dataSet = int(str(ctx.Integer(2)))
+        dataSet = int(str(ctx.Integer(2)))
 
         if weight <= 0.0:
             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
@@ -666,7 +677,7 @@ class CyanaMRParserListener(ParseTreeListener):
         upper_limit = target + error
 
         validRange = True
-        dstFunc = {'weight': weight}
+        dstFunc = {'weight': weight, 'dataset': dataSet}
 
         if target_value is not None:
             if RDC_ERROR_MIN < target_value < RDC_ERROR_MAX:
@@ -839,9 +850,95 @@ class CyanaMRParserListener(ParseTreeListener):
     def enterPcs_restraint(self, ctx: CyanaMRParser.Pcs_restraintContext):  # pylint: disable=unused-argument
         self.pcsRestraints += 1
 
+        self.atomSelectionSet = []
+
     # Exit a parse tree produced by CyanaMRParser#pcs_restraint.
     def exitPcs_restraint(self, ctx: CyanaMRParser.Pcs_restraintContext):  # pylint: disable=unused-argument
-        pass
+        if not self.__hasPolySeq:
+            return
+
+        seqId = int(str(ctx.Integer(0)))
+        compId = str(ctx.Simple_name(0)).upper()
+        atomId = str(ctx.Simple_name(1)).upper()
+        target = float(str(ctx.Float(0)))
+        error = abs(float(str(ctx.Float(1))))
+        weight = float(str(ctx.Float(2)))
+        dataSet = int(str(ctx.Integer(1)))
+
+        if weight <= 0.0:
+            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                f"The relative weight value of '{weight}' must be a positive value.\n"
+            return
+
+        target_value = target
+        lower_limit = target - error
+        upper_limit = target + error
+
+        validRange = True
+        dstFunc = {'weight': weight, 'dataset': dataSet}
+
+        if target_value is not None:
+            if PCS_ERROR_MIN < target_value < PCS_ERROR_MAX:
+                dstFunc['target_value'] = f"{target_value:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The target value='{target_value}' must be within range {PCS_RESTRAINT_ERROR}.\n"
+
+        if lower_limit is not None:
+            if PCS_ERROR_MIN < lower_limit < PCS_ERROR_MAX:
+                dstFunc['lower_limit'] = f"{lower_limit:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The lower limit value='{lower_limit}' must be within range {PCS_RESTRAINT_ERROR}.\n"
+
+        if upper_limit is not None:
+            if PCS_ERROR_MIN < upper_limit < PCS_ERROR_MAX:
+                dstFunc['upper_limit'] = f"{upper_limit:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The upper limit value='{upper_limit}' must be within range {PCS_RESTRAINT_ERROR}.\n"
+
+        if not validRange:
+            return
+
+        if target_value is not None:
+            if PCS_RANGE_MIN <= target_value <= PCS_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The target value='{target_value}' should be within range {PCS_RESTRAINT_RANGE}.\n"
+
+        if lower_limit is not None:
+            if PCS_RANGE_MIN <= lower_limit <= PCS_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The lower limit value='{lower_limit}' should be within range {PCS_RESTRAINT_RANGE}.\n"
+
+        if upper_limit is not None:
+            if PCS_RANGE_MIN <= upper_limit <= PCS_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The upper limit value='{upper_limit}' should be within range {PCS_RESTRAINT_RANGE}.\n"
+
+        chainAssign = self.assignCoordPolymerSequence(seqId, compId, atomId)
+
+        if len(chainAssign) == 0:
+            return
+
+        self.selectCoordAtoms(chainAssign, seqId, compId, atomId)
+
+        if len(self.atomSelectionSet) < 1:
+            return
+
+        for atom in self.atomSelectionSet[0]:
+            if self.__verbose:
+                print(f"subtype={self.__cur_subtype} id={self.pcsRestraints} "
+                      f"atom={atom} {dstFunc}")
 
     def __getCurrentRestraint(self):
         if self.__cur_subtype == 'dist':

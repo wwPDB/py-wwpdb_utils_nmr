@@ -2580,7 +2580,7 @@ class AmberMRParserListener(ParseTreeListener):
                         f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
                     continue
 
-                if abs(seq_id_1 - seq_id_2) > 1 or abs(seq_id_2 - seq_id_3) > 1 or abs(seq_id_3 - seq_id_1):
+                if abs(seq_id_1 - seq_id_2) > 1 or abs(seq_id_2 - seq_id_3) > 1 or abs(seq_id_3 - seq_id_1) > 1:
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
                         f"Found inter-residue CSA vector; "\
                         f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
@@ -2682,7 +2682,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                              self.atomSelectionSet[2]):
                     if self.__verbose:
                         print(f"subtype={self.__cur_subtype} dataset={self.datasetc} n={n} "
-                              f"atom1={atom1} atom2={atom2} atom3={atom3} {dstFunc}")
+                              f"atom1={atom1} atom2(CSA central)={atom2} atom3={atom3} {dstFunc}")
 
     # Enter a parse tree produced by AmberMRParser#csa_factor.
     def enterCsa_factor(self, ctx: AmberMRParser.Csa_factorContext):  # pylint: disable=unused-argument

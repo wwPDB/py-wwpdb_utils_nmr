@@ -1034,9 +1034,59 @@ class RosettaMRParserListener(ParseTreeListener):
     def enterSite_residues_restraint(self, ctx: RosettaMRParser.Site_residues_restraintContext):  # pylint: disable=unused-argument
         self.geoRestraints += 1
 
+        self.stackFuncs = []
+        self.atomSelectionSet = []
+
     # Exit a parse tree produced by RosettaMRParser#site_residues_restraint.
-    def exitSite_residues_restraint(self, ctx: RosettaMRParser.Site_residues_restraintContext):  # pylint: disable=unused-argument
-        pass
+    def exitSite_residues_restraint(self, ctx: RosettaMRParser.Site_residues_restraintContext):
+        if not self.__hasPolySeq:
+            return
+
+        seqId1 = int(str(ctx.Integer(0)))
+        atomId1 = str(ctx.Simple_name(0)).upper()
+        compId2 = str(ctx.Simple_name(1)).upper()
+        compId3 = str(ctx.Simple_name(2)).upper()
+
+        dstFunc = self.validateDistanceRange()
+
+        if dstFunc is None:
+            return
+
+        chainAssign1 = self.assignCoordPolymerSequence(seqId1, atomId1)
+
+        if len(chainAssign1) == 0:
+            return
+
+        self.selectCoordAtoms(chainAssign1, seqId1, atomId1)
+
+        if len(self.atomSelectionSet) < 1:
+            return
+
+        found2 = False
+        found3 = False
+
+        for ps in self.__polySeq:
+            if compId2 in ps['comp_id']:
+                found2 = True
+            if compId3 in ps['comp_id']:
+                found3 = True
+            if found2 and found3:
+                break
+
+        if not found2:
+            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                f"The selected residue {compId2!r} is not found in the coordinates.\n"
+            return
+
+        if not found3:
+            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                f"The selected residue {compId3!r} is not found in the coordinates.\n"
+            return
+
+        for atom1 in self.atomSelectionSet[0]:
+            if self.__verbose:
+                print(f"subtype={self.__cur_subtype} (Site-Residue) id={self.geoRestraints} "
+                      f"atom={atom1} compId=({compId2}, {compId3}) {dstFunc}")
 
     # Enter a parse tree produced by RosettaMRParser#min_residue_atomic_distance_restraints.
     def enterMin_residue_atomic_distance_restraints(self, ctx: RosettaMRParser.Min_residue_atomic_distance_restraintsContext):  # pylint: disable=unused-argument

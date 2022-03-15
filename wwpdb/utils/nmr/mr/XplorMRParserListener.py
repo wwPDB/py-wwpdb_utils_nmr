@@ -2033,6 +2033,8 @@ class XplorMRParserListener(ParseTreeListener):
         self.diffRestraints += 1
         self.__cur_subtype = 'diff'
 
+        self.atomSelectionSet = []
+
     # Exit a parse tree produced by XplorMRParser#dani_assign.
     def exitDani_assign(self, ctx: XplorMRParser.Dani_assignContext):
         target = float(str(ctx.Real(0)))
@@ -2589,6 +2591,8 @@ class XplorMRParserListener(ParseTreeListener):
     def enterHbond_assign(self, ctx: XplorMRParser.Hbond_assignContext):  # pylint: disable=unused-argument
         self.hbondRestraints += 1
         self.__cur_subtype = 'hbond'
+
+        self.atomSelectionSet = []
 
     # Exit a parse tree produced by XplorMRParser#hbond_assign.
     def exitHbond_assign(self, ctx: XplorMRParser.Hbond_assignContext):  # pylint: disable=unused-argument

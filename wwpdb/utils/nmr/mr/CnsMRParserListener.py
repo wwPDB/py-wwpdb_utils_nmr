@@ -1099,6 +1099,8 @@ class CnsMRParserListener(ParseTreeListener):
         self.diffRestraints += 1
         self.__cur_subtype = 'diff'
 
+        self.atomSelectionSet = []
+
     # Exit a parse tree produced by CnsMRParser#dani_assign.
     def exitDani_assign(self, ctx: CnsMRParser.Dani_assignContext):
         target = float(str(ctx.Real(0)))

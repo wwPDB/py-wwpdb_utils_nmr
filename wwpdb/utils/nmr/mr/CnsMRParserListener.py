@@ -553,6 +553,9 @@ class CnsMRParserListener(ParseTreeListener):
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
                     f"The upper linear limit value='{upper_linear_limit}' should be within range {DIST_RESTRAINT_RANGE}.\n"
 
+        if not self.__hasPolySeq:
+            return
+
         for i in range(0, len(self.atomSelectionSet), 2):
             for atom1, atom2 in itertools.product(self.atomSelectionSet[i],
                                                   self.atomSelectionSet[i + 1]):
@@ -698,6 +701,9 @@ class CnsMRParserListener(ParseTreeListener):
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
                     f"The upper linear limit value='{upper_linear_limit}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
 
+        if not self.__hasPolySeq:
+            return
+
         compId = self.atomSelectionSet[0][0]['comp_id']
         peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
 
@@ -768,6 +774,10 @@ class CnsMRParserListener(ParseTreeListener):
                 self.potential = 'square'
             elif code.startswith('HARM'):
                 self.potential = 'harmonic'
+
+        elif ctx.Reset():
+            self.potential = 'square'
+            self.scale = 1.0
 
     # Exit a parse tree produced by CnsMRParser#sani_statement.
     def exitSani_statement(self, ctx: CnsMRParser.Sani_statementContext):  # pylint: disable=unused-argument
@@ -852,7 +862,10 @@ class CnsMRParserListener(ParseTreeListener):
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
                     f"The upper limit value='{upper_limit}' should be within range {RDC_RESTRAINT_RANGE}.\n"
 
-        if not self.areUniqueCoordAtoms('an RDC'):
+        if not self.__hasPolySeq:
+            return
+
+        if not self.areUniqueCoordAtoms('an RDC (SANI)'):
             return
 
         chain_id_1 = self.atomSelectionSet[4][0]['chain_id']
@@ -919,7 +932,7 @@ class CnsMRParserListener(ParseTreeListener):
         for atom1, atom2 in itertools.product(self.atomSelectionSet[4],
                                               self.atomSelectionSet[5]):
             if self.__verbose:
-                print(f"subtype={self.__cur_subtype} id={self.rdcRestraints} "
+                print(f"subtype={self.__cur_subtype} (SANI) id={self.rdcRestraints} "
                       f"atom1={atom1} atom2={atom2} {dstFunc}")
 
     # Enter a parse tree produced by CnsMRParser#coupling_statement.

@@ -407,20 +407,18 @@ class CnsMRParserListener(ParseTreeListener):
         dminus = float(str(ctx.Real(1)))
         dplus = float(str(ctx.Real(2)))
 
-        target_value = None
+        target_value = target
         lower_limit = None
         upper_limit = None
         lower_linear_limit = None
         upper_linear_limit = None
 
         if self.noePotential == 'biharmonic':
-            target_value = target
             lower_limit = target - dminus
             upper_limit = target + dplus
         elif self.noePotential == 'lognormal':
-            target_value = target
+            pass
         elif self.noePotential == 'square':
-            target_value = target
             if abs(self.squareExponent - 2.0) < abs(self.squareExponent - 1.0):
                 lower_linear = target - dminus
                 upper_linear = target + dplus - self.squareOffset
@@ -428,7 +426,6 @@ class CnsMRParserListener(ParseTreeListener):
                 lower_linear_limit = target - dminus
                 upper_linear_limit = target + dplus - self.squareOffset
         elif self.noePotential == 'softsquare':
-            target_value = target
             if abs(self.squareExponent - 2.0) < abs(self.squareExponent - 1.0):
                 lower_linear = target - dminus
                 upper_linear = target + dplus - self.squareOffset
@@ -454,7 +451,6 @@ class CnsMRParserListener(ParseTreeListener):
                 lower_linear_limit = target - dminus
                 upper_linear_limit = target + dplus - self.squareOffset
         elif self.noePotential == 'high':
-            target_value = target
             lower_linear = target - dminus
             upper_linear = target + dplus
             lower_linear_limit = lower_linear - 0.1
@@ -473,7 +469,7 @@ class CnsMRParserListener(ParseTreeListener):
             upper_limit = target + dplus
 
         validRange = True
-        dstFunc = {'weight': self.scale}
+        dstFunc = {'weight': self.scale, 'potential': self.noePotential}
 
         if target_value is not None:
             if DIST_ERROR_MIN < target_value < DIST_ERROR_MAX:
@@ -605,18 +601,16 @@ class CnsMRParserListener(ParseTreeListener):
                 f"The exponent value of dihedral angle restraint 'ed={exponent}' must be one (linear well) or two (square well).\n"
             return
 
-        target_value = None
+        target_value = target
         lower_limit = None
         upper_limit = None
         lower_linear_limit = None
         upper_linear_limit = None
 
         if exponent == 2:
-            target_value = target
             lower_limit = target - delta
             upper_limit = target + delta
         else:
-            target_value = target
             lower_linear_limit = target - delta
             upper_linear_limit = target + delta
 
@@ -795,12 +789,11 @@ class CnsMRParserListener(ParseTreeListener):
         target = float(str(ctx.Real(0)))
         delta = abs(float(str(ctx.Real(1))))
 
-        target_value = None
+        target_value = target
         lower_limit = None
         upper_limit = None
 
         if self.potential == 'square':
-            target_value = target
             lower_limit = target - delta
             upper_limit = target + delta
             if ctx.Real(2):
@@ -808,11 +801,9 @@ class CnsMRParserListener(ParseTreeListener):
                 error_less = abs(float(str(ctx.Real(2))))
                 lower_limit = target - error_less
                 upper_limit = target + error_grater
-        else:
-            target_value = target
 
         validRange = True
-        dstFunc = {'weight': self.scale}
+        dstFunc = {'weight': self.scale, 'potential': self.potential}
 
         if target_value is not None:
             if RDC_ERROR_MIN < target_value < RDC_ERROR_MAX:

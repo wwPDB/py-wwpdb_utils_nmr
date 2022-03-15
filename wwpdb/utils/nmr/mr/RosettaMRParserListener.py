@@ -8,6 +8,7 @@
     @author: Masashi Yokochi
 """
 import sys
+import re
 import copy
 import itertools
 
@@ -153,6 +154,8 @@ class RosettaMRParserListener(ParseTreeListener):
 
         # NEFTranslator
         self.__nefT = NEFTranslator(verbose, log, self.__ccU, self.__csStat) if nefT is None else nefT
+
+        self.concat_resnum_chain_pat = re.compile(r'^(\d+)(\S+)$')
 
     # Enter a parse tree produced by RosettaMRParser#rosetta_mr.
     def enterRosetta_mr(self, ctx: RosettaMRParser.Rosetta_mrContext):  # pylint: disable=unused-argument
@@ -353,7 +356,7 @@ class RosettaMRParserListener(ParseTreeListener):
 
         return dstFunc
 
-    def assignCoordPolymerSequence(self, seqId, atomId):
+    def assignCoordPolymerSequence(self, seqId, atomId, fixedChainId=None):
         """ Assign polymer sequences of the coordinates.
         """
 
@@ -361,6 +364,8 @@ class RosettaMRParserListener(ParseTreeListener):
 
         for ps in self.__polySeq:
             chainId = ps['chain_id']
+            if fixedChainId is not None and chainId != fixedChainId:
+                continue
             if seqId in ps['seq_id']:
                 cifCompId = ps['comp_id'][ps['seq_id'].index(seqId)]
                 if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
@@ -369,6 +374,8 @@ class RosettaMRParserListener(ParseTreeListener):
         if len(chainAssign) == 0 and self.__altPolySeq is not None:
             for ps in self.__altPolySeq:
                 chainId = ps['chain_id']
+                if fixedChainId is not None and chainId != fixedChainId:
+                    continue
                 if seqId in ps['auth_seq_id']:
                     cifCompId = ps['comp_id'][ps['auth_seq_id'].index(seqId)]
                     cifSeqId = ps['seq_id'][ps['auth_seq_id'].index(seqId)]
@@ -838,9 +845,55 @@ class RosettaMRParserListener(ParseTreeListener):
     def enterCoordinate_restraint(self, ctx: RosettaMRParser.Coordinate_restraintContext):  # pylint: disable=unused-argument
         self.geoRestraints += 1
 
+        self.stackFuncs = []
+        self.atomSelectionSet = []
+
     # Exit a parse tree produced by RosettaMRParser#coordinate_restraint.
-    def exitCoordinate_restraint(self, ctx: RosettaMRParser.Coordinate_restraintContext):  # pylint: disable=unused-argument
-        pass
+    def exitCoordinate_restraint(self, ctx: RosettaMRParser.Coordinate_restraintContext):
+        atomId1 = str(ctx.Simple_name(0)).upper()
+        _seqId1 = str(ctx.Simple_name(1)).upper()
+        atomId2 = str(ctx.Simple_name(2)).upper()
+        _seqId2 = str(ctx.Simple_name(3)).upper()
+
+        cartX = float(str(ctx.Float(0)))
+        cartY = float(str(ctx.Float(1)))
+        cartZ = float(str(ctx.Float(2)))
+
+        if _seqId1.isdecimal():
+            seqId1 = int(_seqId1)
+            fixedChainId1 = None
+        else:
+            g = self.concat_resnum_chain_pat.search(_seqId1).groups()
+            seqId1 = int(g[0])
+            fixedChainId1 = g[1]
+
+        if _seqId2.isdecimal():
+            seqId2 = int(_seqId2)
+            fixedChainId2 = None
+        else:
+            g = self.concat_resnum_chain_pat.search(_seqId2).groups()
+            seqId2 = int(g[0])
+            fixedChainId2 = g[1]
+
+        dstFunc = self.validateAngleRange()
+
+        if dstFunc is None:
+            return
+
+        chainAssign1 = self.assignCoordPolymerSequence(seqId1, atomId1, fixedChainId1)
+        chainAssign2 = self.assignCoordPolymerSequence(seqId2, atomId2, fixedChainId2)
+
+        if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+            return
+
+        if len(self.atomSelectionSet) < 2:
+            return
+
+        for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
+                                              self.atomSelectionSet[1]):
+            if self.__verbose:
+                print(f"subtype={self.__cur_subtype} (Coordinate) id={self.geoRestraints} "
+                      f"atom={atom1} ref_atom={atom2} coord=({cartX}, {cartY}, {cartZ}) {dstFunc}")
 
     # Enter a parse tree produced by RosettaMRParser#local_coordinate_restraints.
     def enterLocal_coordinate_restraints(self, ctx: RosettaMRParser.Local_coordinate_restraintsContext):  # pylint: disable=unused-argument

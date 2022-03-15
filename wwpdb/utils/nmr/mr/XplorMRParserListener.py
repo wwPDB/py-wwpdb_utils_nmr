@@ -233,7 +233,7 @@ class XplorMRParserListener(ParseTreeListener):
         self.__ccU = ChemCompUtil(verbose, log) if ccU is None else ccU
 
         # BMRB chemical shift statistics
-        self.__csStat = BMRBChemShiftStat(False, log, self.__ccU) if csStat is None else csStat
+        self.__csStat = BMRBChemShiftStat(verbose, log, self.__ccU) if csStat is None else csStat
 
         # NEFTranslator
         self.__nefT = NEFTranslator(verbose, log, self.__ccU, self.__csStat) if nefT is None else nefT

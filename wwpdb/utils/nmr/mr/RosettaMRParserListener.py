@@ -497,7 +497,7 @@ class RosettaMRParserListener(ParseTreeListener):
         self.atomSelectionSet = []
 
     # Exit a parse tree produced by RosettaMRParser#angle_restraint.
-    def exitAngle_restraint(self, ctx: RosettaMRParser.Angle_restraintContext):  # pylint: disable=unused-argument
+    def exitAngle_restraint(self, ctx: RosettaMRParser.Angle_restraintContext):
         if not self.__hasPolySeq:
             return
 
@@ -753,7 +753,7 @@ class RosettaMRParserListener(ParseTreeListener):
         self.atomSelectionSet = []
 
     # Exit a parse tree produced by RosettaMRParser#dihedral_pair_restraint.
-    def exitDihedral_pair_restraint(self, ctx: RosettaMRParser.Dihedral_pair_restraintContext):  # pylint: disable=unused-argument
+    def exitDihedral_pair_restraint(self, ctx: RosettaMRParser.Dihedral_pair_restraintContext):
         if not self.__hasPolySeq:
             return
 
@@ -850,6 +850,9 @@ class RosettaMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by RosettaMRParser#coordinate_restraint.
     def exitCoordinate_restraint(self, ctx: RosettaMRParser.Coordinate_restraintContext):
+        if not self.__hasPolySeq:
+            return
+
         atomId1 = str(ctx.Simple_name(0)).upper()
         _seqId1 = str(ctx.Simple_name(1)).upper()
         atomId2 = str(ctx.Simple_name(2)).upper()
@@ -875,7 +878,7 @@ class RosettaMRParserListener(ParseTreeListener):
             seqId2 = int(g[0])
             fixedChainId2 = g[1]
 
-        dstFunc = self.validateAngleRange()
+        dstFunc = self.validateDistanceRange()
 
         if dstFunc is None:
             return
@@ -914,7 +917,10 @@ class RosettaMRParserListener(ParseTreeListener):
         self.atomSelectionSet = []
 
     # Exit a parse tree produced by RosettaMRParser#local_coordinate_restraint.
-    def exitLocal_coordinate_restraint(self, ctx: RosettaMRParser.Local_coordinate_restraintContext):  # pylint: disable=unused-argument
+    def exitLocal_coordinate_restraint(self, ctx: RosettaMRParser.Local_coordinate_restraintContext):
+        if not self.__hasPolySeq:
+            return
+
         seqId1 = int(str(ctx.Integer(0)))
         atomId1 = str(ctx.Simple_name(0)).upper()
         seqId234 = int(str(ctx.Integer(1)))
@@ -926,7 +932,7 @@ class RosettaMRParserListener(ParseTreeListener):
         cartY = float(str(ctx.Float(1)))
         cartZ = float(str(ctx.Float(2)))
 
-        dstFunc = self.validateAngleRange()
+        dstFunc = self.validateDistanceRange()
 
         if dstFunc is None:
             return
@@ -969,9 +975,52 @@ class RosettaMRParserListener(ParseTreeListener):
     def enterSite_restraint(self, ctx: RosettaMRParser.Site_restraintContext):  # pylint: disable=unused-argument
         self.geoRestraints += 1
 
+        self.stackFuncs = []
+        self.atomSelectionSet = []
+
     # Exit a parse tree produced by RosettaMRParser#site_restraint.
-    def exitSite_restraint(self, ctx: RosettaMRParser.Site_restraintContext):  # pylint: disable=unused-argument
-        pass
+    def exitSite_restraint(self, ctx: RosettaMRParser.Site_restraintContext):
+        if not self.__hasPolySeq:
+            return
+
+        seqId1 = int(str(ctx.Integer(0)))
+        atomId1 = str(ctx.Simple_name(0)).upper()
+        opposingChainId = str(ctx.Simple_name(1)).upper()
+
+        dstFunc = self.validateDistanceRange()
+
+        if dstFunc is None:
+            return
+
+        chainAssign1 = self.assignCoordPolymerSequence(seqId1, atomId1)
+
+        if len(chainAssign1) == 0:
+            return
+
+        self.selectCoordAtoms(chainAssign1, seqId1, atomId1)
+
+        if len(self.atomSelectionSet) < 1:
+            return
+
+        ps = next((ps for ps in self.__polySeq if ps['chain_id'] == opposingChainId), None)
+
+        if ps is None:
+            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                f"The opposing chain {opposingChainId!r} is not found in the coordinates.\n"
+            return
+
+        for atom1 in self.atomSelectionSet[0]:
+            chainId = atom1['chain_id']
+            if chainId == opposingChainId:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"The selected atom {chainId}:{atom1['seq_id']}:{atom1['comp_id']}:{atom1['atom_id']} "\
+                    f"must not in the opposing chain {opposingChainId!r}.\n"
+                return
+
+        for atom1 in self.atomSelectionSet[0]:
+            if self.__verbose:
+                print(f"subtype={self.__cur_subtype} (Site) id={self.geoRestraints} "
+                      f"atom={atom1} opposingChainId={opposingChainId} {dstFunc}")
 
     # Enter a parse tree produced by RosettaMRParser#site_residues_restraints.
     def enterSite_residues_restraints(self, ctx: RosettaMRParser.Site_residues_restraintsContext):  # pylint: disable=unused-argument

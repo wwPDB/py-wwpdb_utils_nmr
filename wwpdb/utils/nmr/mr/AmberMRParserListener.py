@@ -24,7 +24,9 @@ try:
                                                        ANGLE_RESTRAINT_RANGE,
                                                        ANGLE_RESTRAINT_ERROR,
                                                        RDC_RESTRAINT_RANGE,
-                                                       RDC_RESTRAINT_ERROR)
+                                                       RDC_RESTRAINT_ERROR,
+                                                       CSA_RESTRAINT_RANGE,
+                                                       CSA_RESTRAINT_ERROR)
 
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
@@ -40,7 +42,9 @@ except ImportError:
                                            ANGLE_RESTRAINT_RANGE,
                                            ANGLE_RESTRAINT_ERROR,
                                            RDC_RESTRAINT_RANGE,
-                                           RDC_RESTRAINT_ERROR)
+                                           RDC_RESTRAINT_ERROR,
+                                           CSA_RESTRAINT_RANGE,
+                                           CSA_RESTRAINT_ERROR)
 
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
@@ -67,6 +71,13 @@ RDC_RANGE_MAX = RDC_RESTRAINT_RANGE['max_exclusive']
 
 RDC_ERROR_MIN = RDC_RESTRAINT_ERROR['min_exclusive']
 RDC_ERROR_MAX = RDC_RESTRAINT_ERROR['max_exclusive']
+
+
+CSA_RANGE_MIN = CSA_RESTRAINT_RANGE['min_inclusive']
+CSA_RANGE_MAX = CSA_RESTRAINT_RANGE['max_inclusive']
+
+CSA_ERROR_MIN = CSA_RESTRAINT_ERROR['min_exclusive']
+CSA_ERROR_MAX = CSA_RESTRAINT_ERROR['max_exclusive']
 
 
 # maximum column size of IAT
@@ -204,6 +215,16 @@ class AmberMRParserListener(ParseTreeListener):
     dataset = None
     numDataset = None
 
+    # CSA
+    icsa = None
+    jcsa = None
+    kcsa = None
+    cobsl = None
+    cobsu = None
+    cwt = None
+    ncsa = None
+    datasetc = None
+
     # Amber 10: ambmask
     depth = 0
 
@@ -294,6 +315,16 @@ class AmberMRParserListener(ParseTreeListener):
         self.ndip = None
         self.dataset = None
         self.numDataset = None
+
+        # CSA
+        self.icsa = None
+        self.jcsa = None
+        self.kcsa = None
+        self.cobsl = None
+        self.cobsu = None
+        self.cwt = None
+        self.ncsa = None
+        self.datasetc = None
 
         self.dist_sander_pat = re.compile(r'(\d+) (\S+) (\S+) '
                                           r'(\d+) (\S+) (\S+) '
@@ -1392,6 +1423,52 @@ class AmberMRParserListener(ParseTreeListener):
 
         return dstFunc
 
+    def validateCsaRange(self, n, cwt):
+        """ Validate CSA value range.
+        """
+
+        cobsl = self.cobsl[n]
+        cobsu = self.cobsu[n]
+
+        validRange = True
+        dstFunc = {'weight': cwt}
+
+        if cobsl is not None:
+            if CSA_ERROR_MIN < cobsl < CSA_ERROR_MAX:
+                dstFunc['lower_limit'] = f"{cobsl:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint(self.datasetc,n)}"\
+                    f"The lower limit value 'cobsl({n})={cobsl}' must be within range {CSA_RESTRAINT_ERROR}.\n"
+
+        if cobsu is not None:
+            if CSA_ERROR_MIN < cobsu < CSA_ERROR_MAX:
+                dstFunc['upper_limit'] = f"{cobsu:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint(self.datasetc,n)}"\
+                    f"The upper limit value 'cobsu({n})={cobsu}' must be within range {CSA_RESTRAINT_ERROR}.\n"
+
+        if not validRange:
+            self.lastComment = None
+            return None
+
+        if cobsl is not None:
+            if CSA_RANGE_MIN <= cobsl <= CSA_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint(self.datasetc,n)}"\
+                    f"The lower limit value 'cobsl({n})={cobsl}' should be within range {CSA_RESTRAINT_RANGE}.\n"
+
+        if cobsu is not None:
+            if CSA_RANGE_MIN <= cobsu <= CSA_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint(self.datasetc,n)}"\
+                    f"The upper limit value 'cobsu({n})={cobsu}' should be within range {CSA_RESTRAINT_RANGE}.\n"
+
+        return dstFunc
+
     def getAtomNumberDictFromAmbmaskInfo(self, seqId, atomId, useDefault=True):
         """ Return atom number dictionary like component from Amber 10 ambmask information.
         """
@@ -2098,12 +2175,12 @@ class AmberMRParserListener(ParseTreeListener):
 
             if n not in self.dobsl:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"\
-                    f"The lower limit value for the observed dipolar coupling obsl({n}) was not set.\n"
+                    f"The lower limit value for the observed dipolar coupling dobsl({n}) was not set.\n"
                 continue
 
             if n not in self.dobsu:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"\
-                    f"The upper limit value for the observed dipolar coupling obsu({n}) was not set.\n"
+                    f"The upper limit value for the observed dipolar coupling dobsu({n}) was not set.\n"
                 continue
 
             _id = self.id[n]
@@ -2172,32 +2249,35 @@ class AmberMRParserListener(ParseTreeListener):
                 if chain_id_1 != chain_id_2:
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"\
                         f"Found inter-chain RDC vector; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
+                        f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
                     continue
 
                 if abs(seq_id_1 - seq_id_2) > 1:
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"\
                         f"Found inter-residue RDC vector; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
+                        f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
                     continue
 
                 if abs(seq_id_1 - seq_id_2) == 1:
 
                     if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
-                       ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H'))
-                        or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H') and atom_id_2 == 'C')):
+                       ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H')) or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H') and atom_id_2 == 'C')):
                         pass
 
                     else:
                         self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"\
                             "Found inter-residue RDC vector; "\
-                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
+                            f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
                         continue
 
                 elif atom_id_1 == atom_id_2:
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"\
                         "Found zero RDC vector; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
+                        f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
                     continue
 
                 else:
@@ -2211,7 +2291,8 @@ class AmberMRParserListener(ParseTreeListener):
                             if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
                                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"\
                                     "Found an RDC vector over multiple covalent bonds; "\
-                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
+                                    f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
                                 continue
 
                 if self.lastComment is not None:
@@ -2361,17 +2442,376 @@ class AmberMRParserListener(ParseTreeListener):
         self.csaRestraints += 1
         self.__cur_subtype = 'csa'
 
+        self.icsa = {}
+        self.jcsa = {}
+        self.kcsa = {}
+        self.cobsl = {}
+        self.cobsu = {}
+        self.cwt = {}
+        self.ncsa = -1
+        self.datasetc = -1
+
     # Exit a parse tree produced by AmberMRParser#csa_statement.
     def exitCsa_statement(self, ctx: AmberMRParser.Csa_statementContext):  # pylint: disable=unused-argument
-        pass
+        if self.ncsa <= 0:
+            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                f"The number of observed CSA peaks 'ncsa' is the mandatory variable.\n"
+            return
+
+        for n in range(1, self.ncsa + 1):
+
+            if n not in self.icsa:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
+                    f"The first atom number involved in the CSA peak icsa({n}) was not set.\n"
+                continue
+
+            if n not in self.jcsa:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
+                    f"The second atom number involved in the CSA peak jcsa({n}) was not set.\n"
+                continue
+
+            if n not in self.kcsa:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
+                    f"The second atom number involved in the CSA peak kcsa({n}) was not set.\n"
+                continue
+
+            if n not in self.cobsl:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
+                    f"The lower limit value for the observed CSA peak cobsl({n}) was not set.\n"
+                continue
+
+            if n not in self.cobsu:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
+                    f"The upper limit value for the observed CSA peak cobsu({n}) was not set.\n"
+                continue
+
+            _icsa = self.icsa[n]
+            _jcsa = self.jcsa[n]
+            _kcsa = self.kcsa[n]
+
+            if _icsa <= 0:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
+                    f"The first atom number involved in the CSA peak 'icsa({n})={_icsa}' should be a positive integer.\n"
+                continue
+
+            if _jcsa <= 0:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
+                    f"The second atom number involved in the CSA peak 'jcsa({n})={_jcsa}' should be a positive integer.\n"
+                continue
+
+            if _kcsa <= 0:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
+                    f"The second atom number involved in the CSA peak 'kcsa({n})={_kcsa}' should be a positive integer.\n"
+                continue
+
+            cwt = 1.0
+            if n in self.cwt:
+                cwt = self.cwt[n]
+                if cwt <= 0.0:
+                    cwt = 1.0
+
+            # convert AMBER atom numbers to corresponding coordinate atoms based on AMBER parameter/topology file
+            if self.__atomNumberDict is not None:
+
+                self.atomSelectionSet = []
+
+                atomSelection = []
+
+                if _icsa in self.__atomNumberDict:
+                    atomSelection.append(self.__atomNumberDict[_icsa])
+                else:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
+                        f"'icsa({n})={_icsa}' is not defined in the AMBER parameter/topology file.\n"
+                    continue
+
+                chain_id_1 = atomSelection[0]['chain_id']
+                seq_id_1 = atomSelection[0]['seq_id']
+                comp_id_1 = atomSelection[0]['comp_id']
+                atom_id_1 = atomSelection[0]['atom_id']
+
+                self.atomSelectionSet.append(atomSelection)
+
+                atomSelection = []
+
+                if _jcsa in self.__atomNumberDict:
+                    atomSelection.append(self.__atomNumberDict[_jcsa])
+                else:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
+                        f"'jcsa({n})={_jcsa}' is not defined in the AMBER parameter/topology file.\n"
+                    continue
+
+                chain_id_2 = atomSelection[0]['chain_id']
+                seq_id_2 = atomSelection[0]['seq_id']
+                comp_id_2 = atomSelection[0]['comp_id']
+                atom_id_2 = atomSelection[0]['atom_id']
+
+                self.atomSelectionSet.append(atomSelection)
+
+                atomSelection = []
+
+                if _kcsa in self.__atomNumberDict:
+                    atomSelection.append(self.__atomNumberDict[_kcsa])
+                else:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
+                        f"'kcsa({n})={_kcsa}' is not defined in the AMBER parameter/topology file.\n"
+                    continue
+
+                chain_id_3 = atomSelection[0]['chain_id']
+                seq_id_3 = atomSelection[0]['seq_id']
+                comp_id_3 = atomSelection[0]['comp_id']
+                atom_id_3 = atomSelection[0]['atom_id']
+
+                self.atomSelectionSet.append(atomSelection)
+
+                if (atom_id_1[0] not in isotopeNumsOfNmrObsNucs) or (atom_id_2[0] not in isotopeNumsOfNmrObsNucs)\
+                   or (atom_id_3[0] not in isotopeNumsOfNmrObsNucs):
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
+                        f"Non-magnetic susceptible spin appears in CSA vector; "\
+                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
+                        f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
+                        f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
+                    continue
+
+                if chain_id_1 != chain_id_2 or chain_id_2 != chain_id_3:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
+                        f"Found inter-chain CSA vector; "\
+                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
+                        f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
+                        f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
+                    continue
+
+                if abs(seq_id_1 - seq_id_2) > 1 or abs(seq_id_2 - seq_id_3) > 1 or abs(seq_id_3 - seq_id_1):
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
+                        f"Found inter-residue CSA vector; "\
+                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
+                        f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
+                        f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
+                    continue
+
+                if abs(seq_id_1 - seq_id_2) == 1:
+
+                    if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
+                       ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H')) or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H') and atom_id_2 == 'C')):
+                        pass
+
+                    else:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
+                            "Found inter-residue CSA vector; "\
+                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
+                            f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
+                            f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
+                        continue
+
+                elif abs(seq_id_2 - seq_id_3) == 1:
+
+                    if self.__csStat.peptideLike(comp_id_2) and self.__csStat.peptideLike(comp_id_3) and\
+                       ((seq_id_2 < seq_id_3 and atom_id_2 == 'C' and atom_id_3 in ('N', 'H')) or (seq_id_2 > seq_id_3 and atom_id_2 in ('N', 'H') and atom_id_3 == 'C')):
+                        pass
+
+                    else:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
+                            "Found inter-residue CSA vector; "\
+                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
+                            f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
+                            f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
+                        continue
+
+                elif abs(seq_id_3 - seq_id_1) == 1:
+
+                    if self.__csStat.peptideLike(comp_id_3) and self.__csStat.peptideLike(comp_id_1) and\
+                       ((seq_id_3 < seq_id_1 and atom_id_3 == 'C' and atom_id_1 in ('N', 'H')) or (seq_id_3 > seq_id_1 and atom_id_3 in ('N', 'H') and atom_id_1 == 'C')):
+                        pass
+
+                    else:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
+                            "Found inter-residue CSA vector; "\
+                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
+                            f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
+                            f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
+                        continue
+
+                elif atom_id_1 == atom_id_2 or atom_id_2 == atom_id_3 or atom_id_3 == atom_id_1:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
+                        "Found zero CSA vector; "\
+                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
+                        f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
+                        f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
+                    continue
+
+                else:
+
+                    if self.__ccU.updateChemCompDict(comp_id_1) and seq_id_1 == seq_id_2:  # matches with comp_id in CCD
+
+                        if not any(b for b in self.__ccU.lastBonds
+                                   if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
+                                       or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
+
+                            if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
+                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
+                                    "Found an CSA vector over multiple covalent bonds; "\
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
+                                    f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
+                                    f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
+                                continue
+
+                    if self.__ccU.updateChemCompDict(comp_id_3) and seq_id_3 == seq_id_2:  # matches with comp_id in CCD
+
+                        if not any(b for b in self.__ccU.lastBonds
+                                   if ((b[self.__ccU.ccbAtomId1] == atom_id_3 and b[self.__ccU.ccbAtomId2] == atom_id_2)
+                                       or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_3))):
+
+                            if self.__nefT.validate_comp_atom(comp_id_3, atom_id_3) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
+                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
+                                    "Found an CSA vector over multiple covalent bonds; "\
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
+                                    f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
+                                    f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
+                                continue
+
+                if self.lastComment is not None:
+                    if self.__verbose:
+                        print('# ' + self.lastComment)
+
+                dstFunc = self.validateCsaRange(n, cwt)
+
+                if dstFunc is None:
+                    return
+
+                for atom1, atom2, atom3 in itertools.product(self.atomSelectionSet[0],
+                                                             self.atomSelectionSet[1],
+                                                             self.atomSelectionSet[2]):
+                    if self.__verbose:
+                        print(f"subtype={self.__cur_subtype} dataset={self.datasetc} n={n} "
+                              f"atom1={atom1} atom2={atom2} atom3={atom3} {dstFunc}")
 
     # Enter a parse tree produced by AmberMRParser#csa_factor.
     def enterCsa_factor(self, ctx: AmberMRParser.Csa_factorContext):  # pylint: disable=unused-argument
         pass
 
     # Exit a parse tree produced by AmberMRParser#csa_factor.
-    def exitCsa_factor(self, ctx: AmberMRParser.Csa_factorContext):  # pylint: disable=unused-argument
-        pass
+    def exitCsa_factor(self, ctx: AmberMRParser.Csa_factorContext):
+        if ctx.ICSA():
+            varName = 'icsa'
+
+            if ctx.Decimal():
+                decimal = int(str(ctx.Decimal()))
+                if self.ncsa > 0 and decimal > self.ncsa:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,decimal)}"\
+                        f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ncsa}, "\
+                        f"regulated by 'ncsa={self.ncsa}'.\n"
+                    return
+                self.icsa[decimal] = int(str(ctx.Integer()))
+
+        elif ctx.JCSA():
+            varName = 'jcsa'
+
+            if ctx.Decimal():
+                decimal = int(str(ctx.Decimal()))
+                if self.ncsa > 0 and decimal > self.ncsa:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,decimal)}"\
+                        f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ncsa}, "\
+                        f"regulated by 'ncsa={self.ncsa}'.\n"
+                    return
+                self.jcsa[decimal] = int(str(ctx.Integer()))
+
+        elif ctx.KCSA():
+            varName = 'kcsa'
+
+            if ctx.Decimal():
+                decimal = int(str(ctx.Decimal()))
+                if self.ncsa > 0 and decimal > self.ncsa:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,decimal)}"\
+                        f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ncsa}, "\
+                        f"regulated by 'ncsa={self.ncsa}'.\n"
+                    return
+                self.kcsa[decimal] = int(str(ctx.Integer()))
+
+        elif ctx.DOBSL():
+            varName = 'cobsl'
+
+            if ctx.Decimal():
+                decimal = int(str(ctx.Decimal()))
+                if self.ncsa > 0 and decimal > self.ncsa:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,decimal)}"\
+                        f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ncsa}, "\
+                        f"regulated by 'ncsa={self.ncsa}'.\n"
+                    return
+                self.cobsl[decimal] = float(str(ctx.Real()))
+
+        elif ctx.DOBSU():
+            varName = 'cobsu'
+
+            if ctx.Decimal():
+                decimal = int(str(ctx.Decimal()))
+                if self.ncsa > 0 and decimal > self.ncsa:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,decimal)}"\
+                        f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ncsa}, "\
+                        f"regulated by 'ncsa={self.ncsa}'.\n"
+                    return
+                self.cobsu[decimal] = float(str(ctx.Real()))
+
+        elif ctx.DWT():
+            varName = 'cwt'
+
+            if ctx.Decimal():
+                decimal = int(str(ctx.Decimal()))
+                if self.ncsa > 0 and decimal > self.ncsa:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,decimal)}"\
+                        f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ncsa}, "\
+                        f"regulated by 'ncsa={self.ncsa}'.\n"
+                    return
+                rawRealArray = str(ctx.Reals()).split(',')
+                val = float(rawRealArray[0])
+                if val <= 0.0:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,decimal)}"\
+                        f"The relative weight value of '{varName}({decimal})={val}' must be a positive value.\n"
+                    return
+                self.cwt[decimal] = val
+
+            else:
+                if ctx.Reals():
+                    rawRealArray = str(ctx.Reals()).split(',')
+                    if len(rawRealArray) > self.ncsa:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            f"The length of '{varName}={ctx.Reals()}' must not exceed 'ncsa={self.ncsa}'.\n"
+                        return
+                    for col, rawReal in enumerate(rawRealArray):
+                        val = float(rawReal)
+                        if val <= 0.0:
+                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                f"The relative weight value of '{varName}({col+1})={val}' must be a positive value.\n"
+                            return
+                        self.cwt[col + 1] = val
+                elif ctx.MultiplicativeReal():
+                    rawMultReal = str(ctx.MultiplicativeReal()).split('*')
+                    numCol = int(rawMultReal[0])
+                    if numCol <= 0 or numCol > self.ncsa:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            f"The argument value of '{varName}({numCol})' derived from "\
+                            f"'{str(ctx.MultiplicativeReal())}' must be in the range 1-{self.ncsa}, "\
+                            f"regulated by 'ncsa={self.ncsa}'.\n"
+                        return
+                    val = float(rawMultReal[1])
+                    if val <= 0.0:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            f"The relative weight value of '{varName}={val}' derived from "\
+                            f"'{str(ctx.MultiplicativeReal())}' must be a positive value.\n"
+                        return
+                    for col in range(0, numCol):
+                        self.cwt[col + 1] = val
+
+        elif ctx.NCSA():
+            self.ncsa = int(str(ctx.Integer()))
+            if self.ncsa <= 0:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"The argument value of 'ncsa={str(ctx.Integer())}' must be a positive integer.\n"
+
+        elif ctx.DATASETC():
+            self.datasetc = int(str(ctx.Integer()))
+            if self.datasetc <= 0:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"The argument value of 'datasetc={str(ctx.Integer())}' must be a positive integer.\n"
+                return
 
     # Enter a parse tree produced by AmberMRParser#distance_rst_func_call.
     def enterDistance_rst_func_call(self, ctx: AmberMRParser.Distance_rst_func_callContext):  # pylint: disable=unused-argument
@@ -2637,7 +3077,9 @@ class AmberMRParserListener(ParseTreeListener):
         if self.__cur_subtype == 'pcs':
             return f"[Check the {self.pcsRestraints}th row of pseudocontact shift restraints] "
         if self.__cur_subtype == 'csa':
-            return f"[Check the {self.csaRestraints}th row of residual CSA or pseudo-CSA restraints] "
+            if dataset is None or n is None:
+                return f"[Check the {self.csaRestraints}th row of residual CSA or pseudo-CSA restraints] "
+            return f"[Check the {n}th row of residual CSA or pseudo-CSA restraints (dataset={dataset})] "
         return f"[Check the {self.nmrRestraints}th row of NMR restraints] "
 
     def getContentSubtype(self):

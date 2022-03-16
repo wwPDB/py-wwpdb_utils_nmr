@@ -589,13 +589,15 @@ class AmberMRParserListener(ParseTreeListener):
 
                 if self.__cur_subtype == 'dist':
 
+                    dstFunc = self.validateDistanceRange()
+
+                    if dstFunc is None:
+                        return
+
+                    lenIat = len(self.iat)
+
                     # simple distance
-                    if len(self.iat) == COL_DIST:
-                        dstFunc = self.validateDistanceRange()
-
-                        if dstFunc is None:
-                            return
-
+                    if lenIat == COL_DIST:
                         for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                               self.atomSelectionSet[1]):
                             if self.__verbose:
@@ -604,6 +606,55 @@ class AmberMRParserListener(ParseTreeListener):
 
                     # generalized distance
                     else:
+
+                        # generalized distance 2
+                        if lenIat == COL_DIST_COORD2:
+                            for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
+                                                                                self.atomSelectionSet[1],
+                                                                                self.atomSelectionSet[2],
+                                                                                self.atomSelectionSet[3]):
+                                if self.__verbose:
+                                    print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
+                                          f"weight=[{self.rstwt[0]}, {self.rstwt[1]}] "
+                                          f"|atom1={atom1} atom2={atom2}| "
+                                          f"|atom3={atom3} atom4={atom4}| "
+                                          f"{dstFunc}")
+
+                        # generalized distance 3
+                        elif lenIat == COL_DIST_COORD3:
+                            for atom1, atom2, atom3, atom4, atom5, atom6 in itertools.product(self.atomSelectionSet[0],
+                                                                                              self.atomSelectionSet[1],
+                                                                                              self.atomSelectionSet[2],
+                                                                                              self.atomSelectionSet[3],
+                                                                                              self.atomSelectionSet[4],
+                                                                                              self.atomSelectionSet[5]):
+                                if self.__verbose:
+                                    print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
+                                          f"weight=[{self.rstwt[0]}, {self.rstwt[1]}, {self.rstwt[2]}] "
+                                          f"|atom1={atom1} atom2={atom2}| "
+                                          f"|atom3={atom3} atom4={atom4}| "
+                                          f"|atom5={atom5} atom6={atom6}| "
+                                          f"{dstFunc}")
+
+                        # generalized distance 4
+                        else:
+                            for atom1, atom2, atom3, atom4, atom5, atom6, atom7, atom8 in itertools.product(self.atomSelectionSet[0],
+                                                                                                            self.atomSelectionSet[1],
+                                                                                                            self.atomSelectionSet[2],
+                                                                                                            self.atomSelectionSet[3],
+                                                                                                            self.atomSelectionSet[4],
+                                                                                                            self.atomSelectionSet[5],
+                                                                                                            self.atomSelectionSet[6],
+                                                                                                            self.atomSelectionSet[7]):
+                                if self.__verbose:
+                                    print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
+                                          f"weight={self.rstwt} "
+                                          f"|atom1={atom1} atom2={atom2}| "
+                                          f"|atom3={atom3} atom4={atom4}| "
+                                          f"|atom5={atom5} atom6={atom6}| "
+                                          f"|atom7={atom7} atom8={atom8}| "
+                                          f"{dstFunc}")
+
                         self.rstwt = [0.0, 0.0, 0.0, 0.0]
 
                 # angle
@@ -931,13 +982,13 @@ class AmberMRParserListener(ParseTreeListener):
 
                 if self.__cur_subtype == 'dist':
 
+                    dstFunc = self.validateDistanceRange()
+
+                    if dstFunc is None:
+                        return
+
                     # simple distance
                     if not self.inGenDist:
-                        dstFunc = self.validateDistanceRange()
-
-                        if dstFunc is None:
-                            return
-
                         for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                               self.atomSelectionSet[1]):
                             if self.__verbose:
@@ -946,6 +997,57 @@ class AmberMRParserListener(ParseTreeListener):
 
                     # generalized distance
                     else:
+
+                        lenWeight = len(self.inGenDist_weight)
+
+                        # generalized distance 2
+                        if lenWeight == 2:
+                            for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
+                                                                                self.atomSelectionSet[1],
+                                                                                self.atomSelectionSet[2],
+                                                                                self.atomSelectionSet[3]):
+                                if self.__verbose:
+                                    print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
+                                          f"weight={self.inGenDist_weight} "
+                                          f"|atom1={atom1} atom2={atom2}| "
+                                          f"|atom3={atom3} atom4={atom4}| "
+                                          f"{dstFunc}")
+
+                        # generalized distance 3
+                        elif lenWeight == 3:
+                            for atom1, atom2, atom3, atom4, atom5, atom6 in itertools.product(self.atomSelectionSet[0],
+                                                                                              self.atomSelectionSet[1],
+                                                                                              self.atomSelectionSet[2],
+                                                                                              self.atomSelectionSet[3],
+                                                                                              self.atomSelectionSet[4],
+                                                                                              self.atomSelectionSet[5]):
+                                if self.__verbose:
+                                    print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
+                                          f"weight={self.inGenDist_weight} "
+                                          f"|atom1={atom1} atom2={atom2}| "
+                                          f"|atom3={atom3} atom4={atom4}| "
+                                          f"|atom5={atom5} atom6={atom6}| "
+                                          f"{dstFunc}")
+
+                        # generalized distance 4
+                        else:
+                            for atom1, atom2, atom3, atom4, atom5, atom6, atom7, atom8 in itertools.product(self.atomSelectionSet[0],
+                                                                                                            self.atomSelectionSet[1],
+                                                                                                            self.atomSelectionSet[2],
+                                                                                                            self.atomSelectionSet[3],
+                                                                                                            self.atomSelectionSet[4],
+                                                                                                            self.atomSelectionSet[5],
+                                                                                                            self.atomSelectionSet[6],
+                                                                                                            self.atomSelectionSet[7]):
+                                if self.__verbose:
+                                    print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
+                                          f"weight={self.inGenDist_weight} "
+                                          f"|atom1={atom1} atom2={atom2}| "
+                                          f"|atom3={atom3} atom4={atom4}| "
+                                          f"|atom5={atom5} atom6={atom6}| "
+                                          f"|atom7={atom7} atom8={atom8}| "
+                                          f"{dstFunc}")
+
                         self.rstwt = [0.0, 0.0, 0.0, 0.0]
 
                 # angle

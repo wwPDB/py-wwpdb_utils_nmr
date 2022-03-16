@@ -33,6 +33,8 @@ try:
                                                        CSA_RESTRAINT_ERROR,
                                                        PCS_RESTRAINT_RANGE,
                                                        PCS_RESTRAINT_ERROR,
+                                                       PRE_RESTRAINT_RANGE,
+                                                       PRE_RESTRAINT_ERROR,
                                                        T1T2_RESTRAINT_RANGE,
                                                        T1T2_RESTRAINT_ERROR,
                                                        XPLOR_RDC_PRINCIPAL_AXIS_NAMES)
@@ -60,6 +62,8 @@ except ImportError:
                                            CSA_RESTRAINT_ERROR,
                                            PCS_RESTRAINT_RANGE,
                                            PCS_RESTRAINT_ERROR,
+                                           PRE_RESTRAINT_RANGE,
+                                           PRE_RESTRAINT_ERROR,
                                            T1T2_RESTRAINT_RANGE,
                                            T1T2_RESTRAINT_ERROR,
                                            XPLOR_RDC_PRINCIPAL_AXIS_NAMES)
@@ -105,6 +109,13 @@ PCS_RANGE_MAX = PCS_RESTRAINT_RANGE['max_inclusive']
 
 PCS_ERROR_MIN = PCS_RESTRAINT_ERROR['min_exclusive']
 PCS_ERROR_MAX = PCS_RESTRAINT_ERROR['max_exclusive']
+
+
+PRE_RANGE_MIN = PRE_RESTRAINT_RANGE['min_inclusive']
+PRE_RANGE_MAX = PRE_RESTRAINT_RANGE['max_inclusive']
+
+PRE_ERROR_MIN = PRE_RESTRAINT_ERROR['min_exclusive']
+PRE_ERROR_MAX = PRE_RESTRAINT_ERROR['max_exclusive']
 
 
 T1T2_RANGE_MIN = T1T2_RESTRAINT_RANGE['min_inclusive']
@@ -229,6 +240,9 @@ class XplorMRParserListener(ParseTreeListener):
     # CSA
     csaType = None
     csaSigma = None
+
+    # PRE
+    preParameterDict = None
 
     # generic statements
     classification = None
@@ -895,6 +909,7 @@ class XplorMRParserListener(ParseTreeListener):
 
         elif ctx.Reset():
             self.potential = 'square'
+            self.coefficients = None
 
         elif ctx.Classification():
             self.classification = str(ctx.Simple_name())
@@ -1085,6 +1100,7 @@ class XplorMRParserListener(ParseTreeListener):
             self.potential = 'square'
             self.average = 'average'
             self.scale = 1.0
+            self.coefficients = None
 
         elif ctx.Classification():
             self.classification = str(ctx.Simple_name())
@@ -1566,6 +1582,7 @@ class XplorMRParserListener(ParseTreeListener):
 
         elif ctx.Reset():
             self.potential = 'square'
+            self.coefficients = None
 
         elif ctx.Classification():
             self.classification = str(ctx.Simple_name())
@@ -1735,6 +1752,7 @@ class XplorMRParserListener(ParseTreeListener):
 
         elif ctx.Reset():
             self.potential = 'square'
+            self.coefficients = None
 
         elif ctx.Classification():
             self.classification = str(ctx.Simple_name())
@@ -2093,6 +2111,7 @@ class XplorMRParserListener(ParseTreeListener):
 
         elif ctx.Reset():
             self.potential = 'square'
+            self.coefficients = None
 
         elif ctx.Classification():
             self.classification = str(ctx.Simple_name())
@@ -2299,6 +2318,9 @@ class XplorMRParserListener(ParseTreeListener):
         elif ctx.Reset():
             self.potential = 'square'
             self.scale = 1.0
+            self.coefficients = None
+            self.csaType = None
+            self.csaSigma = None
 
         elif ctx.Classification():
             self.classification = str(ctx.Simple_name())
@@ -2554,6 +2576,8 @@ class XplorMRParserListener(ParseTreeListener):
         elif ctx.Reset():
             self.potential = 'square'
             self.scale = 1.0
+            self.coefficients = None
+            self.csaSigma = None
 
         elif ctx.Classification():
             self.classification = str(ctx.Simple_name())
@@ -2614,26 +2638,147 @@ class XplorMRParserListener(ParseTreeListener):
         pass
 
     # Enter a parse tree produced by XplorMRParser#pre_statement.
-    def enterPre_statement(self, ctx: XplorMRParser.Pre_statementContext):  # pylint: disable=unused-argument
-        pass
+    def enterPre_statement(self, ctx: XplorMRParser.Pre_statementContext):
+        if ctx.Rdc_potential():
+            code = str(ctx.Rdc_potential()).upper()
+            if code.startswith('SQUA'):
+                self.potential = 'square'
+            elif code.startswith('HARM'):
+                self.potential = 'harmonic'
+
+        elif ctx.Reset():
+            self.potential = 'square'
+            self.preParameterDict = None
+
+        elif ctx.Classification():
+            self.classification = str(ctx.Simple_name())
+            if self.preParameterDict is None:
+                self.preParameterDict = {}
+            self.preParameterDict[self.classification] = {}
+
+        elif ctx.Kconst():
+            _classification = str(ctx.Simple_name())
+            if _classification not in self.preParameterDict:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"The classification of '{str(ctx.Kconst())}={_classification} {ctx.Real(0)}' is unknown.\n"
+                return
+            self.preParameterDict[_classification]['k_const'] = float(str(ctx.Real(0)))
+
+        elif ctx.Omega():
+            _classification = str(ctx.Simple_name())
+            if _classification not in self.preParameterDict:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"The classification of '{str(ctx.Omega())}={_classification} {ctx.Real(0)}' is unknown.\n"
+                return
+            self.preParameterDict[_classification]['omega'] = float(str(ctx.Real(0)))
+
+        elif ctx.Tauc():
+            _classification = str(ctx.Simple_name())
+            if _classification not in self.preParameterDict:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"The classification of '{str(ctx.Tauc())}={_classification} {ctx.Real(0)}' is unknown.\n"
+                return
+            self.preParameterDict[_classification]['tauc'] = float(str(ctx.Real(0)))
 
     # Exit a parse tree produced by XplorMRParser#pre_statement.
     def exitPre_statement(self, ctx: XplorMRParser.Pre_statementContext):  # pylint: disable=unused-argument
-        pass
+        if self.__verbose:
+            print(f"subtype={self.__cur_subtype} (PMAG) classification={self.classification} "
+                  f"parameters={self.preParameterDict[self.classification]}")
 
     # Enter a parse tree produced by XplorMRParser#pre_assign.
     def enterPre_assign(self, ctx: XplorMRParser.Pre_assignContext):  # pylint: disable=unused-argument
         self.preRestraints += 1
         self.__cur_subtype = 'pre'
 
+        self.atomSelectionSet = []
+
     # Exit a parse tree produced by XplorMRParser#pre_assign.
     def exitPre_assign(self, ctx: XplorMRParser.Pre_assignContext):  # pylint: disable=unused-argument
-        pass
+        target = float(str(ctx.Real(0)))
+        delta = abs(float(str(ctx.Real(1))))
+
+        target_value = target
+        lower_limit = None
+        upper_limit = None
+
+        if self.potential == 'square':
+            lower_limit = target - delta
+            upper_limit = target + delta
+
+        validRange = True
+        dstFunc = {'weight': 1.0, 'potential': self.potential}
+
+        if target_value is not None:
+            if PRE_ERROR_MIN < target_value < PRE_ERROR_MAX:
+                dstFunc['target_value'] = f"{target_value:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The target value='{target_value}' must be within range {PRE_RESTRAINT_ERROR}.\n"
+
+        if lower_limit is not None:
+            if PRE_ERROR_MIN < lower_limit < PRE_ERROR_MAX:
+                dstFunc['lower_limit'] = f"{lower_limit:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The lower limit value='{lower_limit}' must be within range {PRE_RESTRAINT_ERROR}.\n"
+
+        if upper_limit is not None:
+            if PRE_ERROR_MIN < upper_limit < PRE_ERROR_MAX:
+                dstFunc['upper_limit'] = f"{upper_limit:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The upper limit value='{upper_limit}' must be within range {PRE_RESTRAINT_ERROR}.\n"
+
+        if not validRange:
+            return
+
+        if target_value is not None:
+            if PRE_RANGE_MIN <= target_value <= PRE_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The target value='{target_value}' should be within range {PRE_RESTRAINT_RANGE}.\n"
+
+        if lower_limit is not None:
+            if PRE_RANGE_MIN <= lower_limit <= PRE_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The lower limit value='{lower_limit}' should be within range {PRE_RESTRAINT_RANGE}.\n"
+
+        if upper_limit is not None:
+            if PRE_RANGE_MIN <= upper_limit <= PRE_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The upper limit value='{upper_limit}' should be within range {PRE_RESTRAINT_RANGE}.\n"
+
+        if not self.__hasPolySeq:
+            return
+
+        chain_id = self.atomSelectionSet[1][0]['chain_id']
+        seq_id = self.atomSelectionSet[1][0]['seq_id']
+        comp_id = self.atomSelectionSet[1][0]['comp_id']
+        atom_id = self.atomSelectionSet[1][0]['atom_id']
+
+        if atom_id[0] != 'H':
+            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                f"Not a proton;  {chain_id}:{seq_id}:{comp_id}:{atom_id}.\n"
+            return
+
+        for atom in self.atomSelectionSet[1]:
+            if self.__verbose:
+                print(f"subtype={self.__cur_subtype} id={self.preRestraints} "
+                      f"atom={atom} {dstFunc}")
 
     # Enter a parse tree produced by XplorMRParser#pcs_statement.
     def enterPcs_statement(self, ctx: XplorMRParser.Pcs_statementContext):
         if ctx.Reset():
-            pass
+            self.coefficients = None
 
         elif ctx.Classification():
             self.classification = str(ctx.Simple_name())
@@ -3143,9 +3288,9 @@ class XplorMRParserListener(ParseTreeListener):
                     seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck)
 
                     for atomId in _factor['atom_id']:
-                        if self.__cur_subtype in ('rdc', 'diff', 'csa', 'pcs') and atomId in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
+                        if self.__cur_subtype in ('rdc', 'diff', 'csa', 'pcs', 'pre') and atomId in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
                             continue
-                        if self.__cur_subtype == 'pcs' and (atomId in PARAMAGNETIC_ELEMENTS or atomId in FERROMAGNETIC_ELEMENTS):
+                        if self.__cur_subtype in ('pcs', 'pre') and (atomId in PARAMAGNETIC_ELEMENTS or atomId in FERROMAGNETIC_ELEMENTS):
                             continue
                         atomIds = self.__nefT.get_valid_star_atom(compId, atomId.upper())[0]
 
@@ -3230,9 +3375,9 @@ class XplorMRParserListener(ParseTreeListener):
             _factor['atom_selection'] = _atomSelection
 
         if len(_factor['atom_selection']) == 0:
-            if self.__cur_subtype in ('rdc', 'diff', 'csa', 'pcs') and _factor['atom_id'][0] in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
+            if self.__cur_subtype in ('rdc', 'diff', 'csa', 'pcs', 'pre') and _factor['atom_id'][0] in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
                 return _factor
-            if self.__cur_subtype == 'pcs' and (_factor['atom_id'][0] in PARAMAGNETIC_ELEMENTS or _factor['atom_id'][0] in FERROMAGNETIC_ELEMENTS):
+            if self.__cur_subtype in ('pcs', 'pre') and (_factor['atom_id'][0] in PARAMAGNETIC_ELEMENTS or _factor['atom_id'][0] in FERROMAGNETIC_ELEMENTS):
                 return _factor
             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                 f"The {clauseName} has no effect.\n"

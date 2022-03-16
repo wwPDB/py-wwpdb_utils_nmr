@@ -658,7 +658,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
         if self.__verbose:
             print(f"subtype={self.__cur_subtype} orientation={orientation} "
-                  f"parameter={self.rdcParameterDict[orientation]}")
+                  f"parameters={self.rdcParameterDict[orientation]}")
 
     # Exit a parse tree produced by CyanaMRParser#rdc_parameter.
     def exitRdc_parameter(self, ctx: CyanaMRParser.Rdc_parameterContext):  # pylint: disable=unused-argument
@@ -887,7 +887,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
         if self.__verbose:
             print(f"subtype={self.__cur_subtype} orientation={orientation} "
-                  f"parameter={self.pcsParameterDict[orientation]}")
+                  f"parameters={self.pcsParameterDict[orientation]}")
 
     # Exit a parse tree produced by CyanaMRParser#pcs_parameter.
     def exitPcs_parameter(self, ctx: CyanaMRParser.Pcs_parameterContext):  # pylint: disable=unused-argument

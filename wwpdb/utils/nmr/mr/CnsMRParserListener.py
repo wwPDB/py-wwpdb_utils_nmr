@@ -790,6 +790,7 @@ class CnsMRParserListener(ParseTreeListener):
 
         elif ctx.Reset():
             self.potential = 'square'
+            self.coefficients = None
 
         elif ctx.Coefficients():
             self.coefficients = {'DFS': float(str(ctx.Real(0))),
@@ -1103,6 +1104,7 @@ class CnsMRParserListener(ParseTreeListener):
 
         elif ctx.Reset():
             self.potential = 'square'
+            self.coefficients = None
 
         elif ctx.Classification():
             self.classification = str(ctx.Simple_name())

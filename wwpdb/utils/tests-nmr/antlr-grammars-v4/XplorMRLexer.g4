@@ -426,7 +426,7 @@ Angle_dihedral:		A N G L E? | D I H E D? R? A? L?;
 /* XPLOR-NIH: Paramagnetic relaxation enhancement restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node438.html
 */
-Paramagnetic:		P A R A M? A? G? N? E? T? I? C?;	// Paramagnetic { pre_statement } End
+Paramagnetic:		P M A G N? E? T? I? C?;			// Paramagnetic { pre_statement } End
 //Assign:		A S S I G? N?;				// selection selection Real Real
 //Classification:	C L A S S? I? F? I? C? A? T? I? O? N?;	// = Class_name
 //ForceConstant:	F O R C E? C? O? N? S? T? A? N? T?;	// = Class_name Real

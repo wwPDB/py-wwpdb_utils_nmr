@@ -615,6 +615,11 @@ class CnsMRParserListener(ParseTreeListener):
         delta = abs(float(str(ctx.Real(2))))
         exponent = int(str(ctx.Integer()))
 
+        if energyConst <= 0.0:
+            self.warningMessage += f"[Invalid data] "\
+                f"The energy constant value {energyConst} must be a positive value.\n"
+            return
+
         if exponent not in (1, 2):
             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                 f"The exponent value of dihedral angle restraint 'ed={exponent}' must be one (linear well) or two (square well).\n"
@@ -634,7 +639,7 @@ class CnsMRParserListener(ParseTreeListener):
             upper_linear_limit = target + delta
 
         validRange = True
-        dstFunc = {'weight': self.scale}
+        dstFunc = {'weight': self.scale, 'energy_const': energyConst}
 
         if target_value is not None:
             if ANGLE_ERROR_MIN < target_value < ANGLE_ERROR_MAX:
@@ -731,8 +736,7 @@ class CnsMRParserListener(ParseTreeListener):
                 angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
                                                        [atom1, atom2, atom3, atom4])
                 print(f"subtype={self.__cur_subtype} (DIHE) id={self.dihedRestraints} angleName={angleName} "
-                      f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc} "
-                      f"energy_const={energyConst}")
+                      f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
 
     def areUniqueCoordAtoms(self, subtype_name):
         """ Check whether atom selection sets are uniquely assigned.

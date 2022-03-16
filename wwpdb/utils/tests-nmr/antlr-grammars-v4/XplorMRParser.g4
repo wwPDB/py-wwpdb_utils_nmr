@@ -392,10 +392,13 @@ rama_assign:
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node413.html
 */
 collapse_statement:
+	coll_assign* |
 	Scale Real |
-	Assign selection Real Real |
 	Print |
 	Reset;
+
+coll_assign:
+	Assign selection Real Real;
 
 /* XPLOR-NIH: Diffusion anisotropy restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node415.html

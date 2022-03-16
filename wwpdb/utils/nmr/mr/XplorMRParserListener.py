@@ -759,6 +759,11 @@ class XplorMRParserListener(ParseTreeListener):
         delta = abs(float(str(ctx.Real(2))))
         exponent = int(str(ctx.Integer()))
 
+        if energyConst <= 0.0:
+            self.warningMessage += f"[Invalid data] "\
+                f"The energy constant value {energyConst} must be a positive value.\n"
+            return
+
         if exponent not in (1, 2):
             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                 f"The exponent value of dihedral angle restraint 'ed={exponent}' must be one (linear well) or two (square well).\n"
@@ -778,7 +783,7 @@ class XplorMRParserListener(ParseTreeListener):
             upper_linear_limit = target + delta
 
         validRange = True
-        dstFunc = {'weight': self.scale}
+        dstFunc = {'weight': self.scale, 'energy_const': energyConst}
 
         if target_value is not None:
             if ANGLE_ERROR_MIN < target_value < ANGLE_ERROR_MAX:
@@ -875,8 +880,7 @@ class XplorMRParserListener(ParseTreeListener):
                 angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
                                                        [atom1, atom2, atom3, atom4])
                 print(f"subtype={self.__cur_subtype} (DIHE) id={self.dihedRestraints} angleName={angleName} "
-                      f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc} "
-                      f"energy_const={energyConst}")
+                      f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
 
     def areUniqueCoordAtoms(self, subtype_name):
         """ Check whether atom selection sets are uniquely assigned.
@@ -2134,13 +2138,53 @@ class XplorMRParserListener(ParseTreeListener):
         pass
 
     # Enter a parse tree produced by XplorMRParser#collapse_statement.
-    def enterCollapse_statement(self, ctx: XplorMRParser.Collapse_statementContext):  # pylint: disable=unused-argument
-        self.radiRestraints += 1
-        self.__cur_subtype = 'radi'
+    def enterCollapse_statement(self, ctx: XplorMRParser.Collapse_statementContext):
+        if ctx.Scale():
+            self.scale = float(ctx.Real(0))
+            if self.scale <= 0.0:
+                self.warningMessage += f"[Invalid data] "\
+                    f"The scale value 'COLL {str(ctx.Scale())} {self.scale} END' must be a positive value.\n"
+
+        elif ctx.Reset():
+            self.scale = 1.0
 
     # Exit a parse tree produced by XplorMRParser#collapse_statement.
     def exitCollapse_statement(self, ctx: XplorMRParser.Collapse_statementContext):  # pylint: disable=unused-argument
         pass
+
+    # Enter a parse tree produced by XplorMRParser#coll_assign.
+    def enterColl_assign(self, ctx: XplorMRParser.Coll_assignContext):  # pylint: disable=unused-argument
+        self.radiRestraints += 1
+        self.__cur_subtype = 'radi'
+
+        self.atomSelectionSet = []
+
+    # Exit a parse tree produced by XplorMRParser#coll_assign.
+    def exitColl_assign(self, ctx: XplorMRParser.Coll_assignContext):
+        forceConst = float(str(ctx.Real(0)))
+        targetRgyr = float(str(ctx.Real(1)))
+
+        if forceConst <= 0.0:
+            self.warningMessage += f"[Invalid data] "\
+                f"The force constant value {forceConst} must be a positive value.\n"
+            return
+
+        if DIST_ERROR_MIN < targetRgyr < DIST_ERROR_MAX:
+            pass
+        else:
+            self.warningMessage += f"[Invalid data] "\
+                f"The target Rgyr value {targetRgyr} must be within range {DIST_RESTRAINT_ERROR}.\n"
+            return
+
+        dstFunc = {'weight': self.scale, 'target_rgyr': targetRgyr, 'force_const': forceConst}
+
+        if not self.__hasPolySeq:
+            return
+
+        for atom1 in self.atomSelectionSet[0]:
+            if self.__verbose:
+                print(f"subtype={self.__cur_subtype} (COLL) id={self.radiRestraints} "
+                      f"atom={atom1} {dstFunc}")
 
     # Enter a parse tree produced by XplorMRParser#diffusion_statement.
     def enterDiffusion_statement(self, ctx: XplorMRParser.Diffusion_statementContext):
@@ -2812,10 +2856,10 @@ class XplorMRParserListener(ParseTreeListener):
                 f"Not a proton;  {chain_id}:{seq_id}:{comp_id}:{atom_id}.\n"
             return
 
-        for atom in self.atomSelectionSet[1]:
+        for atom1 in self.atomSelectionSet[1]:
             if self.__verbose:
                 print(f"subtype={self.__cur_subtype} id={self.preRestraints} "
-                      f"atom={atom} {dstFunc}")
+                      f"atom={atom1} {dstFunc}")
 
     # Enter a parse tree produced by XplorMRParser#pcs_statement.
     def enterPcs_statement(self, ctx: XplorMRParser.Pcs_statementContext):
@@ -2906,10 +2950,10 @@ class XplorMRParserListener(ParseTreeListener):
         if not self.__hasPolySeq:
             return
 
-        for atom in self.atomSelectionSet[4]:
+        for atom1 in self.atomSelectionSet[4]:
             if self.__verbose:
                 print(f"subtype={self.__cur_subtype} id={self.pcsRestraints} "
-                      f"atom={atom} {dstFunc}")
+                      f"atom={atom1} {dstFunc}")
 
     # Enter a parse tree produced by XplorMRParser#prdc_statement.
     def enterPrdc_statement(self, ctx: XplorMRParser.Prdc_statementContext):  # pylint: disable=unused-argument

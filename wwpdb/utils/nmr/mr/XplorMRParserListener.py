@@ -2400,7 +2400,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#carbon_shift_rcoil.
     def enterCarbon_shift_rcoil(self, ctx: XplorMRParser.Carbon_shift_rcoilContext):  # pylint: disable=unused-argument
-        pass
+        self.atomSelectionSet = []
 
     # Exit a parse tree produced by XplorMRParser#carbon_shift_rcoil.
     def exitCarbon_shift_rcoil(self, ctx: XplorMRParser.Carbon_shift_rcoilContext):
@@ -2455,11 +2455,31 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#proton_shift_rcoil.
     def enterProton_shift_rcoil(self, ctx: XplorMRParser.Proton_shift_rcoilContext):  # pylint: disable=unused-argument
-        pass
+        self.atomSelectionSet = []
 
     # Exit a parse tree produced by XplorMRParser#proton_shift_rcoil.
-    def exitProton_shift_rcoil(self, ctx: XplorMRParser.Proton_shift_rcoilContext):  # pylint: disable=unused-argument
-        pass
+    def exitProton_shift_rcoil(self, ctx: XplorMRParser.Proton_shift_rcoilContext):
+        rcoil = float(str(ctx.Real()))
+
+        if CS_ERROR_MIN < rcoil < CS_ERROR_MAX:
+            pass
+        else:
+            self.warningMessage += f"[Invalid data] "\
+                f"Random coil chemical shift value '{rcoil}' must be within range {CS_RESTRAINT_ERROR}.\n"
+            return
+
+        dstFunc = {'rcoil': rcoil}
+
+        for atom1 in self.atomSelectionSet[0]:
+            if atom1['atom_id'][0] != 'H':
+                self.warningMessage += f"[Invalid data] "\
+                    f"Not a proton; {atom1}.\n"
+                return
+
+        for atom1 in self.atomSelectionSet[0]:
+            if self.__verbose:
+                print(f"subtype={self.__cur_subtype} (RCOI) id={self.procsRestraints} "
+                      f"atom={atom1} {dstFunc}")
 
     # Enter a parse tree produced by XplorMRParser#proton_shift_anisotropy.
     def enterProton_shift_anisotropy(self, ctx: XplorMRParser.Proton_shift_anisotropyContext):  # pylint: disable=unused-argument

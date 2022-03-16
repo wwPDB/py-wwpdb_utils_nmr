@@ -40,9 +40,9 @@ try:
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import (NEFTranslator,
-                                                             isotopeNumsOfNmrObsNucs,
-                                                             paramagElements,
-                                                             ferromagElements)
+                                                             ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
+                                                             PARAMAGNETIC_ELEMENTS,
+                                                             FERROMAGNETIC_ELEMENTS)
 except ImportError:
     from nmr.mr.XplorMRParser import XplorMRParser
     from nmr.mr.ParserListenerUtil import (toNpArray,
@@ -67,9 +67,9 @@ except ImportError:
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.NEFTranslator.NEFTranslator import (NEFTranslator,
-                                                 isotopeNumsOfNmrObsNucs,
-                                                 paramagElements,
-                                                 ferromagElements)
+                                                 ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
+                                                 PARAMAGNETIC_ELEMENTS,
+                                                 FERROMAGNETIC_ELEMENTS)
 
 
 DIST_RANGE_MIN = DIST_RESTRAINT_RANGE['min_inclusive']
@@ -228,6 +228,11 @@ class XplorMRParserListener(ParseTreeListener):
 
     # CSA
     csaType = None
+    csaSigma = None
+
+    # generic statements
+    classification = None
+    coefficients = None
 
     # collection of atom selection
     atomSelectionSet = None
@@ -529,9 +534,13 @@ class XplorMRParserListener(ParseTreeListener):
             self.symmDminus = None
             self.symmDplus = None
 
+        elif ctx.Classification():
+            self.classification = str(ctx.Simple_name(0))
+
     # Exit a parse tree produced by XplorMRParser#noe_statement.
     def exitNoe_statement(self, ctx: XplorMRParser.Noe_statementContext):  # pylint: disable=unused-argument
-        pass
+        if self.__verbose:
+            print(f"subtype={self.__cur_subtype} (NOE) classification={self.classification}")
 
     # Enter a parse tree produced by XplorMRParser#noe_assign.
     def enterNoe_assign(self, ctx: XplorMRParser.Noe_assignContext):  # pylint: disable=unused-argument
@@ -878,19 +887,29 @@ class XplorMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by XplorMRParser#sani_statement.
     def enterSani_statement(self, ctx: XplorMRParser.Sani_statementContext):
         if ctx.Rdc_potential():
-            code = str(ctx.Rdc_potential()).upper()[0:4]
-            if code == 'SQUA':
+            code = str(ctx.Rdc_potential()).upper()
+            if code.startswith('SQUA'):
                 self.potential = 'square'
-            if code == 'HARM':
+            elif code.startswith('HARM'):
                 self.potential = 'harmonic'
 
         elif ctx.Reset():
             self.potential = 'square'
-            self.scale = 1.0
+
+        elif ctx.Classification():
+            self.classification = str(ctx.Simple_name())
+
+        elif ctx.Coefficients():
+            self.coefficients = {'DFS': float(str(ctx.Real(0))),
+                                 'anisotropy': float(str(ctx.Real(1))),
+                                 'rhombicity': float(str(ctx.Real(2)))
+                                 }
 
     # Exit a parse tree produced by XplorMRParser#sani_statement.
     def exitSani_statement(self, ctx: XplorMRParser.Sani_statementContext):  # pylint: disable=unused-argument
-        pass
+        if self.__verbose:
+            print(f"subtype={self.__cur_subtype} (SANI) classification={self.classification} "
+                  f"coefficients={self.coefficients}")
 
     # Enter a parse tree produced by XplorMRParser#sani_assign.
     def enterSani_assign(self, ctx: XplorMRParser.Sani_assignContext):  # pylint: disable=unused-argument
@@ -918,7 +937,7 @@ class XplorMRParserListener(ParseTreeListener):
                 upper_limit = target + error_grater
 
         validRange = True
-        dstFunc = {'weight': self.scale, 'potential': self.potential}
+        dstFunc = {'weight': 1.0, 'potential': self.potential}
 
         if target_value is not None:
             if RDC_ERROR_MIN < target_value < RDC_ERROR_MAX:
@@ -984,7 +1003,7 @@ class XplorMRParserListener(ParseTreeListener):
         comp_id_2 = self.atomSelectionSet[5][0]['comp_id']
         atom_id_2 = self.atomSelectionSet[5][0]['atom_id']
 
-        if (atom_id_1[0] not in isotopeNumsOfNmrObsNucs) or (atom_id_2[0] not in isotopeNumsOfNmrObsNucs):
+        if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                 f"Non-magnetic susceptible spin appears in RDC vector; "\
                 f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
@@ -1059,14 +1078,28 @@ class XplorMRParserListener(ParseTreeListener):
             elif code.startswith('AVER'):
                 self.average = 'average'
 
+        elif ctx.Scale():
+            self.scale = float(str(ctx.Real(0)))
+
         elif ctx.Reset():
             self.potential = 'square'
             self.average = 'average'
             self.scale = 1.0
 
+        elif ctx.Classification():
+            self.classification = str(ctx.Simple_name())
+
+        elif ctx.Coefficients():
+            self.coefficients = {'DFS': float(str(ctx.Real(0))),
+                                 'anisotropy': float(str(ctx.Real(1))),
+                                 'rhombicity': float(str(ctx.Real(2)))
+                                 }
+
     # Exit a parse tree produced by XplorMRParser#xdip_statement.
     def exitXdip_statement(self, ctx: XplorMRParser.Xdip_statementContext):  # pylint: disable=unused-argument
-        pass
+        if self.__verbose:
+            print(f"subtype={self.__cur_subtype} (XDIP) classification={self.classification} "
+                  f"coefficients={self.coefficients}")
 
     # Enter a parse tree produced by XplorMRParser#xdip_assign.
     def enterXdip_assign(self, ctx: XplorMRParser.Xdip_assignContext):  # pylint: disable=unused-argument
@@ -1278,7 +1311,7 @@ class XplorMRParserListener(ParseTreeListener):
         comp_id_2 = self.atomSelectionSet[5][0]['comp_id']
         atom_id_2 = self.atomSelectionSet[5][0]['atom_id']
 
-        if (atom_id_1[0] not in isotopeNumsOfNmrObsNucs) or (atom_id_2[0] not in isotopeNumsOfNmrObsNucs):
+        if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                 f"Non-magnetic susceptible spin appears in 1H-1H dipolar coupling vector; "\
                 f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
@@ -1331,11 +1364,15 @@ class XplorMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by XplorMRParser#vean_statement.
     def enterVean_statement(self, ctx: XplorMRParser.Vean_statementContext):
         if ctx.Reset():
-            self.scale = 1.0
+            pass
+
+        elif ctx.Classification():
+            self.classification = str(ctx.Simple_name())
 
     # Exit a parse tree produced by XplorMRParser#vean_statement.
     def exitVean_statement(self, ctx: XplorMRParser.Vean_statementContext):  # pylint: disable=unused-argument
-        pass
+        if self.__verbose:
+            print(f"subtype={self.__cur_subtype} (VEAN) classification={self.classification}")
 
     # Enter a parse tree produced by XplorMRParser#vean_assign.
     def enterVean_assign(self, ctx: XplorMRParser.Vean_assignContext):  # pylint: disable=unused-argument
@@ -1359,7 +1396,7 @@ class XplorMRParserListener(ParseTreeListener):
         upper_limit_2 = center_2 + range_2
 
         validRange = True
-        dstFunc = {'weight': self.scale, 'potential': self.potential}
+        dstFunc = {'weight': 1.0, 'potential': self.potential}
 
         if ANGLE_ERROR_MIN < target_value_1 < ANGLE_ERROR_MAX:
             dstFunc['target_value_1'] = f"{target_value_1:.3f}"
@@ -1459,7 +1496,7 @@ class XplorMRParserListener(ParseTreeListener):
             comp_id_2 = self.atomSelectionSet[i + 1][0]['comp_id']
             atom_id_2 = self.atomSelectionSet[i + 1][0]['atom_id']
 
-            if (atom_id_1[0] not in isotopeNumsOfNmrObsNucs) or (atom_id_2[0] not in isotopeNumsOfNmrObsNucs):
+            if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                     f"Non-magnetic susceptible spin appears in RDC vector; "\
                     f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
@@ -1529,11 +1566,19 @@ class XplorMRParserListener(ParseTreeListener):
 
         elif ctx.Reset():
             self.potential = 'square'
-            self.scale = 1.0
+
+        elif ctx.Classification():
+            self.classification = str(ctx.Simple_name())
+
+        elif ctx.Coefficients():
+            self.coefficients = {'DFS': float(str(ctx.Real()))
+                                 }
 
     # Exit a parse tree produced by XplorMRParser#tenso_statement.
     def exitTenso_statement(self, ctx: XplorMRParser.Tenso_statementContext):  # pylint: disable=unused-argument
-        pass
+        if self.__verbose:
+            print(f"subtype={self.__cur_subtype} (TENSO) classification={self.classification} "
+                  f"coefficients={self.coefficients}")
 
     # Enter a parse tree produced by XplorMRParser#tenso_assign.
     def enterTenso_assign(self, ctx: XplorMRParser.Tenso_assignContext):  # pylint: disable=unused-argument
@@ -1556,7 +1601,7 @@ class XplorMRParserListener(ParseTreeListener):
             upper_limit = target + delta
 
         validRange = True
-        dstFunc = {'weight': self.scale, 'potential': self.potential}
+        dstFunc = {'weight': 1.0, 'potential': self.potential}
 
         if target_value is not None:
             if RDC_ERROR_MIN < target_value < RDC_ERROR_MAX:
@@ -1622,7 +1667,7 @@ class XplorMRParserListener(ParseTreeListener):
         comp_id_2 = self.atomSelectionSet[1][0]['comp_id']
         atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
 
-        if (atom_id_1[0] not in isotopeNumsOfNmrObsNucs) or (atom_id_2[0] not in isotopeNumsOfNmrObsNucs):
+        if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                 f"Non-magnetic susceptible spin appears in RDC vector; "\
                 f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
@@ -1690,11 +1735,22 @@ class XplorMRParserListener(ParseTreeListener):
 
         elif ctx.Reset():
             self.potential = 'square'
-            self.scale = 1.0
+
+        elif ctx.Classification():
+            self.classification = str(ctx.Simple_name())
+
+        elif ctx.Coefficients():
+            self.coefficients = {'a0': float(str(ctx.Real(0))),
+                                 'a1': float(str(ctx.Real(1))),
+                                 'a2': float(str(ctx.Real(2))),
+                                 'a3': float(str(ctx.Real(3)))
+                                 }
 
     # Exit a parse tree produced by XplorMRParser#anis_statement.
     def exitAnis_statement(self, ctx: XplorMRParser.Anis_statementContext):  # pylint: disable=unused-argument
-        pass
+        if self.__verbose:
+            print(f"subtype={self.__cur_subtype} (ANIS) classification={self.classification} "
+                  f"coefficients={self.coefficients}")
 
     # Enter a parse tree produced by XplorMRParser#anis_assign.
     def enterAnis_assign(self, ctx: XplorMRParser.Anis_assignContext):  # pylint: disable=unused-argument
@@ -1717,7 +1773,7 @@ class XplorMRParserListener(ParseTreeListener):
             upper_limit = target + delta
 
         validRange = True
-        dstFunc = {'weight': self.scale, 'potential': self.potential}
+        dstFunc = {'weight': 1.0, 'potential': self.potential}
 
         if target_value is not None:
             if RDC_ERROR_MIN < target_value < RDC_ERROR_MAX:
@@ -1784,7 +1840,7 @@ class XplorMRParserListener(ParseTreeListener):
             comp_id_2 = self.atomSelectionSet[i + 1][0]['comp_id']
             atom_id_2 = self.atomSelectionSet[i + 1][0]['atom_id']
 
-            if (atom_id_1[0] not in isotopeNumsOfNmrObsNucs) or (atom_id_2[0] not in isotopeNumsOfNmrObsNucs):
+            if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                     f"Non-magnetic susceptible spin appears in RDC vector; "\
                     f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
@@ -2037,11 +2093,23 @@ class XplorMRParserListener(ParseTreeListener):
 
         elif ctx.Reset():
             self.potential = 'square'
-            self.scale = 1.0
+
+        elif ctx.Classification():
+            self.classification = str(ctx.Simple_name())
+
+        elif ctx.Coefficients():
+            self.coefficients = {'Tc': float(str(ctx.Real(0))),
+                                 'anisotropy': float(str(ctx.Real(1))),
+                                 'rhombicity': float(str(ctx.Real(2))),
+                                 'frequency_1h': float(str(ctx.Real(3))),
+                                 'frequency_15n': float(str(ctx.Real(4)))
+                                 }
 
     # Exit a parse tree produced by XplorMRParser#diffusion_statement.
     def exitDiffusion_statement(self, ctx: XplorMRParser.Diffusion_statementContext):  # pylint: disable=unused-argument
-        pass
+        if self.__verbose:
+            print(f"subtype={self.__cur_subtype} (DANI) classification={self.classification} "
+                  f"coefficients={self.coefficients}")
 
     # Enter a parse tree produced by XplorMRParser#dani_assign.
     def enterDani_assign(self, ctx: XplorMRParser.Dani_assignContext):  # pylint: disable=unused-argument
@@ -2064,7 +2132,7 @@ class XplorMRParserListener(ParseTreeListener):
             upper_limit = target + delta
 
         validRange = True
-        dstFunc = {'weight': self.scale, 'potential': self.potential}
+        dstFunc = {'weight': 1.0, 'potential': self.potential}
 
         if target_value is not None:
             if T1T2_ERROR_MIN < target_value < T1T2_ERROR_MAX:
@@ -2130,7 +2198,7 @@ class XplorMRParserListener(ParseTreeListener):
         comp_id_2 = self.atomSelectionSet[5][0]['comp_id']
         atom_id_2 = self.atomSelectionSet[5][0]['atom_id']
 
-        if (atom_id_1[0] not in isotopeNumsOfNmrObsNucs) or (atom_id_2[0] not in isotopeNumsOfNmrObsNucs):
+        if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                 f"Non-magnetic susceptible spin appears in diffusion anisotropy vector; "\
                 f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
@@ -2232,9 +2300,26 @@ class XplorMRParserListener(ParseTreeListener):
             self.potential = 'square'
             self.scale = 1.0
 
+        elif ctx.Classification():
+            self.classification = str(ctx.Simple_name())
+
+        elif ctx.Coefficients():
+            self.coefficients = {'DFS': float(str(ctx.Real(0))),
+                                 'anisotropy': float(str(ctx.Real(1))),
+                                 'rhombicity': float(str(ctx.Real(2)))
+                                 }
+
+        elif ctx.Sigma():
+            self.csaSigma = {'s11': float(str(ctx.Real(0))),
+                             's22': float(str(ctx.Real(1))),
+                             's33': float(str(ctx.Real(2)))
+                             }
+
     # Exit a parse tree produced by XplorMRParser#csa_statement.
     def exitCsa_statement(self, ctx: XplorMRParser.Csa_statementContext):  # pylint: disable=unused-argument
-        pass
+        if self.__verbose:
+            print(f"subtype={self.__cur_subtype} (DCSA) classification={self.classification} "
+                  f"type={self.csaType} scale={self.scale} coefficients={self.coefficients} sigma={self.csaSigma}")
 
     # Enter a parse tree produced by XplorMRParser#csa_assign.
     def enterCsa_assign(self, ctx: XplorMRParser.Csa_assignContext):  # pylint: disable=unused-argument
@@ -2258,7 +2343,7 @@ class XplorMRParserListener(ParseTreeListener):
             upper_limit = target + cplus
 
         validRange = True
-        dstFunc = {'weight': self.scale, 'potential': self.potential}
+        dstFunc = {'weight': 1.0, 'potential': self.potential}
 
         if target_value is not None:
             if CSA_ERROR_MIN < target_value < CSA_ERROR_MAX:
@@ -2337,8 +2422,8 @@ class XplorMRParserListener(ParseTreeListener):
                 f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
             return
 
-        if (atom_id_1[0] not in isotopeNumsOfNmrObsNucs) or (atom_id_2[0] not in isotopeNumsOfNmrObsNucs)\
-           or (atom_id_3[0] not in isotopeNumsOfNmrObsNucs):
+        if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS)\
+           or (atom_id_3[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                 f"Non-magnetic susceptible spin appears in CSA vector; "\
                 f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
@@ -2470,9 +2555,27 @@ class XplorMRParserListener(ParseTreeListener):
             self.potential = 'square'
             self.scale = 1.0
 
+        elif ctx.Classification():
+            self.classification = str(ctx.Simple_name())
+
+        elif ctx.Coefficients():
+            self.coefficients = {'DFS': float(str(ctx.Real(0))),
+                                 'anisotropy': float(str(ctx.Real(1))),
+                                 'rhombicity': float(str(ctx.Real(2)))
+                                 }
+
+        elif ctx.Sigma():
+            self.csaSigma = {'d11': float(str(ctx.Real(0))),
+                             'd22': float(str(ctx.Real(1))),
+                             'd33': float(str(ctx.Real(2))),
+                             'theta': float(str(ctx.Real(3)))
+                             }
+
     # Exit a parse tree produced by XplorMRParser#pcsa_statement.
     def exitPcsa_statement(self, ctx: XplorMRParser.Pcsa_statementContext):  # pylint: disable=unused-argument
-        pass
+        if self.__verbose:
+            print(f"subtype={self.__cur_subtype} (DCSA) classification={self.classification} "
+                  f"scale={self.scale} coefficients={self.coefficients} sigma={self.csaSigma}")
 
     # Enter a parse tree produced by XplorMRParser#one_bond_coupling_statement.
     def enterOne_bond_coupling_statement(self, ctx: XplorMRParser.One_bond_coupling_statementContext):  # pylint: disable=unused-argument
@@ -2530,11 +2633,21 @@ class XplorMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by XplorMRParser#pcs_statement.
     def enterPcs_statement(self, ctx: XplorMRParser.Pcs_statementContext):
         if ctx.Reset():
-            self.scale = 1.0
+            pass
+
+        elif ctx.Classification():
+            self.classification = str(ctx.Simple_name())
+
+        elif ctx.Coefficients():
+            self.coefficients = {'a1': float(str(ctx.Real(0))),
+                                 'a2': float(str(ctx.Real(1)))
+                                 }
 
     # Exit a parse tree produced by XplorMRParser#pcs_statement.
     def exitPcs_statement(self, ctx: XplorMRParser.Pcs_statementContext):  # pylint: disable=unused-argument
-        pass
+        if self.__verbose:
+            print(f"subtype={self.__cur_subtype} (XPCS) classification={self.classification} "
+                  f"coefficients={self.coefficients}")
 
     # Enter a parse tree produced by XplorMRParser#pcs_assign.
     def enterPcs_assign(self, ctx: XplorMRParser.Pcs_assignContext):  # pylint: disable=unused-argument
@@ -2553,7 +2666,7 @@ class XplorMRParserListener(ParseTreeListener):
         upper_limit = target + delta
 
         validRange = True
-        dstFunc = {'weight': self.scale}
+        dstFunc = {'weight': 1.0}
 
         if target_value is not None:
             if PCS_ERROR_MIN < target_value < PCS_ERROR_MAX:
@@ -3032,7 +3145,7 @@ class XplorMRParserListener(ParseTreeListener):
                     for atomId in _factor['atom_id']:
                         if self.__cur_subtype in ('rdc', 'diff', 'csa', 'pcs') and atomId in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
                             continue
-                        if self.__cur_subtype == 'pcs' and (atomId in paramagElements or atomId in ferromagElements):
+                        if self.__cur_subtype == 'pcs' and (atomId in PARAMAGNETIC_ELEMENTS or atomId in FERROMAGNETIC_ELEMENTS):
                             continue
                         atomIds = self.__nefT.get_valid_star_atom(compId, atomId.upper())[0]
 
@@ -3119,7 +3232,7 @@ class XplorMRParserListener(ParseTreeListener):
         if len(_factor['atom_selection']) == 0:
             if self.__cur_subtype in ('rdc', 'diff', 'csa', 'pcs') and _factor['atom_id'][0] in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
                 return _factor
-            if self.__cur_subtype == 'pcs' and (_factor['atom_id'][0] in paramagElements or _factor['atom_id'][0] in ferromagElements):
+            if self.__cur_subtype == 'pcs' and (_factor['atom_id'][0] in PARAMAGNETIC_ELEMENTS or _factor['atom_id'][0] in FERROMAGNETIC_ELEMENTS):
                 return _factor
             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                 f"The {clauseName} has no effect.\n"

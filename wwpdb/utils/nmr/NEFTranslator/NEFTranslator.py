@@ -129,57 +129,61 @@ NEF_FORMAT_NAME = 'nmr_exchange_format'
 
 
 # NEF boolean values
-nefBooleanVals = ('true', 'false')
+NEF_BOOLEAN_VALUES = ('true', 'false')
 
 
 # NMR-STAR boolean values
-starBooleanVals = ('yes', 'no')
+STAR_BOOLEAN_VALUES = ('yes', 'no')
 
 
 # paramagnetic elements, except for Oxygen
-paramagElements = ('LI', 'NA', 'MG', 'AL', 'K', 'CA', 'SC', 'TI', 'V', 'MN', 'RB', 'SR',
-                   'Y', 'ZR', 'NB', 'MO', 'TC', 'RU', 'RH', 'PD', 'SN', 'CS', 'BA', 'LA',
-                   'CE', 'PR', 'ND', 'PM', 'SM', 'EU', 'GD', 'TB', 'DY', 'HO', 'ER', 'TM',
-                   'YB', 'LU', 'HF', 'TA', 'W', 'RE', 'OS', 'IR', 'PT', 'FR', 'RA', 'AC')
+PARAMAGNETIC_ELEMENTS = ('LI', 'NA', 'MG', 'AL', 'K', 'CA', 'SC', 'TI', 'V', 'MN', 'RB', 'SR',
+                         'Y', 'ZR', 'NB', 'MO', 'TC', 'RU', 'RH', 'PD', 'SN', 'CS', 'BA', 'LA',
+                         'CE', 'PR', 'ND', 'PM', 'SM', 'EU', 'GD', 'TB', 'DY', 'HO', 'ER', 'TM',
+                         'YB', 'LU', 'HF', 'TA', 'W', 'RE', 'OS', 'IR', 'PT', 'FR', 'RA', 'AC')
 
 
 # ferromagnetic elements
-ferromagElements = ('CR', 'FE', 'CO', 'NI')
+FERROMAGNETIC_ELEMENTS = ('CR', 'FE', 'CO', 'NI')
 
 
 # non-metal elements
-nonMetalElements = ('H', 'C', 'N', 'O', 'P', 'S', 'SE')
+NON_METAL_ELEMENTS = ('H', 'C', 'N', 'O', 'P', 'S', 'SE')
 
 
 # isotope numbers of NMR observable nucleus
-isotopeNumsOfNmrObsNucs = {'H': [1, 2, 3],
-                           'C': [13],
-                           'N': [15, 14],
-                           'O': [17],
-                           'P': [31],
-                           'S': [33],
-                           'F': [19],
-                           'CD': [113, 111],
-                           'CA': [43]
-                           }
+ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS = {'H': [1, 2, 3],
+                                   'C': [13],
+                                   'N': [15, 14],
+                                   'O': [17],
+                                   'P': [31],
+                                   'S': [33],
+                                   'F': [19],
+                                   'CD': [113, 111],
+                                   'CA': [43]
+                                   }
 
 
 # nucleus with half spin
-halfSpinNucs = ('H', 'C', 'N', 'P', 'F', 'CD')
+HALF_SPIN_NUCLEUS = ('H', 'C', 'N', 'P', 'F', 'CD')
 
 
 # allowed BMRB ambiguity codes
-allowedAmbiguityCodes = (1, 2, 3, 4, 5, 6, 9)
+ALLOWED_AMBIGUITY_CODES = (1, 2, 3, 4, 5, 6, 9)
 
 
-allowedIsotopeNums = []
-for isotopeNums in isotopeNumsOfNmrObsNucs.values():
-    allowedIsotopeNums.extend(isotopeNums)
+ALLOWED_ISOTOPE_NUMBERS = []
+for isotopeNums in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.values():
+    ALLOWED_ISOTOPE_NUMBERS.extend(isotopeNums)
 
 
 # limit number of dimensions
 MAX_DIM_NUM_OF_SPECTRA = 16
 
+
+# data items in _Entity_deleted_atom category of NMR-STAR
+ENTITY_DELETED_ATOM_ITEMS = ['ID', 'Entity_assembly_ID', 'Comp_index_ID', 'Comp_ID', 'Atom_ID',
+                             'Auth_entity_assembly_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_atom_ID', 'Assembly_ID']
 
 # integer pattern
 intPattern = re.compile(r'^([+-]?[1-9]\d*|0)$')
@@ -436,10 +440,6 @@ altRdcConstraintType = {'nef': {'RDC': 'measured',
                                      'measured': 'RDC'
                                      }
                         }
-
-
-entityDelAtomItems = ['ID', 'Entity_assembly_ID', 'Comp_index_ID', 'Comp_ID', 'Atom_ID',
-                      'Auth_entity_assembly_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_atom_ID', 'Assembly_ID']
 
 
 def get_lp_tag(lp_data, tags):
@@ -2042,15 +2042,15 @@ class NEFTranslator:
                             r = {}
                             for j, t in enumerate(loop.tags):
                                 r[t] = loop.data[l][j]
-                            user_warn_msg += f"[Invalid data] {ambig_code} must be one of {allowedAmbiguityCodes}. "\
+                            user_warn_msg += f"[Invalid data] {ambig_code} must be one of {ALLOWED_AMBIGUITY_CODES}. "\
                                 f"#_of_row {l + 1}, data_of_row {r}.\n"
 
-                    if code not in allowedAmbiguityCodes:
+                    if code not in ALLOWED_AMBIGUITY_CODES:
                         if l < len_loop_data:
                             r = {}
                             for j, t in enumerate(loop.tags):
                                 r[t] = loop.data[l][j]
-                            user_warn_msg += f"[Invalid data] {ambig_code} must be one of {allowedAmbiguityCodes}. "\
+                            user_warn_msg += f"[Invalid data] {ambig_code} must be one of {ALLOWED_AMBIGUITY_CODES}. "\
                                 f"#_of_row {l + 1}, data_of_row {r}.\n"
 
                     if code >= 4:
@@ -2331,7 +2331,7 @@ class NEFTranslator:
                                         if ref.startswith('H') or ref.startswith('Q') or ref.startswith('M'):
                                             row.append(1)
                                         else:
-                                            row.append(isotopeNumsOfNmrObsNucs[ref[0]][0])
+                                            row.append(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[ref[0]][0])
                                     loop.add_tag(d['name'])
                                 elif 'Entity_assembly_ID' in d['name']:
                                     for row in loop.data:
@@ -4321,7 +4321,7 @@ class NEFTranslator:
                 else:
                     ambig_code = int(_ambig_code)
 
-                if ambig_code not in allowedAmbiguityCodes:
+                if ambig_code not in ALLOWED_AMBIGUITY_CODES:
 
                     if leave_unmatched:
                         atom_list.append(atom_id)
@@ -4810,7 +4810,7 @@ class NEFTranslator:
                             out[data_index] = _star_chain
                         elif j == '_nef_sequence.sequence_code':
                             out[data_index] = _star_seq
-                        elif data in nefBooleanVals:
+                        elif data in NEF_BOOLEAN_VALUES:
                             out[data_index] = 'yes' if data in trueValue else 'no'
                         else:
                             out[data_index] = data
@@ -4822,8 +4822,8 @@ class NEFTranslator:
                                                           _nef_seq if _cif_seq is None else _cif_seq)
 
                 if variant is not None:
-                    aux = [None] * len(entityDelAtomItems)
-                    for l, aux_tag in enumerate(entityDelAtomItems):  # noqa: E741
+                    aux = [None] * len(ENTITY_DELETED_ATOM_ITEMS)
+                    for l, aux_tag in enumerate(ENTITY_DELETED_ATOM_ITEMS):  # noqa: E741
                         if aux_tag == 'Entity_assembly_ID':
                             aux[l] = _star_chain
                         elif aux_tag == 'Comp_index_ID':
@@ -4842,7 +4842,7 @@ class NEFTranslator:
                             if len(atom_list) > 0:
                                 for atom in atom_list:
                                     _aux = copy.copy(aux)
-                                    for l, aux_tag in enumerate(entityDelAtomItems):  # noqa: E741
+                                    for l, aux_tag in enumerate(ENTITY_DELETED_ATOM_ITEMS):  # noqa: E741
                                         if aux_tag == 'ID':
                                             _aux[l] = len(aux_row) + 1
                                         elif aux_tag == 'Atom_ID':
@@ -4984,7 +4984,7 @@ class NEFTranslator:
                             out[data_index] = _nef_seq
                         else:
                             out[data_index] = _cif_seq
-                    elif data in starBooleanVals:
+                    elif data in STAR_BOOLEAN_VALUES:
                         out[data_index] = 'true' if data in trueValue else 'false'
                     elif nef_tag == '_nef_sequence.residue_variant':
                         if data not in emptyValue or entity_del_atom_loop is None:
@@ -5118,8 +5118,8 @@ class NEFTranslator:
                 #                                                   _in_star_seq if _cif_seq is None else _cif_seq)
                 #
                 if variant is not None:
-                    aux = [None] * len(entityDelAtomItems)
-                    for l, aux_tag in enumerate(entityDelAtomItems):  # noqa: E741
+                    aux = [None] * len(ENTITY_DELETED_ATOM_ITEMS)
+                    for l, aux_tag in enumerate(ENTITY_DELETED_ATOM_ITEMS):  # noqa: E741
                         if aux_tag == 'Entity_assembly_ID':
                             aux[l] = _star_chain
                         elif aux_tag == 'Comp_index_ID':
@@ -5140,7 +5140,7 @@ class NEFTranslator:
                             if len(atom_list) > 0:
                                 for atom in atom_list:
                                     _aux = copy.copy(aux)
-                                    for l, aux_tag in enumerate(entityDelAtomItems):  # noqa: E741
+                                    for l, aux_tag in enumerate(ENTITY_DELETED_ATOM_ITEMS):  # noqa: E741
                                         if aux_tag == 'ID':
                                             _aux[l] = len(aux_row) + 1
                                         elif aux_tag == 'Atom_ID':
@@ -5282,8 +5282,8 @@ class NEFTranslator:
                         buf[star_type_index] = 'disulfide'
                     elif k == 'SE' and l == 'SE':  # noqa: E741
                         buf[star_type_index] = 'diselenide'
-                    elif (k in nonMetalElements and (l in paramagElements or l in ferromagElements)) or\
-                         (l in nonMetalElements and (k in paramagElements or k in ferromagElements)):
+                    elif (k in NON_METAL_ELEMENTS and (l in PARAMAGNETIC_ELEMENTS or l in FERROMAGNETIC_ELEMENTS)) or\
+                         (l in NON_METAL_ELEMENTS and (k in PARAMAGNETIC_ELEMENTS or k in FERROMAGNETIC_ELEMENTS)):
                         buf[star_type_index] = 'metal coordination'
                     elif ((k == 'C' and l == 'N') or (l == 'C' and k == 'N'))\
                             and i[nef_tags.index(chain_tag_1)] == i[nef_tags.index(chain_tag_2)]\
@@ -5448,8 +5448,8 @@ class NEFTranslator:
                         buf[star_type_index] = 'disulfide'
                     elif k == 'SE' and l == 'SE':  # noqa: E741
                         buf[star_type_index] = 'diselenide'
-                    elif (k in nonMetalElements and (l in paramagElements or l in ferromagElements)) or\
-                         (l in nonMetalElements and (k in paramagElements or k in ferromagElements)):
+                    elif (k in NON_METAL_ELEMENTS and (l in PARAMAGNETIC_ELEMENTS or l in FERROMAGNETIC_ELEMENTS)) or\
+                         (l in NON_METAL_ELEMENTS and (k in PARAMAGNETIC_ELEMENTS or k in FERROMAGNETIC_ELEMENTS)):
                         buf[star_type_index] = 'metal coordination'
                     elif ((k == 'C' and l == 'N') or (l == 'C' and k == 'N'))\
                             and i[in_star_tags.index(chain_tag_1)] == i[in_star_tags.index(chain_tag_2)]\
@@ -7680,7 +7680,7 @@ class NEFTranslator:
 
                     if 'chain_code' in j or 'sequence_code' in j:
                         out[data_index] = tag_map[j]
-                    elif data in nefBooleanVals:
+                    elif data in NEF_BOOLEAN_VALUES:
                         out[data_index] = 'yes' if data in trueValue else 'no'
                     else:
                         out[data_index] = data
@@ -7750,7 +7750,7 @@ class NEFTranslator:
 
             if 'chain_code' in nef_tag or 'sequence_code' in nef_tag:
                 out[data_index] = tag_map[j]
-            elif data in starBooleanVals:
+            elif data in STAR_BOOLEAN_VALUES:
                 out[data_index] = 'true' if data in trueValue else 'false'
             else:
                 out[data_index] = data
@@ -8218,7 +8218,7 @@ class NEFTranslator:
                     if len(aux_rows) > 0 and ((loop.category == '_nef_sequence' and not has_covalent_links)
                                               or (loop.category == '_nef_covalent_links' and has_covalent_links)):
                         lp = pynmrstar.Loop.from_scratch()
-                        for _tag in entityDelAtomItems:
+                        for _tag in ENTITY_DELETED_ATOM_ITEMS:
                             lp.add_tag('_Entity_deleted_atom.' + _tag)
                         for d in aux_rows:
                             d[lp.get_tag_names().index('_Entity_deleted_atom.Assembly_ID')] = asm_id
@@ -8469,7 +8469,7 @@ class NEFTranslator:
                 if len(aux_rows) > 0 and ((loop.category == '_nef_sequence' and not has_covalent_links)
                                           or (loop.category == '_nef_covalent_links' and has_covalent_links)):
                     lp = pynmrstar.Loop.from_scratch()
-                    for _tag in entityDelAtomItems:
+                    for _tag in ENTITY_DELETED_ATOM_ITEMS:
                         lp.add_tag('_Entity_deleted_atom.' + _tag)
                     for d in aux_rows:
                         d[lp.get_tag_names().index('_Entity_deleted_atom.Assembly_ID')] = asm_id
@@ -9394,7 +9394,7 @@ class NEFTranslator:
                 if len(aux_rows) > 0 and ((loop.category == '_Chem_comp_assembly' and not has_covalent_links)
                                           or (loop.category == '_Bond' and has_covalent_links)):
                     lp = pynmrstar.Loop.from_scratch()
-                    for _tag in entityDelAtomItems:
+                    for _tag in ENTITY_DELETED_ATOM_ITEMS:
                         lp.add_tag('_Entity_deleted_atom.' + _tag)
                     for d in aux_rows:
                         d[lp.get_tag_names().index('_Entity_deleted_atom.Assembly_ID')] = asm_id

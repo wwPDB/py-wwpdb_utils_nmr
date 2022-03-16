@@ -32,7 +32,7 @@ try:
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import (NEFTranslator,
-                                                             isotopeNumsOfNmrObsNucs)
+                                                             ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS)
 except ImportError:
     from nmr.mr.CyanaMRParser import CyanaMRParser
     from nmr.mr.ParserListenerUtil import (checkCoordinates,
@@ -53,7 +53,7 @@ except ImportError:
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.NEFTranslator.NEFTranslator import (NEFTranslator,
-                                                 isotopeNumsOfNmrObsNucs)
+                                                 ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS)
 
 
 DIST_RANGE_MIN = DIST_RESTRAINT_RANGE['min_inclusive']
@@ -130,6 +130,12 @@ class CyanaMRParserListener(ParseTreeListener):
 
     # current restraint subtype
     __cur_subtype = None
+
+    # RDC parameter dictionary
+    rdcParameterDict = None
+
+    # PCS parameter dictionary
+    pcsParameterDict = None
 
     # collection of atom selection
     atomSelectionSet = None
@@ -633,13 +639,26 @@ class CyanaMRParserListener(ParseTreeListener):
     def enterRdc_restraints(self, ctx: CyanaMRParser.Rdc_restraintsContext):  # pylint: disable=unused-argument
         self.__cur_subtype = 'rdc'
 
+        self.rdcParameterDict = {}
+
     # Exit a parse tree produced by CyanaMRParser#rdc_restraints.
     def exitRdc_restraints(self, ctx: CyanaMRParser.Rdc_restraintsContext):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by CyanaMRParser#rdc_parameter.
     def enterRdc_parameter(self, ctx: CyanaMRParser.Rdc_parameterContext):  # pylint: disable=unused-argument
-        pass
+        orientation = int(str(ctx.Integer(0)))
+        magnitude = float(str(ctx.Float(0)))
+        rhombicity = float(str(ctx.Float(1)))
+        orientationCenterSeqId = int(str(ctx.Integer(1)))
+
+        self.rdcParameterDict[orientation] = {'magnitude': magnitude,
+                                              'rhombicity': rhombicity,
+                                              'orientation_center_seq_id': orientationCenterSeqId}
+
+        if self.__verbose:
+            print(f"subtype={self.__cur_subtype} orientation={orientation} "
+                  f"parameter={self.rdcParameterDict[orientation]}")
 
     # Exit a parse tree produced by CyanaMRParser#rdc_parameter.
     def exitRdc_parameter(self, ctx: CyanaMRParser.Rdc_parameterContext):  # pylint: disable=unused-argument
@@ -665,11 +684,26 @@ class CyanaMRParserListener(ParseTreeListener):
         target = float(str(ctx.Float(0)))
         error = abs(float(str(ctx.Float(1))))
         weight = float(str(ctx.Float(2)))
-        dataSet = int(str(ctx.Integer(2)))
+        orientation = int(str(ctx.Integer(2)))
 
         if weight <= 0.0:
             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                 f"The relative weight value of '{weight}' must be a positive value.\n"
+            return
+
+        if orientation not in self.rdcParameterDict:
+            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                f"The orientation '{orientation}' must be defined before you start to describe RDC restraints.\n"
+            return
+
+        if seqId1 == self.rdcParameterDict[orientation]['orientation_center_seq_id']:
+            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                f"The residue number '{seqId1}' must not be the same as the center of orientation.\n"
+            return
+
+        if seqId2 == self.rdcParameterDict[orientation]['orientation_center_seq_id']:
+            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                f"The residue number '{seqId2}' must not be the same as the center of orientation.\n"
             return
 
         target_value = target
@@ -677,7 +711,7 @@ class CyanaMRParserListener(ParseTreeListener):
         upper_limit = target + error
 
         validRange = True
-        dstFunc = {'weight': weight, 'dataset': dataSet}
+        dstFunc = {'weight': weight, 'orientation': orientation}
 
         if target_value is not None:
             if RDC_ERROR_MIN < target_value < RDC_ERROR_MAX:
@@ -752,7 +786,7 @@ class CyanaMRParserListener(ParseTreeListener):
         comp_id_2 = self.atomSelectionSet[1][0]['comp_id']
         atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
 
-        if (atom_id_1[0] not in isotopeNumsOfNmrObsNucs) or (atom_id_2[0] not in isotopeNumsOfNmrObsNucs):
+        if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                 f"Non-magnetic susceptible spin appears in RDC vector; "\
                 f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
@@ -834,13 +868,26 @@ class CyanaMRParserListener(ParseTreeListener):
     def enterPcs_restraints(self, ctx: CyanaMRParser.Pcs_restraintsContext):  # pylint: disable=unused-argument
         self.__cur_subtype = 'pcs'
 
+        self.pcsParameterDict = {}
+
     # Exit a parse tree produced by CyanaMRParser#pcs_restraints.
     def exitPcs_restraints(self, ctx: CyanaMRParser.Pcs_restraintsContext):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by CyanaMRParser#pcs_parameter.
-    def enterPcs_parameter(self, ctx: CyanaMRParser.Pcs_parameterContext):  # pylint: disable=unused-argument
-        pass
+    def enterPcs_parameter(self, ctx: CyanaMRParser.Pcs_parameterContext):
+        orientation = int(str(ctx.Integer(0)))
+        magnitude = float(str(ctx.Float(0)))
+        rhombicity = float(str(ctx.Float(1)))
+        orientationCenterSeqId = int(str(ctx.Integer(1)))
+
+        self.pcsParameterDict[orientation] = {'magnitude': magnitude,
+                                              'rhombicity': rhombicity,
+                                              'orientation_center_seq_id': orientationCenterSeqId}
+
+        if self.__verbose:
+            print(f"subtype={self.__cur_subtype} orientation={orientation} "
+                  f"parameter={self.pcsParameterDict[orientation]}")
 
     # Exit a parse tree produced by CyanaMRParser#pcs_parameter.
     def exitPcs_parameter(self, ctx: CyanaMRParser.Pcs_parameterContext):  # pylint: disable=unused-argument
@@ -863,11 +910,21 @@ class CyanaMRParserListener(ParseTreeListener):
         target = float(str(ctx.Float(0)))
         error = abs(float(str(ctx.Float(1))))
         weight = float(str(ctx.Float(2)))
-        dataSet = int(str(ctx.Integer(1)))
+        orientation = int(str(ctx.Integer(1)))
 
         if weight <= 0.0:
             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                 f"The relative weight value of '{weight}' must be a positive value.\n"
+            return
+
+        if orientation not in self.pcsParameterDict:
+            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                f"The orientation '{orientation}' must be defined before you start to describe PCS restraints.\n"
+            return
+
+        if seqId == self.pcsParameterDict[orientation]['orientation_center_seq_id']:
+            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                f"The residue number '{seqId}' must not be the same as the center of orientation.\n"
             return
 
         target_value = target
@@ -875,7 +932,7 @@ class CyanaMRParserListener(ParseTreeListener):
         upper_limit = target + error
 
         validRange = True
-        dstFunc = {'weight': weight, 'dataset': dataSet}
+        dstFunc = {'weight': weight, 'orientation': orientation}
 
         if target_value is not None:
             if PCS_ERROR_MIN < target_value < PCS_ERROR_MAX:

@@ -33,7 +33,7 @@ try:
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import (NEFTranslator,
-                                                             isotopeNumsOfNmrObsNucs)
+                                                             ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS)
 except ImportError:
     from nmr.mr.AmberMRParser import AmberMRParser
     from nmr.mr.ParserListenerUtil import (checkCoordinates,
@@ -53,7 +53,7 @@ except ImportError:
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.NEFTranslator.NEFTranslator import (NEFTranslator,
-                                                 isotopeNumsOfNmrObsNucs)
+                                                 ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS)
 
 
 DIST_RANGE_MIN = DIST_RESTRAINT_RANGE['min_inclusive']
@@ -2769,7 +2769,7 @@ class AmberMRParserListener(ParseTreeListener):
 
                 self.atomSelectionSet.append(atomSelection)
 
-                if (atom_id_1[0] not in isotopeNumsOfNmrObsNucs) or (atom_id_2[0] not in isotopeNumsOfNmrObsNucs):
+                if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"\
                         f"Non-magnetic susceptible spin appears in RDC vector; "\
                         f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
@@ -3093,8 +3093,8 @@ class AmberMRParserListener(ParseTreeListener):
 
                 self.atomSelectionSet.append(atomSelection)
 
-                if (atom_id_1[0] not in isotopeNumsOfNmrObsNucs) or (atom_id_2[0] not in isotopeNumsOfNmrObsNucs)\
-                   or (atom_id_3[0] not in isotopeNumsOfNmrObsNucs):
+                if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS)\
+                   or (atom_id_3[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
                         f"Non-magnetic susceptible spin appears in CSA vector; "\
                         f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\

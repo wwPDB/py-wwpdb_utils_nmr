@@ -36,7 +36,7 @@ try:
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import (NEFTranslator,
-                                                             isotopeNumsOfNmrObsNucs)
+                                                             ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS)
 except ImportError:
     from nmr.mr.CnsMRParser import CnsMRParser
     from nmr.mr.ParserListenerUtil import (toNpArray,
@@ -57,7 +57,7 @@ except ImportError:
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.NEFTranslator.NEFTranslator import (NEFTranslator,
-                                                 isotopeNumsOfNmrObsNucs)
+                                                 ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS)
 
 
 DIST_RANGE_MIN = DIST_RESTRAINT_RANGE['min_inclusive']
@@ -180,6 +180,10 @@ class CnsMRParserListener(ParseTreeListener):
 
     # RDC
     potential = 'square'
+
+    # generic statements
+    classification = None
+    coefficients = None
 
     # collection of atom selection
     atomSelectionSet = None
@@ -401,9 +405,13 @@ class CnsMRParserListener(ParseTreeListener):
             self.symmDminus = None
             self.symmDplus = None
 
+        elif ctx.Classification():
+            self.classification = str(ctx.Simple_name(0))
+
     # Exit a parse tree produced by CnsMRParser#noe_statement.
     def exitNoe_statement(self, ctx: CnsMRParser.Noe_statementContext):  # pylint: disable=unused-argument
-        pass
+        if self.__verbose:
+            print(f"subtype={self.__cur_subtype} (NOE) classification={self.classification}")
 
     # Enter a parse tree produced by CnsMRParser#noe_assign.
     def enterNoe_assign(self, ctx: CnsMRParser.Noe_assignContext):  # pylint: disable=unused-argument
@@ -782,11 +790,18 @@ class CnsMRParserListener(ParseTreeListener):
 
         elif ctx.Reset():
             self.potential = 'square'
-            self.scale = 1.0
+
+        elif ctx.Coefficients():
+            self.coefficients = {'DFS': float(str(ctx.Real(0))),
+                                 'anisotropy': float(str(ctx.Real(1))),
+                                 'rhombicity': float(str(ctx.Real(2)))
+                                 }
 
     # Exit a parse tree produced by CnsMRParser#sani_statement.
     def exitSani_statement(self, ctx: CnsMRParser.Sani_statementContext):  # pylint: disable=unused-argument
-        pass
+        if self.__verbose:
+            print(f"subtype={self.__cur_subtype} (SANI) classification={self.classification} "
+                  f"coefficients={self.coefficients}")
 
     # Enter a parse tree produced by CnsMRParser#sani_assign.
     def enterSani_assign(self, ctx: CnsMRParser.Sani_assignContext):  # pylint: disable=unused-argument
@@ -814,7 +829,7 @@ class CnsMRParserListener(ParseTreeListener):
                 upper_limit = target + error_grater
 
         validRange = True
-        dstFunc = {'weight': self.scale, 'potential': self.potential}
+        dstFunc = {'weight': 1.0, 'potential': self.potential}
 
         if target_value is not None:
             if RDC_ERROR_MIN < target_value < RDC_ERROR_MAX:
@@ -880,7 +895,7 @@ class CnsMRParserListener(ParseTreeListener):
         comp_id_2 = self.atomSelectionSet[5][0]['comp_id']
         atom_id_2 = self.atomSelectionSet[5][0]['atom_id']
 
-        if (atom_id_1[0] not in isotopeNumsOfNmrObsNucs) or (atom_id_2[0] not in isotopeNumsOfNmrObsNucs):
+        if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                 f"Non-magnetic susceptible spin appears in RDC vector; "\
                 f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
@@ -1088,11 +1103,23 @@ class CnsMRParserListener(ParseTreeListener):
 
         elif ctx.Reset():
             self.potential = 'square'
-            self.scale = 1.0
+
+        elif ctx.Classification():
+            self.classification = str(ctx.Simple_name())
+
+        elif ctx.Coefficients():
+            self.coefficients = {'Tc': float(str(ctx.Real(0))),
+                                 'anisotropy': float(str(ctx.Real(1))),
+                                 'rhombicity': float(str(ctx.Real(2))),
+                                 'frequency_1h': float(str(ctx.Real(3))),
+                                 'frequency_15n': float(str(ctx.Real(4)))
+                                 }
 
     # Exit a parse tree produced by CnsMRParser#diffusion_statement.
     def exitDiffusion_statement(self, ctx: CnsMRParser.Diffusion_statementContext):  # pylint: disable=unused-argument
-        pass
+        if self.__verbose:
+            print(f"subtype={self.__cur_subtype} (DANI) classification={self.classification} "
+                  f"coefficients={self.coefficients}")
 
     # Enter a parse tree produced by CnsMRParser#dani_assign.
     def enterDani_assign(self, ctx: CnsMRParser.Dani_assignContext):  # pylint: disable=unused-argument
@@ -1115,7 +1142,7 @@ class CnsMRParserListener(ParseTreeListener):
             upper_limit = target + delta
 
         validRange = True
-        dstFunc = {'weight': self.scale, 'potential': self.potential}
+        dstFunc = {'weight': 1.0, 'potential': self.potential}
 
         if target_value is not None:
             if T1T2_ERROR_MIN < target_value < T1T2_ERROR_MAX:
@@ -1181,7 +1208,7 @@ class CnsMRParserListener(ParseTreeListener):
         comp_id_2 = self.atomSelectionSet[5][0]['comp_id']
         atom_id_2 = self.atomSelectionSet[5][0]['atom_id']
 
-        if (atom_id_1[0] not in isotopeNumsOfNmrObsNucs) or (atom_id_2[0] not in isotopeNumsOfNmrObsNucs):
+        if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                 f"Non-magnetic susceptible spin appears in diffusion anisotropy vector; "\
                 f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\

@@ -178,10 +178,13 @@ try:
                                                              altDistanceConstraintType,
                                                              altDihedralAngleConstraintType,
                                                              altRdcConstraintType,
-                                                             paramagElements, ferromagElements, nonMetalElements,
-                                                             isotopeNumsOfNmrObsNucs, halfSpinNucs,
-                                                             allowedAmbiguityCodes,
-                                                             allowedIsotopeNums,
+                                                             PARAMAGNETIC_ELEMENTS,
+                                                             FERROMAGNETIC_ELEMENTS,
+                                                             NON_METAL_ELEMENTS,
+                                                             ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
+                                                             HALF_SPIN_NUCLEUS,
+                                                             ALLOWED_AMBIGUITY_CODES,
+                                                             ALLOWED_ISOTOPE_NUMBERS,
                                                              MAX_DIM_NUM_OF_SPECTRA)
     from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
     from wwpdb.utils.nmr.AlignUtil import (emptyValue, trueValue,
@@ -205,10 +208,13 @@ except ImportError:
                                                  altDistanceConstraintType,
                                                  altDihedralAngleConstraintType,
                                                  altRdcConstraintType,
-                                                 paramagElements, ferromagElements, nonMetalElements,
-                                                 isotopeNumsOfNmrObsNucs, halfSpinNucs,
-                                                 allowedAmbiguityCodes,
-                                                 allowedIsotopeNums,
+                                                 PARAMAGNETIC_ELEMENTS,
+                                                 FERROMAGNETIC_ELEMENTS,
+                                                 NON_METAL_ELEMENTS,
+                                                 ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
+                                                 HALF_SPIN_NUCLEUS,
+                                                 ALLOWED_AMBIGUITY_CODES,
+                                                 ALLOWED_ISOTOPE_NUMBERS,
                                                  MAX_DIM_NUM_OF_SPECTRA)
     from nmr.NmrDpReport import NmrDpReport
     from nmr.AlignUtil import (emptyValue, trueValue,
@@ -302,7 +308,7 @@ def is_non_metal_element(atom_id):
         @return: True for non metal element, False otherwise
     """
 
-    return any(elem for elem in nonMetalElements if atom_id.startswith(elem))
+    return any(elem for elem in NON_METAL_ELEMENTS if atom_id.startswith(elem))
 
 
 def is_half_spin_nuclei(atom_id):
@@ -310,7 +316,7 @@ def is_half_spin_nuclei(atom_id):
         @return: True for spin 1/2 nuclei, False otherwise
     """
 
-    return any(nucl for nucl in halfSpinNucs if atom_id.startswith(nucl))
+    return any(nucl for nucl in HALF_SPIN_NUCLEUS if atom_id.startswith(nucl))
 
 
 def probability_density(value, mean, stddev):
@@ -1179,9 +1185,9 @@ class NmrDpUtility:
                                                       {'name': 'Atom_ID', 'type': 'str',
                                                        'remove-bad-pattern': True}
                                                       ],
-                                       'chem_shift_ref': [{'name': 'Atom_type', 'type': 'enum', 'enum': set(isotopeNumsOfNmrObsNucs.keys()),
+                                       'chem_shift_ref': [{'name': 'Atom_type', 'type': 'enum', 'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
                                                            'enforce-enum': True},
-                                                          {'name': 'Atom_isotope_number', 'type': 'enum-int', 'enum': set(allowedIsotopeNums),
+                                                          {'name': 'Atom_isotope_number', 'type': 'enum-int', 'enum': set(ALLOWED_ISOTOPE_NUMBERS),
                                                            'enforce-enum': True},
                                                           {'name': 'Mol_common_name', 'type': 'str'}],
                                        'dist_restraint': [{'name': 'ID', 'type': 'positive-int'},
@@ -1379,10 +1385,10 @@ class NmrDpUtility:
                                                   {'name': 'value_uncertainty', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
                                                    'range': self.chem_shift_error},
                                                   {'name': 'element', 'type': 'enum', 'mandatory': True, 'default-from': 'atom_name',
-                                                   'enum': set(isotopeNumsOfNmrObsNucs.keys()),
+                                                   'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
                                                    'enforce-enum': True},
                                                   {'name': 'isotope_number', 'type': 'enum-int', 'mandatory': True, 'default-from': 'atom_name',
-                                                   'enum': set(allowedIsotopeNums),
+                                                   'enum': set(ALLOWED_ISOTOPE_NUMBERS),
                                                    'enforce-enum': True}
                                                   ],
                                    'chem_shift_ref': None,
@@ -1543,17 +1549,17 @@ class NmrDpUtility:
                                                      ],
                                         'entity': None,
                                         'chem_shift': [{'name': 'Atom_type', 'type': 'enum', 'mandatory': True, 'default-from': 'Atom_ID',
-                                                        'enum': set(isotopeNumsOfNmrObsNucs.keys()),
+                                                        'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
                                                         'enforce-enum': True},
                                                        {'name': 'Atom_isotope_number', 'type': 'enum-int', 'mandatory': True, 'default-from': 'Atom_ID',
-                                                        'enum': set(allowedIsotopeNums),
+                                                        'enum': set(ALLOWED_ISOTOPE_NUMBERS),
                                                         'enforce-enum': True},
                                                        {'name': 'Val', 'type': 'range-float', 'mandatory': True,
                                                         'range': self.chem_shift_range},
                                                        {'name': 'Val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
                                                         'range': self.chem_shift_error},
                                                        {'name': 'Ambiguity_code', 'type': 'enum-int', 'mandatory': False,
-                                                        'enum': allowedAmbiguityCodes,
+                                                        'enum': ALLOWED_AMBIGUITY_CODES,
                                                         'enforce-enum': True},
                                                        {'name': 'Ambiguity_set_ID', 'type': 'positive-int', 'mandatory': False,
                                                         'enforce-non-zero': True},
@@ -3091,7 +3097,7 @@ class NmrDpUtility:
                                                                               {'name': 'Comp_ID', 'type': 'str', 'mandatory': False, 'uppercase': True},
                                                                               {'name': 'Atom_ID', 'type': 'str', 'mandatory': False},
                                                                               {'name': 'Ambiguity_code', 'type': 'enum-int', 'mandatory': False,
-                                                                               'enum': allowedAmbiguityCodes},
+                                                                               'enum': ALLOWED_AMBIGUITY_CODES},
                                                                               {'name': 'Ambiguity_set_ID', 'type': 'positive-int', 'mandatory': False},
                                                                               {'name': 'Auth_seq_ID', 'type': 'int', 'mandatory': False},
                                                                               {'name': 'Auth_comp_ID', 'type': 'str', 'mandatory': False},
@@ -3850,7 +3856,7 @@ class NmrDpUtility:
                     ref_elems = set(a[self.__ccU.ccaTypeSymbol] for a in self.__ccU.lastAtomList if a[self.__ccU.ccaLeavingAtomFlag] != 'Y')
 
                     for elem in ref_elems:
-                        if elem in paramagElements or elem in ferromagElements:
+                        if elem in PARAMAGNETIC_ELEMENTS or elem in FERROMAGNETIC_ELEMENTS:
                             self.report.setDiamagnetic(False)
                             break
 
@@ -5466,7 +5472,7 @@ class NmrDpUtility:
                             atom_type = row[atom_name_col][0]
                             if atom_type in ('Q', 'M'):
                                 atom_type = 'H'
-                            row.append(str(isotopeNumsOfNmrObsNucs[atom_type][0]))
+                            row.append(str(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atom_type][0]))
 
                         loop.add_tag(lp_category + '.isotope_number')
 
@@ -5483,7 +5489,7 @@ class NmrDpUtility:
                             atom_type = row[atom_name_col][0]
                             if atom_type in ('Q', 'M'):
                                 atom_type = 'H'
-                            row[iso_num_col] = str(isotopeNumsOfNmrObsNucs[atom_type][0])
+                            row[iso_num_col] = str(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atom_type][0])
 
             elif content_subtype == 'dihed_restraint':
 
@@ -5754,7 +5760,7 @@ class NmrDpUtility:
                             atom_type = row[atom_name_col][0]
                             if atom_type in ('Q', 'M'):
                                 atom_type = 'H'
-                            row.append(str(isotopeNumsOfNmrObsNucs[atom_type][0]))
+                            row.append(str(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atom_type][0]))
 
                         loop.add_tag(lp_category + '.Atom_isotope_number')
 
@@ -5771,7 +5777,7 @@ class NmrDpUtility:
                             atom_type = row[atom_name_col][0]
                             if atom_type in ('Q', 'M'):
                                 atom_type = 'H'
-                            row[iso_num_col] = str(isotopeNumsOfNmrObsNucs[atom_type][0])
+                            row[iso_num_col] = str(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atom_type][0])
 
             elif content_subtype == 'dihed_restraint':
 
@@ -5846,7 +5852,7 @@ class NmrDpUtility:
 
                         for row in loop:
                             atom_type = re.sub(r'\d+', '', row[axis_code_name_col])
-                            row.append(str(isotopeNumsOfNmrObsNucs[atom_type][0]))
+                            row.append(str(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atom_type][0]))
 
                         loop.add_tag(lp_category + '.Atom_isotope_number')
 
@@ -10430,7 +10436,7 @@ class NmrDpUtility:
                         ref_elems = set(a[self.__ccU.ccaTypeSymbol] for a in self.__ccU.lastAtomList if a[self.__ccU.ccaLeavingAtomFlag] != 'Y')
 
                         for elem in ref_elems:
-                            if elem in paramagElements or elem in ferromagElements:
+                            if elem in PARAMAGNETIC_ELEMENTS or elem in FERROMAGNETIC_ELEMENTS:
                                 self.report.setDiamagnetic(False)
                                 break
 
@@ -10897,7 +10903,7 @@ class NmrDpUtility:
                 isotope_nums = a_type['isotope_number']
                 atom_ids = a_type['atom_id']
 
-                if atom_type not in isotopeNumsOfNmrObsNucs.keys():
+                if atom_type not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys():
 
                     err = f"Invalid atom_type {atom_type!r} in a loop {lp_category}."
 
@@ -10912,10 +10918,10 @@ class NmrDpUtility:
                 else:
 
                     for isotope_num in isotope_nums:
-                        if isotope_num not in isotopeNumsOfNmrObsNucs[atom_type]:
+                        if isotope_num not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atom_type]:
 
                             err = f"Invalid isotope number {str(isotope_num)!r} (atom_type {atom_type}, "\
-                                f"allowed isotope number {isotopeNumsOfNmrObsNucs[atom_type]}) in a loop {lp_category}."
+                                f"allowed isotope number {ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atom_type]}) in a loop {lp_category}."
 
                             self.report.error.appendDescription('invalid_isotope_number',
                                                                 {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
@@ -14258,7 +14264,7 @@ class NmrDpUtility:
                     else:
 
                         err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id)\
-                            + f"] Invalid ambiguity code {str(ambig_code)!r} (allowed ambig_code {allowedAmbiguityCodes}) in a loop."
+                            + f"] Invalid ambiguity code {str(ambig_code)!r} (allowed ambig_code {ALLOWED_AMBIGUITY_CODES}) in a loop."
 
                         self.report.error.appendDescription('invalid_ambiguity_code',
                                                             {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
@@ -15681,7 +15687,7 @@ class NmrDpUtility:
                     comp_id_2 = i[comp_id_2_name]
                     atom_id_2 = i[atom_id_2_name]
 
-                    if (atom_id_1[0] not in isotopeNumsOfNmrObsNucs) or (atom_id_2[0] not in isotopeNumsOfNmrObsNucs):
+                    if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
 
                         idx_msg = f"[Check row of {index_tag} {i[index_tag]}] "
 
@@ -21425,8 +21431,8 @@ class NmrDpUtility:
         """
 
         try:
-            iso_number_1 = isotopeNumsOfNmrObsNucs[atom_id_1[0]][0]
-            iso_number_2 = isotopeNumsOfNmrObsNucs[atom_id_2[0]][0]
+            iso_number_1 = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atom_id_1[0]][0]
+            iso_number_2 = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atom_id_2[0]][0]
         except KeyError:
             pass
 
@@ -27633,8 +27639,8 @@ class NmrDpUtility:
             neighbor = [n for n in _neighbor
                         if n['seq_id'] != cif_seq_id
                         and np.linalg.norm(to_np_array(n) - o) < cutoff
-                        and (n['type_symbol'] in paramagElements
-                             or n['type_symbol'] in ferromagElements)]
+                        and (n['type_symbol'] in PARAMAGNETIC_ELEMENTS
+                             or n['type_symbol'] in FERROMAGNETIC_ELEMENTS)]
 
             if len(neighbor) == 0:
                 self.__coord_near_para_ferro[seq_key] = None
@@ -27751,7 +27757,7 @@ class NmrDpUtility:
                         if row[isoNumCol] is emptyValue:
 
                             try:
-                                row[isoNumCol] = isotopeNumsOfNmrObsNucs[atom_id[0]][0]
+                                row[isoNumCol] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atom_id[0]][0]
                             except KeyError:
                                 pass
 
@@ -27767,7 +27773,7 @@ class NmrDpUtility:
                             row[atomTypeCol] = atom_id[0]
 
                         try:
-                            iso_num = isotopeNumsOfNmrObsNucs[atom_id[0]][0]
+                            iso_num = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atom_id[0]][0]
                             row.append(iso_num)
                         except KeyError:
                             row.append('.')
@@ -27785,11 +27791,11 @@ class NmrDpUtility:
                         if row[isoNumCol] is emptyValue:
 
                             try:
-                                row[isoNumCol] = isotopeNumsOfNmrObsNucs[atom_id[0]][0]
+                                row[isoNumCol] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atom_id[0]][0]
                             except KeyError:
                                 pass
 
-                        row.append(atom_id[0] if atom_id[0] in isotopeNumsOfNmrObsNucs else '.')
+                        row.append(atom_id[0] if atom_id[0] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS else '.')
 
                     loop.add_tag(cs_atom_type)
 
@@ -27799,10 +27805,10 @@ class NmrDpUtility:
 
                         atom_id = row[atomIdCol]
 
-                        row.append(atom_id[0] if atom_id[0] in isotopeNumsOfNmrObsNucs else '.')
+                        row.append(atom_id[0] if atom_id[0] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS else '.')
 
                         try:
-                            iso_num = isotopeNumsOfNmrObsNucs[atom_id[0]][0]
+                            iso_num = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atom_id[0]][0]
                             row.append(iso_num)
                         except KeyError:
                             row.append('.')

@@ -383,28 +383,28 @@ class CnsMRParserListener(ParseTreeListener):
                 self.noePotential = '3dpo'
 
         elif ctx.SqExponent():
-            self.squareExponent = float(ctx.Real())
+            self.squareExponent = float(str(ctx.Real()))
             if self.squareExponent <= 0.0:
                 self.warningMessage += f"[Invalid data] "\
                     "The exponent value of square-well or soft-square function "\
                     f"NOE {str(ctx.SqExponent())} {str(ctx.Simple_names())} {self.squareExponent} END' must be a positive value.\n"
 
         elif ctx.SqOffset():
-            self.squareOffset = float(ctx.Real())
+            self.squareOffset = float(str(ctx.Real()))
             if self.squareOffset < 0.0:
                 self.warningMessage += f"[Invalid data] "\
                     "The offset value of square-well or soft-square function "\
                     f"NOE {str(ctx.SqOffset())} {str(ctx.Simple_names())} {self.squareOffset} END' must not be a negative value.\n"
 
         elif ctx.Rswitch():
-            self.rSwitch = float(ctx.Real())
+            self.rSwitch = float(str(ctx.Real()))
             if self.rSwitch < 0.0:
                 self.warningMessage += f"[Invalid data] "\
                     "The smoothing parameter of soft-square function "\
                     f"NOE {str(ctx.Rswitch())} {str(ctx.Simple_names())} {self.rSwitch} END' must not be a negative value.\n"
 
         elif ctx.Scale():
-            self.scale = float(ctx.Real())
+            self.scale = float(str(ctx.Real()))
             if self.scale <= 0.0:
                 self.warningMessage += f"[Invalid data] "\
                     f"The scale value 'NOE {str(ctx.Scale())} {str(ctx.Simple_names())} {self.scale} END' must be a positive value.\n"
@@ -603,7 +603,7 @@ class CnsMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by CnsMRParser#dihedral_statement.
     def enterDihedral_statement(self, ctx: CnsMRParser.Dihedral_statementContext):
         if ctx.Scale():
-            self.scale = float(ctx.Real())
+            self.scale = float(str(ctx.Real()))
             if self.scale <= 0.0:
                 self.warningMessage += f"[Invalid data] "\
                     f"The scale value 'RESTRAINT DIHEDRAL {str(ctx.Scale())} {self.scale} END' must be a positive value.\n"
@@ -789,7 +789,7 @@ class CnsMRParserListener(ParseTreeListener):
         self.atomSelectionSet = []
 
         if ctx.Weight():
-            self.scale = float(ctx.Real())
+            self.scale = float(str(ctx.Real()))
             if self.scale <= 0.0:
                 self.warningMessage += f"[Invalid data] "\
                     f"The weight value 'GROUP {str(ctx.Weight())} {self.scale} END' must be a positive value.\n"
@@ -1370,8 +1370,36 @@ class CnsMRParserListener(ParseTreeListener):
         pass
 
     # Exit a parse tree produced by CnsMRParser#carbon_shift_rcoil.
-    def exitCarbon_shift_rcoil(self, ctx: CnsMRParser.Carbon_shift_rcoilContext):  # pylint: disable=unused-argument
-        pass
+    def exitCarbon_shift_rcoil(self, ctx: CnsMRParser.Carbon_shift_rcoilContext):
+        rcoil_a = float(str(ctx.Real(0)))
+        rcoil_b = float(str(ctx.Real(1)))
+
+        if CS_ERROR_MIN < rcoil_a < CS_ERROR_MAX:
+            pass
+        else:
+            self.warningMessage += f"[Invalid data] "\
+                f"Random coil 'a' chemical shift value '{rcoil_a}' must be within range {CS_RESTRAINT_ERROR}.\n"
+            return
+
+        if CS_ERROR_MIN < rcoil_b < CS_ERROR_MAX:
+            pass
+        else:
+            self.warningMessage += f"[Invalid data] "\
+                f"Random coil 'b' chemical shift value '{rcoil_b}' must be within range {CS_RESTRAINT_ERROR}.\n"
+            return
+
+        dstFunc = {'rcoil_a': rcoil_a, 'rcoil_b': rcoil_b}
+
+        for atom1 in self.atomSelectionSet[0]:
+            if atom1['atom_id'][0] != 'C':
+                self.warningMessage += f"[Invalid data] "\
+                    f"Not a carbon; {atom1}.\n"
+                return
+
+        for atom1 in self.atomSelectionSet[0]:
+            if self.__verbose:
+                print(f"subtype={self.__cur_subtype} (RCOI) id={self.hvycsRestraints} "
+                      f"atom={atom1} {dstFunc}")
 
     # Enter a parse tree produced by CnsMRParser#proton_shift_statement.
     def enterProton_shift_statement(self, ctx: CnsMRParser.Proton_shift_statementContext):  # pylint: disable=unused-argument

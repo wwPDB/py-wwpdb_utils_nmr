@@ -233,7 +233,7 @@ DegEnergy:		D E G E N? E? R? G? Y?;			// Number_of_couplings
 //Reset:		R E S E T?;
 
 //Number_of_couplings:	'1' | '2';
-Coupling_potential:	Rdc_potential | M U L T I? P? L? E?;
+Coupling_potential:	Rdc_potential;
 
 /* XPLOR-NIH: Carbon chemical shift restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node404.html
@@ -246,7 +246,7 @@ Carbon:			C A R B O? N?;				// Carbon { carbon_shift_statement } End
 //Nrestraints:		N R E S T? R? A? I? N? T? S?;		// Integer
 PhiStep:		P H I S T? E? P?;			// Real
 PsiStep:		P S I S T? E? P?;			// Real
-//Potential:		P O T E N? T? I? A? L?;			// Coupling_potential
+//Potential:		P O T E N? T? I? A? L?;			// Rdc_potential
 //Print:		P R I N T?;
 //Threshold:		T H R E S? H? O? L? D?;			// Real
 Rcoil:			R C O I L?;				// selection Real Real

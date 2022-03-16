@@ -458,7 +458,7 @@ def serializedATN():
         buf.write("\7\'\2\2\u0301\u0316\7\u00a3\2\2\u0302\u0303\7\17\2\2")
         buf.write("\u0303\u0316\7\u00a1\2\2\u0304\u0305\7C\2\2\u0305\u0316")
         buf.write("\7\u00a3\2\2\u0306\u0307\7D\2\2\u0307\u0316\7\u00a3\2")
-        buf.write("\2\u0308\u0309\7\20\2\2\u0309\u0316\7A\2\2\u030a\u030b")
+        buf.write("\2\u0308\u0309\7\20\2\2\u0309\u0316\7(\2\2\u030a\u030b")
         buf.write("\7\22\2\2\u030b\u030c\7\23\2\2\u030c\u0316\7\u00a3\2\2")
         buf.write("\u030d\u030f\5^\60\2\u030e\u030d\3\2\2\2\u030f\u0312\3")
         buf.write("\2\2\2\u0310\u030e\3\2\2\2\u0310\u0311\3\2\2\2\u0311\u0316")
@@ -5559,8 +5559,8 @@ class XplorMRParser ( Parser ):
         def Potential(self):
             return self.getToken(XplorMRParser.Potential, 0)
 
-        def Coupling_potential(self):
-            return self.getToken(XplorMRParser.Coupling_potential, 0)
+        def Rdc_potential(self):
+            return self.getToken(XplorMRParser.Rdc_potential, 0)
 
         def Print(self):
             return self.getToken(XplorMRParser.Print, 0)
@@ -5679,7 +5679,7 @@ class XplorMRParser ( Parser ):
                 self.state = 774
                 self.match(XplorMRParser.Potential)
                 self.state = 775
-                self.match(XplorMRParser.Coupling_potential)
+                self.match(XplorMRParser.Rdc_potential)
                 pass
 
             elif la_ == 9:

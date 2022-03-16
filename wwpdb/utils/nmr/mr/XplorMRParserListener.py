@@ -2002,13 +2002,11 @@ class XplorMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by XplorMRParser#coupling_statement.
     def enterCoupling_statement(self, ctx: XplorMRParser.Coupling_statementContext):  # pylint: disable=unused-argument
         if ctx.Coupling_potential():
-            code = str(ctx.Rdc_potential()).upper()
+            code = str(ctx.Coupling_potential()).upper()
             if code.startswith('SQUA'):
                 self.potential = 'square'
             elif code.startswith('HARM'):
                 self.potential = 'harmonic'
-            elif code.startswith('MULT'):  # extension according to CNS
-                self.potential = 'multiple'
 
         elif ctx.Reset():
             self.potential = 'square'
@@ -2241,10 +2239,10 @@ class XplorMRParserListener(ParseTreeListener):
                                                                 self.atomSelectionSet[3]):
                 if self.__verbose:
                     if dstFunc2 is None:
-                        print(f"subtype={self.__cur_subtype} (DIHE) id={self.jcoupRestraints} "
+                        print(f"subtype={self.__cur_subtype} (COUP) id={self.jcoupRestraints} "
                               f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
                     else:
-                        print(f"subtype={self.__cur_subtype} (DIHE) id={self.jcoupRestraints} "
+                        print(f"subtype={self.__cur_subtype} (COUP) id={self.jcoupRestraints} "
                               f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc} {dstFunc2}")
 
         else:
@@ -2254,10 +2252,10 @@ class XplorMRParserListener(ParseTreeListener):
                                                                 self.atomSelectionSet[3]):
                 if self.__verbose:
                     if dstFunc2 is None:
-                        print(f"subtype={self.__cur_subtype} (DIHE) id={self.jcoupRestraints} "
+                        print(f"subtype={self.__cur_subtype} (COUP) id={self.jcoupRestraints} "
                               f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
                     else:
-                        print(f"subtype={self.__cur_subtype} (DIHE) id={self.jcoupRestraints} "
+                        print(f"subtype={self.__cur_subtype} (COUP) id={self.jcoupRestraints} "
                               f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc} {dstFunc2}")
 
             for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[4],
@@ -2266,10 +2264,10 @@ class XplorMRParserListener(ParseTreeListener):
                                                                 self.atomSelectionSet[7]):
                 if self.__verbose:
                     if dstFunc2 is None:
-                        print(f"subtype={self.__cur_subtype} (DIHE) id={self.jcoupRestraints} "
+                        print(f"subtype={self.__cur_subtype} (COUP) id={self.jcoupRestraints} "
                               f"atom4={atom1} atom5={atom2} atom6={atom3} atom7={atom4} {dstFunc}")
                     else:
-                        print(f"subtype={self.__cur_subtype} (DIHE) id={self.jcoupRestraints} "
+                        print(f"subtype={self.__cur_subtype} (COUP) id={self.jcoupRestraints} "
                               f"atom4={atom1} atom5={atom2} atom6={atom3} atom7={atom4} {dstFunc} {dstFunc2}")
 
     # Enter a parse tree produced by XplorMRParser#carbon_shift_statement.
@@ -2383,12 +2381,23 @@ class XplorMRParserListener(ParseTreeListener):
         pass
 
     # Enter a parse tree produced by XplorMRParser#ramachandran_statement.
-    def enterRamachandran_statement(self, ctx: XplorMRParser.Ramachandran_statementContext):  # pylint: disable=unused-argument
-        pass
+    def enterRamachandran_statement(self, ctx: XplorMRParser.Ramachandran_statementContext):
+        if ctx.Scale():
+            self.scale = float(ctx.Real(0))
+            if self.scale <= 0.0:
+                self.warningMessage += f"[Invalid data] "\
+                    f"The scale value 'RAMA {str(ctx.Scale())} {self.scale} END' must be a positive value.\n"
+
+        elif ctx.Reset():
+            self.scale = 1.0
+
+        elif ctx.Classification():
+            self.classification = str(ctx.Simple_name())
 
     # Exit a parse tree produced by XplorMRParser#ramachandran_statement.
     def exitRamachandran_statement(self, ctx: XplorMRParser.Ramachandran_statementContext):  # pylint: disable=unused-argument
-        pass
+        if self.__verbose:
+            print(f"subtype={self.__cur_subtype} (RAMA) classification={self.classification}")
 
     # Enter a parse tree produced by XplorMRParser#rama_assign.
     def enterRama_assign(self, ctx: XplorMRParser.Rama_assignContext):  # pylint: disable=unused-argument
@@ -2399,7 +2408,82 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#rama_assign.
     def exitRama_assign(self, ctx: XplorMRParser.Rama_assignContext):  # pylint: disable=unused-argument
-        pass
+        if not self.__hasPolySeq:
+            return
+
+        if not self.areUniqueCoordAtoms('a dihedral angle database (RAMA)'):
+            return
+
+        for i in range(0, len(self.atomSelectionSet), 2):
+            chain_id_1 = self.atomSelectionSet[i][0]['chain_id']
+            seq_id_1 = self.atomSelectionSet[i][0]['seq_id']
+            comp_id_1 = self.atomSelectionSet[i][0]['comp_id']
+            atom_id_1 = self.atomSelectionSet[i][0]['atom_id']
+
+            chain_id_2 = self.atomSelectionSet[i + 1][0]['chain_id']
+            seq_id_2 = self.atomSelectionSet[i + 1][0]['seq_id']
+            comp_id_2 = self.atomSelectionSet[i + 1][0]['comp_id']
+            atom_id_2 = self.atomSelectionSet[i + 1][0]['atom_id']
+
+            if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"Non-magnetic susceptible spin appears in dihedral angle vector; "\
+                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
+                    f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                return
+
+            if chain_id_1 != chain_id_2:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"Found inter-chain dihedral angle vector; "\
+                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                return
+
+            if abs(seq_id_1 - seq_id_2) > 1:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"Found inter-residue dihedral angle vector; "\
+                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                return
+
+            if abs(seq_id_1 - seq_id_2) == 1:
+
+                if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
+                   ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H')) or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H') and atom_id_2 == 'C')):
+                    pass
+
+                else:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        "Found inter-residue dihedral angle vector; "\
+                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    return
+
+            elif atom_id_1 == atom_id_2:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    "Found zero dihedral angle vector; "\
+                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                return
+
+            else:
+
+                if self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
+
+                    if not any(b for b in self.__ccU.lastBonds
+                               if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
+                                   or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
+
+                        if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
+                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                "Found an dihedral angle vector over multiple covalent bonds in the 'SANIsotropy' statement; "\
+                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                            return
+
+        for i in range(0, len(self.atomSelectionSet), 4):
+            for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[i],
+                                                                self.atomSelectionSet[i + 1],
+                                                                self.atomSelectionSet[i + 2],
+                                                                self.atomSelectionSet[i + 3]):
+                if self.__verbose:
+                    print(f"subtype={self.__cur_subtype} (RAMA) id={self.ramaRestraints} "
+                          f"atom{i+1}={atom1} atom{i+2}={atom2} atom{i+3}={atom3} atom{i+4}={atom4}")
 
     # Enter a parse tree produced by XplorMRParser#collapse_statement.
     def enterCollapse_statement(self, ctx: XplorMRParser.Collapse_statementContext):

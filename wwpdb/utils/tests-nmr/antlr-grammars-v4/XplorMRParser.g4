@@ -305,7 +305,7 @@ carbon_shift_statement:
 	Nrestraints Integer |
 	PhiStep Real |
 	PsiStep Real |
-	Potential Coupling_potential |
+	Potential Rdc_potential |
 	Print Threshold Real |
 	carbon_shift_rcoil* |
 	Reset |

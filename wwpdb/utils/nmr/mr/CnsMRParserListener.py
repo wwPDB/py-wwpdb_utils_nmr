@@ -29,6 +29,8 @@ try:
                                                        ANGLE_RESTRAINT_ERROR,
                                                        RDC_RESTRAINT_RANGE,
                                                        RDC_RESTRAINT_ERROR,
+                                                       CS_RESTRAINT_RANGE,
+                                                       CS_RESTRAINT_ERROR,
                                                        T1T2_RESTRAINT_RANGE,
                                                        T1T2_RESTRAINT_ERROR,
                                                        XPLOR_RDC_PRINCIPAL_AXIS_NAMES)
@@ -50,6 +52,8 @@ except ImportError:
                                            ANGLE_RESTRAINT_ERROR,
                                            RDC_RESTRAINT_RANGE,
                                            RDC_RESTRAINT_ERROR,
+                                           CS_RESTRAINT_RANGE,
+                                           CS_RESTRAINT_ERROR,
                                            T1T2_RESTRAINT_RANGE,
                                            T1T2_RESTRAINT_ERROR,
                                            XPLOR_RDC_PRINCIPAL_AXIS_NAMES)
@@ -79,6 +83,13 @@ RDC_RANGE_MAX = RDC_RESTRAINT_RANGE['max_exclusive']
 
 RDC_ERROR_MIN = RDC_RESTRAINT_ERROR['min_exclusive']
 RDC_ERROR_MAX = RDC_RESTRAINT_ERROR['max_exclusive']
+
+
+CS_RANGE_MIN = CS_RESTRAINT_RANGE['min_inclusive']
+CS_RANGE_MAX = CS_RESTRAINT_RANGE['max_inclusive']
+
+CS_ERROR_MIN = CS_RESTRAINT_ERROR['min_exclusive']
+CS_ERROR_MAX = CS_RESTRAINT_ERROR['max_excusive']
 
 
 T1T2_RANGE_MIN = T1T2_RESTRAINT_RANGE['min_inclusive']
@@ -180,6 +191,9 @@ class CnsMRParserListener(ParseTreeListener):
 
     # RDC
     potential = 'square'
+
+    # CS
+    csExpect = None
 
     # generic statements
     classification = None
@@ -725,7 +739,7 @@ class CnsMRParserListener(ParseTreeListener):
         compId = self.atomSelectionSet[0][0]['comp_id']
         peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
 
-        if not self.areUniqueCoordAtoms('a dihedral angle'):
+        if not self.areUniqueCoordAtoms('a dihedral angle (DIHE)'):
             return
 
         for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
@@ -1249,12 +1263,34 @@ class CnsMRParserListener(ParseTreeListener):
                               f"atom4={atom1} atom5={atom2} atom6={atom3} atom7={atom4} {dstFunc} {dstFunc2}")
 
     # Enter a parse tree produced by CnsMRParser#carbon_shift_statement.
-    def enterCarbon_shift_statement(self, ctx: CnsMRParser.Carbon_shift_statementContext):  # pylint: disable=unused-argument
-        pass
+    def enterCarbon_shift_statement(self, ctx: CnsMRParser.Carbon_shift_statementContext):
+        if ctx.Rdc_potential():
+            code = str(ctx.Rdc_potential()).upper()
+            if code.startswith('SQUA'):
+                self.potential = 'square'
+            elif code.startswith('HARM'):
+                self.potential = 'harmonic'
+
+        elif ctx.Reset():
+            self.potential = 'square'
+
+        elif ctx.Classification():
+            self.classification = str(ctx.Simple_name())
+
+        elif ctx.Expectation():
+            self.csExpect = {'psi_position': int(str(ctx.Integer(0))),
+                             'phi_poistion': int(str(ctx.Integer(1))),
+                             'ca_shift': float(str(ctx.Real(0))),
+                             'ca_shift_error': float(str(ctx.Real(1))),
+                             'cb_shift': float(str(ctx.Real(2))),
+                             'cb_shift_error': float(str(ctx.Real(3)))
+                             }
 
     # Exit a parse tree produced by CnsMRParser#carbon_shift_statement.
     def exitCarbon_shift_statement(self, ctx: CnsMRParser.Carbon_shift_statementContext):  # pylint: disable=unused-argument
-        pass
+        if self.__verbose:
+            print(f"subtype={self.__cur_subtype} (CARB) classification={self.classification} "
+                  f"expectation={self.csExpect}")
 
     # Enter a parse tree produced by CnsMRParser#carbon_shift_assign.
     def enterCarbon_shift_assign(self, ctx: CnsMRParser.Carbon_shift_assignContext):  # pylint: disable=unused-argument
@@ -1265,7 +1301,69 @@ class CnsMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by CnsMRParser#carbon_shift_assign.
     def exitCarbon_shift_assign(self, ctx: CnsMRParser.Carbon_shift_assignContext):  # pylint: disable=unused-argument
-        pass
+        ca_shift = float(str(ctx.Real(0)))
+        cb_shift = float(str(ctx.Real(1)))
+
+        if CS_ERROR_MIN < ca_shift < CS_ERROR_MAX:
+            pass
+        else:
+            self.warningMessage += f"[Invalid data] "\
+                f"CA chemical shift value '{ca_shift}' must be within range {CS_RESTRAINT_ERROR}.\n"
+            return
+
+        if CS_ERROR_MIN < cb_shift < CS_ERROR_MAX:
+            pass
+        else:
+            self.warningMessage += f"[Invalid data] "\
+                f"CB chemicbl shift value '{ca_shift}' must be within range {CS_RESTRAINT_ERROR}.\n"
+            return
+
+        if not self.__hasPolySeq:
+            return
+
+        if not self.areUniqueCoordAtoms('a carbon chemical shift (CARB)'):
+            return
+
+        dstFunc = {'ca_shift': ca_shift, 'cb_shift': cb_shift, 'weight': 1.0, 'potential': self.potential}
+
+        chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
+        seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
+        atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
+
+        chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
+        seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
+        atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+
+        chain_id_3 = self.atomSelectionSet[2][0]['chain_id']
+        seq_id_3 = self.atomSelectionSet[2][0]['seq_id']
+        atom_id_3 = self.atomSelectionSet[2][0]['atom_id']
+
+        chain_id_4 = self.atomSelectionSet[3][0]['chain_id']
+        seq_id_4 = self.atomSelectionSet[3][0]['seq_id']
+        atom_id_4 = self.atomSelectionSet[3][0]['atom_id']
+
+        chain_id_5 = self.atomSelectionSet[4][0]['chain_id']
+        seq_id_5 = self.atomSelectionSet[4][0]['seq_id']
+        atom_id_5 = self.atomSelectionSet[4][0]['atom_id']
+
+        chain_ids = [chain_id_1, chain_id_2, chain_id_3, chain_id_4, chain_id_5]
+        seq_ids = [seq_id_1, seq_id_2, seq_id_3, seq_id_4, seq_id_5]
+        offsets = [seq_id - seq_id_3 for seq_id in seq_ids]
+        atom_ids = [atom_id_1, atom_id_2, atom_id_3, atom_id_4, atom_id_5]
+
+        if chain_ids != [chain_id_1] * 5 or offsets != [0] * 5 or atom_ids != ['C', 'N', 'CA', 'C', 'N']:
+            self.warningMessage += "[Invalid data] "\
+                "The atom selection order must be [C(i-1), N(i), CA(i), C(i), N(i+1)].\n"
+            return
+
+        for atom1, atom2, atom3, atom4, atom5 in itertools.product(self.atomSelectionSet[0],
+                                                                   self.atomSelectionSet[1],
+                                                                   self.atomSelectionSet[2],
+                                                                   self.atomSelectionSet[3],
+                                                                   self.atomSelectionSet[4]):
+            if self.__verbose:
+                print(f"subtype={self.__cur_subtype} (CARB) id={self.hvycsRestraints} "
+                      f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} atom5={atom5} {dstFunc}")
 
     # Enter a parse tree produced by CnsMRParser#carbon_shift_rcoil.
     def enterCarbon_shift_rcoil(self, ctx: CnsMRParser.Carbon_shift_rcoilContext):  # pylint: disable=unused-argument
@@ -1568,7 +1666,7 @@ class CnsMRParserListener(ParseTreeListener):
         if not self.__hasPolySeq:
             return
 
-        if not self.areUniqueCoordAtoms('a diffusion anisotropy'):
+        if not self.areUniqueCoordAtoms('a diffusion anisotropy (DANI)'):
             return
 
         chain_id_1 = self.atomSelectionSet[4][0]['chain_id']

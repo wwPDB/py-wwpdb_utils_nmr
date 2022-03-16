@@ -137,7 +137,7 @@ CS_RANGE_MIN = CS_RESTRAINT_RANGE['min_inclusive']
 CS_RANGE_MAX = CS_RESTRAINT_RANGE['max_inclusive']
 
 CS_ERROR_MIN = CS_RESTRAINT_ERROR['min_exclusive']
-CS_ERROR_MAX = PRE_RESTRAINT_ERROR['max_excusive']
+CS_ERROR_MAX = CS_RESTRAINT_ERROR['max_exclusive']
 
 
 T1T2_RANGE_MIN = T1T2_RESTRAINT_RANGE['min_inclusive']
@@ -544,28 +544,28 @@ class XplorMRParserListener(ParseTreeListener):
         elif ctx.SqExponent():
             self.squareExponent = float(str(ctx.Real()))
             if self.squareExponent <= 0.0:
-                self.warningMessage += f"[Invalid data] "\
+                self.warningMessage += "[Invalid data] "\
                     "The exponent value of square-well or soft-square function "\
                     f"NOE {str(ctx.SqExponent())} {str(ctx.Simple_names())} {self.squareExponent} END' must be a positive value.\n"
 
         elif ctx.SqOffset():
             self.squareOffset = float(str(ctx.Real()))
             if self.squareOffset < 0.0:
-                self.warningMessage += f"[Invalid data] "\
+                self.warningMessage += "[Invalid data] "\
                     "The offset value of square-well or soft-square function "\
                     f"NOE {str(ctx.SqOffset())} {str(ctx.Simple_names())} {self.squareOffset} END' must not be a negative value.\n"
 
         elif ctx.Rswitch():
             self.rSwitch = float(str(ctx.Real()))
             if self.rSwitch < 0.0:
-                self.warningMessage += f"[Invalid data] "\
+                self.warningMessage += "[Invalid data] "\
                     "The smoothing parameter of soft-square function "\
                     f"NOE {str(ctx.Rswitch())} {str(ctx.Simple_names())} {self.rSwitch} END' must not be a negative value.\n"
 
         elif ctx.Scale():
             self.scale = float(str(ctx.Real()))
             if self.scale <= 0.0:
-                self.warningMessage += f"[Invalid data] "\
+                self.warningMessage += "[Invalid data] "\
                     f"The scale value 'NOE {str(ctx.Scale())} {str(ctx.Simple_names())} {self.scale} END' must be a positive value.\n"
 
         elif ctx.Reset():
@@ -764,7 +764,7 @@ class XplorMRParserListener(ParseTreeListener):
         if ctx.Scale():
             self.scale = float(str(ctx.Real()))
             if self.scale <= 0.0:
-                self.warningMessage += f"[Invalid data] "\
+                self.warningMessage += "[Invalid data] "\
                     f"The scale value 'RESTRAINT DIHEDRAL {str(ctx.Scale())} {self.scale} END' must be a positive value.\n"
 
         elif ctx.Reset():
@@ -789,7 +789,7 @@ class XplorMRParserListener(ParseTreeListener):
         exponent = int(str(ctx.Integer()))
 
         if energyConst <= 0.0:
-            self.warningMessage += f"[Invalid data] "\
+            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                 f"The energy constant value {energyConst} must be a positive value.\n"
             return
 
@@ -1969,7 +1969,7 @@ class XplorMRParserListener(ParseTreeListener):
         if ctx.Weight():
             self.scale = float(str(ctx.Real()))
             if self.scale <= 0.0:
-                self.warningMessage += f"[Invalid data] "\
+                self.warningMessage += "[Invalid data] "\
                     f"The weight value 'GROUP {str(ctx.Weight())} {self.scale} END' must be a positive value.\n"
 
     # Exit a parse tree produced by XplorMRParser#group_statement.
@@ -1996,7 +1996,7 @@ class XplorMRParserListener(ParseTreeListener):
             if DIST_ERROR_MIN < self.adistExpect < DIST_ERROR_MAX:
                 pass
             else:
-                self.warningMessage += f"[Invalid data] "\
+                self.warningMessage += "[Invalid data] "\
                     f"The expectation distance 'XADC {str(ctx.Expectation())} {str(ctx.Integer())} {self.scale} END' "\
                     f"must be within range {DIST_RESTRAINT_ERROR}.\n"
 
@@ -2340,14 +2340,14 @@ class XplorMRParserListener(ParseTreeListener):
         if CS_ERROR_MIN < ca_shift < CS_ERROR_MAX:
             pass
         else:
-            self.warningMessage += f"[Invalid data] "\
+            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                 f"CA chemical shift value '{ca_shift}' must be within range {CS_RESTRAINT_ERROR}.\n"
             return
 
         if CS_ERROR_MIN < cb_shift < CS_ERROR_MAX:
             pass
         else:
-            self.warningMessage += f"[Invalid data] "\
+            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                 f"CB chemicbl shift value '{ca_shift}' must be within range {CS_RESTRAINT_ERROR}.\n"
             return
 
@@ -2410,14 +2410,14 @@ class XplorMRParserListener(ParseTreeListener):
         if CS_ERROR_MIN < rcoil_a < CS_ERROR_MAX:
             pass
         else:
-            self.warningMessage += f"[Invalid data] "\
+            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                 f"Random coil 'a' chemical shift value '{rcoil_a}' must be within range {CS_RESTRAINT_ERROR}.\n"
             return
 
         if CS_ERROR_MIN < rcoil_b < CS_ERROR_MAX:
             pass
         else:
-            self.warningMessage += f"[Invalid data] "\
+            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                 f"Random coil 'b' chemical shift value '{rcoil_b}' must be within range {CS_RESTRAINT_ERROR}.\n"
             return
 
@@ -2425,22 +2425,35 @@ class XplorMRParserListener(ParseTreeListener):
 
         for atom1 in self.atomSelectionSet[0]:
             if atom1['atom_id'][0] != 'C':
-                self.warningMessage += f"[Invalid data] "\
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                     f"Not a carbon; {atom1}.\n"
                 return
 
         for atom1 in self.atomSelectionSet[0]:
             if self.__verbose:
-                print(f"subtype={self.__cur_subtype} (RCOI) id={self.hvycsRestraints} "
+                print(f"subtype={self.__cur_subtype} (CARB/RCOI) id={self.hvycsRestraints} "
                       f"atom={atom1} {dstFunc}")
 
     # Enter a parse tree produced by XplorMRParser#proton_shift_statement.
-    def enterProton_shift_statement(self, ctx: XplorMRParser.Proton_shift_statementContext):  # pylint: disable=unused-argument
-        pass
+    def enterProton_shift_statement(self, ctx: XplorMRParser.Proton_shift_statementContext):
+        if ctx.Coupling_potential():
+            code = str(ctx.Coupling_potential()).upper()
+            if code.startswith('SQUA'):
+                self.potential = 'square'
+            elif code.startswith('HARM'):
+                self.potential = 'harmonic'
+
+        elif ctx.Reset():
+            self.potential = 'square'
+            self.coefficients = None
+
+        elif ctx.Classification():
+            self.classification = str(ctx.Simple_name())
 
     # Exit a parse tree produced by XplorMRParser#proton_shift_statement.
     def exitProton_shift_statement(self, ctx: XplorMRParser.Proton_shift_statementContext):  # pylint: disable=unused-argument
-        pass
+        if self.__verbose:
+            print(f"subtype={self.__cur_subtype} (PROT) classification={self.classification}")
 
     # Enter a parse tree produced by XplorMRParser#observed.
     def enterObserved(self, ctx: XplorMRParser.ObservedContext):  # pylint: disable=unused-argument
@@ -2451,7 +2464,61 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#observed.
     def exitObserved(self, ctx: XplorMRParser.ObservedContext):  # pylint: disable=unused-argument
-        pass
+        obs_value = float(str(ctx.Real(0)))
+        obs_value_2 = None
+        if ctx.Real(1):
+            obs_value_2 = float(str(ctx.Real(1)))
+
+        if CS_ERROR_MIN < obs_value < CS_ERROR_MAX:
+            pass
+        else:
+            self.warningMessage += "[Invalid data] "\
+                f"The observed chemical shift value '{obs_value}' must be within range {CS_RESTRAINT_ERROR}.\n"
+            return
+
+        if obs_value_2 is not None:
+            if CS_ERROR_MIN < obs_value_2 < CS_ERROR_MAX:
+                pass
+            else:
+                self.warningMessage += "[Invalid data] "\
+                    f"The 2nd observed chemical shift value '{obs_value_2}' must be within range {CS_RESTRAINT_ERROR}.\n"
+                return
+
+        if obs_value_2 is None:
+            dstFunc = {'obs_value': obs_value}
+        else:
+            dstFunc = {'obs_value_1': obs_value, 'obs_value_2': obs_value_2}
+
+        lenAtomSelectionSet = len(self.atomSelectionSet)
+
+        if obs_value_2 is None and lenAtomSelectionSet == 1:
+            self.warningMessage += "[Invalid data] "\
+                "Missing observed chemical shift value for the 2nd atom selection.\n"
+            return
+
+        if obs_value_2 is not None and lenAtomSelectionSet == 2:
+            self.warningMessage += "[Invalid data] "\
+                f"Missing 2nd atom selection for the observed chemical shift value '{obs_value_2}'.\n"
+            return
+
+        for atom1 in self.atomSelectionSet[0]:
+            if atom1['atom_id'][0] != 'H':
+                self.warningMessage += "[Invalid data] "\
+                    f"Not a proton; {atom1}.\n"
+            return
+
+        if lenAtomSelectionSet == 1:
+            for atom1 in self.atomSelectionSet[0]:
+                if self.__verbose:
+                    print(f"subtype={self.__cur_subtype} (PROT/OBSE) id={self.procsRestraints} "
+                          f"atom={atom1} {dstFunc}")
+
+        else:
+            for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
+                                                  self.atomSelectionSet[1]):
+                if self.__verbose:
+                    print(f"subtype={self.__cur_subtype} (PROT/OBSE) id={self.procsRestraints} "
+                          f"atom1={atom1} atom2={atom2} {dstFunc}")
 
     # Enter a parse tree produced by XplorMRParser#proton_shift_rcoil.
     def enterProton_shift_rcoil(self, ctx: XplorMRParser.Proton_shift_rcoilContext):  # pylint: disable=unused-argument
@@ -2464,7 +2531,7 @@ class XplorMRParserListener(ParseTreeListener):
         if CS_ERROR_MIN < rcoil < CS_ERROR_MAX:
             pass
         else:
-            self.warningMessage += f"[Invalid data] "\
+            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                 f"Random coil chemical shift value '{rcoil}' must be within range {CS_RESTRAINT_ERROR}.\n"
             return
 
@@ -2472,13 +2539,13 @@ class XplorMRParserListener(ParseTreeListener):
 
         for atom1 in self.atomSelectionSet[0]:
             if atom1['atom_id'][0] != 'H':
-                self.warningMessage += f"[Invalid data] "\
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                     f"Not a proton; {atom1}.\n"
                 return
 
         for atom1 in self.atomSelectionSet[0]:
             if self.__verbose:
-                print(f"subtype={self.__cur_subtype} (RCOI) id={self.procsRestraints} "
+                print(f"subtype={self.__cur_subtype} (PROT/RCOI) id={self.procsRestraints} "
                       f"atom={atom1} {dstFunc}")
 
     # Enter a parse tree produced by XplorMRParser#proton_shift_anisotropy.
@@ -2524,63 +2591,136 @@ class XplorMRParserListener(ParseTreeListener):
                                                      self.atomSelectionSet[1],
                                                      self.atomSelectionSet[2]):
             if self.__verbose:
-                print(f"subtype={self.__cur_subtype} (CARB) id={self.procsRestraints} "
+                print(f"subtype={self.__cur_subtype} (PROT/ANIS) id={self.procsRestraints} "
                       f"atom1={atom1} atom2={atom2} atom3={atom3} {dstFunc}")
 
     # Enter a parse tree produced by XplorMRParser#proton_shift_amides.
     def enterProton_shift_amides(self, ctx: XplorMRParser.Proton_shift_amidesContext):  # pylint: disable=unused-argument
-        pass
+        self.atomSelectionSet = []
 
     # Exit a parse tree produced by XplorMRParser#proton_shift_amides.
     def exitProton_shift_amides(self, ctx: XplorMRParser.Proton_shift_amidesContext):  # pylint: disable=unused-argument
-        pass
+        for atom1 in self.atomSelectionSet[0]:
+            if atom1['atom_id'] != 'H':
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"Not a backbone amide proton; {atom1}.\n"
+                return
+
+        for atom1 in self.atomSelectionSet[0]:
+            print(f"subtype={self.__cur_subtype} (PROT/AMID) id={self.procsRestraints} "
+                  f"atom={atom1}")
 
     # Enter a parse tree produced by XplorMRParser#proton_shift_carbons.
     def enterProton_shift_carbons(self, ctx: XplorMRParser.Proton_shift_carbonsContext):  # pylint: disable=unused-argument
-        pass
+        self.atomSelectionSet = []
 
     # Exit a parse tree produced by XplorMRParser#proton_shift_carbons.
     def exitProton_shift_carbons(self, ctx: XplorMRParser.Proton_shift_carbonsContext):  # pylint: disable=unused-argument
-        pass
+        for atom1 in self.atomSelectionSet[0]:
+            if atom1['atom_id'] != 'C':
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"Not a backbone carbonyl carbon; {atom1}.\n"
+                return
+
+        for atom1 in self.atomSelectionSet[0]:
+            print(f"subtype={self.__cur_subtype} (PROT/CARB) id={self.procsRestraints} "
+                  f"atom={atom1}")
 
     # Enter a parse tree produced by XplorMRParser#proton_shift_nitrogens.
     def enterProton_shift_nitrogens(self, ctx: XplorMRParser.Proton_shift_nitrogensContext):  # pylint: disable=unused-argument
-        pass
+        self.atomSelectionSet = []
 
     # Exit a parse tree produced by XplorMRParser#proton_shift_nitrogens.
     def exitProton_shift_nitrogens(self, ctx: XplorMRParser.Proton_shift_nitrogensContext):  # pylint: disable=unused-argument
-        pass
+        for atom1 in self.atomSelectionSet[0]:
+            if atom1['atom_id'] != 'N':
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"Not a backbone nitrogen; {atom1}.\n"
+                return
+
+        for atom1 in self.atomSelectionSet[0]:
+            print(f"subtype={self.__cur_subtype} (PROT/NITR) id={self.procsRestraints} "
+                  f"atom={atom1}")
 
     # Enter a parse tree produced by XplorMRParser#proton_shift_oxygens.
     def enterProton_shift_oxygens(self, ctx: XplorMRParser.Proton_shift_oxygensContext):  # pylint: disable=unused-argument
-        pass
+        self.atomSelectionSet = []
 
     # Exit a parse tree produced by XplorMRParser#proton_shift_oxygens.
     def exitProton_shift_oxygens(self, ctx: XplorMRParser.Proton_shift_oxygensContext):  # pylint: disable=unused-argument
-        pass
+        for atom1 in self.atomSelectionSet[0]:
+            if atom1['atom_id'] != 'O':
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"Not a backbone oxygen; {atom1}.\n"
+                return
+
+        for atom1 in self.atomSelectionSet[0]:
+            print(f"subtype={self.__cur_subtype} (PROT/OXYG) id={self.procsRestraints} "
+                  f"atom={atom1}")
 
     # Enter a parse tree produced by XplorMRParser#proton_shift_ring_atoms.
     def enterProton_shift_ring_atoms(self, ctx: XplorMRParser.Proton_shift_ring_atomsContext):  # pylint: disable=unused-argument
-        pass
+        self.atomSelectionSet = []
 
     # Exit a parse tree produced by XplorMRParser#proton_shift_ring_atoms.
-    def exitProton_shift_ring_atoms(self, ctx: XplorMRParser.Proton_shift_ring_atomsContext):  # pylint: disable=unused-argument
-        pass
+    def exitProton_shift_ring_atoms(self, ctx: XplorMRParser.Proton_shift_ring_atomsContext):
+        ring_name = str(ctx.Simple_name())
+
+        ringNames = ('PHE', 'TYR', 'HIS', 'TRP5', 'TRP6', 'ADE6', 'ADE5', 'GUA6', 'GUA5', 'THY', 'CYT', 'URA')
+
+        if ring_name not in ringNames:
+            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                f"{ring_name!r} must be one of {ringNames}.\n"
+            return
+
+        if not self.areUniqueCoordAtoms('a proton chemical shift (PROT/RING)'):
+            return
+
+        if len(self.atomSelectionSet) == 5:
+            for atom1, atom2, atom3, atom4, atom5 in itertools.product(self.atomSelectionSet[0],
+                                                                       self.atomSelectionSet[1],
+                                                                       self.atomSelectionSet[2],
+                                                                       self.atomSelectionSet[3],
+                                                                       self.atomSelectionSet[4]):
+                if self.__verbose:
+                    print(f"subtype={self.__cur_subtype} (PROT/RING) id={self.procsRestraints} "
+                          f"ring_name={ring_name} atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} atom5={atom5}")
+
+        else:
+            for atom1, atom2, atom3, atom4, atom5, atom6 in itertools.product(self.atomSelectionSet[0],
+                                                                              self.atomSelectionSet[1],
+                                                                              self.atomSelectionSet[2],
+                                                                              self.atomSelectionSet[3],
+                                                                              self.atomSelectionSet[4],
+                                                                              self.atomSelectionSet[5]):
+                if self.__verbose:
+                    print(f"subtype={self.__cur_subtype} (PROT/RING) id={self.procsRestraints} "
+                          f"ring_name={ring_name} atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} atom5={atom5} atom6={atom6}")
 
     # Enter a parse tree produced by XplorMRParser#proton_shift_alphas_and_amides.
     def enterProton_shift_alphas_and_amides(self, ctx: XplorMRParser.Proton_shift_alphas_and_amidesContext):  # pylint: disable=unused-argument
-        pass
+        self.atomSelectionSet = []
 
     # Exit a parse tree produced by XplorMRParser#proton_shift_alphas_and_amides.
     def exitProton_shift_alphas_and_amides(self, ctx: XplorMRParser.Proton_shift_alphas_and_amidesContext):  # pylint: disable=unused-argument
-        pass
+        for atom1 in self.atomSelectionSet[0]:
+            if atom1['atom_id'] == 'H' or atom1['atom_id'].startswith('HA'):
+                pass
+            else:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"Neither alpha protons nor amide proton; {atom1}.\n"
+                return
+
+        for atom1 in self.atomSelectionSet[0]:
+            print(f"subtype={self.__cur_subtype} (PROT/ALPH) id={self.procsRestraints} "
+                  f"atom={atom1}")
 
     # Enter a parse tree produced by XplorMRParser#ramachandran_statement.
     def enterRamachandran_statement(self, ctx: XplorMRParser.Ramachandran_statementContext):
         if ctx.Scale():
             self.scale = float(str(ctx.Real(0)))
             if self.scale <= 0.0:
-                self.warningMessage += f"[Invalid data] "\
+                self.warningMessage += "[Invalid data] "\
                     f"The scale value 'RAMA {str(ctx.Scale())} {self.scale} END' must be a positive value.\n"
 
         elif ctx.Reset():
@@ -2685,7 +2825,7 @@ class XplorMRParserListener(ParseTreeListener):
         if ctx.Scale():
             self.scale = float(str(ctx.Real(0)))
             if self.scale <= 0.0:
-                self.warningMessage += f"[Invalid data] "\
+                self.warningMessage += "[Invalid data] "\
                     f"The scale value 'COLL {str(ctx.Scale())} {self.scale} END' must be a positive value.\n"
 
         elif ctx.Reset():
@@ -2708,14 +2848,14 @@ class XplorMRParserListener(ParseTreeListener):
         targetRgyr = float(str(ctx.Real(1)))
 
         if forceConst <= 0.0:
-            self.warningMessage += f"[Invalid data] "\
+            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                 f"The force constant value {forceConst} must be a positive value.\n"
             return
 
         if DIST_ERROR_MIN < targetRgyr < DIST_ERROR_MAX:
             pass
         else:
-            self.warningMessage += f"[Invalid data] "\
+            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                 f"The target Rgyr value {targetRgyr} must be within range {DIST_RESTRAINT_ERROR}.\n"
             return
 
@@ -3025,7 +3165,7 @@ class XplorMRParserListener(ParseTreeListener):
         elif ctx.Scale():
             self.scale = float(str(ctx.Real(0)))
             if self.scale <= 0.0:
-                self.warningMessage += f"[Invalid data] "\
+                self.warningMessage += "[Invalid data] "\
                     f"The scale value 'DCSA {str(ctx.Scale())} {self.scale} END' must be a positive value.\n"
 
         elif ctx.Reset():
@@ -3283,7 +3423,7 @@ class XplorMRParserListener(ParseTreeListener):
         elif ctx.Scale():
             self.scale = float(str(ctx.Real(0)))
             if self.scale <= 0.0:
-                self.warningMessage += f"[Invalid data] "\
+                self.warningMessage += "[Invalid data] "\
                     f"The scale value 'PCSA {str(ctx.Scale())} {self.scale} END' must be a positive value.\n"
 
         elif ctx.Reset():

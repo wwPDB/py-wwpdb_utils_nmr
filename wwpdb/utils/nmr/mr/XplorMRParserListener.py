@@ -3404,12 +3404,17 @@ class XplorMRParserListener(ParseTreeListener):
         pass
 
     # Enter a parse tree produced by XplorMRParser#porientation_statement.
-    def enterPorientation_statement(self, ctx: XplorMRParser.Porientation_statementContext):  # pylint: disable=unused-argument
-        pass
+    def enterPorientation_statement(self, ctx: XplorMRParser.Porientation_statementContext):
+        if ctx.Reset():
+            pass
+
+        elif ctx.Classification():
+            self.classification = str(ctx.Simple_name())
 
     # Exit a parse tree produced by XplorMRParser#porientation_statement.
     def exitPorientation_statement(self, ctx: XplorMRParser.Porientation_statementContext):  # pylint: disable=unused-argument
-        pass
+        if self.__verbose:
+            print(f"subtype={self.__cur_subtype} (XANG) classification={self.classification}")
 
     # Enter a parse tree produced by XplorMRParser#porientation_assign.
     def enterPorientation_assign(self, ctx: XplorMRParser.Porientation_assignContext):  # pylint: disable=unused-argument
@@ -3420,7 +3425,191 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#porientation_assign.
     def exitPorientation_assign(self, ctx: XplorMRParser.Porientation_assignContext):  # pylint: disable=unused-argument
-        pass
+        theta = float(str(ctx.Real(0)))
+        phi = float(str(ctx.Real(1)))
+        delta = abs(float(str(ctx.Real(2))))
+
+        validRange = True
+        dstFunc = {'weight': 1.0, 'angle_name': 'theta'}
+
+        target_value = theta
+        lower_limit = theta - delta
+        upper_limit = theta + delta
+
+        if target_value is not None:
+            if ANGLE_ERROR_MIN < target_value < ANGLE_ERROR_MAX:
+                dstFunc['target_value'] = f"{target_value:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The target value='{target_value}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
+
+        if lower_limit is not None:
+            if ANGLE_ERROR_MIN < lower_limit < ANGLE_ERROR_MAX:
+                dstFunc['lower_limit'] = f"{lower_limit:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The lower limit value='{lower_limit}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
+
+        if upper_limit is not None:
+            if ANGLE_ERROR_MIN < upper_limit < ANGLE_ERROR_MAX:
+                dstFunc['upper_limit'] = f"{upper_limit:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The upper limit value='{upper_limit}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
+
+        if not validRange:
+            return
+
+        if target_value is not None:
+            if ANGLE_RANGE_MIN <= target_value <= ANGLE_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The target value='{target_value}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
+
+        if lower_limit is not None:
+            if ANGLE_RANGE_MIN <= lower_limit <= ANGLE_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The lower limit value='{lower_limit}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
+
+        if upper_limit is not None:
+            if ANGLE_RANGE_MIN <= upper_limit <= ANGLE_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The upper limit value='{upper_limit}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
+
+        dstFunc2 = {'weight': 1.0, 'angle_name': 'phi'}
+
+        target_value = phi
+        lower_limit = phi - delta
+        upper_limit = phi + delta
+
+        if target_value is not None:
+            if ANGLE_ERROR_MIN < target_value < ANGLE_ERROR_MAX:
+                dstFunc2['target_value'] = f"{target_value:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The target value='{target_value}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
+
+        if lower_limit is not None:
+            if ANGLE_ERROR_MIN < lower_limit < ANGLE_ERROR_MAX:
+                dstFunc2['lower_limit'] = f"{lower_limit:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The lower limit value='{lower_limit}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
+
+        if upper_limit is not None:
+            if ANGLE_ERROR_MIN < upper_limit < ANGLE_ERROR_MAX:
+                dstFunc2['upper_limit'] = f"{upper_limit:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The upper limit value='{upper_limit}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
+
+        if not validRange:
+            return
+
+        if target_value is not None:
+            if ANGLE_RANGE_MIN <= target_value <= ANGLE_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The target value='{target_value}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
+
+        if lower_limit is not None:
+            if ANGLE_RANGE_MIN <= lower_limit <= ANGLE_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The lower limit value='{lower_limit}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
+
+        if upper_limit is not None:
+            if ANGLE_RANGE_MIN <= upper_limit <= ANGLE_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The upper limit value='{upper_limit}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
+
+        if not self.__hasPolySeq:
+            return
+
+        if not self.areUniqueCoordAtoms('a paramagnetic orientation (XANG)'):
+            return
+
+        chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
+        seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
+        comp_id_1 = self.atomSelectionSet[0][0]['comp_id']
+        atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
+
+        chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
+        seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
+        comp_id_2 = self.atomSelectionSet[1][0]['comp_id']
+        atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+
+        if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
+            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                f"Non-magnetic susceptible spin appears in orientation vector; "\
+                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
+                f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+            return
+
+        if chain_id_1 != chain_id_2:
+            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                f"Found inter-chain orientation vector; "\
+                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+            return
+
+        if abs(seq_id_1 - seq_id_2) > 1:
+            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                f"Found inter-residue orientation vector; "\
+                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+            return
+
+        if abs(seq_id_1 - seq_id_2) == 1:
+
+            if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
+               ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H')) or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H') and atom_id_2 == 'C')):
+                pass
+
+            else:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    "Found inter-residue orientation vector; "\
+                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                return
+
+        elif atom_id_1 == atom_id_2:
+            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                "Found zero orientation vector; "\
+                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+            return
+
+        else:
+
+            if self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
+
+                if not any(b for b in self.__ccU.lastBonds
+                           if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
+                               or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
+
+                    if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            "Found an orientation vector over multiple covalent bonds in the 'SANIsotropy' statement; "\
+                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                        return
+
+        for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
+                                              self.atomSelectionSet[1]):
+            if self.__verbose:
+                print(f"subtype={self.__cur_subtype} (XANG) id={self.pangRestraints} "
+                      f"atom1={atom1} atom2={atom2} {dstFunc} {dstFunc2}")
 
     # Enter a parse tree produced by XplorMRParser#pccr_statement.
     def enterPccr_statement(self, ctx: XplorMRParser.Pccr_statementContext):  # pylint: disable=unused-argument

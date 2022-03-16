@@ -2483,11 +2483,49 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#proton_shift_anisotropy.
     def enterProton_shift_anisotropy(self, ctx: XplorMRParser.Proton_shift_anisotropyContext):  # pylint: disable=unused-argument
-        pass
+        self.atomSelectionSet = []
 
     # Exit a parse tree produced by XplorMRParser#proton_shift_anisotropy.
-    def exitProton_shift_anisotropy(self, ctx: XplorMRParser.Proton_shift_anisotropyContext):  # pylint: disable=unused-argument
-        pass
+    def exitProton_shift_anisotropy(self, ctx: XplorMRParser.Proton_shift_anisotropyContext):
+        co_or_cn = str(ctx.Simple_name(0))
+        is_cooh = None
+        if ctx.Logical():
+            is_cooh = str(ctx.Logical()) in ('TRUE', 'ON')
+        sc_or_bb = str(ctx.Simple_name(1))
+
+        if not self.areUniqueCoordAtoms('a proton chemical shift (PROT/ANIS)'):
+            return
+
+        dstFunc = {'co_or_cn': co_or_cn.lower(), 'is_cooh': is_cooh, 'sc_or_bb': sc_or_bb.lower()}
+
+        chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
+        seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
+        atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
+
+        chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
+        seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
+        atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+
+        chain_id_3 = self.atomSelectionSet[2][0]['chain_id']
+        seq_id_3 = self.atomSelectionSet[2][0]['seq_id']
+        atom_id_3 = self.atomSelectionSet[2][0]['atom_id']
+
+        chain_ids = [chain_id_1, chain_id_2, chain_id_3]
+        seq_ids = [seq_id_1, seq_id_2, seq_id_3]
+        offsets = [seq_id - seq_id_2 for seq_id in seq_ids]
+        atom_ids = [atom_id_1, atom_id_2, atom_id_3]
+
+        if chain_ids != [chain_id_1] * 3 or offsets != [0] * 3 or atom_ids != ['CA', 'C', 'O']:
+            self.warningMessage += "[Invalid data] "\
+                "The atom selection order must be [CA(i), C(i), O(i)].\n"
+            return
+
+        for atom1, atom2, atom3 in itertools.product(self.atomSelectionSet[0],
+                                                     self.atomSelectionSet[1],
+                                                     self.atomSelectionSet[2]):
+            if self.__verbose:
+                print(f"subtype={self.__cur_subtype} (CARB) id={self.procsRestraints} "
+                      f"atom1={atom1} atom2={atom2} atom3={atom3} {dstFunc}")
 
     # Enter a parse tree produced by XplorMRParser#proton_shift_amides.
     def enterProton_shift_amides(self, ctx: XplorMRParser.Proton_shift_amidesContext):  # pylint: disable=unused-argument

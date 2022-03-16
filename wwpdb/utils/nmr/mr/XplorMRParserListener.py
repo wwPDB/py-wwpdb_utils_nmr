@@ -222,6 +222,7 @@ class XplorMRParserListener(ParseTreeListener):
     squareOffset = 0.0
     rSwitch = 10.0
     scale = 1.0
+    adistExpect = -1.0
     symmTarget = None
     symmDminus = None
     symmDplus = None
@@ -1949,8 +1950,22 @@ class XplorMRParserListener(ParseTreeListener):
                       f"atom={atom1} weight={self.scale}")
 
     # Enter a parse tree produced by XplorMRParser#antidistance_statement.
-    def enterAntidistance_statement(self, ctx: XplorMRParser.Antidistance_statementContext):  # pylint: disable=unused-argument
-        pass
+    def enterAntidistance_statement(self, ctx: XplorMRParser.Antidistance_statementContext):
+        if ctx.Reset():
+            self.adistExpect = -1.0
+
+        elif ctx.Classification():
+            self.classification = str(ctx.Simple_name())
+
+        elif ctx.Expectation():
+            self.adistExpect = float(str(ctx.Real()))
+
+            if DIST_ERROR_MIN < self.adistExpect < DIST_ERROR_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Invalid data] "\
+                    f"The expectation distance 'XADC {str(ctx.Expectation())} {str(ctx.Integer())} {self.scale} END' "\
+                    f"must be within range {DIST_RESTRAINT_ERROR}.\n"
 
     # Exit a parse tree produced by XplorMRParser#antidistance_statement.
     def exitAntidistance_statement(self, ctx: XplorMRParser.Antidistance_statementContext):  # pylint: disable=unused-argument
@@ -1961,9 +1976,22 @@ class XplorMRParserListener(ParseTreeListener):
         self.adistRestraints += 1
         self.__cur_subtype = 'adist'
 
+        self.atomSelectionSet = []
+
     # Exit a parse tree produced by XplorMRParser#xadc_assign.
     def exitXadc_assign(self, ctx: XplorMRParser.Xadc_assignContext):  # pylint: disable=unused-argument
-        pass
+        if not self.__hasPolySeq:
+            return
+
+        for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
+                                              self.atomSelectionSet[1]):
+            if self.__verbose:
+                if DIST_ERROR_MIN < self.adistExpect < DIST_ERROR_MAX:
+                    print(f"subtype={self.__cur_subtype} (XADC) id={self.adistRestraints} "
+                          f"atom1={atom1} atom2={atom2} expectation={self.adistExpect}")
+                else:
+                    print(f"subtype={self.__cur_subtype} (XADC) id={self.adistRestraints} "
+                          f"atom1={atom1} atom2={atom2}")
 
     # Enter a parse tree produced by XplorMRParser#coupling_statement.
     def enterCoupling_statement(self, ctx: XplorMRParser.Coupling_statementContext):  # pylint: disable=unused-argument

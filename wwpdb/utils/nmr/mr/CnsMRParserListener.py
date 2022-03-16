@@ -976,12 +976,35 @@ class CnsMRParserListener(ParseTreeListener):
                       f"atom1={atom1} atom2={atom2} {dstFunc}")
 
     # Enter a parse tree produced by CnsMRParser#coupling_statement.
-    def enterCoupling_statement(self, ctx: CnsMRParser.Coupling_statementContext):  # pylint: disable=unused-argument
-        pass
+    def enterCoupling_statement(self, ctx: CnsMRParser.Coupling_statementContext):
+        if ctx.Coupling_potential():
+            code = str(ctx.Rdc_potential()).upper()
+            if code.startswith('SQUA'):
+                self.potential = 'square'
+            elif code.startswith('HARM'):
+                self.potential = 'harmonic'
+            elif code.startswith('MULT'):
+                self.potential = 'multiple'
+
+        elif ctx.Reset():
+            self.potential = 'square'
+            self.coefficients = None
+
+        elif ctx.Classification():
+            self.classification = str(ctx.Simple_name())
+
+        elif ctx.Coefficients():
+            self.coefficients = {'Karplus_coef_a': float(str(ctx.Real(0))),
+                                 'Karplus_coef_b': float(str(ctx.Real(1))),
+                                 'Karplus_coef_c': float(str(ctx.Real(2))),
+                                 'Karplus_phase': float(str(ctx.Real(3)))
+                                 }
 
     # Exit a parse tree produced by CnsMRParser#coupling_statement.
     def exitCoupling_statement(self, ctx: CnsMRParser.Coupling_statementContext):  # pylint: disable=unused-argument
-        pass
+        if self.__verbose:
+            print(f"subtype={self.__cur_subtype} (COUP) classification={self.classification} "
+                  f"coefficients={self.coefficients}")
 
     # Enter a parse tree produced by CnsMRParser#coup_assign.
     def enterCoup_assign(self, ctx: CnsMRParser.Coup_assignContext):  # pylint: disable=unused-argument
@@ -990,7 +1013,238 @@ class CnsMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by CnsMRParser#coup_assign.
     def exitCoup_assign(self, ctx: CnsMRParser.Coup_assignContext):  # pylint: disable=unused-argument
-        pass
+        target = float(str(ctx.Real(0)))
+        delta = abs(float(str(ctx.Real(1))))
+
+        target_value = target
+        lower_limit = None
+        upper_limit = None
+
+        if self.potential != 'harmonic':
+            lower_limit = target - delta
+            upper_limit = target + delta
+
+        validRange = True
+        dstFunc = {'weight': 1.0, 'potential': self.potential}
+
+        if target_value is not None:
+            if RDC_ERROR_MIN < target_value < RDC_ERROR_MAX:
+                dstFunc['target_value'] = f"{target_value:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The target value='{target_value}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+
+        if lower_limit is not None:
+            if RDC_ERROR_MIN < lower_limit < RDC_ERROR_MAX:
+                dstFunc['lower_limit'] = f"{lower_limit:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The lower limit value='{lower_limit}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+
+        if upper_limit is not None:
+            if RDC_ERROR_MIN < upper_limit < RDC_ERROR_MAX:
+                dstFunc['upper_limit'] = f"{upper_limit:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The upper limit value='{upper_limit}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+
+        if not validRange:
+            return
+
+        if target_value is not None:
+            if RDC_RANGE_MIN < target_value < RDC_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The target value='{target_value}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+
+        if lower_limit is not None:
+            if RDC_RANGE_MIN < lower_limit < RDC_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The lower limit value='{lower_limit}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+
+        if upper_limit is not None:
+            if RDC_RANGE_MIN < upper_limit < RDC_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The upper limit value='{upper_limit}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+
+        dstFunc2 = None
+
+        if ctx.Real(2):
+            target = float(str(ctx.Real(2)))
+            delta = abs(float(str(ctx.Real(3))))
+
+            target_value = target
+            lower_limit = None
+            upper_limit = None
+
+            if self.potential != 'harmonic':
+                lower_limit = target - delta
+                upper_limit = target + delta
+
+            validRange = True
+            dstFunc2 = {'weight': 1.0, 'potential': self.potential}
+
+            if target_value is not None:
+                if RDC_ERROR_MIN < target_value < RDC_ERROR_MAX:
+                    dstFunc2['target_value'] = f"{target_value:.3f}"
+                else:
+                    validRange = False
+                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                        f"The target value='{target_value}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+
+            if lower_limit is not None:
+                if RDC_ERROR_MIN < lower_limit < RDC_ERROR_MAX:
+                    dstFunc2['lower_limit'] = f"{lower_limit:.3f}"
+                else:
+                    validRange = False
+                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                        f"The lower limit value='{lower_limit}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+
+            if upper_limit is not None:
+                if RDC_ERROR_MIN < upper_limit < RDC_ERROR_MAX:
+                    dstFunc2['upper_limit'] = f"{upper_limit:.3f}"
+                else:
+                    validRange = False
+                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                        f"The upper limit value='{upper_limit}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+
+            if not validRange:
+                return
+
+            if target_value is not None:
+                if RDC_RANGE_MIN < target_value < RDC_RANGE_MAX:
+                    pass
+                else:
+                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                        f"The target value='{target_value}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+
+            if lower_limit is not None:
+                if RDC_RANGE_MIN < lower_limit < RDC_RANGE_MAX:
+                    pass
+                else:
+                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                        f"The lower limit value='{lower_limit}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+
+            if upper_limit is not None:
+                if RDC_RANGE_MIN < upper_limit < RDC_RANGE_MAX:
+                    pass
+                else:
+                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                        f"The upper limit value='{upper_limit}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+
+        if not self.__hasPolySeq:
+            return
+
+        if not self.areUniqueCoordAtoms('a J-coupling (COUP)'):
+            return
+
+        for i in range(0, len(self.atomSelectionSet), 2):
+            chain_id_1 = self.atomSelectionSet[i][0]['chain_id']
+            seq_id_1 = self.atomSelectionSet[i][0]['seq_id']
+            comp_id_1 = self.atomSelectionSet[i][0]['comp_id']
+            atom_id_1 = self.atomSelectionSet[i][0]['atom_id']
+
+            chain_id_2 = self.atomSelectionSet[i + 1][0]['chain_id']
+            seq_id_2 = self.atomSelectionSet[i + 1][0]['seq_id']
+            comp_id_2 = self.atomSelectionSet[i + 1][0]['comp_id']
+            atom_id_2 = self.atomSelectionSet[i + 1][0]['atom_id']
+
+            if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"Non-magnetic susceptible spin appears in J-coupling vector; "\
+                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
+                    f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                return
+
+            if chain_id_1 != chain_id_2:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"Found inter-chain J-coupling vector; "\
+                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                return
+
+            if abs(seq_id_1 - seq_id_2) > 1:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"Found inter-residue J-coupling vector; "\
+                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                return
+
+            if abs(seq_id_1 - seq_id_2) == 1:
+
+                if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
+                   ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H')) or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H') and atom_id_2 == 'C')):
+                    pass
+
+                else:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        "Found inter-residue J-coupling vector; "\
+                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    return
+
+            elif atom_id_1 == atom_id_2:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    "Found zero J-coupling vector; "\
+                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                return
+
+            else:
+
+                if self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
+
+                    if not any(b for b in self.__ccU.lastBonds
+                               if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
+                                   or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
+
+                        if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
+                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                "Found an J-coupling vector over multiple covalent bonds in the 'SANIsotropy' statement; "\
+                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                            return
+
+        if len(self.atomSelectionSet) == 4:
+            for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
+                                                                self.atomSelectionSet[1],
+                                                                self.atomSelectionSet[2],
+                                                                self.atomSelectionSet[3]):
+                if self.__verbose:
+                    if dstFunc2 is None:
+                        print(f"subtype={self.__cur_subtype} (DIHE) id={self.jcoupRestraints} "
+                              f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
+                    else:
+                        print(f"subtype={self.__cur_subtype} (DIHE) id={self.jcoupRestraints} "
+                              f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc} {dstFunc2}")
+
+        else:
+            for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
+                                                                self.atomSelectionSet[1],
+                                                                self.atomSelectionSet[2],
+                                                                self.atomSelectionSet[3]):
+                if self.__verbose:
+                    if dstFunc2 is None:
+                        print(f"subtype={self.__cur_subtype} (DIHE) id={self.jcoupRestraints} "
+                              f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
+                    else:
+                        print(f"subtype={self.__cur_subtype} (DIHE) id={self.jcoupRestraints} "
+                              f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc} {dstFunc2}")
+
+            for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[4],
+                                                                self.atomSelectionSet[5],
+                                                                self.atomSelectionSet[6],
+                                                                self.atomSelectionSet[7]):
+                if self.__verbose:
+                    if dstFunc2 is None:
+                        print(f"subtype={self.__cur_subtype} (DIHE) id={self.jcoupRestraints} "
+                              f"atom4={atom1} atom5={atom2} atom6={atom3} atom7={atom4} {dstFunc}")
+                    else:
+                        print(f"subtype={self.__cur_subtype} (DIHE) id={self.jcoupRestraints} "
+                              f"atom4={atom1} atom5={atom2} atom6={atom3} atom7={atom4} {dstFunc} {dstFunc2}")
 
     # Enter a parse tree produced by CnsMRParser#carbon_shift_statement.
     def enterCarbon_shift_statement(self, ctx: CnsMRParser.Carbon_shift_statementContext):  # pylint: disable=unused-argument

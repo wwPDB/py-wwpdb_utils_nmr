@@ -2709,12 +2709,17 @@ class XplorMRParserListener(ParseTreeListener):
                       f"atom1={atom1} atom2={atom2} {dstFunc}")
 
     # Enter a parse tree produced by XplorMRParser#orientation_statement.
-    def enterOrientation_statement(self, ctx: XplorMRParser.Orientation_statementContext):  # pylint: disable=unused-argument
-        pass
+    def enterOrientation_statement(self, ctx: XplorMRParser.Orientation_statementContext):
+        if ctx.Reset():
+            pass
+
+        elif ctx.Classification():
+            self.classification = str(ctx.Simple_name())
 
     # Exit a parse tree produced by XplorMRParser#orientation_statement.
     def exitOrientation_statement(self, ctx: XplorMRParser.Orientation_statementContext):  # pylint: disable=unused-argument
-        pass
+        if self.__verbose:
+            print(f"subtype={self.__cur_subtype} (ORIE) classification={self.classification}")
 
     # Enter a parse tree produced by XplorMRParser#orie_assign.
     def enterOrie_assign(self, ctx: XplorMRParser.Orie_assignContext):  # pylint: disable=unused-argument
@@ -2725,7 +2730,84 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#orie_assign.
     def exitOrie_assign(self, ctx: XplorMRParser.Orie_assignContext):  # pylint: disable=unused-argument
-        pass
+        if not self.__hasPolySeq:
+            return
+
+        if not self.areUniqueCoordAtoms('a residue-residue position/orientation database (ORIE)'):
+            return
+
+        chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
+        seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
+        comp_id_1 = self.atomSelectionSet[0][0]['comp_id']
+        atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
+
+        chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
+        seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
+        comp_id_2 = self.atomSelectionSet[1][0]['comp_id']
+        atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+
+        chain_id_3 = self.atomSelectionSet[2][0]['chain_id']
+        seq_id_3 = self.atomSelectionSet[2][0]['seq_id']
+        comp_id_3 = self.atomSelectionSet[2][0]['comp_id']
+        atom_id_3 = self.atomSelectionSet[2][0]['atom_id']
+
+        chain_id_4 = self.atomSelectionSet[3][0]['chain_id']
+        seq_id_4 = self.atomSelectionSet[3][0]['seq_id']
+        comp_id_4 = self.atomSelectionSet[3][0]['comp_id']
+        atom_id_4 = self.atomSelectionSet[3][0]['atom_id']
+
+        _, nucleotide, _ = self.__csStat.getTypeOfCompId(comp_id_1)
+
+        if not nucleotide:
+            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                "Not a nucleic acid; "\
+                f"{chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}.\n"
+            return
+
+        if comp_id_2 != comp_id_1:
+            _, nucleotide, _ = self.__csStat.getTypeOfCompId(comp_id_2)
+
+            if not nucleotide:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    "Not a nucleic acid; "\
+                    f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}.\n"
+                return
+
+        if comp_id_3 not in (comp_id_1, comp_id_2):
+            _, nucleotide, _ = self.__csStat.getTypeOfCompId(comp_id_3)
+
+            if not nucleotide:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    "Not a nucleic acid; "\
+                    f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}.\n"
+                return
+
+        if comp_id_4 not in (comp_id_1, comp_id_2, comp_id_3):
+            _, nucleotide, _ = self.__csStat.getTypeOfCompId(comp_id_4)
+
+            if not nucleotide:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    "Not a nucleic acid; "\
+                    f"{chain_id_4}:{seq_id_4}:{comp_id_4}:{atom_id_4}.\n"
+                return
+
+        if chain_id_1 == chain_id_2 and chain_id_2 == chain_id_3 and chain_id_3 == chain_id_4:
+            if seq_id_1 == seq_id_2 and seq_id_2 == seq_id_3 and seq_id_3 == seq_id_4:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    "All selected atoms are in the same residue; "\
+                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
+                    f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
+                    f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}, "\
+                    f"{chain_id_4}:{seq_id_4}:{comp_id_4}:{atom_id_4}).\n"
+                return
+
+        for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
+                                                            self.atomSelectionSet[1],
+                                                            self.atomSelectionSet[2],
+                                                            self.atomSelectionSet[3]):
+            if self.__verbose:
+                print(f"subtype={self.__cur_subtype} (ORIE) id={self.nbaseRestraints} "
+                      f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4}")
 
     # Enter a parse tree produced by XplorMRParser#csa_statement.
     def enterCsa_statement(self, ctx: XplorMRParser.Csa_statementContext):

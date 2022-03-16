@@ -768,12 +768,27 @@ class CnsMRParserListener(ParseTreeListener):
         pass
 
     # Enter a parse tree produced by CnsMRParser#group_statement.
-    def enterGroup_statement(self, ctx: CnsMRParser.Group_statementContext):  # pylint: disable=unused-argument
-        pass
+    def enterGroup_statement(self, ctx: CnsMRParser.Group_statementContext):
+        self.planeRestraints += 1
+        self.__cur_subtype = 'plane'
+
+        self.atomSelectionSet = []
+
+        if ctx.Weight():
+            self.scale = float(ctx.Real())
+            if self.scale <= 0.0:
+                self.warningMessage += f"[Invalid data] "\
+                    f"The weight value 'GROUP {str(ctx.Weight())} {self.scale} END' must be a positive value.\n"
 
     # Exit a parse tree produced by CnsMRParser#group_statement.
     def exitGroup_statement(self, ctx: CnsMRParser.Group_statementContext):  # pylint: disable=unused-argument
-        pass
+        if not self.__hasPolySeq:
+            return
+
+        for atom1 in self.atomSelectionSet[0]:
+            if self.__verbose:
+                print(f"subtype={self.__cur_subtype} (GROU) id={self.planeRestraints} "
+                      f"atom={atom1} weight={self.scale}")
 
     # Enter a parse tree produced by CnsMRParser#harmonic_statement.
     def enterHarmonic_statement(self, ctx: CnsMRParser.Harmonic_statementContext):  # pylint: disable=unused-argument
@@ -795,6 +810,9 @@ class CnsMRParserListener(ParseTreeListener):
         elif ctx.Reset():
             self.potential = 'square'
             self.coefficients = None
+
+        elif ctx.Classification():
+            self.classification = str(ctx.Simple_name())
 
         elif ctx.Coefficients():
             self.coefficients = {'DFS': float(str(ctx.Real(0))),

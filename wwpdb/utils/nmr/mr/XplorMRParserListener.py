@@ -1973,7 +1973,9 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#antidistance_statement.
     def exitAntidistance_statement(self, ctx: XplorMRParser.Antidistance_statementContext):  # pylint: disable=unused-argument
-        pass
+        if self.__verbose:
+            print(f"subtype={self.__cur_subtype} (XADC) classification={self.classification} "
+                  f"coefficients={self.coefficients}")
 
     # Enter a parse tree produced by XplorMRParser#xadc_assign.
     def enterXadc_assign(self, ctx: XplorMRParser.Xadc_assignContext):  # pylint: disable=unused-argument
@@ -2684,7 +2686,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by XplorMRParser#pcsa_statement.
     def exitPcsa_statement(self, ctx: XplorMRParser.Pcsa_statementContext):  # pylint: disable=unused-argument
         if self.__verbose:
-            print(f"subtype={self.__cur_subtype} (DCSA) classification={self.classification} "
+            print(f"subtype={self.__cur_subtype} (PCSA) classification={self.classification} "
                   f"scale={self.scale} coefficients={self.coefficients} sigma={self.csaSigma}")
 
     # Enter a parse tree produced by XplorMRParser#one_bond_coupling_statement.
@@ -3007,11 +3009,16 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#hbond_statement.
     def enterHbond_statement(self, ctx: XplorMRParser.Hbond_statementContext):  # pylint: disable=unused-argument
-        pass
+        if ctx.Reset():
+            pass
+
+        elif ctx.Classification():
+            self.classification = str(ctx.Simple_name())
 
     # Exit a parse tree produced by XplorMRParser#hbond_statement.
     def exitHbond_statement(self, ctx: XplorMRParser.Hbond_statementContext):  # pylint: disable=unused-argument
-        pass
+        if self.__verbose:
+            print(f"subtype={self.__cur_subtype} (HBSA) classification={self.classification}")
 
     # Enter a parse tree produced by XplorMRParser#hbond_assign.
     def enterHbond_assign(self, ctx: XplorMRParser.Hbond_assignContext):  # pylint: disable=unused-argument

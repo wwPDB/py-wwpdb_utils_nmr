@@ -1206,7 +1206,7 @@ class CnsMRParserListener(ParseTreeListener):
 
                         if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
                             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                "Found an J-coupling vector over multiple covalent bonds in the 'SANIsotropy' statement; "\
+                                "Found an J-coupling vector over multiple covalent bonds in the 'COUPling' statement; "\
                                 f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
                             return
 
@@ -1451,7 +1451,7 @@ class CnsMRParserListener(ParseTreeListener):
 
                         if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
                             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                "Found an dihedral angle vector over multiple covalent bonds in the 'SANIsotropy' statement; "\
+                                "Found an dihedral angle vector over multiple covalent bonds in the 'CONFormation' statement; "\
                                 f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
                             return
 

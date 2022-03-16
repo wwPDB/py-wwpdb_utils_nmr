@@ -2035,6 +2035,8 @@ class XplorMRParserListener(ParseTreeListener):
         self.jcoupRestraints += 1
         self.__cur_subtype = 'jcoup'
 
+        self.atomSelectionSet = []
+
     # Exit a parse tree produced by XplorMRParser#coup_assign.
     def exitCoup_assign(self, ctx: XplorMRParser.Coup_assignContext):  # pylint: disable=unused-argument
         target = float(str(ctx.Real(0)))
@@ -2283,6 +2285,8 @@ class XplorMRParserListener(ParseTreeListener):
         self.hvycsRestraints += 1
         self.__cur_subtype = 'hvycs'
 
+        self.atomSelectionSet = []
+
     # Exit a parse tree produced by XplorMRParser#carbon_shift_assign.
     def exitCarbon_shift_assign(self, ctx: XplorMRParser.Carbon_shift_assignContext):  # pylint: disable=unused-argument
         pass
@@ -2307,6 +2311,8 @@ class XplorMRParserListener(ParseTreeListener):
     def enterObserved(self, ctx: XplorMRParser.ObservedContext):  # pylint: disable=unused-argument
         self.procsRestraints += 1
         self.__cur_subtype = 'procs'
+
+        self.atomSelectionSet = []
 
     # Exit a parse tree produced by XplorMRParser#observed.
     def exitObserved(self, ctx: XplorMRParser.ObservedContext):  # pylint: disable=unused-argument
@@ -2388,6 +2394,8 @@ class XplorMRParserListener(ParseTreeListener):
     def enterRama_assign(self, ctx: XplorMRParser.Rama_assignContext):  # pylint: disable=unused-argument
         self.ramaRestraints += 1
         self.__cur_subtype = 'rama'
+
+        self.atomSelectionSet = []
 
     # Exit a parse tree produced by XplorMRParser#rama_assign.
     def exitRama_assign(self, ctx: XplorMRParser.Rama_assignContext):  # pylint: disable=unused-argument
@@ -2628,6 +2636,8 @@ class XplorMRParserListener(ParseTreeListener):
     def enterOrie_assign(self, ctx: XplorMRParser.Orie_assignContext):  # pylint: disable=unused-argument
         self.nbaseRestraints += 1
         self.__cur_subtype = 'nbase'
+
+        self.atomSelectionSet = []
 
     # Exit a parse tree produced by XplorMRParser#orie_assign.
     def exitOrie_assign(self, ctx: XplorMRParser.Orie_assignContext):  # pylint: disable=unused-argument
@@ -3240,6 +3250,8 @@ class XplorMRParserListener(ParseTreeListener):
         self.pangRestraints += 1
         self.__cur_subtype = 'pang'
 
+        self.atomSelectionSet = []
+
     # Exit a parse tree produced by XplorMRParser#porientation_assign.
     def exitPorientation_assign(self, ctx: XplorMRParser.Porientation_assignContext):  # pylint: disable=unused-argument
         pass
@@ -3256,6 +3268,8 @@ class XplorMRParserListener(ParseTreeListener):
     def enterPccr_assign(self, ctx: XplorMRParser.Pccr_assignContext):  # pylint: disable=unused-argument
         self.pccrRestraints += 1
         self.__cur_subtype = 'pccr'
+
+        self.atomSelectionSet = []
 
     # Exit a parse tree produced by XplorMRParser#pccr_assign.
     def exitPccr_assign(self, ctx: XplorMRParser.Pccr_assignContext):  # pylint: disable=unused-argument

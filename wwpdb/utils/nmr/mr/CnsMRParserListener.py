@@ -1011,6 +1011,8 @@ class CnsMRParserListener(ParseTreeListener):
         self.jcoupRestraints += 1
         self.__cur_subtype = 'jcoup'
 
+        self.atomSelectionSet = []
+
     # Exit a parse tree produced by CnsMRParser#coup_assign.
     def exitCoup_assign(self, ctx: CnsMRParser.Coup_assignContext):  # pylint: disable=unused-argument
         target = float(str(ctx.Real(0)))
@@ -1259,6 +1261,8 @@ class CnsMRParserListener(ParseTreeListener):
         self.hvycsRestraints += 1
         self.__cur_subtype = 'hvycs'
 
+        self.atomSelectionSet = []
+
     # Exit a parse tree produced by CnsMRParser#carbon_shift_assign.
     def exitCarbon_shift_assign(self, ctx: CnsMRParser.Carbon_shift_assignContext):  # pylint: disable=unused-argument
         pass
@@ -1283,6 +1287,8 @@ class CnsMRParserListener(ParseTreeListener):
     def enterObserved(self, ctx: CnsMRParser.ObservedContext):  # pylint: disable=unused-argument
         self.procsRestraints += 1
         self.__cur_subtype = 'procs'
+
+        self.atomSelectionSet = []
 
     # Exit a parse tree produced by CnsMRParser#observed.
     def exitObserved(self, ctx: CnsMRParser.ObservedContext):  # pylint: disable=unused-argument
@@ -1364,6 +1370,8 @@ class CnsMRParserListener(ParseTreeListener):
     def enterConf_assign(self, ctx: CnsMRParser.Conf_assignContext):  # pylint: disable=unused-argument
         self.ramaRestraints += 1
         self.__cur_subtype = 'rama'
+
+        self.atomSelectionSet = []
 
     # Exit a parse tree produced by CnsMRParser#conf_assign.
     def exitConf_assign(self, ctx: CnsMRParser.Conf_assignContext):  # pylint: disable=unused-argument

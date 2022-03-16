@@ -711,7 +711,48 @@ class AmberMRParserListener(ParseTreeListener):
 
                 # plane-(point/plane) angle
                 else:
-                    pass
+                    valid = True
+                    for col, iat in enumerate(self.iat):
+                        if iat < 0:
+                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                f"Ambiguous atom selection 'iat({col+1})={iat}' is not allowed as a plane-(point/plane) angle restraint.\n"
+                            valid = False
+                    if not valid:
+                        return
+
+                    dstFunc = self.validateAngleRange()
+
+                    if dstFunc is None:
+                        return
+
+                    # plane-point angle
+                    if lenIat == COL_PLANE_POINT:
+                        for atom1, atom2, atom3, atom4, atom5 in itertools.product(self.atomSelectionSet[0],
+                                                                                   self.atomSelectionSet[1],
+                                                                                   self.atomSelectionSet[2],
+                                                                                   self.atomSelectionSet[3],
+                                                                                   self.atomSelectionSet[4]):
+                            if self.__verbose:
+                                print(f"subtype={self.__cur_subtype} id={self.planeRestraints} "
+                                      f"plane: |atom_1={atom1} atom_2={atom2} atom_3={atom3} atom_4={atom4}| "
+                                      f"point: atom={atom5}"
+                                      f"{dstFunc}")
+
+                    # plane-plane angle
+                    else:
+                        for atom1, atom2, atom3, atom4, atom5, atom6, atom7, atom8 in itertools.product(self.atomSelectionSet[0],
+                                                                                                        self.atomSelectionSet[1],
+                                                                                                        self.atomSelectionSet[2],
+                                                                                                        self.atomSelectionSet[3],
+                                                                                                        self.atomSelectionSet[4],
+                                                                                                        self.atomSelectionSet[5],
+                                                                                                        self.atomSelectionSet[6],
+                                                                                                        self.atomSelectionSet[7]):
+                            if self.__verbose:
+                                print(f"subtype={self.__cur_subtype} id={self.planeRestraints} "
+                                      f"plane_1: |atom_1={atom1} atom_2={atom2} atom_3={atom3} atom_4={atom4}| "
+                                      f"plane_2: |atom_1={atom5} atom_2={atom6} atom_3={atom7} atom_4={atom8}| "
+                                      f"{dstFunc}")
 
             # try to update AMBER atom number dictionary based on Sander comments
             else:
@@ -944,6 +985,38 @@ class AmberMRParserListener(ParseTreeListener):
             # convert AMBER atom numbers to corresponding coordinate atoms based on AMBER parameter/topology file
             if self.__atomNumberDict is not None:
 
+                # 1st plane should be processed at first due to plane-point angle restraint
+                if self.__cur_subtype == 'plane':
+
+                    for col, funcExpr in enumerate(self.inPlane_funcExprs):
+
+                        atomSelection = []
+
+                        if isinstance(funcExpr, dict):
+                            if 'iat' in funcExpr:
+                                iat = funcExpr['iat']
+                                if iat in self.__atomNumberDict:
+                                    atomSelection.append(self.__atomNumberDict[iat])
+                                else:
+                                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                        f"'iat({col+1})={iat}' is not defined in the AMBER parameter/topology file.\n"
+                            else:  # ambmask format
+                                factor = self.getAtomNumberDictFromAmbmaskInfo(funcExpr['seq_id'], funcExpr['atom_id'])
+                                if factor is not None:
+                                    atomSelection.append(factor)
+                        else:  # list
+                            rawExprs = []
+                            for _funcExpr in funcExpr:
+                                if 'igr' in _funcExpr:
+                                    rawExprs.append(str(_funcExpr['igr']))
+                                else:  # ambmask format
+                                    rawExprs.append(f":{_funcExpr['seq_id']}@{_funcExpr['atom_id']}")
+                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                f"Ambiguous atom selection 'igr({col+1})={', '.join(rawExprs)}' is not allowed as a plane-(point/plane) angle restraint.\n"
+                            return
+
+                        self.atomSelectionSet.append(atomSelection)
+
                 for col, funcExpr in enumerate(self.funcExprs):
 
                     atomSelection = []
@@ -997,6 +1070,38 @@ class AmberMRParserListener(ParseTreeListener):
 
                     # generalized distance
                     else:
+
+                        for col, funcExpr in enumerate(self.inGenDist_funcExprs):
+
+                            atomSelection = []
+
+                            if isinstance(funcExpr, dict):
+                                if 'iat' in funcExpr:
+                                    iat = funcExpr['iat']
+                                    if iat in self.__atomNumberDict:
+                                        atomSelection.append(self.__atomNumberDict[iat])
+                                    else:
+                                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                            f"'iat({col+1})={iat}' is not defined in the AMBER parameter/topology file.\n"
+                                else:  # ambmask format
+                                    factor = self.getAtomNumberDictFromAmbmaskInfo(funcExpr['seq_id'], funcExpr['atom_id'])
+                                    if factor is not None:
+                                        atomSelection.append(factor)
+                            else:  # list
+                                for _funcExpr in funcExpr:
+                                    if 'igr' in _funcExpr:
+                                        igr = _funcExpr['igr']
+                                        if igr in self.__atomNumberDict:
+                                            atomSelection.append(self.__atomNumberDict[igr])
+                                        else:
+                                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                                f"'igr({col+1})={igr}' is not defined in the AMBER parameter/topology file.\n"
+                                    else:  # ambmask format
+                                        factor = self.getAtomNumberDictFromAmbmaskInfo(_funcExpr['seq_id'], _funcExpr['atom_id'])
+                                        if factor is not None:
+                                            atomSelection.append(factor)
+
+                            self.atomSelectionSet.append(atomSelection)
 
                         lenWeight = len(self.inGenDist_weight)
 
@@ -1116,18 +1221,84 @@ class AmberMRParserListener(ParseTreeListener):
 
                 # plane-(point/plane) angle
                 else:
-                    for funcExpr in self.inPlane_funcExprs:  # 1st plane
-                        pass
+
+                    dstFunc = self.validateAngleRange()
+
+                    if dstFunc is None:
+                        return
 
                     # plane-point angle
                     if self.inPlane_columnSel == 0:
-                        for funcExpr in self.funcExprs:  # point
-                            pass
+
+                        for col, funcExpr in enumerate(self.funcExprs, 4):
+                            if isinstance(funcExpr, list):
+                                rawExprs = []
+                                for _funcExpr in funcExpr:
+                                    if 'igr' in _funcExpr:
+                                        rawExprs.append(str(_funcExpr['igr']))
+                                    else:  # ambmask format
+                                        rawExprs.append(f":{_funcExpr['seq_id']}@{_funcExpr['atom_id']}")
+                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                    f"Ambiguous atom selection 'igr({col+1})={', '.join(rawExprs)}' is not allowed as a plane-point angle restraint.\n"
+                                return
+
+                        for atom1, atom2, atom3, atom4, atom5 in itertools.product(self.atomSelectionSet[0],
+                                                                                   self.atomSelectionSet[1],
+                                                                                   self.atomSelectionSet[2],
+                                                                                   self.atomSelectionSet[3],
+                                                                                   self.atomSelectionSet[4]):
+                            if self.__verbose:
+                                print(f"subtype={self.__cur_subtype} id={self.planeRestraints} "
+                                      f"plane: |atom_1={atom1} atom_2={atom2} atom_3={atom3} atom_4={atom4}| "
+                                      f"point: atom={atom5}"
+                                      f"{dstFunc}")
 
                     # plane-plane angle
                     else:
-                        for funcExpr in self.inPlane_funcExprs2:  # 2nd plane
-                            pass
+
+                        # 2nd plane
+                        for col, funcExpr in enumerate(self.inPlane_funcExprs2, 4):
+
+                            atomSelection = []
+
+                            if isinstance(funcExpr, dict):
+                                if 'iat' in funcExpr:
+                                    iat = funcExpr['iat']
+                                    if iat in self.__atomNumberDict:
+                                        atomSelection.append(self.__atomNumberDict[iat])
+                                    else:
+                                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                            f"'iat({col+1})={iat}' is not defined in the AMBER parameter/topology file.\n"
+                                else:  # ambmask format
+                                    factor = self.getAtomNumberDictFromAmbmaskInfo(funcExpr['seq_id'], funcExpr['atom_id'])
+                                    if factor is not None:
+                                        atomSelection.append(factor)
+                            else:  # list
+                                rawExprs = []
+                                for _funcExpr in funcExpr:
+                                    if 'igr' in _funcExpr:
+                                        rawExprs.append(str(_funcExpr['igr']))
+                                    else:  # ambmask format
+                                        rawExprs.append(f":{_funcExpr['seq_id']}@{_funcExpr['atom_id']}")
+                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                    f"Ambiguous atom selection 'igr({col+1})={', '.join(rawExprs)}' is not allowed as a plane-plane angle restraint.\n"
+                                return
+
+                            self.atomSelectionSet.append(atomSelection)
+
+                        for atom1, atom2, atom3, atom4, atom5, atom6, atom7, atom8 in itertools.product(self.atomSelectionSet[0],
+                                                                                                        self.atomSelectionSet[1],
+                                                                                                        self.atomSelectionSet[2],
+                                                                                                        self.atomSelectionSet[3],
+                                                                                                        self.atomSelectionSet[4],
+                                                                                                        self.atomSelectionSet[5],
+                                                                                                        self.atomSelectionSet[6],
+                                                                                                        self.atomSelectionSet[7]):
+                            if self.__verbose:
+                                print(f"subtype={self.__cur_subtype} id={self.planeRestraints} "
+                                      f"plane_1: |atom_1={atom1} atom_2={atom2} atom_3={atom3} atom_4={atom4}| "
+                                      f"plane_2: |atom_1={atom5} atom_2={atom6} atom_3={atom7} atom_4={atom8}| "
+                                      f"{dstFunc}")
 
             # try to update AMBER atom number dictionary based on Sander comments
             else:

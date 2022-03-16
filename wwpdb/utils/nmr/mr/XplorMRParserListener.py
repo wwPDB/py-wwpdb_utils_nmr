@@ -33,6 +33,8 @@ try:
                                                        CSA_RESTRAINT_ERROR,
                                                        PCS_RESTRAINT_RANGE,
                                                        PCS_RESTRAINT_ERROR,
+                                                       CCR_RESTRAINT_RANGE,
+                                                       CCR_RESTRAINT_ERROR,
                                                        PRE_RESTRAINT_RANGE,
                                                        PRE_RESTRAINT_ERROR,
                                                        T1T2_RESTRAINT_RANGE,
@@ -62,6 +64,8 @@ except ImportError:
                                            CSA_RESTRAINT_ERROR,
                                            PCS_RESTRAINT_RANGE,
                                            PCS_RESTRAINT_ERROR,
+                                           CCR_RESTRAINT_RANGE,
+                                           CCR_RESTRAINT_ERROR,
                                            PRE_RESTRAINT_RANGE,
                                            PRE_RESTRAINT_ERROR,
                                            T1T2_RESTRAINT_RANGE,
@@ -109,6 +113,13 @@ PCS_RANGE_MAX = PCS_RESTRAINT_RANGE['max_inclusive']
 
 PCS_ERROR_MIN = PCS_RESTRAINT_ERROR['min_exclusive']
 PCS_ERROR_MAX = PCS_RESTRAINT_ERROR['max_exclusive']
+
+
+CCR_RANGE_MIN = CCR_RESTRAINT_RANGE['min_inclusive']
+CCR_RANGE_MAX = CCR_RESTRAINT_RANGE['max_inclusive']
+
+CCR_ERROR_MIN = CCR_RESTRAINT_ERROR['min_exclusive']
+CCR_ERROR_MAX = CCR_RESTRAINT_ERROR['max_exclusive']
 
 
 PRE_RANGE_MIN = PRE_RESTRAINT_RANGE['min_inclusive']
@@ -482,6 +493,8 @@ class XplorMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by XplorMRParser#pccr_restraint.
     def enterPccr_restraint(self, ctx: XplorMRParser.Pccr_restraintContext):  # pylint: disable=unused-argument
         self.pccrStatements += 1
+
+        self.potential = 'square'  # default potential
 
     # Exit a parse tree produced by XplorMRParser#pccr_restraint.
     def exitPccr_restraint(self, ctx: XplorMRParser.Pccr_restraintContext):  # pylint: disable=unused-argument
@@ -3280,6 +3293,8 @@ class XplorMRParserListener(ParseTreeListener):
         if not self.__hasPolySeq:
             return
 
+        atom_id_0 = self.atomSelectionSet[0][0]['atom_id'] if 'atom_id' in self.atomSelectionSet[0][0] else 'paramagnetic center'
+
         chain_id = self.atomSelectionSet[1][0]['chain_id']
         seq_id = self.atomSelectionSet[1][0]['seq_id']
         comp_id = self.atomSelectionSet[1][0]['comp_id']
@@ -3293,7 +3308,7 @@ class XplorMRParserListener(ParseTreeListener):
         for atom1 in self.atomSelectionSet[1]:
             if self.__verbose:
                 print(f"subtype={self.__cur_subtype} id={self.preRestraints} "
-                      f"atom={atom1} {dstFunc}")
+                      f"paramag={atom_id_0} atom={atom1} {dstFunc}")
 
     # Enter a parse tree produced by XplorMRParser#pcs_statement.
     def enterPcs_statement(self, ctx: XplorMRParser.Pcs_statementContext):
@@ -3384,10 +3399,12 @@ class XplorMRParserListener(ParseTreeListener):
         if not self.__hasPolySeq:
             return
 
+        atom_id_0 = self.atomSelectionSet[0][0]['atom_id'] if 'atom_id' in self.atomSelectionSet[0][0] else 'paramagnetic center'
+
         for atom1 in self.atomSelectionSet[4]:
             if self.__verbose:
                 print(f"subtype={self.__cur_subtype} id={self.pcsRestraints} "
-                      f"atom={atom1} {dstFunc}")
+                      f"paramag={atom_id_0} atom={atom1} {dstFunc}")
 
     # Enter a parse tree produced by XplorMRParser#prdc_statement.
     def enterPrdc_statement(self, ctx: XplorMRParser.Prdc_statementContext):
@@ -3482,6 +3499,8 @@ class XplorMRParserListener(ParseTreeListener):
         if not self.areUniqueCoordAtoms('a paramagnetic RDC (XRDC)'):
             return
 
+        atom_id_0 = self.atomSelectionSet[0][0]['atom_id'] if 'atom_id' in self.atomSelectionSet[0][0] else 'paramagnetic center'
+
         chain_id_1 = self.atomSelectionSet[4][0]['chain_id']
         seq_id_1 = self.atomSelectionSet[4][0]['seq_id']
         comp_id_1 = self.atomSelectionSet[4][0]['comp_id']
@@ -3547,7 +3566,7 @@ class XplorMRParserListener(ParseTreeListener):
                                               self.atomSelectionSet[5]):
             if self.__verbose:
                 print(f"subtype={self.__cur_subtype} (XRDC) id={self.prdcRestraints} "
-                      f"atom1={atom1} atom2={atom2} {dstFunc}")
+                      f"paramag={atom_id_0} atom1={atom1} atom2={atom2} {dstFunc}")
 
     # Enter a parse tree produced by XplorMRParser#porientation_statement.
     def enterPorientation_statement(self, ctx: XplorMRParser.Porientation_statementContext):
@@ -3758,12 +3777,21 @@ class XplorMRParserListener(ParseTreeListener):
                       f"atom1={atom1} atom2={atom2} {dstFunc} {dstFunc2}")
 
     # Enter a parse tree produced by XplorMRParser#pccr_statement.
-    def enterPccr_statement(self, ctx: XplorMRParser.Pccr_statementContext):  # pylint: disable=unused-argument
-        pass
+    def enterPccr_statement(self, ctx: XplorMRParser.Pccr_statementContext):
+        if ctx.Reset():
+            self.coefficients = None
+
+        elif ctx.Classification():
+            self.classification = str(ctx.Simple_name())
+
+        elif ctx.Coefficients():
+            self.coefficients = {'proportionality': float(str(ctx.Real()))}
 
     # Exit a parse tree produced by XplorMRParser#pccr_statement.
     def exitPccr_statement(self, ctx: XplorMRParser.Pccr_statementContext):  # pylint: disable=unused-argument
-        pass
+        if self.__verbose:
+            print(f"subtype={self.__cur_subtype} (XCCR) classification={self.classification} "
+                  f"coefficients={self.coefficients}")
 
     # Enter a parse tree produced by XplorMRParser#pccr_assign.
     def enterPccr_assign(self, ctx: XplorMRParser.Pccr_assignContext):  # pylint: disable=unused-argument
@@ -3773,8 +3801,139 @@ class XplorMRParserListener(ParseTreeListener):
         self.atomSelectionSet = []
 
     # Exit a parse tree produced by XplorMRParser#pccr_assign.
-    def exitPccr_assign(self, ctx: XplorMRParser.Pccr_assignContext):  # pylint: disable=unused-argument
-        pass
+    def exitPccr_assign(self, ctx: XplorMRParser.Pccr_assignContext):
+        target = float(str(ctx.Real(0)))
+        delta = abs(float(str(ctx.Real(1))))
+
+        target_value = target
+        lower_limit = target - delta
+        upper_limit = target + delta
+
+        validRange = True
+        dstFunc = {'weight': 1.0, 'potential': self.potential}
+
+        if target_value is not None:
+            if CCR_ERROR_MIN < target_value < CCR_ERROR_MAX:
+                dstFunc['target_value'] = f"{target_value:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The target value='{target_value}' must be within range {CCR_RESTRAINT_ERROR}.\n"
+
+        if lower_limit is not None:
+            if CCR_ERROR_MIN < lower_limit < CCR_ERROR_MAX:
+                dstFunc['lower_limit'] = f"{lower_limit:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The lower limit value='{lower_limit}' must be within range {CCR_RESTRAINT_ERROR}.\n"
+
+        if upper_limit is not None:
+            if CCR_ERROR_MIN < upper_limit < CCR_ERROR_MAX:
+                dstFunc['upper_limit'] = f"{upper_limit:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The upper limit value='{upper_limit}' must be within range {CCR_RESTRAINT_ERROR}.\n"
+
+        if not validRange:
+            return
+
+        if target_value is not None:
+            if CCR_RANGE_MIN < target_value < CCR_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The target value='{target_value}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+
+        if lower_limit is not None:
+            if RDC_RANGE_MIN < lower_limit < RDC_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The lower limit value='{lower_limit}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+
+        if upper_limit is not None:
+            if RDC_RANGE_MIN < upper_limit < RDC_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The upper limit value='{upper_limit}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+
+        if not self.__hasPolySeq:
+            return
+
+        if not self.areUniqueCoordAtoms('a paramagnetic cross-correlation rate (XCCR)'):
+            return
+
+        atom_id_0 = self.atomSelectionSet[0][0]['atom_id'] if 'atom_id' in self.atomSelectionSet[0][0] else 'paramagnetic center'
+
+        chain_id_1 = self.atomSelectionSet[1][0]['chain_id']
+        seq_id_1 = self.atomSelectionSet[1][0]['seq_id']
+        comp_id_1 = self.atomSelectionSet[1][0]['comp_id']
+        atom_id_1 = self.atomSelectionSet[1][0]['atom_id']
+
+        chain_id_2 = self.atomSelectionSet[2][0]['chain_id']
+        seq_id_2 = self.atomSelectionSet[2][0]['seq_id']
+        comp_id_2 = self.atomSelectionSet[2][0]['comp_id']
+        atom_id_2 = self.atomSelectionSet[2][0]['atom_id']
+
+        if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
+            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                f"Non-magnetic susceptible spin appears in CCR vector; "\
+                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
+                f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+            return
+
+        if chain_id_1 != chain_id_2:
+            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                f"Found inter-chain CCR vector; "\
+                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+            return
+
+        if abs(seq_id_1 - seq_id_2) > 1:
+            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                f"Found inter-residue CCR vector; "\
+                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+            return
+
+        if abs(seq_id_1 - seq_id_2) == 1:
+
+            if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
+               ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H')) or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H') and atom_id_2 == 'C')):
+                pass
+
+            else:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    "Found inter-residue CCR vector; "\
+                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                return
+
+        elif atom_id_1 == atom_id_2:
+            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                "Found zero CCR vector; "\
+                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+            return
+
+        else:
+
+            if self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
+
+                if not any(b for b in self.__ccU.lastBonds
+                           if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
+                               or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
+
+                    if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            "Found an CCR vector over multiple covalent bonds in the 'XCCR' statement; "\
+                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                        return
+
+        for atom1, atom2 in itertools.product(self.atomSelectionSet[1],
+                                              self.atomSelectionSet[2]):
+            if self.__verbose:
+                print(f"subtype={self.__cur_subtype} (XCCR) id={self.prdcRestraints} "
+                      f"paramag={atom_id_0} atom1={atom1} atom2={atom2} {dstFunc}")
 
     # Enter a parse tree produced by XplorMRParser#hbond_statement.
     def enterHbond_statement(self, ctx: XplorMRParser.Hbond_statementContext):  # pylint: disable=unused-argument
@@ -4152,7 +4311,7 @@ class XplorMRParserListener(ParseTreeListener):
                     for atomId in _factor['atom_id']:
                         if self.__cur_subtype in ('rdc', 'diff', 'csa', 'pcs', 'pre', 'prdc') and atomId in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
                             continue
-                        if self.__cur_subtype in ('pcs', 'pre', 'prdc') and (atomId in PARAMAGNETIC_ELEMENTS or atomId in FERROMAGNETIC_ELEMENTS):
+                        if self.__cur_subtype in ('pcs', 'pre', 'prdc', 'pccr') and (atomId in PARAMAGNETIC_ELEMENTS or atomId in FERROMAGNETIC_ELEMENTS):
                             continue
                         atomIds = self.__nefT.get_valid_star_atom(compId, atomId.upper())[0]
 
@@ -4239,7 +4398,7 @@ class XplorMRParserListener(ParseTreeListener):
         if len(_factor['atom_selection']) == 0:
             if self.__cur_subtype in ('rdc', 'diff', 'csa', 'pcs', 'pre', 'prdc') and _factor['atom_id'][0] in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
                 return _factor
-            if self.__cur_subtype in ('pcs', 'pre', 'prdc') and (_factor['atom_id'][0] in PARAMAGNETIC_ELEMENTS or _factor['atom_id'][0] in FERROMAGNETIC_ELEMENTS):
+            if self.__cur_subtype in ('pcs', 'pre', 'prdc', 'pccr') and (_factor['atom_id'][0] in PARAMAGNETIC_ELEMENTS or _factor['atom_id'][0] in FERROMAGNETIC_ELEMENTS):
                 return _factor
             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                 f"The {clauseName} has no effect.\n"

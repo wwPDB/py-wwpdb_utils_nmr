@@ -121,6 +121,9 @@ class RosettaMRParserListener(ParseTreeListener):
     # collection of atom selection
     atomSelectionSet = None
 
+    # current nested restraint type
+    __cur_nest = None
+
     warningMessage = ''
 
     def __init__(self, verbose=True, log=sys.stdout, cR=None, polySeq=None,
@@ -211,6 +214,10 @@ class RosettaMRParserListener(ParseTreeListener):
 
         if len(self.atomSelectionSet) < 2:
             return
+
+        if self.__cur_nest is not None:
+            if self.__verbose:
+                print(f"NESTED: {self.__cur_nest}")
 
         for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                               self.atomSelectionSet[1]):
@@ -546,6 +553,10 @@ class RosettaMRParserListener(ParseTreeListener):
         if len(self.atomSelectionSet) < 3:
             return
 
+        if self.__cur_nest is not None:
+            if self.__verbose:
+                print(f"NESTED: {self.__cur_nest}")
+
         for atom1, atom2, atom3 in itertools.product(self.atomSelectionSet[0],
                                                      self.atomSelectionSet[1],
                                                      self.atomSelectionSet[2]):
@@ -746,6 +757,10 @@ class RosettaMRParserListener(ParseTreeListener):
         compId = self.atomSelectionSet[0][0]['comp_id']
         peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
 
+        if self.__cur_nest is not None:
+            if self.__verbose:
+                print(f"NESTED: {self.__cur_nest}")
+
         for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
                                                             self.atomSelectionSet[1],
                                                             self.atomSelectionSet[2],
@@ -828,6 +843,10 @@ class RosettaMRParserListener(ParseTreeListener):
 
         compId = self.atomSelectionSet[0][0]['comp_id']
         peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
+
+        if self.__cur_nest is not None:
+            if self.__verbose:
+                print(f"NESTED: {self.__cur_nest}")
 
         for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
                                                             self.atomSelectionSet[1],
@@ -914,6 +933,10 @@ class RosettaMRParserListener(ParseTreeListener):
         if len(self.atomSelectionSet) < 2:
             return
 
+        if self.__cur_nest is not None:
+            if self.__verbose:
+                print(f"NESTED: {self.__cur_nest}")
+
         for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                               self.atomSelectionSet[1]):
             if self.__verbose:
@@ -972,6 +995,10 @@ class RosettaMRParserListener(ParseTreeListener):
 
         if len(self.atomSelectionSet) < 4:
             return
+
+        if self.__cur_nest is not None:
+            if self.__verbose:
+                print(f"NESTED: {self.__cur_nest}")
 
         for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
                                                             self.atomSelectionSet[1],
@@ -1036,6 +1063,10 @@ class RosettaMRParserListener(ParseTreeListener):
                     f"must not in the opposing chain {opposingChainId!r}.\n"
                 return
 
+        if self.__cur_nest is not None:
+            if self.__verbose:
+                print(f"NESTED: {self.__cur_nest}")
+
         for atom1 in self.atomSelectionSet[0]:
             if self.__verbose:
                 print(f"subtype={self.__cur_subtype} (Site) id={self.geoRestraints} "
@@ -1092,6 +1123,10 @@ class RosettaMRParserListener(ParseTreeListener):
 
         if len(self.atomSelectionSet) < 3:
             return
+
+        if self.__cur_nest is not None:
+            if self.__verbose:
+                print(f"NESTED: {self.__cur_nest}")
 
         for atom1, res2, res3 in itertools.product(self.atomSelectionSet[0],
                                                    self.atomSelectionSet[1],
@@ -1154,6 +1189,10 @@ class RosettaMRParserListener(ParseTreeListener):
         else:
             self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
                 f"The target value='{target_value}' should be within range {DIST_RESTRAINT_RANGE}.\n"
+
+        if self.__cur_nest is not None:
+            if self.__verbose:
+                print(f"NESTED: {self.__cur_nest}")
 
         for res1, res2 in itertools.product(self.atomSelectionSet[0],
                                             self.atomSelectionSet[1]):
@@ -1219,6 +1258,10 @@ class RosettaMRParserListener(ParseTreeListener):
             self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
                 f"The 'sdev={sDev}' should be within range {DIST_RESTRAINT_RANGE}.\n"
 
+        if self.__cur_nest is not None:
+            if self.__verbose:
+                print(f"NESTED: {self.__cur_nest}")
+
         for res in self.atomSelectionSet[0]:
             if self.__verbose:
                 print(f"subtype={self.__cur_subtype} (BigBin) id={self.geoRestraints} "
@@ -1233,16 +1276,31 @@ class RosettaMRParserListener(ParseTreeListener):
         pass
 
     # Enter a parse tree produced by RosettaMRParser#nested_restraint.
-    def enterNested_restraint(self, ctx: RosettaMRParser.Nested_restraintContext):  # pylint: disable=unused-argument
-        pass
+    def enterNested_restraint(self, ctx: RosettaMRParser.Nested_restraintContext):
+        n = 0
+        while ctx.any_restraint(n):
+            n += 1
+
+        self.__cur_nest = {}
+
+        if ctx.MultiConstraint():
+            self.__cur_nest['type'] = 'multi'
+        elif ctx.AmbiguousConstraint():
+            self.__cur_nest['type'] = 'ambig'
+        else:
+            k = int(str(ctx.Integer()))
+            self.__cur_nest['type'] = f"{k}of{n}"
+
+        self.__cur_nest['id'] = -1
+        self.__cur_nest['size'] = n
 
     # Exit a parse tree produced by RosettaMRParser#nested_restraint.
     def exitNested_restraint(self, ctx: RosettaMRParser.Nested_restraintContext):  # pylint: disable=unused-argument
-        pass
+        self.__cur_nest = None
 
     # Enter a parse tree produced by RosettaMRParser#any_restraint.
     def enterAny_restraint(self, ctx: RosettaMRParser.Any_restraintContext):  # pylint: disable=unused-argument
-        pass
+        self.__cur_nest['id'] = self.__cur_nest['id'] + 1
 
     # Exit a parse tree produced by RosettaMRParser#any_restraint.
     def exitAny_restraint(self, ctx: RosettaMRParser.Any_restraintContext):  # pylint: disable=unused-argument

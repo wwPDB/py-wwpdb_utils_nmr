@@ -2166,10 +2166,20 @@ class RosettaMRParserListener(ParseTreeListener):
         if len(self.atomSelectionSet) < 2:
             return
 
+        for atom1 in self.atomSelectionSet[0]:
+            if atom1['comp_id'] != 'CYS':
+                self.warningMessage += f"[Invalid atom selection] {self.__getCurrentRestraint()}"\
+                    f"Failed to select a Cystein residue for disulfide bond between '{seqId1}' and '{seqId2}'.\n"
+
+        for atom2 in self.atomSelectionSet[1]:
+            if atom2['comp_id'] != 'CYS':
+                self.warningMessage += f"[Invalid atom selection] {self.__getCurrentRestraint()}"\
+                    f"Failed to select a Cystein residue for disulfide bond between '{seqId1}' and '{seqId2}'.\n"
+
         for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                               self.atomSelectionSet[1]):
             if self.__verbose:
-                print(f"subtype={self.__cur_subtype} (CS-ROSETTA: Disulfide bond linkage) id={self.geoRestraints} "
+                print(f"subtype={self.__cur_subtype} (CS-ROSETTA: disulfide bond linkage) id={self.geoRestraints} "
                       f"atom1={atom1} atom2={atom2}")
 
     def __getCurrentRestraint(self):

@@ -116,7 +116,7 @@ class CnsMRParserListener(ParseTreeListener):
     ramaRestraints = 0      # CNS: Conformation database restraints
     diffRestraints = 0      # CNS: Diffusion anisotropy restraints
     nbaseRestraints = 0     # CNS: Residue-residue position/orientation database restraints
-    angRestraints = 0       # CNS: Angle database restraints
+    # angRestraints = 0       # CNS: Angle database restraints
 
     distStatements = 0      # CNS: Distance statements
     dihedStatements = 0     # CNS: Dihedral angle statements
@@ -128,7 +128,7 @@ class CnsMRParserListener(ParseTreeListener):
     ramaStatements = 0      # CNS: Conformation database statements
     diffStatements = 0      # CNS: Diffusion anisotropy statements
     nbaseStatements = 0     # CNS: Residue-residue position/orientation database statements
-    angStatements = 0       # CNS: Angle database statements
+    # angStatements = 0       # CNS: Angle database statements
 
     # CCD accessing utility
     __ccU = None
@@ -286,7 +286,8 @@ class CnsMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by CnsMRParser#harmonic_restraint.
     def enterHarmonic_restraint(self, ctx: CnsMRParser.Harmonic_restraintContext):  # pylint: disable=unused-argument
-        self.angStatements += 1
+        # self.angStatements += 1
+        pass
 
     # Exit a parse tree produced by CnsMRParser#harmonic_restraint.
     def exitHarmonic_restraint(self, ctx: CnsMRParser.Harmonic_restraintContext):  # pylint: disable=unused-argument
@@ -3802,8 +3803,8 @@ class CnsMRParserListener(ParseTreeListener):
             return f"[Check the {self.diffRestraints}th row of duffusion anisotropy restraints] "
         if self.__cur_subtype == 'nbase':
             return f"[Check the {self.nbaseRestraints}th row of residue-residue position/orientation database restraints] "
-        if self.__cur_subtype == 'ang':
-            return f"[Check the {self.angRestraints}th row of angle database restraints] "
+        # if self.__cur_subtype == 'ang':
+        #    return f"[Check the {self.angRestraints}th row of angle database restraints] "
         return ''
 
     def getContentSubtype(self):
@@ -3840,8 +3841,8 @@ class CnsMRParserListener(ParseTreeListener):
         if self.nbaseStatements == 0 and self.nbaseRestraints > 0:
             self.nbaseStatements = 1
 
-        if self.angStatements == 0 and self.angRestraints > 0:
-            self.angStatements = 1
+        # if self.angStatements == 0 and self.angRestraints > 0:
+        #    self.angStatements = 1
 
         contentSubtype = {'dist_restraint': self.distStatements,
                           'dihed_restraint': self.dihedStatements,
@@ -3853,7 +3854,7 @@ class CnsMRParserListener(ParseTreeListener):
                           'rama_restraint': self.ramaStatements,
                           'diff_restraint': self.diffStatements,
                           'nbase_restraint': self.nbaseStatements,
-                          'ang_restraint': self.angStatements
+                          # 'ang_restraint': self.angStatements
                           }
 
         return {k: v for k, v in contentSubtype.items() if v > 0}

@@ -167,7 +167,7 @@ class XplorMRParserListener(ParseTreeListener):
     diffRestraints = 0      # XPLOR-NIH: Diffusion anisotropy restraints
     nbaseRestraints = 0     # XPLOR-NIH: Residue-residue position/orientation database restraints
     csaRestraints = 0       # XPLOR-NIH: (Pseudo) Chemical shift anisotropy restraints
-    angRestraints = 0       # XPLOR-NIH: Angle database restraints
+    # angRestraints = 0       # XPLOR-NIH: Angle database restraints
     preRestraints = 0       # XPLOR-NIH: Paramagnetic relaxation enhancement restraints
     pcsRestraints = 0       # XPLOR-NIH: Paramagnetic pseudocontact shift restraints
     prdcRestraints = 0      # XPLOR-NIH: Paramagnetic residual dipolar coupling restraints
@@ -188,7 +188,7 @@ class XplorMRParserListener(ParseTreeListener):
     diffStatements = 0      # XPLOR-NIH: Diffusion anisotropy statements
     nbaseStatements = 0     # XPLOR-NIH: Residue-residue position/orientation database statements
     csaStatements = 0       # XPLOR-NIH: (Pseudo) Chemical shift anisotropy statements
-    angStatements = 0       # XPLOR-NIH: Angle database statements
+    # angStatements = 0       # XPLOR-NIH: Angle database statements
     preStatements = 0       # XPLOR-NIH: Paramagnetic relaxation enhancement statements
     pcsStatements = 0       # XPLOR-NIH: Paramagnetic pseudocontact shift statements
     prdcStatements = 0      # XPLOR-NIH: Paramagnetic residual dipolar coupling statements
@@ -404,7 +404,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#dihedral_angle_db_restraint.
     def enterDihedral_angle_db_restraint(self, ctx: XplorMRParser.Dihedral_angle_db_restraintContext):  # pylint: disable=unused-argument
-        self.angStatements += 1
+        self.dihedStatements += 1
 
     # Exit a parse tree produced by XplorMRParser#dihedral_angle_db_restraint.
     def exitDihedral_angle_db_restraint(self, ctx: XplorMRParser.Dihedral_angle_db_restraintContext):  # pylint: disable=unused-argument
@@ -5980,8 +5980,8 @@ class XplorMRParserListener(ParseTreeListener):
             return f"[Check the {self.nbaseRestraints}th row of residue-residue position/orientation database restraints] "
         if self.__cur_subtype == 'csa':
             return f"[Check the {self.csaRestraints}th row of (pseudo) chemical shift anisotropy restraints] "
-        if self.__cur_subtype == 'ang':
-            return f"[Check the {self.angRestraints}th row of angle database restraints] "
+        # if self.__cur_subtype == 'ang':
+        #    return f"[Check the {self.angRestraints}th row of angle database restraints] "
         if self.__cur_subtype == 'pre':
             return f"[Check the {self.preRestraints}th row of paramagnetic relaxation enhancement restraints] "
         if self.__cur_subtype == 'pcs':
@@ -6039,8 +6039,8 @@ class XplorMRParserListener(ParseTreeListener):
         if self.csaStatements == 0 and self.csaRestraints > 0:
             self.csaStatements = 1
 
-        if self.angStatements == 0 and self.angRestraints > 0:
-            self.angStatements = 1
+        # if self.angStatements == 0 and self.angRestraints > 0:
+        #    self.angStatements = 1
 
         if self.preStatements == 0 and self.preRestraints > 0:
             self.preStatements = 1
@@ -6073,7 +6073,7 @@ class XplorMRParserListener(ParseTreeListener):
                           'diff_restraint': self.diffStatements,
                           'nbase_restraint': self.nbaseStatements,
                           'csa_restraint': self.csaStatements,
-                          'ang_restraint': self.angStatements,
+                          # 'ang_restraint': self.angStatements,
                           'pre_restraint': self.preStatements,
                           'pcs_restraint': self.pcsStatements,
                           'prdc_restraint': self.prdcStatements,

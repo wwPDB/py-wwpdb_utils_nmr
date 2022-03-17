@@ -2002,7 +2002,6 @@ class RosettaMRParserListener(ParseTreeListener):
     def enterRdc_restraint(self, ctx: RosettaMRParser.Rdc_restraintContext):  # pylint: disable=unused-argument
         self.rdcRestraints += 1
 
-        self.stackFuncs = []
         self.atomSelectionSet = []
 
     # Exit a parse tree produced by RosettaMRParser#rdc_restraint.
@@ -2109,7 +2108,7 @@ class RosettaMRParserListener(ParseTreeListener):
         for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                               self.atomSelectionSet[1]):
             if self.__verbose:
-                print(f"subtype={self.__cur_subtype} id={self.rdcRestraints} "
+                print(f"subtype={self.__cur_subtype} (CS-ROSETTA: RDC) id={self.rdcRestraints} "
                       f"atom1={atom1} atom2={atom2} {dstFunc}")
 
     def areUniqueCoordAtoms(self, subtype_name):
@@ -2145,9 +2144,33 @@ class RosettaMRParserListener(ParseTreeListener):
     def enterDisulfide_bond_linkage(self, ctx: RosettaMRParser.Disulfide_bond_linkageContext):  # pylint: disable=unused-argument
         self.geoRestraints += 1
 
+        self.atomSelectionSet = []
+
     # Exit a parse tree produced by RosettaMRParser#disulfide_bond_linkage.
-    def exitDisulfide_bond_linkage(self, ctx: RosettaMRParser.Disulfide_bond_linkageContext):  # pylint: disable=unused-argument
-        pass
+    def exitDisulfide_bond_linkage(self, ctx: RosettaMRParser.Disulfide_bond_linkageContext):
+        if not self.__hasPolySeq:
+            return
+
+        seqId1 = int(str(ctx.Integer(0)))
+        seqId2 = int(str(ctx.Integer(1)))
+
+        chainAssign1 = self.assignCoordPolymerSequence(seqId1)
+        chainAssign2 = self.assignCoordPolymerSequence(seqId2)
+
+        if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+            return
+
+        self.selectCoordAtoms(chainAssign1, seqId1, 'SG')
+        self.selectCoordAtoms(chainAssign2, seqId2, 'SG')
+
+        if len(self.atomSelectionSet) < 2:
+            return
+
+        for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
+                                              self.atomSelectionSet[1]):
+            if self.__verbose:
+                print(f"subtype={self.__cur_subtype} (CS-ROSETTA: Disulfide bond linkage) id={self.geoRestraints} "
+                      f"atom1={atom1} atom2={atom2}")
 
     def __getCurrentRestraint(self):
         if self.__cur_subtype == 'dist':

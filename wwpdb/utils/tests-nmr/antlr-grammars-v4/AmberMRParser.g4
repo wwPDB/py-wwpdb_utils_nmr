@@ -84,10 +84,10 @@ noeexp_statement:
 	noeexp_factor*;
 
 noeexp_factor:
-	NPEAK Equ_op_IA (Integers | MultiplicativeInt) Comma_IA |
-	EMIX Equ_op_RA (Reals | MultiplicativeReal) Comma_RA |
-	(IHP | JHP) L_paren_IA Decimal Comma_A Decimal R_paren_A Equ_op_IA (Integers | MultiplicativeInt) Comma_IA |
-	(AEXP | ARANGE | AWT) L_paren_RA Decimal Comma_A Decimal R_paren_A Equ_op_RA (Reals | MultiplicativeReal) Comma_RA |
+	NPEAK L_paren_IP Decimal R_paren_A Equ_op_IP Integer Comma |
+	EMIX L_paren_RP Decimal R_paren_A Equ_op_RP Real Comma  |
+	(IHP | JHP) L_paren_IP Decimal Comma_A Decimal R_paren_A Equ_op_IP Integer Comma |
+	(AEXP | ARANGE | AWT) L_paren_RP Decimal Comma_A Decimal R_paren_A Equ_op_RP Real Comma |
 	(INVWT1 | INVWT2 | OMEGA | TAUROT | TAUMET | OSCALE) Equ_op_RP Real Comma |
 	ID2O Equ_op_BP BoolInt Comma;
 
@@ -99,7 +99,7 @@ shf_statement:
 
 shf_factor:
 	(NRING | NPROT | NTER | CTER) Equ_op_IP Integer Comma |
-	(NATR | IPROT) L_paren_IA Decimal R_paren_A Equ_op_IA (Integers | MultiplicativeInt) Comma_IA |
+	(NATR | IPROT) L_paren_IP Decimal R_paren_A Equ_op_IP Integer Comma |
 	IATR L_paren_IP Decimal Comma_A Decimal R_paren_A Equ_op_IP Integer Comma |
 	OBS L_paren_RP Decimal R_paren_A Equ_op_RP Real Comma |
 	(STR | SHRANG | WT) L_paren_RA Decimal R_paren_A Equ_op_RA (Reals | MultiplicativeReal) Comma_RA |
@@ -115,7 +115,7 @@ pcshf_statement:
 pcshf_factor:
 	(NPROT | NME) Equ_op_IP Integer Comma |
 	NMPMC Equ_op_QA Qstrings Comma_QA |
-	(IPROT | MLTPRO) L_paren_IA Decimal R_paren_A Equ_op_IA (Integers | MultiplicativeInt) Comma_IA |
+	(IPROT | MLTPRO) L_paren_IP Decimal R_paren_A Equ_op_IP Integer Comma |
 	(OPTPHI | OPTTET | OPTOMG | OPTA1 | OPTA2 | OBS) L_paren_RP Decimal R_paren_A Equ_op_RP Real Comma |
 	(WT | TOLPRO) L_paren_RA Decimal R_paren_A Equ_op_RA (Reals | MultiplicativeReal) Comma_RA |
 	OPTKON Equ_op_RP Real Comma;

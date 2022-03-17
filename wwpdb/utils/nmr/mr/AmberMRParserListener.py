@@ -233,6 +233,7 @@ class AmberMRParserListener(ParseTreeListener):
     dobsl = None
     dobsu = None
     dwt = None
+    gigj = None
     ndip = None
     dataset = None
     numDataset = None
@@ -272,6 +273,7 @@ class AmberMRParserListener(ParseTreeListener):
     optomg = None
     opta1 = None
     opta2 = None
+    optkon = None
     nme = None
 
     # CS
@@ -283,6 +285,21 @@ class AmberMRParserListener(ParseTreeListener):
     nring = None
     nter = None
     cter = None
+
+    # NOESY
+    ihp = None
+    jhp = None
+    aexp = None
+    arange = None
+    awt = None
+    emix = None
+    npeak = None
+    invwt1 = None
+    invwt2 = None
+    omega = None
+    taurot = None
+    taumet = None
+    id2o = None
 
     # Amber 10: ambmask
     depth = 0
@@ -371,6 +388,7 @@ class AmberMRParserListener(ParseTreeListener):
         self.dobsl = None
         self.dobsu = None
         self.dwt = None
+        self.gigj = None
         self.ndip = None
         self.dataset = None
         self.numDataset = None
@@ -410,6 +428,7 @@ class AmberMRParserListener(ParseTreeListener):
         self.optomg = None
         self.opta1 = None
         self.opta2 = None
+        self.optkon = None
         self.nme = None
 
         # CS
@@ -421,6 +440,21 @@ class AmberMRParserListener(ParseTreeListener):
         self.nring = None
         self.nter = None
         self.cter = None
+
+        # NOESY
+        self.ihp = None
+        self.jhp = None
+        self.aexp = None
+        self.arange = None
+        self.awt = None
+        self.emix = None
+        self.npeak = None
+        self.invwt1 = None
+        self.invwt2 = None
+        self.omega = None
+        self.taurot = None
+        self.taumet = None
+        self.id2o = None
 
         self.dist_sander_pat = re.compile(r'(\d+) (\S+) (\S+) '
                                           r'(\d+) (\S+) (\S+) '
@@ -2493,17 +2527,274 @@ class AmberMRParserListener(ParseTreeListener):
         self.noepkRestraints += 1
         self.__cur_subtype = 'noepk'
 
+        self.ihp = {}
+        self.jhp = {}
+        self.aexp = {}
+        self.arange = {}
+        self.awt = {}
+        self.emix = {}
+        self.npeak = {}
+        self.invwt1 = 0.0
+        self.invwt2 = 0.0
+        self.omega = 500.0  # MHz
+        self.taurot = 1.0  # ns
+        self.taumet = 0.0001  # ns
+        self.id2o = 0
+
     # Exit a parse tree produced by AmberMRParser#noeexp_statement.
     def exitNoeexp_statement(self, ctx: AmberMRParser.Noeexp_statementContext):  # pylint: disable=unused-argument
-        pass
+        imixes = self.npeak.keys()
+        if len(imixes) <= 0:
+            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                f"No NOESY experiment exists.\n"
+            return
+
+        for imix in imixes:
+
+            if imix not in self.emix:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"The mixing time of the NOESY experiment emix({imix}) is unknown.\n"
+                continue
+
+            mix = self.emix[imix]
+
+            for ipeak in range(1, self.npeak[imix] + 1):
+
+                if ipeak not in self.ihp:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"\
+                        f"The atom number involved in the NOESY peak ihp({imix},{ipeak}) was not set.\n"
+                    continue
+
+                if ipeak not in self.jhp:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"\
+                        f"The atom number involved in the NOESY peak jhp({imix},{ipeak}) was not set.\n"
+                    continue
+
+                if ipeak not in self.aexp:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"\
+                        f"The NOESY peak volume aexp({imix},{ipeak}) was not set.\n"
+                    continue
+
+                _iprot = self.ihp[imix][ipeak]
+                _jprot = self.jhp[imix][ipeak]
+
+                if _iprot <= 0:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"\
+                        f"The atom number involved in the NOESY peak 'ihp({imix},{ipeak})={_iprot}' should be a positive integer.\n"
+                    continue
+
+                if _jprot <= 0:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"\
+                        f"The atom number involved in the NOESY peak 'jhp({imix},{ipeak})={_jprot}' should be a positive integer.\n"
+                    continue
+
+                awt = 1.0
+                if imix in self.awt and ipeak in self.awt[imix]:
+                    awt = self.awt[imix][ipeak]
+                    if awt <= 0.0:
+                        awt = 1.0
+
+                arange = 0.0
+                if imix in self.arange and ipeak in self.arange[imix]:
+                    arange = max(self.arange[imix][ipeak], 0.0)
+
+                # convert AMBER atom numbers to corresponding coordinate atoms based on AMBER parameter/topology file
+                if self.__atomNumberDict is not None:
+
+                    self.atomSelectionSet = []
+
+                    atomSelection = []
+
+                    if _iprot in self.__atomNumberDict:
+                        atomSelection.append(self.__atomNumberDict[_iprot])
+                    else:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"\
+                            f"'ihp({imix},{ipeak})={_iprot}' is not defined in the AMBER parameter/topology file.\n"
+                        continue
+
+                    chain_id = atomSelection[0]['chain_id']
+                    seq_id = atomSelection[0]['seq_id']
+                    comp_id = atomSelection[0]['comp_id']
+                    atom_id = atomSelection[0]['atom_id']
+
+                    self.atomSelectionSet.append(atomSelection)
+
+                    if atom_id[0] != 'H':
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"\
+                            f"({chain_id}:{seq_id}:{comp_id}:{atom_id} (derived from ihp) is not a proton.\n"
+                        continue
+
+                    atomSelection = []
+
+                    if _jprot in self.__atomNumberDict:
+                        atomSelection.append(self.__atomNumberDict[_jprot])
+                    else:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"\
+                            f"'jhp({imix},{ipeak})={_jprot}' is not defined in the AMBER parameter/topology file.\n"
+                        continue
+
+                    chain_id = atomSelection[0]['chain_id']
+                    seq_id = atomSelection[0]['seq_id']
+                    comp_id = atomSelection[0]['comp_id']
+                    atom_id = atomSelection[0]['atom_id']
+
+                    self.atomSelectionSet.append(atomSelection)
+
+                    if atom_id[0] != 'H':
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"\
+                            f"({chain_id}:{seq_id}:{comp_id}:{atom_id} (derived from jhp) is not a proton.\n"
+                        continue
+
+                    dstFunc = self.validateNoexpRange(imix, ipeak, awt, arange)
+
+                    for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
+                                                          self.atomSelectionSet[1]):
+                        if self.__verbose:
+                            print(f"subtype={self.__cur_subtype} dataset={imix} mixing_time={mix} peak={ipeak} "
+                                  f"atom1={atom1} atom2={atom2} {dstFunc}")
+
+    def validateNoexpRange(self, imix, ipeak, awt, arange):
+        """ Validate NOESY peak volume range.
+        """
+
+        aexp = self.aexp[imix][ipeak]
+
+        dstFunc = {'weight': awt, 'tolerance': arange}
+
+        dstFunc['target_value'] = f"{aexp:.3f}"
+
+        return dstFunc
 
     # Enter a parse tree produced by AmberMRParser#noeexp_factor.
     def enterNoeexp_factor(self, ctx: AmberMRParser.Noeexp_factorContext):  # pylint: disable=unused-argument
         pass
 
     # Exit a parse tree produced by AmberMRParser#noeexp_factor.
-    def exitNoeexp_factor(self, ctx: AmberMRParser.Noeexp_factorContext):  # pylint: disable=unused-argument
-        pass
+    def exitNoeexp_factor(self, ctx: AmberMRParser.Noeexp_factorContext):
+        if ctx.IHP():
+            varName = 'ihp'
+
+            if ctx.Decimal(0) and ctx.Decimal(1):
+                imix = int(str(ctx.Decimal(0)))
+                ipeak = int(str(ctx.Decimal(1)))
+                if imix in self.npeak and ipeak > self.npeak[imix]:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"\
+                        f"The second argument value of '{varName}({imix},{ipeak})' must be in the range 1-{self.npeak[imix]}, "\
+                        f"regulated by 'npeak({imix})={self.npeak[imix]}'.\n"
+                    return
+                if imix not in self.ihp:
+                    self.ihp[imix] = {}
+                self.ihp[imix][ipeak] = int(str(ctx.Integer()))
+
+        elif ctx.JHP():
+            varName = 'jhp'
+
+            if ctx.Decimal(0) and ctx.Decimal(1):
+                imix = int(str(ctx.Decimal(0)))
+                ipeak = int(str(ctx.Decimal(1)))
+                if imix in self.npeak and ipeak > self.npeak[imix]:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"\
+                        f"The second argument value of '{varName}({imix},{ipeak})' must be in the range 1-{self.npeak[imix]}, "\
+                        f"regulated by 'npeak({imix})={self.npeak[imix]}'.\n"
+                    return
+                if imix not in self.jhp:
+                    self.jhp[imix] = {}
+                self.jhp[imix][ipeak] = int(str(ctx.Integer()))
+
+        elif ctx.AEXP():
+            varName = 'aexp'
+
+            if ctx.Decimal(0) and ctx.Decimal(1):
+                imix = int(str(ctx.Decimal(0)))
+                ipeak = int(str(ctx.Decimal(1)))
+                if imix in self.npeak and ipeak > self.npeak[imix]:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"\
+                        f"The second argument value of '{varName}({imix},{ipeak})' must be in the range 1-{self.npeak[imix]}, "\
+                        f"regulated by 'npeak({imix})={self.npeak[imix]}'.\n"
+                    return
+                if imix not in self.aexp:
+                    self.aexp[imix] = {}
+                self.aexp[imix][ipeak] = float(str(ctx.Real()))
+
+        elif ctx.ARANGE():
+            varName = 'arange'
+
+            if ctx.Decimal(0) and ctx.Decimal(1):
+                imix = int(str(ctx.Decimal(0)))
+                ipeak = int(str(ctx.Decimal(1)))
+                if imix in self.npeak and ipeak > self.npeak[imix]:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"\
+                        f"The second argument value of '{varName}({imix},{ipeak})' must be in the range 1-{self.npeak[imix]}, "\
+                        f"regulated by 'npeak({imix})={self.npeak[imix]}'.\n"
+                    return
+                if imix not in self.arange:
+                    self.arange[imix] = {}
+                val = float(str(ctx.Real()))
+                if val < 0.0:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"\
+                        f"The uncertainty of peak volume '{varName}({imix},{ipeak})={val}' must not be a negative value.\n"
+                    return
+                self.arange[imix][ipeak] = val
+
+        elif ctx.AWT():
+            varName = 'awt'
+
+            if ctx.Decimal(0) and ctx.Decimal(1):
+                imix = int(str(ctx.Decimal(0)))
+                ipeak = int(str(ctx.Decimal(1)))
+                if imix in self.npeak and ipeak > self.npeak[imix]:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"\
+                        f"The second argument value of '{varName}({imix},{ipeak})' must be in the range 1-{self.npeak[imix]}, "\
+                        f"regulated by 'npeak({imix})={self.npeak[imix]}'.\n"
+                    return
+                if imix not in self.awt:
+                    self.awt[imix] = {}
+                val = float(str(ctx.Real()))
+                if val <= 0.0:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"\
+                        f"The relative weight value '{varName}({imix},{ipeak})={val}' must not be a negative value.\n"
+                    return
+                self.awt[imix][ipeak] = val
+
+        elif ctx.NPEAK():
+            varName = 'npeak'
+
+            if ctx.Decimal(0):
+                decimal = int(str(ctx.Decimal(0)))
+                self.npeak[decimal] = int(str(ctx.Integer()))
+                if self.npeak[decimal] <= 0:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"The number of peaks '{varName}({decimal})={self.npeak[decimal]}' must be a positive integer.\n"
+                    return
+
+        elif ctx.EMIX():
+            varName = 'emix'
+
+            if ctx.Decimal(0):
+                decimal = int(str(ctx.Decimal(0)))
+                self.emix[decimal] = float(str(ctx.Real()))
+                if self.emix[decimal] <= 0.0:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"The mixing time '{varName}({decimal})={self.emix[decimal]}' must be a positive value.\n"
+                    return
+
+        elif ctx.INVWT1():
+            self.invwt1 = float(str(ctx.Real()))
+
+        elif ctx.INVWT2():
+            self.invwt2 = float(str(ctx.Real()))
+
+        elif ctx.OMEGA():
+            self.omega = float(str(ctx.Real()))
+
+        elif ctx.TAUROT():
+            self.taurot = float(str(ctx.Real()))
+
+        elif ctx.TAUMET():
+            self.taumet = float(str(ctx.Real()))
+
+        elif ctx.ID2O():
+            self.id2o = int(str(ctx.BoolInt()))
 
     # Enter a parse tree produced by AmberMRParser#shf_statement.
     def enterShf_statement(self, ctx: AmberMRParser.Shf_statementContext):  # pylint: disable=unused-argument
@@ -2584,6 +2875,7 @@ class AmberMRParserListener(ParseTreeListener):
                 if atom_id[0] != 'H':
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(n=n)}"\
                         f"({chain_id}:{seq_id}:{comp_id}:{atom_id} is not a proton.\n"
+                    continue
 
                 dstFunc = self.validateShfRange(n, wt, shrang)
 
@@ -2691,30 +2983,7 @@ class AmberMRParserListener(ParseTreeListener):
                         f"The argument value of '{varName}({decimal})' must be in the range 1-{self.nprot}, "\
                         f"regulated by 'nprot={self.nprot}'.\n"
                     return
-                rawIntArray = str(ctx.Integers()).split(',')
-                self.iprot[decimal] = int(rawIntArray[0])
-
-            else:
-                if ctx.Integers():
-                    rawIntArray = str(ctx.Integers()).split(',')
-                    if len(rawIntArray) > self.nprot:
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            f"The length of '{varName}={ctx.Integers()}' must not exceed 'nprot={self.nprot}'.\n"
-                        return
-                    for col, rawInt in enumerate(rawIntArray):
-                        self.iprot[col + 1] = int(rawInt)
-                elif ctx.MultiplicativeInt():
-                    rawMultInt = str(ctx.MultiplicativeInt()).split('*')
-                    numCol = int(rawMultInt[0])
-                    if numCol <= 0 or numCol > self.nprot:
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            f"The argument value of '{varName}({numCol})' derived from "\
-                            f"'{str(ctx.MultiplicativeInt())}' must be in the range 1-{self.nprot}, "\
-                            f"regulated by 'nprot={self.nprot}'.\n"
-                        return
-                    val = int(rawMultInt[1])
-                    for col in range(0, numCol):
-                        self.iprot[col + 1] = val
+                self.iprot[decimal] = int(str(ctx.Integer()))
 
         elif ctx.OBS():
             varName = 'obs'
@@ -2843,12 +3112,12 @@ class AmberMRParserListener(ParseTreeListener):
                 ring = int(str(ctx.Decimal(1)))
                 if self.nring > 0 and ring > self.nring:
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(n=decimal)}"\
-                        f"The 2nd argument value of '{varName}({j},{ring})' must be in the range 1-{self.nring}, "\
+                        f"The second argument value of '{varName}({j},{ring})' must be in the range 1-{self.nring}, "\
                         f"regulated by 'nring={self.nring}'.\n"
                     return
                 if ring in self.natr and j > self.natr[ring]:
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(n=decimal)}"\
-                        f"The 1st argument value of '{varName}({j},{ring})' must be in the range 1-{self.natr[ring]}, "\
+                        f"The first argument value of '{varName}({j},{ring})' must be in the range 1-{self.natr[ring]}, "\
                         f"regulated by 'natr({ring})={self.natr[ring]}'.\n"
                     return
                 self.iatr[ring][j] = int(str(ctx.Integer()))
@@ -2863,48 +3132,13 @@ class AmberMRParserListener(ParseTreeListener):
                         f"The argument value of '{varName}({decimal})' must be in the range 1-{self.nring}, "\
                         f"regulated by 'nring={self.nring}'.\n"
                     return
-                rawIntArray = str(ctx.Integers()).split(',')
-                val = int(rawIntArray[0])
+                val = int(str(ctx.Integer()))
                 if val < 0:
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                         f"The number of atoms in a ring '{varName}({decimal})={val}' must not be a negative integer.\n"
                     return
                 self.natr[decimal] = val
                 self.iatr[decimal] = {}
-
-            else:
-                if ctx.Integers():
-                    rawIntArray = str(ctx.Integers()).split(',')
-                    if len(rawIntArray) > self.nring:
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            f"The length of '{varName}={ctx.Integers()}' must not exceed 'nring={self.nring}'.\n"
-                        return
-                    for col, rawInt in enumerate(rawIntArray):
-                        val = int(rawInt)
-                        if val < 0:
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                f"The number of atoms in a ring '{varName}({col+1})={val}' must not be a negative integer.\n"
-                            return
-                        self.natr[col + 1] = val
-                        self.iatr[col + 1] = {}
-                elif ctx.MultiplicativeInt():
-                    rawMultInt = str(ctx.MultiplicativeInt()).split('*')
-                    numCol = int(rawMultInt[0])
-                    if numCol <= 0 or numCol > self.nring:
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            f"The argument value of '{varName}({numCol})' derived from "\
-                            f"'{str(ctx.MultiplicativeInt())}' must be in the range 1-{self.nring}, "\
-                            f"regulated by 'nring={self.nring}'.\n"
-                        return
-                    val = int(rawMultInt[1])
-                    if val < 0:
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            f"The number of atoms in a ring '{varName}={val}' derived from "\
-                            f"'{str(ctx.MultiplicativeInt())}' must not be a negative integer.\n"
-                        return
-                    for col in range(0, numCol):
-                        self.natr[col + 1] = val
-                        self.iatr[col + 1] = {}
 
         elif ctx.STR():
             varName = 'str'
@@ -3006,6 +3240,7 @@ class AmberMRParserListener(ParseTreeListener):
         self.optomg = {}
         self.opta1 = {}
         self.opta2 = {}
+        self.optkon = 0.0
         self.nme = -1
 
     # Exit a parse tree produced by AmberMRParser#pcshf_statement.
@@ -3081,6 +3316,7 @@ class AmberMRParserListener(ParseTreeListener):
                 if atom_id[0] != 'H':
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,n)}"\
                         f"({chain_id}:{seq_id}:{comp_id}:{atom_id} is not a proton.\n"
+                    continue
 
                 dstFunc = self.validatePcsRange(n, wt, tolpro, mltpro)
 
@@ -3108,30 +3344,7 @@ class AmberMRParserListener(ParseTreeListener):
                         f"The argument value of '{varName}({decimal})' must be in the range 1-{self.nprot}, "\
                         f"regulated by 'nprot={self.nprot}'.\n"
                     return
-                rawIntArray = str(ctx.Integers()).split(',')
-                self.iprot[decimal] = int(rawIntArray[0])
-
-            else:
-                if ctx.Integers():
-                    rawIntArray = str(ctx.Integers()).split(',')
-                    if len(rawIntArray) > self.nprot:
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            f"The length of '{varName}={ctx.Integers()}' must not exceed 'nprot={self.nprot}'.\n"
-                        return
-                    for col, rawInt in enumerate(rawIntArray):
-                        self.iprot[col + 1] = int(rawInt)
-                elif ctx.MultiplicativeInt():
-                    rawMultInt = str(ctx.MultiplicativeInt()).split('*')
-                    numCol = int(rawMultInt[0])
-                    if numCol <= 0 or numCol > self.nprot:
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            f"The argument value of '{varName}({numCol})' derived from "\
-                            f"'{str(ctx.MultiplicativeInt())}' must be in the range 1-{self.nprot}, "\
-                            f"regulated by 'nprot={self.nprot}'.\n"
-                        return
-                    val = int(rawMultInt[1])
-                    for col in range(0, numCol):
-                        self.iprot[col + 1] = val
+                self.iprot[decimal] = int(str(ctx.Integer()))
 
         elif ctx.OBS():
             varName = 'obs'
@@ -3255,51 +3468,18 @@ class AmberMRParserListener(ParseTreeListener):
                         f"The argument value of '{varName}({decimal})' must be in the range 1-{self.nprot}, "\
                         f"regulated by 'nprot={self.nprot}'.\n"
                     return
-                rawIntArray = str(ctx.Integers()).split(',')
-                val = int(rawIntArray[0])
+                val = int(str(ctx.Integer()))
                 if val <= 0:
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,decimal)}"\
                         f"The multiplicity of NMR signal of '{varName}({decimal})={val}' must be a positive integer.\n"
                     return
                 self.mltpro[decimal] = val
 
-            else:
-                if ctx.Integers():
-                    rawIntArray = str(ctx.Integers()).split(',')
-                    if len(rawIntArray) > self.nprot:
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            f"The length of '{varName}={ctx.Integers()}' must not exceed 'nprot={self.nprot}'.\n"
-                        return
-                    for col, rawInt in enumerate(rawIntArray):
-                        val = int(rawInt)
-                        if val <= 0:
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                f"The multiplicity of NMR signal of '{varName}({col+1})={val}' must be a positive integer.\n"
-                            return
-                        self.mltpro[col + 1] = val
-                elif ctx.MultiplicativeInt():
-                    rawMultInt = str(ctx.MultiplicativeInt()).split('*')
-                    numCol = int(rawMultInt[0])
-                    if numCol <= 0 or numCol > self.nprot:
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            f"The argument value of '{varName}({numCol})' derived from "\
-                            f"'{str(ctx.MultiplicativeInt())}' must be in the range 1-{self.nprot}, "\
-                            f"regulated by 'nprot={self.nprot}'.\n"
-                        return
-                    val = int(rawMultInt[1])
-                    if val < 0.0:
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            f"The multiplicity of NMR signal of '{varName}={val}' derived from "\
-                            f"'{str(ctx.MultiplicativeInt())}' must be a positive integer.\n"
-                        return
-                    for col in range(0, numCol):
-                        self.mltpro[col + 1] = val
-
         elif ctx.NPROT():
             self.nprot = int(str(ctx.Integer()))
             if self.nprot <= 0:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The argument value of 'nprot={self.nprot}' must be a positive integer.\n"
+                    f"The number of protons 'nprot={self.nprot}' must be a positive integer.\n"
                 return
 
         elif ctx.OPTPHI():
@@ -3362,11 +3542,14 @@ class AmberMRParserListener(ParseTreeListener):
                     return
                 self.opta2[decimal] = float(str(ctx.Real()))
 
+        elif ctx.OPTKON():
+            self.optkon = float(str(ctx.Real()))
+
         elif ctx.NME():
             self.nme = int(str(ctx.Integer()))
             if self.nme <= 0:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The argument value of 'nme={self.nme}' must be a positive integer.\n"
+                    f"The number of paramagnetic centers 'nme={self.nme}' must be a positive integer.\n"
                 return
 
         elif ctx.NMPMC():
@@ -3382,6 +3565,7 @@ class AmberMRParserListener(ParseTreeListener):
         self.dobsl = {}
         self.dobsu = {}
         self.dwt = {}
+        self.gigj = {}
         self.ndip = -1
         self.dataset = -1
         self.numDataset = -1
@@ -3641,6 +3825,41 @@ class AmberMRParserListener(ParseTreeListener):
                         return
                     for col in range(0, numCol):
                         self.dwt[col + 1] = val
+
+        elif ctx.GIGJ():
+            varName = 'gigj'
+
+            if ctx.Decimal():
+                decimal = int(str(ctx.Decimal()))
+                if self.ndip > 0 and decimal > self.ndip:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,decimal)}"\
+                        f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ndip}, "\
+                        f"regulated by 'ndip={self.ndip}'.\n"
+                    return
+                rawRealArray = str(ctx.Reals()).split(',')
+                self.gigj[decimal] = float(rawRealArray[0])
+
+            else:
+                if ctx.Reals():
+                    rawRealArray = str(ctx.Reals()).split(',')
+                    if len(rawRealArray) > self.ndip:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            f"The length of '{varName}={ctx.Reals()}' must not exceed 'ndip={self.ndip}'.\n"
+                        return
+                    for col, rawReal in enumerate(rawRealArray):
+                        self.gigj[col + 1] = float(rawReal)
+                elif ctx.MultiplicativeReal():
+                    rawMultReal = str(ctx.MultiplicativeReal()).split('*')
+                    numCol = int(rawMultReal[0])
+                    if numCol <= 0 or numCol > self.ndip:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            f"The argument value of '{varName}({numCol})' derived from "\
+                            f"'{str(ctx.MultiplicativeReal())}' must be in the range 1-{self.ndip}, "\
+                            f"regulated by 'ndip={self.ndip}'.\n"
+                        return
+                    val = float(rawMultReal[1])
+                    for col in range(0, numCol):
+                        self.gigj[col + 1] = val
 
         elif ctx.NDIP():
             self.ndip = int(str(ctx.Integer()))
@@ -4336,7 +4555,9 @@ class AmberMRParserListener(ParseTreeListener):
         if self.__cur_subtype == 'plane':
             return f"[Check the {self.planeRestraints}th row of plane-point/plane angle restraints] "
         if self.__cur_subtype == 'noepk':
-            return f"[Check the {self.noepkRestraints}th row of NOESY volume restraints] "
+            if dataset is None or n is None:
+                return f"[Check the {self.noepkRestraints}th row of NOESY volume restraints] "
+            return f"[Check the {n}th row of NOESY volume restraints (dataset={dataset})] "
         if self.__cur_subtype == 'procs':
             if n is None:
                 return f"[Check the {self.procsRestraints}th row of chemical shift restraints] "

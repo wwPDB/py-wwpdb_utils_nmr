@@ -660,7 +660,7 @@ class XplorMRParserListener(ParseTreeListener):
             lower_limit = target - dminus
             upper_limit = target + dplus
 
-        dstFunc = self.validateDistanceRange(self.scale, self.noePotential,
+        dstFunc = self.validateDistanceRange(self.scale,
                                              target_value, lower_limit, upper_limit,
                                              lower_linear_limit, upper_linear_limit)
 
@@ -677,14 +677,14 @@ class XplorMRParserListener(ParseTreeListener):
                     print(f"subtype={self.__cur_subtype} (NOE) id={self.distRestraints} "
                           f"atom1={atom1} atom2={atom2} {dstFunc}")
 
-    def validateDistanceRange(self, weight, potential,
+    def validateDistanceRange(self, weight,
                               target_value, lower_limit, upper_limit,
                               lower_linear_limit, upper_linear_limit):
         """ Validate distance value range.
         """
 
         validRange = True
-        dstFunc = {'weight': weight, 'potential': potential}
+        dstFunc = {'weight': weight, 'potential': self.noePotential}
 
         if target_value is not None:
             if DIST_ERROR_MIN < target_value < DIST_ERROR_MAX:
@@ -1489,7 +1489,7 @@ class XplorMRParserListener(ParseTreeListener):
         lower_limit_2 = center_2 - range_2
         upper_limit_2 = center_2 + range_2
 
-        dstFunc = self.validateAngleRange2(1.0, self.potential,
+        dstFunc = self.validateAngleRange2(1.0,
                                            target_value_1, lower_limit_1, upper_limit_1,
                                            target_value_2, lower_limit_2, upper_limit_2)
 
@@ -1572,14 +1572,14 @@ class XplorMRParserListener(ParseTreeListener):
                 print(f"subtype={self.__cur_subtype} (VEAN) id={self.rdcRestraints} "
                       f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
 
-    def validateAngleRange2(self, weight, potential,
+    def validateAngleRange2(self, weight,
                             target_value_1, lower_limit_1, upper_limit_1,
                             target_value_2, lower_limit_2, upper_limit_2):
         """ Validate two angle value ranges.
         """
 
         validRange = True
-        dstFunc = {'weight': weight, 'potential': potential}
+        dstFunc = {'weight': weight, 'potential': self.potential}
 
         if ANGLE_ERROR_MIN < target_value_1 < ANGLE_ERROR_MAX:
             dstFunc['target_value_1'] = f"{target_value_1:.3f}"
@@ -2216,14 +2216,14 @@ class XplorMRParserListener(ParseTreeListener):
         if CS_ERROR_MIN < ca_shift < CS_ERROR_MAX:
             pass
         else:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+            self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
                 f"CA chemical shift value '{ca_shift}' must be within range {CS_RESTRAINT_ERROR}.\n"
             return
 
         if CS_ERROR_MIN < cb_shift < CS_ERROR_MAX:
             pass
         else:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+            self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
                 f"CB chemicbl shift value '{ca_shift}' must be within range {CS_RESTRAINT_ERROR}.\n"
             return
 
@@ -2286,14 +2286,14 @@ class XplorMRParserListener(ParseTreeListener):
         if CS_ERROR_MIN < rcoil_a < CS_ERROR_MAX:
             pass
         else:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+            self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
                 f"Random coil 'a' chemical shift value '{rcoil_a}' must be within range {CS_RESTRAINT_ERROR}.\n"
             return
 
         if CS_ERROR_MIN < rcoil_b < CS_ERROR_MAX:
             pass
         else:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+            self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
                 f"Random coil 'b' chemical shift value '{rcoil_b}' must be within range {CS_RESTRAINT_ERROR}.\n"
             return
 
@@ -2348,7 +2348,7 @@ class XplorMRParserListener(ParseTreeListener):
         if CS_ERROR_MIN < obs_value < CS_ERROR_MAX:
             pass
         else:
-            self.warningMessage += "[Invalid data] "\
+            self.warningMessage += "[Range value error] "\
                 f"The observed chemical shift value '{obs_value}' must be within range {CS_RESTRAINT_ERROR}.\n"
             return
 
@@ -2356,7 +2356,7 @@ class XplorMRParserListener(ParseTreeListener):
             if CS_ERROR_MIN < obs_value_2 < CS_ERROR_MAX:
                 pass
             else:
-                self.warningMessage += "[Invalid data] "\
+                self.warningMessage += "[Range value error] "\
                     f"The 2nd observed chemical shift value '{obs_value_2}' must be within range {CS_RESTRAINT_ERROR}.\n"
                 return
 
@@ -2407,7 +2407,7 @@ class XplorMRParserListener(ParseTreeListener):
         if CS_ERROR_MIN < rcoil < CS_ERROR_MAX:
             pass
         else:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+            self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
                 f"Random coil chemical shift value '{rcoil}' must be within range {CS_RESTRAINT_ERROR}.\n"
             return
 
@@ -2795,7 +2795,7 @@ class XplorMRParserListener(ParseTreeListener):
             lower_limit = target - delta
             upper_limit = target + delta
 
-        dstFunc = self.validateT1T2Range(1.0, self.potential,
+        dstFunc = self.validateT1T2Range(1.0,
                                          target_value, lower_limit, upper_limit)
 
         if dstFunc is None:
@@ -2874,14 +2874,14 @@ class XplorMRParserListener(ParseTreeListener):
                 print(f"subtype={self.__cur_subtype} (DANI) id={self.diffRestraints} "
                       f"atom1={atom1} atom2={atom2} {dstFunc}")
 
-    def validateT1T2Range(self, weight, potential,
+    def validateT1T2Range(self, weight,
                           target_value, lower_limit, upper_limit,
                           lower_linear_limit=None, upper_linear_limit=None):
         """ Validate T1/T2 value range.
         """
 
         validRange = True
-        dstFunc = {'weight': weight, 'potential': potential}
+        dstFunc = {'weight': weight, 'potential': self.potential}
 
         if target_value is not None:
             if T1T2_ERROR_MIN < target_value < T1T2_ERROR_MAX:
@@ -3137,7 +3137,7 @@ class XplorMRParserListener(ParseTreeListener):
             lower_limit = target - cminus
             upper_limit = target + cplus
 
-        dstFunc = self.validateCsaRange(1.0, self.potential,
+        dstFunc = self.validateCsaRange(1.0,
                                         target_value, lower_limit, upper_limit)
 
         if dstFunc is None:
@@ -3284,14 +3284,14 @@ class XplorMRParserListener(ParseTreeListener):
                 print(f"subtype={self.__cur_subtype} id={self.csaRestraints} "
                       f"atom1(CSA central)={atom1} atom2={atom2} atom3={atom3} {dstFunc}")
 
-    def validateCsaRange(self, weight, potential,
+    def validateCsaRange(self, weight,
                          target_value, lower_limit, upper_limit,
                          lower_linear_limit=None, upper_linear_limit=None):
         """ Validate CSA value range.
         """
 
         validRange = True
-        dstFunc = {'weight': weight, 'potential': potential}
+        dstFunc = {'weight': weight, 'potential': self.potential}
 
         if target_value is not None:
             if CSA_ERROR_MIN < target_value < CSA_ERROR_MAX:
@@ -3523,7 +3523,7 @@ class XplorMRParserListener(ParseTreeListener):
             lower_limit = target - delta
             upper_limit = target + delta
 
-        dstFunc = self.validatePreRange(1.0, self.potential,
+        dstFunc = self.validatePreRange(1.0,
                                         target_value, lower_limit, upper_limit)
 
         if dstFunc is None:
@@ -3549,14 +3549,14 @@ class XplorMRParserListener(ParseTreeListener):
                 print(f"subtype={self.__cur_subtype} id={self.preRestraints} "
                       f"paramag={atom_id_0} atom={atom1} {dstFunc}")
 
-    def validatePreRange(self, weight, potential,
+    def validatePreRange(self, weight,
                          target_value, lower_limit, upper_limit,
                          lower_linear_limit=None, upper_linear_limit=None):
         """ Validate PRE value range.
         """
 
         validRange = True
-        dstFunc = {'weight': weight, 'potential': potential}
+        dstFunc = {'weight': weight, 'potential': self.potential}
 
         if target_value is not None:
             if PRE_ERROR_MIN < target_value < PRE_ERROR_MAX:
@@ -4048,7 +4048,7 @@ class XplorMRParserListener(ParseTreeListener):
         lower_limit = target - delta
         upper_limit = target + delta
 
-        dstFunc = self.validateCcrRange(1.0, self.potential,
+        dstFunc = self.validateCcrRange(1.0,
                                         target_value, lower_limit, upper_limit)
 
         if dstFunc is None:
@@ -4129,14 +4129,14 @@ class XplorMRParserListener(ParseTreeListener):
                 print(f"subtype={self.__cur_subtype} (XCCR) id={self.prdcRestraints} "
                       f"paramag={atom_id_0} atom1={atom1} atom2={atom2} {dstFunc}")
 
-    def validateCcrRange(self, weight, potential,
+    def validateCcrRange(self, weight,
                          target_value, lower_limit, upper_limit,
                          lower_linear_limit=None, upper_linear_limit=None):
         """ Validate CCR value range.
         """
 
         validRange = True
-        dstFunc = {'weight': weight, 'potential': potential}
+        dstFunc = {'weight': weight, 'potential': self.potential}
 
         if target_value is not None:
             if CCR_ERROR_MIN < target_value < CCR_ERROR_MAX:

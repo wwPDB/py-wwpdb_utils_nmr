@@ -115,7 +115,8 @@ class RosettaMRParserListener(ParseTreeListener):
     # current restraint subtype
     __cur_subtype = None
 
-    stackFuncs = None  # stack of function
+    # stack of function
+    stackFuncs = None
 
     # collection of atom selection
     atomSelectionSet = None
@@ -1111,6 +1112,7 @@ class RosettaMRParserListener(ParseTreeListener):
     def enterMin_residue_atomic_distance_restraint(self, ctx: RosettaMRParser.Min_residue_atomic_distance_restraintContext):  # pylint: disable=unused-argument
         self.geoRestraints += 1
 
+        self.stackFuncs = []
         self.atomSelectionSet = []
 
     # Exit a parse tree produced by RosettaMRParser#min_residue_atomic_distance_restraint.
@@ -1171,6 +1173,7 @@ class RosettaMRParserListener(ParseTreeListener):
     def enterBig_bin_restraint(self, ctx: RosettaMRParser.Big_bin_restraintContext):  # pylint: disable=unused-argument
         self.dihedRestraints += 1
 
+        self.stackFuncs = []
         self.atomSelectionSet = []
 
     # Exit a parse tree produced by RosettaMRParser#big_bin_restraint.
@@ -1999,6 +2002,7 @@ class RosettaMRParserListener(ParseTreeListener):
     def enterRdc_restraint(self, ctx: RosettaMRParser.Rdc_restraintContext):  # pylint: disable=unused-argument
         self.rdcRestraints += 1
 
+        self.stackFuncs = []
         self.atomSelectionSet = []
 
     # Exit a parse tree produced by RosettaMRParser#rdc_restraint.

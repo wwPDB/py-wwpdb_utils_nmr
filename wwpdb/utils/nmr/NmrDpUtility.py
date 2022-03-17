@@ -983,7 +983,7 @@ class NmrDpUtility:
         self.dihed_restraint_error = {'min_inclusive': 0.0, 'max_inclusive': 90.0}
 
         # allowed RDC range in Hz
-        self.rdc_restraint_range = {'min_exclusive': -100.0, 'max_exclusive': 100.0}
+        self.rdc_restraint_range = {'min_inclusive': -100.0, 'max_inclusive': 100.0}
         self.rdc_restraint_error = {'min_inclusive': 0.0, 'max_inclusive': 5.0}
 
         # allowed weight range

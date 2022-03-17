@@ -62,8 +62,8 @@ ANGLE_ERROR_MIN = ANGLE_RESTRAINT_ERROR['min_exclusive']
 ANGLE_ERROR_MAX = ANGLE_RESTRAINT_ERROR['max_exclusive']
 
 
-RDC_RANGE_MIN = RDC_RESTRAINT_RANGE['min_exclusive']
-RDC_RANGE_MAX = RDC_RESTRAINT_RANGE['max_exclusive']
+RDC_RANGE_MIN = RDC_RESTRAINT_RANGE['min_inclusive']
+RDC_RANGE_MAX = RDC_RESTRAINT_RANGE['max_inclusive']
 
 RDC_ERROR_MIN = RDC_RESTRAINT_ERROR['min_exclusive']
 RDC_ERROR_MAX = RDC_RESTRAINT_ERROR['max_exclusive']
@@ -194,7 +194,7 @@ class RosettaMRParserListener(ParseTreeListener):
         seqId2 = int(str(ctx.Integer(1)))
         atomId2 = str(ctx.Simple_name(1)).upper()
 
-        dstFunc = self.validateDistanceRange()
+        dstFunc = self.validateDistanceRange(1.0)
 
         if dstFunc is None:
             return
@@ -217,7 +217,7 @@ class RosettaMRParserListener(ParseTreeListener):
                 print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
                       f"atom1={atom1} atom2={atom2} {dstFunc}")
 
-    def validateDistanceRange(self):
+    def validateDistanceRange(self, weight):
         """ Validate distance value range.
         """
 
@@ -274,7 +274,7 @@ class RosettaMRParserListener(ParseTreeListener):
             return None
 
         validRange = True
-        dstFunc = {'weight': 1.0}
+        dstFunc = {'weight': weight}
 
         if target_value is not None:
             if DIST_ERROR_MIN < target_value < DIST_ERROR_MAX:
@@ -323,35 +323,35 @@ class RosettaMRParserListener(ParseTreeListener):
             if DIST_RANGE_MIN <= target_value <= DIST_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
                     f"{srcFunc}, the target value='{target_value}' should be within range {DIST_RESTRAINT_RANGE}.\n"
 
         if lower_limit is not None:
             if DIST_RANGE_MIN <= lower_limit <= DIST_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
                     f"{srcFunc}, the lower limit value='{lower_limit}' should be within range {DIST_RESTRAINT_RANGE}.\n"
 
         if upper_limit is not None:
             if DIST_RANGE_MIN <= upper_limit <= DIST_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
                     f"{srcFunc}, the upper limit value='{upper_limit}' should be within range {DIST_RESTRAINT_RANGE}.\n"
 
         if lower_linear_limit is not None:
             if DIST_RANGE_MIN <= lower_linear_limit <= DIST_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
                     f"{srcFunc}, the lower linear limit value='{lower_linear_limit}' should be within range {DIST_RESTRAINT_RANGE}.\n"
 
         if upper_linear_limit is not None:
             if DIST_RANGE_MIN <= upper_linear_limit <= DIST_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
                     f"{srcFunc}, the upper linear limit value='{upper_linear_limit}' should be within range {DIST_RESTRAINT_RANGE}.\n"
 
         return dstFunc
@@ -526,7 +526,7 @@ class RosettaMRParserListener(ParseTreeListener):
         seqId3 = int(str(ctx.Integer(2)))
         atomId3 = str(ctx.Simple_name(2)).upper()
 
-        dstFunc = self.validateAngleRange()
+        dstFunc = self.validateAngleRange(1.0)
 
         if dstFunc is None:
             return
@@ -552,7 +552,7 @@ class RosettaMRParserListener(ParseTreeListener):
                 print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} "
                       f"atom1={atom1} atom2={atom2} atom3={atom3} {dstFunc}")
 
-    def validateAngleRange(self):
+    def validateAngleRange(self, weight):
         """ Validate angle value range.
         """
 
@@ -609,7 +609,7 @@ class RosettaMRParserListener(ParseTreeListener):
             return None
 
         validRange = True
-        dstFunc = {'weight': 1.0}
+        dstFunc = {'weight': weight}
 
         if target_value is not None:
             if ANGLE_ERROR_MIN < target_value < ANGLE_ERROR_MAX:
@@ -658,35 +658,35 @@ class RosettaMRParserListener(ParseTreeListener):
             if ANGLE_RANGE_MIN <= target_value <= ANGLE_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
                     f"{srcFunc}, the target value='{target_value}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
 
         if lower_limit is not None:
             if ANGLE_RANGE_MIN <= lower_limit <= ANGLE_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
                     f"{srcFunc}, the lower limit value='{lower_limit}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
 
         if upper_limit is not None:
             if ANGLE_RANGE_MIN <= upper_limit <= ANGLE_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
                     f"{srcFunc}, the upper limit value='{upper_limit}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
 
         if lower_linear_limit is not None:
             if ANGLE_RANGE_MIN <= lower_linear_limit <= ANGLE_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
                     f"{srcFunc}, the lower linear limit value='{lower_linear_limit}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
 
         if upper_linear_limit is not None:
             if ANGLE_RANGE_MIN <= upper_linear_limit <= ANGLE_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
                     f"{srcFunc}, the upper linear limit value='{upper_linear_limit}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
 
         return dstFunc
@@ -720,7 +720,7 @@ class RosettaMRParserListener(ParseTreeListener):
         seqId4 = int(str(ctx.Integer(3)))
         atomId4 = str(ctx.Simple_name(3)).upper()
 
-        dstFunc = self.validateAngleRange()
+        dstFunc = self.validateAngleRange(1.0)
 
         if dstFunc is None:
             return
@@ -793,7 +793,7 @@ class RosettaMRParserListener(ParseTreeListener):
         seqId8 = int(str(ctx.Integer(7)))
         atomId8 = str(ctx.Simple_name(7)).upper()
 
-        dstFunc = self.validateAngleRange()
+        dstFunc = self.validateAngleRange(1.0)
 
         if dstFunc is None:
             return
@@ -896,7 +896,7 @@ class RosettaMRParserListener(ParseTreeListener):
             seqId2 = int(g[0])
             fixedChainId2 = g[1]
 
-        dstFunc = self.validateDistanceRange()
+        dstFunc = self.validateDistanceRange(1.0)
 
         if dstFunc is None:
             return
@@ -950,7 +950,7 @@ class RosettaMRParserListener(ParseTreeListener):
         cartY = float(str(ctx.Float(1)))
         cartZ = float(str(ctx.Float(2)))
 
-        dstFunc = self.validateDistanceRange()
+        dstFunc = self.validateDistanceRange(1.0)
 
         if dstFunc is None:
             return
@@ -1005,7 +1005,7 @@ class RosettaMRParserListener(ParseTreeListener):
         atomId1 = str(ctx.Simple_name(0)).upper()
         opposingChainId = str(ctx.Simple_name(1)).upper()
 
-        dstFunc = self.validateDistanceRange()
+        dstFunc = self.validateDistanceRange(1.0)
 
         if dstFunc is None:
             return
@@ -1065,7 +1065,7 @@ class RosettaMRParserListener(ParseTreeListener):
         seqId2 = int(str(ctx.Integer(1)))
         seqId3 = int(str(ctx.Integer(2)))
 
-        dstFunc = self.validateDistanceRange()
+        dstFunc = self.validateDistanceRange(1.0)
 
         if dstFunc is None:
             return
@@ -1150,7 +1150,7 @@ class RosettaMRParserListener(ParseTreeListener):
         if DIST_RANGE_MIN <= target_value <= DIST_RANGE_MAX:
             pass
         else:
-            self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+            self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
                 f"The target value='{target_value}' should be within range {DIST_RESTRAINT_RANGE}.\n"
 
         for res1, res2 in itertools.product(self.atomSelectionSet[0],
@@ -1213,7 +1213,7 @@ class RosettaMRParserListener(ParseTreeListener):
         if DIST_RANGE_MIN <= sDev <= DIST_RANGE_MAX:
             pass
         else:
-            self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+            self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
                 f"The 'sdev={sDev}' should be within range {DIST_RESTRAINT_RANGE}.\n"
 
         for res in self.atomSelectionSet[0]:

@@ -70,8 +70,8 @@ ANGLE_ERROR_MIN = ANGLE_RESTRAINT_ERROR['min_exclusive']
 ANGLE_ERROR_MAX = ANGLE_RESTRAINT_ERROR['max_exclusive']
 
 
-RDC_RANGE_MIN = RDC_RESTRAINT_RANGE['min_exclusive']
-RDC_RANGE_MAX = RDC_RESTRAINT_RANGE['max_exclusive']
+RDC_RANGE_MIN = RDC_RESTRAINT_RANGE['min_inclusive']
+RDC_RANGE_MAX = RDC_RESTRAINT_RANGE['max_inclusive']
 
 RDC_ERROR_MIN = RDC_RESTRAINT_ERROR['min_exclusive']
 RDC_ERROR_MAX = RDC_RESTRAINT_ERROR['max_exclusive']
@@ -245,49 +245,10 @@ class CyanaMRParserListener(ParseTreeListener):
         else:  # 'lol_w_upl'
             lower_limit = float(str(ctx.Float()))
 
-        validRange = True
-        dstFunc = {'weight': 1.0}
+        dstFunc = self.validateDistanceRange(1.0, target_value, lower_limit, upper_limit)
 
-        if target_value is not None:
-            if DIST_ERROR_MIN < target_value < DIST_ERROR_MAX:
-                dstFunc['target_value'] = f"{target_value:.3f}"
-
-        if lower_limit is not None:
-            if DIST_ERROR_MIN < lower_limit < DIST_ERROR_MAX:
-                dstFunc['lower_limit'] = f"{lower_limit:.3f}"
-            else:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit}' must be within range {DIST_RESTRAINT_ERROR}.\n"
-
-        if upper_limit is not None:
-            if DIST_ERROR_MIN < upper_limit < DIST_ERROR_MAX:
-                dstFunc['upper_limit'] = f"{upper_limit:.3f}"
-            else:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit}' must be within range {DIST_RESTRAINT_ERROR}.\n"
-
-        if not validRange:
+        if dstFunc is None:
             return
-
-        if target_value is not None:
-            if DIST_RANGE_MIN <= target_value <= DIST_RANGE_MAX:
-                pass
-
-        if lower_limit is not None:
-            if DIST_RANGE_MIN <= lower_limit <= DIST_RANGE_MAX:
-                pass
-            else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit}' should be within range {DIST_RESTRAINT_RANGE}.\n"
-
-        if upper_limit is not None:
-            if DIST_RANGE_MIN <= upper_limit <= DIST_RANGE_MAX:
-                pass
-            else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit}' should be within range {DIST_RESTRAINT_RANGE}.\n"
 
         chainAssign1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
         chainAssign2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
@@ -306,6 +267,63 @@ class CyanaMRParserListener(ParseTreeListener):
             if self.__verbose:
                 print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
                       f"atom1={atom1} atom2={atom2} {dstFunc}")
+
+    def validateDistanceRange(self, weight, target_value, lower_limit, upper_limit):
+        """ Validate distance value range.
+        """
+
+        validRange = True
+        dstFunc = {'weight': weight}
+
+        if target_value is not None:
+            if DIST_ERROR_MIN < target_value < DIST_ERROR_MAX:
+                dstFunc['target_value'] = f"{target_value:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The target value='{target_value}' must be within range {DIST_RESTRAINT_ERROR}.\n"
+
+        if lower_limit is not None:
+            if DIST_ERROR_MIN < lower_limit < DIST_ERROR_MAX:
+                dstFunc['lower_limit'] = f"{lower_limit:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The lower limit value='{lower_limit}' must be within range {DIST_RESTRAINT_ERROR}.\n"
+
+        if upper_limit is not None:
+            if DIST_ERROR_MIN < upper_limit < DIST_ERROR_MAX:
+                dstFunc['upper_limit'] = f"{upper_limit:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The upper limit value='{upper_limit}' must be within range {DIST_RESTRAINT_ERROR}.\n"
+
+        if not validRange:
+            return None
+
+        if target_value is not None:
+            if DIST_RANGE_MIN <= target_value <= DIST_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                    f"The target value='{target_value}' should be within range {DIST_RESTRAINT_RANGE}.\n"
+
+        if lower_limit is not None:
+            if DIST_RANGE_MIN <= lower_limit <= DIST_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                    f"The lower limit value='{lower_limit}' should be within range {DIST_RESTRAINT_RANGE}.\n"
+
+        if upper_limit is not None:
+            if DIST_RANGE_MIN <= upper_limit <= DIST_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                    f"The upper limit value='{upper_limit}' should be within range {DIST_RESTRAINT_RANGE}.\n"
+
+        return dstFunc
 
     def assignCoordPolymerSequence(self, seqId, compId, atomId):
         """ Assign polymer sequences of the coordinates.
@@ -478,49 +496,10 @@ class CyanaMRParserListener(ParseTreeListener):
         while target_value < ANGLE_RANGE_MIN:
             target_value += 360.0
 
-        validRange = True
-        dstFunc = {'weight': 1.0}
+        dstFunc = self.validateAngleRange(1.0, target_value, lower_limit, upper_limit)
 
-        if target_value is not None:
-            if ANGLE_ERROR_MIN < target_value < ANGLE_ERROR_MAX:
-                dstFunc['target_value'] = f"{target_value:.3f}"
-
-        if lower_limit is not None:
-            if ANGLE_ERROR_MIN < lower_limit < ANGLE_ERROR_MAX:
-                dstFunc['lower_limit'] = f"{lower_limit:.3f}"
-            else:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
-
-        if upper_limit is not None:
-            if ANGLE_ERROR_MIN < upper_limit < ANGLE_ERROR_MAX:
-                dstFunc['upper_limit'] = f"{upper_limit:.3f}"
-            else:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
-
-        if not validRange:
+        if dstFunc is None:
             return
-
-        if target_value is not None:
-            if ANGLE_RANGE_MIN <= target_value <= ANGLE_RANGE_MAX:
-                pass
-
-        if lower_limit is not None:
-            if ANGLE_RANGE_MIN <= lower_limit <= ANGLE_RANGE_MAX:
-                pass
-            else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
-
-        if upper_limit is not None:
-            if ANGLE_RANGE_MIN <= upper_limit <= ANGLE_RANGE_MAX:
-                pass
-            else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
 
         peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
 
@@ -635,6 +614,63 @@ class CyanaMRParserListener(ParseTreeListener):
 
             self.atomSelectionSet = []
 
+    def validateAngleRange(self, weight, target_value, lower_limit, upper_limit):
+        """ Validate angle value range.
+        """
+
+        validRange = True
+        dstFunc = {'weight': weight}
+
+        if target_value is not None:
+            if ANGLE_ERROR_MIN < target_value < ANGLE_ERROR_MAX:
+                dstFunc['target_value'] = f"{target_value:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The target value='{target_value}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
+
+        if lower_limit is not None:
+            if ANGLE_ERROR_MIN < lower_limit < ANGLE_ERROR_MAX:
+                dstFunc['lower_limit'] = f"{lower_limit:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The lower limit value='{lower_limit}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
+
+        if upper_limit is not None:
+            if ANGLE_ERROR_MIN < upper_limit < ANGLE_ERROR_MAX:
+                dstFunc['upper_limit'] = f"{upper_limit:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The upper limit value='{upper_limit}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
+
+        if not validRange:
+            return None
+
+        if target_value is not None:
+            if ANGLE_RANGE_MIN <= target_value <= ANGLE_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                    f"The target value='{target_value}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
+
+        if lower_limit is not None:
+            if ANGLE_RANGE_MIN <= lower_limit <= ANGLE_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                    f"The lower limit value='{lower_limit}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
+
+        if upper_limit is not None:
+            if ANGLE_RANGE_MIN <= upper_limit <= ANGLE_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                    f"The upper limit value='{upper_limit}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
+
+        return dstFunc
+
     # Enter a parse tree produced by CyanaMRParser#rdc_restraints.
     def enterRdc_restraints(self, ctx: CyanaMRParser.Rdc_restraintsContext):  # pylint: disable=unused-argument
         self.__cur_subtype = 'rdc'
@@ -710,56 +746,10 @@ class CyanaMRParserListener(ParseTreeListener):
         lower_limit = target - error
         upper_limit = target + error
 
-        validRange = True
-        dstFunc = {'weight': weight, 'orientation': orientation}
+        dstFunc = self.validateRdcRange(weight, orientation, target_value, lower_limit, upper_limit)
 
-        if target_value is not None:
-            if RDC_ERROR_MIN < target_value < RDC_ERROR_MAX:
-                dstFunc['target_value'] = f"{target_value:.3f}"
-            else:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The target value='{target_value}' must be within range {RDC_RESTRAINT_ERROR}.\n"
-
-        if lower_limit is not None:
-            if RDC_ERROR_MIN < lower_limit < RDC_ERROR_MAX:
-                dstFunc['lower_limit'] = f"{lower_limit:.3f}"
-            else:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit}' must be within range {RDC_RESTRAINT_ERROR}.\n"
-
-        if upper_limit is not None:
-            if RDC_ERROR_MIN < upper_limit < RDC_ERROR_MAX:
-                dstFunc['upper_limit'] = f"{upper_limit:.3f}"
-            else:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit}' must be within range {RDC_RESTRAINT_ERROR}.\n"
-
-        if not validRange:
+        if dstFunc is None:
             return
-
-        if target_value is not None:
-            if RDC_RANGE_MIN < target_value < RDC_RANGE_MAX:
-                pass
-            else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The target value='{target_value}' should be within range {RDC_RESTRAINT_RANGE}.\n"
-
-        if lower_limit is not None:
-            if RDC_RANGE_MIN < lower_limit < RDC_RANGE_MAX:
-                pass
-            else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit}' should be within range {RDC_RESTRAINT_RANGE}.\n"
-
-        if upper_limit is not None:
-            if RDC_RANGE_MIN < upper_limit < RDC_RANGE_MAX:
-                pass
-            else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit}' should be within range {RDC_RESTRAINT_RANGE}.\n"
 
         chainAssign1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
         chainAssign2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
@@ -842,6 +832,63 @@ class CyanaMRParserListener(ParseTreeListener):
             if self.__verbose:
                 print(f"subtype={self.__cur_subtype} id={self.rdcRestraints} "
                       f"atom1={atom1} atom2={atom2} {dstFunc}")
+
+    def validateRdcRange(self, weight, orientation, target_value, lower_limit, upper_limit):
+        """ Validate RDC value range.
+        """
+
+        validRange = True
+        dstFunc = {'weight': weight, 'orientation': orientation}
+
+        if target_value is not None:
+            if RDC_ERROR_MIN < target_value < RDC_ERROR_MAX:
+                dstFunc['target_value'] = f"{target_value:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The target value='{target_value}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+
+        if lower_limit is not None:
+            if RDC_ERROR_MIN < lower_limit < RDC_ERROR_MAX:
+                dstFunc['lower_limit'] = f"{lower_limit:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The lower limit value='{lower_limit}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+
+        if upper_limit is not None:
+            if RDC_ERROR_MIN < upper_limit < RDC_ERROR_MAX:
+                dstFunc['upper_limit'] = f"{upper_limit:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The upper limit value='{upper_limit}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+
+        if not validRange:
+            return None
+
+        if target_value is not None:
+            if RDC_RANGE_MIN <= target_value <= RDC_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                    f"The target value='{target_value}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+
+        if lower_limit is not None:
+            if RDC_RANGE_MIN <= lower_limit <= RDC_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                    f"The lower limit value='{lower_limit}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+
+        if upper_limit is not None:
+            if RDC_RANGE_MIN <= upper_limit <= RDC_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                    f"The upper limit value='{upper_limit}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+
+        return dstFunc
 
     def areUniqueCoordAtoms(self, subtype_name):
         """ Check whether atom selection sets are uniquely assigned.
@@ -931,6 +978,30 @@ class CyanaMRParserListener(ParseTreeListener):
         lower_limit = target - error
         upper_limit = target + error
 
+        dstFunc = self.validatePcsRange(weight, orientation, target_value, lower_limit, upper_limit)
+
+        if dstFunc is None:
+            return
+
+        chainAssign = self.assignCoordPolymerSequence(seqId, compId, atomId)
+
+        if len(chainAssign) == 0:
+            return
+
+        self.selectCoordAtoms(chainAssign, seqId, compId, atomId)
+
+        if len(self.atomSelectionSet) < 1:
+            return
+
+        for atom in self.atomSelectionSet[0]:
+            if self.__verbose:
+                print(f"subtype={self.__cur_subtype} id={self.pcsRestraints} "
+                      f"atom={atom} {dstFunc}")
+
+    def validatePcsRange(self, weight, orientation, target_value, lower_limit, upper_limit):
+        """ Validate PCS value range.
+        """
+
         validRange = True
         dstFunc = {'weight': weight, 'orientation': orientation}
 
@@ -959,43 +1030,30 @@ class CyanaMRParserListener(ParseTreeListener):
                     f"The upper limit value='{upper_limit}' must be within range {PCS_RESTRAINT_ERROR}.\n"
 
         if not validRange:
-            return
+            return None
 
         if target_value is not None:
             if PCS_RANGE_MIN <= target_value <= PCS_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
                     f"The target value='{target_value}' should be within range {PCS_RESTRAINT_RANGE}.\n"
 
         if lower_limit is not None:
             if PCS_RANGE_MIN <= lower_limit <= PCS_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
                     f"The lower limit value='{lower_limit}' should be within range {PCS_RESTRAINT_RANGE}.\n"
 
         if upper_limit is not None:
             if PCS_RANGE_MIN <= upper_limit <= PCS_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
                     f"The upper limit value='{upper_limit}' should be within range {PCS_RESTRAINT_RANGE}.\n"
 
-        chainAssign = self.assignCoordPolymerSequence(seqId, compId, atomId)
-
-        if len(chainAssign) == 0:
-            return
-
-        self.selectCoordAtoms(chainAssign, seqId, compId, atomId)
-
-        if len(self.atomSelectionSet) < 1:
-            return
-
-        for atom in self.atomSelectionSet[0]:
-            if self.__verbose:
-                print(f"subtype={self.__cur_subtype} id={self.pcsRestraints} "
-                      f"atom={atom} {dstFunc}")
+        return dstFunc
 
     def __getCurrentRestraint(self):
         if self.__cur_subtype == 'dist':

@@ -70,8 +70,8 @@ ANGLE_ERROR_MIN = ANGLE_RESTRAINT_ERROR['min_exclusive']
 ANGLE_ERROR_MAX = ANGLE_RESTRAINT_ERROR['max_exclusive']
 
 
-RDC_RANGE_MIN = RDC_RESTRAINT_RANGE['min_exclusive']
-RDC_RANGE_MAX = RDC_RESTRAINT_RANGE['max_exclusive']
+RDC_RANGE_MIN = RDC_RESTRAINT_RANGE['min_inclusive']
+RDC_RANGE_MAX = RDC_RESTRAINT_RANGE['max_inclusive']
 
 RDC_ERROR_MIN = RDC_RESTRAINT_ERROR['min_exclusive']
 RDC_ERROR_MAX = RDC_RESTRAINT_ERROR['max_exclusive']
@@ -589,7 +589,7 @@ class AmberMRParserListener(ParseTreeListener):
 
                 if self.__cur_subtype == 'dist':
 
-                    dstFunc = self.validateDistanceRange()
+                    dstFunc = self.validateDistanceRange(1.0)
 
                     if dstFunc is None:
                         return
@@ -668,7 +668,7 @@ class AmberMRParserListener(ParseTreeListener):
                     if not valid:
                         return
 
-                    dstFunc = self.validateAngleRange()
+                    dstFunc = self.validateAngleRange(1.0)
 
                     if dstFunc is None:
                         return
@@ -691,7 +691,7 @@ class AmberMRParserListener(ParseTreeListener):
                     if not valid:
                         return
 
-                    dstFunc = self.validateAngleRange()
+                    dstFunc = self.validateAngleRange(1.0)
 
                     if dstFunc is None:
                         return
@@ -720,7 +720,7 @@ class AmberMRParserListener(ParseTreeListener):
                     if not valid:
                         return
 
-                    dstFunc = self.validateAngleRange()
+                    dstFunc = self.validateAngleRange(1.0)
 
                     if dstFunc is None:
                         return
@@ -1055,7 +1055,7 @@ class AmberMRParserListener(ParseTreeListener):
 
                 if self.__cur_subtype == 'dist':
 
-                    dstFunc = self.validateDistanceRange()
+                    dstFunc = self.validateDistanceRange(1.0)
 
                     if dstFunc is None:
                         return
@@ -1172,7 +1172,7 @@ class AmberMRParserListener(ParseTreeListener):
                     if not valid:
                         return
 
-                    dstFunc = self.validateAngleRange()
+                    dstFunc = self.validateAngleRange(1.0)
 
                     if dstFunc is None:
                         return
@@ -1201,7 +1201,7 @@ class AmberMRParserListener(ParseTreeListener):
                     if not valid:
                         return
 
-                    dstFunc = self.validateAngleRange()
+                    dstFunc = self.validateAngleRange(1.0)
 
                     if dstFunc is None:
                         return
@@ -1222,7 +1222,7 @@ class AmberMRParserListener(ParseTreeListener):
                 # plane-(point/plane) angle
                 else:
 
-                    dstFunc = self.validateAngleRange()
+                    dstFunc = self.validateAngleRange(1.0)
 
                     if dstFunc is None:
                         return
@@ -1544,12 +1544,12 @@ class AmberMRParserListener(ParseTreeListener):
 
         self.lastComment = None
 
-    def validateDistanceRange(self):
+    def validateDistanceRange(self, wt):
         """ Validate distance value range.
         """
 
         validRange = True
-        dstFunc = {'weight': 1.0}
+        dstFunc = {'weight': wt}
 
         if self.lowerLimit is not None:
             if DIST_ERROR_MIN < self.lowerLimit < DIST_ERROR_MAX:
@@ -1617,12 +1617,12 @@ class AmberMRParserListener(ParseTreeListener):
 
         return dstFunc
 
-    def validateAngleRange(self):
+    def validateAngleRange(self, wt):
         """ Validate angle value range.
         """
 
         validRange = True
-        dstFunc = {'weight': 1.0}
+        dstFunc = {'weight': wt}
 
         if self.lowerLimit is not None:
             if ANGLE_ERROR_MIN < self.lowerLimit < ANGLE_ERROR_MAX:
@@ -1720,7 +1720,7 @@ class AmberMRParserListener(ParseTreeListener):
 
         return dstFunc
 
-    def validateRdcRange(self, n, dwt):
+    def validateRdcRange(self, n, wt):
         """ Validate RDC value range.
         """
 
@@ -1728,7 +1728,7 @@ class AmberMRParserListener(ParseTreeListener):
         dobsu = self.dobsu[n]
 
         validRange = True
-        dstFunc = {'weight': dwt}
+        dstFunc = {'weight': wt}
 
         if dobsl is not None:
             if RDC_ERROR_MIN < dobsl < RDC_ERROR_MAX:
@@ -1751,14 +1751,14 @@ class AmberMRParserListener(ParseTreeListener):
             return None
 
         if dobsl is not None:
-            if RDC_RANGE_MIN < dobsl < RDC_RANGE_MAX:
+            if RDC_RANGE_MIN <= dobsl <= RDC_RANGE_MAX:
                 pass
             else:
                 self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint(self.dataset,n)}"\
                     f"The lower limit value 'dobsl({n})={dobsl}' should be within range {RDC_RESTRAINT_RANGE}.\n"
 
         if dobsu is not None:
-            if RDC_RANGE_MIN < dobsu < RDC_RANGE_MAX:
+            if RDC_RANGE_MIN <= dobsu <= RDC_RANGE_MAX:
                 pass
             else:
                 self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint(self.dataset,n)}"\
@@ -1766,7 +1766,7 @@ class AmberMRParserListener(ParseTreeListener):
 
         return dstFunc
 
-    def validateCsaRange(self, n, cwt):
+    def validateCsaRange(self, n, wt):
         """ Validate CSA value range.
         """
 
@@ -1774,7 +1774,7 @@ class AmberMRParserListener(ParseTreeListener):
         cobsu = self.cobsu[n]
 
         validRange = True
-        dstFunc = {'weight': cwt}
+        dstFunc = {'weight': wt}
 
         if cobsl is not None:
             if CSA_ERROR_MIN < cobsl < CSA_ERROR_MAX:

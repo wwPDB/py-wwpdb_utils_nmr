@@ -98,8 +98,8 @@ ANGLE_ERROR_MIN = ANGLE_RESTRAINT_ERROR['min_exclusive']
 ANGLE_ERROR_MAX = ANGLE_RESTRAINT_ERROR['max_exclusive']
 
 
-RDC_RANGE_MIN = RDC_RESTRAINT_RANGE['min_exclusive']
-RDC_RANGE_MAX = RDC_RESTRAINT_RANGE['max_exclusive']
+RDC_RANGE_MIN = RDC_RESTRAINT_RANGE['min_inclusive']
+RDC_RANGE_MAX = RDC_RESTRAINT_RANGE['max_inclusive']
 
 RDC_ERROR_MIN = RDC_RESTRAINT_ERROR['min_exclusive']
 RDC_ERROR_MAX = RDC_RESTRAINT_ERROR['max_exclusive']
@@ -660,8 +660,31 @@ class XplorMRParserListener(ParseTreeListener):
             lower_limit = target - dminus
             upper_limit = target + dplus
 
+        dstFunc = self.validateDistanceRange(self.scale, self.noePotential,
+                                             target_value, lower_limit, upper_limit,
+                                             lower_linear_limit, upper_linear_limit)
+
+        if dstFunc is None:
+            return
+
+        if not self.__hasPolySeq:
+            return
+
+        for i in range(0, len(self.atomSelectionSet), 2):
+            for atom1, atom2 in itertools.product(self.atomSelectionSet[i],
+                                                  self.atomSelectionSet[i + 1]):
+                if self.__verbose:
+                    print(f"subtype={self.__cur_subtype} (NOE) id={self.distRestraints} "
+                          f"atom1={atom1} atom2={atom2} {dstFunc}")
+
+    def validateDistanceRange(self, weight, potential,
+                              target_value, lower_limit, upper_limit,
+                              lower_linear_limit, upper_linear_limit):
+        """ Validate distance value range.
+        """
+
         validRange = True
-        dstFunc = {'weight': self.scale, 'potential': self.noePotential}
+        dstFunc = {'weight': weight, 'potential': potential}
 
         if target_value is not None:
             if DIST_ERROR_MIN < target_value < DIST_ERROR_MAX:
@@ -704,52 +727,44 @@ class XplorMRParserListener(ParseTreeListener):
                     f"The upper linear limit value='{upper_linear_limit}' must be within range {DIST_RESTRAINT_ERROR}.\n"
 
         if not validRange:
-            return
+            return None
 
         if target_value is not None:
             if DIST_RANGE_MIN <= target_value <= DIST_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
                     f"The target value='{target_value}' should be within range {DIST_RESTRAINT_RANGE}.\n"
 
         if lower_limit is not None:
             if DIST_RANGE_MIN <= lower_limit <= DIST_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
                     f"The lower limit value='{lower_limit}' should be within range {DIST_RESTRAINT_RANGE}.\n"
 
         if upper_limit is not None:
             if DIST_RANGE_MIN <= upper_limit <= DIST_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
                     f"The upper limit value='{upper_limit}' should be within range {DIST_RESTRAINT_RANGE}.\n"
 
         if lower_linear_limit is not None:
             if DIST_RANGE_MIN <= lower_linear_limit <= DIST_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
                     f"The lower linear limit value='{lower_linear_limit}' should be within range {DIST_RESTRAINT_RANGE}.\n"
 
         if upper_linear_limit is not None:
             if DIST_RANGE_MIN <= upper_linear_limit <= DIST_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
                     f"The upper linear limit value='{upper_linear_limit}' should be within range {DIST_RESTRAINT_RANGE}.\n"
 
-        if not self.__hasPolySeq:
-            return
-
-        for i in range(0, len(self.atomSelectionSet), 2):
-            for atom1, atom2 in itertools.product(self.atomSelectionSet[i],
-                                                  self.atomSelectionSet[i + 1]):
-                if self.__verbose:
-                    print(f"subtype={self.__cur_subtype} (NOE) id={self.distRestraints} "
-                          f"atom1={atom1} atom2={atom2} {dstFunc}")
+        return dstFunc
 
     # Enter a parse tree produced by XplorMRParser#predict_statement.
     def enterPredict_statement(self, ctx: XplorMRParser.Predict_statementContext):  # pylint: disable=unused-argument
@@ -811,8 +826,44 @@ class XplorMRParserListener(ParseTreeListener):
             lower_linear_limit = target - delta
             upper_linear_limit = target + delta
 
+        dstFunc = self.validateAngleRange(self.scale, {'energy_const': energyConst},
+                                          target_value, lower_limit, upper_limit,
+                                          lower_linear_limit, upper_linear_limit)
+
+        if dstFunc is None:
+            return
+
+        if not self.__hasPolySeq:
+            return
+
+        compId = self.atomSelectionSet[0][0]['comp_id']
+        peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
+
+        if not self.areUniqueCoordAtoms('a dihedral angle (DIHE)'):
+            return
+
+        for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
+                                                            self.atomSelectionSet[1],
+                                                            self.atomSelectionSet[2],
+                                                            self.atomSelectionSet[3]):
+            if self.__verbose:
+                angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
+                                                       [atom1, atom2, atom3, atom4])
+                print(f"subtype={self.__cur_subtype} (DIHE) id={self.dihedRestraints} angleName={angleName} "
+                      f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
+
+    def validateAngleRange(self, weight, misc_dict,
+                           target_value, lower_limit, upper_limit,
+                           lower_linear_limit=None, upper_linear_limit=None):
+        """ Validate angle value range.
+        """
+
         validRange = True
-        dstFunc = {'weight': self.scale, 'energy_const': energyConst}
+        dstFunc = {'weight': weight}
+
+        if isinstance(misc_dict, dict):
+            for k, v in misc_dict.items():
+                dstFunc[k] = v
 
         if target_value is not None:
             if ANGLE_ERROR_MIN < target_value < ANGLE_ERROR_MAX:
@@ -855,61 +906,44 @@ class XplorMRParserListener(ParseTreeListener):
                     f"The upper linear limit value='{upper_linear_limit}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
 
         if not validRange:
-            return
+            return None
 
         if target_value is not None:
             if ANGLE_RANGE_MIN <= target_value <= ANGLE_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
                     f"The target value='{target_value}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
 
         if lower_limit is not None:
             if ANGLE_RANGE_MIN <= lower_limit <= ANGLE_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
                     f"The lower limit value='{lower_limit}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
 
         if upper_limit is not None:
             if ANGLE_RANGE_MIN <= upper_limit <= ANGLE_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
                     f"The upper limit value='{upper_limit}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
 
         if lower_linear_limit is not None:
             if ANGLE_RANGE_MIN <= lower_linear_limit <= ANGLE_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
                     f"The lower linear limit value='{lower_linear_limit}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
 
         if upper_linear_limit is not None:
             if ANGLE_RANGE_MIN <= upper_linear_limit <= ANGLE_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
                     f"The upper linear limit value='{upper_linear_limit}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
 
-        if not self.__hasPolySeq:
-            return
-
-        compId = self.atomSelectionSet[0][0]['comp_id']
-        peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
-
-        if not self.areUniqueCoordAtoms('a dihedral angle (DIHE)'):
-            return
-
-        for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
-                                                            self.atomSelectionSet[1],
-                                                            self.atomSelectionSet[2],
-                                                            self.atomSelectionSet[3]):
-            if self.__verbose:
-                angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
-                                                       [atom1, atom2, atom3, atom4])
-                print(f"subtype={self.__cur_subtype} (DIHE) id={self.dihedRestraints} angleName={angleName} "
-                      f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
+        return dstFunc
 
     def areUniqueCoordAtoms(self, subtype_name):
         """ Check whether atom selection sets are uniquely assigned.
@@ -985,56 +1019,11 @@ class XplorMRParserListener(ParseTreeListener):
                 lower_limit = target - error_less
                 upper_limit = target + error_grater
 
-        validRange = True
-        dstFunc = {'weight': 1.0, 'potential': self.potential}
+        dstFunc = self.validateRdcRange(1.0, {'potential': self.potential},
+                                        target_value, lower_limit, upper_limit)
 
-        if target_value is not None:
-            if RDC_ERROR_MIN < target_value < RDC_ERROR_MAX:
-                dstFunc['target_value'] = f"{target_value:.3f}"
-            else:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The target value='{target_value}' must be within range {RDC_RESTRAINT_ERROR}.\n"
-
-        if lower_limit is not None:
-            if RDC_ERROR_MIN < lower_limit < RDC_ERROR_MAX:
-                dstFunc['lower_limit'] = f"{lower_limit:.3f}"
-            else:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit}' must be within range {RDC_RESTRAINT_ERROR}.\n"
-
-        if upper_limit is not None:
-            if RDC_ERROR_MIN < upper_limit < RDC_ERROR_MAX:
-                dstFunc['upper_limit'] = f"{upper_limit:.3f}"
-            else:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit}' must be within range {RDC_RESTRAINT_ERROR}.\n"
-
-        if not validRange:
+        if dstFunc is None:
             return
-
-        if target_value is not None:
-            if RDC_RANGE_MIN < target_value < RDC_RANGE_MAX:
-                pass
-            else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The target value='{target_value}' should be within range {RDC_RESTRAINT_RANGE}.\n"
-
-        if lower_limit is not None:
-            if RDC_RANGE_MIN < lower_limit < RDC_RANGE_MAX:
-                pass
-            else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit}' should be within range {RDC_RESTRAINT_RANGE}.\n"
-
-        if upper_limit is not None:
-            if RDC_RANGE_MIN < upper_limit < RDC_RANGE_MAX:
-                pass
-            else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit}' should be within range {RDC_RESTRAINT_RANGE}.\n"
 
         if not self.__hasPolySeq:
             return
@@ -1109,6 +1098,99 @@ class XplorMRParserListener(ParseTreeListener):
                 print(f"subtype={self.__cur_subtype} (SANI) id={self.rdcRestraints} "
                       f"atom1={atom1} atom2={atom2} {dstFunc}")
 
+    def validateRdcRange(self, weight, misc_dict,
+                         target_value, lower_limit, upper_limit,
+                         lower_linear_limit=None, upper_linear_limit=None):
+        """ Validate angle value range.
+        """
+
+        validRange = True
+        dstFunc = {'weight': weight}
+
+        if isinstance(misc_dict, dict):
+            for k, v in misc_dict.items():
+                dstFunc[k] = v
+
+        if target_value is not None:
+            if RDC_ERROR_MIN < target_value < RDC_ERROR_MAX:
+                dstFunc['target_value'] = f"{target_value:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The target value='{target_value}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+
+        if lower_limit is not None:
+            if RDC_ERROR_MIN < lower_limit < RDC_ERROR_MAX:
+                dstFunc['lower_limit'] = f"{lower_limit:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The lower limit value='{lower_limit}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+
+        if upper_limit is not None:
+            if RDC_ERROR_MIN < upper_limit < RDC_ERROR_MAX:
+                dstFunc['upper_limit'] = f"{upper_limit:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The upper limit value='{upper_limit}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+
+        if lower_linear_limit is not None:
+            if RDC_ERROR_MIN < lower_linear_limit < RDC_ERROR_MAX:
+                dstFunc['lower_linear_limit'] = f"{lower_linear_limit:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The lower linear limit value='{lower_linear_limit}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+
+        if upper_linear_limit is not None:
+            if RDC_ERROR_MIN < upper_linear_limit < RDC_ERROR_MAX:
+                dstFunc['upper_linear_limit'] = f"{upper_linear_limit:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The upper linear limit value='{upper_linear_limit}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+
+        if not validRange:
+            return None
+
+        if target_value is not None:
+            if RDC_RANGE_MIN <= target_value <= RDC_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                    f"The target value='{target_value}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+
+        if lower_limit is not None:
+            if RDC_RANGE_MIN <= lower_limit <= RDC_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                    f"The lower limit value='{lower_limit}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+
+        if upper_limit is not None:
+            if RDC_RANGE_MIN <= upper_limit <= RDC_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                    f"The upper limit value='{upper_limit}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+
+        if lower_linear_limit is not None:
+            if RDC_RANGE_MIN <= lower_linear_limit <= RDC_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                    f"The lower linear limit value='{lower_linear_limit}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+
+        if upper_linear_limit is not None:
+            if RDC_RANGE_MIN <= upper_linear_limit <= RDC_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                    f"The upper linear limit value='{upper_linear_limit}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+
+        return dstFunc
+
     # Enter a parse tree produced by XplorMRParser#xdip_statement.
     def enterXdip_statement(self, ctx: XplorMRParser.Xdip_statementContext):
         if ctx.Rdc_potential():
@@ -1163,8 +1245,6 @@ class XplorMRParserListener(ParseTreeListener):
         target = float(str(ctx.Real(0)))
         delta = abs(float(str(ctx.Real(1))))
 
-        dstFunc = {'weight': self.scale, 'potential': self.potential, 'average': self.average}
-
         if ctx.Real(3):
             lower_limit_1 = None
             upper_limit_1 = None
@@ -1184,100 +1264,12 @@ class XplorMRParserListener(ParseTreeListener):
                 lower_limit_2 = target_value_2 - error_less_2
                 upper_limit_2 = target_value_2 + error_grater_2
 
-            validRange = True
+            dstFunc = self.validateRdcRange2(self.scale, {'potential': self.potential, 'average': self.average},
+                                             target_value_1, lower_limit_1, upper_limit_1,
+                                             target_value_2, lower_limit_2, upper_limit_2)
 
-            if target_value_1 is not None:
-                if RDC_ERROR_MIN < target_value_1 < RDC_ERROR_MAX:
-                    dstFunc['target_value_1'] = f"{target_value_1:.3f}"
-                else:
-                    validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The target value(1)='{target_value_1}' must be within range {RDC_RESTRAINT_ERROR}.\n"
-
-            if lower_limit_1 is not None:
-                if RDC_ERROR_MIN < lower_limit_1 < RDC_ERROR_MAX:
-                    dstFunc['lower_limit_1'] = f"{lower_limit_1:.3f}"
-                else:
-                    validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value(1)='{lower_limit_1}' must be within range {RDC_RESTRAINT_ERROR}.\n"
-
-            if upper_limit_1 is not None:
-                if RDC_ERROR_MIN < upper_limit_1 < RDC_ERROR_MAX:
-                    dstFunc['upper_limit_1'] = f"{upper_limit_1:.3f}"
-                else:
-                    validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper limit value(1)='{upper_limit_1}' must be within range {RDC_RESTRAINT_ERROR}.\n"
-
-            if target_value_2 is not None:
-                if RDC_ERROR_MIN < target_value_2 < RDC_ERROR_MAX:
-                    dstFunc['target_value_2'] = f"{target_value_2:.3f}"
-                else:
-                    validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The target value(2)='{target_value_2}' must be within range {RDC_RESTRAINT_ERROR}.\n"
-
-            if lower_limit_2 is not None:
-                if RDC_ERROR_MIN < lower_limit_2 < RDC_ERROR_MAX:
-                    dstFunc['lower_limit_2'] = f"{lower_limit_2:.3f}"
-                else:
-                    validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value(2)='{lower_limit_2}' must be within range {RDC_RESTRAINT_ERROR}.\n"
-
-            if upper_limit_2 is not None:
-                if RDC_ERROR_MIN < upper_limit_2 < RDC_ERROR_MAX:
-                    dstFunc['upper_limit_2'] = f"{upper_limit_2:.3f}"
-                else:
-                    validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper limit value(2)='{upper_limit_2}' must be within range {RDC_RESTRAINT_ERROR}.\n"
-
-            if not validRange:
+            if dstFunc is None:
                 return
-
-            if target_value_1 is not None:
-                if RDC_RANGE_MIN < target_value_1 < RDC_RANGE_MAX:
-                    pass
-                else:
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The target value(1)='{target_value_1}' should be within range {RDC_RESTRAINT_RANGE}.\n"
-
-            if lower_limit_1 is not None:
-                if RDC_RANGE_MIN < lower_limit_1 < RDC_RANGE_MAX:
-                    pass
-                else:
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value(1)='{lower_limit_1}' should be within range {RDC_RESTRAINT_RANGE}.\n"
-
-            if upper_limit_1 is not None:
-                if RDC_RANGE_MIN < upper_limit_1 < RDC_RANGE_MAX:
-                    pass
-                else:
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper limit value(1)='{upper_limit_1}' should be within range {RDC_RESTRAINT_RANGE}.\n"
-
-            if target_value_2 is not None:
-                if RDC_RANGE_MIN < target_value_2 < RDC_RANGE_MAX:
-                    pass
-                else:
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The target value(2)='{target_value_2}' should be within range {RDC_RESTRAINT_RANGE}.\n"
-
-            if lower_limit_2 is not None:
-                if RDC_RANGE_MIN < lower_limit_2 < RDC_RANGE_MAX:
-                    pass
-                else:
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value(2)='{lower_limit_2}' should be within range {RDC_RESTRAINT_RANGE}.\n"
-
-            if upper_limit_2 is not None:
-                if RDC_RANGE_MIN < upper_limit_2 < RDC_RANGE_MAX:
-                    pass
-                else:
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper limit value(2)='{upper_limit_2}' should be within range {RDC_RESTRAINT_RANGE}.\n"
 
         else:
             lower_limit = None
@@ -1295,55 +1287,11 @@ class XplorMRParserListener(ParseTreeListener):
             else:
                 target_value = target
 
-            validRange = True
+            dstFunc = self.validateRdcRange(self.scale, {'potential': self.potential, 'average': self.average},
+                                            target_value, lower_limit, upper_limit)
 
-            if target_value is not None:
-                if RDC_ERROR_MIN < target_value < RDC_ERROR_MAX:
-                    dstFunc['target_value'] = f"{target_value:.3f}"
-                else:
-                    validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The target value='{target_value}' must be within range {RDC_RESTRAINT_ERROR}.\n"
-
-            if lower_limit is not None:
-                if RDC_ERROR_MIN < lower_limit < RDC_ERROR_MAX:
-                    dstFunc['lower_limit'] = f"{lower_limit:.3f}"
-                else:
-                    validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value='{lower_limit}' must be within range {RDC_RESTRAINT_ERROR}.\n"
-
-            if upper_limit is not None:
-                if RDC_ERROR_MIN < upper_limit < RDC_ERROR_MAX:
-                    dstFunc['upper_limit'] = f"{upper_limit:.3f}"
-                else:
-                    validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper limit value='{upper_limit}' must be within range {RDC_RESTRAINT_ERROR}.\n"
-
-            if not validRange:
+            if dstFunc is None:
                 return
-
-            if target_value is not None:
-                if RDC_RANGE_MIN < target_value < RDC_RANGE_MAX:
-                    pass
-                else:
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The target value='{target_value}' should be within range {RDC_RESTRAINT_RANGE}.\n"
-
-            if lower_limit is not None:
-                if RDC_RANGE_MIN < lower_limit < RDC_RANGE_MAX:
-                    pass
-                else:
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value='{lower_limit}' should be within range {RDC_RESTRAINT_RANGE}.\n"
-
-            if upper_limit is not None:
-                if RDC_RANGE_MIN < upper_limit < RDC_RANGE_MAX:
-                    pass
-                else:
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper limit value='{upper_limit}' should be within range {RDC_RESTRAINT_RANGE}.\n"
 
         if not self.__hasPolySeq:
             return
@@ -1411,6 +1359,102 @@ class XplorMRParserListener(ParseTreeListener):
                 print(f"subtype={self.__cur_subtype} (XDIP) id={self.rdcRestraints} "
                       f"atom1={atom1} atom2={atom2} {dstFunc}")
 
+    def validateRdcRange2(self, weight, misc_dict,
+                          target_value_1, lower_limit_1, upper_limit_1,
+                          target_value_2, lower_limit_2, upper_limit_2):
+        """ Validate two RDC value ranges.
+        """
+
+        validRange = True
+        dstFunc = {'weight': weight}
+
+        if isinstance(misc_dict, dict):
+            for k, v in misc_dict.items():
+                dstFunc[k] = v
+
+        if RDC_ERROR_MIN < target_value_1 < RDC_ERROR_MAX:
+            dstFunc['target_value_1'] = f"{target_value_1:.3f}"
+        else:
+            validRange = False
+            self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                f"The target value(1)='{target_value_1}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+
+        if RDC_ERROR_MIN < lower_limit_1 < RDC_ERROR_MAX:
+            dstFunc['lower_limit_1'] = f"{lower_limit_1:.3f}"
+        else:
+            validRange = False
+            self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                f"The lower limit value(1)='{lower_limit_1}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+
+        if RDC_ERROR_MIN < upper_limit_1 < RDC_ERROR_MAX:
+            dstFunc['upper_limit_1'] = f"{upper_limit_1:.3f}"
+        else:
+            validRange = False
+            self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                f"The upper limit value(1)='{upper_limit_1}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+
+        if RDC_ERROR_MIN < target_value_2 < RDC_ERROR_MAX:
+            dstFunc['target_value_2'] = f"{target_value_2:.3f}"
+        else:
+            validRange = False
+            self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                f"The target value(2)='{target_value_2}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+
+        if RDC_ERROR_MIN < lower_limit_2 < RDC_ERROR_MAX:
+            dstFunc['lower_limit_2'] = f"{lower_limit_2:.3f}"
+        else:
+            validRange = False
+            self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                f"The lower limit value(2)='{lower_limit_2}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+
+        if RDC_ERROR_MIN < upper_limit_2 < RDC_ERROR_MAX:
+            dstFunc['upper_limit_2'] = f"{upper_limit_2:.3f}"
+        else:
+            validRange = False
+            self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                f"The upper limit value(2)='{upper_limit_2}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+
+        if not validRange:
+            return None
+
+        if RDC_RANGE_MIN <= target_value_1 <= RDC_RANGE_MAX:
+            pass
+        else:
+            self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                f"The target value(1)='{target_value_1}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+
+        if RDC_RANGE_MIN <= lower_limit_1 <= RDC_RANGE_MAX:
+            pass
+        else:
+            self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                f"The lower limit value(1)='{lower_limit_1}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+
+        if RDC_RANGE_MIN <= upper_limit_1 <= RDC_RANGE_MAX:
+            pass
+        else:
+            self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                f"The upper limit value(1)='{upper_limit_1}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+
+        if RDC_RANGE_MIN <= target_value_2 <= RDC_RANGE_MAX:
+            pass
+        else:
+            self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                f"The target value(2)='{target_value_2}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+
+        if RDC_RANGE_MIN <= lower_limit_2 <= RDC_RANGE_MAX:
+            pass
+        else:
+            self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                f"The lower limit value(2)='{lower_limit_2}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+
+        if RDC_RANGE_MIN <= upper_limit_2 <= RDC_RANGE_MAX:
+            pass
+        else:
+            self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                f"The upper limit value(2)='{upper_limit_2}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
+
+        return dstFunc
+
     # Enter a parse tree produced by XplorMRParser#vean_statement.
     def enterVean_statement(self, ctx: XplorMRParser.Vean_statementContext):
         if ctx.Reset():
@@ -1445,89 +1489,12 @@ class XplorMRParserListener(ParseTreeListener):
         lower_limit_2 = center_2 - range_2
         upper_limit_2 = center_2 + range_2
 
-        validRange = True
-        dstFunc = {'weight': 1.0, 'potential': self.potential}
+        dstFunc = self.validateAngleRange2(1.0, self.potential,
+                                           target_value_1, lower_limit_1, upper_limit_1,
+                                           target_value_2, lower_limit_2, upper_limit_2)
 
-        if ANGLE_ERROR_MIN < target_value_1 < ANGLE_ERROR_MAX:
-            dstFunc['target_value_1'] = f"{target_value_1:.3f}"
-        else:
-            validRange = False
-            self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                f"The target value(1)='{target_value_1}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
-
-        if ANGLE_ERROR_MIN < lower_limit_1 < ANGLE_ERROR_MAX:
-            dstFunc['lower_limit_1'] = f"{lower_limit_1:.3f}"
-        else:
-            validRange = False
-            self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                f"The lower limit value(1)='{lower_limit_1}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
-
-        if ANGLE_ERROR_MIN < upper_limit_1 < ANGLE_ERROR_MAX:
-            dstFunc['upper_limit_1'] = f"{upper_limit_1:.3f}"
-        else:
-            validRange = False
-            self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                f"The upper limit value(1)='{upper_limit_1}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
-
-        if ANGLE_ERROR_MIN < target_value_2 < ANGLE_ERROR_MAX:
-            dstFunc['target_value_2'] = f"{target_value_2:.3f}"
-        else:
-            validRange = False
-            self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                f"The target value(2)='{target_value_2}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
-
-        if ANGLE_ERROR_MIN < lower_limit_2 < ANGLE_ERROR_MAX:
-            dstFunc['lower_limit_2'] = f"{lower_limit_2:.3f}"
-        else:
-            validRange = False
-            self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                f"The lower limit value(2)='{lower_limit_2}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
-
-        if ANGLE_ERROR_MIN < upper_limit_2 < ANGLE_ERROR_MAX:
-            dstFunc['upper_limit_2'] = f"{upper_limit_2:.3f}"
-        else:
-            validRange = False
-            self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                f"The upper limit value(2)='{upper_limit_2}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
-
-        if not validRange:
+        if dstFunc is None:
             return
-
-        if ANGLE_RANGE_MIN <= target_value_1 <= ANGLE_RANGE_MAX:
-            pass
-        else:
-            self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                f"The target value(1)='{target_value_1}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
-
-        if ANGLE_RANGE_MIN <= lower_limit_1 <= ANGLE_RANGE_MAX:
-            pass
-        else:
-            self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                f"The lower limit value(1)='{lower_limit_1}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
-
-        if ANGLE_RANGE_MIN <= upper_limit_1 <= ANGLE_RANGE_MAX:
-            pass
-        else:
-            self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                f"The upper limit value(1)='{upper_limit_1}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
-
-        if ANGLE_RANGE_MIN <= target_value_2 <= ANGLE_RANGE_MAX:
-            pass
-        else:
-            self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                f"The target value(2)='{target_value_2}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
-
-        if ANGLE_RANGE_MIN <= lower_limit_2 <= ANGLE_RANGE_MAX:
-            pass
-        else:
-            self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                f"The lower limit value(2)='{lower_limit_2}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
-
-        if ANGLE_RANGE_MIN <= upper_limit_2 <= ANGLE_RANGE_MAX:
-            pass
-        else:
-            self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                f"The upper limit value(2)='{upper_limit_2}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
 
         if not self.__hasPolySeq:
             return
@@ -1605,6 +1572,98 @@ class XplorMRParserListener(ParseTreeListener):
                 print(f"subtype={self.__cur_subtype} (VEAN) id={self.rdcRestraints} "
                       f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
 
+    def validateAngleRange2(self, weight, potential,
+                            target_value_1, lower_limit_1, upper_limit_1,
+                            target_value_2, lower_limit_2, upper_limit_2):
+        """ Validate two angle value ranges.
+        """
+
+        validRange = True
+        dstFunc = {'weight': weight, 'potential': potential}
+
+        if ANGLE_ERROR_MIN < target_value_1 < ANGLE_ERROR_MAX:
+            dstFunc['target_value_1'] = f"{target_value_1:.3f}"
+        else:
+            validRange = False
+            self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                f"The target value(1)='{target_value_1}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
+
+        if ANGLE_ERROR_MIN < lower_limit_1 < ANGLE_ERROR_MAX:
+            dstFunc['lower_limit_1'] = f"{lower_limit_1:.3f}"
+        else:
+            validRange = False
+            self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                f"The lower limit value(1)='{lower_limit_1}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
+
+        if ANGLE_ERROR_MIN < upper_limit_1 < ANGLE_ERROR_MAX:
+            dstFunc['upper_limit_1'] = f"{upper_limit_1:.3f}"
+        else:
+            validRange = False
+            self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                f"The upper limit value(1)='{upper_limit_1}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
+
+        if ANGLE_ERROR_MIN < target_value_2 < ANGLE_ERROR_MAX:
+            dstFunc['target_value_2'] = f"{target_value_2:.3f}"
+        else:
+            validRange = False
+            self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                f"The target value(2)='{target_value_2}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
+
+        if ANGLE_ERROR_MIN < lower_limit_2 < ANGLE_ERROR_MAX:
+            dstFunc['lower_limit_2'] = f"{lower_limit_2:.3f}"
+        else:
+            validRange = False
+            self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                f"The lower limit value(2)='{lower_limit_2}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
+
+        if ANGLE_ERROR_MIN < upper_limit_2 < ANGLE_ERROR_MAX:
+            dstFunc['upper_limit_2'] = f"{upper_limit_2:.3f}"
+        else:
+            validRange = False
+            self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                f"The upper limit value(2)='{upper_limit_2}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
+
+        if not validRange:
+            return None
+
+        if ANGLE_RANGE_MIN <= target_value_1 <= ANGLE_RANGE_MAX:
+            pass
+        else:
+            self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                f"The target value(1)='{target_value_1}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
+
+        if ANGLE_RANGE_MIN <= lower_limit_1 <= ANGLE_RANGE_MAX:
+            pass
+        else:
+            self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                f"The lower limit value(1)='{lower_limit_1}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
+
+        if ANGLE_RANGE_MIN <= upper_limit_1 <= ANGLE_RANGE_MAX:
+            pass
+        else:
+            self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                f"The upper limit value(1)='{upper_limit_1}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
+
+        if ANGLE_RANGE_MIN <= target_value_2 <= ANGLE_RANGE_MAX:
+            pass
+        else:
+            self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                f"The target value(2)='{target_value_2}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
+
+        if ANGLE_RANGE_MIN <= lower_limit_2 <= ANGLE_RANGE_MAX:
+            pass
+        else:
+            self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                f"The lower limit value(2)='{lower_limit_2}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
+
+        if ANGLE_RANGE_MIN <= upper_limit_2 <= ANGLE_RANGE_MAX:
+            pass
+        else:
+            self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                f"The upper limit value(2)='{upper_limit_2}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
+
+        return dstFunc
+
     # Enter a parse tree produced by XplorMRParser#tenso_statement.
     def enterTenso_statement(self, ctx: XplorMRParser.Tenso_statementContext):
         if ctx.Rdc_potential():
@@ -1651,56 +1710,11 @@ class XplorMRParserListener(ParseTreeListener):
             lower_limit = target - delta
             upper_limit = target + delta
 
-        validRange = True
-        dstFunc = {'weight': 1.0, 'potential': self.potential}
+        dstFunc = self.validateRdcRange(1.0, {'potential': self.potential},
+                                        target_value, lower_limit, upper_limit)
 
-        if target_value is not None:
-            if RDC_ERROR_MIN < target_value < RDC_ERROR_MAX:
-                dstFunc['target_value'] = f"{target_value:.3f}"
-            else:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The target value='{target_value}' must be within range {RDC_RESTRAINT_ERROR}.\n"
-
-        if lower_limit is not None:
-            if RDC_ERROR_MIN < lower_limit < RDC_ERROR_MAX:
-                dstFunc['lower_limit'] = f"{lower_limit:.3f}"
-            else:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit}' must be within range {RDC_RESTRAINT_ERROR}.\n"
-
-        if upper_limit is not None:
-            if RDC_ERROR_MIN < upper_limit < RDC_ERROR_MAX:
-                dstFunc['upper_limit'] = f"{upper_limit:.3f}"
-            else:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit}' must be within range {RDC_RESTRAINT_ERROR}.\n"
-
-        if not validRange:
+        if dstFunc is None:
             return
-
-        if target_value is not None:
-            if RDC_RANGE_MIN < target_value < RDC_RANGE_MAX:
-                pass
-            else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The target value='{target_value}' should be within range {RDC_RESTRAINT_RANGE}.\n"
-
-        if lower_limit is not None:
-            if RDC_RANGE_MIN < lower_limit < RDC_RANGE_MAX:
-                pass
-            else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit}' should be within range {RDC_RESTRAINT_RANGE}.\n"
-
-        if upper_limit is not None:
-            if RDC_RANGE_MIN < upper_limit < RDC_RANGE_MAX:
-                pass
-            else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit}' should be within range {RDC_RESTRAINT_RANGE}.\n"
 
         if not self.__hasPolySeq:
             return
@@ -1824,56 +1838,8 @@ class XplorMRParserListener(ParseTreeListener):
             lower_limit = target - delta
             upper_limit = target + delta
 
-        validRange = True
-        dstFunc = {'weight': 1.0, 'potential': self.potential}
-
-        if target_value is not None:
-            if RDC_ERROR_MIN < target_value < RDC_ERROR_MAX:
-                dstFunc['target_value'] = f"{target_value:.3f}"
-            else:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The target value='{target_value}' must be within range {RDC_RESTRAINT_ERROR}.\n"
-
-        if lower_limit is not None:
-            if RDC_ERROR_MIN < lower_limit < RDC_ERROR_MAX:
-                dstFunc['lower_limit'] = f"{lower_limit:.3f}"
-            else:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit}' must be within range {RDC_RESTRAINT_ERROR}.\n"
-
-        if upper_limit is not None:
-            if RDC_ERROR_MIN < upper_limit < RDC_ERROR_MAX:
-                dstFunc['upper_limit'] = f"{upper_limit:.3f}"
-            else:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit}' must be within range {RDC_RESTRAINT_ERROR}.\n"
-
-        if not validRange:
-            return
-
-        if target_value is not None:
-            if RDC_RANGE_MIN < target_value < RDC_RANGE_MAX:
-                pass
-            else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The target value='{target_value}' should be within range {RDC_RESTRAINT_RANGE}.\n"
-
-        if lower_limit is not None:
-            if RDC_RANGE_MIN < lower_limit < RDC_RANGE_MAX:
-                pass
-            else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit}' should be within range {RDC_RESTRAINT_RANGE}.\n"
-
-        if upper_limit is not None:
-            if RDC_RANGE_MIN < upper_limit < RDC_RANGE_MAX:
-                pass
-            else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+        dstFunc = self.validateRdcRange(1.0, {'potential': self.potential},
+                                        target_value, lower_limit, upper_limit)
 
         if not self.__hasPolySeq:
             return
@@ -1996,7 +1962,7 @@ class XplorMRParserListener(ParseTreeListener):
             if DIST_ERROR_MIN < self.adistExpect < DIST_ERROR_MAX:
                 pass
             else:
-                self.warningMessage += "[Invalid data] "\
+                self.warningMessage += "[Range value error] "\
                     f"The expectation distance 'XADC {str(ctx.Expectation())} {str(ctx.Integer())} {self.scale} END' "\
                     f"must be within range {DIST_RESTRAINT_ERROR}.\n"
 
@@ -2073,56 +2039,11 @@ class XplorMRParserListener(ParseTreeListener):
             lower_limit = target - delta
             upper_limit = target + delta
 
-        validRange = True
-        dstFunc = {'weight': 1.0, 'potential': self.potential}
+        dstFunc = self.validateRdcRange(1.0, {'potential': self.potential},
+                                        target_value, lower_limit, upper_limit)
 
-        if target_value is not None:
-            if RDC_ERROR_MIN < target_value < RDC_ERROR_MAX:
-                dstFunc['target_value'] = f"{target_value:.3f}"
-            else:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The target value='{target_value}' must be within range {RDC_RESTRAINT_ERROR}.\n"
-
-        if lower_limit is not None:
-            if RDC_ERROR_MIN < lower_limit < RDC_ERROR_MAX:
-                dstFunc['lower_limit'] = f"{lower_limit:.3f}"
-            else:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit}' must be within range {RDC_RESTRAINT_ERROR}.\n"
-
-        if upper_limit is not None:
-            if RDC_ERROR_MIN < upper_limit < RDC_ERROR_MAX:
-                dstFunc['upper_limit'] = f"{upper_limit:.3f}"
-            else:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit}' must be within range {RDC_RESTRAINT_ERROR}.\n"
-
-        if not validRange:
+        if dstFunc is None:
             return
-
-        if target_value is not None:
-            if RDC_RANGE_MIN < target_value < RDC_RANGE_MAX:
-                pass
-            else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The target value='{target_value}' should be within range {RDC_RESTRAINT_RANGE}.\n"
-
-        if lower_limit is not None:
-            if RDC_RANGE_MIN < lower_limit < RDC_RANGE_MAX:
-                pass
-            else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit}' should be within range {RDC_RESTRAINT_RANGE}.\n"
-
-        if upper_limit is not None:
-            if RDC_RANGE_MIN < upper_limit < RDC_RANGE_MAX:
-                pass
-            else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit}' should be within range {RDC_RESTRAINT_RANGE}.\n"
 
         dstFunc2 = None
 
@@ -2138,56 +2059,11 @@ class XplorMRParserListener(ParseTreeListener):
                 lower_limit = target - delta
                 upper_limit = target + delta
 
-            validRange = True
-            dstFunc2 = {'weight': 1.0, 'potential': self.potential}
+            dstFunc2 = self.validateRdcRange(1.0, {'potential': self.potential},
+                                             target_value, lower_limit, upper_limit)
 
-            if target_value is not None:
-                if RDC_ERROR_MIN < target_value < RDC_ERROR_MAX:
-                    dstFunc2['target_value'] = f"{target_value:.3f}"
-                else:
-                    validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The target value='{target_value}' must be within range {RDC_RESTRAINT_ERROR}.\n"
-
-            if lower_limit is not None:
-                if RDC_ERROR_MIN < lower_limit < RDC_ERROR_MAX:
-                    dstFunc2['lower_limit'] = f"{lower_limit:.3f}"
-                else:
-                    validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value='{lower_limit}' must be within range {RDC_RESTRAINT_ERROR}.\n"
-
-            if upper_limit is not None:
-                if RDC_ERROR_MIN < upper_limit < RDC_ERROR_MAX:
-                    dstFunc2['upper_limit'] = f"{upper_limit:.3f}"
-                else:
-                    validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper limit value='{upper_limit}' must be within range {RDC_RESTRAINT_ERROR}.\n"
-
-            if not validRange:
+            if dstFunc2 is None:
                 return
-
-            if target_value is not None:
-                if RDC_RANGE_MIN < target_value < RDC_RANGE_MAX:
-                    pass
-                else:
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The target value='{target_value}' should be within range {RDC_RESTRAINT_RANGE}.\n"
-
-            if lower_limit is not None:
-                if RDC_RANGE_MIN < lower_limit < RDC_RANGE_MAX:
-                    pass
-                else:
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value='{lower_limit}' should be within range {RDC_RESTRAINT_RANGE}.\n"
-
-            if upper_limit is not None:
-                if RDC_RANGE_MIN < upper_limit < RDC_RANGE_MAX:
-                    pass
-                else:
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper limit value='{upper_limit}' should be within range {RDC_RESTRAINT_RANGE}.\n"
 
         if not self.__hasPolySeq:
             return
@@ -2855,7 +2731,7 @@ class XplorMRParserListener(ParseTreeListener):
         if DIST_ERROR_MIN < targetRgyr < DIST_ERROR_MAX:
             pass
         else:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+            self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
                 f"The target Rgyr value {targetRgyr} must be within range {DIST_RESTRAINT_ERROR}.\n"
             return
 
@@ -2919,56 +2795,11 @@ class XplorMRParserListener(ParseTreeListener):
             lower_limit = target - delta
             upper_limit = target + delta
 
-        validRange = True
-        dstFunc = {'weight': 1.0, 'potential': self.potential}
+        dstFunc = self.validateT1T2Range(1.0, self.potential,
+                                         target_value, lower_limit, upper_limit)
 
-        if target_value is not None:
-            if T1T2_ERROR_MIN < target_value < T1T2_ERROR_MAX:
-                dstFunc['target_value'] = f"{target_value:.3f}"
-            else:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The target value='{target_value}' must be within range {T1T2_RESTRAINT_ERROR}.\n"
-
-        if lower_limit is not None:
-            if T1T2_ERROR_MIN < lower_limit < T1T2_ERROR_MAX:
-                dstFunc['lower_limit'] = f"{lower_limit:.3f}"
-            else:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit}' must be within range {T1T2_RESTRAINT_ERROR}.\n"
-
-        if upper_limit is not None:
-            if T1T2_ERROR_MIN < upper_limit < T1T2_ERROR_MAX:
-                dstFunc['upper_limit'] = f"{upper_limit:.3f}"
-            else:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit}' must be within range {T1T2_RESTRAINT_ERROR}.\n"
-
-        if not validRange:
+        if dstFunc is None:
             return
-
-        if target_value is not None:
-            if T1T2_RANGE_MIN <= target_value <= T1T2_RANGE_MAX:
-                pass
-            else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The target value='{target_value}' should be within range {T1T2_RESTRAINT_RANGE}.\n"
-
-        if lower_limit is not None:
-            if T1T2_RANGE_MIN <= lower_limit <= T1T2_RANGE_MAX:
-                pass
-            else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit}' should be within range {T1T2_RESTRAINT_RANGE}.\n"
-
-        if upper_limit is not None:
-            if T1T2_RANGE_MIN <= upper_limit <= T1T2_RANGE_MAX:
-                pass
-            else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit}' should be within range {T1T2_RESTRAINT_RANGE}.\n"
 
         if not self.__hasPolySeq:
             return
@@ -3042,6 +2873,95 @@ class XplorMRParserListener(ParseTreeListener):
             if self.__verbose:
                 print(f"subtype={self.__cur_subtype} (DANI) id={self.diffRestraints} "
                       f"atom1={atom1} atom2={atom2} {dstFunc}")
+
+    def validateT1T2Range(self, weight, potential,
+                          target_value, lower_limit, upper_limit,
+                          lower_linear_limit=None, upper_linear_limit=None):
+        """ Validate T1/T2 value range.
+        """
+
+        validRange = True
+        dstFunc = {'weight': weight, 'potential': potential}
+
+        if target_value is not None:
+            if T1T2_ERROR_MIN < target_value < T1T2_ERROR_MAX:
+                dstFunc['target_value'] = f"{target_value:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The target value='{target_value}' must be within range {T1T2_RESTRAINT_ERROR}.\n"
+
+        if lower_limit is not None:
+            if T1T2_ERROR_MIN < lower_limit < T1T2_ERROR_MAX:
+                dstFunc['lower_limit'] = f"{lower_limit:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The lower limit value='{lower_limit}' must be within range {T1T2_RESTRAINT_ERROR}.\n"
+
+        if upper_limit is not None:
+            if T1T2_ERROR_MIN < upper_limit < T1T2_ERROR_MAX:
+                dstFunc['upper_limit'] = f"{upper_limit:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The upper limit value='{upper_limit}' must be within range {T1T2_RESTRAINT_ERROR}.\n"
+
+        if lower_linear_limit is not None:
+            if T1T2_ERROR_MIN < lower_linear_limit < T1T2_ERROR_MAX:
+                dstFunc['lower_linear_limit'] = f"{lower_linear_limit:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The lower linear limit value='{lower_linear_limit}' must be within range {T1T2_RESTRAINT_ERROR}.\n"
+
+        if upper_linear_limit is not None:
+            if T1T2_ERROR_MIN < upper_linear_limit < T1T2_ERROR_MAX:
+                dstFunc['upper_linear_limit'] = f"{upper_linear_limit:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The upper linear limit value='{upper_linear_limit}' must be within range {T1T2_RESTRAINT_ERROR}.\n"
+
+        if not validRange:
+            return None
+
+        if target_value is not None:
+            if T1T2_RANGE_MIN <= target_value <= T1T2_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                    f"The target value='{target_value}' should be within range {T1T2_RESTRAINT_RANGE}.\n"
+
+        if lower_limit is not None:
+            if T1T2_RANGE_MIN <= lower_limit <= T1T2_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                    f"The lower limit value='{lower_limit}' should be within range {T1T2_RESTRAINT_RANGE}.\n"
+
+        if upper_limit is not None:
+            if T1T2_RANGE_MIN <= upper_limit <= T1T2_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                    f"The upper limit value='{upper_limit}' should be within range {T1T2_RESTRAINT_RANGE}.\n"
+
+        if lower_linear_limit is not None:
+            if T1T2_RANGE_MIN <= lower_linear_limit <= T1T2_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                    f"The lower linear limit value='{lower_linear_limit}' should be within range {T1T2_RESTRAINT_RANGE}.\n"
+
+        if upper_linear_limit is not None:
+            if T1T2_RANGE_MIN <= upper_linear_limit <= T1T2_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                    f"The upper linear limit value='{upper_linear_limit}' should be within range {T1T2_RESTRAINT_RANGE}.\n"
+
+        return dstFunc
 
     # Enter a parse tree produced by XplorMRParser#orientation_statement.
     def enterOrientation_statement(self, ctx: XplorMRParser.Orientation_statementContext):
@@ -3217,56 +3137,11 @@ class XplorMRParserListener(ParseTreeListener):
             lower_limit = target - cminus
             upper_limit = target + cplus
 
-        validRange = True
-        dstFunc = {'weight': 1.0, 'potential': self.potential}
+        dstFunc = self.validateCsaRange(1.0, self.potential,
+                                        target_value, lower_limit, upper_limit)
 
-        if target_value is not None:
-            if CSA_ERROR_MIN < target_value < CSA_ERROR_MAX:
-                dstFunc['target_value'] = f"{target_value:.3f}"
-            else:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The target value='{target_value}' must be within range {CSA_RESTRAINT_ERROR}.\n"
-
-        if lower_limit is not None:
-            if CSA_ERROR_MIN < lower_limit < CSA_ERROR_MAX:
-                dstFunc['lower_limit'] = f"{lower_limit:.3f}"
-            else:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit}' must be within range {CSA_RESTRAINT_ERROR}.\n"
-
-        if upper_limit is not None:
-            if CSA_ERROR_MIN < upper_limit < CSA_ERROR_MAX:
-                dstFunc['upper_limit'] = f"{upper_limit:.3f}"
-            else:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit}' must be within range {CSA_RESTRAINT_ERROR}.\n"
-
-        if not validRange:
+        if dstFunc is None:
             return
-
-        if target_value is not None:
-            if CSA_RANGE_MIN <= target_value <= CSA_RANGE_MAX:
-                pass
-            else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The target value='{target_value}' should be within range {CSA_RESTRAINT_RANGE}.\n"
-
-        if lower_limit is not None:
-            if CSA_RANGE_MIN <= lower_limit <= CSA_RANGE_MAX:
-                pass
-            else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit}' should be within range {CSA_RESTRAINT_RANGE}.\n"
-
-        if upper_limit is not None:
-            if CSA_RANGE_MIN <= upper_limit <= CSA_RANGE_MAX:
-                pass
-            else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit}' should be within range {CSA_RESTRAINT_RANGE}.\n"
 
         if not self.__hasPolySeq:
             return
@@ -3408,6 +3283,95 @@ class XplorMRParserListener(ParseTreeListener):
             if self.__verbose:
                 print(f"subtype={self.__cur_subtype} id={self.csaRestraints} "
                       f"atom1(CSA central)={atom1} atom2={atom2} atom3={atom3} {dstFunc}")
+
+    def validateCsaRange(self, weight, potential,
+                         target_value, lower_limit, upper_limit,
+                         lower_linear_limit=None, upper_linear_limit=None):
+        """ Validate CSA value range.
+        """
+
+        validRange = True
+        dstFunc = {'weight': weight, 'potential': potential}
+
+        if target_value is not None:
+            if CSA_ERROR_MIN < target_value < CSA_ERROR_MAX:
+                dstFunc['target_value'] = f"{target_value:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The target value='{target_value}' must be within range {CSA_RESTRAINT_ERROR}.\n"
+
+        if lower_limit is not None:
+            if CSA_ERROR_MIN < lower_limit < CSA_ERROR_MAX:
+                dstFunc['lower_limit'] = f"{lower_limit:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The lower limit value='{lower_limit}' must be within range {CSA_RESTRAINT_ERROR}.\n"
+
+        if upper_limit is not None:
+            if CSA_ERROR_MIN < upper_limit < CSA_ERROR_MAX:
+                dstFunc['upper_limit'] = f"{upper_limit:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The upper limit value='{upper_limit}' must be within range {CSA_RESTRAINT_ERROR}.\n"
+
+        if lower_linear_limit is not None:
+            if CSA_ERROR_MIN < lower_linear_limit < CSA_ERROR_MAX:
+                dstFunc['lower_linear_limit'] = f"{lower_linear_limit:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The lower linear limit value='{lower_linear_limit}' must be within range {CSA_RESTRAINT_ERROR}.\n"
+
+        if upper_linear_limit is not None:
+            if CSA_ERROR_MIN < upper_linear_limit < CSA_ERROR_MAX:
+                dstFunc['upper_linear_limit'] = f"{upper_linear_limit:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The upper linear limit value='{upper_linear_limit}' must be within range {CSA_RESTRAINT_ERROR}.\n"
+
+        if not validRange:
+            return None
+
+        if target_value is not None:
+            if CSA_RANGE_MIN <= target_value <= CSA_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                    f"The target value='{target_value}' should be within range {CSA_RESTRAINT_RANGE}.\n"
+
+        if lower_limit is not None:
+            if CSA_RANGE_MIN <= lower_limit <= CSA_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                    f"The lower limit value='{lower_limit}' should be within range {CSA_RESTRAINT_RANGE}.\n"
+
+        if upper_limit is not None:
+            if CSA_RANGE_MIN <= upper_limit <= CSA_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                    f"The upper limit value='{upper_limit}' should be within range {CSA_RESTRAINT_RANGE}.\n"
+
+        if lower_linear_limit is not None:
+            if CSA_RANGE_MIN <= lower_linear_limit <= CSA_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                    f"The lower linear limit value='{lower_linear_limit}' should be within range {CSA_RESTRAINT_RANGE}.\n"
+
+        if upper_linear_limit is not None:
+            if CSA_RANGE_MIN <= upper_linear_limit <= CSA_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                    f"The upper linear limit value='{upper_linear_limit}' should be within range {CSA_RESTRAINT_RANGE}.\n"
+
+        return dstFunc
 
     # Enter a parse tree produced by XplorMRParser#pcsa_statement.
     def enterPcsa_statement(self, ctx: XplorMRParser.Pcsa_statementContext):
@@ -3559,8 +3523,40 @@ class XplorMRParserListener(ParseTreeListener):
             lower_limit = target - delta
             upper_limit = target + delta
 
+        dstFunc = self.validatePreRange(1.0, self.potential,
+                                        target_value, lower_limit, upper_limit)
+
+        if dstFunc is None:
+            return
+
+        if not self.__hasPolySeq:
+            return
+
+        atom_id_0 = self.atomSelectionSet[0][0]['atom_id'] if 'atom_id' in self.atomSelectionSet[0][0] else 'paramagnetic center'
+
+        chain_id = self.atomSelectionSet[1][0]['chain_id']
+        seq_id = self.atomSelectionSet[1][0]['seq_id']
+        comp_id = self.atomSelectionSet[1][0]['comp_id']
+        atom_id = self.atomSelectionSet[1][0]['atom_id']
+
+        if atom_id[0] != 'H':
+            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                f"Not a proton;  {chain_id}:{seq_id}:{comp_id}:{atom_id}.\n"
+            return
+
+        for atom1 in self.atomSelectionSet[1]:
+            if self.__verbose:
+                print(f"subtype={self.__cur_subtype} id={self.preRestraints} "
+                      f"paramag={atom_id_0} atom={atom1} {dstFunc}")
+
+    def validatePreRange(self, weight, potential,
+                         target_value, lower_limit, upper_limit,
+                         lower_linear_limit=None, upper_linear_limit=None):
+        """ Validate PRE value range.
+        """
+
         validRange = True
-        dstFunc = {'weight': 1.0, 'potential': self.potential}
+        dstFunc = {'weight': weight, 'potential': potential}
 
         if target_value is not None:
             if PRE_ERROR_MIN < target_value < PRE_ERROR_MAX:
@@ -3586,49 +3582,61 @@ class XplorMRParserListener(ParseTreeListener):
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
                     f"The upper limit value='{upper_limit}' must be within range {PRE_RESTRAINT_ERROR}.\n"
 
+        if lower_linear_limit is not None:
+            if PRE_ERROR_MIN < lower_linear_limit < PRE_ERROR_MAX:
+                dstFunc['lower_linear_limit'] = f"{lower_linear_limit:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The lower linear limit value='{lower_linear_limit}' must be within range {PRE_RESTRAINT_ERROR}.\n"
+
+        if upper_linear_limit is not None:
+            if PRE_ERROR_MIN < upper_linear_limit < PRE_ERROR_MAX:
+                dstFunc['upper_linear_limit'] = f"{upper_linear_limit:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The upper linear limit value='{upper_linear_limit}' must be within range {PRE_RESTRAINT_ERROR}.\n"
+
         if not validRange:
-            return
+            return None
 
         if target_value is not None:
             if PRE_RANGE_MIN <= target_value <= PRE_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
                     f"The target value='{target_value}' should be within range {PRE_RESTRAINT_RANGE}.\n"
 
         if lower_limit is not None:
             if PRE_RANGE_MIN <= lower_limit <= PRE_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
                     f"The lower limit value='{lower_limit}' should be within range {PRE_RESTRAINT_RANGE}.\n"
 
         if upper_limit is not None:
             if PRE_RANGE_MIN <= upper_limit <= PRE_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
                     f"The upper limit value='{upper_limit}' should be within range {PRE_RESTRAINT_RANGE}.\n"
 
-        if not self.__hasPolySeq:
-            return
+        if lower_linear_limit is not None:
+            if PRE_RANGE_MIN <= lower_linear_limit <= PRE_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                    f"The lower linear limit value='{lower_linear_limit}' should be within range {PRE_RESTRAINT_RANGE}.\n"
 
-        atom_id_0 = self.atomSelectionSet[0][0]['atom_id'] if 'atom_id' in self.atomSelectionSet[0][0] else 'paramagnetic center'
+        if upper_linear_limit is not None:
+            if PRE_RANGE_MIN <= upper_linear_limit <= PRE_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                    f"The upper linear limit value='{upper_linear_limit}' should be within range {PRE_RESTRAINT_RANGE}.\n"
 
-        chain_id = self.atomSelectionSet[1][0]['chain_id']
-        seq_id = self.atomSelectionSet[1][0]['seq_id']
-        comp_id = self.atomSelectionSet[1][0]['comp_id']
-        atom_id = self.atomSelectionSet[1][0]['atom_id']
-
-        if atom_id[0] != 'H':
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                f"Not a proton;  {chain_id}:{seq_id}:{comp_id}:{atom_id}.\n"
-            return
-
-        for atom1 in self.atomSelectionSet[1]:
-            if self.__verbose:
-                print(f"subtype={self.__cur_subtype} id={self.preRestraints} "
-                      f"paramag={atom_id_0} atom={atom1} {dstFunc}")
+        return dstFunc
 
     # Enter a parse tree produced by XplorMRParser#pcs_statement.
     def enterPcs_statement(self, ctx: XplorMRParser.Pcs_statementContext):
@@ -3665,8 +3673,29 @@ class XplorMRParserListener(ParseTreeListener):
         lower_limit = target - delta
         upper_limit = target + delta
 
+        dstFunc = self.validatePcsRange(1.0, target_value, lower_limit, upper_limit)
+
+        if dstFunc is None:
+            return
+
+        if not self.__hasPolySeq:
+            return
+
+        atom_id_0 = self.atomSelectionSet[0][0]['atom_id'] if 'atom_id' in self.atomSelectionSet[0][0] else 'paramagnetic center'
+
+        for atom1 in self.atomSelectionSet[4]:
+            if self.__verbose:
+                print(f"subtype={self.__cur_subtype} id={self.pcsRestraints} "
+                      f"paramag={atom_id_0} atom={atom1} {dstFunc}")
+
+    def validatePcsRange(self, weight,
+                         target_value, lower_limit, upper_limit,
+                         lower_linear_limit=None, upper_linear_limit=None):
+        """ Validate PCS value range.
+        """
+
         validRange = True
-        dstFunc = {'weight': 1.0}
+        dstFunc = {'weight': weight}
 
         if target_value is not None:
             if PCS_ERROR_MIN < target_value < PCS_ERROR_MAX:
@@ -3692,39 +3721,61 @@ class XplorMRParserListener(ParseTreeListener):
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
                     f"The upper limit value='{upper_limit}' must be within range {PCS_RESTRAINT_ERROR}.\n"
 
+        if lower_linear_limit is not None:
+            if PCS_ERROR_MIN < lower_linear_limit < PCS_ERROR_MAX:
+                dstFunc['lower_linear_limit'] = f"{lower_linear_limit:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The lower linear limit value='{lower_linear_limit}' must be within range {PCS_RESTRAINT_ERROR}.\n"
+
+        if upper_linear_limit is not None:
+            if PCS_ERROR_MIN < upper_linear_limit < PCS_ERROR_MAX:
+                dstFunc['upper_linear_limit'] = f"{upper_linear_limit:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The upper linear limit value='{upper_linear_limit}' must be within range {PCS_RESTRAINT_ERROR}.\n"
+
         if not validRange:
-            return
+            return None
 
         if target_value is not None:
             if PCS_RANGE_MIN <= target_value <= PCS_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
                     f"The target value='{target_value}' should be within range {PCS_RESTRAINT_RANGE}.\n"
 
         if lower_limit is not None:
             if PCS_RANGE_MIN <= lower_limit <= PCS_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
                     f"The lower limit value='{lower_limit}' should be within range {PCS_RESTRAINT_RANGE}.\n"
 
         if upper_limit is not None:
             if PCS_RANGE_MIN <= upper_limit <= PCS_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
                     f"The upper limit value='{upper_limit}' should be within range {PCS_RESTRAINT_RANGE}.\n"
 
-        if not self.__hasPolySeq:
-            return
+        if lower_linear_limit is not None:
+            if PCS_RANGE_MIN <= lower_linear_limit <= PCS_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                    f"The lower linear limit value='{lower_linear_limit}' should be within range {PCS_RESTRAINT_RANGE}.\n"
 
-        atom_id_0 = self.atomSelectionSet[0][0]['atom_id'] if 'atom_id' in self.atomSelectionSet[0][0] else 'paramagnetic center'
+        if upper_linear_limit is not None:
+            if PCS_RANGE_MIN <= upper_linear_limit <= PCS_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                    f"The upper linear limit value='{upper_linear_limit}' should be within range {PCS_RESTRAINT_RANGE}.\n"
 
-        for atom1 in self.atomSelectionSet[4]:
-            if self.__verbose:
-                print(f"subtype={self.__cur_subtype} id={self.pcsRestraints} "
-                      f"paramag={atom_id_0} atom={atom1} {dstFunc}")
+        return dstFunc
 
     # Enter a parse tree produced by XplorMRParser#prdc_statement.
     def enterPrdc_statement(self, ctx: XplorMRParser.Prdc_statementContext):
@@ -3762,56 +3813,11 @@ class XplorMRParserListener(ParseTreeListener):
         lower_limit = target - delta
         upper_limit = target + delta
 
-        validRange = True
-        dstFunc = {'weight': 1.0, 'potential': self.potential}
+        dstFunc = self.validateRdcRange(1.0, {'potential': self.potential},
+                                        target_value, lower_limit, upper_limit)
 
-        if target_value is not None:
-            if RDC_ERROR_MIN < target_value < RDC_ERROR_MAX:
-                dstFunc['target_value'] = f"{target_value:.3f}"
-            else:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The target value='{target_value}' must be within range {RDC_RESTRAINT_ERROR}.\n"
-
-        if lower_limit is not None:
-            if RDC_ERROR_MIN < lower_limit < RDC_ERROR_MAX:
-                dstFunc['lower_limit'] = f"{lower_limit:.3f}"
-            else:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit}' must be within range {RDC_RESTRAINT_ERROR}.\n"
-
-        if upper_limit is not None:
-            if RDC_ERROR_MIN < upper_limit < RDC_ERROR_MAX:
-                dstFunc['upper_limit'] = f"{upper_limit:.3f}"
-            else:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit}' must be within range {RDC_RESTRAINT_ERROR}.\n"
-
-        if not validRange:
+        if dstFunc is None:
             return
-
-        if target_value is not None:
-            if RDC_RANGE_MIN < target_value < RDC_RANGE_MAX:
-                pass
-            else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The target value='{target_value}' should be within range {RDC_RESTRAINT_RANGE}.\n"
-
-        if lower_limit is not None:
-            if RDC_RANGE_MIN < lower_limit < RDC_RANGE_MAX:
-                pass
-            else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit}' should be within range {RDC_RESTRAINT_RANGE}.\n"
-
-        if upper_limit is not None:
-            if RDC_RANGE_MIN < upper_limit < RDC_RANGE_MAX:
-                pass
-            else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit}' should be within range {RDC_RESTRAINT_RANGE}.\n"
 
         if not self.__hasPolySeq:
             return
@@ -3914,60 +3920,15 @@ class XplorMRParserListener(ParseTreeListener):
         phi = float(str(ctx.Real(1)))
         delta = abs(float(str(ctx.Real(2))))
 
-        validRange = True
-        dstFunc = {'weight': 1.0, 'angle_name': 'theta'}
-
         target_value = theta
         lower_limit = theta - delta
         upper_limit = theta + delta
 
-        if target_value is not None:
-            if ANGLE_ERROR_MIN < target_value < ANGLE_ERROR_MAX:
-                dstFunc['target_value'] = f"{target_value:.3f}"
-            else:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The target value='{target_value}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
+        dstFunc = self.validateAngleRange(1.0, {'angle_name': 'theta'},
+                                          target_value, lower_limit, upper_limit)
 
-        if lower_limit is not None:
-            if ANGLE_ERROR_MIN < lower_limit < ANGLE_ERROR_MAX:
-                dstFunc['lower_limit'] = f"{lower_limit:.3f}"
-            else:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
-
-        if upper_limit is not None:
-            if ANGLE_ERROR_MIN < upper_limit < ANGLE_ERROR_MAX:
-                dstFunc['upper_limit'] = f"{upper_limit:.3f}"
-            else:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
-
-        if not validRange:
+        if dstFunc is None:
             return
-
-        if target_value is not None:
-            if ANGLE_RANGE_MIN <= target_value <= ANGLE_RANGE_MAX:
-                pass
-            else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The target value='{target_value}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
-
-        if lower_limit is not None:
-            if ANGLE_RANGE_MIN <= lower_limit <= ANGLE_RANGE_MAX:
-                pass
-            else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
-
-        if upper_limit is not None:
-            if ANGLE_RANGE_MIN <= upper_limit <= ANGLE_RANGE_MAX:
-                pass
-            else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
 
         dstFunc2 = {'weight': 1.0, 'angle_name': 'phi'}
 
@@ -3975,53 +3936,11 @@ class XplorMRParserListener(ParseTreeListener):
         lower_limit = phi - delta
         upper_limit = phi + delta
 
-        if target_value is not None:
-            if ANGLE_ERROR_MIN < target_value < ANGLE_ERROR_MAX:
-                dstFunc2['target_value'] = f"{target_value:.3f}"
-            else:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The target value='{target_value}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
+        dstFunc2 = self.validateAngleRange(1.0, {'angle_name': 'phi'},
+                                           target_value, lower_limit, upper_limit)
 
-        if lower_limit is not None:
-            if ANGLE_ERROR_MIN < lower_limit < ANGLE_ERROR_MAX:
-                dstFunc2['lower_limit'] = f"{lower_limit:.3f}"
-            else:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
-
-        if upper_limit is not None:
-            if ANGLE_ERROR_MIN < upper_limit < ANGLE_ERROR_MAX:
-                dstFunc2['upper_limit'] = f"{upper_limit:.3f}"
-            else:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
-
-        if not validRange:
+        if dstFunc2 is None:
             return
-
-        if target_value is not None:
-            if ANGLE_RANGE_MIN <= target_value <= ANGLE_RANGE_MAX:
-                pass
-            else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The target value='{target_value}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
-
-        if lower_limit is not None:
-            if ANGLE_RANGE_MIN <= lower_limit <= ANGLE_RANGE_MAX:
-                pass
-            else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
-
-        if upper_limit is not None:
-            if ANGLE_RANGE_MIN <= upper_limit <= ANGLE_RANGE_MAX:
-                pass
-            else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
 
         if not self.__hasPolySeq:
             return
@@ -4129,56 +4048,11 @@ class XplorMRParserListener(ParseTreeListener):
         lower_limit = target - delta
         upper_limit = target + delta
 
-        validRange = True
-        dstFunc = {'weight': 1.0, 'potential': self.potential}
+        dstFunc = self.validateCcrRange(1.0, self.potential,
+                                        target_value, lower_limit, upper_limit)
 
-        if target_value is not None:
-            if CCR_ERROR_MIN < target_value < CCR_ERROR_MAX:
-                dstFunc['target_value'] = f"{target_value:.3f}"
-            else:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The target value='{target_value}' must be within range {CCR_RESTRAINT_ERROR}.\n"
-
-        if lower_limit is not None:
-            if CCR_ERROR_MIN < lower_limit < CCR_ERROR_MAX:
-                dstFunc['lower_limit'] = f"{lower_limit:.3f}"
-            else:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit}' must be within range {CCR_RESTRAINT_ERROR}.\n"
-
-        if upper_limit is not None:
-            if CCR_ERROR_MIN < upper_limit < CCR_ERROR_MAX:
-                dstFunc['upper_limit'] = f"{upper_limit:.3f}"
-            else:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit}' must be within range {CCR_RESTRAINT_ERROR}.\n"
-
-        if not validRange:
+        if dstFunc is None:
             return
-
-        if target_value is not None:
-            if CCR_RANGE_MIN < target_value < CCR_RANGE_MAX:
-                pass
-            else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The target value='{target_value}' should be within range {RDC_RESTRAINT_RANGE}.\n"
-
-        if lower_limit is not None:
-            if RDC_RANGE_MIN < lower_limit < RDC_RANGE_MAX:
-                pass
-            else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit}' should be within range {RDC_RESTRAINT_RANGE}.\n"
-
-        if upper_limit is not None:
-            if RDC_RANGE_MIN < upper_limit < RDC_RANGE_MAX:
-                pass
-            else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit}' should be within range {RDC_RESTRAINT_RANGE}.\n"
 
         if not self.__hasPolySeq:
             return
@@ -4254,6 +4128,95 @@ class XplorMRParserListener(ParseTreeListener):
             if self.__verbose:
                 print(f"subtype={self.__cur_subtype} (XCCR) id={self.prdcRestraints} "
                       f"paramag={atom_id_0} atom1={atom1} atom2={atom2} {dstFunc}")
+
+    def validateCcrRange(self, weight, potential,
+                         target_value, lower_limit, upper_limit,
+                         lower_linear_limit=None, upper_linear_limit=None):
+        """ Validate CCR value range.
+        """
+
+        validRange = True
+        dstFunc = {'weight': weight, 'potential': potential}
+
+        if target_value is not None:
+            if CCR_ERROR_MIN < target_value < CCR_ERROR_MAX:
+                dstFunc['target_value'] = f"{target_value:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The target value='{target_value}' must be within range {CCR_RESTRAINT_ERROR}.\n"
+
+        if lower_limit is not None:
+            if CCR_ERROR_MIN < lower_limit < CCR_ERROR_MAX:
+                dstFunc['lower_limit'] = f"{lower_limit:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The lower limit value='{lower_limit}' must be within range {CCR_RESTRAINT_ERROR}.\n"
+
+        if upper_limit is not None:
+            if CCR_ERROR_MIN < upper_limit < CCR_ERROR_MAX:
+                dstFunc['upper_limit'] = f"{upper_limit:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The upper limit value='{upper_limit}' must be within range {CCR_RESTRAINT_ERROR}.\n"
+
+        if lower_linear_limit is not None:
+            if CCR_ERROR_MIN < lower_linear_limit < CCR_ERROR_MAX:
+                dstFunc['lower_linear_limit'] = f"{lower_linear_limit:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The lower linear limit value='{lower_linear_limit}' must be within range {CCR_RESTRAINT_ERROR}.\n"
+
+        if upper_linear_limit is not None:
+            if CCR_ERROR_MIN < upper_linear_limit < CCR_ERROR_MAX:
+                dstFunc['upper_linear_limit'] = f"{upper_linear_limit:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The upper linear limit value='{upper_linear_limit}' must be within range {CCR_RESTRAINT_ERROR}.\n"
+
+        if not validRange:
+            return None
+
+        if target_value is not None:
+            if CCR_RANGE_MIN <= target_value <= CCR_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                    f"The target value='{target_value}' should be within range {CCR_RESTRAINT_RANGE}.\n"
+
+        if lower_limit is not None:
+            if CCR_RANGE_MIN <= lower_limit <= CCR_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                    f"The lower limit value='{lower_limit}' should be within range {CCR_RESTRAINT_RANGE}.\n"
+
+        if upper_limit is not None:
+            if CCR_RANGE_MIN <= upper_limit <= CCR_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                    f"The upper limit value='{upper_limit}' should be within range {CCR_RESTRAINT_RANGE}.\n"
+
+        if lower_linear_limit is not None:
+            if CCR_RANGE_MIN <= lower_linear_limit <= CCR_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                    f"The lower linear limit value='{lower_linear_limit}' should be within range {CCR_RESTRAINT_RANGE}.\n"
+
+        if upper_linear_limit is not None:
+            if CCR_RANGE_MIN <= upper_linear_limit <= CCR_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                    f"The upper linear limit value='{upper_linear_limit}' should be within range {CCR_RESTRAINT_RANGE}.\n"
+
+        return dstFunc
 
     # Enter a parse tree produced by XplorMRParser#hbond_statement.
     def enterHbond_statement(self, ctx: XplorMRParser.Hbond_statementContext):  # pylint: disable=unused-argument

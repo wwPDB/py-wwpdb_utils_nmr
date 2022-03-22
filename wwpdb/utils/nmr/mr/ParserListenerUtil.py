@@ -29,8 +29,8 @@ RDC_RESTRAINT_RANGE = {'min_inclusive': -100.0, 'max_inclusive': 100.0}
 RDC_RESTRAINT_ERROR = {'min_exclusive': -200.0, 'max_exclusive': 200.0}
 
 
-CS_RESTRAINT_RANGE = {'min_inclusive': -200.0, 'max_inclusive': 200.0}
-CS_RESTRAINT_ERROR = {'min_exclusive': -300.0, 'max_exclusive': 300.0}
+CS_RESTRAINT_RANGE = {'min_inclusive': -300.0, 'max_inclusive': 300.0}
+CS_RESTRAINT_ERROR = {'min_exclusive': -999.0, 'max_exclusive': 999.0}
 
 
 CSA_RESTRAINT_RANGE = {'min_inclusive': -300.0, 'max_inclusive': 300.0}
@@ -51,6 +51,19 @@ PRE_RESTRAINT_ERROR = {'min_exclusive': 0.0, 'max_exclusive': 40.0}
 
 T1T2_RESTRAINT_RANGE = {'min_inclusive': 1.0, 'max_inclusive': 20.0}
 T1T2_RESTRAINT_ERROR = {'min_exclusive': 0.0, 'max_exclusive': 100.0}
+
+
+CS_UNCERTAINTY_RANGE = {'min_inclusive': 0.0, 'max_inclusive': 3.0}
+
+DIST_UNCERTAINTY_RANGE = {'min_inclusive': 0.0, 'max_inclusive': 5.0}
+
+ANGLE_UNCERTAINTY_RANGE = {'min_inclusive': 0.0, 'max_inclusive': 90.0}
+
+RDC_UNCERTAINTY_RANGE = {'min_inclusive': 0.0, 'max_inclusive': 5.0}
+
+WEIGHT_RANGE = {'min_inclusive': 0.0, 'max_inclusive': 100.0}
+
+SCALE_RANGE = {'min_inclusive': 0.0, 'max_inclusive': 100.0}
 
 
 # @see: https://x3dna.org/highlights/torsion-angles-of-nucleic-acid-structures for nucleic acids
@@ -207,6 +220,7 @@ def translateAmberAtomNomenclature(atomId):
 
 
 def checkCoordinates(verbose=True, log=sys.stdout, cR=None, polySeq=None,
+                     representativeModelId=REPRESENTATIVE_MODEL_ID,
                      coordAtomSite=None, coordUnobsRes=None, labelToAuthSeq=None,
                      testTag=True):
     """ Examine the coordinates for MR/PT parser listener.
@@ -336,7 +350,7 @@ def checkCoordinates(verbose=True, log=sys.stdout, cR=None, polySeq=None,
                                                   {'name': altAuthAtomId, 'type': 'str', 'alt_name': 'alt_atom_id'},
                                                   {'name': 'type_symbol', 'type': 'str'}
                                                   ],
-                                                 [{'name': modelNumName, 'type': 'int', 'value': REPRESENTATIVE_MODEL_ID}
+                                                 [{'name': modelNumName, 'type': 'int', 'value': representativeModelId}
                                                   ])
             else:
                 coord = cR.getDictListWithFilter('atom_site',
@@ -347,7 +361,7 @@ def checkCoordinates(verbose=True, log=sys.stdout, cR=None, polySeq=None,
                                                   {'name': authAtomId, 'type': 'str', 'alt_name': 'atom_id'},
                                                   {'name': 'type_symbol', 'type': 'str'}
                                                   ],
-                                                 [{'name': modelNumName, 'type': 'int', 'value': REPRESENTATIVE_MODEL_ID}
+                                                 [{'name': modelNumName, 'type': 'int', 'value': representativeModelId}
                                                   ])
 
             coordAtomSite = {}
@@ -379,7 +393,7 @@ def checkCoordinates(verbose=True, log=sys.stdout, cR=None, polySeq=None,
                                               {'name': 'auth_seq_id', 'type': 'str', 'alt_name': 'seq_id'},
                                               {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'}
                                               ],
-                                             [{'name': 'PDB_model_num', 'type': 'int', 'value': REPRESENTATIVE_MODEL_ID}
+                                             [{'name': 'PDB_model_num', 'type': 'int', 'value': representativeModelId}
                                               ])
 
             if len(unobs) > 0:

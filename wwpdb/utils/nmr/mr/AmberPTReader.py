@@ -7,6 +7,7 @@
 """
 import sys
 import os
+
 from antlr4 import InputStream, CommonTokenStream, ParseTreeWalker
 
 try:
@@ -15,7 +16,8 @@ try:
     from wwpdb.utils.nmr.mr.AmberPTLexer import AmberPTLexer
     from wwpdb.utils.nmr.mr.AmberPTParser import AmberPTParser
     from wwpdb.utils.nmr.mr.AmberPTParserListener import AmberPTParserListener
-    from wwpdb.utils.nmr.mr.ParserListenerUtil import checkCoordinates
+    from wwpdb.utils.nmr.mr.ParserListenerUtil import (checkCoordinates,
+                                                       REPRESENTATIVE_MODEL_ID)
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
@@ -25,7 +27,8 @@ except ImportError:
     from nmr.mr.AmberPTLexer import AmberPTLexer
     from nmr.mr.AmberPTParser import AmberPTParser
     from nmr.mr.AmberPTParserListener import AmberPTParserListener
-    from nmr.mr.ParserListenerUtil import checkCoordinates
+    from nmr.mr.ParserListenerUtil import (checkCoordinates,
+                                           REPRESENTATIVE_MODEL_ID)
     from nmr.io.CifReader import CifReader
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
@@ -36,12 +39,17 @@ class AmberPTReader:
     """
 
     def __init__(self, verbose=True, log=sys.stdout, cR=None, polySeqModel=None,
+                 representativeModelId=REPRESENTATIVE_MODEL_ID,
                  ccU=None, csStat=None):
         self.__verbose = verbose
         self.__lfh = log
 
+        self.__representativeModelId = representativeModelId
+
         if cR is not None and polySeqModel is None:
-            ret = checkCoordinates(verbose, log, cR, polySeqModel, testTag=False)
+            ret = checkCoordinates(verbose, log, cR, polySeqModel,
+                                   representativeModelId,
+                                   testTag=False)
             polySeqModel = ret['polymer_sequence']
 
         self.__cR = cR
@@ -104,6 +112,7 @@ class AmberPTReader:
 
                 walker = ParseTreeWalker()
                 listener = AmberPTParserListener(self.__verbose, self.__lfh, self.__cR, self.__polySeqModel,
+                                                 self.__representativeModelId,
                                                  self.__ccU, self.__csStat)
                 walker.walk(listener, tree)
 
@@ -116,9 +125,10 @@ class AmberPTReader:
                             self.__lfh.write(f"{description['input']}\n")
                             self.__lfh.write(f"{description['marker']}\n")
 
-                if listener.warningMessage is not None:
-                    print(listener.warningMessage)
-                print(listener.getContentSubtype())
+                if self.__verbose:
+                    if listener.warningMessage is not None:
+                        print(listener.warningMessage)
+                    print(listener.getContentSubtype())
 
             return listener
 

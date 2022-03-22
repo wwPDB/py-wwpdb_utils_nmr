@@ -19,6 +19,7 @@ try:
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (checkCoordinates,
                                                        translateAmberAtomNomenclature,
                                                        getTypeOfDihedralRestraint,
+                                                       REPRESENTATIVE_MODEL_ID,
                                                        DIST_RESTRAINT_RANGE,
                                                        DIST_RESTRAINT_ERROR,
                                                        ANGLE_RESTRAINT_RANGE,
@@ -31,7 +32,6 @@ try:
                                                        PCS_RESTRAINT_ERROR,
                                                        CS_RESTRAINT_RANGE,
                                                        CS_RESTRAINT_ERROR)
-
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import (NEFTranslator,
@@ -41,6 +41,7 @@ except ImportError:
     from nmr.mr.ParserListenerUtil import (checkCoordinates,
                                            translateAmberAtomNomenclature,
                                            getTypeOfDihedralRestraint,
+                                           REPRESENTATIVE_MODEL_ID,
                                            DIST_RESTRAINT_RANGE,
                                            DIST_RESTRAINT_ERROR,
                                            ANGLE_RESTRAINT_RANGE,
@@ -53,7 +54,6 @@ except ImportError:
                                            PCS_RESTRAINT_ERROR,
                                            CS_RESTRAINT_RANGE,
                                            CS_RESTRAINT_ERROR)
-
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.NEFTranslator.NEFTranslator import (NEFTranslator,
@@ -325,6 +325,7 @@ class AmberMRParserListener(ParseTreeListener):
     warningMessage = ''
 
     def __init__(self, verbose=True, log=sys.stdout, cR=None, polySeq=None,
+                 representativeModelId=REPRESENTATIVE_MODEL_ID,
                  coordAtomSite=None, coordUnobsRes=None, labelToAuthSeq=None,
                  ccU=None, csStat=None, nefT=None, atomNumberDict=None):
         self.__verbose = verbose
@@ -334,6 +335,7 @@ class AmberMRParserListener(ParseTreeListener):
 
         if self.__hasCoord:
             ret = checkCoordinates(verbose, log, cR, polySeq,
+                                   representativeModelId,
                                    coordAtomSite, coordUnobsRes, labelToAuthSeq)
             self.__modelNumName = ret['model_num_name']
             self.__authAsymId = ret['auth_asym_id']

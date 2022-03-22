@@ -58,6 +58,7 @@
 # 27-Jan-2022  M. Yokochi - add restraint types described by XPLOR-NIH, CNS, CYANA, and AMBER systems (NMR restraint remediation)
 # 22 Feb-2022  M. Yokochi - add 'complemented_chemical_shift' warning type (DAOTHER-7681, issue #1)
 # 04-Mar-2022  M. Yokochi - add coordinate geometry restraints (DAOTHER-7690, NMR restraint remediation)
+# 22-Mar-2022  M. Yokochi - add 'nm-res-ros' file type for ROSETTA restraint format (DAOTHER-7690)
 ##
 """ Wrapper class for NMR data processing report.
     @author: Masashi Yokochi
@@ -1641,7 +1642,7 @@ class NmrDpReportInputSource:
         self.file_types = ('pdbx',
                            'nef', 'nmr-star',
                            'nm-res-amb', 'nm-res-cns', 'nm-res-cya', 'nm-res-xpl', 'nm-res-oth',
-                           'nm-aux-amb')
+                           'nm-aux-amb', 'nm-res-ros')
         self.content_types = ('model',
                               'nmr-data-nef', 'nmr-data-str',
                               'nmr-chemical-shifts', 'nmr-restraints')

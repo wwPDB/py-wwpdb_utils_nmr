@@ -200,7 +200,18 @@ try:
     from wwpdb.utils.nmr.CifToNmrStar import CifToNmrStar
     from wwpdb.utils.nmr.NmrStarToCif import NmrStarToCif
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (getTypeOfDihedralRestraint,
-                                                       KNOWN_ANGLE_NAMES)
+                                                       KNOWN_ANGLE_NAMES,
+                                                       CS_RESTRAINT_RANGE,
+                                                       DIST_RESTRAINT_RANGE,
+                                                       ANGLE_RESTRAINT_RANGE,
+                                                       RDC_RESTRAINT_RANGE,
+                                                       CS_UNCERTAINTY_RANGE,
+                                                       DIST_UNCERTAINTY_RANGE,
+                                                       ANGLE_UNCERTAINTY_RANGE,
+                                                       RDC_UNCERTAINTY_RANGE,
+                                                       WEIGHT_RANGE,
+                                                       SCALE_RANGE,
+                                                       REPRESENTATIVE_MODEL_ID)
 except ImportError:
     from nmr.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
     from nmr.NEFTranslator.NEFTranslator import (NEFTranslator,
@@ -230,13 +241,48 @@ except ImportError:
     from nmr.CifToNmrStar import CifToNmrStar
     from nmr.NmrStarToCif import NmrStarToCif
     from nmr.mr.ParserListenerUtil import (getTypeOfDihedralRestraint,
-                                           KNOWN_ANGLE_NAMES)
+                                           KNOWN_ANGLE_NAMES,
+                                           CS_RESTRAINT_RANGE,
+                                           DIST_RESTRAINT_RANGE,
+                                           ANGLE_RESTRAINT_RANGE,
+                                           RDC_RESTRAINT_RANGE,
+                                           CS_UNCERTAINTY_RANGE,
+                                           DIST_UNCERTAINTY_RANGE,
+                                           ANGLE_UNCERTAINTY_RANGE,
+                                           RDC_UNCERTAINTY_RANGE,
+                                           WEIGHT_RANGE,
+                                           SCALE_RANGE,
+                                           REPRESENTATIVE_MODEL_ID)
 
 
 __pynmrstar_v3_3__ = version.parse(pynmrstar.__version__) >= version.parse("3.3.0")
 __pynmrstar_v3_2__ = version.parse(pynmrstar.__version__) >= version.parse("3.2.0")
 __pynmrstar_v3_1__ = version.parse(pynmrstar.__version__) >= version.parse("3.1.0")
 __pynmrstar_v3__ = version.parse(pynmrstar.__version__) >= version.parse("3.0.0")
+
+
+CS_RANGE_MIN = CS_RESTRAINT_RANGE['min_inclusive']
+CS_RANGE_MAX = CS_RESTRAINT_RANGE['max_inclusive']
+
+DIST_RANGE_MIN = DIST_RESTRAINT_RANGE['min_inclusive']
+DIST_RANGE_MAX = DIST_RESTRAINT_RANGE['max_inclusive']
+
+ANGLE_RANGE_MIN = ANGLE_RESTRAINT_RANGE['min_inclusive']
+ANGLE_RANGE_MAX = ANGLE_RESTRAINT_RANGE['max_inclusive']
+
+RDC_RANGE_MIN = RDC_RESTRAINT_RANGE['min_inclusive']
+RDC_RANGE_MAX = RDC_RESTRAINT_RANGE['max_inclusive']
+
+WEIGHT_RANGE_MIN = WEIGHT_RANGE['min_inclusive']
+WEIGHT_RANGE_MAX = WEIGHT_RANGE['max_inclusive']
+
+CS_UNCERT_MAX = CS_UNCERTAINTY_RANGE['max_inclusive']
+
+DIST_UNCERT_MAX = DIST_UNCERTAINTY_RANGE['max_inclusive']
+
+ANGLE_UNCERT_MAX = ANGLE_UNCERTAINTY_RANGE['max_inclusive']
+
+RDC_UNCERT_MAX = RDC_UNCERTAINTY_RANGE['max_inclusive']
 
 
 def detect_bom(in_file, default='utf-8'):
@@ -970,27 +1016,6 @@ class NmrDpUtility:
                                        }
                               }
 
-        # allowed chemical shift range in ppm
-        self.chem_shift_range = {'min_exclusive': -300.0, 'max_exclusive': 300.0}
-        self.chem_shift_error = {'min_inclusive': 0.0, 'max_inclusive': 3.0}
-
-        # allowed distance range in Angstromes
-        self.dist_restraint_range = {'min_inclusive': 0.5, 'max_inclusive': 50.0}
-        self.dist_restraint_error = {'min_inclusive': 0.0, 'max_inclusive': 5.0}
-
-        # allowed dihedral angle range in degrees
-        self.dihed_restraint_range = {'min_inclusive': -240.0, 'max_inclusive': 240.0}
-        self.dihed_restraint_error = {'min_inclusive': 0.0, 'max_inclusive': 90.0}
-
-        # allowed RDC range in Hz
-        self.rdc_restraint_range = {'min_inclusive': -100.0, 'max_inclusive': 100.0}
-        self.rdc_restraint_error = {'min_inclusive': 0.0, 'max_inclusive': 5.0}
-
-        # allowed weight range
-        self.weight_range = {'min_inclusive': 0.0, 'max_inclusive': 100.0}
-        # allowed scale range
-        self.scale_range = self.weight_range
-
         # criterion for low sequence coverage
         self.low_seq_coverage = 0.3
 
@@ -1381,9 +1406,9 @@ class NmrDpUtility:
                                                 ],
                                    'entity': None,
                                    'chem_shift': [{'name': 'value', 'type': 'range-float', 'mandatory': True,
-                                                   'range': self.chem_shift_range},
+                                                   'range': CS_RESTRAINT_RANGE},
                                                   {'name': 'value_uncertainty', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
-                                                   'range': self.chem_shift_error},
+                                                   'range': CS_UNCERTAINTY_RANGE},
                                                   {'name': 'element', 'type': 'enum', 'mandatory': True, 'default-from': 'atom_name',
                                                    'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
                                                    'enforce-enum': True},
@@ -1398,36 +1423,36 @@ class NmrDpUtility:
                                                       {'name': 'restraint_combination_id', 'type': 'positive-int', 'mandatory': False,
                                                        'enforce-non-zero': True},
                                                       {'name': 'weight', 'type': 'range-float', 'mandatory': True,
-                                                       'range': self.weight_range},
+                                                       'range': WEIGHT_RANGE},
                                                       # 'enforce-non-zero': True},
                                                       {'name': 'target_value', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True, 'void-zero': True,
-                                                       'range': self.dist_restraint_range,
+                                                       'range': DIST_RESTRAINT_RANGE,
                                                        'group': {'member-with': ['lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit'],
                                                                  'coexist-with': None,
                                                                  'smaller-than': ['lower_linear_limit', 'lower_limit'],
                                                                  'larger-than': ['upper_limit', 'upper_linear_limit']}},
                                                       {'name': 'target_value_uncertainty', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
-                                                       'range': self.dist_restraint_error},
+                                                       'range': DIST_UNCERTAINTY_RANGE},
                                                       {'name': 'lower_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True, 'void-zero': True,
-                                                       'range': self.dist_restraint_range,
+                                                       'range': DIST_RESTRAINT_RANGE,
                                                        'group': {'member-with': ['target_value', 'lower_limit', 'upper_limit', 'upper_linear_limit'],
                                                                  'coexist-with': None,  # ['lower_limit', 'upper_limit', 'upper_linear_limit'],
                                                                  'smaller-than': None,
                                                                  'larger-than': ['lower_limit', 'upper_limit', 'upper_linear_limit']}},
                                                       {'name': 'lower_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True, 'void-zero': True,
-                                                       'range': self.dist_restraint_range,
+                                                       'range': DIST_RESTRAINT_RANGE,
                                                        'group': {'member-with': ['target_value', 'lower_linear_limit', 'upper_limit', 'upper_linear_limit'],
                                                                  'coexist-with': None,  # ['upper_limit'],
                                                                  'smaller-than':['lower_linear_limit'],
                                                                  'larger-than': ['upper_limit', 'upper_linear_limit']}},
                                                       {'name': 'upper_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True, 'void-zero': True,
-                                                       'range': self.dist_restraint_range,
+                                                       'range': DIST_RESTRAINT_RANGE,
                                                        'group': {'member-with': ['target_value', 'lower_linear_limit', 'lower_limit', 'upper_linear_limit'],
                                                                  'coexist-with': None,  # ['lower_limit'],
                                                                  'smaller-than': ['lower_linear_limit', 'lower_limit'],
                                                                  'larger-than': ['upper_linear_limit']}},
                                                       {'name': 'upper_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True, 'void-zero': True,
-                                                       'range': self.dist_restraint_range,
+                                                       'range': DIST_RESTRAINT_RANGE,
                                                        'group': {'member-with': ['target_value', 'lower_linear_limit', 'lower_limit', 'upper_limit'],
                                                                  'coexist-with': None,  # ['lower_linear_limit', 'lower_limit', 'upper_limit'],
                                                                  'smaller-than': ['lower_linear_limit', 'lower_limit', 'upper_limit'],
@@ -1439,40 +1464,40 @@ class NmrDpUtility:
                                                        {'name': 'restraint_combination_id', 'type': 'positive-int', 'mandatory': False,
                                                         'enforce-non-zero': True},
                                                        {'name': 'weight', 'type': 'range-float', 'mandatory': True,
-                                                        'range': self.weight_range},
+                                                        'range': WEIGHT_RANGE},
                                                        # 'enforce-non-zero': True},
                                                        {'name': 'target_value', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
-                                                        'range': self.dihed_restraint_range,
+                                                        'range': ANGLE_RESTRAINT_RANGE,
                                                         'group': {'member-with': ['lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit'],
                                                                   'coexist-with': None,
                                                                   'smaller-than': ['lower_linear_limit', 'lower_limit'],
                                                                   'larger-than': ['upper_limit', 'upper_linear_limit'],
                                                                   'circular-shift': 360.0}},
                                                        {'name': 'target_value_uncertainty', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
-                                                        'range': self.dihed_restraint_error},
+                                                        'range': ANGLE_UNCERTAINTY_RANGE},
                                                        {'name': 'lower_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
-                                                        'range': self.dihed_restraint_range,
+                                                        'range': ANGLE_RESTRAINT_RANGE,
                                                         'group': {'member-with': ['target_value', 'lower_limit', 'upper_limit', 'upper_linear_limit'],
                                                                   'coexist-with': None,  # ['lower_limit', 'upper_limit', 'upper_linear_limit'],
                                                                   'smaller-than': None,
                                                                   'larger-than': ['lower_limit', 'upper_limit', 'upper_linear_limit'],
                                                                   'circular-shift': 360.0}},
                                                        {'name': 'lower_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
-                                                        'range': self.dihed_restraint_range,
+                                                        'range': ANGLE_RESTRAINT_RANGE,
                                                         'group': {'member-with': ['target_value', 'lower_linear_limit', 'upper_limit', 'upper_linear_limit'],
                                                                   'coexist-with': None,  # ['upper_limit'],
                                                                   'smaller-than': ['lower_linear_limit'],
                                                                   'larger-than': ['upper_limit', 'upper_linear_limit'],
                                                                   'circular-shift': 360.0}},
                                                        {'name': 'upper_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
-                                                        'range': self.dihed_restraint_range,
+                                                        'range': ANGLE_RESTRAINT_RANGE,
                                                         'group': {'member-with': ['target_value', 'lower_linear_limit', 'lower_limit', 'upper_linear_limit'],
                                                                   'coexist-with': None,  # ['lower_limit'],
                                                                   'smaller-than': ['lower_linear_limit', 'lower_limit'],
                                                                   'larger-than': ['upper_linear_limit'],
                                                                   'circular-shift': 360.0}},
                                                        {'name': 'upper_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
-                                                        'range': self.dihed_restraint_range,
+                                                        'range': ANGLE_RESTRAINT_RANGE,
                                                         'group': {'member-with': ['target_value', 'lower_linear_limit', 'lower_limit', 'upper_limit'],
                                                                   'coexist-with': None,  # ['lower_linear_limit', 'lower_limit', 'upper_limit'],
                                                                   'smaller-than': ['lower_linear_limit', 'lower_limit', 'upper_limit'],
@@ -1486,39 +1511,39 @@ class NmrDpUtility:
                                                      {'name': 'restraint_combination_id', 'type': 'positive-int', 'mandatory': False,
                                                       'enforce-non-zero': True},
                                                      {'name': 'target_value', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
-                                                      'range': self.rdc_restraint_range,
+                                                      'range': RDC_RESTRAINT_RANGE,
                                                       'group': {'member-with': ['lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit'],
                                                                 'coexist-with': None,
                                                                 'smaller-than': ['lower_linear_limit', 'lower_limit'],
                                                                 'larger-than': ['upper_limit', 'upper_linear_limit']}},
                                                      {'name': 'target_value_uncertainty', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
-                                                      'range': self.rdc_restraint_error},
+                                                      'range': RDC_UNCERTAINTY_RANGE},
                                                      {'name': 'lower_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
-                                                      'range': self.rdc_restraint_range,
+                                                      'range': RDC_RESTRAINT_RANGE,
                                                       'group': {'member-with': ['target_value', 'lower_limit', 'upper_limit', 'upper_linear_limit'],
                                                                 'coexist-with': None,  # ['lower_limit', 'upper_limit', 'upper_linear_limit'],
                                                                 'smaller-than': None,
                                                                 'larger-than': ['lower_limit', 'upper_limit', 'upper_linear_limit']}},
                                                      {'name': 'lower_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
-                                                      'range': self.rdc_restraint_range,
+                                                      'range': RDC_RESTRAINT_RANGE,
                                                       'group': {'member-with': ['target_value', 'lower_linear_limit', 'upper_limit', 'upper_linear_limit'],
                                                                 'coexist-with': None,  # ['upper_limit'],
                                                                 'smaller-than': ['lower_linear_limit'],
                                                                 'larger-than': ['upper_limit', 'upper_linear_limit']}},
                                                      {'name': 'upper_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
-                                                      'range': self.rdc_restraint_range,
+                                                      'range': RDC_RESTRAINT_RANGE,
                                                       'group': {'member-with': ['target_value', 'lower_linear_limit', 'lower_limit', 'upper_linear_limit'],
                                                                 'coexist-with': None,  # ['lower_limit'],
                                                                 'smaller-than': ['lower_linear_limit', 'lower_limit'],
                                                                 'larger-than': ['upper_linear_limit']}},
                                                      {'name': 'upper_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
-                                                      'range': self.rdc_restraint_range,
+                                                      'range': RDC_RESTRAINT_RANGE,
                                                       'group': {'member-with': ['target_value', 'lower_linear_limit', 'lower_limit', 'upper_limit'],
                                                                 'coexist-with': None,  # ['lower_linear_limit', 'lower_limit', 'upper_limit'],
                                                                 'smaller-than': ['lower_linear_limit', 'lower_limit', 'upper_limit'],
                                                                 'larger-than': None}},
                                                      {'name': 'scale', 'type': 'range-float', 'mandatory': False,
-                                                      'range': self.scale_range,
+                                                      'range': SCALE_RANGE,
                                                       'enforce-non-zero': True},
                                                      {'name': 'distance_dependent', 'type': 'bool', 'mandatory': False}
                                                      ],
@@ -1555,9 +1580,9 @@ class NmrDpUtility:
                                                         'enum': set(ALLOWED_ISOTOPE_NUMBERS),
                                                         'enforce-enum': True},
                                                        {'name': 'Val', 'type': 'range-float', 'mandatory': True,
-                                                        'range': self.chem_shift_range},
+                                                        'range': CS_RESTRAINT_RANGE},
                                                        {'name': 'Val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
-                                                        'range': self.chem_shift_error},
+                                                        'range': CS_UNCERTAINTY_RANGE},
                                                        {'name': 'Ambiguity_code', 'type': 'enum-int', 'mandatory': False,
                                                         'enum': ALLOWED_AMBIGUITY_CODES,
                                                         'enforce-enum': True},
@@ -1609,7 +1634,7 @@ class NmrDpUtility:
                                                             'enum': ('OR', 'AND'),
                                                             'enforce-enum': True},
                                                            {'name': 'Target_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True, 'void-zero': True,
-                                                            'range': self.dist_restraint_range,
+                                                            'range': DIST_RESTRAINT_RANGE,
                                                             'group': {'member-with': ['Lower_linear_limit',
                                                                                       'Upper_linear_limit',
                                                                                       'Distance_lower_bound_val',
@@ -1618,9 +1643,9 @@ class NmrDpUtility:
                                                                       'smaller-than': ['Lower_linear_limit', 'Distance_lower_bound_val'],
                                                                       'larger-than': ['Distance_upper_bound_val', 'Upper_linear_limit']}},
                                                            {'name': 'Target_val_uncertainty', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
-                                                            'range': self.dist_restraint_error},
+                                                            'range': DIST_UNCERTAINTY_RANGE},
                                                            {'name': 'Lower_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True, 'void-zero': True,
-                                                            'range': self.dist_restraint_range,
+                                                            'range': DIST_RESTRAINT_RANGE,
                                                             'group': {'member-with': ['Target_val',
                                                                                       'Upper_linear_limit',
                                                                                       'Distance_lower_bound_val',
@@ -1629,7 +1654,7 @@ class NmrDpUtility:
                                                                       'smaller-than': None,
                                                                       'larger-than': ['Distance_lower_bound_val', 'Distance_upper_bound_val', 'Upper_linear_limit']}},
                                                            {'name': 'Upper_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True, 'void-zero': True,
-                                                            'range': self.dist_restraint_range,
+                                                            'range': DIST_RESTRAINT_RANGE,
                                                             'group': {'member-with': ['Target_val',
                                                                                       'Lower_linear_limit',
                                                                                       'Distance_lower_bound_val',
@@ -1639,22 +1664,22 @@ class NmrDpUtility:
                                                                       'larger-than': None}},
                                                            {'name': 'Distance_lower_bound_val', 'type': 'range-float', 'mandatory': False,
                                                             'group-mandatory': True, 'void-zero': True,
-                                                            'range': self.dist_restraint_range,
+                                                            'range': DIST_RESTRAINT_RANGE,
                                                             'group': {'member-with': ['Target_val', 'Lower_linear_limit', 'Upper_linear_limit', 'Distance_upper_bound_val'],
                                                                       'coexist-with': None,  # ['Distance_upper_bound_val'],
                                                                       'smaller-than': ['Lower_linear_limit'],
                                                                       'larger-than': ['Distance_upper_bound_val', 'Upper_linear_limit']}},
                                                            {'name': 'Distance_upper_bound_val', 'type': 'range-float', 'mandatory': False,
                                                             'group-mandatory': True, 'void-zero': True,
-                                                            'range': self.dist_restraint_range,
+                                                            'range': DIST_RESTRAINT_RANGE,
                                                             'group': {'member-with': ['Target_val', 'Lower_linear_limit', 'Upper_linear_limit', 'Distance_lower_bound_val'],
                                                                       'coexist-with': None,  # ['Distance_lower_bound_val'],
                                                                       'smaller-than': ['Lower_linear_limit', 'Distance_lower_bound_val'],
                                                                       'larger-than': ['Upper_linear_limit']}},
                                                            {'name': 'Distance_val', 'type': 'range-float', 'mandatory': False,
-                                                                    'range': self.dist_restraint_range},
+                                                                    'range': DIST_RESTRAINT_RANGE},
                                                            {'name': 'Weight', 'type': 'range-float', 'mandatory': False,
-                                                            'range': self.weight_range},
+                                                            'range': WEIGHT_RANGE},
                                                            # 'enforce-non-zero': True},
                                                            {'name': 'Auth_asym_ID_1', 'type': 'str', 'mandatory': False},
                                                            {'name': 'Auth_seq_ID_1', 'type': 'int', 'mandatory': False},
@@ -1674,7 +1699,7 @@ class NmrDpUtility:
                                                              'enforce-non-zero': True},
                                                             {'name': 'Torsion_angle_name', 'type': 'str', 'mandatory': False},
                                                             {'name': 'Angle_lower_bound_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
-                                                             'range': self.dihed_restraint_range,
+                                                             'range': ANGLE_RESTRAINT_RANGE,
                                                              'group': {'member-with': ['Angle_target_val', 'Angle_lower_linear_limit',
                                                                                        'Angle_upper_linear_limit', 'Angle_upper_bound_val'],
                                                                        'coexist-with': None,  # ['Angle_upper_bound_val'],
@@ -1682,7 +1707,7 @@ class NmrDpUtility:
                                                                        'larger-than': ['Angle_upper_bound_val', 'Angle_upper_linear_limit'],
                                                                        'circular-shift': 360.0}},
                                                             {'name': 'Angle_upper_bound_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
-                                                             'range': self.dihed_restraint_range,
+                                                             'range': ANGLE_RESTRAINT_RANGE,
                                                              'group': {'member-with': ['Angle_target_val', 'Angle_lower_linear_limit',
                                                                                        'Angle_upper_linear_limit', 'Angle_lower_bound_val'],
                                                                        'coexist-with': None,  # ['Angle_lower_bound_val'],
@@ -1690,7 +1715,7 @@ class NmrDpUtility:
                                                                        'larger-than': ['Angle_upper_linear_limit'],
                                                                        'circular-shift': 360.0}},
                                                             {'name': 'Angle_target_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
-                                                             'range': self.dihed_restraint_range,
+                                                             'range': ANGLE_RESTRAINT_RANGE,
                                                              'group': {'member-with': ['Angle_lower_linear_limit',
                                                                                        'Angle_upper_linear_limit',
                                                                                        'Angle_lower_bound_val',
@@ -1700,9 +1725,9 @@ class NmrDpUtility:
                                                                        'larger-than': ['Angle_upper_bound_val', 'Angle_upper_linear_limit'],
                                                                        'circular-shift': 360.0}},
                                                             {'name': 'Angle_target_val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
-                                                             'range': self.dihed_restraint_error},
+                                                             'range': ANGLE_UNCERTAINTY_RANGE},
                                                             {'name': 'Angle_lower_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
-                                                             'range': self.dihed_restraint_range,
+                                                             'range': ANGLE_RESTRAINT_RANGE,
                                                              'group': {'member-with': ['Angle_target_val', 'Angle_upper_linear_limit',
                                                                                        'Angle_lower_bound_val', 'Angle_upper_bound_val'],
                                                                        'coexist-with': None,  # ['Angle_upper_linear_limit', 'Angle_lower_bound_val', 'Angle_upper_bound_val'],
@@ -1710,7 +1735,7 @@ class NmrDpUtility:
                                                                        'larger-than': ['Angle_lower_bound_val', 'Angle_upper_bound', 'Angle_upper_linear_limit'],
                                                                        'circular-shift': 360.0}},
                                                             {'name': 'Angle_upper_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
-                                                             'range': self.dihed_restraint_range,
+                                                             'range': ANGLE_RESTRAINT_RANGE,
                                                              'group': {'member-with': ['Angle_target_val', 'Angle_lower_linear_limit',
                                                                                        'Angle_lower_bound_val', 'Angle_upper_bound_val'],
                                                                        'coexist-with': None,  # ['Angle_lower_linear_limit', 'Angle_lower_bound_val', 'Angle_upper_bound_val'],
@@ -1718,7 +1743,7 @@ class NmrDpUtility:
                                                                        'larger-than': None,
                                                                        'circular-shift': 360.0}},
                                                             {'name': 'Weight', 'type': 'range-float', 'mandatory': False,
-                                                             'range': self.weight_range},
+                                                             'range': WEIGHT_RANGE},
                                                             # 'enforce-non-zero': True},
                                                             {'name': 'Auth_asym_ID_1', 'type': 'str', 'mandatory': False},
                                                             {'name': 'Auth_seq_ID_1', 'type': 'int', 'mandatory': False},
@@ -1745,46 +1770,46 @@ class NmrDpUtility:
                                                           {'name': 'Combination_ID', 'type': 'positive-int', 'mandatory': False,
                                                            'enforce-non-zero': True},
                                                           {'name': 'Weight', 'type': 'range-float', 'mandatory': False,
-                                                           'range': self.weight_range},
+                                                           'range': WEIGHT_RANGE},
                                                           # 'enforce-non-zero': True},
                                                           {'name': 'Target_value', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
-                                                           'range': self.rdc_restraint_range,
+                                                           'range': RDC_RESTRAINT_RANGE,
                                                            'group': {'member-with': ['RDC_lower_linear_limit', 'RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
                                                                      'coexist-with': None,
                                                                      'smaller-than': ['RDC_lower_linear_limit', 'RDC_lower_bound'],
                                                                      'larger-than': ['RDC_upper_bound', 'RDC_upper_linear_limit']}},
                                                           {'name': 'Target_value_uncertainty', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
-                                                           'range': self.rdc_restraint_error},
+                                                           'range': RDC_UNCERTAINTY_RANGE},
                                                           {'name': 'RDC_lower_bound', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
-                                                           'range': self.rdc_restraint_range,
+                                                           'range': RDC_RESTRAINT_RANGE,
                                                            'group': {'member-with': ['Target_value', 'RDC_lower_linear_limit', 'RDC_upper_linear_limit', 'RDC_upper_bound'],
                                                                      'coexist-with': None,  # ['RDC_upper_bound'],
                                                                      'smaller-than': ['RDC_lower_linear_limit'],
                                                                      'larger-than': ['RDC_upper_bound', 'RDC_upper_linear_limit']}},
                                                           {'name': 'RDC_upper_bound', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
-                                                           'range': self.rdc_restraint_range,
+                                                           'range': RDC_RESTRAINT_RANGE,
                                                            'group': {'member-with': ['Target_value', 'RDC_lower_linear_limit', 'RDC_upper_linear_limit', 'RDC_lower_bound'],
                                                                      'coexist-with': None,  # ['RDC_lower_bound'],
                                                                      'smaller-than': ['RDC_lower_linear_limit', 'RDC_lower_bound'],
                                                                      'larger-than': ['RDC_upper_linear_limit']}},
                                                           {'name': 'RDC_lower_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
-                                                           'range': self.rdc_restraint_range,
+                                                           'range': RDC_RESTRAINT_RANGE,
                                                            'group': {'member-with': ['Target_value', 'RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
                                                                      'coexist-with': None,  # ['RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
                                                                      'smaller-than': None,
                                                                      'larger-than': ['RDC_lower_bound', 'RDC_upper_bound', 'RDC_upper_linear_limit']}},
                                                           {'name': 'RDC_upper_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
-                                                           'range': self.rdc_restraint_range,
+                                                           'range': RDC_RESTRAINT_RANGE,
                                                            'group': {'member-with': ['Target_value', 'RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
                                                                      'coexist-with': None,  # ['RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
                                                                      'smaller-than': ['RDC_lower_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
                                                                      'larger-than': None}},
                                                           {'name': 'RDC_val', 'type': 'range-float', 'mandatory': False,
-                                                           'range': self.rdc_restraint_range},
+                                                           'range': RDC_RESTRAINT_RANGE},
                                                           {'name': 'RDC_val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
-                                                           'range': self.rdc_restraint_error},
+                                                           'range': RDC_UNCERTAINTY_RANGE},
                                                           {'name': 'RDC_val_scale_factor', 'type': 'range-float', 'mandatory': False,
-                                                           'range': self.scale_range,
+                                                           'range': SCALE_RANGE,
                                                            'enforce-non-zero': True},
                                                           {'name': 'RDC_distant_dependent', 'type': 'bool', 'mandatory': False},
                                                           {'name': 'Auth_asym_ID_1', 'type': 'str', 'mandatory': False},
@@ -1812,7 +1837,7 @@ class NmrDpUtility:
                                                           ],
                                         'spectral_peak_alt': [{'name': 'Index_ID', 'type': 'index-int', 'mandatory': False},
                                                               {'name': 'Figure_of_merit', 'type': 'range-float', 'mandatory': False,
-                                                               'range': self.weight_range},
+                                                               'range': WEIGHT_RANGE},
                                                               {'name': 'Restraint', 'type': 'enum', 'mandatory': False,
                                                                'enum': ('no', 'yes')}
                                                               ]
@@ -1821,99 +1846,99 @@ class NmrDpUtility:
 
         # data items of loop to check consistency
         self.consist_data_items = {'nef': {'dist_restraint': [{'name': 'target_value', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
-                                                               'range': self.dist_restraint_range,
+                                                               'range': DIST_RESTRAINT_RANGE,
                                                                'group': {'member-with': ['lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit'],
                                                                          'coexist-with': None,
                                                                          'smaller-than': ['lower_linear_limit', 'lower_limit'],
                                                                          'larger-than': ['upper_limit', 'upper_linear_limit']}},
                                                               {'name': 'target_value_uncertainty', 'type': 'range-float', 'mandatory': False,
-                                                               'range': self.dist_restraint_error},
+                                                               'range': DIST_UNCERTAINTY_RANGE},
                                                               {'name': 'lower_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
-                                                               'range': self.dist_restraint_range,
+                                                               'range': DIST_RESTRAINT_RANGE,
                                                                'group': {'member-with': ['target_value', 'lower_limit', 'upper_limit', 'upper_linear_limit'],
                                                                          'coexist-with': None,  # ['lower_limit', 'upper_limit', 'upper_linear_limit'],
                                                                          'smaller-than': None,
                                                                          'larger-than': ['lower_limit', 'upper_limit', 'upper_linear_limit']}},
                                                               {'name': 'lower_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
-                                                               'range': self.dist_restraint_range,
+                                                               'range': DIST_RESTRAINT_RANGE,
                                                                'group': {'member-with': ['target_value', 'lower_linear_limit', 'upper_limit', 'upper_linear_limit'],
                                                                          'coexist-with': None,  # ['upper_limit'],
                                                                          'smaller-than': ['lower_linear_limit'],
                                                                          'larger-than': ['upper_limit', 'upper_linear_limit']}},
                                                               {'name': 'upper_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
-                                                               'range': self.dist_restraint_range,
+                                                               'range': DIST_RESTRAINT_RANGE,
                                                                'group': {'member-with': ['target_value', 'lower_linear_limit', 'lower_limit', 'upper_linear_limit'],
                                                                          'coexist-with': None,  # ['lower_limit'],
                                                                          'smaller-than': ['lower_linear_limit', 'lower_limit'],
                                                                          'larger-than': ['upper_linear_limit']}},
                                                               {'name': 'upper_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
-                                                               'range': self.dist_restraint_range,
+                                                               'range': DIST_RESTRAINT_RANGE,
                                                                'group': {'member-with': ['target_value', 'lower_linear_limit', 'lower_limit', 'upper_limit'],
                                                                          'coexist-with': None,  # ['lower_linear_limit', 'lower_limit', 'upper_limit'],
                                                                          'smaller-than': ['lower_linear_limit', 'lower_limit', 'upper_limit'],
                                                                          'larger-than': None}}
                                                               ],
                                            'dihed_restraint': [{'name': 'target_value', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
-                                                               'range': self.dihed_restraint_range,
+                                                               'range': ANGLE_RESTRAINT_RANGE,
                                                                 'group': {'member-with': ['lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit'],
                                                                           'coexist-with': None,
                                                                           'smaller-than': ['lower_linear_limit', 'lower_limit'],
                                                                           'larger-than': ['upper_limit', 'upper_linear_limit']}},
                                                                {'name': 'target_value_uncertainty', 'type': 'range-float', 'mandatory': False,
-                                                                'range': self.dihed_restraint_error},
+                                                                'range': ANGLE_UNCERTAINTY_RANGE},
                                                                {'name': 'lower_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
-                                                                'range': self.dihed_restraint_range,
+                                                                'range': ANGLE_RESTRAINT_RANGE,
                                                                 'group': {'member-with': ['target_value', 'lower_limit', 'upper_limit', 'upper_linear_limit'],
                                                                           'coexist-with': None,  # ['lower_limit', 'upper_limit', 'upper_linear_limit'],
                                                                           'smaller-than': None,
                                                                           'larger-than': ['lower_limit', 'upper_limit', 'upper_linear_limit']}},
                                                                {'name': 'lower_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
-                                                                'range': self.dihed_restraint_range,
+                                                                'range': ANGLE_RESTRAINT_RANGE,
                                                                 'group': {'member-with': ['target_value', 'lower_linear_limit', 'upper_limit', 'upper_linear_limit'],
                                                                           'coexist-with': None,  # ['upper_limit'],
                                                                           'smaller-than': ['lower_linear_limit'],
                                                                           'larger-than': ['upper_limit', 'upper_linear_limit']}},
                                                                {'name': 'upper_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
-                                                                'range': self.dihed_restraint_range,
+                                                                'range': ANGLE_RESTRAINT_RANGE,
                                                                 'group': {'member-with': ['target_value', 'lower_linear_limit', 'lower_limit', 'upper_linear_limit'],
                                                                           'coexist-with': None,  # ['lower_limit'],
                                                                           'smaller-than': ['lower_linear_limit', 'lower_limit'],
                                                                           'larger-than': ['upper_linear_limit']}},
                                                                {'name': 'upper_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
-                                                                'range': self.dihed_restraint_range,
+                                                                'range': ANGLE_RESTRAINT_RANGE,
                                                                 'group': {'member-with': ['target_value', 'lower_linear_limit', 'lower_limit', 'upper_limit'],
                                                                           'coexist-with': None,  # ['lower_linear_limit', 'lower_limit', 'upper_limit'],
                                                                           'smaller-than': ['lower_linear_limit', 'lower_limit', 'upper_limit'],
                                                                           'larger-than': None}}
                                                                ],
                                            'rdc_restraint': [{'name': 'target_value', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
-                                                              'range': self.rdc_restraint_range,
+                                                              'range': RDC_RESTRAINT_RANGE,
                                                               'group': {'member-with': ['lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit'],
                                                                         'coexist-with': None,
                                                                         'smaller-than': ['lower_linear_limit', 'lower_limit'],
                                                                         'larger-than': ['upper_limit', 'upper_linear_limit']}},
                                                              {'name': 'target_value_uncertainty', 'type': 'range-float', 'mandatory': False,
-                                                              'range': self.rdc_restraint_error},
+                                                              'range': RDC_UNCERTAINTY_RANGE},
                                                              {'name': 'lower_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
-                                                              'range': self.rdc_restraint_range,
+                                                              'range': RDC_RESTRAINT_RANGE,
                                                               'group': {'member-with': ['target_value', 'lower_limit', 'upper_limit', 'upper_linear_limit'],
                                                                         'coexist-with': None,  # ['lower_limit', 'upper_limit', 'upper_linear_limit'],
                                                                         'smaller-than': None,
                                                                         'larger-than': ['lower_limit', 'upper_limit', 'upper_linear_limit']}},
                                                              {'name': 'lower_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
-                                                              'range': self.rdc_restraint_range,
+                                                              'range': RDC_RESTRAINT_RANGE,
                                                               'group': {'member-with': ['target_value', 'lower_linear_limit', 'upper_limit', 'upper_linear_limit'],
                                                                         'coexist-with': None,  # ['upper_limit'],
                                                                         'smaller-than': ['lower_linear_limit'],
                                                                         'larger-than': ['upper_limit', 'upper_linear_limit']}},
                                                              {'name': 'upper_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
-                                                              'range': self.rdc_restraint_range,
+                                                              'range': RDC_RESTRAINT_RANGE,
                                                               'group': {'member-with': ['target_value', 'lower_linear_limit', 'lower_limit', 'upper_linear_limit'],
                                                                         'coexist-with': None,  # ['lower_limit'],
                                                                         'smaller-than': ['lower_linear_limit', 'lower_limit'],
                                                                         'larger-than': ['upper_linear_limit']}},
                                                              {'name': 'upper_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
-                                                              'range': self.rdc_restraint_range,
+                                                              'range': RDC_RESTRAINT_RANGE,
                                                               'group': {'member-with': ['target_value', 'lower_linear_limit', 'lower_limit', 'upper_limit'],
                                                                         'coexist-with': None,  # ['lower_linear_limit', 'lower_limit', 'upper_limit'],
                                                                         'smaller-than': ['lower_linear_limit', 'lower_limit', 'upper_limit'],
@@ -1923,7 +1948,7 @@ class NmrDpUtility:
                                            'spectral_peak_alt': None
                                            },
                                    'nmr-star': {'dist_restraint': [{'name': 'Target_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
-                                                                    'range': self.dist_restraint_range,
+                                                                    'range': DIST_RESTRAINT_RANGE,
                                                                     'group': {'member-with': ['Lower_linear_limit',
                                                                                               'Upper_linear_limit',
                                                                                               'Distance_lower_bound_val',
@@ -1932,9 +1957,9 @@ class NmrDpUtility:
                                                                               'smaller-than': ['Lower_linear_limit', 'Distance_lower_bound_val'],
                                                                               'larger-than': ['Distance_upper_bound_val', 'Upper_linear_limit']}},
                                                                    {'name': 'Target_val_uncertainty', 'type': 'range-float', 'mandatory': False,
-                                                                    'range': self.dist_restraint_error},
+                                                                    'range': DIST_UNCERTAINTY_RANGE},
                                                                    {'name': 'Lower_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
-                                                                    'range': self.dist_restraint_range,
+                                                                    'range': DIST_RESTRAINT_RANGE,
                                                                     'group': {'member-with': ['Target_val',
                                                                                               'Upper_linear_limit',
                                                                                               'Distance_lower_bound_val',
@@ -1944,7 +1969,7 @@ class NmrDpUtility:
                                                                               'smaller-than': None,
                                                                               'larger-than': ['Distance_lower_bound_val', 'Distance_upper_bound_val', 'Upper_linear_limit']}},
                                                                    {'name': 'Upper_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
-                                                                    'range': self.dist_restraint_range,
+                                                                    'range': DIST_RESTRAINT_RANGE,
                                                                     'group': {'member-with': ['Target_val',
                                                                                               'Lower_linear_limit',
                                                                                               'Distance_lower_bound_val',
@@ -1954,7 +1979,7 @@ class NmrDpUtility:
                                                                               'smaller-than': ['Lower_linear_limit', 'Distance_lower_bound_val', 'Distance_upper_bound_val'],
                                                                               'larger-than': None}},
                                                                    {'name': 'Distance_lower_bound_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
-                                                                    'range': self.dist_restraint_range,
+                                                                    'range': DIST_RESTRAINT_RANGE,
                                                                     'group': {'member-with': ['Target_val',
                                                                                               'Lower_linear_limit',
                                                                                               'Upper_linear_limit',
@@ -1963,7 +1988,7 @@ class NmrDpUtility:
                                                                               'smaller-than': ['Lower_linear_limit'],
                                                                               'larger-than': ['Distance_upper_bound_val', 'Upper_linear_limit']}},
                                                                    {'name': 'Distance_upper_bound_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
-                                                                    'range': self.dist_restraint_range,
+                                                                    'range': DIST_RESTRAINT_RANGE,
                                                                     'group': {'member-with': ['Target_val',
                                                                                               'Lower_linear_limit',
                                                                                               'Upper_linear_limit',
@@ -1972,10 +1997,10 @@ class NmrDpUtility:
                                                                               'smaller-than': ['Lower_linear_limit', 'Distance_lower_bound_val'],
                                                                               'larger-than': ['Upper_linear_limit']}},
                                                                    {'name': 'Distance_val', 'type': 'range-float', 'mandatory': False,
-                                                                    'range': self.dist_restraint_range}
+                                                                    'range': DIST_RESTRAINT_RANGE}
                                                                    ],
                                                 'dihed_restraint': [{'name': 'Angle_lower_bound_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
-                                                                     'range': self.dihed_restraint_range,
+                                                                     'range': ANGLE_RESTRAINT_RANGE,
                                                                      'group': {'member-with': ['Angle_target_val',
                                                                                                'Angle_lower_linear_limit',
                                                                                                'Angle_upper_linear_limit',
@@ -1984,7 +2009,7 @@ class NmrDpUtility:
                                                                                'smaller-than': ['Angle_lower_linear_limit'],
                                                                                'larger-than': ['Angle_upper_bound_val', 'Angle_upper_linear_limit']}},
                                                                     {'name': 'Angle_upper_bound_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
-                                                                     'range': self.dihed_restraint_range,
+                                                                     'range': ANGLE_RESTRAINT_RANGE,
                                                                      'group': {'member-with': ['Angle_target_val',
                                                                                                'Angle_lower_linear_limit',
                                                                                                'Angle_upper_linear_limit',
@@ -1993,7 +2018,7 @@ class NmrDpUtility:
                                                                                'smaller-than': ['Angle_lower_linear_limit', 'Angle_lower_bound_val'],
                                                                                'larger-than': ['Angle_upper_linear_limit']}},
                                                                     {'name': 'Angle_target_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
-                                                                     'range': self.dihed_restraint_range,
+                                                                     'range': ANGLE_RESTRAINT_RANGE,
                                                                      'group': {'member-with': ['Angle_lower_linear_limit',
                                                                                                'Angle_upper_linear_limit',
                                                                                                'Angle_lower_bound_val',
@@ -2002,9 +2027,9 @@ class NmrDpUtility:
                                                                                'smaller-than': ['Angle_lower_linear_limit', 'Angle_lower_bound_val'],
                                                                                'larger-than': ['Angle_upper_bound_val', 'Angle_upper_linear_limit']}},
                                                                     {'name': 'Angle_target_val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
-                                                                     'range': self.dihed_restraint_error},
+                                                                     'range': ANGLE_UNCERTAINTY_RANGE},
                                                                     {'name': 'Angle_lower_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
-                                                                     'range': self.dihed_restraint_range,
+                                                                     'range': ANGLE_RESTRAINT_RANGE,
                                                                      'group': {'member-with': ['Angle_target_val',
                                                                                                'Angle_upper_linear_limit',
                                                                                                'Angle_lower_bound_val',
@@ -2014,7 +2039,7 @@ class NmrDpUtility:
                                                                                'smaller-than': None,
                                                                                'larger-than': ['Angle_lower_bound_val', 'Angle_upper_bound_val', 'Angle_upper_linear_limit']}},
                                                                     {'name': 'Angle_upper_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
-                                                                     'range': self.dihed_restraint_range,
+                                                                     'range': ANGLE_RESTRAINT_RANGE,
                                                                      'group': {'member-with': ['Angle_target_val',
                                                                                                'Angle_lower_linear_limit',
                                                                                                'Angle_lower_bound_val',
@@ -2025,7 +2050,7 @@ class NmrDpUtility:
                                                                                'larger-than': None}}
                                                                     ],
                                                 'rdc_restraint': [{'name': 'Target_value', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
-                                                                   'range': self.rdc_restraint_range,
+                                                                   'range': RDC_RESTRAINT_RANGE,
                                                                    'group': {'member-with': ['RDC_lower_linear_limit',
                                                                                              'RDC_upper_linear_limit',
                                                                                              'RDC_lower_bound',
@@ -2034,9 +2059,9 @@ class NmrDpUtility:
                                                                              'smaller-than': ['RDC_lower_linear_limit', 'RDC_lower_bound'],
                                                                              'larger-than': ['RDC_upper_bound', 'RDC_upper_linear_limit']}},
                                                                   {'name': 'Target_value_uncertainty', 'type': 'range-float', 'mandatory': False,
-                                                                   'range': self.rdc_restraint_error},
+                                                                   'range': RDC_UNCERTAINTY_RANGE},
                                                                   {'name': 'RDC_lower_bound', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
-                                                                   'range': self.rdc_restraint_range,
+                                                                   'range': RDC_RESTRAINT_RANGE,
                                                                    'group': {'member-with': ['Target_value',
                                                                                              'RDC_lower_linear_limit',
                                                                                              'RDC_upper_linear_limit',
@@ -2045,7 +2070,7 @@ class NmrDpUtility:
                                                                              'smaller-than': ['RDC_lower_linear_limit'],
                                                                              'larger-than': ['RDC_upper_boud', 'RDC_upper_linear_limit']}},
                                                                   {'name': 'RDC_upper_bound', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
-                                                                   'range': self.rdc_restraint_range,
+                                                                   'range': RDC_RESTRAINT_RANGE,
                                                                    'group': {'member-with': ['Target_value',
                                                                                              'RDC_lower_linear_limit',
                                                                                              'RDC_upper_linear_limit',
@@ -2054,21 +2079,21 @@ class NmrDpUtility:
                                                                              'smaller-than': ['RDC_lower_linear_limit', 'RDC_lower_bound'],
                                                                              'larger-than': ['RDC_upper_linear_limit']}},
                                                                   {'name': 'RDC_lower_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
-                                                                   'range': self.rdc_restraint_range,
+                                                                   'range': RDC_RESTRAINT_RANGE,
                                                                    'group': {'member-with': ['Target_value', 'RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
                                                                              'coexist-with': None,  # ['RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
                                                                              'smaller-than': None,
                                                                              'larger-than': ['RDC_lower_bound', 'RDC_upper_bound', 'RDC_upper_linear_limit']}},
                                                                   {'name': 'RDC_upper_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
-                                                                   'range': self.rdc_restraint_range,
+                                                                   'range': RDC_RESTRAINT_RANGE,
                                                                    'group': {'member-with': ['Target_value', 'RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
                                                                              'coexist-with': None,  # ['RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
                                                                              'smaller-than': None,
                                                                              'larger-than': ['RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound']}},
                                                                   {'name': 'RDC_val', 'type': 'range-float', 'mandatory': False,
-                                                                   'range': self.rdc_restraint_range},
+                                                                   'range': RDC_RESTRAINT_RANGE},
                                                                   {'name': 'RDC_val_err', 'type': 'range-float', 'mandatory': False,
-                                                                   'range': self.rdc_restraint_error}
+                                                                   'range': RDC_UNCERTAINTY_RANGE}
                                                                   ],
                                                 'spectral_peak': None,
                                                 'spectral_peak_alt': None
@@ -2114,7 +2139,7 @@ class NmrDpUtility:
 
         # loop data items for spectral peak
         self.pk_data_items = {'nef': [{'name': 'position_uncertainty_%s', 'type': 'range-float', 'mandatory': False,
-                                       'range': self.chem_shift_error},
+                                       'range': CS_UNCERTAINTY_RANGE},
                                       {'name': 'chain_code_%s', 'type': 'str', 'mandatory': False,
                                        'relax-key-if-exist': True},
                                       {'name': 'sequence_code_%s', 'type': 'int', 'mandatory': False,
@@ -2128,7 +2153,7 @@ class NmrDpUtility:
                                        'relax-key-if-exist': True,
                                        'clear-bad-pattern': True}],
                               'nmr-star': [{'name': 'Position_uncertainty_%s', 'type': 'range-float', 'mandatory': False,
-                                            'range': self.chem_shift_error},
+                                            'range': CS_UNCERTAINTY_RANGE},
                                            {'name': 'Entity_assembly_ID_%s', 'type': 'positive-int-as-str', 'mandatory': False,
                                             'default': '1', 'default-from': 'Auth_asym_ID_%s',
                                             'enforce-non-zero': True,
@@ -3070,9 +3095,9 @@ class NmrDpUtility:
                                                                 'enum': set(range(1, MAX_DIM_NUM_OF_SPECTRA)),
                                                                 'enforce-enum': True},
                                                                {'name': 'Chem_shift_val', 'type': 'range-float', 'mandatory': True,
-                                                                'range': self.chem_shift_range},
+                                                                'range': CS_RESTRAINT_RANGE},
                                                                {'name': 'Chem_shift_val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
-                                                                'range': self.chem_shift_error},
+                                                                'range': CS_UNCERTAINTY_RANGE},
                                                                {'name': 'Line_width_val', 'type': 'positive-float', 'mandatory': False},
                                                                {'name': 'Line_width_val_err', 'type': 'positive-float', 'mandatory': False, 'void-zero': True},
                                                                {'name': 'Coupling_pattern', 'type': 'enum', 'mandatory': False,
@@ -3086,11 +3111,11 @@ class NmrDpUtility:
                                                                               {'name': 'Set_ID', 'type': 'positive-int', 'mandatory': False},
                                                                               {'name': 'Magnetization_linkage_ID', 'type': 'positive-int', 'mandatory': False},
                                                                               {'name': 'Val', 'type': 'range-float', 'mandatory': False,
-                                                                               'range': self.chem_shift_range},
+                                                                               'range': CS_RESTRAINT_RANGE},
                                                                               {'name': 'Contribution_fractional_val', 'type': 'range-float', 'mandatory': False,
-                                                                               'range': self.weight_range},
+                                                                               'range': WEIGHT_RANGE},
                                                                               {'name': 'Figure_of_merit', 'type': 'range-float', 'mandatory': False,
-                                                                               'range': self.weight_range},
+                                                                               'range': WEIGHT_RANGE},
                                                                               {'name': 'Assigned_chem_shift_list_ID', 'type': 'pointer-index', 'mandatory': False},
                                                                               {'name': 'Entity_assembly_ID', 'type': 'positive-int-as-str', 'mandatory': False},
                                                                               {'name': 'Comp_index_ID', 'type': 'int', 'mandatory': False},
@@ -3383,7 +3408,7 @@ class NmrDpUtility:
         self.__pA.setVerbose(self.__verbose)
 
         # representative model id
-        self.__representative_model_id = 1
+        self.__representative_model_id = REPRESENTATIVE_MODEL_ID
         # total number of models
         self.__total_models = 0
         # atom id list in model
@@ -6133,15 +6158,6 @@ class NmrDpUtility:
         hbond_da_atom_types = ('O', 'N', 'F')
         rdc_origins = ('OO', 'X', 'Y', 'Z')
 
-        cs_range_min = self.chem_shift_range['min_exclusive']
-        cs_range_max = self.chem_shift_range['max_exclusive']
-        dist_range_min = self.dist_restraint_range['min_inclusive']
-        dist_range_max = self.dist_restraint_range['max_inclusive']
-        dihed_range_min = self.dihed_restraint_range['min_inclusive']
-        dihed_range_max = self.dihed_restraint_range['max_inclusive']
-        rdc_range_min = self.rdc_restraint_range['min_exclusive']
-        rdc_range_max = self.rdc_restraint_range['max_exclusive']
-
         fileListId = self.__file_path_list_len
 
         md5_list = []
@@ -6176,10 +6192,12 @@ class NmrDpUtility:
                 mr_format_name = 'AMBER'
             elif file_type == 'nm-res-cya':
                 mr_format_name = 'CYANA'
+            elif file_type == 'nm-res-ros':
+                mr_format_name = 'ROSETTA'
             else:
                 mr_format_name = 'other format'
 
-            atom_like_names = self.__csStat.getAtomLikeNameSet(minimum_len=(2 if file_type == 'nm-res-oth' or is_aux_amb else 1))
+            atom_like_names = self.__csStat.getAtomLikeNameSet(minimum_len=(2 if file_type in ('nm-res-ros', 'nm-res-oth') or is_aux_amb else 1))
             cs_atom_like_names = list(filter(is_half_spin_nuclei, atom_like_names))  # DAOTHER-7491
 
             has_chem_shift = False
@@ -6305,13 +6323,13 @@ class NmrDpUtility:
                             elif '.' in t:
                                 try:
                                     v = float(t)
-                                    if cs_range_min < v < cs_range_max:
+                                    if CS_RANGE_MIN <= v <= CS_RANGE_MAX:
                                         cs_range_like = True
-                                    if dist_range_min <= v <= dist_range_max:
+                                    if DIST_RANGE_MIN <= v <= DIST_RANGE_MAX:
                                         dist_range_like = True
-                                    if dihed_range_min <= v <= dihed_range_max:
+                                    if ANGLE_RANGE_MIN <= v <= ANGLE_RANGE_MAX:
                                         dihed_range_like = True
-                                    if rdc_range_min < v < rdc_range_max:
+                                    if RDC_RANGE_MIN <= v <= RDC_RANGE_MAX:
                                         rdc_range_like = True
                                     real_likes += 1
                                 except ValueError:
@@ -6378,7 +6396,7 @@ class NmrDpUtility:
                                     if atom_likes > 0:
                                         try:
                                             v = float(t)
-                                            if self.weight_range['min_inclusive'] <= v <= self.weight_range['max_inclusive']:
+                                            if WEIGHT_RANGE_MIN <= v <= WEIGHT_RANGE_MAX:
                                                 has_plane_restraint = True
                                         except ValueError:
                                             pass
@@ -6488,11 +6506,11 @@ class NmrDpUtility:
                                     if len(values) == 4:
                                         v = (values[1] + values[2]) / 2.0
 
-                                        if dist_range_min <= v <= dist_range_max:
+                                        if DIST_RANGE_MIN <= v <= DIST_RANGE_MAX:
                                             dist_range_like = True
-                                        if dihed_range_min <= v <= dihed_range_max:
+                                        if ANGLE_RANGE_MIN <= v <= ANGLE_RANGE_MAX:
                                             dihed_range_like = True
-                                        if rdc_range_min < v < rdc_range_max:
+                                        if RDC_RANGE_MIN <= v <= RDC_RANGE_MAX:
                                             rdc_range_like = True
 
                                         if atom_likes == 2 and dist_range_like:
@@ -6594,7 +6612,7 @@ class NmrDpUtility:
                                     in_igr1 = False
                                     in_igr2 = False
 
-            elif file_type == 'nm-res-cya' or file_type == 'nm-res-oth' or is_aux_amb:
+            elif file_type in ('nm-res-cya', 'nm-res-ros', 'nm-res-oth') or is_aux_amb:
 
                 if is_aux_amb:
 
@@ -6786,11 +6804,11 @@ class NmrDpUtility:
                             elif '.' in t:
                                 try:
                                     v = float(t)
-                                    if cs_range_min < v < cs_range_max:
+                                    if CS_RANGE_MIN <= v <= CS_RANGE_MAX:
                                         cs_range_like = True
-                                    if dist_range_min <= v <= dist_range_max:
+                                    if DIST_RANGE_MIN <= v <= DIST_RANGE_MAX:
                                         dist_range_like = True
-                                    if dihed_range_min <= v <= dihed_range_max:
+                                    if ANGLE_RANGE_MIN <= v <= ANGLE_RANGE_MAX:
                                         dihed_range_like = True
                                 except ValueError:
                                     pass
@@ -6855,11 +6873,11 @@ class NmrDpUtility:
                                 elif '.' in t:
                                     try:
                                         v = float(t)
-                                        if cs_range_min < v < cs_range_max:
+                                        if CS_RANGE_MIN <= v <= CS_RANGE_MAX:
                                             cs_range_like = True
-                                        if dist_range_min <= v <= dist_range_max:
+                                        if DIST_RANGE_MIN <= v <= DIST_RANGE_MAX:
                                             dist_range_like = True
-                                        if dihed_range_min <= v <= dihed_range_max:
+                                        if ANGLE_RANGE_MIN <= v <= ANGLE_RANGE_MAX:
                                             dihed_range_like = True
                                     except ValueError:
                                         pass
@@ -6888,7 +6906,7 @@ class NmrDpUtility:
                     if has_amb_coord and (not has_first_atom or has_ens_coord):
                         has_amb_coord = False
 
-            if file_type in ('nm-res-cya', 'nm-res-oth') and not has_dist_restraint:  # DAOTHER-7491
+            if file_type in ('nm-res-cya', 'nmr-res-ros', 'nm-res-oth') and not has_dist_restraint:  # DAOTHER-7491
 
                 with open(file_path, 'r', encoding='utf-8') as ifp:
 
@@ -6908,7 +6926,7 @@ class NmrDpUtility:
                             int(s[0])
                             int(s[3])
                             v = float(s[6])
-                            if v < dist_range_min or dist_range_max < v:
+                            if v < DIST_RANGE_MIN or DIST_RANGE_MAX < v:
                                 continue
                         except ValueError:
                             continue
@@ -11715,12 +11733,12 @@ class NmrDpUtility:
         id_tag = self.consist_id_tags[file_type][content_subtype]
 
         if content_subtype == 'dist_restraint':
-            max_inclusive = self.dist_restraint_error['max_inclusive']
+            max_inclusive = DIST_UNCERT_MAX
 
             data_unit_name = 'atom pair'
 
         elif content_subtype == 'dihed_restraint':
-            max_inclusive = self.dihed_restraint_error['max_inclusive']
+            max_inclusive = ANGLE_UNCERT_MAX
 
             data_unit_name = 'dihedral angle'
 
@@ -11741,7 +11759,7 @@ class NmrDpUtility:
             angle_type_name = dh_item_names['angle_type']
 
         elif content_subtype == 'rdc_restraint':
-            max_inclusive = self.rdc_restraint_error['max_inclusive']
+            max_inclusive = RDC_UNCERT_MAX
 
             data_unit_name = 'bond vector'
 
@@ -12928,7 +12946,6 @@ class NmrDpUtility:
         full_value_name = lp_category + '.' + value_name
 
         # index_tag = self.index_tags[file_type][content_subtype]
-        max_cs_err = self.chem_shift_error['max_inclusive']
 
         add_details = False
 
@@ -14245,13 +14262,13 @@ class NmrDpUtility:
                                         if self.__verbose:
                                             self.__lfh.write(f"+NmrDpUtility.__validateCSValue() ++ ValueError - {err}\n")
 
-                                    elif abs(value2 - value) > max_cs_err and value < value2:
+                                    elif abs(value2 - value) > CS_UNCERT_MAX and value < value2:
 
                                         err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id)\
                                             + f", {value_name} {value}, {ambig_code_name} {str(ambig_code)!r}, {ambig_set_id_name} {ambig_set_id}] "\
                                             f"However, {value_name} {value2} of "\
                                             + row_tmp % (chain_id2, seq_id2, comp_id2, atom_id2)\
-                                            + f"differs by {value2 - value} (tolerance {max_cs_err})."
+                                            + f"differs by {value2 - value} (tolerance {CS_UNCERT_MAX})."
 
                                         self.report.error.appendDescription('invalid_ambiguity_code',
                                                                             {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
@@ -14824,7 +14841,6 @@ class NmrDpUtility:
                     position_names.append(item_names[d]['position'])
 
                 index_tag = self.index_tags[file_type][content_subtype]
-                max_cs_err = self.chem_shift_error['max_inclusive']
 
                 try:
 
@@ -14923,8 +14939,8 @@ class NmrDpUtility:
                                     if value in emptyValue:
                                         continue
 
-                                    if error is None or error < 1.0e-3 or error * self.cs_diff_error_scaled_by_sigma > max_cs_err:
-                                        error = max_cs_err
+                                    if error is None or error < 1.0e-3 or error * self.cs_diff_error_scaled_by_sigma > CS_UNCERT_MAX:
+                                        error = CS_UNCERT_MAX
                                     else:
                                         error *= self.cs_diff_error_scaled_by_sigma
 
@@ -14947,7 +14963,7 @@ class NmrDpUtility:
                                                 + f") in {sf_framecode!r} saveframe is inconsistent with the assigned chemical shift value "\
                                                 f"{value} (difference {position - value:.3f}, tolerance {error}) in {cs_list!r} saveframe."
 
-                                            if error >= max_cs_err:
+                                            if error >= CS_UNCERT_MAX:
 
                                                 self.report.error.appendDescription('invalid_data',
                                                                                     {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
@@ -15283,8 +15299,6 @@ class NmrDpUtility:
                 dim_id_name = 'Spectral_dim_ID'
                 set_id_name = 'Set_ID'
 
-                max_cs_err = self.chem_shift_error['max_inclusive']
-
                 try:
 
                     lp_data = next((l['data'] for l in self.__aux_data[content_subtype]
@@ -15407,8 +15421,8 @@ class NmrDpUtility:
                                 if value in emptyValue:
                                     continue
 
-                                if error is None or error < 1.0e-3 or error * self.cs_diff_error_scaled_by_sigma > max_cs_err:
-                                    error = max_cs_err
+                                if error is None or error < 1.0e-3 or error * self.cs_diff_error_scaled_by_sigma > CS_UNCERT_MAX:
+                                    error = CS_UNCERT_MAX
                                 else:
                                     error *= self.cs_diff_error_scaled_by_sigma
 
@@ -15430,7 +15444,7 @@ class NmrDpUtility:
                                             + f") in {sf_framecode!r} saveframe is inconsistent with the assigned chemical shift value "\
                                             f"{value} (difference {position - value:.3f}, tolerance {error}) in {cs_list!r} saveframe."
 
-                                        if error >= max_cs_err:
+                                        if error >= CS_UNCERT_MAX:
 
                                             self.report.error.appendDescription('invalid_data',
                                                                                 {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
@@ -18854,7 +18868,7 @@ class NmrDpUtility:
 
             if conflict_id_set is not None:
 
-                # max_inclusive = self.dist_restraint_error['max_inclusive']
+                # max_inclusive = DIST_UNCERT_MAX
 
                 max_val = 0.0
                 min_val = 0.0
@@ -20486,7 +20500,7 @@ class NmrDpUtility:
 
             if conflict_id_set is not None:
 
-                max_inclusive = self.dihed_restraint_error['max_inclusive']
+                max_inclusive = ANGLE_UNCERT_MAX
 
                 max_val = 0.0
                 min_val = 0.0
@@ -21177,7 +21191,7 @@ class NmrDpUtility:
 
             if conflict_id_set is not None:
 
-                max_inclusive = self.rdc_restraint_error['max_inclusive']
+                max_inclusive = RDC_UNCERT_MAX
 
                 max_val = 0.0
                 min_val = 0.0

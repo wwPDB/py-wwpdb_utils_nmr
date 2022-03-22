@@ -58,8 +58,6 @@ class LexerErrorListener(ErrorListener):
             except ValueError:
                 pass
 
-        print(msg)
-
         self.__messageList.append(_dict)
 
     def reportAmbiguity(self, recognizer, dfa, startIndex, stopIndex, exact, ambigAlts, configs):

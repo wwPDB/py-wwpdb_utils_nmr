@@ -20,13 +20,13 @@ try:
     from wwpdb.utils.nmr.mr.RosettaMRParser import RosettaMRParser
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (checkCoordinates,
                                                        getTypeOfDihedralRestraint,
+                                                       REPRESENTATIVE_MODEL_ID,
                                                        DIST_RESTRAINT_RANGE,
                                                        DIST_RESTRAINT_ERROR,
                                                        ANGLE_RESTRAINT_RANGE,
                                                        ANGLE_RESTRAINT_ERROR,
                                                        RDC_RESTRAINT_RANGE,
                                                        RDC_RESTRAINT_ERROR)
-
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import (NEFTranslator,
@@ -35,13 +35,13 @@ except ImportError:
     from nmr.mr.RosettaMRParser import RosettaMRParser
     from nmr.mr.ParserListenerUtil import (checkCoordinates,
                                            getTypeOfDihedralRestraint,
+                                           REPRESENTATIVE_MODEL_ID,
                                            DIST_RESTRAINT_RANGE,
                                            DIST_RESTRAINT_ERROR,
                                            ANGLE_RESTRAINT_RANGE,
                                            ANGLE_RESTRAINT_ERROR,
                                            RDC_RESTRAINT_RANGE,
                                            RDC_RESTRAINT_ERROR)
-
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.NEFTranslator.NEFTranslator import (NEFTranslator,
@@ -127,6 +127,7 @@ class RosettaMRParserListener(ParseTreeListener):
     warningMessage = ''
 
     def __init__(self, verbose=True, log=sys.stdout, cR=None, polySeq=None,
+                 representativeModelId=REPRESENTATIVE_MODEL_ID,
                  coordAtomSite=None, coordUnobsRes=None, labelToAuthSeq=None,
                  ccU=None, csStat=None, nefT=None):
         self.__verbose = verbose
@@ -136,6 +137,7 @@ class RosettaMRParserListener(ParseTreeListener):
 
         if self.__hasCoord:
             ret = checkCoordinates(verbose, log, cR, polySeq,
+                                   representativeModelId,
                                    coordAtomSite, coordUnobsRes, labelToAuthSeq)
             self.__modelNumName = ret['model_num_name']
             self.__authAsymId = ret['auth_asym_id']

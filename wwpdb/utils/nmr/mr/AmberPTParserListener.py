@@ -17,8 +17,8 @@ try:
     from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
     from wwpdb.utils.nmr.mr.AmberPTParser import AmberPTParser
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (checkCoordinates,
-                                                       translateAmberAtomNomenclature)
-
+                                                       translateAmberAtomNomenclature,
+                                                       REPRESENTATIVE_MODEL_ID)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.AlignUtil import (hasLargeSeqGap,
@@ -30,8 +30,8 @@ except ImportError:
     from nmr.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
     from nmr.mr.AmberPTParser import AmberPTParser
     from nmr.mr.ParserListenerUtil import (checkCoordinates,
-                                           translateAmberAtomNomenclature)
-
+                                           translateAmberAtomNomenclature,
+                                           REPRESENTATIVE_MODEL_ID)
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.AlignUtil import (hasLargeSeqGap,
@@ -155,10 +155,13 @@ class AmberPTParserListener(ParseTreeListener):
     warningMessage = ''
 
     def __init__(self, verbose=True, log=sys.stdout, cR=None, polySeqModel=None,
+                 representativeModelId=REPRESENTATIVE_MODEL_ID,
                  ccU=None, csStat=None):
 
         if cR is not None:
-            ret = checkCoordinates(verbose, log, cR, polySeqModel, testTag=False)
+            ret = checkCoordinates(verbose, log, cR, polySeqModel,
+                                   representativeModelId,
+                                   testTag=False)
             self.__polySeqModel = ret['polymer_sequence']
 
         self.__hasPolySeqModel = self.__polySeqModel is not None and len(self.__polySeqModel) > 0

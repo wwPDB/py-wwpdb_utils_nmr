@@ -7,6 +7,7 @@
 """
 import sys
 import os
+
 from antlr4 import InputStream, CommonTokenStream, ParseTreeWalker
 
 try:
@@ -15,7 +16,8 @@ try:
     from wwpdb.utils.nmr.mr.CnsMRLexer import CnsMRLexer
     from wwpdb.utils.nmr.mr.CnsMRParser import CnsMRParser
     from wwpdb.utils.nmr.mr.CnsMRParserListener import CnsMRParserListener
-    from wwpdb.utils.nmr.mr.ParserListenerUtil import checkCoordinates
+    from wwpdb.utils.nmr.mr.ParserListenerUtil import (checkCoordinates,
+                                                       REPRESENTATIVE_MODEL_ID)
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
@@ -26,7 +28,8 @@ except ImportError:
     from nmr.mr.CnsMRLexer import CnsMRLexer
     from nmr.mr.CnsMRParser import CnsMRParser
     from nmr.mr.CnsMRParserListener import CnsMRParserListener
-    from nmr.mr.ParserListenerUtil import checkCoordinates
+    from nmr.mr.ParserListenerUtil import (checkCoordinates,
+                                           REPRESENTATIVE_MODEL_ID)
     from nmr.io.CifReader import CifReader
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
@@ -38,13 +41,17 @@ class CnsMRReader:
     """
 
     def __init__(self, verbose=True, log=sys.stdout, cR=None, polySeqModel=None,
+                 representativeModelId=REPRESENTATIVE_MODEL_ID,
                  coordAtomSite=None, coordUnobsRes=None, labelToAuthSeq=None,
                  ccU=None, csStat=None, nefT=None):
         self.__verbose = verbose
         self.__lfh = log
 
+        self.__representativeModelId = representativeModelId
+
         if cR is not None and polySeqModel is None:
-            ret = checkCoordinates(verbose, log, cR, polySeqModel, testTag=False)
+            ret = checkCoordinates(verbose, log, cR, polySeqModel,
+                                   representativeModelId, testTag=False)
             polySeqModel = ret['polymer_sequence']
 
         self.__cR = cR
@@ -113,6 +120,7 @@ class CnsMRReader:
 
                 walker = ParseTreeWalker()
                 listener = CnsMRParserListener(self.__verbose, self.__lfh, self.__cR, self.__polySeqModel,
+                                               self.__representativeModelId,
                                                self.__coordAtomSite, self.__coordUnobsRes, self.__labelToAuthSeq,
                                                self.__ccU, self.__csStat, self.__nefT)
                 walker.walk(listener, tree)
@@ -126,9 +134,10 @@ class CnsMRReader:
                             self.__lfh.write(f"{description['input']}\n")
                             self.__lfh.write(f"{description['marker']}\n")
 
-                if listener.warningMessage is not None:
-                    print(listener.warningMessage)
-                print(listener.getContentSubtype())
+                if self.__verbose:
+                    if listener.warningMessage is not None:
+                        print(listener.warningMessage)
+                    print(listener.getContentSubtype())
 
             return listener
 

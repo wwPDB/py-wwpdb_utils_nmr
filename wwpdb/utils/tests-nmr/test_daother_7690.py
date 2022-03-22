@@ -17,8 +17,8 @@ class TestNmrDpUtility(unittest.TestCase):
         here = os.path.abspath(os.path.dirname(__file__))
         self.data_dir_path = os.path.join(here, 'mock-data-daother-7690/')
         self.res_file_type = {
-            'daother-7690': 'nm-res-oth',
-            'daother-7690_edit': 'nm-res-oth'
+            'daother-7690': 'nm-res-ros',
+            'daother-7690_edit': 'nm-res-ros'
         }
         self.cs_file_path = {
             'daother-7690': ['SA1_V90T_30C.txt'],
@@ -74,7 +74,7 @@ class TestNmrDpUtility(unittest.TestCase):
             error_type = {str(k): len(v) for k, v in report['error'].items() if str(k) != 'total'}
             print('%s: %s, %s' % (cs_type, report['information']['status'], error_type))
 
-        self.assertNotEqual(report['information']['status'], 'Error')
+        self.assertEqual(report['information']['status'], 'Error')
         if report['warning'] is not None:
             self.assertNotIn('missing_content', report['warning'])
 

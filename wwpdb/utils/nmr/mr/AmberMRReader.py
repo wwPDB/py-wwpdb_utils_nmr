@@ -77,7 +77,7 @@ class AmberMRReader:
 
     def parse(self, mrFilePath, cifFilePath=None, ptFilePath=None):
         """ Parse AMBER MR file.
-            @return: AmberMRParserListener for success or None otherwise.
+            @return: AmberMRParserListener for success or None otherwise, ParserErrorListener, LexerErrorListener.
         """
 
         try:
@@ -85,24 +85,24 @@ class AmberMRReader:
             if not os.access(mrFilePath, os.R_OK):
                 if self.__verbose:
                     self.__lfh.write(f"AmberMRReader.parse() {mrFilePath} is not accessible.\n")
-                return None
+                return None, None, None
 
             if cifFilePath is not None:
                 if not os.access(cifFilePath, os.R_OK):
                     if self.__verbose:
                         self.__lfh.write(f"AmberMRReader.parse() {cifFilePath} is not accessible.\n")
-                    return None
+                    return None, None, None
 
                 if self.__cR is None:
                     self.__cR = CifReader(self.__verbose, self.__lfh)
                     if not self.__cR.parse(cifFilePath):
-                        return None
+                        return None, None, None
 
             if ptFilePath is not None and self.__atomNumberDict is None:
                 ptR = AmberPTReader(self.__verbose, self.__lfh, self.__cR, self.__polySeqModel,
                                     self.__representativeModelId,
                                     self.__ccU, self.__csStat)
-                ptPL = ptR.parse(ptFilePath, cifFilePath)
+                ptPL, _, _ = ptR.parse(ptFilePath, cifFilePath)
                 if ptPL is not None:
                     self.__atomNumberDict = ptPL.getAtomNumberDict()
 
@@ -165,12 +165,12 @@ class AmberMRReader:
                     else:
                         break
 
-            return listener
+            return listener, parser_error_listener, lexer_error_listener
 
         except IOError as e:
             if self.__verbose:
                 self.__lfh.write(f"+AmberMRReader.parse() ++ Error - {str(e)}\n")
-            return None
+            return None, None, None
 
 
 if __name__ == "__main__":

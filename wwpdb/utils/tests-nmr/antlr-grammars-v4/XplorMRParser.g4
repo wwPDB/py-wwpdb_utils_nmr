@@ -46,6 +46,7 @@ xplor_nih_mr:
 	sani_assign*			// allowing bare assign clauses for RDC restraints
 	planar_statement*		// allowing bare group clauses for planer restraints
 	hbond_assign*			// allowing bare assign clauses for Hydrogen bond restraints
+	coup_assign*			// allowing bare assign clauses for scaler J-coupling restraints
 	EOF;
 
 distance_restraint:
@@ -146,7 +147,7 @@ noe_statement:
 	Temperature Equ_op Real;
 
 noe_assign:
-	Assign selection selection Real Real Real (Or_op selection selection)*;
+	Assign selection selection (Real | Integer) Real Real (Or_op selection selection)*;
 
 predict_statement:
 	Cutoff Equ_op Real | Cuton Equ_op Real | From selection | To selection;
@@ -161,7 +162,7 @@ dihedral_statement:
 	Scale Real;
 
 dihedral_assign:
-	Assign selection selection selection selection Real Real Real Integer;
+	Assign selection selection selection selection (Real | Integer) Real Real Integer;
 
 /* XPLOR-NIH: Residual Dipolar Couplings - Syntax (SANI - Susceptibility anisotropy)
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node418.html
@@ -177,7 +178,7 @@ sani_statement:
 	Reset;
 
 sani_assign:
-	Assign selection selection selection selection selection selection Real Real Real?;
+	Assign selection selection selection selection selection selection (Real | Integer) Real Real?;
 
 /* XPLOR-NIH: Residual Dipolar Couplings - Syntax (XDIP)
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node419.html
@@ -256,7 +257,7 @@ planar_statement:
 
 group_statement:
 	Selection Equ_op selection |
-	Weight Equ_op Real;
+	Weight Equ_op (Real | Integer);
 
 /* XPLOR-NIH: Antidiatance restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node398.html

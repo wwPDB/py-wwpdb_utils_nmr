@@ -212,9 +212,6 @@ class CyanaMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by CyanaMRParser#distance_restraint.
     def exitDistance_restraint(self, ctx: CyanaMRParser.Distance_restraintContext):
-        if not self.__hasPolySeq:
-            return
-
         seqId1 = int(str(ctx.Integer(0)))
         compId1 = str(ctx.Simple_name(0)).upper()
         atomId1 = str(ctx.Simple_name(1)).upper()
@@ -250,6 +247,9 @@ class CyanaMRParserListener(ParseTreeListener):
         dstFunc = self.validateDistanceRange(1.0, target_value, lower_limit, upper_limit)
 
         if dstFunc is None:
+            return
+
+        if not self.__hasPolySeq:
             return
 
         chainAssign1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
@@ -472,9 +472,6 @@ class CyanaMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by CyanaMRParser#torsion_angle_restraint.
     def exitTorsion_angle_restraint(self, ctx: CyanaMRParser.Torsion_angle_restraintContext):  # pylint: disable=unused-argument
-        if not self.__hasPolySeq:
-            return
-
         seqId = int(str(ctx.Integer()))
         compId = str(ctx.Simple_name(0)).upper()
         angleName = str(ctx.Simple_name(1)).upper()
@@ -501,6 +498,9 @@ class CyanaMRParserListener(ParseTreeListener):
         dstFunc = self.validateAngleRange(1.0, target_value, lower_limit, upper_limit)
 
         if dstFunc is None:
+            return
+
+        if not self.__hasPolySeq:
             return
 
         peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
@@ -710,9 +710,6 @@ class CyanaMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by CyanaMRParser#rdc_restraint.
     def exitRdc_restraint(self, ctx: CyanaMRParser.Rdc_restraintContext):
-        if not self.__hasPolySeq:
-            return
-
         seqId1 = int(str(ctx.Integer(0)))
         compId1 = str(ctx.Simple_name(0)).upper()
         atomId1 = str(ctx.Simple_name(1)).upper()
@@ -751,6 +748,9 @@ class CyanaMRParserListener(ParseTreeListener):
         dstFunc = self.validateRdcRange(weight, orientation, target_value, lower_limit, upper_limit)
 
         if dstFunc is None:
+            return
+
+        if not self.__hasPolySeq:
             return
 
         chainAssign1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
@@ -950,9 +950,6 @@ class CyanaMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by CyanaMRParser#pcs_restraint.
     def exitPcs_restraint(self, ctx: CyanaMRParser.Pcs_restraintContext):  # pylint: disable=unused-argument
-        if not self.__hasPolySeq:
-            return
-
         seqId = int(str(ctx.Integer(0)))
         compId = str(ctx.Simple_name(0)).upper()
         atomId = str(ctx.Simple_name(1)).upper()
@@ -983,6 +980,9 @@ class CyanaMRParserListener(ParseTreeListener):
         dstFunc = self.validatePcsRange(weight, orientation, target_value, lower_limit, upper_limit)
 
         if dstFunc is None:
+            return
+
+        if not self.__hasPolySeq:
             return
 
         chainAssign = self.assignCoordPolymerSequence(seqId, compId, atomId)

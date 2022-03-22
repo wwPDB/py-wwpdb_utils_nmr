@@ -597,9 +597,14 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#noe_assign.
     def exitNoe_assign(self, ctx: XplorMRParser.Noe_assignContext):
-        target = float(str(ctx.Real(0)))
-        dminus = float(str(ctx.Real(1)))
-        dplus = float(str(ctx.Real(2)))
+        if ctx.Integer():
+            target = float(str(ctx.Integer()))
+            dminus = float(str(ctx.Real(0)))
+            dplus = float(str(ctx.Real(1)))
+        else:
+            target = float(str(ctx.Real(0)))
+            dminus = float(str(ctx.Real(1)))
+            dplus = float(str(ctx.Real(2)))
 
         target_value = target
         lower_limit = None
@@ -800,10 +805,16 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#dihedral_assign.
     def exitDihedral_assign(self, ctx: XplorMRParser.Dihedral_assignContext):
-        energyConst = float(str(ctx.Real(0)))
-        target = float(str(ctx.Real(1)))
-        delta = abs(float(str(ctx.Real(2))))
-        exponent = int(str(ctx.Integer()))
+        if ctx.Integer(1):
+            energyConst = float(str(ctx.Integer(0)))
+            target = float(str(ctx.Real(0)))
+            delta = abs(float(str(ctx.Real(1))))
+            exponent = int(str(ctx.Integer(1)))
+        else:
+            energyConst = float(str(ctx.Real(0)))
+            target = float(str(ctx.Real(1)))
+            delta = abs(float(str(ctx.Real(2))))
+            exponent = int(str(ctx.Integer(0)))
 
         if energyConst <= 0.0:
             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
@@ -1005,8 +1016,14 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#sani_assign.
     def exitSani_assign(self, ctx: XplorMRParser.Sani_assignContext):
-        target = float(str(ctx.Real(0)))
-        delta = abs(float(str(ctx.Real(1))))
+        if ctx.Integer():
+            target = float(str(ctx.Integer()))
+            delta = abs(float(str(ctx.Real(0))))
+            n = 1
+        else:
+            target = float(str(ctx.Real(0)))
+            delta = abs(float(str(ctx.Real(1))))
+            n = 2
 
         target_value = target
         lower_limit = None
@@ -1015,7 +1032,7 @@ class XplorMRParserListener(ParseTreeListener):
         if self.potential == 'square':
             lower_limit = target - delta
             upper_limit = target + delta
-            if ctx.Real(2):
+            if ctx.Real(n):
                 error_grater = delta
                 error_less = abs(float(str(ctx.Real(2))))
                 lower_limit = target - error_less
@@ -1935,7 +1952,10 @@ class XplorMRParserListener(ParseTreeListener):
         self.atomSelectionSet = []
 
         if ctx.Weight():
-            self.scale = float(str(ctx.Real()))
+            if ctx.Real():
+                self.scale = float(str(ctx.Real()))
+            else:
+                self.scale = float(str(ctx.Integer()))
             if self.scale <= 0.0:
                 self.warningMessage += "[Invalid data] "\
                     f"The weight value 'GROUP {str(ctx.Weight())} {self.scale} END' must be a positive value.\n"

@@ -12,6 +12,9 @@ import os.path
 from antlr4.error.ErrorListener import ErrorListener
 
 
+MAX_ERROR_REPORT = 1
+
+
 class LexerErrorListener(ErrorListener):
 
     __messageList = None
@@ -30,6 +33,9 @@ class LexerErrorListener(ErrorListener):
     def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
         if self.__messageList is None:
             self.__messageList = []
+
+        if len(self.__messageList) >= MAX_ERROR_REPORT:
+            return
 
         _msg = msg.split("'")
         length = 1 if 'alternative' in msg or len(_msg) < 2 else len(_msg[1])

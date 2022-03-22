@@ -46,6 +46,7 @@ fragment X:		[xX];
 fragment Y:		[yY];
 fragment Z:		[zZ];
 
+Set:			S E T;
 End:			E N D;
 
 /* CNS: Distance restraints - Syntax - noe
@@ -357,20 +358,20 @@ fragment DEC_DIGIT:	[0-9];
 fragment DECIMAL:	DEC_DIGIT+;
 
 Simple_name:		SIMPLE_NAME;
-Simple_names:		WILDCARD | WILDCARD? SIMPLE_NAME WILDCARD;
-Integers:		WILDCARD | WILDCARD? Integer WILDCARD;
+Simple_names:		WILDCARD | WILDCARD* SIMPLE_NAME WILDCARD+;
+Integers:		WILDCARD | WILDCARD* Integer WILDCARD+;
 //Class_name:		SIMPLE_NAME;
-//Class_names:		WILDCARD | WILDCARD? SIMPLE_NAME WILDCARD;
+//Class_names:		WILDCARD | WILDCARD* SIMPLE_NAME WILDCARD+;
 //Segment_name:		SIMPLE_NAME;
-//Segment_names:	WILDCARD | WILDCARD? SIMPLE_NAME WILDCARD;
+//Segment_names:	WILDCARD | WILDCARD* SIMPLE_NAME WILDCARD+;
 //Residue_number:	Integer;
-//Residue_numbers:	WILDCARD | WILDCARD? Residue_number WILDCARD;
+//Residue_numbers:	WILDCARD | WILDCARD* Residue_number WILDCARD+;
 //Residue_name:		SIMPLE_NAME;
-//Residue_names:	WILDCARD | WILDCARD? SIMPLE_NAME WILDCARD;
+//Residue_names:	WILDCARD | WILDCARD* SIMPLE_NAME WILDCARD+;
 //Atom_name:		ALPHA_NUM ATM_NAME_CHAR*;
-//Atom_names:		WILDCARD | WILDCARD? Atom_name WILDCARD;
+//Atom_names:		WILDCARD | WILDCARD* Atom_name WILDCARD+;
 //Atom_type:		ALPHA ATM_TYPE_CHAR*;
-//Atom_types:		WILDCARD | WILDCARD? Atom_type WILDCARD;
+//Atom_types:		WILDCARD | WILDCARD* Atom_type WILDCARD+;
 
 /* Wildcard - Syntax
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
@@ -398,6 +399,7 @@ Neq_op:			'#';
 SPACE:			[ \t\r\n]+ -> skip;
 COMMENT:		'{*' (COMMENT | .)*? '*}' -> channel(HIDDEN);
 LINE_COMMENT:		('#' | '!') ~[\r\n]* -> channel(HIDDEN);
+SET_VARIABLE:		Set ~[\r\n]* End -> channel(HIDDEN);
 
 mode ATTR_MODE; // Inside of Attribute tag
 
@@ -407,5 +409,5 @@ Attr_properties:	(B | B C O M P? | C H A R G? E? | D X | D Y | D Z | F B E T A? 
 Comparison_ops:		(Equ_op | Lt_op | Gt_op | Leq_op | Geq_op | Neq_op)
 			-> popMode;
 
-WS:			[ \t\r\n]+ -> skip;
+SPACE_ATTR:		[ \t\r\n]+ -> skip;
 

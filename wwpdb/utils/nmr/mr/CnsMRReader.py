@@ -71,7 +71,7 @@ class CnsMRReader:
 
     def parse(self, mrFilePath, cifFilePath=None):
         """ Parse CNS MR file.
-            @return: CnsMRParserListener for success or None otherwise.
+            @return: CnsMRParserListener for success or None otherwise, ParserErrorListener, LexerErrorListener.
         """
 
         try:
@@ -79,18 +79,18 @@ class CnsMRReader:
             if not os.access(mrFilePath, os.R_OK):
                 if self.__verbose:
                     self.__lfh.write(f"CnsMRReader.parse() {mrFilePath} is not accessible.\n")
-                return None
+                return None, None, None
 
             if cifFilePath is not None:
                 if not os.access(cifFilePath, os.R_OK):
                     if self.__verbose:
                         self.__lfh.write(f"CnsMRReader.parse() {cifFilePath} is not accessible.\n")
-                    return None
+                    return None, None, None
 
                 if self.__cR is None:
                     self.__cR = CifReader(self.__verbose, self.__lfh)
                     if not self.__cR.parse(cifFilePath):
-                        return None
+                        return None, None, None
 
             with open(mrFilePath) as ifp:
 
@@ -139,12 +139,12 @@ class CnsMRReader:
                         print(listener.warningMessage)
                     print(listener.getContentSubtype())
 
-            return listener
+            return listener, parser_error_listener, lexer_error_listener
 
         except IOError as e:
             if self.__verbose:
                 self.__lfh.write(f"+CnsMRReader.parse() ++ Error - {str(e)}\n")
-            return None
+            return None, None, None
 
 
 if __name__ == "__main__":

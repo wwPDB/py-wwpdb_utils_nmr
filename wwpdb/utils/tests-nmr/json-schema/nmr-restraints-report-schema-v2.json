@@ -39,7 +39,7 @@
         "content_type": {
           "description": "Content type of input source file.",
           "type": "string",
-          "enum": [
+          "ZZZZZenum": [
             "model",
             "nmr-data-nef",
             "nmr-data-str",
@@ -117,7 +117,7 @@
               "minimum": 1
             },
             "hvycs_restraint": {
-              "description": "The number of lists associated with carbon/nitrogen chemical shift restraints.",
+              "description": "The number of lists associated with carbon chemical shift restraints.",
               "type": "integer",
               "minimum": 1
             },
@@ -177,7 +177,7 @@
               "minimum": 1
             },
             "pccr_restraint": {
-              "description": "The number of lists associated with paramagnetic cross-correlation (CCR) rate restraints.",
+              "description": "The number of lists associated with paramagnetic cross-correlation rate (CCR) restraints.",
               "type": "integer",
               "minimum": 1
             },

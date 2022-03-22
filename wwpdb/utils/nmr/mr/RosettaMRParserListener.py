@@ -192,9 +192,6 @@ class RosettaMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by RosettaMRParser#atom_pair_restraint.
     def exitAtom_pair_restraint(self, ctx: RosettaMRParser.Atom_pair_restraintContext):
-        if not self.__hasPolySeq:
-            return
-
         seqId1 = int(str(ctx.Integer(0)))
         atomId1 = str(ctx.Simple_name(0)).upper()
         seqId2 = int(str(ctx.Integer(1)))
@@ -203,6 +200,9 @@ class RosettaMRParserListener(ParseTreeListener):
         dstFunc = self.validateDistanceRange(1.0)
 
         if dstFunc is None:
+            return
+
+        if not self.__hasPolySeq:
             return
 
         chainAssign1 = self.assignCoordPolymerSequence(seqId1, atomId1)
@@ -526,9 +526,6 @@ class RosettaMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by RosettaMRParser#angle_restraint.
     def exitAngle_restraint(self, ctx: RosettaMRParser.Angle_restraintContext):
-        if not self.__hasPolySeq:
-            return
-
         seqId1 = int(str(ctx.Integer(0)))
         atomId1 = str(ctx.Simple_name(0)).upper()
         seqId2 = int(str(ctx.Integer(1)))
@@ -539,6 +536,9 @@ class RosettaMRParserListener(ParseTreeListener):
         dstFunc = self.validateAngleRange(1.0)
 
         if dstFunc is None:
+            return
+
+        if not self.__hasPolySeq:
             return
 
         chainAssign1 = self.assignCoordPolymerSequence(seqId1, atomId1)
@@ -722,9 +722,6 @@ class RosettaMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by RosettaMRParser#dihedral_restraint.
     def exitDihedral_restraint(self, ctx: RosettaMRParser.Dihedral_restraintContext):
-        if not self.__hasPolySeq:
-            return
-
         seqId1 = int(str(ctx.Integer(0)))
         atomId1 = str(ctx.Simple_name(0)).upper()
         seqId2 = int(str(ctx.Integer(1)))
@@ -737,6 +734,9 @@ class RosettaMRParserListener(ParseTreeListener):
         dstFunc = self.validateAngleRange(1.0)
 
         if dstFunc is None:
+            return
+
+        if not self.__hasPolySeq:
             return
 
         chainAssign1 = self.assignCoordPolymerSequence(seqId1, atomId1)
@@ -790,9 +790,6 @@ class RosettaMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by RosettaMRParser#dihedral_pair_restraint.
     def exitDihedral_pair_restraint(self, ctx: RosettaMRParser.Dihedral_pair_restraintContext):
-        if not self.__hasPolySeq:
-            return
-
         seqId1 = int(str(ctx.Integer(0)))
         atomId1 = str(ctx.Simple_name(0)).upper()
         seqId2 = int(str(ctx.Integer(1)))
@@ -814,6 +811,9 @@ class RosettaMRParserListener(ParseTreeListener):
         dstFunc = self.validateAngleRange(1.0)
 
         if dstFunc is None:
+            return
+
+        if not self.__hasPolySeq:
             return
 
         chainAssign1 = self.assignCoordPolymerSequence(seqId1, atomId1)
@@ -890,9 +890,6 @@ class RosettaMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by RosettaMRParser#coordinate_restraint.
     def exitCoordinate_restraint(self, ctx: RosettaMRParser.Coordinate_restraintContext):
-        if not self.__hasPolySeq:
-            return
-
         atomId1 = str(ctx.Simple_name(0)).upper()
         _seqId1 = str(ctx.Simple_name(1)).upper()
         atomId2 = str(ctx.Simple_name(2)).upper()
@@ -921,6 +918,9 @@ class RosettaMRParserListener(ParseTreeListener):
         dstFunc = self.validateDistanceRange(1.0)
 
         if dstFunc is None:
+            return
+
+        if not self.__hasPolySeq:
             return
 
         chainAssign1 = self.assignCoordPolymerSequence(seqId1, atomId1, fixedChainId1)
@@ -962,9 +962,6 @@ class RosettaMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by RosettaMRParser#local_coordinate_restraint.
     def exitLocal_coordinate_restraint(self, ctx: RosettaMRParser.Local_coordinate_restraintContext):
-        if not self.__hasPolySeq:
-            return
-
         seqId1 = int(str(ctx.Integer(0)))
         atomId1 = str(ctx.Simple_name(0)).upper()
         seqId234 = int(str(ctx.Integer(1)))
@@ -979,6 +976,9 @@ class RosettaMRParserListener(ParseTreeListener):
         dstFunc = self.validateDistanceRange(1.0)
 
         if dstFunc is None:
+            return
+
+        if not self.__hasPolySeq:
             return
 
         chainAssign1 = self.assignCoordPolymerSequence(seqId1, atomId1)
@@ -1028,9 +1028,6 @@ class RosettaMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by RosettaMRParser#site_restraint.
     def exitSite_restraint(self, ctx: RosettaMRParser.Site_restraintContext):
-        if not self.__hasPolySeq:
-            return
-
         seqId1 = int(str(ctx.Integer()))
         atomId1 = str(ctx.Simple_name(0)).upper()
         opposingChainId = str(ctx.Simple_name(1)).upper()
@@ -1038,6 +1035,9 @@ class RosettaMRParserListener(ParseTreeListener):
         dstFunc = self.validateDistanceRange(1.0)
 
         if dstFunc is None:
+            return
+
+        if not self.__hasPolySeq:
             return
 
         chainAssign1 = self.assignCoordPolymerSequence(seqId1, atomId1)
@@ -1091,9 +1091,6 @@ class RosettaMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by RosettaMRParser#site_residues_restraint.
     def exitSite_residues_restraint(self, ctx: RosettaMRParser.Site_residues_restraintContext):
-        if not self.__hasPolySeq:
-            return
-
         seqId1 = int(str(ctx.Integer(0)))
         atomId1 = str(ctx.Simple_name()).upper()
         seqId2 = int(str(ctx.Integer(1)))
@@ -1102,6 +1099,9 @@ class RosettaMRParserListener(ParseTreeListener):
         dstFunc = self.validateDistanceRange(1.0)
 
         if dstFunc is None:
+            return
+
+        if not self.__hasPolySeq:
             return
 
         chainAssign1 = self.assignCoordPolymerSequence(seqId1, atomId1)
@@ -1154,12 +1154,12 @@ class RosettaMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by RosettaMRParser#min_residue_atomic_distance_restraint.
     def exitMin_residue_atomic_distance_restraint(self, ctx: RosettaMRParser.Min_residue_atomic_distance_restraintContext):
-        if not self.__hasPolySeq:
-            return
-
         seqId1 = int(str(ctx.Integer(0)))
         seqId2 = int(str(ctx.Integer(1)))
         target_value = float(str(ctx.Float()))
+
+        if not self.__hasPolySeq:
+            return
 
         chainAssign1 = self.assignCoordPolymerSequence(seqId1)
         chainAssign2 = self.assignCoordPolymerSequence(seqId2)
@@ -1219,12 +1219,12 @@ class RosettaMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by RosettaMRParser#big_bin_restraint.
     def exitBig_bin_restraint(self, ctx: RosettaMRParser.Big_bin_restraintContext):
-        if not self.__hasPolySeq:
-            return
-
         seqId = int(str(ctx.Simple_name()))
         binChar = str(ctx.Simple_name())
         sDev = float(str(ctx.Float()))
+
+        if not self.__hasPolySeq:
+            return
 
         chainAssign = self.assignCoordPolymerSequence(seqId)
 
@@ -2066,9 +2066,6 @@ class RosettaMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by RosettaMRParser#rdc_restraint.
     def exitRdc_restraint(self, ctx: RosettaMRParser.Rdc_restraintContext):
-        if not self.__hasPolySeq:
-            return
-
         seqId1 = int(str(ctx.Integer(0)))
         atomId1 = str(ctx.Simple_name(0)).upper()
         seqId2 = int(str(ctx.Integer(1)))
@@ -2081,6 +2078,10 @@ class RosettaMRParserListener(ParseTreeListener):
         if target_value is not None:
             if RDC_ERROR_MIN < target_value < RDC_ERROR_MAX:
                 dstFunc['target_value'] = f"{target_value:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The target value='{target_value}' must be within range {RDC_RESTRAINT_ERROR}.\n"
 
         if not validRange:
             return
@@ -2088,6 +2089,12 @@ class RosettaMRParserListener(ParseTreeListener):
         if target_value is not None:
             if RDC_RANGE_MIN < target_value < RDC_RANGE_MAX:
                 pass
+            else:
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                    f"The target value='{target_value}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+
+        if not self.__hasPolySeq:
+            return
 
         chainAssign1 = self.assignCoordPolymerSequence(seqId1, atomId1)
         chainAssign2 = self.assignCoordPolymerSequence(seqId2, atomId2)
@@ -2208,11 +2215,11 @@ class RosettaMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by RosettaMRParser#disulfide_bond_linkage.
     def exitDisulfide_bond_linkage(self, ctx: RosettaMRParser.Disulfide_bond_linkageContext):
-        if not self.__hasPolySeq:
-            return
-
         seqId1 = int(str(ctx.Integer(0)))
         seqId2 = int(str(ctx.Integer(1)))
+
+        if not self.__hasPolySeq:
+            return
 
         chainAssign1 = self.assignCoordPolymerSequence(seqId1)
         chainAssign2 = self.assignCoordPolymerSequence(seqId2)

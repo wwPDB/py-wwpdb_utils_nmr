@@ -847,7 +847,7 @@ class AmberMRParserListener(ParseTreeListener):
                                       f"{dstFunc}")
 
             # try to update AMBER atom number dictionary based on Sander comments
-            else:
+            elif self.__hasPolySeq:
 
                 if self.__cur_subtype == 'dist' and len(self.iat) == COL_DIST:
                     subtype_name = 'distance restraint'
@@ -1393,7 +1393,7 @@ class AmberMRParserListener(ParseTreeListener):
                                       f"{dstFunc}")
 
             # try to update AMBER atom number dictionary based on Sander comments
-            else:
+            elif self.__hasPolySeq:
 
                 if self.__cur_subtype == 'dist' and not self.inGenDist:
                     subtype_name = 'distance restraint'

@@ -35,6 +35,7 @@ cns_mr:
 	dihedral_assign*		// allowing bare assign clauses for dihedral angle restraints
 	sani_assign*			// allowing bare assign clauses for RDC restraints
 	plane_statement*		// allowing bare group clauses for plane restraints
+        coup_assign*			// allowing bare assign clauses for scaler J-coupling restraints
 	EOF;
 
 distance_restraint:
@@ -110,7 +111,7 @@ noe_statement:
 	Temperature Equ_op Real;
 
 noe_assign:
-	Assign selection selection Real Real Real (Or_op selection selection)*;
+	Assign selection selection (Real | Integer) Real Real (Or_op selection selection)*;
 
 predict_statement:
 	Cutoff Equ_op Real | Cuton Equ_op Real | From selection | To selection;
@@ -128,7 +129,7 @@ dihedral_statement:
 	Print_any;
 
 dihedral_assign:
-	Assign selection selection selection selection Real Real Real Integer;
+	Assign selection selection selection selection (Real | Integer) Real Real Integer;
 
 /* CNS: Plane restraints - Syntax - restraints/plane
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
@@ -140,7 +141,7 @@ plane_statement:
 
 group_statement:
 	Selection Equ_op selection |
-	Weight Equ_op Real;
+	Weight Equ_op (Real | Integer);
 
 /* CNS: Plane restraints - Syntax - restraints/harmonic
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
@@ -163,7 +164,7 @@ sani_statement:
 	Reset;
 
 sani_assign:
-	Assign selection selection selection selection selection selection Real Real Real?;
+	Assign selection selection selection selection selection selection (Real | Integer) Real Real?;
 
 /* CNS: Scalar J-coupling restraints - Syntax
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html

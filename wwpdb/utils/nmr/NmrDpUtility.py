@@ -212,6 +212,13 @@ try:
                                                        WEIGHT_RANGE,
                                                        SCALE_RANGE,
                                                        REPRESENTATIVE_MODEL_ID)
+    from wwpdb.utils.nmr.mr.AmberMRReader import AmberMRReader
+    from wwpdb.utils.nmr.mr.CnsMRReader import CnsMRReader
+    from wwpdb.utils.nmr.mr.CyanaMRReader import CyanaMRReader
+    from wwpdb.utils.nmr.mr.RosettaMRReader import RosettaMRReader
+    from wwpdb.utils.nmr.mr.XplorMRReader import XplorMRReader
+    from wwpdb.utils.nmr.mr.AmberPTReader import AmberPTReader
+
 except ImportError:
     from nmr.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
     from nmr.NEFTranslator.NEFTranslator import (NEFTranslator,
@@ -253,6 +260,12 @@ except ImportError:
                                            WEIGHT_RANGE,
                                            SCALE_RANGE,
                                            REPRESENTATIVE_MODEL_ID)
+    from nmr.mr.AmberMRReader import AmberMRReader
+    from nmr.mr.CnsMRReader import CnsMRReader
+    from nmr.mr.CyanaMRReader import CyanaMRReader
+    from nmr.mr.RosettaMRReader import RosettaMRReader
+    from nmr.mr.XplorMRReader import XplorMRReader
+    from nmr.mr.AmberPTReader import AmberPTReader
 
 
 __pynmrstar_v3_3__ = version.parse(pynmrstar.__version__) >= version.parse("3.3.0")
@@ -6182,10 +6195,10 @@ class NmrDpUtility:
 
             is_aux_amb = file_type == 'nm-aux-amb'
 
-            if file_type == 'nm-res-cns':
-                mr_format_name = 'CNS'
-            elif file_type == 'nm-res-xpl':
+            if file_type == 'nm-res-xpl':
                 mr_format_name = 'XPLOR-NIH'
+            elif file_type == 'nm-res-cns':
+                mr_format_name = 'CNS'
             elif file_type == 'nm-res-amb':
                 mr_format_name = 'AMBER'
             elif is_aux_amb:
@@ -6216,7 +6229,7 @@ class NmrDpUtility:
 
             has_first_atom = False
 
-            if file_type in ('nm-res-cns', 'nm-res-xpl'):
+            if file_type in ('nm-res-xpl', 'nm-res-cns'):
 
                 with open(file_path, 'r', encoding='utf-8') as ifp:
 
@@ -6963,20 +6976,427 @@ class NmrDpUtility:
 
                         break
 
+            content_subtype = None
+
+            try:
+
+                if file_type == 'nm-res-xpl':
+
+                    reader = XplorMRReader(self.__verbose, self.__lfh, None, None, None, None, None, None,
+                                           self.__ccU, self.__csStat, self.__nefT)
+                    listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
+
+                    err = ''
+
+                    if lexer_err_listener is not None:
+                        messageList = lexer_err_listener.getMessageList()
+
+                    if messageList is not None:
+                        for description in messageList:
+                            err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                            if 'input' in description:
+                                err += f"{description['input']}\n"
+                                err += f"{description['marker']}\n"
+
+                    if parser_err_listener is not None:
+                        messageList = parser_err_listener.getMessageList()
+
+                    if messageList is not None:
+                        for description in messageList:
+                            err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                            if 'input' in description:
+                                err += f"{description['input']}\n"
+                                err += f"{description['marker']}\n"
+
+                    if len(err) > 0:
+                        err = f"Could not interprete {file_name!r} as an {mr_format_name} restraint file:\n{err[0:-1]}"
+
+                        self.report.error.appendDescription('format_issue',
+                                                            {'file_name': file_name, 'description': err})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMR() ++ Error  - {err}\n")
+
+                        has_dist_restraint = has_dihed_restraint = has_rdc_restraint = False
+
+                    elif listener is not None:
+
+                        if listener.warningMessage is not None:
+                            msg = listener.warningMessage.split('\n')
+                            if len(msg) > 5:
+                                msg = msg[:5]
+                                msg = '\n'.join(msg)
+                                msg += '\nThose similar errors may continue...'
+                            else:
+                                msg = '\n'.join(msg)
+                            err = f"Could not interprete {file_name!r} due to the following data issue(s):\n{msg}"
+
+                            self.report.error.appendDescription('format_issue',
+                                                                {'file_name': file_name, 'description': err})
+                            self.report.setError()
+
+                        content_subtype = listener.getContentSubtype()
+                        if len(content_subtype) == 0:
+                            content_subtype = None
+                        else:
+                            has_dist_restraint = 'dist_restraint' in content_subtype
+                            has_dihed_restraint = 'dihed_restraint' in content_subtype
+                            has_rdc_restraint = 'rdc_restraint' in content_subtype
+                            has_plane_restraint = 'plane_restraint' in content_subtype
+                            has_hbond_restraint = 'hbond_restraint' in content_subtype
+                            has_chem_shift = has_coordinate = False
+
+                elif file_type == 'nm-res-cns':
+
+                    reader = CnsMRReader(self.__verbose, self.__lfh, None, None, None, None, None, None,
+                                         self.__ccU, self.__csStat, self.__nefT)
+                    listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
+
+                    err = ''
+
+                    if lexer_err_listener is not None:
+                        messageList = lexer_err_listener.getMessageList()
+
+                    if messageList is not None:
+                        for description in messageList:
+                            err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                            if 'input' in description:
+                                err += f"{description['input']}\n"
+                                err += f"{description['marker']}\n"
+
+                    if parser_err_listener is not None:
+                        messageList = parser_err_listener.getMessageList()
+
+                    if messageList is not None:
+                        for description in messageList:
+                            err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                            if 'input' in description:
+                                err += f"{description['input']}\n"
+                                err += f"{description['marker']}\n"
+
+                    if len(err) > 0:
+                        err = f"Could not interprete {file_name!r} as a {mr_format_name} restraint file:\n{err[0:-1]}"
+
+                        self.report.error.appendDescription('format_issue',
+                                                            {'file_name': file_name, 'description': err})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMR() ++ Error  - {err}\n")
+
+                        has_dist_restraint = has_dihed_restraint = has_rdc_restraint = False
+
+                    elif listener is not None:
+
+                        if listener.warningMessage is not None:
+                            msg = listener.warningMessage.split('\n')
+                            if len(msg) > 5:
+                                msg = msg[:5]
+                                msg = '\n'.join(msg)
+                                msg += '\nThose similar errors may continue...'
+                            else:
+                                msg = '\n'.join(msg)
+                            err = f"Could not interprete {file_name!r} due to the following data issue(s):\n{msg}"
+
+                            self.report.error.appendDescription('format_issue',
+                                                                {'file_name': file_name, 'description': err})
+                            self.report.setError()
+
+                        content_subtype = listener.getContentSubtype()
+                        if len(content_subtype) == 0:
+                            content_subtype = None
+                        else:
+                            has_dist_restraint = 'dist_restraint' in content_subtype
+                            has_dihed_restraint = 'dihed_restraint' in content_subtype
+                            has_rdc_restraint = 'rdc_restraint' in content_subtype
+                            has_plane_restraint = 'plane_restraint' in content_subtype
+                            has_chem_shift = has_coordinate = False
+
+                elif file_type == 'nm-res-amb':
+
+                    reader = AmberMRReader(self.__verbose, self.__lfh, None, None, None, None, None, None,
+                                           self.__ccU, self.__csStat, self.__nefT)
+                    listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None, None)
+
+                    err = ''
+
+                    if lexer_err_listener is not None:
+                        messageList = lexer_err_listener.getMessageList()
+
+                    if messageList is not None:
+                        for description in messageList:
+                            err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                            if 'input' in description:
+                                err += f"{description['input']}\n"
+                                err += f"{description['marker']}\n"
+
+                    if parser_err_listener is not None:
+                        messageList = parser_err_listener.getMessageList()
+
+                    if messageList is not None:
+                        for description in messageList:
+                            err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                            if 'input' in description:
+                                err += f"{description['input']}\n"
+                                err += f"{description['marker']}\n"
+
+                    if len(err) > 0:
+                        err = f"Could not interprete {file_name!r} as an {mr_format_name} restraint file:\n{err[0:-1]}"
+
+                        self.report.error.appendDescription('format_issue',
+                                                            {'file_name': file_name, 'description': err})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMR() ++ Error  - {err}\n")
+
+                        has_dist_restraint = has_dihed_restraint = has_rdc_restraint = False
+
+                    elif listener is not None:
+
+                        if listener.warningMessage is not None:
+                            msg = listener.warningMessage.split('\n')
+                            if len(msg) > 5:
+                                msg = msg[:5]
+                                msg = '\n'.join(msg)
+                                msg += '\nThose similar errors may continue...'
+                            else:
+                                msg = '\n'.join(msg)
+                            err = f"Could not interprete {file_name!r} due to the following data issue(s):\n{msg}"
+
+                            self.report.error.appendDescription('format_issue',
+                                                                {'file_name': file_name, 'description': err})
+                            self.report.setError()
+
+                        content_subtype = listener.getContentSubtype()
+                        if len(content_subtype) == 0:
+                            content_subtype = None
+                        else:
+                            has_dist_restraint = 'dist_restraint' in content_subtype
+                            has_dihed_restraint = 'dihed_restraint' in content_subtype
+                            has_rdc_restraint = 'rdc_restraint' in content_subtype
+                            has_plane_restraint = 'plane_restraint' in content_subtype
+                            has_chem_shift = has_coordinate = False
+
+                elif file_type == 'nm-aux-amb':
+
+                    reader = AmberPTReader(self.__verbose, self.__lfh, None, None, None,
+                                           self.__ccU, self.__csStat)
+                    listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
+
+                    err = ''
+
+                    if lexer_err_listener is not None:
+                        messageList = lexer_err_listener.getMessageList()
+
+                    if messageList is not None:
+                        for description in messageList:
+                            err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                            if 'input' in description:
+                                err += f"{description['input']}\n"
+                                err += f"{description['marker']}\n"
+
+                    if parser_err_listener is not None:
+                        messageList = parser_err_listener.getMessageList()
+
+                    if messageList is not None:
+                        for description in messageList:
+                            err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                            if 'input' in description:
+                                err += f"{description['input']}\n"
+                                err += f"{description['marker']}\n"
+
+                    if len(err) > 0:
+                        err = f"Could not interprete {file_name!r} as an {mr_format_name} topology file:\n{err[0:-1]}"
+
+                        self.report.error.appendDescription('format_issue',
+                                                            {'file_name': file_name, 'description': err})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMR() ++ Error  - {err}\n")
+
+                        has_dist_restraint = has_dihed_restraint = has_rdc_restraint = False
+
+                    elif listener is not None:
+
+                        if listener.warningMessage is not None:
+                            msg = listener.warningMessage.split('\n')
+                            if len(msg) > 5:
+                                msg = msg[:5]
+                                msg = '\n'.join(msg)
+                                msg += '\nThose similar errors may continue...'
+                            else:
+                                msg = '\n'.join(msg)
+                            err = f"Could not interprete {file_name!r} due to the following data issue(s):\n{msg}"
+
+                            self.report.error.appendDescription('format_issue',
+                                                                {'file_name': file_name, 'description': err})
+                            self.report.setError()
+
+                        content_subtype = listener.getContentSubtype()
+                        if len(content_subtype) == 0:
+                            content_subtype = None
+                        else:
+                            has_topology = True
+                            content_subtype = {'topology': 1}
+                            has_chem_shift = has_coordinate = False
+
+                elif file_type == 'nm-res-cya':
+
+                    reader = CyanaMRReader(self.__verbose, self.__lfh, None, None, None, None, None, None,
+                                           self.__ccU, self.__csStat, self.__nefT)
+                    listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
+
+                    err = ''
+
+                    if lexer_err_listener is not None:
+                        messageList = lexer_err_listener.getMessageList()
+
+                    if messageList is not None:
+                        for description in messageList:
+                            err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                            if 'input' in description:
+                                err += f"{description['input']}\n"
+                                err += f"{description['marker']}\n"
+
+                    if parser_err_listener is not None:
+                        messageList = parser_err_listener.getMessageList()
+
+                    if messageList is not None:
+                        for description in messageList:
+                            err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                            if 'input' in description:
+                                err += f"{description['input']}\n"
+                                err += f"{description['marker']}\n"
+
+                    if len(err) > 0:
+                        err = f"Could not interprete {file_name!r} as a {mr_format_name} restraint file:\n{err[0:-1]}"
+
+                        self.report.error.appendDescription('format_issue',
+                                                            {'file_name': file_name, 'description': err})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMR() ++ Error  - {err}\n")
+
+                        has_dist_restraint = has_dihed_restraint = has_rdc_restraint = False
+
+                    elif listener is not None:
+
+                        if listener.warningMessage is not None:
+                            msg = listener.warningMessage.split('\n')
+                            if len(msg) > 5:
+                                msg = msg[:5]
+                                msg = '\n'.join(msg)
+                                msg += '\nThose similar errors may continue...'
+                            else:
+                                msg = '\n'.join(msg)
+                            err = f"Could not interprete {file_name!r} due to the following data issue(s):\n{msg}"
+
+                            self.report.error.appendDescription('format_issue',
+                                                                {'file_name': file_name, 'description': err})
+                            self.report.setError()
+
+                        content_subtype = listener.getContentSubtype()
+                        if len(content_subtype) == 0:
+                            content_subtype = None
+                        else:
+                            has_dist_restraint = 'dist_restraint' in content_subtype
+                            has_dihed_restraint = 'dihed_restraint' in content_subtype
+                            has_rdc_restraint = 'rdc_restraint' in content_subtype
+                            has_chem_shift = has_coordinate = False
+
+                elif file_type == 'nm-res-ros':
+
+                    reader = RosettaMRReader(self.__verbose, self.__lfh, None, None, None, None, None, None,
+                                             self.__ccU, self.__csStat, self.__nefT)
+                    listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
+
+                    err = ''
+
+                    if lexer_err_listener is not None:
+                        messageList = lexer_err_listener.getMessageList()
+
+                    if messageList is not None:
+                        for description in messageList:
+                            err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                            if 'input' in description:
+                                err += f"{description['input']}\n"
+                                err += f"{description['marker']}\n"
+
+                    if parser_err_listener is not None:
+                        messageList = parser_err_listener.getMessageList()
+
+                    if messageList is not None:
+                        for description in messageList:
+                            err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                            if 'input' in description:
+                                err += f"{description['input']}\n"
+                                err += f"{description['marker']}\n"
+
+                    if len(err) > 0:
+                        err = f"Could not interprete {file_name!r} as a {mr_format_name} restraint file:\n{err[0:-1]}"
+
+                        self.report.error.appendDescription('format_issue',
+                                                            {'file_name': file_name, 'description': err})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMR() ++ Error  - {err}\n")
+
+                        has_dist_restraint = has_dihed_restraint = has_rdc_restraint = False
+
+                    elif listener is not None:
+
+                        if listener.warningMessage is not None:
+                            msg = listener.warningMessage.split('\n')
+                            if len(msg) > 5:
+                                msg = msg[:5]
+                                msg = '\n'.join(msg)
+                                msg += '\nThose similar errors may continue...'
+                            else:
+                                msg = '\n'.join(msg)
+                            err = f"Could not interprete {file_name!r} due to the following data issue(s):\n{msg}"
+
+                            self.report.error.appendDescription('format_issue',
+                                                                {'file_name': file_name, 'description': err})
+                            self.report.setError()
+
+                        content_subtype = listener.getContentSubtype()
+                        if len(content_subtype) == 0:
+                            content_subtype = None
+                        else:
+                            has_dist_restraint = 'dist_restraint' in content_subtype
+                            has_dihed_restraint = 'dihed_restraint' in content_subtype
+                            has_rdc_restraint = 'rdc_restraint' in content_subtype
+                            has_chem_shift = has_coordinate = False
+
+            except ValueError as e:
+
+                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__detectContentSubTypeOfLegacyMR() ++ Error  - " + str(e))
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write(f"+NmrDpUtility.__extractPolymerSequence() ++ Error  - {str(e)}\n")
+
             if has_coordinate and not has_dist_restraint and not has_dihed_restraint and not has_rdc_restraint\
                     and not has_plane_restraint and not has_hbond_restraint:
 
                 if not is_aux_amb:
-
-                    err = f"NMR restraint file ({mr_format_name}) includes coordinates. "\
+                    err = f"The {mr_format_name} restraint file includes coordinates. "\
+                        "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
+                else:
+                    err = f"The {mr_format_name} topology file includes coordinates. "\
                         "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
 
-                    self.report.error.appendDescription('content_mismatch',
-                                                        {'file_name': file_name, 'description': err})
-                    self.report.setError()
+                self.report.error.appendDescription('content_mismatch',
+                                                    {'file_name': file_name, 'description': err})
+                self.report.setError()
 
-                    if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMR() ++ Error  - {err}\n")
+                if self.__verbose:
+                    self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMR() ++ Error  - {err}\n")
 
                 has_chem_shift = False
 
@@ -6988,7 +7408,7 @@ class NmrDpUtility:
                     hint = 'assign ( resid # and name OO ) ( resid # and name X ) ( resid # and name Y ) ( resid # and name Z ) "\
                         "( segid $ and resid # and name $ ) ( segid $ and resid # and name $ ) #.# #.#'
 
-                    err = f"NMR restraint file ({mr_format_name}) seems to be a malformed XPLOR-NIH RDC restraint file. "\
+                    err = f"The NMR restraint file seems to be a malformed XPLOR-NIH RDC restraint file. "\
                         f"Tips for XPLOR-NIH RDC restraints: {hint!r} pattern must be present in the file. "\
                         "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
 
@@ -7001,10 +7421,14 @@ class NmrDpUtility:
 
                     has_chem_shift = False
 
-                elif not is_aux_amb:
+                else:
 
-                    err = f"NMR restraint file ({mr_format_name}) includes assigned chemical shifts. "\
-                        "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
+                    if not is_aux_amb:
+                        err = f"The {mr_format_name} restraint file includes assigned chemical shifts. "\
+                            "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
+                    else:
+                        err = f"The {mr_format_name} topology file includes assigned chemical shifts. "\
+                            "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
 
                     self.report.error.appendDescription('content_mismatch',
                                                         {'file_name': file_name, 'description': err})
@@ -7016,20 +7440,21 @@ class NmrDpUtility:
             elif has_chem_shift:
                 has_chem_shift = False
 
-            content_subtype = {'chem_shift': 1 if has_chem_shift else 0,
-                               'dist_restraint': 1 if has_dist_restraint else 0,
-                               'dihed_restraint': 1 if has_dihed_restraint else 0,
-                               'rdc_restraint': 1 if has_rdc_restraint else 0,
-                               'plane_restraint': 1 if has_plane_restraint else 0,
-                               'hbond_restraint': 1 if has_hbond_restraint else 0,
-                               'coordinate': 1 if has_coordinate else 0,
-                               'topology': 1 if has_topology else 0}
+            if content_subtype is None:
+                content_subtype = {'chem_shift': 1 if has_chem_shift else 0,
+                                   'dist_restraint': 1 if has_dist_restraint else 0,
+                                   'dihed_restraint': 1 if has_dihed_restraint else 0,
+                                   'rdc_restraint': 1 if has_rdc_restraint else 0,
+                                   'plane_restraint': 1 if has_plane_restraint else 0,
+                                   'hbond_restraint': 1 if has_hbond_restraint else 0,
+                                   'coordinate': 1 if has_coordinate else 0,
+                                   'topology': 1 if has_topology else 0}
 
             if not is_aux_amb and not has_chem_shift and not has_dist_restraint and not has_dihed_restraint and not has_rdc_restraint\
                and not has_plane_restraint and not has_hbond_restraint:
 
                 hint = ""
-                if file_type in ('nm-res-cns', 'nm-res-xpl') and not has_rdc_origins:
+                if file_type in ('nm-res-xpl', 'nm-res-cns') and not has_rdc_origins:
                     hint = 'assign ( segid $ and resid # and name $ ) ( segid $ and resid # and name $ ) #.# #.# #.#'
                 elif file_type == 'nm-res-amb':
                     hint = '&rst iat=#[,#], r1=#.#, r2=#.#, r3=#.#, r4=#.#, [igr1=#[,#],] [igr2=#[,#],] &end'
@@ -7061,7 +7486,7 @@ class NmrDpUtility:
                 if has_plane_restraint:
                     subtype_name += "Planarity restraints, "
                 if has_hbond_restraint:
-                    subtype_name = "Hydrogen bond restraints, "
+                    subtype_name += "Hydrogen bond restraints, "
                 if has_amb_inpcrd:
                     subtype_name += "AMBER restart coordinates (.rst), "
 
@@ -7135,6 +7560,40 @@ class NmrDpUtility:
                         subtype_name += "Planarity restraints, "
                     if 'hbond_restraint' in content_subtype:
                         subtype_name += "Hydrogen bond restraints, "
+                    if 'adist_restraint' in content_subtype:
+                        subtype_name += "Anti-distance restraints, "
+                    if 'jcoup_restraint' in content_subtype:
+                        subtype_name += "Scalar J-coupling restraints, "
+                    if 'hcycs_restraint' in content_subtype:
+                        subtype_name += "Carbon chemical shift restraints, "
+                    if 'procs_restraint' in content_subtype:
+                        subtype_name += "Proton chemical shift restraints, "
+                    if 'rama_restraint' in content_subtype:
+                        subtype_name += "Dihedral angle database restraints, "
+                    if 'radi_restraint' in content_subtype:
+                        subtype_name += "Radius of gyration restraints, "
+                    if 'diff_restraint' in content_subtype:
+                        subtype_name += "Diffusion anisotropy restraints, "
+                    if 'nbase_restraint' in content_subtype:
+                        subtype_name += "Nucleic acid base orientation database restraints, "
+                    if 'csa_restraint' in content_subtype:
+                        subtype_name += "CSA restraints, "
+                    if 'ang_restraint' in content_subtype:
+                        subtype_name += "Angle database restraints, "
+                    if 'pre_restraint' in content_subtype:
+                        subtype_name += "PRE restraints, "
+                    if 'pcs_restraint' in content_subtype:
+                        subtype_name += "PCS restraints, "
+                    if 'prdc_restraint' in content_subtype:
+                        subtype_name += "Paramagnetic RDC restraints, "
+                    if 'pang_restraint' in content_subtype:
+                        subtype_name += "Paramagnetic orientation restraints, "
+                    if 'pccr_restraint' in content_subtype:
+                        subtype_name += "Paramagnetic CCR restraints, "
+                    if 'geo_restraint' in content_subtype:
+                        subtype_name += "Coordinate geometry restraints, "
+                    if 'noepk_restraint' in content_subtype:
+                        subtype_name += "NOESY peak volume restraints, "
 
                     err = f"NMR restraint file includes {subtype_name[:-2]}. "\
                         "However, deposition of distance restraints is mandatory. Please re-upload the NMR restraint file."

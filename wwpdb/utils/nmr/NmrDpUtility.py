@@ -838,6 +838,7 @@ class NmrDpUtility:
                              self.__validateCSValue,
                              self.__extractCoordDisulfideBond,
                              self.__extractCoordOtherBond,
+                             self.__validateLegacyMR,
                              self.__calculateStatsOfExptlData
                              ]
 
@@ -6991,22 +6992,22 @@ class NmrDpUtility:
                     if lexer_err_listener is not None:
                         messageList = lexer_err_listener.getMessageList()
 
-                    if messageList is not None:
-                        for description in messageList:
-                            err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
-                            if 'input' in description:
-                                err += f"{description['input']}\n"
-                                err += f"{description['marker']}\n"
+                        if messageList is not None:
+                            for description in messageList:
+                                err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                                if 'input' in description:
+                                    err += f"{description['input']}\n"
+                                    err += f"{description['marker']}\n"
 
                     if parser_err_listener is not None:
                         messageList = parser_err_listener.getMessageList()
 
-                    if messageList is not None:
-                        for description in messageList:
-                            err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
-                            if 'input' in description:
-                                err += f"{description['input']}\n"
-                                err += f"{description['marker']}\n"
+                        if messageList is not None:
+                            for description in messageList:
+                                err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                                if 'input' in description:
+                                    err += f"{description['input']}\n"
+                                    err += f"{description['marker']}\n"
 
                     if len(err) > 0:
                         err = f"Could not interprete {file_name!r} as an {mr_format_name} restraint file:\n{err[0:-1]}"
@@ -7023,13 +7024,13 @@ class NmrDpUtility:
                     elif listener is not None:
 
                         if listener.warningMessage is not None:
-                            msg = listener.warningMessage.split('\n')
-                            if len(msg) > 5:
-                                msg = msg[:5]
-                                msg = '\n'.join(msg)
+                            messages = listener.warningMessage.split('\n')
+                            if len(messages) > 5:
+                                messages = messages[:5]
+                                msg = '\n'.join(messages)
                                 msg += '\nThose similar errors may continue...'
                             else:
-                                msg = '\n'.join(msg)
+                                msg = '\n'.join(messages)
                             err = f"Could not interprete {file_name!r} due to the following data issue(s):\n{msg}"
 
                             self.report.error.appendDescription('format_issue',
@@ -7060,22 +7061,22 @@ class NmrDpUtility:
                     if lexer_err_listener is not None:
                         messageList = lexer_err_listener.getMessageList()
 
-                    if messageList is not None:
-                        for description in messageList:
-                            err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
-                            if 'input' in description:
-                                err += f"{description['input']}\n"
-                                err += f"{description['marker']}\n"
+                        if messageList is not None:
+                            for description in messageList:
+                                err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                                if 'input' in description:
+                                    err += f"{description['input']}\n"
+                                    err += f"{description['marker']}\n"
 
                     if parser_err_listener is not None:
                         messageList = parser_err_listener.getMessageList()
 
-                    if messageList is not None:
-                        for description in messageList:
-                            err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
-                            if 'input' in description:
-                                err += f"{description['input']}\n"
-                                err += f"{description['marker']}\n"
+                        if messageList is not None:
+                            for description in messageList:
+                                err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                                if 'input' in description:
+                                    err += f"{description['input']}\n"
+                                    err += f"{description['marker']}\n"
 
                     if len(err) > 0:
                         err = f"Could not interprete {file_name!r} as a {mr_format_name} restraint file:\n{err[0:-1]}"
@@ -7092,13 +7093,13 @@ class NmrDpUtility:
                     elif listener is not None:
 
                         if listener.warningMessage is not None:
-                            msg = listener.warningMessage.split('\n')
-                            if len(msg) > 5:
-                                msg = msg[:5]
-                                msg = '\n'.join(msg)
+                            messages = listener.warningMessage.split('\n')
+                            if len(messages) > 5:
+                                messages = messages[:5]
+                                msg = '\n'.join(messages)
                                 msg += '\nThose similar errors may continue...'
                             else:
-                                msg = '\n'.join(msg)
+                                msg = '\n'.join(messages)
                             err = f"Could not interprete {file_name!r} due to the following data issue(s):\n{msg}"
 
                             self.report.error.appendDescription('format_issue',
@@ -7128,22 +7129,22 @@ class NmrDpUtility:
                     if lexer_err_listener is not None:
                         messageList = lexer_err_listener.getMessageList()
 
-                    if messageList is not None:
-                        for description in messageList:
-                            err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
-                            if 'input' in description:
-                                err += f"{description['input']}\n"
-                                err += f"{description['marker']}\n"
+                        if messageList is not None:
+                            for description in messageList:
+                                err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                                if 'input' in description:
+                                    err += f"{description['input']}\n"
+                                    err += f"{description['marker']}\n"
 
                     if parser_err_listener is not None:
                         messageList = parser_err_listener.getMessageList()
 
-                    if messageList is not None:
-                        for description in messageList:
-                            err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
-                            if 'input' in description:
-                                err += f"{description['input']}\n"
-                                err += f"{description['marker']}\n"
+                        if messageList is not None:
+                            for description in messageList:
+                                err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                                if 'input' in description:
+                                    err += f"{description['input']}\n"
+                                    err += f"{description['marker']}\n"
 
                     if len(err) > 0:
                         err = f"Could not interprete {file_name!r} as an {mr_format_name} restraint file:\n{err[0:-1]}"
@@ -7160,13 +7161,13 @@ class NmrDpUtility:
                     elif listener is not None:
 
                         if listener.warningMessage is not None:
-                            msg = listener.warningMessage.split('\n')
-                            if len(msg) > 5:
-                                msg = msg[:5]
-                                msg = '\n'.join(msg)
+                            messages = listener.warningMessage.split('\n')
+                            if len(messages) > 5:
+                                messages = messages[:5]
+                                msg = '\n'.join(messages)
                                 msg += '\nThose similar errors may continue...'
                             else:
-                                msg = '\n'.join(msg)
+                                msg = '\n'.join(messages)
                             err = f"Could not interprete {file_name!r} due to the following data issue(s):\n{msg}"
 
                             self.report.error.appendDescription('format_issue',
@@ -7196,22 +7197,22 @@ class NmrDpUtility:
                     if lexer_err_listener is not None:
                         messageList = lexer_err_listener.getMessageList()
 
-                    if messageList is not None:
-                        for description in messageList:
-                            err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
-                            if 'input' in description:
-                                err += f"{description['input']}\n"
-                                err += f"{description['marker']}\n"
+                        if messageList is not None:
+                            for description in messageList:
+                                err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                                if 'input' in description:
+                                    err += f"{description['input']}\n"
+                                    err += f"{description['marker']}\n"
 
                     if parser_err_listener is not None:
                         messageList = parser_err_listener.getMessageList()
 
-                    if messageList is not None:
-                        for description in messageList:
-                            err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
-                            if 'input' in description:
-                                err += f"{description['input']}\n"
-                                err += f"{description['marker']}\n"
+                        if messageList is not None:
+                            for description in messageList:
+                                err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                                if 'input' in description:
+                                    err += f"{description['input']}\n"
+                                    err += f"{description['marker']}\n"
 
                     if len(err) > 0:
                         err = f"Could not interprete {file_name!r} as an {mr_format_name} parameter/topology file:\n{err[0:-1]}"
@@ -7228,13 +7229,13 @@ class NmrDpUtility:
                     elif listener is not None:
 
                         if listener.warningMessage is not None:
-                            msg = listener.warningMessage.split('\n')
-                            if len(msg) > 5:
-                                msg = msg[:5]
-                                msg = '\n'.join(msg)
+                            messages = listener.warningMessage.split('\n')
+                            if len(messages) > 5:
+                                messages = messages[:5]
+                                msg = '\n'.join(messages)
                                 msg += '\nThose similar errors may continue...'
                             else:
-                                msg = '\n'.join(msg)
+                                msg = '\n'.join(messages)
                             err = f"Could not interprete {file_name!r} due to the following data issue(s):\n{msg}"
 
                             self.report.error.appendDescription('format_issue',
@@ -7262,22 +7263,22 @@ class NmrDpUtility:
                     if lexer_err_listener is not None:
                         messageList = lexer_err_listener.getMessageList()
 
-                    if messageList is not None:
-                        for description in messageList:
-                            err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
-                            if 'input' in description:
-                                err += f"{description['input']}\n"
-                                err += f"{description['marker']}\n"
+                        if messageList is not None:
+                            for description in messageList:
+                                err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                                if 'input' in description:
+                                    err += f"{description['input']}\n"
+                                    err += f"{description['marker']}\n"
 
                     if parser_err_listener is not None:
                         messageList = parser_err_listener.getMessageList()
 
-                    if messageList is not None:
-                        for description in messageList:
-                            err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
-                            if 'input' in description:
-                                err += f"{description['input']}\n"
-                                err += f"{description['marker']}\n"
+                        if messageList is not None:
+                            for description in messageList:
+                                err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                                if 'input' in description:
+                                    err += f"{description['input']}\n"
+                                    err += f"{description['marker']}\n"
 
                     if len(err) > 0:
                         err = f"Could not interprete {file_name!r} as a {mr_format_name} restraint file:\n{err[0:-1]}"
@@ -7294,13 +7295,13 @@ class NmrDpUtility:
                     elif listener is not None:
 
                         if listener.warningMessage is not None:
-                            msg = listener.warningMessage.split('\n')
-                            if len(msg) > 5:
-                                msg = msg[:5]
-                                msg = '\n'.join(msg)
+                            messages = listener.warningMessage.split('\n')
+                            if len(messages) > 5:
+                                messages = messages[:5]
+                                msg = '\n'.join(messages)
                                 msg += '\nThose similar errors may continue...'
                             else:
-                                msg = '\n'.join(msg)
+                                msg = '\n'.join(messages)
                             err = f"Could not interprete {file_name!r} due to the following data issue(s):\n{msg}"
 
                             self.report.error.appendDescription('format_issue',
@@ -7329,22 +7330,22 @@ class NmrDpUtility:
                     if lexer_err_listener is not None:
                         messageList = lexer_err_listener.getMessageList()
 
-                    if messageList is not None:
-                        for description in messageList:
-                            err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
-                            if 'input' in description:
-                                err += f"{description['input']}\n"
-                                err += f"{description['marker']}\n"
+                        if messageList is not None:
+                            for description in messageList:
+                                err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                                if 'input' in description:
+                                    err += f"{description['input']}\n"
+                                    err += f"{description['marker']}\n"
 
                     if parser_err_listener is not None:
                         messageList = parser_err_listener.getMessageList()
 
-                    if messageList is not None:
-                        for description in messageList:
-                            err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
-                            if 'input' in description:
-                                err += f"{description['input']}\n"
-                                err += f"{description['marker']}\n"
+                        if messageList is not None:
+                            for description in messageList:
+                                err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                                if 'input' in description:
+                                    err += f"{description['input']}\n"
+                                    err += f"{description['marker']}\n"
 
                     if len(err) > 0:
                         err = f"Could not interprete {file_name!r} as a {mr_format_name} restraint file:\n{err[0:-1]}"
@@ -7361,13 +7362,13 @@ class NmrDpUtility:
                     elif listener is not None:
 
                         if listener.warningMessage is not None:
-                            msg = listener.warningMessage.split('\n')
-                            if len(msg) > 5:
-                                msg = msg[:5]
-                                msg = '\n'.join(msg)
+                            messages = listener.warningMessage.split('\n')
+                            if len(messages) > 5:
+                                messages = messages[:5]
+                                msg = '\n'.join(messages)
                                 msg += '\nThose similar errors may continue...'
                             else:
-                                msg = '\n'.join(msg)
+                                msg = '\n'.join(messages)
                             err = f"Could not interprete {file_name!r} due to the following data issue(s):\n{msg}"
 
                             self.report.error.appendDescription('format_issue',
@@ -7384,6 +7385,148 @@ class NmrDpUtility:
                                 has_dist_restraint = 'dist_restraint' in content_subtype
                                 has_dihed_restraint = 'dihed_restraint' in content_subtype
                                 has_rdc_restraint = 'rdc_restraint' in content_subtype
+
+                else:
+
+                    checked = False
+
+                    if not checked:
+
+                        reader = CnsMRReader(self.__verbose, self.__lfh, None, None, None, None, None, None,
+                                             self.__ccU, self.__csStat, self.__nefT)
+                        listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
+
+                        if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
+                           and lexer_err_listener.getMessageList() is None\
+                           and parser_err_listener.getMessageList() is None\
+                           and listener.warningMessage is None:
+
+                            checked = True
+
+                            err = f"The NMR restraint file {file_name!r} ({mr_format_name}) looks like a CNS or XPLOR-NIH restraint file. "\
+                                "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
+
+                            self.report.error.appendDescription('content_mismatch',
+                                                                {'file_name': file_name, 'description': err})
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMR() ++ Error  - {err}\n")
+
+                    if not checked:
+
+                        reader = XplorMRReader(self.__verbose, self.__lfh, None, None, None, None, None, None,
+                                               self.__ccU, self.__csStat, self.__nefT)
+                        listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
+
+                        if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
+                           and lexer_err_listener.getMessageList() is None\
+                           and parser_err_listener.getMessageList() is None\
+                           and listener.warningMessage is None:
+
+                            checked = True
+
+                            err = f"The NMR restraint file {file_name!r} ({mr_format_name}) looks like an XPLOR-NIH restraint file. "\
+                                "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
+
+                            self.report.error.appendDescription('content_mismatch',
+                                                                {'file_name': file_name, 'description': err})
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMR() ++ Error  - {err}\n")
+
+                    if not checked:
+
+                        reader = AmberMRReader(self.__verbose, self.__lfh, None, None, None, None, None, None,
+                                               self.__ccU, self.__csStat, self.__nefT)
+                        listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None, None)
+
+                        if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
+                           and lexer_err_listener.getMessageList() is None\
+                           and parser_err_listener.getMessageList() is None\
+                           and listener.warningMessage is None:
+
+                            checked = True
+
+                            err = f"The NMR restraint file {file_name!r} ({mr_format_name}) looks like an AMBER restraint file. "\
+                                "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
+
+                            self.report.error.appendDescription('content_mismatch',
+                                                                {'file_name': file_name, 'description': err})
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMR() ++ Error  - {err}\n")
+
+                    if not checked:
+
+                        reader = AmberPTReader(self.__verbose, self.__lfh, None, None, None,
+                                               self.__ccU, self.__csStat)
+                        listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
+
+                        if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
+                           and lexer_err_listener.getMessageList() is None\
+                           and parser_err_listener.getMessageList() is None\
+                           and listener.warningMessage is None:
+
+                            checked = True
+
+                            err = f"The NMR restraint file {file_name!r} ({mr_format_name}) looks like an AMBER parameter/topology file. "\
+                                "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
+
+                            self.report.error.appendDescription('content_mismatch',
+                                                                {'file_name': file_name, 'description': err})
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMR() ++ Error  - {err}\n")
+
+                    if not checked:
+
+                        reader = CyanaMRReader(self.__verbose, self.__lfh, None, None, None, None, None, None,
+                                               self.__ccU, self.__csStat, self.__nefT)
+                        listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
+
+                        if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
+                           and lexer_err_listener.getMessageList() is None\
+                           and parser_err_listener.getMessageList() is None\
+                           and listener.warningMessage is None:
+
+                            checked = True
+
+                            err = f"The NMR restraint file {file_name!r} ({mr_format_name}) looks like a CYANA restraint file. "\
+                                "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
+
+                            self.report.error.appendDescription('content_mismatch',
+                                                                {'file_name': file_name, 'description': err})
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMR() ++ Error  - {err}\n")
+
+                    if not checked:
+
+                        reader = RosettaMRReader(self.__verbose, self.__lfh, None, None, None, None, None, None,
+                                                 self.__ccU, self.__csStat, self.__nefT)
+                        listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
+
+                        if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
+                           and lexer_err_listener.getMessageList() is None\
+                           and parser_err_listener.getMessageList() is None\
+                           and listener.warningMessage is None:
+
+                            checked = True
+
+                            err = f"The NMR restraint file {file_name!r} ({mr_format_name}) looks like a ROSETTA restraint file. "\
+                                "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
+
+                            self.report.error.appendDescription('content_mismatch',
+                                                                {'file_name': file_name, 'description': err})
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMR() ++ Error  - {err}\n")
 
             except ValueError as e:
 
@@ -7420,7 +7563,7 @@ class NmrDpUtility:
                     hint = 'assign ( resid # and name OO ) ( resid # and name X ) ( resid # and name Y ) ( resid # and name Z ) "\
                         "( segid $ and resid # and name $ ) ( segid $ and resid # and name $ ) #.# #.#'
 
-                    err = f"The NMR restraint file seems to be a malformed XPLOR-NIH RDC restraint file. "\
+                    err = f"The NMR restraint file {file_name!r} seems to be a malformed XPLOR-NIH RDC restraint file. "\
                         f"Tips for XPLOR-NIH RDC restraints: {hint!r} pattern must be present in the file. "\
                         "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
 
@@ -16916,6 +17059,143 @@ class NmrDpUtility:
             msg += k['name'] + f" {row_data[k['name']]}, "
 
         return msg[:-2]
+
+    def __validateLegacyMR(self):
+        """ Validate data content of legacy NMR restraint files.
+        """
+
+        if self.__combined_mode:
+            return True
+
+        ar_file_path_list = 'atypical_restraint_file_path_list'
+
+        if ar_file_path_list not in self.__inputParamDict:
+            return True
+
+        id = self.report.getInputSourceIdOfCoord()  # pylint: disable=redefined-builtin
+
+        if id < 0:
+            return True
+
+        input_source = self.report.input_sources[id]
+        input_source_dic = input_source.get()
+
+        has_poly_seq = has_key_value(input_source_dic, 'polymer_sequence')
+
+        if not has_poly_seq:
+            return True
+
+        polySeqModel = input_source_dic['polymer_sequence']
+        atomNumberDict = None
+
+        fileListId = self.__file_path_list_len
+
+        for ar in self.__inputParamDict[ar_file_path_list]:
+
+            file_path = ar['file_name']
+
+            input_source = self.report.input_sources[fileListId]
+            input_source_dic = input_source.get()
+
+            file_type = input_source_dic['file_type']
+            content_subtype = input_source_dic['content_subtype']
+
+            if file_type == 'nm-aux-amb' and content_subtype is not None and 'topology' in content_subtype:
+
+                file_name = input_source_dic['file_name']
+                if 'original_file_name' in input_source_dic:
+                    original_file_name = input_source_dic['original_file_name']
+                    if file_name != original_file_name and original_file_name is not None:
+                        file_name = f"{original_file_name} ({file_name})"
+
+                reader = AmberPTReader(self.__verbose, self.__lfh, self.__cR, polySeqModel,
+                                       self.__representative_model_id,
+                                       self.__ccU, self.__csStat)
+
+                listener, _, _ = reader.parse(file_path, self.__cifPath)
+
+                if listener is not None:
+
+                    if listener.warningMessage is not None:
+                        messages = listener.warningMessage.split('\n')
+
+                        for msg in messages:
+                            p = msg.index(']') + 2
+                            warn = msg[p:]
+
+                            if msg.startswith('[Concatenated sequence]'):
+                                self.report.warning.appendDescription('concatenated_sequence',
+                                                                      {'file_name': file_name, 'description': warn})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
+
+                            elif msg.startswith('[Sequence mismatch]'):
+                                self.report.warning.appendDescription('conflicted_mr_data',
+                                                                      {'file_name': file_name, 'description': warn})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
+
+                            elif msg.startswith('[Unknown atom name]'):
+                                self.report.warning.appendDescription('inconsistent_mr_data',
+                                                                      {'file_name': file_name, 'description': warn})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
+
+                            elif msg.startswith('[Unknown residue name]'):
+                                self.report.warning.appendDescription('inconsistent_mr_data',
+                                                                      {'file_name': file_name, 'description': warn})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
+
+                            else:
+                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMR() ++ KeyError  - " + msg)
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ KeyError  - {msg}\n")
+
+                    else:
+                        atomNumberDict = listener.getAtomNumberDict()
+
+                break
+
+            fileListId += 1
+
+        fileListId = self.__file_path_list_len
+
+        for ar in self.__inputParamDict[ar_file_path_list]:
+
+            file_path = ar['file_name']
+
+            input_source = self.report.input_sources[fileListId]
+            input_source_dic = input_source.get()
+
+            file_type = input_source_dic['file_type']
+            content_subtype = input_source_dic['content_subtype']
+
+            if file_type in ('nm-aux-amb', 'nm-res-oth'):
+                continue
+
+            if content_subtype is None or len(content_subtype) == 0:
+                continue
+
+            file_name = input_source_dic['file_name']
+            if 'original_file_name' in input_source_dic:
+                original_file_name = input_source_dic['original_file_name']
+                if file_name != original_file_name and original_file_name is not None:
+                    file_name = f"{original_file_name} ({file_name})"
+
+            fileListId += 1
+
+        return not self.report.isError()
 
     def __calculateStatsOfExptlData(self):
         """ Calculate statistics of experimental data.

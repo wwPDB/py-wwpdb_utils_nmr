@@ -676,7 +676,7 @@ class AmberPTParserListener(ParseTreeListener):
 
                         self.warningMessage += f"[Sequence mismatch] Sequence alignment error between the coordinate ({cif_seq_code}) "\
                             f"and the AMBER parameter/topology data ({top_seq_code}). "\
-                            "Please verify the two sequences and re-upload the correct file(s).\n"
+                            "Please verify the two sequences and re-upload the correct file(s) if required.\n"
 
                 if len(unmapped) > 0:
                     chain_assign['unmapped_sequence'] = unmapped

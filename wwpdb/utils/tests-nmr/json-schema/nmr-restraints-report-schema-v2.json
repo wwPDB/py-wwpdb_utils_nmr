@@ -3855,6 +3855,15 @@
         "redundant_data": {
           "$ref": "#/definitions/common_message"
         },
+        "conflicted_mr_data": {
+          "$ref": "#/definitions/common_message"
+        },
+        "inconsistent_mr_data": {
+          "$ref": "#/definitions/common_message"
+        },
+        "redundant_mr_data": {
+          "$ref": "#/definitions/common_message"
+        },
         "concatenated_sequence": {
           "$ref": "#/definitions/common_message"
         },

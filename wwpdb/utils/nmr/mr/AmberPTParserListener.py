@@ -184,6 +184,11 @@ class AmberPTParserListener(ParseTreeListener):
     # Exit a parse tree produced by AmberPTParser#amber_pt.
     def exitAmber_pt(self, ctx: AmberPTParser.Amber_ptContext):  # pylint: disable=unused-argument
         if not self.__hasPolySeqModel:
+            if len(self.warningMessage) == 0:
+                self.warningMessage = None
+            else:
+                self.warningMessage = self.warningMessage[0:-1]
+                self.warningMessage = '\n'.join(set(self.warningMessage.split('\n')))
             return
 
         residuePointer2 = [resPoint - 1 for resPoint in self.__residuePointer]
@@ -298,7 +303,7 @@ class AmberPTParserListener(ParseTreeListener):
                                     atomNum['atom_id'] = atomNum['auth_atom_id']
                     else:
                         compIdList.append('.')
-                        self.warningMessage += f"[Unknown residue name]"\
+                        self.warningMessage += f"[Unknown residue name] "\
                             f"{authCompId!r} is unknown residue name.\n"
 
             ps['comp_id'] = compIdList
@@ -317,10 +322,10 @@ class AmberPTParserListener(ParseTreeListener):
         for atomNum in self.__atomNumberDict.values():
             if 'atom_id' not in atomNum:
                 if 'comp_id' not in atomNum or atomNum['comp_id'] == atomNum['auth_comp_id']:
-                    self.warningMessage += f"[Unknown atom name]"\
+                    self.warningMessage += f"[Unknown atom name] "\
                         f"{atomNum['auth_atom_id']!r} is not recognized as the atom name of {atomNum['auth_comp_id']!r} residue.\n"
                 else:
-                    self.warningMessage += f"[Unknown atom name]"\
+                    self.warningMessage += f"[Unknown atom name] "\
                         f"{atomNum['auth_atom_id']!r} is not recognized as the atom name of {atomNum['comp_id']!r} residue "\
                         f"(the original residue label is {atomNum['auth_comp_id']!r}).\n"
 
@@ -520,7 +525,7 @@ class AmberPTParserListener(ParseTreeListener):
                     chain_id2 = self.__polySeqPrmTop[column]['chain_id']
                     concatenated_prmtop_chain[chain_id2] = _cif_chains
 
-                    self.warningMessage += f"[Warning] The chain ID {chain_id2!r} of the sequences in the AMBER parameter/topology file "\
+                    self.warningMessage += f"[Concatenated sequence] The chain ID {chain_id2!r} of the sequences in the AMBER parameter/topology file "\
                         f"will be re-assigned to the chain IDs {_cif_chains} in the coordinates during biocuration.\n"
 
             chain_id = self.__polySeqModel[row]['chain_id']

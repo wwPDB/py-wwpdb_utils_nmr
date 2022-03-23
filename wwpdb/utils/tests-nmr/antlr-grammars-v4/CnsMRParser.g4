@@ -31,11 +31,11 @@ cns_mr:
 	diffusion_anisotropy_restraint |
 	one_bond_coupling_restraint |
 	angle_db_restraint)*
-	noe_assign*			// allowing bare assign clauses for distance restraints
-	dihedral_assign*		// allowing bare assign clauses for dihedral angle restraints
+	noe_assign*			// allowing bare assign clauses for Distance restraints
+	dihedral_assign*		// allowing bare assign clauses for Dihedral angle restraints
 	sani_assign*			// allowing bare assign clauses for RDC restraints
-	plane_statement*		// allowing bare group clauses for plane restraints
-        coup_assign*			// allowing bare assign clauses for scaler J-coupling restraints
+	plane_statement*		// allowing bare group clauses for Plane restraints
+        coup_assign*			// allowing bare assign clauses for Scaler J-coupling restraints
 	EOF;
 
 distance_restraint:

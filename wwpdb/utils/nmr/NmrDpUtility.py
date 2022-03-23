@@ -7036,16 +7036,18 @@ class NmrDpUtility:
                                                                 {'file_name': file_name, 'description': err})
                             self.report.setError()
 
-                        content_subtype = listener.getContentSubtype()
-                        if len(content_subtype) == 0:
-                            content_subtype = None
                         else:
-                            has_dist_restraint = 'dist_restraint' in content_subtype
-                            has_dihed_restraint = 'dihed_restraint' in content_subtype
-                            has_rdc_restraint = 'rdc_restraint' in content_subtype
-                            has_plane_restraint = 'plane_restraint' in content_subtype
-                            has_hbond_restraint = 'hbond_restraint' in content_subtype
                             has_chem_shift = has_coordinate = False
+
+                            content_subtype = listener.getContentSubtype()
+                            if len(content_subtype) == 0:
+                                content_subtype = None
+                            else:
+                                has_dist_restraint = 'dist_restraint' in content_subtype
+                                has_dihed_restraint = 'dihed_restraint' in content_subtype
+                                has_rdc_restraint = 'rdc_restraint' in content_subtype
+                                has_plane_restraint = 'plane_restraint' in content_subtype
+                                has_hbond_restraint = 'hbond_restraint' in content_subtype
 
                 elif file_type == 'nm-res-cns':
 
@@ -7103,15 +7105,17 @@ class NmrDpUtility:
                                                                 {'file_name': file_name, 'description': err})
                             self.report.setError()
 
-                        content_subtype = listener.getContentSubtype()
-                        if len(content_subtype) == 0:
-                            content_subtype = None
                         else:
-                            has_dist_restraint = 'dist_restraint' in content_subtype
-                            has_dihed_restraint = 'dihed_restraint' in content_subtype
-                            has_rdc_restraint = 'rdc_restraint' in content_subtype
-                            has_plane_restraint = 'plane_restraint' in content_subtype
                             has_chem_shift = has_coordinate = False
+
+                            content_subtype = listener.getContentSubtype()
+                            if len(content_subtype) == 0:
+                                content_subtype = None
+                            else:
+                                has_dist_restraint = 'dist_restraint' in content_subtype
+                                has_dihed_restraint = 'dihed_restraint' in content_subtype
+                                has_rdc_restraint = 'rdc_restraint' in content_subtype
+                                has_plane_restraint = 'plane_restraint' in content_subtype
 
                 elif file_type == 'nm-res-amb':
 
@@ -7169,15 +7173,17 @@ class NmrDpUtility:
                                                                 {'file_name': file_name, 'description': err})
                             self.report.setError()
 
-                        content_subtype = listener.getContentSubtype()
-                        if len(content_subtype) == 0:
-                            content_subtype = None
                         else:
-                            has_dist_restraint = 'dist_restraint' in content_subtype
-                            has_dihed_restraint = 'dihed_restraint' in content_subtype
-                            has_rdc_restraint = 'rdc_restraint' in content_subtype
-                            has_plane_restraint = 'plane_restraint' in content_subtype
                             has_chem_shift = has_coordinate = False
+
+                            content_subtype = listener.getContentSubtype()
+                            if len(content_subtype) == 0:
+                                content_subtype = None
+                            else:
+                                has_dist_restraint = 'dist_restraint' in content_subtype
+                                has_dihed_restraint = 'dihed_restraint' in content_subtype
+                                has_rdc_restraint = 'rdc_restraint' in content_subtype
+                                has_plane_restraint = 'plane_restraint' in content_subtype
 
                 elif file_type == 'nm-aux-amb':
 
@@ -7208,7 +7214,7 @@ class NmrDpUtility:
                                 err += f"{description['marker']}\n"
 
                     if len(err) > 0:
-                        err = f"Could not interprete {file_name!r} as an {mr_format_name} topology file:\n{err[0:-1]}"
+                        err = f"Could not interprete {file_name!r} as an {mr_format_name} parameter/topology file:\n{err[0:-1]}"
 
                         self.report.error.appendDescription('format_issue',
                                                             {'file_name': file_name, 'description': err})
@@ -7235,13 +7241,15 @@ class NmrDpUtility:
                                                                 {'file_name': file_name, 'description': err})
                             self.report.setError()
 
-                        content_subtype = listener.getContentSubtype()
-                        if len(content_subtype) == 0:
-                            content_subtype = None
                         else:
-                            has_topology = True
-                            content_subtype = {'topology': 1}
                             has_chem_shift = has_coordinate = False
+
+                            content_subtype = listener.getContentSubtype()
+                            if len(content_subtype) == 0:
+                                content_subtype = None
+                            else:
+                                has_topology = True
+                                content_subtype = {'topology': 1}
 
                 elif file_type == 'nm-res-cya':
 
@@ -7299,14 +7307,16 @@ class NmrDpUtility:
                                                                 {'file_name': file_name, 'description': err})
                             self.report.setError()
 
-                        content_subtype = listener.getContentSubtype()
-                        if len(content_subtype) == 0:
-                            content_subtype = None
                         else:
-                            has_dist_restraint = 'dist_restraint' in content_subtype
-                            has_dihed_restraint = 'dihed_restraint' in content_subtype
-                            has_rdc_restraint = 'rdc_restraint' in content_subtype
                             has_chem_shift = has_coordinate = False
+
+                            content_subtype = listener.getContentSubtype()
+                            if len(content_subtype) == 0:
+                                content_subtype = None
+                            else:
+                                has_dist_restraint = 'dist_restraint' in content_subtype
+                                has_dihed_restraint = 'dihed_restraint' in content_subtype
+                                has_rdc_restraint = 'rdc_restraint' in content_subtype
 
                 elif file_type == 'nm-res-ros':
 
@@ -7364,14 +7374,16 @@ class NmrDpUtility:
                                                                 {'file_name': file_name, 'description': err})
                             self.report.setError()
 
-                        content_subtype = listener.getContentSubtype()
-                        if len(content_subtype) == 0:
-                            content_subtype = None
                         else:
-                            has_dist_restraint = 'dist_restraint' in content_subtype
-                            has_dihed_restraint = 'dihed_restraint' in content_subtype
-                            has_rdc_restraint = 'rdc_restraint' in content_subtype
                             has_chem_shift = has_coordinate = False
+
+                            content_subtype = listener.getContentSubtype()
+                            if len(content_subtype) == 0:
+                                content_subtype = None
+                            else:
+                                has_dist_restraint = 'dist_restraint' in content_subtype
+                                has_dihed_restraint = 'dihed_restraint' in content_subtype
+                                has_rdc_restraint = 'rdc_restraint' in content_subtype
 
             except ValueError as e:
 
@@ -7388,7 +7400,7 @@ class NmrDpUtility:
                     err = f"The {mr_format_name} restraint file includes coordinates. "\
                         "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
                 else:
-                    err = f"The {mr_format_name} topology file includes coordinates. "\
+                    err = f"The {mr_format_name} parameter/topology file includes coordinates. "\
                         "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
 
                 self.report.error.appendDescription('content_mismatch',
@@ -7427,7 +7439,7 @@ class NmrDpUtility:
                         err = f"The {mr_format_name} restraint file includes assigned chemical shifts. "\
                             "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
                     else:
-                        err = f"The {mr_format_name} topology file includes assigned chemical shifts. "\
+                        err = f"The {mr_format_name} parameter/topology file includes assigned chemical shifts. "\
                             "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
 
                     self.report.error.appendDescription('content_mismatch',
@@ -7501,7 +7513,7 @@ class NmrDpUtility:
                         "to ensure that AMBER atomic IDs, referred as 'iat' in the AMBER restraint file, are preserved in the file."
 
                 err = f"{file_name} is neither AMBER topology (.prmtop) nor coordinates (.inpcrd.pdb){subtype_name}."\
-                    + hint + " Did you accidentally select the wrong format? Please re-upload the AMBER topology file."
+                    + hint + " Did you accidentally select the wrong format? Please re-upload the AMBER parameter/topology file."
 
                 self.report.error.appendDescription('content_mismatch',
                                                     {'file_name': file_name, 'description': err})

@@ -484,7 +484,7 @@ class CyanaMRParserListener(ParseTreeListener):
             return
 
         if angleName not in KNOWN_ANGLE_NAMES:
-            self.warningMessage += f"[Enumeration error] {self.__getCurrentRestraint()}"\
+            self.warningMessage += f"[Enum mismatch ignorable] {self.__getCurrentRestraint()}"\
                 f"The angle identifier '{str(ctx.Simple_name(1))}' is unknown.\n"
             return
 
@@ -560,7 +560,7 @@ class CyanaMRParserListener(ParseTreeListener):
             elif carbohydrate and angleName in ('PHI', 'PSI', 'OMEGA'):
                 pass
             else:
-                self.warningMessage += f"[Enumeration error] {self.__getCurrentRestraint()}"\
+                self.warningMessage += f"[Enum mismatch ignorable] {self.__getCurrentRestraint()}"\
                     f"The angle identifier {str(ctx.Simple_name(1))!r} did not match with residue {compId!r}.\n"
                 return
 

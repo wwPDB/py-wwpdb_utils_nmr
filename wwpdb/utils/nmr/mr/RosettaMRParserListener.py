@@ -273,7 +273,7 @@ class RosettaMRParserListener(ParseTreeListener):
             return None
 
         if level > 1:
-            self.warningMessage += f"[Complex data] {self.__getCurrentRestraint()}"\
+            self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
                 f"Too complex constraint function {firstFunc} can not be converted to NEF/NMR-STAR data.\n"
             return None
 
@@ -612,7 +612,7 @@ class RosettaMRParserListener(ParseTreeListener):
             return None
 
         if level > 1:
-            self.warningMessage += f"[Complex data] {self.__getCurrentRestraint()}"\
+            self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
                 f"Too complex constraint function {firstFunc} can not be converted to NEF/NMR-STAR data.\n"
             return None
 
@@ -1237,7 +1237,7 @@ class RosettaMRParserListener(ParseTreeListener):
             return
 
         if binChar not in ('O', 'G', 'E', 'A', 'B'):
-            self.warningMessage += f"[Enumeration error] {self.__getCurrentRestraint()}"\
+            self.warningMessage += f"[Enum mismatch] {self.__getCurrentRestraint()}"\
                 f"The BigBin identifier '{binChar}' must be one of {('O', 'G', 'E', 'A', 'B')}.\n"
             return
 
@@ -1866,7 +1866,7 @@ class RosettaMRParserListener(ParseTreeListener):
                 pass
             else:
                 valid = False
-                self.warningMessage += f"[Syntax error] {self.__getCurrentRestraint()}"\
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                     f"{funcType} requires {n_funcs} function definitions after the first 'n_funcs' value.\n"
 
             func['func_types'] = []

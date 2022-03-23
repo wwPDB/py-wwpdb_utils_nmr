@@ -2094,13 +2094,13 @@ class CnsMRParserListener(ParseTreeListener):
             if self.inVector3D_columnSel == 0:
                 self.inVector3D_tail = atomSelection[0]
                 if len(atomSelection) > 1:
-                    self.warningMessage += f"[Multiple selections] {self.__getCurrentRestraint()}"\
-                        "The first atom has been selected to create a 3d-vector in the 'tail' clause.\n"
+                    self.warningMessage += f"[Invalid atom selection] {self.__getCurrentRestraint()}"\
+                        "Ambiguous atoms have been selected to create a 3d-vector in the 'tail' clause.\n"
             else:
                 self.inVector3D_head = atomSelection[0]
                 if len(atomSelection) > 1:
-                    self.warningMessage += f"[Multiple selections] {self.__getCurrentRestraint()}"\
-                        "The first atom has been selected to create a 3d-vector in the 'head' clause.\n"
+                    self.warningMessage += f"[Invalid atom selection] {self.__getCurrentRestraint()}"\
+                        "Ambiguous atoms have been selected to create a 3d-vector in the 'head' clause.\n"
 
         else:
             self.atomSelectionSet.append(atomSelection)
@@ -2843,7 +2843,7 @@ class CnsMRParserListener(ParseTreeListener):
                     or attr_prop.startswith('ycom')\
                     or attr_prop.startswith('zcom'):  # BCOMP, QCOMP, XCOMP, YCOMP, ZCOM`
                 self.factor['atom_id'] = [None]
-                self.warningMessage += f"[Unavailable resource] {self.__getCurrentRestraint()}"\
+                self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
                     f"The attribute property {_attr_prop!r} "\
                     "requires a comparison coordinate set.\n"
                 validProp = False
@@ -2884,14 +2884,14 @@ class CnsMRParserListener(ParseTreeListener):
 
             elif attr_prop in ('dx', 'dy', 'dz', 'harm'):
                 self.factor['atom_id'] = [None]
-                self.warningMessage += f"[Unavailable resource] {self.__getCurrentRestraint()}"\
+                self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
                     f"The attribute property {_attr_prop!r} "\
                     "related to atomic force of each atom is not possessed in the static coordinate file.\n"
                 validProp = False
 
             elif attr_prop.startswith('fbet'):  # FBETA
                 self.factor['atom_id'] = [None]
-                self.warningMessage += f"[Unavailable resource] {self.__getCurrentRestraint()}"\
+                self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
                     f"The attribute property {_attr_prop!r} "\
                     "related to the Langevin dynamics (nonzero friction coefficient) is not possessed in the static coordinate file.\n"
                 validProp = False
@@ -2962,21 +2962,21 @@ class CnsMRParserListener(ParseTreeListener):
                 self.intersectionFactor_expressions(atomSelection)
 
             elif attr_prop.startswith('scatter'):  # scatter_[ab][1-4], scatter_c, scatter_fp, scatter_fdp
-                self.warningMessage += f"[Unavailable resource] {self.__getCurrentRestraint()}"\
+                self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
                     f"The attribute property {_attr_prop!r} "\
                     "related to X-ray scattering power of each atom is not possessed in the static coordinate file.\n"
                 validProp = False
 
             elif attr_prop in ('refx', 'refy', 'refz', 'rmsd'):
                 self.factor['atom_id'] = [None]
-                self.warningMessage += f"[Unavailable resource] {self.__getCurrentRestraint()}"\
+                self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
                     f"The attribute property {_attr_prop!r} "\
                     "requires a reference coordinate set.\n"
                 validProp = False
 
             elif attr_prop == ('vx', 'vy', 'vz'):
                 self.factor['atom_id'] = [None]
-                self.warningMessage += f"[Unavailable resource] {self.__getCurrentRestraint()}"\
+                self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
                     f"The attribute property {_attr_prop!r} "\
                     "related to current velocities of each atom is not possessed in the static coordinate file.\n"
                 validProp = False
@@ -3463,7 +3463,7 @@ class CnsMRParserListener(ParseTreeListener):
             if self.__debug:
                 print("  " * self.depth + "--> id")
             self.factor['atom_id'] = [None]
-            self.warningMessage += f"[Unavailable resource] {self.__getCurrentRestraint()}"\
+            self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
                 "The 'id' clause has no effect "\
                 "because the internal atom number is not included in the coordinate file.\n"
 
@@ -3634,7 +3634,7 @@ class CnsMRParserListener(ParseTreeListener):
             if self.__debug:
                 print("  " * self.depth + "--> previous")
             self.factor['atom_id'] = [None]
-            self.warningMessage += f"[Unavailable resource] {self.__getCurrentRestraint()}"\
+            self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
                 "The 'previous' clause has no effect "\
                 "because the internal atom selection is fragile in the restraint file.\n"
 
@@ -3757,7 +3757,7 @@ class CnsMRParserListener(ParseTreeListener):
             if self.__debug:
                 print("  " * self.depth + "--> store[1-9]")
             self.factor['atom_id'] = [None]
-            self.warningMessage += f"[Unavailable resource] {self.__getCurrentRestraint()}"\
+            self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
                 "The 'store[1-9]' clause has no effect "\
                 "because the internal vector statement is fragile in the restraint file.\n"
 

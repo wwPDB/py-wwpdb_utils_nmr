@@ -2006,12 +2006,12 @@ class AmberMRParserListener(ParseTreeListener):
         """ Report Sander comment issue.
         """
         if self.lastComment is None:
-            self.warningMessage += f"[Fatal error] {self.__getCurrentRestraint()}"\
-                "Failed to recognize AMBER atom numbers "\
+            self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
+                "Failed to recognize AMBER atom numbers in the restraint file "\
                 "because neither AMBER parameter/topology file nor Sander comment are available."
         else:
-            self.warningMessage += f"[Fatal error] {self.__getCurrentRestraint()}"\
-                "Failed to recognize AMBER atom numbers "\
+            self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
+                "Failed to recognize AMBER atom numbers in the restraint file "\
                 f"because Sander comment {self.lastComment!r} couldn't be interpreted as a {subtype_name}."
 
     def updateSanderAtomNumberDict(self, factor, cifCheck=True, useDefault=True):
@@ -2229,7 +2229,7 @@ class AmberMRParserListener(ParseTreeListener):
                 rawIntArray = str(ctx.Integers()).split(',')
                 val = int(rawIntArray[0])
                 if len(rawIntArray) > 1:
-                    self.warningMessage += f"[Multiple data] {self.__getCurrentRestraint()}"\
+                    self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
                         f"The '{varName}({decimal})={str(ctx.Integers())}' can not be an array of integers, "\
                         f"hence the first value '{varName}({decimal})={val}' will be evaluated as a valid value.\n"
                 self.iat[decimal - 1] = val
@@ -2353,7 +2353,7 @@ class AmberMRParserListener(ParseTreeListener):
                 rawIntArray = str(ctx.Integers()).split(',')
                 val = int(rawIntArray[0])
                 if len(rawIntArray) > 1:
-                    self.warningMessage += f"[Multiple data] {self.__getCurrentRestraint()}"\
+                    self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
                         f"The '{varName}({decimal})={str(ctx.Integers())}' can not be an array of integers, "\
                         f"hence the first value '{varName}({decimal})={val}' will be evaluated as a valid value.\n"
                 self.igr[varNum][decimal - 1] = val
@@ -2819,6 +2819,9 @@ class AmberMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by AmberMRParser#shf_statement.
     def exitShf_statement(self, ctx: AmberMRParser.Shf_statementContext):  # pylint: disable=unused-argument
+        if self.nprot < 0 and self.iprot.keys() is not None:
+            self.nprot = max(self.iprot.keys())
+
         if self.nprot <= 0:
             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                 f"The number of observed chemical shifts 'nprot' is the mandatory variable.\n"
@@ -3247,16 +3250,22 @@ class AmberMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by AmberMRParser#pcshf_statement.
     def exitPcshf_statement(self, ctx: AmberMRParser.Pcshf_statementContext):  # pylint: disable=unused-argument
+        if self.nprot < 0 and self.iprot.keys() is not None:
+            self.nprot = max(self.iprot.keys())
+
         if self.nprot <= 0:
             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                 f"The number of observed PCS values 'nprot' is the mandatory variable.\n"
             return
 
+        if self.nme < 0 and self.optphi.keys() is not None:
+            self.nme = max(self.optphi.keys())
+        """
         if self.nme <= 0:
             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                 f"The number of paramagnetic centers 'nme' is the mandatory variable.\n"
             return
-
+        """
         for n in range(1, self.nprot + 1):
 
             if n not in self.iprot:
@@ -3569,11 +3578,14 @@ class AmberMRParserListener(ParseTreeListener):
         self.dwt = {}
         self.gigj = {}
         self.ndip = -1
-        self.dataset = -1
-        self.numDataset = -1
+        self.dataset = 1
+        self.numDataset = 1
 
     # Exit a parse tree produced by AmberMRParser#align_statement.
     def exitAlign_statement(self, ctx: AmberMRParser.Align_statementContext):  # pylint: disable=unused-argument
+        if self.ndip < 0 and self.id.keys() is not None:
+            self.ndip = max(self.id.keys())
+
         if self.ndip <= 0:
             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                 f"The number of observed dipolar couplings 'ndip' is the mandatory variable.\n"
@@ -3878,11 +3890,13 @@ class AmberMRParserListener(ParseTreeListener):
                 return
 
             if self.dataset > self.numDataset:
+                self.numDataset = self.dataset
+                """
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                     f"The argument value of 'dataset={self.dataset}' must be in the range 1-{self.numDataset}, "\
                     f"regulated by 'num_dataset={self.numDataset}'.\n"
                 return
-
+                """
         elif ctx.NUM_DATASET():
             self.numDataset = int(str(ctx.Integer()))
             if self.numDataset <= 0:
@@ -3920,10 +3934,13 @@ class AmberMRParserListener(ParseTreeListener):
         self.cobsu = {}
         self.cwt = {}
         self.ncsa = -1
-        self.datasetc = -1
+        self.datasetc = 1
 
     # Exit a parse tree produced by AmberMRParser#csa_statement.
     def exitCsa_statement(self, ctx: AmberMRParser.Csa_statementContext):  # pylint: disable=unused-argument
+        if self.ncsa < 0 and self.icsa.keys() is not None:
+            self.ncsa = max(self.icsa.keys())
+
         if self.ncsa <= 0:
             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                 f"The number of observed CSA values 'ncsa' is the mandatory variable.\n"

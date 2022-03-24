@@ -3770,10 +3770,10 @@ class NEFTranslator:
             @return: True for valid atom_id of comp_id, False otherwise
         """
 
-        comp_id = comp_id.upper()
-
         if comp_id in emptyValue:
             return False
+
+        comp_id = comp_id.upper()
 
         if self.__ccU.updateChemCompDict(comp_id):
             return atom_id in [a[self.__ccU.ccaAtomId] for a in self.__ccU.lastAtomList]
@@ -4059,6 +4059,9 @@ class NEFTranslator:
             @return: list of instanced atom_id, ambiguity_code, and description
         """
 
+        if comp_id in emptyValue:
+            return [], None, None
+
         if atom_id == 'HN' or atom_id.endswith('%') or atom_id.endswith('*'):
             return self.get_star_atom(comp_id, atom_id, details, leave_unmatched)
 
@@ -4094,13 +4097,10 @@ class NEFTranslator:
             @return: list of instanced atom_id of a given NEF atom, ambiguity_code, and description
         """
 
-        if comp_id is None:
+        if comp_id in emptyValue:
             return [], None, None
 
         comp_id = comp_id.upper()
-
-        if comp_id in emptyValue:
-            return [], None, None
 
         comp_code = getOneLetterCode(comp_id)
 
@@ -4242,10 +4242,10 @@ class NEFTranslator:
             @return: list of instanced atom_id of given NMR-STAR atoms, descriptions, and atom conversion dictionary for conversion of other loops
         """
 
-        comp_id = comp_id.upper()
-
         if comp_id in emptyValue:
             return [], None, None
+
+        comp_id = comp_id.upper()
 
         atom_list = []
         atom_id_map = {}
@@ -4656,6 +4656,9 @@ class NEFTranslator:
             @return: heavy atom name and list of proton names
         """
 
+        if comp_id in emptyValue:
+            return None, None
+
         if atom_id is None or atom_id[0] not in ('H', 'C', 'N', 'O'):
             return None, None
 
@@ -4683,6 +4686,9 @@ class NEFTranslator:
             @author: Masashi Yokochi
             @return: geminal heavy atom name and list of geminal proton names
         """
+
+        if comp_id in emptyValue:
+            return None, None
 
         if atom_id is None or atom_id[0] not in ('H', 'C', 'N', 'O'):
             return None, None

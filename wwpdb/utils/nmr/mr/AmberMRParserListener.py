@@ -199,6 +199,7 @@ class AmberMRParserListener(ParseTreeListener):
     __coordAtomSite = None
     __coordUnobsRes = None
     __labelToAuthSeq = None
+    __authToLabelSeq = None
     __preferAuthSeq = True
 
     # current restraint subtype
@@ -326,7 +327,8 @@ class AmberMRParserListener(ParseTreeListener):
 
     def __init__(self, verbose=True, log=sys.stdout, cR=None, polySeq=None,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
-                 coordAtomSite=None, coordUnobsRes=None, labelToAuthSeq=None,
+                 coordAtomSite=None, coordUnobsRes=None,
+                 labelToAuthSeq=None, authToLabelSeq=None,
                  ccU=None, csStat=None, nefT=None, atomNumberDict=None):
         self.__verbose = verbose
         self.__lfh = log
@@ -336,7 +338,8 @@ class AmberMRParserListener(ParseTreeListener):
         if self.__hasCoord:
             ret = checkCoordinates(verbose, log, cR, polySeq,
                                    representativeModelId,
-                                   coordAtomSite, coordUnobsRes, labelToAuthSeq)
+                                   coordAtomSite, coordUnobsRes,
+                                   labelToAuthSeq, authToLabelSeq)
             self.__modelNumName = ret['model_num_name']
             self.__authAsymId = ret['auth_asym_id']
             self.__authSeqId = ret['auth_seq_id']
@@ -347,6 +350,7 @@ class AmberMRParserListener(ParseTreeListener):
             self.__coordAtomSite = ret['coord_atom_site']
             self.__coordUnobsRes = ret['coord_unobs_res']
             self.__labelToAuthSeq = ret['label_to_auth_seq']
+            self.__authToLabelSeq = ret['auth_to_label_seq']
 
         self.__hasPolySeq = self.__polySeq is not None and len(self.__polySeq) > 0
 
@@ -786,6 +790,9 @@ class AmberMRParserListener(ParseTreeListener):
                     dstFunc = self.validateAngleRange(1.0)
 
                     if dstFunc is None:
+                        return
+
+                    if len(self.atomSelectionSet[0]) == 0:
                         return
 
                     compId = self.atomSelectionSet[0][0]['comp_id']
@@ -1296,6 +1303,9 @@ class AmberMRParserListener(ParseTreeListener):
                     dstFunc = self.validateAngleRange(1.0)
 
                     if dstFunc is None:
+                        return
+
+                    if len(self.atomSelectionSet[0]) == 0:
                         return
 
                     compId = self.atomSelectionSet[0][0]['comp_id']
@@ -1985,7 +1995,6 @@ class AmberMRParserListener(ParseTreeListener):
                         if self.__ccU.updateChemCompDict(compId):
                             cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId), None)
                             if cca is not None:
-                                found = True
                                 factor['chain_id'] = chainId
                                 factor['seq_id'] = seqId if cifSeqId is None else cifSeqId
                                 factor['comp_id'] = compId
@@ -1996,6 +2005,92 @@ class AmberMRParserListener(ParseTreeListener):
                                     self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                                         f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
                                 return factor
+                            self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                                f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
+                            return None
+
+        if not useDefault:
+            for ps in self.__polySeq:
+                chainId = ps['chain_id']
+                seqKey = (chainId, seqId)
+                if seqKey in self.__authToLabelSeq:
+                    _, seqId = self.__authToLabelSeq[seqKey]
+                    if seqId in ps['seq_id']:
+                        compId = ps['comp_id'][ps['seq_id'].index(seqId)]
+                        seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck)
+
+                        atomId = translateAmberAtomNomenclature(atomId)
+
+                        atomIds = self.__nefT.get_valid_star_atom(compId, atomId)[0]
+
+                        for _atomId in atomIds:
+                            ccdCheck = not cifCheck
+
+                            if cifCheck:
+                                if coordAtomSite is not None:
+                                    if _atomId in coordAtomSite['atom_id']:
+                                        found = True
+                                    elif 'alt_atom_id' in coordAtomSite and _atomId in coordAtomSite['alt_atom_id']:
+                                        found = True
+                                        self.__authAtomId = 'auth_atom_id'
+                                    elif self.__preferAuthSeq:
+                                        _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck, asis=False)
+                                        if _coordAtomSite is not None:
+                                            if _atomId in _coordAtomSite['atom_id']:
+                                                found = True
+                                                self.__preferAuthSeq = False
+                                                self.__authSeqId = 'label_seq_id'
+                                                seqKey = _seqKey
+                                            elif 'alt_atom_id' in _coordAtomSite and _atomId in _coordAtomSite['alt_atom_id']:
+                                                found = True
+                                                self.__preferAuthSeq = False
+                                                self.__authSeqId = 'label_seq_id'
+                                                self.__authAtomId = 'auth_atom_id'
+                                                seqKey = _seqKey
+
+                                elif self.__preferAuthSeq:
+                                    _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck, asis=False)
+                                    if _coordAtomSite is not None:
+                                        if _atomId in _coordAtomSite['atom_id']:
+                                            found = True
+                                            self.__preferAuthSeq = False
+                                            self.__authSeqId = 'label_seq_id'
+                                            seqKey = _seqKey
+                                        elif 'alt_atom_id' in _coordAtomSite and _atomId in _coordAtomSite['alt_atom_id']:
+                                            found = True
+                                            self.__preferAuthSeq = False
+                                            self.__authSeqId = 'label_seq_id'
+                                            self.__authAtomId = 'auth_atom_id'
+                                            seqKey = _seqKey
+
+                                if found:
+                                    factor['chain_id'] = chainId
+                                    factor['seq_id'] = seqId
+                                    factor['comp_id'] = compId
+                                    factor['atom_id'] = _atomId
+                                    factor['auth_seq_id'] = seqId
+                                    factor['auth_atom_id'] = authAtomId
+                                    return factor
+
+                                ccdCheck = True
+
+                            if ccdCheck:
+                                if self.__ccU.updateChemCompDict(compId):
+                                    cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId), None)
+                                    if cca is not None:
+                                        factor['chain_id'] = chainId
+                                        factor['seq_id'] = seqId
+                                        factor['comp_id'] = compId
+                                        factor['atom_id'] = _atomId
+                                        factor['auth_seq_id'] = seqId
+                                        factor['auth_atom_id'] = authAtomId
+                                        if cifCheck and seqKey not in self.__coordUnobsRes:
+                                            self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                                                f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
+                                        return factor
+                                    self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                                        f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
+                                    return None
 
         if not useDefault or self.__altPolySeq is None:
             return None
@@ -4618,19 +4713,5 @@ class AmberMRParserListener(ParseTreeListener):
         """
         return self.__sanderAtomNumberDict
 
-    def getCoordAtomSite(self):
-        """ Return coordinates' atom name dictionary of each residue.
-        """
-        return self.__coordAtomSite
-
-    def getCoordUnobsRes(self):
-        """ Return catalog of unobserved residues of the coordinates.
-        """
-        return self.__coordUnobsRes
-
-    def getLabelToAuthSeq(self):
-        """ Return dictionary of differences between label_seq_id (as key) to auth_seq_id (as value).
-        """
-        return self.__labelToAuthSeq
 
 # del AmberMRParser

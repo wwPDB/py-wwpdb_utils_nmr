@@ -59,7 +59,7 @@
 # 22 Feb-2022  M. Yokochi - add 'complemented_chemical_shift' warning type (DAOTHER-7681, issue #1)
 # 04-Mar-2022  M. Yokochi - add coordinate geometry restraints (DAOTHER-7690, NMR restraint remediation)
 # 22-Mar-2022  M. Yokochi - add 'nm-res-ros' file type for ROSETTA restraint format (DAOTHER-7690)
-# 23-Mar-2022  M. Yokochi - add 'conflicted_mr_data', 'inconsistent_mr_data', 'redundant_mr_data' warning types (DAOTHER-7690)
+# 23-Mar-2022  M. Yokochi - add 'conflicted_mr_data', 'inconsistent_mr_data', 'redundant_mr_data', 'unsupported_mr_data' warning types (DAOTHER-7690)
 ##
 """ Wrapper class for NMR data processing report.
     @author: Masashi Yokochi
@@ -2059,7 +2059,7 @@ class NmrDpReportWarning:
                       'complemented_chemical_shift', 'incompletely_assigned_chemical_shift', 'incompletely_assigned_spectral_peak',
                       'anomalous_data', 'unusual_data', 'unusual/rare_data', 'insufficient_data',
                       'conflicted_data', 'inconsistent_data', 'redundant_data',
-                      'conflicted_mr_data', 'inconsistent_mr_data', 'redundant_mr_data',
+                      'conflicted_mr_data', 'inconsistent_mr_data', 'redundant_mr_data', 'unsupported_mr_data',
                       'concatenated_sequence', 'not_superimposed_model', 'exactly_overlaid_model')
 
         self.group_items = ('sequence_mismatch',

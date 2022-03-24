@@ -44,7 +44,8 @@ class AmberMRReader:
 
     def __init__(self, verbose=True, log=sys.stdout, cR=None, polySeqModel=None,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
-                 coordAtomSite=None, coordUnobsRes=None, labelToAuthSeq=None,
+                 coordAtomSite=None, coordUnobsRes=None,
+                 labelToAuthSeq=None, authToLabelSeq=None,
                  ccU=None, csStat=None, nefT=None, atomNumberDict=None):
         self.__verbose = verbose
         self.__lfh = log
@@ -62,6 +63,7 @@ class AmberMRReader:
         self.__coordAtomSite = coordAtomSite
         self.__coordUnobsRes = coordUnobsRes
         self.__labelToAuthSeq = labelToAuthSeq
+        self.__authToLabelSeq = authToLabelSeq
 
         # CCD accessing utility
         self.__ccU = ChemCompUtil(verbose, log) if ccU is None else ccU
@@ -120,7 +122,7 @@ class AmberMRReader:
 
                     messageList = lexer_error_listener.getMessageList()
 
-                    if messageList is not None:
+                    if messageList is not None and self.__verbose:
                         for description in messageList:
                             self.__lfh.write(f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n")
                             if 'input' in description:
@@ -137,13 +139,14 @@ class AmberMRReader:
                     walker = ParseTreeWalker()
                     listener = AmberMRParserListener(self.__verbose, self.__lfh, self.__cR, self.__polySeqModel,
                                                      self.__representativeModelId,
-                                                     self.__coordAtomSite, self.__coordUnobsRes, self.__labelToAuthSeq,
+                                                     self.__coordAtomSite, self.__coordUnobsRes,
+                                                     self.__labelToAuthSeq, self.__authToLabelSeq,
                                                      self.__ccU, self.__csStat, self.__nefT, self.__atomNumberDict)
                     walker.walk(listener, tree)
 
                     messageList = parser_error_listener.getMessageList()
 
-                    if messageList is not None:
+                    if messageList is not None and self.__verbose:
                         for description in messageList:
                             self.__lfh.write(f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n")
                             if 'input' in description:

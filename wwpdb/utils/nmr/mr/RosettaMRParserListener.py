@@ -110,6 +110,7 @@ class RosettaMRParserListener(ParseTreeListener):
     __coordAtomSite = None
     __coordUnobsRes = None
     __labelToAuthSeq = None
+    __authToLabelSeq = None
     __preferAuthSeq = True
 
     # current restraint subtype
@@ -128,7 +129,8 @@ class RosettaMRParserListener(ParseTreeListener):
 
     def __init__(self, verbose=True, log=sys.stdout, cR=None, polySeq=None,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
-                 coordAtomSite=None, coordUnobsRes=None, labelToAuthSeq=None,
+                 coordAtomSite=None, coordUnobsRes=None,
+                 labelToAuthSeq=None, authToLabelSeq=None,
                  ccU=None, csStat=None, nefT=None):
         self.__verbose = verbose
         self.__lfh = log
@@ -138,7 +140,8 @@ class RosettaMRParserListener(ParseTreeListener):
         if self.__hasCoord:
             ret = checkCoordinates(verbose, log, cR, polySeq,
                                    representativeModelId,
-                                   coordAtomSite, coordUnobsRes, labelToAuthSeq)
+                                   coordAtomSite, coordUnobsRes,
+                                   labelToAuthSeq, authToLabelSeq)
             self.__modelNumName = ret['model_num_name']
             self.__authAsymId = ret['auth_asym_id']
             self.__authSeqId = ret['auth_seq_id']
@@ -149,6 +152,7 @@ class RosettaMRParserListener(ParseTreeListener):
             self.__coordAtomSite = ret['coord_atom_site']
             self.__coordUnobsRes = ret['coord_unobs_res']
             self.__labelToAuthSeq = ret['label_to_auth_seq']
+            self.__authToLabelSeq = ret['auth_to_label_seq']
 
         self.__hasPolySeq = self.__polySeq is not None and len(self.__polySeq) > 0
 
@@ -381,6 +385,20 @@ class RosettaMRParserListener(ParseTreeListener):
                 if atomId is None\
                    or (atomId is not None and len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0):
                     chainAssign.append((chainId, seqId, cifCompId))
+
+        if len(chainAssign) == 0:
+            for ps in self.__polySeq:
+                chainId = ps['chain_id']
+                if fixedChainId is not None and chainId != fixedChainId:
+                    continue
+                seqKey = (chainId, seqId)
+                if seqKey in self.__authToLabelSeq:
+                    _, seqId = self.__authToLabelSeq[seqKey]
+                    if seqId in ps['seq_id']:
+                        cifCompId = ps['comp_id'][ps['seq_id'].index(seqId)]
+                        if atomId is None\
+                           or (atomId is not None and len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0):
+                            chainAssign.append((chainId, seqId, cifCompId))
 
         if len(chainAssign) == 0 and self.__altPolySeq is not None:
             for ps in self.__altPolySeq:
@@ -2066,11 +2084,15 @@ class RosettaMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by RosettaMRParser#rdc_restraint.
     def exitRdc_restraint(self, ctx: RosettaMRParser.Rdc_restraintContext):
-        seqId1 = int(str(ctx.Integer(0)))
-        atomId1 = str(ctx.Simple_name(0)).upper()
-        seqId2 = int(str(ctx.Integer(1)))
-        atomId2 = str(ctx.Simple_name(1)).upper()
-        target_value = float(str(ctx.Float()))
+        try:
+            seqId1 = int(str(ctx.Integer(0)))
+            atomId1 = str(ctx.Simple_name(0)).upper()
+            seqId2 = int(str(ctx.Integer(1)))
+            atomId2 = str(ctx.Simple_name(1)).upper()
+            target_value = float(str(ctx.Float()))
+        except ValueError:
+            self.rdcRestraints -= 1
+            return
 
         validRange = True
         dstFunc = {'weight': 1.0}
@@ -2215,8 +2237,12 @@ class RosettaMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by RosettaMRParser#disulfide_bond_linkage.
     def exitDisulfide_bond_linkage(self, ctx: RosettaMRParser.Disulfide_bond_linkageContext):
-        seqId1 = int(str(ctx.Integer(0)))
-        seqId2 = int(str(ctx.Integer(1)))
+        try:
+            seqId1 = int(str(ctx.Integer(0)))
+            seqId2 = int(str(ctx.Integer(1)))
+        except ValueError:
+            self.geoRestraints -= 1
+            return
 
         if not self.__hasPolySeq:
             return
@@ -2275,19 +2301,5 @@ class RosettaMRParserListener(ParseTreeListener):
 
         return {k: 1 for k, v in contentSubtype.items() if v > 0}
 
-    def getCoordAtomSite(self):
-        """ Return coordinates' atom name dictionary of each residue.
-        """
-        return self.__coordAtomSite
-
-    def getCoordUnobsRes(self):
-        """ Return catalog of unobserved residues of the coordinates.
-        """
-        return self.__coordUnobsRes
-
-    def getLabelToAuthSeq(self):
-        """ Return dictionary of differences between label_seq_id (as key) to auth_seq_id (as value).
-        """
-        return self.__labelToAuthSeq
 
 # del RosettaMRParser

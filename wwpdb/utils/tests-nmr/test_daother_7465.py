@@ -74,11 +74,8 @@ class TestNmrDpUtility(unittest.TestCase):
             error_type = {str(k): len(v) for k, v in report['error'].items() if str(k) != 'total'}
             print('%s: %s, %s' % (cs_type, report['information']['status'], error_type))
 
-        if cs_type == 'daother-7465':
-            self.assertIn('content_mismatch', report['error'])
-            self.assertEqual(1, report['error']['total'])
-        else:
-            self.assertNotEqual(report['information']['status'], 'Error')
+        self.assertIn('content_mismatch', report['error'])
+        self.assertEqual(1, report['error']['total'])
 
     def test_nmr_cs_str_consistency_check_daother_7465(self):
         self.__test_nmr_cs_str_consistency('daother-7465')

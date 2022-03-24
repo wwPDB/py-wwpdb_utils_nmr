@@ -42,8 +42,9 @@ class CyanaMRReader:
 
     def __init__(self, verbose=True, log=sys.stdout, cR=None, polySeqModel=None,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
-                 coordAtomSite=None, coordUnobsRes=None, labelToAuthSeq=None,
-                 ccU=None, csStat=None, nefT=None):
+                 coordAtomSite=None, coordUnobsRes=None,
+                 labelToAuthSeq=None, authToLabelSeq=None,
+                 ccU=None, csStat=None, nefT=None, upl_or_lol=None):
         self.__verbose = verbose
         self.__lfh = log
 
@@ -59,6 +60,7 @@ class CyanaMRReader:
         self.__coordAtomSite = coordAtomSite
         self.__coordUnobsRes = coordUnobsRes
         self.__labelToAuthSeq = labelToAuthSeq
+        self.__authToLabelSeq = authToLabelSeq
 
         # CCD accessing utility
         self.__ccU = ChemCompUtil(verbose, log) if ccU is None else ccU
@@ -68,6 +70,8 @@ class CyanaMRReader:
 
         # NEFTranslator
         self.__nefT = NEFTranslator(verbose, log, self.__ccU, self.__csStat) if nefT is None else nefT
+
+        self.__utl_or_lol = upl_or_lol
 
     def parse(self, mrFilePath, cifFilePath=None):
         """ Parse CYANA MR file.
@@ -104,7 +108,7 @@ class CyanaMRReader:
 
                 messageList = lexer_error_listener.getMessageList()
 
-                if messageList is not None:
+                if messageList is not None and self.__verbose:
                     for description in messageList:
                         self.__lfh.write(f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n")
                         if 'input' in description:
@@ -121,13 +125,14 @@ class CyanaMRReader:
                 walker = ParseTreeWalker()
                 listener = CyanaMRParserListener(self.__verbose, self.__lfh, self.__cR, self.__polySeqModel,
                                                  self.__representativeModelId,
-                                                 self.__coordAtomSite, self.__coordUnobsRes, self.__labelToAuthSeq,
-                                                 self.__ccU, self.__csStat, self.__nefT, 'upl_only')
+                                                 self.__coordAtomSite, self.__coordUnobsRes,
+                                                 self.__labelToAuthSeq, self.__authToLabelSeq,
+                                                 self.__ccU, self.__csStat, self.__nefT, self.__utl_or_lol)
                 walker.walk(listener, tree)
 
                 messageList = parser_error_listener.getMessageList()
 
-                if messageList is not None:
+                if messageList is not None and self.__verbose:
                     for description in messageList:
                         self.__lfh.write(f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n")
                         if 'input' in description:

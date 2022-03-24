@@ -96,7 +96,7 @@ class AmberPTReader:
 
                 messageList = lexer_error_listener.getMessageList()
 
-                if messageList is not None:
+                if messageList is not None and self.__verbose:
                     for description in messageList:
                         self.__lfh.write(f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n")
                         if 'input' in description:
@@ -118,7 +118,7 @@ class AmberPTReader:
 
                 messageList = parser_error_listener.getMessageList()
 
-                if messageList is not None:
+                if messageList is not None and self.__verbose:
                     for description in messageList:
                         self.__lfh.write(f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n")
                         if 'input' in description:

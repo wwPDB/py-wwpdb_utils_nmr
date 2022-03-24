@@ -10,6 +10,7 @@
 import sys
 import re
 import itertools
+import copy
 
 import numpy as np
 
@@ -33,7 +34,8 @@ try:
                                                        CS_RESTRAINT_ERROR,
                                                        T1T2_RESTRAINT_RANGE,
                                                        T1T2_RESTRAINT_ERROR,
-                                                       XPLOR_RDC_PRINCIPAL_AXIS_NAMES)
+                                                       XPLOR_RDC_PRINCIPAL_AXIS_NAMES,
+                                                       XPLOR_ORIGIN_AXIS_COLS)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import (NEFTranslator,
@@ -55,7 +57,8 @@ except ImportError:
                                            CS_RESTRAINT_ERROR,
                                            T1T2_RESTRAINT_RANGE,
                                            T1T2_RESTRAINT_ERROR,
-                                           XPLOR_RDC_PRINCIPAL_AXIS_NAMES)
+                                           XPLOR_RDC_PRINCIPAL_AXIS_NAMES,
+                                           XPLOR_ORIGIN_AXIS_COLS)
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.NEFTranslator.NEFTranslator import (NEFTranslator,
@@ -158,6 +161,7 @@ class CnsMRParserListener(ParseTreeListener):
     __coordAtomSite = None
     __coordUnobsRes = None
     __labelToAuthSeq = None
+    __authToLabelSeq = None
     __preferAuthSeq = True
 
     # current restraint subtype
@@ -205,7 +209,8 @@ class CnsMRParserListener(ParseTreeListener):
 
     def __init__(self, verbose=True, log=sys.stdout, cR=None, polySeq=None,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
-                 coordAtomSite=None, coordUnobsRes=None, labelToAuthSeq=None,
+                 coordAtomSite=None, coordUnobsRes=None,
+                 labelToAuthSeq=None, authToLabelSeq=None,
                  ccU=None, csStat=None, nefT=None):
         self.__verbose = verbose
         self.__lfh = log
@@ -216,7 +221,8 @@ class CnsMRParserListener(ParseTreeListener):
         if self.__hasCoord:
             ret = checkCoordinates(verbose, log, cR, polySeq,
                                    representativeModelId,
-                                   coordAtomSite, coordUnobsRes, labelToAuthSeq)
+                                   coordAtomSite, coordUnobsRes,
+                                   labelToAuthSeq, authToLabelSeq)
             self.__modelNumName = ret['model_num_name']
             self.__authAsymId = ret['auth_asym_id']
             self.__authSeqId = ret['auth_seq_id']
@@ -227,6 +233,7 @@ class CnsMRParserListener(ParseTreeListener):
             self.__coordAtomSite = ret['coord_atom_site']
             self.__coordUnobsRes = ret['coord_unobs_res']
             self.__labelToAuthSeq = ret['label_to_auth_seq']
+            self.__authToLabelSeq = ret['auth_to_label_seq']
 
         self.__hasPolySeq = self.__polySeq is not None and len(self.__polySeq) > 0
 
@@ -691,11 +698,11 @@ class CnsMRParserListener(ParseTreeListener):
         if not self.__hasPolySeq:
             return
 
-        compId = self.atomSelectionSet[0][0]['comp_id']
-        peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
-
         if not self.areUniqueCoordAtoms('a dihedral angle (DIHE)'):
             return
+
+        compId = self.atomSelectionSet[0][0]['comp_id']
+        peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
 
         for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
                                                             self.atomSelectionSet[1],
@@ -800,13 +807,19 @@ class CnsMRParserListener(ParseTreeListener):
 
         return dstFunc
 
-    def areUniqueCoordAtoms(self, subtype_name):
+    def areUniqueCoordAtoms(self, subtype_name, skip_col=None):
         """ Check whether atom selection sets are uniquely assigned.
         """
 
-        for _atomSelectionSet in self.atomSelectionSet:
+        for col, _atomSelectionSet in enumerate(self.atomSelectionSet):
+            _lenAtomSelectionSet = len(_atomSelectionSet)
 
-            if len(_atomSelectionSet) < 2:
+            if _lenAtomSelectionSet == 0:
+                if skip_col is not None and col in skip_col:
+                    continue
+                return False  # raised error already
+
+            if _lenAtomSelectionSet == 1:
                 continue
 
             for atom1, atom2 in itertools.combinations(_atomSelectionSet, _atomSelectionSet):
@@ -931,7 +944,7 @@ class CnsMRParserListener(ParseTreeListener):
         if not self.__hasPolySeq:
             return
 
-        if not self.areUniqueCoordAtoms('an RDC (SANI)'):
+        if not self.areUniqueCoordAtoms('an RDC (SANI)', XPLOR_ORIGIN_AXIS_COLS):
             return
 
         chain_id_1 = self.atomSelectionSet[4][0]['chain_id']
@@ -1864,7 +1877,7 @@ class CnsMRParserListener(ParseTreeListener):
         if not self.__hasPolySeq:
             return
 
-        if not self.areUniqueCoordAtoms('a diffusion anisotropy (DANI)'):
+        if not self.areUniqueCoordAtoms('a diffusion anisotropy (DANI)', XPLOR_ORIGIN_AXIS_COLS):
             return
 
         chain_id_1 = self.atomSelectionSet[4][0]['chain_id']
@@ -2208,19 +2221,32 @@ class CnsMRParserListener(ParseTreeListener):
 
         if 'seq_ids' in _factor and len(_factor['seq_ids']) > 0\
            and ('seq_id' not in _factor or len(_factor['seq_id']) == 0):
+            seqId = _factor['seq_ids'][0]
+            _seqId = toRegEx(seqId)
             seqIds = []
             for chainId in _factor['chain_id']:
                 ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chainId), None)
                 if ps is not None:
+                    found = False
                     for realSeqId in ps['seq_id']:
                         if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                             realCompId = ps['comp_id'][ps['seq_id'].index(realSeqId)]
                             if realCompId not in _factor['comp_id']:
                                 continue
-                        seqId = _factor['seq_ids'][0]
-                        _seqId = toRegEx(seqId)
                         if re.match(_seqId, str(realSeqId)):
                             seqIds.append(realSeqId)
+                            found = True
+                    if not found:
+                        for realSeqId in ps['seq_id']:
+                            if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
+                                realCompId = ps['comp_id'][ps['seq_id'].index(realSeqId)]
+                                if realCompId not in _factor['comp_id']:
+                                    continue
+                            seqKey = (chainId, realSeqId)
+                            if seqKey in self.__authToLabelSeq:
+                                _, realSeqId = self.__authToLabelSeq[seqKey]
+                                if re.match(_seqId, str(realSeqId)):
+                                    seqIds.append(realSeqId)
             _factor['seq_id'] = list(set(seqIds))
             del _factor['seq_ids']
 
@@ -2340,6 +2366,18 @@ class CnsMRParserListener(ParseTreeListener):
 
                     seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck)
 
+                    if compId is None and seqKey in self.__authToLabelSeq:
+                        _, seqId = self.__authToLabelSeq[seqKey]
+                        if ps is not None and seqId in ps['seq_id']:
+                            compId = ps['comp_id'][ps['seq_id'].index(seqId)]
+                            seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck)
+
+                    if compId is None and coordAtomSite is not None and ps is not None and seqKey[1] in ps['seq_id']:
+                        compId = ps['comp_id'][ps['seq_id'].index(seqKey[1])]
+
+                    if compId is None:
+                        continue
+
                     for atomId in _factor['atom_id']:
                         if self.__cur_subtype in ('rdc', 'diff') and atomId in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
                             continue
@@ -2405,11 +2443,15 @@ class CnsMRParserListener(ParseTreeListener):
                                 else:
                                     ccdCheck = True
 
-                            if ccdCheck and compId is not None:
+                            if ccdCheck and compId is not None and _atomId not in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
                                 if self.__ccU.updateChemCompDict(compId) and ('comp_id' not in _factor or compId in _factor['comp_id']):
                                     cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId), None)
                                     if cca is not None and ('type_symbol' not in _factor or cca[self.__ccU.ccaTypeSymbol] in _factor['type_symbol']):
                                         _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId})
+                                        if cifCheck and seqKey not in self.__coordUnobsRes:
+                                            self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                                                f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.\n"
+                                    elif cca is None:
                                         if cifCheck and seqKey not in self.__coordUnobsRes:
                                             self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                                                 f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.\n"
@@ -2428,8 +2470,10 @@ class CnsMRParserListener(ParseTreeListener):
         if len(_factor['atom_selection']) == 0:
             if self.__cur_subtype in ('rdc', 'diff') and _factor['atom_id'][0] in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
                 return _factor
+            __factor = copy.copy(_factor)
+            del __factor['atom_selection']
             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                f"The {clauseName} has no effect.\n"
+                f"The {clauseName} has no effect for factor {__factor}.\n"
 
         if 'chain_id' in _factor:
             del _factor['chain_id']
@@ -2750,9 +2794,18 @@ class CnsMRParserListener(ParseTreeListener):
                 for chainId in self.factor['chain_id']:
                     ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chainId), None)
                     if ps is not None:
+                        found = False
                         for realSeqId in ps['seq_id']:
                             if re.match(_seqId, str(realSeqId)):
                                 _seqIdSelect.add(realSeqId)
+                                found = True
+                        if not found:
+                            for realSeqId in ps['seq_id']:
+                                seqKey = (chainId, realSeqId)
+                                if seqKey in self.__authToLabelSeq:
+                                    _, realSeqId = self.__authToLabelSeq[seqKey]
+                                    if re.match(_seqId, str(realSeqId)):
+                                        _seqIdSelect.add(realSeqId)
                 self.factor['seq_id'] = list(_seqIdSelect)
 
             _atomIdSelect = set()
@@ -3881,19 +3934,5 @@ class CnsMRParserListener(ParseTreeListener):
 
         return {k: v for k, v in contentSubtype.items() if v > 0}
 
-    def getCoordAtomSite(self):
-        """ Return coordinates' atom name dictionary of each residue.
-        """
-        return self.__coordAtomSite
-
-    def getCoordUnobsRes(self):
-        """ Return catalog of unobserved residues of the coordinates.
-        """
-        return self.__coordUnobsRes
-
-    def getLabelToAuthSeq(self):
-        """ Return dictionary of differences between label_seq_id (as key) to auth_seq_id (as value).
-        """
-        return self.__labelToAuthSeq
 
 # del CnsMRParser

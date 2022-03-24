@@ -126,6 +126,7 @@ class CyanaMRParserListener(ParseTreeListener):
     __coordAtomSite = None
     __coordUnobsRes = None
     __labelToAuthSeq = None
+    __authToLabelSeq = None
     __preferAuthSeq = True
 
     # current restraint subtype
@@ -144,7 +145,8 @@ class CyanaMRParserListener(ParseTreeListener):
 
     def __init__(self, verbose=True, log=sys.stdout, cR=None, polySeq=None,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
-                 coordAtomSite=None, coordUnobsRes=None, labelToAuthSeq=None,
+                 coordAtomSite=None, coordUnobsRes=None,
+                 labelToAuthSeq=None, authToLabelSeq=None,
                  ccU=None, csStat=None, nefT=None, upl_or_lol=None):
         self.__verbose = verbose
         self.__lfh = log
@@ -154,7 +156,8 @@ class CyanaMRParserListener(ParseTreeListener):
         if self.__hasCoord:
             ret = checkCoordinates(verbose, log, cR, polySeq,
                                    representativeModelId,
-                                   coordAtomSite, coordUnobsRes, labelToAuthSeq)
+                                   coordAtomSite, coordUnobsRes,
+                                   labelToAuthSeq, authToLabelSeq)
             self.__modelNumName = ret['model_num_name']
             self.__authAsymId = ret['auth_asym_id']
             self.__authSeqId = ret['auth_seq_id']
@@ -165,6 +168,7 @@ class CyanaMRParserListener(ParseTreeListener):
             self.__coordAtomSite = ret['coord_atom_site']
             self.__coordUnobsRes = ret['coord_unobs_res']
             self.__labelToAuthSeq = ret['label_to_auth_seq']
+            self.__authToLabelSeq = ret['auth_to_label_seq']
 
         self.__hasPolySeq = self.__polySeq is not None and len(self.__polySeq) > 0
 
@@ -183,6 +187,8 @@ class CyanaMRParserListener(ParseTreeListener):
             msg = f"The argument 'upl_or_lol' must be one of {(None, 'upl_only', 'upl_w_lol', 'lol_only', 'lol_w_upl')}"
             self.__lfh.write(f"'+CyanaMRParserListener.__init__() ++ ValueError  -  {msg}\n")
             raise ValueError(f"'+CyanaMRParserListener.__init__() ++ ValueError  -  {msg}")
+
+        self.__max_dist_value = None
 
     # Enter a parse tree produced by CyanaMRParser#cyana_mr.
     def enterCyana_mr(self, ctx: CyanaMRParser.Cyana_mrContext):  # pylint: disable=unused-argument
@@ -219,30 +225,33 @@ class CyanaMRParserListener(ParseTreeListener):
         compId2 = str(ctx.Simple_name(2)).upper()
         atomId2 = str(ctx.Simple_name(3)).upper()
 
-        if self.__upl_or_lol is None:
-            msg = f"The 'upl_or_lol' argument must be chosen from {('upl_only', 'upl_w_lol', 'lol_only', 'lol_w_upl')}"
-            self.__lfh.write(f"'+CyanaMRParserListener.exitDistance_restraint() ++ ValueError  -  {msg}\n")
-            raise ValueError(f"'+CyanaMRParserListener.exitDistance_restraint() ++ ValueError  -  {msg}")
-
         target_value = None
         lower_limit = None
         upper_limit = None
 
-        if self.__upl_or_lol == 'upl_only':
-            upper_limit = float(str(ctx.Float()))
+        value = float(str(ctx.Float()))
+
+        if DIST_RANGE_MIN <= value <= DIST_RANGE_MAX:
+            if self.__max_dist_value is None:
+                self.__max_dist_value = value
+            if value > self.__max_dist_value:
+                self.__max_dist_value = value
+
+        if self.__upl_or_lol is None or self.__upl_or_lol == 'upl_only':
+            upper_limit = value
             lower_limit = 1.8  # default value of PDBStat
             target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
 
         elif self.__upl_or_lol == 'upl_w_lol':
-            upper_limit = float(str(ctx.Float()))
+            upper_limit = value
 
         elif self.__upl_or_lol == 'lol_only':
-            lower_limit = float(str(ctx.Float()))
+            lower_limit = value
             upper_limit = 5.5  # default value of PDBStat
             target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
 
         else:  # 'lol_w_upl'
-            lower_limit = float(str(ctx.Float()))
+            lower_limit = value
 
         dstFunc = self.validateDistanceRange(1.0, target_value, lower_limit, upper_limit)
 
@@ -344,6 +353,22 @@ class CyanaMRParserListener(ParseTreeListener):
                     if cifCompId != compId:
                         self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
                             f"The residue name {seqId}:{compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
+
+        if len(chainAssign) == 0:
+            for ps in self.__polySeq:
+                chainId = ps['chain_id']
+                seqKey = (chainId, seqId)
+                if seqKey in self.__authToLabelSeq:
+                    _, seqKey = self.__authToLabelSeq[seqKey]
+                    if seqId in ps['seq_id']:
+                        cifCompId = ps['comp_id'][ps['seq_id'].index(seqId)]
+                        if cifCompId == compId:
+                            chainAssign.append((chainId, seqId, cifCompId))
+                        elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                            chainAssign.append((chainId, seqId, cifCompId))
+                            if cifCompId != compId:
+                                self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
+                                    f"The residue name {seqId}:{compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
 
         if len(chainAssign) == 0 and self.__altPolySeq is not None:
             for ps in self.__altPolySeq:
@@ -1080,19 +1105,11 @@ class CyanaMRParserListener(ParseTreeListener):
 
         return {k: 1 for k, v in contentSubtype.items() if v > 0}
 
-    def getCoordAtomSite(self):
-        """ Return coordinates' atom name dictionary of each residue.
+    def isUplDistanceRestraint(self):
+        """ Return whether CYANA MR file contains upper limit distance restraints.
         """
-        return self.__coordAtomSite
-
-    def getCoordUnobsRes(self):
-        """ Return catalog of unobserved residues of the coordinates.
-        """
-        return self.__coordUnobsRes
-
-    def getLabelToAuthSeq(self):
-        """ Return dictionary of differences between label_seq_id (as key) to auth_seq_id (as value).
-        """
-        return self.__labelToAuthSeq
+        if self.__max_dist_value is None:
+            return None
+        return self.__max_dist_value > 3.5
 
 # del CyanaMRParser

@@ -159,6 +159,8 @@ KNOWN_ANGLE_CARBO_SEQ_OFFSET = {'PHI': [0, 0, 0, -1],  # i, i, i, i-n; for n > 0
 
 XPLOR_RDC_PRINCIPAL_AXIS_NAMES = ('OO', 'X', 'Y', 'Z')
 
+XPLOR_ORIGIN_AXIS_COLS = [0, 1, 2, 3]
+
 
 def toNpArray(atom):
     """ Return Numpy array of a given Cartesian coordinate in {'x': float, 'y': float, 'z': float} format.
@@ -221,7 +223,8 @@ def translateAmberAtomNomenclature(atomId):
 
 def checkCoordinates(verbose=True, log=sys.stdout, cR=None, polySeq=None,
                      representativeModelId=REPRESENTATIVE_MODEL_ID,
-                     coordAtomSite=None, coordUnobsRes=None, labelToAuthSeq=None,
+                     coordAtomSite=None, coordUnobsRes=None,
+                     labelToAuthSeq=None, authToLabelSeq=None,
                      testTag=True):
     """ Examine the coordinates for MR/PT parser listener.
     """
@@ -338,7 +341,7 @@ def checkCoordinates(verbose=True, log=sys.stdout, cR=None, polySeq=None,
         authAtomId = 'pdbx_auth_atom_name' if cR.hasItem('atom_site', 'pdbx_auth_atom_name') else 'auth_atom_id'
         altAuthAtomId = None if authAtomId == 'auth_atom_id' else 'auth_atom_id'
 
-        if coordAtomSite is None or labelToAuthSeq is None:
+        if coordAtomSite is None or labelToAuthSeq is None or authToLabelSeq is None:
 
             if altAuthAtomId is not None:
                 coord = cR.getDictListWithFilter('atom_site',
@@ -385,6 +388,7 @@ def checkCoordinates(verbose=True, log=sys.stdout, cR=None, polySeq=None,
                     altSeqId = next((c['alt_seq_id'] for c in coord if c['chain_id'] == chainId and c['seq_id'] == seqId), None)
                     if altSeqId is not None and altSeqId.isdigit():
                         labelToAuthSeq[(chainId, int(altSeqId))] = seqKey
+            authToLabelSeq = {v: k for k, v in labelToAuthSeq.items()}
 
         if coordUnobsRes is None:
             coordUnobsRes = {}
@@ -419,7 +423,8 @@ def checkCoordinates(verbose=True, log=sys.stdout, cR=None, polySeq=None,
             'alt_polymer_sequence': altPolySeq,
             'coord_atom_site': coordAtomSite,
             'coord_unobs_res': coordUnobsRes,
-            'label_to_auth_seq': labelToAuthSeq}
+            'label_to_auth_seq': labelToAuthSeq,
+            'auth_to_label_seq': authToLabelSeq}
 
 
 def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms):

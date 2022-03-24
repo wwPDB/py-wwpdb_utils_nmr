@@ -149,6 +149,7 @@
 # 17-Feb-2022  M. Yokochi - do report incompletely assigned chemical shifts for conventional deposition (DAOTHER-7662)
 # 21-Feb-2022  M. Yokochi - verify 'onebond' coherence transfer type using CCD (DAOTHER-7681, issue #2)
 # 21-Feb-2022  M. Yokochi - verify pseudo atom names in NMR restraints are in assigned chemical shifts (DAOTHER-7681, issue #1)
+# 24-Mar-2022  M. Yokochi - utilize software specific MR parsers for sanity check of NMR restraint files (DAOTHER-7690)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -199,7 +200,8 @@ try:
     from wwpdb.utils.nmr.rci.RCI import RCI
     from wwpdb.utils.nmr.CifToNmrStar import CifToNmrStar
     from wwpdb.utils.nmr.NmrStarToCif import NmrStarToCif
-    from wwpdb.utils.nmr.mr.ParserListenerUtil import (getTypeOfDihedralRestraint,
+    from wwpdb.utils.nmr.mr.ParserListenerUtil import (checkCoordinates,
+                                                       getTypeOfDihedralRestraint,
                                                        KNOWN_ANGLE_NAMES,
                                                        CS_RESTRAINT_RANGE,
                                                        DIST_RESTRAINT_RANGE,
@@ -247,7 +249,8 @@ except ImportError:
     from nmr.rci.RCI import RCI
     from nmr.CifToNmrStar import CifToNmrStar
     from nmr.NmrStarToCif import NmrStarToCif
-    from nmr.mr.ParserListenerUtil import (getTypeOfDihedralRestraint,
+    from nmr.mr.ParserListenerUtil import (checkCoordinates,
+                                           getTypeOfDihedralRestraint,
                                            KNOWN_ANGLE_NAMES,
                                            CS_RESTRAINT_RANGE,
                                            DIST_RESTRAINT_RANGE,
@@ -689,6 +692,59 @@ def dihedral_angle(p0, p1, p2, p3):
     y = np.dot(np.cross(b1, v), w)
 
     return np.degrees(np.arctan2(y, x))
+
+
+def concat_nmr_restraint_names(content_subtype):
+    """ Return concatenated NMR restraint names.
+    """
+
+    subtype_name = ""
+    if 'dist_restraint' in content_subtype:
+        subtype_name += "Distance restraints, "
+    if 'dihed_restraint' in content_subtype:
+        subtype_name += "Dihedral angle restraints, "
+    if 'rdc_restraint' in content_subtype:
+        subtype_name += "RDC restraints, "
+    if 'plane_restraint' in content_subtype:
+        subtype_name += "Planarity restraints, "
+    if 'hbond_restraint' in content_subtype:
+        subtype_name += "Hydrogen bond restraints, "
+    if 'adist_restraint' in content_subtype:
+        subtype_name += "Anti-distance restraints, "
+    if 'jcoup_restraint' in content_subtype:
+        subtype_name += "Scalar J-coupling restraints, "
+    if 'hcycs_restraint' in content_subtype:
+        subtype_name += "Carbon chemical shift restraints, "
+    if 'procs_restraint' in content_subtype:
+        subtype_name += "Proton chemical shift restraints, "
+    if 'rama_restraint' in content_subtype:
+        subtype_name += "Dihedral angle database restraints, "
+    if 'radi_restraint' in content_subtype:
+        subtype_name += "Radius of gyration restraints, "
+    if 'diff_restraint' in content_subtype:
+        subtype_name += "Diffusion anisotropy restraints, "
+    if 'nbase_restraint' in content_subtype:
+        subtype_name += "Nucleic acid base orientation database restraints, "
+    if 'csa_restraint' in content_subtype:
+        subtype_name += "CSA restraints, "
+    if 'ang_restraint' in content_subtype:
+        subtype_name += "Angle database restraints, "
+    if 'pre_restraint' in content_subtype:
+        subtype_name += "PRE restraints, "
+    if 'pcs_restraint' in content_subtype:
+        subtype_name += "PCS restraints, "
+    if 'prdc_restraint' in content_subtype:
+        subtype_name += "Paramagnetic RDC restraints, "
+    if 'pang_restraint' in content_subtype:
+        subtype_name += "Paramagnetic orientation restraints, "
+    if 'pccr_restraint' in content_subtype:
+        subtype_name += "Paramagnetic CCR restraints, "
+    if 'geo_restraint' in content_subtype:
+        subtype_name += "Coordinate geometry restraints, "
+    if 'noepk_restraint' in content_subtype:
+        subtype_name += "NOESY peak volume restraints, "
+
+    return '' if len(subtype_name) == 0 else subtype_name[:-2]
 
 
 class NmrDpUtility:
@@ -6978,6 +7034,7 @@ class NmrDpUtility:
                         break
 
             content_subtype = None
+            valid = True
 
             try:
 
@@ -7010,6 +7067,8 @@ class NmrDpUtility:
                                     err += f"{description['marker']}\n"
 
                     if len(err) > 0:
+                        valid = False
+
                         err = f"Could not interprete {file_name!r} as an {mr_format_name} restraint file:\n{err[0:-1]}"
 
                         self.report.error.appendDescription('format_issue',
@@ -7024,20 +7083,24 @@ class NmrDpUtility:
                     elif listener is not None:
 
                         if listener.warningMessage is not None:
-                            messages = listener.warningMessage.split('\n')
-                            if len(messages) > 5:
-                                messages = messages[:5]
-                                msg = '\n'.join(messages)
-                                msg += '\nThose similar errors may continue...'
-                            else:
-                                msg = '\n'.join(messages)
-                            err = f"Could not interprete {file_name!r} due to the following data issue(s):\n{msg}"
+                            messages = [msg for msg in listener.warningMessage.split('\n') if 'warning' not in msg]
+                            if len(messages) > 0:
+                                valid = False
 
-                            self.report.error.appendDescription('format_issue',
-                                                                {'file_name': file_name, 'description': err})
-                            self.report.setError()
+                                if len(messages) > 5:
+                                    messages = messages[:5]
+                                    msg = '\n'.join(messages)
+                                    msg += '\nThose similar errors may continue...'
+                                else:
+                                    msg = '\n'.join(messages)
+                                err = f"Could not interprete {file_name!r} due to the following data issue(s):\n{msg}"
 
-                        else:
+                                self.report.error.appendDescription('format_issue',
+                                                                    {'file_name': file_name, 'description': err})
+                                self.report.setError()
+
+                        if valid:
+
                             has_chem_shift = has_coordinate = False
 
                             content_subtype = listener.getContentSubtype()
@@ -7079,6 +7142,8 @@ class NmrDpUtility:
                                     err += f"{description['marker']}\n"
 
                     if len(err) > 0:
+                        valid = False
+
                         err = f"Could not interprete {file_name!r} as a {mr_format_name} restraint file:\n{err[0:-1]}"
 
                         self.report.error.appendDescription('format_issue',
@@ -7093,20 +7158,24 @@ class NmrDpUtility:
                     elif listener is not None:
 
                         if listener.warningMessage is not None:
-                            messages = listener.warningMessage.split('\n')
-                            if len(messages) > 5:
-                                messages = messages[:5]
-                                msg = '\n'.join(messages)
-                                msg += '\nThose similar errors may continue...'
-                            else:
-                                msg = '\n'.join(messages)
-                            err = f"Could not interprete {file_name!r} due to the following data issue(s):\n{msg}"
+                            messages = [msg for msg in listener.warningMessage.split('\n') if 'warning' not in msg]
+                            if len(messages) > 0:
+                                valid = False
 
-                            self.report.error.appendDescription('format_issue',
-                                                                {'file_name': file_name, 'description': err})
-                            self.report.setError()
+                                if len(messages) > 5:
+                                    messages = messages[:5]
+                                    msg = '\n'.join(messages)
+                                    msg += '\nThose similar errors may continue...'
+                                else:
+                                    msg = '\n'.join(messages)
+                                err = f"Could not interprete {file_name!r} due to the following data issue(s):\n{msg}"
 
-                        else:
+                                self.report.error.appendDescription('format_issue',
+                                                                    {'file_name': file_name, 'description': err})
+                                self.report.setError()
+
+                        if valid:
+
                             has_chem_shift = has_coordinate = False
 
                             content_subtype = listener.getContentSubtype()
@@ -7147,6 +7216,8 @@ class NmrDpUtility:
                                     err += f"{description['marker']}\n"
 
                     if len(err) > 0:
+                        valid = False
+
                         err = f"Could not interprete {file_name!r} as an {mr_format_name} restraint file:\n{err[0:-1]}"
 
                         self.report.error.appendDescription('format_issue',
@@ -7161,20 +7232,24 @@ class NmrDpUtility:
                     elif listener is not None:
 
                         if listener.warningMessage is not None:
-                            messages = listener.warningMessage.split('\n')
-                            if len(messages) > 5:
-                                messages = messages[:5]
-                                msg = '\n'.join(messages)
-                                msg += '\nThose similar errors may continue...'
-                            else:
-                                msg = '\n'.join(messages)
-                            err = f"Could not interprete {file_name!r} due to the following data issue(s):\n{msg}"
+                            messages = [msg for msg in listener.warningMessage.split('\n') if 'warning' not in msg]
+                            if len(messages) > 0:
+                                valid = False
 
-                            self.report.error.appendDescription('format_issue',
-                                                                {'file_name': file_name, 'description': err})
-                            self.report.setError()
+                                if len(messages) > 5:
+                                    messages = messages[:5]
+                                    msg = '\n'.join(messages)
+                                    msg += '\nThose similar errors may continue...'
+                                else:
+                                    msg = '\n'.join(messages)
+                                err = f"Could not interprete {file_name!r} due to the following data issue(s):\n{msg}"
 
-                        else:
+                                self.report.error.appendDescription('format_issue',
+                                                                    {'file_name': file_name, 'description': err})
+                                self.report.setError()
+
+                        if valid:
+
                             has_chem_shift = has_coordinate = False
 
                             content_subtype = listener.getContentSubtype()
@@ -7215,6 +7290,8 @@ class NmrDpUtility:
                                     err += f"{description['marker']}\n"
 
                     if len(err) > 0:
+                        valid = False
+
                         err = f"Could not interprete {file_name!r} as an {mr_format_name} parameter/topology file:\n{err[0:-1]}"
 
                         self.report.error.appendDescription('format_issue',
@@ -7229,20 +7306,24 @@ class NmrDpUtility:
                     elif listener is not None:
 
                         if listener.warningMessage is not None:
-                            messages = listener.warningMessage.split('\n')
-                            if len(messages) > 5:
-                                messages = messages[:5]
-                                msg = '\n'.join(messages)
-                                msg += '\nThose similar errors may continue...'
-                            else:
-                                msg = '\n'.join(messages)
-                            err = f"Could not interprete {file_name!r} due to the following data issue(s):\n{msg}"
+                            messages = [msg for msg in listener.warningMessage.split('\n') if 'warning' not in msg]
+                            if len(messages) > 0:
+                                valid = False
 
-                            self.report.error.appendDescription('format_issue',
-                                                                {'file_name': file_name, 'description': err})
-                            self.report.setError()
+                                if len(messages) > 5:
+                                    messages = messages[:5]
+                                    msg = '\n'.join(messages)
+                                    msg += '\nThose similar errors may continue...'
+                                else:
+                                    msg = '\n'.join(messages)
+                                err = f"Could not interprete {file_name!r} due to the following data issue(s):\n{msg}"
 
-                        else:
+                                self.report.error.appendDescription('format_issue',
+                                                                    {'file_name': file_name, 'description': err})
+                                self.report.setError()
+
+                        if valid:
+
                             has_chem_shift = has_coordinate = False
 
                             content_subtype = listener.getContentSubtype()
@@ -7281,6 +7362,8 @@ class NmrDpUtility:
                                     err += f"{description['marker']}\n"
 
                     if len(err) > 0:
+                        valid = False
+
                         err = f"Could not interprete {file_name!r} as a {mr_format_name} restraint file:\n{err[0:-1]}"
 
                         self.report.error.appendDescription('format_issue',
@@ -7295,20 +7378,24 @@ class NmrDpUtility:
                     elif listener is not None:
 
                         if listener.warningMessage is not None:
-                            messages = listener.warningMessage.split('\n')
-                            if len(messages) > 5:
-                                messages = messages[:5]
-                                msg = '\n'.join(messages)
-                                msg += '\nThose similar errors may continue...'
-                            else:
-                                msg = '\n'.join(messages)
-                            err = f"Could not interprete {file_name!r} due to the following data issue(s):\n{msg}"
+                            messages = [msg for msg in listener.warningMessage.split('\n') if 'warning' not in msg]
+                            if len(messages) > 0:
+                                valid = False
 
-                            self.report.error.appendDescription('format_issue',
-                                                                {'file_name': file_name, 'description': err})
-                            self.report.setError()
+                                if len(messages) > 5:
+                                    messages = messages[:5]
+                                    msg = '\n'.join(messages)
+                                    msg += '\nThose similar errors may continue...'
+                                else:
+                                    msg = '\n'.join(messages)
+                                err = f"Could not interprete {file_name!r} due to the following data issue(s):\n{msg}"
 
-                        else:
+                                self.report.error.appendDescription('format_issue',
+                                                                    {'file_name': file_name, 'description': err})
+                                self.report.setError()
+
+                        if valid:
+
                             has_chem_shift = has_coordinate = False
 
                             content_subtype = listener.getContentSubtype()
@@ -7318,6 +7405,8 @@ class NmrDpUtility:
                                 has_dist_restraint = 'dist_restraint' in content_subtype
                                 has_dihed_restraint = 'dihed_restraint' in content_subtype
                                 has_rdc_restraint = 'rdc_restraint' in content_subtype
+                                if has_dist_restraint:
+                                    ar['is_upl'] = listener.isUplDistanceRestraint()
 
                 elif file_type == 'nm-res-ros':
 
@@ -7348,6 +7437,8 @@ class NmrDpUtility:
                                     err += f"{description['marker']}\n"
 
                     if len(err) > 0:
+                        valid = False
+
                         err = f"Could not interprete {file_name!r} as a {mr_format_name} restraint file:\n{err[0:-1]}"
 
                         self.report.error.appendDescription('format_issue',
@@ -7362,20 +7453,24 @@ class NmrDpUtility:
                     elif listener is not None:
 
                         if listener.warningMessage is not None:
-                            messages = listener.warningMessage.split('\n')
-                            if len(messages) > 5:
-                                messages = messages[:5]
-                                msg = '\n'.join(messages)
-                                msg += '\nThose similar errors may continue...'
-                            else:
-                                msg = '\n'.join(messages)
-                            err = f"Could not interprete {file_name!r} due to the following data issue(s):\n{msg}"
+                            messages = [msg for msg in listener.warningMessage.split('\n') if 'warning' not in msg]
+                            if len(messages) > 0:
+                                valid = False
 
-                            self.report.error.appendDescription('format_issue',
-                                                                {'file_name': file_name, 'description': err})
-                            self.report.setError()
+                                if len(messages) > 5:
+                                    messages = messages[:5]
+                                    msg = '\n'.join(messages)
+                                    msg += '\nThose similar errors may continue...'
+                                else:
+                                    msg = '\n'.join(messages)
+                                err = f"Could not interprete {file_name!r} due to the following data issue(s):\n{msg}"
 
-                        else:
+                                self.report.error.appendDescription('format_issue',
+                                                                    {'file_name': file_name, 'description': err})
+                                self.report.setError()
+
+                        if valid:
+
                             has_chem_shift = has_coordinate = False
 
                             content_subtype = listener.getContentSubtype()
@@ -7386,147 +7481,161 @@ class NmrDpUtility:
                                 has_dihed_restraint = 'dihed_restraint' in content_subtype
                                 has_rdc_restraint = 'rdc_restraint' in content_subtype
 
-                else:
+                elif file_type == 'nm-res-oth':
 
-                    checked = False
+                    try:
 
-                    if not checked:
+                        checked = False
 
-                        reader = CnsMRReader(self.__verbose, self.__lfh, None, None, None, None, None, None,
-                                             self.__ccU, self.__csStat, self.__nefT)
-                        listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
+                        if not checked:
 
-                        if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
-                           and lexer_err_listener.getMessageList() is None\
-                           and parser_err_listener.getMessageList() is None\
-                           and listener.warningMessage is None:
-
-                            checked = True
-
-                            err = f"The NMR restraint file {file_name!r} ({mr_format_name}) looks like a CNS or XPLOR-NIH restraint file. "\
-                                "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
-
-                            self.report.error.appendDescription('content_mismatch',
-                                                                {'file_name': file_name, 'description': err})
-                            self.report.setError()
-
-                            if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMR() ++ Error  - {err}\n")
-
-                    if not checked:
-
-                        reader = XplorMRReader(self.__verbose, self.__lfh, None, None, None, None, None, None,
-                                               self.__ccU, self.__csStat, self.__nefT)
-                        listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
-
-                        if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
-                           and lexer_err_listener.getMessageList() is None\
-                           and parser_err_listener.getMessageList() is None\
-                           and listener.warningMessage is None:
-
-                            checked = True
-
-                            err = f"The NMR restraint file {file_name!r} ({mr_format_name}) looks like an XPLOR-NIH restraint file. "\
-                                "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
-
-                            self.report.error.appendDescription('content_mismatch',
-                                                                {'file_name': file_name, 'description': err})
-                            self.report.setError()
-
-                            if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMR() ++ Error  - {err}\n")
-
-                    if not checked:
-
-                        reader = AmberMRReader(self.__verbose, self.__lfh, None, None, None, None, None, None,
-                                               self.__ccU, self.__csStat, self.__nefT)
-                        listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None, None)
-
-                        if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
-                           and lexer_err_listener.getMessageList() is None\
-                           and parser_err_listener.getMessageList() is None\
-                           and listener.warningMessage is None:
-
-                            checked = True
-
-                            err = f"The NMR restraint file {file_name!r} ({mr_format_name}) looks like an AMBER restraint file. "\
-                                "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
-
-                            self.report.error.appendDescription('content_mismatch',
-                                                                {'file_name': file_name, 'description': err})
-                            self.report.setError()
-
-                            if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMR() ++ Error  - {err}\n")
-
-                    if not checked:
-
-                        reader = AmberPTReader(self.__verbose, self.__lfh, None, None, None,
-                                               self.__ccU, self.__csStat)
-                        listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
-
-                        if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
-                           and lexer_err_listener.getMessageList() is None\
-                           and parser_err_listener.getMessageList() is None\
-                           and listener.warningMessage is None:
-
-                            checked = True
-
-                            err = f"The NMR restraint file {file_name!r} ({mr_format_name}) looks like an AMBER parameter/topology file. "\
-                                "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
-
-                            self.report.error.appendDescription('content_mismatch',
-                                                                {'file_name': file_name, 'description': err})
-                            self.report.setError()
-
-                            if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMR() ++ Error  - {err}\n")
-
-                    if not checked:
-
-                        reader = CyanaMRReader(self.__verbose, self.__lfh, None, None, None, None, None, None,
-                                               self.__ccU, self.__csStat, self.__nefT)
-                        listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
-
-                        if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
-                           and lexer_err_listener.getMessageList() is None\
-                           and parser_err_listener.getMessageList() is None\
-                           and listener.warningMessage is None:
-
-                            checked = True
-
-                            err = f"The NMR restraint file {file_name!r} ({mr_format_name}) looks like a CYANA restraint file. "\
-                                "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
-
-                            self.report.error.appendDescription('content_mismatch',
-                                                                {'file_name': file_name, 'description': err})
-                            self.report.setError()
-
-                            if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMR() ++ Error  - {err}\n")
-
-                    if not checked:
-
-                        reader = RosettaMRReader(self.__verbose, self.__lfh, None, None, None, None, None, None,
+                            reader = CnsMRReader(False, self.__lfh, None, None, None, None, None, None,
                                                  self.__ccU, self.__csStat, self.__nefT)
-                        listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
+                            listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
-                        if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
-                           and lexer_err_listener.getMessageList() is None\
-                           and parser_err_listener.getMessageList() is None\
-                           and listener.warningMessage is None:
+                            if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
+                               and lexer_err_listener.getMessageList() is None\
+                               and parser_err_listener.getMessageList() is None:
 
-                            checked = True
+                                checked = True
 
-                            err = f"The NMR restraint file {file_name!r} ({mr_format_name}) looks like a ROSETTA restraint file. "\
-                                "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
+                                _content_subtype = listener.getContentSubtype()
 
-                            self.report.error.appendDescription('content_mismatch',
-                                                                {'file_name': file_name, 'description': err})
-                            self.report.setError()
+                                err = f"The NMR restraint file {file_name!r} ({mr_format_name}) looks like a CNS or XPLOR-NIH restraint file, "\
+                                    f"which has {concat_nmr_restraint_names(_content_subtype)}. "\
+                                    "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
 
-                            if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMR() ++ Error  - {err}\n")
+                                self.report.error.appendDescription('content_mismatch',
+                                                                    {'file_name': file_name, 'description': err})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMR() ++ Error  - {err}\n")
+
+                        if not checked:
+
+                            reader = XplorMRReader(False, self.__lfh, None, None, None, None, None, None,
+                                                   self.__ccU, self.__csStat, self.__nefT)
+                            listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
+
+                            if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
+                               and lexer_err_listener.getMessageList() is None\
+                               and parser_err_listener.getMessageList() is None:
+
+                                checked = True
+
+                                _content_subtype = listener.getContentSubtype()
+
+                                err = f"The NMR restraint file {file_name!r} ({mr_format_name}) looks like an XPLOR-NIH restraint file, "\
+                                    f"which has {concat_nmr_restraint_names(_content_subtype)}. "\
+                                    "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
+
+                                self.report.error.appendDescription('content_mismatch',
+                                                                    {'file_name': file_name, 'description': err})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMR() ++ Error  - {err}\n")
+
+                        if not checked:
+
+                            reader = AmberMRReader(False, self.__lfh, None, None, None, None, None, None,
+                                                   self.__ccU, self.__csStat, self.__nefT)
+                            listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None, None)
+
+                            if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
+                               and lexer_err_listener.getMessageList() is None\
+                               and parser_err_listener.getMessageList() is None:
+
+                                checked = True
+
+                                _content_subtype = listener.getContentSubtype()
+
+                                err = f"The NMR restraint file {file_name!r} ({mr_format_name}) looks like an AMBER restraint file, "\
+                                    f"which has {concat_nmr_restraint_names(_content_subtype)}. "\
+                                    "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
+
+                                self.report.error.appendDescription('content_mismatch',
+                                                                    {'file_name': file_name, 'description': err})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMR() ++ Error  - {err}\n")
+
+                        if not checked:
+
+                            reader = AmberPTReader(False, self.__lfh, None, None, None,
+                                                   self.__ccU, self.__csStat)
+                            listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
+
+                            if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
+                               and lexer_err_listener.getMessageList() is None\
+                               and parser_err_listener.getMessageList() is None:
+
+                                checked = True
+
+                                err = f"The NMR restraint file {file_name!r} ({mr_format_name}) looks like an AMBER parameter/topology file. "\
+                                    "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
+
+                                self.report.error.appendDescription('content_mismatch',
+                                                                    {'file_name': file_name, 'description': err})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMR() ++ Error  - {err}\n")
+
+                        if not checked:
+
+                            reader = CyanaMRReader(False, self.__lfh, None, None, None, None, None, None,
+                                                   self.__ccU, self.__csStat, self.__nefT)
+                            listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
+
+                            if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
+                               and lexer_err_listener.getMessageList() is None\
+                               and parser_err_listener.getMessageList() is None:
+
+                                checked = True
+
+                                _content_subtype = listener.getContentSubtype()
+
+                                err = f"The NMR restraint file {file_name!r} ({mr_format_name}) looks like a CYANA restraint file, "\
+                                    f"which has {concat_nmr_restraint_names(_content_subtype)}. "\
+                                    "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
+
+                                self.report.error.appendDescription('content_mismatch',
+                                                                    {'file_name': file_name, 'description': err})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMR() ++ Error  - {err}\n")
+
+                        if not checked:
+
+                            reader = RosettaMRReader(False, self.__lfh, None, None, None, None, None, None,
+                                                     self.__ccU, self.__csStat, self.__nefT)
+                            listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
+
+                            if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
+                               and lexer_err_listener.getMessageList() is None\
+                               and parser_err_listener.getMessageList() is None:
+
+                                checked = True
+
+                                _content_subtype = listener.getContentSubtype()
+
+                                err = f"The NMR restraint file {file_name!r} ({mr_format_name}) looks like a ROSETTA restraint file, "\
+                                    f"which has {concat_nmr_restraint_names(_content_subtype)}. "\
+                                    "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
+
+                                self.report.error.appendDescription('content_mismatch',
+                                                                    {'file_name': file_name, 'description': err})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMR() ++ Error  - {err}\n")
+
+                    except ValueError:
+                        pass
 
             except ValueError as e:
 
@@ -7606,7 +7715,7 @@ class NmrDpUtility:
                                    'topology': 1 if has_topology else 0}
 
             if not is_aux_amb and not has_chem_shift and not has_dist_restraint and not has_dihed_restraint and not has_rdc_restraint\
-               and not has_plane_restraint and not has_hbond_restraint:
+               and not has_plane_restraint and not has_hbond_restraint and valid:
 
                 hint = ""
                 if file_type in ('nm-res-xpl', 'nm-res-cns') and not has_rdc_origins:
@@ -7706,51 +7815,7 @@ class NmrDpUtility:
 
                 elif 'chem_shift' not in content_subtype:
 
-                    subtype_name = ""
-                    if 'dihed_restraint' in content_subtype:
-                        subtype_name += "Dihedral angle restraints, "
-                    if 'rdc_restraint' in content_subtype:
-                        subtype_name += "RDC restraints, "
-                    if 'plane_restraint' in content_subtype:
-                        subtype_name += "Planarity restraints, "
-                    if 'hbond_restraint' in content_subtype:
-                        subtype_name += "Hydrogen bond restraints, "
-                    if 'adist_restraint' in content_subtype:
-                        subtype_name += "Anti-distance restraints, "
-                    if 'jcoup_restraint' in content_subtype:
-                        subtype_name += "Scalar J-coupling restraints, "
-                    if 'hcycs_restraint' in content_subtype:
-                        subtype_name += "Carbon chemical shift restraints, "
-                    if 'procs_restraint' in content_subtype:
-                        subtype_name += "Proton chemical shift restraints, "
-                    if 'rama_restraint' in content_subtype:
-                        subtype_name += "Dihedral angle database restraints, "
-                    if 'radi_restraint' in content_subtype:
-                        subtype_name += "Radius of gyration restraints, "
-                    if 'diff_restraint' in content_subtype:
-                        subtype_name += "Diffusion anisotropy restraints, "
-                    if 'nbase_restraint' in content_subtype:
-                        subtype_name += "Nucleic acid base orientation database restraints, "
-                    if 'csa_restraint' in content_subtype:
-                        subtype_name += "CSA restraints, "
-                    if 'ang_restraint' in content_subtype:
-                        subtype_name += "Angle database restraints, "
-                    if 'pre_restraint' in content_subtype:
-                        subtype_name += "PRE restraints, "
-                    if 'pcs_restraint' in content_subtype:
-                        subtype_name += "PCS restraints, "
-                    if 'prdc_restraint' in content_subtype:
-                        subtype_name += "Paramagnetic RDC restraints, "
-                    if 'pang_restraint' in content_subtype:
-                        subtype_name += "Paramagnetic orientation restraints, "
-                    if 'pccr_restraint' in content_subtype:
-                        subtype_name += "Paramagnetic CCR restraints, "
-                    if 'geo_restraint' in content_subtype:
-                        subtype_name += "Coordinate geometry restraints, "
-                    if 'noepk_restraint' in content_subtype:
-                        subtype_name += "NOESY peak volume restraints, "
-
-                    err = f"NMR restraint file includes {subtype_name[:-2]}. "\
+                    err = f"NMR restraint file includes {concat_nmr_restraint_names(content_subtype)}. "\
                         "However, deposition of distance restraints is mandatory. Please re-upload the NMR restraint file."
 
                     self.__suspended_errors_for_polypeptide.append({'content_mismatch':
@@ -17085,8 +17150,18 @@ class NmrDpUtility:
         if not has_poly_seq:
             return True
 
-        polySeqModel = input_source_dic['polymer_sequence']
+        ret = checkCoordinates(self.__verbose, self.__lfh, self.__cR, None,
+                               self.__representative_model_id)
+
+        polySeqModel = ret['polymer_sequence']
+        coordAtomSite = ret['coord_atom_site']
+        coordUnobsRes = ret['coord_unobs_res']
+        labelToAuthSeq = ret['label_to_auth_seq']
+        authToLabelSeq = ret['auth_to_label_seq']
+
         atomNumberDict = None
+        cyanaUplDistRest = 0
+        cyanaLolDistRest = 0
 
         fileListId = self.__file_path_list_len
 
@@ -17119,11 +17194,11 @@ class NmrDpUtility:
                     if listener.warningMessage is not None:
                         messages = listener.warningMessage.split('\n')
 
-                        for msg in messages:
-                            p = msg.index(']') + 2
-                            warn = msg[p:]
+                        for warn in messages:
+                            # p = msg.index(']') + 2
+                            # warn = msg[p:]
 
-                            if msg.startswith('[Concatenated sequence]'):
+                            if warn.startswith('[Concatenated sequence]'):
                                 self.report.warning.appendDescription('concatenated_sequence',
                                                                       {'file_name': file_name, 'description': warn})
                                 self.report.setWarning()
@@ -17131,7 +17206,7 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
 
-                            elif msg.startswith('[Sequence mismatch]'):
+                            elif warn.startswith('[Sequence mismatch]'):
                                 self.report.warning.appendDescription('conflicted_mr_data',
                                                                       {'file_name': file_name, 'description': warn})
                                 self.report.setWarning()
@@ -17139,7 +17214,7 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
 
-                            elif msg.startswith('[Unknown atom name]'):
+                            elif warn.startswith('[Unknown atom name]'):
                                 self.report.warning.appendDescription('inconsistent_mr_data',
                                                                       {'file_name': file_name, 'description': warn})
                                 self.report.setWarning()
@@ -17147,7 +17222,7 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
 
-                            elif msg.startswith('[Unknown residue name]'):
+                            elif warn.startswith('[Unknown residue name]'):
                                 self.report.warning.appendDescription('inconsistent_mr_data',
                                                                       {'file_name': file_name, 'description': warn})
                                 self.report.setWarning()
@@ -17156,16 +17231,19 @@ class NmrDpUtility:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
 
                             else:
-                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMR() ++ KeyError  - " + msg)
+                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMR() ++ KeyError  - " + warn)
                                 self.report.setError()
 
                                 if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ KeyError  - {msg}\n")
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ KeyError  - {warn}\n")
 
-                    else:
-                        atomNumberDict = listener.getAtomNumberDict()
+                    atomNumberDict = listener.getAtomNumberDict()
 
-                break
+            elif file_type == 'nm-res-cya' and content_subtype is not None and 'dist_restraint' in content_subtype:
+                if ar['is_upl']:
+                    cyanaUplDistRest += 1
+                else:
+                    cyanaLolDistRest += 1
 
             fileListId += 1
 
@@ -17192,6 +17270,373 @@ class NmrDpUtility:
                 original_file_name = input_source_dic['original_file_name']
                 if file_name != original_file_name and original_file_name is not None:
                     file_name = f"{original_file_name} ({file_name})"
+
+            if file_type == 'nm-res-xpl':
+                reader = XplorMRReader(self.__verbose, self.__lfh, self.__cR, polySeqModel,
+                                       self.__representative_model_id,
+                                       coordAtomSite, coordUnobsRes,
+                                       labelToAuthSeq, authToLabelSeq,
+                                       self.__ccU, self.__csStat, self.__nefT)
+
+                listener, _, _ = reader.parse(file_path, self.__cifPath)
+
+                if listener is not None:
+
+                    if listener.warningMessage is not None:
+                        messages = listener.warningMessage.split('\n')
+
+                        for warn in messages:
+                            if warn.startswith('[Atom not found]'):
+                                self.report.error.appendDescription('atom_not_found',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+
+                            elif warn.startswith('[Invalid atom selection]') or warn.startswith('[Invalid data]'):
+                                self.report.error.appendDescription('invalid_data',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError  - {warn}\n")
+
+                            elif warn.startswith('[Range value error]'):
+                                self.report.error.appendDescription('anomalous_data',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError - {warn}\n")
+
+                            elif warn.startswith('[Range value warning]'):
+                                self.report.warning.appendDescription('unusual_data',
+                                                                      {'file_name': file_name, 'description': warn})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning - {warn}\n")
+
+                            elif warn.startswith('[Unsupported data]'):
+                                self.report.warning.appendDescription('unsupported_mr_data',
+                                                                      {'file_name': file_name, 'description': warn})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning - {warn}\n")
+
+                            else:
+                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMR() ++ KeyError  - " + warn)
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ KeyError  - {warn}\n")
+
+            elif file_type == 'nm-res-cns':
+                reader = CnsMRReader(self.__verbose, self.__lfh, self.__cR, polySeqModel,
+                                     self.__representative_model_id,
+                                     coordAtomSite, coordUnobsRes,
+                                     labelToAuthSeq, authToLabelSeq,
+                                     self.__ccU, self.__csStat, self.__nefT)
+
+                listener, _, _ = reader.parse(file_path, self.__cifPath)
+
+                if listener is not None:
+
+                    if listener.warningMessage is not None:
+                        messages = listener.warningMessage.split('\n')
+
+                        for warn in messages:
+                            if warn.startswith('[Atom not found]'):
+                                self.report.error.appendDescription('atom_not_found',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+
+                            elif warn.startswith('[Invalid atom selection]') or warn.startswith('[Invalid data]'):
+                                self.report.error.appendDescription('invalid_data',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError  - {warn}\n")
+
+                            elif warn.startswith('[Range value error]'):
+                                self.report.error.appendDescription('anomalous_data',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError - {warn}\n")
+
+                            elif warn.startswith('[Range value warning]'):
+                                self.report.warning.appendDescription('unusual_data',
+                                                                      {'file_name': file_name, 'description': warn})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning - {warn}\n")
+
+                            elif warn.startswith('[Unsupported data]'):
+                                self.report.warning.appendDescription('unsupported_mr_data',
+                                                                      {'file_name': file_name, 'description': warn})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning - {warn}\n")
+
+                            else:
+                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMR() ++ KeyError  - " + warn)
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ KeyError  - {warn}\n")
+
+            elif file_type == 'nm-res-amb':
+                reader = AmberMRReader(self.__verbose, self.__lfh, self.__cR, polySeqModel,
+                                       self.__representative_model_id,
+                                       coordAtomSite, coordUnobsRes,
+                                       labelToAuthSeq, authToLabelSeq,
+                                       self.__ccU, self.__csStat, self.__nefT,
+                                       atomNumberDict)
+
+                listener, _, _ = reader.parse(file_path, self.__cifPath)
+
+                if listener is not None:
+
+                    if listener.warningMessage is not None:
+                        messages = listener.warningMessage.split('\n')
+
+                        for warn in messages:
+                            if warn.startswith('[Atom not found]'):
+                                self.report.error.appendDescription('atom_not_found',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+
+                            elif warn.startswith('[Invalid data]'):
+                                self.report.error.appendDescription('invalid_data',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError  - {warn}\n")
+
+                            elif warn.startswith('[Missing data]'):
+                                self.report.error.appendDescription('missing_data',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError  - {warn}\n")
+
+                            elif warn.startswith('[Range value error]'):
+                                self.report.error.appendDescription('anomalous_data',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError - {warn}\n")
+
+                            elif warn.startswith('[Range value warning]'):
+                                self.report.warning.appendDescription('unusual_data',
+                                                                      {'file_name': file_name, 'description': warn})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning - {warn}\n")
+
+                            elif warn.startswith('[Redundant data]'):
+                                self.report.warning.appendDescription('redundant_mr_data',
+                                                                      {'file_name': file_name, 'description': warn})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning - {warn}\n")
+
+                            else:
+                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMR() ++ KeyError  - " + warn)
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ KeyError  - {warn}\n")
+
+            elif file_type == 'nm-res-cya':
+                has_dist_restraint = 'dist_restraint' in content_subtype
+
+                upl_or_lol = None
+                if has_dist_restraint:
+                    is_upl = ar['is_upl']
+                    if cyanaUplDistRest + cyanaLolDistRest == 1:
+                        upl_or_lol = 'upl_only' if is_upl else 'lol_only'
+                    elif cyanaLolDistRest == 0:
+                        upl_or_lol = 'upl_only'
+                    elif cyanaUplDistRest == 0:
+                        upl_or_lol = 'lpl_only'
+                    elif is_upl:
+                        upl_or_lol = 'upl_w_lol'
+                    else:
+                        upl_or_lol = 'lol_w_upl'
+
+                reader = CyanaMRReader(self.__verbose, self.__lfh, self.__cR, polySeqModel,
+                                       self.__representative_model_id,
+                                       coordAtomSite, coordUnobsRes,
+                                       labelToAuthSeq, authToLabelSeq,
+                                       self.__ccU, self.__csStat, self.__nefT, upl_or_lol)
+
+                listener, _, _ = reader.parse(file_path, self.__cifPath)
+
+                if listener is not None:
+
+                    if listener.warningMessage is not None:
+                        messages = listener.warningMessage.split('\n')
+
+                        for warn in messages:
+                            if warn.startswith('[Atom not found]'):
+                                self.report.error.appendDescription('atom_not_found',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+
+                            elif warn.startswith('[Invalid atom nomenclature]'):
+                                self.report.error.appendDescription('invalid_atom_nomenclature',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+
+                            elif warn.startswith('[Invalid atom selection]') or warn.warn.startswith('[Invalid data]'):
+                                self.report.error.appendDescription('invalid_data',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError  - {warn}\n")
+
+                            elif warn.startswith('[Enum mismatch ignorable]'):
+                                self.report.warning.appendDescription('enum_mismatch_ignorable',
+                                                                      {'file_name': file_name, 'description': warn})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning - {warn}\n")
+
+                            elif warn.startswith('[Range value error]'):
+                                self.report.error.appendDescription('anomalous_data',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError - {warn}\n")
+
+                            elif warn.startswith('[Range value warning]'):
+                                self.report.warning.appendDescription('unusual_data',
+                                                                      {'file_name': file_name, 'description': warn})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning - {warn}\n")
+
+                            elif warn.startswith('[Unmatched residue name]'):
+                                self.report.warning.appendDescription('conflicted_mr_data',
+                                                                      {'file_name': file_name, 'description': warn})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning - {warn}\n")
+
+                            else:
+                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMR() ++ KeyError  - " + warn)
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ KeyError  - {warn}\n")
+
+            elif file_type == 'nm-res-ros':
+                reader = RosettaMRReader(self.__verbose, self.__lfh, self.__cR, polySeqModel,
+                                         self.__representative_model_id,
+                                         coordAtomSite, coordUnobsRes,
+                                         labelToAuthSeq, authToLabelSeq,
+                                         self.__ccU, self.__csStat, self.__nefT)
+
+                listener, _, _ = reader.parse(file_path, self.__cifPath)
+
+                if listener is not None:
+
+                    if listener.warningMessage is not None:
+                        messages = listener.warningMessage.split('\n')
+
+                        for warn in messages:
+                            if warn.startswith('[Atom not found]'):
+                                self.report.error.appendDescription('atom_not_found',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+
+                            elif warn.startswith('[Invalid atom nomenclature]'):
+                                self.report.error.appendDescription('invalid_atom_nomenclature',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+
+                            elif warn.startswith('[Invalid atom selection]') or warn.warn.startswith('[Invalid data]'):
+                                self.report.error.appendDescription('invalid_data',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError  - {warn}\n")
+
+                            elif warn.startswith('[Enum mismatch]'):
+                                self.report.warning.appendDescription('enum_mismatch',
+                                                                      {'file_name': file_name, 'description': warn})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning - {warn}\n")
+
+                            elif warn.startswith('[Range value error]'):
+                                self.report.error.appendDescription('anomalous_data',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError - {warn}\n")
+
+                            elif warn.startswith('[Range value warning]'):
+                                self.report.warning.appendDescription('unusual_data',
+                                                                      {'file_name': file_name, 'description': warn})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning - {warn}\n")
+
+                            elif warn.startswith('[Unsupported data]'):
+                                self.report.warning.appendDescription('unsupported_mr_data',
+                                                                      {'file_name': file_name, 'description': warn})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning - {warn}\n")
+
+                            else:
+                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMR() ++ KeyError  - " + warn)
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ KeyError  - {warn}\n")
 
             fileListId += 1
 

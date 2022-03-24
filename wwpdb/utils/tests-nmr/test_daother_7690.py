@@ -75,7 +75,7 @@ class TestNmrDpUtility(unittest.TestCase):
             print('%s: %s, %s' % (cs_type, report['information']['status'], error_type))
 
         if cs_type == 'daother-7690-edit':
-            self.assertNotEqual(report['information']['status'], 'Error') 
+            self.assertNotEqual(report['information']['status'], 'Error')
         else:
             self.assertEqual(report['information']['status'], 'Error')
         if report['warning'] is not None:

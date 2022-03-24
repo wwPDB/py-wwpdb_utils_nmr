@@ -11,6 +11,8 @@
 # 30-May-2020  M. Yokochi - add unit test for detection of total number of models (DAOTHER-5650)
 # 08-Jul-2020  M. Yokochi - add unit test for combined NMR-STAR (DAOTHER-5926)
 # 24-Aug-2021  M. Yokochi - add support for XPLOR-NIH planarity restraints (DAOTHER-7265)
+# 27-Jan-2022  M. Yokochi - add restraint types described by XPLOR-NIH, CNS, CYANA, and AMBER systems (NMR restraint remediation)
+# 04-Mar-2022  M. Yokochi - add coordinate geometry restraint (DAOTHER-7690, NMR restraint remediation)
 #
 import unittest
 import os
@@ -41,7 +43,13 @@ class TestNmrDpUtility(unittest.TestCase):
 
         # compare NMR content subtypes in NmrDpReportInputSource
         input_source = NmrDpReportInputSource()
-        self.assertEqual(nmr_content_subtypes, set(input_source.content_subtypes) - {'plane_restraint', 'hbond_restraint', 'coordinate', 'non_poly', 'topology'})
+        self.assertEqual(set(nmr_content_subtypes), set(input_source.content_subtypes)
+                         - {'plane_restraint', 'adist_restraint', 'jcoup_restraint', 'hvycs_restraint',
+                            'procs_restraint', 'rama_restraint', 'radi_restraint', 'diff_restraint',
+                            'nbase_restraint', 'csa_restraint', 'ang_restraint', 'pre_restraint',
+                            'pcs_restraint', 'prdc_restraint', 'pang_restraint', 'pccr_restraint',
+                            'noepk_restraint', 'hbond_restraint', 'geo_restraint',
+                            'coordinate', 'non_poly', 'topology'})
 
         # data directory exists
         self.assertEqual(os.path.isdir(self.data_dir_path), True)

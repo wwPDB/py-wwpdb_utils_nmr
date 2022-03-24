@@ -12,6 +12,7 @@
 # 03-Dec-2021  M. Yokochi - optimize loading performance of other chemical shift statistics (DAOTHER-7514)
 # 04-Feb-2022  M. Yokochi - add getPseudoAtoms() (nmr-restraint-remediation)
 # 14-Feb-2022  M. Yokochi - add getSimilarCompIdFromAtomIds() (nmr-restraint-remediation)
+# 25-Feb-2022  M. Yokochi - add peptideLike() (nmr-restraint-remediation)
 ##
 """ Wrapper class for retrieving BMRB chemical shift statistics.
     @author: Masashi Yokochi
@@ -25,7 +26,12 @@ import copy
 import pickle
 import collections
 
-from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
+try:
+    from wwpdb.utils.nmr.AlignUtil import emptyValue
+    from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
+except ImportError:
+    from nmr.AlignUtil import emptyValue
+    from nmr.ChemCompUtil import ChemCompUtil
 
 
 def load_stat_from_pickle(file_name):
@@ -52,7 +58,7 @@ class BMRBChemShiftStat:
     """ Wrapper class for retrieving BMRB chemical shift statistics.
     """
 
-    def __init__(self, verbose=False, log=sys.stderr):
+    def __init__(self, verbose=False, log=sys.stderr, ccU=None):
         self.__verbose = verbose
         self.__lfh = log
 
@@ -91,21 +97,24 @@ class BMRBChemShiftStat:
         self.max_count_th = 10
 
         # CCD accessing utility
-        self.__ccU = ChemCompUtil(self.__verbose, self.__lfh)
+        self.__ccU = ChemCompUtil(self.__verbose, self.__lfh) if ccU is None else ccU
 
         if not self.loadStatFromPickleFiles():
             self.loadStatFromCsvFiles()
+    # """
+    # def isOk(self):
+    #     """ Return whether all BMRB chemical shift statistics are available.
+    #     """
 
-    def isOk(self):
-        """ Return whether all BMRB chemical shift statistics are available.
-        """
-
-        return len(self.aa_filt) > 0 and len(self.aa_full) > 0 and len(self.dna_filt) > 0 and len(self.dna_full) > 0 and \
-            len(self.rna_filt) > 0 and len(self.rna_full) and (len(self.others) > 0 or self.lazy_others)
-
+    #     return len(self.aa_filt) > 0 and len(self.aa_full) > 0 and len(self.dna_filt) > 0 and len(self.dna_full) > 0 and \
+    #         len(self.rna_filt) > 0 and len(self.rna_full) and (len(self.others) > 0 or self.lazy_others)
+    # """
     def hasCompId(self, comp_id):
         """ Return whether a given comp_id has BMRB chemical shift statistics.
         """
+
+        if comp_id in emptyValue:
+            return False
 
         if comp_id in self.__std_comp_ids:
             return True
@@ -114,10 +123,41 @@ class BMRBChemShiftStat:
 
         return comp_id in self.__all_comp_ids
 
+    def peptideLike(self, comp_id):
+        """ Return whether a given comp_id is peptide-like component.
+        """
+
+        if comp_id in emptyValue:
+            return False
+
+        if comp_id in self.__aa_comp_ids:
+            return True
+
+        if comp_id in self.__dna_comp_ids or comp_id in self.__rna_comp_ids:
+            return False
+
+        if self.__ccU.updateChemCompDict(comp_id):
+            ctype = self.__ccU.lastChemCompDict['_chem_comp.type']
+
+            if 'PEPTIDE' in ctype:
+                return True
+
+            if 'DNA' in ctype or 'RNA' in ctype or 'SACCHARIDE' in ctype:
+                return False
+
+        peptide_like = len(self.getBackBoneAtoms(comp_id, True, True, False, False))
+        nucleotide_like = len(self.getBackBoneAtoms(comp_id, True, False, True, False))
+        carbohydrate_like = len(self.getBackBoneAtoms(comp_id, True, False, False, True))
+
+        return peptide_like > nucleotide_like and peptide_like > carbohydrate_like
+
     def getTypeOfCompId(self, comp_id):
         """ Return type of a given comp_id.
             @return: array of bool: peptide, nucleotide, carbohydrate
         """
+
+        if comp_id in emptyValue:
+            return False, False, False
 
         if comp_id in self.__aa_comp_ids:
             return True, False, False
@@ -268,6 +308,9 @@ class BMRBChemShiftStat:
         """ Return whether a given comp_id has enough chemical shift statistics.
         """
 
+        if comp_id in emptyValue:
+            return False
+
         if comp_id in self.__std_comp_ids:
             return True
 
@@ -288,6 +331,9 @@ class BMRBChemShiftStat:
     def get(self, comp_id, diamagnetic=True):
         """ Return BMRB chemical shift statistics for a given comp_id.
         """
+
+        if comp_id in emptyValue:
+            return []
 
         if comp_id in self.__aa_comp_ids:
 
@@ -320,6 +366,9 @@ class BMRBChemShiftStat:
     def __get(self, comp_id, diamagnetic=True):
         """ Return atom list for a given comp_id.
         """
+
+        if comp_id in emptyValue:
+            return []
 
         if comp_id in self.__aa_comp_ids:
 
@@ -360,6 +409,9 @@ class BMRBChemShiftStat:
             @return: one of (1, 2, 3), 0 for not found
         """
 
+        if comp_id in emptyValue:
+            return 0
+
         if comp_id not in self.__std_comp_ids:
             self.loadOtherStatFromCsvFiles(comp_id)
 
@@ -384,6 +436,9 @@ class BMRBChemShiftStat:
     def getGeminalAtom(self, comp_id, atom_id):
         """ Return geminal or aromatic opposite atom of a given atom.
         """
+
+        if comp_id in emptyValue:
+            return None
 
         if comp_id not in self.__std_comp_ids:
             self.loadOtherStatFromCsvFiles(comp_id)
@@ -423,6 +478,9 @@ class BMRBChemShiftStat:
         """ Return all atoms of a given comp_id.
         """
 
+        if comp_id in emptyValue:
+            return []
+
         if comp_id not in self.__std_comp_ids:
             self.loadOtherStatFromCsvFiles(comp_id)
 
@@ -441,6 +499,9 @@ class BMRBChemShiftStat:
     def getBackBoneAtoms(self, comp_id, excl_minor_atom=False, polypeptide_like=False, polynucleotide_like=False, carbohydrates_like=False):
         """ Return backbone atoms of a given comp_id.
         """
+
+        if comp_id in emptyValue:
+            return []
 
         if comp_id not in self.__std_comp_ids:
             self.loadOtherStatFromCsvFiles(comp_id)
@@ -489,6 +550,9 @@ class BMRBChemShiftStat:
         """ Return aromatic atoms of a given comp_id.
         """
 
+        if comp_id in emptyValue:
+            return []
+
         if comp_id not in self.__std_comp_ids:
             self.loadOtherStatFromCsvFiles(comp_id)
 
@@ -507,6 +571,9 @@ class BMRBChemShiftStat:
     def getMethylAtoms(self, comp_id, excl_minor_atom=False, primary=False):
         """ Return atoms in methyl group of a given comp_id.
         """
+
+        if comp_id in emptyValue:
+            return []
 
         if comp_id not in self.__std_comp_ids:
             self.loadOtherStatFromCsvFiles(comp_id)
@@ -527,6 +594,9 @@ class BMRBChemShiftStat:
         """ Return representative protons in methyl group of a given comp_id.
         """
 
+        if comp_id in emptyValue:
+            return []
+
         ends_w_num = [a for a in self.getMethylAtoms(comp_id, excl_minor_atom, primary) if a.startswith('H') and a[-1].isdigit()]
         ends_w_alp = [a for a in self.getMethylAtoms(comp_id, excl_minor_atom, primary) if a.startswith('H') and not a[-1].isdigit()]
 
@@ -545,6 +615,9 @@ class BMRBChemShiftStat:
         """ Return non-representative protons in methyl group of a given comp_id.
         """
 
+        if comp_id in emptyValue:
+            return []
+
         rep_list = self.getRepresentativeMethylProtons(comp_id, excl_minor_atom, primary)
 
         return [a for a in self.getMethylAtoms(comp_id, excl_minor_atom, primary) if a.startswith('H') and a not in rep_list]
@@ -552,6 +625,9 @@ class BMRBChemShiftStat:
     def getSideChainAtoms(self, comp_id, excl_minor_atom=False, polypeptide_like=False, polynucleotide_like=False, carbohydrates_like=False):
         """ Return sidechain atoms of a given comp_id.
         """
+
+        if comp_id in emptyValue:
+            return []
 
         if comp_id not in self.__std_comp_ids:
             self.loadOtherStatFromCsvFiles(comp_id)
@@ -582,6 +658,9 @@ class BMRBChemShiftStat:
     def getPseudoAtoms(self, comp_id, excl_minor_atom=False, primary=False):
         """ Return all pseudo atoms of a give comp_id.
         """
+
+        if comp_id in emptyValue:
+            return []
 
         if comp_id not in self.__std_comp_ids:
             self.loadOtherStatFromCsvFiles(comp_id)
@@ -856,6 +935,9 @@ class BMRBChemShiftStat:
     def __appendExtraFromCcd(self, comp_id):
         """ Append atom list as extra residue for a given comp_id.
         """
+
+        if comp_id in emptyValue:
+            return
 
         if comp_id in self.__all_comp_ids or comp_id in self.__ext_comp_ids or not self.__ccU.updateChemCompDict(comp_id):
             return

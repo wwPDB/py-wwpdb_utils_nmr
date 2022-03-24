@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://bmrbpub.pdbj.org/archive/combined_restraints/nmr-restraints-report-schema.json",
-  "title": "JSON Schema for NMR restraints report",
+  "title": "JSON Schema for NMR restraints report v2",
   "description": "The NMR restraints report provides restraint statistics and diagnostic information for NMR restraints with reference to associated atomic coordinates.",
   "definitions": {
     "input_source": {
@@ -24,6 +24,7 @@
             "nm-res-cya",
             "nm-res-xpl",
             "nm-res-oth",
+            "nm-res-reo",
             "nm-aux-amb"
           ]
         },
@@ -38,7 +39,7 @@
         "content_type": {
           "description": "Content type of input source file.",
           "type": "string",
-          "enum": [
+          "ZZZZZenum": [
             "model",
             "nmr-data-nef",
             "nmr-data-str",
@@ -47,66 +48,166 @@
           ]
         },
         "content_subtype": {
-          "description": "Dictionary of content subtype that accommodates total number of relevant saveframe(s).",
+          "description": "Dictionary of content subtype that accommodates total number of relevant saveframes.",
           "type": "object",
           "properties": {
             "coordinate": {
+              "description": "The number of saveframes associated with atomic coordinates.",
               "type": "integer",
               "minimum": 1
             },
             "non_poly": {
+              "description": "The number of saveframes associated with non-polymer chemical components.",
               "type": "integer",
               "minimum": 1
             },
             "entry_info": {
+              "description": "The number of saveframes associated with entry information.",
               "type": "integer",
               "minimum": 1
             },
             "poly_seq": {
+              "description": "The number of saveframes associated with polymer sequence of entity.",
               "type": "integer",
               "minimum": 1
             },
             "entity": {
+              "description": "The number of saveframes associated with molecular entity.",
               "type": "integer",
               "minimum": 1
             },
             "chem_shift": {
+              "description": "The number of saveframes associated with assigned chemical shifts.",
               "type": "integer",
               "minimum": 1
             },
             "chem_shift_ref": {
+              "description": "The number of saveframes associated with chemical shift reference.",
               "type": "integer",
               "minimum": 1
             },
             "dist_restraint": {
+              "description": "The number of saveframes associated with distance restraints.",
               "type": "integer",
               "minimum": 1
             },
             "dihed_restraint": {
+              "description": "The number of saveframes associated with dihedral angle restraints.",
               "type": "integer",
               "minimum": 1
             },
             "rdc_restraint": {
+              "description": "The number of saveframes associated with residual dipolar coupling (RDC) restraints.",
               "type": "integer",
               "minimum": 1
             },
             "plane_restraint": {
+              "description": "The number of lists associated with planarity restraints.",
+              "type": "integer",
+              "minimum": 1
+            },
+            "adist_restraint": {
+              "description": "The number of lists associated with anti-distance restraints.",
+              "type": "integer",
+              "minimum": 1
+            },
+            "jcoup_restraint": {
+              "description": "The number of lists associated with scalar J-coupling restraints.",
+              "type": "integer",
+              "minimum": 1
+            },
+            "hvycs_restraint": {
+              "description": "The number of lists associated with carbon chemical shift restraints.",
+              "type": "integer",
+              "minimum": 1
+            },
+            "procs_restraint": {
+              "description": "The number of lists associated with proton chemical shift restraints.",
+              "type": "integer",
+              "minimum": 1
+            },
+            "rama_restraint": {
+              "description": "The number of lists associated with dihedral angle database restraints.",
+              "type": "integer",
+              "minimum": 1
+            },
+            "radi_restraint": {
+              "description": "The number of lists associated with radius of gyration restraints.",
+              "type": "integer",
+              "minimum": 1
+            },
+            "diff_restraint": {
+              "description": "The number of lists associated with diffusion anisotropy restraints.",
+              "type": "integer",
+              "minimum": 1
+            },
+            "nbase_restraint": {
+              "description": "The number of lists associated with nucleic acid base orientation database restraints.",
+              "type": "integer",
+              "minimum": 1
+            },
+            "csa_restraint": {
+              "description": "The number of lists associated with (pseudo) chemical shift anisotropy (CSA) restraints.",
+              "type": "integer",
+              "minimum": 1
+            },
+            "ang_restraint": {
+              "description": "The number of lists associated with angle database restraints.",
+              "type": "integer",
+              "minimum": 1
+            },
+            "pre_restraint": {
+              "description": "The number of lists associated with paramagnetic relaxation enhancement (PRE) restraints.",
+              "type": "integer",
+              "minimum": 1
+            },
+            "pcs_restraint": {
+              "description": "The number of lists associated with paramagnetic pseudocontact shift (PCS) restraints.",
+              "type": "integer",
+              "minimum": 1
+            },
+            "prdc_restraint": {
+              "description": "The number of lists associated with paramagnetic residual dipolar coupling (RDC) restraints.",
+              "type": "integer",
+              "minimum": 1
+            },
+            "pang_restraint": {
+              "description": "The number of lists associated with paramagnetic orientation restraints.",
+              "type": "integer",
+              "minimum": 1
+            },
+            "pccr_restraint": {
+              "description": "The number of lists associated with paramagnetic cross-correlation rate (CCR) restraints.",
               "type": "integer",
               "minimum": 1
             },
             "hbond_restraint": {
+              "description": "The number of lists associated with hydrogen bond geometry restraints.",
+              "type": "integer",
+              "minimum": 1
+            },
+            "geo_restraint": {
+              "description": "The number of lists associated with coordinate geometry restraints.",
+              "type": "integer",
+              "minimum": 1
+            },
+            "noepk_restraint": {
+              "description": "The number of lists associated with NOESY peak volume restraints.",
               "type": "integer",
               "minimum": 1
             },
             "spectral_peak": {
+              "description": "The number of saveframes associated with NEF compatible spectral peak list.",
               "type": "integer",
               "minimum": 1
             },
             "spectral_peak_alt": {
+              "description": "The number of saveframes associated with NMR-STAR cannonical spectral peak list.",
               "type": "integer",
               "minimum": 1
             },
             "topology": {
+              "description": "The number of lists associated with topology information of the studied molecule.",
               "type": "integer",
               "minimum": 1
             }
@@ -153,6 +254,139 @@
             },
             "rdc_restraint": {
               "description": "The array provides the polymer sequences in data loops for RDC restraints.",
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/polymer_sequence_in_loop"
+              }
+            },
+            "plane_restraint": {
+              "description": "The array provides the polymer sequences in data loops for planarity restraints.",
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/polymer_sequence_in_loop"
+              }
+            },
+            "adist_restraint": {
+              "description": "The array provides the polymer sequences in data loops for anti-distance restraints.",
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/polymer_sequence_in_loop"
+              }
+            },
+            "jcoup_restraint": {
+              "description": "The array provides the polymer sequences in data loops for scalar J-coupling restraints.",
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/polymer_sequence_in_loop"
+              }
+            },
+            "hvycs_restraint": {
+              "description": "The array provides the polymer sequences in data loops for carbon/nitrogen chemical shift restraints.",
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/polymer_sequence_in_loop"
+              }
+            },
+            "procs_restraint": {
+              "description": "The array provides the polymer sequences in data loops for proton chemical shift restraints.",
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/polymer_sequence_in_loop"
+              }
+            },
+            "rama_restraint": {
+              "description": "The array provides the polymer sequences in data loops for dihedral angle database restraints.",
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/polymer_sequence_in_loop"
+              }
+            },
+            "radi_restraint": {
+              "description": "The array provides the polymer sequences in data loops for radius of gyration restraints.",
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/polymer_sequence_in_loop"
+              }
+            },
+            "diff_restraint": {
+              "description": "The array provides the polymer sequences in data loops for diffusion anisotropy restraints.",
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/polymer_sequence_in_loop"
+              }
+            },
+            "nbase_restraint": {
+              "description": "The array provides the polymer sequences in data loops for nucleic acid base orientation database restraints.",
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/polymer_sequence_in_loop"
+              }
+            },
+            "csa_restraint": {
+              "description": "The array provides the polymer sequences in data loops for (pseudo) CSA restraints.",
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/polymer_sequence_in_loop"
+              }
+            },
+            "ang_restraint": {
+              "description": "The array provides the polymer sequences in data loops for angle database restraints.",
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/polymer_sequence_in_loop"
+              }
+            },
+            "pre_restraint": {
+              "description": "The array provides the polymer sequences in data loops for PRE restraints.",
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/polymer_sequence_in_loop"
+              }
+            },
+            "pcs_restraint": {
+              "description": "The array provides the polymer sequences in data loops for PCS restraints.",
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/polymer_sequence_in_loop"
+              }
+            },
+            "prdc_restraint": {
+              "description": "The array provides the polymer sequences in data loops for paramagnetic RDC restraints.",
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/polymer_sequence_in_loop"
+              }
+            },
+            "pang_restraint": {
+              "description": "The array provides the polymer sequences in data loops for paramagnetic orientation restraints.",
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/polymer_sequence_in_loop"
+              }
+            },
+            "pccr_restraint": {
+              "description": "The array provides the polymer sequences in data loops for paramagnetic CCR restraints.",
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/polymer_sequence_in_loop"
+              }
+            },
+            "hbond_restraint": {
+              "description": "The array provides the polymer sequences in data loops for hydrogen bond geometry restraints.",
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/polymer_sequence_in_loop"
+              }
+            },
+            "geo_restraint": {
+              "description": "The array provides the polymer sequences in data loops for coordinate geometry restraints.",
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/polymer_sequence_in_loop"
+              }
+            },
+            "noepk_restraint": {
+              "description": "The array provides the polymer sequences in data loops for NOESY peak volume restraints.",
               "type": "array",
               "items": {
                 "$ref": "#/definitions/polymer_sequence_in_loop"
@@ -3621,6 +3855,18 @@
         "redundant_data": {
           "$ref": "#/definitions/common_message"
         },
+        "conflicted_mr_data": {
+          "$ref": "#/definitions/common_message"
+        },
+        "inconsistent_mr_data": {
+          "$ref": "#/definitions/common_message"
+        },
+        "redundant_mr_data": {
+          "$ref": "#/definitions/common_message"
+        },
+        "unsupported_mr_data": {
+          "$ref": "#/definitions/common_message"
+        },
         "concatenated_sequence": {
           "$ref": "#/definitions/common_message"
         },
@@ -3684,6 +3930,380 @@
                 "allOf": [
                   {
                     "$ref": "#/definitions/sequence_alignment_nmr_coord"
+                  },
+                  {
+                    "$ref": "#/definitions/common_sequence_alignment"
+                  }
+                ]
+              }
+            },
+            "model_poly_seq_vs_dist_restraint": {
+              "description": "The object provides sequence alignment between sequence of the coordinates and sequence in data loops for distance restraints.",
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "allOf": [
+                  {
+                    "$ref": "#/definitions/sequence_alignment_in_coord"
+                  },
+                  {
+                    "$ref": "#/definitions/common_sequence_alignment"
+                  }
+                ]
+              }
+            },
+            "model_poly_seq_vs_dihed_restraint": {
+              "description": "The object provides sequence alignment between sequence of the coordinates and sequence in data loops for dihedral angle restraints.",
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "allOf": [
+                  {
+                    "$ref": "#/definitions/sequence_alignment_in_coord"
+                  },
+                  {
+                    "$ref": "#/definitions/common_sequence_alignment"
+                  }
+                ]
+              }
+            },
+            "model_poly_seq_vs_rdc_restraint": {
+              "description": "The object provides sequence alignment between sequence of the coordinates and sequence in data loops for RDC restraints.",
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "allOf": [
+                  {
+                    "$ref": "#/definitions/sequence_alignment_in_coord"
+                  },
+                  {
+                    "$ref": "#/definitions/common_sequence_alignment"
+                  }
+                ]
+              }
+            },
+            "model_poly_seq_vs_plane_restraint": {
+              "description": "The object provides sequence alignment between sequence of the coordinates and sequence in data loops for planarity restraints.",
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "allOf": [
+                  {
+                    "$ref": "#/definitions/sequence_alignment_in_coord"
+                  },
+                  {
+                    "$ref": "#/definitions/common_sequence_alignment"
+                  }
+                ]
+              }
+            },
+            "model_poly_seq_vs_adist_restraint": {
+              "description": "The object provides sequence alignment between sequence of the coordinates and sequence in data loops for anti-distance restraints.",
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "allOf": [
+                  {
+                    "$ref": "#/definitions/sequence_alignment_in_coord"
+                  },
+                  {
+                    "$ref": "#/definitions/common_sequence_alignment"
+                  }
+                ]
+              }
+            },
+            "model_poly_seq_vs_jcoup_restraint": {
+              "description": "The object provides sequence alignment between sequence of the coordinates and sequence in data loops for scalar J-coupling restraints.",
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "allOf": [
+                  {
+                    "$ref": "#/definitions/sequence_alignment_in_coord"
+                  },
+                  {
+                    "$ref": "#/definitions/common_sequence_alignment"
+                  }
+                ]
+              }
+            },
+            "model_poly_seq_vs_hvycs_restraint": {
+              "description": "The object provides sequence alignment between sequence of the coordinates and sequence in data loops for carbon/nitrogen chemical shift restraints.",
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "allOf": [
+                  {
+                    "$ref": "#/definitions/sequence_alignment_in_coord"
+                  },
+                  {
+                    "$ref": "#/definitions/common_sequence_alignment"
+                  }
+                ]
+              }
+            },
+            "model_poly_seq_vs_procs_restraint": {
+              "description": "The object provides sequence alignment between sequence of the coordinates and sequence in data loops for proton chemical shift restraints.",
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "allOf": [
+                  {
+                    "$ref": "#/definitions/sequence_alignment_in_coord"
+                  },
+                  {
+                    "$ref": "#/definitions/common_sequence_alignment"
+                  }
+                ]
+              }
+            },
+            "model_poly_seq_vs_rama_restraint": {
+              "description": "The object provides sequence alignment between sequence of the coordinates and sequence in data loops for dihedral angle database restraints.",
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "allOf": [
+                  {
+                    "$ref": "#/definitions/sequence_alignment_in_coord"
+                  },
+                  {
+                    "$ref": "#/definitions/common_sequence_alignment"
+                  }
+                ]
+              }
+            },
+            "model_poly_seq_vs_radi_restraint": {
+              "description": "The object provides sequence alignment between sequence of the coordinates and sequence in data loops for radius of gyration restraints.",
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "allOf": [
+                  {
+                    "$ref": "#/definitions/sequence_alignment_in_coord"
+                  },
+                  {
+                    "$ref": "#/definitions/common_sequence_alignment"
+                  }
+                ]
+              }
+            },
+            "model_poly_seq_vs_diff_restraint": {
+              "description": "The object provides sequence alignment between sequence of the coordinates and sequence in data loops for diffusion anisotropy restraints.",
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "allOf": [
+                  {
+                    "$ref": "#/definitions/sequence_alignment_in_coord"
+                  },
+                  {
+                    "$ref": "#/definitions/common_sequence_alignment"
+                  }
+                ]
+              }
+            },
+            "model_poly_seq_vs_nbase_restraint": {
+              "description": "The object provides sequence alignment between sequence of the coordinates and sequence in data loops for nucleic acid base orientation database restraints.",
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "allOf": [
+                  {
+                    "$ref": "#/definitions/sequence_alignment_in_coord"
+                  },
+                  {
+                    "$ref": "#/definitions/common_sequence_alignment"
+                  }
+                ]
+              }
+            },
+            "model_poly_seq_vs_csa_restraint": {
+              "description": "The object provides sequence alignment between sequence of the coordinates and sequence in data loops for (pseudo) CSA restraints.",
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "allOf": [
+                  {
+                    "$ref": "#/definitions/sequence_alignment_in_coord"
+                  },
+                  {
+                    "$ref": "#/definitions/common_sequence_alignment"
+                  }
+                ]
+              }
+            },
+            "model_poly_seq_vs_ang_restraint": {
+              "description": "The object provides sequence alignment between sequence of the coordinates and sequence in data loops for angle database restraints.",
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "allOf": [
+                  {
+                    "$ref": "#/definitions/sequence_alignment_in_coord"
+                  },
+                  {
+                    "$ref": "#/definitions/common_sequence_alignment"
+                  }
+                ]
+              }
+            },
+            "model_poly_seq_vs_pre_restraint": {
+              "description": "The object provides sequence alignment between sequence of the coordinates and sequence in data loops for PRE restraints.",
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "allOf": [
+                  {
+                    "$ref": "#/definitions/sequence_alignment_in_coord"
+                  },
+                  {
+                    "$ref": "#/definitions/common_sequence_alignment"
+                  }
+                ]
+              }
+            },
+            "model_poly_seq_vs_pcs_restraint": {
+              "description": "The object provides sequence alignment between sequence of the coordinates and sequence in data loops for paramagnetic PCS restraints.",
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "allOf": [
+                  {
+                    "$ref": "#/definitions/sequence_alignment_in_coord"
+                  },
+                  {
+                    "$ref": "#/definitions/common_sequence_alignment"
+                  }
+                ]
+              }
+            },
+            "model_poly_seq_vs_prdc_restraint": {
+              "description": "The object provides sequence alignment between sequence of the coordinates and sequence in data loops for paramagnetic RDC restraints.",
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "allOf": [
+                  {
+                    "$ref": "#/definitions/sequence_alignment_in_coord"
+                  },
+                  {
+                    "$ref": "#/definitions/common_sequence_alignment"
+                  }
+                ]
+              }
+            },
+            "model_poly_seq_vs_pang_restraint": {
+              "description": "The object provides sequence alignment between sequence of the coordinates and sequence in data loops for paramagnetic orientation restraints.",
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "allOf": [
+                  {
+                    "$ref": "#/definitions/sequence_alignment_in_coord"
+                  },
+                  {
+                    "$ref": "#/definitions/common_sequence_alignment"
+                  }
+                ]
+              }
+            },
+            "model_poly_seq_vs_pccr_restraint": {
+              "description": "The object provides sequence alignment between sequence of the coordinates and sequence in data loops for paramagnetic CCR restraints.",
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "allOf": [
+                  {
+                    "$ref": "#/definitions/sequence_alignment_in_coord"
+                  },
+                  {
+                    "$ref": "#/definitions/common_sequence_alignment"
+                  }
+                ]
+              }
+            },
+            "model_poly_seq_vs_hbond_restraint": {
+              "description": "The object provides sequence alignment between sequence of the coordinates and sequence in data loops for hydrogen bond geometry restraints.",
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "allOf": [
+                  {
+                    "$ref": "#/definitions/sequence_alignment_in_coord"
+                  },
+                  {
+                    "$ref": "#/definitions/common_sequence_alignment"
+                  }
+                ]
+              }
+            },
+            "model_poly_seq_vs_geo_restraint": {
+              "description": "The object provides sequence alignment between sequence of the coordinates and sequence in data loops for coordinate geometry restraints.",
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "allOf": [
+                  {
+                    "$ref": "#/definitions/sequence_alignment_in_coord"
+                  },
+                  {
+                    "$ref": "#/definitions/common_sequence_alignment"
+                  }
+                ]
+              }
+            },
+            "model_poly_seq_vs_noepk_restraint": {
+              "description": "The object provides sequence alignment between sequence of the coordinates and sequence in data loops for NOESY peak volume restraints.",
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "allOf": [
+                  {
+                    "$ref": "#/definitions/sequence_alignment_in_coord"
                   },
                   {
                     "$ref": "#/definitions/common_sequence_alignment"
@@ -3760,7 +4380,7 @@
               }
             },
             "nmr_poly_seq_vs_rdc_restraint": {
-              "description": "The object provides sequence alignment between the representative sequence of the NMR data and sequence in data loops for RDC (residual dipolar coupling) restraints.",
+              "description": "The object provides sequence alignment between the representative sequence of the NMR data and sequence in data loops for RDC restraints.",
               "type": [
                 "array",
                 "null"
@@ -3813,15 +4433,7 @@
           },
           "additionalProperties": false,
           "required": [
-            "model_poly_seq_vs_coordinate",
-            "model_poly_seq_vs_nmr_poly_seq",
-            "nmr_poly_seq_vs_model_poly_seq",
-            "nmr_poly_seq_vs_chem_shift",
-            "nmr_poly_seq_vs_dist_restraint",
-            "nmr_poly_seq_vs_dihed_restraint",
-            "nmr_poly_seq_vs_rdc_restraint",
-            "nmr_poly_seq_vs_spectral_peak",
-            "nmr_poly_seq_vs_spectral_peak_alt"
+            "nmr_poly_seq_vs_chem_shift"
           ]
         },
         "chain_assignments": {

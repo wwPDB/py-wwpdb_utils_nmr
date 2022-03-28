@@ -17574,7 +17574,7 @@ class NmrDpUtility:
 
             while v <= max_val:
 
-                _count = copy.copy(count)
+                _count = count.copy()
 
                 for k in count:
                     _count[k] = len([z for z in z_scores[k] if v <= z < v + scale])
@@ -18757,7 +18757,7 @@ class NmrDpUtility:
 
             while v <= max_val:
 
-                _count = copy.copy(count)
+                _count = count.copy()
 
                 for k in count:
                     _count[k] = 0
@@ -18964,7 +18964,7 @@ class NmrDpUtility:
 
                     while v <= max_val:
 
-                        _count = copy.copy(count)
+                        _count = count.copy()
 
                         for k in count:
                             _count[k] = 0
@@ -20617,7 +20617,7 @@ class NmrDpUtility:
 
                     while v <= max_val:
 
-                        _count = copy.copy(count)
+                        _count = count.copy()
 
                         for k in count:
                             _count[k] = 0
@@ -21176,7 +21176,7 @@ class NmrDpUtility:
 
             while v <= max_val:
 
-                _count = copy.copy(count)
+                _count = count.copy()
 
                 for k in count:
                     _count[k] = 0
@@ -21362,7 +21362,7 @@ class NmrDpUtility:
 
                     while v <= max_val:
 
-                        _count = copy.copy(count)
+                        _count = count.copy()
 
                         for k in count:
                             _count[k] = 0
@@ -23726,7 +23726,9 @@ class NmrDpUtility:
 
                         if any(s for s in cif_polymer_sequence if 'identical_chain_id' in s):
 
-                            for chain_assign in chain_assign_set:
+                            _chain_assign_set = chain_assign_set.copy()
+
+                            for chain_assign in _chain_assign_set:
 
                                 if chain_assign['conflict'] > 0:
                                     continue
@@ -23741,7 +23743,7 @@ class NmrDpUtility:
                                     for chain_id in identity:
 
                                         if not any(_chain_assign for _chain_assign in chain_assign_set if _chain_assign['ref_chain_id'] == chain_id):
-                                            _chain_assign = copy.copy(chain_assign)
+                                            _chain_assign = chain_assign.copy()
                                             _chain_assign['ref_chain_id'] = chain_id
                                             if auth_chain_id is not None:
                                                 _chain_assign['ref_auth_chain_id'] = auth_chain_id
@@ -24111,7 +24113,9 @@ class NmrDpUtility:
 
                         if any(s for s in cif_polymer_sequence if 'identical_chain_id' in s):
 
-                            for chain_assign in chain_assign_set:
+                            _chain_assign_set = chain_assign_set.copy()
+
+                            for chain_assign in _chain_assign_set:
 
                                 if chain_assign['conflict'] > 0:
                                     continue
@@ -24126,7 +24130,7 @@ class NmrDpUtility:
                                     for _chain_id in identity:
 
                                         if not any(_chain_assign for _chain_assign in chain_assign_set if _chain_assign['test_chain_id'] == _chain_id):
-                                            _chain_assign = copy.copy(chain_assign)
+                                            _chain_assign = chain_assign.copy()
                                             _chain_assign['test_chain_id'] = _chain_id
                                             if _auth_chain_id is not None:
                                                 _chain_assign['test_auth_chain_id'] = _auth_chain_id
@@ -26218,11 +26222,12 @@ class NmrDpUtility:
             if rot1['unknown'] == 0.0:
                 del rot1['unknown']
 
-            for r in rot1:
-                if r == 'name':
+            _rot1 = rot1.copy()
+
+            for k, v in _rot1.items():
+                if k == 'name':
                     continue
-                rot1[r] /= total_models
-                rot1[r] = float(f"{rot1[r]:.3f}")
+                rot1[k] = float(f"{v/total_models:.3f}")
 
             self.__coord_rotamer[seq_key] = [rot1]
             return [rot1]
@@ -26339,17 +26344,18 @@ class NmrDpUtility:
             if rot2['unknown'] == 0.0:
                 del rot2['unknown']
 
-            for r in rot1:
-                if r == 'name':
-                    continue
-                rot1[r] /= total_models
-                rot1[r] = float(f"{rot1[r]:.3f}")
+            _rot1 = rot1.copy()
+            _rot2 = rot2.copy()
 
-            for r in rot2:
-                if r == 'name':
+            for k, v in _rot1.items():
+                if k == 'name':
                     continue
-                rot2[r] /= total_models
-                rot2[r] = float(f"{rot2[r]:.3f}")
+                rot1[k] = float(f"{v/total_models:.3f}")
+
+            for k, v in _rot2.items():
+                if k == 'name':
+                    continue
+                rot2[k] = float(f"{v/total_models:.3f}")
 
             self.__coord_rotamer[seq_key] = [rot1, rot2]
             return [rot1, rot2]
@@ -26466,17 +26472,18 @@ class NmrDpUtility:
             if rot2['unknown'] == 0.0:
                 del rot2['unknown']
 
-            for r in rot1:
-                if r == 'name':
-                    continue
-                rot1[r] /= total_models
-                rot1[r] = float(f"{rot1[r]:.3f}")
+            _rot1 = rot1.copy()
+            _rot2 = rot2.copy()
 
-            for r in rot2:
-                if r == 'name':
+            for k, v in _rot1.items():
+                if k == 'name':
                     continue
-                rot2[r] /= total_models
-                rot2[r] = float(f"{rot2[r]:.3f}")
+                rot1[k] = float(f"{v/total_models:.3f}")
+
+            for k, v in _rot2.items():
+                if k == 'name':
+                    continue
+                rot2[k] = float(f"{v/total_models:.3f}")
 
             self.__coord_rotamer[seq_key] = [rot1, rot2]
             return [rot1, rot2]

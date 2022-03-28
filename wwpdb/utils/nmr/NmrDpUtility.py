@@ -18794,7 +18794,7 @@ class NmrDpUtility:
 
             while v <= max_val:
 
-                _count = copy.copy(count)
+                _count = count.copy()
 
                 for k in count:
                     _count[k] = len([z for z in z_scores[k] if v <= z < v + scale])
@@ -19977,7 +19977,7 @@ class NmrDpUtility:
 
             while v <= max_val:
 
-                _count = copy.copy(count)
+                _count = count.copy()
 
                 for k in count:
                     _count[k] = 0
@@ -20184,7 +20184,7 @@ class NmrDpUtility:
 
                     while v <= max_val:
 
-                        _count = copy.copy(count)
+                        _count = count.copy()
 
                         for k in count:
                             _count[k] = 0
@@ -21850,7 +21850,7 @@ class NmrDpUtility:
 
                     while v <= max_val:
 
-                        _count = copy.copy(count)
+                        _count = count.copy()
 
                         for k in count:
                             _count[k] = 0
@@ -22314,7 +22314,7 @@ class NmrDpUtility:
 
             while v <= max_val:
 
-                _count = copy.copy(count)
+                _count = count.copy()
 
                 for k in count:
                     _count[k] = 0
@@ -22500,7 +22500,7 @@ class NmrDpUtility:
 
                     while v <= max_val:
 
-                        _count = copy.copy(count)
+                        _count = count.copy()
 
                         for k in count:
                             _count[k] = 0
@@ -24881,7 +24881,7 @@ class NmrDpUtility:
                                     for chain_id in identity:
 
                                         if not any(_chain_assign for _chain_assign in chain_assign_set if _chain_assign['ref_chain_id'] == chain_id):
-                                            _chain_assign = copy.copy(chain_assign)
+                                            _chain_assign = chain_assign.copy()
                                             _chain_assign['ref_chain_id'] = chain_id
                                             if auth_chain_id is not None:
                                                 _chain_assign['ref_auth_chain_id'] = auth_chain_id
@@ -25268,7 +25268,7 @@ class NmrDpUtility:
                                     for _chain_id in identity:
 
                                         if not any(_chain_assign for _chain_assign in chain_assign_set if _chain_assign['test_chain_id'] == _chain_id):
-                                            _chain_assign = copy.copy(chain_assign)
+                                            _chain_assign = chain_assign.copy()
                                             _chain_assign['test_chain_id'] = _chain_id
                                             if _auth_chain_id is not None:
                                                 _chain_assign['test_auth_chain_id'] = _auth_chain_id

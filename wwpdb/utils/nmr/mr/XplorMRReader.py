@@ -47,6 +47,7 @@ class XplorMRReader:
                  ccU=None, csStat=None, nefT=None):
         self.__verbose = verbose
         self.__lfh = log
+        self.__debug = False
 
         self.__representativeModelId = representativeModelId
 
@@ -71,6 +72,9 @@ class XplorMRReader:
 
         # NEFTranslator
         self.__nefT = NEFTranslator(verbose, log, self.__ccU, self.__csStat) if nefT is None else nefT
+
+    def setDebugMode(self, debug):
+        self.__debug = debug
 
     def parse(self, mrFilePath, cifFilePath=None):
         """ Parse XPLOR-NIH MR file.
@@ -127,6 +131,7 @@ class XplorMRReader:
                                                  self.__coordAtomSite, self.__coordUnobsRes,
                                                  self.__labelToAuthSeq, self.__authToLabelSeq,
                                                  self.__ccU, self.__csStat, self.__nefT)
+                listener.setDebugMode(self.__debug)
                 walker.walk(listener, tree)
 
                 messageList = parser_error_listener.getMessageList()
@@ -153,8 +158,10 @@ class XplorMRReader:
 
 if __name__ == "__main__":
     reader = XplorMRReader(True)
+    reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-pdbstat/D_1000243168_mr-upload_P8.xplor-nih.V1',
                  '../../tests-nmr/mock-data-pdbstat/6pvr.cif')
     # reader = XplorMRReader(True)
+    # reader.setDebugMode(True)
     # reader.parse('../../tests-nmr/mock-data-pdbstat/D_1000243168_mr-upload_P2.xplor-nih.V1',  # atom_sel_expr_example.txt',
     #              '../../tests-nmr/mock-data-pdbstat/6pvr.cif')

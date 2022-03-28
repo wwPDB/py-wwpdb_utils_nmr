@@ -154,6 +154,7 @@ class XplorMRParserListener(ParseTreeListener):
     __verbose = None
     __lfh = None
     __debug = False
+    __sel_expr_debug = False
 
     distRestraints = 0      # XPLOR-NIH: Distance restraints
     dihedRestraints = 0     # XPLOR-NIH: Dihedral angle restraints
@@ -320,6 +321,9 @@ class XplorMRParserListener(ParseTreeListener):
 
         # NEFTranslator
         self.__nefT = NEFTranslator(verbose, log, self.__ccU, self.__csStat) if nefT is None else nefT
+
+    def setDebugMode(self, debug):
+        self.__debug = debug
 
     # Enter a parse tree produced by XplorMRParser#xplor_nih_mr.
     def enterXplor_nih_mr(self, ctx: XplorMRParser.Xplor_nih_mrContext):  # pylint: disable=unused-argument
@@ -592,7 +596,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#noe_statement.
     def exitNoe_statement(self, ctx: XplorMRParser.Noe_statementContext):  # pylint: disable=unused-argument
-        if self.__verbose:
+        if self.__debug:
             print(f"subtype={self.__cur_subtype} (NOE) classification={self.classification}")
 
     # Enter a parse tree produced by XplorMRParser#noe_assign.
@@ -687,7 +691,7 @@ class XplorMRParserListener(ParseTreeListener):
         for i in range(0, len(self.atomSelectionSet), 2):
             for atom1, atom2 in itertools.product(self.atomSelectionSet[i],
                                                   self.atomSelectionSet[i + 1]):
-                if self.__verbose:
+                if self.__debug:
                     print(f"subtype={self.__cur_subtype} (NOE) id={self.distRestraints} "
                           f"atom1={atom1} atom2={atom2} {dstFunc}")
 
@@ -866,7 +870,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                             self.atomSelectionSet[1],
                                                             self.atomSelectionSet[2],
                                                             self.atomSelectionSet[3]):
-            if self.__verbose:
+            if self.__debug:
                 angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
                                                        [atom1, atom2, atom3, atom4])
                 print(f"subtype={self.__cur_subtype} (DIHE) id={self.dihedRestraints} angleName={angleName} "
@@ -1016,7 +1020,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#sani_statement.
     def exitSani_statement(self, ctx: XplorMRParser.Sani_statementContext):  # pylint: disable=unused-argument
-        if self.__verbose:
+        if self.__debug:
             print(f"subtype={self.__cur_subtype} (SANI) classification={self.classification} "
                   f"coefficients={self.coefficients}")
 
@@ -1126,7 +1130,7 @@ class XplorMRParserListener(ParseTreeListener):
 
         for atom1, atom2 in itertools.product(self.atomSelectionSet[4],
                                               self.atomSelectionSet[5]):
-            if self.__verbose:
+            if self.__debug:
                 print(f"subtype={self.__cur_subtype} (SANI) id={self.rdcRestraints} "
                       f"atom1={atom1} atom2={atom2} {dstFunc}")
 
@@ -1261,7 +1265,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#xdip_statement.
     def exitXdip_statement(self, ctx: XplorMRParser.Xdip_statementContext):  # pylint: disable=unused-argument
-        if self.__verbose:
+        if self.__debug:
             print(f"subtype={self.__cur_subtype} (XDIP) classification={self.classification} "
                   f"coefficients={self.coefficients}")
 
@@ -1387,7 +1391,7 @@ class XplorMRParserListener(ParseTreeListener):
 
         for atom1, atom2 in itertools.product(self.atomSelectionSet[4],
                                               self.atomSelectionSet[5]):
-            if self.__verbose:
+            if self.__debug:
                 print(f"subtype={self.__cur_subtype} (XDIP) id={self.rdcRestraints} "
                       f"atom1={atom1} atom2={atom2} {dstFunc}")
 
@@ -1497,7 +1501,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#vean_statement.
     def exitVean_statement(self, ctx: XplorMRParser.Vean_statementContext):  # pylint: disable=unused-argument
-        if self.__verbose:
+        if self.__debug:
             print(f"subtype={self.__cur_subtype} (VEAN) classification={self.classification}")
 
     # Enter a parse tree produced by XplorMRParser#vean_assign.
@@ -1600,7 +1604,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                             self.atomSelectionSet[1],
                                                             self.atomSelectionSet[2],
                                                             self.atomSelectionSet[3]):
-            if self.__verbose:
+            if self.__debug:
                 print(f"subtype={self.__cur_subtype} (VEAN) id={self.rdcRestraints} "
                       f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
 
@@ -1718,7 +1722,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#tenso_statement.
     def exitTenso_statement(self, ctx: XplorMRParser.Tenso_statementContext):  # pylint: disable=unused-argument
-        if self.__verbose:
+        if self.__debug:
             print(f"subtype={self.__cur_subtype} (TENSO) classification={self.classification} "
                   f"coefficients={self.coefficients}")
 
@@ -1817,7 +1821,7 @@ class XplorMRParserListener(ParseTreeListener):
 
         for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                               self.atomSelectionSet[1]):
-            if self.__verbose:
+            if self.__debug:
                 print(f"subtype={self.__cur_subtype} (TENSO) id={self.rdcRestraints} "
                       f"atom1={atom1} atom2={atom2} {dstFunc}")
 
@@ -1846,7 +1850,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#anis_statement.
     def exitAnis_statement(self, ctx: XplorMRParser.Anis_statementContext):  # pylint: disable=unused-argument
-        if self.__verbose:
+        if self.__debug:
             print(f"subtype={self.__cur_subtype} (ANIS) classification={self.classification} "
                   f"coefficients={self.coefficients}")
 
@@ -1945,7 +1949,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                             self.atomSelectionSet[1],
                                                             self.atomSelectionSet[2],
                                                             self.atomSelectionSet[3]):
-            if self.__verbose:
+            if self.__debug:
                 print(f"subtype={self.__cur_subtype} (ANIS) id={self.rdcRestraints} "
                       f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
 
@@ -1979,7 +1983,7 @@ class XplorMRParserListener(ParseTreeListener):
             return
 
         for atom1 in self.atomSelectionSet[0]:
-            if self.__verbose:
+            if self.__debug:
                 print(f"subtype={self.__cur_subtype} (GROU) id={self.planeRestraints} "
                       f"atom={atom1} weight={self.scale}")
 
@@ -2003,7 +2007,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#antidistance_statement.
     def exitAntidistance_statement(self, ctx: XplorMRParser.Antidistance_statementContext):  # pylint: disable=unused-argument
-        if self.__verbose:
+        if self.__debug:
             print(f"subtype={self.__cur_subtype} (XADC) classification={self.classification} "
                   f"coefficients={self.coefficients} expectation={self.adistExpect}")
 
@@ -2021,7 +2025,7 @@ class XplorMRParserListener(ParseTreeListener):
 
         for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                               self.atomSelectionSet[1]):
-            if self.__verbose:
+            if self.__debug:
                 print(f"subtype={self.__cur_subtype} (XADC) id={self.adistRestraints} "
                       f"atom1={atom1} atom2={atom2}")
 
@@ -2050,7 +2054,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#coupling_statement.
     def exitCoupling_statement(self, ctx: XplorMRParser.Coupling_statementContext):  # pylint: disable=unused-argument
-        if self.__verbose:
+        if self.__debug:
             print(f"subtype={self.__cur_subtype} (COUP) classification={self.classification} "
                   f"coefficients={self.coefficients}")
 
@@ -2173,7 +2177,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                                 self.atomSelectionSet[1],
                                                                 self.atomSelectionSet[2],
                                                                 self.atomSelectionSet[3]):
-                if self.__verbose:
+                if self.__debug:
                     if dstFunc2 is None:
                         print(f"subtype={self.__cur_subtype} (COUP) id={self.jcoupRestraints} "
                               f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
@@ -2186,7 +2190,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                                 self.atomSelectionSet[1],
                                                                 self.atomSelectionSet[2],
                                                                 self.atomSelectionSet[3]):
-                if self.__verbose:
+                if self.__debug:
                     if dstFunc2 is None:
                         print(f"subtype={self.__cur_subtype} (COUP) id={self.jcoupRestraints} "
                               f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
@@ -2198,7 +2202,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                                 self.atomSelectionSet[5],
                                                                 self.atomSelectionSet[6],
                                                                 self.atomSelectionSet[7]):
-                if self.__verbose:
+                if self.__debug:
                     if dstFunc2 is None:
                         print(f"subtype={self.__cur_subtype} (COUP) id={self.jcoupRestraints} "
                               f"atom4={atom1} atom5={atom2} atom6={atom3} atom7={atom4} {dstFunc}")
@@ -2232,7 +2236,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#carbon_shift_statement.
     def exitCarbon_shift_statement(self, ctx: XplorMRParser.Carbon_shift_statementContext):  # pylint: disable=unused-argument
-        if self.__verbose:
+        if self.__debug:
             print(f"subtype={self.__cur_subtype} (CARB) classification={self.classification} "
                   f"expectation={self.csExpect}")
 
@@ -2305,7 +2309,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                                    self.atomSelectionSet[2],
                                                                    self.atomSelectionSet[3],
                                                                    self.atomSelectionSet[4]):
-            if self.__verbose:
+            if self.__debug:
                 print(f"subtype={self.__cur_subtype} (CARB) id={self.hvycsRestraints} "
                       f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} atom5={atom5} {dstFunc}")
 
@@ -2341,7 +2345,7 @@ class XplorMRParserListener(ParseTreeListener):
                 return
 
         for atom1 in self.atomSelectionSet[0]:
-            if self.__verbose:
+            if self.__debug:
                 print(f"subtype={self.__cur_subtype} (CARB/RCOI) id={self.hvycsRestraints} "
                       f"atom={atom1} {dstFunc}")
 
@@ -2363,7 +2367,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#proton_shift_statement.
     def exitProton_shift_statement(self, ctx: XplorMRParser.Proton_shift_statementContext):  # pylint: disable=unused-argument
-        if self.__verbose:
+        if self.__debug:
             print(f"subtype={self.__cur_subtype} (PROT) classification={self.classification}")
 
     # Enter a parse tree produced by XplorMRParser#observed.
@@ -2420,14 +2424,14 @@ class XplorMRParserListener(ParseTreeListener):
 
         if lenAtomSelectionSet == 1:
             for atom1 in self.atomSelectionSet[0]:
-                if self.__verbose:
+                if self.__debug:
                     print(f"subtype={self.__cur_subtype} (PROT/OBSE) id={self.procsRestraints} "
                           f"atom={atom1} {dstFunc}")
 
         else:
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
-                if self.__verbose:
+                if self.__debug:
                     print(f"subtype={self.__cur_subtype} (PROT/OBSE) id={self.procsRestraints} "
                           f"atom1={atom1} atom2={atom2} {dstFunc}")
 
@@ -2455,7 +2459,7 @@ class XplorMRParserListener(ParseTreeListener):
                 return
 
         for atom1 in self.atomSelectionSet[0]:
-            if self.__verbose:
+            if self.__debug:
                 print(f"subtype={self.__cur_subtype} (PROT/RCOI) id={self.procsRestraints} "
                       f"atom={atom1} {dstFunc}")
 
@@ -2501,7 +2505,7 @@ class XplorMRParserListener(ParseTreeListener):
         for atom1, atom2, atom3 in itertools.product(self.atomSelectionSet[0],
                                                      self.atomSelectionSet[1],
                                                      self.atomSelectionSet[2]):
-            if self.__verbose:
+            if self.__debug:
                 print(f"subtype={self.__cur_subtype} (PROT/ANIS) id={self.procsRestraints} "
                       f"atom1={atom1} atom2={atom2} atom3={atom3} {dstFunc}")
 
@@ -2593,7 +2597,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                                        self.atomSelectionSet[2],
                                                                        self.atomSelectionSet[3],
                                                                        self.atomSelectionSet[4]):
-                if self.__verbose:
+                if self.__debug:
                     print(f"subtype={self.__cur_subtype} (PROT/RING) id={self.procsRestraints} "
                           f"ring_name={ring_name} atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} atom5={atom5}")
 
@@ -2604,7 +2608,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                                               self.atomSelectionSet[3],
                                                                               self.atomSelectionSet[4],
                                                                               self.atomSelectionSet[5]):
-                if self.__verbose:
+                if self.__debug:
                     print(f"subtype={self.__cur_subtype} (PROT/RING) id={self.procsRestraints} "
                           f"ring_name={ring_name} atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} atom5={atom5} atom6={atom6}")
 
@@ -2642,7 +2646,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#ramachandran_statement.
     def exitRamachandran_statement(self, ctx: XplorMRParser.Ramachandran_statementContext):  # pylint: disable=unused-argument
-        if self.__verbose:
+        if self.__debug:
             print(f"subtype={self.__cur_subtype} (RAMA) classification={self.classification}")
 
     # Enter a parse tree produced by XplorMRParser#rama_assign.
@@ -2727,7 +2731,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                                 self.atomSelectionSet[i + 1],
                                                                 self.atomSelectionSet[i + 2],
                                                                 self.atomSelectionSet[i + 3]):
-                if self.__verbose:
+                if self.__debug:
                     print(f"subtype={self.__cur_subtype} (RAMA) id={self.ramaRestraints} "
                           f"atom{i+1}={atom1} atom{i+2}={atom2} atom{i+3}={atom3} atom{i+4}={atom4}")
 
@@ -2776,7 +2780,7 @@ class XplorMRParserListener(ParseTreeListener):
             return
 
         for atom1 in self.atomSelectionSet[0]:
-            if self.__verbose:
+            if self.__debug:
                 print(f"subtype={self.__cur_subtype} (COLL) id={self.radiRestraints} "
                       f"atom={atom1} {dstFunc}")
 
@@ -2806,7 +2810,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#diffusion_statement.
     def exitDiffusion_statement(self, ctx: XplorMRParser.Diffusion_statementContext):  # pylint: disable=unused-argument
-        if self.__verbose:
+        if self.__debug:
             print(f"subtype={self.__cur_subtype} (DANI) classification={self.classification} "
                   f"coefficients={self.coefficients}")
 
@@ -2905,7 +2909,7 @@ class XplorMRParserListener(ParseTreeListener):
 
         for atom1, atom2 in itertools.product(self.atomSelectionSet[4],
                                               self.atomSelectionSet[5]):
-            if self.__verbose:
+            if self.__debug:
                 print(f"subtype={self.__cur_subtype} (DANI) id={self.diffRestraints} "
                       f"atom1={atom1} atom2={atom2} {dstFunc}")
 
@@ -3008,7 +3012,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#orientation_statement.
     def exitOrientation_statement(self, ctx: XplorMRParser.Orientation_statementContext):  # pylint: disable=unused-argument
-        if self.__verbose:
+        if self.__debug:
             print(f"subtype={self.__cur_subtype} (ORIE) classification={self.classification}")
 
     # Enter a parse tree produced by XplorMRParser#orie_assign.
@@ -3095,7 +3099,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                             self.atomSelectionSet[1],
                                                             self.atomSelectionSet[2],
                                                             self.atomSelectionSet[3]):
-            if self.__verbose:
+            if self.__debug:
                 print(f"subtype={self.__cur_subtype} (ORIE) id={self.nbaseRestraints} "
                       f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4}")
 
@@ -3147,7 +3151,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#csa_statement.
     def exitCsa_statement(self, ctx: XplorMRParser.Csa_statementContext):  # pylint: disable=unused-argument
-        if self.__verbose:
+        if self.__debug:
             print(f"subtype={self.__cur_subtype} (DCSA) classification={self.classification} "
                   f"type={self.csaType} scale={self.scale} coefficients={self.coefficients} sigma={self.csaSigma}")
 
@@ -3315,7 +3319,7 @@ class XplorMRParserListener(ParseTreeListener):
         for atom1, atom2, atom3 in itertools.product(self.atomSelectionSet[4],
                                                      self.atomSelectionSet[5],
                                                      self.atomSelectionSet[6]):
-            if self.__verbose:
+            if self.__debug:
                 print(f"subtype={self.__cur_subtype} id={self.csaRestraints} "
                       f"atom1(CSA central)={atom1} atom2={atom2} atom3={atom3} {dstFunc}")
 
@@ -3449,7 +3453,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#pcsa_statement.
     def exitPcsa_statement(self, ctx: XplorMRParser.Pcsa_statementContext):  # pylint: disable=unused-argument
-        if self.__verbose:
+        if self.__debug:
             print(f"subtype={self.__cur_subtype} (PCSA) classification={self.classification} "
                   f"scale={self.scale} coefficients={self.coefficients} sigma={self.csaSigma}")
 
@@ -3534,7 +3538,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#pre_statement.
     def exitPre_statement(self, ctx: XplorMRParser.Pre_statementContext):  # pylint: disable=unused-argument
-        if self.__verbose:
+        if self.__debug:
             print(f"subtype={self.__cur_subtype} (PMAG) classification={self.classification} "
                   f"parameters={self.preParameterDict[self.classification]}")
 
@@ -3580,7 +3584,7 @@ class XplorMRParserListener(ParseTreeListener):
             return
 
         for atom1 in self.atomSelectionSet[1]:
-            if self.__verbose:
+            if self.__debug:
                 print(f"subtype={self.__cur_subtype} id={self.preRestraints} "
                       f"paramag={atom_id_0} atom={atom1} {dstFunc}")
 
@@ -3688,7 +3692,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#pcs_statement.
     def exitPcs_statement(self, ctx: XplorMRParser.Pcs_statementContext):  # pylint: disable=unused-argument
-        if self.__verbose:
+        if self.__debug:
             print(f"subtype={self.__cur_subtype} (XPCS) classification={self.classification} "
                   f"coefficients={self.coefficients}")
 
@@ -3719,7 +3723,7 @@ class XplorMRParserListener(ParseTreeListener):
         atom_id_0 = self.atomSelectionSet[0][0]['atom_id'] if len(self.atomSelectionSet[0]) > 0 and 'atom_id' in self.atomSelectionSet[0][0] else 'paramagnetic center'
 
         for atom1 in self.atomSelectionSet[4]:
-            if self.__verbose:
+            if self.__debug:
                 print(f"subtype={self.__cur_subtype} id={self.pcsRestraints} "
                       f"paramag={atom_id_0} atom={atom1} {dstFunc}")
 
@@ -3828,7 +3832,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#prdc_statement.
     def exitPrdc_statement(self, ctx: XplorMRParser.Prdc_statementContext):  # pylint: disable=unused-argument
-        if self.__verbose:
+        if self.__debug:
             print(f"subtype={self.__cur_subtype} (XRDC) classification={self.classification} "
                   f"coefficients={self.coefficients}")
 
@@ -3925,7 +3929,7 @@ class XplorMRParserListener(ParseTreeListener):
 
         for atom1, atom2 in itertools.product(self.atomSelectionSet[4],
                                               self.atomSelectionSet[5]):
-            if self.__verbose:
+            if self.__debug:
                 print(f"subtype={self.__cur_subtype} (XRDC) id={self.prdcRestraints} "
                       f"paramag={atom_id_0} atom1={atom1} atom2={atom2} {dstFunc}")
 
@@ -3939,7 +3943,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#porientation_statement.
     def exitPorientation_statement(self, ctx: XplorMRParser.Porientation_statementContext):  # pylint: disable=unused-argument
-        if self.__verbose:
+        if self.__debug:
             print(f"subtype={self.__cur_subtype} (XANG) classification={self.classification}")
 
     # Enter a parse tree produced by XplorMRParser#porientation_assign.
@@ -4046,7 +4050,7 @@ class XplorMRParserListener(ParseTreeListener):
 
         for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                               self.atomSelectionSet[1]):
-            if self.__verbose:
+            if self.__debug:
                 print(f"subtype={self.__cur_subtype} (XANG) id={self.pangRestraints} "
                       f"atom1={atom1} atom2={atom2} {dstFunc} {dstFunc2}")
 
@@ -4063,7 +4067,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#pccr_statement.
     def exitPccr_statement(self, ctx: XplorMRParser.Pccr_statementContext):  # pylint: disable=unused-argument
-        if self.__verbose:
+        if self.__debug:
             print(f"subtype={self.__cur_subtype} (XCCR) classification={self.classification} "
                   f"coefficients={self.coefficients}")
 
@@ -4160,7 +4164,7 @@ class XplorMRParserListener(ParseTreeListener):
 
         for atom1, atom2 in itertools.product(self.atomSelectionSet[1],
                                               self.atomSelectionSet[2]):
-            if self.__verbose:
+            if self.__debug:
                 print(f"subtype={self.__cur_subtype} (XCCR) id={self.prdcRestraints} "
                       f"paramag={atom_id_0} atom1={atom1} atom2={atom2} {dstFunc}")
 
@@ -4263,7 +4267,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#hbond_statement.
     def exitHbond_statement(self, ctx: XplorMRParser.Hbond_statementContext):  # pylint: disable=unused-argument
-        if self.__verbose:
+        if self.__debug:
             print(f"subtype={self.__cur_subtype} (HBDA) classification={self.classification}")
 
     # Enter a parse tree produced by XplorMRParser#hbond_assign.
@@ -4341,13 +4345,13 @@ class XplorMRParserListener(ParseTreeListener):
         for atom1, atom2, atom3 in itertools.product(self.atomSelectionSet[0],
                                                      self.atomSelectionSet[1],
                                                      self.atomSelectionSet[2]):
-            if self.__verbose:
+            if self.__debug:
                 print(f"subtype={self.__cur_subtype} (HBDA) id={self.hbondRestraints} "
                       f"donor={atom1} hydrogen={atom2} acceptor={atom3}")
 
     # Enter a parse tree produced by XplorMRParser#selection.
     def enterSelection(self, ctx: XplorMRParser.SelectionContext):  # pylint: disable=unused-argument
-        if self.__debug:
+        if self.__sel_expr_debug:
             print("  " * self.depth + "enter_selection")
 
         if self.inVector3D:
@@ -4360,7 +4364,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#selection.
     def exitSelection(self, ctx: XplorMRParser.SelectionContext):  # pylint: disable=unused-argument
-        if self.__debug:
+        if self.__sel_expr_debug:
             print("  " * self.depth + "exit_selection")
 
         atomSelection = self.stackSelections.pop() if self.stackSelections else []
@@ -4373,7 +4377,7 @@ class XplorMRParserListener(ParseTreeListener):
                         _atomSelection.append(_atom)
             atomSelection = _atomSelection
 
-        if self.__debug:
+        if self.__sel_expr_debug:
             print("  " * self.depth + f"atom selection: {atomSelection}")
 
         if self.inVector3D:
@@ -4393,7 +4397,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#selection_expression.
     def enterSelection_expression(self, ctx: XplorMRParser.Selection_expressionContext):
-        if self.__debug:
+        if self.__sel_expr_debug:
             print("  " * self.depth + f"enter_sel_expr, union: {bool(ctx.Or_op(0))}")
 
         if self.depth > 0 and len(self.factor) > 0:
@@ -4409,7 +4413,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by XplorMRParser#selection_expression.
     def exitSelection_expression(self, ctx: XplorMRParser.Selection_expressionContext):  # pylint: disable=unused-argument
         self.depth -= 1
-        if self.__debug:
+        if self.__sel_expr_debug:
             print("  " * self.depth + "exit_sel_expr")
 
         atomSelection = []
@@ -4427,7 +4431,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#term.
     def enterTerm(self, ctx: XplorMRParser.TermContext):
-        if self.__debug:
+        if self.__sel_expr_debug:
             print("  " * self.depth + f"enter_term, intersection: {bool(ctx.And_op(0))}")
 
         self.stackFactors = []
@@ -4438,7 +4442,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by XplorMRParser#term.
     def exitTerm(self, ctx: XplorMRParser.TermContext):  # pylint: disable=unused-argument
         self.depth -= 1
-        if self.__debug:
+        if self.__sel_expr_debug:
             print("  " * self.depth + "exit_term")
 
         while self.stackFactors:
@@ -4803,7 +4807,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#factor.
     def enterFactor(self, ctx: XplorMRParser.FactorContext):
-        if self.__debug:
+        if self.__sel_expr_debug:
             print("  " * self.depth + f"enter_factor, concatenation: {bool(ctx.factor())}")
 
         if ctx.Point():
@@ -4818,7 +4822,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by XplorMRParser#factor.
     def exitFactor(self, ctx: XplorMRParser.FactorContext):
         self.depth -= 1
-        if self.__debug:
+        if self.__sel_expr_debug:
             print("  " * self.depth + "exit_factor")
 
         # concatenation
@@ -4828,7 +4832,7 @@ class XplorMRParserListener(ParseTreeListener):
 
         if ctx.All() or ctx.Known():
             clauseName = 'all' if ctx.All() else 'known'
-            if self.__debug:
+            if self.__sel_expr_debug:
                 print("  " * self.depth + f"--> {clauseName}")
             if not self.__hasCoord:
                 return
@@ -4878,7 +4882,7 @@ class XplorMRParserListener(ParseTreeListener):
 
         elif ctx.Around() or ctx.Saround():
             clauseName = 'around' if ctx.Around() else 'saround'
-            if self.__debug:
+            if self.__sel_expr_debug:
                 print("  " * self.depth + f"--> {clauseName}")
             if not self.__hasCoord:
                 return
@@ -5035,7 +5039,7 @@ class XplorMRParserListener(ParseTreeListener):
                             f"The {clauseName!r} clause has no effect.\n"
 
         elif ctx.Atom():
-            if self.__debug:
+            if self.__sel_expr_debug:
                 print("  " * self.depth + "--> atom")
             if not self.__hasPolySeq:
                 return
@@ -5120,7 +5124,7 @@ class XplorMRParserListener(ParseTreeListener):
             self.consumeFactor_expressions("'atom' clause", False)
 
         elif ctx.Attribute():
-            if self.__debug:
+            if self.__sel_expr_debug:
                 print("  " * self.depth + "--> attribute")
             if not self.__hasCoord:
                 return
@@ -5345,7 +5349,7 @@ class XplorMRParserListener(ParseTreeListener):
                     f"The 'attribute' clause ('{_attr_prop}{_absolute} {opCode} {attr_value}') has no effect.\n"
 
         elif ctx.BondedTo():
-            if self.__debug:
+            if self.__sel_expr_debug:
                 print("  " * self.depth + "--> bondedto")
             if not self.__hasCoord:
                 return
@@ -5500,7 +5504,7 @@ class XplorMRParserListener(ParseTreeListener):
                     "The 'bondedto' clause has no effect because no atom is selected.\n"
 
         elif ctx.ByGroup():
-            if self.__debug:
+            if self.__sel_expr_debug:
                 print("  " * self.depth + "--> bygroup")
             if not self.__hasCoord:
                 return
@@ -5604,7 +5608,7 @@ class XplorMRParserListener(ParseTreeListener):
                     "The 'bygroup' clause has no effect because no atom is selected.\n"
 
         elif ctx.ByRes():
-            if self.__debug:
+            if self.__sel_expr_debug:
                 print("  " * self.depth + "--> byres")
             if not self.__hasCoord:
                 return
@@ -5659,7 +5663,7 @@ class XplorMRParserListener(ParseTreeListener):
                     "The 'byres' clause has no effect because no atom is selected.\n"
 
         elif ctx.Chemical():
-            if self.__debug:
+            if self.__sel_expr_debug:
                 print("  " * self.depth + "--> chemical")
             if ctx.Colon():  # range expression
                 self.factor['type_symbols'] = [str(ctx.Simple_name(0)), str(ctx.Simple_name(1))]
@@ -5673,7 +5677,7 @@ class XplorMRParserListener(ParseTreeListener):
             self.consumeFactor_expressions("'chemical' clause", False)
 
         elif ctx.Hydrogen():
-            if self.__debug:
+            if self.__sel_expr_debug:
                 print("  " * self.depth + "--> hydrogen")
             _typeSymbolSelect = set()
             atomTypes = self.__cR.getDictList('atom_type')
@@ -5690,7 +5694,7 @@ class XplorMRParserListener(ParseTreeListener):
             self.consumeFactor_expressions("'hydrogen' clause", False)
 
         elif ctx.Id():
-            if self.__debug:
+            if self.__sel_expr_debug:
                 print("  " * self.depth + "--> id")
             self.factor['atom_id'] = [None]
             self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
@@ -5698,7 +5702,7 @@ class XplorMRParserListener(ParseTreeListener):
                 "because the internal atom number is not included in the coordinate file.\n"
 
         elif ctx.Name():
-            if self.__debug:
+            if self.__sel_expr_debug:
                 print("  " * self.depth + "--> name")
             if ctx.Colon():  # range expression
                 self.factor['atom_ids'] = [str(ctx.Simple_name(0)), str(ctx.Simple_name(1))]
@@ -5710,7 +5714,7 @@ class XplorMRParserListener(ParseTreeListener):
                 self.factor['atom_ids'] = [str(ctx.Simple_names(0))]
 
         elif ctx.Not_op():
-            if self.__debug:
+            if self.__sel_expr_debug:
                 print("  " * self.depth + "--> not")
             if not self.__hasCoord:
                 return
@@ -5741,7 +5745,7 @@ class XplorMRParserListener(ParseTreeListener):
                     "The 'not' clause has no effect.\n"
 
         elif ctx.Point():
-            if self.__debug:
+            if self.__sel_expr_debug:
                 print("  " * self.depth + "--> point")
             if not self.__hasCoord:
                 return
@@ -5857,7 +5861,7 @@ class XplorMRParserListener(ParseTreeListener):
             self.vector3D = None
 
         elif ctx.Previous():
-            if self.__debug:
+            if self.__sel_expr_debug:
                 print("  " * self.depth + "--> previous")
             self.factor['atom_id'] = [None]
             self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
@@ -5865,7 +5869,7 @@ class XplorMRParserListener(ParseTreeListener):
                 "because the internal atom selection is fragile in the restraint file.\n"
 
         elif ctx.Pseudo():
-            if self.__debug:
+            if self.__sel_expr_debug:
                 print("  " * self.depth + "--> pseudo")
             if not self.__hasCoord:
                 return
@@ -5899,7 +5903,7 @@ class XplorMRParserListener(ParseTreeListener):
                         atomSelection.append(_atom)
 
             except Exception as e:
-                if self.__debug:
+                if self.__verbose:
                     self.__lfh.write(f"+XplorMRParserListener.exitFactor() ++ Error  - {str(e)}\n")
 
             self.intersectionFactor_expressions(atomSelection)
@@ -5910,7 +5914,7 @@ class XplorMRParserListener(ParseTreeListener):
                     "The 'pseudo' clause has no effect.\n"
 
         elif ctx.Residue():
-            if self.__debug:
+            if self.__sel_expr_debug:
                 print("  " * self.depth + "--> residue")
             if ctx.Colon():  # range expression
                 self.factor['seq_id'] = list(range(int(str(ctx.Integer(0))), int(str(ctx.Integer(0))) + 1))
@@ -5922,7 +5926,7 @@ class XplorMRParserListener(ParseTreeListener):
                 self.factor['seq_ids'] = [str(ctx.Integers())]
 
         elif ctx.Resname():
-            if self.__debug:
+            if self.__sel_expr_debug:
                 print("  " * self.depth + "--> resname")
             if ctx.Colon():  # range expression
                 self.factor['comp_ids'] = [str(ctx.Simple_name(0)), str(ctx.Simple_name(1))]
@@ -5934,7 +5938,7 @@ class XplorMRParserListener(ParseTreeListener):
                 self.factor['comp_ids'] = [str(ctx.Simple_names(0))]
 
         elif ctx.SegIdentifier():
-            if self.__debug:
+            if self.__sel_expr_debug:
                 print("  " * self.depth + "--> segidentifier")
             if not self.__hasPolySeq:
                 return
@@ -5977,7 +5981,7 @@ class XplorMRParserListener(ParseTreeListener):
         elif ctx.Store_1() or ctx.Store_2() or ctx.Store_3()\
                 or ctx.Store_4() or ctx.Store_5() or ctx.Store_6()\
                 or ctx.Store_7() or ctx.Store_8() or ctx.Store_9():
-            if self.__debug:
+            if self.__sel_expr_debug:
                 print("  " * self.depth + "--> store[1-9]")
             self.factor['atom_id'] = [None]
             self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
@@ -5985,7 +5989,7 @@ class XplorMRParserListener(ParseTreeListener):
                 "because the internal vector statement is fragile in the restraint file.\n"
 
         elif ctx.Tag():
-            if self.__debug:
+            if self.__sel_expr_debug:
                 print("  " * self.depth + "--> tag")
             if not self.__hasCoord:
                 return

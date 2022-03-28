@@ -47,6 +47,7 @@ class CyanaMRReader:
                  ccU=None, csStat=None, nefT=None, upl_or_lol=None):
         self.__verbose = verbose
         self.__lfh = log
+        self.__debug = False
 
         self.__representativeModelId = representativeModelId
 
@@ -72,6 +73,9 @@ class CyanaMRReader:
         self.__nefT = NEFTranslator(verbose, log, self.__ccU, self.__csStat) if nefT is None else nefT
 
         self.__utl_or_lol = upl_or_lol
+
+    def setDebugMode(self, debug):
+        self.__debug = debug
 
     def parse(self, mrFilePath, cifFilePath=None):
         """ Parse CYANA MR file.
@@ -128,6 +132,7 @@ class CyanaMRReader:
                                                  self.__coordAtomSite, self.__coordUnobsRes,
                                                  self.__labelToAuthSeq, self.__authToLabelSeq,
                                                  self.__ccU, self.__csStat, self.__nefT, self.__utl_or_lol)
+                listener.setDebugMode(self.__debug)
                 walker.walk(listener, tree)
 
                 messageList = parser_error_listener.getMessageList()
@@ -154,11 +159,14 @@ class CyanaMRReader:
 
 if __name__ == "__main__":
     reader = CyanaMRReader(True)
+    reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-daother-6830/2nd_test/cyana_rdc_restraints_exmaple',
                  '../../tests-nmr/mock-data-daother-6830/2nd_test/D_800411_model_P1.cif.V1')
     # reader = CyanaMRReader(True)
+    # reader.setDebugMode(True)
     # reader.parse('../../tests-nmr/mock-data-daother-6830/2nd_test/cyana_dihed_restraints_exmaple',
     #              '../../tests-nmr/mock-data-daother-6830/2nd_test/D_800411_model_P1.cif.V1')
     # reader = CyanaMRReader(True)
+    # reader.setDebugMode(True)
     # reader.parse('../../tests-nmr/mock-data-daother-5829/D_1000249951_mr-upload_P1.cyana.V1',
     #              '../../tests-nmr/mock-data-daother-5829/D_800467_model_P1.cif.V3')

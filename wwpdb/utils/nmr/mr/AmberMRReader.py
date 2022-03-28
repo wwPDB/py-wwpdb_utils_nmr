@@ -49,6 +49,7 @@ class AmberMRReader:
                  ccU=None, csStat=None, nefT=None, atomNumberDict=None):
         self.__verbose = verbose
         self.__lfh = log
+        self.__debug = False
 
         self.__representativeModelId = representativeModelId
 
@@ -76,6 +77,9 @@ class AmberMRReader:
 
         # AmberPTParserListener.getAtomNumberDict()
         self.__atomNumberDict = atomNumberDict
+
+    def setDebugMode(self, debug):
+        self.__debug = debug
 
     def parse(self, mrFilePath, cifFilePath=None, ptFilePath=None):
         """ Parse AMBER MR file.
@@ -142,6 +146,7 @@ class AmberMRReader:
                                                      self.__coordAtomSite, self.__coordUnobsRes,
                                                      self.__labelToAuthSeq, self.__authToLabelSeq,
                                                      self.__ccU, self.__csStat, self.__nefT, self.__atomNumberDict)
+                    listener.setDebugMode(self.__debug)
                     walker.walk(listener, tree)
 
                     messageList = parser_error_listener.getMessageList()
@@ -178,10 +183,12 @@ class AmberMRReader:
 
 if __name__ == "__main__":
     reader = AmberMRReader(True)
+    reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-daother-7421/amber_rdc.test',
                  '../../tests-nmr/mock-data-daother-7421/D_800450_model_P1.cif.V1',
                  '../../tests-nmr/mock-data-daother-7421/D_1292118884_mr-upload_P1.dat.V1')
     # reader = AmberMRReader(True)
+    # reader.setDebugMode(True)
     # reader.parse('../../tests-nmr/mock-data-daother-7421/D_1292118884_mr-upload_P1.amber.V1',
     #              '../../tests-nmr/mock-data-daother-7421/D_800450_model_P1.cif.V1',
     #              '../../tests-nmr/mock-data-daother-7421/D_1292118884_mr-upload_P1.dat.V1')

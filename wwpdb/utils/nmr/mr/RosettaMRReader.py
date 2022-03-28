@@ -47,6 +47,7 @@ class RosettaMRReader:
                  ccU=None, csStat=None, nefT=None):
         self.__verbose = verbose
         self.__lfh = log
+        self.__debug = False
 
         self.__representativeModelId = representativeModelId
 
@@ -71,6 +72,9 @@ class RosettaMRReader:
 
         # NEFTranslator
         self.__nefT = NEFTranslator(verbose, log, self.__ccU, self.__csStat) if nefT is None else nefT
+
+    def setDebugMode(self, debug):
+        self.__debug = debug
 
     def parse(self, mrFilePath, cifFilePath=None):
         """ Parse ROSETTA MR file.
@@ -127,6 +131,7 @@ class RosettaMRReader:
                                                    self.__coordAtomSite, self.__coordUnobsRes,
                                                    self.__labelToAuthSeq, self.__authToLabelSeq,
                                                    self.__ccU, self.__csStat, self.__nefT)
+                listener.setDebugMode(self.__debug)
                 walker.walk(listener, tree)
 
                 messageList = parser_error_listener.getMessageList()
@@ -153,11 +158,14 @@ class RosettaMRReader:
 
 if __name__ == "__main__":
     reader = RosettaMRReader(True)
+    reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-daother-7690/rosetta_rdc.test',
                  '../../tests-nmr/mock-data-daother-7690/D_800470_model_P1.cif.V4')
     # reader = RosettaMRReader(True)
+    # reader.setDebugMode(True)
     # reader.parse('../../tests-nmr/mock-data-daother-7690/rosetta_angle.test',
     #              '../../tests-nmr/mock-data-daother-7690/D_800470_model_P1.cif.V4')
     # reader = RosettaMRReader(True)
+    # reader.setDebugMode(True)
     # reader.parse('../../tests-nmr/mock-data-daother-7690/rosetta_dist.test',
     #              '../../tests-nmr/mock-data-daother-7690/D_800470_model_P1.cif.V4')

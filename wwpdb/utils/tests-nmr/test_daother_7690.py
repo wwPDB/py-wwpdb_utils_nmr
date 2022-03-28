@@ -1,6 +1,6 @@
 ##
-# File: test_daother_7465.py
-# Date:  15-Nov-2021  M. Yokochi
+# File: test_daother_7690.py
+# Date:  03-Mar-2022  M. Yokochi
 #
 # Updates:
 #
@@ -15,22 +15,22 @@ class TestNmrDpUtility(unittest.TestCase):
 
     def setUp(self):
         here = os.path.abspath(os.path.dirname(__file__))
-        self.data_dir_path = os.path.join(here, 'mock-data-daother-7465/')
+        self.data_dir_path = os.path.join(here, 'mock-data-daother-7690/')
         self.res_file_type = {
-            'daother-7465': 'nm-res-cns',
-            'daother-7465_2': 'nm-res-oth'
+            'daother-7690': 'nm-res-ros',
+            'daother-7690-edit': 'nm-res-ros'
         }
         self.cs_file_path = {
-            'daother-7465': ['D_1000251112_cs-upload_P1.str.V1'],
-            'daother-7465_2': ['D_1000261119_cs-review_P1.str']
+            'daother-7690': ['SA1_V90T_30C.txt'],
+            'daother-7690-edit': ['SA1_V90T_30C.txt']
         }
         self.mr_file_path = {
-            'daother-7465': ['D_1000251112_mr-upload_P1.cns.V1'],
-            'daother-7465_2': ['D_1000261119_mr-upload_P1.dat']
+            'daother-7690': ['Sa1_v90t_30C_noe.txt'],
+            'daother-7690-edit': ['Sa1_v90t_30C_noe-edited.txt']
         }
         self.model_file_path = {
-            'daother-7465': 'D_800453_model_P1.cif.V1',
-            'daother-7465_2': 'D_800461_model_P1.cif.V1'
+            'daother-7690': 'pdb_extract_17960.cif',
+            'daother-7690-edit': 'pdb_extract_17960.cif'
         }
         self.utility = NmrDpUtility()
 
@@ -74,14 +74,18 @@ class TestNmrDpUtility(unittest.TestCase):
             error_type = {str(k): len(v) for k, v in report['error'].items() if str(k) != 'total'}
             print('%s: %s, %s' % (cs_type, report['information']['status'], error_type))
 
-        self.assertIn('content_mismatch', report['error'])
-        self.assertEqual(1, report['error']['total'])
+        if cs_type == 'daother-7690-edit':
+            self.assertNotEqual(report['information']['status'], 'Error')
+        else:
+            self.assertEqual(report['information']['status'], 'Error')
+        if report['warning'] is not None:
+            self.assertNotIn('missing_content', report['warning'])
 
-    def test_nmr_cs_str_consistency_check_daother_7465(self):
-        self.__test_nmr_cs_str_consistency('daother-7465')
+    def test_nmr_cs_str_consistency_check_daother_7690(self):
+        self.__test_nmr_cs_str_consistency('daother-7690')
 
-    def test_nmr_cs_str_consistency_check_daother_7465_2(self):
-        self.__test_nmr_cs_str_consistency('daother-7465_2')
+    def test_nmr_cs_str_consistency_check_daother_7690_edit(self):
+        self.__test_nmr_cs_str_consistency('daother-7690-edit')
 
 
 if __name__ == '__main__':

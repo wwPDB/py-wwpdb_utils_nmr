@@ -9,9 +9,15 @@
 """
 import sys
 
-from wwpdb.utils.config.ConfigInfo import getSiteId
-from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommon
-from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
+try:
+    from wwpdb.utils.config.ConfigInfo import getSiteId
+    from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommon
+    from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
+    cICommon = ConfigInfoAppCommon(getSiteId())
+    CC_CVS_PATH = cICommon.get_site_cc_cvs_path()
+except ImportError:
+    from nmr.io.ChemCompIo import ChemCompReader
+    CC_CVS_PATH = './ligand_dict'  # need to setup 'ligand_dict' CCD resource for NMR restraint processing
 
 
 class ChemCompUtil:
@@ -19,11 +25,8 @@ class ChemCompUtil:
     """
 
     def __init__(self, verbose=False, log=sys.stderr):
-        _cICommon = ConfigInfoAppCommon(getSiteId())
-        _ccCvsPath = _cICommon.get_site_cc_cvs_path()
-
         self.__ccR = ChemCompReader(verbose, log)
-        self.__ccR.setCachePath(_ccCvsPath)
+        self.__ccR.setCachePath(CC_CVS_PATH)
 
         self.lastCompId = None
         self.lastStatus = False
@@ -92,30 +95,40 @@ class ChemCompUtil:
         aromaticFlag = next(d for d in _chemCompBondDict if d[0] == '_chem_comp_bond.pdbx_aromatic_flag')
         self.ccbAromaticFlag = _chemCompBondDict.index(aromaticFlag)
 
-        self.__cache = {}
+        self.__cachedDict = {}
+        self.__failedCompId = []
 
     def updateChemCompDict(self, compId):
         """ Update CCD information for a given comp_id.
             @return: True for successfully update CCD information or False for the case a given comp_id does not exist in CCD
         """
 
+        if compId is None:
+            return False
+
         compId = compId.upper()
+
+        if compId in self.__failedCompId:
+            return False
 
         if compId != self.lastCompId:
             self.lastStatus = False if '_' in compId else self.__ccR.setCompId(compId)
             self.lastCompId = compId
 
             if self.lastStatus:
-                if compId in self.__cache:
-                    self.lastChemCompDict = self.__cache[compId]['chem_comp']
-                    self.lastAtomList = self.__cache[compId]['chem_comp_atom']
-                    self.lastBonds = self.__cache[compId]['chem_comp_bond']
+                if compId in self.__cachedDict:
+                    self.lastChemCompDict = self.__cachedDict[compId]['chem_comp']
+                    self.lastAtomList = self.__cachedDict[compId]['chem_comp_atom']
+                    self.lastBonds = self.__cachedDict[compId]['chem_comp_bond']
                 else:
                     self.lastChemCompDict = self.__ccR.getChemCompDict()
                     self.lastAtomList = self.__ccR.getAtomList()
                     self.lastBonds = self.__ccR.getBonds()
-                    self.__cache[compId] = {'chem_comp': self.lastChemCompDict,
-                                            'chem_comp_atom': self.lastAtomList,
-                                            'chem_comp_bond': self.lastBonds}
+                    self.__cachedDict[compId] = {'chem_comp': self.lastChemCompDict,
+                                                 'chem_comp_atom': self.lastAtomList,
+                                                 'chem_comp_bond': self.lastBonds}
+
+            else:
+                self.__failedCompId.append(compId)
 
         return self.lastStatus

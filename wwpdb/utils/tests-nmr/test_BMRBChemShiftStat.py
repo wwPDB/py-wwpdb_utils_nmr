@@ -27,8 +27,8 @@ class TestBMRBChemShiftStat(unittest.TestCase):
         self.bmrb_cs_stat.loadStatFromCsvFiles()
         self.bmrb_cs_stat.writeStatAsPickleFiles()
 
-    def test_init(self):
-        self.assertEqual(self.bmrb_cs_stat.isOk(), True)
+    # def test_init(self):
+    #     self.assertEqual(self.bmrb_cs_stat.isOk(), True)
 
     def test_poly_type(self):
         self.assertEqual(self.bmrb_cs_stat.getTypeOfCompId('ALA')[0], True)

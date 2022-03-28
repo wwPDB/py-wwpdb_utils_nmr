@@ -13,8 +13,13 @@
 import sys
 
 from mmcif.io.IoAdapterPy import IoAdapterPy
-from wwpdb.utils.nmr.io.mmCIFUtil import mmCIFUtil
-from wwpdb.utils.nmr.AlignUtil import emptyValue
+
+try:
+    from wwpdb.utils.nmr.io.mmCIFUtil import mmCIFUtil
+    from wwpdb.utils.nmr.AlignUtil import emptyValue
+except ImportError:
+    from nmr.io.mmCIFUtil import mmCIFUtil
+    from nmr.AlignUtil import emptyValue
 
 
 class NmrStarToCif:

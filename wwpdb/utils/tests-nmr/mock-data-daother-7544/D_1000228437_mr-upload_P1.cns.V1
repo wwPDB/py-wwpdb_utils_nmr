@@ -78,7 +78,7 @@ assign (residue 16 and name HN) (residue 16 and name HA) 3.2 1.0 0.3
 assign (residue 16 and name HN) (residue 16 and name HB1) 4.2 2.0 0.3
 assign (residue 16 and name HN) (residue 16 and name HB2) 5.0 2.8 1.0 
 assign (residue 16 and name HN) (residue 16 and name HD1#) 3.2 1.0 0.3
-assign (residue 16 and name HN) (residue 16 and name HD2 5.0 2.8 1.0 
+assign (residue 16 and name HN) (residue 16 and name HD2) 5.0 2.8 1.0 
 assign (residue 16 and name HN) (residue 16 and name HG) 5.0 2.8 1.0 
 
 assign (residue 17 and name HN) (residue 17 and name HA1) 3.2 1.0 0.3

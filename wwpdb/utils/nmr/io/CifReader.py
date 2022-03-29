@@ -639,6 +639,9 @@ class CifReader:
 
         max_d_var = np.max(d_var)
 
+        if max_d_var <= 0.0:
+            return rlist, dlist
+
         d_ord = np.ones(matrix_size, dtype=float)
 
         for i, j in itertools.combinations(range(size), 2):

@@ -18893,19 +18893,20 @@ class NmrDpUtility:
                                 else:
                                     cys['redox_state_pred'] = f"oxidized {oxi:.1%}, reduced {red:.1%}"
 
-                            cys['in_disulfide_bond'] = False
-                            if has_key_value(input_source_dic, 'disulfide_bond'):
-                                if any(b for b in input_source_dic['disulfide_bond']
-                                       if (b['chain_id_1'] == chain_id and b['seq_id_1'] == seq_id)
-                                       or (b['chain_id_2'] == chain_id and b['seq_id_2'] == seq_id)):
-                                    cys['in_disulfide_bond'] = True
+                            if self.__hasCoordSeq(chain_id, seq_id):
+                                cys['in_disulfide_bond'] = False
+                                if has_key_value(input_source_dic, 'disulfide_bond'):
+                                    if any(b for b in input_source_dic['disulfide_bond']
+                                           if (b['chain_id_1'] == chain_id and b['seq_id_1'] == seq_id)
+                                           or (b['chain_id_2'] == chain_id and b['seq_id_2'] == seq_id)):
+                                        cys['in_disulfide_bond'] = True
 
-                            cys['in_other_bond'] = False
-                            if has_key_value(input_source_dic, 'other_bond'):
-                                if any(b for b in input_source_dic['other_bond']
-                                       if (b['chain_id_1'] == chain_id and b['seq_id_1'] == seq_id)
-                                       or (b['chain_id_2'] == chain_id and b['seq_id_2'] == seq_id)):
-                                    cys['in_other_bond'] = True
+                                cys['in_other_bond'] = False
+                                if has_key_value(input_source_dic, 'other_bond'):
+                                    if any(b for b in input_source_dic['other_bond']
+                                           if (b['chain_id_1'] == chain_id and b['seq_id_1'] == seq_id)
+                                           or (b['chain_id_2'] == chain_id and b['seq_id_2'] == seq_id)):
+                                        cys['in_other_bond'] = True
 
                             cys_redox_state.append(cys)
 
@@ -18977,41 +18978,44 @@ class NmrDpUtility:
                                 else:
                                     pro['cis_trans_pred'] = f"cis {cis:.1%}, trans {trs:.1%}"
 
-                            pro['in_cis_peptide_bond'] = self.__isProtCis(chain_id, seq_id)
+                            if self.__hasCoordSeq(chain_id, seq_id):
+                                in_cis_peptide_bond = self.__isProtCis(chain_id, seq_id)
 
-                            if pro['cis_trans_pred'] != 'unknown':
+                                pro['in_cis_peptide_bond'] = in_cis_peptide_bond
 
-                                if (pro['in_cis_peptide_bond'] and pro['cis_trans_pred'] != 'cis')\
-                                   or (not pro['in_cis_peptide_bond'] and pro['cis_trans_pred'] != 'trans'):
-                                    item = None
-                                    if ',' in pro['cis_trans_pred']:
-                                        if (pro['in_cis_peptide_bond'] and cis > trs) or\
-                                           (not pro['in_cis_peptide_bond'] and trs > cis):
-                                            pass
+                                if pro['cis_trans_pred'] != 'unknown':
+
+                                    if (in_cis_peptide_bond and pro['cis_trans_pred'] != 'cis')\
+                                       or (not in_cis_peptide_bond and pro['cis_trans_pred'] != 'trans'):
+                                        item = None
+                                        if ',' in pro['cis_trans_pred']:
+                                            if (in_cis_peptide_bond and cis > trs) or\
+                                               (not in_cis_peptide_bond and trs > cis):
+                                                pass
+                                            else:
+                                                item = 'unusual_chemical_shift'
                                         else:
-                                            item = 'unusual_chemical_shift'
-                                    else:
-                                        item = 'anomalous_chemical_shift'
+                                            item = 'anomalous_chemical_shift'
 
-                                    if item is not None:
+                                        if item is not None:
 
-                                        shifts = ''
-                                        if cb_chem_shift is not None:
-                                            shifts += f"CB {cb_chem_shift} ppm, "
-                                        if cg_chem_shift is not None:
-                                            shifts += f"CG {cg_chem_shift} ppm, "
+                                            shifts = ''
+                                            if cb_chem_shift is not None:
+                                                shifts += f"CB {cb_chem_shift} ppm, "
+                                            if cg_chem_shift is not None:
+                                                shifts += f"CG {cg_chem_shift} ppm, "
 
-                                        warn = f"{'cis' if pro['in_cis_peptide_bond'] else 'trans'}-peptide bond of "\
-                                            f"{chain_id}:{seq_id}:{comp_id} can not be verified with "\
-                                            f"the assigned chemical shift values ({shifts}cis_trans_pred {pro['cis_trans_pred']})."
+                                            warn = f"{'cis' if in_cis_peptide_bond else 'trans'}-peptide bond of "\
+                                                f"{chain_id}:{seq_id}:{comp_id} can not be verified with "\
+                                                f"the assigned chemical shift values ({shifts}cis_trans_pred {pro['cis_trans_pred']})."
 
-                                        self.report.warning.appendDescription(item,
-                                                                              {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                                               'description': warn})
-                                        self.report.setWarning()
+                                            self.report.warning.appendDescription(item,
+                                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                                   'description': warn})
+                                            self.report.setWarning()
 
-                                        if self.__verbose:
-                                            self.__lfh.write(f"+NmrDpUtility.__calculateStatsOfAssignedChemShift() ++ Warning  - {warn}\n")
+                                            if self.__verbose:
+                                                self.__lfh.write(f"+NmrDpUtility.__calculateStatsOfAssignedChemShift() ++ Warning  - {warn}\n")
 
                             pro_cis_trans.append(pro)
 
@@ -23607,8 +23611,6 @@ class NmrDpUtility:
                                         not_superimposed_ensemble[chain_id].append(rmsd_item)
 
                                 if r['rmsd_in_well_defined_region'] < self.rmsd_overlaid_exactly:
-                                    if chain_id not in exactly_overlaid_ensemble:
-                                        exactly_overlaid_ensemble[chain_id] = []
                                     domain_id = r['domain_id']
                                     domain = next((r for r in region if r['domain_id'] == domain_id), None)
                                     if domain is not None and domain['mean_rmsd'] < self.rmsd_overlaid_exactly:
@@ -27040,6 +27042,36 @@ class NmrDpUtility:
             if seq_key in self.authSeqMap:
                 row[auth_chain_index], row[auth_seq_index] = self.authSeqMap[seq_key]
 
+    def __hasCoordSeq(self, nmr_chain_id, nmr_seq_id):
+        """ Return whether a given sequence is in the coordinates.
+            @return: True for corresponding sequence in the coordinates exist, False otherwise
+        """
+
+        cif_ps = self.report.getModelPolymerSequenceWithNmrChainId(nmr_chain_id)
+
+        if cif_ps is None:
+            return False
+
+        cif_chain_id = cif_ps['chain_id']
+
+        seq_align_dic = self.report.sequence_alignment.get()
+
+        if not has_key_value(seq_align_dic, 'nmr_poly_seq_vs_model_poly_seq'):
+            return False
+
+        result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq']
+                       if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)
+
+        if result is not None:
+
+            cif_seq_id = next((test_seq_id for ref_seq_id, test_seq_id
+                               in zip(result['ref_seq_id'], result['test_seq_id'])
+                               if ref_seq_id == nmr_seq_id), None)
+
+            return cif_seq_id is not None
+
+        return False
+
     def __isCyclicPolymer(self, nmr_chain_id):
         """ Return whether a given chain is cyclic polymer based on coordinate annotation.
             @return: True for cyclic polymer, False otherwise
@@ -28221,20 +28253,22 @@ class NmrDpUtility:
                     sf_data = self.__star_data[fileListId]
                     sf_framecode = ''
 
-                    ca_chem_shift_1, cb_chem_shift_1, ca_chem_shift_2, cb_chem_shift_2 = self.__mapCoordOtherBond2Nmr__(file_name, file_type, content_subtype,
-                                                                                                                        sf_data, sf_framecode, lp_category,
-                                                                                                                        nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1,
-                                                                                                                        nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2)
+                    ca_chem_shift_1, cb_chem_shift_1, ca_chem_shift_2, cb_chem_shift_2 =\
+                        self.__mapCoordOtherBond2Nmr__(file_name, file_type, content_subtype,
+                                                       sf_data, sf_framecode, lp_category,
+                                                       nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1,
+                                                       nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2)
 
                 elif self.__star_data_type[fileListId] == 'Saveframe':
 
                     sf_data = self.__star_data[fileListId]
                     sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
-                    ca_chem_shift_1, cb_chem_shift_1, ca_chem_shift_2, cb_chem_shift_2 = self.__mapCoordOtherBond2Nmr__(file_name, file_type, content_subtype,
-                                                                                                                        sf_data, sf_framecode, lp_category,
-                                                                                                                        nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1,
-                                                                                                                        nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2)
+                    ca_chem_shift_1, cb_chem_shift_1, ca_chem_shift_2, cb_chem_shift_2 =\
+                        self.__mapCoordOtherBond2Nmr__(file_name, file_type, content_subtype,
+                                                       sf_data, sf_framecode, lp_category,
+                                                       nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1,
+                                                       nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2)
 
                 else:
 
@@ -28245,10 +28279,11 @@ class NmrDpUtility:
                         if not any(loop for loop in sf_data.loops if loop.category == lp_category):
                             continue
 
-                        ca_chem_shift_1, cb_chem_shift_1, ca_chem_shift_2, cb_chem_shift_2 = self.__mapCoordOtherBond2Nmr__(file_name, file_type, content_subtype,
-                                                                                                                            sf_data, sf_framecode, lp_category,
-                                                                                                                            nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1,
-                                                                                                                            nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2)
+                        ca_chem_shift_1, cb_chem_shift_1, ca_chem_shift_2, cb_chem_shift_2 =\
+                            self.__mapCoordOtherBond2Nmr__(file_name, file_type, content_subtype,
+                                                           sf_data, sf_framecode, lp_category,
+                                                           nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1,
+                                                           nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2)
 
                         if ca_chem_shift_1 is None or cb_chem_shift_1 is None or ca_chem_shift_2 is None or cb_chem_shift_2 is None:
                             pass

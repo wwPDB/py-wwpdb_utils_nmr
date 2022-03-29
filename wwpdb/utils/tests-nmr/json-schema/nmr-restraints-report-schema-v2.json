@@ -1766,9 +1766,7 @@
               "seq_id",
               "ca_chem_shift",
               "cb_chem_shift",
-              "redox_state_pred",
-              "in_disulfide_bond",
-              "in_other_bond"
+              "redox_state_pred"
             ]
           }
         },
@@ -1817,8 +1815,7 @@
               "seq_id",
               "cb_chem_shift",
               "cg_chem_shift",
-              "cis_trans_pred",
-              "in_cis_peptide_bond"
+              "cis_trans_pred"
             ]
           }
         },

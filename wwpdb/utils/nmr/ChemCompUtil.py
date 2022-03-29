@@ -7,6 +7,7 @@
 """ Wrapper class for retrieving chemical component dictionary.
     @author: Masashi Yokochi
 """
+import os
 import sys
 
 try:
@@ -17,7 +18,7 @@ try:
     CC_CVS_PATH = cICommon.get_site_cc_cvs_path()
 except ImportError:
     from nmr.io.ChemCompIo import ChemCompReader
-    CC_CVS_PATH = './ligand_dict'  # need to setup 'ligand_dict' CCD resource for NMR restraint processing
+    CC_CVS_PATH = os.path.dirname(__file__) + '/ligand_dict'  # need to setup 'ligand_dict' CCD resource for NMR restraint processing
 
 
 class ChemCompUtil:

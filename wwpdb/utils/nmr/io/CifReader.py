@@ -639,20 +639,19 @@ class CifReader:
 
         max_d_var = np.max(d_var)
 
-        if max_d_var <= 0.0:
-            return rlist, dlist
-
         d_ord = np.ones(matrix_size, dtype=float)
 
-        for i, j in itertools.combinations(range(size), 2):
+        if max_d_var > 0.0:
 
-            if i < j:
-                q = 1.0 - math.sqrt(d_var[i, j] / max_d_var)
-            else:
-                q = 1.0 - math.sqrt(d_var[j, i] / max_d_var)
+            for i, j in itertools.combinations(range(size), 2):
 
-            d_ord[i, j] = q
-            d_ord[j, i] = q
+                if i < j:
+                    q = 1.0 - math.sqrt(d_var[i, j] / max_d_var)
+                else:
+                    q = 1.0 - math.sqrt(d_var[j, i] / max_d_var)
+
+                d_ord[i, j] = q
+                d_ord[j, i] = q
 
         _, v = np.linalg.eig(d_ord)
 
@@ -679,7 +678,11 @@ class CifReader:
 
                     epsilon = 2.0 ** (_epsilon / 2.0) / 100.0  # epsilon travels from 0.04 to 0.32
 
-                    db = DBSCAN(eps=epsilon, min_samples=min_samples).fit(x)
+                    try:
+                        db = DBSCAN(eps=epsilon, min_samples=min_samples).fit(x)
+                    except ValueError:
+                        db = DBSCAN(eps=epsilon, min_samples=min_samples).fit(np.real(x))
+
                     labels = db.labels_
 
                     list_labels = list(labels)
@@ -755,7 +758,11 @@ class CifReader:
 
         x = np.delete(v, np.s_[min_result['features']:], 1)
 
-        db = DBSCAN(eps=min_result['epsilon'], min_samples=min_result['min_samples']).fit(x)
+        try:
+            db = DBSCAN(eps=min_result['epsilon'], min_samples=min_result['min_samples']).fit(x)
+        except ValueError:
+            db = DBSCAN(eps=min_result['epsilon'], min_samples=min_result['min_samples']).fit(np.real(x))
+
         labels = db.labels_
 
         list_labels = list(labels)

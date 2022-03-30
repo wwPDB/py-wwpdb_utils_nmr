@@ -25738,7 +25738,7 @@ class NmrDpUtility:
                     cyclic = self.__isCyclicPolymer(ref_chain_id)
 
                     if self.__nonblk_bad_nterm and (seq_id == 1 or cif_seq_id == 1) and atom_id_ == 'H'\
-                       and (cyclic or comp_id == 'PRO' or 'auth_atom_id' not in coord_atom_site_):  # DAOTHER-7665
+                       and (cyclic or comp_id == 'PRO' or (coord_atom_site_ is not None and 'auth_atom_id' not in coord_atom_site_)):  # DAOTHER-7665
 
                         err += " However, it is acceptable if corresponding atom name, H1, is given during biocuration "
 

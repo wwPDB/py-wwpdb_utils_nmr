@@ -150,6 +150,7 @@
 # 21-Feb-2022  M. Yokochi - verify 'onebond' coherence transfer type using CCD (DAOTHER-7681, issue #2)
 # 21-Feb-2022  M. Yokochi - verify pseudo atom names in NMR restraints are in assigned chemical shifts (DAOTHER-7681, issue #1)
 # 24-Mar-2022  M. Yokochi - utilize software specific MR parsers for sanity check of NMR restraint files (DAOTHER-7690)
+# 20-Mar-2022  M. Yokochi - add support for _atom_site.label_alt_id (DAOTHER-4060, 7544, NMR restraint remediation)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -16682,7 +16683,9 @@ class NmrDpUtility:
                                                                ],
                                                               [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id_1},
                                                                {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id_1},
-                                                               {'name': 'label_atom_id', 'type': 'str', 'value': nmr_atom_id_1}])
+                                                               {'name': 'label_atom_id', 'type': 'str', 'value': nmr_atom_id_1},
+                                                               {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}
+                                                               ])
 
                 atom_site_2 = self.__cR.getDictListWithFilter('atom_site',
                                                               [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
@@ -16692,7 +16695,9 @@ class NmrDpUtility:
                                                                ],
                                                               [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id_2},
                                                                {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id_2},
-                                                               {'name': 'label_atom_id', 'type': 'str', 'value': nmr_atom_id_2}])
+                                                               {'name': 'label_atom_id', 'type': 'str', 'value': nmr_atom_id_2},
+                                                               {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}
+                                                               ])
 
             except Exception as e:
 
@@ -23660,8 +23665,7 @@ class NmrDpUtility:
                         "Please superimpose the coordinates and re-upload the model file."
 
                     self.report.warning.appendDescription('not_superimposed_model',
-                                                          {'file_name': file_name, 'category': 'atom_site',
-                                                           'description': warn})
+                                                          {'file_name': file_name, 'category': 'atom_site', 'description': warn})
                     self.report.setWarning()
 
                     if self.__verbose:
@@ -25314,7 +25318,7 @@ class NmrDpUtility:
 
         if self.__coord_atom_site is None:
 
-            try:
+            if True:
 
                 model_num_name = 'pdbx_PDB_model_num' if self.__cR.hasItem('atom_site', 'pdbx_PDB_model_num') else 'ndb_model'
                 has_pdbx_auth_atom_name = self.__cR.hasItem('atom_site', 'pdbx_auth_atom_name')
@@ -25328,7 +25332,8 @@ class NmrDpUtility:
                                                              {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'},
                                                              {'name': 'pdbx_auth_atom_name', 'type': 'str', 'alt_name': 'auth_atom_id'}  # DAOTHER-7665
                                                              ],
-                                                            [{'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id}
+                                                            [{'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id},
+                                                             {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}
                                                              ])
                 else:
                     coord = self.__cR.getDictListWithFilter('atom_site',
@@ -25338,7 +25343,8 @@ class NmrDpUtility:
                                                              {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
                                                              {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
                                                              ],
-                                                            [{'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id}
+                                                            [{'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id},
+                                                             {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}
                                                              ])
 
                 self.__coord_atom_site = {}
@@ -25376,7 +25382,7 @@ class NmrDpUtility:
                         seq_ids = set(int(u['seq_id']) for u in unobs_res if u['chain_id'] == chain_id and u['seq_id'] is not None)
                         for seq_id in seq_ids:
                             self.__coord_unobs_res.append((chain_id, seq_id))
-
+                """
             except Exception as e:
 
                 self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testCoordAtomIdConsistency() ++ Error  - " + str(e))
@@ -25386,6 +25392,7 @@ class NmrDpUtility:
                     self.__lfh.write(f"+NmrDpUtility.__testCoordAtomIdConsistency() ++ Error  - {str(e)}\n")
 
                 return False
+                """
 
         for fileListId in range(self.__file_path_list_len):
 
@@ -27259,7 +27266,8 @@ class NmrDpUtility:
                                                            {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
                                                            {'name': 'label_comp_id', 'type': 'str', 'value': 'HIS'},
                                                            {'name': 'type_symbol', 'type': 'str', 'value': 'H'},
-                                                           {'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id}
+                                                           {'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id},
+                                                           {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}
                                                            ])
 
             except Exception as e:
@@ -27348,7 +27356,9 @@ class NmrDpUtility:
                                                          ],
                                                         [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id},
                                                          {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
-                                                         {'name': 'label_comp_id', 'type': 'str', 'value': 'VAL'}])
+                                                         {'name': 'label_comp_id', 'type': 'str', 'value': 'VAL'},
+                                                         {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}
+                                                         ])
 
             except Exception as e:
 
@@ -27455,7 +27465,9 @@ class NmrDpUtility:
                                                          ],
                                                         [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id},
                                                          {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
-                                                         {'name': 'label_comp_id', 'type': 'str', 'value': 'LEU'}])
+                                                         {'name': 'label_comp_id', 'type': 'str', 'value': 'LEU'},
+                                                         {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}
+                                                         ])
 
             except Exception as e:
 
@@ -27583,7 +27595,9 @@ class NmrDpUtility:
                                                          ],
                                                         [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id},
                                                          {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
-                                                         {'name': 'label_comp_id', 'type': 'str', 'value': 'ILE'}])
+                                                         {'name': 'label_comp_id', 'type': 'str', 'value': 'ILE'},
+                                                         {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}
+                                                         ])
 
             except Exception as e:
 
@@ -28495,7 +28509,8 @@ class NmrDpUtility:
                                                           [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id},
                                                            {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
                                                            {'name': 'label_atom_id', 'type': 'str', 'value': nmr_atom_id},
-                                                           {'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id}
+                                                           {'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id},
+                                                           {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}
                                                            ])
 
             except Exception as e:
@@ -28532,7 +28547,8 @@ class NmrDpUtility:
                                                               'range': {'min_exclusive': (o[1] - cutoff), 'max_exclusive': (o[1] + cutoff)}},
                                                              {'name': 'Cartn_z', 'type': 'range-float',
                                                               'range': {'min_exclusive': (o[2] - cutoff), 'max_exclusive': (o[2] + cutoff)}},
-                                                             {'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id}
+                                                             {'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id},
+                                                             {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}
                                                              ])
 
             except Exception as e:
@@ -28714,6 +28730,7 @@ class NmrDpUtility:
                                                        {'name': 'label_seq_id', 'type': 'int', 'value': na['cif_seq_id']},
                                                        {'name': 'label_comp_id', 'type': 'str', 'value': na['comp_id']},
                                                        {'name': 'label_atom_id', 'type': 'enum', 'enum': ring_atoms},
+                                                       {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}
                                                        ])
 
             except Exception as e:
@@ -28834,7 +28851,8 @@ class NmrDpUtility:
                                                           [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id},
                                                            {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
                                                            {'name': 'label_atom_id', 'type': 'str', 'value': nmr_atom_id},
-                                                           {'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id}
+                                                           {'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id},
+                                                           {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}
                                                            ])
 
             except Exception as e:
@@ -28871,7 +28889,8 @@ class NmrDpUtility:
                                                               'range': {'min_exclusive': (o[1] - cutoff), 'max_exclusive': (o[1] + cutoff)}},
                                                              {'name': 'Cartn_z', 'type': 'range-float',
                                                               'range': {'min_exclusive': (o[2] - cutoff), 'max_exclusive': (o[2] + cutoff)}},
-                                                             {'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id}
+                                                             {'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id},
+                                                             {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}
                                                              ])
 
             except Exception as e:
@@ -28920,6 +28939,7 @@ class NmrDpUtility:
                                                       {'name': 'auth_seq_id', 'type': 'int', 'value': p['seq_id']},  # non-polymer
                                                       {'name': 'label_comp_id', 'type': 'str', 'value': p['comp_id']},
                                                       {'name': 'label_atom_id', 'type': 'str', 'value': p['atom_id']},
+                                                      {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}
                                                       ])
 
             except Exception as e:

@@ -20,6 +20,7 @@
 # 29-Jun-2021   my  - add 'auth_chain_id', 'identical_auth_chain_id' in results of getPolymerSequence() if possible (DAOTHER-7108)
 # 14-Jan-2022   my  - precise RMSD calculation with domain and medoid model identification (DAOTHER-4060, 7544)
 # 02-Feb-2022   my  - add 'abs-int', 'abs-float', 'range-int', 'range-abs-int', 'range-abs-float' as filter item types and 'not_equal_to' range filter (NMR restraint remediation)
+# 30-Mar-2022   my  - add support for _atom_site.label_alt_id (DAOTHER-4060, 7544, NMR restraint remediation)
 ##
 """ A collection of classes for parsing CIF files.
 """
@@ -475,6 +476,8 @@ class CifReader:
                                                                     ],
                                                                    [{'name': 'label_asym_id', 'type': 'str', 'value': c},
                                                                     {'name': 'label_atom_id', 'type': 'str', 'value': 'CA'},
+                                                                    {'name': 'label_alt_id', 'type': 'enum',
+                                                                     'enum': ('A')},
                                                                     {'name': 'type_symbol', 'type': 'str', 'value': 'C'}])
 
                         ca_rmsd, well_defined_region = self.__calculateRMSD(c, len(seqDict[c]), total_models, ca_atom_sites, randomM)
@@ -496,6 +499,8 @@ class CifReader:
                                                                    ],
                                                                   [{'name': 'label_asym_id', 'type': 'str', 'value': c},
                                                                    {'name': 'label_atom_id', 'type': 'str', 'value': 'P'},
+                                                                   {'name': 'label_alt_id', 'type': 'enum',
+                                                                    'enum': ('A')},
                                                                    {'name': 'type_symbol', 'type': 'str', 'value': 'P'}])
 
                         p_rmsd, well_defined_region = self.__calculateRMSD(c, len(seqDict[c]), total_models, p_atom_sites, randomM)
@@ -1009,7 +1014,7 @@ class CifReader:
                     for filterItem in filterItems:
                         val = row[fcolDict[filterItem['name']]]
                         if val in self.emptyValue:
-                            if not filterItem['value'] in self.emptyValue:
+                            if 'value' in filterItem and not filterItem['value'] in self.emptyValue:
                                 keep = False
                                 break
                         else:

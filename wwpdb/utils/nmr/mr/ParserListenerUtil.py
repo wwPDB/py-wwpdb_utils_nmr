@@ -353,7 +353,9 @@ def checkCoordinates(verbose=True, log=sys.stdout, cR=None, polySeq=None,
                                                   {'name': altAuthAtomId, 'type': 'str', 'alt_name': 'alt_atom_id'},
                                                   {'name': 'type_symbol', 'type': 'str'}
                                                   ],
-                                                 [{'name': modelNumName, 'type': 'int', 'value': representativeModelId}
+                                                 [{'name': modelNumName, 'type': 'int',
+                                                   'value': representativeModelId},
+                                                  {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}
                                                   ])
             else:
                 coord = cR.getDictListWithFilter('atom_site',
@@ -364,7 +366,9 @@ def checkCoordinates(verbose=True, log=sys.stdout, cR=None, polySeq=None,
                                                   {'name': authAtomId, 'type': 'str', 'alt_name': 'atom_id'},
                                                   {'name': 'type_symbol', 'type': 'str'}
                                                   ],
-                                                 [{'name': modelNumName, 'type': 'int', 'value': representativeModelId}
+                                                 [{'name': modelNumName, 'type': 'int',
+                                                   'value': representativeModelId},
+                                                  {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}
                                                   ])
 
             coordAtomSite = {}

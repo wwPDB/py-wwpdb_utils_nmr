@@ -2570,7 +2570,9 @@ class CnsMRParserListener(ParseTreeListener):
                                                      {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
                                                      ],
                                                     [{'name': self.__modelNumName, 'type': 'int',
-                                                      'value': self.__representativeModelId}
+                                                      'value': self.__representativeModelId},
+                                                     {'name': 'label_alt_id', 'type': 'enum',
+                                                      'enum': ('A')}
                                                      ])
 
                 self.intersectionFactor_expressions(atomSelection)
@@ -2631,7 +2633,9 @@ class CnsMRParserListener(ParseTreeListener):
                                                              {'name': self.__authSeqId, 'type': 'int', 'value': _atom['seq_id']},
                                                              {'name': self.__authAtomId, 'type': 'str', 'value': _atom['atom_id']},
                                                              {'name': self.__modelNumName, 'type': 'int',
-                                                              'value': self.__representativeModelId}
+                                                              'value': self.__representativeModelId},
+                                                             {'name': 'label_alt_id', 'type': 'enum',
+                                                              'enum': ('A')}
                                                              ])
 
                         if len(_origin) != 1:
@@ -2659,7 +2663,9 @@ class CnsMRParserListener(ParseTreeListener):
                                                               'range': {'min_exclusive': (origin[2] - around),
                                                                         'max_exclusive': (origin[2] + around)}},
                                                              {'name': self.__modelNumName, 'type': 'int',
-                                                              'value': self.__representativeModelId}
+                                                              'value': self.__representativeModelId},
+                                                             {'name': 'label_alt_id', 'type': 'enum',
+                                                              'enum': ('A')}
                                                              ])
 
                         if len(_neighbor) == 0:
@@ -2708,7 +2714,9 @@ class CnsMRParserListener(ParseTreeListener):
                                                                          {'name': self.__authSeqId, 'type': 'int', 'value': _atom['seq_id']},
                                                                          {'name': self.__authAtomId, 'type': 'str', 'value': _atom['atom_id']},
                                                                          {'name': self.__modelNumName, 'type': 'int',
-                                                                          'value': self.__representativeModelId}
+                                                                          'value': self.__representativeModelId},
+                                                                         {'name': 'label_alt_id', 'type': 'enum',
+                                                                          'enum': ('A')}
                                                                          ])
 
                                     if len(_origin) != 1:
@@ -2736,7 +2744,9 @@ class CnsMRParserListener(ParseTreeListener):
                                                                           'range': {'min_exclusive': (origin[2] - around),
                                                                                     'max_exclusive': (origin[2] + around)}},
                                                                          {'name': self.__modelNumName, 'type': 'int',
-                                                                          'value': self.__representativeModelId}
+                                                                          'value': self.__representativeModelId},
+                                                                         {'name': 'label_alt_id', 'type': 'enum',
+                                                                          'enum': ('A')}
                                                                          ])
 
                                     if len(_neighbor) == 0:
@@ -2889,7 +2899,9 @@ class CnsMRParserListener(ParseTreeListener):
                                                      ],
                                                     [valueType,
                                                      {'name': self.__modelNumName, 'type': 'int',
-                                                      'value': self.__representativeModelId}
+                                                      'value': self.__representativeModelId},
+                                                     {'name': 'label_alt_id', 'type': 'enum',
+                                                      'enum': ('A')}
                                                      ])
 
                 self.intersectionFactor_expressions(atomSelection)
@@ -2934,7 +2946,9 @@ class CnsMRParserListener(ParseTreeListener):
                                                      ],
                                                     [valueType,
                                                      {'name': self.__modelNumName, 'type': 'int',
-                                                      'value': self.__representativeModelId}
+                                                      'value': self.__representativeModelId},
+                                                     {'name': 'label_alt_id', 'type': 'enum',
+                                                      'enum': ('A')}
                                                      ])
 
                 self.intersectionFactor_expressions(atomSelection)
@@ -2977,9 +2991,12 @@ class CnsMRParserListener(ParseTreeListener):
                                                      {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
                                                      {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
                                                      ],
-                                                    [{'name': 'type_symbol', 'type': 'enum', 'enum': _typeSymbolSelect},
+                                                    [{'name': 'type_symbol', 'type': 'enum',
+                                                      'enum': _typeSymbolSelect},
                                                      {'name': self.__modelNumName, 'type': 'int',
-                                                      'value': self.__representativeModelId}
+                                                      'value': self.__representativeModelId},
+                                                     {'name': 'label_alt_id', 'type': 'enum',
+                                                      'enum': ('A')}
                                                      ])
 
                 self.intersectionFactor_expressions(atomSelection)
@@ -3013,7 +3030,9 @@ class CnsMRParserListener(ParseTreeListener):
                                                      ],
                                                     [valueType,
                                                      {'name': self.__modelNumName, 'type': 'int',
-                                                      'value': self.__representativeModelId}
+                                                      'value': self.__representativeModelId},
+                                                     {'name': 'label_alt_id', 'type': 'enum',
+                                                      'enum': ('A')}
                                                      ])
 
                 self.intersectionFactor_expressions(atomSelection)
@@ -3067,7 +3086,9 @@ class CnsMRParserListener(ParseTreeListener):
                                                      ],
                                                     [valueType,
                                                      {'name': self.__modelNumName, 'type': 'int',
-                                                      'value': self.__representativeModelId}
+                                                      'value': self.__representativeModelId},
+                                                     {'name': 'label_alt_id', 'type': 'enum',
+                                                      'enum': ('A')}
                                                      ])
 
                 self.intersectionFactor_expressions(atomSelection)
@@ -3143,7 +3164,9 @@ class CnsMRParserListener(ParseTreeListener):
                                                                  {'name': self.__authSeqId, 'type': 'int', 'value': seqId},
                                                                  {'name': self.__authAtomId, 'type': 'str', 'value': atomId},
                                                                  {'name': self.__modelNumName, 'type': 'int',
-                                                                  'value': self.__representativeModelId}
+                                                                  'value': self.__representativeModelId},
+                                                                 {'name': 'label_alt_id', 'type': 'enum',
+                                                                  'enum': ('A')}
                                                                  ])
 
                             if len(_origin) == 1:
@@ -3179,7 +3202,9 @@ class CnsMRParserListener(ParseTreeListener):
                                                                                          {'name': self.__authSeqId, 'type': 'int', 'value': _seqId},
                                                                                          {'name': self.__authAtomId, 'type': 'str', 'value': _atomId},
                                                                                          {'name': self.__modelNumName, 'type': 'int',
-                                                                                          'value': self.__representativeModelId}
+                                                                                          'value': self.__representativeModelId},
+                                                                                         {'name': 'label_alt_id', 'type': 'enum',
+                                                                                          'enum': ('A')}
                                                                                          ])
 
                                                     if len(_neighbor) != 1:
@@ -3283,7 +3308,9 @@ class CnsMRParserListener(ParseTreeListener):
                                                                  {'name': self.__authSeqId, 'type': 'int', 'value': seqId},
                                                                  {'name': self.__authAtomId, 'type': 'str', 'value': atomId},
                                                                  {'name': self.__modelNumName, 'type': 'int',
-                                                                  'value': self.__representativeModelId}
+                                                                  'value': self.__representativeModelId},
+                                                                 {'name': 'label_alt_id', 'type': 'enum',
+                                                                  'enum': ('A')}
                                                                  ])
 
                             if len(_origin) == 1:
@@ -3300,7 +3327,9 @@ class CnsMRParserListener(ParseTreeListener):
                                                                          {'name': self.__authSeqId, 'type': 'int', 'value': seqId},
                                                                          {'name': self.__authAtomId, 'type': 'str', 'value': _atomId},
                                                                          {'name': self.__modelNumName, 'type': 'int',
-                                                                          'value': self.__representativeModelId}
+                                                                          'value': self.__representativeModelId},
+                                                                         {'name': 'label_alt_id', 'type': 'enum',
+                                                                          'enum': ('A')}
                                                                          ])
 
                                     if len(_neighbor) != 1:
@@ -3365,7 +3394,9 @@ class CnsMRParserListener(ParseTreeListener):
                                                         [{'name': self.__authAsymId, 'type': 'str', 'value': chainId},
                                                          {'name': self.__authSeqId, 'type': 'int', 'value': seqId},
                                                          {'name': self.__modelNumName, 'type': 'int',
-                                                          'value': self.__representativeModelId}
+                                                          'value': self.__representativeModelId},
+                                                         {'name': 'label_alt_id', 'type': 'enum',
+                                                          'enum': ('A')}
                                                          ])
 
                     if len(_atomByRes) > 0 and _atomByRes[0]['comp_id'] == compId:
@@ -3455,7 +3486,9 @@ class CnsMRParserListener(ParseTreeListener):
                                                       'range': {'min_exclusive': zmin,
                                                                 'max_exclusive': zmax}},
                                                      {'name': self.__modelNumName, 'type': 'int',
-                                                      'value': self.__representativeModelId}
+                                                      'value': self.__representativeModelId},
+                                                     {'name': 'label_alt_id', 'type': 'enum',
+                                                      'enum': ('A')}
                                                      ])
 
             except Exception as e:
@@ -3490,7 +3523,9 @@ class CnsMRParserListener(ParseTreeListener):
                                                                  {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
                                                                  ],
                                                                 [{'name': self.__modelNumName, 'type': 'int',
-                                                                  'value': self.__representativeModelId}
+                                                                  'value': self.__representativeModelId},
+                                                                 {'name': 'label_alt_id', 'type': 'enum',
+                                                                  'enum': ('A')}
                                                                  ])
 
                             for atom in __atomSelection:
@@ -3556,7 +3591,9 @@ class CnsMRParserListener(ParseTreeListener):
                                                      {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
                                                      ],
                                                     [{'name': self.__modelNumName, 'type': 'int',
-                                                      'value': self.__representativeModelId}
+                                                      'value': self.__representativeModelId},
+                                                     {'name': 'label_alt_id', 'type': 'enum',
+                                                      'enum': ('A')}
                                                      ])
 
             except Exception as e:
@@ -3592,7 +3629,9 @@ class CnsMRParserListener(ParseTreeListener):
                                                              {'name': self.__authSeqId, 'type': 'int', 'value': self.inVector3D_tail['seq_id']},
                                                              {'name': self.__authAtomId, 'type': 'str', 'value': self.inVector3D_tail['atom_id']},
                                                              {'name': self.__modelNumName, 'type': 'int',
-                                                              'value': self.__representativeModelId}
+                                                              'value': self.__representativeModelId},
+                                                             {'name': 'label_alt_id', 'type': 'enum',
+                                                              'enum': ('A')}
                                                              ])
 
                         if len(_tail) == 1:
@@ -3613,7 +3652,9 @@ class CnsMRParserListener(ParseTreeListener):
                                                                      {'name': self.__authSeqId, 'type': 'int', 'value': self.inVector3D_head['seq_id']},
                                                                      {'name': self.__authAtomId, 'type': 'str', 'value': self.inVector3D_head['atom_id']},
                                                                      {'name': self.__modelNumName, 'type': 'int',
-                                                                      'value': self.__representativeModelId}
+                                                                      'value': self.__representativeModelId},
+                                                                     {'name': 'label_alt_id', 'type': 'enum',
+                                                                      'enum': ('A')}
                                                                      ])
 
                                 if len(_head) == 1:
@@ -3661,7 +3702,9 @@ class CnsMRParserListener(ParseTreeListener):
                                                           'range': {'min_exclusive': (self.vector3D[2] - cut),
                                                                     'max_exclusive': (self.vector3D[2] + cut)}},
                                                          {'name': self.__modelNumName, 'type': 'int',
-                                                          'value': self.__representativeModelId}
+                                                          'value': self.__representativeModelId},
+                                                         {'name': 'label_alt_id', 'type': 'enum',
+                                                          'enum': ('A')}
                                                          ])
 
                     if len(_neighbor) > 0:
@@ -3712,7 +3755,9 @@ class CnsMRParserListener(ParseTreeListener):
                                                      {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
                                                      ],
                                                     [{'name': self.__modelNumName, 'type': 'int',
-                                                      'value': self.__representativeModelId}
+                                                      'value': self.__representativeModelId},
+                                                     {'name': 'label_alt_id', 'type': 'enum',
+                                                      'enum': ('A')}
                                                      ])
 
                 lastCompId = None
@@ -3836,7 +3881,9 @@ class CnsMRParserListener(ParseTreeListener):
                                                      {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
                                                      ],
                                                     [{'name': self.__modelNumName, 'type': 'int',
-                                                      'value': self.__representativeModelId}
+                                                      'value': self.__representativeModelId},
+                                                     {'name': 'label_alt_id', 'type': 'enum',
+                                                      'enum': ('A')}
                                                      ])
 
                 for _atom in _atomSelection:

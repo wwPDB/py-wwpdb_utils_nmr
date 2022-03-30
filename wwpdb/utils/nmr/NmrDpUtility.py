@@ -12505,7 +12505,7 @@ class NmrDpUtility:
 
                             if content_subtype == 'dihed_restraint':
 
-                                if r > 240.0:
+                                if r > 180.0:
                                     if val_1 < val_2:
                                         r = abs(val_1 - (val_2 - 360.0))
                                     if val_1 > val_2:
@@ -21368,9 +21368,9 @@ class NmrDpUtility:
 
                 target_value = float(f"{target_value:.1f}")
 
-                while target_value > 240.0:
+                while target_value > 180.0:
                     target_value -= 360.0
-                while target_value < -240.0:
+                while target_value < -180.0:
                     target_value += 360.0
 
                 if has_key_value(i, lower_limit_name)\
@@ -21378,14 +21378,14 @@ class NmrDpUtility:
                     lower_limit = i[lower_limit_name]
                     upper_limit = i[upper_limit_name]
 
-                    while lower_limit - target_value > 240.0:
+                    while lower_limit - target_value > 180.0:
                         lower_limit -= 360.0
-                    while lower_limit - target_value < -240.0:
+                    while lower_limit - target_value < -180.0:
                         lower_limit += 360.0
 
-                    while upper_limit - target_value > 240.0:
+                    while upper_limit - target_value > 180.0:
                         upper_limit -= 360.0
-                    while upper_limit - target_value < -240.0:
+                    while upper_limit - target_value < -180.0:
                         upper_limit += 360.0
 
                 elif has_key_value(i, lower_linear_limit_name)\
@@ -21393,14 +21393,14 @@ class NmrDpUtility:
                     lower_limit = i[lower_linear_limit_name]
                     upper_limit = i[upper_linear_limit_name]
 
-                    while lower_limit - target_value > 240.0:
+                    while lower_limit - target_value > 180.0:
                         lower_limit -= 360.0
-                    while lower_limit - target_value < -240.0:
+                    while lower_limit - target_value < -180.0:
                         lower_limit += 360.0
 
-                    while upper_limit - target_value > 240.0:
+                    while upper_limit - target_value > 180.0:
                         upper_limit -= 360.0
-                    while upper_limit - target_value < -240.0:
+                    while upper_limit - target_value < -180.0:
                         upper_limit += 360.0
 
                 else:
@@ -21770,14 +21770,14 @@ class NmrDpUtility:
                             if target_value_1 is None or target_value_2 is None:
                                 continue
 
-                            while target_value_1 > 240.0:
+                            while target_value_1 > 180.0:
                                 target_value_1 -= 360.0
-                            while target_value_1 < -240.0:
+                            while target_value_1 < -180.0:
                                 target_value_1 += 360.0
 
-                            while target_value_2 > 240.0:
+                            while target_value_2 > 180.0:
                                 target_value_2 -= 360.0
-                            while target_value_2 < -240.0:
+                            while target_value_2 < -180.0:
                                 target_value_2 += 360.0
 
                             if target_value_1 == target_value_2:
@@ -21785,7 +21785,7 @@ class NmrDpUtility:
 
                             discrepancy = abs(target_value_1 - target_value_2)
 
-                            if discrepancy > 240.0:
+                            if discrepancy > 180.0:
                                 if target_value_1 < target_value_2:
                                     discrepancy = abs(target_value_1 - (target_value_2 - 360.0))
                                 if target_value_1 > target_value_2:
@@ -21928,14 +21928,14 @@ class NmrDpUtility:
                                         redundant = False
                                         continue
 
-                                    while target_value_1 > 240.0:
+                                    while target_value_1 > 180.0:
                                         target_value_1 -= 360.0
-                                    while target_value_1 < -240.0:
+                                    while target_value_1 < -180.0:
                                         target_value_1 += 360.0
 
-                                    while target_value_2 > 240.0:
+                                    while target_value_2 > 180.0:
                                         target_value_2 -= 360.0
-                                    while target_value_2 < -240.0:
+                                    while target_value_2 < -180.0:
                                         target_value_2 += 360.0
 
                                     if target_value_1 == target_value_2:

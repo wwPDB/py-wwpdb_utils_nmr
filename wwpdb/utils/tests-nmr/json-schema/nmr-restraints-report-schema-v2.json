@@ -39,7 +39,7 @@
         "content_type": {
           "description": "Content type of input source file.",
           "type": "string",
-          "ZZZZZenum": [
+          "enum": [
             "model",
             "nmr-data-nef",
             "nmr-data-str",

@@ -25318,7 +25318,7 @@ class NmrDpUtility:
 
         if self.__coord_atom_site is None:
 
-            if True:
+            try:
 
                 model_num_name = 'pdbx_PDB_model_num' if self.__cR.hasItem('atom_site', 'pdbx_PDB_model_num') else 'ndb_model'
                 has_pdbx_auth_atom_name = self.__cR.hasItem('atom_site', 'pdbx_auth_atom_name')
@@ -25382,7 +25382,7 @@ class NmrDpUtility:
                         seq_ids = set(int(u['seq_id']) for u in unobs_res if u['chain_id'] == chain_id and u['seq_id'] is not None)
                         for seq_id in seq_ids:
                             self.__coord_unobs_res.append((chain_id, seq_id))
-                """
+
             except Exception as e:
 
                 self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testCoordAtomIdConsistency() ++ Error  - " + str(e))
@@ -25392,7 +25392,6 @@ class NmrDpUtility:
                     self.__lfh.write(f"+NmrDpUtility.__testCoordAtomIdConsistency() ++ Error  - {str(e)}\n")
 
                 return False
-                """
 
         for fileListId in range(self.__file_path_list_len):
 

@@ -7113,6 +7113,7 @@ class NmrDpUtility:
                                 has_rdc_restraint = 'rdc_restraint' in content_subtype
                                 has_plane_restraint = 'plane_restraint' in content_subtype
                                 has_hbond_restraint = 'hbond_restraint' in content_subtype
+                                ar['is_valid'] = True
 
                 elif file_type == 'nm-res-cns':
 
@@ -7187,6 +7188,7 @@ class NmrDpUtility:
                                 has_dihed_restraint = 'dihed_restraint' in content_subtype
                                 has_rdc_restraint = 'rdc_restraint' in content_subtype
                                 has_plane_restraint = 'plane_restraint' in content_subtype
+                                ar['is_valid'] = True
 
                 elif file_type == 'nm-res-amb':
 
@@ -7261,6 +7263,7 @@ class NmrDpUtility:
                                 has_dihed_restraint = 'dihed_restraint' in content_subtype
                                 has_rdc_restraint = 'rdc_restraint' in content_subtype
                                 has_plane_restraint = 'plane_restraint' in content_subtype
+                                ar['is_valid'] = True
 
                 elif file_type == 'nm-aux-amb':
 
@@ -7333,6 +7336,7 @@ class NmrDpUtility:
                             else:
                                 has_topology = True
                                 content_subtype = {'topology': 1}
+                                ar['is_valid'] = True
 
                 elif file_type == 'nm-res-cya':
 
@@ -7406,6 +7410,7 @@ class NmrDpUtility:
                                 has_dist_restraint = 'dist_restraint' in content_subtype
                                 has_dihed_restraint = 'dihed_restraint' in content_subtype
                                 has_rdc_restraint = 'rdc_restraint' in content_subtype
+                                ar['is_valid'] = True
                                 if has_dist_restraint:
                                     ar['is_upl'] = listener.isUplDistanceRestraint()
 
@@ -7478,6 +7483,7 @@ class NmrDpUtility:
                             if len(content_subtype) == 0:
                                 content_subtype = None
                             else:
+                                ar['is_valid'] = True
                                 has_dist_restraint = 'dist_restraint' in content_subtype
                                 has_dihed_restraint = 'dihed_restraint' in content_subtype
                                 has_rdc_restraint = 'rdc_restraint' in content_subtype
@@ -17180,6 +17186,9 @@ class NmrDpUtility:
             file_type = input_source_dic['file_type']
             content_subtype = input_source_dic['content_subtype']
 
+            if 'is_valid' not in ar or not ar['is_valid']:
+                continue
+
             if file_type == 'nm-aux-amb' and content_subtype is not None and 'topology' in content_subtype:
 
                 file_name = input_source_dic['file_name']
@@ -17268,6 +17277,9 @@ class NmrDpUtility:
                 continue
 
             if content_subtype is None or len(content_subtype) == 0:
+                continue
+
+            if 'is_valid' not in ar or not ar['is_valid']:
                 continue
 
             file_name = input_source_dic['file_name']

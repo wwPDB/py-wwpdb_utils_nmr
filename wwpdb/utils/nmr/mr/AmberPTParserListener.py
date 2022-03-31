@@ -191,6 +191,12 @@ class AmberPTParserListener(ParseTreeListener):
                 self.warningMessage = '\n'.join(set(self.warningMessage.split('\n')))
             return
 
+        if self.__residueLabel is None or self.__residuePointer is None or self.__atomName is None:
+            return
+
+        if len(self.__residueLabel) == 0 or len(self.__residuePointer) == 0 or len(self.__atomName) == 0:
+            return
+
         residuePointer2 = [resPoint - 1 for resPoint in self.__residuePointer]
         del residuePointer2[0]
         residuePointer2.append(self.__residuePointer[-1] + 1000)

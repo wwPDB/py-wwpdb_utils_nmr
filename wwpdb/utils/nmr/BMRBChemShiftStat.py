@@ -291,6 +291,7 @@ class BMRBChemShiftStat:
                     return comp_id
 
         else:
+            max_score = 0
             for _comp_id in self.__all_comp_ids:
                 peptide_like, nucleotide_like, carbohydrate_like = self.getTypeOfCompId(_comp_id)
                 if not(peptide_like or nucleotide_like or carbohydrate_like):

@@ -984,7 +984,7 @@ class XplorMRParserListener(ParseTreeListener):
             if _lenAtomSelectionSet == 1:
                 continue
 
-            for atom1, atom2 in itertools.combinations(_atomSelectionSet, _atomSelectionSet):
+            for (atom1, atom2) in itertools.combinations(_atomSelectionSet, 2):
                 if atom1['chain_id'] != atom2['chain_id']:
                     continue
                 if atom1['seq_id'] != atom2['seq_id']:

@@ -17299,6 +17299,17 @@ class NmrDpUtility:
 
                 if listener is not None:
 
+                    reasons = listener.getReasonsForReparsing()
+
+                    if reasons is not None:
+                        reader = XplorMRReader(self.__verbose, self.__lfh, self.__cR, polySeqModel,
+                                               self.__representative_model_id,
+                                               coordAtomSite, coordUnobsRes,
+                                               labelToAuthSeq, authToLabelSeq,
+                                               self.__ccU, self.__csStat, self.__nefT, reasons)
+
+                        listener, _, _ = reader.parse(file_path, self.__cifPath)
+
                     if listener.warningMessage is not None:
                         messages = listener.warningMessage.split('\n')
 
@@ -17360,6 +17371,17 @@ class NmrDpUtility:
                 listener, _, _ = reader.parse(file_path, self.__cifPath)
 
                 if listener is not None:
+
+                    reasons = listener.getReasonsForReparsing()
+
+                    if reasons is not None:
+                        reader = CnsMRReader(self.__verbose, self.__lfh, self.__cR, polySeqModel,
+                                             self.__representative_model_id,
+                                             coordAtomSite, coordUnobsRes,
+                                             labelToAuthSeq, authToLabelSeq,
+                                             self.__ccU, self.__csStat, self.__nefT, reasons)
+
+                        listener, _, _ = reader.parse(file_path, self.__cifPath)
 
                     if listener.warningMessage is not None:
                         messages = listener.warningMessage.split('\n')

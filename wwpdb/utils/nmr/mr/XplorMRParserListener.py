@@ -207,6 +207,9 @@ class XplorMRParserListener(ParseTreeListener):
     # NEFTranslator
     __nefT = None
 
+    # reasons for re-parsing request from the previous trial
+    __reasons = None
+
     # CIF reader
     __cR = None
     __hasCoord = False
@@ -283,11 +286,13 @@ class XplorMRParserListener(ParseTreeListener):
 
     warningMessage = ''
 
+    reasonsForReParsing = None
+
     def __init__(self, verbose=True, log=sys.stdout, cR=None, polySeq=None,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
                  coordAtomSite=None, coordUnobsRes=None,
                  labelToAuthSeq=None, authToLabelSeq=None,
-                 ccU=None, csStat=None, nefT=None):
+                 ccU=None, csStat=None, nefT=None, reasons=None):
         self.__verbose = verbose
         self.__lfh = log
         self.__cR = cR
@@ -321,6 +326,9 @@ class XplorMRParserListener(ParseTreeListener):
 
         # NEFTranslator
         self.__nefT = NEFTranslator(verbose, log, self.__ccU, self.__csStat) if nefT is None else nefT
+
+        # reasons for re-parsing request from the previous trial
+        self.__reasons = reasons
 
     def setDebugMode(self, debug):
         self.__debug = debug
@@ -4636,6 +4644,14 @@ class XplorMRParserListener(ParseTreeListener):
             for chainId in _factor['chain_id']:
                 ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chainId), None)
                 for seqId in _factor['seq_id']:
+
+                    if self.__reasons is not None and 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme']:
+                        seqKey = (chainId, seqId)
+                        if seqKey in self.__authToLabelSeq:
+                            _, _seqId = self.__authToLabelSeq[seqKey]
+                            if ps is not None and _seqId in ps['seq_id']:
+                                seqId = _seqId
+
                     if ps is not None and seqId in ps['seq_id']:
                         compId = ps['comp_id'][ps['seq_id'].index(seqId)]
                     else:
@@ -4660,7 +4676,43 @@ class XplorMRParserListener(ParseTreeListener):
                             continue
                         if self.__cur_subtype in ('pcs', 'pre', 'prdc', 'pccr') and (atomId in PARAMAGNETIC_ELEMENTS or atomId in FERROMAGNETIC_ELEMENTS):
                             continue
-                        atomIds = self.__nefT.get_valid_star_atom(compId, atomId.upper())[0]
+
+                        atomId = atomId.upper()
+
+                        atomIds, _, details = self.__nefT.get_valid_star_atom(compId, atomId, leave_unmatched=True)
+
+                        if self.__reasons is not None:
+                            if 'xplor_atom_nomenclature' in self.__reasons and self.__reasons['xplor_atom_nomenclature']:
+                                if details is not None and atomId.endswith('1'):
+                                    _atomId = atomId[:-1] + '3'
+                                    if self.__nefT.validate_comp_atom(compId, _atomId):
+                                        atomIds = self.__nefT.get_valid_star_atom(compId, _atomId)[0]
+                                if compId == 'ASN':
+                                    if atomId == 'HD21':
+                                        _atomId = atomId[:-1] + '2'
+                                        if self.__nefT.validate_comp_atom(compId, _atomId):
+                                            atomIds = self.__nefT.get_valid_star_atom(compId, _atomId)[0]
+                                    elif atomId == 'HD22':
+                                        _atomId = atomId[:-1] + '1'
+                                        if self.__nefT.validate_comp_atom(compId, _atomId):
+                                            atomIds = self.__nefT.get_valid_star_atom(compId, _atomId)[0]
+                                elif compId == 'GLN':
+                                    if atomId == 'HE21':
+                                        _atomId = atomId[:-1] + '2'
+                                        if self.__nefT.validate_comp_atom(compId, _atomId):
+                                            atomIds = self.__nefT.get_valid_star_atom(compId, _atomId)[0]
+                                    elif atomId == 'HE22':
+                                        _atomId = atomId[:-1] + '1'
+                                        if self.__nefT.validate_comp_atom(compId, _atomId):
+                                            atomIds = self.__nefT.get_valid_star_atom(compId, _atomId)[0]
+
+                        elif details is not None and atomId.endswith('1'):
+                            _atomId = atomId[:-1] + '3'
+                            if self.__nefT.validate_comp_atom(compId, _atomId):
+                                if self.reasonsForReParsing is None:
+                                    self.reasonsForReParsing = {}
+                                if 'xplor_atom_nomenclature' not in self.reasonsForReParsing:
+                                    self.reasonsForReParsing['xplor_atom_nomenclature'] = True
 
                         for _atomId in atomIds:
                             ccdCheck = not cifCheck
@@ -4731,6 +4783,17 @@ class XplorMRParserListener(ParseTreeListener):
                                             self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                                                 f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.\n"
                                     elif cca is None:
+                                        if self.__reasons is None and seqKey in self.__authToLabelSeq:
+                                            _, _seqId = self.__authToLabelSeq[seqKey]
+                                            if ps is not None and _seqId in ps['seq_id']:
+                                                _compId = ps['comp_id'][ps['seq_id'].index(_seqId)]
+                                                if self.__ccU.updateChemCompDict(_compId):
+                                                    cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId), None)
+                                                    if cca is not None:
+                                                        if self.reasonsForReParsing is None:
+                                                            self.reasonsForReParsing = {}
+                                                        if 'label_seq_scheme' not in self.reasonsForReParsing:
+                                                            self.reasonsForReParsing['label_seq_scheme'] = True
                                         self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                                             f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.\n"
 
@@ -6204,6 +6267,11 @@ class XplorMRParserListener(ParseTreeListener):
                           }
 
         return {k: v for k, v in contentSubtype.items() if v > 0}
+
+    def getReasonsForReparsing(self):
+        """ Return reasons for re-parsing XPLOR-NIH MR file.
+        """
+        return self.reasonsForReParsing
 
 
 # del XplorMRParser

@@ -17552,7 +17552,7 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
-                            elif warn.startswith('[Invalid atom selection]') or warn.warn.startswith('[Invalid data]'):
+                            elif warn.startswith('[Invalid atom selection]') or warn.startswith('[Invalid data]'):
                                 self.report.error.appendDescription('invalid_data',
                                                                     {'file_name': file_name, 'description': warn})
                                 self.report.setError()
@@ -17630,7 +17630,7 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
-                            elif warn.startswith('[Invalid atom selection]') or warn.warn.startswith('[Invalid data]'):
+                            elif warn.startswith('[Invalid atom selection]') or warn.startswith('[Invalid data]'):
                                 self.report.error.appendDescription('invalid_data',
                                                                     {'file_name': file_name, 'description': warn})
                                 self.report.setError()

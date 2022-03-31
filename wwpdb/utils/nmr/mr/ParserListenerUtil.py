@@ -178,9 +178,9 @@ def toRegEx(string):
     if '%' in string:  # a single character
         return string.replace('%', '.')
     if '#' in string:  # any number
-        return string.replace('#', '[+-]?[0-9][0-9\\.]?')
+        return string.replace('#', '[+-]?[0-9\\.]*')
     if '+' in string:  # any digit
-        return string.replace('+', '[0-9]+')
+        return string.replace('+', '[0-9]*')
     return string
 
 

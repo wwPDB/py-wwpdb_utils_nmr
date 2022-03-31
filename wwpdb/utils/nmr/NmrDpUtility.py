@@ -7070,7 +7070,7 @@ class NmrDpUtility:
                     if len(err) > 0:
                         valid = False
 
-                        err = f"Could not interprete {file_name!r} as an {mr_format_name} restraint file:\n{err[0:-1]}"
+                        err = f"Could not interpret {file_name!r} as an {mr_format_name} restraint file:\n{err[0:-1]}"
 
                         self.report.error.appendDescription('format_issue',
                                                             {'file_name': file_name, 'description': err})
@@ -7094,7 +7094,7 @@ class NmrDpUtility:
                                     msg += '\nThose similar errors may continue...'
                                 else:
                                     msg = '\n'.join(messages)
-                                err = f"Could not interprete {file_name!r} due to the following data issue(s):\n{msg}"
+                                err = f"Could not interpret {file_name!r} due to the following data issue(s):\n{msg}"
 
                                 self.report.error.appendDescription('format_issue',
                                                                     {'file_name': file_name, 'description': err})
@@ -7145,7 +7145,7 @@ class NmrDpUtility:
                     if len(err) > 0:
                         valid = False
 
-                        err = f"Could not interprete {file_name!r} as a {mr_format_name} restraint file:\n{err[0:-1]}"
+                        err = f"Could not interpret {file_name!r} as a {mr_format_name} restraint file:\n{err[0:-1]}"
 
                         self.report.error.appendDescription('format_issue',
                                                             {'file_name': file_name, 'description': err})
@@ -7169,7 +7169,7 @@ class NmrDpUtility:
                                     msg += '\nThose similar errors may continue...'
                                 else:
                                     msg = '\n'.join(messages)
-                                err = f"Could not interprete {file_name!r} due to the following data issue(s):\n{msg}"
+                                err = f"Could not interpret {file_name!r} due to the following data issue(s):\n{msg}"
 
                                 self.report.error.appendDescription('format_issue',
                                                                     {'file_name': file_name, 'description': err})
@@ -7219,7 +7219,7 @@ class NmrDpUtility:
                     if len(err) > 0:
                         valid = False
 
-                        err = f"Could not interprete {file_name!r} as an {mr_format_name} restraint file:\n{err[0:-1]}"
+                        err = f"Could not interpret {file_name!r} as an {mr_format_name} restraint file:\n{err[0:-1]}"
 
                         self.report.error.appendDescription('format_issue',
                                                             {'file_name': file_name, 'description': err})
@@ -7243,7 +7243,7 @@ class NmrDpUtility:
                                     msg += '\nThose similar errors may continue...'
                                 else:
                                     msg = '\n'.join(messages)
-                                err = f"Could not interprete {file_name!r} due to the following data issue(s):\n{msg}"
+                                err = f"Could not interpret {file_name!r} due to the following data issue(s):\n{msg}"
 
                                 self.report.error.appendDescription('format_issue',
                                                                     {'file_name': file_name, 'description': err})
@@ -7293,7 +7293,7 @@ class NmrDpUtility:
                     if len(err) > 0:
                         valid = False
 
-                        err = f"Could not interprete {file_name!r} as an {mr_format_name} parameter/topology file:\n{err[0:-1]}"
+                        err = f"Could not interpret {file_name!r} as an {mr_format_name} parameter/topology file:\n{err[0:-1]}"
 
                         self.report.error.appendDescription('format_issue',
                                                             {'file_name': file_name, 'description': err})
@@ -7317,7 +7317,7 @@ class NmrDpUtility:
                                     msg += '\nThose similar errors may continue...'
                                 else:
                                     msg = '\n'.join(messages)
-                                err = f"Could not interprete {file_name!r} due to the following data issue(s):\n{msg}"
+                                err = f"Could not interpret {file_name!r} due to the following data issue(s):\n{msg}"
 
                                 self.report.error.appendDescription('format_issue',
                                                                     {'file_name': file_name, 'description': err})
@@ -7365,7 +7365,7 @@ class NmrDpUtility:
                     if len(err) > 0:
                         valid = False
 
-                        err = f"Could not interprete {file_name!r} as a {mr_format_name} restraint file:\n{err[0:-1]}"
+                        err = f"Could not interpret {file_name!r} as a {mr_format_name} restraint file:\n{err[0:-1]}"
 
                         self.report.error.appendDescription('format_issue',
                                                             {'file_name': file_name, 'description': err})
@@ -7389,7 +7389,7 @@ class NmrDpUtility:
                                     msg += '\nThose similar errors may continue...'
                                 else:
                                     msg = '\n'.join(messages)
-                                err = f"Could not interprete {file_name!r} due to the following data issue(s):\n{msg}"
+                                err = f"Could not interpret {file_name!r} due to the following data issue(s):\n{msg}"
 
                                 self.report.error.appendDescription('format_issue',
                                                                     {'file_name': file_name, 'description': err})
@@ -7440,7 +7440,7 @@ class NmrDpUtility:
                     if len(err) > 0:
                         valid = False
 
-                        err = f"Could not interprete {file_name!r} as a {mr_format_name} restraint file:\n{err[0:-1]}"
+                        err = f"Could not interpret {file_name!r} as a {mr_format_name} restraint file:\n{err[0:-1]}"
 
                         self.report.error.appendDescription('format_issue',
                                                             {'file_name': file_name, 'description': err})
@@ -7464,7 +7464,7 @@ class NmrDpUtility:
                                     msg += '\nThose similar errors may continue...'
                                 else:
                                     msg = '\n'.join(messages)
-                                err = f"Could not interprete {file_name!r} due to the following data issue(s):\n{msg}"
+                                err = f"Could not interpret {file_name!r} due to the following data issue(s):\n{msg}"
 
                                 self.report.error.appendDescription('format_issue',
                                                                     {'file_name': file_name, 'description': err})

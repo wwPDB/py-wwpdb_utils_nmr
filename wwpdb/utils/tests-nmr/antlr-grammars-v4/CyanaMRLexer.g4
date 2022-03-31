@@ -40,6 +40,6 @@ fragment ATM_TYPE_CHAR:	ALPHA_NUM | '-' | '+';
 fragment SIMPLE_NAME:	START_CHAR NAME_CHAR*;
 
 SPACE:			[ \t\r\n]+ -> skip;
-COMMENT:		'{*' (COMMENT | .)*? '*}' -> channel(HIDDEN);
+COMMENT:		'{' (COMMENT | .)*? '}' -> channel(HIDDEN);
 LINE_COMMENT:		('#' | '!' | '*' | ';' | '/') ~[\r\n]* -> channel(HIDDEN);
 

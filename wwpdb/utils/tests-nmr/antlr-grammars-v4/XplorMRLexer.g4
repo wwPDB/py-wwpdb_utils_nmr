@@ -584,7 +584,7 @@ Integer:		DECIMAL;
 Logical:		'TRUE' | 'FALSE' | 'ON' | 'OFF';
 Real:			('+' | '-')? (DECIMAL | DEC_DOT_DEC) (E ('+' | '-')? DECIMAL)?;
 Double_quote_string:	'"' ~'"'+ '"';
-fragment DEC_DOT_DEC:	DECIMAL '.' DECIMAL | DECIMAL '.' | '.' DECIMAL;
+fragment DEC_DOT_DEC:	(DECIMAL '.' DECIMAL?) | ('.' DECIMAL);
 fragment DEC_DIGIT:	[0-9];
 fragment DECIMAL:	DEC_DIGIT+;
 

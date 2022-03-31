@@ -357,7 +357,7 @@ COMMENT:		('#' | '!')+ -> mode(COMMENT_MODE);
 fragment INTEGER:	('+' | '-')? DECIMAL;
 fragment REAL:		('+' | '-')? (DECIMAL | DEC_DOT_DEC) (E ('+' | '-')? DECIMAL)?;
 Logical:		'.'? T R U E '.'? | '.'? F A L S E '.'?;
-fragment DEC_DOT_DEC:	DECIMAL '.' DECIMAL | DECIMAL '.' | '.' DECIMAL;
+fragment DEC_DOT_DEC:	(DECIMAL '.' DECIMAL?) | ('.' DECIMAL);
 fragment DEC_DIGIT:	[0-9];
 fragment DECIMAL:	DEC_DIGIT+;
 fragment ONE_OR_ZERO:	'0' | '1';

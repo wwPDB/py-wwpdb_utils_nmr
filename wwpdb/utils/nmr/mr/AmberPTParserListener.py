@@ -205,6 +205,7 @@ class AmberPTParserListener(ParseTreeListener):
         chainId = indexToLetter(chainIndex)
 
         terminus = [atomName.endswith('T') for atomName in self.__atomName]
+
         atomTotal = len(self.__atomName)
         if terminus[0]:
             terminus[0] = False
@@ -218,13 +219,18 @@ class AmberPTParserListener(ParseTreeListener):
         seqIdList = []
         compIdList = []
 
+        NON_METAL_ELEMENTS = ('H', 'C', 'N', 'O', 'P', 'S')
+
+        prevAtomName = ''
+        prevSeqId = None
         offset = 0
         for atomNum, atomName in enumerate(self.__atomName, start=1):
             _seqId = next(resNum for resNum, (atomNumBegin, atomNumEnd)
                           in enumerate(zip(self.__residuePointer, residuePointer2), start=1)
                           if atomNumBegin <= atomNum <= atomNumEnd)
             compId = self.__residueLabel[_seqId - 1]
-            if terminus[atomNum - 1]:
+            if terminus[atomNum - 2]\
+               or (len(prevAtomName) > 0 and prevAtomName[0] not in NON_METAL_ELEMENTS and prevSeqId != _seqId):
                 self.__polySeqPrmTop.append({'chain_id': chainId,
                                              'seq_id': seqIdList,
                                              'auth_comp_id': compIdList})
@@ -241,6 +247,8 @@ class AmberPTParserListener(ParseTreeListener):
                                               'seq_id': seqId,
                                               'auth_comp_id': compId,
                                               'auth_atom_id': atomName}
+            prevAtomName = atomName
+            prevSeqId = _seqId
 
         self.__polySeqPrmTop.append({'chain_id': chainId,
                                      'seq_id': seqIdList,
@@ -352,10 +360,12 @@ class AmberPTParserListener(ParseTreeListener):
             if len(chain_mapping) > 0:
 
                 for ps in self.__polySeqPrmTop:
-                    ps['chain_id'] = chain_mapping[ps['chain_id']]
+                    if ps['chain_id'] in chain_mapping:
+                        ps['chain_id'] = chain_mapping[ps['chain_id']]
 
-                for atomNum in self.__atomNumberDict:
-                    atomNum['chain_id'] = chain_mapping[atomNum['chain_id']]
+                for atomNum in self.__atomNumberDict.values():
+                    if atomNum['chain_id'] in chain_mapping:
+                        atomNum['chain_id'] = chain_mapping[atomNum['chain_id']]
 
                 self.alignPolymerSequence()
                 self.assignPolymerSequence()

@@ -44,7 +44,7 @@ class CyanaMRReader:
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
                  coordAtomSite=None, coordUnobsRes=None,
                  labelToAuthSeq=None, authToLabelSeq=None,
-                 ccU=None, csStat=None, nefT=None, upl_or_lol=None):
+                 ccU=None, csStat=None, nefT=None, reasons=None, upl_or_lol=None):
         self.__verbose = verbose
         self.__lfh = log
         self.__debug = False
@@ -71,6 +71,9 @@ class CyanaMRReader:
 
         # NEFTranslator
         self.__nefT = NEFTranslator(verbose, log, self.__ccU, self.__csStat) if nefT is None else nefT
+
+        # reasons for re-parsing request from the previous trial
+        self.__reasons = reasons
 
         self.__utl_or_lol = upl_or_lol
 
@@ -131,7 +134,7 @@ class CyanaMRReader:
                                                  self.__representativeModelId,
                                                  self.__coordAtomSite, self.__coordUnobsRes,
                                                  self.__labelToAuthSeq, self.__authToLabelSeq,
-                                                 self.__ccU, self.__csStat, self.__nefT, self.__utl_or_lol)
+                                                 self.__ccU, self.__csStat, self.__nefT, self.__reasons, self.__utl_or_lol)
                 listener.setDebugMode(self.__debug)
                 walker.walk(listener, tree)
 

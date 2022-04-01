@@ -105,6 +105,9 @@ class CyanaMRParserListener(ParseTreeListener):
     # NEFTranslator
     __nefT = None
 
+    # reasons for re-parsing request from the previous trial
+    __reasons = None
+
     __upl_or_lol = None  # must be one of (None, 'upl_only', 'upl_w_lol', 'lol_only', 'lol_w_upl')
 
     # CIF reader
@@ -147,11 +150,13 @@ class CyanaMRParserListener(ParseTreeListener):
 
     warningMessage = ''
 
+    reasonsForReParsing = None
+
     def __init__(self, verbose=True, log=sys.stdout, cR=None, polySeq=None,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
                  coordAtomSite=None, coordUnobsRes=None,
                  labelToAuthSeq=None, authToLabelSeq=None,
-                 ccU=None, csStat=None, nefT=None, upl_or_lol=None):
+                 ccU=None, csStat=None, nefT=None, reasons=None, upl_or_lol=None):
         # self.__verbose = verbose
         # self.__lfh = log
         # self.__cR = cR
@@ -184,6 +189,9 @@ class CyanaMRParserListener(ParseTreeListener):
 
         # NEFTranslator
         self.__nefT = NEFTranslator(verbose, log, self.__ccU, self.__csStat) if nefT is None else nefT
+
+        # reasons for re-parsing request from the previous trial
+        self.__reasons = reasons
 
         self.__upl_or_lol = upl_or_lol
 
@@ -345,23 +353,36 @@ class CyanaMRParserListener(ParseTreeListener):
 
         return dstFunc
 
+    def getRealSeqId(self, ps, seqId):
+        chainId = ps['chain_id']
+        if self.__reasons is not None and 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme']:
+            seqKey = (chainId, seqId)
+            if seqKey in self.__authToLabelSeq:
+                _, _seqId = self.__authToLabelSeq[seqKey]
+                if _seqId in ps['seq_id']:
+                    seqId = _seqId
+        return seqId
+
     def assignCoordPolymerSequence(self, seqId, compId, atomId):
         """ Assign polymer sequences of the coordinates.
         """
 
         chainAssign = []
+        _seqId = seqId
 
         for ps in self.__polySeq:
             chainId = ps['chain_id']
+            seqId = self.getRealSeqId(ps, _seqId)
             if seqId in ps['seq_id']:
                 cifCompId = ps['comp_id'][ps['seq_id'].index(seqId)]
                 if cifCompId == compId:
-                    chainAssign.append((chainId, seqId, cifCompId))
+                    if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                        chainAssign.append((chainId, seqId, cifCompId))
                 elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                     chainAssign.append((chainId, seqId, cifCompId))
                     if cifCompId != compId:
                         self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
-                            f"The residue name {seqId}:{compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
+                            f"The residue name {_seqId}:{compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
 
         if len(chainAssign) == 0:
             for ps in self.__polySeq:
@@ -372,12 +393,17 @@ class CyanaMRParserListener(ParseTreeListener):
                     if seqId in ps['seq_id']:
                         cifCompId = ps['comp_id'][ps['seq_id'].index(seqId)]
                         if cifCompId == compId:
-                            chainAssign.append((chainId, seqId, cifCompId))
+                            if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                                chainAssign.append((chainId, seqId, cifCompId))
+                                if self.reasonsForReParsing is None:
+                                    self.reasonsForReParsing = {}
+                                if 'label_seq_scheme' not in self.reasonsForReParsing:
+                                    self.reasonsForReParsing['label_seq_scheme'] = True
                         elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                             chainAssign.append((chainId, seqId, cifCompId))
                             if cifCompId != compId:
                                 self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
-                                    f"The residue name {seqId}:{compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
+                                    f"The residue name {_seqId}:{compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
 
         if len(chainAssign) == 0 and self.__altPolySeq is not None:
             for ps in self.__altPolySeq:
@@ -388,11 +414,11 @@ class CyanaMRParserListener(ParseTreeListener):
                     chainAssign.append(chainId, cifSeqId, cifCompId)
                     if cifCompId != compId:
                         self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
-                            f"The residue name {seqId}:{compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
+                            f"The residue name {_seqId}:{compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
 
         if len(chainAssign) == 0:
             self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                f"{seqId}:{compId}:{atomId} is not present in the coordinates.\n"
+                f"{_seqId}:{compId}:{atomId} is not present in the coordinates.\n"
 
         return chainAssign
 
@@ -1128,6 +1154,11 @@ class CyanaMRParserListener(ParseTreeListener):
                           }
 
         return {k: 1 for k, v in contentSubtype.items() if v > 0}
+
+    def getReasonsForReparsing(self):
+        """ Return reasons for re-parsing CYANA MR file.
+        """
+        return self.reasonsForReParsing
 
     def isUplDistanceRestraint(self):
         """ Return whether CYANA MR file contains upper limit distance restraints.

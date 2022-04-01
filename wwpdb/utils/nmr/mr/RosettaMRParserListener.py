@@ -91,6 +91,9 @@ class RosettaMRParserListener(ParseTreeListener):
     # NEFTranslator
     __nefT = None
 
+    # reasons for re-parsing request from the previous trial
+    __reasons = None
+
     # CIF reader
     # __cR = None
     __hasCoord = False
@@ -134,11 +137,13 @@ class RosettaMRParserListener(ParseTreeListener):
 
     warningMessage = ''
 
+    reasonsForReParsing = None
+
     def __init__(self, verbose=True, log=sys.stdout, cR=None, polySeq=None,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
                  coordAtomSite=None, coordUnobsRes=None,
                  labelToAuthSeq=None, authToLabelSeq=None,
-                 ccU=None, csStat=None, nefT=None):
+                 ccU=None, csStat=None, nefT=None, reasons=None):
         # self.__verbose = verbose
         # self.__lfh = log
         # self.__cR = cR
@@ -171,6 +176,9 @@ class RosettaMRParserListener(ParseTreeListener):
 
         # NEFTranslator
         self.__nefT = NEFTranslator(verbose, log, self.__ccU, self.__csStat) if nefT is None else nefT
+
+        # reasons for re-parsing request from the previous trial
+        self.__reasons = reasons
 
         self.concat_resnum_chain_pat = re.compile(r'^(\d+)(\S+)$')
 
@@ -380,16 +388,28 @@ class RosettaMRParserListener(ParseTreeListener):
 
         return dstFunc
 
+    def getRealSeqId(self, ps, seqId):
+        chainId = ps['chain_id']
+        if self.__reasons is not None and 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme']:
+            seqKey = (chainId, seqId)
+            if seqKey in self.__authToLabelSeq:
+                _, _seqId = self.__authToLabelSeq[seqKey]
+                if _seqId in ps['seq_id']:
+                    seqId = _seqId
+        return seqId
+
     def assignCoordPolymerSequence(self, seqId, atomId=None, fixedChainId=None):
         """ Assign polymer sequences of the coordinates.
         """
 
         chainAssign = []
+        _seqId = seqId
 
         for ps in self.__polySeq:
             chainId = ps['chain_id']
             if fixedChainId is not None and chainId != fixedChainId:
                 continue
+            seqId = self.getRealSeqId(ps, _seqId)
             if seqId in ps['seq_id']:
                 cifCompId = ps['comp_id'][ps['seq_id'].index(seqId)]
                 if atomId is None\
@@ -409,6 +429,10 @@ class RosettaMRParserListener(ParseTreeListener):
                         if atomId is None\
                            or (atomId is not None and len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0):
                             chainAssign.append((chainId, seqId, cifCompId))
+                            if self.reasonsForReParsing is None:
+                                self.reasonsForReParsing = {}
+                            if 'label_seq_scheme' not in self.reasonsForReParsing:
+                                self.reasonsForReParsing['label_seq_scheme'] = True
 
         if len(chainAssign) == 0 and self.__altPolySeq is not None:
             for ps in self.__altPolySeq:
@@ -423,10 +447,10 @@ class RosettaMRParserListener(ParseTreeListener):
         if len(chainAssign) == 0:
             if atomId is not None:
                 self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                    f"{seqId}:{atomId} is not present in the coordinates.\n"
+                    f"{_seqId}:{atomId} is not present in the coordinates.\n"
             else:
                 self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                    f"{seqId} is not present in the coordinates.\n"
+                    f"{_seqId} is not present in the coordinates.\n"
 
         return chainAssign
 
@@ -2344,6 +2368,11 @@ class RosettaMRParserListener(ParseTreeListener):
                           }
 
         return {k: 1 for k, v in contentSubtype.items() if v > 0}
+
+    def getReasonsForReparsing(self):
+        """ Return reasons for re-parsing ROSETTA MR file.
+        """
+        return self.reasonsForReParsing
 
 
 # del RosettaMRParser

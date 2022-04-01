@@ -17186,10 +17186,10 @@ class NmrDpUtility:
             file_type = input_source_dic['file_type']
             content_subtype = input_source_dic['content_subtype']
 
-            if 'is_valid' not in ar or not ar['is_valid']:
-                continue
-
             if file_type == 'nm-aux-amb' and content_subtype is not None and 'topology' in content_subtype:
+
+                if 'is_valid' not in ar or not ar['is_valid']:
+                    continue
 
                 file_name = input_source_dic['file_name']
                 if 'original_file_name' in input_source_dic:

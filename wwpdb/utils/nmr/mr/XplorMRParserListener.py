@@ -5171,10 +5171,13 @@ class XplorMRParserListener(ParseTreeListener):
                     simpleNamesIndex += 1
 
                 if len(self.factor['chain_id']) == 0:
-                    self.factor['atom_id'] = [None]
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        "Couldn't specify segment name "\
-                        f"'{chainId}' the coordinates.\n"  # do not use 'chainId!r' expression, '%' code throws ValueError
+                    if len(self.__polySeq) == 1:
+                        self.factor['chain_id'] = self.__polySeq[0]['chain_id']
+                    else:
+                        self.factor['atom_id'] = [None]
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            "Couldn't specify segment name "\
+                            f"'{chainId}' the coordinates.\n"  # do not use 'chainId!r' expression, '%' code throws ValueError
 
                 if ctx.Integer(0):
                     self.factor['seq_id'] = [int(str(ctx.Integer(0)))]
@@ -6105,9 +6108,12 @@ class XplorMRParserListener(ParseTreeListener):
                                                if begChainId <= ps['chain_id'] <= endChainId]
 
                     if len(self.factor['chain_id']) == 0:
-                        self.factor['atom_id'] = [None]
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            f"Couldn't specify segment name {begChainId:!r}:{endChainId:!r} in the coordinates.\n"
+                        if len(self.__polySeq) == 1:
+                            self.factor['chain_id'] = self.__polySeq[0]['chain_id']
+                        else:
+                            self.factor['atom_id'] = [None]
+                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                f"Couldn't specify segment name {begChainId:!r}:{endChainId:!r} in the coordinates.\n"
 
                 else:
                     if ctx.Simple_name(0) or ctx.Double_quote_string(0):
@@ -6123,10 +6129,13 @@ class XplorMRParserListener(ParseTreeListener):
                         self.factor['chain_id'] = [ps['chain_id'] for ps in self.__polySeq
                                                    if re.match(_chainId, ps['chain_id'])]
                     if len(self.factor['chain_id']) == 0:
-                        self.factor['atom_id'] = [None]
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            "Couldn't specify segment name "\
-                            f"'{chainId}' in the coordinates.\n"  # do not use 'chainId!r' expression, '%' code throws ValueError
+                        if len(self.__polySeq) == 1:
+                            self.factor['chain_id'] = self.__polySeq[0]['chain_id']
+                        else:
+                            self.factor['atom_id'] = [None]
+                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                "Couldn't specify segment name "\
+                                f"'{chainId}' in the coordinates.\n"  # do not use 'chainId!r' expression, '%' code throws ValueError
 
             elif ctx.Store_1() or ctx.Store_2() or ctx.Store_3()\
                     or ctx.Store_4() or ctx.Store_5() or ctx.Store_6()\

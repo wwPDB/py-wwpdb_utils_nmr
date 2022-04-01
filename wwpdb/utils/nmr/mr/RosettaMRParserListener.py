@@ -421,7 +421,7 @@ class RosettaMRParserListener(ParseTreeListener):
                 chainId = ps['chain_id']
                 if fixedChainId is not None and chainId != fixedChainId:
                     continue
-                seqKey = (chainId, seqId)
+                seqKey = (chainId, _seqId)
                 if seqKey in self.__authToLabelSeq:
                     _, seqId = self.__authToLabelSeq[seqKey]
                     if seqId in ps['seq_id']:
@@ -439,9 +439,9 @@ class RosettaMRParserListener(ParseTreeListener):
                 chainId = ps['chain_id']
                 if fixedChainId is not None and chainId != fixedChainId:
                     continue
-                if seqId in ps['auth_seq_id']:
-                    cifCompId = ps['comp_id'][ps['auth_seq_id'].index(seqId)]
-                    cifSeqId = ps['seq_id'][ps['auth_seq_id'].index(seqId)]
+                if _seqId in ps['auth_seq_id']:
+                    cifCompId = ps['comp_id'][ps['auth_seq_id'].index(_seqId)]
+                    cifSeqId = ps['seq_id'][ps['auth_seq_id'].index(_seqId)]
                     chainAssign.append(chainId, cifSeqId, cifCompId)
 
         if len(chainAssign) == 0:

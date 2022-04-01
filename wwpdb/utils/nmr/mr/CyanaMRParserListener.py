@@ -387,9 +387,9 @@ class CyanaMRParserListener(ParseTreeListener):
         if len(chainAssign) == 0:
             for ps in self.__polySeq:
                 chainId = ps['chain_id']
-                seqKey = (chainId, seqId)
+                seqKey = (chainId, _seqId)
                 if seqKey in self.__authToLabelSeq:
-                    _, seqKey = self.__authToLabelSeq[seqKey]
+                    _, seqId = self.__authToLabelSeq[seqKey]
                     if seqId in ps['seq_id']:
                         cifCompId = ps['comp_id'][ps['seq_id'].index(seqId)]
                         if cifCompId == compId:
@@ -408,9 +408,9 @@ class CyanaMRParserListener(ParseTreeListener):
         if len(chainAssign) == 0 and self.__altPolySeq is not None:
             for ps in self.__altPolySeq:
                 chainId = ps['chain_id']
-                if seqId in ps['auth_seq_id']:
-                    cifCompId = ps['comp_id'][ps['auth_seq_id'].index(seqId)]
-                    cifSeqId = ps['seq_id'][ps['auth_seq_id'].index(seqId)]
+                if _seqId in ps['auth_seq_id']:
+                    cifCompId = ps['comp_id'][ps['auth_seq_id'].index(_seqId)]
+                    cifSeqId = ps['seq_id'][ps['auth_seq_id'].index(_seqId)]
                     chainAssign.append(chainId, cifSeqId, cifCompId)
                     if cifCompId != compId:
                         self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
@@ -626,12 +626,6 @@ class CyanaMRParserListener(ParseTreeListener):
                     f"The angle identifier {str(ctx.Simple_name(1))!r} did not match with residue {compId!r}.\n"
                 return
 
-            seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, self.__hasCoord)
-            if 1 in seqOffset:
-                nextSeqKey, nextCoordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId + 1, self.__hasCoord)
-            if -1 in seqOffset:
-                prevSeqKey, prevCoordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId - 1, self.__hasCoord)
-
             for atomId, offset in zip(atomNames, seqOffset):
 
                 atomSelection = []
@@ -657,10 +651,6 @@ class CyanaMRParserListener(ParseTreeListener):
                     return
 
                 atomSelection.append({'chain_id': chainId, 'seq_id': _cifSeqId, 'comp_id': _cifCompId, 'atom_id': cifAtomId})
-
-                self.testCoordAtomIdConsistency(chainId, _cifSeqId, _cifCompId, cifAtomId,
-                                                seqKey if offset == 0 else (nextSeqKey if offset == 1 else prevSeqKey),
-                                                coordAtomSite if offset == 0 else (nextCoordAtomSite if offset == 1 else prevCoordAtomSite))
 
                 if len(atomSelection) > 0:
                     self.atomSelectionSet.append(atomSelection)

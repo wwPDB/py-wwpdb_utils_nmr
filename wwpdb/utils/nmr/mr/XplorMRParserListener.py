@@ -20,7 +20,7 @@ from rmsd.calculate_rmsd import (int_atom, ELEMENT_WEIGHTS)  # noqa: F401 pylint
 try:
     from wwpdb.utils.nmr.mr.XplorMRParser import XplorMRParser
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (toNpArray,
-                                                       toRegEx,
+                                                       toRegEx, toNefEx,
                                                        checkCoordinates,
                                                        getTypeOfDihedralRestraint,
                                                        REPRESENTATIVE_MODEL_ID,
@@ -53,7 +53,7 @@ try:
 except ImportError:
     from nmr.mr.XplorMRParser import XplorMRParser
     from nmr.mr.ParserListenerUtil import (toNpArray,
-                                           toRegEx,
+                                           toRegEx, toNefEx,
                                            checkCoordinates,
                                            getTypeOfDihedralRestraint,
                                            REPRESENTATIVE_MODEL_ID,
@@ -4639,7 +4639,8 @@ class XplorMRParserListener(ParseTreeListener):
                         if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
                             realAtomId = cca[self.__ccU.ccaAtomId]
                             if lenAtomIds == 1 and re.match(toRegEx(_factor['atom_ids'][0]), realAtomId):
-                                _atomIdSelect.add(_factor['atom_ids'][0])
+                                _atomIdSelect.add(toNefEx(_factor['atom_ids'][0]))
+                                _factor['alt_atom_id'] = _factor['atom_ids'][0]
                             elif lenAtomIds == 2 and _factor['atom_ids'][0] <= realAtomId <= _factor['atom_ids'][1]:
                                 _atomIdSelect.add(realAtomId)
             _factor['atom_id'] = list(_atomIdSelect)
@@ -4704,9 +4705,13 @@ class XplorMRParserListener(ParseTreeListener):
                         if self.__cur_subtype in ('pcs', 'pre', 'prdc', 'pccr') and (atomId in PARAMAGNETIC_ELEMENTS or atomId in FERROMAGNETIC_ELEMENTS):
                             continue
 
+                        origAtomId = _factor['atom_id'] if 'alt_atom_id' not in _factor else _factor['alt_atom_id']
+
                         atomId = atomId.upper()
 
                         atomIds, _, details = self.__nefT.get_valid_star_atom(compId, atomId, leave_unmatched=True)
+                        if 'alt_atom_id' in _factor and details is not None:
+                            atomIds, _, details = self.__nefT.get_valid_star_atom(compId, atomId[:-1], leave_unmatched=True)
 
                         if self.__reasons is not None:
                             if 'xplor_atom_nomenclature' in self.__reasons and self.__reasons['xplor_atom_nomenclature']:
@@ -4808,7 +4813,7 @@ class XplorMRParserListener(ParseTreeListener):
                                         _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId})
                                         if cifCheck and seqKey not in self.__coordUnobsRes:
                                             self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                                f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.\n"
+                                                f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates.\n"
                                     elif cca is None:
                                         if self.__reasons is None and seqKey in self.__authToLabelSeq:
                                             _, _seqId = self.__authToLabelSeq[seqKey]
@@ -4822,9 +4827,13 @@ class XplorMRParserListener(ParseTreeListener):
                                                         if 'label_seq_scheme' not in self.reasonsForReParsing:
                                                             self.reasonsForReParsing['label_seq_scheme'] = True
                                         self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                            f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.\n"
+                                            f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates.\n"
 
         atomSelection = [dict(s) for s in set(frozenset(atom.items()) for atom in _atomSelection)]
+
+        if 'alt_chain_id' in _factor:
+            for _atom in atomSelection:
+                self.updateSgmentIdDict(_factor, _atom['chain_id'])
 
         if 'atom_selection' not in _factor:
             _factor['atom_selection'] = atomSelection
@@ -4855,6 +4864,10 @@ class XplorMRParserListener(ParseTreeListener):
             del _factor['type_symbol']
         if 'atom_id' in _factor:
             del _factor['atom_id']
+        if 'alt_chain_id' in _factor:
+            del _factor['alt_chain_id']
+        if 'alt_atom_id' in _factor:
+            del _factor['alt_atom_id']
 
         return _factor
 
@@ -4867,6 +4880,24 @@ class XplorMRParserListener(ParseTreeListener):
                 if _seqId in ps['seq_id']:
                     seqId = _seqId
         return seqId
+
+    def getRealChainId(self, chainId):
+        if self.__reasons is not None and 'segment_id_mismatch' in self.__reasons and chainId in self.__reasons['segment_id_mismatch']:
+            _chainId = self.__reasons['segment_id_mismatch'][chainId]
+            if _chainId is not None:
+                chainId = _chainId
+        return chainId
+
+    def updateSgmentIdDict(self, factor, chainId):
+        if self.__reasons is not None or 'alt_chain_id' not in factor\
+           or self.reasonsForReParsing is None or 'segment_id_mismatch' not in self.reasonsForReParsing:
+            return
+        altChainId = factor['alt_chain_id']
+        if altChainId not in self.reasonsForReParsing['segment_id_mismatch']:
+            return
+        if self.reasonsForReParsing['segment_id_mismatch'][altChainId] is not None:
+            return
+        self.reasonsForReParsing['segment_id_mismatch'][altChainId] = chainId
 
     def getCoordAtomSiteOf(self, chainId, seqId, cifCheck=True, asis=True):
         seqKey = (chainId, seqId)
@@ -4979,6 +5010,10 @@ class XplorMRParserListener(ParseTreeListener):
                             del self.factor['type_symbols']
                         if 'atom_ids' in self.factor:
                             del self.factor['atom_ids']
+                        if 'alt_chain_id' in self.factor:
+                            del self.factor['alt_chain_id']
+                        if 'alt_atom_id' in self.factor:
+                            del self.factor['alt_atom_id']
 
                 except Exception as e:
                     if self.__verbose:
@@ -5159,7 +5194,7 @@ class XplorMRParserListener(ParseTreeListener):
                 if ctx.Simple_name(0):
                     chainId = str(ctx.Simple_name(0))
                     self.factor['chain_id'] = [ps['chain_id'] for ps in self.__polySeq
-                                               if ps['chain_id'] == chainId]
+                                               if ps['chain_id'] == self.getRealChainId(chainId)]
                     if len(self.factor['chain_id']) > 0:
                         simpleNameIndex += 1
 
@@ -5173,11 +5208,19 @@ class XplorMRParserListener(ParseTreeListener):
                 if len(self.factor['chain_id']) == 0:
                     if len(self.__polySeq) == 1:
                         self.factor['chain_id'] = self.__polySeq[0]['chain_id']
-                    else:
+                    elif self.__reasons is not None:
                         self.factor['atom_id'] = [None]
                         self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                             "Couldn't specify segment name "\
                             f"'{chainId}' the coordinates.\n"  # do not use 'chainId!r' expression, '%' code throws ValueError
+                    else:
+                        if self.reasonsForReParsing is None:
+                            self.reasonsForReParsing = {}
+                        if 'segment_id_mismatch' not in self.reasonsForReParsing:
+                            self.reasonsForReParsing['segment_id_mismatch'] = {}
+                        if chainId not in self.reasonsForReParsing['segment_id_mismatch']:
+                            self.reasonsForReParsing['segment_id_mismatch'][chainId] = None
+                        self.factor['alt_chain_id'] = chainId
 
                 if ctx.Integer(0):
                     self.factor['seq_id'] = [int(str(ctx.Integer(0)))]
@@ -6122,7 +6165,7 @@ class XplorMRParserListener(ParseTreeListener):
                         elif ctx.Double_quote_string(0):
                             chainId = str(ctx.Simple_name(0)).strip('"').strip()
                         self.factor['chain_id'] = [ps['chain_id'] for ps in self.__polySeq
-                                                   if ps['chain_id'] == chainId]
+                                                   if ps['chain_id'] == self.getRealChainId(chainId)]
                     if ctx.Simple_names(0):
                         chainId = str(ctx.Simple_names(0))
                         _chainId = toRegEx(chainId)
@@ -6131,11 +6174,19 @@ class XplorMRParserListener(ParseTreeListener):
                     if len(self.factor['chain_id']) == 0:
                         if len(self.__polySeq) == 1:
                             self.factor['chain_id'] = self.__polySeq[0]['chain_id']
-                        else:
+                        elif self.__reasons is not None:
                             self.factor['atom_id'] = [None]
                             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                                 "Couldn't specify segment name "\
                                 f"'{chainId}' in the coordinates.\n"  # do not use 'chainId!r' expression, '%' code throws ValueError
+                        else:
+                            if self.reasonsForReParsing is None:
+                                self.reasonsForReParsing = {}
+                            if 'segment_id_mismatch' not in self.reasonsForReParsing:
+                                self.reasonsForReParsing['segment_id_mismatch'] = {}
+                            if chainId not in self.reasonsForReParsing['segment_id_mismatch']:
+                                self.reasonsForReParsing['segment_id_mismatch'][chainId] = None
+                            self.factor['alt_chain_id'] = chainId
 
             elif ctx.Store_1() or ctx.Store_2() or ctx.Store_3()\
                     or ctx.Store_4() or ctx.Store_5() or ctx.Store_6()\

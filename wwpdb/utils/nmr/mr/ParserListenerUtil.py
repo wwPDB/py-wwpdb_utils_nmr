@@ -184,6 +184,21 @@ def toRegEx(string):
     return string
 
 
+def toNefEx(string):
+    """ Return NEF regular expression for a given string including XPLOR-NIH wildcard format.
+    """
+
+    if '*' in string:  # any string
+        return re.sub(r'\*\*', '*', string)
+    if '%' in string:  # a single character
+        return re.sub(r'\*\*', '*', string.replace('%', '*'))
+    if '#' in string:  # any number
+        return re.sub(r'\*\*', '*', string.replace('#', '*'))
+    if '+' in string:  # any digit
+        return re.sub(r'\%\%', '%', string.replace('+', '%'))
+    return string
+
+
 def translateAmberAtomNomenclature(atomId):
     """ Translate AMBER atom nomenclature to the IUPAC one.
     """

@@ -649,8 +649,9 @@ class AmberMRParserListener(ParseTreeListener):
                         else:
                             nonp = [val for col, val in enumerate(self.igr[varNum]) if val > 0 and col < maxCol]
                             if len(nonp) != len(set(nonp)):
-                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                    f"'{varName}={valArray}' includes redundant integers.\n"
+                                if self.__hasPolySeq:
+                                    self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
+                                        f"'{varName}={valArray}' includes redundant integers.\n"
                             elif len(nonp) < 2:
                                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                                     f"Surprisingly '{varName}={valArray}' is consist of a single integer.\n"

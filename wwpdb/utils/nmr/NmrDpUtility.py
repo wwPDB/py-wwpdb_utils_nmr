@@ -7692,7 +7692,7 @@ class NmrDpUtility:
 
                     has_chem_shift = False
 
-                else:
+                elif valid:
 
                     if not is_aux_amb:
                         err = f"The {mr_format_name} restraint file includes assigned chemical shifts. "\

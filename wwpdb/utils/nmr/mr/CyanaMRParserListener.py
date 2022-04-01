@@ -140,7 +140,10 @@ class CyanaMRParserListener(ParseTreeListener):
     pcsParameterDict = None
 
     # collection of atom selection
-    atomSelectionSet = None
+    atomSelectionSet = []
+
+    # collection of number selection
+    numberSelection = []
 
     warningMessage = ''
 
@@ -218,7 +221,7 @@ class CyanaMRParserListener(ParseTreeListener):
     def enterDistance_restraint(self, ctx: CyanaMRParser.Distance_restraintContext):  # pylint: disable=unused-argument
         self.distRestraints += 1
 
-        self.atomSelectionSet = []
+        self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by CyanaMRParser#distance_restraint.
     def exitDistance_restraint(self, ctx: CyanaMRParser.Distance_restraintContext):
@@ -233,7 +236,9 @@ class CyanaMRParserListener(ParseTreeListener):
         lower_limit = None
         upper_limit = None
 
-        value = float(str(ctx.Float()))
+        value = self.numberSelection[0]
+
+        self.numberSelection.clear()
 
         if DIST_RANGE_MIN <= value <= DIST_RANGE_MAX:
             if self.__max_dist_value is None:
@@ -497,15 +502,17 @@ class CyanaMRParserListener(ParseTreeListener):
     def enterTorsion_angle_restraint(self, ctx: CyanaMRParser.Torsion_angle_restraintContext):  # pylint: disable=unused-argument
         self.dihedRestraints += 1
 
-        self.atomSelectionSet = []
+        self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by CyanaMRParser#torsion_angle_restraint.
     def exitTorsion_angle_restraint(self, ctx: CyanaMRParser.Torsion_angle_restraintContext):  # pylint: disable=unused-argument
         seqId = int(str(ctx.Integer()))
         compId = str(ctx.Simple_name(0)).upper()
         angleName = str(ctx.Simple_name(1)).upper()
-        lower_limit = float(str(ctx.Float(0)))
-        upper_limit = float(str(ctx.Float(1)))
+        lower_limit = self.numberSelection[0]
+        upper_limit = self.numberSelection[1]
+
+        self.numberSelection.clear()
 
         if lower_limit > upper_limit:
             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
@@ -643,8 +650,6 @@ class CyanaMRParserListener(ParseTreeListener):
                     print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} "
                           f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
 
-            self.atomSelectionSet = []
-
     def validateAngleRange(self, weight, target_value, lower_limit, upper_limit):
         """ Validate angle value range.
         """
@@ -735,7 +740,7 @@ class CyanaMRParserListener(ParseTreeListener):
     def enterRdc_restraint(self, ctx: CyanaMRParser.Rdc_restraintContext):  # pylint: disable=unused-argument
         self.rdcRestraints += 1
 
-        self.atomSelectionSet = []
+        self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by CyanaMRParser#rdc_restraint.
     def exitRdc_restraint(self, ctx: CyanaMRParser.Rdc_restraintContext):
@@ -745,10 +750,12 @@ class CyanaMRParserListener(ParseTreeListener):
         seqId2 = int(str(ctx.Integer(1)))
         compId2 = str(ctx.Simple_name(2)).upper()
         atomId2 = str(ctx.Simple_name(3)).upper()
-        target = float(str(ctx.Float(0)))
-        error = abs(float(str(ctx.Float(1))))
-        weight = float(str(ctx.Float(2)))
+        target = self.numberSelection[0]
+        error = abs(self.numberSelection[1])
+        weight = self.numberSelection[2]
         orientation = int(str(ctx.Integer(2)))
+
+        self.numberSelection.clear()
 
         if weight <= 0.0:
             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
@@ -975,17 +982,19 @@ class CyanaMRParserListener(ParseTreeListener):
     def enterPcs_restraint(self, ctx: CyanaMRParser.Pcs_restraintContext):  # pylint: disable=unused-argument
         self.pcsRestraints += 1
 
-        self.atomSelectionSet = []
+        self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by CyanaMRParser#pcs_restraint.
     def exitPcs_restraint(self, ctx: CyanaMRParser.Pcs_restraintContext):  # pylint: disable=unused-argument
         seqId = int(str(ctx.Integer(0)))
         compId = str(ctx.Simple_name(0)).upper()
         atomId = str(ctx.Simple_name(1)).upper()
-        target = float(str(ctx.Float(0)))
-        error = abs(float(str(ctx.Float(1))))
-        weight = float(str(ctx.Float(2)))
+        target = self.numberSelection[0]
+        error = abs(self.numberSelection[1])
+        weight = self.numberSelection[2]
         orientation = int(str(ctx.Integer(1)))
+
+        self.numberSelection.clear()
 
         if weight <= 0.0:
             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
@@ -1028,6 +1037,17 @@ class CyanaMRParserListener(ParseTreeListener):
             if self.__debug:
                 print(f"subtype={self.__cur_subtype} id={self.pcsRestraints} "
                       f"atom={atom} {dstFunc}")
+
+    # Enter a parse tree produced by CyanaMRParser#number.
+    def enterNumber(self, ctx: CyanaMRParser.NumberContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by CyanaMRParser#number.
+    def exitNumber(self, ctx: CyanaMRParser.NumberContext):
+        if ctx.Float():
+            self.numberSelection.append(float(str(ctx.Float())))
+        else:
+            self.numberSelection.append(float(str(ctx.Integer())))
 
     def validatePcsRange(self, weight, orientation, target_value, lower_limit, upper_limit):
         """ Validate PCS value range.

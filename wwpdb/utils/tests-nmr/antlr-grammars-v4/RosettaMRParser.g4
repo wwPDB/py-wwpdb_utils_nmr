@@ -67,14 +67,14 @@ coordinate_restraints:
 
 coordinate_restraint:
 	CoordinateConstraint Simple_name Simple_name Simple_name Simple_name	// The 2nd and 4th Simple_names represent Residue_num[Chain_ID]
-	Float Float Float func_type_def;
+	number number number func_type_def;
 
 local_coordinate_restraints:
 	local_coordinate_restraint+;
 
 local_coordinate_restraint:
 	LocalCoordinateConstraint Simple_name Integer Simple_name Simple_name Simple_name Integer
-	Float Float Float func_type_def;
+	number number number func_type_def;
 
 site_restraints:
 	site_restraint+;
@@ -92,13 +92,13 @@ min_residue_atomic_distance_restraints:
 	min_residue_atomic_distance_restraint+;
 
 min_residue_atomic_distance_restraint:
-	MinResidueAtomicDistance Integer Integer Float;
+	MinResidueAtomicDistance Integer Integer number;
 
 big_bin_restraints:
 	big_bin_restraint+;
 
 big_bin_restraint:
-	BigBin Integer Simple_name Float; // Simple_name must be a single uppercase letter selected from 'O', 'G', 'E', 'A', and 'B'
+	BigBin Integer Simple_name number; // Simple_name must be a single uppercase letter selected from 'O', 'G', 'E', 'A', and 'B'
 
 /* Rosetta Constraint File - Constraint Types - Nested constraints
  See also https://www.rosettacommons.org/docs/latest/rosetta_basics/file_types/constraint-file
@@ -125,26 +125,26 @@ any_restraint:
  See also https://www.rosettacommons.org/docs/latest/rosetta_basics/file_types/constraint-file
 */
 func_type_def:
-	(CIRCULARHARMONIC | HARMONIC | SIGMOID | SQUARE_WELL) Float Float |
-	BOUNDED Float Float Float Float? Simple_name? |
-	PERIODICBOUNDED Float Float Float Float Float? Simple_name? |
-	OFFSETPERIODICBOUNDED Float Float Float Float Float Float? Simple_name? |
-	(AMBERPERIODIC | CHARMMPERIODIC | FLAT_HARMONIC | TOPOUT) Float Float Float |
-	(CIRCULARSIGMOIDAL | LINEAR_PENALTY) Float Float Float Float |
-	CIRCULARSPLINE Float+ |
-	GAUSSIANFUNC Float Float Simple_name (WEIGHT Float)? |
-	SOGFUNC Integer (Float Float Float)+ |
-	(MIXTUREFUNC | KARPLUS | SOEDINGFUNC) Float Float Float Float Float Float |
-	CONSTANTFUNC Float |
+	(CIRCULARHARMONIC | HARMONIC | SIGMOID | SQUARE_WELL) number_f number_f |
+	BOUNDED number_f number_f number_f number_f? Simple_name? |
+	PERIODICBOUNDED number_f number_f number_f number_f number_f? Simple_name? |
+	OFFSETPERIODICBOUNDED number_f number_f number_f number_f number_f number_f? Simple_name? |
+	(AMBERPERIODIC | CHARMMPERIODIC | FLAT_HARMONIC | TOPOUT) number_f number_f number_f |
+	(CIRCULARSIGMOIDAL | LINEAR_PENALTY) number_f number_f number_f number_f |
+	CIRCULARSPLINE number_f+ |
+	GAUSSIANFUNC number_f number_f Simple_name (WEIGHT number_f)? |
+	SOGFUNC Integer (number_f number_f number_f)+ |
+	(MIXTUREFUNC | KARPLUS | SOEDINGFUNC) number_f number_f number_f number_f number_f number_f |
+	CONSTANTFUNC number_f |
 	IDENTITY |
-	SCALARWEIGHTEDFUNC Float func_type_def |
+	SCALARWEIGHTEDFUNC number_f func_type_def |
 	SUMFUNC Integer func_type_def+ |
-	SPLINE Simple_name (Float Float Float | NONE Float Float Float (Simple_name Float*)+) | // histogram_file_path can not be evaluated
-	FADE Float Float Float Float Float? |
-	SQUARE_WELL2 Float Float Float DEGREES? |
-	ETABLE Float Float Float* |
-	USOG Integer (Float Float Float Float)+ |
-	SOG Integer (Float Float Float Float Float Float)+;
+	SPLINE Simple_name (number_f number_f number_f | NONE number_f number_f number_f (Simple_name number_f*)+) | // histogram_file_path can not be evaluated
+	FADE number_f number_f number_f number_f number_f? |
+	SQUARE_WELL2 number_f number_f number_f DEGREES? |
+	ETABLE number_f number_f number_f* |
+	USOG Integer (number_f number_f number_f number_f)+ |
+	SOG Integer (number_f number_f number_f number_f number_f number_f)+;
 
 /* CS-ROSETTA Installation Files
  See also https://spin.niddk.nih.gov/bax/software/CSROSETTA/#rdc and https://csrosetta.bmrb.io/format_help
@@ -153,7 +153,7 @@ rdc_restraints:
 	rdc_restraint+;
 
 rdc_restraint:
-	Integer Simple_name Integer Simple_name Float;
+	Integer Simple_name Integer Simple_name number;
 
 /* CS-ROSETTA Installation Files
  See also https://spin.niddk.nih.gov/bax/software/CSROSETTA/#faq and https://csrosetta.bmrb.io/format_help
@@ -163,4 +163,11 @@ disulfide_bond_linkages:
 
 disulfide_bond_linkage:
 	Integer Integer;
+
+/* number expression in restrains */
+number:	Float | Integer;
+
+/* number expression in functions */
+number_f:
+	Float | Integer;
 

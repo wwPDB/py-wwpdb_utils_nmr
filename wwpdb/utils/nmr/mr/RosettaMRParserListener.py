@@ -118,10 +118,16 @@ class RosettaMRParserListener(ParseTreeListener):
     __cur_subtype = None
 
     # stack of function
-    stackFuncs = None
+    stackFuncs = []
 
     # collection of atom selection
-    atomSelectionSet = None
+    atomSelectionSet = []
+
+    # collection of number selection
+    numberSelection = []
+
+    # collection of number selection in function
+    numberFSelection = []
 
     # current nested restraint type
     __cur_nest = None
@@ -195,8 +201,8 @@ class RosettaMRParserListener(ParseTreeListener):
     def enterAtom_pair_restraint(self, ctx: RosettaMRParser.Atom_pair_restraintContext):  # pylint: disable=unused-argument
         self.distRestraints += 1
 
-        self.stackFuncs = []
-        self.atomSelectionSet = []
+        self.stackFuncs.clear()
+        self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by RosettaMRParser#atom_pair_restraint.
     def exitAtom_pair_restraint(self, ctx: RosettaMRParser.Atom_pair_restraintContext):
@@ -543,8 +549,8 @@ class RosettaMRParserListener(ParseTreeListener):
     def enterAngle_restraint(self, ctx: RosettaMRParser.Angle_restraintContext):  # pylint: disable=unused-argument
         self.angRestraints += 1
 
-        self.stackFuncs = []
-        self.atomSelectionSet = []
+        self.stackFuncs.clear()
+        self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by RosettaMRParser#angle_restraint.
     def exitAngle_restraint(self, ctx: RosettaMRParser.Angle_restraintContext):
@@ -739,8 +745,8 @@ class RosettaMRParserListener(ParseTreeListener):
     def enterDihedral_restraint(self, ctx: RosettaMRParser.Dihedral_restraintContext):  # pylint: disable=unused-argument
         self.dihedRestraints += 1
 
-        self.stackFuncs = []
-        self.atomSelectionSet = []
+        self.stackFuncs.clear()
+        self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by RosettaMRParser#dihedral_restraint.
     def exitDihedral_restraint(self, ctx: RosettaMRParser.Dihedral_restraintContext):
@@ -807,8 +813,8 @@ class RosettaMRParserListener(ParseTreeListener):
     def enterDihedral_pair_restraint(self, ctx: RosettaMRParser.Dihedral_pair_restraintContext):  # pylint: disable=unused-argument
         self.dihedRestraints += 1
 
-        self.stackFuncs = []
-        self.atomSelectionSet = []
+        self.stackFuncs.clear()
+        self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by RosettaMRParser#dihedral_pair_restraint.
     def exitDihedral_pair_restraint(self, ctx: RosettaMRParser.Dihedral_pair_restraintContext):
@@ -907,8 +913,8 @@ class RosettaMRParserListener(ParseTreeListener):
     def enterCoordinate_restraint(self, ctx: RosettaMRParser.Coordinate_restraintContext):  # pylint: disable=unused-argument
         self.geoRestraints += 1
 
-        self.stackFuncs = []
-        self.atomSelectionSet = []
+        self.stackFuncs.clear()
+        self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by RosettaMRParser#coordinate_restraint.
     def exitCoordinate_restraint(self, ctx: RosettaMRParser.Coordinate_restraintContext):
@@ -917,9 +923,11 @@ class RosettaMRParserListener(ParseTreeListener):
         atomId2 = str(ctx.Simple_name(2)).upper()
         _seqId2 = str(ctx.Simple_name(3)).upper()
 
-        cartX = float(str(ctx.Float(0)))
-        cartY = float(str(ctx.Float(1)))
-        cartZ = float(str(ctx.Float(2)))
+        cartX = self.numberSelection[0]
+        cartY = self.numberSelection[1]
+        cartZ = self.numberSelection[2]
+
+        self.numberSelection.clear()
 
         if _seqId1.isdecimal():
             seqId1 = int(_seqId1)
@@ -979,8 +987,8 @@ class RosettaMRParserListener(ParseTreeListener):
     def enterLocal_coordinate_restraint(self, ctx: RosettaMRParser.Local_coordinate_restraintContext):  # pylint: disable=unused-argument
         self.geoRestraints += 1
 
-        self.stackFuncs = []
-        self.atomSelectionSet = []
+        self.stackFuncs.clear()
+        self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by RosettaMRParser#local_coordinate_restraint.
     def exitLocal_coordinate_restraint(self, ctx: RosettaMRParser.Local_coordinate_restraintContext):
@@ -991,9 +999,11 @@ class RosettaMRParserListener(ParseTreeListener):
         atomId3 = str(ctx.Simple_name(2)).upper()
         atomId4 = str(ctx.Simple_name(3)).upper()
 
-        cartX = float(str(ctx.Float(0)))
-        cartY = float(str(ctx.Float(1)))
-        cartZ = float(str(ctx.Float(2)))
+        cartX = self.numberSelection[0]
+        cartY = self.numberSelection[1]
+        cartZ = self.numberSelection[2]
+
+        self.numberSelection.clear()
 
         dstFunc = self.validateDistanceRange(1.0)
 
@@ -1045,8 +1055,8 @@ class RosettaMRParserListener(ParseTreeListener):
     def enterSite_restraint(self, ctx: RosettaMRParser.Site_restraintContext):  # pylint: disable=unused-argument
         self.geoRestraints += 1
 
-        self.stackFuncs = []
-        self.atomSelectionSet = []
+        self.stackFuncs.clear()
+        self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by RosettaMRParser#site_restraint.
     def exitSite_restraint(self, ctx: RosettaMRParser.Site_restraintContext):
@@ -1108,8 +1118,8 @@ class RosettaMRParserListener(ParseTreeListener):
     def enterSite_residues_restraint(self, ctx: RosettaMRParser.Site_residues_restraintContext):  # pylint: disable=unused-argument
         self.geoRestraints += 1
 
-        self.stackFuncs = []
-        self.atomSelectionSet = []
+        self.stackFuncs.clear()
+        self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by RosettaMRParser#site_residues_restraint.
     def exitSite_residues_restraint(self, ctx: RosettaMRParser.Site_residues_restraintContext):
@@ -1171,14 +1181,16 @@ class RosettaMRParserListener(ParseTreeListener):
     def enterMin_residue_atomic_distance_restraint(self, ctx: RosettaMRParser.Min_residue_atomic_distance_restraintContext):  # pylint: disable=unused-argument
         self.geoRestraints += 1
 
-        self.stackFuncs = []
-        self.atomSelectionSet = []
+        self.stackFuncs.clear()
+        self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by RosettaMRParser#min_residue_atomic_distance_restraint.
     def exitMin_residue_atomic_distance_restraint(self, ctx: RosettaMRParser.Min_residue_atomic_distance_restraintContext):
         seqId1 = int(str(ctx.Integer(0)))
         seqId2 = int(str(ctx.Integer(1)))
-        target_value = float(str(ctx.Float()))
+        target_value = self.numberSelection[0]
+
+        self.numberSelection.clear()
 
         if not self.__hasPolySeq:
             return
@@ -1236,14 +1248,16 @@ class RosettaMRParserListener(ParseTreeListener):
     def enterBig_bin_restraint(self, ctx: RosettaMRParser.Big_bin_restraintContext):  # pylint: disable=unused-argument
         self.dihedRestraints += 1
 
-        self.stackFuncs = []
-        self.atomSelectionSet = []
+        self.stackFuncs.clear()
+        self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by RosettaMRParser#big_bin_restraint.
     def exitBig_bin_restraint(self, ctx: RosettaMRParser.Big_bin_restraintContext):
         seqId = int(str(ctx.Simple_name()))
         binChar = str(ctx.Simple_name())
-        sDev = float(str(ctx.Float()))
+        sDev = self.numberSelection[0]
+
+        self.numberSelection.clear()
 
         if not self.__hasPolySeq:
             return
@@ -1363,14 +1377,14 @@ class RosettaMRParserListener(ParseTreeListener):
         valid = True
 
         if ctx.CIRCULARHARMONIC() or ctx.HARMONIC() or ctx.SIGMOID() or ctx.SQUARE_WELL():
-            x0 = float(str(ctx.Float(0)))
+            x0 = self.numberFSelection[0]
 
             func['x0'] = x0
 
             if ctx.CIRCULARHARMONIC():  # x0 sd
                 funcType = 'CIRCULARHARMONIC'
 
-                sd = float(str(ctx.Float(1)))
+                sd = self.numberFSelection[1]
 
                 func['sd'] = sd
 
@@ -1386,7 +1400,7 @@ class RosettaMRParserListener(ParseTreeListener):
             elif ctx.HARMONIC():  # x0 sd
                 funcType = 'HARMONIC'
 
-                sd = float(str(ctx.Float(1)))
+                sd = self.numberFSelection[1]
 
                 func['sd'] = sd
 
@@ -1402,7 +1416,7 @@ class RosettaMRParserListener(ParseTreeListener):
             elif ctx.SIGMOID():  # x0 m
                 funcType = 'SIGMOID'
 
-                m = float(str(ctx.Float(1)))
+                m = self.numberFSelection[1]
 
                 func['m'] = m
 
@@ -1414,7 +1428,7 @@ class RosettaMRParserListener(ParseTreeListener):
             else:  # x0 depth
                 funcType = 'SQUARE_WELL'
 
-                depth = float(str(ctx.Float(1)))
+                depth = self.numberFSelection[1]
 
                 func['depth'] = depth
 
@@ -1427,9 +1441,9 @@ class RosettaMRParserListener(ParseTreeListener):
 
         elif ctx.BOUNDED():  # lb ub sd rswitch tag
             funcType = 'BOUNDED'
-            lb = float(str(ctx.Float(0)))
-            ub = float(str(ctx.Float(1)))
-            sd = float(str(ctx.Float(2)))
+            lb = self.numberFSelection[0]
+            ub = self.numberFSelection[1]
+            sd = self.numberFSelection[2]
             rswitch = 0.5
 
             func['name'] = funcType
@@ -1446,8 +1460,8 @@ class RosettaMRParserListener(ParseTreeListener):
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                     f"{funcType} standard deviation 'sd={sd}' must be a positive value.\n"
 
-            if ctx.Float(3):
-                rswitch = float(str(ctx.Float(3)))
+            if len(self.numberFSelection) > 3:
+                rswitch = self.numberFSelection[3]
 
                 func['rswitch'] = rswitch
 
@@ -1467,10 +1481,10 @@ class RosettaMRParserListener(ParseTreeListener):
         elif ctx.PERIODICBOUNDED():  # period lb ub sd rswitch tag
             funcType = 'PERIODICBOUNDED'
 
-            period = float(str(ctx.Float(0)))
-            lb = float(str(ctx.Float(1)))
-            ub = float(str(ctx.Float(2)))
-            sd = float(str(ctx.Float(3)))
+            period = self.numberFSelection[0]
+            lb = self.numberFSelection[1]
+            ub = self.numberFSelection[2]
+            sd = self.numberFSelection[3]
             rswitch = 0.5
 
             func['name'] = funcType
@@ -1492,8 +1506,8 @@ class RosettaMRParserListener(ParseTreeListener):
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                     f"{funcType} standard deviation 'sd={sd}' must be a positive value.\n"
 
-            if ctx.Float(4):
-                rswitch = float(str(ctx.Float(4)))
+            if len(self.numberFSelection) > 4:
+                rswitch = self.numberFSelection[4]
 
                 func['rswitch'] = rswitch
 
@@ -1513,11 +1527,11 @@ class RosettaMRParserListener(ParseTreeListener):
         elif ctx.OFFSETPERIODICBOUNDED():  # offset period lb ub sd rswitch tag
             funcType = 'OFFSETPERIODICBOUNDED'
 
-            offset = float(str(ctx.Float(0)))
-            period = float(str(ctx.Float(1)))
-            lb = float(str(ctx.Float(2)))
-            ub = float(str(ctx.Float(3)))
-            sd = float(str(ctx.Float(4)))
+            offset = self.numberFSelection[0]
+            period = self.numberFSelection[1]
+            lb = self.numberFSelection[2]
+            ub = self.numberFSelection[3]
+            sd = self.numberFSelection[4]
             rswitch = 0.5
 
             func['name'] = funcType
@@ -1540,8 +1554,8 @@ class RosettaMRParserListener(ParseTreeListener):
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                     f"{funcType} standard deviation 'sd={sd}' must be a positive value.\n"
 
-            if ctx.Float(5):
-                rswitch = float(str(ctx.Float(5)))
+            if len(self.numberFSelection) > 5:
+                rswitch = self.numberFSelection[5]
 
                 func['rswitch'] = rswitch
 
@@ -1560,9 +1574,9 @@ class RosettaMRParserListener(ParseTreeListener):
 
         elif ctx.AMBERPERIODIC() or ctx.CHARMMPERIODIC():  # x0 n_period k
             funcType = 'AMBERPERIODIC' if ctx.AMBERPERIODIC() else 'CHARMMPERIODIC'
-            x0 = float(str(ctx.Float(0)))
-            n_period = float(str(ctx.Float(1)))
-            k = float(str(ctx.Float(2)))
+            x0 = self.numberFSelection[0]
+            n_period = self.numberFSelection[1]
+            k = self.numberFSelection[2]
 
             func['name'] = funcType
             func['x0'] = x0
@@ -1578,9 +1592,9 @@ class RosettaMRParserListener(ParseTreeListener):
             funcType = 'FLAT_HARMONIC' if ctx.FLAT_HARMONIC() else 'TOPOUT'
 
             if ctx.FLAT_HARMONIC():  # x0 sd tol
-                x0 = float(str(ctx.Float(0)))
-                sd = float(str(ctx.Float(1)))
-                tol = float(str(ctx.Float(2)))
+                x0 = self.numberFSelection[0]
+                sd = self.numberFSelection[1]
+                tol = self.numberFSelection[2]
 
                 func['x0'] = x0
                 func['sd'] = sd
@@ -1600,9 +1614,9 @@ class RosettaMRParserListener(ParseTreeListener):
                 func['upper_limit'] = x0 + tol + sd
 
             else:  # weight x0 limit
-                weight = float(str(ctx.Float(0)))
-                x0 = float(str(ctx.Float(1)))
-                limit = float(str(ctx.Float(2)))
+                weight = self.numberFSelection[0]
+                x0 = self.numberFSelection[1]
+                limit = self.numberFSelection[2]
 
                 func['weight'] = weight
                 func['x0'] = x0
@@ -1627,10 +1641,10 @@ class RosettaMRParserListener(ParseTreeListener):
             funcType = 'CIRCULARSIGMOIDAL' if ctx.CIRCULARSIGMOIDAL() else 'LINEAR_PENALTY'
 
             if ctx.CIRCULARSIGMOIDAL():  # xC m o1 o2
-                xC = float(str(ctx.Float(0)))
-                m = float(str(ctx.Float(1)))
-                o1 = float(str(ctx.Float(2)))
-                o2 = float(str(ctx.Float(3)))
+                xC = self.numberFSelection[0]
+                m = self.numberFSelection[1]
+                o1 = self.numberFSelection[2]
+                o2 = self.numberFSelection[3]
 
                 func['xC'] = xC
                 func['m'] = m
@@ -1643,10 +1657,10 @@ class RosettaMRParserListener(ParseTreeListener):
                         f"{funcType} periodicity 'm={m}' must not be a negative value.\n"
 
             else:  # x0 depth width slope
-                x0 = float(str(ctx.Float(0)))
-                depth = float(str(ctx.Float(1)))
-                width = float(str(ctx.Float(2)))
-                slope = float(str(ctx.Float(3)))
+                x0 = self.numberFSelection[0]
+                depth = self.numberFSelection[1]
+                width = self.numberFSelection[2]
+                slope = self.numberFSelection[3]
 
                 func['x0'] = x0
                 func['depth'] = depth
@@ -1669,7 +1683,7 @@ class RosettaMRParserListener(ParseTreeListener):
 
         elif ctx.CIRCULARSPLINE():  # weight [36 energy values]
             funcType = 'CIRCULARSPLINE'
-            weight = float(str(ctx.Float(0)))
+            weight = self.numberFSelection[0]
 
             func['name'] = funcType
             func['weight'] = weight
@@ -1679,10 +1693,10 @@ class RosettaMRParserListener(ParseTreeListener):
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                     f"{funcType} 'weight={weight}' must not be a negative value.\n"
 
-            if ctx.Float(36):
+            if len(self.numberFSelection) > 36:
                 func['energy'] = []
                 for i in range(36):
-                    func['energy'].append(float(str(ctx.Float(i + 1))))
+                    func['energy'].append(self.numberFSelection[i + 1])
             else:
                 valid = False
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
@@ -1690,8 +1704,8 @@ class RosettaMRParserListener(ParseTreeListener):
 
         elif ctx.GAUSSIANFUNC():  # mean sd tag WEIGHT weight
             funcType = 'GAUSSIANFUNC'
-            mean = float(str(ctx.Float(0)))
-            sd = float(str(ctx.Float(1)))
+            mean = self.numberFSelection[0]
+            sd = self.numberFSelection[1]
 
             func['name'] = funcType
             func['mean'] = mean
@@ -1704,7 +1718,7 @@ class RosettaMRParserListener(ParseTreeListener):
                     f"{funcType} standard deviation 'sd={sd}' must be a positive value.\n"
 
             if ctx.WEIGHT():
-                weight = float(str(ctx.Float(2)))
+                weight = self.numberFSelection[2]
 
                 func['weight'] = weight
 
@@ -1728,15 +1742,15 @@ class RosettaMRParserListener(ParseTreeListener):
                 valid = False
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                     f"{funcType} the number of Gaussian functions 'n_funcs={n_funcs}' must be a positive value.\n"
-            elif ctx.Float(n_funcs * 3 - 1):
+            elif len(self.numberFSelection) > n_funcs * 3 - 1:
                 func['mean'] = []
                 func['sdev'] = []
                 func['weight'] = []
                 for n in range(n_funcs):
                     p = n * 3
-                    mean = float(str(ctx.Float(p)))
-                    sdev = float(str(ctx.Float(p + 1)))
-                    weight = float(str(ctx.Float(p + 2)))
+                    mean = self.numberFSelection[p]
+                    sdev = self.numberFSelection[p + 1]
+                    weight = self.numberFSelection[p + 2]
 
                     func['mean'].append(mean)
                     func['sdev'].append(sdev)
@@ -1763,12 +1777,12 @@ class RosettaMRParserListener(ParseTreeListener):
         elif ctx.MIXTUREFUNC() or ctx.KARPLUS() or ctx.SOEDINGFUNC():
             if ctx.MIXTUREFUNC():  # anchor gaussian_param exp_param mixture_param bg_mean bg_sd
                 funcType = 'MIXTUREFUNC'
-                anchor = float(str(ctx.Float(0)))
-                gaussian_param = float(str(ctx.Float(1)))
-                exp_param = float(str(ctx.Float(2)))
-                mixture_param = float(str(ctx.Float(3)))
-                bg_mean = float(str(ctx.Float(4)))
-                bg_sd = float(str(ctx.Float(5)))
+                anchor = self.numberFSelection[0]
+                gaussian_param = self.numberFSelection[1]
+                exp_param = self.numberFSelection[2]
+                mixture_param = self.numberFSelection[3]
+                bg_mean = self.numberFSelection[4]
+                bg_sd = self.numberFSelection[5]
 
                 func['name'] = funcType
                 func['anchor'] = anchor
@@ -1797,12 +1811,12 @@ class RosettaMRParserListener(ParseTreeListener):
 
             elif ctx.KARPLUS():  # A B C D x0 sd
                 funcType = 'KARPLUS'
-                A = float(str(ctx.Float(0)))
-                B = float(str(ctx.Float(1)))
-                C = float(str(ctx.Float(2)))
-                D = float(str(ctx.Float(3)))
-                x0 = float(str(ctx.Float(4)))
-                sd = float(str(ctx.Float(5)))
+                A = self.numberFSelection[0]
+                B = self.numberFSelection[1]
+                C = self.numberFSelection[2]
+                D = self.numberFSelection[3]
+                x0 = self.numberFSelection[4]
+                sd = self.numberFSelection[5]
 
                 func['A'] = A
                 func['B'] = B
@@ -1818,12 +1832,12 @@ class RosettaMRParserListener(ParseTreeListener):
 
             else:  # w1 mean1 sd1 w2 mean2 sd2
                 funcType = 'SOEDINGFUNC'
-                w1 = float(str(ctx.Float(0)))
-                mean1 = float(str(ctx.Float(1)))
-                sd1 = float(str(ctx.Float(2)))
-                w2 = float(str(ctx.Float(3)))
-                mean2 = float(str(ctx.Float(4)))
-                sd2 = float(str(ctx.Float(5)))
+                w1 = self.numberFSelection[0]
+                mean1 = self.numberFSelection[1]
+                sd1 = self.numberFSelection[2]
+                w2 = self.numberFSelection[3]
+                mean2 = self.numberFSelection[4]
+                sd2 = self.numberFSelection[5]
 
                 func['w1'] = w1
                 func['mean1'] = mean1
@@ -1851,7 +1865,7 @@ class RosettaMRParserListener(ParseTreeListener):
 
         elif ctx.CONSTANTFUNC():  # return_val
             funcType = 'CONSTANTFUNC'
-            return_val = float(str(ctx.Float(0)))
+            return_val = self.numberFSelection[0]
 
             func['name'] = funcType
             func['return_val'] = return_val
@@ -1861,7 +1875,7 @@ class RosettaMRParserListener(ParseTreeListener):
 
         elif ctx.SCALARWEIGHTEDFUNC():  # weight func_type_def
             funcType = 'SCALARWEIGHTEDFUNC'
-            weight = float(str(ctx.Float(0)))
+            weight = self.numberFSelection[0]
 
             func['name'] = funcType
             func['weight'] = weight
@@ -1896,9 +1910,9 @@ class RosettaMRParserListener(ParseTreeListener):
         elif ctx.SPLINE():  # description (NONE) experimental_value weight bin_size (x_axis val*)+
             funcType = 'SPLINE'
             description = str(ctx.Simple_name(0))
-            experimental_value = float(str(ctx.Float(0)))
-            weight = float(str(ctx.Float(1)))
-            bin_size = float(str(ctx.Float(2)))
+            experimental_value = self.numberFSelection[0]
+            weight = self.numberFSelection[1]
+            bin_size = self.numberFSelection[2]
 
             func['name'] = funcType
             func['description'] = description
@@ -1917,10 +1931,10 @@ class RosettaMRParserListener(ParseTreeListener):
 
         elif ctx.FADE():  # lb ub d wd [ wo ]
             funcType = 'FADE'
-            lb = float(str(ctx.Float(0)))
-            ub = float(str(ctx.Float(1)))
-            d = float(str(ctx.Float(2)))
-            wd = float(str(ctx.Float(3)))
+            lb = self.numberFSelection[0]
+            ub = self.numberFSelection[1]
+            d = self.numberFSelection[2]
+            wd = self.numberFSelection[3]
             wo = 0.0
 
             func['name'] = funcType
@@ -1939,16 +1953,16 @@ class RosettaMRParserListener(ParseTreeListener):
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                     f"{funcType} fade zone 'd={d}' must not be a negative value.\n"
 
-            if ctx.Float(4):
-                wo = float(str(ctx.Float(4)))
+            if len(self.numberFSelection) > 4:
+                wo = self.numberFSelection[4]
 
                 func['wo'] = wo  # well offset
 
         elif ctx.SQUARE_WELL2():  # x0 width depth [DEGREES]
             funcType = 'SQUARE_WELL2'
-            x0 = float(str(ctx.Float(0)))
-            width = float(str(ctx.Float(2)))
-            depth = float(str(ctx.Float(1)))
+            x0 = self.numberFSelection[0]
+            width = self.numberFSelection[2]
+            depth = self.numberFSelection[1]
 
             func['name'] = funcType
             func['x0'] = x0
@@ -1971,8 +1985,8 @@ class RosettaMRParserListener(ParseTreeListener):
 
         elif ctx.ETABLE():  # min max [many numbers]
             funcType = 'ETABLE'
-            _min = float(str(ctx.Float(0)))
-            _max = float(str(ctx.Float(1)))
+            _min = self.numberFSelection[0]
+            _max = self.numberFSelection[1]
 
             func['name'] = funcType
             func['min'] = _min
@@ -1983,7 +1997,7 @@ class RosettaMRParserListener(ParseTreeListener):
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                     f"{funcType} 'min={_min}' must be less than or equal to 'max={_max}'.\n"
 
-            if ctx.Float(2):
+            if len(self.numberFSelection) > 2:
                 pass
             else:
                 valid = False
@@ -2001,13 +2015,13 @@ class RosettaMRParserListener(ParseTreeListener):
                 valid = False
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                     f"{funcType} the number of Gaussian functions 'num_gaussians={num_gaussians}' must be a positive value.\n"
-            elif ctx.Float(num_gaussians * 2 - 1):
+            elif len(self.numberFSelection) > num_gaussians * 2 - 1:
                 func['mean'] = []
                 func['sd'] = []
                 for n in range(num_gaussians):
                     p = n * 2
-                    mean = float(str(ctx.Float(p)))
-                    sd = float(str(ctx.Float(p + 1)))
+                    mean = self.numberFSelection[p]
+                    sd = self.numberFSelection[p + 1]
 
                     func['mean'].append(mean)
                     func['sd'].append(sd)
@@ -2037,15 +2051,15 @@ class RosettaMRParserListener(ParseTreeListener):
                 valid = False
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                     f"{funcType} the number of Gaussian functions 'num_gaussians={num_gaussians}' must be a positive value.\n"
-            elif ctx.Float(num_gaussians * 3 - 1):
+            elif len(self.numberFSelection) > num_gaussians * 3 - 1:
                 func['mean'] = []
                 func['sd'] = []
                 func['weight'] = []
                 for n in range(num_gaussians):
                     p = n * 3
-                    mean = float(str(ctx.Float(p)))
-                    sd = float(str(ctx.Float(p + 1)))
-                    weight = float(str(ctx.Float(p + 2)))
+                    mean = self.numberFSelection[p]
+                    sd = self.numberFSelection[p + 1]
+                    weight = self.numberFSelection[p + 2]
 
                     func['mean'].append(mean)
                     func['sd'].append(sd)
@@ -2072,6 +2086,8 @@ class RosettaMRParserListener(ParseTreeListener):
         if valid:
             self.stackFuncs.append(func)
 
+        self.numberFSelection.clear()
+
     # Enter a parse tree produced by RosettaMRParser#rdc_restraints.
     def enterRdc_restraints(self, ctx: RosettaMRParser.Rdc_restraintsContext):  # pylint: disable=unused-argument
         self.__cur_subtype = 'rdc'
@@ -2084,7 +2100,7 @@ class RosettaMRParserListener(ParseTreeListener):
     def enterRdc_restraint(self, ctx: RosettaMRParser.Rdc_restraintContext):  # pylint: disable=unused-argument
         self.rdcRestraints += 1
 
-        self.atomSelectionSet = []
+        self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by RosettaMRParser#rdc_restraint.
     def exitRdc_restraint(self, ctx: RosettaMRParser.Rdc_restraintContext):
@@ -2093,10 +2109,12 @@ class RosettaMRParserListener(ParseTreeListener):
             atomId1 = str(ctx.Simple_name(0)).upper()
             seqId2 = int(str(ctx.Integer(1)))
             atomId2 = str(ctx.Simple_name(1)).upper()
-            target_value = float(str(ctx.Float()))
+            target_value = self.numberSelection[0]
         except ValueError:
             self.rdcRestraints -= 1
             return
+        finally:
+            self.numberSelection.clear()
 
         validRange = True
         dstFunc = {'weight': 1.0}
@@ -2237,7 +2255,7 @@ class RosettaMRParserListener(ParseTreeListener):
     def enterDisulfide_bond_linkage(self, ctx: RosettaMRParser.Disulfide_bond_linkageContext):  # pylint: disable=unused-argument
         self.geoRestraints += 1
 
-        self.atomSelectionSet = []
+        self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by RosettaMRParser#disulfide_bond_linkage.
     def exitDisulfide_bond_linkage(self, ctx: RosettaMRParser.Disulfide_bond_linkageContext):
@@ -2278,6 +2296,28 @@ class RosettaMRParserListener(ParseTreeListener):
             if self.__debug:
                 print(f"subtype={self.__cur_subtype} (CS-ROSETTA: disulfide bond linkage) id={self.geoRestraints} "
                       f"atom1={atom1} atom2={atom2}")
+
+    # Enter a parse tree produced by RosettaMRParser#number.
+    def enterNumber(self, ctx: RosettaMRParser.NumberContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by RosettaMRParser#number.
+    def exitNumber(self, ctx: RosettaMRParser.NumberContext):
+        if ctx.Float():
+            self.numberSelection.append(float(str(ctx.Float())))
+        else:
+            self.numberSelection.append(float(str(ctx.Integer())))
+
+    # Enter a parse tree produced by RosettaMRParser#number_f.
+    def enterNumber_f(self, ctx: RosettaMRParser.Number_fContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by RosettaMRParser#number_f.
+    def exitNumber_f(self, ctx: RosettaMRParser.Number_fContext):
+        if ctx.Float():
+            self.numberFSelection.append(float(str(ctx.Float())))
+        else:
+            self.numberFSelection.append(float(str(ctx.Integer())))
 
     def __getCurrentRestraint(self):
         if self.__cur_subtype == 'dist':

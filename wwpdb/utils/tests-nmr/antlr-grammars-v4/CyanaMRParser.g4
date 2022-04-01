@@ -34,7 +34,7 @@ distance_restraints:
 distance_restraint:
 	Integer Simple_name Simple_name
 	Integer Simple_name Simple_name
-	Float;
+	number;
 
 /* CYANA 3.0 Reference Manual - Torsion angle restraint file
  See also http://www.cyana.org/wiki/index.php/Torsion_angle_restraint_file
@@ -43,7 +43,7 @@ torsion_angle_restraints:
 	torsion_angle_restraint+;
 
 torsion_angle_restraint:
-	Integer Simple_name Simple_name Float Float;
+	Integer Simple_name Simple_name number number;
 
 /* CYANA 3.0 Reference Manual - Residual dipolar coupling restraint file
  See also http://www.cyana.org/wiki/index.php/Residual_dipolar_coupling_restraint_file
@@ -58,7 +58,7 @@ rdc_parameter:
 rdc_restraint:
 	Integer Simple_name Simple_name
 	Integer Simple_name Simple_name
-	Float Float Float Integer;
+	number number number Integer;
 
 /* CYANA 3.0 Reference Manual - Pseudocontact shift restraint file
  See also http://www.cyana.org/wiki/index.php/Pseudocontact_shift_restraint_file
@@ -72,5 +72,8 @@ pcs_parameter:
 
 pcs_restraint:
 	Integer Simple_name Simple_name
-	Float Float Float Integer;
+	number number number Integer;
+
+/* number expression in restrains */
+number:	Float | Integer;
 

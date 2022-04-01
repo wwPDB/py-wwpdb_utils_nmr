@@ -129,33 +129,33 @@ hbond_restraint:
 */
 noe_statement:
 	noe_assign* |
-	Asymptote Simple_names Real |
+	Asymptote Simple_names number_s |
 	Averaging Simple_names Noe_avr_methods |
-	Bhig Simple_names Real |
-	Ceiling Equ_op Real |
+	Bhig Simple_names number_s |
+	Ceiling Equ_op number_s |
 	Classification Simple_name |
 	CountViol Simple_name |
-	Distribute Simple_name Simple_name Real |
+	Distribute Simple_name Simple_name number_s |
 	Monomers Simple_names Integer |
 	Ncount Simple_names Integer |
 	Nrestraints Equ_op Integer |
 	Potential Simple_names Noe_potential |
 	Predict predict_statement End |
-	Print Threshold Equ_op? Real |
+	Print Threshold Equ_op? number_s |
 	Reset |
-	Rswitch Simple_names Real |
-	Scale Simple_names Real |
-	SoExponent Simple_names Real |
-	SqConstant Simple_names Real |
-	SqExponent Simple_names Real |
-	SqOffset Simple_names Real |
-	Temperature Equ_op Real;
+	Rswitch Simple_names number_s |
+	Scale Simple_names number_s |
+	SoExponent Simple_names number_s |
+	SqConstant Simple_names number_s |
+	SqExponent Simple_names number_s |
+	SqOffset Simple_names number_s |
+	Temperature Equ_op number_s;
 
 noe_assign:
-	Assign selection selection (Real | Integer) Real Real (Or_op selection selection)*;
+	Assign selection selection number number number (Or_op selection selection)*;
 
 predict_statement:
-	Cutoff Equ_op Real | Cuton Equ_op Real | From selection | To selection;
+	Cutoff Equ_op number_s | Cuton Equ_op number_s | From selection | To selection;
 
 /* XPLOR-NIH: Dihedral angle restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/cdih_syntax.html
@@ -164,10 +164,10 @@ dihedral_statement:
 	dihedral_assign* |
 	Nassign Equ_op Integer |
 	Reset |
-	Scale Real;
+	Scale number_s;
 
 dihedral_assign:
-	Assign selection selection selection selection (Real | Integer) Real Real Integer;
+	Assign selection selection selection selection number number number Integer;
 
 /* XPLOR-NIH: Residual Dipolar Couplings - Syntax (SANI - Susceptibility anisotropy)
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node418.html
@@ -175,15 +175,15 @@ dihedral_assign:
 sani_statement:
 	sani_assign* |
 	Classification Simple_name |
-	Coefficients Real Real Real |
-	ForceConstant Real |
+	Coefficients number_s number_s number_s |
+	ForceConstant number_s |
 	Nrestraints Integer |
 	Potential Rdc_potential |
-	Print Threshold Real |
+	Print Threshold number_s |
 	Reset;
 
 sani_assign:
-	Assign selection selection selection selection selection selection (Real | Integer) Real Real?;
+	Assign selection selection selection selection selection selection number number number?;
 
 /* XPLOR-NIH: Residual Dipolar Couplings - Syntax (XDIP)
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node419.html
@@ -192,18 +192,18 @@ xdip_statement:
 	xdip_assign* |
 	Classification Simple_name |
 	Type Rdc_dist_fix_types |
-	Scale Real |
+	Scale number_s |
 	Sign Logical |
 	Average Rdc_avr_methods |
-	Coefficients Real Real Real |
-	ForceConstant Real |
+	Coefficients number_s number_s number_s |
+	ForceConstant number_s |
 	Nrestraints Integer |
 	Potential Rdc_potential |
-	Print Threshold Real |
+	Print Threshold number_s |
 	Reset;
 
 xdip_assign:
-	Assign selection selection selection selection selection selection Real Real (Real | Real Real Real Real)?;
+	Assign selection selection selection selection selection selection number number (number | number number number number)?;
 
 /* XPLOR-NIH: Residual Dipolar Couplings - Syntax (VEAN)
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node420.html
@@ -212,14 +212,14 @@ vean_statement:
 	vean_assign* |
 	Cv Equ_op Integer |
 	Classification Simple_name |
-	ForceConstant Real Real |
+	ForceConstant number_s number_s |
 	Nrestraints Integer |
 	Partition Equ_op Integer |
-	Print Threshold Real |
+	Print Threshold number_s |
 	Reset;
 
 vean_assign:
-	Assign selection selection selection selection Real Real Real Real;
+	Assign selection selection selection selection number number number number;
 
 /* XPLOR-NIH: Residual Dipolar Couplings - Syntax (TENSO)
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node421.html
@@ -227,14 +227,14 @@ vean_assign:
 tenso_statement:
 	tenso_assign* |
 	Classification Simple_name |
-	Coefficients Real |
+	Coefficients number_s |
 	Nrestraints Integer |
 	Potential Rdc_potential |
-	Print Threshold Real |
+	Print Threshold number_s |
 	Reset;
 
 tenso_assign:
-	Assign selection selection Real Real;
+	Assign selection selection number number;
 
 /* XPLOR-NIH: Residual Dipolar Couplings - Syntax (ANIS)
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node422.html
@@ -242,16 +242,16 @@ tenso_assign:
 anis_statement:
 	anis_assign* |
 	Classification Simple_name |
-	Coefficients Real Real Real Real |
-	ForceConstant Real |
+	Coefficients number_s number_s number_s number_s |
+	ForceConstant number_s |
 	Nrestraints Integer |
 	Potential Rdc_potential |
-	Print Threshold Real |
+	Print Threshold number_s |
 	Reset |
 	Type Rdc_anis_types;
 
 anis_assign:
-	Assign selection selection selection selection Real Real;
+	Assign selection selection selection selection number number;
 
 /* XPLOR-NIH: Planality restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/plan_syntax.html
@@ -262,7 +262,7 @@ planar_statement:
 
 group_statement:
 	Selection Equ_op selection |
-	Weight Equ_op (Real | Integer);
+	Weight Equ_op number_s;
 
 /* XPLOR-NIH: Antidiatance restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node398.html
@@ -270,12 +270,12 @@ group_statement:
 antidistance_statement:
 	xadc_assign* |
 	Classification Simple_name |
-	Expectation Integer Real |
-	ForceConstant Real |
+	Expectation Integer number_s |
+	ForceConstant number_s |
 	Nrestraints Integer |
-	Print Threshold Real (All | (Classification Simple_name)) |
+	Print Threshold number_s (All | (Classification Simple_name)) |
 	Reset |
-	Size Real Integer |
+	Size number_s Integer |
 	Zero;
 
 xadc_assign:
@@ -287,18 +287,18 @@ xadc_assign:
 coupling_statement:
 	coup_assign* |
 	Classification Simple_name |
-	Coefficients Real Real Real Real |
+	Coefficients number_s number_s number_s number_s |
 	Cv Equ_op Integer |
 	DegEnergy Integer |
-	ForceConstant Real Real? |
+	ForceConstant number_s number_s? |
 	Nrestraints Integer |
 	Partition Equ_op Integer |
 	Potential Coupling_potential |
-	Print Threshold Real (All | (Classification Simple_name)) |
+	Print Threshold number_s (All | (Classification Simple_name)) |
 	Reset;
 
 coup_assign:
-	Assign selection selection selection selection (selection selection selection selection)? Real Real (Real Real)?;
+	Assign selection selection selection selection (selection selection selection selection)? number number (number number)?;
 
 /* XPLOR-NIH: Carbon chemical shift restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node404.html
@@ -306,22 +306,22 @@ coup_assign:
 carbon_shift_statement:
 	carbon_shift_assign* |
 	Classification Simple_name |
-	Expectation Integer Integer Real Real Real |
-	ForceConstant Real |
+	Expectation Integer Integer number_s number_s number_s |
+	ForceConstant number_s |
 	Nrestraints Integer |
-	PhiStep Real |
-	PsiStep Real |
+	PhiStep number_s |
+	PsiStep number_s |
 	Potential Rdc_potential |
-	Print Threshold Real |
+	Print Threshold number_s |
 	carbon_shift_rcoil* |
 	Reset |
 	Zero;
 
 carbon_shift_assign:
-	Assign selection selection selection selection selection Real Real;
+	Assign selection selection selection selection selection number number;
 
 carbon_shift_rcoil:
-	Rcoil selection Real Real;
+	Rcoil selection number_s number_s;
 
 /* XPLOR-NIH: Proton chemical shift restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node407.html
@@ -337,18 +337,18 @@ proton_shift_statement:
 	proton_shift_ring_atoms* |
 	proton_shift_alphas_and_amides* |
 	Classification Simple_name |
-	Error Real |
+	Error number_s |
 	DegEnergy Integer |
-	ForceConstant Real Real? |
+	ForceConstant number_s number_s? |
 	Potential Coupling_potential |
-	Print Threshold Real (All | (Classification Simple_name)) Simple_name |
+	Print Threshold number_s (All | (Classification Simple_name)) Simple_name |
 	Reset;
 
 observed:
-	Observed selection selection? Real Real?;
+	Observed selection selection? number_s number_s?;
 
 proton_shift_rcoil:
-	Rcoil selection Real;
+	Rcoil selection number_s;
 
 proton_shift_anisotropy:
 	Anisotropy selection selection selection Simple_name Logical? Simple_name;
@@ -377,17 +377,17 @@ proton_shift_alphas_and_amides:
 ramachandran_statement:
 	rama_assign* |
 	Classification Simple_name |
-	Cutoff Real |
-	ForceConstant Real |
-	Gaussian Real Real Real (Real Real Real)? (Real Real Real)? (Real Real Real)? |
+	Cutoff number_s |
+	ForceConstant number_s |
+	Gaussian number_s number_s number_s (number_s number_s number_s)? (number_s number_s number_s)? (number_s number_s number_s)? |
 	Nrestraints Integer |
-	Phase Real Real Real (Real Real Real)? (Real Real Real)? (Real Real Real)? |
-	Print Threshold Real (All | (Classification Simple_name)) |
-	Quartic Real Real Real (Real Real Real)? (Real Real Real)? (Real Real Real)? |
+	Phase number_s number_s number_s (number_s number_s number_s)? (number_s number_s number_s)? (number_s number_s number_s)? |
+	Print Threshold number_s (All | (Classification Simple_name)) |
+	Quartic number_s number_s number_s (number_s number_s number_s)? (number_s number_s number_s)? (number_s number_s number_s)? |
 	Reset |
-	Scale Real |
+	Scale number_s |
 	Shape Gauss_or_Quart |
-	Size Dimensions Real Real? Real? Real? |
+	Size Dimensions number_s number_s? number_s? number_s? |
 	Sort |
 	Zero;
 
@@ -399,12 +399,12 @@ rama_assign:
 */
 collapse_statement:
 	coll_assign* |
-	Scale Real |
+	Scale number_s |
 	Print |
 	Reset;
 
 coll_assign:
-	Assign selection Real Real;
+	Assign selection number number;
 
 /* XPLOR-NIH: Diffusion anisotropy restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node415.html
@@ -412,16 +412,16 @@ coll_assign:
 diffusion_statement:
 	dani_assign* |
 	Classification Simple_name |
-	Coefficients Real Real Real Real Real |
-	ForceConstant Real |
+	Coefficients number_s number_s number_s number_s number_s |
+	ForceConstant number_s |
 	Nrestraints Integer |
 	Potential Rdc_potential |
-	Print Threshold Real |
+	Print Threshold number_s |
 	Reset |
 	Type Diff_anis_types;
 
 dani_assign:
-	Assign selection selection selection selection selection selection Real Real;
+	Assign selection selection selection selection selection selection number number;
 
 /* XPLOR-NIH: Residue-residue position/orientation database restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node425.html
@@ -429,18 +429,18 @@ dani_assign:
 orientation_statement:
 	orie_assign* |
 	Classification Simple_name |
-	Cutoff Real |
-	Height Real |
-	ForceConstant Real |
-	Gaussian Real Real Real Real Real Real Real |
+	Cutoff number_s |
+	Height number_s |
+	ForceConstant number_s |
+	Gaussian number_s number_s number_s number_s number_s number_s number_s |
 	MaxGaussians Integer |
-	NewGaussian Real Real Real Real Real Real Real Real |
+	NewGaussian number_s number_s number_s number_s number_s number_s number_s number_s |
 	Nrestraints Integer |
-	Print Threshold Real (All | (Classification Simple_name)) |
-	Quartic Real Real Real Real Real Real Real |
+	Print Threshold number_s (All | (Classification Simple_name)) |
+	Quartic number_s number_s number_s number_s number_s number_s number_s |
 	Reset |
 	Residue Integer |
-	Size Real Real |
+	Size number_s number_s |
 	Zero;
 
 orie_assign:
@@ -452,18 +452,18 @@ orie_assign:
 csa_statement:
 	csa_assign* |
 	Classification Simple_name |
-	Scale Real |
+	Scale number_s |
 	Type Csa_types |
-	Coefficients Real Real Real |
-	Sigma Real Real Real |
-	ForceConstant Real |
+	Coefficients number_s number_s number_s |
+	Sigma number_s number_s number_s |
+	ForceConstant number_s |
 	Nrestraints Integer |
 	Potential Rdc_potential |
-	Print Threshold Real |
+	Print Threshold number_s |
 	Reset;
 
 csa_assign:
-	Assign selection selection selection selection selection selection selection Real Real Real;
+	Assign selection selection selection selection selection selection selection number number number;
 
 /* XPLOR-NIH: Pseudo chemical shift anisotropy restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node430.html
@@ -471,13 +471,13 @@ csa_assign:
 pcsa_statement:
 	csa_assign* |
 	Classification Simple_name |
-	Scale Real |
-	Coefficients Real Real Real |
-	Sigma Real Real Real Real |
-	ForceConstant Real |
+	Scale number_s |
+	Coefficients number_s number_s number_s |
+	Sigma number_s number_s number_s number_s |
+	ForceConstant number_s |
 	Nrestraints Integer |
 	Potential Rdc_potential |
-	Print Threshold Real |
+	Print Threshold number_s |
 	Reset;
 
 /* XPLOR-NIH: One-bond coupling restraints - Syntax
@@ -486,15 +486,15 @@ pcsa_statement:
 one_bond_coupling_statement:
 	one_bond_assign* |
 	Classification Simple_name |
-	Coefficients Real Real Real Real Real Real Real |
-	ForceConstant Real |
+	Coefficients number_s number_s number_s number_s number_s number_s number_s |
+	ForceConstant number_s |
 	Nrestraints Integer |
 	Potential Rdc_potential |
-	Print Threshold Real |
+	Print Threshold number_s |
 	Reset;
 
 one_bond_assign:
-	Assign selection selection selection selection selection selection selection selection Real Real;
+	Assign selection selection selection selection selection selection selection selection number number;
 
 /* XPLOR-NIH: Angle database restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node435.html
@@ -503,12 +503,12 @@ angle_db_statement:
 	angle_db_assign* |
 	Classification Simple_name |
 	DerivFlag Simple_name |
-	Expectation Integer Integer Real |
-	Error Real |
-	ForceConstant Real |
+	Expectation Integer Integer number_s |
+	Error number_s |
+	ForceConstant number_s |
 	Nrestraints Integer |
 	Potential Rdc_potential |
-	Print Threshold Real (All | (Classification Simple_name)) |
+	Print Threshold number_s (All | (Classification Simple_name)) |
 	Reset |
 	Size Angle_dihedral Integer Integer |
 	Zero;
@@ -522,18 +522,18 @@ angle_db_assign:
 pre_statement:
 	pre_assign* |
 	Classification Equ_op Simple_name |
-	ForceConstant Equ_op Simple_name Real |
+	ForceConstant Equ_op Simple_name number_s |
 	Nrestraints Equ_op Integer |
 	Potential Equ_op Simple_name Rdc_potential |
-	Kconst Equ_op Simple_name Real |
-	Omega Equ_op Simple_name Real |
-	Tauc Equ_op Simple_name Real Real |
-	Print Threshold Real (All | (Classification Simple_name)) |
+	Kconst Equ_op Simple_name number_s |
+	Omega Equ_op Simple_name number_s |
+	Tauc Equ_op Simple_name number_s number_s |
+	Print Threshold number_s (All | (Classification Simple_name)) |
 	Reset |
 	Debug;
 
 pre_assign:
-	Assign selection selection Real Real;
+	Assign selection selection number number;
 
 /* XPLOR-NIH: Paramagnetic pseudocontact shift restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node442.html
@@ -542,13 +542,13 @@ pcs_statement:
 	pcs_assign* |
 	Classification Simple_name |
 	Tolerance Integer |
-	Coefficients Real Real |
-	ForceConstant Real |
+	Coefficients number_s number_s |
+	ForceConstant number_s |
 	Nrestraints Integer |
-	Print Threshold Real (All | (Classification Simple_name)) |
+	Print Threshold number_s (All | (Classification Simple_name)) |
 	Reset |
 	Save Simple_name |
-	Fmed Real Integer |
+	Fmed number_s Integer |
 	ErrOn |
 	ErrOff |
 	Fon |
@@ -558,7 +558,7 @@ pcs_statement:
 	Frun Integer;
 
 pcs_assign:
-	Assign selection selection selection selection selection Real Real;
+	Assign selection selection selection selection selection number number;
 
 /* XPLOR-NIH: Paramagnetic residual dipolar coupling restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node445.html
@@ -567,8 +567,8 @@ prdc_statement:
 	prdc_assign* |
 	Classification Simple_name |
 	Tolerance Integer |
-	Coefficients Real Real |
-	ForceConstant Real |
+	Coefficients number_s number_s |
+	ForceConstant number_s |
 	Nrestraints Integer |
 	ErrOn |
 	ErrOff |
@@ -583,7 +583,7 @@ prdc_statement:
 	Soff;
 
 prdc_assign:
-	Assign selection selection selection selection selection selection Real Real;
+	Assign selection selection selection selection selection selection number number;
 
 /* XPLOR-NIH: Paramagnetic orientation restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node448.html
@@ -591,13 +591,13 @@ prdc_assign:
 porientation_statement:
 	porientation_assign* |
 	Classification Simple_name |
-	ForceConstant Real |
+	ForceConstant number_s |
 	Nrestraints Integer |
-	Print Threshold Real |
+	Print Threshold number_s |
 	Reset;
 
 porientation_assign:
-	Assign selection selection Real Real Real;
+	Assign selection selection number number number;
 
 /* XPLOR-NIH: Paramagnetic cross-correlation rate restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node450.html
@@ -606,15 +606,15 @@ pccr_statement:
 	pccr_assign* |
 	Classification Simple_name |
 	Weip Integer |
-	Coefficients Real |
-	ForceConstant Real |
+	Coefficients number_s |
+	ForceConstant number_s |
 	Nrestraints Integer |
-	Print Threshold Real |
+	Print Threshold number_s |
 	Reset |
 	Frun Integer;
 
 pccr_assign:
-	Assign selection selection selection Real Real;
+	Assign selection selection selection number number;
 
 /* XPLOR-NIH: Hydrogen bond geometry restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node452.html
@@ -622,9 +622,9 @@ pccr_assign:
 hbond_statement:
 	hbond_assign* |
 	Classification Simple_name |
-	ForceConstant Real |
+	ForceConstant number_s |
 	Nrestraints Integer |
-	Print Threshold Real |
+	Print Threshold number_s |
 	Reset;
 
 hbond_assign:
@@ -645,9 +645,9 @@ term:
 factor:
 	L_paren selection_expression R_paren |
 	All |
-	factor Around Real |
+	factor Around number_f |
 	Atom (Simple_names | Simple_name) (Integers | Integer) (Simple_names | Simple_name) |
-	Attribute Abs? Attr_properties Comparison_ops Real |
+	Attribute Abs? Attr_properties Comparison_ops number_f |
 	BondedTo factor |
 	ByGroup factor |
 	ByRes factor |
@@ -657,13 +657,13 @@ factor:
 	Known |
 	Name (Simple_names | Simple_name (Colon Simple_name)?) |
 	Not_op factor |
-	Point L_paren Real Comma? Real Comma? Real R_paren Cut Real |
-	Point L_paren Tail Equ_op selection Comma? (Head Equ_op selection)? R_paren Cut Real |
+	Point L_paren number_f Comma? number_f Comma? number_f R_paren Cut number_f |
+	Point L_paren Tail Equ_op selection Comma? (Head Equ_op selection)? R_paren Cut number_f |
 	Previous |
 	Pseudo |
 	Residue (Integers | Integer (Colon Integer)?) |
 	Resname (Simple_names | Simple_name (Colon Simple_name)?) |
-	factor Saround Real |
+	factor Saround number_f |
 	SegIdentifier (Simple_names | Simple_name (Colon Simple_name)? | Double_quote_string (Colon Double_quote_string)?) |
 	Store_1 | Store_2 | Store_3 | Store_4 | Store_5 | Store_6 | Store_7 | Store_8 | Store_9 |
 	Tag;
@@ -672,6 +672,17 @@ factor:
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node15.html
 
 vector_3d:
-	L_paren Real Comma? Real Comma? Real R_paren |
+	L_paren number_f Comma? number_f Comma? number_f R_paren |
 	L_paren Tail Equ_op selection Comma? (Head Equ_op selection)? R_paren;
 */
+
+/* number expression in assign */
+number:	Real | Integer;
+
+/* number expression in factor */
+number_f:
+	Real | Integer;
+
+number_s:
+	Real | Integer;
+

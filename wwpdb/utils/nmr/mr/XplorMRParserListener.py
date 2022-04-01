@@ -282,7 +282,13 @@ class XplorMRParserListener(ParseTreeListener):
     coefficients = None
 
     # collection of atom selection
-    atomSelectionSet = None
+    atomSelectionSet = []
+
+    # collection of number selection
+    numberSelection = []
+
+    # collection of number selection in factor
+    numberFSelection = []
 
     warningMessage = ''
 
@@ -563,28 +569,28 @@ class XplorMRParserListener(ParseTreeListener):
                 self.noePotential = '3dpo'
 
         elif ctx.SqExponent():
-            self.squareExponent = float(str(ctx.Real()))
+            self.squareExponent = self.getNumber_s(ctx.number_s())
             if self.squareExponent <= 0.0:
                 self.warningMessage += "[Invalid data] "\
                     "The exponent value of square-well or soft-square function "\
                     f"NOE {str(ctx.SqExponent())} {str(ctx.Simple_names())} {self.squareExponent} END' must be a positive value.\n"
 
         elif ctx.SqOffset():
-            self.squareOffset = float(str(ctx.Real()))
+            self.squareOffset = self.getNumber_s(ctx.number_s())
             if self.squareOffset < 0.0:
                 self.warningMessage += "[Invalid data] "\
                     "The offset value of square-well or soft-square function "\
                     f"NOE {str(ctx.SqOffset())} {str(ctx.Simple_names())} {self.squareOffset} END' must not be a negative value.\n"
 
         elif ctx.Rswitch():
-            self.rSwitch = float(str(ctx.Real()))
+            self.rSwitch = self.getNumber_s(ctx.number_s())
             if self.rSwitch < 0.0:
                 self.warningMessage += "[Invalid data] "\
                     "The smoothing parameter of soft-square function "\
                     f"NOE {str(ctx.Rswitch())} {str(ctx.Simple_names())} {self.rSwitch} END' must not be a negative value.\n"
 
         elif ctx.Scale():
-            self.scale = float(str(ctx.Real()))
+            self.scale = self.getNumber_s(ctx.number_s())
             if self.scale <= 0.0:
                 self.warningMessage += "[Invalid data] "\
                     f"The scale value 'NOE {str(ctx.Scale())} {str(ctx.Simple_names())} {self.scale} END' must be a positive value.\n"
@@ -612,18 +618,15 @@ class XplorMRParserListener(ParseTreeListener):
         self.distRestraints += 1
         self.__cur_subtype = 'dist'
 
-        self.atomSelectionSet = []
+        self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by XplorMRParser#noe_assign.
-    def exitNoe_assign(self, ctx: XplorMRParser.Noe_assignContext):
-        if ctx.Integer():
-            target = float(str(ctx.Integer()))
-            dminus = float(str(ctx.Real(0)))
-            dplus = float(str(ctx.Real(1)))
-        else:
-            target = float(str(ctx.Real(0)))
-            dminus = float(str(ctx.Real(1)))
-            dplus = float(str(ctx.Real(2)))
+    def exitNoe_assign(self, ctx: XplorMRParser.Noe_assignContext):  # pylint: disable=unused-argument
+        target = self.numberSelection[0]
+        dminus = self.numberSelection[1]
+        dplus = self.numberSelection[2]
+
+        self.numberSelection.clear()
 
         target_value = target
         lower_limit = None
@@ -803,7 +806,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by XplorMRParser#dihedral_statement.
     def enterDihedral_statement(self, ctx: XplorMRParser.Dihedral_statementContext):
         if ctx.Scale():
-            self.scale = float(str(ctx.Real()))
+            self.scale = self.getNumber_s(ctx.number_s())
             if self.scale <= 0.0:
                 self.warningMessage += "[Invalid data] "\
                     f"The scale value 'RESTRAINT DIHEDRAL {str(ctx.Scale())} {self.scale} END' must be a positive value.\n"
@@ -820,20 +823,16 @@ class XplorMRParserListener(ParseTreeListener):
         self.dihedRestraints += 1
         self.__cur_subtype = 'dihed'
 
-        self.atomSelectionSet = []
+        self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by XplorMRParser#dihedral_assign.
     def exitDihedral_assign(self, ctx: XplorMRParser.Dihedral_assignContext):
-        if ctx.Integer(1):
-            energyConst = float(str(ctx.Integer(0)))
-            target = float(str(ctx.Real(0)))
-            delta = abs(float(str(ctx.Real(1))))
-            exponent = int(str(ctx.Integer(1)))
-        else:
-            energyConst = float(str(ctx.Real(0)))
-            target = float(str(ctx.Real(1)))
-            delta = abs(float(str(ctx.Real(2))))
-            exponent = int(str(ctx.Integer(0)))
+        energyConst = self.numberSelection[0]
+        target = self.numberSelection[1]
+        delta = abs(self.numberSelection[2])
+        exponent = int(str(ctx.Integer()))
+
+        self.numberSelection.clear()
 
         if energyConst <= 0.0:
             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
@@ -1021,9 +1020,9 @@ class XplorMRParserListener(ParseTreeListener):
             self.classification = str(ctx.Simple_name())
 
         elif ctx.Coefficients():
-            self.coefficients = {'DFS': float(str(ctx.Real(0))),
-                                 'anisotropy': float(str(ctx.Real(1))),
-                                 'rhombicity': float(str(ctx.Real(2)))
+            self.coefficients = {'DFS': self.getNumber_s(ctx.number_s(0)),
+                                 'anisotropy': self.getNumber_s(ctx.number_s(1)),
+                                 'rhombicity': self.getNumber_s(ctx.number_s(2))
                                  }
 
     # Exit a parse tree produced by XplorMRParser#sani_statement.
@@ -1037,18 +1036,12 @@ class XplorMRParserListener(ParseTreeListener):
         self.rdcRestraints += 1
         self.__cur_subtype = 'rdc'
 
-        self.atomSelectionSet = []
+        self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by XplorMRParser#sani_assign.
-    def exitSani_assign(self, ctx: XplorMRParser.Sani_assignContext):
-        if ctx.Integer():
-            target = float(str(ctx.Integer()))
-            delta = abs(float(str(ctx.Real(0))))
-            n = 1
-        else:
-            target = float(str(ctx.Real(0)))
-            delta = abs(float(str(ctx.Real(1))))
-            n = 2
+    def exitSani_assign(self, ctx: XplorMRParser.Sani_assignContext):  # pylint: disable=unused-argument
+        target = self.numberSelection[0]
+        delta = abs(self.numberSelection[1])
 
         target_value = target
         lower_limit = None
@@ -1057,11 +1050,13 @@ class XplorMRParserListener(ParseTreeListener):
         if self.potential == 'square':
             lower_limit = target - delta
             upper_limit = target + delta
-            if ctx.Real(n):
+            if len(self.numberSelection) > 2:
                 error_grater = delta
-                error_less = abs(float(str(ctx.Real(2))))
+                error_less = abs(self.numberSelection[2])
                 lower_limit = target - error_less
                 upper_limit = target + error_grater
+
+        self.numberSelection.clear()
 
         dstFunc = self.validateRdcRange(1.0, {'potential': self.potential},
                                         target_value, lower_limit, upper_limit)
@@ -1254,7 +1249,7 @@ class XplorMRParserListener(ParseTreeListener):
                 self.average = 'average'
 
         elif ctx.Scale():
-            self.scale = float(str(ctx.Real(0)))
+            self.scale = self.getNumber_s(ctx.number_s(0))
 
         elif ctx.Reset():
             self.potential = 'square'
@@ -1266,9 +1261,9 @@ class XplorMRParserListener(ParseTreeListener):
             self.classification = str(ctx.Simple_name())
 
         elif ctx.Coefficients():
-            self.coefficients = {'DFS': float(str(ctx.Real(0))),
-                                 'anisotropy': float(str(ctx.Real(1))),
-                                 'rhombicity': float(str(ctx.Real(2)))
+            self.coefficients = {'DFS': self.getNumber_s(ctx.number_s(0)),
+                                 'anisotropy': self.getNumber_s(ctx.number_s(1)),
+                                 'rhombicity': self.getNumber_s(ctx.number_s(2))
                                  }
 
     # Exit a parse tree produced by XplorMRParser#xdip_statement.
@@ -1282,60 +1277,65 @@ class XplorMRParserListener(ParseTreeListener):
         self.rdcRestraints += 1
         self.__cur_subtype = 'rdc'
 
-        self.atomSelectionSet = []
+        self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by XplorMRParser#xdip_assign.
-    def exitXdip_assign(self, ctx: XplorMRParser.Xdip_assignContext):
-        target = float(str(ctx.Real(0)))
-        delta = abs(float(str(ctx.Real(1))))
+    def exitXdip_assign(self, ctx: XplorMRParser.Xdip_assignContext):  # pylint: disable=unused-argument
+        target = self.numberSelection[0]
+        delta = abs(self.numberSelection[1])
 
-        if ctx.Real(3):
-            lower_limit_1 = None
-            upper_limit_1 = None
-            lower_limit_2 = None
-            upper_limit_2 = None
+        try:
 
-            target_value_1 = float(str(ctx.Real(0)))
-            target_value_2 = float(str(ctx.Real(3)))
-            error_grater_1 = abs(float(str(ctx.Real(1))))
-            error_less_1 = abs(float(str(ctx.Real(2))))
-            error_grater_2 = abs(float(str(ctx.Real(4))))
-            error_less_2 = abs(float(str(ctx.Real(5))))
+            if len(self.numberSelection) > 3:
+                lower_limit_1 = None
+                upper_limit_1 = None
+                lower_limit_2 = None
+                upper_limit_2 = None
 
-            if self.potential == 'square':
-                lower_limit_1 = target_value_1 - error_less_1
-                upper_limit_1 = target_value_1 + error_grater_1
-                lower_limit_2 = target_value_2 - error_less_2
-                upper_limit_2 = target_value_2 + error_grater_2
+                target_value_1 = self.numberSelection[0]
+                target_value_2 = self.numberSelection[3]
+                error_grater_1 = abs(self.numberSelection[1])
+                error_less_1 = abs(self.numberSelection[2])
+                error_grater_2 = abs(self.numberSelection[4])
+                error_less_2 = abs(self.numberSelection[5])
 
-            dstFunc = self.validateRdcRange2(self.scale, {'potential': self.potential, 'average': self.average},
-                                             target_value_1, lower_limit_1, upper_limit_1,
-                                             target_value_2, lower_limit_2, upper_limit_2)
+                if self.potential == 'square':
+                    lower_limit_1 = target_value_1 - error_less_1
+                    upper_limit_1 = target_value_1 + error_grater_1
+                    lower_limit_2 = target_value_2 - error_less_2
+                    upper_limit_2 = target_value_2 + error_grater_2
 
-            if dstFunc is None:
-                return
+                dstFunc = self.validateRdcRange2(self.scale, {'potential': self.potential, 'average': self.average},
+                                                 target_value_1, lower_limit_1, upper_limit_1,
+                                                 target_value_2, lower_limit_2, upper_limit_2)
 
-        else:
-            lower_limit = None
-            upper_limit = None
+                if dstFunc is None:
+                    return
 
-            if self.potential == 'square':
-                target_value = target
-                lower_limit = target - delta
-                upper_limit = target + delta
-                if ctx.Real(2):
-                    error_grater = delta
-                    error_less = abs(float(str(ctx.Real(2))))
-                    lower_limit = target - error_less
-                    upper_limit = target + error_grater
             else:
-                target_value = target
+                lower_limit = None
+                upper_limit = None
 
-            dstFunc = self.validateRdcRange(self.scale, {'potential': self.potential, 'average': self.average},
-                                            target_value, lower_limit, upper_limit)
+                if self.potential == 'square':
+                    target_value = target
+                    lower_limit = target - delta
+                    upper_limit = target + delta
+                    if len(self.numberSelection) > 2:
+                        error_grater = delta
+                        error_less = abs(self.numberSelection[2])
+                        lower_limit = target - error_less
+                        upper_limit = target + error_grater
+                else:
+                    target_value = target
 
-            if dstFunc is None:
-                return
+                dstFunc = self.validateRdcRange(self.scale, {'potential': self.potential, 'average': self.average},
+                                                target_value, lower_limit, upper_limit)
+
+                if dstFunc is None:
+                    return
+
+        finally:
+            self.numberSelection.clear()
 
         if not self.__hasPolySeq:
             return
@@ -1517,14 +1517,16 @@ class XplorMRParserListener(ParseTreeListener):
         self.rdcRestraints += 1
         self.__cur_subtype = 'rdc'
 
-        self.atomSelectionSet = []
+        self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by XplorMRParser#vean_assign.
-    def exitVean_assign(self, ctx: XplorMRParser.Vean_assignContext):
-        center_1 = float(str(ctx.Real(0)))
-        range_1 = abs(float(str(ctx.Real(1))))
-        center_2 = float(str(ctx.Real(2)))
-        range_2 = abs(float(str(ctx.Real(3))))
+    def exitVean_assign(self, ctx: XplorMRParser.Vean_assignContext):  # pylint: disable=unused-argument
+        center_1 = self.numberSelection[0]
+        range_1 = abs(self.numberSelection[1])
+        center_2 = self.numberSelection[2]
+        range_2 = abs(self.numberSelection[3])
+
+        self.numberSelection.clear()
 
         target_value_1 = center_1
         target_value_2 = center_2
@@ -1725,7 +1727,7 @@ class XplorMRParserListener(ParseTreeListener):
             self.classification = str(ctx.Simple_name())
 
         elif ctx.Coefficients():
-            self.coefficients = {'DFS': float(str(ctx.Real()))
+            self.coefficients = {'DFS': self.getNumber_s(ctx.number_s())
                                  }
 
     # Exit a parse tree produced by XplorMRParser#tenso_statement.
@@ -1739,12 +1741,14 @@ class XplorMRParserListener(ParseTreeListener):
         self.rdcRestraints += 1
         self.__cur_subtype = 'rdc'
 
-        self.atomSelectionSet = []
+        self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by XplorMRParser#tenso_assign.
-    def exitTenso_assign(self, ctx: XplorMRParser.Tenso_assignContext):
-        target = float(str(ctx.Real(0)))
-        delta = abs(float(str(ctx.Real(1))))
+    def exitTenso_assign(self, ctx: XplorMRParser.Tenso_assignContext):  # pylint: disable=unused-argument
+        target = self.numberSelection[0]
+        delta = abs(self.numberSelection[1])
+
+        self.numberSelection.clear()
 
         target_value = target
         lower_limit = None
@@ -1850,10 +1854,10 @@ class XplorMRParserListener(ParseTreeListener):
             self.classification = str(ctx.Simple_name())
 
         elif ctx.Coefficients():
-            self.coefficients = {'a0': float(str(ctx.Real(0))),
-                                 'a1': float(str(ctx.Real(1))),
-                                 'a2': float(str(ctx.Real(2))),
-                                 'a3': float(str(ctx.Real(3)))
+            self.coefficients = {'a0': self.getNumber_s(ctx.number_s(0)),
+                                 'a1': self.getNumber_s(ctx.number_s(1)),
+                                 'a2': self.getNumber_s(ctx.number_s(2)),
+                                 'a3': self.getNumber_s(ctx.number_s(3))
                                  }
 
     # Exit a parse tree produced by XplorMRParser#anis_statement.
@@ -1867,12 +1871,14 @@ class XplorMRParserListener(ParseTreeListener):
         self.rdcRestraints += 1
         self.__cur_subtype = 'rdc'
 
-        self.atomSelectionSet = []
+        self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by XplorMRParser#anis_assign.
     def exitAnis_assign(self, ctx: XplorMRParser.Anis_assignContext):  # pylint: disable=unused-argument
-        target = float(str(ctx.Real(0)))
-        delta = abs(float(str(ctx.Real(1))))
+        target = self.numberSelection[0]
+        delta = abs(self.numberSelection[1])
+
+        self.numberSelection.clear()
 
         target_value = target
         lower_limit = None
@@ -1974,13 +1980,10 @@ class XplorMRParserListener(ParseTreeListener):
         self.planeRestraints += 1
         self.__cur_subtype = 'plane'
 
-        self.atomSelectionSet = []
+        self.atomSelectionSet.clear()
 
         if ctx.Weight():
-            if ctx.Real():
-                self.scale = float(str(ctx.Real()))
-            else:
-                self.scale = float(str(ctx.Integer()))
+            self.scale = float(str(ctx.number_s()))
             if self.scale <= 0.0:
                 self.warningMessage += "[Invalid data] "\
                     f"The weight value 'GROUP {str(ctx.Weight())} {self.scale} END' must be a positive value.\n"
@@ -2004,7 +2007,7 @@ class XplorMRParserListener(ParseTreeListener):
             self.classification = str(ctx.Simple_name())
 
         elif ctx.Expectation():
-            self.adistExpect = float(str(ctx.Real()))
+            self.adistExpect = self.getNumber_s(ctx.number_s())
 
             if DIST_ERROR_MIN < self.adistExpect < DIST_ERROR_MAX:
                 pass
@@ -2024,7 +2027,7 @@ class XplorMRParserListener(ParseTreeListener):
         self.adistRestraints += 1
         self.__cur_subtype = 'adist'
 
-        self.atomSelectionSet = []
+        self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by XplorMRParser#xadc_assign.
     def exitXadc_assign(self, ctx: XplorMRParser.Xadc_assignContext):  # pylint: disable=unused-argument
@@ -2054,10 +2057,10 @@ class XplorMRParserListener(ParseTreeListener):
             self.classification = str(ctx.Simple_name())
 
         elif ctx.Coefficients():
-            self.coefficients = {'Karplus_coef_a': float(str(ctx.Real(0))),
-                                 'Karplus_coef_b': float(str(ctx.Real(1))),
-                                 'Karplus_coef_c': float(str(ctx.Real(2))),
-                                 'Karplus_phase': float(str(ctx.Real(3)))
+            self.coefficients = {'Karplus_coef_a': self.getNumber_s(ctx.number_s(0)),
+                                 'Karplus_coef_b': self.getNumber_s(ctx.number_s(1)),
+                                 'Karplus_coef_c': self.getNumber_s(ctx.number_s(2)),
+                                 'Karplus_phase': self.getNumber_s(ctx.number_s(3))
                                  }
 
     # Exit a parse tree produced by XplorMRParser#coupling_statement.
@@ -2071,46 +2074,51 @@ class XplorMRParserListener(ParseTreeListener):
         self.jcoupRestraints += 1
         self.__cur_subtype = 'jcoup'
 
-        self.atomSelectionSet = []
+        self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by XplorMRParser#coup_assign.
     def exitCoup_assign(self, ctx: XplorMRParser.Coup_assignContext):  # pylint: disable=unused-argument
-        target = float(str(ctx.Real(0)))
-        delta = abs(float(str(ctx.Real(1))))
+        target = self.numberSelection[0]
+        delta = abs(self.numberSelection[1])
 
         target_value = target
         lower_limit = None
         upper_limit = None
 
-        if self.potential != 'harmonic':
-            lower_limit = target - delta
-            upper_limit = target + delta
-
-        dstFunc = self.validateRdcRange(1.0, {'potential': self.potential},
-                                        target_value, lower_limit, upper_limit)
-
-        if dstFunc is None:
-            return
-
-        dstFunc2 = None
-
-        if ctx.Real(2):
-            target = float(str(ctx.Real(2)))
-            delta = abs(float(str(ctx.Real(3))))
-
-            target_value = target
-            lower_limit = None
-            upper_limit = None
+        try:
 
             if self.potential != 'harmonic':
                 lower_limit = target - delta
                 upper_limit = target + delta
 
-            dstFunc2 = self.validateRdcRange(1.0, {'potential': self.potential},
-                                             target_value, lower_limit, upper_limit)
+            dstFunc = self.validateRdcRange(1.0, {'potential': self.potential},
+                                            target_value, lower_limit, upper_limit)
 
-            if dstFunc2 is None:
+            if dstFunc is None:
                 return
+
+            dstFunc2 = None
+
+            if len(self.numberSelection) > 2:
+                target = self.numberSelection[2]
+                delta = abs(self.numberSelection[3])
+
+                target_value = target
+                lower_limit = None
+                upper_limit = None
+
+                if self.potential != 'harmonic':
+                    lower_limit = target - delta
+                    upper_limit = target + delta
+
+                dstFunc2 = self.validateRdcRange(1.0, {'potential': self.potential},
+                                                 target_value, lower_limit, upper_limit)
+
+                if dstFunc2 is None:
+                    return
+
+        finally:
+            self.numberSelection.clear()
 
         if not self.__hasPolySeq:
             return
@@ -2236,10 +2244,10 @@ class XplorMRParserListener(ParseTreeListener):
         elif ctx.Expectation():
             self.csExpect = {'psi_position': int(str(ctx.Integer(0))),
                              'phi_poistion': int(str(ctx.Integer(1))),
-                             'ca_shift': float(str(ctx.Real(0))),
-                             'ca_shift_error': float(str(ctx.Real(1))),
-                             'cb_shift': float(str(ctx.Real(2))),
-                             'cb_shift_error': float(str(ctx.Real(3)))
+                             'ca_shift': self.getNumber_s(ctx.number_s(0)),
+                             'ca_shift_error': self.getNumber_s(ctx.number_s(1)),
+                             'cb_shift': self.getNumber_s(ctx.number_s(2)),
+                             'cb_shift_error': self.getNumber_s(ctx.number_s(3))
                              }
 
     # Exit a parse tree produced by XplorMRParser#carbon_shift_statement.
@@ -2253,12 +2261,14 @@ class XplorMRParserListener(ParseTreeListener):
         self.hvycsRestraints += 1
         self.__cur_subtype = 'hvycs'
 
-        self.atomSelectionSet = []
+        self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by XplorMRParser#carbon_shift_assign.
-    def exitCarbon_shift_assign(self, ctx: XplorMRParser.Carbon_shift_assignContext):
-        ca_shift = float(str(ctx.Real(0)))
-        cb_shift = float(str(ctx.Real(1)))
+    def exitCarbon_shift_assign(self, ctx: XplorMRParser.Carbon_shift_assignContext):  # pylint: disable=unused-argument
+        ca_shift = self.numberSelection[0]
+        cb_shift = self.numberSelection[1]
+
+        self.numberSelection.clear()
 
         if CS_ERROR_MIN < ca_shift < CS_ERROR_MAX:
             pass
@@ -2323,12 +2333,12 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#carbon_shift_rcoil.
     def enterCarbon_shift_rcoil(self, ctx: XplorMRParser.Carbon_shift_rcoilContext):  # pylint: disable=unused-argument
-        self.atomSelectionSet = []
+        self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by XplorMRParser#carbon_shift_rcoil.
     def exitCarbon_shift_rcoil(self, ctx: XplorMRParser.Carbon_shift_rcoilContext):
-        rcoil_a = float(str(ctx.Real(0)))
-        rcoil_b = float(str(ctx.Real(1)))
+        rcoil_a = self.getNumber_s(ctx.number_s(0))
+        rcoil_b = self.getNumber_s(ctx.number_s(1))
 
         if CS_ERROR_MIN < rcoil_a < CS_ERROR_MAX:
             pass
@@ -2383,14 +2393,14 @@ class XplorMRParserListener(ParseTreeListener):
         self.procsRestraints += 1
         self.__cur_subtype = 'procs'
 
-        self.atomSelectionSet = []
+        self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by XplorMRParser#observed.
     def exitObserved(self, ctx: XplorMRParser.ObservedContext):  # pylint: disable=unused-argument
-        obs_value = float(str(ctx.Real(0)))
+        obs_value = self.getNumber_s(ctx.number_s(0))
         obs_value_2 = None
-        if ctx.Real(1):
-            obs_value_2 = float(str(ctx.Real(1)))
+        if ctx.number_s(1):
+            obs_value_2 = self.getNumber_s(ctx.number_s(1))
 
         if CS_ERROR_MIN < obs_value < CS_ERROR_MAX:
             pass
@@ -2445,11 +2455,11 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#proton_shift_rcoil.
     def enterProton_shift_rcoil(self, ctx: XplorMRParser.Proton_shift_rcoilContext):  # pylint: disable=unused-argument
-        self.atomSelectionSet = []
+        self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by XplorMRParser#proton_shift_rcoil.
     def exitProton_shift_rcoil(self, ctx: XplorMRParser.Proton_shift_rcoilContext):
-        rcoil = float(str(ctx.Real()))
+        rcoil = self.getNumber_s(ctx.number_s())
 
         if CS_ERROR_MIN < rcoil < CS_ERROR_MAX:
             pass
@@ -2473,7 +2483,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#proton_shift_anisotropy.
     def enterProton_shift_anisotropy(self, ctx: XplorMRParser.Proton_shift_anisotropyContext):  # pylint: disable=unused-argument
-        self.atomSelectionSet = []
+        self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by XplorMRParser#proton_shift_anisotropy.
     def exitProton_shift_anisotropy(self, ctx: XplorMRParser.Proton_shift_anisotropyContext):
@@ -2519,7 +2529,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#proton_shift_amides.
     def enterProton_shift_amides(self, ctx: XplorMRParser.Proton_shift_amidesContext):  # pylint: disable=unused-argument
-        self.atomSelectionSet = []
+        self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by XplorMRParser#proton_shift_amides.
     def exitProton_shift_amides(self, ctx: XplorMRParser.Proton_shift_amidesContext):  # pylint: disable=unused-argument
@@ -2535,7 +2545,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#proton_shift_carbons.
     def enterProton_shift_carbons(self, ctx: XplorMRParser.Proton_shift_carbonsContext):  # pylint: disable=unused-argument
-        self.atomSelectionSet = []
+        self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by XplorMRParser#proton_shift_carbons.
     def exitProton_shift_carbons(self, ctx: XplorMRParser.Proton_shift_carbonsContext):  # pylint: disable=unused-argument
@@ -2551,7 +2561,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#proton_shift_nitrogens.
     def enterProton_shift_nitrogens(self, ctx: XplorMRParser.Proton_shift_nitrogensContext):  # pylint: disable=unused-argument
-        self.atomSelectionSet = []
+        self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by XplorMRParser#proton_shift_nitrogens.
     def exitProton_shift_nitrogens(self, ctx: XplorMRParser.Proton_shift_nitrogensContext):  # pylint: disable=unused-argument
@@ -2567,7 +2577,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#proton_shift_oxygens.
     def enterProton_shift_oxygens(self, ctx: XplorMRParser.Proton_shift_oxygensContext):  # pylint: disable=unused-argument
-        self.atomSelectionSet = []
+        self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by XplorMRParser#proton_shift_oxygens.
     def exitProton_shift_oxygens(self, ctx: XplorMRParser.Proton_shift_oxygensContext):  # pylint: disable=unused-argument
@@ -2583,7 +2593,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#proton_shift_ring_atoms.
     def enterProton_shift_ring_atoms(self, ctx: XplorMRParser.Proton_shift_ring_atomsContext):  # pylint: disable=unused-argument
-        self.atomSelectionSet = []
+        self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by XplorMRParser#proton_shift_ring_atoms.
     def exitProton_shift_ring_atoms(self, ctx: XplorMRParser.Proton_shift_ring_atomsContext):
@@ -2622,7 +2632,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#proton_shift_alphas_and_amides.
     def enterProton_shift_alphas_and_amides(self, ctx: XplorMRParser.Proton_shift_alphas_and_amidesContext):  # pylint: disable=unused-argument
-        self.atomSelectionSet = []
+        self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by XplorMRParser#proton_shift_alphas_and_amides.
     def exitProton_shift_alphas_and_amides(self, ctx: XplorMRParser.Proton_shift_alphas_and_amidesContext):  # pylint: disable=unused-argument
@@ -2641,7 +2651,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by XplorMRParser#ramachandran_statement.
     def enterRamachandran_statement(self, ctx: XplorMRParser.Ramachandran_statementContext):
         if ctx.Scale():
-            self.scale = float(str(ctx.Real(0)))
+            self.scale = self.getNumber_s(ctx.number_s(0))
             if self.scale <= 0.0:
                 self.warningMessage += "[Invalid data] "\
                     f"The scale value 'RAMA {str(ctx.Scale())} {self.scale} END' must be a positive value.\n"
@@ -2662,7 +2672,7 @@ class XplorMRParserListener(ParseTreeListener):
         self.ramaRestraints += 1
         self.__cur_subtype = 'rama'
 
-        self.atomSelectionSet = []
+        self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by XplorMRParser#rama_assign.
     def exitRama_assign(self, ctx: XplorMRParser.Rama_assignContext):  # pylint: disable=unused-argument
@@ -2746,7 +2756,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by XplorMRParser#collapse_statement.
     def enterCollapse_statement(self, ctx: XplorMRParser.Collapse_statementContext):
         if ctx.Scale():
-            self.scale = float(str(ctx.Real(0)))
+            self.scale = self.getNumber_s(ctx.number_s(0))
             if self.scale <= 0.0:
                 self.warningMessage += "[Invalid data] "\
                     f"The scale value 'COLL {str(ctx.Scale())} {self.scale} END' must be a positive value.\n"
@@ -2763,12 +2773,14 @@ class XplorMRParserListener(ParseTreeListener):
         self.radiRestraints += 1
         self.__cur_subtype = 'radi'
 
-        self.atomSelectionSet = []
+        self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by XplorMRParser#coll_assign.
-    def exitColl_assign(self, ctx: XplorMRParser.Coll_assignContext):
-        forceConst = float(str(ctx.Real(0)))
-        targetRgyr = float(str(ctx.Real(1)))
+    def exitColl_assign(self, ctx: XplorMRParser.Coll_assignContext):  # pylint: disable=unused-argument
+        forceConst = self.numberSelection[0]
+        targetRgyr = self.numberSelection[1]
+
+        self.numberSelection.clear()
 
         if forceConst <= 0.0:
             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
@@ -2809,11 +2821,11 @@ class XplorMRParserListener(ParseTreeListener):
             self.classification = str(ctx.Simple_name())
 
         elif ctx.Coefficients():
-            self.coefficients = {'Tc': float(str(ctx.Real(0))),
-                                 'anisotropy': float(str(ctx.Real(1))),
-                                 'rhombicity': float(str(ctx.Real(2))),
-                                 'frequency_1h': float(str(ctx.Real(3))),
-                                 'frequency_15n': float(str(ctx.Real(4)))
+            self.coefficients = {'Tc': self.getNumber_s(ctx.number_s(0)),
+                                 'anisotropy': self.getNumber_s(ctx.number_s(1)),
+                                 'rhombicity': self.getNumber_s(ctx.number_s(2)),
+                                 'frequency_1h': self.getNumber_s(ctx.number_s(3)),
+                                 'frequency_15n': self.getNumber_s(ctx.number_s(4))
                                  }
 
     # Exit a parse tree produced by XplorMRParser#diffusion_statement.
@@ -2827,12 +2839,14 @@ class XplorMRParserListener(ParseTreeListener):
         self.diffRestraints += 1
         self.__cur_subtype = 'diff'
 
-        self.atomSelectionSet = []
+        self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by XplorMRParser#dani_assign.
-    def exitDani_assign(self, ctx: XplorMRParser.Dani_assignContext):
-        target = float(str(ctx.Real(0)))
-        delta = abs(float(str(ctx.Real(1))))
+    def exitDani_assign(self, ctx: XplorMRParser.Dani_assignContext):  # pylint: disable=unused-argument
+        target = self.numberSelection[0]
+        delta = abs(self.numberSelection[1])
+
+        self.numberSelection.clear()
 
         target_value = target
         lower_limit = None
@@ -3028,7 +3042,7 @@ class XplorMRParserListener(ParseTreeListener):
         self.nbaseRestraints += 1
         self.__cur_subtype = 'nbase'
 
-        self.atomSelectionSet = []
+        self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by XplorMRParser#orie_assign.
     def exitOrie_assign(self, ctx: XplorMRParser.Orie_assignContext):  # pylint: disable=unused-argument
@@ -3130,7 +3144,7 @@ class XplorMRParserListener(ParseTreeListener):
                 self.potential = 'harmonic'
 
         elif ctx.Scale():
-            self.scale = float(str(ctx.Real(0)))
+            self.scale = self.getNumber_s(ctx.number_s(0))
             if self.scale <= 0.0:
                 self.warningMessage += "[Invalid data] "\
                     f"The scale value 'DCSA {str(ctx.Scale())} {self.scale} END' must be a positive value.\n"
@@ -3146,15 +3160,15 @@ class XplorMRParserListener(ParseTreeListener):
             self.classification = str(ctx.Simple_name())
 
         elif ctx.Coefficients():
-            self.coefficients = {'DFS': float(str(ctx.Real(0))),
-                                 'anisotropy': float(str(ctx.Real(1))),
-                                 'rhombicity': float(str(ctx.Real(2)))
+            self.coefficients = {'DFS': self.getNumber_s(ctx.number_s(0)),
+                                 'anisotropy': self.getNumber_s(ctx.number_s(1)),
+                                 'rhombicity': self.getNumber_s(ctx.number_s(2))
                                  }
 
         elif ctx.Sigma():
-            self.csaSigma = {'s11': float(str(ctx.Real(0))),
-                             's22': float(str(ctx.Real(1))),
-                             's33': float(str(ctx.Real(2)))
+            self.csaSigma = {'s11': self.getNumber_s(ctx.number_s(0)),
+                             's22': self.getNumber_s(ctx.number_s(1)),
+                             's33': self.getNumber_s(ctx.number_s(2))
                              }
 
     # Exit a parse tree produced by XplorMRParser#csa_statement.
@@ -3168,13 +3182,15 @@ class XplorMRParserListener(ParseTreeListener):
         self.csaRestraints += 1
         self.__cur_subtype = 'csa'
 
-        self.atomSelectionSet = []
+        self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by XplorMRParser#csa_assign.
     def exitCsa_assign(self, ctx: XplorMRParser.Csa_assignContext):  # pylint: disable=unused-argument
-        target = float(str(ctx.Real(0)))
-        cminus = float(str(ctx.Real(1)))
-        cplus = float(str(ctx.Real(2)))
+        target = self.numberSelection[0]
+        cminus = self.numberSelection[1]
+        cplus = self.numberSelection[2]
+
+        self.numberSelection.clear()
 
         target_value = target
         lower_limit = None
@@ -3432,7 +3448,7 @@ class XplorMRParserListener(ParseTreeListener):
                 self.potential = 'harmonic'
 
         elif ctx.Scale():
-            self.scale = float(str(ctx.Real(0)))
+            self.scale = self.getNumber_s(ctx.number_s(0))
             if self.scale <= 0.0:
                 self.warningMessage += "[Invalid data] "\
                     f"The scale value 'PCSA {str(ctx.Scale())} {self.scale} END' must be a positive value.\n"
@@ -3447,16 +3463,16 @@ class XplorMRParserListener(ParseTreeListener):
             self.classification = str(ctx.Simple_name())
 
         elif ctx.Coefficients():
-            self.coefficients = {'DFS': float(str(ctx.Real(0))),
-                                 'anisotropy': float(str(ctx.Real(1))),
-                                 'rhombicity': float(str(ctx.Real(2)))
+            self.coefficients = {'DFS': self.getNumber_s(ctx.number_s(0)),
+                                 'anisotropy': self.getNumber_s(ctx.number_s(1)),
+                                 'rhombicity': self.getNumber_s(ctx.number_s(2))
                                  }
 
         elif ctx.Sigma():
-            self.csaSigma = {'d11': float(str(ctx.Real(0))),
-                             'd22': float(str(ctx.Real(1))),
-                             'd33': float(str(ctx.Real(2))),
-                             'theta': float(str(ctx.Real(3)))
+            self.csaSigma = {'d11': self.getNumber_s(ctx.number_s(0)),
+                             'd22': self.getNumber_s(ctx.number_s(1)),
+                             'd33': self.getNumber_s(ctx.number_s(2)),
+                             'theta': self.getNumber_s(ctx.number_s(3))
                              }
 
     # Exit a parse tree produced by XplorMRParser#pcsa_statement.
@@ -3524,25 +3540,25 @@ class XplorMRParserListener(ParseTreeListener):
             _classification = str(ctx.Simple_name())
             if _classification not in self.preParameterDict:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The classification of '{str(ctx.Kconst())}={_classification} {ctx.Real(0)}' is unknown.\n"
+                    f"The classification of '{str(ctx.Kconst())}={_classification} {self.getNumber_s(ctx.number_s(0))}' is unknown.\n"
                 return
-            self.preParameterDict[_classification]['k_const'] = float(str(ctx.Real(0)))
+            self.preParameterDict[_classification]['k_const'] = self.getNumber_s(ctx.number_s(0))
 
         elif ctx.Omega():
             _classification = str(ctx.Simple_name())
             if _classification not in self.preParameterDict:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The classification of '{str(ctx.Omega())}={_classification} {ctx.Real(0)}' is unknown.\n"
+                    f"The classification of '{str(ctx.Omega())}={_classification} {self.getNumber_s(ctx.number_s(0))}' is unknown.\n"
                 return
-            self.preParameterDict[_classification]['omega'] = float(str(ctx.Real(0)))
+            self.preParameterDict[_classification]['omega'] = self.getNumber_s(ctx.number_s(0))
 
         elif ctx.Tauc():
             _classification = str(ctx.Simple_name())
             if _classification not in self.preParameterDict:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The classification of '{str(ctx.Tauc())}={_classification} {ctx.Real(0)}' is unknown.\n"
+                    f"The classification of '{str(ctx.Tauc())}={_classification} {self.getNumber_s(ctx.number_s(0))}' is unknown.\n"
                 return
-            self.preParameterDict[_classification]['tauc'] = float(str(ctx.Real(0)))
+            self.preParameterDict[_classification]['tauc'] = self.getNumber_s(ctx.number_s(0))
 
     # Exit a parse tree produced by XplorMRParser#pre_statement.
     def exitPre_statement(self, ctx: XplorMRParser.Pre_statementContext):  # pylint: disable=unused-argument
@@ -3555,12 +3571,14 @@ class XplorMRParserListener(ParseTreeListener):
         self.preRestraints += 1
         self.__cur_subtype = 'pre'
 
-        self.atomSelectionSet = []
+        self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by XplorMRParser#pre_assign.
     def exitPre_assign(self, ctx: XplorMRParser.Pre_assignContext):  # pylint: disable=unused-argument
-        target = float(str(ctx.Real(0)))
-        delta = abs(float(str(ctx.Real(1))))
+        target = self.numberSelection[0]
+        delta = abs(self.numberSelection[1])
+
+        self.numberSelection.clear()
 
         target_value = target
         lower_limit = None
@@ -3694,8 +3712,8 @@ class XplorMRParserListener(ParseTreeListener):
             self.classification = str(ctx.Simple_name())
 
         elif ctx.Coefficients():
-            self.coefficients = {'a1': float(str(ctx.Real(0))),
-                                 'a2': float(str(ctx.Real(1)))
+            self.coefficients = {'a1': self.getNumber_s(ctx.number_s(0)),
+                                 'a2': self.getNumber_s(ctx.number_s(1))
                                  }
 
     # Exit a parse tree produced by XplorMRParser#pcs_statement.
@@ -3709,12 +3727,14 @@ class XplorMRParserListener(ParseTreeListener):
         self.pcsRestraints += 1
         self.__cur_subtype = 'pcs'
 
-        self.atomSelectionSet = []
+        self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by XplorMRParser#pcs_assign.
-    def exitPcs_assign(self, ctx: XplorMRParser.Pcs_assignContext):
-        target = float(str(ctx.Real(0)))
-        delta = abs(float(str(ctx.Real(0))))
+    def exitPcs_assign(self, ctx: XplorMRParser.Pcs_assignContext):  # pylint: disable=unused-argument
+        target = self.numberSelection[0]
+        delta = abs(self.numberSelection[0])
+
+        self.numberSelection.clear()
 
         target_value = target
         lower_limit = target - delta
@@ -3834,8 +3854,8 @@ class XplorMRParserListener(ParseTreeListener):
             self.classification = str(ctx.Simple_name())
 
         elif ctx.Coefficients():
-            self.coefficients = {'a1': float(str(ctx.Real(0))),
-                                 'a2': float(str(ctx.Real(1)))
+            self.coefficients = {'a1': self.getNumber_s(ctx.number_s(0)),
+                                 'a2': self.getNumber_s(ctx.number_s(1))
                                  }
 
     # Exit a parse tree produced by XplorMRParser#prdc_statement.
@@ -3849,12 +3869,14 @@ class XplorMRParserListener(ParseTreeListener):
         self.prdcRestraints += 1
         self.__cur_subtype = 'prdc'
 
-        self.atomSelectionSet = []
+        self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by XplorMRParser#prdc_assign.
-    def exitPrdc_assign(self, ctx: XplorMRParser.Prdc_assignContext):
-        target = float(str(ctx.Real(0)))
-        delta = abs(float(str(ctx.Real(1))))
+    def exitPrdc_assign(self, ctx: XplorMRParser.Prdc_assignContext):  # pylint: disable=unused-argument
+        target = self.numberSelection[0]
+        delta = abs(self.numberSelection[1])
+
+        self.numberSelection.clear()
 
         target_value = target
         lower_limit = target - delta
@@ -3959,13 +3981,15 @@ class XplorMRParserListener(ParseTreeListener):
         self.pangRestraints += 1
         self.__cur_subtype = 'pang'
 
-        self.atomSelectionSet = []
+        self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by XplorMRParser#porientation_assign.
     def exitPorientation_assign(self, ctx: XplorMRParser.Porientation_assignContext):  # pylint: disable=unused-argument
-        theta = float(str(ctx.Real(0)))
-        phi = float(str(ctx.Real(1)))
-        delta = abs(float(str(ctx.Real(2))))
+        theta = self.numberSelection[0]
+        phi = self.numberSelection[1]
+        delta = abs(self.numberSelection[2])
+
+        self.numberSelection.clear()
 
         target_value = theta
         lower_limit = theta - delta
@@ -4071,7 +4095,7 @@ class XplorMRParserListener(ParseTreeListener):
             self.classification = str(ctx.Simple_name())
 
         elif ctx.Coefficients():
-            self.coefficients = {'proportionality': float(str(ctx.Real()))}
+            self.coefficients = {'proportionality': self.getNumber_s(ctx.number_s())}
 
     # Exit a parse tree produced by XplorMRParser#pccr_statement.
     def exitPccr_statement(self, ctx: XplorMRParser.Pccr_statementContext):  # pylint: disable=unused-argument
@@ -4084,12 +4108,14 @@ class XplorMRParserListener(ParseTreeListener):
         self.pccrRestraints += 1
         self.__cur_subtype = 'pccr'
 
-        self.atomSelectionSet = []
+        self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by XplorMRParser#pccr_assign.
-    def exitPccr_assign(self, ctx: XplorMRParser.Pccr_assignContext):
-        target = float(str(ctx.Real(0)))
-        delta = abs(float(str(ctx.Real(1))))
+    def exitPccr_assign(self, ctx: XplorMRParser.Pccr_assignContext):  # pylint: disable=unused-argument
+        target = self.numberSelection[0]
+        delta = abs(self.numberSelection[1])
+
+        self.numberSelection.clear()
 
         target_value = target
         lower_limit = target - delta
@@ -4283,7 +4309,7 @@ class XplorMRParserListener(ParseTreeListener):
         self.hbondRestraints += 1
         self.__cur_subtype = 'hbond'
 
-        self.atomSelectionSet = []
+        self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by XplorMRParser#hbond_assign.
     def exitHbond_assign(self, ctx: XplorMRParser.Hbond_assignContext):  # pylint: disable=unused-argument
@@ -4899,99 +4925,1040 @@ class XplorMRParserListener(ParseTreeListener):
         if self.__sel_expr_debug:
             print("  " * self.depth + "exit_factor")
 
-        # concatenation
-        if ctx.factor() and self.stackSelections:
-            self.stackFactors.pop()
-            self.factor = {'atom_selection': self.stackSelections.pop()}
+        try:
 
-        if ctx.All() or ctx.Known():
-            clauseName = 'all' if ctx.All() else 'known'
-            if self.__sel_expr_debug:
-                print("  " * self.depth + f"--> {clauseName}")
-            if not self.__hasCoord:
-                return
-            try:
+            # concatenation
+            if ctx.factor() and self.stackSelections:
+                self.stackFactors.pop()
+                self.factor = {'atom_selection': self.stackSelections.pop()}
 
-                atomSelection =\
-                    self.__cR.getDictListWithFilter('atom_site',
-                                                    [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                                     {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                                     {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                     {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
-                                                     ],
-                                                    [{'name': self.__modelNumName, 'type': 'int',
-                                                      'value': self.__representativeModelId},
-                                                     {'name': 'label_alt_id', 'type': 'enum',
-                                                      'enum': ('A')}
-                                                     ])
+            if ctx.All() or ctx.Known():
+                clauseName = 'all' if ctx.All() else 'known'
+                if self.__sel_expr_debug:
+                    print("  " * self.depth + f"--> {clauseName}")
+                if not self.__hasCoord:
+                    return
+                try:
 
-                self.intersectionFactor_expressions(atomSelection)
+                    atomSelection =\
+                        self.__cR.getDictListWithFilter('atom_site',
+                                                        [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                         {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                                         {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                         {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
+                                                         ],
+                                                        [{'name': self.__modelNumName, 'type': 'int',
+                                                          'value': self.__representativeModelId},
+                                                         {'name': 'label_alt_id', 'type': 'enum',
+                                                          'enum': ('A')}
+                                                         ])
 
-                if len(self.factor['atom_selection']) == 0:
+                    self.intersectionFactor_expressions(atomSelection)
+
+                    if len(self.factor['atom_selection']) == 0:
+                        self.factor['atom_id'] = [None]
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            f"The {clauseName!r} clause has no effect.\n"
+
+                    else:
+                        if 'chain_id' in self.factor:
+                            del self.factor['chain_id']
+                        if 'comp_id' in self.factor:
+                            del self.factor['comp_id']
+                        if 'seq_id' in self.factor:
+                            del self.factor['seq_id']
+                        if 'type_symbol' in self.factor:
+                            del self.factor['type_symbol']
+                        if 'atom_id' in self.factor:
+                            del self.factor['atom_id']
+                        if 'comp_ids' in self.factor:
+                            del self.factor['comp_ids']
+                        if 'seq_ids' in self.factor:
+                            del self.factor['seq_ids']
+                        if 'type_symbols' in self.factor:
+                            del self.factor['type_symbols']
+                        if 'atom_ids' in self.factor:
+                            del self.factor['atom_ids']
+
+                except Exception as e:
+                    if self.__verbose:
+                        self.__lfh.write(f"+XplorMRParserListener.exitFactor() ++ Error  - {str(e)}\n")
+
+            elif ctx.Around() or ctx.Saround():
+                clauseName = 'around' if ctx.Around() else 'saround'
+                if self.__sel_expr_debug:
+                    print("  " * self.depth + f"--> {clauseName}")
+                if not self.__hasCoord:
+                    return
+                around = self.numberFSelection[0]
+                _atomSelection = []
+
+                self.consumeFactor_expressions(f"atom selection expression before the {clauseName!r} clause")
+
+                if 'atom_selection' in self.factor:
+
+                    for _atom in self.factor['atom_selection']:
+
+                        try:
+
+                            _origin =\
+                                self.__cR.getDictListWithFilter('atom_site',
+                                                                [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                                 {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                                 {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
+                                                                 ],
+                                                                [{'name': self.__authAsymId, 'type': 'str', 'value': _atom['chain_id']},
+                                                                 {'name': self.__authSeqId, 'type': 'int', 'value': _atom['seq_id']},
+                                                                 {'name': self.__authAtomId, 'type': 'str', 'value': _atom['atom_id']},
+                                                                 {'name': self.__modelNumName, 'type': 'int',
+                                                                  'value': self.__representativeModelId},
+                                                                 {'name': 'label_alt_id', 'type': 'enum',
+                                                                  'enum': ('A')}
+                                                                 ])
+
+                            if len(_origin) != 1:
+                                continue
+
+                            origin = toNpArray(_origin[0])
+
+                            _neighbor =\
+                                self.__cR.getDictListWithFilter('atom_site',
+                                                                [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                                 {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                                                 {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                                 {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'},
+                                                                 {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                                 {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                                 {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
+                                                                 ],
+                                                                [{'name': 'Cartn_x', 'type': 'range-float',
+                                                                  'range': {'min_exclusive': (origin[0] - around),
+                                                                            'max_exclusive': (origin[0] + around)}},
+                                                                 {'name': 'Cartn_y', 'type': 'range-float',
+                                                                  'range': {'min_exclusive': (origin[1] - around),
+                                                                            'max_exclusive': (origin[1] + around)}},
+                                                                 {'name': 'Cartn_z', 'type': 'range-float',
+                                                                  'range': {'min_exclusive': (origin[2] - around),
+                                                                            'max_exclusive': (origin[2] + around)}},
+                                                                 {'name': self.__modelNumName, 'type': 'int',
+                                                                  'value': self.__representativeModelId},
+                                                                 {'name': 'label_alt_id', 'type': 'enum',
+                                                                  'enum': ('A')}
+                                                                 ])
+
+                            if len(_neighbor) == 0:
+                                continue
+
+                            neighbor = [atom for atom in _neighbor if np.linalg.norm(toNpArray(atom) - origin) < around]
+
+                            for atom in neighbor:
+                                del atom['x']
+                                del atom['y']
+                                del atom['z']
+                                _atomSelection.append(atom)
+
+                        except Exception as e:
+                            if self.__verbose:
+                                self.__lfh.write(f"+XplorMRParserListener.exitFactor() ++ Error  - {str(e)}\n")
+
+                    if ctx.Saround():
+                        identity = np.identity(3, dtype=float)
+                        zero = np.zeros(3, dtype=float)
+
+                        oper_list = self.__cR.getDictList('pdbx_struct_oper_list')
+                        if len(oper_list) > 0:
+                            for oper in oper_list:
+                                matrix = np.array([[float(oper['matrix[1][1]']), float(oper['matrix[1][2]']), float(oper['matrix[1][3]'])],
+                                                   [float(oper['matrix[2][1]']), float(oper['matrix[2][2]']), float(oper['matrix[2][3]'])],
+                                                   [float(oper['matrix[3][1]']), float(oper['matrix[3][2]']), float(oper['matrix[3][3]'])]], dtype=float)
+                                vector = np.array([float(oper['vector[1]']), float(oper['vector[2]']), float(oper['vector[3]'])], dtype=float)
+
+                                if np.array_equal(matrix, identity) and np.array_equal(vector, zero):
+                                    continue
+
+                                inv_matrix = np.linalg.inv(matrix)
+
+                                for _atom in self.factor['atom_selection']:
+
+                                    try:
+
+                                        _origin =\
+                                            self.__cR.getDictListWithFilter('atom_site',
+                                                                            [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                                             {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                                             {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
+                                                                             ],
+                                                                            [{'name': self.__authAsymId, 'type': 'str', 'value': _atom['chain_id']},
+                                                                             {'name': self.__authSeqId, 'type': 'int', 'value': _atom['seq_id']},
+                                                                             {'name': self.__authAtomId, 'type': 'str', 'value': _atom['atom_id']},
+                                                                             {'name': self.__modelNumName, 'type': 'int',
+                                                                              'value': self.__representativeModelId},
+                                                                             {'name': 'label_alt_id', 'type': 'enum',
+                                                                              'enum': ('A')}
+                                                                             ])
+
+                                        if len(_origin) != 1:
+                                            continue
+
+                                        origin = np.dot(inv_matrix, np.subtract(toNpArray(_origin[0]), vector))
+
+                                        _neighbor =\
+                                            self.__cR.getDictListWithFilter('atom_site',
+                                                                            [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                                             {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                                                             {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                                             {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'},
+                                                                             {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                                             {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                                             {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
+                                                                             ],
+                                                                            [{'name': 'Cartn_x', 'type': 'range-float',
+                                                                              'range': {'min_exclusive': (origin[0] - around),
+                                                                                        'max_exclusive': (origin[0] + around)}},
+                                                                             {'name': 'Cartn_y', 'type': 'range-float',
+                                                                              'range': {'min_exclusive': (origin[1] - around),
+                                                                                        'max_exclusive': (origin[1] + around)}},
+                                                                             {'name': 'Cartn_z', 'type': 'range-float',
+                                                                              'range': {'min_exclusive': (origin[2] - around),
+                                                                                        'max_exclusive': (origin[2] + around)}},
+                                                                             {'name': self.__modelNumName, 'type': 'int',
+                                                                              'value': self.__representativeModelId},
+                                                                             {'name': 'label_alt_id', 'type': 'enum',
+                                                                              'enum': ('A')}
+                                                                             ])
+
+                                        if len(_neighbor) == 0:
+                                            continue
+
+                                        neighbor = [atom for atom in _neighbor if np.linalg.norm(toNpArray(atom) - origin) < around]
+
+                                        for atom in neighbor:
+                                            del atom['x']
+                                            del atom['y']
+                                            del atom['z']
+                                            _atomSelection.append(atom)
+
+                                    except Exception as e:
+                                        if self.__verbose:
+                                            self.__lfh.write(f"+XplorMRParserListener.exitFactor() ++ Error  - {str(e)}\n")
+
+                    if len(self.factor['atom_selection']) > 0:
+                        self.factor['atom_selection'] = [dict(s) for s in set(frozenset(atom.items()) for atom in _atomSelection)]
+
+                        if len(self.factor['atom_selection']) == 0:
+                            self.factor['atom_id'] = [None]
+                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                f"The {clauseName!r} clause has no effect.\n"
+
+            elif ctx.Atom():
+                if self.__sel_expr_debug:
+                    print("  " * self.depth + "--> atom")
+                if not self.__hasPolySeq:
+                    return
+                simpleNameIndex = simpleNamesIndex = 0  # these indices are necessary to deal with mixing case of 'Simple_name' and 'Simple_names'
+                if ctx.Simple_name(0):
+                    chainId = str(ctx.Simple_name(0))
+                    self.factor['chain_id'] = [ps['chain_id'] for ps in self.__polySeq
+                                               if ps['chain_id'] == chainId]
+                    if len(self.factor['chain_id']) > 0:
+                        simpleNameIndex += 1
+
+                if simpleNameIndex == 0 and ctx.Simple_names(0):
+                    chainId = str(ctx.Simple_names(0))
+                    _chainId = toRegEx(chainId)
+                    self.factor['chain_id'] = [ps['chain_id'] for ps in self.__polySeq
+                                               if re.match(_chainId, ps['chain_id'])]
+                    simpleNamesIndex += 1
+
+                if len(self.factor['chain_id']) == 0:
                     self.factor['atom_id'] = [None]
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"The {clauseName!r} clause has no effect.\n"
+                        "Couldn't specify segment name "\
+                        f"'{chainId}' the coordinates.\n"  # do not use 'chainId!r' expression, '%' code throws ValueError
+
+                if ctx.Integer(0):
+                    self.factor['seq_id'] = [int(str(ctx.Integer(0)))]
+
+                if ctx.Integers():
+                    seqId = str(ctx.Integers())
+                    _seqId = toRegEx(seqId)
+                    _seqIdSelect = set()
+                    for chainId in self.factor['chain_id']:
+                        ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chainId), None)
+                        if ps is not None:
+                            found = False
+                            for realSeqId in ps['seq_id']:
+                                realSeqId = self.getRealSeqId(ps, realSeqId)
+                                if re.match(_seqId, str(realSeqId)):
+                                    _seqIdSelect.add(realSeqId)
+                                    found = True
+                            if not found:
+                                for realSeqId in ps['seq_id']:
+                                    realSeqId = self.getRealSeqId(ps, realSeqId)
+                                    seqKey = (chainId, realSeqId)
+                                    if seqKey in self.__authToLabelSeq:
+                                        _, realSeqId = self.__authToLabelSeq[seqKey]
+                                        if re.match(_seqId, str(realSeqId)):
+                                            _seqIdSelect.add(realSeqId)
+                    self.factor['seq_id'] = list(_seqIdSelect)
+
+                _atomIdSelect = set()
+                if ctx.Simple_name(simpleNameIndex):
+                    atomId = str(ctx.Simple_name(simpleNameIndex))
+                    for chainId in self.factor['chain_id']:
+                        ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chainId), None)
+                        if ps is None:
+                            continue
+                        for seqId in self.factor['seq_id']:
+                            if seqId in ps['seq_id']:
+                                seqId = self.getRealSeqId(ps, seqId)
+                                compId = ps['comp_id'][ps['seq_id'].index(seqId)]
+                                if self.__ccU.updateChemCompDict(compId):
+                                    if any(cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId):
+                                        _atomIdSelect.add(atomId)
+
+                elif ctx.Simple_names(simpleNamesIndex):
+                    atomId = str(ctx.Simple_names(simpleNamesIndex))
+                    _atomId = toRegEx(atomId)
+                    for chainId in self.factor['chain_id']:
+                        ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chainId), None)
+                        if ps is None:
+                            continue
+                        for seqId in self.factor['seq_id']:
+                            if seqId in ps['seq_id']:
+                                seqId = self.getRealSeqId(ps, seqId)
+                                compId = ps['comp_id'][ps['seq_id'].index(seqId)]
+                                if self.__ccU.updateChemCompDict(compId):
+                                    for cca in self.__ccU.lastAtomList:
+                                        if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
+                                            realAtomId = cca[self.__ccU.ccaAtomId]
+                                            if re.match(_atomId, realAtomId):
+                                                _atomIdSelect.add(realAtomId)
+
+                self.factor['atom_id'] = list(_atomIdSelect)
+
+                self.consumeFactor_expressions("'atom' clause", False)
+
+            elif ctx.Attribute():
+                if self.__sel_expr_debug:
+                    print("  " * self.depth + "--> attribute")
+                if not self.__hasCoord:
+                    return
+                absolute = bool(ctx.Abs())
+                _attr_prop = str(ctx.Attr_properties())
+                attr_prop = _attr_prop.lower()
+                opCode = str(ctx.Comparison_ops())
+                attr_value = self.numberFSelection[0]
+
+                validProp = True
+
+                if attr_prop == 'b':
+                    valueType = {'name': 'B_iso_or_equiv'}
+                    if opCode == '=':
+                        valueType['type'] = 'float' if not absolute else 'abs-float'
+                        valueType['value'] = attr_value
+                    elif opCode == '<':
+                        valueType['type'] = 'range-float' if not absolute else 'range-abs-float'
+                        valueType['range'] = {'max_exclusive': attr_value}
+                    elif opCode == '>':
+                        valueType['type'] = 'range-float' if not absolute else 'range-abs-float'
+                        valueType['range'] = {'min_exclusive': attr_value}
+                    elif opCode == '<=':
+                        valueType['type'] = 'range-float' if not absolute else 'range-abs-float'
+                        valueType['range'] = {'max_inclusive': attr_value}
+                    elif opCode == '>=':
+                        valueType['type'] = 'range-float' if not absolute else 'range-abs-float'
+                        valueType['range'] = {'min_inclusive': attr_value}
+                    elif opCode == '#':
+                        valueType['type'] = 'range-float' if not absolute else 'range-abs-float'
+                        valueType['range'] = {'not_equal_to': attr_value}
+                    atomSelection =\
+                        self.__cR.getDictListWithFilter('atom_site',
+                                                        [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                         {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                                         {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                         {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
+                                                         ],
+                                                        [valueType,
+                                                         {'name': self.__modelNumName, 'type': 'int',
+                                                          'value': self.__representativeModelId},
+                                                         {'name': 'label_alt_id', 'type': 'enum',
+                                                          'enum': ('A')}
+                                                         ])
+
+                    self.intersectionFactor_expressions(atomSelection)
+
+                elif attr_prop.startswith('bcom')\
+                        or attr_prop.startswith('qcom')\
+                        or attr_prop.startswith('xcom')\
+                        or attr_prop.startswith('ycom')\
+                        or attr_prop.startswith('zcom'):  # BCOMP, QCOMP, XCOMP, YCOMP, ZCOM`
+                    self.factor['atom_id'] = [None]
+                    self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
+                        f"The attribute property {_attr_prop!r} "\
+                        "requires a comparison coordinate set.\n"
+                    validProp = False
+
+                elif attr_prop.startswith('char'):  # CAHRGE
+                    valueType = {'name': 'pdbx_formal_charge'}
+                    if opCode == '=':
+                        valueType['type'] = 'int' if not absolute else 'abs-int'
+                        valueType['value'] = attr_value
+                    elif opCode == '<':
+                        valueType['type'] = 'range-int' if not absolute else 'range-abs-int'
+                        valueType['range'] = {'max_exclusive': attr_value}
+                    elif opCode == '>':
+                        valueType['type'] = 'range-int' if not absolute else 'range-abs-int'
+                        valueType['range'] = {'min_exclusive': attr_value}
+                    elif opCode == '<=':
+                        valueType['type'] = 'range-int' if not absolute else 'range-abs-int'
+                        valueType['range'] = {'max_inclusive': attr_value}
+                    elif opCode == '>=':
+                        valueType['type'] = 'range-int' if not absolute else 'range-abs-int'
+                        valueType['range'] = {'min_inclusive': attr_value}
+                    elif opCode == '#':
+                        valueType['type'] = 'range-int' if not absolute else 'range-abs-int'
+                        valueType['range'] = {'not_equal_to': attr_value}
+                    atomSelection =\
+                        self.__cR.getDictListWithFilter('atom_site',
+                                                        [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                         {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                                         {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                         {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
+                                                         ],
+                                                        [valueType,
+                                                         {'name': self.__modelNumName, 'type': 'int',
+                                                          'value': self.__representativeModelId},
+                                                         {'name': 'label_alt_id', 'type': 'enum',
+                                                          'enum': ('A')}
+                                                         ])
+
+                    self.intersectionFactor_expressions(atomSelection)
+
+                elif attr_prop in ('dx', 'dy', 'dz', 'harm'):
+                    self.factor['atom_id'] = [None]
+                    self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
+                        f"The attribute property {_attr_prop!r} "\
+                        "related to atomic force of each atom is not possessed in the static coordinate file.\n"
+                    validProp = False
+
+                elif attr_prop.startswith('fbet'):  # FBETA
+                    self.factor['atom_id'] = [None]
+                    self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
+                        f"The attribute property {_attr_prop!r} "\
+                        "related to the Langevin dynamics (nonzero friction coefficient) is not possessed in the static coordinate file.\n"
+                    validProp = False
+
+                elif attr_prop == 'mass':
+                    _typeSymbolSelect = set()
+                    atomTypes = self.__cR.getDictList('atom_type')
+                    if len(atomTypes) > 0 and 'symbol' in atomTypes[0]:
+                        for atomType in atomTypes:
+                            typeSymbol = atomType['symbol']
+                            atomicNumber = int_atom(typeSymbol)
+                            atomicWeight = ELEMENT_WEIGHTS[atomicNumber]
+
+                            if (opCode == '=' and atomicWeight == attr_value)\
+                               or (opCode == '<' and atomicWeight < attr_value)\
+                               or (opCode == '>' and atomicWeight > attr_value)\
+                               or (opCode == '<=' and atomicWeight <= attr_value)\
+                               or (opCode == '>=' and atomicWeight >= attr_value)\
+                               or (opCode == '#' and atomicWeight != attr_value):
+                                _typeSymbolSelect.add(typeSymbol)
+
+                    atomSelection =\
+                        self.__cR.getDictListWithFilter('atom_site',
+                                                        [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                         {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                                         {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                         {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
+                                                         ],
+                                                        [{'name': 'type_symbol', 'type': 'enum',
+                                                          'enum': _typeSymbolSelect},
+                                                         {'name': self.__modelNumName, 'type': 'int',
+                                                          'value': self.__representativeModelId},
+                                                         {'name': 'label_alt_id', 'type': 'enum',
+                                                          'enum': ('A')}
+                                                         ])
+
+                    self.intersectionFactor_expressions(atomSelection)
+
+                elif attr_prop == 'q':
+                    valueType = {'name': 'occupancy'}
+                    if opCode == '=':
+                        valueType['type'] = 'float' if not absolute else 'abs-float'
+                        valueType['value'] = attr_value
+                    elif opCode == '<':
+                        valueType['type'] = 'range-float' if not absolute else 'range-abs-float'
+                        valueType['range'] = {'max_exclusive': attr_value}
+                    elif opCode == '>':
+                        valueType['type'] = 'range-float' if not absolute else 'range-abs-float'
+                        valueType['range'] = {'min_exclusive': attr_value}
+                    elif opCode == '<=':
+                        valueType['type'] = 'range-float' if not absolute else 'range-abs-float'
+                        valueType['range'] = {'max_inclusive': attr_value}
+                    elif opCode == '>=':
+                        valueType['type'] = 'range-float' if not absolute else 'range-abs-float'
+                        valueType['range'] = {'min_inclusive': attr_value}
+                    elif opCode == '#':
+                        valueType['type'] = 'range-float' if not absolute else 'range-abs-float'
+                        valueType['range'] = {'not_equal_to': attr_value}
+                    atomSelection =\
+                        self.__cR.getDictListWithFilter('atom_site',
+                                                        [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                         {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                                         {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                         {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
+                                                         ],
+                                                        [valueType,
+                                                         {'name': self.__modelNumName, 'type': 'int',
+                                                          'value': self.__representativeModelId},
+                                                         {'name': 'label_alt_id', 'type': 'enum',
+                                                          'enum': ('A')}
+                                                         ])
+
+                    self.intersectionFactor_expressions(atomSelection)
+
+                elif attr_prop in ('refx', 'refy', 'refz', 'rmsd'):
+                    self.factor['atom_id'] = [None]
+                    self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
+                        f"The attribute property {_attr_prop!r} "\
+                        "requires a reference coordinate set.\n"
+                    validProp = False
+
+                elif attr_prop == ('vx', 'vy', 'vz'):
+                    self.factor['atom_id'] = [None]
+                    self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
+                        f"The attribute property {_attr_prop!r} "\
+                        "related to current velocities of each atom is not possessed in the static coordinate file.\n"
+                    validProp = False
+
+                elif attr_prop in ('x', 'y', 'z'):
+                    valueType = {'name': f"Cartn_{attr_prop}"}
+                    if opCode == '=':
+                        valueType['type'] = 'float' if not absolute else 'abs-float'
+                        valueType['value'] = attr_value
+                    elif opCode == '<':
+                        valueType['type'] = 'range-float' if not absolute else 'range-abs-float'
+                        valueType['range'] = {'max_exclusive': attr_value}
+                    elif opCode == '>':
+                        valueType['type'] = 'range-float' if not absolute else 'range-abs-float'
+                        valueType['range'] = {'min_exclusive': attr_value}
+                    elif opCode == '<=':
+                        valueType['type'] = 'range-float' if not absolute else 'range-abs-float'
+                        valueType['range'] = {'max_inclusive': attr_value}
+                    elif opCode == '>=':
+                        valueType['type'] = 'range-float' if not absolute else 'range-abs-float'
+                        valueType['range'] = {'min_inclusive': attr_value}
+                    elif opCode == '#':
+                        valueType['type'] = 'range-float' if not absolute else 'range-abs-float'
+                        valueType['range'] = {'not_equal_to': attr_value}
+                    atomSelection =\
+                        self.__cR.getDictListWithFilter('atom_site',
+                                                        [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                         {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                                         {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                         {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
+                                                         ],
+                                                        [valueType,
+                                                         {'name': self.__modelNumName, 'type': 'int',
+                                                          'value': self.__representativeModelId},
+                                                         {'name': 'label_alt_id', 'type': 'enum',
+                                                          'enum': ('A')}
+                                                         ])
+
+                    self.intersectionFactor_expressions(atomSelection)
+
+                if validProp and len(self.factor['atom_selection']) == 0:
+                    self.factor['atom_id'] = [None]
+                    _absolute = ' abs' if absolute else ''
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"The 'attribute' clause ('{_attr_prop}{_absolute} {opCode} {attr_value}') has no effect.\n"
+
+            elif ctx.BondedTo():
+                if self.__sel_expr_debug:
+                    print("  " * self.depth + "--> bondedto")
+                if not self.__hasCoord:
+                    return
+                if 'atom_selection' in self.factor and len(self.factor['atom_selection']) > 0:
+                    _atomSelection = []
+
+                    for _atom in self.factor['atom_selection']:
+                        chainId = _atom['chain_id']
+                        compId = _atom['comp_id']
+                        seqId = _atom['seq_id']
+                        atomId = _atom['atom_id']
+
+                        _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId)
+
+                        # intra
+                        if self.__ccU.updateChemCompDict(compId):
+                            leavingAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaLeavingAtomFlag] == 'Y']
+
+                            _atomIdSelect = set()
+                            for ccb in self.__ccU.lastBonds:
+                                if ccb[self.__ccU.ccbAtomId1] == atomId:
+                                    _atomIdSelect.add(ccb[self.__ccU.ccbAtomId2])
+                                elif ccb[self.__ccU.ccbAtomId2] == atomId:
+                                    _atomIdSelect.add(ccb[self.__ccU.ccbAtomId1])
+
+                            hasLeaavindAtomId = False
+
+                            for _atomId in _atomIdSelect:
+
+                                if _atomId in leavingAtomIds:
+                                    hasLeaavindAtomId = True
+                                    continue
+
+                                _atom = None
+                                if coordAtomSite is not None:
+                                    if _atomId in coordAtomSite['atom_id']:
+                                        _atom = {}
+                                        _atom['comp_id'] = coordAtomSite['comp_id']
+                                    elif 'alt_atom_id' in coordAtomSite and _atomId in coordAtomSite['alt_atom_id']:
+                                        _atom = {}
+                                        _atom['comp_id'] = coordAtomSite['comp_id']
+
+                                if _atom is not None and _atom['comp_id'] == compId:
+                                    _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId})
+
+                                else:
+                                    ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chainId), None)
+                                    if ps is not None and seqId in ps['seq_id'] and ps['comp_id'][ps['seq_id'].index(seqId)] == compId:
+                                        seqId = self.getRealSeqId(ps, seqId)
+                                        if any(cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId):
+                                            _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId})
+
+                            # sequential
+                            if hasLeaavindAtomId:
+                                _origin =\
+                                    self.__cR.getDictListWithFilter('atom_site',
+                                                                    [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                                     {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                                     {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
+                                                                     ],
+                                                                    [{'name': self.__authAsymId, 'type': 'str', 'value': chainId},
+                                                                     {'name': self.__authSeqId, 'type': 'int', 'value': seqId},
+                                                                     {'name': self.__authAtomId, 'type': 'str', 'value': atomId},
+                                                                     {'name': self.__modelNumName, 'type': 'int',
+                                                                      'value': self.__representativeModelId},
+                                                                     {'name': 'label_alt_id', 'type': 'enum',
+                                                                      'enum': ('A')}
+                                                                     ])
+
+                                if len(_origin) == 1:
+                                    origin = toNpArray(_origin[0])
+
+                                    ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chainId), None)
+                                    if ps is not None:
+                                        for _seqId in [seqId - 1, seqId + 1]:
+                                            if _seqId in ps['seq_id']:
+                                                _seqId = self.getRealSeqId(ps, _seqId)
+                                                _compId = ps['comp_id'][ps['seq_id'].index(_seqId)]
+                                                if self.__ccU.updateChemCompDict(_compId):
+                                                    leavingAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaLeavingAtomFlag] == 'Y']
+
+                                                    _atomIdSelect = set()
+                                                    for ccb in self.__ccU.lastBonds:
+                                                        if ccb[self.__ccU.ccbAtomId1] in leavingAtomIds:
+                                                            _atomId = ccb[self.__ccU.ccbAtomId2]
+                                                            if _atomId not in leavingAtomIds:
+                                                                _atomIdSelect.add(_atomId)
+                                                        if ccb[self.__ccU.ccbAtomId2] in leavingAtomIds:
+                                                            _atomId = ccb[self.__ccU.ccbAtomId1]
+                                                            if _atomId not in leavingAtomIds:
+                                                                _atomIdSelect.add(_atomId)
+
+                                                    for _atomId in _atomIdSelect:
+                                                        _neighbor =\
+                                                            self.__cR.getDictListWithFilter('atom_site',
+                                                                                            [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                                                             {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                                                             {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
+                                                                                             ],
+                                                                                            [{'name': self.__authAsymId, 'type': 'str', 'value': chainId},
+                                                                                             {'name': self.__authSeqId, 'type': 'int', 'value': _seqId},
+                                                                                             {'name': self.__authAtomId, 'type': 'str', 'value': _atomId},
+                                                                                             {'name': self.__modelNumName, 'type': 'int',
+                                                                                              'value': self.__representativeModelId},
+                                                                                             {'name': 'label_alt_id', 'type': 'enum',
+                                                                                              'enum': ('A')}
+                                                                                             ])
+
+                                                        if len(_neighbor) != 1:
+                                                            continue
+
+                                                        if np.linalg.norm(toNpArray(_neighbor[0]) - origin) < 2.5:
+                                                            _atomSelection.append({'chain_id': chainId, 'seq_id': _seqId, 'comp_id': _compId, 'atom_id': _atomId})
+
+                        # struct_conn category
+                        _atom = self.__cR.getDictListWithFilter('struct_conn',
+                                                                [{'name': 'ptnr1_auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                                 {'name': 'ptnr1_auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                                                 {'name': 'ptnr1_label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                                 {'name': 'ptnr1_label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
+                                                                 ],
+                                                                [{'name': 'ptnr2_auth_asym_id', 'type': 'str', 'value': chainId},
+                                                                 {'name': 'ptnr2_auth_seq_id', 'type': 'int', 'value': seqId},
+                                                                 {'name': 'ptnr2_label_atom_id', 'type': 'str', 'value': atomId},
+                                                                 {'name': self.__modelNumName, 'type': 'int',
+                                                                  'value': self.__representativeModelId}
+                                                                 ])
+
+                        if len(_atom) == 1:
+                            _atomSelection.append(_atom[0])
+
+                        _atom = self.__cR.getDictListWithFilter('struct_conn',
+                                                                [{'name': 'ptnr2_auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                                 {'name': 'ptnr2_auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                                                 {'name': 'ptnr2_label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                                 {'name': 'ptnr2_label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
+                                                                 ],
+                                                                [{'name': 'ptnr1_auth_asym_id', 'type': 'str', 'value': chainId},
+                                                                 {'name': 'ptnr1_auth_seq_id', 'type': 'int', 'value': seqId},
+                                                                 {'name': 'ptnr1_label_atom_id', 'type': 'str', 'value': atomId},
+                                                                 {'name': self.__modelNumName, 'type': 'int',
+                                                                  'value': self.__representativeModelId}
+                                                                 ])
+
+                        if len(_atom) == 1:
+                            _atomSelection.append(_atom[0])
+
+                    self.factor['atom_selection'] = [dict(s) for s in set(frozenset(atom.items()) for atom in _atomSelection)]
+
+                    if len(self.factor['atom_selection']) == 0:
+                        self.factor['atom_id'] = [None]
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            "The 'bondedto' clause has no effect.\n"
 
                 else:
-                    if 'chain_id' in self.factor:
-                        del self.factor['chain_id']
-                    if 'comp_id' in self.factor:
-                        del self.factor['comp_id']
-                    if 'seq_id' in self.factor:
-                        del self.factor['seq_id']
-                    if 'type_symbol' in self.factor:
-                        del self.factor['type_symbol']
-                    if 'atom_id' in self.factor:
-                        del self.factor['atom_id']
-                    if 'comp_ids' in self.factor:
-                        del self.factor['comp_ids']
-                    if 'seq_ids' in self.factor:
-                        del self.factor['seq_ids']
-                    if 'type_symbols' in self.factor:
-                        del self.factor['type_symbols']
-                    if 'atom_ids' in self.factor:
-                        del self.factor['atom_ids']
+                    self.factor['atom_id'] = [None]
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        "The 'bondedto' clause has no effect because no atom is selected.\n"
 
-            except Exception as e:
-                if self.__verbose:
-                    self.__lfh.write(f"+XplorMRParserListener.exitFactor() ++ Error  - {str(e)}\n")
+            elif ctx.ByGroup():
+                if self.__sel_expr_debug:
+                    print("  " * self.depth + "--> bygroup")
+                if not self.__hasCoord:
+                    return
+                if 'atom_selection' in self.factor and len(self.factor['atom_selection']) > 0:
+                    _atomSelection = []
 
-        elif ctx.Around() or ctx.Saround():
-            clauseName = 'around' if ctx.Around() else 'saround'
-            if self.__sel_expr_debug:
-                print("  " * self.depth + f"--> {clauseName}")
-            if not self.__hasCoord:
-                return
-            around = float(str(ctx.Real(0)))
-            _atomSelection = []
+                    for _atom in self.factor['atom_selection']:
+                        chainId = _atom['chain_id']
+                        compId = _atom['comp_id']
+                        seqId = _atom['seq_id']
+                        atomId = _atom['atom_id']
 
-            self.consumeFactor_expressions(f"atom selection expression before the {clauseName!r} clause")
+                        _atomSelection.append(_atom)  # self atom
 
-            if 'atom_selection' in self.factor:
+                        if self.__ccU.updateChemCompDict(compId):
+                            _bondedAtomIdSelect = set()
+                            for ccb in self.__ccU.lastBonds:
+                                if ccb[self.__ccU.ccbAtomId1] == atomId:
+                                    _bondedAtomIdSelect.add(ccb[self.__ccU.ccbAtomId2])
+                                elif ccb[self.__ccU.ccbAtomId2] == atomId:
+                                    _bondedAtomIdSelect.add(ccb[self.__ccU.ccbAtomId1])
 
-                for _atom in self.factor['atom_selection']:
+                            _nonBondedAtomIdSelect = set()
+                            for _atomId in _bondedAtomIdSelect:
+                                for ccb in self.__ccU.lastBonds:
+                                    if ccb[self.__ccU.ccbAtomId1] == _atomId:
+                                        _nonBondedAtomIdSelect.add(ccb[self.__ccU.ccbAtomId2])
+                                    elif ccb[self.__ccU.ccbAtomId2] == _atomId:
+                                        _nonBondedAtomIdSelect.add(ccb[self.__ccU.ccbAtomId1])
 
-                    try:
+                            if atomId in _nonBondedAtomIdSelect:
+                                _nonBondedAtomIdSelect.remove(atomId)
 
-                        _origin =\
+                            for _atomId in _bondedAtomIdSelect:
+                                if _atomId in _nonBondedAtomIdSelect:
+                                    _nonBondedAtomIdSelect.remove(_atomId)
+
+                            if len(_nonBondedAtomIdSelect) > 0:
+                                _origin =\
+                                    self.__cR.getDictListWithFilter('atom_site',
+                                                                    [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                                     {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                                     {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
+                                                                     ],
+                                                                    [{'name': self.__authAsymId, 'type': 'str', 'value': chainId},
+                                                                     {'name': self.__authSeqId, 'type': 'int', 'value': seqId},
+                                                                     {'name': self.__authAtomId, 'type': 'str', 'value': atomId},
+                                                                     {'name': self.__modelNumName, 'type': 'int',
+                                                                      'value': self.__representativeModelId},
+                                                                     {'name': 'label_alt_id', 'type': 'enum',
+                                                                      'enum': ('A')}
+                                                                     ])
+
+                                if len(_origin) == 1:
+                                    origin = toNpArray(_origin[0])
+
+                                    for _atomId in _nonBondedAtomIdSelect:
+                                        _neighbor =\
+                                            self.__cR.getDictListWithFilter('atom_site',
+                                                                            [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                                             {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                                             {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
+                                                                             ],
+                                                                            [{'name': self.__authAsymId, 'type': 'str', 'value': chainId},
+                                                                             {'name': self.__authSeqId, 'type': 'int', 'value': seqId},
+                                                                             {'name': self.__authAtomId, 'type': 'str', 'value': _atomId},
+                                                                             {'name': self.__modelNumName, 'type': 'int',
+                                                                              'value': self.__representativeModelId},
+                                                                             {'name': 'label_alt_id', 'type': 'enum',
+                                                                              'enum': ('A')}
+                                                                             ])
+
+                                        if len(_neighbor) != 1:
+                                            continue
+
+                                        if np.linalg.norm(toNpArray(_neighbor[0]) - origin) < 2.0:
+                                            _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId})
+
+                                else:
+                                    cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId), None)
+                                    if cca is not None:
+                                        _origin = {'x': float(cca[self.__ccU.ccaCartnX]), 'y': float(cca[self.__ccU.ccaCartnY]), 'z': float(cca[self.__ccU.ccaCartnZ])}
+                                        origin = toNpArray(_origin)
+
+                                        for _atomId in _nonBondedAtomIdSelect:
+                                            _cca = next((_cca for _cca in self.__ccU.lastAtomList if _cca[self.__ccU.ccaAtomId] == _atomId), None)
+                                            if _cca is not None:
+                                                _neighbor = {'x': float(_cca[self.__ccU.ccaCartnX]), 'y': float(_cca[self.__ccU.ccaCartnY]), 'z': float(_cca[self.__ccU.ccaCartnZ])}
+
+                                                if np.linalg.norm(toNpArray(_neighbor) - origin) < 2.0:
+                                                    _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId})
+
+                    atomSelection = [dict(s) for s in set(frozenset(atom.items()) for atom in _atomSelection)]
+
+                    if len(atomSelection) <= len(self.factor['atom_selection']):
+                        self.factor['atom_id'] = [None]
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            "The 'bygroup' clause has no effect.\n"
+
+                    self.factor['atom_selection'] = atomSelection
+
+                else:
+                    self.factor['atom_id'] = [None]
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        "The 'bygroup' clause has no effect because no atom is selected.\n"
+
+            elif ctx.ByRes():
+                if self.__sel_expr_debug:
+                    print("  " * self.depth + "--> byres")
+                if not self.__hasCoord:
+                    return
+                if 'atom_selection' in self.factor and len(self.factor['atom_selection']) > 0:
+                    _atomSelection = []
+
+                    _sequenceSelect = set()
+
+                    for _atom in self.factor['atom_selection']:
+                        chainId = _atom['chain_id']
+                        seqId = _atom['seq_id']
+
+                        _sequenceSelect.add((chainId, seqId))
+
+                    for (chainId, seqId) in _sequenceSelect:
+                        _atom = next(_atom for _atom in self.factor['atom_selection'] if _atom['chain_id'] == chainId and _atom['seq_id'] == seqId)
+                        compId = _atom['comp_id']
+
+                        _atomByRes =\
                             self.__cR.getDictListWithFilter('atom_site',
-                                                            [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                             {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                             {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
+                                                            [{'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                             {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
                                                              ],
-                                                            [{'name': self.__authAsymId, 'type': 'str', 'value': _atom['chain_id']},
-                                                             {'name': self.__authSeqId, 'type': 'int', 'value': _atom['seq_id']},
-                                                             {'name': self.__authAtomId, 'type': 'str', 'value': _atom['atom_id']},
+                                                            [{'name': self.__authAsymId, 'type': 'str', 'value': chainId},
+                                                             {'name': self.__authSeqId, 'type': 'int', 'value': seqId},
                                                              {'name': self.__modelNumName, 'type': 'int',
                                                               'value': self.__representativeModelId},
                                                              {'name': 'label_alt_id', 'type': 'enum',
                                                               'enum': ('A')}
                                                              ])
 
-                        if len(_origin) != 1:
-                            continue
+                        if len(_atomByRes) > 0 and _atomByRes[0]['comp_id'] == compId:
+                            for _atom in _atomByRes:
+                                _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': _atom['comp_id'], 'atom_id': _atom['atom_id']})
 
-                        origin = toNpArray(_origin[0])
+                        else:
+                            ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chainId), None)
+                            if ps is not None and seqId in ps['seq_id'] and ps['comp_id'][ps['seq_id'].index(seqId)] == compId:
+                                seqId = self.getRealSeqId(ps, seqId)
+                                if self.__ccU.updateChemCompDict(compId):
+                                    atomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y']
+                                    for atomId in atomIds:
+                                        _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': atomId})
+
+                    self.factor['atom_selection'] = [dict(s) for s in set(frozenset(atom.items()) for atom in _atomSelection)]
+
+                    if len(self.factor['atom_selection']) == 0:
+                        self.factor['atom_id'] = [None]
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            "The 'byres' clause has no effect.\n"
+
+                else:
+                    self.factor['atom_id'] = [None]
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        "The 'byres' clause has no effect because no atom is selected.\n"
+
+            elif ctx.Chemical():
+                if self.__sel_expr_debug:
+                    print("  " * self.depth + "--> chemical")
+                if ctx.Colon():  # range expression
+                    self.factor['type_symbols'] = [str(ctx.Simple_name(0)), str(ctx.Simple_name(1))]
+
+                elif ctx.Simple_name(0):
+                    self.factor['type_symbol'] = [str(ctx.Simple_name(0))]
+
+                elif ctx.Simple_names(0):
+                    self.factor['type_symbols'] = [str(ctx.Simple_names(0))]
+
+                self.consumeFactor_expressions("'chemical' clause", False)
+
+            elif ctx.Hydrogen():
+                if self.__sel_expr_debug:
+                    print("  " * self.depth + "--> hydrogen")
+                _typeSymbolSelect = set()
+                atomTypes = self.__cR.getDictList('atom_type')
+                if len(atomTypes) > 0 and 'symbol' in atomTypes[0]:
+                    for atomType in atomTypes:
+                        typeSymbol = atomType['symbol']
+                        atomicNumber = int_atom(typeSymbol)
+                        atomicWeight = ELEMENT_WEIGHTS[atomicNumber]
+                        if atomicWeight < 3.5:
+                            _typeSymbolSelect.add(typeSymbol)
+
+                self.factor['type_symbol'] = list(_typeSymbolSelect)
+
+                self.consumeFactor_expressions("'hydrogen' clause", False)
+
+            elif ctx.Id():
+                if self.__sel_expr_debug:
+                    print("  " * self.depth + "--> id")
+                self.factor['atom_id'] = [None]
+                self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
+                    "The 'id' clause has no effect "\
+                    "because the internal atom number is not included in the coordinate file.\n"
+
+            elif ctx.Name():
+                if self.__sel_expr_debug:
+                    print("  " * self.depth + "--> name")
+                if ctx.Colon():  # range expression
+                    self.factor['atom_ids'] = [str(ctx.Simple_name(0)), str(ctx.Simple_name(1))]
+
+                elif ctx.Simple_name(0):
+                    self.factor['atom_id'] = [str(ctx.Simple_name(0))]
+
+                elif ctx.Simple_names(0):
+                    self.factor['atom_ids'] = [str(ctx.Simple_names(0))]
+
+            elif ctx.Not_op():
+                if self.__sel_expr_debug:
+                    print("  " * self.depth + "--> not")
+                if not self.__hasCoord:
+                    return
+
+                try:
+
+                    _atomSelection =\
+                        self.__cR.getDictListWithFilter('atom_site',
+                                                        [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                         {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                                         {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                         {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
+                                                         ],
+                                                        [{'name': self.__modelNumName, 'type': 'int',
+                                                          'value': self.__representativeModelId},
+                                                         {'name': 'label_alt_id', 'type': 'enum',
+                                                          'enum': ('A')}
+                                                         ])
+
+                except Exception as e:
+                    if self.__verbose:
+                        self.__lfh.write(f"+XplorMRParserListener.exitFactor() ++ Error  - {str(e)}\n")
+
+                _refAtomSelection = [atom for atom in self.factor['atom_selection'] if atom in _atomSelection]
+                self.factor['atom_selection'] = [atom for atom in _atomSelection if atom not in _refAtomSelection]
+
+                if len(self.factor['atom_selection']) == 0:
+                    self.factor['atom_id'] = [None]
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        "The 'not' clause has no effect.\n"
+
+            elif ctx.Point():
+                if self.__sel_expr_debug:
+                    print("  " * self.depth + "--> point")
+                if not self.__hasCoord:
+                    return
+                if ctx.Tail():
+
+                    if self.inVector3D_tail is not None:
+
+                        try:
+
+                            _tail =\
+                                self.__cR.getDictListWithFilter('atom_site',
+                                                                [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                                 {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                                 {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
+                                                                 ],
+                                                                [{'name': self.__authAsymId, 'type': 'str', 'value': self.inVector3D_tail['chain_id']},
+                                                                 {'name': self.__authSeqId, 'type': 'int', 'value': self.inVector3D_tail['seq_id']},
+                                                                 {'name': self.__authAtomId, 'type': 'str', 'value': self.inVector3D_tail['atom_id']},
+                                                                 {'name': self.__modelNumName, 'type': 'int',
+                                                                  'value': self.__representativeModelId},
+                                                                 {'name': 'label_alt_id', 'type': 'enum',
+                                                                  'enum': ('A')}
+                                                                 ])
+
+                            if len(_tail) == 1:
+                                tail = toNpArray(_tail[0])
+
+                                if self.inVector3D_head is None:
+                                    self.vector3D = tail
+
+                                else:
+
+                                    _head =\
+                                        self.__cR.getDictListWithFilter('atom_site',
+                                                                        [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                                         {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                                         {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
+                                                                         ],
+                                                                        [{'name': self.__authAsymId, 'type': 'str', 'value': self.inVector3D_head['chain_id']},
+                                                                         {'name': self.__authSeqId, 'type': 'int', 'value': self.inVector3D_head['seq_id']},
+                                                                         {'name': self.__authAtomId, 'type': 'str', 'value': self.inVector3D_head['atom_id']},
+                                                                         {'name': self.__modelNumName, 'type': 'int',
+                                                                          'value': self.__representativeModelId},
+                                                                         {'name': 'label_alt_id', 'type': 'enum',
+                                                                          'enum': ('A')}
+                                                                         ])
+
+                                    if len(_head) == 1:
+                                        head = toNpArray(_head[0])
+                                        self.vector3D = np.subtract(tail, head, dtype=float)
+
+                        except Exception as e:
+                            if self.__verbose:
+                                self.__lfh.write(f"+XplorMRParserListener.exitFactor() ++ Error  - {str(e)}\n")
+
+                    self.inVector3D_tail = self.inVector3D_head = None
+                    cut = self.numberFSelection[0]
+
+                else:
+                    self.vector3D = [self.numberFSelection[0], self.numberFSelection[1], self.numberFSelection[2]]
+                    cut = self.numberFSelection[3]
+
+                if self.vector3D is None:
+                    self.factor['atom_id'] = [None]
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        "The 'point' clause has no effect because no 3d-vector is specified.\n"
+
+                else:
+                    atomSelection = []
+
+                    try:
 
                         _neighbor =\
                             self.__cR.getDictListWithFilter('atom_site',
@@ -5004,1156 +5971,255 @@ class XplorMRParserListener(ParseTreeListener):
                                                              {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
                                                              ],
                                                             [{'name': 'Cartn_x', 'type': 'range-float',
-                                                              'range': {'min_exclusive': (origin[0] - around),
-                                                                        'max_exclusive': (origin[0] + around)}},
+                                                              'range': {'min_exclusive': (self.vector3D[0] - cut),
+                                                                        'max_exclusive': (self.vector3D[0] + cut)}},
                                                              {'name': 'Cartn_y', 'type': 'range-float',
-                                                              'range': {'min_exclusive': (origin[1] - around),
-                                                                        'max_exclusive': (origin[1] + around)}},
+                                                              'range': {'min_exclusive': (self.vector3D[1] - cut),
+                                                                        'max_exclusive': (self.vector3D[1] + cut)}},
                                                              {'name': 'Cartn_z', 'type': 'range-float',
-                                                              'range': {'min_exclusive': (origin[2] - around),
-                                                                        'max_exclusive': (origin[2] + around)}},
+                                                              'range': {'min_exclusive': (self.vector3D[2] - cut),
+                                                                        'max_exclusive': (self.vector3D[2] + cut)}},
                                                              {'name': self.__modelNumName, 'type': 'int',
                                                               'value': self.__representativeModelId},
                                                              {'name': 'label_alt_id', 'type': 'enum',
                                                               'enum': ('A')}
                                                              ])
 
-                        if len(_neighbor) == 0:
-                            continue
+                        if len(_neighbor) > 0:
+                            neighbor = [atom for atom in _neighbor if np.linalg.norm(toNpArray(atom) - self.vector3D) < cut]
 
-                        neighbor = [atom for atom in _neighbor if np.linalg.norm(toNpArray(atom) - origin) < around]
-
-                        for atom in neighbor:
-                            del atom['x']
-                            del atom['y']
-                            del atom['z']
-                            _atomSelection.append(atom)
+                            for atom in neighbor:
+                                del atom['x']
+                                del atom['y']
+                                del atom['z']
+                                atomSelection.append(atom)
 
                     except Exception as e:
                         if self.__verbose:
                             self.__lfh.write(f"+XplorMRParserListener.exitFactor() ++ Error  - {str(e)}\n")
 
-                if ctx.Saround():
-                    identity = np.identity(3, dtype=float)
-                    zero = np.zeros(3, dtype=float)
-
-                    oper_list = self.__cR.getDictList('pdbx_struct_oper_list')
-                    if len(oper_list) > 0:
-                        for oper in oper_list:
-                            matrix = np.array([[float(oper['matrix[1][1]']), float(oper['matrix[1][2]']), float(oper['matrix[1][3]'])],
-                                               [float(oper['matrix[2][1]']), float(oper['matrix[2][2]']), float(oper['matrix[2][3]'])],
-                                               [float(oper['matrix[3][1]']), float(oper['matrix[3][2]']), float(oper['matrix[3][3]'])]], dtype=float)
-                            vector = np.array([float(oper['vector[1]']), float(oper['vector[2]']), float(oper['vector[3]'])], dtype=float)
-
-                            if np.array_equal(matrix, identity) and np.array_equal(vector, zero):
-                                continue
-
-                            inv_matrix = np.linalg.inv(matrix)
-
-                            for _atom in self.factor['atom_selection']:
-
-                                try:
-
-                                    _origin =\
-                                        self.__cR.getDictListWithFilter('atom_site',
-                                                                        [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                                         {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                                         {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
-                                                                         ],
-                                                                        [{'name': self.__authAsymId, 'type': 'str', 'value': _atom['chain_id']},
-                                                                         {'name': self.__authSeqId, 'type': 'int', 'value': _atom['seq_id']},
-                                                                         {'name': self.__authAtomId, 'type': 'str', 'value': _atom['atom_id']},
-                                                                         {'name': self.__modelNumName, 'type': 'int',
-                                                                          'value': self.__representativeModelId},
-                                                                         {'name': 'label_alt_id', 'type': 'enum',
-                                                                          'enum': ('A')}
-                                                                         ])
-
-                                    if len(_origin) != 1:
-                                        continue
-
-                                    origin = np.dot(inv_matrix, np.subtract(toNpArray(_origin[0]), vector))
-
-                                    _neighbor =\
-                                        self.__cR.getDictListWithFilter('atom_site',
-                                                                        [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                                                         {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                                                         {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                                         {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'},
-                                                                         {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                                         {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                                         {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
-                                                                         ],
-                                                                        [{'name': 'Cartn_x', 'type': 'range-float',
-                                                                          'range': {'min_exclusive': (origin[0] - around),
-                                                                                    'max_exclusive': (origin[0] + around)}},
-                                                                         {'name': 'Cartn_y', 'type': 'range-float',
-                                                                          'range': {'min_exclusive': (origin[1] - around),
-                                                                                    'max_exclusive': (origin[1] + around)}},
-                                                                         {'name': 'Cartn_z', 'type': 'range-float',
-                                                                          'range': {'min_exclusive': (origin[2] - around),
-                                                                                    'max_exclusive': (origin[2] + around)}},
-                                                                         {'name': self.__modelNumName, 'type': 'int',
-                                                                          'value': self.__representativeModelId},
-                                                                         {'name': 'label_alt_id', 'type': 'enum',
-                                                                          'enum': ('A')}
-                                                                         ])
-
-                                    if len(_neighbor) == 0:
-                                        continue
-
-                                    neighbor = [atom for atom in _neighbor if np.linalg.norm(toNpArray(atom) - origin) < around]
-
-                                    for atom in neighbor:
-                                        del atom['x']
-                                        del atom['y']
-                                        del atom['z']
-                                        _atomSelection.append(atom)
-
-                                except Exception as e:
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+XplorMRParserListener.exitFactor() ++ Error  - {str(e)}\n")
-
-                if len(self.factor['atom_selection']) > 0:
-                    self.factor['atom_selection'] = [dict(s) for s in set(frozenset(atom.items()) for atom in _atomSelection)]
+                    self.factor['atom_selection'] = atomSelection
 
                     if len(self.factor['atom_selection']) == 0:
                         self.factor['atom_id'] = [None]
                         self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            f"The {clauseName!r} clause has no effect.\n"
+                            "The 'cut' clause has no effect.\n"
 
-        elif ctx.Atom():
-            if self.__sel_expr_debug:
-                print("  " * self.depth + "--> atom")
-            if not self.__hasPolySeq:
-                return
-            simpleNameIndex = simpleNamesIndex = 0  # these indices are necessary to deal with mixing case of 'Simple_name' and 'Simple_names'
-            if ctx.Simple_name(0):
-                chainId = str(ctx.Simple_name(0))
-                self.factor['chain_id'] = [ps['chain_id'] for ps in self.__polySeq
-                                           if ps['chain_id'] == chainId]
-                if len(self.factor['chain_id']) > 0:
-                    simpleNameIndex += 1
+                self.inVector3D = False
+                self.vector3D = None
 
-            if simpleNameIndex == 0 and ctx.Simple_names(0):
-                chainId = str(ctx.Simple_names(0))
-                _chainId = toRegEx(chainId)
-                self.factor['chain_id'] = [ps['chain_id'] for ps in self.__polySeq
-                                           if re.match(_chainId, ps['chain_id'])]
-                simpleNamesIndex += 1
-
-            if len(self.factor['chain_id']) == 0:
-                self.factor['atom_id'] = [None]
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    "Couldn't specify segment name "\
-                    f"'{chainId}' the coordinates.\n"  # do not use 'chainId!r' expression, '%' code throws ValueError
-
-            if ctx.Integer(0):
-                self.factor['seq_id'] = [int(str(ctx.Integer(0)))]
-
-            if ctx.Integers():
-                seqId = str(ctx.Integers())
-                _seqId = toRegEx(seqId)
-                _seqIdSelect = set()
-                for chainId in self.factor['chain_id']:
-                    ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chainId), None)
-                    if ps is not None:
-                        found = False
-                        for realSeqId in ps['seq_id']:
-                            realSeqId = self.getRealSeqId(ps, realSeqId)
-                            if re.match(_seqId, str(realSeqId)):
-                                _seqIdSelect.add(realSeqId)
-                                found = True
-                        if not found:
-                            for realSeqId in ps['seq_id']:
-                                realSeqId = self.getRealSeqId(ps, realSeqId)
-                                seqKey = (chainId, realSeqId)
-                                if seqKey in self.__authToLabelSeq:
-                                    _, realSeqId = self.__authToLabelSeq[seqKey]
-                                    if re.match(_seqId, str(realSeqId)):
-                                        _seqIdSelect.add(realSeqId)
-                self.factor['seq_id'] = list(_seqIdSelect)
-
-            _atomIdSelect = set()
-            if ctx.Simple_name(simpleNameIndex):
-                atomId = str(ctx.Simple_name(simpleNameIndex))
-                for chainId in self.factor['chain_id']:
-                    ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chainId), None)
-                    if ps is None:
-                        continue
-                    for seqId in self.factor['seq_id']:
-                        if seqId in ps['seq_id']:
-                            seqId = self.getRealSeqId(ps, seqId)
-                            compId = ps['comp_id'][ps['seq_id'].index(seqId)]
-                            if self.__ccU.updateChemCompDict(compId):
-                                if any(cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId):
-                                    _atomIdSelect.add(atomId)
-
-            elif ctx.Simple_names(simpleNamesIndex):
-                atomId = str(ctx.Simple_names(simpleNamesIndex))
-                _atomId = toRegEx(atomId)
-                for chainId in self.factor['chain_id']:
-                    ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chainId), None)
-                    if ps is None:
-                        continue
-                    for seqId in self.factor['seq_id']:
-                        if seqId in ps['seq_id']:
-                            seqId = self.getRealSeqId(ps, seqId)
-                            compId = ps['comp_id'][ps['seq_id'].index(seqId)]
-                            if self.__ccU.updateChemCompDict(compId):
-                                for cca in self.__ccU.lastAtomList:
-                                    if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
-                                        realAtomId = cca[self.__ccU.ccaAtomId]
-                                        if re.match(_atomId, realAtomId):
-                                            _atomIdSelect.add(realAtomId)
-
-            self.factor['atom_id'] = list(_atomIdSelect)
-
-            self.consumeFactor_expressions("'atom' clause", False)
-
-        elif ctx.Attribute():
-            if self.__sel_expr_debug:
-                print("  " * self.depth + "--> attribute")
-            if not self.__hasCoord:
-                return
-            absolute = bool(ctx.Abs())
-            _attr_prop = str(ctx.Attr_properties())
-            attr_prop = _attr_prop.lower()
-            opCode = str(ctx.Comparison_ops())
-            attr_value = float(str(ctx.Real(0)))
-
-            validProp = True
-
-            if attr_prop == 'b':
-                valueType = {'name': 'B_iso_or_equiv'}
-                if opCode == '=':
-                    valueType['type'] = 'float' if not absolute else 'abs-float'
-                    valueType['value'] = attr_value
-                elif opCode == '<':
-                    valueType['type'] = 'range-float' if not absolute else 'range-abs-float'
-                    valueType['range'] = {'max_exclusive': attr_value}
-                elif opCode == '>':
-                    valueType['type'] = 'range-float' if not absolute else 'range-abs-float'
-                    valueType['range'] = {'min_exclusive': attr_value}
-                elif opCode == '<=':
-                    valueType['type'] = 'range-float' if not absolute else 'range-abs-float'
-                    valueType['range'] = {'max_inclusive': attr_value}
-                elif opCode == '>=':
-                    valueType['type'] = 'range-float' if not absolute else 'range-abs-float'
-                    valueType['range'] = {'min_inclusive': attr_value}
-                elif opCode == '#':
-                    valueType['type'] = 'range-float' if not absolute else 'range-abs-float'
-                    valueType['range'] = {'not_equal_to': attr_value}
-                atomSelection =\
-                    self.__cR.getDictListWithFilter('atom_site',
-                                                    [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                                     {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                                     {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                     {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
-                                                     ],
-                                                    [valueType,
-                                                     {'name': self.__modelNumName, 'type': 'int',
-                                                      'value': self.__representativeModelId},
-                                                     {'name': 'label_alt_id', 'type': 'enum',
-                                                      'enum': ('A')}
-                                                     ])
-
-                self.intersectionFactor_expressions(atomSelection)
-
-            elif attr_prop.startswith('bcom')\
-                    or attr_prop.startswith('qcom')\
-                    or attr_prop.startswith('xcom')\
-                    or attr_prop.startswith('ycom')\
-                    or attr_prop.startswith('zcom'):  # BCOMP, QCOMP, XCOMP, YCOMP, ZCOM`
+            elif ctx.Previous():
+                if self.__sel_expr_debug:
+                    print("  " * self.depth + "--> previous")
                 self.factor['atom_id'] = [None]
                 self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
-                    f"The attribute property {_attr_prop!r} "\
-                    "requires a comparison coordinate set.\n"
-                validProp = False
-
-            elif attr_prop.startswith('char'):  # CAHRGE
-                valueType = {'name': 'pdbx_formal_charge'}
-                if opCode == '=':
-                    valueType['type'] = 'int' if not absolute else 'abs-int'
-                    valueType['value'] = attr_value
-                elif opCode == '<':
-                    valueType['type'] = 'range-int' if not absolute else 'range-abs-int'
-                    valueType['range'] = {'max_exclusive': attr_value}
-                elif opCode == '>':
-                    valueType['type'] = 'range-int' if not absolute else 'range-abs-int'
-                    valueType['range'] = {'min_exclusive': attr_value}
-                elif opCode == '<=':
-                    valueType['type'] = 'range-int' if not absolute else 'range-abs-int'
-                    valueType['range'] = {'max_inclusive': attr_value}
-                elif opCode == '>=':
-                    valueType['type'] = 'range-int' if not absolute else 'range-abs-int'
-                    valueType['range'] = {'min_inclusive': attr_value}
-                elif opCode == '#':
-                    valueType['type'] = 'range-int' if not absolute else 'range-abs-int'
-                    valueType['range'] = {'not_equal_to': attr_value}
-                atomSelection =\
-                    self.__cR.getDictListWithFilter('atom_site',
-                                                    [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                                     {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                                     {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                     {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
-                                                     ],
-                                                    [valueType,
-                                                     {'name': self.__modelNumName, 'type': 'int',
-                                                      'value': self.__representativeModelId},
-                                                     {'name': 'label_alt_id', 'type': 'enum',
-                                                      'enum': ('A')}
-                                                     ])
-
-                self.intersectionFactor_expressions(atomSelection)
-
-            elif attr_prop in ('dx', 'dy', 'dz', 'harm'):
-                self.factor['atom_id'] = [None]
-                self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
-                    f"The attribute property {_attr_prop!r} "\
-                    "related to atomic force of each atom is not possessed in the static coordinate file.\n"
-                validProp = False
-
-            elif attr_prop.startswith('fbet'):  # FBETA
-                self.factor['atom_id'] = [None]
-                self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
-                    f"The attribute property {_attr_prop!r} "\
-                    "related to the Langevin dynamics (nonzero friction coefficient) is not possessed in the static coordinate file.\n"
-                validProp = False
-
-            elif attr_prop == 'mass':
-                _typeSymbolSelect = set()
-                atomTypes = self.__cR.getDictList('atom_type')
-                if len(atomTypes) > 0 and 'symbol' in atomTypes[0]:
-                    for atomType in atomTypes:
-                        typeSymbol = atomType['symbol']
-                        atomicNumber = int_atom(typeSymbol)
-                        atomicWeight = ELEMENT_WEIGHTS[atomicNumber]
-
-                        if (opCode == '=' and atomicWeight == attr_value)\
-                           or (opCode == '<' and atomicWeight < attr_value)\
-                           or (opCode == '>' and atomicWeight > attr_value)\
-                           or (opCode == '<=' and atomicWeight <= attr_value)\
-                           or (opCode == '>=' and atomicWeight >= attr_value)\
-                           or (opCode == '#' and atomicWeight != attr_value):
-                            _typeSymbolSelect.add(typeSymbol)
-
-                atomSelection =\
-                    self.__cR.getDictListWithFilter('atom_site',
-                                                    [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                                     {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                                     {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                     {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
-                                                     ],
-                                                    [{'name': 'type_symbol', 'type': 'enum',
-                                                      'enum': _typeSymbolSelect},
-                                                     {'name': self.__modelNumName, 'type': 'int',
-                                                      'value': self.__representativeModelId},
-                                                     {'name': 'label_alt_id', 'type': 'enum',
-                                                      'enum': ('A')}
-                                                     ])
-
-                self.intersectionFactor_expressions(atomSelection)
-
-            elif attr_prop == 'q':
-                valueType = {'name': 'occupancy'}
-                if opCode == '=':
-                    valueType['type'] = 'float' if not absolute else 'abs-float'
-                    valueType['value'] = attr_value
-                elif opCode == '<':
-                    valueType['type'] = 'range-float' if not absolute else 'range-abs-float'
-                    valueType['range'] = {'max_exclusive': attr_value}
-                elif opCode == '>':
-                    valueType['type'] = 'range-float' if not absolute else 'range-abs-float'
-                    valueType['range'] = {'min_exclusive': attr_value}
-                elif opCode == '<=':
-                    valueType['type'] = 'range-float' if not absolute else 'range-abs-float'
-                    valueType['range'] = {'max_inclusive': attr_value}
-                elif opCode == '>=':
-                    valueType['type'] = 'range-float' if not absolute else 'range-abs-float'
-                    valueType['range'] = {'min_inclusive': attr_value}
-                elif opCode == '#':
-                    valueType['type'] = 'range-float' if not absolute else 'range-abs-float'
-                    valueType['range'] = {'not_equal_to': attr_value}
-                atomSelection =\
-                    self.__cR.getDictListWithFilter('atom_site',
-                                                    [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                                     {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                                     {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                     {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
-                                                     ],
-                                                    [valueType,
-                                                     {'name': self.__modelNumName, 'type': 'int',
-                                                      'value': self.__representativeModelId},
-                                                     {'name': 'label_alt_id', 'type': 'enum',
-                                                      'enum': ('A')}
-                                                     ])
-
-                self.intersectionFactor_expressions(atomSelection)
-
-            elif attr_prop in ('refx', 'refy', 'refz', 'rmsd'):
-                self.factor['atom_id'] = [None]
-                self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
-                    f"The attribute property {_attr_prop!r} "\
-                    "requires a reference coordinate set.\n"
-                validProp = False
-
-            elif attr_prop == ('vx', 'vy', 'vz'):
-                self.factor['atom_id'] = [None]
-                self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
-                    f"The attribute property {_attr_prop!r} "\
-                    "related to current velocities of each atom is not possessed in the static coordinate file.\n"
-                validProp = False
-
-            elif attr_prop in ('x', 'y', 'z'):
-                valueType = {'name': f"Cartn_{attr_prop}"}
-                if opCode == '=':
-                    valueType['type'] = 'float' if not absolute else 'abs-float'
-                    valueType['value'] = attr_value
-                elif opCode == '<':
-                    valueType['type'] = 'range-float' if not absolute else 'range-abs-float'
-                    valueType['range'] = {'max_exclusive': attr_value}
-                elif opCode == '>':
-                    valueType['type'] = 'range-float' if not absolute else 'range-abs-float'
-                    valueType['range'] = {'min_exclusive': attr_value}
-                elif opCode == '<=':
-                    valueType['type'] = 'range-float' if not absolute else 'range-abs-float'
-                    valueType['range'] = {'max_inclusive': attr_value}
-                elif opCode == '>=':
-                    valueType['type'] = 'range-float' if not absolute else 'range-abs-float'
-                    valueType['range'] = {'min_inclusive': attr_value}
-                elif opCode == '#':
-                    valueType['type'] = 'range-float' if not absolute else 'range-abs-float'
-                    valueType['range'] = {'not_equal_to': attr_value}
-                atomSelection =\
-                    self.__cR.getDictListWithFilter('atom_site',
-                                                    [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                                     {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                                     {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                     {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
-                                                     ],
-                                                    [valueType,
-                                                     {'name': self.__modelNumName, 'type': 'int',
-                                                      'value': self.__representativeModelId},
-                                                     {'name': 'label_alt_id', 'type': 'enum',
-                                                      'enum': ('A')}
-                                                     ])
-
-                self.intersectionFactor_expressions(atomSelection)
-
-            if validProp and len(self.factor['atom_selection']) == 0:
-                self.factor['atom_id'] = [None]
-                _absolute = ' abs' if absolute else ''
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The 'attribute' clause ('{_attr_prop}{_absolute} {opCode} {attr_value}') has no effect.\n"
-
-        elif ctx.BondedTo():
-            if self.__sel_expr_debug:
-                print("  " * self.depth + "--> bondedto")
-            if not self.__hasCoord:
-                return
-            if 'atom_selection' in self.factor and len(self.factor['atom_selection']) > 0:
-                _atomSelection = []
-
-                for _atom in self.factor['atom_selection']:
-                    chainId = _atom['chain_id']
-                    compId = _atom['comp_id']
-                    seqId = _atom['seq_id']
-                    atomId = _atom['atom_id']
-
-                    _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId)
-
-                    # intra
-                    if self.__ccU.updateChemCompDict(compId):
-                        leavingAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaLeavingAtomFlag] == 'Y']
-
-                        _atomIdSelect = set()
-                        for ccb in self.__ccU.lastBonds:
-                            if ccb[self.__ccU.ccbAtomId1] == atomId:
-                                _atomIdSelect.add(ccb[self.__ccU.ccbAtomId2])
-                            elif ccb[self.__ccU.ccbAtomId2] == atomId:
-                                _atomIdSelect.add(ccb[self.__ccU.ccbAtomId1])
-
-                        hasLeaavindAtomId = False
-
-                        for _atomId in _atomIdSelect:
-
-                            if _atomId in leavingAtomIds:
-                                hasLeaavindAtomId = True
-                                continue
-
-                            _atom = None
-                            if coordAtomSite is not None:
-                                if _atomId in coordAtomSite['atom_id']:
-                                    _atom = {}
-                                    _atom['comp_id'] = coordAtomSite['comp_id']
-                                elif 'alt_atom_id' in coordAtomSite and _atomId in coordAtomSite['alt_atom_id']:
-                                    _atom = {}
-                                    _atom['comp_id'] = coordAtomSite['comp_id']
-
-                            if _atom is not None and _atom['comp_id'] == compId:
-                                _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId})
-
-                            else:
-                                ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chainId), None)
-                                if ps is not None and seqId in ps['seq_id'] and ps['comp_id'][ps['seq_id'].index(seqId)] == compId:
-                                    seqId = self.getRealSeqId(ps, seqId)
-                                    if any(cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId):
-                                        _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId})
-
-                        # sequential
-                        if hasLeaavindAtomId:
-                            _origin =\
-                                self.__cR.getDictListWithFilter('atom_site',
-                                                                [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                                 {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                                 {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
-                                                                 ],
-                                                                [{'name': self.__authAsymId, 'type': 'str', 'value': chainId},
-                                                                 {'name': self.__authSeqId, 'type': 'int', 'value': seqId},
-                                                                 {'name': self.__authAtomId, 'type': 'str', 'value': atomId},
-                                                                 {'name': self.__modelNumName, 'type': 'int',
-                                                                  'value': self.__representativeModelId},
-                                                                 {'name': 'label_alt_id', 'type': 'enum',
-                                                                  'enum': ('A')}
-                                                                 ])
-
-                            if len(_origin) == 1:
-                                origin = toNpArray(_origin[0])
-
-                                ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chainId), None)
-                                if ps is not None:
-                                    for _seqId in [seqId - 1, seqId + 1]:
-                                        if _seqId in ps['seq_id']:
-                                            _seqId = self.getRealSeqId(ps, _seqId)
-                                            _compId = ps['comp_id'][ps['seq_id'].index(_seqId)]
-                                            if self.__ccU.updateChemCompDict(_compId):
-                                                leavingAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaLeavingAtomFlag] == 'Y']
-
-                                                _atomIdSelect = set()
-                                                for ccb in self.__ccU.lastBonds:
-                                                    if ccb[self.__ccU.ccbAtomId1] in leavingAtomIds:
-                                                        _atomId = ccb[self.__ccU.ccbAtomId2]
-                                                        if _atomId not in leavingAtomIds:
-                                                            _atomIdSelect.add(_atomId)
-                                                    if ccb[self.__ccU.ccbAtomId2] in leavingAtomIds:
-                                                        _atomId = ccb[self.__ccU.ccbAtomId1]
-                                                        if _atomId not in leavingAtomIds:
-                                                            _atomIdSelect.add(_atomId)
-
-                                                for _atomId in _atomIdSelect:
-                                                    _neighbor =\
-                                                        self.__cR.getDictListWithFilter('atom_site',
-                                                                                        [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                                                         {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                                                         {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
-                                                                                         ],
-                                                                                        [{'name': self.__authAsymId, 'type': 'str', 'value': chainId},
-                                                                                         {'name': self.__authSeqId, 'type': 'int', 'value': _seqId},
-                                                                                         {'name': self.__authAtomId, 'type': 'str', 'value': _atomId},
-                                                                                         {'name': self.__modelNumName, 'type': 'int',
-                                                                                          'value': self.__representativeModelId},
-                                                                                         {'name': 'label_alt_id', 'type': 'enum',
-                                                                                          'enum': ('A')}
-                                                                                         ])
-
-                                                    if len(_neighbor) != 1:
-                                                        continue
-
-                                                    if np.linalg.norm(toNpArray(_neighbor[0]) - origin) < 2.5:
-                                                        _atomSelection.append({'chain_id': chainId, 'seq_id': _seqId, 'comp_id': _compId, 'atom_id': _atomId})
-
-                    # struct_conn category
-                    _atom = self.__cR.getDictListWithFilter('struct_conn',
-                                                            [{'name': 'ptnr1_auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                                             {'name': 'ptnr1_auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                                             {'name': 'ptnr1_label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                             {'name': 'ptnr1_label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
-                                                             ],
-                                                            [{'name': 'ptnr2_auth_asym_id', 'type': 'str', 'value': chainId},
-                                                             {'name': 'ptnr2_auth_seq_id', 'type': 'int', 'value': seqId},
-                                                             {'name': 'ptnr2_label_atom_id', 'type': 'str', 'value': atomId},
-                                                             {'name': self.__modelNumName, 'type': 'int',
-                                                              'value': self.__representativeModelId}
-                                                             ])
-
-                    if len(_atom) == 1:
-                        _atomSelection.append(_atom[0])
-
-                    _atom = self.__cR.getDictListWithFilter('struct_conn',
-                                                            [{'name': 'ptnr2_auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                                             {'name': 'ptnr2_auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                                             {'name': 'ptnr2_label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                             {'name': 'ptnr2_label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
-                                                             ],
-                                                            [{'name': 'ptnr1_auth_asym_id', 'type': 'str', 'value': chainId},
-                                                             {'name': 'ptnr1_auth_seq_id', 'type': 'int', 'value': seqId},
-                                                             {'name': 'ptnr1_label_atom_id', 'type': 'str', 'value': atomId},
-                                                             {'name': self.__modelNumName, 'type': 'int',
-                                                              'value': self.__representativeModelId}
-                                                             ])
-
-                    if len(_atom) == 1:
-                        _atomSelection.append(_atom[0])
-
-                self.factor['atom_selection'] = [dict(s) for s in set(frozenset(atom.items()) for atom in _atomSelection)]
-
-                if len(self.factor['atom_selection']) == 0:
-                    self.factor['atom_id'] = [None]
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        "The 'bondedto' clause has no effect.\n"
-
-            else:
-                self.factor['atom_id'] = [None]
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    "The 'bondedto' clause has no effect because no atom is selected.\n"
-
-        elif ctx.ByGroup():
-            if self.__sel_expr_debug:
-                print("  " * self.depth + "--> bygroup")
-            if not self.__hasCoord:
-                return
-            if 'atom_selection' in self.factor and len(self.factor['atom_selection']) > 0:
-                _atomSelection = []
-
-                for _atom in self.factor['atom_selection']:
-                    chainId = _atom['chain_id']
-                    compId = _atom['comp_id']
-                    seqId = _atom['seq_id']
-                    atomId = _atom['atom_id']
-
-                    _atomSelection.append(_atom)  # self atom
-
-                    if self.__ccU.updateChemCompDict(compId):
-                        _bondedAtomIdSelect = set()
-                        for ccb in self.__ccU.lastBonds:
-                            if ccb[self.__ccU.ccbAtomId1] == atomId:
-                                _bondedAtomIdSelect.add(ccb[self.__ccU.ccbAtomId2])
-                            elif ccb[self.__ccU.ccbAtomId2] == atomId:
-                                _bondedAtomIdSelect.add(ccb[self.__ccU.ccbAtomId1])
-
-                        _nonBondedAtomIdSelect = set()
-                        for _atomId in _bondedAtomIdSelect:
-                            for ccb in self.__ccU.lastBonds:
-                                if ccb[self.__ccU.ccbAtomId1] == _atomId:
-                                    _nonBondedAtomIdSelect.add(ccb[self.__ccU.ccbAtomId2])
-                                elif ccb[self.__ccU.ccbAtomId2] == _atomId:
-                                    _nonBondedAtomIdSelect.add(ccb[self.__ccU.ccbAtomId1])
-
-                        if atomId in _nonBondedAtomIdSelect:
-                            _nonBondedAtomIdSelect.remove(atomId)
-
-                        for _atomId in _bondedAtomIdSelect:
-                            if _atomId in _nonBondedAtomIdSelect:
-                                _nonBondedAtomIdSelect.remove(_atomId)
-
-                        if len(_nonBondedAtomIdSelect) > 0:
-                            _origin =\
-                                self.__cR.getDictListWithFilter('atom_site',
-                                                                [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                                 {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                                 {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
-                                                                 ],
-                                                                [{'name': self.__authAsymId, 'type': 'str', 'value': chainId},
-                                                                 {'name': self.__authSeqId, 'type': 'int', 'value': seqId},
-                                                                 {'name': self.__authAtomId, 'type': 'str', 'value': atomId},
-                                                                 {'name': self.__modelNumName, 'type': 'int',
-                                                                  'value': self.__representativeModelId},
-                                                                 {'name': 'label_alt_id', 'type': 'enum',
-                                                                  'enum': ('A')}
-                                                                 ])
-
-                            if len(_origin) == 1:
-                                origin = toNpArray(_origin[0])
-
-                                for _atomId in _nonBondedAtomIdSelect:
-                                    _neighbor =\
-                                        self.__cR.getDictListWithFilter('atom_site',
-                                                                        [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                                         {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                                         {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
-                                                                         ],
-                                                                        [{'name': self.__authAsymId, 'type': 'str', 'value': chainId},
-                                                                         {'name': self.__authSeqId, 'type': 'int', 'value': seqId},
-                                                                         {'name': self.__authAtomId, 'type': 'str', 'value': _atomId},
-                                                                         {'name': self.__modelNumName, 'type': 'int',
-                                                                          'value': self.__representativeModelId},
-                                                                         {'name': 'label_alt_id', 'type': 'enum',
-                                                                          'enum': ('A')}
-                                                                         ])
-
-                                    if len(_neighbor) != 1:
-                                        continue
-
-                                    if np.linalg.norm(toNpArray(_neighbor[0]) - origin) < 2.0:
-                                        _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId})
-
-                            else:
-                                cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId), None)
-                                if cca is not None:
-                                    _origin = {'x': float(cca[self.__ccU.ccaCartnX]), 'y': float(cca[self.__ccU.ccaCartnY]), 'z': float(cca[self.__ccU.ccaCartnZ])}
-                                    origin = toNpArray(_origin)
-
-                                    for _atomId in _nonBondedAtomIdSelect:
-                                        _cca = next((_cca for _cca in self.__ccU.lastAtomList if _cca[self.__ccU.ccaAtomId] == _atomId), None)
-                                        if _cca is not None:
-                                            _neighbor = {'x': float(_cca[self.__ccU.ccaCartnX]), 'y': float(_cca[self.__ccU.ccaCartnY]), 'z': float(_cca[self.__ccU.ccaCartnZ])}
-
-                                            if np.linalg.norm(toNpArray(_neighbor) - origin) < 2.0:
-                                                _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId})
-
-                atomSelection = [dict(s) for s in set(frozenset(atom.items()) for atom in _atomSelection)]
-
-                if len(atomSelection) <= len(self.factor['atom_selection']):
-                    self.factor['atom_id'] = [None]
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        "The 'bygroup' clause has no effect.\n"
-
-                self.factor['atom_selection'] = atomSelection
-
-            else:
-                self.factor['atom_id'] = [None]
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    "The 'bygroup' clause has no effect because no atom is selected.\n"
-
-        elif ctx.ByRes():
-            if self.__sel_expr_debug:
-                print("  " * self.depth + "--> byres")
-            if not self.__hasCoord:
-                return
-            if 'atom_selection' in self.factor and len(self.factor['atom_selection']) > 0:
-                _atomSelection = []
-
-                _sequenceSelect = set()
-
-                for _atom in self.factor['atom_selection']:
-                    chainId = _atom['chain_id']
-                    seqId = _atom['seq_id']
-
-                    _sequenceSelect.add((chainId, seqId))
-
-                for (chainId, seqId) in _sequenceSelect:
-                    _atom = next(_atom for _atom in self.factor['atom_selection'] if _atom['chain_id'] == chainId and _atom['seq_id'] == seqId)
-                    compId = _atom['comp_id']
-
-                    _atomByRes =\
-                        self.__cR.getDictListWithFilter('atom_site',
-                                                        [{'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                         {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
-                                                         ],
-                                                        [{'name': self.__authAsymId, 'type': 'str', 'value': chainId},
-                                                         {'name': self.__authSeqId, 'type': 'int', 'value': seqId},
-                                                         {'name': self.__modelNumName, 'type': 'int',
-                                                          'value': self.__representativeModelId},
-                                                         {'name': 'label_alt_id', 'type': 'enum',
-                                                          'enum': ('A')}
-                                                         ])
-
-                    if len(_atomByRes) > 0 and _atomByRes[0]['comp_id'] == compId:
-                        for _atom in _atomByRes:
-                            _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': _atom['comp_id'], 'atom_id': _atom['atom_id']})
-
-                    else:
-                        ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chainId), None)
-                        if ps is not None and seqId in ps['seq_id'] and ps['comp_id'][ps['seq_id'].index(seqId)] == compId:
-                            seqId = self.getRealSeqId(ps, seqId)
-                            if self.__ccU.updateChemCompDict(compId):
-                                atomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y']
-                                for atomId in atomIds:
-                                    _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': atomId})
-
-                self.factor['atom_selection'] = [dict(s) for s in set(frozenset(atom.items()) for atom in _atomSelection)]
-
-                if len(self.factor['atom_selection']) == 0:
-                    self.factor['atom_id'] = [None]
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        "The 'byres' clause has no effect.\n"
-
-            else:
-                self.factor['atom_id'] = [None]
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    "The 'byres' clause has no effect because no atom is selected.\n"
-
-        elif ctx.Chemical():
-            if self.__sel_expr_debug:
-                print("  " * self.depth + "--> chemical")
-            if ctx.Colon():  # range expression
-                self.factor['type_symbols'] = [str(ctx.Simple_name(0)), str(ctx.Simple_name(1))]
-
-            elif ctx.Simple_name(0):
-                self.factor['type_symbol'] = [str(ctx.Simple_name(0))]
-
-            elif ctx.Simple_names(0):
-                self.factor['type_symbols'] = [str(ctx.Simple_names(0))]
-
-            self.consumeFactor_expressions("'chemical' clause", False)
-
-        elif ctx.Hydrogen():
-            if self.__sel_expr_debug:
-                print("  " * self.depth + "--> hydrogen")
-            _typeSymbolSelect = set()
-            atomTypes = self.__cR.getDictList('atom_type')
-            if len(atomTypes) > 0 and 'symbol' in atomTypes[0]:
-                for atomType in atomTypes:
-                    typeSymbol = atomType['symbol']
-                    atomicNumber = int_atom(typeSymbol)
-                    atomicWeight = ELEMENT_WEIGHTS[atomicNumber]
-                    if atomicWeight < 3.5:
-                        _typeSymbolSelect.add(typeSymbol)
-
-            self.factor['type_symbol'] = list(_typeSymbolSelect)
-
-            self.consumeFactor_expressions("'hydrogen' clause", False)
-
-        elif ctx.Id():
-            if self.__sel_expr_debug:
-                print("  " * self.depth + "--> id")
-            self.factor['atom_id'] = [None]
-            self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
-                "The 'id' clause has no effect "\
-                "because the internal atom number is not included in the coordinate file.\n"
-
-        elif ctx.Name():
-            if self.__sel_expr_debug:
-                print("  " * self.depth + "--> name")
-            if ctx.Colon():  # range expression
-                self.factor['atom_ids'] = [str(ctx.Simple_name(0)), str(ctx.Simple_name(1))]
-
-            elif ctx.Simple_name(0):
-                self.factor['atom_id'] = [str(ctx.Simple_name(0))]
-
-            elif ctx.Simple_names(0):
-                self.factor['atom_ids'] = [str(ctx.Simple_names(0))]
-
-        elif ctx.Not_op():
-            if self.__sel_expr_debug:
-                print("  " * self.depth + "--> not")
-            if not self.__hasCoord:
-                return
-
-            try:
-
-                _atomSelection =\
-                    self.__cR.getDictListWithFilter('atom_site',
-                                                    [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                                     {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                                     {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                     {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
-                                                     ],
-                                                    [{'name': self.__modelNumName, 'type': 'int',
-                                                      'value': self.__representativeModelId},
-                                                     {'name': 'label_alt_id', 'type': 'enum',
-                                                      'enum': ('A')}
-                                                     ])
-
-            except Exception as e:
-                if self.__verbose:
-                    self.__lfh.write(f"+XplorMRParserListener.exitFactor() ++ Error  - {str(e)}\n")
-
-            _refAtomSelection = [atom for atom in self.factor['atom_selection'] if atom in _atomSelection]
-            self.factor['atom_selection'] = [atom for atom in _atomSelection if atom not in _refAtomSelection]
-
-            if len(self.factor['atom_selection']) == 0:
-                self.factor['atom_id'] = [None]
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    "The 'not' clause has no effect.\n"
-
-        elif ctx.Point():
-            if self.__sel_expr_debug:
-                print("  " * self.depth + "--> point")
-            if not self.__hasCoord:
-                return
-            if ctx.Tail():
-
-                if self.inVector3D_tail is not None:
-
-                    try:
-
-                        _tail =\
-                            self.__cR.getDictListWithFilter('atom_site',
-                                                            [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                             {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                             {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
-                                                             ],
-                                                            [{'name': self.__authAsymId, 'type': 'str', 'value': self.inVector3D_tail['chain_id']},
-                                                             {'name': self.__authSeqId, 'type': 'int', 'value': self.inVector3D_tail['seq_id']},
-                                                             {'name': self.__authAtomId, 'type': 'str', 'value': self.inVector3D_tail['atom_id']},
-                                                             {'name': self.__modelNumName, 'type': 'int',
-                                                              'value': self.__representativeModelId},
-                                                             {'name': 'label_alt_id', 'type': 'enum',
-                                                              'enum': ('A')}
-                                                             ])
-
-                        if len(_tail) == 1:
-                            tail = toNpArray(_tail[0])
-
-                            if self.inVector3D_head is None:
-                                self.vector3D = tail
-
-                            else:
-
-                                _head =\
-                                    self.__cR.getDictListWithFilter('atom_site',
-                                                                    [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                                     {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                                     {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
-                                                                     ],
-                                                                    [{'name': self.__authAsymId, 'type': 'str', 'value': self.inVector3D_head['chain_id']},
-                                                                     {'name': self.__authSeqId, 'type': 'int', 'value': self.inVector3D_head['seq_id']},
-                                                                     {'name': self.__authAtomId, 'type': 'str', 'value': self.inVector3D_head['atom_id']},
-                                                                     {'name': self.__modelNumName, 'type': 'int',
-                                                                      'value': self.__representativeModelId},
-                                                                     {'name': 'label_alt_id', 'type': 'enum',
-                                                                      'enum': ('A')}
-                                                                     ])
-
-                                if len(_head) == 1:
-                                    head = toNpArray(_head[0])
-                                    self.vector3D = np.subtract(tail, head, dtype=float)
-
-                    except Exception as e:
-                        if self.__verbose:
-                            self.__lfh.write(f"+XplorMRParserListener.exitFactor() ++ Error  - {str(e)}\n")
-
-                self.inVector3D_tail = self.inVector3D_head = None
-                cut = float(str(ctx.Real(0)))
-
-            else:
-                self.vector3D = [float(str(ctx.Real(0))), float(str(ctx.Real(1))), float(str(ctx.Real(2)))]
-                cut = float(str(ctx.Real(3)))
-
-            if self.vector3D is None:
-                self.factor['atom_id'] = [None]
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    "The 'point' clause has no effect because no 3d-vector is specified.\n"
-
-            else:
+                    "The 'previous' clause has no effect "\
+                    "because the internal atom selection is fragile in the restraint file.\n"
+
+            elif ctx.Pseudo():
+                if self.__sel_expr_debug:
+                    print("  " * self.depth + "--> pseudo")
+                if not self.__hasCoord:
+                    return
                 atomSelection = []
 
                 try:
 
-                    _neighbor =\
+                    _atomSelection =\
                         self.__cR.getDictListWithFilter('atom_site',
                                                         [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                                          {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
                                                          {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                         {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'},
-                                                         {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                         {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                         {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
+                                                         {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
                                                          ],
-                                                        [{'name': 'Cartn_x', 'type': 'range-float',
-                                                          'range': {'min_exclusive': (self.vector3D[0] - cut),
-                                                                    'max_exclusive': (self.vector3D[0] + cut)}},
-                                                         {'name': 'Cartn_y', 'type': 'range-float',
-                                                          'range': {'min_exclusive': (self.vector3D[1] - cut),
-                                                                    'max_exclusive': (self.vector3D[1] + cut)}},
-                                                         {'name': 'Cartn_z', 'type': 'range-float',
-                                                          'range': {'min_exclusive': (self.vector3D[2] - cut),
-                                                                    'max_exclusive': (self.vector3D[2] + cut)}},
-                                                         {'name': self.__modelNumName, 'type': 'int',
+                                                        [{'name': self.__modelNumName, 'type': 'int',
                                                           'value': self.__representativeModelId},
                                                          {'name': 'label_alt_id', 'type': 'enum',
                                                           'enum': ('A')}
                                                          ])
 
-                    if len(_neighbor) > 0:
-                        neighbor = [atom for atom in _neighbor if np.linalg.norm(toNpArray(atom) - self.vector3D) < cut]
+                    lastCompId = None
+                    pseudoAtoms = None
 
-                        for atom in neighbor:
-                            del atom['x']
-                            del atom['y']
-                            del atom['z']
-                            atomSelection.append(atom)
+                    for _atom in _atomSelection:
+                        compId = _atom['comp_id']
+                        atomId = _atom['atom_id']
+
+                        if compId is not lastCompId:
+                            pseudoAtoms = self.__csStat.getPseudoAtoms(compId)
+                            lastCompId = compId
+
+                        if atomId in pseudoAtoms:
+                            atomSelection.append(_atom)
 
                 except Exception as e:
                     if self.__verbose:
                         self.__lfh.write(f"+XplorMRParserListener.exitFactor() ++ Error  - {str(e)}\n")
 
-                self.factor['atom_selection'] = atomSelection
+                self.intersectionFactor_expressions(atomSelection)
 
                 if len(self.factor['atom_selection']) == 0:
                     self.factor['atom_id'] = [None]
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        "The 'cut' clause has no effect.\n"
+                        "The 'pseudo' clause has no effect.\n"
 
-            self.inVector3D = False
-            self.vector3D = None
+            elif ctx.Residue():
+                if self.__sel_expr_debug:
+                    print("  " * self.depth + "--> residue")
+                if ctx.Colon():  # range expression
+                    self.factor['seq_id'] = list(range(int(str(ctx.Integer(0))), int(str(ctx.Integer(0))) + 1))
 
-        elif ctx.Previous():
-            if self.__sel_expr_debug:
-                print("  " * self.depth + "--> previous")
-            self.factor['atom_id'] = [None]
-            self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
-                "The 'previous' clause has no effect "\
-                "because the internal atom selection is fragile in the restraint file.\n"
+                elif ctx.Integer(0):
+                    self.factor['seq_id'] = [int(str(ctx.Integer(0)))]
 
-        elif ctx.Pseudo():
-            if self.__sel_expr_debug:
-                print("  " * self.depth + "--> pseudo")
-            if not self.__hasCoord:
-                return
-            atomSelection = []
+                elif ctx.Integers():
+                    self.factor['seq_ids'] = [str(ctx.Integers())]
 
-            try:
+            elif ctx.Resname():
+                if self.__sel_expr_debug:
+                    print("  " * self.depth + "--> resname")
+                if ctx.Colon():  # range expression
+                    self.factor['comp_ids'] = [str(ctx.Simple_name(0)), str(ctx.Simple_name(1))]
 
-                _atomSelection =\
-                    self.__cR.getDictListWithFilter('atom_site',
-                                                    [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                                     {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                                     {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                     {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
-                                                     ],
-                                                    [{'name': self.__modelNumName, 'type': 'int',
-                                                      'value': self.__representativeModelId},
-                                                     {'name': 'label_alt_id', 'type': 'enum',
-                                                      'enum': ('A')}
-                                                     ])
+                elif ctx.Simple_name(0):
+                    self.factor['comp_id'] = [str(ctx.Simple_name(0))]
 
-                lastCompId = None
-                pseudoAtoms = None
+                elif ctx.Simple_names(0):
+                    self.factor['comp_ids'] = [str(ctx.Simple_names(0))]
 
-                for _atom in _atomSelection:
-                    compId = _atom['comp_id']
-                    atomId = _atom['atom_id']
-
-                    if compId is not lastCompId:
-                        pseudoAtoms = self.__csStat.getPseudoAtoms(compId)
-                        lastCompId = compId
-
-                    if atomId in pseudoAtoms:
-                        atomSelection.append(_atom)
-
-            except Exception as e:
-                if self.__verbose:
-                    self.__lfh.write(f"+XplorMRParserListener.exitFactor() ++ Error  - {str(e)}\n")
-
-            self.intersectionFactor_expressions(atomSelection)
-
-            if len(self.factor['atom_selection']) == 0:
-                self.factor['atom_id'] = [None]
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    "The 'pseudo' clause has no effect.\n"
-
-        elif ctx.Residue():
-            if self.__sel_expr_debug:
-                print("  " * self.depth + "--> residue")
-            if ctx.Colon():  # range expression
-                self.factor['seq_id'] = list(range(int(str(ctx.Integer(0))), int(str(ctx.Integer(0))) + 1))
-
-            elif ctx.Integer(0):
-                self.factor['seq_id'] = [int(str(ctx.Integer(0)))]
-
-            elif ctx.Integers():
-                self.factor['seq_ids'] = [str(ctx.Integers())]
-
-        elif ctx.Resname():
-            if self.__sel_expr_debug:
-                print("  " * self.depth + "--> resname")
-            if ctx.Colon():  # range expression
-                self.factor['comp_ids'] = [str(ctx.Simple_name(0)), str(ctx.Simple_name(1))]
-
-            elif ctx.Simple_name(0):
-                self.factor['comp_id'] = [str(ctx.Simple_name(0))]
-
-            elif ctx.Simple_names(0):
-                self.factor['comp_ids'] = [str(ctx.Simple_names(0))]
-
-        elif ctx.SegIdentifier():
-            if self.__sel_expr_debug:
-                print("  " * self.depth + "--> segidentifier")
-            if not self.__hasPolySeq:
-                return
-            if ctx.Colon():  # range expression
-                if ctx.Simple_name(0):
-                    begChainId = str(ctx.Simple_name(0))
-                elif ctx.Double_quote_string(0):
-                    begChainId = str(ctx.Simple_name(0)).strip('"').strip()
-                if ctx.Simple_name(1):
-                    endChainId = str(ctx.Simple_name(1))
-                elif ctx.Double_quote_string(1):
-                    endChainId = str(ctx.Simple_name(1)).strip('"').strip()
-                self.factor['chain_id'] = [ps['chain_id'] for ps in self.__polySeq
-                                           if begChainId <= ps['chain_id'] <= endChainId]
-
-                if len(self.factor['chain_id']) == 0:
-                    self.factor['atom_id'] = [None]
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"Couldn't specify segment name {begChainId:!r}:{endChainId:!r} in the coordinates.\n"
-
-            else:
-                if ctx.Simple_name(0) or ctx.Double_quote_string(0):
+            elif ctx.SegIdentifier():
+                if self.__sel_expr_debug:
+                    print("  " * self.depth + "--> segidentifier")
+                if not self.__hasPolySeq:
+                    return
+                if ctx.Colon():  # range expression
                     if ctx.Simple_name(0):
-                        chainId = str(ctx.Simple_name(0))
+                        begChainId = str(ctx.Simple_name(0))
                     elif ctx.Double_quote_string(0):
-                        chainId = str(ctx.Simple_name(0)).strip('"').strip()
+                        begChainId = str(ctx.Simple_name(0)).strip('"').strip()
+                    if ctx.Simple_name(1):
+                        endChainId = str(ctx.Simple_name(1))
+                    elif ctx.Double_quote_string(1):
+                        endChainId = str(ctx.Simple_name(1)).strip('"').strip()
                     self.factor['chain_id'] = [ps['chain_id'] for ps in self.__polySeq
-                                               if ps['chain_id'] == chainId]
-                if ctx.Simple_names(0):
-                    chainId = str(ctx.Simple_names(0))
-                    _chainId = toRegEx(chainId)
-                    self.factor['chain_id'] = [ps['chain_id'] for ps in self.__polySeq
-                                               if re.match(_chainId, ps['chain_id'])]
-                if len(self.factor['chain_id']) == 0:
+                                               if begChainId <= ps['chain_id'] <= endChainId]
+
+                    if len(self.factor['chain_id']) == 0:
+                        self.factor['atom_id'] = [None]
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            f"Couldn't specify segment name {begChainId:!r}:{endChainId:!r} in the coordinates.\n"
+
+                else:
+                    if ctx.Simple_name(0) or ctx.Double_quote_string(0):
+                        if ctx.Simple_name(0):
+                            chainId = str(ctx.Simple_name(0))
+                        elif ctx.Double_quote_string(0):
+                            chainId = str(ctx.Simple_name(0)).strip('"').strip()
+                        self.factor['chain_id'] = [ps['chain_id'] for ps in self.__polySeq
+                                                   if ps['chain_id'] == chainId]
+                    if ctx.Simple_names(0):
+                        chainId = str(ctx.Simple_names(0))
+                        _chainId = toRegEx(chainId)
+                        self.factor['chain_id'] = [ps['chain_id'] for ps in self.__polySeq
+                                                   if re.match(_chainId, ps['chain_id'])]
+                    if len(self.factor['chain_id']) == 0:
+                        self.factor['atom_id'] = [None]
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            "Couldn't specify segment name "\
+                            f"'{chainId}' in the coordinates.\n"  # do not use 'chainId!r' expression, '%' code throws ValueError
+
+            elif ctx.Store_1() or ctx.Store_2() or ctx.Store_3()\
+                    or ctx.Store_4() or ctx.Store_5() or ctx.Store_6()\
+                    or ctx.Store_7() or ctx.Store_8() or ctx.Store_9():
+                if self.__sel_expr_debug:
+                    print("  " * self.depth + "--> store[1-9]")
+                self.factor['atom_id'] = [None]
+                self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
+                    "The 'store[1-9]' clause has no effect "\
+                    "because the internal vector statement is fragile in the restraint file.\n"
+
+            elif ctx.Tag():
+                if self.__sel_expr_debug:
+                    print("  " * self.depth + "--> tag")
+                if not self.__hasCoord:
+                    return
+                atomSelection = []
+                _sequenceSelect = []
+
+                try:
+
+                    _atomSelection =\
+                        self.__cR.getDictListWithFilter('atom_site',
+                                                        [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                         {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                                         {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                         {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
+                                                         ],
+                                                        [{'name': self.__modelNumName, 'type': 'int',
+                                                          'value': self.__representativeModelId},
+                                                         {'name': 'label_alt_id', 'type': 'enum',
+                                                          'enum': ('A')}
+                                                         ])
+
+                    for _atom in _atomSelection:
+                        _sequence = (_atom['chain_id'], _atom['seq_id'])
+
+                        if _sequence in _sequenceSelect:
+                            continue
+
+                        atomSelection.append(_atom)
+                        _sequenceSelect.append(_sequence)
+
+                except Exception as e:
+                    if self.__verbose:
+                        self.__lfh.write(f"+XplorMRParserListener.exitFactor() ++ Error  - {str(e)}\n")
+
+                self.intersectionFactor_expressions(atomSelection)
+
+                if len(self.factor['atom_selection']) == 0:
                     self.factor['atom_id'] = [None]
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        "Couldn't specify segment name "\
-                        f"'{chainId}' in the coordinates.\n"  # do not use 'chainId!r' expression, '%' code throws ValueError
+                        "The 'tag' clause has no effect.\n"
 
-        elif ctx.Store_1() or ctx.Store_2() or ctx.Store_3()\
-                or ctx.Store_4() or ctx.Store_5() or ctx.Store_6()\
-                or ctx.Store_7() or ctx.Store_8() or ctx.Store_9():
-            if self.__sel_expr_debug:
-                print("  " * self.depth + "--> store[1-9]")
-            self.factor['atom_id'] = [None]
-            self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
-                "The 'store[1-9]' clause has no effect "\
-                "because the internal vector statement is fragile in the restraint file.\n"
+            self.stackFactors.append(self.factor)
 
-        elif ctx.Tag():
-            if self.__sel_expr_debug:
-                print("  " * self.depth + "--> tag")
-            if not self.__hasCoord:
-                return
-            atomSelection = []
-            _sequenceSelect = []
+        finally:
+            self.numberFSelection.clear()
 
-            try:
+    # Enter a parse tree produced by XplorMRParser#number.
+    def enterNumber(self, ctx: XplorMRParser.NumberContext):  # pylint: disable=unused-argument
+        pass
 
-                _atomSelection =\
-                    self.__cR.getDictListWithFilter('atom_site',
-                                                    [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                                     {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                                     {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                     {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
-                                                     ],
-                                                    [{'name': self.__modelNumName, 'type': 'int',
-                                                      'value': self.__representativeModelId},
-                                                     {'name': 'label_alt_id', 'type': 'enum',
-                                                      'enum': ('A')}
-                                                     ])
+    # Exit a parse tree produced by XplorMRParser#number.
+    def exitNumber(self, ctx: XplorMRParser.NumberContext):
+        if ctx.Real():
+            self.numberSelection.append(float(str(ctx.Real())))
+        else:
+            self.numberSelection.append(float(str(ctx.Integer())))
 
-                for _atom in _atomSelection:
-                    _sequence = (_atom['chain_id'], _atom['seq_id'])
+    # Enter a parse tree produced by XplorMRParser#number_f.
+    def enterNumber_f(self, ctx: XplorMRParser.Number_fContext):  # pylint: disable=unused-argument
+        pass
 
-                    if _sequence in _sequenceSelect:
-                        continue
+    # Exit a parse tree produced by XplorMRParser#number_f.
+    def exitNumber_f(self, ctx: XplorMRParser.Number_fContext):
+        if ctx.Real():
+            self.numberFSelection.append(float(str(ctx.Real())))
+        else:
+            self.numberFSelection.append(float(str(ctx.Integer())))
 
-                    atomSelection.append(_atom)
-                    _sequenceSelect.append(_sequence)
+    # Enter a parse tree produced by XplorMRParser#number_s.
+    def enterNumber_s(self, ctx: XplorMRParser.Number_sContext):  # pylint: disable=unused-argument
+        pass
 
-            except Exception as e:
-                if self.__verbose:
-                    self.__lfh.write(f"+XplorMRParserListener.exitFactor() ++ Error  - {str(e)}\n")
+    # Exit a parse tree produced by XplorMRParser#number_s.
+    def exitNumber_s(self, ctx: XplorMRParser.Number_sContext):  # pylint: disable=unused-argument
+        pass
 
-            self.intersectionFactor_expressions(atomSelection)
-
-            if len(self.factor['atom_selection']) == 0:
-                self.factor['atom_id'] = [None]
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    "The 'tag' clause has no effect.\n"
-
-        self.stackFactors.append(self.factor)
+    def getNumber_s(self, ctx: XplorMRParser.Number_sContext):  # pylint: disable=no-self-use
+        if ctx.Real():
+            return float(str(ctx.Real()))
+        return float(str(ctx.Integer()))
 
     def __getCurrentRestraint(self):
         if self.__cur_subtype == 'dist':

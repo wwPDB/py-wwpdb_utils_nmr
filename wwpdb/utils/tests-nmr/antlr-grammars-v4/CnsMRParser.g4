@@ -35,7 +35,7 @@ cns_mr:
 	dihedral_assign*		// allowing bare assign clauses for Dihedral angle restraints
 	sani_assign*			// allowing bare assign clauses for RDC restraints
 	plane_statement*		// allowing bare group clauses for Plane restraints
-        coup_assign*			// allowing bare assign clauses for Scaler J-coupling restraints
+	coup_assign*			// allowing bare assign clauses for Scaler J-coupling restraints
 	EOF;
 
 distance_restraint:
@@ -80,16 +80,16 @@ angle_db_restraint:
 noe_statement:
 	Analysis Equ_op Noe_analysis |
 	noe_assign* |
-	Asymptote Simple_names Real |
+	Asymptote Simple_names number_s |
 	Averaging Simple_names Noe_avr_methods |
-	Bgig Simple_names Real |
-	Ceiling Equ_op Real |
+	Bgig Simple_names number_s |
+	Ceiling Equ_op number_s |
 	Classification Equ_op Simple_name |
 	CountViol Simple_name |
 	Cv Equ_op Integer |
 	Den Initialize |
-	Den Update Gamma Equ_op Real Kappa Equ_op Real |
-	Distribute Simple_name Simple_name Real |
+	Den Update Gamma Equ_op number_s Kappa Equ_op number_s |
+	Distribute Simple_name Simple_name number_s |
 	Ensemble *? End |
 	Monomers Simple_names Integer |
 	Ncount Simple_names Integer |
@@ -98,23 +98,23 @@ noe_statement:
 	Partition Equ_op Integer |
 	Potential Simple_names Noe_potential |
 	Predict predict_statement End |
-	Print Threshold Equ_op Real |
+	Print Threshold Equ_op number_s |
 	Raverage Simple_name *? End |
 	Reset |
-	Rswitch Simple_names Real |
-	Scale Simple_names Real |
-	SoExponent Simple_names Real |
-	SqConstant Simple_names Real |
-	SqExponent Simple_names Real |
-	SqOffset Simple_names Real |
+	Rswitch Simple_names number_s |
+	Scale Simple_names number_s |
+	SoExponent Simple_names number_s |
+	SqConstant Simple_names number_s |
+	SqExponent Simple_names number_s |
+	SqOffset Simple_names number_s |
 	Taverage Simple_name *? End |
-	Temperature Equ_op Real;
+	Temperature Equ_op number_s;
 
 noe_assign:
-	Assign selection selection (Real | Integer) Real Real (Or_op selection selection)*;
+	Assign selection selection number number number (Or_op selection selection)*;
 
 predict_statement:
-	Cutoff Equ_op Real | Cuton Equ_op Real | From selection | To selection;
+	Cutoff Equ_op number_s | Cuton Equ_op number_s | From selection | To selection;
 
 /* CNS: Dihedral angle restraints - Syntax - restranits/dihedral
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
@@ -125,11 +125,11 @@ dihedral_statement:
 	Nassign Equ_op Integer |
 	Partition Equ_op Integer |
 	Reset |
-	Scale Equ_op Real |
+	Scale Equ_op number_s |
 	Print_any;
 
 dihedral_assign:
-	Assign selection selection selection selection (Real | Integer) Real Real Integer;
+	Assign selection selection selection selection number number number Integer;
 
 /* CNS: Plane restraints - Syntax - restraints/plane
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
@@ -141,14 +141,14 @@ plane_statement:
 
 group_statement:
 	Selection Equ_op selection |
-	Weight Equ_op (Real | Integer);
+	Weight Equ_op number_s;
 
 /* CNS: Plane restraints - Syntax - restraints/harmonic
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
 */
 harmonic_statement:
 	Exponent Equ_op Integer |
-	Normal Equ_op L_paren (Real Comma? Real Comma? Real | Tail Equ_op selection Comma? (Head Equ_op selection)?) R_paren;
+	Normal Equ_op L_paren (number_s Comma? number_s Comma? number_s | Tail Equ_op selection Comma? (Head Equ_op selection)?) R_paren;
 
 /* CNS: Suscetibility anisotropy restraints - Syntax
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
@@ -156,15 +156,15 @@ harmonic_statement:
 sani_statement:
 	sani_assign* |
 	Classification Equ_op Simple_name |
-	Coefficients Real Real Real |
-	ForceConstant Equ_op Real |
+	Coefficients number_s number_s number_s |
+	ForceConstant Equ_op number_s |
 	Nrestraints Equ_op Integer |
 	Potential Equ_op Rdc_potential |
-	Print Threshold Real |
+	Print Threshold number_s |
 	Reset;
 
 sani_assign:
-	Assign selection selection selection selection selection selection (Real | Integer) Real Real?;
+	Assign selection selection selection selection selection selection number number number?;
 
 /* CNS: Scalar J-coupling restraints - Syntax
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
@@ -172,17 +172,17 @@ sani_assign:
 coupling_statement:
 	coup_assign* |
 	Classification Equ_op Simple_name |
-	Coefficients Real Real Real Real |
+	Coefficients number_s number_s number_s number_s |
 	Cv Equ_op Integer |
-	ForceConstant Real Real? |
+	ForceConstant number_s number_s? |
 	Nrestraints Equ_op Integer |
 	Partition Equ_op Integer |
 	Potential Equ_op Coupling_potential |
-	Print Threshold Real (All | (Classification Equ_op Simple_name)) |
+	Print Threshold number_s (All | (Classification Equ_op Simple_name)) |
 	Reset;
 
 coup_assign:
-	Assign selection selection selection selection (selection selection selection selection)? Real Real (Real Real)?;
+	Assign selection selection selection selection (selection selection selection selection)? number number (number number)?;
 
 /* CNS: Carbon chemical shift restraints - Syntax
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
@@ -190,22 +190,22 @@ coup_assign:
 carbon_shift_statement:
 	carbon_shift_assign* |
 	Classification Equ_op Simple_name |
-	Expectation Integer Integer Real Real Real |
-	ForceConstant Equ_op Real |
+	Expectation Integer Integer number_s number_s number_s |
+	ForceConstant Equ_op number_s |
 	Nrestraints Equ_op Integer |
-	PhiStep Equ_op Real |
-	PsiStep Equ_op Real |
+	PhiStep Equ_op number_s |
+	PsiStep Equ_op number_s |
 	Potential Equ_op Rdc_potential |
-	Print Threshold Real |
+	Print Threshold number_s |
 	carbon_shift_rcoil* |
 	Reset |
 	Zero;
 
 carbon_shift_assign:
-	Assign selection selection selection selection selection Real Real;
+	Assign selection selection selection selection selection number number;
 
 carbon_shift_rcoil:
-	Rcoil selection Real Real;
+	Rcoil selection number_s number_s;
 
 /* CNS: Proton chemical shift restraints - Syntax
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
@@ -221,17 +221,17 @@ proton_shift_statement:
 	proton_shift_ring_atoms* |
 	proton_shift_alphas_and_amides* |
 	Classification Equ_op Simple_name |
-	Error Equ_op? Real |
-	ForceConstant Real Real? |
+	Error Equ_op? number_s |
+	ForceConstant number_s number_s? |
 	Potential Coupling_potential |
-	Print Threshold Real (All | (Classification Equ_op Simple_name)) Simple_name |
+	Print Threshold number_s (All | (Classification Equ_op Simple_name)) Simple_name |
 	Reset;
 
 observed:
-	Observed selection selection? Real Real?;
+	Observed selection selection? number_s number_s?;
 
 proton_shift_rcoil:
-	Rcoil selection Real;
+	Rcoil selection number_s;
 
 proton_shift_anisotropy:
 	Anisotropy selection selection selection Simple_name Logical? Simple_name;
@@ -261,13 +261,13 @@ conformation_statement:
 	conf_assign* |
 	Classification Equ_op Simple_name |
 	Compressed |
-	Expectation Integer Integer? Integer? Integer? Real |
-	Error Equ_op Real |
-	ForceConstant Equ_op Real |
+	Expectation Integer Integer? Integer? Integer? number_s |
+	Error Equ_op number_s |
+	ForceConstant Equ_op number_s |
 	Nrestraints Equ_op Integer |
 	Phase Integer Integer Integer (Integer Integer Integer)? (Integer Integer Integer)? (Integer Integer Integer)? |
 	Potential Equ_op Rdc_potential |
-	Print Threshold Real (All | (Classification Equ_op Simple_name)) |
+	Print Threshold number_s (All | (Classification Equ_op Simple_name)) |
 	Reset |
 	Size Dimensions Integer Integer? Integer? Integer? |
 	Zero;
@@ -281,15 +281,15 @@ conf_assign:
 diffusion_statement:
 	dani_assign* |
 	Classification Equ_op Simple_name |
-	Coefficients Real Real Real Real Real |
-	ForceConstant Equ_op Real |
+	Coefficients number_s number_s number_s number_s number_s |
+	ForceConstant Equ_op number_s |
 	Nrestraints Equ_op Integer |
 	Potential Equ_op Rdc_potential |
-	Print Threshold Real |
+	Print Threshold number_s |
 	Reset;
 
 dani_assign:
-	Assign selection selection selection selection selection selection Real Real;
+	Assign selection selection selection selection selection selection number number;
 
 /* CNS: One-bond coupling restraints - Syntax
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
@@ -297,15 +297,15 @@ dani_assign:
 one_bond_coupling_statement:
 	one_bond_assign* |
 	Classification Equ_op Simple_name |
-	Coefficients Real Real Real Real Real Real Real |
-	ForceConstant Equ_op Real |
+	Coefficients number_s number_s number_s number_s number_s number_s number_s |
+	ForceConstant Equ_op number_s |
 	Nrestraints Equ_op Integer |
 	Potential Equ_op Rdc_potential |
-	Print Threshold Real |
+	Print Threshold number_s |
 	Reset;
 
 one_bond_assign:
-	Assign selection selection selection selection selection selection selection selection Real Real;
+	Assign selection selection selection selection selection selection selection selection number number;
 
 /* CNS: Angle database restraints - Syntax
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
@@ -314,12 +314,12 @@ angle_db_statement:
 	angle_db_assign* |
 	Classification Equ_op Simple_name |
 	DerivFlag Equ_op Simple_name |
-	Expectation Integer Integer Real |
-	Error Equ_op Real |
-	ForceConstant Equ_op Real |
+	Expectation Integer Integer number_s |
+	Error Equ_op number_s |
+	ForceConstant Equ_op number_s |
 	Nrestraints Equ_op Integer |
 	Potential Equ_op Rdc_potential |
-	Print Threshold Real (All | (Classification Equ_op Simple_name)) |
+	Print Threshold number_s (All | (Classification Equ_op Simple_name)) |
 	Reset |
 	Size Angle_dihedral Integer Integer |
 	Zero;
@@ -342,29 +342,29 @@ term:
 factor:
 	L_paren selection_expression R_paren |
 	All |
-	factor Around Real |
+	factor Around number_f |
 	Atom (Simple_names | Simple_name) (Integers | Integer) (Simple_names | Simple_name) |
-	Attribute Abs? Attr_properties Comparison_ops Real |
+	Attribute Abs? Attr_properties Comparison_ops number_f |
 	BondedTo factor |
 	ByGroup factor |
 	ByRes factor |
 	Chemical (Simple_names | Simple_name (Colon Simple_name)?) |
-	Fbox Real Real Real Real Real Real |
+	Fbox number_f number_f number_f number_f number_f number_f |
 	Hydrogen |
 	Id Integer |
 	Known |
 	Name (Simple_names | Simple_name (Colon Simple_name)?) |
 	NONE |
 	Not_op factor |
-	Point L_paren Real Comma? Real Comma? Real R_paren Cut Real |
-	Point L_paren Tail Equ_op selection Comma? (Head Equ_op selection)? R_paren Cut Real |
+	Point L_paren number_f Comma? number_f Comma? number_f R_paren Cut number_f |
+	Point L_paren Tail Equ_op selection Comma? (Head Equ_op selection)? R_paren Cut number_f |
 	Previous |
 	Pseudo |
 	Residue (Integers | Integer (Colon Integer)?) |
 	Resname (Simple_names | Simple_name (Colon Simple_name)?) |
-	factor Saround Real |
+	factor Saround number_f |
 	SegIdentifier (Simple_names | Simple_name (Colon Simple_name)? | Double_quote_string (Colon Double_quote_string)?) |
-	Sfbox Real Real Real Real Real Real |
+	Sfbox number_f number_f number_f number_f number_f number_f |
 	Store_1 | Store_2 | Store_3 | Store_4 | Store_5 | Store_6 | Store_7 | Store_8 | Store_9 |
 	Tag;
 
@@ -372,6 +372,18 @@ factor:
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
 
 vector_3d:
-	L_paren Real Comma? Real Comma? Real R_paren |
+	L_paren number_f Comma? number_f Comma? number_f R_paren |
 	L_paren Tail Equ_op selection Comma? (Head Equ_op selection)? R_paren;
 */
+
+/* number expression in assign */
+number: Real | Integer;
+
+/* number expression in factor */
+number_f:
+	Real | Integer;
+
+/* number expression in statement */
+number_s:
+	Real | Integer;
+

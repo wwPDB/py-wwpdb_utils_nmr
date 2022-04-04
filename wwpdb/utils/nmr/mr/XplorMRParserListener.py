@@ -5044,7 +5044,7 @@ class XplorMRParserListener(ParseTreeListener):
             return _factor
 
         if 'chain_id' not in _factor or len(_factor['chain_id']) == 0:
-            _factor['chain_id'] = [ps['chain_id'] for ps in self.__polySeq]
+            _factor['chain_id'] = [ps['auth_chain_id'] for ps in self.__polySeq]
 
         if 'seq_id' not in _factor and 'seq_ids' not in _factor:
             if 'comp_ids' in _factor and len(_factor['comp_ids']) > 0\
@@ -5052,11 +5052,11 @@ class XplorMRParserListener(ParseTreeListener):
                 lenCompIds = len(_factor['comp_ids'])
                 _compIdSelect = set()
                 for chainId in _factor['chain_id']:
-                    ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chainId), None)
+                    ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
                     if ps is not None:
-                        for realSeqId in ps['seq_id']:
+                        for realSeqId in ps['auth_seq_id']:
                             realSeqId = self.getRealSeqId(ps, realSeqId)
-                            realCompId = ps['comp_id'][ps['seq_id'].index(realSeqId)]
+                            realCompId = ps['comp_id'][ps['auth_seq_id'].index(realSeqId)]
                             if (lenCompIds == 1 and re.match(toRegEx(_factor['comp_ids'][0]), realCompId))\
                                or (lenCompIds == 2 and _factor['comp_ids'][0] <= realCompId <= _factor['comp_ids'][1]):
                                 _compIdSelect.add(realCompId)
@@ -5069,23 +5069,23 @@ class XplorMRParserListener(ParseTreeListener):
             _seqId = toRegEx(seqId)
             seqIds = []
             for chainId in _factor['chain_id']:
-                ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chainId), None)
+                ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
                 if ps is not None:
                     found = False
-                    for realSeqId in ps['seq_id']:
+                    for realSeqId in ps['auth_seq_id']:
                         realSeqId = self.getRealSeqId(ps, realSeqId)
                         if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
-                            realCompId = ps['comp_id'][ps['seq_id'].index(realSeqId)]
+                            realCompId = ps['comp_id'][ps['auth_seq_id'].index(realSeqId)]
                             if realCompId not in _factor['comp_id']:
                                 continue
                         if re.match(_seqId, str(realSeqId)):
                             seqIds.append(realSeqId)
                             found = True
                     if not found:
-                        for realSeqId in ps['seq_id']:
+                        for realSeqId in ps['auth_seq_id']:
                             realSeqId = self.getRealSeqId(ps, realSeqId)
                             if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
-                                realCompId = ps['comp_id'][ps['seq_id'].index(realSeqId)]
+                                realCompId = ps['comp_id'][ps['auth_seq_id'].index(realSeqId)]
                                 if realCompId not in _factor['comp_id']:
                                     continue
                             seqKey = (chainId, realSeqId)
@@ -5099,12 +5099,12 @@ class XplorMRParserListener(ParseTreeListener):
         if 'seq_id' not in _factor or len(_factor['seq_id']) == 0:
             seqIds = []
             for chainId in _factor['chain_id']:
-                ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chainId), None)
+                ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
                 if ps is not None:
-                    for realSeqId in ps['seq_id']:
+                    for realSeqId in ps['auth_seq_id']:
                         realSeqId = self.getRealSeqId(ps, realSeqId)
                         if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
-                            realCompId = ps['comp_id'][ps['seq_id'].index(realSeqId)]
+                            realCompId = ps['comp_id'][ps['auth_seq_id'].index(realSeqId)]
                             if realCompId not in _factor['comp_id']:
                                 continue
                         seqIds.append(realSeqId)
@@ -5117,7 +5117,7 @@ class XplorMRParserListener(ParseTreeListener):
                 _typeSymbolSelect = set()
                 _compIdSelect = set()
                 for chainId in _factor['chain_id']:
-                    ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chainId), None)
+                    ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
                     if ps is not None:
                         _compIdSelect |= set(ps['comp_id'])
                 for compId in _compIdSelect:
@@ -5136,7 +5136,7 @@ class XplorMRParserListener(ParseTreeListener):
                 _atomIdSelect = set()
                 _compIdSelect = set()
                 for chainId in _factor['chain_id']:
-                    ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chainId), None)
+                    ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
                     if ps is not None:
                         _compIdSelect |= set(ps['comp_id'])
                 for compId in _compIdSelect:
@@ -5154,11 +5154,11 @@ class XplorMRParserListener(ParseTreeListener):
             lenAtomIds = len(_factor['atom_ids'])
             _compIdSelect = set()
             for chainId in _factor['chain_id']:
-                ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chainId), None)
+                ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
                 if ps is not None:
-                    for realSeqId in ps['seq_id']:
+                    for realSeqId in ps['auth_seq_id']:
                         realSeqId = self.getRealSeqId(ps, realSeqId)
-                        realCompId = ps['comp_id'][ps['seq_id'].index(realSeqId)]
+                        realCompId = ps['comp_id'][ps['auth_seq_id'].index(realSeqId)]
                         if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                             if realCompId not in _factor['comp_id']:
                                 continue
@@ -5183,11 +5183,11 @@ class XplorMRParserListener(ParseTreeListener):
         if 'atom_id' not in _factor or len(_factor['atom_id']) == 0:
             _compIdSelect = set()
             for chainId in _factor['chain_id']:
-                ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chainId), None)
+                ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
                 if ps is not None:
-                    for realSeqId in ps['seq_id']:
+                    for realSeqId in ps['auth_seq_id']:
                         realSeqId = self.getRealSeqId(ps, realSeqId)
-                        realCompId = ps['comp_id'][ps['seq_id'].index(realSeqId)]
+                        realCompId = ps['comp_id'][ps['auth_seq_id'].index(realSeqId)]
                         if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                             if realCompId not in _factor['comp_id']:
                                 continue
@@ -5208,12 +5208,12 @@ class XplorMRParserListener(ParseTreeListener):
 
         if _factor['atom_id'][0] is not None:
             for chainId in _factor['chain_id']:
-                ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chainId), None)
+                ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
                 for seqId in _factor['seq_id']:
                     seqId = self.getRealSeqId(ps, seqId)
 
-                    if ps is not None and seqId in ps['seq_id']:
-                        compId = ps['comp_id'][ps['seq_id'].index(seqId)]
+                    if ps is not None and seqId in ps['auth_seq_id']:
+                        compId = ps['comp_id'][ps['auth_seq_id'].index(seqId)]
                     else:
                         compId = None
 
@@ -5221,12 +5221,12 @@ class XplorMRParserListener(ParseTreeListener):
 
                     if compId is None and seqKey in self.__authToLabelSeq:
                         _, seqId = self.__authToLabelSeq[seqKey]
-                        if ps is not None and seqId in ps['seq_id']:
-                            compId = ps['comp_id'][ps['seq_id'].index(seqId)]
+                        if ps is not None and seqId in ps['auth_seq_id']:
+                            compId = ps['comp_id'][ps['auth_seq_id'].index(seqId)]
                             seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck)
 
-                    if compId is None and coordAtomSite is not None and ps is not None and seqKey[1] in ps['seq_id']:
-                        compId = ps['comp_id'][ps['seq_id'].index(seqKey[1])]
+                    if compId is None and coordAtomSite is not None and ps is not None and seqKey[1] in ps['auth_seq_id']:
+                        compId = ps['comp_id'][ps['auth_seq_id'].index(seqKey[1])]
 
                     if compId is None:
                         continue
@@ -5245,38 +5245,29 @@ class XplorMRParserListener(ParseTreeListener):
                         if 'alt_atom_id' in _factor and details is not None:
                             atomIds, _, details = self.__nefT.get_valid_star_atom(compId, atomId[:-1], leave_unmatched=True)
 
-                        if self.__reasons is not None:
-                            if 'xplor_atom_nomenclature' in self.__reasons and self.__reasons['xplor_atom_nomenclature']:
-                                if details is not None and atomId.endswith('1'):
-                                    _atomId = atomId[:-1] + '3'
-                                    if self.__nefT.validate_comp_atom(compId, _atomId):
-                                        atomIds = self.__nefT.get_valid_star_atom(compId, _atomId)[0]
-                                if compId == 'ASN':
-                                    if atomId == 'HD21':
-                                        _atomId = atomId[:-1] + '2'
-                                        if self.__nefT.validate_comp_atom(compId, _atomId):
-                                            atomIds = self.__nefT.get_valid_star_atom(compId, _atomId)[0]
-                                    elif atomId == 'HD22':
-                                        _atomId = atomId[:-1] + '1'
-                                        if self.__nefT.validate_comp_atom(compId, _atomId):
-                                            atomIds = self.__nefT.get_valid_star_atom(compId, _atomId)[0]
-                                elif compId == 'GLN':
-                                    if atomId == 'HE21':
-                                        _atomId = atomId[:-1] + '2'
-                                        if self.__nefT.validate_comp_atom(compId, _atomId):
-                                            atomIds = self.__nefT.get_valid_star_atom(compId, _atomId)[0]
-                                    elif atomId == 'HE22':
-                                        _atomId = atomId[:-1] + '1'
-                                        if self.__nefT.validate_comp_atom(compId, _atomId):
-                                            atomIds = self.__nefT.get_valid_star_atom(compId, _atomId)[0]
-
-                        elif details is not None and atomId.endswith('1'):
+                        if details is not None and atomId.endswith('1'):
                             _atomId = atomId[:-1] + '3'
                             if self.__nefT.validate_comp_atom(compId, _atomId):
-                                if self.reasonsForReParsing is None:
-                                    self.reasonsForReParsing = {}
-                                if 'xplor_atom_nomenclature' not in self.reasonsForReParsing:
-                                    self.reasonsForReParsing['xplor_atom_nomenclature'] = True
+                                atomIds = self.__nefT.get_valid_star_atom(compId, _atomId)[0]
+
+                        if compId == 'ASN':
+                            if atomId == 'HD21':
+                                _atomId = atomId[:-1] + '2'
+                                if self.__nefT.validate_comp_atom(compId, _atomId):
+                                    atomIds = self.__nefT.get_valid_star_atom(compId, _atomId)[0]
+                            elif atomId == 'HD22':
+                                _atomId = atomId[:-1] + '1'
+                                if self.__nefT.validate_comp_atom(compId, _atomId):
+                                    atomIds = self.__nefT.get_valid_star_atom(compId, _atomId)[0]
+                        elif compId == 'GLN':
+                            if atomId == 'HE21':
+                                _atomId = atomId[:-1] + '2'
+                                if self.__nefT.validate_comp_atom(compId, _atomId):
+                                    atomIds = self.__nefT.get_valid_star_atom(compId, _atomId)[0]
+                            elif atomId == 'HE22':
+                                _atomId = atomId[:-1] + '1'
+                                if self.__nefT.validate_comp_atom(compId, _atomId):
+                                    atomIds = self.__nefT.get_valid_star_atom(compId, _atomId)[0]
 
                         for _atomId in atomIds:
                             ccdCheck = not cifCheck
@@ -5349,8 +5340,8 @@ class XplorMRParserListener(ParseTreeListener):
                                     elif cca is None:
                                         if self.__reasons is None and seqKey in self.__authToLabelSeq:
                                             _, _seqId = self.__authToLabelSeq[seqKey]
-                                            if ps is not None and _seqId in ps['seq_id']:
-                                                _compId = ps['comp_id'][ps['seq_id'].index(_seqId)]
+                                            if ps is not None and _seqId in ps['auth_seq_id']:
+                                                _compId = ps['comp_id'][ps['auth_seq_id'].index(_seqId)]
                                                 if self.__ccU.updateChemCompDict(_compId):
                                                     cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId), None)
                                                     if cca is not None:
@@ -5404,13 +5395,16 @@ class XplorMRParserListener(ParseTreeListener):
         return _factor
 
     def getRealSeqId(self, ps, seqId):
-        chainId = ps['chain_id']
         if self.__reasons is not None and 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme']:
-            seqKey = (chainId, seqId)
-            if seqKey in self.__authToLabelSeq:
-                _, _seqId = self.__authToLabelSeq[seqKey]
-                if _seqId in ps['seq_id']:
-                    seqId = _seqId
+            seqKey = (ps['chain_id'], seqId)
+            if seqKey in self.__labelToAuthSeq:
+                _chainId, _seqId = self.__labelToAuthSeq[seqKey]
+                if _seqId in ps['auth_seq_id']:
+                    return _seqId
+        if seqId in ps['auth_seq_id']:
+            return seqId
+        if seqId in ps['seq_id']:
+            return ps['auth_seq_id'][ps['seq_id'].index(seqId)]
         return seqId
 
     def getRealChainId(self, chainId):
@@ -5725,16 +5719,16 @@ class XplorMRParserListener(ParseTreeListener):
                 simpleNameIndex = simpleNamesIndex = 0  # these indices are necessary to deal with mixing case of 'Simple_name' and 'Simple_names'
                 if ctx.Simple_name(0):
                     chainId = str(ctx.Simple_name(0))
-                    self.factor['chain_id'] = [ps['chain_id'] for ps in self.__polySeq
-                                               if ps['chain_id'] == self.getRealChainId(chainId)]
+                    self.factor['chain_id'] = [ps['auth_chain_id'] for ps in self.__polySeq
+                                               if ps['auth_chain_id'] == self.getRealChainId(chainId)]
                     if len(self.factor['chain_id']) > 0:
                         simpleNameIndex += 1
 
                 if simpleNameIndex == 0 and ctx.Simple_names(0):
                     chainId = str(ctx.Simple_names(0))
                     _chainId = toRegEx(chainId)
-                    self.factor['chain_id'] = [ps['chain_id'] for ps in self.__polySeq
-                                               if re.match(_chainId, ps['chain_id'])]
+                    self.factor['chain_id'] = [ps['auth_chain_id'] for ps in self.__polySeq
+                                               if re.match(_chainId, ps['auth_chain_id'])]
                     simpleNamesIndex += 1
 
                 if len(self.factor['chain_id']) == 0:
@@ -5762,16 +5756,16 @@ class XplorMRParserListener(ParseTreeListener):
                     _seqId = toRegEx(seqId)
                     _seqIdSelect = set()
                     for chainId in self.factor['chain_id']:
-                        ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chainId), None)
+                        ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
                         if ps is not None:
                             found = False
-                            for realSeqId in ps['seq_id']:
+                            for realSeqId in ps['auth_seq_id']:
                                 realSeqId = self.getRealSeqId(ps, realSeqId)
                                 if re.match(_seqId, str(realSeqId)):
                                     _seqIdSelect.add(realSeqId)
                                     found = True
                             if not found:
-                                for realSeqId in ps['seq_id']:
+                                for realSeqId in ps['auth_seq_id']:
                                     realSeqId = self.getRealSeqId(ps, realSeqId)
                                     seqKey = (chainId, realSeqId)
                                     if seqKey in self.__authToLabelSeq:
@@ -5784,13 +5778,13 @@ class XplorMRParserListener(ParseTreeListener):
                 if ctx.Simple_name(simpleNameIndex):
                     atomId = str(ctx.Simple_name(simpleNameIndex))
                     for chainId in self.factor['chain_id']:
-                        ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chainId), None)
+                        ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
                         if ps is None:
                             continue
                         for seqId in self.factor['seq_id']:
-                            if seqId in ps['seq_id']:
+                            if seqId in ps['auth_seq_id']:
                                 seqId = self.getRealSeqId(ps, seqId)
-                                compId = ps['comp_id'][ps['seq_id'].index(seqId)]
+                                compId = ps['comp_id'][ps['auth_seq_id'].index(seqId)]
                                 if self.__ccU.updateChemCompDict(compId):
                                     if any(cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId):
                                         _atomIdSelect.add(atomId)
@@ -5799,13 +5793,13 @@ class XplorMRParserListener(ParseTreeListener):
                     atomId = str(ctx.Simple_names(simpleNamesIndex))
                     _atomId = toRegEx(atomId)
                     for chainId in self.factor['chain_id']:
-                        ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chainId), None)
+                        ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
                         if ps is None:
                             continue
                         for seqId in self.factor['seq_id']:
-                            if seqId in ps['seq_id']:
+                            if seqId in ps['auth_seq_id']:
                                 seqId = self.getRealSeqId(ps, seqId)
-                                compId = ps['comp_id'][ps['seq_id'].index(seqId)]
+                                compId = ps['comp_id'][ps['auth_seq_id'].index(seqId)]
                                 if self.__ccU.updateChemCompDict(compId):
                                     for cca in self.__ccU.lastAtomList:
                                         if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
@@ -6101,8 +6095,8 @@ class XplorMRParserListener(ParseTreeListener):
                                     _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId})
 
                                 else:
-                                    ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chainId), None)
-                                    if ps is not None and seqId in ps['seq_id'] and ps['comp_id'][ps['seq_id'].index(seqId)] == compId:
+                                    ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
+                                    if ps is not None and seqId in ps['auth_seq_id'] and ps['comp_id'][ps['auth_seq_id'].index(seqId)] == compId:
                                         seqId = self.getRealSeqId(ps, seqId)
                                         if any(cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId):
                                             _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId})
@@ -6127,12 +6121,12 @@ class XplorMRParserListener(ParseTreeListener):
                                 if len(_origin) == 1:
                                     origin = toNpArray(_origin[0])
 
-                                    ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chainId), None)
+                                    ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
                                     if ps is not None:
                                         for _seqId in [seqId - 1, seqId + 1]:
-                                            if _seqId in ps['seq_id']:
+                                            if _seqId in ps['auth_seq_id']:
                                                 _seqId = self.getRealSeqId(ps, _seqId)
-                                                _compId = ps['comp_id'][ps['seq_id'].index(_seqId)]
+                                                _compId = ps['comp_id'][ps['auth_seq_id'].index(_seqId)]
                                                 if self.__ccU.updateChemCompDict(_compId):
                                                     leavingAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaLeavingAtomFlag] == 'Y']
 
@@ -6360,8 +6354,8 @@ class XplorMRParserListener(ParseTreeListener):
                                 _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': _atom['comp_id'], 'atom_id': _atom['atom_id']})
 
                         else:
-                            ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chainId), None)
-                            if ps is not None and seqId in ps['seq_id'] and ps['comp_id'][ps['seq_id'].index(seqId)] == compId:
+                            ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
+                            if ps is not None and seqId in ps['auth_seq_id'] and ps['comp_id'][ps['auth_seq_id'].index(seqId)] == compId:
                                 seqId = self.getRealSeqId(ps, seqId)
                                 if self.__ccU.updateChemCompDict(compId):
                                     atomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y']
@@ -6679,8 +6673,8 @@ class XplorMRParserListener(ParseTreeListener):
                         endChainId = str(ctx.Simple_name(1))
                     elif ctx.Double_quote_string(1):
                         endChainId = str(ctx.Simple_name(1)).strip('"').strip()
-                    self.factor['chain_id'] = [ps['chain_id'] for ps in self.__polySeq
-                                               if begChainId <= ps['chain_id'] <= endChainId]
+                    self.factor['chain_id'] = [ps['auth_chain_id'] for ps in self.__polySeq
+                                               if begChainId <= ps['auth_chain_id'] <= endChainId]
 
                     if len(self.factor['chain_id']) == 0:
                         if len(self.__polySeq) == 1:
@@ -6696,13 +6690,13 @@ class XplorMRParserListener(ParseTreeListener):
                             chainId = str(ctx.Simple_name(0))
                         elif ctx.Double_quote_string(0):
                             chainId = str(ctx.Simple_name(0)).strip('"').strip()
-                        self.factor['chain_id'] = [ps['chain_id'] for ps in self.__polySeq
-                                                   if ps['chain_id'] == self.getRealChainId(chainId)]
+                        self.factor['chain_id'] = [ps['auth_chain_id'] for ps in self.__polySeq
+                                                   if ps['auth_chain_id'] == self.getRealChainId(chainId)]
                     if ctx.Simple_names(0):
                         chainId = str(ctx.Simple_names(0))
                         _chainId = toRegEx(chainId)
-                        self.factor['chain_id'] = [ps['chain_id'] for ps in self.__polySeq
-                                                   if re.match(_chainId, ps['chain_id'])]
+                        self.factor['chain_id'] = [ps['auth_chain_id'] for ps in self.__polySeq
+                                                   if re.match(_chainId, ps['auth_chain_id'])]
                     if len(self.factor['chain_id']) == 0:
                         if len(self.__polySeq) == 1:
                             self.factor['chain_id'] = self.__polySeq[0]['chain_id']

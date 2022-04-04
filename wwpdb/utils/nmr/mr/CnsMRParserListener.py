@@ -2656,10 +2656,21 @@ class CnsMRParserListener(ParseTreeListener):
                         if 'alt_atom_id' in _factor and details is not None:
                             atomIds, _, details = self.__nefT.get_valid_star_atom(compId, atomId[:-1], leave_unmatched=True)
 
-                        if details is not None and atomId.endswith('1'):
-                            _atomId = atomId[:-1] + '3'
-                            if self.__nefT.validate_comp_atom(compId, _atomId):
-                                atomIds = self.__nefT.get_valid_star_atom(compId, _atomId)[0]
+                        if details is not None:
+                            if atomId.endswith('1'):
+                                _atomId = atomId[:-1] + '3'
+                                if self.__nefT.validate_comp_atom(compId, _atomId):
+                                    atomIds = self.__nefT.get_valid_star_atom(compId, _atomId)[0]
+
+                            elif atomId.endswith('1*') or atomId.endswith('1%'):
+                                _atomId = atomId[:-2] + '3' + atomId[-1]
+                                _atomIds, _, details = self.__nefT.get_valid_star_atom(compId, _atomId, leave_unmatched=True)
+                                if details is None:
+                                    atomIds = _atomIds
+                                else:
+                                    _atomIds, _, details = self.__nefT.get_valid_star_atom(compId, _atomId[:-1], leave_unmatched=True)
+                                    if details is None:
+                                        atomIds = _atomIds
 
                         if compId == 'ASN':
                             if atomId == 'HD21':

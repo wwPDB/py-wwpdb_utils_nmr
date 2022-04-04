@@ -569,27 +569,27 @@ class XplorMRParserListener(ParseTreeListener):
             if self.squareExponent <= 0.0:
                 self.warningMessage += "[Invalid data] "\
                     "The exponent value of square-well or soft-square function "\
-                    f"NOE {str(ctx.SqExponent())} {str(ctx.Simple_names())} {self.squareExponent} END' must be a positive value.\n"
+                    f"NOE {str(ctx.SqExponent())} {str(ctx.Simple_name())} {self.squareExponent} END' must be a positive value.\n"
 
         elif ctx.SqOffset():
             self.squareOffset = self.getNumber_s(ctx.number_s())
             if self.squareOffset < 0.0:
                 self.warningMessage += "[Invalid data] "\
                     "The offset value of square-well or soft-square function "\
-                    f"NOE {str(ctx.SqOffset())} {str(ctx.Simple_names())} {self.squareOffset} END' must not be a negative value.\n"
+                    f"NOE {str(ctx.SqOffset())} {str(ctx.Simple_name())} {self.squareOffset} END' must not be a negative value.\n"
 
         elif ctx.Rswitch():
             self.rSwitch = self.getNumber_s(ctx.number_s())
             if self.rSwitch < 0.0:
                 self.warningMessage += "[Invalid data] "\
                     "The smoothing parameter of soft-square function "\
-                    f"NOE {str(ctx.Rswitch())} {str(ctx.Simple_names())} {self.rSwitch} END' must not be a negative value.\n"
+                    f"NOE {str(ctx.Rswitch())} {str(ctx.Simple_name())} {self.rSwitch} END' must not be a negative value.\n"
 
         elif ctx.Scale():
             self.scale = self.getNumber_s(ctx.number_s())
             if self.scale <= 0.0:
                 self.warningMessage += "[Invalid data] "\
-                    f"The scale value 'NOE {str(ctx.Scale())} {str(ctx.Simple_names())} {self.scale} END' must be a positive value.\n"
+                    f"The scale value 'NOE {str(ctx.Scale())} {str(ctx.Simple_name())} {self.scale} END' must be a positive value.\n"
 
         elif ctx.Reset():
             self.noePotential = 'biharmonic'  # default potential

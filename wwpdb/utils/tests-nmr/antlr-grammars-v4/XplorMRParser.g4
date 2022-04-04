@@ -57,26 +57,26 @@ xplor_nih_mr:
 	EOF;
 
 distance_restraint:
-	Noe noe_statement End;
+	Noe noe_statement* End;
 
 dihedral_angle_restraint:
-	Restraints Dihedral dihedral_statement End;
+	Restraints Dihedral dihedral_statement* End;
 
 rdc_restraint:
-	Sanisotropy sani_statement End |
-	(Xdipolar | Dipolar) xdip_statement End |
-	VectorAngle vean_statement End |
-	Tensor tenso_statement End |
-	Anisotropy anis_statement End;
+	Sanisotropy sani_statement* End |
+	(Xdipolar | Dipolar) xdip_statement* End |
+	VectorAngle vean_statement* End |
+	Tensor tenso_statement* End |
+	Anisotropy anis_statement* End;
 
 planar_restraint:
-	Restraints Planar planar_statement End;
+	Restraints Planar planar_statement* End;
 
 antidistance_restraint:
-	Xadc antidistance_statement End;
+	Xadc antidistance_statement* End;
 
 coupling_restraint:
-	Coupling coupling_statement End;
+	Coupling coupling_statement* End;
 
 carbon_shift_restraint:
 	Carbon carbon_shift_statement End;
@@ -85,86 +85,86 @@ proton_shift_restraint:
 	Proton proton_shift_statement End;
 
 dihedral_angle_db_restraint:
-	Ramachandran ramachandran_statement End;
+	Ramachandran ramachandran_statement* End;
 
 radius_of_gyration_restraint:
-	Collapse collapse_statement End;
+	Collapse collapse_statement* End;
 
 diffusion_anisotropy_restraint:
-	Danisotropy diffusion_statement End;
+	Danisotropy diffusion_statement* End;
 
 orientation_db_restraint:
-	Orient orientation_statement End;
+	Orient orientation_statement* End;
 
 csa_restraint:
-	Dcsa csa_statement End;
+	Dcsa csa_statement* End;
 
 pcsa_restraint:
-	Pcsa pcsa_statement End;
+	Pcsa pcsa_statement* End;
 
 one_bond_coupling_restraint:
-	OneBond one_bond_coupling_statement End;
+	OneBond one_bond_coupling_statement* End;
 
 angle_db_restraint:
-	AngleDb angle_db_statement End;
+	AngleDb angle_db_statement* End;
 
 pre_restraint:
-	Paramagnetic pre_statement End;
+	Paramagnetic pre_statement* End;
 
 pcs_restraint:
-	Xpcs pcs_statement End;
+	Xpcs pcs_statement* End;
 
 prdc_restraint:
-	Xrdcoupling prdc_statement End;
+	Xrdcoupling prdc_statement* End;
 
 porientation_restraint:
-	Xangle porientation_statement End;
+	Xangle porientation_statement* End;
 
 pccr_restraint:
-	Xccr pccr_statement End;
+	Xccr pccr_statement* End;
 
 hbond_restraint:
-	Hbda hbond_statement End;
+	Hbda hbond_statement* End;
 
 /* XPLOR-NIH: Distance restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node377.html
 */
 noe_statement:
-	noe_assign* |
-	Asymptote Simple_names number_s |
-	Averaging Simple_names Noe_avr_methods |
-	Bhig Simple_names number_s |
-	Ceiling Equ_op number_s |
+	noe_assign |
+	Asymptote Simple_name number_s |
+	Averaging Simple_name Noe_avr_methods |
+	Bhig Simple_name number_s |
+	Ceiling Equ_op? number_s |
 	Classification Simple_name |
 	CountViol Simple_name |
 	Distribute Simple_name Simple_name number_s |
-	Monomers Simple_names Integer |
-	Ncount Simple_names Integer |
-	Nrestraints Equ_op Integer |
-	Potential Simple_names Noe_potential |
+	Monomers Simple_name Integer |
+	Ncount Simple_name Integer |
+	Nrestraints Equ_op? Integer |
+	Potential Simple_name Noe_potential |
 	Predict predict_statement End |
 	Print Threshold Equ_op? number_s |
 	Reset |
-	Rswitch Simple_names number_s |
-	Scale Simple_names number_s |
-	SoExponent Simple_names number_s |
-	SqConstant Simple_names number_s |
-	SqExponent Simple_names number_s |
-	SqOffset Simple_names number_s |
-	Temperature Equ_op number_s;
+	Rswitch Simple_name number_s |
+	Scale Simple_name number_s |
+	SoExponent Simple_name number_s |
+	SqConstant Simple_name number_s |
+	SqExponent Simple_name number_s |
+	SqOffset Simple_name number_s |
+	Temperature Equ_op? number_s;
 
 noe_assign:
 	Assign selection selection number number number (Or_op selection selection)*;
 
 predict_statement:
-	Cutoff Equ_op number_s | Cuton Equ_op number_s | From selection | To selection;
+	Cutoff Equ_op? number_s | Cuton Equ_op? number_s | From selection | To selection;
 
 /* XPLOR-NIH: Dihedral angle restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/cdih_syntax.html
 */
 dihedral_statement:
-	dihedral_assign* |
-	Nassign Equ_op Integer |
+	dihedral_assign |
+	Nassign Equ_op? Integer |
 	Reset |
 	Scale number_s;
 
@@ -175,7 +175,7 @@ dihedral_assign:
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node418.html
 */
 sani_statement:
-	sani_assign* |
+	sani_assign |
 	Classification Simple_name |
 	Coefficients number_s number_s number_s |
 	ForceConstant number_s |
@@ -191,7 +191,7 @@ sani_assign:
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node419.html
 */
 xdip_statement:
-	xdip_assign* |
+	xdip_assign |
 	Classification Simple_name |
 	Type Rdc_dist_fix_types |
 	Scale number_s |
@@ -211,12 +211,12 @@ xdip_assign:
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node420.html
 */
 vean_statement:
-	vean_assign* |
-	Cv Equ_op Integer |
+	vean_assign |
+	Cv Equ_op? Integer |
 	Classification Simple_name |
 	ForceConstant number_s number_s |
 	Nrestraints Integer |
-	Partition Equ_op Integer |
+	Partition Equ_op? Integer |
 	Print Threshold number_s |
 	Reset;
 
@@ -227,7 +227,7 @@ vean_assign:
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node421.html
 */
 tenso_statement:
-	tenso_assign* |
+	tenso_assign |
 	Classification Simple_name |
 	Coefficients number_s |
 	Nrestraints Integer |
@@ -242,7 +242,7 @@ tenso_assign:
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node422.html
 */
 anis_statement:
-	anis_assign* |
+	anis_assign |
 	Classification Simple_name |
 	Coefficients number_s number_s number_s number_s |
 	ForceConstant number_s |
@@ -263,14 +263,14 @@ planar_statement:
 	Initialize;
 
 group_statement:
-	Selection Equ_op selection |
-	Weight Equ_op number_s;
+	Selection Equ_op? selection |
+	Weight Equ_op? number_s;
 
 /* XPLOR-NIH: Antidiatance restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node398.html
 */
 antidistance_statement:
-	xadc_assign* |
+	xadc_assign |
 	Classification Simple_name |
 	Expectation Integer number_s |
 	ForceConstant number_s |
@@ -287,14 +287,14 @@ xadc_assign:
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node401.html
 */
 coupling_statement:
-	coup_assign* |
+	coup_assign |
 	Classification Simple_name |
 	Coefficients number_s number_s number_s number_s |
-	Cv Equ_op Integer |
+	Cv Equ_op? Integer |
 	DegEnergy Integer |
 	ForceConstant number_s number_s? |
 	Nrestraints Integer |
-	Partition Equ_op Integer |
+	Partition Equ_op? Integer |
 	Potential Coupling_potential |
 	Print Threshold number_s (All | (Classification Simple_name)) |
 	Reset;
@@ -306,7 +306,7 @@ coup_assign:
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node404.html
 */
 carbon_shift_statement:
-	carbon_shift_assign* |
+	carbon_shift_assign |
 	Classification Simple_name |
 	Expectation Integer Integer number_s number_s number_s |
 	ForceConstant number_s |
@@ -377,7 +377,7 @@ proton_shift_alphas_and_amides:
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node410.html
 */
 ramachandran_statement:
-	rama_assign* |
+	rama_assign |
 	Classification Simple_name |
 	Cutoff number_s |
 	ForceConstant number_s |
@@ -400,7 +400,7 @@ rama_assign:
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node413.html
 */
 collapse_statement:
-	coll_assign* |
+	coll_assign |
 	Scale number_s |
 	Print |
 	Reset;
@@ -412,7 +412,7 @@ coll_assign:
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node415.html
 */
 diffusion_statement:
-	dani_assign* |
+	dani_assign |
 	Classification Simple_name |
 	Coefficients number_s number_s number_s number_s number_s |
 	ForceConstant number_s |
@@ -429,7 +429,7 @@ dani_assign:
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node425.html
 */
 orientation_statement:
-	orie_assign* |
+	orie_assign |
 	Classification Simple_name |
 	Cutoff number_s |
 	Height number_s |
@@ -452,7 +452,7 @@ orie_assign:
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node427.html
 */
 csa_statement:
-	csa_assign* |
+	csa_assign |
 	Classification Simple_name |
 	Scale number_s |
 	Type Csa_types |
@@ -471,7 +471,7 @@ csa_assign:
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node430.html
 */
 pcsa_statement:
-	csa_assign* |
+	csa_assign |
 	Classification Simple_name |
 	Scale number_s |
 	Coefficients number_s number_s number_s |
@@ -486,7 +486,7 @@ pcsa_statement:
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node433.html
 */
 one_bond_coupling_statement:
-	one_bond_assign* |
+	one_bond_assign |
 	Classification Simple_name |
 	Coefficients number_s number_s number_s number_s number_s number_s number_s |
 	ForceConstant number_s |
@@ -502,7 +502,7 @@ one_bond_assign:
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node435.html
 */
 angle_db_statement:
-	angle_db_assign* |
+	angle_db_assign |
 	Classification Simple_name |
 	DerivFlag Simple_name |
 	Expectation Integer Integer number_s |
@@ -522,14 +522,14 @@ angle_db_assign:
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node438.html
 */
 pre_statement:
-	pre_assign* |
-	Classification Equ_op Simple_name |
-	ForceConstant Equ_op Simple_name number_s |
-	Nrestraints Equ_op Integer |
-	Potential Equ_op Simple_name Rdc_potential |
-	Kconst Equ_op Simple_name number_s |
-	Omega Equ_op Simple_name number_s |
-	Tauc Equ_op Simple_name number_s number_s |
+	pre_assign |
+	Classification Equ_op? Simple_name |
+	ForceConstant Equ_op? Simple_name number_s |
+	Nrestraints Equ_op? Integer |
+	Potential Equ_op? Simple_name Rdc_potential |
+	Kconst Equ_op? Simple_name number_s |
+	Omega Equ_op? Simple_name number_s |
+	Tauc Equ_op? Simple_name number_s number_s |
 	Print Threshold number_s (All | (Classification Simple_name)) |
 	Reset |
 	Debug;
@@ -541,7 +541,7 @@ pre_assign:
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node442.html
 */
 pcs_statement:
-	pcs_assign* |
+	pcs_assign |
 	Classification Simple_name |
 	Tolerance Integer |
 	Coefficients number_s number_s |
@@ -566,7 +566,7 @@ pcs_assign:
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node445.html
 */
 prdc_statement:
-	prdc_assign* |
+	prdc_assign |
 	Classification Simple_name |
 	Tolerance Integer |
 	Coefficients number_s number_s |
@@ -591,7 +591,7 @@ prdc_assign:
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node448.html
 */
 porientation_statement:
-	porientation_assign* |
+	porientation_assign |
 	Classification Simple_name |
 	ForceConstant number_s |
 	Nrestraints Integer |
@@ -605,7 +605,7 @@ porientation_assign:
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node450.html
 */
 pccr_statement:
-	pccr_assign* |
+	pccr_assign |
 	Classification Simple_name |
 	Weip Integer |
 	Coefficients number_s |
@@ -622,7 +622,7 @@ pccr_assign:
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node452.html
 */
 hbond_statement:
-	hbond_assign* |
+	hbond_assign |
 	Classification Simple_name |
 	ForceConstant number_s |
 	Nrestraints Integer |
@@ -660,7 +660,7 @@ factor:
 	Name (Simple_names | Simple_name (Colon Simple_name)?) |
 	Not_op factor |
 	Point L_paren number_f Comma? number_f Comma? number_f R_paren Cut number_f |
-	Point L_paren Tail Equ_op selection Comma? (Head Equ_op selection)? R_paren Cut number_f |
+	Point L_paren Tail Equ_op? selection Comma? (Head Equ_op? selection)? R_paren Cut number_f |
 	Previous |
 	Pseudo |
 	Residue (Integers | Integer (Colon Integer)?) |
@@ -675,7 +675,7 @@ factor:
 
 vector_3d:
 	L_paren number_f Comma? number_f Comma? number_f R_paren |
-	L_paren Tail Equ_op selection Comma? (Head Equ_op selection)? R_paren;
+	L_paren Tail Equ_op? selection Comma? (Head Equ_op? selection)? R_paren;
 */
 
 /* number expression in assign */

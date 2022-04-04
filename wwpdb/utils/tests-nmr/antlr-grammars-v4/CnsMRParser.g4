@@ -41,22 +41,22 @@ cns_mr:
 	EOF;
 
 distance_restraint:
-	Noe noe_statement End;
+	Noe noe_statement* End;
 
 dihedral_angle_restraint:
-	Restraints Dihedral dihedral_statement End;
+	Restraints Dihedral dihedral_statement* End;
 
 plane_restraint:
-	Restraints Plane plane_statement End;
+	Restraints Plane plane_statement* End;
 
 harmonic_restraint:
-	Restraints Harmonic harmonic_statement End;
+	Restraints Harmonic harmonic_statement* End;
 
 rdc_restraint:
-	Sanisotropy sani_statement End;
+	Sanisotropy sani_statement* End;
 
 coupling_restraint:
-	Coupling coupling_statement End;
+	Coupling coupling_statement* End;
 
 carbon_shift_restraint:
 	Carbon carbon_shift_statement End;
@@ -65,69 +65,69 @@ proton_shift_restraint:
 	Proton proton_shift_statement End;
 
 conformation_db_restraint:
-	Conformation conformation_statement End;
+	Conformation conformation_statement* End;
 
 diffusion_anisotropy_restraint:
-	Danisotropy diffusion_statement End;
+	Danisotropy diffusion_statement* End;
 
 one_bond_coupling_restraint:
-	OneBond one_bond_coupling_statement End;
+	OneBond one_bond_coupling_statement* End;
 
 angle_db_restraint:
-	AngleDb angle_db_statement End;
+	AngleDb angle_db_statement* End;
 
 /* CNS: Distance restraints - Syntax - noe
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
 */
 noe_statement:
-	(Analysis Equ_op Noe_analysis |
+	Analysis Equ_op? Noe_analysis |
 	noe_assign |
-	Asymptote Simple_names number_s |
-	Averaging Simple_names Noe_avr_methods |
-	Bgig Simple_names number_s |
-	Ceiling Equ_op number_s |
+	Asymptote Simple_name number_s |
+	Averaging Simple_name Noe_avr_methods |
+	Bgig Simple_name number_s |
+	Ceiling Equ_op? number_s |
 	Classification Equ_op? Simple_name |
 	CountViol Simple_name |
-	Cv Equ_op Integer |
+	Cv Equ_op? Integer |
 	Den Initialize |
-	Den Update Gamma Equ_op number_s Kappa Equ_op number_s |
+	Den Update Gamma Equ_op? number_s Kappa Equ_op? number_s |
 	Distribute Simple_name Simple_name number_s |
 	Ensemble *? End |
-	Monomers Simple_names Integer |
-	Ncount Simple_names Integer |
-	Nrestraints Equ_op Integer |
+	Monomers Simple_name Integer |
+	Ncount Simple_name Integer |
+	Nrestraints Equ_op? Integer |
 	Outd |
-	Partition Equ_op Integer |
-	Potential Simple_names Noe_potential |
+	Partition Equ_op? Integer |
+	Potential Simple_name Noe_potential |
 	Predict predict_statement End |
-	Print Threshold Equ_op number_s |
+	Print Threshold Equ_op? number_s |
 	Raverage Simple_name *? End |
 	Reset |
-	Rswitch Simple_names number_s |
-	Scale Simple_names number_s |
-	SoExponent Simple_names number_s |
-	SqConstant Simple_names number_s |
-	SqExponent Simple_names number_s |
-	SqOffset Simple_names number_s |
+	Rswitch Simple_name number_s |
+	Scale Simple_name number_s |
+	SoExponent Simple_name number_s |
+	SqConstant Simple_name number_s |
+	SqExponent Simple_name number_s |
+	SqOffset Simple_name number_s |
 	Taverage Simple_name *? End |
-	Temperature Equ_op number_s)*;
+	Temperature Equ_op? number_s;
 
 noe_assign:
 	Assign selection selection number number number (Or_op selection selection)*;
 
 predict_statement:
-	Cutoff Equ_op number_s | Cuton Equ_op number_s | From selection | To selection;
+	Cutoff Equ_op? number_s | Cuton Equ_op? number_s | From selection | To selection;
 
 /* CNS: Dihedral angle restraints - Syntax - restranits/dihedral
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
 */
 dihedral_statement:
-	dihedral_assign* |
-	Cv Equ_op Integer |
-	Nassign Equ_op Integer |
-	Partition Equ_op Integer |
+	dihedral_assign |
+	Cv Equ_op? Integer |
+	Nassign Equ_op? Integer |
+	Partition Equ_op? Integer |
 	Reset |
-	Scale Equ_op number_s |
+	Scale Equ_op? number_s |
 	Print_any;
 
 dihedral_assign:
@@ -142,26 +142,26 @@ plane_statement:
 	Print_any;
 
 group_statement:
-	Selection Equ_op selection |
-	Weight Equ_op number_s;
+	Selection Equ_op? selection |
+	Weight Equ_op? number_s;
 
 /* CNS: Plane restraints - Syntax - restraints/harmonic
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
 */
 harmonic_statement:
-	Exponent Equ_op Integer |
-	Normal Equ_op L_paren (number_s Comma? number_s Comma? number_s | Tail Equ_op selection Comma? (Head Equ_op selection)?) R_paren;
+	Exponent Equ_op? Integer |
+	Normal Equ_op? L_paren (number_s Comma? number_s Comma? number_s | Tail Equ_op? selection Comma? (Head Equ_op? selection)?) R_paren;
 
 /* CNS: Suscetibility anisotropy restraints - Syntax
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
 */
 sani_statement:
-	sani_assign* |
+	sani_assign |
 	Classification Equ_op? Simple_name |
 	Coefficients number_s number_s number_s |
-	ForceConstant Equ_op number_s |
-	Nrestraints Equ_op Integer |
-	Potential Equ_op Rdc_potential |
+	ForceConstant Equ_op? number_s |
+	Nrestraints Equ_op? Integer |
+	Potential Equ_op? Rdc_potential |
 	Print Threshold number_s |
 	Reset;
 
@@ -172,14 +172,14 @@ sani_assign:
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
 */
 coupling_statement:
-	coup_assign* |
+	coup_assign |
 	Classification Equ_op? Simple_name |
 	Coefficients number_s number_s number_s number_s |
-	Cv Equ_op Integer |
+	Cv Equ_op? Integer |
 	ForceConstant number_s number_s? |
-	Nrestraints Equ_op Integer |
-	Partition Equ_op Integer |
-	Potential Equ_op Coupling_potential |
+	Nrestraints Equ_op? Integer |
+	Partition Equ_op? Integer |
+	Potential Equ_op? Coupling_potential |
 	Print Threshold number_s (All | (Classification Equ_op? Simple_name)) |
 	Reset;
 
@@ -190,14 +190,14 @@ coup_assign:
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
 */
 carbon_shift_statement:
-	carbon_shift_assign* |
+	carbon_shift_assign |
 	Classification Equ_op? Simple_name |
 	Expectation Integer Integer number_s number_s number_s |
-	ForceConstant Equ_op number_s |
-	Nrestraints Equ_op Integer |
-	PhiStep Equ_op number_s |
-	PsiStep Equ_op number_s |
-	Potential Equ_op Rdc_potential |
+	ForceConstant Equ_op? number_s |
+	Nrestraints Equ_op? Integer |
+	PhiStep Equ_op? number_s |
+	PsiStep Equ_op? number_s |
+	Potential Equ_op? Rdc_potential |
 	Print Threshold number_s |
 	carbon_shift_rcoil* |
 	Reset |
@@ -260,15 +260,15 @@ proton_shift_alphas_and_amides:
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
 */
 conformation_statement:
-	conf_assign* |
+	conf_assign |
 	Classification Equ_op? Simple_name |
 	Compressed |
 	Expectation Integer Integer? Integer? Integer? number_s |
-	Error Equ_op number_s |
-	ForceConstant Equ_op number_s |
-	Nrestraints Equ_op Integer |
+	Error Equ_op? number_s |
+	ForceConstant Equ_op? number_s |
+	Nrestraints Equ_op? Integer |
 	Phase Integer Integer Integer (Integer Integer Integer)? (Integer Integer Integer)? (Integer Integer Integer)? |
-	Potential Equ_op Rdc_potential |
+	Potential Equ_op? Rdc_potential |
 	Print Threshold number_s (All | (Classification Equ_op? Simple_name)) |
 	Reset |
 	Size Dimensions Integer Integer? Integer? Integer? |
@@ -281,12 +281,12 @@ conf_assign:
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
 */
 diffusion_statement:
-	dani_assign* |
+	dani_assign |
 	Classification Equ_op? Simple_name |
 	Coefficients number_s number_s number_s number_s number_s |
-	ForceConstant Equ_op number_s |
-	Nrestraints Equ_op Integer |
-	Potential Equ_op Rdc_potential |
+	ForceConstant Equ_op? number_s |
+	Nrestraints Equ_op? Integer |
+	Potential Equ_op? Rdc_potential |
 	Print Threshold number_s |
 	Reset;
 
@@ -297,12 +297,12 @@ dani_assign:
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
 */
 one_bond_coupling_statement:
-	one_bond_assign* |
+	one_bond_assign |
 	Classification Equ_op? Simple_name |
 	Coefficients number_s number_s number_s number_s number_s number_s number_s |
-	ForceConstant Equ_op number_s |
-	Nrestraints Equ_op Integer |
-	Potential Equ_op Rdc_potential |
+	ForceConstant Equ_op? number_s |
+	Nrestraints Equ_op? Integer |
+	Potential Equ_op? Rdc_potential |
 	Print Threshold number_s |
 	Reset;
 
@@ -313,14 +313,14 @@ one_bond_assign:
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
 */
 angle_db_statement:
-	angle_db_assign* |
+	angle_db_assign |
 	Classification Equ_op? Simple_name |
-	DerivFlag Equ_op Simple_name |
+	DerivFlag Equ_op? Simple_name |
 	Expectation Integer Integer number_s |
-	Error Equ_op number_s |
-	ForceConstant Equ_op number_s |
-	Nrestraints Equ_op Integer |
-	Potential Equ_op Rdc_potential |
+	Error Equ_op? number_s |
+	ForceConstant Equ_op? number_s |
+	Nrestraints Equ_op? Integer |
+	Potential Equ_op? Rdc_potential |
 	Print Threshold number_s (All | (Classification Equ_op? Simple_name)) |
 	Reset |
 	Size Angle_dihedral Integer Integer |
@@ -359,7 +359,7 @@ factor:
 	NONE |
 	Not_op factor |
 	Point L_paren number_f Comma? number_f Comma? number_f R_paren Cut number_f |
-	Point L_paren Tail Equ_op selection Comma? (Head Equ_op selection)? R_paren Cut number_f |
+	Point L_paren Tail Equ_op? selection Comma? (Head Equ_op? selection)? R_paren Cut number_f |
 	Previous |
 	Pseudo |
 	Residue (Integers | Integer (Colon Integer)?) |
@@ -375,7 +375,7 @@ factor:
 
 vector_3d:
 	L_paren number_f Comma? number_f Comma? number_f R_paren |
-	L_paren Tail Equ_op selection Comma? (Head Equ_op selection)? R_paren;
+	L_paren Tail Equ_op? selection Comma? (Head Equ_op? selection)? R_paren;
 */
 
 /* number expression in assign */

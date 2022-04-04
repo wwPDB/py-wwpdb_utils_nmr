@@ -236,22 +236,24 @@ def translateAmberAtomNomenclature(atomId):
     return atomId
 
 
-def checkCoordinates(verbose=True, log=sys.stdout, cR=None, polySeq=None,
+def checkCoordinates(verbose=True, log=sys.stdout,
                      representativeModelId=REPRESENTATIVE_MODEL_ID,
-                     coordAtomSite=None, coordUnobsRes=None,
-                     labelToAuthSeq=None, authToLabelSeq=None,
+                     cR=None, prevCoordCheck=None,
                      testTag=True):
     """ Examine the coordinates for MR/PT parser listener.
     """
 
-    altPolySeq = None
+    changed = False
+
+    polySeq = None if prevCoordCheck is None or 'polymer_sequence' not in prevCoordCheck else prevCoordCheck['polymer_sequence']
+    altPolySeq = None if prevCoordCheck is None or 'alt_polymer_sequence' not in prevCoordCheck else prevCoordCheck['alt_polymer_sequence']
 
     if polySeq is None:
+        changed = True
 
         # loop categories
         _lpCategories = {'poly_seq': 'pdbx_poly_seq_scheme',
                          'non_poly': 'pdbx_nonpoly_scheme',
-                         'coordinate': 'atom_site',
                          'poly_seq_alias': 'ndb_poly_seq_scheme',
                          'non_poly_alias': 'ndb_nonpoly_scheme'
                          }
@@ -275,30 +277,6 @@ def checkCoordinates(verbose=True, log=sys.stdout, cR=None, polySeq=None,
                                         {'name': 'pdb_num', 'type': 'int', 'alt_name': 'seq_id'},
                                         {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'}
                                         ],
-                     'coordinate': [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                    {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                    {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                    {'name': 'pdbx_PDB_model_num', 'type': 'int', 'alt_name': 'model_id'}
-                                    ],
-                     'coordinate_alias': [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                          {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                          {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                          {'name': 'ndb_model', 'type': 'int', 'alt_name': 'model_id'}
-                                          ],
-                     'coordinate_ins': [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                        {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                        {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                        {'name': 'pdbx_PDB_ins_code', 'type': 'str', 'alt_name': 'ins_code', 'default': '?'},
-                                        {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'label_seq_id', 'default': '.'},
-                                        {'name': 'pdbx_PDB_model_num', 'type': 'int', 'alt_name': 'model_id'}
-                                        ],
-                     'coordinate_ins_alias': [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                              {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                              {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                              {'name': 'ndb_ins_code', 'type': 'str', 'alt_name': 'ins_code', 'default': '?'},
-                                              {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'label_seq_id', 'default': '.'},
-                                              {'name': 'ndb_model', 'type': 'int', 'alt_name': 'model_id'}
-                                              ]
                      }
 
         contetSubtype = 'poly_seq'
@@ -318,12 +296,7 @@ def checkCoordinates(verbose=True, log=sys.stdout, cR=None, polySeq=None,
                 polySeq = cR.getPolymerSequence(lpCategory, keyItems,
                                                 withStructConf=True, alias=alias)
             except KeyError:  # pdbx_PDB_ins_code throws KeyError
-                if contetSubtype + ('_ins_alias' if alias else '_ins') in keyItems:
-                    keyItems = _keyItems[contetSubtype + ('_ins_alias' if alias else '_ins')]
-                    polySeq = cR.getPolymerSequence(lpCategory, keyItems,
-                                                    withStructConf=True, alias=alias)
-                else:
-                    polySeq = []
+                polySeq = []
 
             if len(polySeq) > 1:
                 ps = copy.copy(polySeq[0])
@@ -346,21 +319,43 @@ def checkCoordinates(verbose=True, log=sys.stdout, cR=None, polySeq=None,
                 log.write(f"+ParserListenerUtil.checkCoordinates() ++ Error - {str(e)}\n")
 
     if not testTag:
-        return {'polymer_sequence': polySeq, 'alt_polymer_sequence': altPolySeq}
+        if not changed:
+            return prevCoordCheck
+
+        return {'polymer_sequence': polySeq,
+                'alt_polymer_sequence': altPolySeq}
+
+    modelNumName = None if prevCoordCheck is None or 'model_num_name' not in prevCoordCheck else prevCoordCheck['model_num_name']
+    authAsymId = None if prevCoordCheck is None or 'auth_asym_id' not in prevCoordCheck else prevCoordCheck['auth_asym_id']
+    authSeqId = None if prevCoordCheck is None or 'auth_seq_id' not in prevCoordCheck else prevCoordCheck['auth_seq_id']
+    authAtomId = None if prevCoordCheck is None or 'auth_atom_id' not in prevCoordCheck else prevCoordCheck['auth_atom_id']
+
+    coordAtomSite = None if prevCoordCheck is None or 'coord_atom_site' not in prevCoordCheck else prevCoordCheck['coord_atom_site']
+    coordUnobsRes = None if prevCoordCheck is None or 'coord_unobs_res' not in prevCoordCheck else prevCoordCheck['coord_unobs_res']
+    labelToAuthChain = None if prevCoordCheck is None or 'label_to_auth_chain' not in prevCoordCheck else prevCoordCheck['label_to_auth_chain']
+    authToLabelChain = None if prevCoordCheck is None or 'auth_to_label_chain' not in prevCoordCheck else prevCoordCheck['auth_to_label_chain']
+    labelToAuthSeq = None if prevCoordCheck is None or 'label_to_auth_seq' not in prevCoordCheck else prevCoordCheck['label_to_auth_seq']
+    authToLabelSeq = None if prevCoordCheck is None or 'auth_to_label_seq' not in prevCoordCheck else prevCoordCheck['auth_to_label_seq']
 
     try:
 
-        modelNumName = 'pdbx_PDB_model_num' if cR.hasItem('atom_site', 'pdbx_PDB_model_num') else 'ndb_model'
-        authAsymId = 'pdbx_auth_asym_id' if cR.hasItem('atom_site', 'pdbx_auth_asym_id') else 'auth_asym_id'
-        authSeqId = 'pdbx_auth_seq_id' if cR.hasItem('atom_site', 'pdbx_auth_seq_id') else 'auth_seq_id'
-        authAtomId = 'pdbx_auth_atom_name' if cR.hasItem('atom_site', 'pdbx_auth_atom_name') else 'auth_atom_id'
+        if modelNumName is None:
+            modelNumName = 'pdbx_PDB_model_num' if cR.hasItem('atom_site', 'pdbx_PDB_model_num') else 'ndb_model'
+        if authAsymId is None:
+            authAsymId = 'pdbx_auth_asym_id' if cR.hasItem('atom_site', 'pdbx_auth_asym_id') else 'auth_asym_id'
+        if authSeqId is None:
+            authSeqId = 'pdbx_auth_seq_id' if cR.hasItem('atom_site', 'pdbx_auth_seq_id') else 'auth_seq_id'
+        if authAtomId is None:
+            authAtomId = 'pdbx_auth_atom_name' if cR.hasItem('atom_site', 'pdbx_auth_atom_name') else 'auth_atom_id'
         altAuthAtomId = None if authAtomId == 'auth_atom_id' else 'auth_atom_id'
 
-        if coordAtomSite is None or labelToAuthSeq is None or authToLabelSeq is None:
+        if coordAtomSite is None or labelToAuthChain is None or authToLabelChain is None or labelToAuthSeq is None or authToLabelSeq is None:
+            changed = True
 
             if altAuthAtomId is not None:
                 coord = cR.getDictListWithFilter('atom_site',
                                                  [{'name': authAsymId, 'type': 'str', 'alt_name': 'chain_id'},
+                                                  {'name': 'label_asym_id', 'type': 'str', 'alt_name': 'alt_chain_id'},
                                                   {'name': authSeqId, 'type': 'int', 'alt_name': 'seq_id'},
                                                   {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'alt_seq_id'},
                                                   {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
@@ -375,6 +370,7 @@ def checkCoordinates(verbose=True, log=sys.stdout, cR=None, polySeq=None,
             else:
                 coord = cR.getDictListWithFilter('atom_site',
                                                  [{'name': authAsymId, 'type': 'str', 'alt_name': 'chain_id'},
+                                                  {'name': 'label_asym_id', 'type': 'str', 'alt_name': 'alt_chain_id'},
                                                   {'name': authSeqId, 'type': 'int', 'alt_name': 'seq_id'},
                                                   {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'alt_seq_id'},
                                                   {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
@@ -386,6 +382,14 @@ def checkCoordinates(verbose=True, log=sys.stdout, cR=None, polySeq=None,
                                                   {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}
                                                   ])
 
+            emptyValue = (None, '', '.', '?')
+            authToLabelChain = {}
+            labelToAuthChain = {}
+            for c in coord:
+                if c['chain_id'] not in emptyValue and c['alt_chain_id'] not in emptyValue:
+                    if c['chain_id'] not in authToLabelChain:
+                        authToLabelChain[c['chain_id']] = c['alt_chain_id']
+                        labelToAuthChain[c['alt_chain_id']] = c['chain_id']
             coordAtomSite = {}
             labelToAuthSeq = {}
             chainIds = set(c['chain_id'] for c in coord)
@@ -406,7 +410,7 @@ def checkCoordinates(verbose=True, log=sys.stdout, cR=None, polySeq=None,
                         coordAtomSite[seqKey]['alt_atom_id'] = altAtomIds
                     altSeqId = next((c['alt_seq_id'] for c in coord if c['chain_id'] == chainId and c['seq_id'] == seqId), None)
                     if altSeqId is not None and altSeqId.isdigit():
-                        labelToAuthSeq[(chainId, int(altSeqId))] = seqKey
+                        labelToAuthSeq[(authToLabelChain[chainId], int(altSeqId))] = seqKey
             authToLabelSeq = {v: k for k, v in labelToAuthSeq.items()}
 
         if coordUnobsRes is None:
@@ -433,6 +437,9 @@ def checkCoordinates(verbose=True, log=sys.stdout, cR=None, polySeq=None,
         if verbose:
             log.write(f"+ParserListenerUtil.checkCoordinates() ++ Error  - {str(e)}\n")
 
+    if not changed:
+        return prevCoordCheck
+
     return {'model_num_name': modelNumName,
             'auth_asym_id': authAsymId,
             'auth_seq_id': authSeqId,
@@ -442,6 +449,8 @@ def checkCoordinates(verbose=True, log=sys.stdout, cR=None, polySeq=None,
             'alt_polymer_sequence': altPolySeq,
             'coord_atom_site': coordAtomSite,
             'coord_unobs_res': coordUnobsRes,
+            'label_to_auth_chain': labelToAuthChain,
+            'auth_to_label_chain': authToLabelChain,
             'label_to_auth_seq': labelToAuthSeq,
             'auth_to_label_seq': authToLabelSeq}
 

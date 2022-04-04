@@ -7041,7 +7041,7 @@ class NmrDpUtility:
 
                 if file_type == 'nm-res-xpl':
 
-                    reader = XplorMRReader(self.__verbose, self.__lfh, None, None, None, None, None, None,
+                    reader = XplorMRReader(self.__verbose, self.__lfh, None, None, None,
                                            self.__ccU, self.__csStat, self.__nefT)
                     listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
@@ -7117,7 +7117,7 @@ class NmrDpUtility:
 
                 elif file_type == 'nm-res-cns':
 
-                    reader = CnsMRReader(self.__verbose, self.__lfh, None, None, None, None, None, None,
+                    reader = CnsMRReader(self.__verbose, self.__lfh, None, None, None,
                                          self.__ccU, self.__csStat, self.__nefT)
                     listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
@@ -7192,7 +7192,7 @@ class NmrDpUtility:
 
                 elif file_type == 'nm-res-amb':
 
-                    reader = AmberMRReader(self.__verbose, self.__lfh, None, None, None, None, None, None,
+                    reader = AmberMRReader(self.__verbose, self.__lfh, None, None, None,
                                            self.__ccU, self.__csStat, self.__nefT)
                     listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None, None)
 
@@ -7340,7 +7340,7 @@ class NmrDpUtility:
 
                 elif file_type == 'nm-res-cya':
 
-                    reader = CyanaMRReader(self.__verbose, self.__lfh, None, None, None, None, None, None,
+                    reader = CyanaMRReader(self.__verbose, self.__lfh, None, None, None,
                                            self.__ccU, self.__csStat, self.__nefT)
                     listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
@@ -7416,7 +7416,7 @@ class NmrDpUtility:
 
                 elif file_type == 'nm-res-ros':
 
-                    reader = RosettaMRReader(self.__verbose, self.__lfh, None, None, None, None, None, None,
+                    reader = RosettaMRReader(self.__verbose, self.__lfh, None, None, None,
                                              self.__ccU, self.__csStat, self.__nefT)
                     listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
@@ -7496,7 +7496,7 @@ class NmrDpUtility:
 
                         if not checked:
 
-                            reader = CnsMRReader(False, self.__lfh, None, None, None, None, None, None,
+                            reader = CnsMRReader(False, self.__lfh, None, None, None,
                                                  self.__ccU, self.__csStat, self.__nefT)
                             listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
@@ -7521,7 +7521,7 @@ class NmrDpUtility:
 
                         if not checked:
 
-                            reader = XplorMRReader(False, self.__lfh, None, None, None, None, None, None,
+                            reader = XplorMRReader(False, self.__lfh, None, None, None,
                                                    self.__ccU, self.__csStat, self.__nefT)
                             listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
@@ -7546,7 +7546,7 @@ class NmrDpUtility:
 
                         if not checked:
 
-                            reader = AmberMRReader(False, self.__lfh, None, None, None, None, None, None,
+                            reader = AmberMRReader(False, self.__lfh, None, None, None,
                                                    self.__ccU, self.__csStat, self.__nefT)
                             listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None, None)
 
@@ -7593,7 +7593,7 @@ class NmrDpUtility:
 
                         if not checked:
 
-                            reader = CyanaMRReader(False, self.__lfh, None, None, None, None, None, None,
+                            reader = CyanaMRReader(False, self.__lfh, None, None, None,
                                                    self.__ccU, self.__csStat, self.__nefT)
                             listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
@@ -7618,7 +7618,7 @@ class NmrDpUtility:
 
                         if not checked:
 
-                            reader = RosettaMRReader(False, self.__lfh, None, None, None, None, None, None,
+                            reader = RosettaMRReader(False, self.__lfh, None, None, None,
                                                      self.__ccU, self.__csStat, self.__nefT)
                             listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
@@ -17161,14 +17161,9 @@ class NmrDpUtility:
         if not has_poly_seq:
             return True
 
-        ret = checkCoordinates(self.__verbose, self.__lfh, self.__cR, None,
-                               self.__representative_model_id)
-
-        polySeqModel = ret['polymer_sequence']
-        coordAtomSite = ret['coord_atom_site']
-        coordUnobsRes = ret['coord_unobs_res']
-        labelToAuthSeq = ret['label_to_auth_seq']
-        authToLabelSeq = ret['auth_to_label_seq']
+        cC = checkCoordinates(self.__verbose, self.__lfh,
+                              self.__representative_model_id,
+                              self.__cR, None)
 
         atomNumberDict = None
         cyanaUplDistRest = 0
@@ -17197,8 +17192,9 @@ class NmrDpUtility:
                     if file_name != original_file_name and original_file_name is not None:
                         file_name = f"{original_file_name} ({file_name})"
 
-                reader = AmberPTReader(self.__verbose, self.__lfh, self.__cR, polySeqModel,
+                reader = AmberPTReader(self.__verbose, self.__lfh,
                                        self.__representative_model_id,
+                                       self.__cR, cC,
                                        self.__ccU, self.__csStat)
 
                 listener, _, _ = reader.parse(file_path, self.__cifPath)
@@ -17289,10 +17285,9 @@ class NmrDpUtility:
                     file_name = f"{original_file_name} ({file_name})"
 
             if file_type == 'nm-res-xpl':
-                reader = XplorMRReader(self.__verbose, self.__lfh, self.__cR, polySeqModel,
+                reader = XplorMRReader(self.__verbose, self.__lfh,
                                        self.__representative_model_id,
-                                       coordAtomSite, coordUnobsRes,
-                                       labelToAuthSeq, authToLabelSeq,
+                                       self.__cR, cC,
                                        self.__ccU, self.__csStat, self.__nefT)
 
                 listener, _, _ = reader.parse(file_path, self.__cifPath)
@@ -17302,11 +17297,11 @@ class NmrDpUtility:
                     reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
-                        reader = XplorMRReader(self.__verbose, self.__lfh, self.__cR, polySeqModel,
+                        reader = XplorMRReader(self.__verbose, self.__lfh,
                                                self.__representative_model_id,
-                                               coordAtomSite, coordUnobsRes,
-                                               labelToAuthSeq, authToLabelSeq,
-                                               self.__ccU, self.__csStat, self.__nefT, reasons)
+                                               self.__cR, cC,
+                                               self.__ccU, self.__csStat, self.__nefT,
+                                               reasons)
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath)
 
@@ -17362,10 +17357,9 @@ class NmrDpUtility:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ KeyError  - {warn}\n")
 
             elif file_type == 'nm-res-cns':
-                reader = CnsMRReader(self.__verbose, self.__lfh, self.__cR, polySeqModel,
+                reader = CnsMRReader(self.__verbose, self.__lfh,
                                      self.__representative_model_id,
-                                     coordAtomSite, coordUnobsRes,
-                                     labelToAuthSeq, authToLabelSeq,
+                                     self.__cR, cC,
                                      self.__ccU, self.__csStat, self.__nefT)
 
                 listener, _, _ = reader.parse(file_path, self.__cifPath)
@@ -17375,11 +17369,11 @@ class NmrDpUtility:
                     reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
-                        reader = CnsMRReader(self.__verbose, self.__lfh, self.__cR, polySeqModel,
+                        reader = CnsMRReader(self.__verbose, self.__lfh,
                                              self.__representative_model_id,
-                                             coordAtomSite, coordUnobsRes,
-                                             labelToAuthSeq, authToLabelSeq,
-                                             self.__ccU, self.__csStat, self.__nefT, reasons)
+                                             self.__cR, cC,
+                                             self.__ccU, self.__csStat, self.__nefT,
+                                             reasons)
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath)
 
@@ -17435,10 +17429,9 @@ class NmrDpUtility:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ KeyError  - {warn}\n")
 
             elif file_type == 'nm-res-amb':
-                reader = AmberMRReader(self.__verbose, self.__lfh, self.__cR, polySeqModel,
+                reader = AmberMRReader(self.__verbose, self.__lfh,
                                        self.__representative_model_id,
-                                       coordAtomSite, coordUnobsRes,
-                                       labelToAuthSeq, authToLabelSeq,
+                                       self.__cR, cC,
                                        self.__ccU, self.__csStat, self.__nefT,
                                        atomNumberDict)
 
@@ -17522,11 +17515,11 @@ class NmrDpUtility:
                     else:
                         upl_or_lol = 'lol_w_upl'
 
-                reader = CyanaMRReader(self.__verbose, self.__lfh, self.__cR, polySeqModel,
+                reader = CyanaMRReader(self.__verbose, self.__lfh,
                                        self.__representative_model_id,
-                                       coordAtomSite, coordUnobsRes,
-                                       labelToAuthSeq, authToLabelSeq,
-                                       self.__ccU, self.__csStat, self.__nefT, None, upl_or_lol)
+                                       self.__cR, cC,
+                                       self.__ccU, self.__csStat, self.__nefT,
+                                       None, upl_or_lol)
 
                 listener, _, _ = reader.parse(file_path, self.__cifPath)
 
@@ -17535,11 +17528,11 @@ class NmrDpUtility:
                     reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
-                        reader = CyanaMRReader(self.__verbose, self.__lfh, self.__cR, polySeqModel,
+                        reader = CyanaMRReader(self.__verbose, self.__lfh,
                                                self.__representative_model_id,
-                                               coordAtomSite, coordUnobsRes,
-                                               labelToAuthSeq, authToLabelSeq,
-                                               self.__ccU, self.__csStat, self.__nefT, reasons, upl_or_lol)
+                                               self.__cR, cC,
+                                               self.__ccU, self.__csStat, self.__nefT,
+                                               reasons, upl_or_lol)
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath)
 
@@ -17611,10 +17604,9 @@ class NmrDpUtility:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ KeyError  - {warn}\n")
 
             elif file_type == 'nm-res-ros':
-                reader = RosettaMRReader(self.__verbose, self.__lfh, self.__cR, polySeqModel,
+                reader = RosettaMRReader(self.__verbose, self.__lfh,
                                          self.__representative_model_id,
-                                         coordAtomSite, coordUnobsRes,
-                                         labelToAuthSeq, authToLabelSeq,
+                                         self.__cR, cC,
                                          self.__ccU, self.__csStat, self.__nefT)
 
                 listener, _, _ = reader.parse(file_path, self.__cifPath)
@@ -17624,11 +17616,11 @@ class NmrDpUtility:
                     reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
-                        reader = RosettaMRReader(self.__verbose, self.__lfh, self.__cR, polySeqModel,
+                        reader = RosettaMRReader(self.__verbose, self.__lfh,
                                                  self.__representative_model_id,
-                                                 coordAtomSite, coordUnobsRes,
-                                                 labelToAuthSeq, authToLabelSeq,
-                                                 self.__ccU, self.__csStat, self.__nefT, reasons)
+                                                 self.__cR, cC,
+                                                 self.__ccU, self.__csStat, self.__nefT,
+                                                 reasons)
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath)
 

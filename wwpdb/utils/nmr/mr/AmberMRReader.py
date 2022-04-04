@@ -42,29 +42,21 @@ class AmberMRReader:
     """ Accessor methods for parsing AMBER MR files.
     """
 
-    def __init__(self, verbose=True, log=sys.stdout, cR=None, polySeqModel=None,
+    def __init__(self, verbose=True, log=sys.stdout,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
-                 coordAtomSite=None, coordUnobsRes=None,
-                 labelToAuthSeq=None, authToLabelSeq=None,
-                 ccU=None, csStat=None, nefT=None, atomNumberDict=None):
+                 cR=None, cC=None, ccU=None, csStat=None, nefT=None,
+                 atomNumberDict=None):
         self.__verbose = verbose
         self.__lfh = log
         self.__debug = False
 
         self.__representativeModelId = representativeModelId
 
-        if cR is not None and polySeqModel is None:
-            ret = checkCoordinates(verbose, log, cR, polySeqModel,
-                                   representativeModelId,
-                                   testTag=False)
-            polySeqModel = ret['polymer_sequence']
+        if cR is not None and cC is None:
+            cC = checkCoordinates(verbose, log, representativeModelId, cR, None, testTag=False)
 
         self.__cR = cR
-        self.__polySeqModel = polySeqModel
-        self.__coordAtomSite = coordAtomSite
-        self.__coordUnobsRes = coordUnobsRes
-        self.__labelToAuthSeq = labelToAuthSeq
-        self.__authToLabelSeq = authToLabelSeq
+        self.__cC = cC
 
         # CCD accessing utility
         self.__ccU = ChemCompUtil(verbose, log) if ccU is None else ccU
@@ -105,8 +97,9 @@ class AmberMRReader:
                         return None, None, None
 
             if ptFilePath is not None and self.__atomNumberDict is None:
-                ptR = AmberPTReader(self.__verbose, self.__lfh, self.__cR, self.__polySeqModel,
+                ptR = AmberPTReader(self.__verbose, self.__lfh,
                                     self.__representativeModelId,
+                                    self.__cR, self.__cC,
                                     self.__ccU, self.__csStat)
                 ptPL, _, _ = ptR.parse(ptFilePath, cifFilePath)
                 if ptPL is not None:
@@ -141,11 +134,11 @@ class AmberMRReader:
                     tree = parser.amber_mr()
 
                     walker = ParseTreeWalker()
-                    listener = AmberMRParserListener(self.__verbose, self.__lfh, self.__cR, self.__polySeqModel,
+                    listener = AmberMRParserListener(self.__verbose, self.__lfh,
                                                      self.__representativeModelId,
-                                                     self.__coordAtomSite, self.__coordUnobsRes,
-                                                     self.__labelToAuthSeq, self.__authToLabelSeq,
-                                                     self.__ccU, self.__csStat, self.__nefT, self.__atomNumberDict)
+                                                     self.__cR, self.__cC,
+                                                     self.__ccU, self.__csStat, self.__nefT,
+                                                     self.__atomNumberDict)
                     listener.setDebugMode(self.__debug)
                     walker.walk(listener, tree)
 

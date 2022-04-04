@@ -129,6 +129,8 @@ class CyanaMRParserListener(ParseTreeListener):
     __altPolySeq = None
     __coordAtomSite = None
     __coordUnobsRes = None
+    __labelToAuthChain = None
+    __authToLabelChain = None
     __labelToAuthSeq = None
     __authToLabelSeq = None
     __preferAuthSeq = True
@@ -152,21 +154,17 @@ class CyanaMRParserListener(ParseTreeListener):
 
     reasonsForReParsing = None
 
-    def __init__(self, verbose=True, log=sys.stdout, cR=None, polySeq=None,
+    def __init__(self, verbose=True, log=sys.stdout,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
-                 coordAtomSite=None, coordUnobsRes=None,
-                 labelToAuthSeq=None, authToLabelSeq=None,
-                 ccU=None, csStat=None, nefT=None, reasons=None, upl_or_lol=None):
+                 cR=None, cC=None, ccU=None, csStat=None, nefT=None,
+                 reasons=None, upl_or_lol=None):
         # self.__verbose = verbose
         # self.__lfh = log
         # self.__cR = cR
         self.__hasCoord = cR is not None
 
         if self.__hasCoord:
-            ret = checkCoordinates(verbose, log, cR, polySeq,
-                                   representativeModelId,
-                                   coordAtomSite, coordUnobsRes,
-                                   labelToAuthSeq, authToLabelSeq)
+            ret = checkCoordinates(verbose, log, representativeModelId, cR, cC)
             # self.__modelNumName = ret['model_num_name']
             # self.__authAsymId = ret['auth_asym_id']
             # self.__authSeqId = ret['auth_seq_id']
@@ -176,6 +174,8 @@ class CyanaMRParserListener(ParseTreeListener):
             self.__altPolySeq = ret['alt_polymer_sequence']
             self.__coordAtomSite = ret['coord_atom_site']
             self.__coordUnobsRes = ret['coord_unobs_res']
+            self.__labelToAuthChain = ret['label_to_auth_chain']
+            self.__authToLabelChain = ret['auth_to_label_chain']
             self.__labelToAuthSeq = ret['label_to_auth_seq']
             self.__authToLabelSeq = ret['auth_to_label_seq']
 
@@ -353,15 +353,16 @@ class CyanaMRParserListener(ParseTreeListener):
 
         return dstFunc
 
-    def getRealSeqId(self, ps, seqId):
-        chainId = ps['chain_id']
+    def getRealChainSeqId(self, ps, seqId):
+        chainId = self.__labelToAuthChain[ps['chain_id']] if ps['chain_id'] in self.__labelToAuthChain else ps['chain_id']
         if self.__reasons is not None and 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme']:
             seqKey = (chainId, seqId)
             if seqKey in self.__authToLabelSeq:
-                _, _seqId = self.__authToLabelSeq[seqKey]
+                _chainId, _seqId = self.__authToLabelSeq[seqKey]
                 if _seqId in ps['seq_id']:
+                    chainId = _chainId
                     seqId = _seqId
-        return seqId
+        return chainId, seqId
 
     def assignCoordPolymerSequence(self, seqId, compId, atomId):
         """ Assign polymer sequences of the coordinates.
@@ -371,8 +372,7 @@ class CyanaMRParserListener(ParseTreeListener):
         _seqId = seqId
 
         for ps in self.__polySeq:
-            chainId = ps['chain_id']
-            seqId = self.getRealSeqId(ps, _seqId)
+            chainId, seqId = self.getRealChainSeqId(ps, _seqId)
             if seqId in ps['seq_id']:
                 cifCompId = ps['comp_id'][ps['seq_id'].index(seqId)]
                 if cifCompId == compId:
@@ -456,6 +456,10 @@ class CyanaMRParserListener(ParseTreeListener):
 
         found = False
 
+        print(chainId)
+        print(compId)
+        print(coordAtomSite)
+
         if coordAtomSite is not None:
             if atomId in coordAtomSite['atom_id']:
                 found = True
@@ -499,7 +503,7 @@ class CyanaMRParserListener(ParseTreeListener):
             cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId), None)
             if cca is not None and seqKey not in self.__coordUnobsRes:
                 self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                    f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.\n"
+                    f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates 2.\n"
 
     def getCoordAtomSiteOf(self, chainId, seqId, cifCheck=True, asis=True):
         seqKey = (chainId, seqId)

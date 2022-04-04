@@ -38,22 +38,19 @@ class AmberPTReader:
     """ Accessor methods for parsing AMBER PT files.
     """
 
-    def __init__(self, verbose=True, log=sys.stdout, cR=None, polySeqModel=None,
+    def __init__(self, verbose=True, log=sys.stdout,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
-                 ccU=None, csStat=None):
+                 cR=None, cC=None, ccU=None, csStat=None):
         self.__verbose = verbose
         self.__lfh = log
 
         self.__representativeModelId = representativeModelId
 
-        if cR is not None and polySeqModel is None:
-            ret = checkCoordinates(verbose, log, cR, polySeqModel,
-                                   representativeModelId,
-                                   testTag=False)
-            polySeqModel = ret['polymer_sequence']
+        if cR is not None and cC is None:
+            cC = checkCoordinates(verbose, log, representativeModelId, cR, None, testTag=False)
 
         self.__cR = cR
-        self.__polySeqModel = polySeqModel
+        self.__cC = cC
 
         # CCD accessing utility
         self.__ccU = ChemCompUtil(verbose, log) if ccU is None else ccU
@@ -111,8 +108,9 @@ class AmberPTReader:
                 tree = parser.amber_pt()
 
                 walker = ParseTreeWalker()
-                listener = AmberPTParserListener(self.__verbose, self.__lfh, self.__cR, self.__polySeqModel,
+                listener = AmberPTParserListener(self.__verbose, self.__lfh,
                                                  self.__representativeModelId,
+                                                 self.__cR, self.__cC,
                                                  self.__ccU, self.__csStat)
                 walker.walk(listener, tree)
 

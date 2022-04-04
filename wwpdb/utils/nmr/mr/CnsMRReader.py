@@ -40,28 +40,21 @@ class CnsMRReader:
     """ Accessor methods for parsing CNS MR files.
     """
 
-    def __init__(self, verbose=True, log=sys.stdout, cR=None, polySeqModel=None,
+    def __init__(self, verbose=True, log=sys.stdout,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
-                 coordAtomSite=None, coordUnobsRes=None,
-                 labelToAuthSeq=None, authToLabelSeq=None,
-                 ccU=None, csStat=None, nefT=None, reasons=None):
+                 cR=None, cC=None, ccU=None, csStat=None, nefT=None,
+                 reasons=None):
         self.__verbose = verbose
         self.__lfh = log
         self.__debug = False
 
         self.__representativeModelId = representativeModelId
 
-        if cR is not None and polySeqModel is None:
-            ret = checkCoordinates(verbose, log, cR, polySeqModel,
-                                   representativeModelId, testTag=False)
-            polySeqModel = ret['polymer_sequence']
+        if cR is not None and cC is None:
+            cC = checkCoordinates(verbose, log, representativeModelId, cR, None, testTag=False)
 
         self.__cR = cR
-        self.__polySeqModel = polySeqModel
-        self.__coordAtomSite = coordAtomSite
-        self.__coordUnobsRes = coordUnobsRes
-        self.__labelToAuthSeq = labelToAuthSeq
-        self.__authToLabelSeq = authToLabelSeq
+        self.__cC = cC
 
         # CCD accessing utility
         self.__ccU = ChemCompUtil(verbose, log) if ccU is None else ccU
@@ -128,11 +121,11 @@ class CnsMRReader:
                 tree = parser.cns_mr()
 
                 walker = ParseTreeWalker()
-                listener = CnsMRParserListener(self.__verbose, self.__lfh, self.__cR, self.__polySeqModel,
+                listener = CnsMRParserListener(self.__verbose, self.__lfh,
                                                self.__representativeModelId,
-                                               self.__coordAtomSite, self.__coordUnobsRes,
-                                               self.__labelToAuthSeq, self.__authToLabelSeq,
-                                               self.__ccU, self.__csStat, self.__nefT, self.__reasons)
+                                               self.__cR, self.__cC,
+                                               self.__ccU, self.__csStat, self.__nefT,
+                                               self.__reasons)
                 listener.setDebugMode(self.__debug)
                 walker.walk(listener, tree)
 

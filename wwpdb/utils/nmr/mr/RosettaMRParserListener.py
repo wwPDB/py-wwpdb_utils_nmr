@@ -113,6 +113,8 @@ class RosettaMRParserListener(ParseTreeListener):
     __altPolySeq = None
     __coordAtomSite = None
     __coordUnobsRes = None
+    __labelToAuthChain = None
+    __authToLabelChain = None
     __labelToAuthSeq = None
     __authToLabelSeq = None
     __preferAuthSeq = True
@@ -139,21 +141,17 @@ class RosettaMRParserListener(ParseTreeListener):
 
     reasonsForReParsing = None
 
-    def __init__(self, verbose=True, log=sys.stdout, cR=None, polySeq=None,
+    def __init__(self, verbose=True, log=sys.stdout,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
-                 coordAtomSite=None, coordUnobsRes=None,
-                 labelToAuthSeq=None, authToLabelSeq=None,
-                 ccU=None, csStat=None, nefT=None, reasons=None):
+                 cR=None, cC=None, ccU=None, csStat=None, nefT=None,
+                 reasons=None):
         # self.__verbose = verbose
         # self.__lfh = log
         # self.__cR = cR
         self.__hasCoord = cR is not None
 
         if self.__hasCoord:
-            ret = checkCoordinates(verbose, log, cR, polySeq,
-                                   representativeModelId,
-                                   coordAtomSite, coordUnobsRes,
-                                   labelToAuthSeq, authToLabelSeq)
+            ret = checkCoordinates(verbose, log, representativeModelId, cR, cC)
             # self.__modelNumName = ret['model_num_name']
             # self.__authAsymId = ret['auth_asym_id']
             # self.__authSeqId = ret['auth_seq_id']
@@ -163,6 +161,8 @@ class RosettaMRParserListener(ParseTreeListener):
             self.__altPolySeq = ret['alt_polymer_sequence']
             self.__coordAtomSite = ret['coord_atom_site']
             self.__coordUnobsRes = ret['coord_unobs_res']
+            self.__labelToAuthChain = ret['label_to_auth_chain']
+            self.__authToLabelChain = ret['auth_to_label_chain']
             self.__labelToAuthSeq = ret['label_to_auth_seq']
             self.__authToLabelSeq = ret['auth_to_label_seq']
 

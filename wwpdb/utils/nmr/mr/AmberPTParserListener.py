@@ -154,14 +154,12 @@ class AmberPTParserListener(ParseTreeListener):
 
     warningMessage = ''
 
-    def __init__(self, verbose=True, log=sys.stdout, cR=None, polySeqModel=None,
+    def __init__(self, verbose=True, log=sys.stdout,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
-                 ccU=None, csStat=None):
+                 cR=None, cC=None, ccU=None, csStat=None):
 
         if cR is not None:
-            ret = checkCoordinates(verbose, log, cR, polySeqModel,
-                                   representativeModelId,
-                                   testTag=False)
+            ret = checkCoordinates(verbose, log, representativeModelId, cR, cC, testTag=False)
             self.__polySeqModel = ret['polymer_sequence']
 
         self.__hasPolySeqModel = self.__polySeqModel is not None and len(self.__polySeqModel) > 0

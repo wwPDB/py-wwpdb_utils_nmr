@@ -370,6 +370,7 @@ class CifReader:
             ins_code_col = -1 if 'ins_code' not in altDict else altDict['ins_code']
             label_seq_col = -1 if 'label_seq_id' not in altDict else altDict['label_seq_id']
             auth_chain_id_col = -1 if 'auth_chain_id' not in altDict else altDict['auth_chain_id']
+            auth_seq_id_col = -1 if 'auth_seq_id' not in altDict else altDict['auth_seq_id']
 
             chains = sorted(set(row[chain_id_col] for row in rowList))
 
@@ -442,6 +443,20 @@ class CifReader:
 
                 if auth_chain_id_col != -1:
                     ent['auth_chain_id'] = authChainDict[c]
+
+                if auth_seq_id_col != -1:
+                    ent['auth_seq_id'] = []
+                    for s in seqDict[c]:
+                        row = next((row for row in rowList if row[chain_id_col] == c and int(row[seq_id_col]) == s), None)
+                        if row is not None:
+                            if row[auth_seq_id_col] not in self.emptyValue:
+                                try:
+                                    _s = int(row[auth_seq_id_col])
+                                except ValueError:
+                                    _s = None
+                                ent['auth_seq_id'].append(_s)
+                            else:
+                                ent['auth_seq_id'].append(None)
 
                 if withStructConf:
                     ent['struct_conf'] = self.__extractStructConf(c, seqDict[c], alias)

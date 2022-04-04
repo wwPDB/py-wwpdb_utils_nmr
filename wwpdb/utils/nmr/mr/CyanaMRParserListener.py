@@ -470,10 +470,6 @@ class CyanaMRParserListener(ParseTreeListener):
 
         found = False
 
-        print(chainId)
-        print(compId)
-        print(coordAtomSite)
-
         if coordAtomSite is not None:
             if atomId in coordAtomSite['atom_id']:
                 found = True

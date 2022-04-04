@@ -253,48 +253,34 @@ def checkCoordinates(verbose=True, log=sys.stdout,
 
         # loop categories
         _lpCategories = {'poly_seq': 'pdbx_poly_seq_scheme',
-                         'non_poly': 'pdbx_nonpoly_scheme',
-                         'poly_seq_alias': 'ndb_poly_seq_scheme',
-                         'non_poly_alias': 'ndb_nonpoly_scheme'
+                         'non_poly': 'pdbx_nonpoly_scheme'
                          }
 
         # key items of loop
         _keyItems = {'poly_seq': [{'name': 'asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                   {'name': 'seq_id', 'type': 'int', 'alt_name': 'seq_id'},
                                   {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                  {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_chain_id'}
+                                  {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
+                                  {'name': 'pdb_seq_num', 'type': 'str', 'alt_name': 'auth_seq_id'}
                                   ],
-                     'poly_seq_alias': [{'name': 'id', 'type': 'str', 'alt_name': 'chain_id'},
-                                        {'name': 'seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                        {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'}
-                                        ],
                      'non_poly': [{'name': 'asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                   {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'seq_id'},
                                   {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                  {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_chain_id'}
-                                  ],
-                     'non_poly_alias': [{'name': 'asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                        {'name': 'pdb_num', 'type': 'int', 'alt_name': 'seq_id'},
-                                        {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'}
-                                        ],
+                                  {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
+                                  {'name': 'pdb_seq_num', 'type': 'str', 'alt_name': 'auth_seq_id'}
+                                  ]
                      }
 
         contetSubtype = 'poly_seq'
 
-        alias = False
         lpCategory = _lpCategories[contetSubtype]
         keyItems = _keyItems[contetSubtype]
-
-        if not cR.hasCategory(lpCategory):
-            alias = True
-            lpCategory = _lpCategories[contetSubtype + '_alias']
-            keyItems = _keyItems[contetSubtype + '_alias']
 
         try:
 
             try:
                 polySeq = cR.getPolymerSequence(lpCategory, keyItems,
-                                                withStructConf=True, alias=alias)
+                                                withStructConf=True)
             except KeyError:  # pdbx_PDB_ins_code throws KeyError
                 polySeq = []
 

@@ -1658,7 +1658,7 @@ class AmberMRParserListener(ParseTreeListener):
         dstFunc = {'weight': wt}
 
         if self.lowerLimit is not None:
-            if DIST_ERROR_MIN < self.lowerLimit < DIST_ERROR_MAX:
+            if DIST_ERROR_MIN <= self.lowerLimit < DIST_ERROR_MAX:
                 dstFunc['lower_limit'] = f"{self.lowerLimit:.3f}"
             else:
                 validRange = False
@@ -1666,7 +1666,7 @@ class AmberMRParserListener(ParseTreeListener):
                     f"The lower limit value 'r2={self.lowerLimit}' must be within range {DIST_RESTRAINT_ERROR}.\n"
 
         if self.upperLimit is not None:
-            if DIST_ERROR_MIN < self.upperLimit < DIST_ERROR_MAX:
+            if DIST_ERROR_MIN < self.upperLimit <= DIST_ERROR_MAX:
                 dstFunc['upper_limit'] = f"{self.upperLimit:.3f}"
             else:
                 validRange = False
@@ -1674,7 +1674,7 @@ class AmberMRParserListener(ParseTreeListener):
                     f"The upper limit value 'r3={self.upperLimit}' must be within range {DIST_RESTRAINT_ERROR}.\n"
 
         if self.lowerLinearLimit is not None:
-            if DIST_ERROR_MIN < self.lowerLinearLimit < DIST_ERROR_MAX:
+            if DIST_ERROR_MIN <= self.lowerLinearLimit < DIST_ERROR_MAX:
                 dstFunc['lower_linear_limit'] = f"{self.lowerLinearLimit:.3f}"
             else:
                 validRange = False
@@ -1682,12 +1682,48 @@ class AmberMRParserListener(ParseTreeListener):
                     f"The lower linear limit value 'r1={self.lowerLinearLimit}' must be within range {DIST_RESTRAINT_ERROR}.\n"
 
         if self.upperLinearLimit is not None:
-            if DIST_ERROR_MIN < self.upperLinearLimit < DIST_ERROR_MAX:
+            if DIST_ERROR_MIN < self.upperLinearLimit <= DIST_ERROR_MAX:
                 dstFunc['upper_linear_limit'] = f"{self.upperLinearLimit:.3f}"
             else:
                 validRange = False
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
                     f"The upper linear limit value 'r4={self.upperLinearLimit}' must be within range {DIST_RESTRAINT_ERROR}.\n"
+
+        if self.lowerLimit is not None and self.upperLimit is not None:
+            if self.lowerLimit > self.upperLimit:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The lower limit value 'r2={self.lowerLimit}' must be less than the upper limit value 'r3={self.upperLimit}'.\n"
+
+        if self.lowerLinearLimit is not None and self.upperLimit is not None:
+            if self.lowerLinearLimit > self.upperLimit:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The lower linear limit value 'r1={self.lowerLinearLimit}' must be less than the upper limit value 'r3={self.upperLimit}'.\n"
+
+        if self.lowerLimit is not None and self.upperLinearLimit is not None:
+            if self.lowerLimit > self.upperLinearLimit:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The lower limit value 'r2={self.lowerLimit}' must be less than the upper limit value 'r4={self.upperLinearLimit}'.\n"
+
+        if self.lowerLinearLimit is not None and self.upperLinearLimit is not None:
+            if self.lowerLinearLimit > self.upperLinearLimit:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The lower linear limit value 'r1={self.lowerLinearLimit}' must be less than the upper limit value 'r4={self.upperLinearLimit}'.\n"
+
+        if self.lowerLimit is not None and self.lowerLinearLimit is not None:
+            if self.lowerLinearLimit > self.lowerLimit:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The lower linear limit value 'r1={self.lowerLinearLimit}' must be less than the lower limit value 'r2={self.lowerLimit}'.\n"
+
+        if self.upperLimit is not None and self.upperLinearLimit is not None:
+            if self.upperLimit > self.upperLinearLimit:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The upper limit value 'r3={self.upperLimit}' must be less than the upper linear limit value 'r4={self.upperLinearLimit}'.\n"
 
         if not validRange:
             self.lastComment = None
@@ -1731,7 +1767,7 @@ class AmberMRParserListener(ParseTreeListener):
         dstFunc = {'weight': wt}
 
         if self.lowerLimit is not None:
-            if ANGLE_ERROR_MIN < self.lowerLimit < ANGLE_ERROR_MAX:
+            if ANGLE_ERROR_MIN <= self.lowerLimit < ANGLE_ERROR_MAX:
                 dstFunc['lower_limit'] = f"{self.lowerLimit:.3f}"
             else:
                 validRange = False
@@ -1739,7 +1775,7 @@ class AmberMRParserListener(ParseTreeListener):
                     f"The lower limit value 'r2={self.lowerLimit}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
 
         if self.upperLimit is not None:
-            if ANGLE_ERROR_MIN < self.upperLimit < ANGLE_ERROR_MAX:
+            if ANGLE_ERROR_MIN < self.upperLimit <= ANGLE_ERROR_MAX:
                 dstFunc['upper_limit'] = f"{self.upperLimit:.3f}"
             else:
                 validRange = False
@@ -1747,7 +1783,7 @@ class AmberMRParserListener(ParseTreeListener):
                     f"The upper limit value 'r3={self.upperLimit}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
 
         if self.lowerLinearLimit is not None:
-            if ANGLE_ERROR_MIN < self.lowerLinearLimit < ANGLE_ERROR_MAX:
+            if ANGLE_ERROR_MIN <= self.lowerLinearLimit < ANGLE_ERROR_MAX:
                 dstFunc['lower_linear_limit'] = f"{self.lowerLinearLimit:.3f}"
             else:
                 validRange = False
@@ -1755,12 +1791,48 @@ class AmberMRParserListener(ParseTreeListener):
                     f"The lower linear limit value 'r1={self.lowerLinearLimit}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
 
         if self.upperLinearLimit is not None:
-            if ANGLE_ERROR_MIN < self.upperLinearLimit < ANGLE_ERROR_MAX:
+            if ANGLE_ERROR_MIN < self.upperLinearLimit <= ANGLE_ERROR_MAX:
                 dstFunc['upper_linear_limit'] = f"{self.upperLinearLimit:.3f}"
             else:
                 validRange = False
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
                     f"The upper linear limit value 'r4={self.upperLinearLimit}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
+
+        if self.lowerLimit is not None and self.upperLimit is not None:
+            if self.lowerLimit > self.upperLimit:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The lower limit value 'r2={self.lowerLimit}' must be less than the upper limit value 'r3={self.upperLimit}'.\n"
+
+        if self.lowerLinearLimit is not None and self.upperLimit is not None:
+            if self.lowerLinearLimit > self.upperLimit:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The lower linear limit value 'r1={self.lowerLinearLimit}' must be less than the upper limit value 'r3={self.upperLimit}'.\n"
+
+        if self.lowerLimit is not None and self.upperLinearLimit is not None:
+            if self.lowerLimit > self.upperLinearLimit:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The lower limit value 'r2={self.lowerLimit}' must be less than the upper limit value 'r4={self.upperLinearLimit}'.\n"
+
+        if self.lowerLinearLimit is not None and self.upperLinearLimit is not None:
+            if self.lowerLinearLimit > self.upperLinearLimit:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The lower linear limit value 'r1={self.lowerLinearLimit}' must be less than the upper limit value 'r4={self.upperLinearLimit}'.\n"
+
+        if self.lowerLimit is not None and self.lowerLinearLimit is not None:
+            if self.lowerLinearLimit > self.lowerLimit:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The lower linear limit value 'r1={self.lowerLinearLimit}' must be less than the lower limit value 'r2={self.lowerLimit}'.\n"
+
+        if self.upperLimit is not None and self.upperLinearLimit is not None:
+            if self.upperLimit > self.upperLinearLimit:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The upper limit value 'r3={self.upperLimit}' must be less than the upper linear limit value 'r4={self.upperLinearLimit}'.\n"
 
         if not validRange:
             self.lastComment = None

@@ -113,8 +113,6 @@ class RosettaMRParserListener(ParseTreeListener):
     __altPolySeq = None
     __coordAtomSite = None
     __coordUnobsRes = None
-    __labelToAuthChain = None
-    __authToLabelChain = None
     __labelToAuthSeq = None
     __authToLabelSeq = None
     __preferAuthSeq = True
@@ -161,8 +159,6 @@ class RosettaMRParserListener(ParseTreeListener):
             self.__altPolySeq = ret['alt_polymer_sequence']
             self.__coordAtomSite = ret['coord_atom_site']
             self.__coordUnobsRes = ret['coord_unobs_res']
-            self.__labelToAuthChain = ret['label_to_auth_chain']
-            self.__authToLabelChain = ret['auth_to_label_chain']
             self.__labelToAuthSeq = ret['label_to_auth_seq']
             self.__authToLabelSeq = ret['auth_to_label_seq']
 
@@ -450,15 +446,18 @@ class RosettaMRParserListener(ParseTreeListener):
 
         return dstFunc
 
-    def getRealSeqId(self, ps, seqId):
-        chainId = ps['chain_id']
+    def getRealChainSeqId(self, ps, seqId):
         if self.__reasons is not None and 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme']:
-            seqKey = (chainId, seqId)
-            if seqKey in self.__authToLabelSeq:
-                _, _seqId = self.__authToLabelSeq[seqKey]
-                if _seqId in ps['seq_id']:
-                    seqId = _seqId
-        return seqId
+            seqKey = (ps['chain_id'], seqId)
+            if seqKey in self.__labelToAuthSeq:
+                _chainId, _seqId = self.__labelToAuthSeq[seqKey]
+                if _seqId in ps['auth_seq_id']:
+                    return _chainId, _seqId
+        if seqId in ps['auth_seq_id']:
+            return ps['auth_chain_id'], seqId
+        if seqId in ps['seq_id']:
+            return ps['auth_chain_id'], ps['auth_seq_id'][ps['seq_id'].index(seqId)]
+        return ps['chain_id'], seqId
 
     def assignCoordPolymerSequence(self, seqId, atomId=None, fixedChainId=None):
         """ Assign polymer sequences of the coordinates.
@@ -468,12 +467,11 @@ class RosettaMRParserListener(ParseTreeListener):
         _seqId = seqId
 
         for ps in self.__polySeq:
-            chainId = ps['chain_id']
+            chainId, seqId = self.getRealChainSeqId(ps, _seqId)
             if fixedChainId is not None and chainId != fixedChainId:
                 continue
-            seqId = self.getRealSeqId(ps, _seqId)
-            if seqId in ps['seq_id']:
-                cifCompId = ps['comp_id'][ps['seq_id'].index(seqId)]
+            if seqId in ps['auth_seq_id']:
+                cifCompId = ps['comp_id'][ps['auth_seq_id'].index(seqId)]
                 if atomId is None\
                    or (atomId is not None and len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0):
                     chainAssign.append((chainId, seqId, cifCompId))
@@ -490,7 +488,7 @@ class RosettaMRParserListener(ParseTreeListener):
                         cifCompId = ps['comp_id'][ps['seq_id'].index(seqId)]
                         if atomId is None\
                            or (atomId is not None and len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0):
-                            chainAssign.append((chainId, seqId, cifCompId))
+                            chainAssign.append((ps['auth_chain_id'], _seqId, cifCompId))
                             if self.reasonsForReParsing is None:
                                 self.reasonsForReParsing = {}
                             if 'label_seq_scheme' not in self.reasonsForReParsing:
@@ -498,13 +496,12 @@ class RosettaMRParserListener(ParseTreeListener):
 
         if len(chainAssign) == 0 and self.__altPolySeq is not None:
             for ps in self.__altPolySeq:
-                chainId = ps['chain_id']
+                chainId = ps['auth_chain_id']
                 if fixedChainId is not None and chainId != fixedChainId:
                     continue
                 if _seqId in ps['auth_seq_id']:
                     cifCompId = ps['comp_id'][ps['auth_seq_id'].index(_seqId)]
-                    cifSeqId = ps['seq_id'][ps['auth_seq_id'].index(_seqId)]
-                    chainAssign.append(chainId, cifSeqId, cifCompId)
+                    chainAssign.append(chainId, _seqId, cifCompId)
 
         if len(chainAssign) == 0:
             if atomId is not None:
@@ -1230,7 +1227,10 @@ class RosettaMRParserListener(ParseTreeListener):
         if len(self.atomSelectionSet) < 1:
             return
 
-        ps = next((ps for ps in self.__polySeq if ps['chain_id'] == opposingChainId), None)
+        if self.__reasons is not None and 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme']:
+            ps = next((ps for ps in self.__polySeq if ps['chain_id'] == opposingChainId), None)
+        else:
+            ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == opposingChainId), None)
 
         if ps is None:
             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\

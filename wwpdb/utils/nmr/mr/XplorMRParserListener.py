@@ -230,8 +230,6 @@ class XplorMRParserListener(ParseTreeListener):
     # __altPolySeq = None
     __coordAtomSite = None
     __coordUnobsRes = None
-    __labelToAuthChain = None
-    __authToLabelChain = None
     __labelToAuthSeq = None
     __authToLabelSeq = None
     __preferAuthSeq = True
@@ -317,8 +315,6 @@ class XplorMRParserListener(ParseTreeListener):
             # self.__altPolySeq = ret['alt_polymer_sequence']
             self.__coordAtomSite = ret['coord_atom_site']
             self.__coordUnobsRes = ret['coord_unobs_res']
-            self.__labelToAuthChain = ret['label_to_auth_chain']
-            self.__authToLabelChain = ret['auth_to_label_chain']
             self.__labelToAuthSeq = ret['label_to_auth_seq']
             self.__authToLabelSeq = ret['auth_to_label_seq']
 

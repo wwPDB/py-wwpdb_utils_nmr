@@ -154,6 +154,11 @@ class CnsMRReader:
 if __name__ == "__main__":
     reader = CnsMRReader(True)
     reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-daother-7690/cns_dist.test', # D_1300019843_mr-upload_P1.cns.V1',
+                 '../../tests-nmr/mock-data-daother-7690/D_1300019843_model-annotate_P1.cif.V1')
+    """
+    reader = CnsMRReader(True)
+    reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-pdbstat/D_1000243168_mr-upload_P8.xplor-nih.V1',
                  '../../tests-nmr/mock-data-pdbstat/6pvr.cif')
 
@@ -161,3 +166,4 @@ if __name__ == "__main__":
     reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-pdbstat/D_1000243168_mr-upload_P2.xplor-nih.V1',  # atom_sel_expr_example.txt',
                  '../../tests-nmr/mock-data-pdbstat/6pvr.cif')
+    """

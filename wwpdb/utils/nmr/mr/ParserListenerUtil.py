@@ -368,14 +368,8 @@ def checkCoordinates(verbose=True, log=sys.stdout,
                                                   {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}
                                                   ])
 
-            emptyValue = (None, '', '.', '?')
-            authToLabelChain = {}
-            labelToAuthChain = {}
-            for c in coord:
-                if c['chain_id'] not in emptyValue and c['alt_chain_id'] not in emptyValue:
-                    if c['chain_id'] not in authToLabelChain:
-                        authToLabelChain[c['chain_id']] = c['alt_chain_id']
-                        labelToAuthChain[c['alt_chain_id']] = c['chain_id']
+            authToLabelChain = {ps['auth_chain_id']: ps['chain_id'] for ps in polySeq}
+
             coordAtomSite = {}
             labelToAuthSeq = {}
             chainIds = set(c['chain_id'] for c in coord)
@@ -435,8 +429,6 @@ def checkCoordinates(verbose=True, log=sys.stdout,
             'alt_polymer_sequence': altPolySeq,
             'coord_atom_site': coordAtomSite,
             'coord_unobs_res': coordUnobsRes,
-            'label_to_auth_chain': labelToAuthChain,
-            'auth_to_label_chain': authToLabelChain,
             'label_to_auth_seq': labelToAuthSeq,
             'auth_to_label_seq': authToLabelSeq}
 

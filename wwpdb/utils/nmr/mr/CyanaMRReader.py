@@ -156,6 +156,16 @@ class CyanaMRReader:
 if __name__ == "__main__":
     reader = CyanaMRReader(True)
     reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-daother-7690/D_1300022821_mr-upload_P2.cyana.V1',
+                 '../../tests-nmr/mock-data-daother-7690/D_1300022821_model-annotate_P1.cif.V1')
+
+    reader = CyanaMRReader(True)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-daother-7690/D_1300024364_mr-upload_P1.cyana.V2',
+                 '../../tests-nmr/mock-data-daother-7690/D_1300024364_model-release_P1.cif.V1')
+
+    reader = CyanaMRReader(True)
+    reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-daother-6830/2nd_test/cyana_rdc_restraints_exmaple',
                  '../../tests-nmr/mock-data-daother-6830/2nd_test/D_800411_model_P1.cif.V1')
 

@@ -16580,7 +16580,7 @@ class NmrDpUtility:
 
             if aux_data is not None:
 
-                for l, i in enumerate(aux_data):  # noqa: E741
+                for _l, i in enumerate(aux_data):  # noqa: E741
                     chain_id_1 = i[chain_id_1_name]
                     seq_id_1 = i[seq_id_1_name]
                     comp_id_1 = i[comp_id_1_name]

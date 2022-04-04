@@ -390,6 +390,7 @@ class CnsMRParserListener(ParseTreeListener):
     def enterNoe_statement(self, ctx: CnsMRParser.Noe_statementContext):
         if ctx.Noe_potential():
             code = str(ctx.Noe_potential()).upper()
+            print(code)
             if code.startswith('BIHA'):
                 self.noePotential = 'biharmonic'
             elif code.startswith('LOGN'):

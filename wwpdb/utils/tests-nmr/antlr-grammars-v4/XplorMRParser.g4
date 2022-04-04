@@ -19,7 +19,8 @@ parser grammar XplorMRParser;
 options { tokenVocab=XplorMRLexer; }
 
 xplor_nih_mr:
-	(distance_restraint |
+	(
+	distance_restraint |
 	dihedral_angle_restraint |
 	rdc_restraint |
 	planar_restraint |
@@ -40,7 +41,8 @@ xplor_nih_mr:
 	prdc_restraint |
 	porientation_restraint |
 	pccr_restraint |
-	hbond_restraint)*
+	hbond_restraint
+	)*
 	noe_assign*			// allowing bare assign clauses for Distance restraints
 	dihedral_assign*		// allowing bare assign clauses for Dihedral angle restraints
 	sani_assign*			// allowing bare assign clauses for RDC restraints

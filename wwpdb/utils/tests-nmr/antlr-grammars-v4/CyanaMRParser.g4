@@ -19,10 +19,12 @@ parser grammar CyanaMRParser;
 options { tokenVocab=CyanaMRLexer; }
 
 cyana_mr:
-	(distance_restraints |
+	(
+	distance_restraints |
 	torsion_angle_restraints |
 	rdc_restraints |
-	pcs_restraints)*
+	pcs_restraints
+	)*
 	EOF;
 
 /* CYANA 3.0 Reference Manual - Distance restraint file

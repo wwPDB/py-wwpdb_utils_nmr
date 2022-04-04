@@ -19,7 +19,8 @@ parser grammar AmberPTParser;
 options { tokenVocab=AmberPTLexer; }
 
 amber_pt:
-	(version_statement | FLAG) (
+	(version_statement | FLAG)
+	(
 	amber_atom_type_statement |
 	angle_equil_value_statement |
 	angle_force_constant_statement |
@@ -66,7 +67,9 @@ amber_pt:
 	solty_statement |
 	solvent_pointers_statement |
 	title_statement |
-	tree_chain_classification_statement)*;
+	tree_chain_classification_statement
+	)*
+	EOF;
 
 /* Amber file format: parameter/topology file specification (prmtop)
  See also https://ambermd.org/FileFormats.php and https://ambermd.org/Manuals.php

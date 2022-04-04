@@ -19,7 +19,8 @@ parser grammar RosettaMRParser;
 options { tokenVocab=RosettaMRLexer; }
 
 rosetta_mr:
-	(atom_pair_restraints |
+	(
+	atom_pair_restraints |
 	angle_restraints |
 	dihedral_restraints |
 	dihedral_pair_restraints |
@@ -31,7 +32,8 @@ rosetta_mr:
 	big_bin_restraints |
 	nested_restraints |
 	rdc_restraints |			// used only in CS-ROSETTA
-	disulfide_bond_linkages)*		// used only in CS-ROSETTA
+	disulfide_bond_linkages			// used only in CS-ROSETTA
+	)*
 	EOF;
 
 /* Rosetta Constraint File - Constraint Types - Single constraints

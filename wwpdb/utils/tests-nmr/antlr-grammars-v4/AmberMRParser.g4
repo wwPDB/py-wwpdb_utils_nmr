@@ -19,13 +19,15 @@ parser grammar AmberMRParser;
 options { tokenVocab=AmberMRLexer; }
 
 amber_mr:
-	(comment |
+	(
+	comment |
 	nmr_restraint |
 	noesy_volume_restraint |
 	chemical_shift_restraint |
 	pcs_restraint |
 	dipolar_coupling_restraint |
-	csa_restraint)*
+	csa_restraint
+	)*
 	EOF;
 
 comment:

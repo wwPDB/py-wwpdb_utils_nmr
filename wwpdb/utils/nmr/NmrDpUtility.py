@@ -17183,77 +17183,76 @@ class NmrDpUtility:
 
             if file_type == 'nm-aux-amb' and content_subtype is not None and 'topology' in content_subtype:
 
-                if 'is_valid' not in ar or not ar['is_valid']:
-                    continue
+                if 'is_valid' in ar and ar['is_valid']:
 
-                file_name = input_source_dic['file_name']
-                if 'original_file_name' in input_source_dic:
-                    original_file_name = input_source_dic['original_file_name']
-                    if file_name != original_file_name and original_file_name is not None:
-                        file_name = f"{original_file_name} ({file_name})"
+                    file_name = input_source_dic['file_name']
+                    if 'original_file_name' in input_source_dic:
+                        original_file_name = input_source_dic['original_file_name']
+                        if file_name != original_file_name and original_file_name is not None:
+                            file_name = f"{original_file_name} ({file_name})"
 
-                reader = AmberPTReader(self.__verbose, self.__lfh,
-                                       self.__representative_model_id,
-                                       self.__cR, cC,
-                                       self.__ccU, self.__csStat)
+                    reader = AmberPTReader(self.__verbose, self.__lfh,
+                                           self.__representative_model_id,
+                                           self.__cR, cC,
+                                           self.__ccU, self.__csStat)
 
-                listener, _, _ = reader.parse(file_path, self.__cifPath)
+                    listener, _, _ = reader.parse(file_path, self.__cifPath)
 
-                if listener is not None:
+                    if listener is not None:
 
-                    if listener.warningMessage is not None:
-                        messages = listener.warningMessage.split('\n')
+                        if listener.warningMessage is not None:
+                            messages = listener.warningMessage.split('\n')
 
-                        for warn in messages:
-                            # p = msg.index(']') + 2
-                            # warn = msg[p:]
+                            for warn in messages:
+                                # p = msg.index(']') + 2
+                                # warn = msg[p:]
 
-                            if warn.startswith('[Concatenated sequence]'):
-                                self.report.warning.appendDescription('concatenated_sequence',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
+                                if warn.startswith('[Concatenated sequence]'):
+                                    self.report.warning.appendDescription('concatenated_sequence',
+                                                                          {'file_name': file_name, 'description': warn})
+                                    self.report.setWarning()
 
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
 
-                            elif warn.startswith('[Sequence mismatch]'):
-                                self.report.warning.appendDescription('conflicted_mr_data',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
+                                elif warn.startswith('[Sequence mismatch]'):
+                                    self.report.warning.appendDescription('conflicted_mr_data',
+                                                                          {'file_name': file_name, 'description': warn})
+                                    self.report.setWarning()
 
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
 
-                            elif warn.startswith('[Unknown atom name]'):
-                                self.report.warning.appendDescription('inconsistent_mr_data',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
+                                elif warn.startswith('[Unknown atom name]'):
+                                    self.report.warning.appendDescription('inconsistent_mr_data',
+                                                                          {'file_name': file_name, 'description': warn})
+                                    self.report.setWarning()
 
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
 
-                            elif warn.startswith('[Unknown residue name]'):
-                                self.report.warning.appendDescription('inconsistent_mr_data',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
+                                elif warn.startswith('[Unknown residue name]'):
+                                    self.report.warning.appendDescription('inconsistent_mr_data',
+                                                                          {'file_name': file_name, 'description': warn})
+                                    self.report.setWarning()
 
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
 
-                            else:
-                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMR() ++ KeyError  - " + warn)
-                                self.report.setError()
+                                else:
+                                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMR() ++ KeyError  - " + warn)
+                                    self.report.setError()
 
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ KeyError  - {warn}\n")
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ KeyError  - {warn}\n")
 
-                    atomNumberDict = listener.getAtomNumberDict()
+                        atomNumberDict = listener.getAtomNumberDict()
 
-            elif file_type == 'nm-res-cya' and content_subtype is not None and 'dist_restraint' in content_subtype:
-                if ar['is_upl']:
-                    cyanaUplDistRest += 1
-                else:
-                    cyanaLolDistRest += 1
+                elif file_type == 'nm-res-cya' and content_subtype is not None and 'dist_restraint' in content_subtype:
+                    if ar['is_upl']:
+                        cyanaUplDistRest += 1
+                    else:
+                        cyanaLolDistRest += 1
 
             fileListId += 1
 

@@ -19,7 +19,8 @@ parser grammar CnsMRParser;
 options { tokenVocab=CnsMRLexer; }
 
 cns_mr:
-	(distance_restraint |
+	(
+	distance_restraint |
 	dihedral_angle_restraint |
 	plane_restraint |
 	harmonic_restraint |
@@ -30,7 +31,8 @@ cns_mr:
 	conformation_db_restraint |
 	diffusion_anisotropy_restraint |
 	one_bond_coupling_restraint |
-	angle_db_restraint)*
+	angle_db_restraint
+	)*
 	noe_assign*			// allowing bare assign clauses for Distance restraints
 	dihedral_assign*		// allowing bare assign clauses for Dihedral angle restraints
 	sani_assign*			// allowing bare assign clauses for RDC restraints
@@ -78,13 +80,13 @@ angle_db_restraint:
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
 */
 noe_statement:
-	Analysis Equ_op Noe_analysis |
-	noe_assign* |
+	(Analysis Equ_op Noe_analysis |
+	noe_assign |
 	Asymptote Simple_names number_s |
 	Averaging Simple_names Noe_avr_methods |
 	Bgig Simple_names number_s |
 	Ceiling Equ_op number_s |
-	Classification Equ_op Simple_name |
+	Classification Equ_op? Simple_name |
 	CountViol Simple_name |
 	Cv Equ_op Integer |
 	Den Initialize |
@@ -108,7 +110,7 @@ noe_statement:
 	SqExponent Simple_names number_s |
 	SqOffset Simple_names number_s |
 	Taverage Simple_name *? End |
-	Temperature Equ_op number_s;
+	Temperature Equ_op number_s)*;
 
 noe_assign:
 	Assign selection selection number number number (Or_op selection selection)*;
@@ -155,7 +157,7 @@ harmonic_statement:
 */
 sani_statement:
 	sani_assign* |
-	Classification Equ_op Simple_name |
+	Classification Equ_op? Simple_name |
 	Coefficients number_s number_s number_s |
 	ForceConstant Equ_op number_s |
 	Nrestraints Equ_op Integer |
@@ -171,14 +173,14 @@ sani_assign:
 */
 coupling_statement:
 	coup_assign* |
-	Classification Equ_op Simple_name |
+	Classification Equ_op? Simple_name |
 	Coefficients number_s number_s number_s number_s |
 	Cv Equ_op Integer |
 	ForceConstant number_s number_s? |
 	Nrestraints Equ_op Integer |
 	Partition Equ_op Integer |
 	Potential Equ_op Coupling_potential |
-	Print Threshold number_s (All | (Classification Equ_op Simple_name)) |
+	Print Threshold number_s (All | (Classification Equ_op? Simple_name)) |
 	Reset;
 
 coup_assign:
@@ -189,7 +191,7 @@ coup_assign:
 */
 carbon_shift_statement:
 	carbon_shift_assign* |
-	Classification Equ_op Simple_name |
+	Classification Equ_op? Simple_name |
 	Expectation Integer Integer number_s number_s number_s |
 	ForceConstant Equ_op number_s |
 	Nrestraints Equ_op Integer |
@@ -220,11 +222,11 @@ proton_shift_statement:
 	proton_shift_oxygens* |
 	proton_shift_ring_atoms* |
 	proton_shift_alphas_and_amides* |
-	Classification Equ_op Simple_name |
+	Classification Equ_op? Simple_name |
 	Error Equ_op? number_s |
 	ForceConstant number_s number_s? |
 	Potential Coupling_potential |
-	Print Threshold number_s (All | (Classification Equ_op Simple_name)) Simple_name |
+	Print Threshold number_s (All | (Classification Equ_op? Simple_name)) Simple_name |
 	Reset;
 
 observed:
@@ -259,7 +261,7 @@ proton_shift_alphas_and_amides:
 */
 conformation_statement:
 	conf_assign* |
-	Classification Equ_op Simple_name |
+	Classification Equ_op? Simple_name |
 	Compressed |
 	Expectation Integer Integer? Integer? Integer? number_s |
 	Error Equ_op number_s |
@@ -267,7 +269,7 @@ conformation_statement:
 	Nrestraints Equ_op Integer |
 	Phase Integer Integer Integer (Integer Integer Integer)? (Integer Integer Integer)? (Integer Integer Integer)? |
 	Potential Equ_op Rdc_potential |
-	Print Threshold number_s (All | (Classification Equ_op Simple_name)) |
+	Print Threshold number_s (All | (Classification Equ_op? Simple_name)) |
 	Reset |
 	Size Dimensions Integer Integer? Integer? Integer? |
 	Zero;
@@ -280,7 +282,7 @@ conf_assign:
 */
 diffusion_statement:
 	dani_assign* |
-	Classification Equ_op Simple_name |
+	Classification Equ_op? Simple_name |
 	Coefficients number_s number_s number_s number_s number_s |
 	ForceConstant Equ_op number_s |
 	Nrestraints Equ_op Integer |
@@ -296,7 +298,7 @@ dani_assign:
 */
 one_bond_coupling_statement:
 	one_bond_assign* |
-	Classification Equ_op Simple_name |
+	Classification Equ_op? Simple_name |
 	Coefficients number_s number_s number_s number_s number_s number_s number_s |
 	ForceConstant Equ_op number_s |
 	Nrestraints Equ_op Integer |
@@ -312,14 +314,14 @@ one_bond_assign:
 */
 angle_db_statement:
 	angle_db_assign* |
-	Classification Equ_op Simple_name |
+	Classification Equ_op? Simple_name |
 	DerivFlag Equ_op Simple_name |
 	Expectation Integer Integer number_s |
 	Error Equ_op number_s |
 	ForceConstant Equ_op number_s |
 	Nrestraints Equ_op Integer |
 	Potential Equ_op Rdc_potential |
-	Print Threshold number_s (All | (Classification Equ_op Simple_name)) |
+	Print Threshold number_s (All | (Classification Equ_op? Simple_name)) |
 	Reset |
 	Size Angle_dihedral Integer Integer |
 	Zero;

@@ -251,9 +251,12 @@ class CyanaMRParserListener(ParseTreeListener):
                 self.__max_dist_value = value
 
         if self.__upl_or_lol is None or self.__upl_or_lol == 'upl_only':
-            upper_limit = value
-            lower_limit = 1.8  # default value of PDBStat
-            target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+            if value > 1.8:
+                upper_limit = value
+                lower_limit = 1.8  # default value of PDBStat
+                target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+            else:
+                lower_limit = value
 
         elif self.__upl_or_lol == 'upl_w_lol':
             upper_limit = value

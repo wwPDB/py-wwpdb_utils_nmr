@@ -2001,8 +2001,9 @@ class AmberMRParserListener(ParseTreeListener):
         found = False
 
         for ps in (self.__polySeq if useDefault else self.__altPolySeq):
+            chainId = ps['auth_chain_id']
+
             if seqId in (ps['seq_id'] if useDefault else ps['auth_seq_id']):
-                chainId = ps['chain_id']
                 compId = ps['comp_id'][ps['seq_id'].index(seqId) if useDefault else ps['auth_seq_id'].index(seqId)]
                 cifSeqId = None if useDefault else ps['seq_id'][ps['auth_seq_id'].index(seqId)]
 
@@ -2083,7 +2084,8 @@ class AmberMRParserListener(ParseTreeListener):
 
         if not useDefault:
             for ps in self.__polySeq:
-                chainId = ps['chain_id']
+                chainId = ps['auth_chain_id']
+
                 seqKey = (chainId, seqId)
                 if seqKey in self.__authToLabelSeq:
                     _, seqId = self.__authToLabelSeq[seqKey]
@@ -2193,8 +2195,9 @@ class AmberMRParserListener(ParseTreeListener):
         found = False
 
         for ps in (self.__polySeq if useDefault else self.__altPolySeq):
+            chainId = ps['auth_chain_id']
+
             if factor['auth_seq_id'] in (ps['seq_id'] if useDefault else ps['auth_seq_id']):
-                chainId = ps['chain_id']
                 seqId = factor['auth_seq_id']
                 compId = ps['comp_id'][ps['seq_id'].index(seqId) if useDefault else ps['auth_seq_id'].index(seqId)]
                 cifSeqId = None if useDefault else ps['seq_id'][ps['auth_seq_id'].index(seqId)]

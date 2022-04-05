@@ -199,7 +199,7 @@ class AmberPTParserListener(ParseTreeListener):
         del residuePointer2[0]
         residuePointer2.append(self.__residuePointer[-1] + 1000)
 
-        chainIndex = letterToDigit(self.__polySeqModel[0]['chain_id']) - 1
+        chainIndex = letterToDigit(self.__polySeqModel[0]['chain_id']) - 1  # set tentative chain_id from label_asym_id, which will be assigned to coordinate auth_asym_id
         chainId = indexToLetter(chainIndex)
 
         terminus = [atomName.endswith('T') for atomName in self.__atomName]
@@ -381,7 +381,7 @@ class AmberPTParserListener(ParseTreeListener):
         self.__seqAlign = []
 
         for s1 in self.__polySeqModel:
-            chain_id = s1['chain_id']
+            chain_id = s1['auth_chain_id']
 
             for s2 in self.__polySeqPrmTop:
                 chain_id2 = s2['chain_id']
@@ -505,7 +505,7 @@ class AmberPTParserListener(ParseTreeListener):
         indices = []
 
         for s1 in self.__polySeqModel:
-            chain_id = s1['chain_id']
+            chain_id = s1['auth_chain_id']
 
             cost = [0 for i in range(top_chains)]
 
@@ -533,7 +533,7 @@ class AmberPTParserListener(ParseTreeListener):
                 _cif_chains = []
                 for _row, _column in indices:
                     if column == _column:
-                        _cif_chains.append(self.__polySeqModel[_row]['chain_id'])
+                        _cif_chains.append(self.__polySeqModel[_row]['auth_chain_id'])
 
                 if len(_cif_chains) > 1:
                     chain_id2 = self.__polySeqPrmTop[column]['chain_id']
@@ -542,7 +542,7 @@ class AmberPTParserListener(ParseTreeListener):
                     self.warningMessage += f"[Concatenated sequence] The chain ID {chain_id2!r} of the sequences in the AMBER parameter/topology file "\
                         f"will be re-assigned to the chain IDs {_cif_chains} in the coordinates during biocuration.\n"
 
-            chain_id = self.__polySeqModel[row]['chain_id']
+            chain_id = self.__polySeqModel[row]['auth_chain_id']
             chain_id2 = self.__polySeqPrmTop[column]['chain_id']
 
             result = next(seq_align for seq_align in self.__seqAlign
@@ -552,12 +552,7 @@ class AmberPTParserListener(ParseTreeListener):
                             'matched': result['matched'], 'conflict': result['conflict'], 'unmapped': result['unmapped'],
                             'sequence_coverage': result['sequence_coverage']}
 
-            auth_chain_id = chain_id
-            if 'auth_chain_id' in self.__polySeqModel[row]:
-                auth_chain_id = self.__polySeqModel[row]['auth_chain_id']
-                chain_assign['ref_auth_chain_id'] = auth_chain_id
-
-            s1 = next(s for s in self.__polySeqModel if s['chain_id'] == chain_id)
+            s1 = next(s for s in self.__polySeqModel if s['auth_chain_id'] == chain_id)
             s2 = next(s for s in self.__polySeqPrmTop if s['chain_id'] == chain_id2)
 
             self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + chain_id)
@@ -671,7 +666,7 @@ class AmberPTParserListener(ParseTreeListener):
                         unmapped.append({'ref_seq_id': seq_id1[i], 'ref_comp_id': cif_comp_id})
 
                         if not aligned[i]:
-                            cif_seq_code = f"{auth_chain_id}:{seq_id1[i]}:{cif_comp_id}"
+                            cif_seq_code = f"{chain_id}:{seq_id1[i]}:{cif_comp_id}"
 
                             self.warningMessage += f"[Sequence mismatch] {cif_seq_code} is not present "\
                                 f"in the AMBER parameter/topology data (chain_id {chain_id2}).\n"
@@ -681,7 +676,7 @@ class AmberPTParserListener(ParseTreeListener):
                         conflict.append({'ref_seq_id': seq_id1[i], 'ref_comp_id': cif_comp_id,
                                          'test_seq_id': seq_id2[i], 'test_comp_id': top_comp_id})
 
-                        cif_seq_code = f"{auth_chain_id}:{seq_id1[i]}:{cif_comp_id}"
+                        cif_seq_code = f"{chain_id}:{seq_id1[i]}:{cif_comp_id}"
                         if cif_comp_id == '.':
                             cif_seq_code += ', insertion error'
                         top_seq_code = f"{chain_id2}:{seq_id2[i]}:{top_comp_id}"
@@ -720,19 +715,16 @@ class AmberPTParserListener(ParseTreeListener):
                             continue
 
                         chain_id = chain_assign['ref_chain_id']
-                        auth_chain_id = None if 'ref_auth_chain_id' not in chain_assign else chain_assign['ref_auth_chain_id']
 
                         try:
                             identity = next(s['identical_chain_id'] for s in self.__polySeqModel
-                                            if s['chain_id'] == chain_id and 'identical_chain_id' in s)
+                                            if s['auth_chain_id'] == chain_id and 'identical_chain_id' in s)
 
                             for chain_id in identity:
 
                                 if not any(_chain_assign for _chain_assign in self.__chainAssign if _chain_assign['ref_chain_id'] == chain_id):
                                     _chain_assign = copy.copy(chain_assign)
                                     _chain_assign['ref_chain_id'] = chain_id
-                                    if auth_chain_id is not None:
-                                        _chain_assign['ref_auth_chain_id'] = auth_chain_id
                                     self.__chainAssign.append(_chain_assign)
 
                         except StopIteration:

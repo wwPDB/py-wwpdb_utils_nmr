@@ -252,8 +252,7 @@ def checkCoordinates(verbose=True, log=sys.stdout,
         changed = True
 
         # loop categories
-        _lpCategories = {'poly_seq': 'pdbx_poly_seq_scheme',
-                         'non_poly': 'pdbx_nonpoly_scheme'
+        _lpCategories = {'poly_seq': 'pdbx_poly_seq_scheme'
                          }
 
         # key items of loop
@@ -261,13 +260,12 @@ def checkCoordinates(verbose=True, log=sys.stdout,
                                   {'name': 'seq_id', 'type': 'int', 'alt_name': 'seq_id'},
                                   {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
                                   {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
-                                  {'name': 'pdb_seq_num', 'type': 'str', 'alt_name': 'auth_seq_id'}
+                                  {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'}
                                   ],
                      'non_poly': [{'name': 'asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                   {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'seq_id'},
                                   {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                  {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
-                                  {'name': 'pdb_seq_num', 'type': 'str', 'alt_name': 'auth_seq_id'}
+                                  {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_chain_id'}
                                   ]
                      }
 

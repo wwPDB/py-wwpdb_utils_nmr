@@ -528,6 +528,11 @@ Hbda:			H B D A;				// Hbda { hbda_statement } End
 //Threshold:		T H R E S? H? O? L? D?;			// Real
 //Reset:		R E S E T?;
 
+/* XPLOR-NIH: Flags - Syntax
+*/
+Flags:			F L A G S?
+			-> pushMode(FLAG_MODE);			// Flags { flag_statement } End
+
 /* Atom selection - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node39.html
 */
@@ -641,4 +646,17 @@ Comparison_ops:		(Equ_op | Lt_op | Gt_op | Leq_op | Geq_op | Neq_op)
 			-> popMode;
 
 SPACE_ATTR:		[ \t\r\n]+ -> skip;
+
+mode FLAG_MODE; // Inside of flag statement
+
+Exclude:		E X C L U? D? E?;			// Class_name* | Any_class
+Include:		I N C L U? D? E?;			// Class_name*
+
+End_flag:		E N D
+			-> popMode;
+
+Class_name:		SIMPLE_NAME;
+Any_class:		'*';
+
+SPACE_FLAG:		[ \t\r\n]+ -> skip;
 

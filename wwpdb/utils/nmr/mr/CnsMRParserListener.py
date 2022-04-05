@@ -22,6 +22,7 @@ try:
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (toNpArray,
                                                        toRegEx, toNefEx,
                                                        checkCoordinates,
+                                                       translateAmberAtomNomenclature,
                                                        getTypeOfDihedralRestraint,
                                                        REPRESENTATIVE_MODEL_ID,
                                                        DIST_RESTRAINT_RANGE,
@@ -45,6 +46,7 @@ except ImportError:
     from nmr.mr.ParserListenerUtil import (toNpArray,
                                            toRegEx, toNefEx,
                                            checkCoordinates,
+                                           translateAmberAtomNomenclature,
                                            getTypeOfDihedralRestraint,
                                            REPRESENTATIVE_MODEL_ID,
                                            DIST_RESTRAINT_RANGE,
@@ -2760,8 +2762,9 @@ class CnsMRParserListener(ParseTreeListener):
                                     if cca is not None and ('type_symbol' not in _factor or cca[self.__ccU.ccaTypeSymbol] in _factor['type_symbol']):
                                         _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId})
                                         if cifCheck and seqKey not in self.__coordUnobsRes:
-                                            self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                                f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates.\n"
+                                            if self.__cur_subtype != 'plane':
+                                                self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                                                    f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates.\n"
                                     elif cca is None:
                                         if self.__reasons is None and seqKey in self.__authToLabelSeq:
                                             _, _seqId = self.__authToLabelSeq[seqKey]
@@ -2774,8 +2777,9 @@ class CnsMRParserListener(ParseTreeListener):
                                                             self.reasonsForReParsing = {}
                                                         if 'label_seq_scheme' not in self.reasonsForReParsing:
                                                             self.reasonsForReParsing['label_seq_scheme'] = True
-                                        self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                            f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates.\n"
+                                        if self.__cur_subtype != 'plane':
+                                            self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                                                f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates.\n"
 
         atomSelection = [dict(s) for s in set(frozenset(atom.items()) for atom in _atomSelection)]
 
@@ -2797,8 +2801,12 @@ class CnsMRParserListener(ParseTreeListener):
                 return _factor
             __factor = copy.copy(_factor)
             del __factor['atom_selection']
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                f"The {clauseName} has no effect for factor {__factor}.\n"
+            if self.__cur_subtype != 'plane':
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"The {clauseName} has no effect for factor {__factor}.\n"
+            else:
+                self.warningMessage += f"[Atom nomenclature mismatch] {self.__getCurrentRestraint()}"\
+                    f"The {clauseName} has no effect for factor {__factor}.\n"
 
         if 'chain_id' in _factor:
             del _factor['chain_id']
@@ -3944,7 +3952,7 @@ class CnsMRParserListener(ParseTreeListener):
                     self.factor['atom_ids'] = [str(ctx.Simple_name(0)), str(ctx.Simple_name(1))]
 
                 elif ctx.Simple_name(0):
-                    self.factor['atom_id'] = [str(ctx.Simple_name(0))]
+                    self.factor['atom_id'] = [translateAmberAtomNomenclature(str(ctx.Simple_name(0)))]
 
                 elif ctx.Simple_names(0):
                     self.factor['atom_ids'] = [str(ctx.Simple_names(0))]
@@ -4338,6 +4346,14 @@ class CnsMRParserListener(ParseTreeListener):
         if ctx.Real():
             return float(str(ctx.Real()))
         return float(str(ctx.Integer()))
+
+    # Enter a parse tree produced by CnsMRParser#flag_statement.
+    def enterFlag_statement(self, ctx: CnsMRParser.Flag_statementContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by CnsMRParser#flag_statement.
+    def exitFlag_statement(self, ctx: CnsMRParser.Flag_statementContext):  # pylint: disable=unused-argument
+        pass
 
     def __getCurrentRestraint(self):
         if self.__cur_subtype == 'dist':

@@ -31,7 +31,8 @@ cns_mr:
 	conformation_db_restraint |
 	diffusion_anisotropy_restraint |
 	one_bond_coupling_restraint |
-	angle_db_restraint
+	angle_db_restraint |
+	flag_statement
 	)*
 	noe_assign*			// allowing bare assign clauses for Distance restraints
 	dihedral_assign*		// allowing bare assign clauses for Dihedral angle restraints
@@ -388,4 +389,9 @@ number_f:
 /* number expression in statement */
 number_s:
 	Real | Integer;
+
+/* XPLOR-NIH: Flags - Syntax
+*/
+flag_statement:
+	Flags (Exclude (Class_name* | Any_class))? Include Class_name* End_flag;
 

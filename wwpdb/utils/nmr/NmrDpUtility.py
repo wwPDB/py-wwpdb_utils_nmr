@@ -17340,6 +17340,14 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning - {warn}\n")
 
+                            elif warn.startswith('[Atom nomenclature mismatch]'):
+                                self.report.warning.appendDescription('atom_nomenclature_mismatch',
+                                                                      {'file_name': file_name, 'description': warn})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning - {warn}\n")
+
                             elif warn.startswith('[Unsupported data]'):
                                 self.report.warning.appendDescription('unsupported_mr_data',
                                                                       {'file_name': file_name, 'description': warn})
@@ -17406,6 +17414,14 @@ class NmrDpUtility:
 
                             elif warn.startswith('[Range value warning]'):
                                 self.report.warning.appendDescription('unusual_data',
+                                                                      {'file_name': file_name, 'description': warn})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning - {warn}\n")
+
+                            elif warn.startswith('[Atom nomenclature mismatch]'):
+                                self.report.warning.appendDescription('atom_nomenclature_mismatch',
                                                                       {'file_name': file_name, 'description': warn})
                                 self.report.setWarning()
 

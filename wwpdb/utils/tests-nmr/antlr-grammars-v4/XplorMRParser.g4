@@ -41,7 +41,8 @@ xplor_nih_mr:
 	prdc_restraint |
 	porientation_restraint |
 	pccr_restraint |
-	hbond_restraint
+	hbond_restraint |
+	flag_statement
 	)*
 	noe_assign*			// allowing bare assign clauses for Distance restraints
 	dihedral_assign*		// allowing bare assign clauses for Dihedral angle restraints
@@ -687,4 +688,9 @@ number_f:
 
 number_s:
 	Real | Integer;
+
+/* XPLOR-NIH: Flags - Syntax
+*/
+flag_statement:
+	Flags (Exclude (Class_name* | Any_class))? Include Class_name* End_flag;
 

@@ -294,6 +294,11 @@ DerivFlag:		D E R I V? F? L? A? G?;			// On_or_Off
 //On_or_Off:		O N | O F F;
 Angle_dihedral:		A N G L E? | D I H E D? R? A? L?;
 
+/* CNS: Flags - Syntax
+*/
+Flags:			F L A G S?
+			-> pushMode(FLAG_MODE);			// Flags { flag_statement } End
+
 /* Atom selection - Syntax - identity/atom-selection
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
 */
@@ -410,4 +415,17 @@ Comparison_ops:		(Equ_op | Lt_op | Gt_op | Leq_op | Geq_op | Neq_op)
 			-> popMode;
 
 SPACE_ATTR:		[ \t\r\n]+ -> skip;
+
+mode FLAG_MODE; // Inside of flag statement
+
+Exclude:		E X C L U? D? E?;			// Class_name* | Any_class
+Include:		I N C L U? D? E?;			// Class_name*
+
+End_flag:		E N D
+			-> popMode;
+
+Class_name:		SIMPLE_NAME;
+Any_class:		'*';
+
+SPACE_FLAG:		[ \t\r\n]+ -> skip;
 

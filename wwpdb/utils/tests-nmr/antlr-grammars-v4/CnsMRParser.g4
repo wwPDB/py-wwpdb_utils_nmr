@@ -59,10 +59,10 @@ coupling_restraint:
 	Coupling coupling_statement* End;
 
 carbon_shift_restraint:
-	Carbon carbon_shift_statement End;
+	Carbon carbon_shift_statement* End;
 
 proton_shift_restraint:
-	Proton proton_shift_statement End;
+	Proton proton_shift_statement* End;
 
 conformation_db_restraint:
 	Conformation conformation_statement* End;
@@ -137,7 +137,7 @@ dihedral_assign:
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
 */
 plane_statement:
-	Group group_statement |
+	Group group_statement* End |
 	Initialize |
 	Print_any;
 
@@ -199,7 +199,7 @@ carbon_shift_statement:
 	PsiStep Equ_op? number_s |
 	Potential Equ_op? Rdc_potential |
 	Print Threshold number_s |
-	carbon_shift_rcoil* |
+	carbon_shift_rcoil |
 	Reset |
 	Zero;
 
@@ -213,15 +213,15 @@ carbon_shift_rcoil:
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
 */
 proton_shift_statement:
-	observed* |
-	proton_shift_rcoil* |
-	proton_shift_anisotropy* |
-	proton_shift_amides* |
-	proton_shift_carbons* |
-	proton_shift_nitrogens* |
-	proton_shift_oxygens* |
-	proton_shift_ring_atoms* |
-	proton_shift_alphas_and_amides* |
+	observed |
+	proton_shift_rcoil |
+	proton_shift_anisotropy |
+	proton_shift_amides |
+	proton_shift_carbons |
+	proton_shift_nitrogens |
+	proton_shift_oxygens |
+	proton_shift_ring_atoms |
+	proton_shift_alphas_and_amides |
 	Classification Equ_op? Simple_name |
 	Error Equ_op? number_s |
 	ForceConstant number_s number_s? |

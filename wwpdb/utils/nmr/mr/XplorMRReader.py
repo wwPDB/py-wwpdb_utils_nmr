@@ -154,6 +154,11 @@ class XplorMRReader:
 if __name__ == "__main__":
     reader = XplorMRReader(True)
     reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-daother-7690/D_1300020446_mr-upload_P5.xplor-nih.V1',
+                 '../../tests-nmr/mock-data-daother-7690/D_1300020446_model-release_P1.cif.V2')
+    """ 
+    reader = XplorMRReader(True)
+    reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-daother-7690/D_1300020646_mr-upload_P1.xplor-nih.V2',
                  '../../tests-nmr/mock-data-daother-7690/D_1300020646_model-annotate_P1.cif.V2')
 
@@ -166,3 +171,4 @@ if __name__ == "__main__":
     reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-pdbstat/D_1000243168_mr-upload_P2.xplor-nih.V1',  # atom_sel_expr_example.txt',
                  '../../tests-nmr/mock-data-pdbstat/6pvr.cif')
+    """

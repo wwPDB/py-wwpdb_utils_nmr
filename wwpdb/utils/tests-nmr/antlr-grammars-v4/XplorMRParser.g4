@@ -46,7 +46,7 @@ xplor_nih_mr:
 	noe_assign*			// allowing bare assign clauses for Distance restraints
 	dihedral_assign*		// allowing bare assign clauses for Dihedral angle restraints
 	sani_assign*			// allowing bare assign clauses for RDC restraints
-	planar_statement*		// allowing bare group clauses for Planer restraints
+	planar_statement*		// allowing bare group clauses for Planality restraints
 	hbond_assign*			// allowing bare assign clauses for Hydrogen bond restraints
 	coup_assign*			// allowing bare assign clauses for Scaler J-coupling restraints
 	xadc_assign*			// allowing bare assign clauses for Antidistance restraints
@@ -79,10 +79,10 @@ coupling_restraint:
 	Coupling coupling_statement* End;
 
 carbon_shift_restraint:
-	Carbon carbon_shift_statement End;
+	Carbon carbon_shift_statement* End;
 
 proton_shift_restraint:
-	Proton proton_shift_statement End;
+	Proton proton_shift_statement* End;
 
 dihedral_angle_db_restraint:
 	Ramachandran ramachandran_statement* End;
@@ -259,7 +259,7 @@ anis_assign:
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/plan_syntax.html
 */
 planar_statement:
-	Group group_statement |
+	Group group_statement* End |
 	Initialize;
 
 group_statement:
@@ -315,7 +315,7 @@ carbon_shift_statement:
 	PsiStep number_s |
 	Potential Rdc_potential |
 	Print Threshold number_s |
-	carbon_shift_rcoil* |
+	carbon_shift_rcoil |
 	Reset |
 	Zero;
 
@@ -329,15 +329,15 @@ carbon_shift_rcoil:
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node407.html
 */
 proton_shift_statement:
-	observed* |
-	proton_shift_rcoil* |
-	proton_shift_anisotropy* |
-	proton_shift_amides* |
-	proton_shift_carbons* |
-	proton_shift_nitrogens* |
-	proton_shift_oxygens* |
-	proton_shift_ring_atoms* |
-	proton_shift_alphas_and_amides* |
+	observed |
+	proton_shift_rcoil |
+	proton_shift_anisotropy |
+	proton_shift_amides |
+	proton_shift_carbons |
+	proton_shift_nitrogens |
+	proton_shift_oxygens |
+	proton_shift_ring_atoms |
+	proton_shift_alphas_and_amides |
 	Classification Simple_name |
 	Error number_s |
 	DegEnergy Integer |

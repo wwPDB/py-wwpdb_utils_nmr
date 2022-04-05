@@ -191,7 +191,7 @@ Rdc_anis_types:		R E L A X | M I S C;
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/plan_syntax.html
 */
 //Restraints:		R E S T R? A? I? N? T? S?;		// Planar
-Planar:			P L A N A? R?;				// Planer { planar_statement } End
+Planar:			P L A N (A | E)? R?;			// Planer { planar_statement } End
 
 // planar_statement
 Group:			G R O U P?;				// Group { group_statement } End

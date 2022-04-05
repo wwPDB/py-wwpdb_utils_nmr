@@ -990,6 +990,9 @@ class CnsMRParserListener(ParseTreeListener):
         if not self.__hasPolySeq:
             return
 
+        if len(self.atomSelectionSet) == 0:
+            return
+
         for atom1 in self.atomSelectionSet[0]:
             if self.__debug:
                 print(f"subtype={self.__cur_subtype} (GROU) id={self.planeRestraints} "

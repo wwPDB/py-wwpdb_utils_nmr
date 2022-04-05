@@ -124,7 +124,7 @@ Print_any:		'?';
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
 */
 //Restraints:		R E S T R? A? I? N? T? S?;		// Plane
-Plane:			P L A N E?;				// Plane { planar_statement } End
+Plane:			P L A N (E | A)? R?;			// Plane { planar_statement } End
 
 // planar_statement
 Group:			G R O U P?;				// Group { group_statement } End
@@ -139,7 +139,7 @@ Weight:			W E I G H? T?;				// = Real
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
 */
 //Restraints:		R E S T R? A? I? N? T? S?;		// Harmonic
-Harmonic:		P L A N E?;				// Harmonic { harmonic_statement } End
+Harmonic:		H A R M O? N? I? C?;			// Harmonic { harmonic_statement } End
 
 // harmonic_stetement
 Exponent:		E X P O N? E? N? T?;			// = Integer

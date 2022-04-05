@@ -2205,7 +2205,7 @@ class XplorMRParserListener(ParseTreeListener):
         self.atomSelectionSet.clear()
 
         if ctx.Weight():
-            self.scale = float(str(ctx.number_s()))
+            self.scale = self.getNumber_s(ctx.number_s())
             if self.scale <= 0.0:
                 self.warningMessage += "[Invalid data] "\
                     f"The weight value 'GROUP {str(ctx.Weight())} {self.scale} END' must be a positive value.\n"
@@ -2213,6 +2213,9 @@ class XplorMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by XplorMRParser#group_statement.
     def exitGroup_statement(self, ctx: XplorMRParser.Group_statementContext):  # pylint: disable=unused-argument
         if not self.__hasPolySeq:
+            return
+
+        if len(self.atomSelectionSet) == 0:
             return
 
         for atom1 in self.atomSelectionSet[0]:

@@ -12,39 +12,41 @@ else:
 def serializedATN():
     with StringIO() as buf:
         buf.write("\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3\b")
-        buf.write("q\4\2\t\2\4\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7\4\b")
+        buf.write("u\4\2\t\2\4\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7\4\b")
         buf.write("\t\b\4\t\t\t\4\n\t\n\4\13\t\13\4\f\t\f\4\r\t\r\3\2\3\2")
         buf.write("\3\2\3\2\7\2\37\n\2\f\2\16\2\"\13\2\3\2\3\2\3\3\6\3\'")
-        buf.write("\n\3\r\3\16\3(\3\4\3\4\3\4\3\4\3\4\3\4\3\4\3\4\3\5\6\5")
-        buf.write("\64\n\5\r\5\16\5\65\3\6\3\6\3\6\3\6\3\6\3\6\3\7\6\7?\n")
-        buf.write("\7\r\7\16\7@\3\7\6\7D\n\7\r\7\16\7E\3\b\3\b\3\b\3\b\3")
-        buf.write("\b\3\t\3\t\3\t\3\t\3\t\3\t\3\t\3\t\3\t\3\t\3\t\3\n\6\n")
-        buf.write("Y\n\n\r\n\16\nZ\3\n\6\n^\n\n\r\n\16\n_\3\13\3\13\3\13")
-        buf.write("\3\13\3\13\3\f\3\f\3\f\3\f\3\f\3\f\3\f\3\f\3\r\3\r\3\r")
-        buf.write("\2\2\16\2\4\6\b\n\f\16\20\22\24\26\30\2\3\3\2\3\4\2n\2")
-        buf.write(" \3\2\2\2\4&\3\2\2\2\6*\3\2\2\2\b\63\3\2\2\2\n\67\3\2")
-        buf.write("\2\2\f>\3\2\2\2\16G\3\2\2\2\20L\3\2\2\2\22X\3\2\2\2\24")
-        buf.write("a\3\2\2\2\26f\3\2\2\2\30n\3\2\2\2\32\37\5\4\3\2\33\37")
-        buf.write("\5\b\5\2\34\37\5\f\7\2\35\37\5\22\n\2\36\32\3\2\2\2\36")
-        buf.write("\33\3\2\2\2\36\34\3\2\2\2\36\35\3\2\2\2\37\"\3\2\2\2 ")
-        buf.write("\36\3\2\2\2 !\3\2\2\2!#\3\2\2\2\" \3\2\2\2#$\7\2\2\3$")
-        buf.write("\3\3\2\2\2%\'\5\6\4\2&%\3\2\2\2\'(\3\2\2\2(&\3\2\2\2(")
-        buf.write(")\3\2\2\2)\5\3\2\2\2*+\7\3\2\2+,\7\5\2\2,-\7\5\2\2-.\7")
-        buf.write("\3\2\2./\7\5\2\2/\60\7\5\2\2\60\61\5\30\r\2\61\7\3\2\2")
-        buf.write("\2\62\64\5\n\6\2\63\62\3\2\2\2\64\65\3\2\2\2\65\63\3\2")
-        buf.write("\2\2\65\66\3\2\2\2\66\t\3\2\2\2\678\7\3\2\289\7\5\2\2")
-        buf.write("9:\7\5\2\2:;\5\30\r\2;<\5\30\r\2<\13\3\2\2\2=?\5\16\b")
-        buf.write("\2>=\3\2\2\2?@\3\2\2\2@>\3\2\2\2@A\3\2\2\2AC\3\2\2\2B")
-        buf.write("D\5\20\t\2CB\3\2\2\2DE\3\2\2\2EC\3\2\2\2EF\3\2\2\2F\r")
-        buf.write("\3\2\2\2GH\7\3\2\2HI\7\4\2\2IJ\7\4\2\2JK\7\3\2\2K\17\3")
-        buf.write("\2\2\2LM\7\3\2\2MN\7\5\2\2NO\7\5\2\2OP\7\3\2\2PQ\7\5\2")
-        buf.write("\2QR\7\5\2\2RS\5\30\r\2ST\5\30\r\2TU\5\30\r\2UV\7\3\2")
-        buf.write("\2V\21\3\2\2\2WY\5\24\13\2XW\3\2\2\2YZ\3\2\2\2ZX\3\2\2")
-        buf.write("\2Z[\3\2\2\2[]\3\2\2\2\\^\5\26\f\2]\\\3\2\2\2^_\3\2\2")
-        buf.write("\2_]\3\2\2\2_`\3\2\2\2`\23\3\2\2\2ab\7\3\2\2bc\7\4\2\2")
-        buf.write("cd\7\4\2\2de\7\3\2\2e\25\3\2\2\2fg\7\3\2\2gh\7\5\2\2h")
-        buf.write("i\7\5\2\2ij\5\30\r\2jk\5\30\r\2kl\5\30\r\2lm\7\3\2\2m")
-        buf.write("\27\3\2\2\2no\t\2\2\2o\31\3\2\2\2\n\36 (\65@EZ_")
+        buf.write("\n\3\r\3\16\3(\3\4\3\4\3\4\3\4\3\4\3\4\3\4\3\4\5\4\63")
+        buf.write("\n\4\3\5\6\5\66\n\5\r\5\16\5\67\3\6\3\6\3\6\3\6\3\6\3")
+        buf.write("\6\5\6@\n\6\3\7\6\7C\n\7\r\7\16\7D\3\7\6\7H\n\7\r\7\16")
+        buf.write("\7I\3\b\3\b\3\b\3\b\3\b\3\t\3\t\3\t\3\t\3\t\3\t\3\t\3")
+        buf.write("\t\3\t\3\t\3\t\3\n\6\n]\n\n\r\n\16\n^\3\n\6\nb\n\n\r\n")
+        buf.write("\16\nc\3\13\3\13\3\13\3\13\3\13\3\f\3\f\3\f\3\f\3\f\3")
+        buf.write("\f\3\f\3\f\3\r\3\r\3\r\2\2\16\2\4\6\b\n\f\16\20\22\24")
+        buf.write("\26\30\2\3\3\2\3\4\2t\2 \3\2\2\2\4&\3\2\2\2\6*\3\2\2\2")
+        buf.write("\b\65\3\2\2\2\n9\3\2\2\2\fB\3\2\2\2\16K\3\2\2\2\20P\3")
+        buf.write("\2\2\2\22\\\3\2\2\2\24e\3\2\2\2\26j\3\2\2\2\30r\3\2\2")
+        buf.write("\2\32\37\5\4\3\2\33\37\5\b\5\2\34\37\5\f\7\2\35\37\5\22")
+        buf.write("\n\2\36\32\3\2\2\2\36\33\3\2\2\2\36\34\3\2\2\2\36\35\3")
+        buf.write("\2\2\2\37\"\3\2\2\2 \36\3\2\2\2 !\3\2\2\2!#\3\2\2\2\"")
+        buf.write(" \3\2\2\2#$\7\2\2\3$\3\3\2\2\2%\'\5\6\4\2&%\3\2\2\2\'")
+        buf.write("(\3\2\2\2(&\3\2\2\2()\3\2\2\2)\5\3\2\2\2*+\7\3\2\2+,\7")
+        buf.write("\5\2\2,-\7\5\2\2-.\7\3\2\2./\7\5\2\2/\60\7\5\2\2\60\62")
+        buf.write("\5\30\r\2\61\63\5\30\r\2\62\61\3\2\2\2\62\63\3\2\2\2\63")
+        buf.write("\7\3\2\2\2\64\66\5\n\6\2\65\64\3\2\2\2\66\67\3\2\2\2\67")
+        buf.write("\65\3\2\2\2\678\3\2\2\28\t\3\2\2\29:\7\3\2\2:;\7\5\2\2")
+        buf.write(";<\7\5\2\2<=\5\30\r\2=?\5\30\r\2>@\5\30\r\2?>\3\2\2\2")
+        buf.write("?@\3\2\2\2@\13\3\2\2\2AC\5\16\b\2BA\3\2\2\2CD\3\2\2\2")
+        buf.write("DB\3\2\2\2DE\3\2\2\2EG\3\2\2\2FH\5\20\t\2GF\3\2\2\2HI")
+        buf.write("\3\2\2\2IG\3\2\2\2IJ\3\2\2\2J\r\3\2\2\2KL\7\3\2\2LM\7")
+        buf.write("\4\2\2MN\7\4\2\2NO\7\3\2\2O\17\3\2\2\2PQ\7\3\2\2QR\7\5")
+        buf.write("\2\2RS\7\5\2\2ST\7\3\2\2TU\7\5\2\2UV\7\5\2\2VW\5\30\r")
+        buf.write("\2WX\5\30\r\2XY\5\30\r\2YZ\7\3\2\2Z\21\3\2\2\2[]\5\24")
+        buf.write("\13\2\\[\3\2\2\2]^\3\2\2\2^\\\3\2\2\2^_\3\2\2\2_a\3\2")
+        buf.write("\2\2`b\5\26\f\2a`\3\2\2\2bc\3\2\2\2ca\3\2\2\2cd\3\2\2")
+        buf.write("\2d\23\3\2\2\2ef\7\3\2\2fg\7\4\2\2gh\7\4\2\2hi\7\3\2\2")
+        buf.write("i\25\3\2\2\2jk\7\3\2\2kl\7\5\2\2lm\7\5\2\2mn\5\30\r\2")
+        buf.write("no\5\30\r\2op\5\30\r\2pq\7\3\2\2q\27\3\2\2\2rs\t\2\2\2")
+        buf.write("s\31\3\2\2\2\f\36 (\62\67?DI^c")
         return buf.getvalue()
 
 
@@ -273,8 +275,11 @@ class CyanaMRParser ( Parser ):
             else:
                 return self.getToken(CyanaMRParser.Simple_name, i)
 
-        def number(self):
-            return self.getTypedRuleContext(CyanaMRParser.NumberContext,0)
+        def number(self, i:int=None):
+            if i is None:
+                return self.getTypedRuleContexts(CyanaMRParser.NumberContext)
+            else:
+                return self.getTypedRuleContext(CyanaMRParser.NumberContext,i)
 
 
         def getRuleIndex(self):
@@ -311,6 +316,14 @@ class CyanaMRParser ( Parser ):
             self.match(CyanaMRParser.Simple_name)
             self.state = 46
             self.number()
+            self.state = 48
+            self._errHandler.sync(self)
+            la_ = self._interp.adaptivePredict(self._input,3,self._ctx)
+            if la_ == 1:
+                self.state = 47
+                self.number()
+
+
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -353,19 +366,19 @@ class CyanaMRParser ( Parser ):
         self.enterRule(localctx, 6, self.RULE_torsion_angle_restraints)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 49 
+            self.state = 51 
             self._errHandler.sync(self)
             _alt = 1
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt == 1:
-                    self.state = 48
+                    self.state = 50
                     self.torsion_angle_restraint()
 
                 else:
                     raise NoViableAltException(self)
-                self.state = 51 
+                self.state = 53 
                 self._errHandler.sync(self)
-                _alt = self._interp.adaptivePredict(self._input,3,self._ctx)
+                _alt = self._interp.adaptivePredict(self._input,4,self._ctx)
 
         except RecognitionException as re:
             localctx.exception = re
@@ -418,16 +431,24 @@ class CyanaMRParser ( Parser ):
         self.enterRule(localctx, 8, self.RULE_torsion_angle_restraint)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 53
-            self.match(CyanaMRParser.Integer)
-            self.state = 54
-            self.match(CyanaMRParser.Simple_name)
             self.state = 55
-            self.match(CyanaMRParser.Simple_name)
+            self.match(CyanaMRParser.Integer)
             self.state = 56
-            self.number()
+            self.match(CyanaMRParser.Simple_name)
             self.state = 57
+            self.match(CyanaMRParser.Simple_name)
+            self.state = 58
             self.number()
+            self.state = 59
+            self.number()
+            self.state = 61
+            self._errHandler.sync(self)
+            la_ = self._interp.adaptivePredict(self._input,5,self._ctx)
+            if la_ == 1:
+                self.state = 60
+                self.number()
+
+
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -477,33 +498,33 @@ class CyanaMRParser ( Parser ):
         self.enterRule(localctx, 10, self.RULE_rdc_restraints)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 60 
+            self.state = 64 
             self._errHandler.sync(self)
             _alt = 1
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt == 1:
-                    self.state = 59
+                    self.state = 63
                     self.rdc_parameter()
 
                 else:
                     raise NoViableAltException(self)
-                self.state = 62 
+                self.state = 66 
                 self._errHandler.sync(self)
-                _alt = self._interp.adaptivePredict(self._input,4,self._ctx)
+                _alt = self._interp.adaptivePredict(self._input,6,self._ctx)
 
-            self.state = 65 
+            self.state = 69 
             self._errHandler.sync(self)
             _alt = 1
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt == 1:
-                    self.state = 64
+                    self.state = 68
                     self.rdc_restraint()
 
                 else:
                     raise NoViableAltException(self)
-                self.state = 67 
+                self.state = 71 
                 self._errHandler.sync(self)
-                _alt = self._interp.adaptivePredict(self._input,5,self._ctx)
+                _alt = self._interp.adaptivePredict(self._input,7,self._ctx)
 
         except RecognitionException as re:
             localctx.exception = re
@@ -552,13 +573,13 @@ class CyanaMRParser ( Parser ):
         self.enterRule(localctx, 12, self.RULE_rdc_parameter)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 69
+            self.state = 73
             self.match(CyanaMRParser.Integer)
-            self.state = 70
+            self.state = 74
             self.match(CyanaMRParser.Float)
-            self.state = 71
+            self.state = 75
             self.match(CyanaMRParser.Float)
-            self.state = 72
+            self.state = 76
             self.match(CyanaMRParser.Integer)
         except RecognitionException as re:
             localctx.exception = re
@@ -614,25 +635,25 @@ class CyanaMRParser ( Parser ):
         self.enterRule(localctx, 14, self.RULE_rdc_restraint)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 74
-            self.match(CyanaMRParser.Integer)
-            self.state = 75
-            self.match(CyanaMRParser.Simple_name)
-            self.state = 76
-            self.match(CyanaMRParser.Simple_name)
-            self.state = 77
-            self.match(CyanaMRParser.Integer)
             self.state = 78
-            self.match(CyanaMRParser.Simple_name)
+            self.match(CyanaMRParser.Integer)
             self.state = 79
             self.match(CyanaMRParser.Simple_name)
             self.state = 80
-            self.number()
+            self.match(CyanaMRParser.Simple_name)
             self.state = 81
-            self.number()
+            self.match(CyanaMRParser.Integer)
             self.state = 82
-            self.number()
+            self.match(CyanaMRParser.Simple_name)
             self.state = 83
+            self.match(CyanaMRParser.Simple_name)
+            self.state = 84
+            self.number()
+            self.state = 85
+            self.number()
+            self.state = 86
+            self.number()
+            self.state = 87
             self.match(CyanaMRParser.Integer)
         except RecognitionException as re:
             localctx.exception = re
@@ -683,33 +704,33 @@ class CyanaMRParser ( Parser ):
         self.enterRule(localctx, 16, self.RULE_pcs_restraints)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 86 
+            self.state = 90 
             self._errHandler.sync(self)
             _alt = 1
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt == 1:
-                    self.state = 85
+                    self.state = 89
                     self.pcs_parameter()
 
                 else:
                     raise NoViableAltException(self)
-                self.state = 88 
+                self.state = 92 
                 self._errHandler.sync(self)
-                _alt = self._interp.adaptivePredict(self._input,6,self._ctx)
+                _alt = self._interp.adaptivePredict(self._input,8,self._ctx)
 
-            self.state = 91 
+            self.state = 95 
             self._errHandler.sync(self)
             _alt = 1
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt == 1:
-                    self.state = 90
+                    self.state = 94
                     self.pcs_restraint()
 
                 else:
                     raise NoViableAltException(self)
-                self.state = 93 
+                self.state = 97 
                 self._errHandler.sync(self)
-                _alt = self._interp.adaptivePredict(self._input,7,self._ctx)
+                _alt = self._interp.adaptivePredict(self._input,9,self._ctx)
 
         except RecognitionException as re:
             localctx.exception = re
@@ -758,13 +779,13 @@ class CyanaMRParser ( Parser ):
         self.enterRule(localctx, 18, self.RULE_pcs_parameter)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 95
+            self.state = 99
             self.match(CyanaMRParser.Integer)
-            self.state = 96
+            self.state = 100
             self.match(CyanaMRParser.Float)
-            self.state = 97
+            self.state = 101
             self.match(CyanaMRParser.Float)
-            self.state = 98
+            self.state = 102
             self.match(CyanaMRParser.Integer)
         except RecognitionException as re:
             localctx.exception = re
@@ -820,19 +841,19 @@ class CyanaMRParser ( Parser ):
         self.enterRule(localctx, 20, self.RULE_pcs_restraint)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 100
-            self.match(CyanaMRParser.Integer)
-            self.state = 101
-            self.match(CyanaMRParser.Simple_name)
-            self.state = 102
-            self.match(CyanaMRParser.Simple_name)
-            self.state = 103
-            self.number()
             self.state = 104
-            self.number()
+            self.match(CyanaMRParser.Integer)
             self.state = 105
-            self.number()
+            self.match(CyanaMRParser.Simple_name)
             self.state = 106
+            self.match(CyanaMRParser.Simple_name)
+            self.state = 107
+            self.number()
+            self.state = 108
+            self.number()
+            self.state = 109
+            self.number()
+            self.state = 110
             self.match(CyanaMRParser.Integer)
         except RecognitionException as re:
             localctx.exception = re
@@ -876,7 +897,7 @@ class CyanaMRParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 108
+            self.state = 112
             _la = self._input.LA(1)
             if not(_la==CyanaMRParser.Integer or _la==CyanaMRParser.Float):
                 self._errHandler.recoverInline(self)

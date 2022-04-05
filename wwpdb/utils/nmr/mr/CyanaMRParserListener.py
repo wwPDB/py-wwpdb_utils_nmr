@@ -242,6 +242,15 @@ class CyanaMRParserListener(ParseTreeListener):
 
         value = self.numberSelection[0]
 
+        weight = 1.0
+        if len(self.numberSelection) > 1:
+            weight = self.numberSelection[1]
+
+        if weight <= 0.0:
+            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                f"The relative weight value of '{weight}' must be a positive value.\n"
+            return
+
         self.numberSelection.clear()
 
         if DIST_RANGE_MIN <= value <= DIST_RANGE_MAX:
@@ -269,7 +278,7 @@ class CyanaMRParserListener(ParseTreeListener):
         else:  # 'lol_w_upl'
             lower_limit = value
 
-        dstFunc = self.validateDistanceRange(1.0, target_value, lower_limit, upper_limit)
+        dstFunc = self.validateDistanceRange(weight, target_value, lower_limit, upper_limit)
 
         if dstFunc is None:
             return
@@ -554,6 +563,15 @@ class CyanaMRParserListener(ParseTreeListener):
         lower_limit = self.numberSelection[0]
         upper_limit = self.numberSelection[1]
 
+        weight = 1.0
+        if len(self.numberSelection) > 2:
+            weight = self.numberSelection[2]
+
+        if weight <= 0.0:
+            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                f"The relative weight value of '{weight}' must be a positive value.\n"
+            return
+
         self.numberSelection.clear()
 
         if lower_limit > upper_limit:
@@ -573,7 +591,7 @@ class CyanaMRParserListener(ParseTreeListener):
         while target_value < ANGLE_RANGE_MIN:
             target_value += 360.0
 
-        dstFunc = self.validateAngleRange(1.0, target_value, lower_limit, upper_limit)
+        dstFunc = self.validateAngleRange(weight, target_value, lower_limit, upper_limit)
 
         if dstFunc is None:
             return

@@ -21,6 +21,8 @@ options { tokenVocab=CyanaMRLexer; }
 cyana_mr:
 	(
 	distance_restraints |
+	fixres_distance_restraints |
+	fixatm_distance_restraints |
 	torsion_angle_restraints |
 	rdc_restraints |
 	pcs_restraints
@@ -75,6 +77,32 @@ pcs_parameter:
 pcs_restraint:
 	Integer Simple_name Simple_name
 	number number number Integer;
+
+/* CYANA (undocumented) - ambiguous (fixed residue) distance restraint
+ 77 VAL #
+        H  73  HIS  O  2.20
+        H  73  HIS  C  3.50
+        N  73  HIS  O  3.30
+        N  73  HIS  C  4.60
+*/
+fixres_distance_restraints:
+	fixres_distance_restraint+;
+
+fixres_distance_restraint:
+	Integer Simple_name
+	(Simple_name Integer Simple_name Simple_name number)+;
+
+/* CYANA (undocumented) - ambiguous (fixed atom) distance restraint
+ 77 VAL H  #
+           73  HIS  O  2.20
+           73  HIS  C  3.50
+*/
+fixatm_distance_restraints:
+	fixatm_distance_restraint+;
+
+fixatm_distance_restraint:
+	Integer Simple_name Simple_name
+	(Integer Simple_name Simple_name number)+;
 
 /* number expression in restrains */
 number:	Float | Integer;

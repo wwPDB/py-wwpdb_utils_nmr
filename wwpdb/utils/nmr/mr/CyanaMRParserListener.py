@@ -15,6 +15,7 @@ from antlr4 import ParseTreeListener
 try:
     from wwpdb.utils.nmr.mr.CyanaMRParser import CyanaMRParser
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (checkCoordinates,
+                                                       translateCyanaResidueName,
                                                        REPRESENTATIVE_MODEL_ID,
                                                        DIST_RESTRAINT_RANGE,
                                                        DIST_RESTRAINT_ERROR,
@@ -36,6 +37,7 @@ try:
 except ImportError:
     from nmr.mr.CyanaMRParser import CyanaMRParser
     from nmr.mr.ParserListenerUtil import (checkCoordinates,
+                                           translateCyanaResidueName,
                                            REPRESENTATIVE_MODEL_ID,
                                            DIST_RESTRAINT_RANGE,
                                            DIST_RESTRAINT_ERROR,
@@ -406,7 +408,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         chainAssign.append((chainId, seqId, cifCompId))
                 elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                     chainAssign.append((chainId, seqId, cifCompId))
-                    if cifCompId != compId:
+                    if cifCompId != translateCyanaResidueName(compId):
                         self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
                             f"The residue name {_seqId}:{compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
 
@@ -427,7 +429,7 @@ class CyanaMRParserListener(ParseTreeListener):
                                     self.reasonsForReParsing['label_seq_scheme'] = True
                         elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                             chainAssign.append((ps['auth_chain_id'], _seqId, cifCompId))
-                            if cifCompId != compId:
+                            if cifCompId != translateCyanaResidueName(compId):
                                 self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
                                     f"The residue name {_seqId}:{compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
 
@@ -437,7 +439,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 if _seqId in ps['auth_seq_id']:
                     cifCompId = ps['comp_id'][ps['auth_seq_id'].index(_seqId)]
                     chainAssign.append(chainId, _seqId, cifCompId)
-                    if cifCompId != compId:
+                    if cifCompId != translateCyanaResidueName(compId):
                         self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
                             f"The residue name {_seqId}:{compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
 
@@ -1115,6 +1117,194 @@ class CyanaMRParserListener(ParseTreeListener):
             if self.__debug:
                 print(f"subtype={self.__cur_subtype} id={self.pcsRestraints} "
                       f"atom={atom} {dstFunc}")
+
+    # Enter a parse tree produced by CyanaMRParser#fixres_distance_restraints.
+    def enterFixres_distance_restraints(self, ctx: CyanaMRParser.Fixres_distance_restraintsContext):  # pylint: disable=unused-argument
+        self.__cur_subtype = 'dist'
+
+    # Exit a parse tree produced by CyanaMRParser#fixres_distance_restraints.
+    def exitFixres_distance_restraints(self, ctx: CyanaMRParser.Fixres_distance_restraintsContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by CyanaMRParser#fixres_distance_restraint.
+    def enterFixres_distance_restraint(self, ctx: CyanaMRParser.Fixres_distance_restraintContext):  # pylint: disable=unused-argument
+        self.distRestraints += 1
+
+        self.atomSelectionSet.clear()
+
+    # Exit a parse tree produced by CyanaMRParser#fixres_distance_restraint.
+    def exitFixres_distance_restraint(self, ctx: CyanaMRParser.Fixres_distance_restraintContext):
+        seqId1 = int(str(ctx.Integer(0)))
+        compId1 = str(ctx.Simple_name(0)).upper()
+
+        int_col = 1
+        str_col = 1
+
+        try:
+
+            for num_col, value in enumerate(self.numberSelection):
+                atomId1 = str(ctx.Simple_name(str_col)).upper()
+                seqId2 = int(str(ctx.Integer(int_col)))
+                compId2 = str(ctx.Simple_name(str_col + 1)).upper()
+                atomId2 = str(ctx.Simple_name(str_col + 2)).upper()
+
+                target_value = None
+                lower_limit = None
+                upper_limit = None
+
+                if DIST_RANGE_MIN <= value <= DIST_RANGE_MAX:
+                    if self.__max_dist_value is None:
+                        self.__max_dist_value = value
+                    if value > self.__max_dist_value:
+                        self.__max_dist_value = value
+
+                if self.__upl_or_lol is None or self.__upl_or_lol == 'upl_only':
+                    if value > 1.8:
+                        upper_limit = value
+                        lower_limit = 1.8  # default value of PDBStat
+                        target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                    else:
+                        lower_limit = value
+
+                elif self.__upl_or_lol == 'upl_w_lol':
+                    upper_limit = value
+
+                elif self.__upl_or_lol == 'lol_only':
+                    lower_limit = value
+                    upper_limit = 5.5  # default value of PDBStat
+                    target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+
+                else:  # 'lol_w_upl'
+                    lower_limit = value
+
+                dstFunc = self.validateDistanceRange(1.0, target_value, lower_limit, upper_limit)
+
+                if dstFunc is None:
+                    return
+
+                if not self.__hasPolySeq:
+                    return
+
+                chainAssign1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
+                chainAssign2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
+
+                if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+                    return
+
+                self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1)
+                self.selectCoordAtoms(chainAssign2, seqId2, compId2, atomId2)
+
+                if len(self.atomSelectionSet) < 2:
+                    return
+
+                for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
+                                                      self.atomSelectionSet[1]):
+                    if self.__debug:
+                        print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
+                              f"atom1={atom1} atom2={atom2} {dstFunc}")
+
+                if num_col > 0:
+                    self.distRestraints += 1
+
+                int_col += 1
+                str_col += 3
+
+        finally:
+            self.numberSelection.clear()
+
+    # Enter a parse tree produced by CyanaMRParser#fixatm_distance_restraints.
+    def enterFixatm_distance_restraints(self, ctx: CyanaMRParser.Fixatm_distance_restraintsContext):  # pylint: disable=unused-argument
+        self.__cur_subtype = 'dist'
+
+    # Exit a parse tree produced by CyanaMRParser#fixatm_distance_restraints.
+    def exitFixatm_distance_restraints(self, ctx: CyanaMRParser.Fixatm_distance_restraintsContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by CyanaMRParser#fixatm_distance_restraint.
+    def enterFixatm_distance_restraint(self, ctx: CyanaMRParser.Fixatm_distance_restraintContext):  # pylint: disable=unused-argument
+        self.distRestraints += 1
+
+        self.atomSelectionSet.clear()
+
+    # Exit a parse tree produced by CyanaMRParser#fixatm_distance_restraint.
+    def exitFixatm_distance_restraint(self, ctx: CyanaMRParser.Fixatm_distance_restraintContext):
+        seqId1 = int(str(ctx.Integer(0)))
+        compId1 = str(ctx.Simple_name(0)).upper()
+        atomId1 = str(ctx.Simple_name(1)).upper()
+
+        int_col = 1
+        str_col = 2
+
+        try:
+
+            for num_col, value in enumerate(self.numberSelection):
+                seqId2 = int(str(ctx.Integer(int_col)))
+                compId2 = str(ctx.Simple_name(str_col)).upper()
+                atomId2 = str(ctx.Simple_name(str_col + 1)).upper()
+
+                target_value = None
+                lower_limit = None
+                upper_limit = None
+
+                if DIST_RANGE_MIN <= value <= DIST_RANGE_MAX:
+                    if self.__max_dist_value is None:
+                        self.__max_dist_value = value
+                    if value > self.__max_dist_value:
+                        self.__max_dist_value = value
+
+                if self.__upl_or_lol is None or self.__upl_or_lol == 'upl_only':
+                    if value > 1.8:
+                        upper_limit = value
+                        lower_limit = 1.8  # default value of PDBStat
+                        target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                    else:
+                        lower_limit = value
+
+                elif self.__upl_or_lol == 'upl_w_lol':
+                    upper_limit = value
+
+                elif self.__upl_or_lol == 'lol_only':
+                    lower_limit = value
+                    upper_limit = 5.5  # default value of PDBStat
+                    target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+
+                else:  # 'lol_w_upl'
+                    lower_limit = value
+
+                dstFunc = self.validateDistanceRange(1.0, target_value, lower_limit, upper_limit)
+
+                if dstFunc is None:
+                    return
+
+                if not self.__hasPolySeq:
+                    return
+
+                chainAssign1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
+                chainAssign2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
+
+                if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+                    return
+
+                self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1)
+                self.selectCoordAtoms(chainAssign2, seqId2, compId2, atomId2)
+
+                if len(self.atomSelectionSet) < 2:
+                    return
+
+                for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
+                                                      self.atomSelectionSet[1]):
+                    if self.__debug:
+                        print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
+                              f"atom1={atom1} atom2={atom2} {dstFunc}")
+
+                if num_col > 0:
+                    self.distRestraints += 1
+
+                int_col += 1
+                str_col += 2
+
+        finally:
+            self.numberSelection.clear()
 
     # Enter a parse tree produced by CyanaMRParser#number.
     def enterNumber(self, ctx: CyanaMRParser.NumberContext):  # pylint: disable=unused-argument

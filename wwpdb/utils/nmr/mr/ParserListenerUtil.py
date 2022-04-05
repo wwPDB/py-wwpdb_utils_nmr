@@ -13,6 +13,11 @@ import collections
 
 import numpy as np
 
+try:
+    from wwpdb.utils.nmr.AlignUtil import monDict3
+except ImportError:
+    from nmr.AlignUtil import monDict3
+
 
 REPRESENTATIVE_MODEL_ID = 1
 
@@ -234,6 +239,36 @@ def translateAmberAtomNomenclature(atomId):
         atomId = atomId[0:len(atomId) - 1] + "''"
 
     return atomId
+
+
+def translateCyanaResidueName(compId):
+    """ Translate CYANA residue name to the CCD one.
+    """
+
+    compId3 = compId[:3]
+
+    if compId3 in monDict3:
+        return compId3
+
+    if compId == 'ADE':
+        return 'DA'
+    if compId == 'CYT':
+        return 'DC'
+    if compId == 'GUA':
+        return 'DG'
+    if compId == 'THY':
+        return 'DT'
+
+    if compId == 'RADE':
+        return 'A'
+    if compId == 'RCYT':
+        return 'C'
+    if compId == 'RGUA':
+        return 'G'
+    if compId == 'URA':
+        return 'U'
+
+    return compId
 
 
 def checkCoordinates(verbose=True, log=sys.stdout,

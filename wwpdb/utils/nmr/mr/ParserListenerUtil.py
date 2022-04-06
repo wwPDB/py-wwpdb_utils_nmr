@@ -22,11 +22,11 @@ except ImportError:
 REPRESENTATIVE_MODEL_ID = 1
 
 
-DIST_RESTRAINT_RANGE = {'min_inclusive': 0.5, 'max_inclusive': 50.0}
+DIST_RESTRAINT_RANGE = {'min_inclusive': 0.0, 'max_inclusive': 101.0}
 DIST_RESTRAINT_ERROR = {'min_exclusive': 0.0, 'max_exclusive': 150.0}
 
 
-ANGLE_RESTRAINT_RANGE = {'min_inclusive': -240.0, 'max_inclusive': 240.0}
+ANGLE_RESTRAINT_RANGE = {'min_inclusive': -271.0, 'max_inclusive': 271.0}
 ANGLE_RESTRAINT_ERROR = {'min_exclusive': -360.0, 'max_exclusive': 360.0}
 
 
@@ -204,8 +204,8 @@ def toNefEx(string):
     return string
 
 
-def translateAmberAtomNomenclature(atomId):
-    """ Translate AMBER atom nomenclature to the IUPAC one.
+def translateToStdAtomName(atomId):
+    """ Translate software specific atom nomenclature for standard residues to the CD one.
     """
 
     atomId = atomId.upper()
@@ -241,14 +241,36 @@ def translateAmberAtomNomenclature(atomId):
     return atomId
 
 
-def translateCyanaResidueName(compId):
-    """ Translate CYANA residue name to the CCD one.
+def translateToStdResName(compId):
+    """ Translate software specific residue name for standard residues to the CCD one.
     """
 
-    compId3 = compId[:3]
+    if len(compId) > 3:
+        compId3 = compId[:3]
 
-    if compId3 in monDict3:
-        return compId3
+        if compId3 in monDict3:
+            return compId3
+
+    if compId.endswith('5') or compId.endswith('3'):
+        _compId = compId[:-1]
+
+        if _compId in monDict3:
+            return _compId
+
+    if compId.startswith('R') and compId[1] in ('A', 'C', 'G', 'U'):
+        _compId = compId[1:]
+
+        if _compId in monDict3:
+            return _compId
+        """ do not use
+        if _compId.endswith('5') or _compId.endswith('3'):
+            _compId = _compId[:-1]
+
+            if _compId in monDict3:
+                return _compId
+        """
+    if compId in ('HIE', 'HIP', 'HID'):
+        return 'HIS'
 
     if compId == 'ADE':
         return 'DA'
@@ -286,8 +308,12 @@ def checkCoordinates(verbose=True, log=sys.stdout,
     if polySeq is None:
         changed = True
 
+        polySeqAuthMonIdName = 'auth_mon_id' if cR.hasItem('pdbx_poly_seq_scheme', 'auth_mon_id') else 'mon_id'
+        nonPolyAuthMonIdName = 'auth_mon_id' if cR.hasItem('pdbx_nonpoly_scheme', 'auth_mon_id') else 'mon_id'
+
         # loop categories
-        _lpCategories = {'poly_seq': 'pdbx_poly_seq_scheme'
+        _lpCategories = {'poly_seq': 'pdbx_poly_seq_scheme',
+                         'non_poly': 'pdbx_nonpoly_scheme'
                          }
 
         # key items of loop
@@ -295,12 +321,14 @@ def checkCoordinates(verbose=True, log=sys.stdout,
                                   {'name': 'seq_id', 'type': 'int', 'alt_name': 'seq_id'},
                                   {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
                                   {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
-                                  {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'}
+                                  {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
+                                  {'name': polySeqAuthMonIdName, 'type': 'str', 'alt_name': 'auth_comp_id', 'default': '.'}
                                   ],
                      'non_poly': [{'name': 'asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                   {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'seq_id'},
                                   {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                  {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_chain_id'}
+                                  {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
+                                  {'name': nonPolyAuthMonIdName, 'type': 'str', 'alt_name': 'auth_comp_id', 'default': '.'}
                                   ]
                      }
 
@@ -335,7 +363,7 @@ def checkCoordinates(verbose=True, log=sys.stdout,
 
         except Exception as e:
             if verbose:
-                log.write(f"+ParserListenerUtil.checkCoordinates() ++ Error - {str(e)}\n")
+                log.write(f"+ParserListenerUtil.checkCoordinates() ++ Error  - {str(e)}\n")
 
     if not testTag:
         if not changed:

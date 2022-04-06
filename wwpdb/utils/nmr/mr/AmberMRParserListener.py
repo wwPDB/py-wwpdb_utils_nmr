@@ -17,8 +17,8 @@ from antlr4 import ParseTreeListener
 try:
     from wwpdb.utils.nmr.mr.AmberMRParser import AmberMRParser
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (checkCoordinates,
-                                                       translateAmberAtomNomenclature,
-                                                       translateCyanaResidueName,
+                                                       translateToStdAtomName,
+                                                       translateToStdResName,
                                                        getTypeOfDihedralRestraint,
                                                        REPRESENTATIVE_MODEL_ID,
                                                        DIST_RESTRAINT_RANGE,
@@ -40,8 +40,8 @@ try:
 except ImportError:
     from nmr.mr.AmberMRParser import AmberMRParser
     from nmr.mr.ParserListenerUtil import (checkCoordinates,
-                                           translateAmberAtomNomenclature,
-                                           translateCyanaResidueName,
+                                           translateToStdAtomName,
+                                           translateToStdResName,
                                            getTypeOfDihedralRestraint,
                                            REPRESENTATIVE_MODEL_ID,
                                            DIST_RESTRAINT_RANGE,
@@ -2011,7 +2011,7 @@ class AmberMRParserListener(ParseTreeListener):
 
                 seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId if cifSeqId is None else cifSeqId, cifCheck)
 
-                atomId = translateAmberAtomNomenclature(atomId)
+                atomId = translateToStdAtomName(atomId)
 
                 atomIds = self.__nefT.get_valid_star_atom(compId, atomId)[0]
 
@@ -2076,7 +2076,7 @@ class AmberMRParserListener(ParseTreeListener):
                                 factor['atom_id'] = _atomId
                                 factor['auth_seq_id'] = seqId
                                 factor['auth_atom_id'] = authAtomId
-                                if cifCheck and seqKey not in self.__coordUnobsRes:
+                                if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                     self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                                         f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
                                 return factor
@@ -2095,7 +2095,7 @@ class AmberMRParserListener(ParseTreeListener):
                         compId = ps['comp_id'][ps['seq_id'].index(seqId)]
                         seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck)
 
-                        atomId = translateAmberAtomNomenclature(atomId)
+                        atomId = translateToStdAtomName(atomId)
 
                         atomIds = self.__nefT.get_valid_star_atom(compId, atomId)[0]
 
@@ -2160,7 +2160,7 @@ class AmberMRParserListener(ParseTreeListener):
                                         factor['atom_id'] = _atomId
                                         factor['auth_seq_id'] = seqId
                                         factor['auth_atom_id'] = authAtomId
-                                        if cifCheck and seqKey not in self.__coordUnobsRes:
+                                        if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                             self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                                                 f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
                                         return factor
@@ -2201,17 +2201,18 @@ class AmberMRParserListener(ParseTreeListener):
 
             if factor['auth_seq_id'] in (ps['seq_id'] if useDefault else ps['auth_seq_id']):
                 seqId = factor['auth_seq_id']
-                compId = ps['comp_id'][ps['seq_id'].index(seqId) if useDefault else ps['auth_seq_id'].index(seqId)]
+                idx = ps['seq_id'].index(seqId) if useDefault else ps['auth_seq_id'].index(seqId)
+                compId = ps['comp_id'][idx]
+                origCompId = ps['auth_comp_id'][idx]
                 cifSeqId = None if useDefault else ps['seq_id'][ps['auth_seq_id'].index(seqId)]
                 authCompId = factor['auth_comp_id'].upper()
 
-                if ((compId == authCompId and useDefault) or not useDefault)\
-                   or (compId == 'HIS' and authCompId in ('HIE', 'HIP', 'HID'))\
-                   or compId == translateCyanaResidueName(authCompId):
+                if ((authCompId in (compId, origCompId) and useDefault) or not useDefault)\
+                   or compId == translateToStdResName(authCompId):
 
                     seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId if cifSeqId is None else cifSeqId, cifCheck)
 
-                    authAtomId = translateAmberAtomNomenclature(factor['auth_atom_id'])
+                    authAtomId = translateToStdAtomName(factor['auth_atom_id'])
 
                     atomIds = self.__nefT.get_valid_star_atom(compId, authAtomId)[0]
 
@@ -2278,7 +2279,7 @@ class AmberMRParserListener(ParseTreeListener):
                                         factor['atom_id'] = _atomId
                                         del factor['iat']
                                         self.__sanderAtomNumberDict[iat] = factor
-                                        if cifCheck and seqKey not in self.__coordUnobsRes:
+                                        if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                             self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                                                 f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
                                         return True
@@ -2346,7 +2347,7 @@ class AmberMRParserListener(ParseTreeListener):
                                         _factor['atom_id'] = _atomId
                                         del _factor['igr']
                                         self.__sanderAtomNumberDict[igr] = _factor
-                                        if cifCheck and seqKey not in self.__coordUnobsRes:
+                                        if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                             self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                                                 f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
 

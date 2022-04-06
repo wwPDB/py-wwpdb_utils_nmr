@@ -17,7 +17,8 @@ try:
     from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
     from wwpdb.utils.nmr.mr.AmberPTParser import AmberPTParser
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (checkCoordinates,
-                                                       translateAmberAtomNomenclature,
+                                                       translateToStdAtomName,
+                                                       translateToStdResName,
                                                        REPRESENTATIVE_MODEL_ID)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
@@ -30,7 +31,8 @@ except ImportError:
     from nmr.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
     from nmr.mr.AmberPTParser import AmberPTParser
     from nmr.mr.ParserListenerUtil import (checkCoordinates,
-                                           translateAmberAtomNomenclature,
+                                           translateToStdAtomName,
+                                           translateToStdResName,
                                            REPRESENTATIVE_MODEL_ID)
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
@@ -260,8 +262,7 @@ class AmberPTParserListener(ParseTreeListener):
                                if atomNum['chain_id'] == chainId
                                and atomNum['seq_id'] == seqId
                                and atomNum['auth_atom_id'][0] != 'H']
-                if authCompId in ('HIE', 'HIP', 'HID'):
-                    authCompId = 'HIS'
+                authCompId = translateToStdResName(authCompId)
                 if self.__ccU.updateChemCompDict(authCompId):
                     chemCompAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]
                     valid = True
@@ -326,7 +327,7 @@ class AmberPTParserListener(ParseTreeListener):
                 if self.__ccU.updateChemCompDict(atomNum['comp_id']):
                     chemCompAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]
 
-                    atomId = translateAmberAtomNomenclature(atomNum['auth_atom_id'])
+                    atomId = translateToStdAtomName(atomNum['auth_atom_id'])
 
                     if atomId is not None and atomId in chemCompAtomIds:
                         atomNum['atom_id'] = atomId
@@ -666,6 +667,13 @@ class AmberPTParserListener(ParseTreeListener):
                         unmapped.append({'ref_seq_id': seq_id1[i], 'ref_comp_id': cif_comp_id})
 
                         if not aligned[i]:
+
+                            if not self.__ccU.updateChemCompDict(cif_comp_id):
+                                continue
+
+                            if self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] != 'REL':
+                                continue
+
                             cif_seq_code = f"{chain_id}:{seq_id1[i]}:{cif_comp_id}"
 
                             self.warningMessage += f"[Sequence mismatch] {cif_seq_code} is not present "\
@@ -682,6 +690,14 @@ class AmberPTParserListener(ParseTreeListener):
                         top_seq_code = f"{chain_id2}:{seq_id2[i]}:{top_comp_id}"
                         if top_comp_id == '.':
                             top_seq_code += ', insertion error'
+
+                        if cif_comp_id != '.':
+
+                            if not self.__ccU.updateChemCompDict(cif_comp_id):
+                                continue
+
+                            if self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] != 'REL':
+                                continue
 
                         self.warningMessage += f"[Sequence mismatch] Sequence alignment error between the coordinate ({cif_seq_code}) "\
                             f"and the AMBER parameter/topology data ({top_seq_code}). "\

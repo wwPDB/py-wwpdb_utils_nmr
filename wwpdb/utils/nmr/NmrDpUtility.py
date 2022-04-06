@@ -7045,12 +7045,14 @@ class NmrDpUtility:
                     listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
                     err = ''
+                    err_lines = []
 
                     if lexer_err_listener is not None:
                         messageList = lexer_err_listener.getMessageList()
 
                         if messageList is not None:
                             for description in messageList:
+                                err_lines.append(description['line_number'])
                                 err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
                                 if 'input' in description:
                                     err += f"{description['input']}\n"
@@ -7061,6 +7063,7 @@ class NmrDpUtility:
 
                         if messageList is not None:
                             for description in messageList:
+                                err_lines.append(description['line_number'])
                                 err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
                                 if 'input' in description:
                                     err += f"{description['input']}\n"
@@ -7071,7 +7074,7 @@ class NmrDpUtility:
 
                         err = f"Could not interpret {file_name!r} as an {mr_format_name} restraint file:\n{err[0:-1]}"
 
-                        ar['format_mismatch'], _err = self.__detectOtherPossibleFormatAsErrorOfLegacyMR(file_path, file_name, file_type)
+                        ar['format_mismatch'], _err = self.__detectOtherPossibleFormatAsErrorOfLegacyMR(file_path, file_name, file_type, err_lines)
 
                         if ar['format_mismatch']:
                             err += '\n' + _err
@@ -7126,12 +7129,14 @@ class NmrDpUtility:
                     listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
                     err = ''
+                    err_lines = []
 
                     if lexer_err_listener is not None:
                         messageList = lexer_err_listener.getMessageList()
 
                         if messageList is not None:
                             for description in messageList:
+                                err_lines.append(description['line_number'])
                                 err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
                                 if 'input' in description:
                                     err += f"{description['input']}\n"
@@ -7142,6 +7147,7 @@ class NmrDpUtility:
 
                         if messageList is not None:
                             for description in messageList:
+                                err_lines.append(description['line_number'])
                                 err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
                                 if 'input' in description:
                                     err += f"{description['input']}\n"
@@ -7152,7 +7158,7 @@ class NmrDpUtility:
 
                         err = f"Could not interpret {file_name!r} as a {mr_format_name} restraint file:\n{err[0:-1]}"
 
-                        ar['format_mismatch'], _err = self.__detectOtherPossibleFormatAsErrorOfLegacyMR(file_path, file_name, file_type)
+                        ar['format_mismatch'], _err = self.__detectOtherPossibleFormatAsErrorOfLegacyMR(file_path, file_name, file_type, err_lines)
 
                         if ar['format_mismatch']:
                             err += '\n' + _err
@@ -7206,12 +7212,14 @@ class NmrDpUtility:
                     listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None, None)
 
                     err = ''
+                    err_lines = []
 
                     if lexer_err_listener is not None:
                         messageList = lexer_err_listener.getMessageList()
 
                         if messageList is not None:
                             for description in messageList:
+                                err_lines.append(description['line_number'])
                                 err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
                                 if 'input' in description:
                                     err += f"{description['input']}\n"
@@ -7222,6 +7230,7 @@ class NmrDpUtility:
 
                         if messageList is not None:
                             for description in messageList:
+                                err_lines.append(description['line_number'])
                                 err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
                                 if 'input' in description:
                                     err += f"{description['input']}\n"
@@ -7232,7 +7241,7 @@ class NmrDpUtility:
 
                         err = f"Could not interpret {file_name!r} as an {mr_format_name} restraint file:\n{err[0:-1]}"
 
-                        ar['format_mismatch'], _err = self.__detectOtherPossibleFormatAsErrorOfLegacyMR(file_path, file_name, file_type)
+                        ar['format_mismatch'], _err = self.__detectOtherPossibleFormatAsErrorOfLegacyMR(file_path, file_name, file_type, err_lines)
 
                         if ar['format_mismatch']:
                             err += '\n' + _err
@@ -7286,12 +7295,14 @@ class NmrDpUtility:
                     listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
                     err = ''
+                    err_lines = []
 
                     if lexer_err_listener is not None:
                         messageList = lexer_err_listener.getMessageList()
 
                         if messageList is not None:
                             for description in messageList:
+                                err_lines.append(description['line_number'])
                                 err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
                                 if 'input' in description:
                                     err += f"{description['input']}\n"
@@ -7302,6 +7313,7 @@ class NmrDpUtility:
 
                         if messageList is not None:
                             for description in messageList:
+                                err_lines.append(description['line_number'])
                                 err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
                                 if 'input' in description:
                                     err += f"{description['input']}\n"
@@ -7312,7 +7324,7 @@ class NmrDpUtility:
 
                         err = f"Could not interpret {file_name!r} as an {mr_format_name} parameter/topology file:\n{err[0:-1]}"
 
-                        ar['format_mismatch'], _err = self.__detectOtherPossibleFormatAsErrorOfLegacyMR(file_path, file_name, file_type)
+                        ar['format_mismatch'], _err = self.__detectOtherPossibleFormatAsErrorOfLegacyMR(file_path, file_name, file_type, err_lines)
 
                         if ar['format_mismatch']:
                             err += '\n' + _err
@@ -7364,12 +7376,14 @@ class NmrDpUtility:
                     listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
                     err = ''
+                    err_lines = []
 
                     if lexer_err_listener is not None:
                         messageList = lexer_err_listener.getMessageList()
 
                         if messageList is not None:
                             for description in messageList:
+                                err_lines.append(description['line_number'])
                                 err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
                                 if 'input' in description:
                                     err += f"{description['input']}\n"
@@ -7380,6 +7394,7 @@ class NmrDpUtility:
 
                         if messageList is not None:
                             for description in messageList:
+                                err_lines.append(description['line_number'])
                                 err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
                                 if 'input' in description:
                                     err += f"{description['input']}\n"
@@ -7390,7 +7405,7 @@ class NmrDpUtility:
 
                         err = f"Could not interpret {file_name!r} as a {mr_format_name} restraint file:\n{err[0:-1]}"
 
-                        ar['format_mismatch'], _err = self.__detectOtherPossibleFormatAsErrorOfLegacyMR(file_path, file_name, file_type)
+                        ar['format_mismatch'], _err = self.__detectOtherPossibleFormatAsErrorOfLegacyMR(file_path, file_name, file_type, err_lines)
 
                         if ar['format_mismatch']:
                             err += '\n' + _err
@@ -7445,12 +7460,14 @@ class NmrDpUtility:
                     listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
                     err = ''
+                    err_lines = []
 
                     if lexer_err_listener is not None:
                         messageList = lexer_err_listener.getMessageList()
 
                         if messageList is not None:
                             for description in messageList:
+                                err_lines.append(description['line_number'])
                                 err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
                                 if 'input' in description:
                                     err += f"{description['input']}\n"
@@ -7461,6 +7478,7 @@ class NmrDpUtility:
 
                         if messageList is not None:
                             for description in messageList:
+                                err_lines.append(description['line_number'])
                                 err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
                                 if 'input' in description:
                                     err += f"{description['input']}\n"
@@ -7471,7 +7489,7 @@ class NmrDpUtility:
 
                         err = f"Could not interpret {file_name!r} as a {mr_format_name} restraint file:\n{err[0:-1]}"
 
-                        ar['format_mismatch'], _err = self.__detectOtherPossibleFormatAsErrorOfLegacyMR(file_path, file_name, file_type)
+                        ar['format_mismatch'], _err = self.__detectOtherPossibleFormatAsErrorOfLegacyMR(file_path, file_name, file_type, err_lines)
 
                         if ar['format_mismatch']:
                             err += '\n' + _err
@@ -7518,7 +7536,7 @@ class NmrDpUtility:
                                 has_rdc_restraint = 'rdc_restraint' in content_subtype
 
                 elif file_type == 'nm-res-oth':
-                    ar['format_mismatch'], _ = self.__detectOtherPossibleFormatAsErrorOfLegacyMR(file_path, file_name, file_type)
+                    ar['format_mismatch'], _ = self.__detectOtherPossibleFormatAsErrorOfLegacyMR(file_path, file_name, file_type, [])
 
             except ValueError as e:
 
@@ -7736,7 +7754,7 @@ class NmrDpUtility:
 
         return not self.report.isError()
 
-    def __detectOtherPossibleFormatAsErrorOfLegacyMR(self, file_path, file_name, file_type):
+    def __detectOtherPossibleFormatAsErrorOfLegacyMR(self, file_path, file_name, file_type, dismiss_err_lines):
         """ Report other possible format as error of a given legacy NMR restraint file.
         """
 
@@ -7789,6 +7807,8 @@ class NmrDpUtility:
 
                             if messageList is not None:
                                 for description in messageList:
+                                    if description['line_number'] in dismiss_err_lines:
+                                        continue
                                     _err += f"[Syntax error as {_mr_format_name} restraint file] "\
                                         f"line {description['line_number']}:{description['column_position']} {description['message']}\n"
                                     if 'input' in description:
@@ -7800,6 +7820,8 @@ class NmrDpUtility:
 
                             if messageList is not None:
                                 for description in messageList:
+                                    if description['line_number'] in dismiss_err_lines:
+                                        continue
                                     _err += f"[Syntax error as {_mr_format_name} restraint file] "\
                                         f"line {description['line_number']}:{description['column_position']} {description['message']}\n"
                                     if 'input' in description:
@@ -7808,6 +7830,9 @@ class NmrDpUtility:
 
                         if len(_err) > 0:
                             err += f"\nEven assuming that the format is the {_mr_format_name!r}, the following issues need to be fixed.\n" + _err[:-1]
+                        elif file_type != 'nmr-res-oth' and (lexer_err_listener.getMessageList() is not None or parser_err_listener.getMessageList() is not None):
+                            checked = False
+                            err = ''
 
                     if file_type == 'nm-res-oth':
                         self.report.error.appendDescription('content_mismatch',
@@ -7848,6 +7873,8 @@ class NmrDpUtility:
 
                             if messageList is not None:
                                 for description in messageList:
+                                    if description['line_number'] in dismiss_err_lines:
+                                        continue
                                     _err += f"[Syntax error as an {_mr_format_name} restraint file] "\
                                         f"line {description['line_number']}:{description['column_position']} {description['message']}\n"
                                     if 'input' in description:
@@ -7859,6 +7886,8 @@ class NmrDpUtility:
 
                             if messageList is not None:
                                 for description in messageList:
+                                    if description['line_number'] in dismiss_err_lines:
+                                        continue
                                     _err += f"[Syntax error as an {_mr_format_name} restraint file] "\
                                         f"line {description['line_number']}:{description['column_position']} {description['message']}\n"
                                     if 'input' in description:
@@ -7867,6 +7896,9 @@ class NmrDpUtility:
 
                         if len(_err) > 0:
                             err += f"\nEven assuming that the format is the {_mr_format_name!r}, the following issues need to be fixed.\n" + _err[:-1]
+                        elif file_type != 'nmr-res-oth' and (lexer_err_listener.getMessageList() is not None or parser_err_listener.getMessageList() is not None):
+                            checked = False
+                            err = ''
 
                     if file_type == 'nm-res-oth':
                         self.report.error.appendDescription('content_mismatch',
@@ -7907,6 +7939,8 @@ class NmrDpUtility:
 
                             if messageList is not None:
                                 for description in messageList:
+                                    if description['line_number'] in dismiss_err_lines:
+                                        continue
                                     _err += f"[Syntax error as an {_mr_format_name} restraint file] "\
                                         f"line {description['line_number']}:{description['column_position']} {description['message']}\n"
                                     if 'input' in description:
@@ -7918,6 +7952,8 @@ class NmrDpUtility:
 
                             if messageList is not None:
                                 for description in messageList:
+                                    if description['line_number'] in dismiss_err_lines:
+                                        continue
                                     _err += f"[Syntax error as an {_mr_format_name} restraint file] "\
                                         f"line {description['line_number']}:{description['column_position']} {description['message']}\n"
                                     if 'input' in description:
@@ -7926,6 +7962,9 @@ class NmrDpUtility:
 
                         if len(_err) > 0:
                             err += f"\nEven assuming that the format is the {_mr_format_name!r}, the following issues need to be fixed.\n" + _err[:-1]
+                        elif file_type != 'nmr-res-oth' and (lexer_err_listener.getMessageList() is not None or parser_err_listener.getMessageList() is not None):
+                            checked = False
+                            err = ''
 
                     if file_type == 'nm-res-oth':
                         self.report.error.appendDescription('content_mismatch',
@@ -7966,6 +8005,8 @@ class NmrDpUtility:
 
                             if messageList is not None:
                                 for description in messageList:
+                                    if description['line_number'] in dismiss_err_lines:
+                                        continue
                                     _err += f"[Syntax error as an {_mr_format_name} parameter/topology file] "\
                                         f"line {description['line_number']}:{description['column_position']} {description['message']}\n"
                                     if 'input' in description:
@@ -7977,6 +8018,8 @@ class NmrDpUtility:
 
                             if messageList is not None:
                                 for description in messageList:
+                                    if description['line_number'] in dismiss_err_lines:
+                                        continue
                                     _err += f"[Syntax error as an {_mr_format_name} parameter/topology file] "\
                                         f"line {description['line_number']}:{description['column_position']} {description['message']}\n"
                                     if 'input' in description:
@@ -7985,6 +8028,9 @@ class NmrDpUtility:
 
                         if len(_err) > 0:
                             err += f"\nEven assuming that the format is the {_mr_format_name!r}, the following issues need to be fixed.\n" + _err[:-1]
+                        elif file_type != 'nmr-res-oth' and (lexer_err_listener.getMessageList() is not None or parser_err_listener.getMessageList() is not None):
+                            checked = False
+                            err = ''
 
                     if file_type == 'nm-res-oth':
                         self.report.error.appendDescription('content_mismatch',
@@ -8025,6 +8071,8 @@ class NmrDpUtility:
 
                             if messageList is not None:
                                 for description in messageList:
+                                    if description['line_number'] in dismiss_err_lines:
+                                        continue
                                     _err += f"[Syntax error as a {_mr_format_name} restraint file] "\
                                         f"line {description['line_number']}:{description['column_position']} {description['message']}\n"
                                     if 'input' in description:
@@ -8036,6 +8084,8 @@ class NmrDpUtility:
 
                             if messageList is not None:
                                 for description in messageList:
+                                    if description['line_number'] in dismiss_err_lines:
+                                        continue
                                     _err += f"[Syntax error as a {_mr_format_name} restraint file] "\
                                         f"line {description['line_number']}:{description['column_position']} {description['message']}\n"
                                     if 'input' in description:
@@ -8044,6 +8094,9 @@ class NmrDpUtility:
 
                         if len(_err) > 0:
                             err += f"\nEven assuming that the format is the {_mr_format_name!r}, the following issues need to be fixed.\n" + _err[:-1]
+                        elif file_type != 'nmr-res-oth' and (lexer_err_listener.getMessageList() is not None or parser_err_listener.getMessageList() is not None):
+                            checked = False
+                            err = ''
 
                     if file_type == 'nm-res-oth':
                         self.report.error.appendDescription('content_mismatch',
@@ -8084,6 +8137,8 @@ class NmrDpUtility:
 
                             if messageList is not None:
                                 for description in messageList:
+                                    if description['line_number'] in dismiss_err_lines:
+                                        continue
                                     _err += f"[Syntax error as a {_mr_format_name} restraint file] "\
                                         f"line {description['line_number']}:{description['column_position']} {description['message']}\n"
                                     if 'input' in description:
@@ -8095,6 +8150,8 @@ class NmrDpUtility:
 
                             if messageList is not None:
                                 for description in messageList:
+                                    if description['line_number'] in dismiss_err_lines:
+                                        continue
                                     _err += f"[Syntax error as a {_mr_format_name} restraint file] "\
                                         f"line {description['line_number']}:{description['column_position']} {description['message']}\n"
                                     if 'input' in description:
@@ -8103,6 +8160,9 @@ class NmrDpUtility:
 
                         if len(_err) > 0:
                             err += f"\nEven assuming that the format is the {_mr_format_name!r}, the following issues need to be fixed.\n" + _err[:-1]
+                        elif file_type != 'nmr-res-oth' and (lexer_err_listener.getMessageList() is not None or parser_err_listener.getMessageList() is not None):
+                            checked = False
+                            err = ''
 
                     if file_type == 'nm-res-oth':
                         self.report.error.appendDescription('content_mismatch',

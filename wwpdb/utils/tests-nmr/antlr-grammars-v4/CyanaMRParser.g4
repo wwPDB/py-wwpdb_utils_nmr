@@ -23,8 +23,10 @@ cyana_mr:
 	distance_restraints |
 	fixres_distance_restraints |
 	fixresw_distance_restraints |
+	fixresw2_distance_restraints |
 	fixatm_distance_restraints |
 	fixatmw_distance_restraints |
+	fixatmw2_distance_restraints |
 	torsion_angle_restraints |
 	rdc_restraints |
 	pcs_restraints
@@ -40,7 +42,7 @@ distance_restraints:
 distance_restraint:
 	Integer Simple_name Simple_name
 	Integer Simple_name Simple_name
-	number number?;
+	number number? number?;
 
 /* CYANA 3.0 Reference Manual - Torsion angle restraint file
  See also http://www.cyana.org/wiki/index.php/Torsion_angle_restraint_file
@@ -94,13 +96,21 @@ fixres_distance_restraint:
 	Integer Simple_name
 	(Simple_name Integer Simple_name Simple_name number)+;
 
-/* with weight value */
+/* with weight value or upper limit value */
 fixresw_distance_restraints:
 	fixresw_distance_restraint+;
 
 fixresw_distance_restraint:
 	Integer Simple_name
 	(Simple_name Integer Simple_name Simple_name number number)+;
+
+/* with lol, upl, weight value */
+fixresw2_distance_restraints:
+	fixresw2_distance_restraint+;
+
+fixresw2_distance_restraint:
+	Integer Simple_name
+	(Simple_name Integer Simple_name Simple_name number number number)+;
 
 /* CYANA (undocumented) - ambiguous (fixed atom) distance restraint
  77 VAL H  #
@@ -114,13 +124,21 @@ fixatm_distance_restraint:
 	Integer Simple_name Simple_name
 	(Integer Simple_name Simple_name number)+;
 
-/* with weight value */
+/* with weight value or upper limit value */
 fixatmw_distance_restraints:
 	fixatmw_distance_restraint+;
 
 fixatmw_distance_restraint:
 	Integer Simple_name Simple_name
 	(Integer Simple_name Simple_name number number)+;
+
+/* with lol, upl, weight value */
+fixatmw2_distance_restraints:
+	fixatmw2_distance_restraint+;
+
+fixatmw2_distance_restraint:
+	Integer Simple_name Simple_name
+	(Integer Simple_name Simple_name number number number)+;
 
 /* number expression in restrains */
 number:	Float | Integer;

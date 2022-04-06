@@ -204,8 +204,8 @@ def toNefEx(string):
     return string
 
 
-def translateAmberAtomNomenclature(atomId):
-    """ Translate AMBER atom nomenclature to the IUPAC one.
+def translateNAAtomNomenclature(atomId):
+    """ Translate nucleic acid atom nomenclature to the IUPAC one.
     """
 
     atomId = atomId.upper()
@@ -245,10 +245,11 @@ def translateCyanaResidueName(compId):
     """ Translate CYANA residue name to the CCD one.
     """
 
-    compId3 = compId[:3]
+    if len(compId) > 3:
+        compId3 = compId[:3]
 
-    if compId3 in monDict3:
-        return compId3
+        if compId3 in monDict3:
+            return compId3
 
     if compId == 'ADE':
         return 'DA'

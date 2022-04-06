@@ -22,7 +22,8 @@ try:
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (toNpArray,
                                                        toRegEx, toNefEx,
                                                        checkCoordinates,
-                                                       translateAmberAtomNomenclature,
+                                                       translateCyanaResidueName,
+                                                       translateNAAtomNomenclature,
                                                        getTypeOfDihedralRestraint,
                                                        REPRESENTATIVE_MODEL_ID,
                                                        DIST_RESTRAINT_RANGE,
@@ -56,7 +57,8 @@ except ImportError:
     from nmr.mr.ParserListenerUtil import (toNpArray,
                                            toRegEx, toNefEx,
                                            checkCoordinates,
-                                           translateAmberAtomNomenclature,
+                                           translateCyanaResidueName,
+                                           translateNAAtomNomenclature,
                                            getTypeOfDihedralRestraint,
                                            REPRESENTATIVE_MODEL_ID,
                                            DIST_RESTRAINT_RANGE,
@@ -5062,8 +5064,11 @@ class XplorMRParserListener(ParseTreeListener):
                         for realSeqId in ps['auth_seq_id']:
                             realSeqId = self.getRealSeqId(ps, realSeqId)
                             realCompId = ps['comp_id'][ps['auth_seq_id'].index(realSeqId)]
-                            if (lenCompIds == 1 and re.match(toRegEx(_factor['comp_ids'][0]), realCompId))\
-                               or (lenCompIds == 2 and _factor['comp_ids'][0] <= realCompId <= _factor['comp_ids'][1]):
+                            if (lenCompIds == 1
+                                and re.match(toRegEx(translateCyanaResidueName(_factor['comp_ids'][0])), realCompId))\
+                               or (lenCompIds == 2
+                                   and translateCyanaResidueName(_factor['comp_ids'][0]) <= realCompId
+                                   <= translateCyanaResidueName(_factor['comp_ids'][1])):
                                 _compIdSelect.add(realCompId)
                 _factor['comp_id'] = list(_compIdSelect)
                 del _factor['comp_ids']
@@ -5081,7 +5086,7 @@ class XplorMRParserListener(ParseTreeListener):
                         realSeqId = self.getRealSeqId(ps, realSeqId)
                         if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                             realCompId = ps['comp_id'][ps['auth_seq_id'].index(realSeqId)]
-                            if realCompId not in _factor['comp_id']:
+                            if realCompId not in translateCyanaResidueName(_factor['comp_id']):
                                 continue
                         if re.match(_seqId, str(realSeqId)):
                             seqIds.append(realSeqId)
@@ -5091,7 +5096,7 @@ class XplorMRParserListener(ParseTreeListener):
                             realSeqId = self.getRealSeqId(ps, realSeqId)
                             if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                                 realCompId = ps['comp_id'][ps['auth_seq_id'].index(realSeqId)]
-                                if realCompId not in _factor['comp_id']:
+                                if realCompId not in translateCyanaResidueName(_factor['comp_id']):
                                     continue
                             seqKey = (chainId, realSeqId)
                             if seqKey in self.__authToLabelSeq:
@@ -5110,7 +5115,7 @@ class XplorMRParserListener(ParseTreeListener):
                         realSeqId = self.getRealSeqId(ps, realSeqId)
                         if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                             realCompId = ps['comp_id'][ps['auth_seq_id'].index(realSeqId)]
-                            if realCompId not in _factor['comp_id']:
+                            if realCompId not in translateCyanaResidueName(_factor['comp_id']):
                                 continue
                         seqIds.append(realSeqId)
             _factor['seq_id'] = list(set(seqIds))
@@ -5165,7 +5170,7 @@ class XplorMRParserListener(ParseTreeListener):
                         realSeqId = self.getRealSeqId(ps, realSeqId)
                         realCompId = ps['comp_id'][ps['auth_seq_id'].index(realSeqId)]
                         if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
-                            if realCompId not in _factor['comp_id']:
+                            if realCompId not in translateCyanaResidueName(_factor['comp_id']):
                                 continue
                         _compIdSelect.add(realCompId)
 
@@ -5175,10 +5180,13 @@ class XplorMRParserListener(ParseTreeListener):
                     for cca in self.__ccU.lastAtomList:
                         if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
                             realAtomId = cca[self.__ccU.ccaAtomId]
-                            if lenAtomIds == 1 and re.match(toRegEx(_factor['atom_ids'][0]), realAtomId):
+                            if lenAtomIds == 1\
+                               and re.match(toRegEx(translateNAAtomNomenclature(_factor['atom_ids'][0])), realAtomId):
                                 _atomIdSelect.add(toNefEx(_factor['atom_ids'][0]))
                                 _factor['alt_atom_id'] = _factor['atom_ids'][0]
-                            elif lenAtomIds == 2 and _factor['atom_ids'][0] <= realAtomId <= _factor['atom_ids'][1]:
+                            elif lenAtomIds == 2\
+                                    and translateNAAtomNomenclature(_factor['atom_ids'][0]) <= realAtomId\
+                                    <= translateNAAtomNomenclature(_factor['atom_ids'][1]):
                                 _atomIdSelect.add(realAtomId)
             _factor['atom_id'] = list(_atomIdSelect)
             if len(_factor['atom_id']) == 0:
@@ -5194,7 +5202,7 @@ class XplorMRParserListener(ParseTreeListener):
                         realSeqId = self.getRealSeqId(ps, realSeqId)
                         realCompId = ps['comp_id'][ps['auth_seq_id'].index(realSeqId)]
                         if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
-                            if realCompId not in _factor['comp_id']:
+                            if realCompId not in translateCyanaResidueName(_factor['comp_id']):
                                 continue
                         _compIdSelect.add(realCompId)
 
@@ -5251,7 +5259,11 @@ class XplorMRParserListener(ParseTreeListener):
                             atomIds, _, details = self.__nefT.get_valid_star_atom(compId, atomId[:-1], leave_unmatched=True)
 
                         if details is not None:
-                            if atomId.endswith('1'):
+                            _atomId = translateNAAtomNomenclature(atomId)
+                            if _atomId != atomId:
+                                atomIds = self.__nefT.get_valid_star_atom(compId, _atomId)[0]
+
+                            elif atomId.endswith('1'):
                                 _atomId = atomId[:-1] + '3'
                                 if self.__nefT.validate_comp_atom(compId, _atomId):
                                     atomIds = self.__nefT.get_valid_star_atom(compId, _atomId)[0]
@@ -5339,14 +5351,14 @@ class XplorMRParserListener(ParseTreeListener):
                                             seqKey = _seqKey
 
                                 if _atom is not None:
-                                    if ('comp_id' not in _factor or _atom['comp_id'] in _factor['comp_id'])\
+                                    if ('comp_id' not in _factor or _atom['comp_id'] in translateCyanaResidueName(_factor['comp_id']))\
                                        and ('type_symbol' not in _factor or _atom['type_symbol'] in _factor['type_symbol']):
                                         _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': _atom['comp_id'], 'atom_id': _atomId})
                                 else:
                                     ccdCheck = True
 
                             if ccdCheck and compId is not None and _atomId not in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
-                                if self.__ccU.updateChemCompDict(compId) and ('comp_id' not in _factor or compId in _factor['comp_id']):
+                                if self.__ccU.updateChemCompDict(compId) and ('comp_id' not in _factor or compId in translateCyanaResidueName(_factor['comp_id'])):
                                     cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId), None)
                                     if cca is not None and ('type_symbol' not in _factor or cca[self.__ccU.ccaTypeSymbol] in _factor['type_symbol']):
                                         _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId})
@@ -5812,7 +5824,7 @@ class XplorMRParserListener(ParseTreeListener):
                                         _atomIdSelect.add(atomId)
 
                 elif ctx.Simple_names(simpleNamesIndex):
-                    atomId = str(ctx.Simple_names(simpleNamesIndex))
+                    atomId = translateNAAtomNomenclature(str(ctx.Simple_names(simpleNamesIndex)))
                     _atomId = toRegEx(atomId)
                     for chainId in self.factor['chain_id']:
                         ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
@@ -6439,10 +6451,11 @@ class XplorMRParserListener(ParseTreeListener):
                 if self.__sel_expr_debug:
                     print("  " * self.depth + "--> name")
                 if ctx.Colon():  # range expression
-                    self.factor['atom_ids'] = [str(ctx.Simple_name(0)), str(ctx.Simple_name(1))]
+                    self.factor['atom_ids'] = [str(ctx.Simple_name(0)),
+                                               str(ctx.Simple_name(1))]
 
                 elif ctx.Simple_name(0):
-                    self.factor['atom_id'] = [translateAmberAtomNomenclature(str(ctx.Simple_name(0)))]
+                    self.factor['atom_id'] = [str(ctx.Simple_name(0))]
 
                 elif ctx.Simple_names(0):
                     self.factor['atom_ids'] = [str(ctx.Simple_names(0))]

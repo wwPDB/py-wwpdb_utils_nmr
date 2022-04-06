@@ -17,7 +17,7 @@ try:
     from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
     from wwpdb.utils.nmr.mr.AmberPTParser import AmberPTParser
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (checkCoordinates,
-                                                       translateAmberAtomNomenclature,
+                                                       translateNAAtomNomenclature,
                                                        REPRESENTATIVE_MODEL_ID)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
@@ -30,7 +30,7 @@ except ImportError:
     from nmr.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
     from nmr.mr.AmberPTParser import AmberPTParser
     from nmr.mr.ParserListenerUtil import (checkCoordinates,
-                                           translateAmberAtomNomenclature,
+                                           translateNAAtomNomenclature,
                                            REPRESENTATIVE_MODEL_ID)
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
@@ -326,7 +326,7 @@ class AmberPTParserListener(ParseTreeListener):
                 if self.__ccU.updateChemCompDict(atomNum['comp_id']):
                     chemCompAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]
 
-                    atomId = translateAmberAtomNomenclature(atomNum['auth_atom_id'])
+                    atomId = translateNAAtomNomenclature(atomNum['auth_atom_id'])
 
                     if atomId is not None and atomId in chemCompAtomIds:
                         atomNum['atom_id'] = atomId

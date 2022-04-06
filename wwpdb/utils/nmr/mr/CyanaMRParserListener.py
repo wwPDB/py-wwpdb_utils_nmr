@@ -243,15 +243,21 @@ class CyanaMRParserListener(ParseTreeListener):
         upper_limit = None
 
         value = self.numberSelection[0]
-
         weight = 1.0
-        if len(self.numberSelection) > 1:
-            weight = self.numberSelection[1]
 
-        if weight <= 0.0:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                f"The relative weight value of '{weight}' must be a positive value.\n"
-            return
+        has_square = False
+        if len(self.numberSelection) > 1:
+            value2 = self.numberSelection[1]
+
+            if value2 <= 0.0:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"The relative weight value of '{value2}' must be a positive value.\n"
+                return
+
+            if value2 <= 1.0 or value2 < value:
+                weight = value2
+            else:
+                has_square = True
 
         self.numberSelection.clear()
 
@@ -261,7 +267,24 @@ class CyanaMRParserListener(ParseTreeListener):
             if value > self.__max_dist_value:
                 self.__max_dist_value = value
 
-        if self.__upl_or_lol is None or self.__upl_or_lol == 'upl_only':
+        if has_square:
+            if value2 > DIST_RANGE_MAX:  # lol_only
+                lower_limit = value
+
+            elif 1.8 <= value <= DIST_ERROR_MAX and DIST_RANGE_MIN <= value2 <= DIST_RANGE_MAX:
+                upper_limit = value2
+                lower_limit = value
+                target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+
+            else:  # upl_only
+                if value2 > 1.8:
+                    upper_limit = value2
+                    lower_limit = 1.8  # default value of PDBStat
+                    target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                else:
+                    upper_limit = value2
+
+        elif self.__upl_or_lol is None or self.__upl_or_lol == 'upl_only':
             if value > 1.8:
                 upper_limit = value
                 lower_limit = 1.8  # default value of PDBStat
@@ -1243,12 +1266,19 @@ class CyanaMRParserListener(ParseTreeListener):
                 atomId2 = str(ctx.Simple_name(str_col + 2)).upper()
 
                 value = self.numberSelection[num_col]
-                weight = self.numberSelection[num_col + 1]
+                value2 = self.numberSelection[num_col + 1]
+                has_square = False
 
-                if weight <= 0.0:
+                if value2 <= 0.0:
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"The relative weight value of '{weight}' must be a positive value.\n"
+                        f"The relative weight value of '{value2}' must be a positive value.\n"
                     return
+
+                if value2 <= 1.0 or value2 < value:
+                    weight = value2
+                else:
+                    weight = 1.0
+                    has_square = True
 
                 target_value = None
                 lower_limit = None
@@ -1260,7 +1290,24 @@ class CyanaMRParserListener(ParseTreeListener):
                     if value > self.__max_dist_value:
                         self.__max_dist_value = value
 
-                if self.__upl_or_lol is None or self.__upl_or_lol == 'upl_only':
+                if has_square:
+                    if value2 > DIST_RANGE_MAX:  # lol_only
+                        lower_limit = value
+
+                    elif 1.8 <= value <= DIST_ERROR_MAX and DIST_RANGE_MIN <= value2 <= DIST_RANGE_MAX:
+                        upper_limit = value2
+                        lower_limit = value
+                        target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+
+                    else:  # upl_only
+                        if value2 > 1.8:
+                            upper_limit = value2
+                            lower_limit = 1.8  # default value of PDBStat
+                            target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                        else:
+                            upper_limit = value2
+
+                elif self.__upl_or_lol is None or self.__upl_or_lol == 'upl_only':
                     if value > 1.8:
                         upper_limit = value
                         lower_limit = 1.8  # default value of PDBStat
@@ -1439,12 +1486,19 @@ class CyanaMRParserListener(ParseTreeListener):
                 atomId2 = str(ctx.Simple_name(str_col + 1)).upper()
 
                 value = self.numberSelection[num_col]
-                weight = self.numberSelection[num_col + 1]
+                value2 = self.numberSelection[num_col + 1]
+                has_square = False
 
-                if weight <= 0.0:
+                if value2 <= 0.0:
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"The relative weight value of '{weight}' must be a positive value.\n"
+                        f"The relative weight value of '{value2}' must be a positive value.\n"
                     return
+
+                if value2 <= 1.0 or value2 < value:
+                    weight = value2
+                else:
+                    weight = 1.0
+                    has_square = True
 
                 target_value = None
                 lower_limit = None
@@ -1456,7 +1510,24 @@ class CyanaMRParserListener(ParseTreeListener):
                     if value > self.__max_dist_value:
                         self.__max_dist_value = value
 
-                if self.__upl_or_lol is None or self.__upl_or_lol == 'upl_only':
+                if has_square:
+                    if value2 > DIST_RANGE_MAX:  # lol_only
+                        lower_limit = value
+
+                    elif 1.8 <= value <= DIST_ERROR_MAX and DIST_RANGE_MIN <= value2 <= DIST_RANGE_MAX:
+                        upper_limit = value2
+                        lower_limit = value
+                        target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+
+                    else:  # upl_only
+                        if value2 > 1.8:
+                            upper_limit = value2
+                            lower_limit = 1.8  # default value of PDBStat
+                            target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                        else:
+                            upper_limit = value2
+
+                elif self.__upl_or_lol is None or self.__upl_or_lol == 'upl_only':
                     if value > 1.8:
                         upper_limit = value
                         lower_limit = 1.8  # default value of PDBStat

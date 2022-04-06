@@ -7994,8 +7994,7 @@ class NmrDpUtility:
                     _mr_format_name = 'AMBER'
                     _content_subtype = listener.getContentSubtype()
 
-                    err = f"The NMR restraint file {file_name!r} ({mr_format_name}) looks like an {_mr_format_name} parameter/topology file, "\
-                        f"which has {concat_nmr_restraint_names(_content_subtype)}. "\
+                    err = f"The NMR restraint file {file_name!r} ({mr_format_name}) looks like an {_mr_format_name} parameter/topology file. "\
                         "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
 
                     if has_content:

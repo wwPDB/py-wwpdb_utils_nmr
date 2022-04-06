@@ -205,7 +205,7 @@ def toNefEx(string):
 
 
 def translateToStdAtomName(atomId):
-    """ Translate software specific atom nomenclature for standard residues to the CD one.
+    """ Translate software specific atom nomenclature for standard residues to the CCD one.
     """
 
     atomId = atomId.upper()

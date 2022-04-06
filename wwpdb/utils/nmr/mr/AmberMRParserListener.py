@@ -2204,7 +2204,7 @@ class AmberMRParserListener(ParseTreeListener):
                 idx = ps['seq_id'].index(seqId) if useDefault else ps['auth_seq_id'].index(seqId)
                 compId = ps['comp_id'][idx]
                 origCompId = ps['auth_comp_id'][idx]
-                cifSeqId = None if useDefault else ps['seq_id'][ps['auth_seq_id'].index(seqId)]
+                cifSeqId = None if useDefault else ps['seq_id'][idx]
                 authCompId = factor['auth_comp_id'].upper()
 
                 if ((authCompId in (compId, origCompId) and useDefault) or not useDefault)\

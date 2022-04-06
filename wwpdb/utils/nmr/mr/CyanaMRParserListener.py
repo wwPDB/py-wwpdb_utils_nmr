@@ -421,7 +421,7 @@ class CyanaMRParserListener(ParseTreeListener):
         if seqId in ps['seq_id']:
             idx = ps['seq_id'].index(seqId)
             if compId in (ps['comp_id'][idx], ps['auth_comp_id'][idx]):
-                return ps['auth_chain_id'], ps['auth_seq_id'][ps['seq_id'].index(seqId)]
+                return ps['auth_chain_id'], ps['auth_seq_id'][idx]
         return ps['chain_id'], seqId
 
     def assignCoordPolymerSequence(self, seqId, compId, atomId):

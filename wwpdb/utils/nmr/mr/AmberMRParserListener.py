@@ -17,8 +17,8 @@ from antlr4 import ParseTreeListener
 try:
     from wwpdb.utils.nmr.mr.AmberMRParser import AmberMRParser
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (checkCoordinates,
-                                                       translateNAAtomNomenclature,
-                                                       translateCyanaResidueName,
+                                                       translateToStdAtomName,
+                                                       translateToStdResName,
                                                        getTypeOfDihedralRestraint,
                                                        REPRESENTATIVE_MODEL_ID,
                                                        DIST_RESTRAINT_RANGE,
@@ -40,8 +40,8 @@ try:
 except ImportError:
     from nmr.mr.AmberMRParser import AmberMRParser
     from nmr.mr.ParserListenerUtil import (checkCoordinates,
-                                           translateNAAtomNomenclature,
-                                           translateCyanaResidueName,
+                                           translateToStdAtomName,
+                                           translateToStdResName,
                                            getTypeOfDihedralRestraint,
                                            REPRESENTATIVE_MODEL_ID,
                                            DIST_RESTRAINT_RANGE,
@@ -2011,7 +2011,7 @@ class AmberMRParserListener(ParseTreeListener):
 
                 seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId if cifSeqId is None else cifSeqId, cifCheck)
 
-                atomId = translateNAAtomNomenclature(atomId)
+                atomId = translateToStdAtomName(atomId)
 
                 atomIds = self.__nefT.get_valid_star_atom(compId, atomId)[0]
 
@@ -2095,7 +2095,7 @@ class AmberMRParserListener(ParseTreeListener):
                         compId = ps['comp_id'][ps['seq_id'].index(seqId)]
                         seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck)
 
-                        atomId = translateNAAtomNomenclature(atomId)
+                        atomId = translateToStdAtomName(atomId)
 
                         atomIds = self.__nefT.get_valid_star_atom(compId, atomId)[0]
 
@@ -2206,12 +2206,11 @@ class AmberMRParserListener(ParseTreeListener):
                 authCompId = factor['auth_comp_id'].upper()
 
                 if ((compId == authCompId and useDefault) or not useDefault)\
-                   or (compId == 'HIS' and authCompId in ('HIE', 'HIP', 'HID'))\
-                   or compId == translateCyanaResidueName(authCompId):
+                   or compId == translateToStdResName(authCompId):
 
                     seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId if cifSeqId is None else cifSeqId, cifCheck)
 
-                    authAtomId = translateNAAtomNomenclature(factor['auth_atom_id'])
+                    authAtomId = translateToStdAtomName(factor['auth_atom_id'])
 
                     atomIds = self.__nefT.get_valid_star_atom(compId, authAtomId)[0]
 

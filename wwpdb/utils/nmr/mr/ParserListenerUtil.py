@@ -204,8 +204,8 @@ def toNefEx(string):
     return string
 
 
-def translateNAAtomNomenclature(atomId):
-    """ Translate nucleic acid atom nomenclature to the IUPAC one.
+def translateToStdAtomName(atomId):
+    """ Translate software specific atom nomenclature for standard residues to the CD one.
     """
 
     atomId = atomId.upper()
@@ -241,8 +241,8 @@ def translateNAAtomNomenclature(atomId):
     return atomId
 
 
-def translateCyanaResidueName(compId):
-    """ Translate CYANA residue name to the CCD one.
+def translateToStdResName(compId):
+    """ Translate software specific residue name for standard residues to the CCD one.
     """
 
     if len(compId) > 3:
@@ -250,6 +250,27 @@ def translateCyanaResidueName(compId):
 
         if compId3 in monDict3:
             return compId3
+
+    if compId.endswith('5') or compId.endswith('3'):
+        _compId = compId[:-1]
+
+        if _compId in monDict3:
+            return _compId
+
+    if compId.startswith('R') and compId[1] in ('A', 'C', 'G', 'U'):
+        _compId = compId[1:]
+
+        if _compId in monDict3:
+            return _compId
+        """ do not use
+        if _compId.endswith('5') or _compId.endswith('3'):
+            _compId = _compId[:-1]
+
+            if _compId in monDict3:
+                return _compId
+        """
+    if compId in ('HIE', 'HIP', 'HID'):
+        return 'HIS'
 
     if compId == 'ADE':
         return 'DA'

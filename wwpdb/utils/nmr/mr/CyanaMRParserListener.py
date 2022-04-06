@@ -15,7 +15,7 @@ from antlr4 import ParseTreeListener
 try:
     from wwpdb.utils.nmr.mr.CyanaMRParser import CyanaMRParser
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (checkCoordinates,
-                                                       translateCyanaResidueName,
+                                                       translateToStdResName,
                                                        REPRESENTATIVE_MODEL_ID,
                                                        DIST_RESTRAINT_RANGE,
                                                        DIST_RESTRAINT_ERROR,
@@ -37,7 +37,7 @@ try:
 except ImportError:
     from nmr.mr.CyanaMRParser import CyanaMRParser
     from nmr.mr.ParserListenerUtil import (checkCoordinates,
-                                           translateCyanaResidueName,
+                                           translateToStdResName,
                                            REPRESENTATIVE_MODEL_ID,
                                            DIST_RESTRAINT_RANGE,
                                            DIST_RESTRAINT_ERROR,
@@ -437,7 +437,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         chainAssign.append((chainId, seqId, cifCompId))
                 elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                     chainAssign.append((chainId, seqId, cifCompId))
-                    if cifCompId != translateCyanaResidueName(compId):
+                    if cifCompId != translateToStdResName(compId):
                         self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
                             f"The residue name {_seqId}:{compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
 
@@ -458,7 +458,7 @@ class CyanaMRParserListener(ParseTreeListener):
                                     self.reasonsForReParsing['label_seq_scheme'] = True
                         elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                             chainAssign.append((ps['auth_chain_id'], _seqId, cifCompId))
-                            if cifCompId != translateCyanaResidueName(compId):
+                            if cifCompId != translateToStdResName(compId):
                                 self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
                                     f"The residue name {_seqId}:{compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
 
@@ -468,7 +468,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 if _seqId in ps['auth_seq_id']:
                     cifCompId = ps['comp_id'][ps['auth_seq_id'].index(_seqId)]
                     chainAssign.append(chainId, _seqId, cifCompId)
-                    if cifCompId != translateCyanaResidueName(compId):
+                    if cifCompId != translateToStdResName(compId):
                         self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
                             f"The residue name {_seqId}:{compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
 

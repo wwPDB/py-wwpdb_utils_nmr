@@ -22,7 +22,9 @@ cyana_mr:
 	(
 	distance_restraints |
 	fixres_distance_restraints |
+	fixresw_distance_restraints |
 	fixatm_distance_restraints |
+	fixatmw_distance_restraints |
 	torsion_angle_restraints |
 	rdc_restraints |
 	pcs_restraints
@@ -92,6 +94,14 @@ fixres_distance_restraint:
 	Integer Simple_name
 	(Simple_name Integer Simple_name Simple_name number)+;
 
+/* with weight value */
+fixresw_distance_restraints:
+	fixresw_distance_restraint+;
+
+fixresw_distance_restraint:
+	Integer Simple_name
+	(Simple_name Integer Simple_name Simple_name number number)+;
+
 /* CYANA (undocumented) - ambiguous (fixed atom) distance restraint
  77 VAL H  #
            73  HIS  O  2.20
@@ -103,6 +113,14 @@ fixatm_distance_restraints:
 fixatm_distance_restraint:
 	Integer Simple_name Simple_name
 	(Integer Simple_name Simple_name number)+;
+
+/* with weight value */
+fixatmw_distance_restraints:
+	fixatmw_distance_restraint+;
+
+fixatmw_distance_restraint:
+	Integer Simple_name Simple_name
+	(Integer Simple_name Simple_name number number)+;
 
 /* number expression in restrains */
 number:	Float | Integer;

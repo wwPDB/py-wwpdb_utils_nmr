@@ -4,7 +4,6 @@
 #
 # Updates:
 # Generated from CnsMRParser.g4 by ANTLR 4.9
-from pygments.lexers.fortran import FortranLexer
 """ ParserLister class for CNS MR files.
     @author: Masashi Yokochi
 """

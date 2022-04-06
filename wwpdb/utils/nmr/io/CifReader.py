@@ -21,6 +21,7 @@
 # 14-Jan-2022   my  - precise RMSD calculation with domain and medoid model identification (DAOTHER-4060, 7544)
 # 02-Feb-2022   my  - add 'abs-int', 'abs-float', 'range-int', 'range-abs-int', 'range-abs-float' as filter item types and 'not_equal_to' range filter (NMR restraint remediation)
 # 30-Mar-2022   my  - add support for _atom_site.label_alt_id (DAOTHER-4060, 7544, NMR restraint remediation)
+# 06-Apr-2022   my  - add support for auth_comp_id (DAOTHER-7690)
 ##
 """ A collection of classes for parsing CIF files.
 """
@@ -354,7 +355,7 @@ class CifReader:
                 for j in range(len_key):
                     itCol = itDict[keyNames[j]]
                     if itCol < len(row) and row[itCol] in self.emptyValue:
-                        if 'default' not in keyItems[j] and keyItems[j]['default'] not in self.emptyValue:
+                        if 'default' not in keyItems[j] or keyItems[j]['default'] not in self.emptyValue:
                             raise ValueError(f"{keyNames[j]} must not be empty.")
 
             compDict = {}
@@ -371,6 +372,7 @@ class CifReader:
             label_seq_col = -1 if 'label_seq_id' not in altDict else altDict['label_seq_id']
             auth_chain_id_col = -1 if 'auth_chain_id' not in altDict else altDict['auth_chain_id']
             auth_seq_id_col = -1 if 'auth_seq_id' not in altDict else altDict['auth_seq_id']
+            auth_comp_id_col = -1 if 'auth_comp_id' not in altDict else altDict['auth_comp_id']
 
             chains = sorted(set(row[chain_id_col] for row in rowList))
 
@@ -457,6 +459,17 @@ class CifReader:
                                 ent['auth_seq_id'].append(_s)
                             else:
                                 ent['auth_seq_id'].append(None)
+
+                if auth_comp_id_col != -1:
+                    ent['auth_comp_id'] = []
+                    for s in seqDict[c]:
+                        row = next((row for row in rowList if row[chain_id_col] == c and int(row[seq_id_col]) == s), None)
+                        if row is not None:
+                            comp_id = row[auth_comp_id_col]
+                            if comp_id not in self.emptyValue:
+                                ent['auth_comp_id'].append(comp_id)
+                            else:
+                                ent['auth_comp_id'].append('.')
 
                 if withStructConf:
                     ent['struct_conf'] = self.__extractStructConf(c, seqDict[c], alias)

@@ -2201,11 +2201,13 @@ class AmberMRParserListener(ParseTreeListener):
 
             if factor['auth_seq_id'] in (ps['seq_id'] if useDefault else ps['auth_seq_id']):
                 seqId = factor['auth_seq_id']
-                compId = ps['comp_id'][ps['seq_id'].index(seqId) if useDefault else ps['auth_seq_id'].index(seqId)]
+                idx = ps['seq_id'].index(seqId) if useDefault else ps['auth_seq_id'].index(seqId)
+                compId = ps['comp_id'][idx]
+                origCompId = ps['auth_comp_id'][idx]
                 cifSeqId = None if useDefault else ps['seq_id'][ps['auth_seq_id'].index(seqId)]
                 authCompId = factor['auth_comp_id'].upper()
 
-                if ((compId == authCompId and useDefault) or not useDefault)\
+                if ((authCompId in (compId, origCompId) and useDefault) or not useDefault)\
                    or compId == translateToStdResName(authCompId):
 
                     seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId if cifSeqId is None else cifSeqId, cifCheck)

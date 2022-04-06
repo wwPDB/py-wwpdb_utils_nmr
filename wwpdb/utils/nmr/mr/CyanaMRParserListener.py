@@ -407,6 +407,7 @@ class CyanaMRParserListener(ParseTreeListener):
         return dstFunc
 
     def getRealChainSeqId(self, ps, seqId, compId):
+        compId = translateToStdResName(compId)
         if self.__reasons is not None and 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme']:
             seqKey = (ps['chain_id'], seqId)
             if seqKey in self.__labelToAuthSeq:
@@ -414,10 +415,12 @@ class CyanaMRParserListener(ParseTreeListener):
                 if _seqId in ps['auth_seq_id']:
                     return _chainId, _seqId
         if seqId in ps['auth_seq_id']:
-            if ps['comp_id'][ps['auth_seq_id'].index(seqId)] == compId:
+            idx = ps['auth_seq_id'].index(seqId)
+            if compId in (ps['comp_id'][idx], ps['auth_comp_id'][idx]):
                 return ps['auth_chain_id'], seqId
         if seqId in ps['seq_id']:
-            if ps['comp_id'][ps['seq_id'].index(seqId)] == compId:
+            idx = ps['seq_id'].index(seqId)
+            if compId in (ps['comp_id'][idx], ps['auth_comp_id'][idx]):
                 return ps['auth_chain_id'], ps['auth_seq_id'][ps['seq_id'].index(seqId)]
         return ps['chain_id'], seqId
 
@@ -431,8 +434,10 @@ class CyanaMRParserListener(ParseTreeListener):
         for ps in self.__polySeq:
             chainId, seqId = self.getRealChainSeqId(ps, _seqId, compId)
             if seqId in ps['auth_seq_id']:
-                cifCompId = ps['comp_id'][ps['auth_seq_id'].index(seqId)]
-                if cifCompId == compId:
+                idx = ps['auth_seq_id'].index(seqId)
+                cifCompId = ps['comp_id'][idx]
+                origCompId = ps['auth_comp_id'][idx]
+                if cifCompId in (cifCompId, origCompId):
                     if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                         chainAssign.append((chainId, seqId, cifCompId))
                 elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
@@ -449,7 +454,8 @@ class CyanaMRParserListener(ParseTreeListener):
                     _, seqId = self.__authToLabelSeq[seqKey]
                     if seqId in ps['seq_id']:
                         cifCompId = ps['comp_id'][ps['seq_id'].index(seqId)]
-                        if cifCompId == compId:
+                        origCompId = ps['auth_comp_id'][ps['seq_id'].index(seqId)]
+                        if compId in (cifCompId, origCompId):
                             if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                                 chainAssign.append((ps['auth_chain_id'], _seqId, cifCompId))
                                 if self.reasonsForReParsing is None:

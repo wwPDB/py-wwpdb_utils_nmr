@@ -22,11 +22,11 @@ except ImportError:
 REPRESENTATIVE_MODEL_ID = 1
 
 
-DIST_RESTRAINT_RANGE = {'min_inclusive': 0.5, 'max_inclusive': 50.0}
+DIST_RESTRAINT_RANGE = {'min_inclusive': 0.0, 'max_inclusive': 101.0}
 DIST_RESTRAINT_ERROR = {'min_exclusive': 0.0, 'max_exclusive': 150.0}
 
 
-ANGLE_RESTRAINT_RANGE = {'min_inclusive': -240.0, 'max_inclusive': 240.0}
+ANGLE_RESTRAINT_RANGE = {'min_inclusive': -271.0, 'max_inclusive': 271.0}
 ANGLE_RESTRAINT_ERROR = {'min_exclusive': -360.0, 'max_exclusive': 360.0}
 
 
@@ -308,8 +308,12 @@ def checkCoordinates(verbose=True, log=sys.stdout,
     if polySeq is None:
         changed = True
 
+        polySeqAuthMonIdName = 'auth_mon_id' if cR.hasItem('pdbx_poly_seq_scheme', 'auth_mon_id') else 'mon_id'
+        nonPolyAuthMonIdName = 'auth_mon_id' if cR.hasItem('pdbx_nonpoly_scheme', 'auth_mon_id') else 'mon_id'
+
         # loop categories
-        _lpCategories = {'poly_seq': 'pdbx_poly_seq_scheme'
+        _lpCategories = {'poly_seq': 'pdbx_poly_seq_scheme',
+                         'non_poly': 'pdbx_nonpoly_scheme'
                          }
 
         # key items of loop
@@ -317,12 +321,14 @@ def checkCoordinates(verbose=True, log=sys.stdout,
                                   {'name': 'seq_id', 'type': 'int', 'alt_name': 'seq_id'},
                                   {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
                                   {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
-                                  {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'}
+                                  {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
+                                  {'name': polySeqAuthMonIdName, 'type': 'str', 'alt_name': 'auth_comp_id', 'default': '.'}
                                   ],
                      'non_poly': [{'name': 'asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                   {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'seq_id'},
                                   {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                  {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_chain_id'}
+                                  {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
+                                  {'name': nonPolyAuthMonIdName, 'type': 'str', 'alt_name': 'auth_comp_id', 'default': '.'}
                                   ]
                      }
 
@@ -357,7 +363,7 @@ def checkCoordinates(verbose=True, log=sys.stdout,
 
         except Exception as e:
             if verbose:
-                log.write(f"+ParserListenerUtil.checkCoordinates() ++ Error - {str(e)}\n")
+                log.write(f"+ParserListenerUtil.checkCoordinates() ++ Error  - {str(e)}\n")
 
     if not testTag:
         if not changed:

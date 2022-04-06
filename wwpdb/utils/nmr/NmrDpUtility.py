@@ -6257,9 +6257,7 @@ class NmrDpUtility:
                 mr_format_name = 'XPLOR-NIH'
             elif file_type == 'nm-res-cns':
                 mr_format_name = 'CNS'
-            elif file_type == 'nm-res-amb':
-                mr_format_name = 'AMBER'
-            elif is_aux_amb:
+            elif file_type in ('nm-res-amb', 'nm-aux-amb'):
                 mr_format_name = 'AMBER'
             elif file_type == 'nm-res-cya':
                 mr_format_name = 'CYANA'
@@ -7072,6 +7070,11 @@ class NmrDpUtility:
 
                         err = f"Could not interpret {file_name!r} as an {mr_format_name} restraint file:\n{err[0:-1]}"
 
+                        ar['format_mismatch'], _err = self.__detectOtherPossibleFormatAsErrorOfLegacyMR(file_path, file_name, file_type)
+
+                        if ar['format_mismatch']:
+                            err += '\n' + _err
+
                         self.report.error.appendDescription('format_issue',
                                                             {'file_name': file_name, 'description': err})
                         self.report.setError()
@@ -7148,6 +7151,11 @@ class NmrDpUtility:
 
                         err = f"Could not interpret {file_name!r} as a {mr_format_name} restraint file:\n{err[0:-1]}"
 
+                        ar['format_mismatch'], _err = self.__detectOtherPossibleFormatAsErrorOfLegacyMR(file_path, file_name, file_type)
+
+                        if ar['format_mismatch']:
+                            err += '\n' + _err
+
                         self.report.error.appendDescription('format_issue',
                                                             {'file_name': file_name, 'description': err})
                         self.report.setError()
@@ -7222,6 +7230,11 @@ class NmrDpUtility:
                         valid = False
 
                         err = f"Could not interpret {file_name!r} as an {mr_format_name} restraint file:\n{err[0:-1]}"
+
+                        ar['format_mismatch'], _err = self.__detectOtherPossibleFormatAsErrorOfLegacyMR(file_path, file_name, file_type)
+
+                        if ar['format_mismatch']:
+                            err += '\n' + _err
 
                         self.report.error.appendDescription('format_issue',
                                                             {'file_name': file_name, 'description': err})
@@ -7298,6 +7311,11 @@ class NmrDpUtility:
 
                         err = f"Could not interpret {file_name!r} as an {mr_format_name} parameter/topology file:\n{err[0:-1]}"
 
+                        ar['format_mismatch'], _err = self.__detectOtherPossibleFormatAsErrorOfLegacyMR(file_path, file_name, file_type)
+
+                        if ar['format_mismatch']:
+                            err += '\n' + _err
+
                         self.report.error.appendDescription('format_issue',
                                                             {'file_name': file_name, 'description': err})
                         self.report.setError()
@@ -7370,6 +7388,11 @@ class NmrDpUtility:
                         valid = False
 
                         err = f"Could not interpret {file_name!r} as a {mr_format_name} restraint file:\n{err[0:-1]}"
+
+                        ar['format_mismatch'], _err = self.__detectOtherPossibleFormatAsErrorOfLegacyMR(file_path, file_name, file_type)
+
+                        if ar['format_mismatch']:
+                            err += '\n' + _err
 
                         self.report.error.appendDescription('format_issue',
                                                             {'file_name': file_name, 'description': err})
@@ -7447,6 +7470,11 @@ class NmrDpUtility:
 
                         err = f"Could not interpret {file_name!r} as a {mr_format_name} restraint file:\n{err[0:-1]}"
 
+                        ar['format_mismatch'], _err = self.__detectOtherPossibleFormatAsErrorOfLegacyMR(file_path, file_name, file_type)
+
+                        if ar['format_mismatch']:
+                            err += '\n' + _err
+
                         self.report.error.appendDescription('format_issue',
                                                             {'file_name': file_name, 'description': err})
                         self.report.setError()
@@ -7489,160 +7517,7 @@ class NmrDpUtility:
                                 has_rdc_restraint = 'rdc_restraint' in content_subtype
 
                 elif file_type == 'nm-res-oth':
-
-                    try:
-
-                        checked = False
-
-                        if not checked:
-
-                            reader = CnsMRReader(False, self.__lfh, None, None, None,
-                                                 self.__ccU, self.__csStat, self.__nefT)
-                            listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
-
-                            if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
-                               and lexer_err_listener.getMessageList() is None\
-                               and parser_err_listener.getMessageList() is None:
-
-                                checked = True
-
-                                _content_subtype = listener.getContentSubtype()
-
-                                err = f"The NMR restraint file {file_name!r} ({mr_format_name}) looks like a CNS or XPLOR-NIH restraint file, "\
-                                    f"which has {concat_nmr_restraint_names(_content_subtype)}. "\
-                                    "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
-
-                                self.report.error.appendDescription('content_mismatch',
-                                                                    {'file_name': file_name, 'description': err})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMR() ++ Error  - {err}\n")
-
-                        if not checked:
-
-                            reader = XplorMRReader(False, self.__lfh, None, None, None,
-                                                   self.__ccU, self.__csStat, self.__nefT)
-                            listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
-
-                            if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
-                               and lexer_err_listener.getMessageList() is None\
-                               and parser_err_listener.getMessageList() is None:
-
-                                checked = True
-
-                                _content_subtype = listener.getContentSubtype()
-
-                                err = f"The NMR restraint file {file_name!r} ({mr_format_name}) looks like an XPLOR-NIH restraint file, "\
-                                    f"which has {concat_nmr_restraint_names(_content_subtype)}. "\
-                                    "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
-
-                                self.report.error.appendDescription('content_mismatch',
-                                                                    {'file_name': file_name, 'description': err})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMR() ++ Error  - {err}\n")
-
-                        if not checked:
-
-                            reader = AmberMRReader(False, self.__lfh, None, None, None,
-                                                   self.__ccU, self.__csStat, self.__nefT)
-                            listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None, None)
-
-                            if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
-                               and lexer_err_listener.getMessageList() is None\
-                               and parser_err_listener.getMessageList() is None:
-
-                                checked = True
-
-                                _content_subtype = listener.getContentSubtype()
-
-                                err = f"The NMR restraint file {file_name!r} ({mr_format_name}) looks like an AMBER restraint file, "\
-                                    f"which has {concat_nmr_restraint_names(_content_subtype)}. "\
-                                    "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
-
-                                self.report.error.appendDescription('content_mismatch',
-                                                                    {'file_name': file_name, 'description': err})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMR() ++ Error  - {err}\n")
-
-                        if not checked:
-
-                            reader = AmberPTReader(False, self.__lfh, None, None, None,
-                                                   self.__ccU, self.__csStat)
-                            listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
-
-                            if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
-                               and lexer_err_listener.getMessageList() is None\
-                               and parser_err_listener.getMessageList() is None:
-
-                                checked = True
-
-                                err = f"The NMR restraint file {file_name!r} ({mr_format_name}) looks like an AMBER parameter/topology file. "\
-                                    "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
-
-                                self.report.error.appendDescription('content_mismatch',
-                                                                    {'file_name': file_name, 'description': err})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMR() ++ Error  - {err}\n")
-
-                        if not checked:
-
-                            reader = CyanaMRReader(False, self.__lfh, None, None, None,
-                                                   self.__ccU, self.__csStat, self.__nefT)
-                            listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
-
-                            if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
-                               and lexer_err_listener.getMessageList() is None\
-                               and parser_err_listener.getMessageList() is None:
-
-                                checked = True
-
-                                _content_subtype = listener.getContentSubtype()
-
-                                err = f"The NMR restraint file {file_name!r} ({mr_format_name}) looks like a CYANA restraint file, "\
-                                    f"which has {concat_nmr_restraint_names(_content_subtype)}. "\
-                                    "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
-
-                                self.report.error.appendDescription('content_mismatch',
-                                                                    {'file_name': file_name, 'description': err})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMR() ++ Error  - {err}\n")
-
-                        if not checked:
-
-                            reader = RosettaMRReader(False, self.__lfh, None, None, None,
-                                                     self.__ccU, self.__csStat, self.__nefT)
-                            listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
-
-                            if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
-                               and lexer_err_listener.getMessageList() is None\
-                               and parser_err_listener.getMessageList() is None:
-
-                                checked = True
-
-                                _content_subtype = listener.getContentSubtype()
-
-                                err = f"The NMR restraint file {file_name!r} ({mr_format_name}) looks like a ROSETTA restraint file, "\
-                                    f"which has {concat_nmr_restraint_names(_content_subtype)}. "\
-                                    "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
-
-                                self.report.error.appendDescription('content_mismatch',
-                                                                    {'file_name': file_name, 'description': err})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMR() ++ Error  - {err}\n")
-
-                    except ValueError:
-                        pass
+                    ar['format_mismatch'], _ = self.__detectOtherPossibleFormatAsErrorOfLegacyMR(file_path, file_name, file_type)
 
             except ValueError as e:
 
@@ -7859,6 +7734,186 @@ class NmrDpUtility:
                         self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMR() ++ Error  - {err}\n")
 
         return not self.report.isError()
+
+    def __detectOtherPossibleFormatAsErrorOfLegacyMR(self, file_path, file_name, file_type):
+        """ Report other possible format as error of a given legacy NMR restraint file.
+        """
+
+        if file_type == 'nm-res-xpl':
+            mr_format_name = 'XPLOR-NIH'
+        elif file_type == 'nm-res-cns':
+            mr_format_name = 'CNS'
+        elif file_type in ('nm-res-amb', 'nm-aux-amb'):
+            mr_format_name = 'AMBER'
+        elif file_type == 'nm-res-cya':
+            mr_format_name = 'CYANA'
+        elif file_type == 'nm-res-ros':
+            mr_format_name = 'ROSETTA'
+        else:
+            mr_format_name = 'other format'
+
+        try:
+
+            checked = False
+            err = ''
+
+            if not checked and file_type != 'nm-res-cns':
+
+                reader = CnsMRReader(False, self.__lfh, None, None, None,
+                                     self.__ccU, self.__csStat, self.__nefT)
+                listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
+
+                if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
+                   and lexer_err_listener.getMessageList() is None\
+                   and parser_err_listener.getMessageList() is None:
+
+                    checked = True
+
+                    _content_subtype = listener.getContentSubtype()
+
+                    err = f"The NMR restraint file {file_name!r} ({mr_format_name}) looks like a CNS or XPLOR-NIH restraint file, "\
+                        f"which has {concat_nmr_restraint_names(_content_subtype)}. "\
+                        "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
+
+                    if file_type == 'nm-res-oth':
+                        self.report.error.appendDescription('content_mismatch',
+                                                            {'file_name': file_name, 'description': err})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__detectOtherPossibleFormatAsErrorOfLegacyMR() ++ Error  - {err}\n")
+
+            if not checked and file_type != 'nm-res-xpl':
+
+                reader = XplorMRReader(False, self.__lfh, None, None, None,
+                                       self.__ccU, self.__csStat, self.__nefT)
+                listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
+
+                if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
+                   and lexer_err_listener.getMessageList() is None\
+                   and parser_err_listener.getMessageList() is None:
+
+                    checked = True
+
+                    _content_subtype = listener.getContentSubtype()
+
+                    err = f"The NMR restraint file {file_name!r} ({mr_format_name}) looks like an XPLOR-NIH restraint file, "\
+                        f"which has {concat_nmr_restraint_names(_content_subtype)}. "\
+                        "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
+
+                    if file_type == 'nm-res-oth':
+                        self.report.error.appendDescription('content_mismatch',
+                                                            {'file_name': file_name, 'description': err})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__detectOtherPossibleFormatAsErrorOfLegacyMR() ++ Error  - {err}\n")
+
+            if not checked and file_type != 'nm-res-amb':
+
+                reader = AmberMRReader(False, self.__lfh, None, None, None,
+                                       self.__ccU, self.__csStat, self.__nefT)
+                listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None, None)
+
+                if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
+                   and lexer_err_listener.getMessageList() is None\
+                   and parser_err_listener.getMessageList() is None:
+
+                    checked = True
+
+                    _content_subtype = listener.getContentSubtype()
+
+                    err = f"The NMR restraint file {file_name!r} ({mr_format_name}) looks like an AMBER restraint file, "\
+                        f"which has {concat_nmr_restraint_names(_content_subtype)}. "\
+                        "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
+
+                    if file_type == 'nm-res-oth':
+                        self.report.error.appendDescription('content_mismatch',
+                                                            {'file_name': file_name, 'description': err})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__detectOtherPossibleFormatAsErrorOfLegacyMR() ++ Error  - {err}\n")
+
+            if not checked and file_type != 'nm-aux-amb':
+
+                reader = AmberPTReader(False, self.__lfh, None, None, None,
+                                       self.__ccU, self.__csStat)
+                listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
+
+                if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
+                   and lexer_err_listener.getMessageList() is None\
+                   and parser_err_listener.getMessageList() is None:
+
+                    checked = True
+
+                    err = f"The NMR restraint file {file_name!r} ({mr_format_name}) looks like an AMBER parameter/topology file. "\
+                        "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
+
+                    if file_type == 'nm-res-oth':
+                        self.report.error.appendDescription('content_mismatch',
+                                                            {'file_name': file_name, 'description': err})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__detectOtherPossibleFormatAsErrorOfLegacyMR() ++ Error  - {err}\n")
+
+            if not checked and file_type != 'nm-res-cya':
+
+                reader = CyanaMRReader(False, self.__lfh, None, None, None,
+                                       self.__ccU, self.__csStat, self.__nefT)
+                listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
+
+                if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
+                   and lexer_err_listener.getMessageList() is None\
+                   and parser_err_listener.getMessageList() is None:
+
+                    checked = True
+
+                    _content_subtype = listener.getContentSubtype()
+
+                    err = f"The NMR restraint file {file_name!r} ({mr_format_name}) looks like a CYANA restraint file, "\
+                        f"which has {concat_nmr_restraint_names(_content_subtype)}. "\
+                        "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
+
+                    if file_type == 'nm-res-oth':
+                        self.report.error.appendDescription('content_mismatch',
+                                                            {'file_name': file_name, 'description': err})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__detectOtherPossibleFormatAsErrorOfLegacyMR() ++ Error  - {err}\n")
+
+            if not checked and file_type != 'nm-res-ros':
+
+                reader = RosettaMRReader(False, self.__lfh, None, None, None,
+                                         self.__ccU, self.__csStat, self.__nefT)
+                listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
+
+                if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
+                   and lexer_err_listener.getMessageList() is None\
+                   and parser_err_listener.getMessageList() is None:
+
+                    checked = True
+
+                    _content_subtype = listener.getContentSubtype()
+
+                    err = f"The NMR restraint file {file_name!r} ({mr_format_name}) looks like a ROSETTA restraint file, "\
+                        f"which has {concat_nmr_restraint_names(_content_subtype)}. "\
+                        "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
+
+                    if file_type == 'nm-res-oth':
+                        self.report.error.appendDescription('content_mismatch',
+                                                            {'file_name': file_name, 'description': err})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__detectOtherPossibleFormatAsErrorOfLegacyMR() ++ Error  - {err}\n")
+
+        except ValueError:
+            pass
+
+        return checked, err
 
     def __getPolymerSequence(self, file_list_id, sf_data, content_subtype):
         """ Wrapper function to retrieve polymer sequence from loop of a specified saveframe and content subtype via NEFTranslator.

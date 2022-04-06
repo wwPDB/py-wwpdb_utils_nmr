@@ -667,6 +667,13 @@ class AmberPTParserListener(ParseTreeListener):
                         unmapped.append({'ref_seq_id': seq_id1[i], 'ref_comp_id': cif_comp_id})
 
                         if not aligned[i]:
+
+                            if not self.__ccU.updateChemCompDict(cif_comp_id):
+                                continue
+
+                            if self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] != 'REL':
+                                continue
+
                             cif_seq_code = f"{chain_id}:{seq_id1[i]}:{cif_comp_id}"
 
                             self.warningMessage += f"[Sequence mismatch] {cif_seq_code} is not present "\
@@ -683,6 +690,14 @@ class AmberPTParserListener(ParseTreeListener):
                         top_seq_code = f"{chain_id2}:{seq_id2[i]}:{top_comp_id}"
                         if top_comp_id == '.':
                             top_seq_code += ', insertion error'
+
+                        if cif_comp_id != '.':
+
+                            if not self.__ccU.updateChemCompDict(cif_comp_id):
+                                continue
+
+                            if self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] != 'REL':
+                                continue
 
                         self.warningMessage += f"[Sequence mismatch] Sequence alignment error between the coordinate ({cif_seq_code}) "\
                             f"and the AMBER parameter/topology data ({top_seq_code}). "\

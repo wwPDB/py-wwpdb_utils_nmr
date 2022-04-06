@@ -559,7 +559,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
         if self.__ccU.updateChemCompDict(compId):
             cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId), None)
-            if cca is not None and seqKey not in self.__coordUnobsRes:
+            if cca is not None and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                 self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                     f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.\n"
 

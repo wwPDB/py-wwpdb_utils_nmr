@@ -2795,7 +2795,7 @@ class CnsMRParserListener(ParseTreeListener):
                                     cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId), None)
                                     if cca is not None and ('type_symbol' not in _factor or cca[self.__ccU.ccaTypeSymbol] in _factor['type_symbol']):
                                         _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId})
-                                        if cifCheck and seqKey not in self.__coordUnobsRes:
+                                        if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                             if self.__cur_subtype != 'plane':
                                                 self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                                                     f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates.\n"

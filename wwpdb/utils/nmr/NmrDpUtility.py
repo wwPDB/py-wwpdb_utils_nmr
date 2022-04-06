@@ -7764,17 +7764,50 @@ class NmrDpUtility:
                                      self.__ccU, self.__csStat, self.__nefT)
                 listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
+                has_content = False
+                if listener is not None:
+                    _content_subtype = listener.getContentSubtype()
+                    if len(_content_subtype) > 0:
+                        has_content = True
+
                 if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
-                   and lexer_err_listener.getMessageList() is None\
-                   and parser_err_listener.getMessageList() is None:
+                   and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None) or has_content):
 
                     checked = True
 
+                    _mr_format_name = 'CNS'
                     _content_subtype = listener.getContentSubtype()
 
-                    err = f"The NMR restraint file {file_name!r} ({mr_format_name}) looks like a CNS or XPLOR-NIH restraint file, "\
+                    err = f"The NMR restraint file {file_name!r} ({mr_format_name}) looks like a {_mr_format_name} or XPLOR-NIH restraint file, "\
                         f"which has {concat_nmr_restraint_names(_content_subtype)}. "\
                         "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
+
+                    if has_content:
+                        _err = ''
+                        if lexer_err_listener is not None:
+                            messageList = lexer_err_listener.getMessageList()
+
+                            if messageList is not None:
+                                for description in messageList:
+                                    _err += f"[Syntax error as {_mr_format_name} restraint file] "\
+                                        f"line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                                    if 'input' in description:
+                                        _err += f"{description['input']}\n"
+                                        _err += f"{description['marker']}\n"
+
+                        if parser_err_listener is not None and len(_err) == 0:
+                            messageList = parser_err_listener.getMessageList()
+
+                            if messageList is not None:
+                                for description in messageList:
+                                    _err += f"[Syntax error as {_mr_format_name} restraint file] "\
+                                        f"line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                                    if 'input' in description:
+                                        _err += f"{description['input']}\n"
+                                        _err += f"{description['marker']}\n"
+
+                        if len(_err) > 0:
+                            err += f"\nEven assuming that the format is the {_mr_format_name!r}, the following issues need to be fixed.\n" + _err[:-1]
 
                     if file_type == 'nm-res-oth':
                         self.report.error.appendDescription('content_mismatch',
@@ -7790,17 +7823,50 @@ class NmrDpUtility:
                                        self.__ccU, self.__csStat, self.__nefT)
                 listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
+                has_content = False
+                if listener is not None:
+                    _content_subtype = listener.getContentSubtype()
+                    if len(_content_subtype) > 0:
+                        has_content = True
+
                 if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
-                   and lexer_err_listener.getMessageList() is None\
-                   and parser_err_listener.getMessageList() is None:
+                   and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None) or has_content):
 
                     checked = True
 
+                    _mr_format_name = 'XPLOR-NIH'
                     _content_subtype = listener.getContentSubtype()
 
-                    err = f"The NMR restraint file {file_name!r} ({mr_format_name}) looks like an XPLOR-NIH restraint file, "\
+                    err = f"The NMR restraint file {file_name!r} ({mr_format_name}) looks like an {_mr_format_name} restraint file, "\
                         f"which has {concat_nmr_restraint_names(_content_subtype)}. "\
                         "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
+
+                    if has_content:
+                        _err = ''
+                        if lexer_err_listener is not None:
+                            messageList = lexer_err_listener.getMessageList()
+
+                            if messageList is not None:
+                                for description in messageList:
+                                    _err += f"[Syntax error as an {_mr_format_name} restraint file] "\
+                                        f"line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                                    if 'input' in description:
+                                        _err += f"{description['input']}\n"
+                                        _err += f"{description['marker']}\n"
+
+                        if parser_err_listener is not None and len(_err) == 0:
+                            messageList = parser_err_listener.getMessageList()
+
+                            if messageList is not None:
+                                for description in messageList:
+                                    _err += f"[Syntax error as an {_mr_format_name} restraint file] "\
+                                        f"line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                                    if 'input' in description:
+                                        _err += f"{description['input']}\n"
+                                        _err += f"{description['marker']}\n"
+
+                        if len(_err) > 0:
+                            err += f"\nEven assuming that the format is the {_mr_format_name!r}, the following issues need to be fixed.\n" + _err[:-1]
 
                     if file_type == 'nm-res-oth':
                         self.report.error.appendDescription('content_mismatch',
@@ -7816,17 +7882,50 @@ class NmrDpUtility:
                                        self.__ccU, self.__csStat, self.__nefT)
                 listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None, None)
 
+                has_content = False
+                if listener is not None:
+                    _content_subtype = listener.getContentSubtype()
+                    if len(_content_subtype) > 0:
+                        has_content = True
+
                 if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
-                   and lexer_err_listener.getMessageList() is None\
-                   and parser_err_listener.getMessageList() is None:
+                   and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None) or has_content):
 
                     checked = True
 
+                    _mr_format_name = 'AMBER'
                     _content_subtype = listener.getContentSubtype()
 
-                    err = f"The NMR restraint file {file_name!r} ({mr_format_name}) looks like an AMBER restraint file, "\
+                    err = f"The NMR restraint file {file_name!r} ({mr_format_name}) looks like an {_mr_format_name} restraint file, "\
                         f"which has {concat_nmr_restraint_names(_content_subtype)}. "\
                         "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
+
+                    if has_content:
+                        _err = ''
+                        if lexer_err_listener is not None:
+                            messageList = lexer_err_listener.getMessageList()
+
+                            if messageList is not None:
+                                for description in messageList:
+                                    _err += f"[Syntax error as an {_mr_format_name} restraint file] "\
+                                        f"line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                                    if 'input' in description:
+                                        _err += f"{description['input']}\n"
+                                        _err += f"{description['marker']}\n"
+
+                        if parser_err_listener is not None and len(_err) == 0:
+                            messageList = parser_err_listener.getMessageList()
+
+                            if messageList is not None:
+                                for description in messageList:
+                                    _err += f"[Syntax error as an {_mr_format_name} restraint file] "\
+                                        f"line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                                    if 'input' in description:
+                                        _err += f"{description['input']}\n"
+                                        _err += f"{description['marker']}\n"
+
+                        if len(_err) > 0:
+                            err += f"\nEven assuming that the format is the {_mr_format_name!r}, the following issues need to be fixed.\n" + _err[:-1]
 
                     if file_type == 'nm-res-oth':
                         self.report.error.appendDescription('content_mismatch',
@@ -7842,14 +7941,50 @@ class NmrDpUtility:
                                        self.__ccU, self.__csStat)
                 listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
+                has_content = False
+                if listener is not None:
+                    _content_subtype = listener.getContentSubtype()
+                    if len(_content_subtype) > 0:
+                        has_content = True
+
                 if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
-                   and lexer_err_listener.getMessageList() is None\
-                   and parser_err_listener.getMessageList() is None:
+                   and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None) or has_content):
 
                     checked = True
 
-                    err = f"The NMR restraint file {file_name!r} ({mr_format_name}) looks like an AMBER parameter/topology file. "\
+                    _mr_format_name = 'AMBER'
+                    _content_subtype = listener.getContentSubtype()
+
+                    err = f"The NMR restraint file {file_name!r} ({mr_format_name}) looks like an {_mr_format_name} parameter/topology file, "\
+                        f"which has {concat_nmr_restraint_names(_content_subtype)}. "\
                         "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
+
+                    if has_content:
+                        _err = ''
+                        if lexer_err_listener is not None:
+                            messageList = lexer_err_listener.getMessageList()
+
+                            if messageList is not None:
+                                for description in messageList:
+                                    _err += f"[Syntax error as an {_mr_format_name} parameter/topology file] "\
+                                        f"line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                                    if 'input' in description:
+                                        _err += f"{description['input']}\n"
+                                        _err += f"{description['marker']}\n"
+
+                        if parser_err_listener is not None and len(_err) == 0:
+                            messageList = parser_err_listener.getMessageList()
+
+                            if messageList is not None:
+                                for description in messageList:
+                                    _err += f"[Syntax error as an {_mr_format_name} parameter/topology file] "\
+                                        f"line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                                    if 'input' in description:
+                                        _err += f"{description['input']}\n"
+                                        _err += f"{description['marker']}\n"
+
+                        if len(_err) > 0:
+                            err += f"\nEven assuming that the format is the {_mr_format_name!r}, the following issues need to be fixed.\n" + _err[:-1]
 
                     if file_type == 'nm-res-oth':
                         self.report.error.appendDescription('content_mismatch',
@@ -7865,17 +8000,50 @@ class NmrDpUtility:
                                        self.__ccU, self.__csStat, self.__nefT)
                 listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
+                has_content = False
+                if listener is not None:
+                    _content_subtype = listener.getContentSubtype()
+                    if len(_content_subtype) > 0:
+                        has_content = True
+
                 if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
-                   and lexer_err_listener.getMessageList() is None\
-                   and parser_err_listener.getMessageList() is None:
+                   and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None) or has_content):
 
                     checked = True
 
+                    _mr_format_name = 'CYANA'
                     _content_subtype = listener.getContentSubtype()
 
-                    err = f"The NMR restraint file {file_name!r} ({mr_format_name}) looks like a CYANA restraint file, "\
+                    err = f"The NMR restraint file {file_name!r} ({mr_format_name}) looks like a {_mr_format_name} restraint file, "\
                         f"which has {concat_nmr_restraint_names(_content_subtype)}. "\
                         "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
+
+                    if has_content:
+                        _err = ''
+                        if lexer_err_listener is not None:
+                            messageList = lexer_err_listener.getMessageList()
+
+                            if messageList is not None:
+                                for description in messageList:
+                                    _err += f"[Syntax error as a {_mr_format_name} restraint file] "\
+                                        f"line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                                    if 'input' in description:
+                                        _err += f"{description['input']}\n"
+                                        _err += f"{description['marker']}\n"
+
+                        if parser_err_listener is not None and len(_err) == 0:
+                            messageList = parser_err_listener.getMessageList()
+
+                            if messageList is not None:
+                                for description in messageList:
+                                    _err += f"[Syntax error as a {_mr_format_name} restraint file] "\
+                                        f"line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                                    if 'input' in description:
+                                        _err += f"{description['input']}\n"
+                                        _err += f"{description['marker']}\n"
+
+                        if len(_err) > 0:
+                            err += f"\nEven assuming that the format is the {_mr_format_name!r}, the following issues need to be fixed.\n" + _err[:-1]
 
                     if file_type == 'nm-res-oth':
                         self.report.error.appendDescription('content_mismatch',
@@ -7891,17 +8059,50 @@ class NmrDpUtility:
                                          self.__ccU, self.__csStat, self.__nefT)
                 listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
+                has_content = False
+                if listener is not None:
+                    _content_subtype = listener.getContentSubtype()
+                    if len(_content_subtype) > 0 and (len(_content_subtype) > 1 or 'geo_restraint' not in _content_subtype):
+                        has_content = True
+
                 if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
-                   and lexer_err_listener.getMessageList() is None\
-                   and parser_err_listener.getMessageList() is None:
+                   and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None) or has_content):
 
                     checked = True
 
+                    _mr_format_name = 'ROSETTA'
                     _content_subtype = listener.getContentSubtype()
 
-                    err = f"The NMR restraint file {file_name!r} ({mr_format_name}) looks like a ROSETTA restraint file, "\
+                    err = f"The NMR restraint file {file_name!r} ({mr_format_name}) looks like a {_mr_format_name} restraint file, "\
                         f"which has {concat_nmr_restraint_names(_content_subtype)}. "\
                         "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
+
+                    if has_content:
+                        _err = ''
+                        if lexer_err_listener is not None:
+                            messageList = lexer_err_listener.getMessageList()
+
+                            if messageList is not None:
+                                for description in messageList:
+                                    _err += f"[Syntax error as a {_mr_format_name} restraint file] "\
+                                        f"line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                                    if 'input' in description:
+                                        _err += f"{description['input']}\n"
+                                        _err += f"{description['marker']}\n"
+
+                        if parser_err_listener is not None and len(_err) == 0:
+                            messageList = parser_err_listener.getMessageList()
+
+                            if messageList is not None:
+                                for description in messageList:
+                                    _err += f"[Syntax error as a {_mr_format_name} restraint file] "\
+                                        f"line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                                    if 'input' in description:
+                                        _err += f"{description['input']}\n"
+                                        _err += f"{description['marker']}\n"
+
+                        if len(_err) > 0:
+                            err += f"\nEven assuming that the format is the {_mr_format_name!r}, the following issues need to be fixed.\n" + _err[:-1]
 
                     if file_type == 'nm-res-oth':
                         self.report.error.appendDescription('content_mismatch',

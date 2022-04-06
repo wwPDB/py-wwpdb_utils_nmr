@@ -2076,7 +2076,7 @@ class AmberMRParserListener(ParseTreeListener):
                                 factor['atom_id'] = _atomId
                                 factor['auth_seq_id'] = seqId
                                 factor['auth_atom_id'] = authAtomId
-                                if cifCheck and seqKey not in self.__coordUnobsRes:
+                                if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                     self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                                         f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
                                 return factor
@@ -2160,7 +2160,7 @@ class AmberMRParserListener(ParseTreeListener):
                                         factor['atom_id'] = _atomId
                                         factor['auth_seq_id'] = seqId
                                         factor['auth_atom_id'] = authAtomId
-                                        if cifCheck and seqKey not in self.__coordUnobsRes:
+                                        if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                             self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                                                 f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
                                         return factor
@@ -2279,7 +2279,7 @@ class AmberMRParserListener(ParseTreeListener):
                                         factor['atom_id'] = _atomId
                                         del factor['iat']
                                         self.__sanderAtomNumberDict[iat] = factor
-                                        if cifCheck and seqKey not in self.__coordUnobsRes:
+                                        if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                             self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                                                 f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
                                         return True
@@ -2347,7 +2347,7 @@ class AmberMRParserListener(ParseTreeListener):
                                         _factor['atom_id'] = _atomId
                                         del _factor['igr']
                                         self.__sanderAtomNumberDict[igr] = _factor
-                                        if cifCheck and seqKey not in self.__coordUnobsRes:
+                                        if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                             self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                                                 f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
 

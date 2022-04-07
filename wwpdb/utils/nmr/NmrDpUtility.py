@@ -8114,6 +8114,7 @@ class NmrDpUtility:
                 has_content = False
                 if listener is not None:
                     _content_subtype = listener.getContentSubtype()
+                    # 'geo_restraints' include CS-ROSETTA disulfide bond linkage, which matches any integer array
                     if len(_content_subtype) > 0 and (len(_content_subtype) > 1 or 'geo_restraint' not in _content_subtype):
                         has_content = True
 

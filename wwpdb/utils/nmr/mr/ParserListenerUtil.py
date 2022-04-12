@@ -349,7 +349,7 @@ def checkCoordinates(verbose=True, log=sys.stdout,
 
             try:
                 polySeq = cR.getPolymerSequence(lpCategory, keyItems,
-                                                withStructConf=True)
+                                                withStructConf=False)
             except KeyError:  # pdbx_PDB_ins_code throws KeyError
                 polySeq = []
 
@@ -361,7 +361,7 @@ def checkCoordinates(verbose=True, log=sys.stdout,
 
                 try:
                     polySeq = cR.getPolymerSequence(lpCategory, keyItems,
-                                                    withStructConf=True)
+                                                    withStructConf=False)
                 except KeyError:
                     polySeq = []
 

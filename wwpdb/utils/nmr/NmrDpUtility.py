@@ -24221,7 +24221,10 @@ class NmrDpUtility:
         input_source_dic = input_source.get()
 
         has_poly_seq = has_key_value(input_source_dic, 'polymer_sequence')
-        if has_poly_seq and 'auth_chain_id' not in input_source_dic['polymer_sequence']:
+
+        polymer_sequence = input_source_dic['polymer_sequence'] if has_poly_seq else []
+
+        if has_poly_seq and any('auth_chain_id' not in ps for ps in polymer_sequence):
             has_poly_seq = False
 
         try:
@@ -24256,7 +24259,7 @@ class NmrDpUtility:
                                                          ])
 
             if has_poly_seq:
-                label_to_auth_chain = {ps['chain_id']: ps['auth_chain_id'] for ps in input_source_dic['polymer_sequence']}
+                label_to_auth_chain = {ps['chain_id']: ps['auth_chain_id'] for ps in polymer_sequence}
             else:
                 label_to_auth_chain = {}
                 for c in coord:
@@ -24366,9 +24369,9 @@ class NmrDpUtility:
 
     #         if len(non_poly) > 0:
 
-    #             poly_seq = input_source_dic['polymer_sequence']
+    #             polymer_sequence = input_source_dic['polymer_sequence']
 
-    #             if poly_seq is None:
+    #             if polymer_sequence is None:
     #                 ""
     #                 err = "Polymer sequence does not exist, __extractCoordPolymerSequence() should be invoked."
 

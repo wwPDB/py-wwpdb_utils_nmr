@@ -472,7 +472,7 @@ class CifReader:
                                 ent['auth_comp_id'].append('.')
 
                 if withStructConf:
-                    ent['struct_conf'] = self.__extractStructConf(c, seqDict[c], alias)
+                    ent['struct_conf'] = self.__extractStructConf(c, seqDict[c])
 
                 entity_poly = self.getDictList('entity_poly')
 
@@ -554,15 +554,17 @@ class CifReader:
 
         return asm
 
-    def __extractStructConf(self, chain_id, seq_ids, alias=False):
+    def __extractStructConf(self, chain_id, seq_ids):
         """ Extract structure conformational annotations.
         """
 
         ret = [None] * len(seq_ids)
 
+        helix_id_name = 'pdbx_PDB_helix_id' if self.hasItem('struct_conf', 'pdbx_PDB_helix_id') else 'pdb_id'
+
         struct_conf = self.getDictListWithFilter('struct_conf',
                                                  [{'name': 'conf_type_id', 'type': 'str'},
-                                                  {'name': 'pdb_id' if alias else 'pdbx_PDB_helix_id', 'type': 'str', 'alt_name': 'helix_id'},
+                                                  {'name': helix_id_name, 'type': 'str', 'alt_name': 'helix_id'},
                                                   {'name': 'beg_label_seq_id', 'type': 'int'},
                                                   {'name': 'end_label_seq_id', 'type': 'int'}
                                                   ],

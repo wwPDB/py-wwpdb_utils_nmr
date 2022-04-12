@@ -98,14 +98,12 @@ import pynmrstar
 from packaging import version
 
 try:
-    from wwpdb.utils.nmr.AlignUtil import (emptyValue, trueValue,
-                                           getOneLetterCode,
+    from wwpdb.utils.nmr.AlignUtil import (emptyValue, trueValue, monDict3,
                                            letterToDigit, indexToLetter)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 except ImportError:
-    from nmr.AlignUtil import (emptyValue, trueValue,
-                               getOneLetterCode,
+    from nmr.AlignUtil import (emptyValue, trueValue, monDict3,
                                letterToDigit, indexToLetter)
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
@@ -2431,7 +2429,7 @@ class NEFTranslator:
                             name = tags[j]
                             if name in key_names:
                                 k = key_items[key_names.index(name)]
-                                if not ('remove-bad-pattern' in k and k['remove-bad-pattern']):
+                                if not ('remove-bad-pattern' in k and k['remove-bad-pattern']) and 'default' not in k:
                                     r = {}
                                     for _j, _t in enumerate(loop.tags):  # noqa: E741
                                         r[_t] = loop.data[l][_j]
@@ -2565,7 +2563,9 @@ class NEFTranslator:
                     if j < key_len:
                         k = key_items[j]
                         type = k['type']  # pylint: disable=redefined-builtin
-                        if type == 'bool':
+                        if val in emptyValue and 'default' in k and k['default'] in emptyValue:
+                            ent[name] = k['default']
+                        elif type == 'bool':
                             try:
                                 ent[name] = val.lower() in trueValue
                             except ValueError:
@@ -4101,8 +4101,7 @@ class NEFTranslator:
             return [], None, None
 
         comp_id = comp_id.upper()
-
-        comp_code = getOneLetterCode(comp_id)
+        is_std_comp_id = comp_id in monDict3
 
         atom_list = []
         ambiguity_code = 1
@@ -4158,10 +4157,7 @@ class NEFTranslator:
                 wc_code = ref_atom[4]
 
                 if wc_code == '%':
-                    if comp_code == 'X':
-                        pattern = re.compile(fr'{atom_type}\S?$')
-                    else:
-                        pattern = re.compile(fr'{atom_type}\d+')
+                    pattern = re.compile(fr'{atom_type}\d+') if is_std_comp_id else re.compile(fr'{atom_type}\S?$')
                 elif wc_code == '*':
                     pattern = re.compile(fr'{atom_type}\S+')
                 elif self.__verbose:
@@ -4211,7 +4207,7 @@ class NEFTranslator:
 
                 methyl_atoms = self.__csStat.getMethylAtoms(comp_id)
 
-                if comp_code != 'X' and not nef_atom.endswith('%') and comp_code != 'X' and not nef_atom.endswith('*') and nef_atom + '1' in methyl_atoms:
+                if is_std_comp_id and not nef_atom.endswith('%') and not nef_atom.endswith('*') and nef_atom + '1' in methyl_atoms:
                     return self.get_star_atom(comp_id, nef_atom + '%',
                                               f"{nef_atom} converted to {nef_atom}%." if leave_unmatched else None, leave_unmatched)
 
@@ -4219,7 +4215,7 @@ class NEFTranslator:
                     return self.get_star_atom(comp_id, nef_atom[:-1] + '%',
                                               f"{nef_atom} converted to {nef_atom[:-1]}%." if leave_unmatched else None, leave_unmatched)
 
-                if ((comp_code != 'X' and nef_atom[-1] == '%') or nef_atom[-1] == '*') and (nef_atom[:-1] + '1' not in methyl_atoms) and\
+                if ((is_std_comp_id and nef_atom[-1] == '%') or nef_atom[-1] == '*') and (nef_atom[:-1] + '1' not in methyl_atoms) and\
                    len(nef_atom) > 2 and (nef_atom[-2].lower() == 'x' or nef_atom[-2].lower() == 'y'):
                     return self.get_star_atom(comp_id, nef_atom[:-2] + ('1' if nef_atom[-2].lower() == 'x' else '2') + '%',
                                               f"{nef_atom} converted to {nef_atom[:-2] + ('1' if nef_atom[-2].lower() == 'x' else '2')}%." if leave_unmatched else None,

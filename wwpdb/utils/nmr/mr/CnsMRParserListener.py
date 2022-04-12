@@ -473,6 +473,13 @@ class CnsMRParserListener(ParseTreeListener):
         dminus = self.numberSelection[1]
         dplus = self.numberSelection[2]
 
+        scale = self.scale
+        if ctx.Weight():
+            scale = self.numberSelection[3]
+            if scale <= 0.0:
+                self.warningMessage += "[Invalid data] "\
+                    f"The weight value '{scale}' must be a positive value.\n"
+
         self.numberSelection.clear()
 
         target_value = target
@@ -536,7 +543,7 @@ class CnsMRParserListener(ParseTreeListener):
             lower_limit = target - dminus
             upper_limit = target + dplus
 
-        dstFunc = self.validateDistanceRange(self.scale,
+        dstFunc = self.validateDistanceRange(scale,
                                              target_value, lower_limit, upper_limit,
                                              lower_linear_limit, upper_linear_limit)
 
@@ -2600,6 +2607,9 @@ class CnsMRParserListener(ParseTreeListener):
                 ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
                 if ps is not None:
                     for realSeqId in ps['auth_seq_id']:
+                        if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
+                            if realSeqId not in _factor['seq_id']:
+                                continue
                         realSeqId = self.getRealSeqId(ps, realSeqId)
                         idx = ps['auth_seq_id'].index(realSeqId)
                         realCompId = ps['comp_id'][idx]
@@ -2616,18 +2626,40 @@ class CnsMRParserListener(ParseTreeListener):
                     for cca in self.__ccU.lastAtomList:
                         if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
                             realAtomId = cca[self.__ccU.ccaAtomId]
-                            if lenAtomIds == 1\
-                               and re.match(toRegEx(translateToStdAtomName(_factor['atom_ids'][0])), realAtomId):
-                                _atomIdSelect.add(toNefEx(_factor['atom_ids'][0]))
-                                _factor['alt_atom_id'] = _factor['atom_ids'][0]
-                            elif lenAtomIds == 2\
-                                    and translateToStdAtomName(_factor['atom_ids'][0]) <= realAtomId\
-                                    <= translateToStdAtomName(_factor['atom_ids'][1]):
-                                _atomIdSelect.add(realAtomId)
+                            if lenAtomIds == 1:
+                                atomId = translateToStdAtomName(_factor['atom_ids'][0])
+                                _, _, details = self.__nefT.get_valid_star_atom(compId, atomId, leave_unmatched=True)
+                                if details is not None:
+                                    _, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                                    if details is None and atomId.rfind('1') != -1:
+                                        idx = atomId.rindex('1')
+                                        atomId = atomId[0:idx] + '3' + atomId[idx + 1:]
+                                _atomId = toNefEx(toRegEx(atomId))
+                                if re.match(_atomId, realAtomId):
+                                    _atomIdSelect.add(realAtomId)
+                                    _factor['alt_atom_id'] = _factor['atom_ids'][0]
+                            elif lenAtomIds == 2:
+                                atomId1 = translateToStdAtomName(_factor['atom_ids'][0])
+                                atomId2 = translateToStdAtomName(_factor['atom_ids'][1])
+                                _, _, details = self.__nefT.get_valid_star_atom(compId, atomId1, leave_unmatched=True)
+                                if details is not None:
+                                    _, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId1, leave_unmatched=True)
+                                    if details is None and atomId1.rfind('1') != -1:
+                                        idx = atomId1.rindex('1')
+                                        atomId1 = atomId1[0:idx] + '3' + atomId1[idx + 1:]
+                                _, _, details = self.__nefT.get_valid_star_atom(compId, atomId2, leave_unmatched=True)
+                                if details is not None:
+                                    _, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId2, leave_unmatched=True)
+                                    if details is None and atomId2.rfind('1') != -1:
+                                        idx = atomId2.rindex('1')
+                                        atomId2 = atomId2[0:idx] + '3' + atomId2[idx + 1:]
+                                if (atomId1 < atomId2 and atomId1 <= realAtomId <= atomId2)\
+                                   or (atomId1 > atomId2 and atomId2 <= realAtomId <= atomId1):
+                                    _atomIdSelect.add(realAtomId)
             _factor['atom_id'] = list(_atomIdSelect)
             if len(_factor['atom_id']) == 0:
                 _factor['atom_id'] = [None]
-            del _factor['atom_ids']
+            # del _factor['atom_ids']
 
         if 'atom_id' not in _factor or len(_factor['atom_id']) == 0:
             _compIdSelect = set()
@@ -2635,6 +2667,9 @@ class CnsMRParserListener(ParseTreeListener):
                 ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
                 if ps is not None:
                     for realSeqId in ps['auth_seq_id']:
+                        if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
+                            if realSeqId not in _factor['seq_id']:
+                                continue
                         realSeqId = self.getRealSeqId(ps, realSeqId)
                         idx = ps['auth_seq_id'].index(realSeqId)
                         realCompId = ps['comp_id'][idx]
@@ -2796,7 +2831,7 @@ class CnsMRParserListener(ParseTreeListener):
                                             if self.__cur_subtype != 'plane':
                                                 self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                                                     f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates.\n"
-                                    elif cca is None:
+                                    elif cca is None and 'type_symbol' not in _factor and 'atom_ids' not in _factor:
                                         if self.__reasons is None and seqKey in self.__authToLabelSeq:
                                             _, _seqId = self.__authToLabelSeq[seqKey]
                                             if ps is not None and _seqId in ps['auth_seq_id']:
@@ -2811,6 +2846,9 @@ class CnsMRParserListener(ParseTreeListener):
                                         if self.__cur_subtype != 'plane':
                                             self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                                                 f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates.\n"
+
+        if 'atom_ids' in _factor:
+            del _factor['atom_ids']
 
         atomSelection = [dict(s) for s in set(frozenset(atom.items()) for atom in _atomSelection)]
 

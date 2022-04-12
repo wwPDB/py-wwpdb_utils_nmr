@@ -155,7 +155,7 @@ noe_statement:
 	Temperature Equ_op? number_s;
 
 noe_assign:
-	Assign selection selection number number number (Or_op selection selection)*;
+	Assign selection selection number number number (Weight Equ_op? number)? (Or_op selection selection)*;
 
 predict_statement:
 	Cutoff Equ_op? number_s | Cuton Equ_op? number_s | From selection | To selection;

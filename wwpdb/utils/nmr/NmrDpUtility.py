@@ -202,8 +202,7 @@ try:
     from wwpdb.utils.nmr.rci.RCI import RCI
     from wwpdb.utils.nmr.CifToNmrStar import CifToNmrStar
     from wwpdb.utils.nmr.NmrStarToCif import NmrStarToCif
-    from wwpdb.utils.nmr.mr.ParserListenerUtil import (toNefEx,
-                                                       translateToStdResName,
+    from wwpdb.utils.nmr.mr.ParserListenerUtil import (translateToStdResName,
                                                        translateToStdAtomName,
                                                        checkCoordinates,
                                                        getTypeOfDihedralRestraint,
@@ -254,8 +253,7 @@ except ImportError:
     from nmr.rci.RCI import RCI
     from nmr.CifToNmrStar import CifToNmrStar
     from nmr.NmrStarToCif import NmrStarToCif
-    from nmr.mr.ParserListenerUtil import (toNefEx,
-                                           translateToStdResName,
+    from nmr.mr.ParserListenerUtil import (translateToStdResName,
                                            translateToStdAtomName,
                                            checkCoordinates,
                                            getTypeOfDihedralRestraint,
@@ -11309,6 +11307,20 @@ class NmrDpUtility:
                 or atom_id.endswith('%') or atom_id.endswith('#')
                 or self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0)
 
+    def __getRepresentativeAtomIdInXplor(self, comp_id, atom_id):
+        """ Return a representative atom ID in IUPAC atom nomenclature for a given atom_id in XPLOR atom nomenclautre.
+        """
+
+        _atom_id = self.__nefT.get_valid_star_atom_in_xplor(comp_id, atom_id, leave_unmatched=False)[0]
+
+        return atom_id if len(_atom_id) == 0 else _atom_id[0]
+
+    def __getAtomIdListInXplor(self, comp_id, atom_id):
+        """ Return atom ID list in IUPAC atom nomenclature for a given atom_id in XPLOR atom nomenclature.
+        """
+
+        return self.__nefT.get_valid_star_atom_in_xplor(comp_id, atom_id, leave_unmatched=False)[0]
+
     def __getRepresentativeAtomId(self, comp_id, atom_id):
         """ Return a representative atom ID in IUPAC atom nomenclature for a given atom_id.
         """
@@ -11536,11 +11548,9 @@ class NmrDpUtility:
 
                             _auth_atom_ids = []
                             for auth_atom_id in auth_atom_ids:
-                                _auth_atom_id = translateToStdAtomName(toNefEx(auth_atom_id))
+                                _auth_atom_id = translateToStdAtomName(auth_atom_id)
 
-                                auth_atom_ids = self.__nefT.get_star_atom(comp_id,
-                                                                          _auth_atom_id,
-                                                                          leave_unmatched=False)[0]
+                                auth_atom_ids = self.__getAtomIdList(comp_id, _auth_atom_id)
 
                                 if len(auth_atom_ids) > 0:
                                     _auth_atom_ids.extend(auth_atom_ids)
@@ -11550,35 +11560,9 @@ class NmrDpUtility:
                                     if self.__nonblk_bad_nterm and _auth_atom_id == 'H1' and comp_id in first_comp_ids:
                                         continue
 
-                                    rescued = False
+                                    auth_atom_ids = self.__getAtomIdListInXplor(comp_id, _auth_atom_id)
 
-                                    if _auth_atom_id.endswith('1'):
-                                        _auth_atom_id = _auth_atom_id[:-1] + '3'
-                                        auth_atom_ids = self.__nefT.get_star_atom(comp_id,
-                                                                                  _auth_atom_id,
-                                                                                  leave_unmatched=False)[0]
-
-                                        if len(auth_atom_ids) > 0:
-                                            rescued = True
-
-                                    elif _auth_atom_id.endswith('1*') or _auth_atom_id.endswith('1%'):
-                                        _auth_atom_id = _auth_atom_id[:-2] + '3' + _auth_atom_id[-1]
-                                        auth_atom_ids = self.__nefT.get_star_atom(comp_id,
-                                                                                  _auth_atom_id,
-                                                                                  leave_unmatched=False)[0]
-
-                                        if len(auth_atom_ids) > 0:
-                                            rescued = True
-                                        else:
-                                            _auth_atom_id = _auth_atom_id[:-1]
-                                            auth_atom_ids = self.__nefT.get_star_atom(comp_id,
-                                                                                      _auth_atom_id,
-                                                                                      leave_unmatched=False)[0]
-
-                                            if len(auth_atom_ids) > 0:
-                                                rescued = True
-
-                                    if rescued:
+                                    if len(auth_atom_ids) > 0:
                                         _auth_atom_ids.extend(auth_atom_ids)
 
                                     else:
@@ -24230,6 +24214,9 @@ class NmrDpUtility:
         if id < 0:
             return False
 
+        if self.__coord_atom_site is not None:
+            return True
+
         input_source = self.report.input_sources[id]
         input_source_dic = input_source.get()
 
@@ -24237,101 +24224,102 @@ class NmrDpUtility:
         if has_poly_seq and 'auth_chain_id' not in input_source_dic['polymer_sequence']:
             has_poly_seq = False
 
-        if self.__coord_atom_site is None:
+        try:
 
-            try:
+            model_num_name = 'pdbx_PDB_model_num' if self.__cR.hasItem('atom_site', 'pdbx_PDB_model_num') else 'ndb_model'
+            has_pdbx_auth_atom_name = self.__cR.hasItem('atom_site', 'pdbx_auth_atom_name')
 
-                model_num_name = 'pdbx_PDB_model_num' if self.__cR.hasItem('atom_site', 'pdbx_PDB_model_num') else 'ndb_model'
-                has_pdbx_auth_atom_name = self.__cR.hasItem('atom_site', 'pdbx_auth_atom_name')
+            if has_pdbx_auth_atom_name:
+                coord = self.__cR.getDictListWithFilter('atom_site',
+                                                        [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                         {'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
+                                                         {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'seq_id'},
+                                                         {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'auth_seq_id'},  # non-polymer
+                                                         {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                         {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'},
+                                                         {'name': 'pdbx_auth_atom_name', 'type': 'str', 'alt_name': 'auth_atom_id'}  # DAOTHER-7665
+                                                         ],
+                                                        [{'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id},
+                                                         {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}
+                                                         ])
+            else:
+                coord = self.__cR.getDictListWithFilter('atom_site',
+                                                        [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                         {'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
+                                                         {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'seq_id'},
+                                                         {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'auth_seq_id'},  # non-polymer
+                                                         {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                         {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
+                                                         ],
+                                                        [{'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id},
+                                                         {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}
+                                                         ])
 
-                if has_pdbx_auth_atom_name:
-                    coord = self.__cR.getDictListWithFilter('atom_site',
-                                                            [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                                             {'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
-                                                             {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'seq_id'},
-                                                             {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'auth_seq_id'},  # non-polymer
-                                                             {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                             {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'},
-                                                             {'name': 'pdbx_auth_atom_name', 'type': 'str', 'alt_name': 'auth_atom_id'}  # DAOTHER-7665
-                                                             ],
-                                                            [{'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id},
-                                                             {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}
-                                                             ])
-                else:
-                    coord = self.__cR.getDictListWithFilter('atom_site',
-                                                            [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                                             {'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
-                                                             {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'seq_id'},
-                                                             {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'auth_seq_id'},  # non-polymer
-                                                             {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                             {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
-                                                             ],
-                                                            [{'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id},
-                                                             {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}
-                                                             ])
+            if has_poly_seq:
+                label_to_auth_chain = {ps['chain_id']: ps['auth_chain_id'] for ps in input_source_dic['polymer_sequence']}
+            else:
+                label_to_auth_chain = {}
+                for c in coord:
+                    if c['chain_id'] not in emptyValue and c['auth_chain_id'] not in emptyValue and c['chain_id'] not in label_to_auth_chain:
+                        label_to_auth_chain[c['chain_id']] = c['auth_chain_id']
 
-                if has_poly_seq:
-                    label_to_auth_chain = {ps['chain_id']: ps['auth_chain_id'] for ps in input_source_dic['polymer_sequence']}
-                else:
-                    label_to_auth_chain = {}
-                    for c in coord:
-                        if c['chain_id'] not in emptyValue and c['auth_chain_id'] not in emptyValue and c['chain_id'] not in label_to_auth_chain:
-                            label_to_auth_chain[c['chain_id']] = c['auth_chain_id']
+            self.__coord_atom_site = {}
+            self.__auth_to_label_seq = {}
+            chain_ids = set(c['chain_id'] for c in coord)
+            for chain_id in chain_ids:
+                seq_ids = set((int(c['seq_id']) if c['seq_id'] is not None else c['auth_seq_id']) for c in coord if c['chain_id'] == chain_id)
+                for seq_id in seq_ids:
+                    seq_key = (chain_id, seq_id)
+                    comp_id = next(c['comp_id'] for c in coord
+                                   if c['chain_id'] == chain_id and ((c['seq_id'] is not None and int(c['seq_id']) == seq_id)
+                                                                     or (c['seq_id'] is None and c['auth_seq_id'] == seq_id)))
+                    atom_ids = [c['atom_id'] for c in coord
+                                if c['chain_id'] == chain_id and ((c['seq_id'] is not None and int(c['seq_id']) == seq_id)
+                                                                  or (c['seq_id'] is None and c['auth_seq_id'] == seq_id))]
+                    self.__coord_atom_site[seq_key] = {'comp_id': comp_id, 'atom_id': atom_ids}
+                    if has_pdbx_auth_atom_name:
+                        auth_atom_ids = [c['auth_atom_id'] for c in coord
+                                         if c['chain_id'] == chain_id and ((c['seq_id'] is not None and int(c['seq_id']) == seq_id)
+                                                                           or (c['seq_id'] is None and c['auth_seq_id'] == seq_id))]
+                        self.__coord_atom_site[seq_key]['auth_atom_id'] = auth_atom_ids
+                    elif any(not self.__nefT.validate_comp_atom(comp_id, atom_id) for atom_id in atom_ids):
+                        auth_atom_ids = [self.__getRepresentativeAtomIdInXplor(comp_id, atom_id) for atom_id in atom_ids]
+                        self.__coord_atom_site[seq_key]['auth_atom_id'] = auth_atom_ids
+                    auth_seq_id = next((c['auth_seq_id'] for c in coord if c['chain_id'] == chain_id and c['seq_id'] == seq_id), None)
+                    if auth_seq_id is not None and auth_seq_id.isdigit():
+                        self.__auth_to_label_seq[(label_to_auth_chain[chain_id], int(auth_seq_id))] = seq_key
+            self.__label_to_auth_seq = {v: k for k, v in self.__auth_to_label_seq.items()}
 
-                self.__coord_atom_site = {}
-                self.__auth_to_label_seq = {}
-                chain_ids = set(c['chain_id'] for c in coord)
+            # DAOTHER-7665
+            self.__coord_unobs_res = []
+            unobs_res = self.__cR.getDictListWithFilter('pdbx_unobs_or_zero_occ_residues',
+                                                        [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                         {'name': 'auth_seq_id', 'type': 'str', 'alt_name': 'seq_id'},
+                                                         {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'}
+                                                         ],
+                                                        [{'name': 'PDB_model_num', 'type': 'int', 'value': self.__representative_model_id}
+                                                         ])
+
+            if len(unobs_res) > 0:
+                chain_ids = set(u['chain_id'] for u in unobs_res)
                 for chain_id in chain_ids:
-                    seq_ids = set((int(c['seq_id']) if c['seq_id'] is not None else c['auth_seq_id']) for c in coord if c['chain_id'] == chain_id)
+                    seq_ids = set(int(u['seq_id']) for u in unobs_res if u['chain_id'] == chain_id and u['seq_id'] is not None)
                     for seq_id in seq_ids:
                         seq_key = (chain_id, seq_id)
-                        comp_id = next(c['comp_id'] for c in coord
-                                       if c['chain_id'] == chain_id and ((c['seq_id'] is not None and int(c['seq_id']) == seq_id)
-                                                                         or (c['seq_id'] is None and c['auth_seq_id'] == seq_id)))
-                        atom_ids = [c['atom_id'] for c in coord
-                                    if c['chain_id'] == chain_id and ((c['seq_id'] is not None and int(c['seq_id']) == seq_id)
-                                                                      or (c['seq_id'] is None and c['auth_seq_id'] == seq_id))]
-                        self.__coord_atom_site[seq_key] = {'comp_id': comp_id, 'atom_id': atom_ids}
-                        if has_pdbx_auth_atom_name:
-                            auth_atom_ids = [c['auth_atom_id'] for c in coord
-                                             if c['chain_id'] == chain_id and ((c['seq_id'] is not None and int(c['seq_id']) == seq_id)
-                                                                               or (c['seq_id'] is None and c['auth_seq_id'] == seq_id))]
-                            self.__coord_atom_site[seq_key]['auth_atom_id'] = auth_atom_ids
-                        auth_seq_id = next((c['auth_seq_id'] for c in coord if c['chain_id'] == chain_id and c['seq_id'] == seq_id), None)
-                        if auth_seq_id is not None and auth_seq_id.isdigit():
-                            self.__auth_to_label_seq[(label_to_auth_chain[chain_id], int(auth_seq_id))] = seq_key
-                self.__label_to_auth_seq = {v: k for k, v in self.__auth_to_label_seq.items()}
+                        if seq_key in self.__auth_to_label_seq:
+                            self.__coord_unobs_res.append(self.__auth_to_label_seq[seq_key])
 
-                # DAOTHER-7665
-                self.__coord_unobs_res = []
-                unobs_res = self.__cR.getDictListWithFilter('pdbx_unobs_or_zero_occ_residues',
-                                                            [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                                             {'name': 'auth_seq_id', 'type': 'str', 'alt_name': 'seq_id'},
-                                                             {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'}
-                                                             ],
-                                                            [{'name': 'PDB_model_num', 'type': 'int', 'value': self.__representative_model_id}
-                                                             ])
+            return True
 
-                if len(unobs_res) > 0:
-                    chain_ids = set(u['chain_id'] for u in unobs_res)
-                    for chain_id in chain_ids:
-                        seq_ids = set(int(u['seq_id']) for u in unobs_res if u['chain_id'] == chain_id and u['seq_id'] is not None)
-                        for seq_id in seq_ids:
-                            seq_key = (chain_id, seq_id)
-                            if seq_key in self.__auth_to_label_seq:
-                                self.__coord_unobs_res.append(self.__auth_to_label_seq[seq_key])
+        except Exception as e:
 
-            except Exception as e:
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractCoordAtomSite() ++ Error  - " + str(e))
+            self.report.setError()
 
-                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractCoordAtomSite() ++ Error  - " + str(e))
-                self.report.setError()
+            if self.__verbose:
+                self.__lfh.write(f"+NmrDpUtility.__extractCoordAtomSite() ++ Error  - {str(e)}\n")
 
-                if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__extractCoordAtomSite() ++ Error  - {str(e)}\n")
-
-                return False
-
-        return True
+            return False
     # """
     # def __extractCoordNonPolymerScheme(self):
     #     "" Extract non-polymer scheme of coordinate file.

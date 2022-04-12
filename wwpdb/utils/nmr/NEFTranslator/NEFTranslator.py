@@ -81,6 +81,7 @@
 # 15-Dec-2021  M. Yokochi - fix TypeError: unsupported operand type(s) for -: 'NoneType' and 'set' (v3.0.6, DAOTHER-7545)
 # 22-Dec-2021  M. Yokochi - extend validate_file() for uploading NMR restraint files in NMR-STAR format (v3.0.7, DAOTHER-7545, issue #2)
 # 02-Mar-2022  M. Yokochi - revise logging and overall code revision (v3.1.0)
+# 12-Apr-2022  M. Yokochi - add get_valid_star_atom_in_xplor(), which translates XPLOR atom name to IUPAC one (v3.1.1, nmr-restraint-remediation, DAOTHER-7407)
 ##
 """ Bi-directional translator between NEF and NMR-STAR
     @author: Kumaran Baskaran, Masashi Yokochi
@@ -108,7 +109,7 @@ except ImportError:
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
 
-__version__ = '3.1.0'
+__version__ = '3.1.1'
 
 __pynmrstar_v3_2__ = version.parse(pynmrstar.__version__) >= version.parse("3.2.0")
 __pynmrstar_v3_1__ = version.parse(pynmrstar.__version__) >= version.parse("3.1.0")
@@ -2163,7 +2164,7 @@ class NEFTranslator:
                 raise LookupError(f"Missing mandatory {index_id} loop tag.")
 
             for l, i in enumerate(index_data):  # noqa: E741
-                if is_empty(i) and l < len_loop_data:
+                if i in emptyValue and l < len_loop_data:
                     r = {}
                     for j, t in enumerate(loop.tags):
                         r[t] = loop.data[l][j]
@@ -2171,7 +2172,7 @@ class NEFTranslator:
                         f"#_of_row {l + 1}, data_of_row {r}.\n"
                 else:
                     try:
-                        int(i[0])
+                        int(i)
                     except ValueError:
                         if l < len_loop_data:
                             r = {}
@@ -4053,6 +4054,41 @@ class NEFTranslator:
 
         return out_tag
 
+    def get_valid_star_atom_in_xplor(self, comp_id, atom_id, details=None, leave_unmatched=True):
+        """ Return lists of atom ID, ambiguity_code, details in IUPAC atom nomenclature for a given atom name in XPLOR atom nomenclature.
+            @author: Masashi Yokochi
+            @return: list of instanced atom_id, ambiguity_code, and description
+        """
+
+        if comp_id in emptyValue:
+            return [], None, None
+
+        if '#' in atom_id:
+            atom_id = atom_id.replace('#', '%')
+
+        if atom_id[0] in ('H', 'Q', 'M'):
+
+            if atom_id.endswith('1') and not self.validate_comp_atom(comp_id, atom_id):
+                _atom_id = atom_id[:-1] + '3'
+                if self.validate_comp_atom(comp_id, _atom_id):
+                    return self.get_valid_star_atom(comp_id, _atom_id, details, leave_unmatched)
+
+            if atom_id.endswith('1*') or atom_id.endswith('1%'):
+                _atom_id = atom_id[:-2] + '3' + atom_id[-1]
+                _atom_list, _ambiguity_code, _details = self.get_valid_star_atom(comp_id, _atom_id, None, True)
+                if _details is None:
+                    if leave_unmatched:
+                        return _atom_list, _ambiguity_code, _details
+                    return self.get_valid_star_atom(comp_id, _atom_id, details, leave_unmatched)
+
+                _atom_list, _ambiguity_code, _details = self.get_valid_star_atom(comp_id, _atom_id[:-1], None, True)
+                if _details is None:
+                    if leave_unmatched:
+                        return _atom_list, _ambiguity_code, _details
+                    return self.get_valid_star_atom(comp_id, _atom_id, details, leave_unmatched)
+
+        return self.get_valid_star_atom(comp_id, atom_id, details, leave_unmatched)
+
     def get_valid_star_atom(self, comp_id, atom_id, details=None, leave_unmatched=True):
         """ Return lists of atom ID, ambiguity_code, details in IUPAC atom nomenclature for a given conventional NMR atom name.
             @author: Masashi Yokochi
@@ -4061,6 +4097,9 @@ class NEFTranslator:
 
         if comp_id in emptyValue:
             return [], None, None
+
+        if '#' in atom_id:
+            atom_id = atom_id.replace('#', '%')
 
         if atom_id == 'HN' or atom_id.endswith('%') or atom_id.endswith('*'):
             return self.get_star_atom(comp_id, atom_id, details, leave_unmatched)
@@ -4084,9 +4123,6 @@ class NEFTranslator:
 
         if (atom_id + '2' in self.__csStat.getAllAtoms(comp_id)) or (atom_id + '22' in self.__csStat.getAllAtoms(comp_id)):
             return self.get_star_atom(comp_id, atom_id + '%', details, leave_unmatched)
-
-        if '#' in atom_id:
-            return self.get_star_atom(comp_id, atom_id.replace('#', '%'))
 
         return self.get_star_atom(comp_id, atom_id, details, leave_unmatched)
 
@@ -5138,7 +5174,7 @@ class NEFTranslator:
                     for _variant in variant.split(','):
                         _variant_ = _variant.strip(' ')
                         if _variant_.startswith('-'):
-                            atom_list = self.get_valid_star_atom(i[comp_index].upper(), _variant_[1:])[0]
+                            atom_list = self.get_valid_star_atom_in_xplor(i[comp_index].upper(), _variant_[1:])[0]
                             if len(atom_list) > 0:
                                 for atom in atom_list:
                                     _aux = copy.copy(aux)
@@ -5390,8 +5426,8 @@ class NEFTranslator:
             intra_residue = i[in_star_tags.index(chain_tag_1)] == i[in_star_tags.index(chain_tag_2)]\
                 and i[in_star_tags.index(seq_tag_1)] == i[in_star_tags.index(seq_tag_2)]
 
-            atom_list_1 = self.get_valid_star_atom(i[in_star_comp_index_1], i[in_star_atom_index_1])[0]
-            atom_list_2 = self.get_valid_star_atom(i[in_star_comp_index_2], i[in_star_atom_index_2])[0]
+            atom_list_1 = self.get_valid_star_atom_in_xplor(i[in_star_comp_index_1], i[in_star_atom_index_1])[0]
+            atom_list_2 = self.get_valid_star_atom_in_xplor(i[in_star_comp_index_2], i[in_star_atom_index_2])[0]
 
             for k in atom_list_1:
 
@@ -5789,7 +5825,7 @@ class NEFTranslator:
 
                 for i in in_row:
 
-                    atom_list, ambiguity_code, details = self.get_valid_star_atom(i[comp_index], i[atom_index], None, leave_unmatched)
+                    atom_list, ambiguity_code, details = self.get_valid_star_atom_in_xplor(i[comp_index], i[atom_index], None, leave_unmatched)
 
                     for atom in atom_list:
 
@@ -6313,8 +6349,8 @@ class NEFTranslator:
                 intra_residue = i[in_star_tags.index(chain_tag_1)] == i[in_star_tags.index(chain_tag_2)]\
                     and i[in_star_tags.index(seq_tag_1)] == i[in_star_tags.index(seq_tag_2)]
 
-                atom_list_1 = self.get_valid_star_atom(i[in_star_comp_index_1], i[in_star_atom_index_1])[0]
-                atom_list_2 = self.get_valid_star_atom(i[in_star_comp_index_2], i[in_star_atom_index_2])[0]
+                atom_list_1 = self.get_valid_star_atom_in_xplor(i[in_star_comp_index_1], i[in_star_atom_index_1])[0]
+                atom_list_2 = self.get_valid_star_atom_in_xplor(i[in_star_comp_index_2], i[in_star_atom_index_2])[0]
 
                 or_code = len(atom_list_1) * len(atom_list_2) > 1
 
@@ -6678,10 +6714,10 @@ class NEFTranslator:
                 intra_residue_34 = i[in_star_tags.index(chain_tag_3)] == i[in_star_tags.index(chain_tag_4)]\
                     and i[in_star_tags.index(seq_tag_3)] == i[in_star_tags.index(seq_tag_4)]
 
-                atom_list_1 = self.get_valid_star_atom(i[in_star_comp_index_1], i[in_star_atom_index_1])[0]
-                atom_list_2 = self.get_valid_star_atom(i[in_star_comp_index_2], i[in_star_atom_index_2])[0]
-                atom_list_3 = self.get_valid_star_atom(i[in_star_comp_index_3], i[in_star_atom_index_3])[0]
-                atom_list_4 = self.get_valid_star_atom(i[in_star_comp_index_4], i[in_star_atom_index_4])[0]
+                atom_list_1 = self.get_valid_star_atom_in_xplor(i[in_star_comp_index_1], i[in_star_atom_index_1])[0]
+                atom_list_2 = self.get_valid_star_atom_in_xplor(i[in_star_comp_index_2], i[in_star_atom_index_2])[0]
+                atom_list_3 = self.get_valid_star_atom_in_xplor(i[in_star_comp_index_3], i[in_star_atom_index_3])[0]
+                atom_list_4 = self.get_valid_star_atom_in_xplor(i[in_star_comp_index_4], i[in_star_atom_index_4])[0]
 
                 for k in atom_list_1:
 
@@ -6986,8 +7022,8 @@ class NEFTranslator:
                 intra_residue = i[in_star_tags.index(chain_tag_1)] == i[in_star_tags.index(chain_tag_2)]\
                     and i[in_star_tags.index(seq_tag_1)] == i[in_star_tags.index(seq_tag_2)]
 
-                atom_list_1 = self.get_valid_star_atom(i[in_star_comp_index_1], i[in_star_atom_index_1])[0]
-                atom_list_2 = self.get_valid_star_atom(i[in_star_comp_index_2], i[in_star_atom_index_2])[0]
+                atom_list_1 = self.get_valid_star_atom_in_xplor(i[in_star_comp_index_1], i[in_star_atom_index_1])[0]
+                atom_list_2 = self.get_valid_star_atom_in_xplor(i[in_star_comp_index_2], i[in_star_atom_index_2])[0]
 
                 for k in atom_list_1:
 
@@ -7477,7 +7513,7 @@ class NEFTranslator:
                 a = []
 
                 for in_star_comp_index, in_star_atom_index in zip(in_star_comp_indices, in_star_atom_indices):
-                    atom_list = self.get_valid_star_atom(i[in_star_comp_index], i[in_star_atom_index])[0]
+                    atom_list = self.get_valid_star_atom_in_xplor(i[in_star_comp_index], i[in_star_atom_index])[0]
                     len_atom_list = len(atom_list)
                     if len_atom_list == 0:
                         atom_list.append('.')

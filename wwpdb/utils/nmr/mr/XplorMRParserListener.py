@@ -160,6 +160,11 @@ class XplorMRParserListener(ParseTreeListener):
     __debug = False
     __sel_expr_debug = False
 
+    # @see: https://bmrb.io/ref_info/atom_nom.tbl
+    # @see: https://bmrb.io/macro/files/xplor_to_iupac.Nov140620
+    # whether to trust the ref_info or the macro for atom nomenclature of ASN/GLN amino group
+    __trust_bmrb_ref_info = True
+
     distRestraints = 0      # XPLOR-NIH: Distance restraints
     dihedRestraints = 0     # XPLOR-NIH: Dihedral angle restraints
     rdcRestraints = 0       # XPLOR-NIH: Residual dipolar coupling restraints
@@ -5299,24 +5304,30 @@ class XplorMRParserListener(ParseTreeListener):
                                     if details is None:
                                         atomIds = _atomIds
 
-                        if compId == 'ASN':
-                            if atomId == 'HD21':
-                                _atomId = atomId[:-1] + '2'
-                                if self.__nefT.validate_comp_atom(compId, _atomId):
-                                    atomIds = self.__nefT.get_valid_star_atom(compId, _atomId)[0]
-                            elif atomId == 'HD22':
-                                _atomId = atomId[:-1] + '1'
-                                if self.__nefT.validate_comp_atom(compId, _atomId):
-                                    atomIds = self.__nefT.get_valid_star_atom(compId, _atomId)[0]
-                        elif compId == 'GLN':
-                            if atomId == 'HE21':
-                                _atomId = atomId[:-1] + '2'
-                                if self.__nefT.validate_comp_atom(compId, _atomId):
-                                    atomIds = self.__nefT.get_valid_star_atom(compId, _atomId)[0]
-                            elif atomId == 'HE22':
-                                _atomId = atomId[:-1] + '1'
-                                if self.__nefT.validate_comp_atom(compId, _atomId):
-                                    atomIds = self.__nefT.get_valid_star_atom(compId, _atomId)[0]
+                        # @see: https://bmrb.io/ref_info/atom_nom.tbl
+                        if self.__trust_bmrb_ref_info:
+                            pass
+
+                        # @see: https://bmrb.io/macro/files/xplor_to_iupac.Nov140620
+                        else:
+                            if compId == 'ASN':
+                                if atomId == 'HD21':
+                                    _atomId = atomId[:-1] + '2'
+                                    if self.__nefT.validate_comp_atom(compId, _atomId):
+                                        atomIds = self.__nefT.get_valid_star_atom(compId, _atomId)[0]
+                                elif atomId == 'HD22':
+                                    _atomId = atomId[:-1] + '1'
+                                    if self.__nefT.validate_comp_atom(compId, _atomId):
+                                        atomIds = self.__nefT.get_valid_star_atom(compId, _atomId)[0]
+                            elif compId == 'GLN':
+                                if atomId == 'HE21':
+                                    _atomId = atomId[:-1] + '2'
+                                    if self.__nefT.validate_comp_atom(compId, _atomId):
+                                        atomIds = self.__nefT.get_valid_star_atom(compId, _atomId)[0]
+                                elif atomId == 'HE22':
+                                    _atomId = atomId[:-1] + '1'
+                                    if self.__nefT.validate_comp_atom(compId, _atomId):
+                                        atomIds = self.__nefT.get_valid_star_atom(compId, _atomId)[0]
 
                         for _atomId in atomIds:
                             ccdCheck = not cifCheck

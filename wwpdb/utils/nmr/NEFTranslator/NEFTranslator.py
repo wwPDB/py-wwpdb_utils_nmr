@@ -584,6 +584,9 @@ class NEFTranslator:
         self.__verbose = verbose
         self.__lfh = log
 
+        # whether to enable remediation routine
+        self.__remediation_mode = False
+
         libDirPath = os.path.dirname(__file__) + '/lib/'
 
         self.tagMap = self.load_csv_data(libDirPath + 'NEF_NMRSTAR_equivalence.csv', transpose=True)
@@ -623,6 +626,12 @@ class NEFTranslator:
                                  'range-float': 'a floating point number in a specific range',
                                  'enum': 'an enumeration value',
                                  'enum-int': 'an enumeration value restricted to integers'}
+
+    def set_remediation_mode(self, flag):
+        """ Set remediation mode.
+        """
+
+        self.__remediation_mode = flag
 
     def load_csv_data(self, csv_file, transpose=False):
         """ Load CSV data to list.
@@ -1169,6 +1178,7 @@ class NEFTranslator:
 
     def get_seq_from_cs_loop(self, in_file):
         """ Extract sequence from chemical shift loop.
+            @deprecated: used only for testing
             @param in_file: NEF/NMR-STAR file
             @return: status, message
         """
@@ -1416,6 +1426,8 @@ class NEFTranslator:
             except:  # AttributeError:  # noqa: E722 pylint: disable=bare-except
                 loops = [star_data]
 
+        def_chain_id = 'A' if self.__remediation_mode else '1'
+
         data = []  # data of all loops
 
         tags = [seq_id, comp_id, chain_id]
@@ -1434,15 +1446,15 @@ class NEFTranslator:
                 seq_data = get_lp_tag(loop, tags)
                 for i in seq_data:
                     if i[2] in emptyValue:
-                        i[2] = '1'
+                        i[2] = def_chain_id
             elif set(tags__) & set(loop.tags) == set(tags__):  # DAOTHER-7421
                 seq_data = get_lp_tag(loop, tags__)
                 for i in seq_data:
-                    i[2] = '1' if i[2] in emptyValue else str(letterToDigit(i[2], 1))
+                    i[2] = def_chain_id if i[2] in emptyValue else str(i[2] if self.__remediation_mode else letterToDigit(i[2], 1))
             elif set(tags_) & set(loop.tags) == set(tags_):  # No Entity_assembly_ID tag case
                 seq_data = get_lp_tag(loop, tags_)
                 for i in seq_data:
-                    i.append('1')
+                    i.append(def_chain_id)
             else:
                 _tags_exist = False
                 for j in range(1, MAX_DIM_NUM_OF_SPECTRA):
@@ -1454,19 +1466,19 @@ class NEFTranslator:
                         seq_data_ = get_lp_tag(loop, _tags)
                         for i in seq_data_:
                             if i[2] in emptyValue:
-                                i[2] = '1'
+                                i[2] = def_chain_id
                         seq_data += seq_data_
                     elif set(_tags__) & set(loop.tags) == set(_tags__):  # DAOTHER-7421
                         _tags_exist = True
                         seq_data_ = get_lp_tag(loop, _tags__)
                         for i in seq_data_:
-                            i[2] = '1' if i[2] in emptyValue else str(letterToDigit(i[2], 1))
+                            i[2] = def_chain_id if i[2] in emptyValue else str(i[2] if self.__remediation_mode else letterToDigit(i[2], 1))
                         seq_data += seq_data_
                     elif set(_tags_) & set(loop.tags) == set(_tags_):
                         _tags_exist = True
                         seq_data_ = get_lp_tag(loop, _tags_)
                         for i in seq_data_:
-                            i.append('1')
+                            i.append(def_chain_id)
                         seq_data += seq_data_
 
                 if not _tags_exist:
@@ -1544,7 +1556,7 @@ class NEFTranslator:
                     ent = {}  # entity
 
                     str_c = str(c)
-                    ent['chain_id'] = str_c if str_c.isdigit() else str(letterToDigit(str_c, 1))
+                    ent['chain_id'] = str_c if str_c.isdigit() or self.__remediation_mode else str(letterToDigit(str_c, 1))
 
                     if allow_gap:
                         ent['seq_id'] = []
@@ -1575,7 +1587,7 @@ class NEFTranslator:
                             if seq_dict[_c] == seq_dict[c]:
                                 if cmp_dict[_c] == cmp_dict[c]:
                                     _str_c = str(_c)
-                                    identity.append(_str_c if _str_c.isdigit() else str(letterToDigit(_str_c, 1)))
+                                    identity.append(_str_c if _str_c.isdigit() or self.__remediation_mode else str(letterToDigit(_str_c, 1)))
                             else:
                                 common_seq_id = set(seq_dict[_c]) & set(seq_dict[c])
                                 if len(common_seq_id) == 0:
@@ -1589,7 +1601,7 @@ class NEFTranslator:
                                            and cmp_dict[_c][seq_dict[_c].index(s)] == cmp_dict[c][seq_dict[c].index(s)]):
                                     continue
                                 _str_c = str(_c)
-                                identity.append(_str_c if _str_c.isdigit() else str(letterToDigit(_str_c, 1)))
+                                identity.append(_str_c if _str_c.isdigit() or self.__remediation_mode else str(letterToDigit(_str_c, 1)))
                         if len(identity) > 0:
                             ent['identical_chain_id'] = identity
 
@@ -2119,6 +2131,7 @@ class NEFTranslator:
 
     def get_nef_index(self, star_data, lp_category='nef_sequence', index_id='index'):
         """ Wrapper function of get_index() for an NEF file.
+            @deprecated: used only for testing
             @author: Masashi Yokochi
         """
 
@@ -2126,6 +2139,7 @@ class NEFTranslator:
 
     def get_star_index(self, star_data, lp_category='Chem_comp_assembly', index_id='NEF_index'):
         """ Wrapper function of get_index() for an NMR-STAR file.
+            @deprecated: used only for testing
             @author: Masashi Yokochi
         """
 
@@ -3784,6 +3798,7 @@ class NEFTranslator:
 
     def validate_atom(self, star_data, lp_category='Atom_chem_shift', comp_id='Comp_ID', atom_id='Atom_ID'):
         """ Validate atom_id in a given loop against CCD.
+            @deprecated: used only for testing
             @change: support non-standard residue by Masashi Yokochi
             @return: list of valid row data
         """
@@ -4791,6 +4806,8 @@ class NEFTranslator:
                     cif_ps = report.getModelPolymerSequenceOf(cif_chain, label_scheme=False)
                     if cif_ps is not None:
                         cif_chain = cif_ps['auth_chain_id']  # auth_asym_id
+                    if self.__remediation_mode:
+                        _star_chain = cif_chain
 
             offset = None
 
@@ -5097,12 +5114,12 @@ class NEFTranslator:
                 seq_align = report.getSequenceAlignmentWithNmrChainId(in_star_chain)
                 if seq_align is not None:
                     cif_chain = seq_align['test_chain_id']  # label_asym_id
+                    _star_chain = str(letterToDigit(cif_chain))
                     cif_ps = report.getModelPolymerSequenceOf(cif_chain, label_scheme=False)
                     if cif_ps is not None:
                         cif_chain = cif_ps['auth_chain_id']  # auth_asym_id
-
-            if cif_chain is not None:
-                _star_chain = str(letterToDigit(cif_chain))
+                    if self.__remediation_mode:
+                        _star_chain = cif_chain
 
             offset = None
 

@@ -766,8 +766,10 @@ class NmrDpUtility:
         # current workflow operation
         self.__op = None
 
-        # whether to run initial rescue routine
+        # whether to enable rescue routine
         self.__rescue_mode = True
+        # whether to enable remediation routine
+        self.__remediation_mode = False
         # whether NMR combined deposition or not (NMR conventional deposition)
         self.__combined_mode = True
         # whether to use datablock name of public release
@@ -3636,6 +3638,62 @@ class NmrDpUtility:
         for key in self.key_items['nmr-star']['chem_shift']:
             if 'remove-bad-pattern' in key:
                 key['remove-bad-pattern'] = self.__combined_mode
+
+        if self.__remediation_mode:
+            for v in self.key_items['nmr-star'].values():
+                if v is None:
+                    continue
+                for d in v:
+                    if d['name'].startswith('Entity_assembly_ID'):
+                        d['type'] = 'str'
+                        d['default'] = 'A'
+                        if 'default-from' in d:
+                            del d['default-from']
+
+            for v in self.consist_key_items['nmr-star'].values():
+                if v is None:
+                    continue
+                for d in v:
+                    if d['name'].startswith('Entity_assembly_ID'):
+                        d['type'] = 'str'
+                        d['default'] = 'A'
+                        if 'default-from' in d:
+                            del d['default-from']
+
+            for v in self.pk_data_items['nmr-star'].values():
+                if v is None:
+                    continue
+                for d in v:
+                    if d['name'].startswith('Entity_assembly_ID'):
+                        d['type'] = 'str'
+                        d['default'] = 'A'
+                        if 'default-from' in d:
+                            del d['default-from']
+                        if 'enforce-non-zero' in d:
+                            del d['enforce-non-zero']
+
+            for v in self.aux_key_items['nmr-star'].values():
+                if v is None:
+                    continue
+                for d in v:
+                    if d['name'].startswith('Entity_assembly_ID'):
+                        d['type'] = 'str'
+                        d['default'] = 'A'
+                        if 'default-from' in d:
+                            del d['default-from']
+
+            for v in self.aux_data_items['nmr-star'].values():
+                if v is None:
+                    continue
+                for v2 in v.values():
+                    for d in v2:
+                        if d['name'].startswith('Entity_assembly_ID'):
+                            d['type'] = 'str'
+                            d['default'] = 'A'
+                            if 'default-from' in d:
+                                del d['default-from']
+
+            self.__nefT.set_remediation_mode(True)
 
         self.__release_mode = 'release' in op
 
@@ -9382,7 +9440,7 @@ class NmrDpUtility:
 
                 #                 if length == unmapped + conflict or _matched <= conflict or (len(polymer_sequence) > 1 and _matched < 4 and offset_1 > 0):
                 #                     chain_id_offset += 1
-                #                     s['chain_id'] = indexToLetter(chain_id_offset) if file_type == 'nef' else str(chain_id_offset)
+                #                     s['chain_id'] = indexToLetter(chain_id_offset) if file_type == 'nef' or self.__remediation_mode else str(chain_id_offset)
                 #                     if fileListId in self.__remapped_def_chain_id:
                 #                         self.__remapped_def_chain_id[fileListId] = {}
                 #                     self.__remapped_def_chain_id[fileListId] = {chain_id: s['chain_id']}
@@ -18509,7 +18567,7 @@ class NmrDpUtility:
 
                     chain_id = sc['chain_id']
 
-                    _chain_id = chain_id if file_type == 'nef' else str(letterToDigit(chain_id))
+                    _chain_id = chain_id if file_type == 'nef' or self.__remediation_mode else str(letterToDigit(chain_id))
 
                     cc['chain_id'] = chain_id
 
@@ -19152,7 +19210,7 @@ class NmrDpUtility:
                 atom_id = i[atom_id_name]
                 value = i[value_name]
 
-                _chain_id = chain_id if file_type == 'nef' else str(letterToDigit(chain_id))
+                _chain_id = chain_id if file_type == 'nef' or self.__remediation_mode else str(letterToDigit(chain_id))
 
                 if value in emptyValue:
                     continue
@@ -19291,7 +19349,7 @@ class NmrDpUtility:
 
                     chain_id = sc['chain_id']
 
-                    _chain_id = chain_id if file_type == 'nef' else str(letterToDigit(chain_id))
+                    _chain_id = chain_id if file_type == 'nef' or self.__remediation_mode else str(letterToDigit(chain_id))
 
                     s = next((s for s in polymer_sequence if s['chain_id'] == chain_id), None)
 
@@ -19375,7 +19433,7 @@ class NmrDpUtility:
 
                     chain_id = sc['chain_id']
 
-                    _chain_id = chain_id if file_type == 'nef' else str(letterToDigit(chain_id))
+                    _chain_id = chain_id if file_type == 'nef' or self.__remediation_mode else str(letterToDigit(chain_id))
 
                     s = next((s for s in polymer_sequence if s['chain_id'] == chain_id), None)
 
@@ -19484,7 +19542,7 @@ class NmrDpUtility:
 
                     chain_id = sc['chain_id']
 
-                    _chain_id = chain_id if file_type == 'nef' else str(letterToDigit(chain_id))
+                    _chain_id = chain_id if file_type == 'nef' or self.__remediation_mode else str(letterToDigit(chain_id))
 
                     s = next((s for s in polymer_sequence if s['chain_id'] == chain_id), None)
 
@@ -19594,7 +19652,7 @@ class NmrDpUtility:
 
                     chain_id = sc['chain_id']
 
-                    _chain_id = chain_id if file_type == 'nef' else str(letterToDigit(chain_id))
+                    _chain_id = chain_id if file_type == 'nef' or self.__remediation_mode else str(letterToDigit(chain_id))
 
                     s = next((s for s in polymer_sequence if s['chain_id'] == chain_id), None)
 
@@ -19891,7 +19949,7 @@ class NmrDpUtility:
 
                     chain_id = sc['chain_id']
 
-                    _chain_id = chain_id if file_type == 'nef' else str(letterToDigit(chain_id))
+                    _chain_id = chain_id if file_type == 'nef' or self.__remediation_mode else str(letterToDigit(chain_id))
 
                     s = next((s for s in polymer_sequence if s['chain_id'] == chain_id), None)
 

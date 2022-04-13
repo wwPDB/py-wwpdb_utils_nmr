@@ -5092,11 +5092,14 @@ class NEFTranslator:
             if len(seq_list) == 0:
                 continue
 
-            cif_chain = None
+            cif_chain = cif_ps = None
             if report is not None:
                 seq_align = report.getSequenceAlignmentWithNmrChainId(in_star_chain)
                 if seq_align is not None:
-                    cif_chain = seq_align['test_chain_id']
+                    cif_chain = seq_align['test_chain_id']  # label_asym_id
+                    cif_ps = report.getModelPolymerSequenceOf(cif_chain, label_scheme=False)
+                    if cif_ps is not None:
+                        cif_chain = cif_ps['auth_chain_id']  # auth_asym_id
 
             if cif_chain is not None:
                 _star_chain = str(letterToDigit(cif_chain))
@@ -5108,9 +5111,11 @@ class NEFTranslator:
                 _cif_seq = None
                 if cif_chain is not None:
                     try:
-                        _cif_seq = seq_align['test_seq_id'][seq_align['ref_seq_id'].index(_in_star_seq)]
+                        _cif_seq = seq_align['test_seq_id'][seq_align['ref_seq_id'].index(_in_star_seq)]  # label_seq_id
                         if offset is None:
                             offset = _cif_seq - _in_star_seq
+                        if cif_ps is not None:
+                            _cif_seq = cif_ps['auth_seq_id'][cif_ps['seq_id'].index(_cif_seq)]  # auth_seq_id
                     except:  # noqa: E722 pylint: disable=bare-except
                         pass
 
@@ -9051,10 +9056,14 @@ class NEFTranslator:
             if len(ps['seq_id']) == 0:
                 continue
 
-            cif_chain = None
-            seq_align = report.getSequenceAlignmentWithNmrChainId(star_chain)
-            if seq_align is not None:
-                cif_chain = seq_align['test_chain_id']
+            cif_chain = cif_ps = None
+            if report is not None:
+                seq_align = report.getSequenceAlignmentWithNmrChainId(star_chain)
+                if seq_align is not None:
+                    cif_chain = seq_align['test_chain_id']  # label_asym_id
+                    cif_ps = report.getModelPolymerSequenceOf(cif_chain, label_scheme=False)
+                    if cif_ps is not None:
+                        cif_chain = cif_ps['auth_chain_id']  # auth_asym_id
 
             # self.star2CifChainMapping[star_chain] = cif_chain
 
@@ -9063,7 +9072,9 @@ class NEFTranslator:
                 _cif_seq = None
                 if cif_chain is not None:
                     try:
-                        _cif_seq = seq_align['test_seq_id'][seq_align['ref_seq_id'].index(star_seq)]
+                        _cif_seq = seq_align['test_seq_id'][seq_align['ref_seq_id'].index(star_seq)]  # label_seq_id
+                        if cif_ps is not None:
+                            _cif_seq = cif_ps['auth_seq_id'][cif_ps['seq_id'].index(_cif_seq)]  # auth_seq_id
                     except:  # noqa: E722 pylint: disable=bare-except
                         pass
 

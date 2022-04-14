@@ -985,7 +985,8 @@ class NmrDpUtility:
                                 'nmr-nef2str-deposit': __nef2strTasks,
                                 'nmr-str2nef-release': __str2nefTasks,
                                 'nmr-cs-nef-consistency-check': [self.__depositLegacyNmrData],
-                                'nmr-cs-str-consistency-check': [self.__depositLegacyNmrData]
+                                'nmr-cs-str-consistency-check': [self.__depositLegacyNmrData],
+                                'nmr-cs-mr-merge': None
                                 }
 
         # data processing report
@@ -3693,7 +3694,7 @@ class NmrDpUtility:
                             if 'default-from' in d:
                                 del d['default-from']
 
-            self.__nefT.set_remediation_mode(True)
+            self.__nefT.set_remediation(True)
 
         self.__release_mode = 'release' in op
 

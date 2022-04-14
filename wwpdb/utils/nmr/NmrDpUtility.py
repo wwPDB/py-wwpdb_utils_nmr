@@ -169,6 +169,7 @@ import shutil
 import time
 import hashlib
 import pynmrstar
+import gzip
 
 from packaging import version
 from munkres import Munkres
@@ -332,6 +333,19 @@ def convert_codec(in_file, out_file, in_codec='utf-8', out_codec='utf-8'):
         with open(out_file, 'w+b') as ofp:
             contents = ifp.read()
             ofp.write(contents.decode(in_codec).encode(out_codec))
+
+
+def is_ascii_file(file_path):
+    """ Check if there are non-ascii or non-printable characters in a file.
+    """
+
+    with open(file_path, 'rb') as ifp:
+        text = ifp.read()
+        try:
+            text.encode('ascii')
+            return '\x00' not in text
+        except:  # noqa: E722 pylint: disable=bare-except
+            return False
 
 
 def has_key_value(d=None, key=None):
@@ -856,6 +870,7 @@ class NmrDpUtility:
 
         # validation tasks for NMR data only
         __nmrCheckTasks = [self.__detectContentSubType,
+                           self.__splitPublicMRFileIntoLegacyMR,
                            self.__detectContentSubTypeOfLegacyMR,
                            self.__extractPolymerSequence,
                            self.__extractPolymerSequenceInLoop,
@@ -3640,6 +3655,8 @@ class NmrDpUtility:
             if 'remove-bad-pattern' in key:
                 key['remove-bad-pattern'] = self.__combined_mode
 
+        self.__remediation_mode = (op == 'nmr-cs-mr-merge')
+
         if self.__remediation_mode:
             for v in self.key_items['nmr-star'].values():
                 if v is None:
@@ -3661,7 +3678,7 @@ class NmrDpUtility:
                         if 'default-from' in d:
                             del d['default-from']
 
-            for v in self.pk_data_items['nmr-star'].values():
+            for v in self.pk_data_items['nmr-star']:
                 if v is None:
                     continue
                 for d in v:
@@ -3981,7 +3998,7 @@ class NmrDpUtility:
 
             if ar_file_path_list in self.__inputParamDict:
 
-                file_path_list_len = self.__cs_file_path_list_len
+                file_path_list_len = self.__file_path_list_len
 
                 for ar in self.__inputParamDict[ar_file_path_list]:
 
@@ -6307,16 +6324,15 @@ class NmrDpUtility:
         hbond_da_atom_types = ('O', 'N', 'F')
         rdc_origins = ('OO', 'X', 'Y', 'Z')
 
-        fileListId = self.__file_path_list_len
-
         md5_list = []
+
+        fileListId = self.__file_path_list_len
 
         for ar in self.__inputParamDict[ar_file_path_list]:
 
             file_path = ar['file_name']
 
             with open(file_path, 'r', encoding='utf-8') as ifp:
-
                 md5_list.append(hashlib.md5(ifp.read().encode('utf-8')).hexdigest())
 
             input_source = self.report.input_sources[fileListId]
@@ -6341,6 +6357,9 @@ class NmrDpUtility:
                 mr_format_name = 'CYANA'
             elif file_type == 'nm-res-ros':
                 mr_format_name = 'ROSETTA'
+            elif file_type == 'nm-res-mr':
+                fileListId += 1
+                continue
             else:
                 mr_format_name = 'other format'
 
@@ -7621,7 +7640,7 @@ class NmrDpUtility:
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__extractPolymerSequence() ++ Error  - {str(e)}\n")
+                    self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMR() ++ Error  - {str(e)}\n")
 
             if has_coordinate and not has_dist_restraint and not has_dihed_restraint and not has_rdc_restraint\
                     and not has_plane_restraint and not has_hbond_restraint:
@@ -7845,6 +7864,8 @@ class NmrDpUtility:
             mr_format_name = 'CYANA'
         elif file_type == 'nm-res-ros':
             mr_format_name = 'ROSETTA'
+        elif file_type == 'nm-res-mr':
+            mr_format_name = 'MR'
         else:
             mr_format_name = 'other format'
 
@@ -8253,6 +8274,105 @@ class NmrDpUtility:
             pass
 
         return checked, err
+
+    def __splitPublicMRFileIntoLegacyMR(self):
+        """ Split public MR file into legacy NMR restraint files for NMR restraint remediation.
+        """
+
+        if self.__combined_mode or not self.__remediation_mode:
+            return True
+
+        ar_file_path_list = 'atypical_restraint_file_path_list'
+
+        if ar_file_path_list not in self.__inputParamDict:
+            return True
+
+        fileListId = self.__file_path_list_len
+
+        for ar in self.__inputParamDict[ar_file_path_list]:
+
+            src_file = ar['file_name']
+
+            input_source = self.report.input_sources[fileListId]
+            input_source_dic = input_source.get()
+
+            file_name = input_source_dic['file_name']
+            file_type = input_source_dic['file_type']
+            if 'original_file_name' in input_source_dic:
+                original_file_name = input_source_dic['original_file_name']
+                if file_name != original_file_name and original_file_name is not None:
+                    file_name = f"{original_file_name} ({file_name})"
+
+            if file_type != 'nm-res-mr':
+                fileListId += 1
+                continue
+
+            if not is_ascii_file(src_file):
+
+                if not src_file.endswith('gz'):
+
+                    err = f"The NMR restraint file {src_file!r} (MR format) is neither ASCII file nor gzip compressed file."
+
+                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__splitPublicMRFileIntoLegacyMR() ++ Error  - " + err)
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write(f"+NmrDpUtility.__splitPublicMRFileIntoLegacyMR() ++ Error  - {err}\n")
+
+                    return False
+
+                dst_file = os.path.splitext(src_file)[0]
+
+                if not os.path.exists(dst_file):
+
+                    try:
+
+                        with gzip.open(src_file, mode='rt') as ifp:
+                            with open(dst_file, 'w') as ofp:
+                                for line in ifp:
+                                    ofp.write(line)
+
+                    except Exception as e:
+
+                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__splitPublicMRFileIntoLegacyMR() ++ Error  - " + str(e))
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__splitPublicMRFileIntoLegacyMR() ++ Error  - {err}\n")
+
+                        return False
+
+                src_file = dst_file
+
+            dst_file = src_file + '~'
+
+            if not os.path.exists(dst_file):
+
+                try:
+
+                    header = True
+                    with open(src_file, 'r') as ifp:
+                        with open(dst_file, 'w') as ofp:
+                            for line in ifp:
+                                if header:
+                                    if line.startswith('*'):
+                                        continue
+                                    header = False
+                                if 'Submitted Coord H atom name' in line:
+                                    break
+                                ofp.write(line)
+
+                except Exception as e:
+
+                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__splitPublicMRFileIntoLegacyMR() ++ Error  - " + str(e))
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write(f"+NmrDpUtility.__splitPublicMRFileIntoLegacyMR() ++ Error  - {err}\n")
+
+                    return False
+
+        return not self.report.isError()
 
     def __getPolymerSequence(self, file_list_id, sf_data, content_subtype):
         """ Wrapper function to retrieve polymer sequence from loop of a specified saveframe and content subtype via NEFTranslator.
@@ -11713,7 +11833,7 @@ class NmrDpUtility:
                     # self.report.setError()
 
                     # if self.__verbose:
-                    #     self.__lfh.write(f"+NmrDpUtility.__extractPolymerSequence() ++ LookupError  - {str(e)}\n")
+                    #     self.__lfh.write(f"+NmrDpUtility.__validateAtomNomenclature() ++ LookupError  - {str(e)}\n")
                     # """
                     pass
 

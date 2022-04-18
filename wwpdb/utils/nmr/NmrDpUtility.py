@@ -308,11 +308,11 @@ ANGLE_UNCERT_MAX = ANGLE_UNCERTAINTY_RANGE['max_inclusive']
 RDC_UNCERT_MAX = RDC_UNCERTAINTY_RANGE['max_inclusive']
 
 
-def detect_bom(in_file, default='utf-8'):
+def detect_bom(inPath, default='utf-8'):
     """ Detect BOM of input file.
     """
 
-    with open(in_file, 'rb') as ifp:
+    with open(inPath, 'rb') as ifp:
         raw = ifp.read(4)
 
     for enc, boms in \
@@ -325,27 +325,37 @@ def detect_bom(in_file, default='utf-8'):
     return default
 
 
-def convert_codec(in_file, out_file, in_codec='utf-8', out_codec='utf-8'):
+def convert_codec(inPath, outPath, in_codec='utf-8', out_codec='utf-8'):
     """ Convert codec of input file.
     """
 
-    with open(in_file, 'rb') as ifp:
-        with open(out_file, 'w+b') as ofp:
+    with open(inPath, 'rb') as ifp:
+        with open(outPath, 'w+b') as ofp:
             contents = ifp.read()
             ofp.write(contents.decode(in_codec).encode(out_codec))
 
 
-def is_ascii_file(file_path):
+def is_ascii_file(fPath):
     """ Check if there are non-ascii or non-printable characters in a file.
     """
 
-    with open(file_path, 'rb') as ifp:
+    with open(fPath, 'rb') as ifp:
         text = ifp.read()
         try:
             text.encode('ascii')
             return '\x00' not in text
         except:  # noqa: E722 pylint: disable=bare-except
             return False
+
+
+def uncompress_gzip_file(inPath, outPath):
+    """ Uncompress a given gzip file.
+    """
+
+    with gzip.open(inPath, mode='rt') as ifp:
+        with open(outPath, 'w') as ofp:
+            for line in ifp:
+                ofp.write(line)
 
 
 def has_key_value(d=None, key=None):
@@ -865,7 +875,8 @@ class NmrDpUtility:
                               'nmr-str2str-deposit',
                               'nmr-str2nef-release',
                               'nmr-cs-nef-consistency-check',
-                              'nmr-cs-str-consistency-check'
+                              'nmr-cs-str-consistency-check',
+                              'nmr-cs-mr-merge'
                               )
 
         # validation tasks for NMR data only
@@ -1001,7 +1012,7 @@ class NmrDpUtility:
                                 'nmr-str2nef-release': __str2nefTasks,
                                 'nmr-cs-nef-consistency-check': [self.__depositLegacyNmrData],
                                 'nmr-cs-str-consistency-check': [self.__depositLegacyNmrData],
-                                'nmr-cs-mr-merge': None
+                                'nmr-cs-mr-merge': __checkTasks
                                 }
 
         # data processing report
@@ -3678,27 +3689,25 @@ class NmrDpUtility:
                         if 'default-from' in d:
                             del d['default-from']
 
-            for v in self.pk_data_items['nmr-star']:
-                if v is None:
-                    continue
-                for d in v:
-                    if d['name'].startswith('Entity_assembly_ID'):
-                        d['type'] = 'str'
-                        d['default'] = 'A'
-                        if 'default-from' in d:
-                            del d['default-from']
-                        if 'enforce-non-zero' in d:
-                            del d['enforce-non-zero']
+            for d in self.pk_data_items['nmr-star']:
+                if d['name'].startswith('Entity_assembly_ID'):
+                    d['type'] = 'str'
+                    d['default'] = 'A'
+                    if 'default-from' in d:
+                        del d['default-from']
+                    if 'enforce-non-zero' in d:
+                        del d['enforce-non-zero']
 
             for v in self.aux_key_items['nmr-star'].values():
                 if v is None:
                     continue
-                for d in v:
-                    if d['name'].startswith('Entity_assembly_ID'):
-                        d['type'] = 'str'
-                        d['default'] = 'A'
-                        if 'default-from' in d:
-                            del d['default-from']
+                for v2 in v.values():
+                    for d in v2:
+                        if d['name'].startswith('Entity_assembly_ID'):
+                            d['type'] = 'str'
+                            d['default'] = 'A'
+                            if 'default-from' in d:
+                                del d['default-from']
 
             for v in self.aux_data_items['nmr-star'].values():
                 if v is None:
@@ -3970,6 +3979,38 @@ class NmrDpUtility:
 
                 file_type = 'nmr-star'  # 'nef' in self.__op else 'nmr-star' # DAOTHER-5673
 
+                if csPath.endswith('.gz'):
+
+                    _csPath = os.path.splitext(csPath)[0]
+
+                    if not os.path.exists(_csPath):
+
+                        try:
+
+                            uncompress_gzip_file(csPath, _csPath)
+
+                        except Exception as e:
+
+                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__initializeDpReport() ++ Error  - " + str(e))
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+NmrDpUtility.__initializeDpReport() ++ Error  - {str(e)}\n")
+
+                            return False
+
+                    csPath = _csPath
+
+                if self.__op == 'nmr-cs-mr-merge':
+
+                    _csPath = csPath + '.cif2str'
+
+                    if not os.path.exists(_csPath):
+                        cif_to_star = CifToNmrStar()
+                        cif_to_star.convert(csPath, _csPath)
+
+                    csPath = _csPath
+
                 input_source.setItemValue('file_name', os.path.basename(csPath))
                 input_source.setItemValue('file_type', file_type)
                 input_source.setItemValue('content_type', 'nmr-chemical-shifts')
@@ -4006,7 +4047,31 @@ class NmrDpUtility:
 
                     input_source = self.report.input_sources[file_path_list_len]
 
-                    input_source.setItemValue('file_name', os.path.basename(ar['file_name']))
+                    arPath = ar['file_name']
+
+                    if arPath.endswith('.gz'):
+
+                        _arPath = os.path.splitext(arPath)[0]
+
+                        if not os.path.exists(_arPath):
+
+                            try:
+
+                                uncompress_gzip_file(arPath, _arPath)
+
+                            except Exception as e:
+
+                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__initializeDpReport() ++ Error  - " + str(e))
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__initializeDpReport() ++ Error  - {str(e)}\n")
+
+                                return False
+
+                        arPath = _arPath
+
+                    input_source.setItemValue('file_name', os.path.basename(arPath))
                     input_source.setItemValue('file_type', ar['file_type'])
                     input_source.setItemValue('content_type', 'nmr-restraints')
                     if 'original_file_name' in ar:
@@ -4152,6 +4217,38 @@ class NmrDpUtility:
             cs_file_path_list = 'chem_shift_file_path_list'
 
             for csListId, csPath in enumerate(self.__inputParamDict[cs_file_path_list]):
+
+                if csPath.endswith('.gz'):
+
+                    _csPath = os.path.splitext(csPath)[0]
+
+                    if not os.path.exists(_csPath):
+
+                        try:
+
+                            uncompress_gzip_file(csPath, _csPath)
+
+                        except Exception as e:
+
+                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateInputSource() ++ Error  - " + str(e))
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+NmrDpUtility.__validateInputSource() ++ Error  - {str(e)}\n")
+
+                            return False
+
+                    csPath = _csPath
+
+                if self.__op == 'nmr-cs-mr-merge':
+
+                    _csPath = csPath + '.cif2str'
+
+                    if not os.path.exists(_csPath):
+                        cif_to_star = CifToNmrStar()
+                        cif_to_star.convert(csPath, _csPath)
+
+                    csPath = _csPath
 
                 codec = detect_bom(csPath, 'utf-8')
 
@@ -4383,6 +4480,28 @@ class NmrDpUtility:
                 for ar in self.__inputParamDict[ar_file_path_list]:
 
                     arPath = ar['file_name']
+
+                    if arPath.endswith('.gz'):
+
+                        _arPath = os.path.splitext(arPath)[0]
+
+                        if not os.path.exists(_arPath):
+
+                            try:
+
+                                uncompress_gzip_file(arPath, _arPath)
+
+                            except Exception as e:
+
+                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateInputSource() ++ Error  - " + str(e))
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateInputSource() ++ Error  - {str(e)}\n")
+
+                                return False
+
+                        arPath = _arPath
 
                     codec = detect_bom(arPath, 'utf-8')
 
@@ -4735,10 +4854,9 @@ class NmrDpUtility:
                         else:
 
                             cif_to_star = CifToNmrStar()
-                            cif_to_star.convert(_srcPath, _srcPath + '~')
-
-                            _srcPath += '~'
-                            tmpPaths.append(_srcPath)
+                            if cif_to_star.convert(_srcPath, _srcPath + '~'):
+                                _srcPath += '~'
+                                tmpPaths.append(_srcPath)
 
                 except AttributeError:
                     pass
@@ -5774,6 +5892,9 @@ class NmrDpUtility:
 
             for content_subtype in self.nmr_content_subtypes:
 
+                if content_subtype == 'entry_info':
+                    continue
+
                 sf_category = self.sf_categories[file_type][content_subtype]
 
                 if sf_category is None:
@@ -6330,11 +6451,6 @@ class NmrDpUtility:
 
         for ar in self.__inputParamDict[ar_file_path_list]:
 
-            file_path = ar['file_name']
-
-            with open(file_path, 'r', encoding='utf-8') as ifp:
-                md5_list.append(hashlib.md5(ifp.read().encode('utf-8')).hexdigest())
-
             input_source = self.report.input_sources[fileListId]
             input_source_dic = input_source.get()
 
@@ -6344,6 +6460,15 @@ class NmrDpUtility:
                 original_file_name = input_source_dic['original_file_name']
                 if file_name != original_file_name and original_file_name is not None:
                     file_name = f"{original_file_name} ({file_name})"
+
+            if file_type == 'nm-res-mr':
+                fileListId += 1
+                continue
+
+            file_path = ar['file_name']
+
+            with open(file_path, 'r', encoding='utf-8') as ifp:
+                md5_list.append(hashlib.md5(ifp.read().encode('utf-8')).hexdigest())
 
             is_aux_amb = file_type == 'nm-aux-amb'
 
@@ -6357,9 +6482,6 @@ class NmrDpUtility:
                 mr_format_name = 'CYANA'
             elif file_type == 'nm-res-ros':
                 mr_format_name = 'ROSETTA'
-            elif file_type == 'nm-res-mr':
-                fileListId += 1
-                continue
             else:
                 mr_format_name = 'other format'
 
@@ -8327,6 +8449,8 @@ class NmrDpUtility:
 
         fileListId = self.__file_path_list_len
 
+        splitted = []
+
         for ar in self.__inputParamDict[ar_file_path_list]:
 
             src_file = ar['file_name']
@@ -8347,7 +8471,7 @@ class NmrDpUtility:
 
             if not is_ascii_file(src_file):
 
-                if not src_file.endswith('gz'):
+                if not src_file.endswith('.gz'):
 
                     err = f"The NMR restraint file {src_file!r} (MR format) is neither ASCII file nor gzip compressed file."
 
@@ -8365,10 +8489,7 @@ class NmrDpUtility:
 
                     try:
 
-                        with gzip.open(src_file, mode='rt') as ifp:
-                            with open(dst_file, 'w') as ofp:
-                                for line in ifp:
-                                    ofp.write(line)
+                        uncompress_gzip_file(src_file, dst_file)
 
                     except Exception as e:
 
@@ -8376,7 +8497,7 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__splitPublicMRFileIntoLegacyMR() ++ Error  - {err}\n")
+                            self.__lfh.write(f"+NmrDpUtility.__splitPublicMRFileIntoLegacyMR() ++ Error  - {str(e)}\n")
 
                         return False
 
@@ -8428,11 +8549,42 @@ class NmrDpUtility:
             if possible_types is None:
                 print(f"The NMR restraint file {file_name!r} (MR format) is identified as {valid_types}.")
 
+                _ar = ar.copy()
+                len_valid_types = len(valid_types)
+
+                if len_valid_types == 1:
+                    _ar['file_name'] = dst_file
+                    _ar['file_type'] = valid_types[0]
+                    splitted.append(_ar)
+
+                elif len_valid_types == 2 and 'nm-res-cns' in valid_types and 'nm-res-xpl' in valid_types:
+                    _ar['file_name'] = dst_file
+                    _ar['file_type'] = 'nm-res-xpl'
+                    splitted.append(_ar)
+
             elif valid_types is None:
                 print(f"The NMR restraint file {file_name!r} (MR format) can be {possible_types}.")
 
             else:
                 print(f"The NMR restraint file {file_name!r} (MR format) is identified as {valid_types} and can be {possible_types} as well.")
+
+        if len(splitted) > 0:
+            self.__inputParamDict[ar_file_path_list].extend(splitted)
+
+            file_path_list_len = len(self.report.input_sources)
+
+            for _ar in splitted:
+                self.report.appendInputSource()
+
+                input_source = self.report.input_sources[file_path_list_len]
+
+                input_source.setItemValue('file_name', _ar['file_name'])
+                input_source.setItemValue('file_type', _ar['file_type'])
+                input_source.setItemValue('content_type', 'nmr-restraints')
+                if 'original_file_name' in _ar:
+                    input_source.setItemValue('original_file_name', _ar['original_file_name'])
+
+                file_path_list_len += 1
 
         return not self.report.isError()
 
@@ -24133,6 +24285,28 @@ class NmrDpUtility:
 
             fPath = self.__inputParamDict['coordinate_file_path']
 
+            if fPath.endswith('.gz'):
+
+                _fPath = os.path.splitext(fPath)[0]
+
+                if not os.path.exists(_fPath):
+
+                    try:
+
+                        uncompress_gzip_file(fPath, _fPath)
+
+                    except Exception as e:
+
+                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__parseCoordFilePath() ++ Error  - " + str(e))
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__parseCoordFilePath() ++ Error  - {str(e)}\n")
+
+                        return False
+
+                fPath = _fPath
+
             try:
 
                 self.__cifPath = fPath
@@ -31794,7 +31968,7 @@ class NmrDpUtility:
 
         except KeyError:  # DAOTHER-7389, issue #4
 
-            if sf_framecode in self.__sf_name_corr[file_list_id]:
+            if file_list_id < len(self.__sf_name_corr) and sf_framecode in self.__sf_name_corr[file_list_id]:
 
                 try:
                     return self.__star_data[file_list_id].get_saveframe_by_name(self.__sf_name_corr[file_list_id][sf_framecode])
@@ -32962,11 +33136,11 @@ class NmrDpUtility:
         if 'nmr-star_file_path' not in self.__outputParamDict:
             raise KeyError("+NmrDpUtility.__translateNef2Str() ++ Error  - Could not find 'nmr-star_file_path' output parameter.")
 
-        out_file_path = self.__outputParamDict['nmr-star_file_path']
+        fPath = self.__outputParamDict['nmr-star_file_path']
 
         try:
 
-            is_valid, message = self.__nefT.nef_to_nmrstar(self.__dstPath, out_file_path,
+            is_valid, message = self.__nefT.nef_to_nmrstar(self.__dstPath, fPath,
                                                            report=self.report, leave_unmatched=self.__leave_intl_note)  # (None if self.__alt_chain else self.report))
 
             if self.__release_mode and self.__tmpPath is not None:
@@ -32988,8 +33162,8 @@ class NmrDpUtility:
             if self.__verbose:
                 self.__lfh.write(f"+NmrDpUtility.__translateNef2Str() ++ Error  - {err}\n")
 
-            if os.path.exists(out_file_path):
-                os.remove(out_file_path)
+            if os.path.exists(fPath):
+                os.remove(fPath)
 
             return False
 
@@ -33002,7 +33176,7 @@ class NmrDpUtility:
                 if 'original_file_name' in self.__inputParamDict:
                     original_file_name = self.__inputParamDict['original_file_name']
 
-                star_to_cif.convert(out_file_path, self.__outputParamDict['nmr-cif_file_path'], original_file_name, 'nm-uni-nef')
+                star_to_cif.convert(fPath, self.__outputParamDict['nmr-cif_file_path'], original_file_name, 'nm-uni-nef')
 
             return True
 
@@ -33021,8 +33195,8 @@ class NmrDpUtility:
         if self.__verbose:
             self.__lfh.write(f"+NmrDpUtility.__translateNef2Str() ++ Error  - {err}\n")
 
-        if os.path.exists(out_file_path):
-            os.remove(out_file_path)
+        if os.path.exists(fPath):
+            os.remove(fPath)
 
         return False
 
@@ -33080,11 +33254,11 @@ class NmrDpUtility:
         if 'nef_file_path' not in self.__outputParamDict:
             raise KeyError("+NmrDpUtility.__translateStr2Nef() ++ Error  - Could not find 'nef_file_path' output parameter.")
 
-        out_file_path = self.__outputParamDict['nef_file_path']
+        fPath = self.__outputParamDict['nef_file_path']
 
         try:
 
-            is_valid, message = self.__nefT.nmrstar_to_nef(self.__dstPath, out_file_path, report=self.report)  # (None if self.__alt_chain else self.report))
+            is_valid, message = self.__nefT.nmrstar_to_nef(self.__dstPath, fPath, report=self.report)  # (None if self.__alt_chain else self.report))
 
             if self.__release_mode and self.__tmpPath is not None:
                 os.remove(self.__tmpPath)
@@ -33105,8 +33279,8 @@ class NmrDpUtility:
             if self.__verbose:
                 self.__lfh.write(f"+NmrDpUtility.__translateStr2Nef() ++ Error  - {err}\n")
 
-            if os.path.exists(out_file_path):
-                os.remove(out_file_path)
+            if os.path.exists(fPath):
+                os.remove(fPath)
 
             return False
 
@@ -33128,8 +33302,8 @@ class NmrDpUtility:
         if self.__verbose:
             self.__lfh.write(f"+NmrDpUtility.__translateStr2Nef() ++ Error  - {err}\n")
 
-        if os.path.exists(out_file_path):
-            os.remove(out_file_path)
+        if os.path.exists(fPath):
+            os.remove(fPath)
 
         return False
 

@@ -44,17 +44,19 @@ xplor_nih_mr:
 	hbond_restraint |
 	flag_statement
 	)*
-	noe_assign*			// allowing bare assign clauses for Distance restraints
-	dihedral_assign*		// allowing bare assign clauses for Dihedral angle restraints
-	sani_assign*			// allowing bare assign clauses for RDC restraints
-	planar_statement*		// allowing bare group clauses for Planality restraints
-	hbond_assign*			// allowing bare assign clauses for Hydrogen bond restraints
-	coup_assign*			// allowing bare assign clauses for Scaler J-coupling restraints
-	xadc_assign*			// allowing bare assign clauses for Antidistance restraints
-	coll_assign*			// allowing bare assign clauses for Radius of gyration restraints
-	csa_assign*			// allowing bare assign clauses for CSA restraints
-	pre_assign*			// allowing bare assign clauses for PRE restraints
-	pcs_assign*			// allowing bare assign clauses for PCS restraints
+	(
+	noe_assign |			// allowing bare assign clauses for Distance restraints
+	dihedral_assign |		// allowing bare assign clauses for Dihedral angle restraints
+	sani_assign |			// allowing bare assign clauses for RDC restraints
+	planar_statement |		// allowing bare group clauses for Planality restraints
+	hbond_assign |			// allowing bare assign clauses for Hydrogen bond restraints
+	coup_assign |			// allowing bare assign clauses for Scaler J-coupling restraints
+	xadc_assign |			// allowing bare assign clauses for Antidistance restraints
+	coll_assign |			// allowing bare assign clauses for Radius of gyration restraints
+	csa_assign |			// allowing bare assign clauses for CSA restraints
+	pre_assign |			// allowing bare assign clauses for PRE restraints
+	pcs_assign			// allowing bare assign clauses for PCS restraints
+	)*
 	EOF;
 
 distance_restraint:

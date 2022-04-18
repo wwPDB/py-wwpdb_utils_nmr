@@ -34,11 +34,13 @@ cns_mr:
 	angle_db_restraint |
 	flag_statement
 	)*
-	noe_assign*			// allowing bare assign clauses for Distance restraints
-	dihedral_assign*		// allowing bare assign clauses for Dihedral angle restraints
-	sani_assign*			// allowing bare assign clauses for RDC restraints
-	plane_statement*		// allowing bare group clauses for Plane restraints
-	coup_assign*			// allowing bare assign clauses for Scaler J-coupling restraints
+	(
+	noe_assign |			// allowing bare assign clauses for Distance restraints
+	dihedral_assign |		// allowing bare assign clauses for Dihedral angle restraints
+	sani_assign |			// allowing bare assign clauses for RDC restraints
+	plane_statement |		// allowing bare group clauses for Plane restraints
+	coup_assign			// allowing bare assign clauses for Scaler J-coupling restraints
+	)*
 	EOF;
 
 distance_restraint:

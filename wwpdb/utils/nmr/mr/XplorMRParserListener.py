@@ -245,7 +245,7 @@ class XplorMRParserListener(ParseTreeListener):
     __preferAuthSeq = True
 
     # current restraint subtype
-    __cur_subtype = None
+    __cur_subtype = ''
 
     depth = 0
 
@@ -360,6 +360,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by XplorMRParser#distance_restraint.
     def enterDistance_restraint(self, ctx: XplorMRParser.Distance_restraintContext):  # pylint: disable=unused-argument
         self.distStatements += 1
+        self.__cur_subtype = 'dist'
 
         self.noePotential = 'biharmonic'  # default potential
         self.squareExponent = 2.0
@@ -377,6 +378,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by XplorMRParser#dihedral_angle_restraint.
     def enterDihedral_angle_restraint(self, ctx: XplorMRParser.Dihedral_angle_restraintContext):  # pylint: disable=unused-argument
         self.dihedStatements += 1
+        self.__cur_subtype = 'dihed'
 
         self.scale = 1.0
 
@@ -387,6 +389,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by XplorMRParser#rdc_restraint.
     def enterRdc_restraint(self, ctx: XplorMRParser.Rdc_restraintContext):  # pylint: disable=unused-argument
         self.rdcStatements += 1
+        self.__cur_subtype = 'rdc'
 
         self.potential = 'square'  # default potential
         self.scale = 1.0
@@ -398,6 +401,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by XplorMRParser#planar_restraint.
     def enterPlanar_restraint(self, ctx: XplorMRParser.Planar_restraintContext):  # pylint: disable=unused-argument
         self.planeStatements += 1
+        self.__cur_subtype = 'plane'
 
     # Exit a parse tree produced by XplorMRParser#planar_restraint.
     def exitPlanar_restraint(self, ctx: XplorMRParser.Planar_restraintContext):  # pylint: disable=unused-argument
@@ -406,6 +410,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by XplorMRParser#antidistance_restraint.
     def enterAntidistance_restraint(self, ctx: XplorMRParser.Antidistance_restraintContext):  # pylint: disable=unused-argument
         self.adistStatements += 1
+        self.__cur_subtype = 'adist'
 
     # Exit a parse tree produced by XplorMRParser#antidistance_restraint.
     def exitAntidistance_restraint(self, ctx: XplorMRParser.Antidistance_restraintContext):  # pylint: disable=unused-argument
@@ -414,6 +419,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by XplorMRParser#coupling_restraint.
     def enterCoupling_restraint(self, ctx: XplorMRParser.Coupling_restraintContext):  # pylint: disable=unused-argument
         self.jcoupStatements += 1
+        self.__cur_subtype = 'jcoup'
 
     # Exit a parse tree produced by XplorMRParser#coupling_restraint.
     def exitCoupling_restraint(self, ctx: XplorMRParser.Coupling_restraintContext):  # pylint: disable=unused-argument
@@ -446,6 +452,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by XplorMRParser#radius_of_gyration_restraint.
     def enterRadius_of_gyration_restraint(self, ctx: XplorMRParser.Radius_of_gyration_restraintContext):  # pylint: disable=unused-argument
         self.radiStatements += 1
+        self.__cur_subtype = 'radi'
 
     # Exit a parse tree produced by XplorMRParser#radius_of_gyration_restraint.
     def exitRadius_of_gyration_restraint(self, ctx: XplorMRParser.Radius_of_gyration_restraintContext):  # pylint: disable=unused-argument
@@ -470,6 +477,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by XplorMRParser#csa_restraint.
     def enterCsa_restraint(self, ctx: XplorMRParser.Csa_restraintContext):  # pylint: disable=unused-argument
         self.csaStatements += 1  # either CSA or pseudo CSA
+        self.__cur_subtype = 'csa'
 
     # Exit a parse tree produced by XplorMRParser#csa_restraint.
     def exitCsa_restraint(self, ctx: XplorMRParser.Csa_restraintContext):  # pylint: disable=unused-argument
@@ -478,6 +486,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by XplorMRParser#pcsa_restraint.
     def enterPcsa_restraint(self, ctx: XplorMRParser.Pcsa_restraintContext):  # pylint: disable=unused-argument
         self.csaStatements += 1  # either CSA or pseudo CSA
+        self.__cur_subtype = 'csa'
 
     # Exit a parse tree produced by XplorMRParser#pcsa_restraint.
     def exitPcsa_restraint(self, ctx: XplorMRParser.Pcsa_restraintContext):  # pylint: disable=unused-argument
@@ -506,6 +515,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by XplorMRParser#pre_restraint.
     def enterPre_restraint(self, ctx: XplorMRParser.Pre_restraintContext):  # pylint: disable=unused-argument
         self.preStatements += 1
+        self.__cur_subtype = 'pre'
 
     # Exit a parse tree produced by XplorMRParser#pre_restraint.
     def exitPre_restraint(self, ctx: XplorMRParser.Pre_restraintContext):  # pylint: disable=unused-argument
@@ -514,6 +524,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by XplorMRParser#pcs_restraint.
     def enterPcs_restraint(self, ctx: XplorMRParser.Pcs_restraintContext):  # pylint: disable=unused-argument
         self.pcsStatements += 1
+        self.__cur_subtype = 'pcs'
 
     # Exit a parse tree produced by XplorMRParser#pcs_restraint.
     def exitPcs_restraint(self, ctx: XplorMRParser.Pcs_restraintContext):  # pylint: disable=unused-argument
@@ -550,6 +561,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by XplorMRParser#hbond_restraint.
     def enterHbond_restraint(self, ctx: XplorMRParser.Hbond_restraintContext):  # pylint: disable=unused-argument
         self.hbondStatements += 1
+        self.__cur_subtype = 'hbond'
 
     # Exit a parse tree produced by XplorMRParser#hbond_restraint.
     def exitHbond_restraint(self, ctx: XplorMRParser.Hbond_restraintContext):  # pylint: disable=unused-argument
@@ -622,6 +634,8 @@ class XplorMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by XplorMRParser#noe_assign.
     def enterNoe_assign(self, ctx: XplorMRParser.Noe_assignContext):  # pylint: disable=unused-argument
         self.distRestraints += 1
+        if self.__cur_subtype != 'dist':
+            self.distStatements += 1
         self.__cur_subtype = 'dist'
 
         self.atomSelectionSet.clear()
@@ -896,6 +910,8 @@ class XplorMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by XplorMRParser#dihedral_assign.
     def enterDihedral_assign(self, ctx: XplorMRParser.Dihedral_assignContext):  # pylint: disable=unused-argument
         self.dihedRestraints += 1
+        if self.__cur_subtype != 'dihed':
+            self.dihedStatements += 1
         self.__cur_subtype = 'dihed'
 
         self.atomSelectionSet.clear()
@@ -1171,6 +1187,8 @@ class XplorMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by XplorMRParser#sani_assign.
     def enterSani_assign(self, ctx: XplorMRParser.Sani_assignContext):  # pylint: disable=unused-argument
         self.rdcRestraints += 1
+        if self.__cur_subtype != 'rdc':
+            self.rdcStatements += 1
         self.__cur_subtype = 'rdc'
 
         self.atomSelectionSet.clear()
@@ -2217,6 +2235,8 @@ class XplorMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by XplorMRParser#group_statement.
     def enterGroup_statement(self, ctx: XplorMRParser.Group_statementContext):
         self.planeRestraints += 1
+        if self.__cur_subtype != 'plane':
+            self.planeStatements += 1
         self.__cur_subtype = 'plane'
 
         self.atomSelectionSet.clear()
@@ -2267,6 +2287,8 @@ class XplorMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by XplorMRParser#xadc_assign.
     def enterXadc_assign(self, ctx: XplorMRParser.Xadc_assignContext):  # pylint: disable=unused-argument
         self.adistRestraints += 1
+        if self.__cur_subtype != 'adist':
+            self.adistStatements += 1
         self.__cur_subtype = 'adist'
 
         self.atomSelectionSet.clear()
@@ -2314,6 +2336,8 @@ class XplorMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by XplorMRParser#coup_assign.
     def enterCoup_assign(self, ctx: XplorMRParser.Coup_assignContext):  # pylint: disable=unused-argument
         self.jcoupRestraints += 1
+        if self.__cur_subtype != 'jcoup':
+            self.jcoupStatements += 1
         self.__cur_subtype = 'jcoup'
 
         self.atomSelectionSet.clear()
@@ -3013,6 +3037,8 @@ class XplorMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by XplorMRParser#coll_assign.
     def enterColl_assign(self, ctx: XplorMRParser.Coll_assignContext):  # pylint: disable=unused-argument
         self.radiRestraints += 1
+        if self.__cur_subtype != 'radi':
+            self.radiStatements += 1
         self.__cur_subtype = 'radi'
 
         self.atomSelectionSet.clear()
@@ -3484,6 +3510,8 @@ class XplorMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by XplorMRParser#csa_assign.
     def enterCsa_assign(self, ctx: XplorMRParser.Csa_assignContext):  # pylint: disable=unused-argument
         self.csaRestraints += 1
+        if self.__cur_subtype != 'csa':
+            self.csaStatements += 1
         self.__cur_subtype = 'csa'
 
         self.atomSelectionSet.clear()
@@ -3935,6 +3963,8 @@ class XplorMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by XplorMRParser#pre_assign.
     def enterPre_assign(self, ctx: XplorMRParser.Pre_assignContext):  # pylint: disable=unused-argument
         self.preRestraints += 1
+        if self.__cur_subtype != 'pre':
+            self.preStatements += 1
         self.__cur_subtype = 'pre'
 
         self.atomSelectionSet.clear()
@@ -4153,6 +4183,8 @@ class XplorMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by XplorMRParser#pcs_assign.
     def enterPcs_assign(self, ctx: XplorMRParser.Pcs_assignContext):  # pylint: disable=unused-argument
         self.pcsRestraints += 1
+        if self.__cur_subtype != 'pcs':
+            self.pcsStatements += 1
         self.__cur_subtype = 'pcs'
 
         self.atomSelectionSet.clear()
@@ -4859,6 +4891,8 @@ class XplorMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by XplorMRParser#hbond_assign.
     def enterHbond_assign(self, ctx: XplorMRParser.Hbond_assignContext):  # pylint: disable=unused-argument
         self.hbondRestraints += 1
+        if self.__cur_subtype != 'hbond':
+            self.hbondStatements += 1
         self.__cur_subtype = 'hbond'
 
         self.atomSelectionSet.clear()

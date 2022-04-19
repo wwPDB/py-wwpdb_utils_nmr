@@ -179,7 +179,7 @@ class CnsMRParserListener(ParseTreeListener):
     __preferAuthSeq = True
 
     # current restraint subtype
-    __cur_subtype = None
+    __cur_subtype = ''
 
     depth = 0
 
@@ -284,6 +284,7 @@ class CnsMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by CnsMRParser#distance_restraint.
     def enterDistance_restraint(self, ctx: CnsMRParser.Distance_restraintContext):  # pylint: disable=unused-argument
         self.distStatements += 1
+        self.__cur_subtype = 'dist'
 
         self.noePotential = 'biharmonic'  # default potential
         self.squareExponent = 2.0
@@ -301,6 +302,7 @@ class CnsMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by CnsMRParser#dihedral_angle_restraint.
     def enterDihedral_angle_restraint(self, ctx: CnsMRParser.Dihedral_angle_restraintContext):  # pylint: disable=unused-argument
         self.dihedStatements += 1
+        self.__cur_subtype = 'dihed'
 
         self.scale = 1.0
 
@@ -311,6 +313,7 @@ class CnsMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by CnsMRParser#plane_restraint.
     def enterPlane_restraint(self, ctx: CnsMRParser.Plane_restraintContext):  # pylint: disable=unused-argument
         self.planeStatements += 1
+        self.__cur_subtype = 'plane'
 
     # Exit a parse tree produced by CnsMRParser#plane_restraint.
     def exitPlane_restraint(self, ctx: CnsMRParser.Plane_restraintContext):  # pylint: disable=unused-argument
@@ -328,6 +331,7 @@ class CnsMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by CnsMRParser#rdc_restraint.
     def enterRdc_restraint(self, ctx: CnsMRParser.Rdc_restraintContext):  # pylint: disable=unused-argument
         self.rdcStatements += 1
+        self.__cur_subtype = 'rdc'
 
         self.potential = 'square'  # default potential
         self.scale = 1.0
@@ -339,6 +343,7 @@ class CnsMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by CnsMRParser#coupling_restraint.
     def enterCoupling_restraint(self, ctx: CnsMRParser.Coupling_restraintContext):  # pylint: disable=unused-argument
         self.jcoupStatements += 1
+        self.__cur_subtype = 'jcoup'
 
     # Exit a parse tree produced by CnsMRParser#coupling_restraint.
     def exitCoupling_restraint(self, ctx: CnsMRParser.Coupling_restraintContext):  # pylint: disable=unused-argument
@@ -463,6 +468,8 @@ class CnsMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by CnsMRParser#noe_assign.
     def enterNoe_assign(self, ctx: CnsMRParser.Noe_assignContext):  # pylint: disable=unused-argument
         self.distRestraints += 1
+        if self.__cur_subtype != 'dist':
+            self.distStatements += 1
         self.__cur_subtype = 'dist'
 
         self.atomSelectionSet.clear()
@@ -737,6 +744,8 @@ class CnsMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by CnsMRParser#dihedral_assign.
     def enterDihedral_assign(self, ctx: CnsMRParser.Dihedral_assignContext):  # pylint: disable=unused-argument
         self.dihedRestraints += 1
+        if self.__cur_subtype != 'dihed':
+            self.dihedStatements += 1
         self.__cur_subtype = 'dihed'
 
         self.atomSelectionSet.clear()
@@ -992,6 +1001,8 @@ class CnsMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by CnsMRParser#group_statement.
     def enterGroup_statement(self, ctx: CnsMRParser.Group_statementContext):
         self.planeRestraints += 1
+        if self.__cur_subtype != 'plane':
+            self.planeStatements += 1
         self.__cur_subtype = 'plane'
 
         self.atomSelectionSet.clear()
@@ -1054,6 +1065,8 @@ class CnsMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by CnsMRParser#sani_assign.
     def enterSani_assign(self, ctx: CnsMRParser.Sani_assignContext):  # pylint: disable=unused-argument
         self.rdcRestraints += 1
+        if self.__cur_subtype != 'rdc':
+            self.rdcStatements += 1
         self.__cur_subtype = 'rdc'
 
         self.atomSelectionSet.clear()
@@ -1346,6 +1359,8 @@ class CnsMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by CnsMRParser#coup_assign.
     def enterCoup_assign(self, ctx: CnsMRParser.Coup_assignContext):  # pylint: disable=unused-argument
         self.jcoupRestraints += 1
+        if self.__cur_subtype != 'jcoup':
+            self.jcoupStatements += 1
         self.__cur_subtype = 'jcoup'
 
         self.atomSelectionSet.clear()

@@ -206,7 +206,7 @@ class AmberMRParserListener(ParseTreeListener):
     __preferAuthSeq = True
 
     # current restraint subtype
-    __cur_subtype = None
+    __cur_subtype = ''
 
     # last Sander comment
     lastComment = None
@@ -574,7 +574,7 @@ class AmberMRParserListener(ParseTreeListener):
     def enterRestraint_statement(self, ctx: AmberMRParser.Restraint_statementContext):  # pylint: disable=unused-argument
         self.nmrRestraints += 1
 
-        self.__cur_subtype = None
+        self.__cur_subtype = ''
 
         self.numIatCol = 0
         self.setIatCol = None
@@ -599,7 +599,7 @@ class AmberMRParserListener(ParseTreeListener):
     def exitRestraint_statement(self, ctx: AmberMRParser.Restraint_statementContext):  # pylint: disable=unused-argument
         self.detectRestraintType(self.distLike)
 
-        if self.__cur_subtype is None:
+        if len(self.__cur_subtype) == 0:
             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                 "Couldn't specify NMR restraint type because the number of columns in the 'iat' clause did not match.\n"
             return
@@ -2412,7 +2412,7 @@ class AmberMRParserListener(ParseTreeListener):
                     self.setIatCol.remove(decimal)
                     if self.numIatCol >= decimal:
                         self.numIatCol = decimal - 1
-                        self.__cur_subtype = None
+                        self.__cur_subtype = ''
 
             else:
                 if ctx.Integers():
@@ -2660,7 +2660,7 @@ class AmberMRParserListener(ParseTreeListener):
     def detectRestraintType(self, distLike):
         self.distLike = distLike
 
-        if self.__cur_subtype is not None:
+        if len(self.__cur_subtype) > 0:
             return
 
         if self.numIatCol == COL_DIST:

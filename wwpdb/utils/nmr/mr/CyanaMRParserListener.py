@@ -137,7 +137,7 @@ class CyanaMRParserListener(ParseTreeListener):
     __preferAuthSeq = True
 
     # current restraint subtype
-    __cur_subtype = None
+    __cur_subtype = ''
 
     # RDC parameter dictionary
     rdcParameterDict = None

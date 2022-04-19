@@ -6482,6 +6482,8 @@ class NmrDpUtility:
                 mr_format_name = 'CYANA'
             elif file_type == 'nm-res-ros':
                 mr_format_name = 'ROSETTA'
+            elif file_type == 'nm-res-mr':
+                mr_format_name = 'MR'
             else:
                 mr_format_name = 'other format'
 
@@ -8433,7 +8435,7 @@ class NmrDpUtility:
         except ValueError:
             pass
 
-        return checked, err, valid_types if len(valid_types) > 0 else None, possible_types if len(possible_types) > 0 else None
+        return checked, err, valid_types, possible_types
 
     def __splitPublicMRFileIntoLegacyMR(self):
         """ Split public MR file into legacy NMR restraint files for NMR restraint remediation.
@@ -8533,7 +8535,10 @@ class NmrDpUtility:
 
             _, _, valid_types, possible_types = self.__detectOtherPossibleFormatAsErrorOfLegacyMR(dst_file, file_name, file_type, [], True)
 
-            if valid_types is None and possible_types is None:
+            len_valid_types = len(valid_types)
+            len_possible_types = len(possible_types)
+
+            if len_valid_types == 0 and len_possible_types == 0:
 
                 err = f"The NMR restraint file {file_name!r} (MR format) does not match with any known format."
 
@@ -8546,11 +8551,10 @@ class NmrDpUtility:
 
                 return False
 
-            if possible_types is None:
+            if len_possible_types == 0:
                 print(f"The NMR restraint file {file_name!r} (MR format) is identified as {valid_types}.")
 
                 _ar = ar.copy()
-                len_valid_types = len(valid_types)
 
                 if len_valid_types == 1:
                     _ar['file_name'] = dst_file
@@ -18047,7 +18051,7 @@ class NmrDpUtility:
             file_type = input_source_dic['file_type']
             content_subtype = input_source_dic['content_subtype']
 
-            if file_type in ('nm-aux-amb', 'nm-res-oth'):
+            if file_type in ('nm-aux-amb', 'nm-res-oth', 'nm-res-mr'):
                 continue
 
             if content_subtype is None or len(content_subtype) == 0:

@@ -112,7 +112,7 @@ class CifToNmrStar:
 
             block_name_list = cifObj.GetBlockIDList()
 
-            entry_id = block_name_list[0]
+            entry_id = None
 
             strObj = pynmrstar.Entry.from_scratch(os.path.basename(cifPath))
 
@@ -142,7 +142,7 @@ class CifToNmrStar:
                     item['ordered'] = ordered_block
 
                     item['sf_category_flag'] = False
-                    for _item in itVals['Items']:
+                    for _item, _value in zip(itVals['Items'], itVals['Values'][0]):
                         tag = '_' + category + '.' + _item
                         dict = self.schema[tag.lower()]
                         dict = {k: v for k, v in self.schema[tag.lower()].items() if v not in emptyValue}
@@ -152,11 +152,16 @@ class CifToNmrStar:
                             item['super_category'] = dict['ADIT super category']
                         if 'Sf category flag' in dict and dict['Sf category flag'].lower() in trueValue:
                             item['sf_category_flag'] = True
+                        if _item == 'Entry_ID' and entry_id in emptyValue:
+                            entry_id = _value
                         # print(f"{tag}\n{dict}")
 
                     category_order.append(item)
 
                     previous_order = current_order
+
+            if entry_id in emptyValue:
+                entry_id = block_name_list[0]
 
             # reorder
             category_order.sort(key=lambda k: k['category_order'])
@@ -263,9 +268,9 @@ class CifToNmrStar:
 
             strObj.write_to_file(strPath, skip_empty_tags=False)
 
-            return True
-
         except Exception as e:
             self.__lfh.write(f"+ERROR- CifToNmrStar.convert() {str(e)}\n")
 
-        return False
+            return False
+
+        return True

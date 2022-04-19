@@ -11,7 +11,6 @@
 """
 import sys
 import os
-import os.path
 import pynmrstar
 import pickle
 

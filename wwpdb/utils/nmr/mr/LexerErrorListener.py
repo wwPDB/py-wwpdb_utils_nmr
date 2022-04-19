@@ -7,7 +7,6 @@
     @author: Masashi Yokochi
 """
 import os
-import os.path
 
 from antlr4.error.ErrorListener import ErrorListener
 

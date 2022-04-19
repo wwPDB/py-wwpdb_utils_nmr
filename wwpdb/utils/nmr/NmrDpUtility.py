@@ -158,7 +158,6 @@
 """
 import sys
 import os
-import os.path
 import itertools
 import copy
 import collections
@@ -4019,13 +4018,11 @@ class NmrDpUtility:
 
             if mr_file_path_list in self.__inputParamDict:
 
-                file_path_list_len = self.__cs_file_path_list_len
-
                 for mrPath in self.__inputParamDict[mr_file_path_list]:
 
                     self.report.appendInputSource()
 
-                    input_source = self.report.input_sources[file_path_list_len]
+                    input_source = self.report.input_sources[-1]
 
                     file_type = 'nmr-star'  # 'nef' if 'nef' in self.__op else 'nmr-star' # DAOTHER-5673
 
@@ -4033,19 +4030,15 @@ class NmrDpUtility:
                     input_source.setItemValue('file_type', file_type)
                     input_source.setItemValue('content_type', 'nmr-restraints')
 
-                    file_path_list_len += 1
-
             ar_file_path_list = 'atypical_restraint_file_path_list'
 
             if ar_file_path_list in self.__inputParamDict:
-
-                file_path_list_len = self.__file_path_list_len
 
                 for ar in self.__inputParamDict[ar_file_path_list]:
 
                     self.report.appendInputSource()
 
-                    input_source = self.report.input_sources[file_path_list_len]
+                    input_source = self.report.input_sources[-1]
 
                     arPath = ar['file_name']
 
@@ -4076,8 +4069,6 @@ class NmrDpUtility:
                     input_source.setItemValue('content_type', 'nmr-restraints')
                     if 'original_file_name' in ar:
                         input_source.setItemValue('original_file_name', ar['original_file_name'])
-
-                    file_path_list_len += 1
 
         self.__star_data_type = []
         self.__star_data = []
@@ -8575,20 +8566,17 @@ class NmrDpUtility:
         if len(splitted) > 0:
             self.__inputParamDict[ar_file_path_list].extend(splitted)
 
-            file_path_list_len = len(self.report.input_sources)
-
             for _ar in splitted:
+
                 self.report.appendInputSource()
 
-                input_source = self.report.input_sources[file_path_list_len]
+                input_source = self.report.input_sources[-1]
 
                 input_source.setItemValue('file_name', _ar['file_name'])
                 input_source.setItemValue('file_type', _ar['file_type'])
                 input_source.setItemValue('content_type', 'nmr-restraints')
                 if 'original_file_name' in _ar:
                     input_source.setItemValue('original_file_name', _ar['original_file_name'])
-
-                file_path_list_len += 1
 
         return not self.report.isError()
 
@@ -24132,17 +24120,16 @@ class NmrDpUtility:
         """
 
         file_type = 'pdbx'
+
         content_type = self.content_type[file_type]
 
         if self.__parseCoordinate():
-
-            file_name = os.path.basename(self.__cifPath)
 
             self.report.appendInputSource()
 
             input_source = self.report.input_sources[-1]
 
-            input_source.setItemValue('file_name', file_name)
+            input_source.setItemValue('file_name', os.path.basename(self.__cifPath))
             input_source.setItemValue('file_type', file_type)
             input_source.setItemValue('content_type', content_type)
 

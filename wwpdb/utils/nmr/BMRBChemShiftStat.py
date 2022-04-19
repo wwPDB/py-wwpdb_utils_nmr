@@ -19,7 +19,6 @@
 """
 import sys
 import os
-import os.path
 import csv
 import re
 import copy

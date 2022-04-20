@@ -85,7 +85,7 @@ ETABLE:			'ETABLE';		// min max [many numbers]
 USOG:			'USOG';			// num_gaussians mean1 sd1 mean2 sd2...
 SOG:			'SOG';			// num_gaussians mean1 sd1 weight1 mean2 sd2 weight2...
 
-Integer:		DECIMAL;
+Integer:		('+' | '-')? DECIMAL;
 Float:			('+' | '-')? (DECIMAL | DEC_DOT_DEC);
 fragment DEC_DOT_DEC:	(DECIMAL '.' DECIMAL?) | ('.' DECIMAL);
 fragment DEC_DIGIT:	[0-9];
@@ -100,7 +100,7 @@ Simple_name:		SIMPLE_NAME;
 fragment ALPHA:		[A-Za-z];
 fragment ALPHA_NUM:	ALPHA | DEC_DIGIT;
 fragment START_CHAR:	ALPHA_NUM | '_';
-fragment NAME_CHAR:	START_CHAR | '\'' | '-' | '+' | '.';
+fragment NAME_CHAR:	START_CHAR | '\'' | '-' | '+' | '.' | '"';
 fragment ATM_NAME_CHAR:	ALPHA_NUM | '\'';
 fragment ATM_TYPE_CHAR:	ALPHA_NUM | '-' | '+';
 fragment SIMPLE_NAME:	START_CHAR NAME_CHAR*;

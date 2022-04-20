@@ -595,7 +595,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by CyanaMRParser#torsion_angle_restraint.
     def exitTorsion_angle_restraint(self, ctx: CyanaMRParser.Torsion_angle_restraintContext):  # pylint: disable=unused-argument
-        seqId = int(str(ctx.Integer()))
+        seqId = int(str(ctx.Integer(0)))
         compId = str(ctx.Simple_name(0)).upper()
         angleName = str(ctx.Simple_name(1)).upper()
         lower_limit = self.numberSelection[0]

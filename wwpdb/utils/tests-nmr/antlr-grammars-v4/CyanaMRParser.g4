@@ -51,7 +51,7 @@ torsion_angle_restraints:
 	torsion_angle_restraint+;
 
 torsion_angle_restraint:
-	Integer Simple_name Simple_name number number number?;
+	Integer Simple_name Simple_name number number number? (Type Equ_op Integer)? Or?;
 
 /* CYANA 3.0 Reference Manual - Residual dipolar coupling restraint file
  See also http://www.cyana.org/wiki/index.php/Residual_dipolar_coupling_restraint_file

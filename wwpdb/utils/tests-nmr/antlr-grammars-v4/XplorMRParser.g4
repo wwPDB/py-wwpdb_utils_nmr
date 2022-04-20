@@ -157,7 +157,7 @@ noe_statement:
 noe_assign:
 	Assign selection selection number number number
 	(Peak Equ_op? number)? (Spectrum Equ_op? number)? (Weight Equ_op? number)?
-	(Volume Equ_op? number)? (Ppm1 Equ_op? number)? (Ppm2 Equ_op? number)?
+	(Volume Equ_op? number)? (Ppm1 Equ_op? number)? (Ppm2 Equ_op? number)? (Cv Equ_op? number)?
 	(Or_op selection selection)*;
 
 predict_statement:

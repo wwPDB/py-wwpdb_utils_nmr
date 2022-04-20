@@ -880,7 +880,7 @@ class NmrDpUtility:
 
         # validation tasks for NMR data only
         __nmrCheckTasks = [self.__detectContentSubType,
-                           self.__splitPublicMRFileIntoLegacyMR,
+                           self.__extractPublicMRFileIntoLegacyMR,
                            self.__detectContentSubTypeOfLegacyMR,
                            self.__extractPolymerSequence,
                            self.__extractPolymerSequenceInLoop,
@@ -8428,8 +8428,8 @@ class NmrDpUtility:
 
         return checked, err, valid_types, possible_types
 
-    def __splitPublicMRFileIntoLegacyMR(self):
-        """ Split public MR file into legacy NMR restraint files for NMR restraint remediation.
+    def __extractPublicMRFileIntoLegacyMR(self):
+        """ Extract/split public MR file into legacy NMR restraint files for NMR restraint remediation.
         """
 
         if self.__combined_mode or not self.__remediation_mode:
@@ -8468,11 +8468,11 @@ class NmrDpUtility:
 
                     err = f"The NMR restraint file {src_file!r} (MR format) is neither ASCII file nor gzip compressed file."
 
-                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__splitPublicMRFileIntoLegacyMR() ++ Error  - " + err)
+                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - " + err)
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__splitPublicMRFileIntoLegacyMR() ++ Error  - {err}\n")
+                        self.__lfh.write(f"+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - {err}\n")
 
                     return False
 
@@ -8486,11 +8486,11 @@ class NmrDpUtility:
 
                     except Exception as e:
 
-                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__splitPublicMRFileIntoLegacyMR() ++ Error  - " + str(e))
+                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - " + str(e))
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__splitPublicMRFileIntoLegacyMR() ++ Error  - {str(e)}\n")
+                            self.__lfh.write(f"+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - {str(e)}\n")
 
                         return False
 
@@ -8516,11 +8516,11 @@ class NmrDpUtility:
 
                 except Exception as e:
 
-                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__splitPublicMRFileIntoLegacyMR() ++ Error  - " + str(e))
+                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - " + str(e))
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__splitPublicMRFileIntoLegacyMR() ++ Error  - {err}\n")
+                        self.__lfh.write(f"+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - {str(e)}\n")
 
                     return False
 
@@ -8531,14 +8531,14 @@ class NmrDpUtility:
 
             if len_valid_types == 0 and len_possible_types == 0:
 
-                err = f"The NMR restraint file {file_name!r} (MR format) does not match with any known format."
+                err = f"The NMR restraint file {file_name!r} (MR format) does not match with any known format. @todo: It needs to be reviewed or marked as entry wo NMR restraints."
 
-                self.report.error.appendDescription('content_mismatch',
+                self.report.error.appendDescription('internal_error',
                                                     {'file_name': file_name, 'description': err})
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMR() ++ Error  - {err}\n")
+                    self.__lfh.write(f"+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - {err}\n")
 
                 return False
 
@@ -8557,11 +8557,37 @@ class NmrDpUtility:
                     _ar['file_type'] = 'nm-res-xpl'
                     splitted.append(_ar)
 
-            elif valid_types is None:
+                else:
+
+                    err = f"The NMR restraint file {file_name!r} (MR format) is identified as {valid_types}. @todo: It needs to be split properly."
+
+                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - " + err)
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write(f"+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - {err}\n")
+
+            elif len_valid_types == 0:
                 print(f"The NMR restraint file {file_name!r} (MR format) can be {possible_types}.")
+
+                err = f"The NMR restraint file {file_name!r} (MR format) can be {possible_types}. @todo: It needs to be reviewed."
+
+                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - " + err)
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write(f"+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - {err}\n")
 
             else:
                 print(f"The NMR restraint file {file_name!r} (MR format) is identified as {valid_types} and can be {possible_types} as well.")
+
+                err = f"The NMR restraint file {file_name!r} (MR format) is identified as {valid_types} and can be {possible_types} as well. @todo: It needs to be reviewed."
+
+                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - " + err)
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write(f"+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - {err}\n")
 
         if len(splitted) > 0:
             self.__inputParamDict[ar_file_path_list].extend(splitted)
@@ -8572,7 +8598,7 @@ class NmrDpUtility:
 
                 input_source = self.report.input_sources[-1]
 
-                input_source.setItemValue('file_name', _ar['file_name'])
+                input_source.setItemValue('file_name', os.path.basename(_ar['file_name']))
                 input_source.setItemValue('file_type', _ar['file_type'])
                 input_source.setItemValue('content_type', 'nmr-restraints')
                 if 'original_file_name' in _ar:

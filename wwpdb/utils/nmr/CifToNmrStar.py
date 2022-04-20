@@ -111,6 +111,9 @@ class CifToNmrStar:
 
             block_name_list = cifObj.GetBlockIDList()
 
+            if len(block_name_list) == 0: # single loop
+                return False
+
             entry_id = None
 
             strObj = pynmrstar.Entry.from_scratch(os.path.basename(cifPath))
@@ -124,6 +127,7 @@ class CifToNmrStar:
                 dict_list = cifObj.GetDataBlock(block_name)
 
                 ordered_block = True
+                sf_category = ''
 
                 for category, itVals in dict_list.items():
                     try:
@@ -137,7 +141,7 @@ class CifToNmrStar:
                         ordered_block = False
                         for item2 in category_order:
                             if item2['block_name'] == block_name:
-                                item['ordered'] = False
+                                item2['ordered'] = False
                     item['ordered'] = ordered_block
 
                     item['sf_category_flag'] = False
@@ -165,6 +169,14 @@ class CifToNmrStar:
                                 item['super_category'] = dict['ADIT super category']
                             if 'Sf category flag' in dict and dict['Sf category flag'].lower() in trueValue:
                                 item['sf_category_flag'] = True
+
+                    if len(sf_category) == 0:
+                        sf_category = item['sf_category']
+                    elif sf_category != item['sf_category']:
+                        for item2 in category_order:
+                            if item2['block_name'] == block_name:
+                                item2['ordered'] = False
+                        item['orderd'] = False
 
                     if item not in category_order:
                         category_order.append(item)
@@ -232,7 +244,7 @@ class CifToNmrStar:
                         count += 1
                 if count == 1:
                     last_item = _category_order[-1]
-                    if not last_item['sf_category_flag']:
+                    if not last_item['sf_category_flag'] and last_item['ordered']:
                         last_item['missing_sf_category'] = True
                         last_item['new_block_name'] = last_item['block_name']
 

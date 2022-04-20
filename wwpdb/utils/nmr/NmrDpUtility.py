@@ -4004,9 +4004,9 @@ class NmrDpUtility:
 
                     _csPath = csPath + '.cif2str'
 
-                    if not os.path.exists(_csPath):
-                        cif_to_star = CifToNmrStar()
-                        cif_to_star.convert(csPath, _csPath)
+                    cif_to_star = CifToNmrStar()
+                    if not cif_to_star.convert(csPath, _csPath):
+                        _csPath = csPath
 
                     csPath = _csPath
 
@@ -4235,9 +4235,9 @@ class NmrDpUtility:
 
                     _csPath = csPath + '.cif2str'
 
-                    if not os.path.exists(_csPath):
-                        cif_to_star = CifToNmrStar()
-                        cif_to_star.convert(csPath, _csPath)
+                    cif_to_star = CifToNmrStar()
+                    if not cif_to_star.convert(csPath, _csPath):
+                        _csPath = csPath
 
                     csPath = _csPath
 

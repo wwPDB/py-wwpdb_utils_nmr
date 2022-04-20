@@ -4,7 +4,7 @@
 #
 # Updates:
 # 13-Oct-2021  M. Yokochi - code revision according to PEP8 using Pylint (DAOTHER-7389, issue #5)
-# 18-Apr-2022  M. Yokochi - enable to fix broken data block order of CIF formatted NMR-STAR using NMR-STAR schema (DAOTHER-7407, NMR restraint remediation)
+# 20-Apr-2022  M. Yokochi - enable to fix broken data block order of CIF formatted NMR-STAR using NMR-STAR schema (DAOTHER-7407, NMR restraint remediation)
 ##
 """ Wrapper class for CIF to NMR-STAR converter.
     @author: Masashi Yokochi
@@ -143,17 +143,28 @@ class CifToNmrStar:
                     item['sf_category_flag'] = False
                     for _item, _value in zip(itVals['Items'], itVals['Values'][0]):
                         tag = '_' + category + '.' + _item
-                        dict = self.schema[tag.lower()]
-                        dict = {k: v for k, v in self.schema[tag.lower()].items() if v not in emptyValue}
-                        if 'sf_category' not in item:
-                            item['sf_category'] = dict['SFCategory']
-                        if 'super_category' not in item:
-                            item['super_category'] = dict['ADIT super category']
-                        if 'Sf category flag' in dict and dict['Sf category flag'].lower() in trueValue:
-                            item['sf_category_flag'] = True
-                        if _item == 'Entry_ID' and entry_id in emptyValue:
-                            entry_id = _value
-                        # print(f"{tag}\n{dict}")
+                        tag = tag.lower()
+                        if tag in self.schema:
+                            dict = {k: v for k, v in self.schema[tag].items() if v not in emptyValue}
+                            if 'sf_category' not in item:
+                                item['sf_category'] = dict['SFCategory']
+                            if 'super_category' not in item:
+                                item['super_category'] = dict['ADIT super category']
+                            if 'Sf category flag' in dict and dict['Sf category flag'].lower() in trueValue:
+                                item['sf_category_flag'] = True
+                            if _item == 'Entry_ID' and entry_id in emptyValue:
+                                entry_id = _value
+
+                    if 'Sf_category' not in itVals['Items']:
+                        _tag = '_' + category.lower() + '.sf_category'
+                        if _tag in self.schema:
+                            dict = {k: v for k, v in self.schema[_tag].items() if v not in emptyValue}
+                            if 'sf_category' not in item:
+                                item['sf_category'] = dict['SFCategory']
+                            if 'super_category' not in item:
+                                item['super_category'] = dict['ADIT super category']
+                            if 'Sf category flag' in dict and dict['Sf category flag'].lower() in trueValue:
+                                item['sf_category_flag'] = True
 
                     category_order.append(item)
 

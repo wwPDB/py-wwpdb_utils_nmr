@@ -223,10 +223,17 @@ class CifToNmrStar:
 
             _category_order = []
             for _block_name in ordered_block_names:
+                count = 0
                 for item in category_order:
                     block_name = item['new_block_name'] if 'new_block_name' in item else item['block_name']
                     if block_name == _block_name:
                         _category_order.append(item)
+                        count += 1
+                if count == 1:
+                    last_item = _category_order[-1]
+                    if not last_item['sf_category_flag']:
+                        last_item['missing_sf_category'] = True
+                        last_item['new_block_name'] = last_item['block_name']
 
             category_order = _category_order
 

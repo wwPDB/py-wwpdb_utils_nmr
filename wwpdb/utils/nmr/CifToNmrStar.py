@@ -168,7 +168,8 @@ class CifToNmrStar:
 
                     category_order.append(item)
 
-                    previous_order = current_order
+                    if item['sf_category_flag']:
+                        previous_order = current_order
 
             if entry_id in emptyValue:
                 entry_id = block_name_list[0]
@@ -213,6 +214,21 @@ class CifToNmrStar:
                         prev_sf_category = item['sf_category']
                         prev_sf_block_name = block_name
                 item['new_block_name'] = block_name
+
+            ordered_block_names = []
+            for item in category_order:
+                block_name = item['new_block_name'] if 'new_block_name' in item else item['block_name']
+                if block_name not in ordered_block_names:
+                    ordered_block_names.append(block_name)
+
+            _category_order = []
+            for _block_name in ordered_block_names:
+                for item in category_order:
+                    block_name = item['new_block_name'] if 'new_block_name' in item else item['block_name']
+                    if block_name == _block_name:
+                        _category_order.append(item)
+
+            category_order = _category_order
 
             reserved_block_names = []
             sf = None

@@ -32,9 +32,7 @@ cns_mr:
 	diffusion_anisotropy_restraint |
 	one_bond_coupling_restraint |
 	angle_db_restraint |
-	flag_statement
-	)*
-	(
+	flag_statement |
 	noe_assign |			// allowing bare assign clauses for Distance restraints
 	dihedral_assign |		// allowing bare assign clauses for Dihedral angle restraints
 	sani_assign |			// allowing bare assign clauses for RDC restraints
@@ -116,7 +114,10 @@ noe_statement:
 	Temperature Equ_op? number_s;
 
 noe_assign:
-	Assign selection selection number number number (Weight Equ_op? number)? (Or_op selection selection)*;
+	Assign selection selection number number number
+	(Peak Equ_op? number)? (Spectrum Equ_op? number)? (Weight Equ_op? number)?
+	(Volume Equ_op? number)? (Ppm1 Equ_op? number)? (Ppm2 Equ_op? number)?
+	(Or_op selection selection)*;
 
 predict_statement:
 	Cutoff Equ_op? number_s | Cuton Equ_op? number_s | From selection | To selection;

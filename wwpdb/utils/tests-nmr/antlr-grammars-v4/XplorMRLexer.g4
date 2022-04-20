@@ -91,6 +91,15 @@ Cuton:			C U T O N;				// = Real
 From:			F R O M;				// = selection
 To:			T O;					// = selection
 
+// 3rd party software extensions for NOE assign clause
+Peak:			P E A K;				// = Integer
+Spectrum:		S P E C T R U M;			// = Integer
+//Weight:		W E I G H T; 				// = Real
+Volume:			V O L U M E;				// = Real
+Ppm1:			P P M '1';				// = Real
+Ppm2:			P P M '2';				// = Real
+//Cv:			C V;					// = Integer
+
 /* XPLOR-NIH: Dihedral angle restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/cdih_syntax.html
 */
@@ -585,7 +594,7 @@ Not_op:			N O T;
 */
 Comma:			',';
 Complex:		L_paren Real Comma Real R_paren;
-Integer:		DECIMAL;
+Integer:		'-'? DECIMAL;
 Logical:		'TRUE' | 'FALSE' | 'ON' | 'OFF';
 Real:			('+' | '-')? (DECIMAL | DEC_DOT_DEC) (E ('+' | '-')? DECIMAL)?;
 Double_quote_string:	'"' ~'"'+ '"';
@@ -634,7 +643,7 @@ Neq_op:			'#';
 
 SPACE:			[ \t\r\n]+ -> skip;
 COMMENT:		'{' (COMMENT | .)*? '}' -> channel(HIDDEN);
-LINE_COMMENT:		('#' | '!' | ';' | '/') ~[\r\n]* -> channel(HIDDEN);
+LINE_COMMENT:		('#' | '!' | ';' | '/' | '*' '*'+ | R E M A R K) ~[\r\n]* -> channel(HIDDEN);
 SET_VARIABLE:		Set ~[\r\n]* End -> channel(HIDDEN);
 
 mode ATTR_MODE; // Inside of Attribute tag

@@ -481,8 +481,14 @@ class CnsMRParserListener(ParseTreeListener):
         dplus = self.numberSelection[2]
 
         scale = self.scale
+
+        p = 3
+        if ctx.Peak():
+            p += 1
+        if ctx.Spectrum():
+            p += 1
         if ctx.Weight():
-            scale = self.numberSelection[3]
+            scale = self.numberSelection[p]
             if scale <= 0.0:
                 self.warningMessage += "[Invalid data] "\
                     f"The weight value '{scale}' must be a positive value.\n"

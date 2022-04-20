@@ -5914,7 +5914,10 @@ class NmrDpUtility:
 
                             sf_framecode = sf_data.name
 
-                            sf_data.tags[tagNames.index('Sf_framecode')][1] = sf_data.name
+                            if 'Sf_framecode' in tagNames:
+                                sf_data.tags[tagNames.index('Sf_framecode')][1] = sf_data.name
+                            elif 'sf_framecode' in tagNames:
+                                sf_data.tags[tagNames.index('sf_framecode')][1] = sf_data.name
 
                         else:
                             err = f"{itName} {sf_framecode!r} must be matched with saveframe name {sf_data.name!r}."

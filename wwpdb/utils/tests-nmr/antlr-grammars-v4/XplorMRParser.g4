@@ -156,12 +156,20 @@ noe_statement:
 
 noe_assign:
 	Assign selection selection number number number
-	(Peak Equ_op? number)? (Spectrum Equ_op? number)? (Weight Equ_op? number)?
-	(Volume Equ_op? number)? (Ppm1 Equ_op? number)? (Ppm2 Equ_op? number)? (Cv Equ_op? number)?
+	noe_annotation*
 	(Or_op selection selection)*;
 
 predict_statement:
 	Cutoff Equ_op? number_s | Cuton Equ_op? number_s | From selection | To selection;
+
+noe_annotation:
+	Peak Equ_op? number_a |
+	Spectrum Equ_op? number_a |
+	Weight Equ_op? number_a |
+	Volume Equ_op? number_a |
+	Ppm1 Equ_op? number_a |
+	Ppm2 Equ_op? number_a |
+	Cv Equ_op? number_a;
 
 /* XPLOR-NIH: Dihedral angle restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/cdih_syntax.html
@@ -689,7 +697,12 @@ number:	Real | Integer;
 number_f:
 	Real | Integer;
 
+/* number expression in statement */
 number_s:
+	Real | Integer;
+
+/* number expression in annotation */
+number_a:
 	Real | Integer;
 
 /* XPLOR-NIH: Flags - Syntax

@@ -195,6 +195,7 @@ class CnsMRParserListener(ParseTreeListener):
     squareOffset = 0.0
     rSwitch = 10.0
     scale = 1.0
+    scale_a = None
     symmTarget = None
     symmDminus = None
     symmDplus = None
@@ -473,6 +474,7 @@ class CnsMRParserListener(ParseTreeListener):
         self.__cur_subtype = 'dist'
 
         self.atomSelectionSet.clear()
+        self.scale_a = None
 
     # Exit a parse tree produced by CnsMRParser#noe_assign.
     def exitNoe_assign(self, ctx: CnsMRParser.Noe_assignContext):  # pylint: disable=unused-argument
@@ -480,18 +482,11 @@ class CnsMRParserListener(ParseTreeListener):
         dminus = self.numberSelection[1]
         dplus = self.numberSelection[2]
 
-        scale = self.scale
+        scale = self.scale if self.scale_a is None else self.scale_a
 
-        p = 3
-        if ctx.Peak():
-            p += 1
-        if ctx.Spectrum():
-            p += 1
-        if ctx.Weight():
-            scale = self.numberSelection[p]
-            if scale <= 0.0:
-                self.warningMessage += "[Invalid data] "\
-                    f"The weight value '{scale}' must be a positive value.\n"
+        if scale <= 0.0:
+            self.warningMessage += "[Invalid data] "\
+                f"The weight value '{scale}' must be a positive value.\n"
 
         self.numberSelection.clear()
 
@@ -730,6 +725,15 @@ class CnsMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by CnsMRParser#predict_statement.
     def exitPredict_statement(self, ctx: CnsMRParser.Predict_statementContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by CnsMRParser#noe_annotation.
+    def enterNoe_annotation(self, ctx: CnsMRParser.Noe_annotationContext):
+        if ctx.Weight():
+            self.scale_a = self.getNumber_a(ctx.number_a())
+
+    # Exit a parse tree produced by CnsMRParser#noe_annotation.
+    def exitNoe_annotation(self, ctx: CnsMRParser.Noe_annotationContext):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by CnsMRParser#dihedral_statement.
@@ -4436,6 +4440,19 @@ class CnsMRParserListener(ParseTreeListener):
         pass
 
     def getNumber_s(self, ctx: CnsMRParser.Number_sContext):  # pylint: disable=no-self-use
+        if ctx.Real():
+            return float(str(ctx.Real()))
+        return float(str(ctx.Integer()))
+
+    # Enter a parse tree produced by CnsMRParser#number_a.
+    def enterNumber_a(self, ctx: CnsMRParser.Number_aContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by CnsMRParser#number_a.
+    def exitNumber_a(self, ctx: CnsMRParser.Number_aContext):  # pylint: disable=unused-argument
+        pass
+
+    def getNumber_a(self, ctx: CnsMRParser.Number_aContext):  # pylint: disable=no-self-use
         if ctx.Real():
             return float(str(ctx.Real()))
         return float(str(ctx.Integer()))

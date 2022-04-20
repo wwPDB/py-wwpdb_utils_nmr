@@ -261,6 +261,7 @@ class XplorMRParserListener(ParseTreeListener):
     squareOffset = 0.0
     rSwitch = 10.0
     scale = 1.0
+    scale_a = None
     adistExpect = -1.0
     symmTarget = None
     symmDminus = None
@@ -639,6 +640,7 @@ class XplorMRParserListener(ParseTreeListener):
         self.__cur_subtype = 'dist'
 
         self.atomSelectionSet.clear()
+        self.scale_a = None
 
     # Exit a parse tree produced by XplorMRParser#noe_assign.
     def exitNoe_assign(self, ctx: XplorMRParser.Noe_assignContext):  # pylint: disable=unused-argument
@@ -646,18 +648,11 @@ class XplorMRParserListener(ParseTreeListener):
         dminus = self.numberSelection[1]
         dplus = self.numberSelection[2]
 
-        scale = self.scale
+        scale = self.scale if self.scale_a is None else self.scale_a
 
-        p = 3
-        if ctx.Peak():
-            p += 1
-        if ctx.Spectrum():
-            p += 1
-        if ctx.Weight():
-            scale = self.numberSelection[p]
-            if scale <= 0.0:
-                self.warningMessage += "[Invalid data] "\
-                    f"The weight value '{scale}' must be a positive value.\n"
+        if scale <= 0.0:
+            self.warningMessage += "[Invalid data] "\
+                f"The weight value '{scale}' must be a positive value.\n"
 
         self.numberSelection.clear()
 
@@ -896,6 +891,15 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#predict_statement.
     def exitPredict_statement(self, ctx: XplorMRParser.Predict_statementContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by XplorMRParser#noe_annotation.
+    def enterNoe_annotation(self, ctx: XplorMRParser.Noe_annotationContext):
+        if ctx.Weight():
+            self.scale_a = self.getNumber_a(ctx.number_a())
+
+    # Exit a parse tree produced by XplorMRParser#noe_annotation.
+    def exitNoe_annotation(self, ctx: XplorMRParser.Noe_annotationContext):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by XplorMRParser#dihedral_statement.
@@ -6935,6 +6939,19 @@ class XplorMRParserListener(ParseTreeListener):
         pass
 
     def getNumber_s(self, ctx: XplorMRParser.Number_sContext):  # pylint: disable=no-self-use
+        if ctx.Real():
+            return float(str(ctx.Real()))
+        return float(str(ctx.Integer()))
+
+    # Enter a parse tree produced by XplorMRParser#number_a.
+    def enterNumber_a(self, ctx: XplorMRParser.Number_aContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by XplorMRParser#number_a.
+    def exitNumber_a(self, ctx: XplorMRParser.Number_aContext):  # pylint: disable=unused-argument
+        pass
+
+    def getNumber_a(self, ctx: XplorMRParser.Number_aContext):  # pylint: disable=no-self-use
         if ctx.Real():
             return float(str(ctx.Real()))
         return float(str(ctx.Integer()))

@@ -8362,9 +8362,15 @@ class NmrDpUtility:
                 has_content = False
                 if listener is not None:
                     _content_subtype = listener.getContentSubtype()
-                    # 'geo_restraints' include CS-ROSETTA disulfide bond linkage, which matches any integer array
-                    if len(_content_subtype) > 0 and (len(_content_subtype) > 1 or 'geo_restraint' not in _content_subtype):
-                        has_content = True
+                    # 'rdc_restraint' occasionally matches with CYANA restraints
+                    # 'geo_restraint' include CS-ROSETTA disulfide bond linkage, which matches any integer array
+                    if len(_content_subtype) > 0:
+                        eff_content_subtypes = 0
+                        for k, v in _content_subtype.items():
+                            if k not in ('rdc_restraint', 'geo_restraint'):
+                                eff_content_subtypes += v
+                        if eff_content_subtypes > 0:
+                            has_content = True
 
                 if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
                    and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None) or has_content):

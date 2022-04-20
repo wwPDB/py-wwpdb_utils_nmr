@@ -166,7 +166,8 @@ class CifToNmrStar:
                             if 'Sf category flag' in dict and dict['Sf category flag'].lower() in trueValue:
                                 item['sf_category_flag'] = True
 
-                    category_order.append(item)
+                    if item not in category_order:
+                        category_order.append(item)
 
                     if item['sf_category_flag']:
                         previous_order = current_order

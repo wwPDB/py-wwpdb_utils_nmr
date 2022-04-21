@@ -4235,9 +4235,10 @@ class NmrDpUtility:
 
                     _csPath = csPath + '.cif2str'
 
-                    cif_to_star = CifToNmrStar()
-                    if not cif_to_star.convert(csPath, _csPath):
-                        _csPath = csPath
+                    if not os.path.exists(_csPath):
+                        cif_to_star = CifToNmrStar()
+                        if not cif_to_star.convert(csPath, _csPath):
+                            _csPath = csPath
 
                     csPath = _csPath
 
@@ -7258,6 +7259,15 @@ class NmrDpUtility:
                                            self.__ccU, self.__csStat, self.__nefT)
                     listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
+                    if listener is not None:
+                        reasons = listener.getReasonsForReparsing()
+
+                        if reasons is not None:
+                            reader = XplorMRReader(self.__verbose, self.__lfh, None, None, None,
+                                                   self.__ccU, self.__csStat, self.__nefT,
+                                                   reasons)
+                            listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
+
                     err = ''
                     err_lines = []
 
@@ -7341,6 +7351,15 @@ class NmrDpUtility:
                     reader = CnsMRReader(self.__verbose, self.__lfh, None, None, None,
                                          self.__ccU, self.__csStat, self.__nefT)
                     listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
+
+                    if listener is not None:
+                        reasons = listener.getReasonsForReparsing()
+
+                        if reasons is not None:
+                            reader = CnsMRReader(self.__verbose, self.__lfh, None, None, None,
+                                                 self.__ccU, self.__csStat, self.__nefT,
+                                                 reasons)
+                            listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
                     err = ''
                     err_lines = []
@@ -7589,6 +7608,15 @@ class NmrDpUtility:
                                            self.__ccU, self.__csStat, self.__nefT)
                     listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
+                    if listener is not None:
+                        reasons = listener.getReasonsForReparsing()
+
+                        if reasons is not None:
+                            reader = CyanaMRReader(self.__verbose, self.__lfh, None, None, None,
+                                                   self.__ccU, self.__csStat, self.__nefT,
+                                                   reasons)
+                            listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
+
                     err = ''
                     err_lines = []
 
@@ -7672,6 +7700,15 @@ class NmrDpUtility:
                     reader = RosettaMRReader(self.__verbose, self.__lfh, None, None, None,
                                              self.__ccU, self.__csStat, self.__nefT)
                     listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
+
+                    if listener is not None:
+                        reasons = listener.getReasonsForReparsing()
+
+                        if reasons is not None:
+                            reader = RosettaMRReader(self.__verbose, self.__lfh, None, None, None,
+                                                     self.__ccU, self.__csStat, self.__nefT,
+                                                     reasons)
+                            listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
                     err = ''
                     err_lines = []
@@ -18098,7 +18135,6 @@ class NmrDpUtility:
                 listener, _, _ = reader.parse(file_path, self.__cifPath)
 
                 if listener is not None:
-
                     reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
@@ -18178,7 +18214,6 @@ class NmrDpUtility:
                 listener, _, _ = reader.parse(file_path, self.__cifPath)
 
                 if listener is not None:
-
                     reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
@@ -18345,7 +18380,6 @@ class NmrDpUtility:
                 listener, _, _ = reader.parse(file_path, self.__cifPath)
 
                 if listener is not None:
-
                     reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
@@ -18433,7 +18467,6 @@ class NmrDpUtility:
                 listener, _, _ = reader.parse(file_path, self.__cifPath)
 
                 if listener is not None:
-
                     reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:

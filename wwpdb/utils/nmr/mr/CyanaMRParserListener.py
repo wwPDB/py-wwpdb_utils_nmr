@@ -93,10 +93,11 @@ class CyanaMRParserListener(ParseTreeListener):
     # __lfh = None
     __debug = False
 
-    distRestraints = 0      # CYANA: Distance restraint file
-    dihedRestraints = 0     # CYANA: Torsion angle restraint file
-    rdcRestraints = 0       # CYANA: Residual dipolar coupling restraint file
-    pcsRestraints = 0       # CYANA: Pseudocontact shift restraint file
+    distRestraints = 0      # CYANA: Distance restraint file (.upl or .lol)
+    dihedRestraints = 0     # CYANA: Torsion angle restraint file (.aco)
+    rdcRestraints = 0       # CYANA: Residual dipolar coupling restraint file (.rdc)
+    pcsRestraints = 0       # CYANA: Pseudocontact shift restraint file (.pcs)
+    noepkRestraints = 0     # CYANA: NOESY volume restraint file (.upv or .lov)
 
     # CCD accessing utility
     __ccU = None
@@ -404,6 +405,41 @@ class CyanaMRParserListener(ParseTreeListener):
             else:
                 self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
                     f"The upper limit value='{upper_limit}' should be within range {DIST_RESTRAINT_RANGE}.\n"
+
+        return dstFunc
+
+    def validatePeakVolumeRange(self, weight, target_value, lower_limit, upper_limit):
+        """ Validate NOESY peak volume value range.
+        """
+
+        validRange = True
+        dstFunc = {'weight': weight}
+
+        if target_value is not None:
+            dstFunc['target_value'] = f"{target_value}"
+
+        if lower_limit is not None:
+            dstFunc['lower_limit'] = f"{lower_limit}"
+
+        if upper_limit is not None:
+            dstFunc['upper_limit'] = f"{upper_limit}"
+
+        if target_value is not None:
+
+            if lower_limit is not None:
+                if lower_limit > target_value:
+                    validRange = False
+                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                        f"The lower limit value='{lower_limit}' must be less than the target value '{target_value}'.\n"
+
+            if upper_limit is not None:
+                if upper_limit < target_value:
+                    validRange = False
+                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                        f"The upper limit value='{upper_limit}' must be grater than the target value '{target_value}'.\n"
+
+        if not validRange:
+            return None
 
         return dstFunc
 
@@ -1156,7 +1192,9 @@ class CyanaMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by CyanaMRParser#fixres_distance_restraints.
     def enterFixres_distance_restraints(self, ctx: CyanaMRParser.Fixres_distance_restraintsContext):  # pylint: disable=unused-argument
-        self.__cur_subtype = 'dist'
+        self.__cur_subtype = 'dist'  # or 'noepk'
+        if self.__reasons is not None and 'noepk_fixres' in self.__reasons:
+            self.__cur_subtype = 'noepk'
 
     # Exit a parse tree produced by CyanaMRParser#fixres_distance_restraints.
     def exitFixres_distance_restraints(self, ctx: CyanaMRParser.Fixres_distance_restraintsContext):  # pylint: disable=unused-argument
@@ -1164,7 +1202,10 @@ class CyanaMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by CyanaMRParser#fixres_distance_restraint.
     def enterFixres_distance_restraint(self, ctx: CyanaMRParser.Fixres_distance_restraintContext):  # pylint: disable=unused-argument
-        self.distRestraints += 1
+        if self.__cur_subtype == 'dist':
+            self.distRestraints += 1
+        else:
+            self.noepkRestraints += 1
 
         self.atomSelectionSet.clear()
 
@@ -1188,32 +1229,45 @@ class CyanaMRParserListener(ParseTreeListener):
                 lower_limit = None
                 upper_limit = None
 
-                if DIST_RANGE_MIN <= value <= DIST_RANGE_MAX:
-                    if self.__max_dist_value is None:
-                        self.__max_dist_value = value
-                    if value > self.__max_dist_value:
-                        self.__max_dist_value = value
+                if self.__cur_subtype == 'dist':
 
-                if self.__upl_or_lol is None or self.__upl_or_lol == 'upl_only':
-                    if value > 1.8:
+                    if DIST_RANGE_MIN <= value <= DIST_RANGE_MAX:
+                        if self.__max_dist_value is None:
+                            self.__max_dist_value = value
+                        if value > self.__max_dist_value:
+                            self.__max_dist_value = value
+
+                    if self.__upl_or_lol is None or self.__upl_or_lol == 'upl_only':
+                        if value > 1.8:
+                            upper_limit = value
+                            lower_limit = 1.8  # default value of PDBStat
+                            target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                        else:
+                            lower_limit = value
+
+                    elif self.__upl_or_lol == 'upl_w_lol':
                         upper_limit = value
-                        lower_limit = 1.8  # default value of PDBStat
+
+                    elif self.__upl_or_lol == 'lol_only':
+                        lower_limit = value
+                        upper_limit = 5.5  # default value of PDBStat
                         target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
-                    else:
+
+                    else:  # 'lol_w_upl'
                         lower_limit = value
 
-                elif self.__upl_or_lol == 'upl_w_lol':
-                    upper_limit = value
+                    dstFunc = self.validateDistanceRange(1.0, target_value, lower_limit, upper_limit)
 
-                elif self.__upl_or_lol == 'lol_only':
-                    lower_limit = value
-                    upper_limit = 5.5  # default value of PDBStat
-                    target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                    if dstFunc is None and abs(value) > DIST_ERROR_MAX * 10.0:
+                        if self.reasonsForReParsing is None:
+                            self.reasonsForReParsing = {}
+                        self.reasonsForReParsing['noepk_fixres'] = True
 
-                else:  # 'lol_w_upl'
-                    lower_limit = value
+                else:  # 'noepk'
 
-                dstFunc = self.validateDistanceRange(1.0, target_value, lower_limit, upper_limit)
+                    target_value = value
+
+                    dstFunc = self.validatePeakVolumeRange(1.0, target_value, lower_limit, upper_limit)
 
                 if dstFunc is None:
                     return
@@ -1250,7 +1304,9 @@ class CyanaMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by CyanaMRParser#fixresw_distance_restraints.
     def enterFixresw_distance_restraints(self, ctx: CyanaMRParser.Fixresw_distance_restraintsContext):  # pylint: disable=unused-argument
-        self.__cur_subtype = 'dist'
+        self.__cur_subtype = 'dist'  # or 'noepk'
+        if self.__reasons is not None and 'noepk_fixresw' in self.__reasons:
+            self.__cur_subtype = 'noepk'
 
     # Exit a parse tree produced by CyanaMRParser#fixresw_distance_restraints.
     def exitFixresw_distance_restraints(self, ctx: CyanaMRParser.Fixresw_distance_restraintsContext):  # pylint: disable=unused-argument
@@ -1258,7 +1314,10 @@ class CyanaMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by CyanaMRParser#fixresw_distance_restraint.
     def enterFixresw_distance_restraint(self, ctx: CyanaMRParser.Fixresw_distance_restraintContext):  # pylint: disable=unused-argument
-        self.distRestraints += 1
+        if self.__cur_subtype == 'dist':
+            self.distRestraints += 1
+        else:
+            self.noepkRestraints += 1
 
         self.atomSelectionSet.clear()
 
@@ -1297,49 +1356,66 @@ class CyanaMRParserListener(ParseTreeListener):
                 lower_limit = None
                 upper_limit = None
 
-                if DIST_RANGE_MIN <= value <= DIST_RANGE_MAX:
-                    if self.__max_dist_value is None:
-                        self.__max_dist_value = value
-                    if value > self.__max_dist_value:
-                        self.__max_dist_value = value
+                if self.__cur_subtype == 'dist':
 
-                if has_square:
-                    if value2 > DIST_RANGE_MAX:  # lol_only
-                        lower_limit = value
+                    if DIST_RANGE_MIN <= value <= DIST_RANGE_MAX:
+                        if self.__max_dist_value is None:
+                            self.__max_dist_value = value
+                        if value > self.__max_dist_value:
+                            self.__max_dist_value = value
 
-                    elif 1.8 <= value <= DIST_ERROR_MAX and DIST_RANGE_MIN <= value2 <= DIST_RANGE_MAX:
-                        upper_limit = value2
-                        lower_limit = value
-                        target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                    if has_square:
+                        if value2 > DIST_RANGE_MAX:  # lol_only
+                            lower_limit = value
 
-                    else:  # upl_only
-                        if value2 > 1.8:
+                        elif 1.8 <= value <= DIST_ERROR_MAX and DIST_RANGE_MIN <= value2 <= DIST_RANGE_MAX:
                             upper_limit = value2
+                            lower_limit = value
+                            target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+
+                        else:  # upl_only
+                            if value2 > 1.8:
+                                upper_limit = value2
+                                lower_limit = 1.8  # default value of PDBStat
+                                target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                            else:
+                                upper_limit = value2
+
+                    elif self.__upl_or_lol is None or self.__upl_or_lol == 'upl_only':
+                        if value > 1.8:
+                            upper_limit = value
                             lower_limit = 1.8  # default value of PDBStat
                             target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
                         else:
-                            upper_limit = value2
+                            lower_limit = value
 
-                elif self.__upl_or_lol is None or self.__upl_or_lol == 'upl_only':
-                    if value > 1.8:
+                    elif self.__upl_or_lol == 'upl_w_lol':
                         upper_limit = value
-                        lower_limit = 1.8  # default value of PDBStat
+
+                    elif self.__upl_or_lol == 'lol_only':
+                        lower_limit = value
+                        upper_limit = 5.5  # default value of PDBStat
                         target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
-                    else:
+
+                    else:  # 'lol_w_upl'
                         lower_limit = value
 
-                elif self.__upl_or_lol == 'upl_w_lol':
-                    upper_limit = value
+                    dstFunc = self.validateDistanceRange(weight, target_value, lower_limit, upper_limit)
 
-                elif self.__upl_or_lol == 'lol_only':
-                    lower_limit = value
-                    upper_limit = 5.5  # default value of PDBStat
-                    target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                    if dstFunc is None and (abs(value) > DIST_ERROR_MAX * 10.0 or abs(value2) > DIST_ERROR_MAX * 10.0):
+                        if self.reasonsForReParsing is None:
+                            self.reasonsForReParsing = {}
+                        self.reasonsForReParsing['noepk_fixresw'] = True
 
-                else:  # 'lol_w_upl'
-                    lower_limit = value
+                else:  # 'noepk'
 
-                dstFunc = self.validateDistanceRange(weight, target_value, lower_limit, upper_limit)
+                    if has_square:
+                        lower_limit = value
+                        upper_limit = value2
+                    else:
+                        target_value = value
+
+                    dstFunc = self.validatePeakVolumeRange(weight, target_value, lower_limit, upper_limit)
 
                 if dstFunc is None:
                     return
@@ -1376,7 +1452,9 @@ class CyanaMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by CyanaMRParser#fixresw2_distance_restraints.
     def enterFixresw2_distance_restraints(self, ctx: CyanaMRParser.Fixresw2_distance_restraintsContext):  # pylint: disable=unused-argument
-        self.__cur_subtype = 'dist'
+        self.__cur_subtype = 'dist'  # or 'noepk'
+        if self.__reasons is not None and 'noepk_fixresw2' in self.__reasons:
+            self.__cur_subtype = 'noepk'
 
     # Exit a parse tree produced by CyanaMRParser#fixresw2_distance_restraints.
     def exitFixresw2_distance_restraints(self, ctx: CyanaMRParser.Fixresw2_distance_restraintsContext):  # pylint: disable=unused-argument
@@ -1384,7 +1462,10 @@ class CyanaMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by CyanaMRParser#fixresw2_distance_restraint.
     def enterFixresw2_distance_restraint(self, ctx: CyanaMRParser.Fixresw2_distance_restraintContext):  # pylint: disable=unused-argument
-        self.distRestraints += 1
+        if self.__cur_subtype == 'dist':
+            self.distRestraints += 1
+        else:
+            self.noepkRestraints += 1
 
         self.atomSelectionSet.clear()
 
@@ -1417,29 +1498,43 @@ class CyanaMRParserListener(ParseTreeListener):
                 lower_limit = None
                 upper_limit = None
 
-                if DIST_RANGE_MIN <= value <= DIST_RANGE_MAX:
-                    if self.__max_dist_value is None:
-                        self.__max_dist_value = value
-                    if value > self.__max_dist_value:
-                        self.__max_dist_value = value
+                if self.__cur_subtype == 'dist':
 
-                if value2 > DIST_RANGE_MAX:  # lol_only
-                    lower_limit = value
+                    if DIST_RANGE_MIN <= value <= DIST_RANGE_MAX:
+                        if self.__max_dist_value is None:
+                            self.__max_dist_value = value
+                        if value > self.__max_dist_value:
+                            self.__max_dist_value = value
 
-                elif 1.8 <= value <= DIST_ERROR_MAX and DIST_RANGE_MIN <= value2 <= DIST_RANGE_MAX:
-                    upper_limit = value2
-                    lower_limit = value
-                    target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                    if value2 > DIST_RANGE_MAX:  # lol_only
+                        lower_limit = value
 
-                else:  # upl_only
-                    if value2 > 1.8:
+                    elif 1.8 <= value <= DIST_ERROR_MAX and DIST_RANGE_MIN <= value2 <= DIST_RANGE_MAX:
                         upper_limit = value2
-                        lower_limit = 1.8  # default value of PDBStat
+                        lower_limit = value
                         target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
-                    else:
-                        upper_limit = value2
 
-                dstFunc = self.validateDistanceRange(weight, target_value, lower_limit, upper_limit)
+                    else:  # upl_only
+                        if value2 > 1.8:
+                            upper_limit = value2
+                            lower_limit = 1.8  # default value of PDBStat
+                            target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                        else:
+                            upper_limit = value2
+
+                    dstFunc = self.validateDistanceRange(weight, target_value, lower_limit, upper_limit)
+
+                    if dstFunc is None and (abs(value) > DIST_ERROR_MAX * 10.0 or abs(value2) > DIST_ERROR_MAX * 10.0):
+                        if self.reasonsForReParsing is None:
+                            self.reasonsForReParsing = {}
+                        self.reasonsForReParsing['noepk_fixresw2'] = True
+
+                else:  # 'noepk'
+
+                    lower_limit = value
+                    upper_limit = value2
+
+                    dstFunc = self.validatePeakVolumeRange(weight, target_value, lower_limit, upper_limit)
 
                 if dstFunc is None:
                     return
@@ -1476,7 +1571,9 @@ class CyanaMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by CyanaMRParser#fixatm_distance_restraints.
     def enterFixatm_distance_restraints(self, ctx: CyanaMRParser.Fixatm_distance_restraintsContext):  # pylint: disable=unused-argument
-        self.__cur_subtype = 'dist'
+        self.__cur_subtype = 'dist'  # or 'noepk'
+        if self.__reasons is not None and 'noepk_fixatm' in self.__reasons:
+            self.__cur_subtype = 'noepk'
 
     # Exit a parse tree produced by CyanaMRParser#fixatm_distance_restraints.
     def exitFixatm_distance_restraints(self, ctx: CyanaMRParser.Fixatm_distance_restraintsContext):  # pylint: disable=unused-argument
@@ -1484,7 +1581,10 @@ class CyanaMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by CyanaMRParser#fixatm_distance_restraint.
     def enterFixatm_distance_restraint(self, ctx: CyanaMRParser.Fixatm_distance_restraintContext):  # pylint: disable=unused-argument
-        self.distRestraints += 1
+        if self.__cur_subtype == 'dist':
+            self.distRestraints += 1
+        else:
+            self.noepkRestraints += 1
 
         self.atomSelectionSet.clear()
 
@@ -1508,32 +1608,45 @@ class CyanaMRParserListener(ParseTreeListener):
                 lower_limit = None
                 upper_limit = None
 
-                if DIST_RANGE_MIN <= value <= DIST_RANGE_MAX:
-                    if self.__max_dist_value is None:
-                        self.__max_dist_value = value
-                    if value > self.__max_dist_value:
-                        self.__max_dist_value = value
+                if self.__cur_subtype == 'dist':
 
-                if self.__upl_or_lol is None or self.__upl_or_lol == 'upl_only':
-                    if value > 1.8:
+                    if DIST_RANGE_MIN <= value <= DIST_RANGE_MAX:
+                        if self.__max_dist_value is None:
+                            self.__max_dist_value = value
+                        if value > self.__max_dist_value:
+                            self.__max_dist_value = value
+
+                    if self.__upl_or_lol is None or self.__upl_or_lol == 'upl_only':
+                        if value > 1.8:
+                            upper_limit = value
+                            lower_limit = 1.8  # default value of PDBStat
+                            target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                        else:
+                            lower_limit = value
+
+                    elif self.__upl_or_lol == 'upl_w_lol':
                         upper_limit = value
-                        lower_limit = 1.8  # default value of PDBStat
+
+                    elif self.__upl_or_lol == 'lol_only':
+                        lower_limit = value
+                        upper_limit = 5.5  # default value of PDBStat
                         target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
-                    else:
+
+                    else:  # 'lol_w_upl'
                         lower_limit = value
 
-                elif self.__upl_or_lol == 'upl_w_lol':
-                    upper_limit = value
+                    dstFunc = self.validateDistanceRange(1.0, target_value, lower_limit, upper_limit)
 
-                elif self.__upl_or_lol == 'lol_only':
-                    lower_limit = value
-                    upper_limit = 5.5  # default value of PDBStat
-                    target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                    if dstFunc is None and abs(value) > DIST_ERROR_MAX * 10.0:
+                        if self.reasonsForReParsing is None:
+                            self.reasonsForReParsing = {}
+                        self.reasonsForReParsing['noepk_fixatm'] = True
 
-                else:  # 'lol_w_upl'
-                    lower_limit = value
+                else:  # 'noepk'
 
-                dstFunc = self.validateDistanceRange(1.0, target_value, lower_limit, upper_limit)
+                    target_value = value
+
+                    dstFunc = self.validatePeakVolumeRange(1.0, target_value, lower_limit, upper_limit)
 
                 if dstFunc is None:
                     return
@@ -1570,7 +1683,9 @@ class CyanaMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by CyanaMRParser#fixatmw_distance_restraints.
     def enterFixatmw_distance_restraints(self, ctx: CyanaMRParser.Fixatmw_distance_restraintsContext):  # pylint: disable=unused-argument
-        self.__cur_subtype = 'dist'
+        self.__cur_subtype = 'dist'  # or 'noepk'
+        if self.__reasons is not None and 'noepk_fixatmw' in self.__reasons:
+            self.__cur_subtype = 'noepk'
 
     # Exit a parse tree produced by CyanaMRParser#fixatmw_distance_restraints.
     def exitFixatmw_distance_restraints(self, ctx: CyanaMRParser.Fixatmw_distance_restraintsContext):  # pylint: disable=unused-argument
@@ -1578,7 +1693,10 @@ class CyanaMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by CyanaMRParser#fixatmw_distance_restraint.
     def enterFixatmw_distance_restraint(self, ctx: CyanaMRParser.Fixatmw_distance_restraintContext):  # pylint: disable=unused-argument
-        self.distRestraints += 1
+        if self.__cur_subtype == 'dist':
+            self.distRestraints += 1
+        else:
+            self.noepkRestraints += 1
 
         self.atomSelectionSet.clear()
 
@@ -1617,49 +1735,66 @@ class CyanaMRParserListener(ParseTreeListener):
                 lower_limit = None
                 upper_limit = None
 
-                if DIST_RANGE_MIN <= value <= DIST_RANGE_MAX:
-                    if self.__max_dist_value is None:
-                        self.__max_dist_value = value
-                    if value > self.__max_dist_value:
-                        self.__max_dist_value = value
+                if self.__cur_subtype == 'dist':
 
-                if has_square:
-                    if value2 > DIST_RANGE_MAX:  # lol_only
-                        lower_limit = value
+                    if DIST_RANGE_MIN <= value <= DIST_RANGE_MAX:
+                        if self.__max_dist_value is None:
+                            self.__max_dist_value = value
+                        if value > self.__max_dist_value:
+                            self.__max_dist_value = value
 
-                    elif 1.8 <= value <= DIST_ERROR_MAX and DIST_RANGE_MIN <= value2 <= DIST_RANGE_MAX:
-                        upper_limit = value2
-                        lower_limit = value
-                        target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                    if has_square:
+                        if value2 > DIST_RANGE_MAX:  # lol_only
+                            lower_limit = value
 
-                    else:  # upl_only
-                        if value2 > 1.8:
+                        elif 1.8 <= value <= DIST_ERROR_MAX and DIST_RANGE_MIN <= value2 <= DIST_RANGE_MAX:
                             upper_limit = value2
+                            lower_limit = value
+                            target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+
+                        else:  # upl_only
+                            if value2 > 1.8:
+                                upper_limit = value2
+                                lower_limit = 1.8  # default value of PDBStat
+                                target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                            else:
+                                upper_limit = value2
+
+                    elif self.__upl_or_lol is None or self.__upl_or_lol == 'upl_only':
+                        if value > 1.8:
+                            upper_limit = value
                             lower_limit = 1.8  # default value of PDBStat
                             target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
                         else:
-                            upper_limit = value2
+                            lower_limit = value
 
-                elif self.__upl_or_lol is None or self.__upl_or_lol == 'upl_only':
-                    if value > 1.8:
+                    elif self.__upl_or_lol == 'upl_w_lol':
                         upper_limit = value
-                        lower_limit = 1.8  # default value of PDBStat
+
+                    elif self.__upl_or_lol == 'lol_only':
+                        lower_limit = value
+                        upper_limit = 5.5  # default value of PDBStat
                         target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
-                    else:
+
+                    else:  # 'lol_w_upl'
                         lower_limit = value
 
-                elif self.__upl_or_lol == 'upl_w_lol':
-                    upper_limit = value
+                    dstFunc = self.validateDistanceRange(weight, target_value, lower_limit, upper_limit)
 
-                elif self.__upl_or_lol == 'lol_only':
-                    lower_limit = value
-                    upper_limit = 5.5  # default value of PDBStat
-                    target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                    if dstFunc is None and (abs(value) > DIST_ERROR_MAX * 10.0 or abs(value2) > DIST_ERROR_MAX * 10.0):
+                        if self.reasonsForReParsing is None:
+                            self.reasonsForReParsing = {}
+                        self.reasonsForReParsing['noepk_fixatmw'] = True
 
-                else:  # 'lol_w_upl'
-                    lower_limit = value
+                else:  # 'noepk'
 
-                dstFunc = self.validateDistanceRange(weight, target_value, lower_limit, upper_limit)
+                    if has_square:
+                        lower_limit = value
+                        upper_limit = value2
+                    else:
+                        target_value = value
+
+                    dstFunc = self.validatePeakVolumeRange(weight, target_value, lower_limit, upper_limit)
 
                 if dstFunc is None:
                     return
@@ -1696,7 +1831,9 @@ class CyanaMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by CyanaMRParser#fixatmw2_distance_restraints.
     def enterFixatmw2_distance_restraints(self, ctx: CyanaMRParser.Fixatmw2_distance_restraintsContext):  # pylint: disable=unused-argument
-        self.__cur_subtype = 'dist'
+        self.__cur_subtype = 'dist'  # or 'noepk'
+        if self.__reasons is not None and 'noepk_fixatmw2' in self.__reasons:
+            self.__cur_subtype = 'noepk'
 
     # Exit a parse tree produced by CyanaMRParser#fixatmw2_distance_restraints.
     def exitFixatmw2_distance_restraints(self, ctx: CyanaMRParser.Fixatmw2_distance_restraintsContext):  # pylint: disable=unused-argument
@@ -1704,7 +1841,10 @@ class CyanaMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by CyanaMRParser#fixatmw2_distance_restraint.
     def enterFixatmw2_distance_restraint(self, ctx: CyanaMRParser.Fixatmw2_distance_restraintContext):  # pylint: disable=unused-argument
-        self.distRestraints += 1
+        if self.__cur_subtype == 'dist':
+            self.distRestraints += 1
+        else:
+            self.noepkRestraints += 1
 
         self.atomSelectionSet.clear()
 
@@ -1737,29 +1877,43 @@ class CyanaMRParserListener(ParseTreeListener):
                 lower_limit = None
                 upper_limit = None
 
-                if DIST_RANGE_MIN <= value <= DIST_RANGE_MAX:
-                    if self.__max_dist_value is None:
-                        self.__max_dist_value = value
-                    if value > self.__max_dist_value:
-                        self.__max_dist_value = value
+                if self.__cur_subtype == 'dist':
 
-                if value2 > DIST_RANGE_MAX:  # lol_only
-                    lower_limit = value
+                    if DIST_RANGE_MIN <= value <= DIST_RANGE_MAX:
+                        if self.__max_dist_value is None:
+                            self.__max_dist_value = value
+                        if value > self.__max_dist_value:
+                            self.__max_dist_value = value
 
-                elif 1.8 <= value <= DIST_ERROR_MAX and DIST_RANGE_MIN <= value2 <= DIST_RANGE_MAX:
-                    upper_limit = value2
-                    lower_limit = value
-                    target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                    if value2 > DIST_RANGE_MAX:  # lol_only
+                        lower_limit = value
 
-                else:  # upl_only
-                    if value2 > 1.8:
+                    elif 1.8 <= value <= DIST_ERROR_MAX and DIST_RANGE_MIN <= value2 <= DIST_RANGE_MAX:
                         upper_limit = value2
-                        lower_limit = 1.8  # default value of PDBStat
+                        lower_limit = value
                         target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
-                    else:
-                        upper_limit = value2
 
-                dstFunc = self.validateDistanceRange(weight, target_value, lower_limit, upper_limit)
+                    else:  # upl_only
+                        if value2 > 1.8:
+                            upper_limit = value2
+                            lower_limit = 1.8  # default value of PDBStat
+                            target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                        else:
+                            upper_limit = value2
+
+                    dstFunc = self.validateDistanceRange(weight, target_value, lower_limit, upper_limit)
+
+                    if dstFunc is None and (abs(value) > DIST_ERROR_MAX * 10.0 or abs(value2) > DIST_ERROR_MAX * 10.0):
+                        if self.reasonsForReParsing is None:
+                            self.reasonsForReParsing = {}
+                        self.reasonsForReParsing['noepk_fixatmw2'] = True
+
+                else:  # 'noepk'
+
+                    lower_limit = value
+                    upper_limit = value2
+
+                    dstFunc = self.validatePeakVolumeRange(weight, target_value, lower_limit, upper_limit)
 
                 if dstFunc is None:
                     return
@@ -1885,6 +2039,8 @@ class CyanaMRParserListener(ParseTreeListener):
             return f"[Check the {self.rdcRestraints}th row of residual dipolar coupling restraints] "
         if self.__cur_subtype == 'pcs':
             return f"[Check the {self.pcsRestraints}th row of pseudocontact shift restraints] "
+        if self.__cur_subtype == 'noepk':
+            return f"[Check the {self.distRestraints}th row of NOESY volume restraints] "
         return ''
 
     def getContentSubtype(self):
@@ -1894,7 +2050,8 @@ class CyanaMRParserListener(ParseTreeListener):
         contentSubtype = {'dist_restraint': self.distRestraints,
                           'dihed_restraint': self.dihedRestraints,
                           'rdc_restraint': self.rdcRestraints,
-                          'pcs_restraint': self.pcsRestraints
+                          'pcs_restraint': self.pcsRestraints,
+                          'noepk_restraint': self.noepkRestraints
                           }
 
         return {k: 1 for k, v in contentSubtype.items() if v > 0}

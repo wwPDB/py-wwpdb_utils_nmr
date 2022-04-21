@@ -430,8 +430,8 @@ Asterisk_IA:		SPACE_IA '*' SPACE_IA;
 Integers:		SPACE_IA INTEGER SPACE_IA (Comma_IA SPACE_IA INTEGER SPACE_IA)* SPACE_IA;
 MultiplicativeInt:	SPACE_IA INTEGER Asterisk_IA INTEGER SPACE_IA;
 
-fragment SPACE_IA:	[ \t]*;
-RETURN_IA:		[\r\n]+ -> skip;
+fragment SPACE_IA:	[ \t\r\n]*;
+//RETURN_IA:		[\r\n]+ -> skip;
 
 mode REAL_ARRAY_MODE;
 
@@ -443,8 +443,8 @@ Asterisk_RA:		SPACE_RA '*' SPACE_RA;
 Reals:			SPACE_RA REAL SPACE_RA (Comma_RA SPACE_RA REAL SPACE_RA)* SPACE_RA;
 MultiplicativeReal:	SPACE_RA INTEGER Asterisk_RA REAL SPACE_RA;
 
-fragment SPACE_RA:	[ \t]*;
-RETURN_RA:		[\r\n]+ -> skip;
+fragment SPACE_RA:	[ \t\r\n]*;
+//RETURN_RA:		[\r\n]+ -> skip;
 
 mode BINT_ARRAY_MODE;
 
@@ -453,8 +453,8 @@ Comma_BA:		',' -> popMode;
 
 BoolInts:		SPACE_BA ONE_OR_ZERO SPACE_BA (Comma_BA SPACE_BA ONE_OR_ZERO SPACE_BA)* SPACE_BA;
 
-fragment SPACE_BA:	[ \t]*;
-RETURN_BA:		[\r\n]+ -> skip;
+fragment SPACE_BA:	[ \t\r\n]*;
+//RETURN_BA:		[\r\n]+ -> skip;
 
 mode QSTR_ARRAY_MODE;
 
@@ -465,8 +465,8 @@ Comma_QA:		',' -> popMode;
 fragment QSTRING:	('\'' | '"')? SIMPLE_NAME ('\'' | '"')?;
 Qstrings:		SPACE_QA QSTRING SPACE_QA (Comma_QA SPACE_QA QSTRING SPACE_QA)* SPACE_QA;
 
-fragment SPACE_QA:	[ \t]*;
-RETURN_QA:		[\r\n]+ -> skip;
+fragment SPACE_QA:	[ \t\r\n]*;
+//RETURN_QA:		[\r\n]+ -> skip;
 
 mode ARGUMENT_MODE;
 

@@ -748,4 +748,7 @@ def startsWithPdbRecord(string):
     """ Return whether a given string starts with legacy PDB records.
     """
 
-    return any(string.startswith(pdb_record) for pdb_record in LEGACY_PDB_RECORDS)
+    if any(string.startswith(pdb_record) for pdb_record in LEGACY_PDB_RECORDS):
+        return True
+
+    return any(string == pdb_record[:-1] for pdb_record in LEGACY_PDB_RECORDS if pdb_record.endswith(' '))

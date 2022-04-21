@@ -744,11 +744,11 @@ def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms
     return '.'
 
 
-def startsWithPdbRecord(string):
-    """ Return whether a given string starts with legacy PDB records.
+def startsWithPdbRecord(line):
+    """ Return whether a given line string starts with legacy PDB records.
     """
 
-    if any(string.startswith(pdb_record) for pdb_record in LEGACY_PDB_RECORDS):
+    if any(line.startswith(pdb_record) for pdb_record in LEGACY_PDB_RECORDS):
         return True
 
-    return any(string == pdb_record[:-1] for pdb_record in LEGACY_PDB_RECORDS if pdb_record.endswith(' '))
+    return any(line[:-1] == pdb_record[:-1] for pdb_record in LEGACY_PDB_RECORDS if pdb_record.endswith(' '))

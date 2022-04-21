@@ -379,7 +379,7 @@ Equ_op:			'=';
 L_QUOT:			'"' -> pushMode(FUNC_CALL_MODE);
 SPACE:			[ \t\r\n]+ -> skip;
 //HIDDEN_COMMENT:	'{*' (HIDDEN_COMMENT | .)*? '*}' -> channel(HIDDEN);
-EMPTY_COMMENT:		('#' | '!' | ';' | '*' '*'+ | R E M A R K) [\r\n]+ -> channel(HIDDEN);
+EMPTY_COMMENT:		('#' | '!' | ';' | '*' '*'+ | '-' '-'+ | '+' '+'+) [\r\n]+ -> channel(HIDDEN);
 
 mode COMMENT_MODE;
 
@@ -431,7 +431,6 @@ Integers:		SPACE_IA INTEGER SPACE_IA (Comma_IA SPACE_IA INTEGER SPACE_IA)* SPACE
 MultiplicativeInt:	SPACE_IA INTEGER Asterisk_IA INTEGER SPACE_IA;
 
 fragment SPACE_IA:	[ \t\r\n]*;
-//RETURN_IA:		[\r\n]+ -> skip;
 
 mode REAL_ARRAY_MODE;
 
@@ -444,7 +443,6 @@ Reals:			SPACE_RA REAL SPACE_RA (Comma_RA SPACE_RA REAL SPACE_RA)* SPACE_RA;
 MultiplicativeReal:	SPACE_RA INTEGER Asterisk_RA REAL SPACE_RA;
 
 fragment SPACE_RA:	[ \t\r\n]*;
-//RETURN_RA:		[\r\n]+ -> skip;
 
 mode BINT_ARRAY_MODE;
 
@@ -454,7 +452,6 @@ Comma_BA:		',' -> popMode;
 BoolInts:		SPACE_BA ONE_OR_ZERO SPACE_BA (Comma_BA SPACE_BA ONE_OR_ZERO SPACE_BA)* SPACE_BA;
 
 fragment SPACE_BA:	[ \t\r\n]*;
-//RETURN_BA:		[\r\n]+ -> skip;
 
 mode QSTR_ARRAY_MODE;
 
@@ -466,7 +463,6 @@ fragment QSTRING:	('\'' | '"')? SIMPLE_NAME ('\'' | '"')?;
 Qstrings:		SPACE_QA QSTRING SPACE_QA (Comma_QA SPACE_QA QSTRING SPACE_QA)* SPACE_QA;
 
 fragment SPACE_QA:	[ \t\r\n]*;
-//RETURN_QA:		[\r\n]+ -> skip;
 
 mode ARGUMENT_MODE;
 

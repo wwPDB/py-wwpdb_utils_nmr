@@ -206,6 +206,7 @@ try:
                                                        translateToStdAtomName,
                                                        checkCoordinates,
                                                        getTypeOfDihedralRestraint,
+                                                       startsWithPdbRecord,
                                                        KNOWN_ANGLE_NAMES,
                                                        CS_RESTRAINT_RANGE,
                                                        DIST_RESTRAINT_RANGE,
@@ -257,6 +258,7 @@ except ImportError:
                                            translateToStdAtomName,
                                            checkCoordinates,
                                            getTypeOfDihedralRestraint,
+                                           startsWithPdbRecord,
                                            KNOWN_ANGLE_NAMES,
                                            CS_RESTRAINT_RANGE,
                                            DIST_RESTRAINT_RANGE,
@@ -4236,6 +4238,7 @@ class NmrDpUtility:
                     _csPath = csPath + '.cif2str'
 
                     if not os.path.exists(_csPath):
+
                         cif_to_star = CifToNmrStar()
                         if not cif_to_star.convert(csPath, _csPath):
                             _csPath = csPath
@@ -8549,6 +8552,7 @@ class NmrDpUtility:
                 try:
 
                     header = True
+                    pdb_format = False
                     with open(src_file, 'r') as ifp:
                         with open(dst_file, 'w') as ofp:
                             for line in ifp:
@@ -8556,6 +8560,13 @@ class NmrDpUtility:
                                     if line.startswith('*'):
                                         continue
                                     header = False
+                                if startsWithPdbRecord(line):
+                                    pdb_format = True
+                                    continue
+                                if pdb_format:
+                                    pdb_format = False
+                                    if line.startswith('END'):
+                                        continue
                                 if 'Submitted Coord H atom name' in line:
                                     break
                                 ofp.write(line)

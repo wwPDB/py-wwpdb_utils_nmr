@@ -166,6 +166,20 @@ XPLOR_RDC_PRINCIPAL_AXIS_NAMES = ('OO', 'X', 'Y', 'Z')
 
 XPLOR_ORIGIN_AXIS_COLS = [0, 1, 2, 3]
 
+LEGACY_PDB_RECORDS = ['HEADER', 'OBSLTE', 'TITLE ', 'SPLIT ', 'CAVEAT', 'COMPND', 'SOURCE', 'KEYWDS', 'EXPDAT',
+                      'NUMMDL', 'MDLTYP', 'AUTHOR', 'REVDAT', 'SPRSDE', 'JRNL', 'REMARK',
+                      'DBREF', 'DBREF1', 'DBREF2', 'SEQADV', 'SEQRES', 'MODRES',
+                      'HET ', 'HETNAM', 'HETSYN', 'FORMUL',
+                      'HELIX ', 'SHEET ',
+                      'SSBOND', 'LINK ', 'CISPEP',
+                      'SITE ',
+                      'CRYST1', 'ORIGX1', 'ORIGX2', 'ORIGX3', 'SCALE1', 'SCALE2', 'SCALE3',
+                      'MTRIX1', 'MTRIX2', 'MTRIX3',
+                      'MODEL ', 'ATOM ', 'ANISOU', 'TER ', 'HETATM', 'ENDMDL',
+                      'CONECT',
+                      'MASTER'
+                      ]
+
 
 def toNpArray(atom):
     """ Return Numpy array of a given Cartesian coordinate in {'x': float, 'y': float, 'z': float} format.
@@ -728,3 +742,10 @@ def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms
                             return dataType
 
     return '.'
+
+
+def startsWithPdbRecord(string):
+    """ Return whether a given string starts with legacy PDB records.
+    """
+
+    return any(string.startswith(pdb_record) for pdb_record in LEGACY_PDB_RECORDS)

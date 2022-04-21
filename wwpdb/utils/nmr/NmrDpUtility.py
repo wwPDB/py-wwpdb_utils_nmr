@@ -309,6 +309,18 @@ ANGLE_UNCERT_MAX = ANGLE_UNCERTAINTY_RANGE['max_inclusive']
 RDC_UNCERT_MAX = RDC_UNCERTAINTY_RANGE['max_inclusive']
 
 
+datablock_pattern = re.compile(r'\s*data_(\S+)\s*')
+sf_anonymous_pattern = re.compile(r'\s*save_\S+\s*')
+save_pattern = re.compile(r'\s*save_\s*')
+loop_pattern = re.compile(r'\s*loop_\s*')
+stop_pattern = re.compile(r'\s*stop_\s*')
+
+category_pattern = re.compile(r'\s*_(\S*)\..*\s*')
+tagvalue_pattern = re.compile(r'\s*_(\S*)\.(\S*)\s+(.*)\s*')
+sf_category_pattern = re.compile(r'\s*_\S*\.Sf_category\s*\S+\s*')
+sf_framecode_pattern = re.compile(r'\s*_\S*\.Sf_framecode\s*\s+\s*')
+
+
 def detect_bom(inPath, default='utf-8'):
     """ Detect BOM of input file.
     """
@@ -4563,16 +4575,6 @@ class NmrDpUtility:
 
         len_tmp_paths = len(tmpPaths)
 
-        datablock_pattern = re.compile(r'\s*data_(\S+)\s*')
-        sf_anonymous_pattern = re.compile(r'\s*save_\S+\s*')
-        save_pattern = re.compile(r'\s*save_\s*')
-        loop_pattern = re.compile(r'\s*loop_\s*')
-        stop_pattern = re.compile(r'\s*stop_\s*')
-        category_pattern = re.compile(r'\s*_(\S*)\..*\s*')
-        tagvalue_pattern = re.compile(r'\s*_(\S*)\.(\S*)\s+(.*)\s*')
-        sf_category_pattern = re.compile(r'\s*_\S*\.Sf_category\s*\S+\s*')
-        sf_framecode_pattern = re.compile(r'\s*_\S*\.Sf_framecode\s*\s+\s*')
-
         msg_template = "Saveframe improperly terminated at end of file."
 
         if any(msg for msg in message['error'] if msg_template in msg):
@@ -4983,7 +4985,7 @@ class NmrDpUtility:
                     pass_sf_framecode = False
                     pass_sf_loop = False
 
-                    sf_framecode_pattern = re.compile(r'\s*save_' + sf_framecode + r'\s*')
+                    sf_named_pattern = re.compile(r'\s*save_' + sf_framecode + r'\s*')
 
                     with open(_srcPath, 'r', encoding='utf-8') as ifp:
                         for line in ifp:
@@ -4998,7 +5000,7 @@ class NmrDpUtility:
                                         break
                                 elif loop_pattern.match(line):
                                     pass_sf_loop = True
-                            elif sf_framecode_pattern.match(line):
+                            elif sf_named_pattern.match(line):
                                 pass_sf_framecode = True
 
                     targets.append(target)
@@ -5013,7 +5015,7 @@ class NmrDpUtility:
                 pass_sf_framecode = False
                 pass_sf_loop = False
 
-                sf_framecode_pattern = re.compile(r'\s*save_' + sf_framecode + r'\s*')
+                sf_named_pattern = re.compile(r'\s*save_' + sf_framecode + r'\s*')
 
                 with open(_srcPath, 'r', encoding='utf-8') as ifp:
                     with open(_srcPath + '~', 'w', encoding='utf-8') as ofp:
@@ -5028,7 +5030,7 @@ class NmrDpUtility:
                                         ofp.write(target['sf_tag_prefix'] + '.' + ('sf_category' if file_type == 'nef' else 'Sf_category') + '    ' + target['sf_category'] + '\n')
                                         ofp.write('#\n')
                                     ofp.write(line)
-                            elif sf_framecode_pattern.match(line):
+                            elif sf_named_pattern.match(line):
                                 pass_sf_framecode = True
                                 ofp.write(line)
                             elif not pass_sf_framecode:
@@ -6465,7 +6467,7 @@ class NmrDpUtility:
 
             file_path = ar['file_name']
 
-            with open(file_path, 'r', encoding='utf-8') as ifp:
+            with open(file_path, 'r', encoding='utf-8', errors='ignore') as ifp:
                 md5_list.append(hashlib.md5(ifp.read().encode('utf-8')).hexdigest())
 
             is_aux_amb = file_type == 'nm-aux-amb'
@@ -8547,39 +8549,225 @@ class NmrDpUtility:
 
             dst_file = src_file + '.trimmed'
 
-            if not os.path.exists(dst_file):
+            has_pdb_format = False
+            has_str_format = False
+            has_cs_str = False
 
-                try:
+            try:
+
+                header = True
+                pdb_record = False
+
+                has_anonymous_saveframe = False
+                has_save = False
+                has_loop = False
+                has_stop = False
+
+                first_str_line_num = -1
+                last_str_line_num = -1
+
+                i = 0
+
+                with open(src_file, 'r') as ifp:
+                    with open(dst_file, 'w') as ofp:
+                        for line in ifp:
+                            i += 1
+
+                            # skip MR header
+                            if header:
+                                if line.startswith('*'):
+                                    continue
+                                header = False
+
+                            # skip legacy PDB
+                            if startsWithPdbRecord(line):
+                                has_pdb_format = pdb_record = True
+                                continue
+                            if pdb_record:
+                                pdb_record = False
+                                if line.startswith('END'):
+                                    continue
+
+                            # check STAR
+                            str_syntax = False
+                            if datablock_pattern.match(line):
+                                str_syntax = True
+                            elif sf_anonymous_pattern.match(line):
+                                str_syntax = has_anonymous_saveframe = True
+                            elif save_pattern.match(line):
+                                str_syntax = has_save = True
+                            elif loop_pattern.match(line):
+                                str_syntax = has_loop = True
+                            elif stop_pattern.match(line):
+                                str_syntax = has_stop = True
+
+                            if str_syntax:
+                                if first_str_line_num < 0:
+                                    first_str_line_num = i
+                                last_str_line_num = i
+                                if has_anonymous_saveframe | has_save | has_loop | has_stop:
+                                    has_str_format = True
+
+                            # skip MR footer
+                            if 'Submitted Coord H atom name' in line:
+                                break
+
+                            ofp.write(line)
+
+                if last_str_line_num - first_str_line_num < 10:
+                    has_str_format = False
+
+                # split STAR and others
+                if has_str_format:
+
+                    mrPath = src_file + '.trimmed.str'
 
                     header = True
-                    pdb_format = False
+                    pdb_record = False
+
+                    i = 0
+
                     with open(src_file, 'r') as ifp:
                         with open(dst_file, 'w') as ofp:
-                            for line in ifp:
-                                if header:
-                                    if line.startswith('*'):
+                            with open(mrPath, 'w') as ofp2:
+                                for line in ifp:
+                                    i += 1
+
+                                    # skip MR header
+                                    if header:
+                                        if line.startswith('*'):
+                                            continue
+                                        header = False
+
+                                    # skip legacy PDB
+                                    if startsWithPdbRecord(line):
+                                        pdb_record = True
                                         continue
-                                    header = False
-                                if startsWithPdbRecord(line):
-                                    pdb_format = True
-                                    continue
-                                if pdb_format:
-                                    pdb_format = False
-                                    if line.startswith('END'):
+                                    if pdb_record:
+                                        pdb_record = False
+                                        if line.startswith('END'):
+                                            continue
+
+                                    if first_str_line_num <= i <= last_str_line_num:
+                                        ofp2.write(line)
                                         continue
-                                if 'Submitted Coord H atom name' in line:
-                                    break
-                                ofp.write(line)
 
-                except Exception as e:
+                                    # skip MR footer
+                                    if 'Submitted Coord H atom name' in line:
+                                        break
 
-                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - " + str(e))
-                    self.report.setError()
+                                    ofp.write(line)
 
-                    if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - {str(e)}\n")
+                    self.__file_path_list_len += 1
 
-                    return False
+                    mr_file_path_list = 'restraint_file_path_list'
+
+                    if mr_file_path_list not in self.__inputParamDict:
+                        self.__inputParamDict[mr_file_path_list] = [mrPath]
+                    else:
+                        self.__inputParamDict[mr_file_path_list].append(mrPath)
+
+                    self.report.appendInputSource()
+
+                    input_source = self.report.input_sources[-1]
+
+                    file_type = 'nmr-star'
+                    file_name = os.path.basename(mrPath)
+
+                    input_source.setItemValue('file_name', file_name)
+                    input_source.setItemValue('file_type', file_type)
+                    input_source.setItemValue('content_type', 'nmr-restraints')
+
+                    file_path_list_len = self.__file_path_list_len - 1
+
+                    codec = detect_bom(mrPath, 'utf-8')
+
+                    mrPath_ = None
+
+                    if codec != 'utf-8':
+                        mrPath_ = mrPath + '~'
+                        convert_codec(mrPath, mrPath_, codec, 'utf-8')
+                        mrPath = mrPath_
+
+                    file_subtype = 'O'
+
+                    is_valid, message = self.__nefT.validate_file(mrPath, file_subtype)
+
+                    if not is_valid:
+                        _is_valid, _ = self.__nefT.validate_file(mrPath, 'S')
+                        if _is_valid:
+                            has_cs_str = True
+
+                    self.__original_error_message.append(message)
+
+                    _file_type = message['file_type']  # nef/nmr-star/unknown
+
+                    if is_valid:
+
+                        if _file_type != file_type:
+
+                            err = f"{file_name!r} was selected as {self.readable_file_type[file_type]} file, "\
+                                f"but recognized as {self.readable_file_type[_file_type]} file."
+
+                            if _file_type == 'nef':  # DAOTHER-5673
+                                err += " Please re-upload the NEF file as an NMR combined data file."
+                            else:
+                                err += " Please re-upload the file."
+
+                            if len(message['error']) > 0:
+                                for err_message in message['error']:
+                                    if 'No such file or directory' not in err_message:
+                                        err += ' ' + re.sub('not in list', 'unknown item.', err_message)
+
+                            self.report.error.appendDescription('content_mismatch',
+                                                                {'file_name': file_name, 'description': err})
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - {err}\n")
+
+                        else:
+
+                            # NEFTranslator.validate_file() generates this object internally, but not re-used.
+                            _is_done, star_data_type, star_data = self.__nefT.read_input_file(mrPath)
+
+                            self.__has_legacy_sf_issue = False
+
+                            if star_data_type == 'Saveframe':
+                                self.__has_legacy_sf_issue = True
+                                self.__fixFormatIssueOfInputSource(file_path_list_len, file_name, file_type, mrPath, file_subtype, message)
+                                _is_done, star_data_type, star_data = self.__nefT.read_input_file(mrPath)
+
+                            if not (self.__has_legacy_sf_issue and _is_done and star_data_type == 'Entry'):
+
+                                if len(self.__star_data_type) == self.__file_path_list_len:
+                                    del self.__star_data_type[-1]
+                                    del self.__star_data[-1]
+
+                                self.__star_data_type.append(star_data_type)
+                                self.__star_data.append(star_data)
+
+                                self.__rescueFormerNef(file_path_list_len)
+                                self.__rescueImmatureStr(file_path_list_len)
+
+                    elif not self.__fixFormatIssueOfInputSource(file_path_list_len, file_name, file_type, mrPath, file_subtype, message):
+                        pass
+
+                    if mrPath_ is not None:
+                        try:
+                            os.remove(mrPath_)
+                        except:  # noqa: E722 pylint: disable=bare-except
+                            pass
+
+            except Exception as e:
+
+                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - " + str(e))
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write(f"+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - {str(e)}\n")
+
+                return False
 
             _, _, valid_types, possible_types = self.__detectOtherPossibleFormatAsErrorOfLegacyMR(dst_file, file_name, file_type, [], True)
 
@@ -8588,7 +8776,16 @@ class NmrDpUtility:
 
             if len_valid_types == 0 and len_possible_types == 0:
 
-                err = f"The NMR restraint file {file_name!r} (MR format) does not match with any known format. @todo: It needs to be reviewed or marked as entry wo NMR restraints."
+                ins_msg = ''
+                if has_pdb_format and has_cs_str:
+                    ins_msg = 'unexpectedly contains PDB coordinates and assigned chemical shifts, but '
+                elif has_pdb_format:
+                    ins_msg = 'unexpectedly contains PDB coordinates, but '
+                elif has_cs_str:
+                    ins_msg = 'unexpectedly contains assigned chemical shifts, but '
+
+                err = f"The NMR restraint file {file_name!r} (MR format) {ins_msg}does not match with any known restraint format. "\
+                    "@todo: It needs to be reviewed or marked as entry wo NMR restraints."
 
                 self.report.error.appendDescription('internal_error',
                                                     {'file_name': file_name, 'description': err})
@@ -8616,7 +8813,8 @@ class NmrDpUtility:
 
                 else:
 
-                    err = f"The NMR restraint file {file_name!r} (MR format) is identified as {valid_types}. @todo: It needs to be split properly."
+                    err = f"The NMR restraint file {file_name!r} (MR format) is identified as {valid_types}. "\
+                        "@todo: It needs to be split properly."
 
                     self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - " + err)
                     self.report.setError()
@@ -8627,7 +8825,8 @@ class NmrDpUtility:
             elif len_valid_types == 0:
                 print(f"The NMR restraint file {file_name!r} (MR format) can be {possible_types}.")
 
-                err = f"The NMR restraint file {file_name!r} (MR format) can be {possible_types}. @todo: It needs to be reviewed."
+                err = f"The NMR restraint file {file_name!r} (MR format) can be {possible_types}. "\
+                    "@todo: It needs to be reviewed."
 
                 self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - " + err)
                 self.report.setError()
@@ -8638,7 +8837,8 @@ class NmrDpUtility:
             else:
                 print(f"The NMR restraint file {file_name!r} (MR format) is identified as {valid_types} and can be {possible_types} as well.")
 
-                err = f"The NMR restraint file {file_name!r} (MR format) is identified as {valid_types} and can be {possible_types} as well. @todo: It needs to be reviewed."
+                err = f"The NMR restraint file {file_name!r} (MR format) is identified as {valid_types} and can be {possible_types} as well. "\
+                    "@todo: It needs to be reviewed."
 
                 self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - " + err)
                 self.report.setError()

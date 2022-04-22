@@ -321,6 +321,8 @@ tagvalue_pattern = re.compile(r'\s*_(\S*)\.(\S*)\s+(.*)\s*')
 sf_category_pattern = re.compile(r'\s*_\S*\.Sf_category\s*\S+\s*')
 sf_framecode_pattern = re.compile(r'\s*_\S*\.Sf_framecode\s*\s+\s*')
 
+mr_file_header_pattern = re.compile(r'^# Restraints file (\d+): (\S+)\s*')
+
 
 def detect_bom(fPath, default='utf-8'):
     """ Detect BOM of input file.
@@ -8597,6 +8599,7 @@ class NmrDpUtility:
 
             dst_file = src_file + '.trimmed'
 
+            has_mr_header = False
             has_pdb_format = False
             has_cif_format = False
             has_str_format = False
@@ -8628,6 +8631,9 @@ class NmrDpUtility:
                                 if line.startswith('*'):
                                     continue
                                 header = False
+
+                            if mr_file_header_pattern.match(line):
+                                has_mr_header = True
 
                             # skip legacy PDB
                             if startsWithPdbRecord(line):
@@ -8692,13 +8698,14 @@ class NmrDpUtility:
                                         header = False
 
                                     # skip legacy PDB
-                                    if startsWithPdbRecord(line):
-                                        pdb_record = True
-                                        continue
-                                    if pdb_record:
-                                        pdb_record = False
-                                        if line.startswith('END'):
+                                    if has_pdb_format:
+                                        if startsWithPdbRecord(line):
+                                            pdb_record = True
                                             continue
+                                        if pdb_record:
+                                            pdb_record = False
+                                            if line.startswith('END'):
+                                                continue
 
                                     if first_str_line_num <= i <= last_str_line_num:
                                         ofp2.write(line)
@@ -8833,15 +8840,6 @@ class NmrDpUtility:
                                             continue
                                         header = False
 
-                                    # skip legacy PDB
-                                    if startsWithPdbRecord(line):
-                                        pdb_record = True
-                                        continue
-                                    if pdb_record:
-                                        pdb_record = False
-                                        if line.startswith('END'):
-                                            continue
-
                                     if first_str_line_num <= i and not has_sharp:
                                         if i <= last_str_line_num:
                                             ofp2.write(line)
@@ -8850,6 +8848,16 @@ class NmrDpUtility:
                                         if line.startswith('#'):
                                             has_sharp = True
                                         continue
+
+                                    # skip legacy PDB
+                                    if has_pdb_format:
+                                        if startsWithPdbRecord(line):
+                                            pdb_record = True
+                                            continue
+                                        if pdb_record:
+                                            pdb_record = False
+                                            if line.startswith('END'):
+                                                continue
 
                                     # skip MR footer
                                     if 'Submitted Coord H atom name' in line:
@@ -8976,52 +8984,67 @@ class NmrDpUtility:
 
                 return False
 
-            _, _, valid_types, possible_types = self.__detectOtherPossibleFormatAsErrorOfLegacyMR(dst_file, file_name, file_type, [], True)
+            # has no MR haeder
+            if not has_mr_header:
 
-            len_valid_types = len(valid_types)
-            len_possible_types = len(possible_types)
+                _, _, valid_types, possible_types = self.__detectOtherPossibleFormatAsErrorOfLegacyMR(dst_file, file_name, file_type, [], True)
 
-            if len_valid_types == 0 and len_possible_types == 0:
+                len_valid_types = len(valid_types)
+                len_possible_types = len(possible_types)
 
-                ins_msg = ''
-                if has_pdb_format and has_cs_str:
-                    ins_msg = 'unexpectedly contains PDB coordinates and assigned chemical shifts, but '
-                elif has_pdb_format:
-                    ins_msg = 'unexpectedly contains PDB coordinates, but '
-                elif has_cs_str:
-                    ins_msg = 'unexpectedly contains assigned chemical shifts, but '
+                if len_valid_types == 0 and len_possible_types == 0:
 
-                err = f"The NMR restraint file {file_name!r} (MR format) {ins_msg}does not match with any known restraint format. "\
-                    "@todo: It needs to be reviewed or marked as entry wo NMR restraints."
+                    ins_msg = ''
+                    if has_pdb_format and has_cs_str:
+                        ins_msg = 'unexpectedly contains PDB coordinates and assigned chemical shifts, but '
+                    elif has_pdb_format:
+                        ins_msg = 'unexpectedly contains PDB coordinates, but '
+                    elif has_cs_str:
+                        ins_msg = 'unexpectedly contains assigned chemical shifts, but '
 
-                self.report.error.appendDescription('internal_error',
-                                                    {'file_name': file_name, 'description': err})
-                self.report.setError()
+                    err = f"The NMR restraint file {file_name!r} (MR format) {ins_msg}does not match with any known restraint format. "\
+                        "@todo: It needs to be reviewed or marked as entry wo NMR restraints."
 
-                if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - {err}\n")
+                    self.report.error.appendDescription('internal_error',
+                                                        {'file_name': file_name, 'description': err})
+                    self.report.setError()
 
-                return False
+                    if self.__verbose:
+                        self.__lfh.write(f"+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - {err}\n")
 
-            if len_possible_types == 0:
-                print(f"The NMR restraint file {file_name!r} (MR format) is identified as {valid_types}.")
+                    return False
 
-                _ar = ar.copy()
+                if len_possible_types == 0:
+                    print(f"The NMR restraint file {file_name!r} (MR format) is identified as {valid_types}.")
 
-                if len_valid_types == 1:
-                    _ar['file_name'] = dst_file
-                    _ar['file_type'] = valid_types[0]
-                    splitted.append(_ar)
+                    _ar = ar.copy()
 
-                elif len_valid_types == 2 and 'nm-res-cns' in valid_types and 'nm-res-xpl' in valid_types:
-                    _ar['file_name'] = dst_file
-                    _ar['file_type'] = 'nm-res-xpl'
-                    splitted.append(_ar)
+                    if len_valid_types == 1:
+                        _ar['file_name'] = dst_file
+                        _ar['file_type'] = valid_types[0]
+                        splitted.append(_ar)
 
-                else:
+                    elif len_valid_types == 2 and 'nm-res-cns' in valid_types and 'nm-res-xpl' in valid_types:
+                        _ar['file_name'] = dst_file
+                        _ar['file_type'] = 'nm-res-xpl'
+                        splitted.append(_ar)
 
-                    err = f"The NMR restraint file {file_name!r} (MR format) is identified as {valid_types}. "\
-                        "@todo: It needs to be split properly."
+                    else:
+
+                        err = f"The NMR restraint file {file_name!r} (MR format) is identified as {valid_types}. "\
+                            "@todo: It needs to be split properly."
+
+                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - " + err)
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - {err}\n")
+
+                elif len_valid_types == 0:
+                    print(f"The NMR restraint file {file_name!r} (MR format) can be {possible_types}.")
+
+                    err = f"The NMR restraint file {file_name!r} (MR format) can be {possible_types}. "\
+                        "@todo: It needs to be reviewed."
 
                     self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - " + err)
                     self.report.setError()
@@ -9029,29 +9052,140 @@ class NmrDpUtility:
                     if self.__verbose:
                         self.__lfh.write(f"+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - {err}\n")
 
-            elif len_valid_types == 0:
-                print(f"The NMR restraint file {file_name!r} (MR format) can be {possible_types}.")
+                else:
+                    print(f"The NMR restraint file {file_name!r} (MR format) is identified as {valid_types} and can be {possible_types} as well.")
 
-                err = f"The NMR restraint file {file_name!r} (MR format) can be {possible_types}. "\
-                    "@todo: It needs to be reviewed."
+                    err = f"The NMR restraint file {file_name!r} (MR format) is identified as {valid_types} and can be {possible_types} as well. "\
+                        "@todo: It needs to be reviewed."
 
-                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - " + err)
-                self.report.setError()
+                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - " + err)
+                    self.report.setError()
 
-                if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - {err}\n")
+                    if self.__verbose:
+                        self.__lfh.write(f"+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - {err}\n")
 
+            # has MR header
             else:
-                print(f"The NMR restraint file {file_name!r} (MR format) is identified as {valid_types} and can be {possible_types} as well.")
 
-                err = f"The NMR restraint file {file_name!r} (MR format) is identified as {valid_types} and can be {possible_types} as well. "\
-                    "@todo: It needs to be reviewed."
+                dir_path = os.path.dirname(dst_file)
+                original_file_path_list = []
 
-                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - " + err)
-                self.report.setError()
+                ofp = None
+                j = 0
 
-                if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - {err}\n")
+                with open(dst_file, 'r') as ifp:
+                    for line in ifp:
+
+                        if mr_file_header_pattern.match(line):
+                            if ofp is not None:
+                                ofp.close()
+                                if j == 0:
+                                    os.remove(original_file_path_list.pop())
+
+                            j = 0
+                            g = mr_file_header_pattern.search(line).groups()
+                            _dst_file = os.path.join(dir_path, g[1])
+                            original_file_path_list.append(_dst_file)
+                            ofp = open(_dst_file, 'w')
+
+                        else:
+                            j += 1
+                            ofp.write(line)
+
+                if ofp is not None:
+                    ofp.close()
+                    if j == 0:
+                        os.remove(original_file_path_list.pop())
+
+                distict = True
+                if len(original_file_path_list) == 0:
+                    distict = False
+                    original_file_path_list.append(dst_file)
+
+                for dst_file in original_file_path_list:
+                    file_name = os.path.basename(dst_file)
+
+                    _, _, valid_types, possible_types = self.__detectOtherPossibleFormatAsErrorOfLegacyMR(dst_file, file_name, file_type, [], True)
+
+                    len_valid_types = len(valid_types)
+                    len_possible_types = len(possible_types)
+
+                    if len_valid_types == 0 and len_possible_types == 0:
+
+                        ins_msg = ''
+                        if not distict:
+                            if has_pdb_format and has_cs_str:
+                                ins_msg = 'unexpectedly contains PDB coordinates and assigned chemical shifts, but '
+                            elif has_pdb_format:
+                                ins_msg = 'unexpectedly contains PDB coordinates, but '
+                            elif has_cs_str:
+                                ins_msg = 'unexpectedly contains assigned chemical shifts, but '
+
+                        err = f"The NMR restraint file {file_name!r} (MR format) {ins_msg}does not match with any known restraint format. "\
+                            "@todo: It needs to be reviewed or marked as entry wo NMR restraints."
+
+                        self.report.error.appendDescription('internal_error',
+                                                            {'file_name': file_name, 'description': err})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - {err}\n")
+
+                        return False
+
+                    if len_possible_types == 0:
+                        print(f"The NMR restraint file {file_name!r} (MR format) is identified as {valid_types}.")
+
+                        _ar = ar.copy()
+
+                        if len_valid_types == 1:
+                            _ar['file_name'] = dst_file
+                            _ar['file_type'] = valid_types[0]
+                            if distict:
+                                _ar['original_file_name'] = file_name
+                            splitted.append(_ar)
+
+                        elif len_valid_types == 2 and 'nm-res-cns' in valid_types and 'nm-res-xpl' in valid_types:
+                            _ar['file_name'] = dst_file
+                            _ar['file_type'] = 'nm-res-xpl'
+                            if distict:
+                                _ar['original_file_name'] = file_name
+                            splitted.append(_ar)
+
+                        else:
+
+                            err = f"The NMR restraint file {file_name!r} (MR format) is identified as {valid_types}. "\
+                                "@todo: It needs to be split properly."
+
+                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - " + err)
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - {err}\n")
+
+                    elif len_valid_types == 0:
+                        print(f"The NMR restraint file {file_name!r} (MR format) can be {possible_types}.")
+
+                        err = f"The NMR restraint file {file_name!r} (MR format) can be {possible_types}. "\
+                            "@todo: It needs to be reviewed."
+
+                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - " + err)
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - {err}\n")
+
+                    else:
+                        print(f"The NMR restraint file {file_name!r} (MR format) is identified as {valid_types} and can be {possible_types} as well.")
+
+                        err = f"The NMR restraint file {file_name!r} (MR format) is identified as {valid_types} and can be {possible_types} as well. "\
+                            "@todo: It needs to be reviewed."
+
+                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - " + err)
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - {err}\n")
 
         if len(splitted) > 0:
             self.__inputParamDict[ar_file_path_list].extend(splitted)

@@ -9113,7 +9113,7 @@ class NmrDpUtility:
                     if len_valid_types == 0 and len_possible_types == 0:
 
                         ins_msg = ''
-                        if not distict:
+                        if not distict or len(original_file_path_list) == 1:
                             if has_pdb_format and has_cs_str:
                                 ins_msg = 'unexpectedly contains PDB coordinates and assigned chemical shifts, but '
                             elif has_pdb_format:

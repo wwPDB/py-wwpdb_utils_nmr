@@ -154,6 +154,7 @@ class AmberMRParserListener(ParseTreeListener):
     # __verbose = None
     # __lfh = None
     __debug = False
+    __omitDistLimitOutlier = True
 
     nmrRestraints = 0       # AMBER: NMR restraints
     distRestraints = 0      # AMBER: Distance restraints
@@ -1660,33 +1661,53 @@ class AmberMRParserListener(ParseTreeListener):
             if DIST_ERROR_MIN <= self.lowerLimit < DIST_ERROR_MAX:
                 dstFunc['lower_limit'] = f"{self.lowerLimit:.3f}"
             else:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value 'r2={self.lowerLimit}' must be within range {DIST_RESTRAINT_ERROR}.\n"
+                if self.lowerLimit < DIST_ERROR_MIN and self.__omitDistLimitOutlier:
+                    self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                        f"The lower limit value 'r2={self.lowerLimit}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.\n"
+                    self.lowerLimit = None
+                else:
+                    validRange = False
+                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                        f"The lower limit value 'r2={self.lowerLimit}' must be within range {DIST_RESTRAINT_ERROR}.\n"
 
         if self.upperLimit is not None:
             if DIST_ERROR_MIN < self.upperLimit <= DIST_ERROR_MAX:
                 dstFunc['upper_limit'] = f"{self.upperLimit:.3f}"
             else:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value 'r3={self.upperLimit}' must be within range {DIST_RESTRAINT_ERROR}.\n"
+                if self.upperLimit > DIST_ERROR_MAX and self.__omitDistLimitOutlier:
+                    self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                        f"The upper limit value 'r3={self.upperLimit}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.\n"
+                    self.upperLimit = None
+                else:
+                    validRange = False
+                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                        f"The upper limit value 'r3={self.upperLimit}' must be within range {DIST_RESTRAINT_ERROR}.\n"
 
         if self.lowerLinearLimit is not None:
             if DIST_ERROR_MIN <= self.lowerLinearLimit < DIST_ERROR_MAX:
                 dstFunc['lower_linear_limit'] = f"{self.lowerLinearLimit:.3f}"
             else:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower linear limit value 'r1={self.lowerLinearLimit}' must be within range {DIST_RESTRAINT_ERROR}.\n"
+                if self.lowerLinearLimit < DIST_ERROR_MIN and self.__omitDistLimitOutlier:
+                    self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                        f"The lower linear limit value 'r1={self.lowerLinearLimit}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.\n"
+                    self.lowerLinearLimit = None
+                else:
+                    validRange = False
+                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                        f"The lower linear limit value 'r1={self.lowerLinearLimit}' must be within range {DIST_RESTRAINT_ERROR}.\n"
 
         if self.upperLinearLimit is not None:
             if DIST_ERROR_MIN < self.upperLinearLimit <= DIST_ERROR_MAX:
                 dstFunc['upper_linear_limit'] = f"{self.upperLinearLimit:.3f}"
             else:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper linear limit value 'r4={self.upperLinearLimit}' must be within range {DIST_RESTRAINT_ERROR}.\n"
+                if self.upperLinearLimit > DIST_ERROR_MAX and self.__omitDistLimitOutlier:
+                    self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                        f"The upper linear limit value 'r4={self.upperLinearLimit}' is omitted because it is not  within range {DIST_RESTRAINT_ERROR}.\n"
+                    self.upperLinearLimit = None
+                else:
+                    validRange = False
+                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                        f"The upper linear limit value 'r4={self.upperLinearLimit}' must be within range {DIST_RESTRAINT_ERROR}.\n"
 
         if self.lowerLimit is not None and self.upperLimit is not None:
             if self.lowerLimit > self.upperLimit:

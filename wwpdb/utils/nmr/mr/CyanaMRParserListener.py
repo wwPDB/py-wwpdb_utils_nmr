@@ -92,6 +92,7 @@ class CyanaMRParserListener(ParseTreeListener):
     # __verbose = None
     # __lfh = None
     __debug = False
+    __omitDistLimitOutlier = True
 
     distRestraints = 0      # CYANA: Distance restraint file (.upl or .lol)
     dihedRestraints = 0     # CYANA: Torsion angle restraint file (.aco)
@@ -311,7 +312,7 @@ class CyanaMRParserListener(ParseTreeListener):
         else:  # 'lol_w_upl'
             lower_limit = value
 
-        dstFunc = self.validateDistanceRange(weight, target_value, lower_limit, upper_limit)
+        dstFunc = self.validateDistanceRange(weight, target_value, lower_limit, upper_limit, self.__omitDistLimitOutlier)
 
         if dstFunc is None:
             return
@@ -337,7 +338,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
                       f"atom1={atom1} atom2={atom2} {dstFunc}")
 
-    def validateDistanceRange(self, weight, target_value, lower_limit, upper_limit):
+    def validateDistanceRange(self, weight, target_value, lower_limit, upper_limit, omit_dist_limit_outlier):
         """ Validate distance value range.
         """
 
@@ -356,17 +357,27 @@ class CyanaMRParserListener(ParseTreeListener):
             if DIST_ERROR_MIN <= lower_limit < DIST_ERROR_MAX:
                 dstFunc['lower_limit'] = f"{lower_limit:.3f}"
             else:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit}' must be within range {DIST_RESTRAINT_ERROR}.\n"
+                if lower_limit < DIST_ERROR_MIN and omit_dist_limit_outlier:
+                    self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                        f"The lower limit value='{lower_limit}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.\n"
+                    lower_limit = None
+                else:
+                    validRange = False
+                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                        f"The lower limit value='{lower_limit}' must be within range {DIST_RESTRAINT_ERROR}.\n"
 
         if upper_limit is not None:
             if DIST_ERROR_MIN < upper_limit <= DIST_ERROR_MAX:
                 dstFunc['upper_limit'] = f"{upper_limit:.3f}"
             else:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit}' must be within range {DIST_RESTRAINT_ERROR}.\n"
+                if upper_limit > DIST_ERROR_MAX and omit_dist_limit_outlier:
+                    self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                        f"The upper limit value='{upper_limit}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.\n"
+                    upper_limit = None
+                else:
+                    validRange = False
+                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                        f"The upper limit value='{upper_limit}' must be within range {DIST_RESTRAINT_ERROR}.\n"
 
         if target_value is not None:
 
@@ -1217,6 +1228,8 @@ class CyanaMRParserListener(ParseTreeListener):
         int_col = 1
         str_col = 1
 
+        omit_dist_limit_outlier = self.__reasons is not None and self.__omitDistLimitOutlier
+
         try:
 
             for num_col, value in enumerate(self.numberSelection):
@@ -1256,7 +1269,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     else:  # 'lol_w_upl'
                         lower_limit = value
 
-                    dstFunc = self.validateDistanceRange(1.0, target_value, lower_limit, upper_limit)
+                    dstFunc = self.validateDistanceRange(1.0, target_value, lower_limit, upper_limit, omit_dist_limit_outlier)
 
                     if dstFunc is None and abs(value) > DIST_ERROR_MAX * 10.0:
                         if self.reasonsForReParsing is None:
@@ -1329,6 +1342,8 @@ class CyanaMRParserListener(ParseTreeListener):
         int_col = 1
         str_col = 1
 
+        omit_dist_limit_outlier = self.__reasons is not None and self.__omitDistLimitOutlier
+
         try:
 
             for num_col in range(0, len(self.numberSelection), 2):
@@ -1400,7 +1415,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     else:  # 'lol_w_upl'
                         lower_limit = value
 
-                    dstFunc = self.validateDistanceRange(weight, target_value, lower_limit, upper_limit)
+                    dstFunc = self.validateDistanceRange(weight, target_value, lower_limit, upper_limit, omit_dist_limit_outlier)
 
                     if dstFunc is None and (abs(value) > DIST_ERROR_MAX * 10.0 or abs(value2) > DIST_ERROR_MAX * 10.0):
                         if self.reasonsForReParsing is None:
@@ -1477,6 +1492,8 @@ class CyanaMRParserListener(ParseTreeListener):
         int_col = 1
         str_col = 1
 
+        omit_dist_limit_outlier = self.__reasons is not None and self.__omitDistLimitOutlier
+
         try:
 
             for num_col in range(0, len(self.numberSelection), 3):
@@ -1522,7 +1539,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         else:
                             upper_limit = value2
 
-                    dstFunc = self.validateDistanceRange(weight, target_value, lower_limit, upper_limit)
+                    dstFunc = self.validateDistanceRange(weight, target_value, lower_limit, upper_limit, omit_dist_limit_outlier)
 
                     if dstFunc is None and (abs(value) > DIST_ERROR_MAX * 10.0 or abs(value2) > DIST_ERROR_MAX * 10.0):
                         if self.reasonsForReParsing is None:
@@ -1597,6 +1614,8 @@ class CyanaMRParserListener(ParseTreeListener):
         int_col = 1
         str_col = 2
 
+        omit_dist_limit_outlier = self.__reasons is not None and self.__omitDistLimitOutlier
+
         try:
 
             for num_col, value in enumerate(self.numberSelection):
@@ -1635,7 +1654,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     else:  # 'lol_w_upl'
                         lower_limit = value
 
-                    dstFunc = self.validateDistanceRange(1.0, target_value, lower_limit, upper_limit)
+                    dstFunc = self.validateDistanceRange(1.0, target_value, lower_limit, upper_limit, omit_dist_limit_outlier)
 
                     if dstFunc is None and abs(value) > DIST_ERROR_MAX * 10.0:
                         if self.reasonsForReParsing is None:
@@ -1709,6 +1728,8 @@ class CyanaMRParserListener(ParseTreeListener):
         int_col = 1
         str_col = 2
 
+        omit_dist_limit_outlier = self.__reasons is not None and self.__omitDistLimitOutlier
+
         try:
 
             for num_col in range(0, len(self.numberSelection), 2):
@@ -1779,7 +1800,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     else:  # 'lol_w_upl'
                         lower_limit = value
 
-                    dstFunc = self.validateDistanceRange(weight, target_value, lower_limit, upper_limit)
+                    dstFunc = self.validateDistanceRange(weight, target_value, lower_limit, upper_limit, omit_dist_limit_outlier)
 
                     if dstFunc is None and (abs(value) > DIST_ERROR_MAX * 10.0 or abs(value2) > DIST_ERROR_MAX * 10.0):
                         if self.reasonsForReParsing is None:
@@ -1857,6 +1878,8 @@ class CyanaMRParserListener(ParseTreeListener):
         int_col = 1
         str_col = 2
 
+        omit_dist_limit_outlier = self.__reasons is not None and self.__omitDistLimitOutlier
+
         try:
 
             for num_col in range(0, len(self.numberSelection), 3):
@@ -1901,7 +1924,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         else:
                             upper_limit = value2
 
-                    dstFunc = self.validateDistanceRange(weight, target_value, lower_limit, upper_limit)
+                    dstFunc = self.validateDistanceRange(weight, target_value, lower_limit, upper_limit, omit_dist_limit_outlier)
 
                     if dstFunc is None and (abs(value) > DIST_ERROR_MAX * 10.0 or abs(value2) > DIST_ERROR_MAX * 10.0):
                         if self.reasonsForReParsing is None:

@@ -169,6 +169,7 @@ import time
 import hashlib
 import pynmrstar
 import gzip
+import chardet
 
 from packaging import version
 from munkres import Munkres
@@ -321,11 +322,11 @@ sf_category_pattern = re.compile(r'\s*_\S*\.Sf_category\s*\S+\s*')
 sf_framecode_pattern = re.compile(r'\s*_\S*\.Sf_framecode\s*\s+\s*')
 
 
-def detect_bom(inPath, default='utf-8'):
+def detect_bom(fPath, default='utf-8'):
     """ Detect BOM of input file.
     """
 
-    with open(inPath, 'rb') as ifp:
+    with open(fPath, 'rb') as ifp:
         raw = ifp.read(4)
 
     for enc, boms in \
@@ -359,6 +360,17 @@ def is_ascii_file(fPath):
             return '\x00' not in text
         except:  # noqa: E722 pylint: disable=bare-except
             return False
+
+
+def detect_encoding(line):
+    """ Return encoding of a given string.
+    """
+
+    try:
+        result = chardet.detect(line.encode('utf-8'))
+        return result['encoding']
+    except:  # noqa: E722 pylint: disable=bare-except
+        return 'binary'
 
 
 def uncompress_gzip_file(inPath, outPath):
@@ -7286,6 +7298,9 @@ class NmrDpUtility:
                                 if 'input' in description:
                                     err += f"{description['input']}\n"
                                     err += f"{description['marker']}\n"
+                                    enc = detect_encoding(description['input'])
+                                    if enc is not None and enc != 'ascii':
+                                        err += f"[Unexpected encoding] Encoding used in the above line is {enc!r}.\n"
 
                     if parser_err_listener is not None:
                         messageList = parser_err_listener.getMessageList()
@@ -7379,6 +7394,9 @@ class NmrDpUtility:
                                 if 'input' in description:
                                     err += f"{description['input']}\n"
                                     err += f"{description['marker']}\n"
+                                    enc = detect_encoding(description['input'])
+                                    if enc is not None and enc != 'ascii':
+                                        err += f"[Mimached encoding] Encoding used in the above line is {enc!r}.\n"
 
                     if parser_err_listener is not None:
                         messageList = parser_err_listener.getMessageList()
@@ -7462,6 +7480,9 @@ class NmrDpUtility:
                                 if 'input' in description:
                                     err += f"{description['input']}\n"
                                     err += f"{description['marker']}\n"
+                                    enc = detect_encoding(description['input'])
+                                    if enc is not None and enc != 'ascii':
+                                        err += f"[Mimached encoding] Encoding used in the above line is {enc!r}.\n"
 
                     if parser_err_listener is not None:
                         messageList = parser_err_listener.getMessageList()
@@ -7545,6 +7566,9 @@ class NmrDpUtility:
                                 if 'input' in description:
                                     err += f"{description['input']}\n"
                                     err += f"{description['marker']}\n"
+                                    enc = detect_encoding(description['input'])
+                                    if enc is not None and enc != 'ascii':
+                                        err += f"[Mimached encoding] Encoding used in the above line is {enc!r}.\n"
 
                     if parser_err_listener is not None:
                         messageList = parser_err_listener.getMessageList()
@@ -7635,6 +7659,9 @@ class NmrDpUtility:
                                 if 'input' in description:
                                     err += f"{description['input']}\n"
                                     err += f"{description['marker']}\n"
+                                    enc = detect_encoding(description['input'])
+                                    if enc is not None and enc != 'ascii':
+                                        err += f"[Mimached encoding] Encoding used in the above line is {enc!r}.\n"
 
                     if parser_err_listener is not None:
                         messageList = parser_err_listener.getMessageList()
@@ -7728,6 +7755,9 @@ class NmrDpUtility:
                                 if 'input' in description:
                                     err += f"{description['input']}\n"
                                     err += f"{description['marker']}\n"
+                                    enc = detect_encoding(description['input'])
+                                    if enc is not None and enc != 'ascii':
+                                        err += f"[Mimached encoding] Encoding used in the above line is {enc!r}.\n"
 
                     if parser_err_listener is not None:
                         messageList = parser_err_listener.getMessageList()
@@ -8075,6 +8105,9 @@ class NmrDpUtility:
                                     if 'input' in description:
                                         _err += f"{description['input']}\n"
                                         _err += f"{description['marker']}\n"
+                                        enc = detect_encoding(description['input'])
+                                        if enc is not None and enc != 'ascii':
+                                            _err += f"[Mimached encoding] Encoding used in the above line is {enc!r}.\n"
 
                         if parser_err_listener is not None and len(_err) == 0:
                             messageList = parser_err_listener.getMessageList()
@@ -8147,6 +8180,9 @@ class NmrDpUtility:
                                     if 'input' in description:
                                         _err += f"{description['input']}\n"
                                         _err += f"{description['marker']}\n"
+                                        enc = detect_encoding(description['input'])
+                                        if enc is not None and enc != 'ascii':
+                                            _err += f"[Mimached encoding] Encoding used in the above line is {enc!r}.\n"
 
                         if parser_err_listener is not None and len(_err) == 0:
                             messageList = parser_err_listener.getMessageList()
@@ -8219,6 +8255,9 @@ class NmrDpUtility:
                                     if 'input' in description:
                                         _err += f"{description['input']}\n"
                                         _err += f"{description['marker']}\n"
+                                        enc = detect_encoding(description['input'])
+                                        if enc is not None and enc != 'ascii':
+                                            _err += f"[Mimached encoding] Encoding used in the above line is {enc!r}.\n"
 
                         if parser_err_listener is not None and len(_err) == 0:
                             messageList = parser_err_listener.getMessageList()
@@ -8290,6 +8329,9 @@ class NmrDpUtility:
                                     if 'input' in description:
                                         _err += f"{description['input']}\n"
                                         _err += f"{description['marker']}\n"
+                                        enc = detect_encoding(description['input'])
+                                        if enc is not None and enc != 'ascii':
+                                            _err += f"[Mimached encoding] Encoding used in the above line is {enc!r}.\n"
 
                         if parser_err_listener is not None and len(_err) == 0:
                             messageList = parser_err_listener.getMessageList()
@@ -8362,6 +8404,9 @@ class NmrDpUtility:
                                     if 'input' in description:
                                         _err += f"{description['input']}\n"
                                         _err += f"{description['marker']}\n"
+                                        enc = detect_encoding(description['input'])
+                                        if enc is not None and enc != 'ascii':
+                                            _err += f"[Mimached encoding] Encoding used in the above line is {enc!r}.\n"
 
                         if parser_err_listener is not None and len(_err) == 0:
                             messageList = parser_err_listener.getMessageList()
@@ -8441,6 +8486,9 @@ class NmrDpUtility:
                                     if 'input' in description:
                                         _err += f"{description['input']}\n"
                                         _err += f"{description['marker']}\n"
+                                        enc = detect_encoding(description['input'])
+                                        if enc is not None and enc != 'ascii':
+                                            _err += f"[Mimached encoding] Encoding used in the above line is {enc!r}.\n"
 
                         if parser_err_listener is not None and len(_err) == 0:
                             messageList = parser_err_listener.getMessageList()

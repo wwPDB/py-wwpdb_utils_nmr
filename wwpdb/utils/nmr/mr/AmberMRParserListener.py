@@ -3401,7 +3401,7 @@ class AmberMRParserListener(ParseTreeListener):
                         f"The argument value of '{varName}({decimal})' must be in the range 1-{self.nring}, "\
                         f"regulated by 'nring={self.nring}'.\n"
                     return
-                self.namr[decimal] = str(ctx.Qstrings()).strip()
+                self.namr[decimal] = str(ctx.Qstring()).strip()
 
     # Enter a parse tree produced by AmberMRParser#pcshf_statement.
     def enterPcshf_statement(self, ctx: AmberMRParser.Pcshf_statementContext):  # pylint: disable=unused-argument
@@ -3739,7 +3739,7 @@ class AmberMRParserListener(ParseTreeListener):
                 return
 
         elif ctx.NMPMC():
-            self.nmpmc = str(ctx.Qstrings()).strip()
+            self.nmpmc = str(ctx.Qstring()).strip()
 
     # Enter a parse tree produced by AmberMRParser#align_statement.
     def enterAlign_statement(self, ctx: AmberMRParser.Align_statementContext):  # pylint: disable=unused-argument

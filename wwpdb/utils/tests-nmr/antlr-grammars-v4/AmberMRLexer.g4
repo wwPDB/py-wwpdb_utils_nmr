@@ -58,7 +58,11 @@ IAT:			I A T
 RSTWT:			R S T W T
 			-> pushMode(REAL_ARRAY_MODE);		// = Real [ , Real ] [ , Real ] [ , Real ]
 RESTRAINT:		R E S T R A I N T;			// = " RestraintFunctionCall " [ , " RestraintFunctionCall " ]*
-ATNAM:			A T N A M
+
+fragment ATNAM_:	A T N A M;
+ATNAM_Lp:		ATNAM_ L_paren
+			-> pushMode(AQSTR_PARAM_MODE);		// = Quoted_atom_name
+ATNAM:			ATNAM_
 			-> pushMode(QSTR_ARRAY_MODE);		// = Quoted_atom_name [ , Quoted_atom_name ]*
 
 IRESID:			I R E S I D
@@ -118,30 +122,55 @@ K0A:			K '0' A
 RJCOEF:			R J C O E F
 			->pushMode(REAL_ARRAY_MODE);		// = Real, Real, Real
 
-fragment IGR:		I G R;					// = Integer [ , Integer ]*
-IGR1:			IGR '1' -> pushMode(INT_ARRAY_MODE);
-IGR2:			IGR '2' -> pushMode(INT_ARRAY_MODE);
-IGR3:			IGR '3' -> pushMode(INT_ARRAY_MODE);
-IGR4:			IGR '4' -> pushMode(INT_ARRAY_MODE);
-IGR5:			IGR '5' -> pushMode(INT_ARRAY_MODE);
-IGR6:			IGR '6' -> pushMode(INT_ARRAY_MODE);
-IGR7:			IGR '7' -> pushMode(INT_ARRAY_MODE);
-IGR8:			IGR '8' -> pushMode(INT_ARRAY_MODE);
+fragment IGR_:		I G R;					// = Integer [ , Integer ]*
+IGR1:			IGR_ '1' -> pushMode(INT_ARRAY_MODE);
+IGR2:			IGR_ '2' -> pushMode(INT_ARRAY_MODE);
+IGR3:			IGR_ '3' -> pushMode(INT_ARRAY_MODE);
+IGR4:			IGR_ '4' -> pushMode(INT_ARRAY_MODE);
+IGR5:			IGR_ '5' -> pushMode(INT_ARRAY_MODE);
+IGR6:			IGR_ '6' -> pushMode(INT_ARRAY_MODE);
+IGR7:			IGR_ '7' -> pushMode(INT_ARRAY_MODE);
+IGR8:			IGR_ '8' -> pushMode(INT_ARRAY_MODE);
 
 FXYZ:			F X Y Z
 			-> pushMode(BINT_ARRAY_MODE);		// = Boolint, Boolint, Boolint
 OUTXYZ:			O U T X Y Z
 			-> pushMode(BINT_PARAM_MODE);		// = Boolint
 
-fragment GRNAM:		G R N A M;				// = Quoted_atom_name [ , Quoted_atom_name ]*
-GRNAM1:			GRNAM '1' -> pushMode(QSTR_ARRAY_MODE);
-GRNAM2:			GRNAM '2' -> pushMode(QSTR_ARRAY_MODE);
-GRNAM3:			GRNAM '3' -> pushMode(QSTR_ARRAY_MODE);
-GRNAM4:			GRNAM '4' -> pushMode(QSTR_ARRAY_MODE);
-GRNAM5:			GRNAM '5' -> pushMode(QSTR_ARRAY_MODE);
-GRNAM6:			GRNAM '6' -> pushMode(QSTR_ARRAY_MODE);
-GRNAM7:			GRNAM '7' -> pushMode(QSTR_ARRAY_MODE);
-GRNAM8:			GRNAM '8' -> pushMode(QSTR_ARRAY_MODE);
+fragment GRNAM_:	G R N A M;
+GRNAM1_Lp:		GRNAM_ '1' L_paren
+			-> pushMode(AQSTR_PARAM_MODE);		// = Quoted_atom_name
+GRNAM2_Lp:		GRNAM_ '2' L_paren
+			-> pushMode(AQSTR_PARAM_MODE);
+GRNAM3_Lp:		GRNAM_ '3' L_paren
+			-> pushMode(AQSTR_PARAM_MODE);
+GRNAM4_Lp:		GRNAM_ '4' L_paren
+			-> pushMode(AQSTR_PARAM_MODE);
+GRNAM5_Lp:		GRNAM_ '5' L_paren
+			-> pushMode(AQSTR_PARAM_MODE);
+GRNAM6_Lp:		GRNAM_ '6' L_paren
+			-> pushMode(AQSTR_PARAM_MODE);
+GRNAM7_Lp:		GRNAM_ '7' L_paren
+			-> pushMode(AQSTR_PARAM_MODE);
+GRNAM8_Lp:		GRNAM_ '8' L_paren
+			-> pushMode(AQSTR_PARAM_MODE);
+
+GRNAM1:			GRNAM_ '1'
+			-> pushMode(QSTR_ARRAY_MODE);		// = Quoted_atom_name [ , Quoted_atom_name ]*
+GRNAM2:			GRNAM_ '2'
+			-> pushMode(QSTR_ARRAY_MODE);
+GRNAM3:			GRNAM_ '3'
+			-> pushMode(QSTR_ARRAY_MODE);
+GRNAM4:			GRNAM_ '4'
+			-> pushMode(QSTR_ARRAY_MODE);
+GRNAM5:			GRNAM_ '5'
+			-> pushMode(QSTR_ARRAY_MODE);
+GRNAM6:			GRNAM_ '6'
+			-> pushMode(QSTR_ARRAY_MODE);
+GRNAM7:			GRNAM_ '7'
+			-> pushMode(QSTR_ARRAY_MODE);
+GRNAM8:			GRNAM_ '8'
+			-> pushMode(QSTR_ARRAY_MODE);
 
 IR6:			I R '6'
 			-> pushMode(BINT_PARAM_MODE);		// = Boolint
@@ -206,7 +235,7 @@ NATR:			N A T R
 IATR:			I A T R
 			-> pushMode(INT_PARAM_MODE);		// iatr(Integer) = Integer
 NAMR:			N A M R
-			-> pushMode(QSTR_ARRAY_MODE);		// namr(Integer) = Quoted_atom_name [ , Quoted_atom_name ]*
+			-> pushMode(QSTR_PARAM_MODE);		// namr(Integer) = Quoted_atom_name
 STR:			S T R
 			-> pushMode(REAL_ARRAY_MODE);		// str(Integer) = Real [ , Real ]*
 IPROT:			I P R O T
@@ -236,7 +265,7 @@ PCSHF:			Ampersand P C S H F;
 NME:			N M E
 			-> pushMode(INT_PARAM_MODE);		// = Integer
 NMPMC:			N M P M C
-			-> pushMode(QSTR_ARRAY_MODE);		// = Quoted_atom_name [ , Quoted_atom_name ]*
+			-> pushMode(QSTR_PARAM_MODE);		// = Quoted_atom_name
 
 OPTPHI:			O P T P H I
 			-> pushMode(REAL_ARRAY_MODE);		// optphi(Integer) = Real [ , Real ]*
@@ -367,6 +396,7 @@ fragment ALPHA_NUM:	ALPHA | DEC_DIGIT;
 fragment START_CHAR:	ALPHA_NUM | '_';
 fragment NAME_CHAR:	START_CHAR | '\'' | '-' | '+' | '.';
 fragment SIMPLE_NAME:	START_CHAR NAME_CHAR*;
+fragment QSTRING:	('\'' | '"')? SIMPLE_NAME ('\'' | '"')?;
 
 L_paren:		'(';
 R_paren:		')';
@@ -420,6 +450,30 @@ BoolInt:		ONE_OR_ZERO -> popMode;	// IRESID = 0 for the IAT points to the atoms,
 
 SPACE_BP:		[ \t\r\n]+ -> skip;
 
+mode QSTR_PARAM_MODE;
+
+L_paren_QP:		'(' -> pushMode(ARGUMENT_MODE);
+Equ_op_QP:		SPACE_QP '=' SPACE_QP;
+
+Qstring:		(SPACE_QP QSTRING SPACE_QP) -> popMode;
+
+fragment SPACE_QP:	[ \t\r\n]*;
+
+mode AQSTR_PARAM_MODE;
+
+Decimal_AQP:		DECIMAL;
+
+R_paren_AQP:		')';
+Equ_op_AQP:		'=' -> pushMode(AQSTR_PARAM_MODE_);
+
+SPACE_AQP:		[ \t\r\n]+ -> skip;
+
+mode AQSTR_PARAM_MODE_;
+
+Qstring_AQP:		(SPACE_AQP_ QSTRING SPACE_AQP_) -> mode(DEFAULT_MODE);
+
+fragment SPACE_AQP_:	[ \t\r\n]*;
+
 mode INT_ARRAY_MODE;
 
 L_paren_IA:		'(' -> pushMode(ARGUMENT_MODE);
@@ -459,7 +513,6 @@ L_paren_QA:		'(' -> pushMode(ARGUMENT_MODE);
 Equ_op_QA:		SPACE_QA '=' SPACE_QA;
 Comma_QA:		',' -> popMode;
 
-fragment QSTRING:	('\'' | '"')? SIMPLE_NAME ('\'' | '"')?;
 Qstrings:		SPACE_QA QSTRING SPACE_QA (Comma_QA SPACE_QA QSTRING SPACE_QA)* SPACE_QA;
 
 fragment SPACE_QA:	[ \t\r\n]*;

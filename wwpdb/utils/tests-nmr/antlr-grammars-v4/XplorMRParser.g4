@@ -61,7 +61,7 @@ distance_restraint:
 	Noe noe_statement* End;
 
 dihedral_angle_restraint:
-	Restraints Dihedral dihedral_statement* End;
+	Restraints? Dihedral dihedral_statement* End;
 
 rdc_restraint:
 	Sanisotropy sani_statement* End |
@@ -71,7 +71,7 @@ rdc_restraint:
 	Anisotropy anis_statement* End;
 
 planar_restraint:
-	Restraints Planar planar_statement* End;
+	Restraints? Planar planar_statement* End;
 
 antidistance_restraint:
 	Xadc antidistance_statement* End;

@@ -47,7 +47,7 @@ class ParserErrorListener(ErrorListener):
                  'marker': " " * (column) + "^" * (length)}
 
         _line = 1
-        with open(self.__filePath, 'r', encoding='UTF-8') as ifp:
+        with open(self.__filePath, 'r', encoding='utf-8') as ifp:
             for content in ifp:
                 if _line == line:
                     _dict['input'] = content.replace('\t', ' ')\

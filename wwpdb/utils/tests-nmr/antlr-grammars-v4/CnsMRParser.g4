@@ -45,13 +45,13 @@ distance_restraint:
 	Noe noe_statement* End;
 
 dihedral_angle_restraint:
-	Restraints Dihedral dihedral_statement* End;
+	Restraints? Dihedral dihedral_statement* End;
 
 plane_restraint:
-	Restraints Plane plane_statement* End;
+	Restraints? Plane plane_statement* End;
 
 harmonic_restraint:
-	Restraints Harmonic harmonic_statement* End;
+	Restraints? Harmonic harmonic_statement* End;
 
 rdc_restraint:
 	Sanisotropy sani_statement* End;

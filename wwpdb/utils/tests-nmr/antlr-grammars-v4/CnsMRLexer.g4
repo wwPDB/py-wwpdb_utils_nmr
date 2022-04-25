@@ -501,15 +501,15 @@ L_paren_VF:		'(' -> pushMode(VECTOR_EXPR_MODE);
 mode VECTOR_SHOW_MODE; // vector show
 
 L_paren_VS:		'(';
-R_paren_VS:		')' -> mode(DEFAULT_MODE);
+R_paren_VS:		')' -> popMode;
 
-Average_VS:		A V E R? A? G? E? -> popMode;
-Element_VS:		E L E M E? N? T? -> popMode;
-Max_VS:			M A X -> popMode;
-Min_VS:			M I N -> popMode;
-Norm_VS:		N O R M -> popMode;
-Rms_VS:			R M S -> popMode;
-Sum_VS:			S U M -> popMode;
+Average_VS:		A V E R? A? G? E?;
+Element_VS:		E L E M E? N? T?;
+Max_VS:			M A X;
+Min_VS:			M I N;
+Norm_VS:		N O R M;
+Rms_VS:			R M S;
+Sum_VS:			S U M;
 
 Atom_properties_VS:	(B | B C O M P? | C H A R G? E? | D X | D Y | D Z | F B E T A? | H A R M O? N? I? C? S? | M A S S | Q | Q C O M P? | R E F X | R E F Y | R E F Z | R M S D | V X | V Y | V Z | X | X C O M P? | Y | Y C O M P? | Z | Z C O M P?);
 

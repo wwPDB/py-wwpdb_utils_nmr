@@ -111,7 +111,7 @@ class CifToNmrStar:
 
             block_name_list = cifObj.GetBlockIDList()
 
-            if len(block_name_list) == 0: # single loop
+            if len(block_name_list) == 0:  # single loop
                 return False
 
             entry_id = None

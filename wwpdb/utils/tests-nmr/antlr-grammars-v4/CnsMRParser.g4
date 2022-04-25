@@ -32,26 +32,27 @@ cns_mr:
 	diffusion_anisotropy_restraint |
 	one_bond_coupling_restraint |
 	angle_db_restraint |
-	flag_statement
+	flag_statement |
+	vector_statement |
+	noe_assign |			// allowing bare assign clauses for Distance restraints
+	dihedral_assign |		// allowing bare assign clauses for Dihedral angle restraints
+	sani_assign |			// allowing bare assign clauses for RDC restraints
+	plane_statement |		// allowing bare group clauses for Plane restraints
+	coup_assign			// allowing bare assign clauses for Scaler J-coupling restraints
 	)*
-	noe_assign*			// allowing bare assign clauses for Distance restraints
-	dihedral_assign*		// allowing bare assign clauses for Dihedral angle restraints
-	sani_assign*			// allowing bare assign clauses for RDC restraints
-	plane_statement*		// allowing bare group clauses for Plane restraints
-	coup_assign*			// allowing bare assign clauses for Scaler J-coupling restraints
 	EOF;
 
 distance_restraint:
 	Noe noe_statement* End;
 
 dihedral_angle_restraint:
-	Restraints Dihedral dihedral_statement* End;
+	Restraints? Dihedral dihedral_statement* End;
 
 plane_restraint:
-	Restraints Plane plane_statement* End;
+	Restraints? Plane plane_statement* End;
 
 harmonic_restraint:
-	Restraints Harmonic harmonic_statement* End;
+	Restraints? Harmonic harmonic_statement* End;
 
 rdc_restraint:
 	Sanisotropy sani_statement* End;
@@ -114,10 +115,21 @@ noe_statement:
 	Temperature Equ_op? number_s;
 
 noe_assign:
-	Assign selection selection number number number (Or_op selection selection)*;
+	Assign selection selection number number number
+	noe_annotation*
+	(Or_op selection selection)*;
 
 predict_statement:
 	Cutoff Equ_op? number_s | Cuton Equ_op? number_s | From selection | To selection;
+
+noe_annotation:
+	Peak Equ_op? number_a |
+	Spectrum Equ_op? number_a |
+	Weight Equ_op? number_a |
+	Volume Equ_op? number_a |
+	Ppm1 Equ_op? number_a |
+	Ppm2 Equ_op? number_a |
+	Cv Equ_op? number_a;
 
 /* CNS: Dihedral angle restraints - Syntax - restranits/dihedral
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
@@ -380,7 +392,7 @@ vector_3d:
 */
 
 /* number expression in assign */
-number: Real | Integer;
+number:	Real | Integer;
 
 /* number expression in factor */
 number_f:
@@ -390,8 +402,58 @@ number_f:
 number_s:
 	Real | Integer;
 
+/* number expression in annotation */
+number_a:
+	Real | Integer;
+
 /* XPLOR-NIH: Flags - Syntax
+ See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node125.html (compatible with XPLOR-NIH)
 */
 flag_statement:
-	Flags (Exclude (Class_name* | Any_class))? Include Class_name* End_flag;
+	Flags (Exclude (Class_name* | Any_class))? Include Class_name* End_F;
+
+/* Vector statement - Syntax
+ See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node42.html (compatible with XPLOR-NIH)
+*/
+vector_statement:
+	Vector vector_mode selection;
+
+vector_mode:
+	(Do_Lp | Identify_Lp) vector_expression R_paren_VE |
+	Show vector_show_property;
+
+vector_expression:
+	Atom_properties_VE (Equ_op_VE vector_operation)?;
+
+vector_operation:
+	vflc ((Add_op_VE | Sub_op_VE | Mul_op_VE | Div_op_VE | Exp_op_VE) vector_operation)*;
+
+vflc:
+	Atom_properties_VE | vector_func_call | Integer_VE | Real_VE | Simple_name_VE | Double_quote_string_VE;
+
+vector_func_call:
+	Abs_VE L_paren_VF vflc R_paren_VE |
+	Acos_VE L_paren_VF vflc R_paren_VE |
+	Cos_VE L_paren_VF vflc R_paren_VE |
+	Decode_VE L_paren_VF vflc R_paren_VE |
+	Encode_VE L_paren_VF vflc R_paren_VE |
+	Exp_VE L_paren_VF vflc R_paren_VE |
+	Gauss_VE L_paren_VF vflc R_paren_VE |
+	Heavy_VE L_paren_VF vflc R_paren_VE |
+	Int_VE L_paren_VF vflc R_paren_VE |
+	Log10_VE L_paren_VF vflc R_paren_VE |
+	Log_VE L_paren_VF vflc R_paren_VE |
+	Max_VE L_paren_VF vflc (Comma_VE vflc)* R_paren_VE |
+	Maxw_VE L_paren_VF vflc R_paren_VE |
+	Min_VE L_paren_VF vflc (Comma_VE vflc)* R_paren_VE |
+	Mod_VE L_paren_VF vflc Comma_VE vflc R_paren_VE |
+	Norm_VE L_paren_VF vflc R_paren_VE |
+	Random_VE L_paren_VF R_paren_VE |
+	Sign_VE L_paren_VF vflc R_paren_VE |
+	Sin_VE L_paren_VF vflc R_paren_VE |
+	Sqrt_VE L_paren_VF vflc R_paren_VE |
+	Tan_VE L_paren_VF vflc R_paren_VE;
+
+vector_show_property:
+	(Average_VS | Element_VS | Max_VS | Min_VS | Norm_VS | Rms_VS | Sum_VS) L_paren_VS Atom_properties_VS R_paren_VS;
 

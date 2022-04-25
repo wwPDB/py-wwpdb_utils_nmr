@@ -10,16 +10,15 @@
 # 25-Jun-2021  M. Yokochi - add getAtomLikeNameSet() (DAOTHER-6830)
 # 13-Oct-2021  M. Yokochi - code revision according to PEP8 using Pylint (DAOTHER-7389, issue #5)
 # 03-Dec-2021  M. Yokochi - optimize loading performance of other chemical shift statistics (DAOTHER-7514)
-# 04-Feb-2022  M. Yokochi - add getPseudoAtoms() (nmr-restraint-remediation)
-# 14-Feb-2022  M. Yokochi - add getSimilarCompIdFromAtomIds() (nmr-restraint-remediation)
-# 25-Feb-2022  M. Yokochi - add peptideLike() (nmr-restraint-remediation)
+# 04-Feb-2022  M. Yokochi - add getPseudoAtoms() (NMR restraint remediation)
+# 14-Feb-2022  M. Yokochi - add getSimilarCompIdFromAtomIds() (NMR restraint remediation)
+# 25-Feb-2022  M. Yokochi - add peptideLike() (NMR restraint remediation)
 ##
 """ Wrapper class for retrieving BMRB chemical shift statistics.
     @author: Masashi Yokochi
 """
 import sys
 import os
-import os.path
 import csv
 import re
 import copy

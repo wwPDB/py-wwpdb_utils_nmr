@@ -203,6 +203,8 @@ def getGaugeCode(seqIdList, offset=0):
         else:
             chars.append('-')
 
+    lenChars = len(chars)
+
     for idx, seqId in enumerate(seqIdList):
 
         if seqId is None or seqId % 10 != 0:
@@ -213,8 +215,9 @@ def getGaugeCode(seqIdList, offset=0):
 
         if idx - lenCode > 0:
             for p in range(lenCode):
-                chars[idx + p - lenCode + 1] = chars[idx + p]
-                chars[idx + p] = '-'
+                if idx + p - lenCode + 1 >= 0 and idx + p < lenChars:
+                    chars[idx + p - lenCode + 1] = chars[idx + p]
+                    chars[idx + p] = '-'
 
     if offset > 0:
         for p in range(offset):

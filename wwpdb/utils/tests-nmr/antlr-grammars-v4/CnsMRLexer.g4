@@ -107,6 +107,15 @@ Cuton:			C U T O N;				// = Real
 From:			F R O M;				// = selection
 To:			T O;					// = selection
 
+// 3rd party software extensions for NOE assign clause
+Peak:			P E A K;				// = Integer
+Spectrum:		S P E C T R U M;			// = Integer
+//Weight:		W E I G H T;				// = Real
+Volume:			V O L U M E;				// = Real
+Ppm1:			P P M '1';				// = Real
+Ppm2:			P P M '2';				// = Real
+//Cv:			C V;					// = Integer
+
 /* CNS: Dihedral angle restraints - Syntax - restranits/dihedral
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
 */
@@ -295,6 +304,7 @@ DerivFlag:		D E R I V? F? L? A? G?;			// On_or_Off
 Angle_dihedral:		A N G L E? | D I H E D? R? A? L?;
 
 /* CNS: Flags - Syntax
+ See alos https://nmr.cit.nih.gov/xplor-nih/xplorMan/node125.html (compatible with XPLOR-NIH)
 */
 Flags:			F L A G S?
 			-> pushMode(FLAG_MODE);			// Flags { flag_statement } End
@@ -338,6 +348,18 @@ Store_8:		S T O R E '8';
 Store_9:		S T O R E '9';
 Tag:			T A G;
 
+/* Vector statement - Syntax
+ See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node42.html (compatible with XPLOR-NIH)
+*/
+Vector:			V E C T O? R?;				// vector_mode vector_expression selection
+
+Do_Lp:			D O ' '* L_paren
+			-> pushMode(VECTOR_EXPR_MODE);
+Identify_Lp:		I D E N T? I? F? Y? ' '* L_paren
+			-> pushMode(VECTOR_EXPR_MODE);
+Show:			S H O W
+			-> pushMode(VECTOR_SHOW_MODE);		// Vector_show_property
+
 /* Three-dimentional vectors - Syntax
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
 */
@@ -354,10 +376,10 @@ Not_op:			N O T;
 */
 Comma:			',';
 Complex:		L_paren Real Comma Real R_paren;
-Integer:		DECIMAL;
+Integer:		'-'? DECIMAL;
 Logical:		'TRUE' | 'FALSE' | 'ON' | 'OFF';
 Real:			('+' | '-')? (DECIMAL | DEC_DOT_DEC) (E ('+' | '-')? DECIMAL)?;
-Double_quote_string:	'"' ~'"'+ '"';
+Double_quote_string:	'"' ~'"'* '"';
 fragment DEC_DOT_DEC:	(DECIMAL '.' DECIMAL?) | ('.' DECIMAL);
 fragment DEC_DIGIT:	[0-9];
 fragment DECIMAL:	DEC_DIGIT+;
@@ -386,7 +408,7 @@ fragment WILDCARD:	'*' | '%' | '#' | '+';
 fragment ALPHA:		[A-Za-z];
 fragment ALPHA_NUM:	ALPHA | DEC_DIGIT;
 fragment START_CHAR:	ALPHA_NUM | '_';
-fragment NAME_CHAR:	START_CHAR | '\'' | '-' | '+' | '.';
+fragment NAME_CHAR:	START_CHAR | '\'' | '-' | '+' | '.' | '"';
 fragment ATM_NAME_CHAR:	ALPHA_NUM | '\'';
 fragment ATM_TYPE_CHAR:	ALPHA_NUM | '-' | '+';
 fragment SIMPLE_NAME:	START_CHAR NAME_CHAR*;
@@ -403,29 +425,93 @@ Neq_op:			'#';
 
 SPACE:			[ \t\r\n]+ -> skip;
 COMMENT:		'{' (COMMENT | .)*? '}' -> channel(HIDDEN);
-LINE_COMMENT:		('#' | '!' | '*' | ';' | '/') ~[\r\n]* -> channel(HIDDEN);
+LINE_COMMENT:		('#' | '!' | ';' | '/' | '*' '*'+ | '-' '-'+ | '+' '+'+) ~[\r\n]* -> channel(HIDDEN);
 SET_VARIABLE:		Set ~[\r\n]* End -> channel(HIDDEN);
 
 mode ATTR_MODE; // Inside of Attribute tag
 
 // Attribute properties
 Abs:			A B S;
-Attr_properties:	(B | B C O M P? | C H A R G? E? | D X | D Y | D Z | F B E T A? | H A R M | M A S S | Q | Q C O M P? | R E F X | R E F Y | R E F Z | R M S D | V X | V Y | V Z | X | X C O M P? | Y | Y C O M P? | Z | Z C O M P? | S C A T T E R '_' A '1' | S C A T T E R '_' A '2' | S C A T T E R '_' A '3' | S C A T T E R '_' A '4' | S C A T T E R '_' B '1' | S C A T T E R '_' B '2' | S C A T T E R '_' B '3' | S C A T T E R '_' B '4' | S C A T T E R '_' C | S C A T T E R '_' F P | S C A T T E R '_' F D P);
+Attr_properties:	(B | B C O M P? | C H A R G? E? | D X | D Y | D Z | F B E T A? | H A R M O? N? I? C? S? | M A S S | Q | Q C O M P? | R E F X | R E F Y | R E F Z | R M S D | V X | V Y | V Z | X | X C O M P? | Y | Y C O M P? | Z | Z C O M P? | S C A T T E R '_' A '1' | S C A T T E R '_' A '2' | S C A T T E R '_' A '3' | S C A T T E R '_' A '4' | S C A T T E R '_' B '1' | S C A T T E R '_' B '2' | S C A T T E R '_' B '3' | S C A T T E R '_' B '4' | S C A T T E R '_' C | S C A T T E R '_' F P | S C A T T E R '_' F D P);
 Comparison_ops:		(Equ_op | Lt_op | Gt_op | Leq_op | Geq_op | Neq_op)
 			-> popMode;
 
-SPACE_ATTR:		[ \t\r\n]+ -> skip;
+SPACE_A:		[ \t\r\n]+ -> skip;
 
 mode FLAG_MODE; // Inside of flag statement
 
 Exclude:		E X C L U? D? E?;			// Class_name* | Any_class
 Include:		I N C L U? D? E?;			// Class_name*
 
-End_flag:		E N D
+End_F:			E N D
 			-> popMode;
 
 Class_name:		SIMPLE_NAME;
 Any_class:		'*';
 
-SPACE_FLAG:		[ \t\r\n]+ -> skip;
+SPACE_F:		[ \t\r\n]+ -> skip;
+
+mode VECTOR_EXPR_MODE; // vector expression
+
+R_paren_VE:		')' -> popMode;
+
+Equ_op_VE:		'=';
+Add_op_VE:		'+';
+Sub_op_VE:		'-';
+Mul_op_VE:		'*';
+Div_op_VE:		'/';
+Exp_op_VE:		('^' | '*' '*');
+Comma_VE:		',';
+
+Integer_VE:		'-'? DECIMAL;
+Real_VE:		('+' | '-')? (DECIMAL | DEC_DOT_DEC) (E ('+' | '-')? DECIMAL)?;
+
+Atom_properties_VE:	(B | B C O M P? | C H A R G? E? | C H E M I? C? A? L? | D X | D Y | D Z | F B E T A? | H A R M O? N? I? C? S? | M A S S | N A M E | Q | Q C O M P? | R E F X | R E F Y | R E F Z | R E S I D? U? E? | R E S N A? M? E? | R M S D | S E G I D? E? N? T? I? F? I? E? R? | S T O R E '1' | S T O R E '2' | S T O R E '3' | S T O R E '4' | S T O R E '5' | S T O R E '6' | S T O R E '7' | S T O R E '8' | S T O R E '9' | P S E U D? O? | V X | V Y | V Z | X | X C O M P? | Y | Y C O M P? | Z | Z C O M P?);
+
+Abs_VE:			A B S -> pushMode(VECTOR_FUNC_MODE);
+Acos_VE:		A C O S -> pushMode(VECTOR_FUNC_MODE);
+Asin_VE:		A S I N -> pushMode(VECTOR_FUNC_MODE);
+Cos_VE:			C O S -> pushMode(VECTOR_FUNC_MODE);
+Decode_VE:		D E C O D E -> pushMode(VECTOR_FUNC_MODE);
+Encode_VE:		E N C O D E -> pushMode(VECTOR_FUNC_MODE);
+Exp_VE:			E X P -> pushMode(VECTOR_FUNC_MODE);
+Gauss_VE:		G A U S S -> pushMode(VECTOR_FUNC_MODE);
+Heavy_VE:		H E A V Y -> pushMode(VECTOR_FUNC_MODE);
+Int_VE:			I N T -> pushMode(VECTOR_FUNC_MODE);
+Log10_VE:		L O G '1' '0' -> pushMode(VECTOR_FUNC_MODE);
+Log_VE:			L O G -> pushMode(VECTOR_FUNC_MODE);
+Max_VE:			M A X -> pushMode(VECTOR_FUNC_MODE);
+Maxw_VE:		M A X W -> pushMode(VECTOR_FUNC_MODE);
+Min_VE:			M I N -> pushMode(VECTOR_FUNC_MODE);
+Mod_VE:			M O D -> pushMode(VECTOR_FUNC_MODE);
+Norm_VE:		N O R M -> pushMode(VECTOR_FUNC_MODE);
+Random_VE:		R A N D O? M? -> pushMode(VECTOR_FUNC_MODE);
+Sign_VE:		S I G N -> pushMode(VECTOR_FUNC_MODE);
+Sin_VE:			S I N -> pushMode(VECTOR_FUNC_MODE);
+Sqrt_VE:		S Q R T -> pushMode(VECTOR_FUNC_MODE);
+Tan_VE:			T A N -> pushMode(VECTOR_FUNC_MODE);
+
+Simple_name_VE:		SIMPLE_NAME;
+Double_quote_string_VE:	'"' ~'"'* '"';
+
+mode VECTOR_FUNC_MODE; // vector function
+
+L_paren_VF:		'(' -> pushMode(VECTOR_EXPR_MODE);
+
+mode VECTOR_SHOW_MODE; // vector show
+
+L_paren_VS:		'(';
+R_paren_VS:		')' -> mode(DEFAULT_MODE);
+
+Average_VS:		A V E R? A? G? E? -> popMode;
+Element_VS:		E L E M E? N? T? -> popMode;
+Max_VS:			M A X -> popMode;
+Min_VS:			M I N -> popMode;
+Norm_VS:		N O R M -> popMode;
+Rms_VS:			R M S -> popMode;
+Sum_VS:			S U M -> popMode;
+
+Atom_properties_VS:	(B | B C O M P? | C H A R G? E? | D X | D Y | D Z | F B E T A? | H A R M O? N? I? C? S? | M A S S | Q | Q C O M P? | R E F X | R E F Y | R E F Z | R M S D | V X | V Y | V Z | X | X C O M P? | Y | Y C O M P? | Z | Z C O M P?);
+
+SPACE_VS:		[ \t\r\n]+ -> skip;
 

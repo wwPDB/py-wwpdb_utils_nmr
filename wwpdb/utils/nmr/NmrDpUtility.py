@@ -158,7 +158,6 @@
 """
 import sys
 import os
-import os.path
 import itertools
 import copy
 import collections
@@ -169,6 +168,8 @@ import shutil
 import time
 import hashlib
 import pynmrstar
+import gzip
+import chardet
 
 from packaging import version
 from munkres import Munkres
@@ -202,8 +203,11 @@ try:
     from wwpdb.utils.nmr.rci.RCI import RCI
     from wwpdb.utils.nmr.CifToNmrStar import CifToNmrStar
     from wwpdb.utils.nmr.NmrStarToCif import NmrStarToCif
-    from wwpdb.utils.nmr.mr.ParserListenerUtil import (checkCoordinates,
+    from wwpdb.utils.nmr.mr.ParserListenerUtil import (translateToStdResName,
+                                                       translateToStdAtomName,
+                                                       checkCoordinates,
                                                        getTypeOfDihedralRestraint,
+                                                       startsWithPdbRecord,
                                                        KNOWN_ANGLE_NAMES,
                                                        CS_RESTRAINT_RANGE,
                                                        DIST_RESTRAINT_RANGE,
@@ -251,8 +255,11 @@ except ImportError:
     from nmr.rci.RCI import RCI
     from nmr.CifToNmrStar import CifToNmrStar
     from nmr.NmrStarToCif import NmrStarToCif
-    from nmr.mr.ParserListenerUtil import (checkCoordinates,
+    from nmr.mr.ParserListenerUtil import (translateToStdResName,
+                                           translateToStdAtomName,
+                                           checkCoordinates,
                                            getTypeOfDihedralRestraint,
+                                           startsWithPdbRecord,
                                            KNOWN_ANGLE_NAMES,
                                            CS_RESTRAINT_RANGE,
                                            DIST_RESTRAINT_RANGE,
@@ -303,11 +310,25 @@ ANGLE_UNCERT_MAX = ANGLE_UNCERTAINTY_RANGE['max_inclusive']
 RDC_UNCERT_MAX = RDC_UNCERTAINTY_RANGE['max_inclusive']
 
 
-def detect_bom(in_file, default='utf-8'):
+datablock_pattern = re.compile(r'\s*data_(\S+)\s*')
+sf_anonymous_pattern = re.compile(r'\s*save_\S+\s*')
+save_pattern = re.compile(r'\s*save_\s*')
+loop_pattern = re.compile(r'\s*loop_\s*')
+stop_pattern = re.compile(r'\s*stop_\s*')
+
+category_pattern = re.compile(r'\s*_(\S*)\..*\s*')
+tagvalue_pattern = re.compile(r'\s*_(\S*)\.(\S*)\s+(.*)\s*')
+sf_category_pattern = re.compile(r'\s*_\S*\.Sf_category\s*\S+\s*')
+sf_framecode_pattern = re.compile(r'\s*_\S*\.Sf_framecode\s*\s+\s*')
+
+mr_file_header_pattern = re.compile(r'^# Restraints file (\d+): (\S+)\s*')
+
+
+def detect_bom(fPath, default='utf-8'):
     """ Detect BOM of input file.
     """
 
-    with open(in_file, 'rb') as ifp:
+    with open(fPath, 'rb') as ifp:
         raw = ifp.read(4)
 
     for enc, boms in \
@@ -320,14 +341,48 @@ def detect_bom(in_file, default='utf-8'):
     return default
 
 
-def convert_codec(in_file, out_file, in_codec='utf-8', out_codec='utf-8'):
+def convert_codec(inPath, outPath, in_codec='utf-8', out_codec='utf-8'):
     """ Convert codec of input file.
     """
 
-    with open(in_file, 'rb') as ifp:
-        with open(out_file, 'w+b') as ofp:
+    with open(inPath, 'rb') as ifp:
+        with open(outPath, 'w+b') as ofp:
             contents = ifp.read()
             ofp.write(contents.decode(in_codec).encode(out_codec))
+
+
+def is_ascii_file(fPath):
+    """ Check if there are non-ascii or non-printable characters in a file.
+    """
+
+    with open(fPath, 'rb') as ifp:
+        text = ifp.read()
+        try:
+            text.encode('ascii')
+            return '\x00' not in text
+        except:  # noqa: E722 pylint: disable=bare-except
+            return False
+
+
+def detect_encoding(line):
+    """ Return encoding of a given string.
+    """
+
+    try:
+        result = chardet.detect(line.encode('utf-8'))
+        return result['encoding']
+    except:  # noqa: E722 pylint: disable=bare-except
+        return 'binary'
+
+
+def uncompress_gzip_file(inPath, outPath):
+    """ Uncompress a given gzip file.
+    """
+
+    with gzip.open(inPath, mode='rt') as ifp:
+        with open(outPath, 'w') as ofp:
+            for line in ifp:
+                ofp.write(line)
 
 
 def has_key_value(d=None, key=None):
@@ -762,8 +817,10 @@ class NmrDpUtility:
         # current workflow operation
         self.__op = None
 
-        # whether to run initial rescue routine
+        # whether to enable rescue routine
         self.__rescue_mode = True
+        # whether to enable remediation routine
+        self.__remediation_mode = False
         # whether NMR combined deposition or not (NMR conventional deposition)
         self.__combined_mode = True
         # whether to use datablock name of public release
@@ -845,11 +902,13 @@ class NmrDpUtility:
                               'nmr-str2str-deposit',
                               'nmr-str2nef-release',
                               'nmr-cs-nef-consistency-check',
-                              'nmr-cs-str-consistency-check'
+                              'nmr-cs-str-consistency-check',
+                              'nmr-cs-mr-merge'
                               )
 
         # validation tasks for NMR data only
         __nmrCheckTasks = [self.__detectContentSubType,
+                           self.__extractPublicMRFileIntoLegacyMR,
                            self.__detectContentSubTypeOfLegacyMR,
                            self.__extractPolymerSequence,
                            self.__extractPolymerSequenceInLoop,
@@ -883,6 +942,7 @@ class NmrDpUtility:
                            self.__detectCoordContentSubType,
                            self.__extractCoordPolymerSequence,
                            self.__extractCoordPolymerSequenceInLoop,
+                           self.__extractCoordAtomSite,
                            self.__extractCoordCommonPolymerSequence,
                            self.__extractCoordNonStandardResidue,
                            self.__appendCoordPolymerSequenceAlignment
@@ -911,7 +971,11 @@ class NmrDpUtility:
         # nmr-*-deposit tasks
         __depositTasks = [self.__retrieveDpReport,
                           self.__validateInputSource,
+                          # __updatePolymerSequence() depends on __extractCoordPolymerSequence()
                           self.__parseCoordinate,
+                          self.__detectCoordContentSubType,
+                          self.__extractCoordPolymerSequence,
+                          self.__extractCoordAtomSite,
                           # resolve conflict
                           self.__resolveConflictsInLoop,
                           self.__resolveConflictsInAuxLoop,
@@ -974,7 +1038,8 @@ class NmrDpUtility:
                                 'nmr-nef2str-deposit': __nef2strTasks,
                                 'nmr-str2nef-release': __str2nefTasks,
                                 'nmr-cs-nef-consistency-check': [self.__depositLegacyNmrData],
-                                'nmr-cs-str-consistency-check': [self.__depositLegacyNmrData]
+                                'nmr-cs-str-consistency-check': [self.__depositLegacyNmrData],
+                                'nmr-cs-mr-merge': __checkTasks
                                 }
 
         # data processing report
@@ -1280,7 +1345,8 @@ class NmrDpUtility:
                                                        'uppercase': True,
                                                        'remove-bad-pattern': True},
                                                       {'name': 'Atom_ID', 'type': 'str',
-                                                       'remove-bad-pattern': True}
+                                                       'remove-bad-pattern': True},
+                                                      {'name': 'Occupancy', 'type': 'positive-float', 'default': '.'}
                                                       ],
                                        'chem_shift_ref': [{'name': 'Atom_type', 'type': 'enum', 'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
                                                            'enforce-enum': True},
@@ -1333,11 +1399,14 @@ class NmrDpUtility:
                           'pdbx': {'poly_seq': [{'name': 'asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                                 {'name': 'seq_id', 'type': 'int', 'alt_name': 'seq_id'},
                                                 {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_chain_id'}
+                                                {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
+                                                {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'}
                                                 ],
                                    'poly_seq_alias': [{'name': 'id', 'type': 'str', 'alt_name': 'chain_id'},
                                                       {'name': 'seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                                      {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'}
+                                                      {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                      {'name': 'pdb_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
+                                                      {'name': 'pdb_num', 'type': 'int', 'alt_name': 'auth_seq_id'}
                                                       ],
                                    'non_poly': [{'name': 'asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                                 {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'seq_id'},
@@ -1346,7 +1415,8 @@ class NmrDpUtility:
                                                 ],
                                    'non_poly_alias': [{'name': 'asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                                       {'name': 'pdb_num', 'type': 'int', 'alt_name': 'seq_id'},
-                                                      {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'}
+                                                      {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                      {'name': 'pdb_id', 'type': 'str', 'alt_name': 'auth_chain_id'}
                                                       ],
                                    'coordinate': [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                                   {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
@@ -3487,6 +3557,10 @@ class NmrDpUtility:
         self.__coord_atom_site = None
         # residues not observed in the coordinates (DAOTHER-7665)
         self.__coord_unobs_res = None
+        # conversion dictionary from auth_seq_id to label_seq_id of the coordinates
+        self.__auth_to_label_seq = None
+        # conversion dictionary from label_seq_id to auth_seq_id of the coordinates
+        self.__label_to_auth_seq = None
         # tautomer state in model
         self.__coord_tautomer = {}
         # rotamer state in model
@@ -3618,6 +3692,62 @@ class NmrDpUtility:
         for key in self.key_items['nmr-star']['chem_shift']:
             if 'remove-bad-pattern' in key:
                 key['remove-bad-pattern'] = self.__combined_mode
+
+        self.__remediation_mode = (op == 'nmr-cs-mr-merge')
+
+        if self.__remediation_mode:
+            for v in self.key_items['nmr-star'].values():
+                if v is None:
+                    continue
+                for d in v:
+                    if d['name'].startswith('Entity_assembly_ID'):
+                        d['type'] = 'str'
+                        d['default'] = 'A'
+                        if 'default-from' in d:
+                            del d['default-from']
+
+            for v in self.consist_key_items['nmr-star'].values():
+                if v is None:
+                    continue
+                for d in v:
+                    if d['name'].startswith('Entity_assembly_ID'):
+                        d['type'] = 'str'
+                        d['default'] = 'A'
+                        if 'default-from' in d:
+                            del d['default-from']
+
+            for d in self.pk_data_items['nmr-star']:
+                if d['name'].startswith('Entity_assembly_ID'):
+                    d['type'] = 'str'
+                    d['default'] = 'A'
+                    if 'default-from' in d:
+                        del d['default-from']
+                    if 'enforce-non-zero' in d:
+                        del d['enforce-non-zero']
+
+            for v in self.aux_key_items['nmr-star'].values():
+                if v is None:
+                    continue
+                for v2 in v.values():
+                    for d in v2:
+                        if d['name'].startswith('Entity_assembly_ID'):
+                            d['type'] = 'str'
+                            d['default'] = 'A'
+                            if 'default-from' in d:
+                                del d['default-from']
+
+            for v in self.aux_data_items['nmr-star'].values():
+                if v is None:
+                    continue
+                for v2 in v.values():
+                    for d in v2:
+                        if d['name'].startswith('Entity_assembly_ID'):
+                            d['type'] = 'str'
+                            d['default'] = 'A'
+                            if 'default-from' in d:
+                                del d['default-from']
+
+            self.__nefT.set_remediation(True)
 
         self.__release_mode = 'release' in op
 
@@ -3876,6 +4006,38 @@ class NmrDpUtility:
 
                 file_type = 'nmr-star'  # 'nef' in self.__op else 'nmr-star' # DAOTHER-5673
 
+                if csPath.endswith('.gz'):
+
+                    _csPath = os.path.splitext(csPath)[0]
+
+                    if not os.path.exists(_csPath):
+
+                        try:
+
+                            uncompress_gzip_file(csPath, _csPath)
+
+                        except Exception as e:
+
+                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__initializeDpReport() ++ Error  - " + str(e))
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+NmrDpUtility.__initializeDpReport() ++ Error  - {str(e)}\n")
+
+                            return False
+
+                    csPath = _csPath
+
+                if self.__op == 'nmr-cs-mr-merge':
+
+                    _csPath = csPath + '.cif2str'
+
+                    cif_to_star = CifToNmrStar()
+                    if not cif_to_star.convert(csPath, _csPath):
+                        _csPath = csPath
+
+                    csPath = _csPath
+
                 input_source.setItemValue('file_name', os.path.basename(csPath))
                 input_source.setItemValue('file_type', file_type)
                 input_source.setItemValue('content_type', 'nmr-chemical-shifts')
@@ -3884,13 +4046,11 @@ class NmrDpUtility:
 
             if mr_file_path_list in self.__inputParamDict:
 
-                file_path_list_len = self.__cs_file_path_list_len
-
                 for mrPath in self.__inputParamDict[mr_file_path_list]:
 
                     self.report.appendInputSource()
 
-                    input_source = self.report.input_sources[file_path_list_len]
+                    input_source = self.report.input_sources[-1]
 
                     file_type = 'nmr-star'  # 'nef' if 'nef' in self.__op else 'nmr-star' # DAOTHER-5673
 
@@ -3898,27 +4058,45 @@ class NmrDpUtility:
                     input_source.setItemValue('file_type', file_type)
                     input_source.setItemValue('content_type', 'nmr-restraints')
 
-                    file_path_list_len += 1
-
             ar_file_path_list = 'atypical_restraint_file_path_list'
 
             if ar_file_path_list in self.__inputParamDict:
-
-                file_path_list_len = self.__cs_file_path_list_len
 
                 for ar in self.__inputParamDict[ar_file_path_list]:
 
                     self.report.appendInputSource()
 
-                    input_source = self.report.input_sources[file_path_list_len]
+                    input_source = self.report.input_sources[-1]
 
-                    input_source.setItemValue('file_name', os.path.basename(ar['file_name']))
+                    arPath = ar['file_name']
+
+                    if arPath.endswith('.gz'):
+
+                        _arPath = os.path.splitext(arPath)[0]
+
+                        if not os.path.exists(_arPath):
+
+                            try:
+
+                                uncompress_gzip_file(arPath, _arPath)
+
+                            except Exception as e:
+
+                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__initializeDpReport() ++ Error  - " + str(e))
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__initializeDpReport() ++ Error  - {str(e)}\n")
+
+                                return False
+
+                        arPath = _arPath
+
+                    input_source.setItemValue('file_name', os.path.basename(arPath))
                     input_source.setItemValue('file_type', ar['file_type'])
                     input_source.setItemValue('content_type', 'nmr-restraints')
                     if 'original_file_name' in ar:
                         input_source.setItemValue('original_file_name', ar['original_file_name'])
-
-                    file_path_list_len += 1
 
         self.__star_data_type = []
         self.__star_data = []
@@ -3941,12 +4119,12 @@ class NmrDpUtility:
 
             chem_comp = self.__cR.getDictList('chem_comp')
 
-            non_std_comp_ids = [i['id'] for i in chem_comp if i['mon_nstd_flag'] != 'y']
+            nstd_comp_ids = [i['id'] for i in chem_comp if i['mon_nstd_flag'] != 'y']
 
-            if len(non_std_comp_ids) == 0:
+            if len(nstd_comp_ids) == 0:
                 return
 
-            for comp_id in non_std_comp_ids:
+            for comp_id in nstd_comp_ids:
 
                 if self.__ccU.updateChemCompDict(comp_id):  # matches with comp_id in CCD
 
@@ -4058,6 +4236,40 @@ class NmrDpUtility:
             cs_file_path_list = 'chem_shift_file_path_list'
 
             for csListId, csPath in enumerate(self.__inputParamDict[cs_file_path_list]):
+
+                if csPath.endswith('.gz'):
+
+                    _csPath = os.path.splitext(csPath)[0]
+
+                    if not os.path.exists(_csPath):
+
+                        try:
+
+                            uncompress_gzip_file(csPath, _csPath)
+
+                        except Exception as e:
+
+                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateInputSource() ++ Error  - " + str(e))
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+NmrDpUtility.__validateInputSource() ++ Error  - {str(e)}\n")
+
+                            return False
+
+                    csPath = _csPath
+
+                if self.__op == 'nmr-cs-mr-merge':
+
+                    _csPath = csPath + '.cif2str'
+
+                    if not os.path.exists(_csPath):
+
+                        cif_to_star = CifToNmrStar()
+                        if not cif_to_star.convert(csPath, _csPath):
+                            _csPath = csPath
+
+                    csPath = _csPath
 
                 codec = detect_bom(csPath, 'utf-8')
 
@@ -4290,6 +4502,28 @@ class NmrDpUtility:
 
                     arPath = ar['file_name']
 
+                    if arPath.endswith('.gz'):
+
+                        _arPath = os.path.splitext(arPath)[0]
+
+                        if not os.path.exists(_arPath):
+
+                            try:
+
+                                uncompress_gzip_file(arPath, _arPath)
+
+                            except Exception as e:
+
+                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateInputSource() ++ Error  - " + str(e))
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateInputSource() ++ Error  - {str(e)}\n")
+
+                                return False
+
+                        arPath = _arPath
+
                     codec = detect_bom(arPath, 'utf-8')
 
                     arPath_ = None
@@ -4354,16 +4588,6 @@ class NmrDpUtility:
             tmpPaths = []
 
         len_tmp_paths = len(tmpPaths)
-
-        datablock_pattern = re.compile(r'\s*data_(\S+)\s*')
-        sf_anonymous_pattern = re.compile(r'\s*save_\S+\s*')
-        save_pattern = re.compile(r'\s*save_\s*')
-        loop_pattern = re.compile(r'\s*loop_\s*')
-        stop_pattern = re.compile(r'\s*stop_\s*')
-        category_pattern = re.compile(r'\s*_(\S*)\..*\s*')
-        tagvalue_pattern = re.compile(r'\s*_(\S*)\.(\S*)\s+(.*)\s*')
-        sf_category_pattern = re.compile(r'\s*_\S*\.Sf_category\s*\S+\s*')
-        sf_framecode_pattern = re.compile(r'\s*_\S*\.Sf_framecode\s*\s+\s*')
 
         msg_template = "Saveframe improperly terminated at end of file."
 
@@ -4641,10 +4865,9 @@ class NmrDpUtility:
                         else:
 
                             cif_to_star = CifToNmrStar()
-                            cif_to_star.convert(_srcPath, _srcPath + '~')
-
-                            _srcPath += '~'
-                            tmpPaths.append(_srcPath)
+                            if cif_to_star.convert(_srcPath, _srcPath + '~'):
+                                _srcPath += '~'
+                                tmpPaths.append(_srcPath)
 
                 except AttributeError:
                     pass
@@ -4776,7 +4999,7 @@ class NmrDpUtility:
                     pass_sf_framecode = False
                     pass_sf_loop = False
 
-                    sf_framecode_pattern = re.compile(r'\s*save_' + sf_framecode + r'\s*')
+                    sf_named_pattern = re.compile(r'\s*save_' + sf_framecode + r'\s*')
 
                     with open(_srcPath, 'r', encoding='utf-8') as ifp:
                         for line in ifp:
@@ -4791,7 +5014,7 @@ class NmrDpUtility:
                                         break
                                 elif loop_pattern.match(line):
                                     pass_sf_loop = True
-                            elif sf_framecode_pattern.match(line):
+                            elif sf_named_pattern.match(line):
                                 pass_sf_framecode = True
 
                     targets.append(target)
@@ -4806,7 +5029,7 @@ class NmrDpUtility:
                 pass_sf_framecode = False
                 pass_sf_loop = False
 
-                sf_framecode_pattern = re.compile(r'\s*save_' + sf_framecode + r'\s*')
+                sf_named_pattern = re.compile(r'\s*save_' + sf_framecode + r'\s*')
 
                 with open(_srcPath, 'r', encoding='utf-8') as ifp:
                     with open(_srcPath + '~', 'w', encoding='utf-8') as ofp:
@@ -4821,7 +5044,7 @@ class NmrDpUtility:
                                         ofp.write(target['sf_tag_prefix'] + '.' + ('sf_category' if file_type == 'nef' else 'Sf_category') + '    ' + target['sf_category'] + '\n')
                                         ofp.write('#\n')
                                     ofp.write(line)
-                            elif sf_framecode_pattern.match(line):
+                            elif sf_named_pattern.match(line):
                                 pass_sf_framecode = True
                                 ofp.write(line)
                             elif not pass_sf_framecode:
@@ -5680,6 +5903,9 @@ class NmrDpUtility:
 
             for content_subtype in self.nmr_content_subtypes:
 
+                if content_subtype == 'entry_info':
+                    continue
+
                 sf_category = self.sf_categories[file_type][content_subtype]
 
                 if sf_category is None:
@@ -5708,7 +5934,10 @@ class NmrDpUtility:
 
                             sf_framecode = sf_data.name
 
-                            sf_data.tags[tagNames.index('Sf_framecode')][1] = sf_data.name
+                            if 'Sf_framecode' in tagNames:
+                                sf_data.tags[tagNames.index('Sf_framecode')][1] = sf_data.name
+                            elif 'sf_framecode' in tagNames:
+                                sf_data.tags[tagNames.index('sf_framecode')][1] = sf_data.name
 
                         else:
                             err = f"{itName} {sf_framecode!r} must be matched with saveframe name {sf_data.name!r}."
@@ -6230,17 +6459,11 @@ class NmrDpUtility:
         hbond_da_atom_types = ('O', 'N', 'F')
         rdc_origins = ('OO', 'X', 'Y', 'Z')
 
-        fileListId = self.__file_path_list_len
-
         md5_list = []
 
+        fileListId = self.__file_path_list_len
+
         for ar in self.__inputParamDict[ar_file_path_list]:
-
-            file_path = ar['file_name']
-
-            with open(file_path, 'r', encoding='utf-8') as ifp:
-
-                md5_list.append(hashlib.md5(ifp.read().encode('utf-8')).hexdigest())
 
             input_source = self.report.input_sources[fileListId]
             input_source_dic = input_source.get()
@@ -6251,6 +6474,15 @@ class NmrDpUtility:
                 original_file_name = input_source_dic['original_file_name']
                 if file_name != original_file_name and original_file_name is not None:
                     file_name = f"{original_file_name} ({file_name})"
+
+            if file_type == 'nm-res-mr':
+                fileListId += 1
+                continue
+
+            file_path = ar['file_name']
+
+            with open(file_path, 'r', encoding='utf-8', errors='ignore') as ifp:
+                md5_list.append(hashlib.md5(ifp.read().encode('utf-8')).hexdigest())
 
             is_aux_amb = file_type == 'nm-aux-amb'
 
@@ -6264,6 +6496,8 @@ class NmrDpUtility:
                 mr_format_name = 'CYANA'
             elif file_type == 'nm-res-ros':
                 mr_format_name = 'ROSETTA'
+            elif file_type == 'nm-res-mr':
+                mr_format_name = 'MR'
             else:
                 mr_format_name = 'other format'
 
@@ -7044,6 +7278,15 @@ class NmrDpUtility:
                                            self.__ccU, self.__csStat, self.__nefT)
                     listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
+                    if listener is not None:
+                        reasons = listener.getReasonsForReparsing()
+
+                        if reasons is not None:
+                            reader = XplorMRReader(self.__verbose, self.__lfh, None, None, None,
+                                                   self.__ccU, self.__csStat, self.__nefT,
+                                                   reasons)
+                            listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
+
                     err = ''
                     err_lines = []
 
@@ -7057,6 +7300,9 @@ class NmrDpUtility:
                                 if 'input' in description:
                                     err += f"{description['input']}\n"
                                     err += f"{description['marker']}\n"
+                                    enc = detect_encoding(description['input'])
+                                    if enc is not None and enc != 'ascii':
+                                        err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r}.\n"
 
                     if parser_err_listener is not None:
                         messageList = parser_err_listener.getMessageList()
@@ -7074,7 +7320,7 @@ class NmrDpUtility:
 
                         err = f"Could not interpret {file_name!r} as an {mr_format_name} restraint file:\n{err[0:-1]}"
 
-                        ar['format_mismatch'], _err = self.__detectOtherPossibleFormatAsErrorOfLegacyMR(file_path, file_name, file_type, err_lines)
+                        ar['format_mismatch'], _err, _, _ = self.__detectOtherPossibleFormatAsErrorOfLegacyMR(file_path, file_name, file_type, err_lines)
 
                         if ar['format_mismatch']:
                             err += '\n' + _err
@@ -7128,6 +7374,15 @@ class NmrDpUtility:
                                          self.__ccU, self.__csStat, self.__nefT)
                     listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
+                    if listener is not None:
+                        reasons = listener.getReasonsForReparsing()
+
+                        if reasons is not None:
+                            reader = CnsMRReader(self.__verbose, self.__lfh, None, None, None,
+                                                 self.__ccU, self.__csStat, self.__nefT,
+                                                 reasons)
+                            listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
+
                     err = ''
                     err_lines = []
 
@@ -7141,6 +7396,9 @@ class NmrDpUtility:
                                 if 'input' in description:
                                     err += f"{description['input']}\n"
                                     err += f"{description['marker']}\n"
+                                    enc = detect_encoding(description['input'])
+                                    if enc is not None and enc != 'ascii':
+                                        err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r}.\n"
 
                     if parser_err_listener is not None:
                         messageList = parser_err_listener.getMessageList()
@@ -7158,7 +7416,7 @@ class NmrDpUtility:
 
                         err = f"Could not interpret {file_name!r} as a {mr_format_name} restraint file:\n{err[0:-1]}"
 
-                        ar['format_mismatch'], _err = self.__detectOtherPossibleFormatAsErrorOfLegacyMR(file_path, file_name, file_type, err_lines)
+                        ar['format_mismatch'], _err, _, _ = self.__detectOtherPossibleFormatAsErrorOfLegacyMR(file_path, file_name, file_type, err_lines)
 
                         if ar['format_mismatch']:
                             err += '\n' + _err
@@ -7224,6 +7482,9 @@ class NmrDpUtility:
                                 if 'input' in description:
                                     err += f"{description['input']}\n"
                                     err += f"{description['marker']}\n"
+                                    enc = detect_encoding(description['input'])
+                                    if enc is not None and enc != 'ascii':
+                                        err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r}.\n"
 
                     if parser_err_listener is not None:
                         messageList = parser_err_listener.getMessageList()
@@ -7241,7 +7502,7 @@ class NmrDpUtility:
 
                         err = f"Could not interpret {file_name!r} as an {mr_format_name} restraint file:\n{err[0:-1]}"
 
-                        ar['format_mismatch'], _err = self.__detectOtherPossibleFormatAsErrorOfLegacyMR(file_path, file_name, file_type, err_lines)
+                        ar['format_mismatch'], _err, _, _ = self.__detectOtherPossibleFormatAsErrorOfLegacyMR(file_path, file_name, file_type, err_lines)
 
                         if ar['format_mismatch']:
                             err += '\n' + _err
@@ -7307,6 +7568,9 @@ class NmrDpUtility:
                                 if 'input' in description:
                                     err += f"{description['input']}\n"
                                     err += f"{description['marker']}\n"
+                                    enc = detect_encoding(description['input'])
+                                    if enc is not None and enc != 'ascii':
+                                        err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r}.\n"
 
                     if parser_err_listener is not None:
                         messageList = parser_err_listener.getMessageList()
@@ -7324,7 +7588,7 @@ class NmrDpUtility:
 
                         err = f"Could not interpret {file_name!r} as an {mr_format_name} parameter/topology file:\n{err[0:-1]}"
 
-                        ar['format_mismatch'], _err = self.__detectOtherPossibleFormatAsErrorOfLegacyMR(file_path, file_name, file_type, err_lines)
+                        ar['format_mismatch'], _err, _, _ = self.__detectOtherPossibleFormatAsErrorOfLegacyMR(file_path, file_name, file_type, err_lines)
 
                         if ar['format_mismatch']:
                             err += '\n' + _err
@@ -7375,6 +7639,15 @@ class NmrDpUtility:
                                            self.__ccU, self.__csStat, self.__nefT)
                     listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
+                    if listener is not None:
+                        reasons = listener.getReasonsForReparsing()
+
+                        if reasons is not None:
+                            reader = CyanaMRReader(self.__verbose, self.__lfh, None, None, None,
+                                                   self.__ccU, self.__csStat, self.__nefT,
+                                                   reasons)
+                            listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
+
                     err = ''
                     err_lines = []
 
@@ -7388,6 +7661,9 @@ class NmrDpUtility:
                                 if 'input' in description:
                                     err += f"{description['input']}\n"
                                     err += f"{description['marker']}\n"
+                                    enc = detect_encoding(description['input'])
+                                    if enc is not None and enc != 'ascii':
+                                        err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r}.\n"
 
                     if parser_err_listener is not None:
                         messageList = parser_err_listener.getMessageList()
@@ -7405,7 +7681,7 @@ class NmrDpUtility:
 
                         err = f"Could not interpret {file_name!r} as a {mr_format_name} restraint file:\n{err[0:-1]}"
 
-                        ar['format_mismatch'], _err = self.__detectOtherPossibleFormatAsErrorOfLegacyMR(file_path, file_name, file_type, err_lines)
+                        ar['format_mismatch'], _err, _, _ = self.__detectOtherPossibleFormatAsErrorOfLegacyMR(file_path, file_name, file_type, err_lines)
 
                         if ar['format_mismatch']:
                             err += '\n' + _err
@@ -7459,6 +7735,15 @@ class NmrDpUtility:
                                              self.__ccU, self.__csStat, self.__nefT)
                     listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
+                    if listener is not None:
+                        reasons = listener.getReasonsForReparsing()
+
+                        if reasons is not None:
+                            reader = RosettaMRReader(self.__verbose, self.__lfh, None, None, None,
+                                                     self.__ccU, self.__csStat, self.__nefT,
+                                                     reasons)
+                            listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
+
                     err = ''
                     err_lines = []
 
@@ -7472,6 +7757,9 @@ class NmrDpUtility:
                                 if 'input' in description:
                                     err += f"{description['input']}\n"
                                     err += f"{description['marker']}\n"
+                                    enc = detect_encoding(description['input'])
+                                    if enc is not None and enc != 'ascii':
+                                        err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r}.\n"
 
                     if parser_err_listener is not None:
                         messageList = parser_err_listener.getMessageList()
@@ -7489,7 +7777,7 @@ class NmrDpUtility:
 
                         err = f"Could not interpret {file_name!r} as a {mr_format_name} restraint file:\n{err[0:-1]}"
 
-                        ar['format_mismatch'], _err = self.__detectOtherPossibleFormatAsErrorOfLegacyMR(file_path, file_name, file_type, err_lines)
+                        ar['format_mismatch'], _err, _, _ = self.__detectOtherPossibleFormatAsErrorOfLegacyMR(file_path, file_name, file_type, err_lines)
 
                         if ar['format_mismatch']:
                             err += '\n' + _err
@@ -7536,7 +7824,7 @@ class NmrDpUtility:
                                 has_rdc_restraint = 'rdc_restraint' in content_subtype
 
                 elif file_type == 'nm-res-oth':
-                    ar['format_mismatch'], _ = self.__detectOtherPossibleFormatAsErrorOfLegacyMR(file_path, file_name, file_type, [])
+                    ar['format_mismatch'], _, _, _ = self.__detectOtherPossibleFormatAsErrorOfLegacyMR(file_path, file_name, file_type, [])
 
             except ValueError as e:
 
@@ -7544,7 +7832,7 @@ class NmrDpUtility:
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__extractPolymerSequence() ++ Error  - {str(e)}\n")
+                    self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMR() ++ Error  - {str(e)}\n")
 
             if has_coordinate and not has_dist_restraint and not has_dihed_restraint and not has_rdc_restraint\
                     and not has_plane_restraint and not has_hbond_restraint:
@@ -7754,7 +8042,7 @@ class NmrDpUtility:
 
         return not self.report.isError()
 
-    def __detectOtherPossibleFormatAsErrorOfLegacyMR(self, file_path, file_name, file_type, dismiss_err_lines):
+    def __detectOtherPossibleFormatAsErrorOfLegacyMR(self, file_path, file_name, file_type, dismiss_err_lines, multiple_check=False):
         """ Report other possible format as error of a given legacy NMR restraint file.
         """
 
@@ -7768,6 +8056,8 @@ class NmrDpUtility:
             mr_format_name = 'CYANA'
         elif file_type == 'nm-res-ros':
             mr_format_name = 'ROSETTA'
+        elif file_type == 'nm-res-mr':
+            mr_format_name = 'MR'
         else:
             mr_format_name = 'other format'
 
@@ -7775,8 +8065,10 @@ class NmrDpUtility:
 
             checked = False
             err = ''
+            valid_types = []
+            possible_types = []
 
-            if not checked and file_type != 'nm-res-cns':
+            if (not checked or multiple_check) and file_type != 'nm-res-cns':
 
                 reader = CnsMRReader(False, self.__lfh, None, None, None,
                                      self.__ccU, self.__csStat, self.__nefT)
@@ -7794,6 +8086,7 @@ class NmrDpUtility:
                     checked = True
 
                     _mr_format_name = 'CNS'
+                    _mr_format_type = 'nm-res-cns'
                     _content_subtype = listener.getContentSubtype()
 
                     err = f"The NMR restraint file {file_name!r} ({mr_format_name}) looks like a {_mr_format_name} or XPLOR-NIH restraint file, "\
@@ -7814,6 +8107,9 @@ class NmrDpUtility:
                                     if 'input' in description:
                                         _err += f"{description['input']}\n"
                                         _err += f"{description['marker']}\n"
+                                        enc = detect_encoding(description['input'])
+                                        if enc is not None and enc != 'ascii':
+                                            _err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r}.\n"
 
                         if parser_err_listener is not None and len(_err) == 0:
                             messageList = parser_err_listener.getMessageList()
@@ -7834,6 +8130,11 @@ class NmrDpUtility:
                             checked = False
                             err = ''
 
+                        if checked:
+                            valid_types.append(_mr_format_type)
+                        else:
+                            possible_types.append(_mr_format_type)
+
                     if file_type == 'nm-res-oth':
                         self.report.error.appendDescription('content_mismatch',
                                                             {'file_name': file_name, 'description': err})
@@ -7842,7 +8143,7 @@ class NmrDpUtility:
                         if self.__verbose:
                             self.__lfh.write(f"+NmrDpUtility.__detectOtherPossibleFormatAsErrorOfLegacyMR() ++ Error  - {err}\n")
 
-            if not checked and file_type != 'nm-res-xpl':
+            if (not checked or multiple_check) and file_type != 'nm-res-xpl':
 
                 reader = XplorMRReader(False, self.__lfh, None, None, None,
                                        self.__ccU, self.__csStat, self.__nefT)
@@ -7860,6 +8161,7 @@ class NmrDpUtility:
                     checked = True
 
                     _mr_format_name = 'XPLOR-NIH'
+                    _mr_format_type = 'nm-res-xpl'
                     _content_subtype = listener.getContentSubtype()
 
                     err = f"The NMR restraint file {file_name!r} ({mr_format_name}) looks like an {_mr_format_name} restraint file, "\
@@ -7880,6 +8182,9 @@ class NmrDpUtility:
                                     if 'input' in description:
                                         _err += f"{description['input']}\n"
                                         _err += f"{description['marker']}\n"
+                                        enc = detect_encoding(description['input'])
+                                        if enc is not None and enc != 'ascii':
+                                            _err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r}.\n"
 
                         if parser_err_listener is not None and len(_err) == 0:
                             messageList = parser_err_listener.getMessageList()
@@ -7900,6 +8205,11 @@ class NmrDpUtility:
                             checked = False
                             err = ''
 
+                        if checked:
+                            valid_types.append(_mr_format_type)
+                        else:
+                            possible_types.append(_mr_format_type)
+
                     if file_type == 'nm-res-oth':
                         self.report.error.appendDescription('content_mismatch',
                                                             {'file_name': file_name, 'description': err})
@@ -7908,7 +8218,7 @@ class NmrDpUtility:
                         if self.__verbose:
                             self.__lfh.write(f"+NmrDpUtility.__detectOtherPossibleFormatAsErrorOfLegacyMR() ++ Error  - {err}\n")
 
-            if not checked and file_type != 'nm-res-amb':
+            if (not checked or multiple_check) and file_type != 'nm-res-amb':
 
                 reader = AmberMRReader(False, self.__lfh, None, None, None,
                                        self.__ccU, self.__csStat, self.__nefT)
@@ -7926,6 +8236,7 @@ class NmrDpUtility:
                     checked = True
 
                     _mr_format_name = 'AMBER'
+                    _mr_format_type = 'nm-res-amb'
                     _content_subtype = listener.getContentSubtype()
 
                     err = f"The NMR restraint file {file_name!r} ({mr_format_name}) looks like an {_mr_format_name} restraint file, "\
@@ -7946,6 +8257,9 @@ class NmrDpUtility:
                                     if 'input' in description:
                                         _err += f"{description['input']}\n"
                                         _err += f"{description['marker']}\n"
+                                        enc = detect_encoding(description['input'])
+                                        if enc is not None and enc != 'ascii':
+                                            _err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r}.\n"
 
                         if parser_err_listener is not None and len(_err) == 0:
                             messageList = parser_err_listener.getMessageList()
@@ -7966,6 +8280,11 @@ class NmrDpUtility:
                             checked = False
                             err = ''
 
+                        if checked:
+                            valid_types.append(_mr_format_type)
+                        else:
+                            possible_types.append(_mr_format_type)
+
                     if file_type == 'nm-res-oth':
                         self.report.error.appendDescription('content_mismatch',
                                                             {'file_name': file_name, 'description': err})
@@ -7974,7 +8293,7 @@ class NmrDpUtility:
                         if self.__verbose:
                             self.__lfh.write(f"+NmrDpUtility.__detectOtherPossibleFormatAsErrorOfLegacyMR() ++ Error  - {err}\n")
 
-            if not checked and file_type != 'nm-aux-amb':
+            if (not checked or multiple_check) and file_type != 'nm-aux-amb':
 
                 reader = AmberPTReader(False, self.__lfh, None, None, None,
                                        self.__ccU, self.__csStat)
@@ -7992,10 +8311,10 @@ class NmrDpUtility:
                     checked = True
 
                     _mr_format_name = 'AMBER'
+                    _mr_format_type = 'nm-aux-amb'
                     _content_subtype = listener.getContentSubtype()
 
-                    err = f"The NMR restraint file {file_name!r} ({mr_format_name}) looks like an {_mr_format_name} parameter/topology file, "\
-                        f"which has {concat_nmr_restraint_names(_content_subtype)}. "\
+                    err = f"The NMR restraint file {file_name!r} ({mr_format_name}) looks like an {_mr_format_name} parameter/topology file. "\
                         "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
 
                     if has_content:
@@ -8012,6 +8331,9 @@ class NmrDpUtility:
                                     if 'input' in description:
                                         _err += f"{description['input']}\n"
                                         _err += f"{description['marker']}\n"
+                                        enc = detect_encoding(description['input'])
+                                        if enc is not None and enc != 'ascii':
+                                            _err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r}.\n"
 
                         if parser_err_listener is not None and len(_err) == 0:
                             messageList = parser_err_listener.getMessageList()
@@ -8032,6 +8354,11 @@ class NmrDpUtility:
                             checked = False
                             err = ''
 
+                        if checked:
+                            valid_types.append(_mr_format_type)
+                        else:
+                            possible_types.append(_mr_format_type)
+
                     if file_type == 'nm-res-oth':
                         self.report.error.appendDescription('content_mismatch',
                                                             {'file_name': file_name, 'description': err})
@@ -8040,7 +8367,7 @@ class NmrDpUtility:
                         if self.__verbose:
                             self.__lfh.write(f"+NmrDpUtility.__detectOtherPossibleFormatAsErrorOfLegacyMR() ++ Error  - {err}\n")
 
-            if not checked and file_type != 'nm-res-cya':
+            if (not checked or multiple_check) and file_type != 'nm-res-cya':
 
                 reader = CyanaMRReader(False, self.__lfh, None, None, None,
                                        self.__ccU, self.__csStat, self.__nefT)
@@ -8058,6 +8385,7 @@ class NmrDpUtility:
                     checked = True
 
                     _mr_format_name = 'CYANA'
+                    _mr_format_type = 'nm-res-cya'
                     _content_subtype = listener.getContentSubtype()
 
                     err = f"The NMR restraint file {file_name!r} ({mr_format_name}) looks like a {_mr_format_name} restraint file, "\
@@ -8078,6 +8406,9 @@ class NmrDpUtility:
                                     if 'input' in description:
                                         _err += f"{description['input']}\n"
                                         _err += f"{description['marker']}\n"
+                                        enc = detect_encoding(description['input'])
+                                        if enc is not None and enc != 'ascii':
+                                            _err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r}.\n"
 
                         if parser_err_listener is not None and len(_err) == 0:
                             messageList = parser_err_listener.getMessageList()
@@ -8097,6 +8428,11 @@ class NmrDpUtility:
                         elif file_type != 'nmr-res-oth' and (lexer_err_listener.getMessageList() is not None or parser_err_listener.getMessageList() is not None):
                             checked = False
                             err = ''
+
+                        if checked:
+                            valid_types.append(_mr_format_type)
+                        else:
+                            possible_types.append(_mr_format_type)
 
                     if file_type == 'nm-res-oth':
                         self.report.error.appendDescription('content_mismatch',
@@ -8106,7 +8442,7 @@ class NmrDpUtility:
                         if self.__verbose:
                             self.__lfh.write(f"+NmrDpUtility.__detectOtherPossibleFormatAsErrorOfLegacyMR() ++ Error  - {err}\n")
 
-            if not checked and file_type != 'nm-res-ros':
+            if (not checked or multiple_check) and file_type != 'nm-res-ros':
 
                 reader = RosettaMRReader(False, self.__lfh, None, None, None,
                                          self.__ccU, self.__csStat, self.__nefT)
@@ -8115,8 +8451,15 @@ class NmrDpUtility:
                 has_content = False
                 if listener is not None:
                     _content_subtype = listener.getContentSubtype()
-                    if len(_content_subtype) > 0 and (len(_content_subtype) > 1 or 'geo_restraint' not in _content_subtype):
-                        has_content = True
+                    # 'rdc_restraint' occasionally matches with CYANA restraints
+                    # 'geo_restraint' include CS-ROSETTA disulfide bond linkage, which matches any integer array
+                    if len(_content_subtype) > 0:
+                        eff_content_subtypes = 0
+                        for k, v in _content_subtype.items():
+                            if k not in ('rdc_restraint', 'geo_restraint'):
+                                eff_content_subtypes += v
+                        if eff_content_subtypes > 0:
+                            has_content = True
 
                 if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
                    and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None) or has_content):
@@ -8124,6 +8467,7 @@ class NmrDpUtility:
                     checked = True
 
                     _mr_format_name = 'ROSETTA'
+                    _mr_format_type = 'nm-res-ros'
                     _content_subtype = listener.getContentSubtype()
 
                     err = f"The NMR restraint file {file_name!r} ({mr_format_name}) looks like a {_mr_format_name} restraint file, "\
@@ -8144,6 +8488,9 @@ class NmrDpUtility:
                                     if 'input' in description:
                                         _err += f"{description['input']}\n"
                                         _err += f"{description['marker']}\n"
+                                        enc = detect_encoding(description['input'])
+                                        if enc is not None and enc != 'ascii':
+                                            _err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r}.\n"
 
                         if parser_err_listener is not None and len(_err) == 0:
                             messageList = parser_err_listener.getMessageList()
@@ -8163,6 +8510,11 @@ class NmrDpUtility:
                         elif file_type != 'nmr-res-oth' and (lexer_err_listener.getMessageList() is not None or parser_err_listener.getMessageList() is not None):
                             checked = False
                             err = ''
+
+                        if checked:
+                            valid_types.append(_mr_format_type)
+                        else:
+                            possible_types.append(_mr_format_type)
 
                     if file_type == 'nm-res-oth':
                         self.report.error.appendDescription('content_mismatch',
@@ -8175,7 +8527,682 @@ class NmrDpUtility:
         except ValueError:
             pass
 
-        return checked, err
+        return checked, err, valid_types, possible_types
+
+    def __extractPublicMRFileIntoLegacyMR(self):
+        """ Extract/split public MR file into legacy NMR restraint files for NMR restraint remediation.
+        """
+
+        if self.__combined_mode or not self.__remediation_mode:
+            return True
+
+        ar_file_path_list = 'atypical_restraint_file_path_list'
+
+        if ar_file_path_list not in self.__inputParamDict:
+            return True
+
+        fileListId = self.__file_path_list_len
+
+        splitted = []
+
+        for ar in self.__inputParamDict[ar_file_path_list]:
+
+            src_file = ar['file_name']
+
+            input_source = self.report.input_sources[fileListId]
+            input_source_dic = input_source.get()
+
+            file_name = input_source_dic['file_name']
+            file_type = input_source_dic['file_type']
+            if 'original_file_name' in input_source_dic:
+                original_file_name = input_source_dic['original_file_name']
+                if file_name != original_file_name and original_file_name is not None:
+                    file_name = f"{original_file_name} ({file_name})"
+
+            if file_type != 'nm-res-mr':
+                fileListId += 1
+                continue
+
+            if not is_ascii_file(src_file):
+
+                if not src_file.endswith('.gz'):
+
+                    err = f"The NMR restraint file {src_file!r} (MR format) is neither ASCII file nor gzip compressed file."
+
+                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - " + err)
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write(f"+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - {err}\n")
+
+                    return False
+
+                dst_file = os.path.splitext(src_file)[0]
+
+                if not os.path.exists(dst_file):
+
+                    try:
+
+                        uncompress_gzip_file(src_file, dst_file)
+
+                    except Exception as e:
+
+                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - " + str(e))
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - {str(e)}\n")
+
+                        return False
+
+                src_file = dst_file
+
+            dst_file = src_file + '.trimmed'
+
+            has_mr_header = False
+            has_pdb_format = False
+            has_cif_format = False
+            has_str_format = False
+            has_cs_str = False
+
+            try:
+
+                header = True
+                pdb_record = False
+
+                has_datablock = False
+                has_anonymous_saveframe = False
+                has_save = False
+                has_loop = False
+                has_stop = False
+
+                first_str_line_num = -1
+                last_str_line_num = -1
+
+                i = 0
+
+                with open(src_file, 'r') as ifp:
+                    with open(dst_file, 'w') as ofp:
+                        for line in ifp:
+                            i += 1
+
+                            # skip MR header
+                            if header:
+                                if line.startswith('*'):
+                                    continue
+                                header = False
+
+                            if mr_file_header_pattern.match(line):
+                                has_mr_header = True
+
+                            # skip legacy PDB
+                            if startsWithPdbRecord(line):
+                                has_pdb_format = pdb_record = True
+                                continue
+                            if pdb_record:
+                                pdb_record = False
+                                if line.startswith('END'):
+                                    continue
+
+                            # check STAR
+                            str_syntax = False
+                            if datablock_pattern.match(line):
+                                str_syntax = has_datablock = True
+                            elif sf_anonymous_pattern.match(line):
+                                str_syntax = has_anonymous_saveframe = True
+                            elif save_pattern.match(line):
+                                str_syntax = has_save = True
+                            elif loop_pattern.match(line):
+                                str_syntax = has_loop = True
+                            elif stop_pattern.match(line):
+                                str_syntax = has_stop = True
+
+                            if str_syntax:
+                                if first_str_line_num < 0:
+                                    first_str_line_num = i
+                                last_str_line_num = i
+                                if (has_anonymous_saveframe and has_save) or (has_loop and has_stop):
+                                    has_str_format = True
+                                elif has_datablock and has_loop and not has_stop:
+                                    has_cif_format = True
+
+                            # skip MR footer
+                            if 'Submitted Coord H atom name' in line:
+                                break
+
+                            ofp.write(line)
+
+                if last_str_line_num - first_str_line_num < 10:
+                    has_str_format = has_cif_format = False
+
+                # split STAR and others
+                if has_str_format:
+
+                    mrPath = src_file + '.trimmed.str'
+
+                    header = True
+                    pdb_record = False
+
+                    i = 0
+
+                    with open(src_file, 'r') as ifp:
+                        with open(dst_file, 'w') as ofp:
+                            with open(mrPath, 'w') as ofp2:
+                                for line in ifp:
+                                    i += 1
+
+                                    # skip MR header
+                                    if header:
+                                        if line.startswith('*'):
+                                            continue
+                                        header = False
+
+                                    # skip legacy PDB
+                                    if has_pdb_format:
+                                        if startsWithPdbRecord(line):
+                                            pdb_record = True
+                                            continue
+                                        if pdb_record:
+                                            pdb_record = False
+                                            if line.startswith('END'):
+                                                continue
+
+                                    if first_str_line_num <= i <= last_str_line_num:
+                                        ofp2.write(line)
+                                        continue
+
+                                    # skip MR footer
+                                    if 'Submitted Coord H atom name' in line:
+                                        break
+
+                                    ofp.write(line)
+
+                    self.__file_path_list_len += 1
+
+                    mr_file_path_list = 'restraint_file_path_list'
+
+                    if mr_file_path_list not in self.__inputParamDict:
+                        self.__inputParamDict[mr_file_path_list] = [mrPath]
+                    else:
+                        self.__inputParamDict[mr_file_path_list].append(mrPath)
+
+                    self.report.appendInputSource()
+
+                    input_source = self.report.input_sources[-1]
+
+                    file_type = 'nmr-star'
+                    file_name = os.path.basename(mrPath)
+
+                    input_source.setItemValue('file_name', file_name)
+                    input_source.setItemValue('file_type', file_type)
+                    input_source.setItemValue('content_type', 'nmr-restraints')
+
+                    file_path_list_len = self.__file_path_list_len - 1
+
+                    codec = detect_bom(mrPath, 'utf-8')
+
+                    mrPath_ = None
+
+                    if codec != 'utf-8':
+                        mrPath_ = mrPath + '~'
+                        convert_codec(mrPath, mrPath_, codec, 'utf-8')
+                        mrPath = mrPath_
+
+                    file_subtype = 'O'
+
+                    is_valid, message = self.__nefT.validate_file(mrPath, file_subtype)
+
+                    if not is_valid:
+                        _is_valid, _ = self.__nefT.validate_file(mrPath, 'S')
+                        if _is_valid:
+                            has_cs_str = True
+
+                    self.__original_error_message.append(message)
+
+                    _file_type = message['file_type']  # nef/nmr-star/unknown
+
+                    if is_valid:
+
+                        if _file_type != file_type:
+
+                            err = f"{file_name!r} was selected as {self.readable_file_type[file_type]} file, "\
+                                f"but recognized as {self.readable_file_type[_file_type]} file."
+
+                            if _file_type == 'nef':  # DAOTHER-5673
+                                err += " Please re-upload the NEF file as an NMR combined data file."
+                            else:
+                                err += " Please re-upload the file."
+
+                            if len(message['error']) > 0:
+                                for err_message in message['error']:
+                                    if 'No such file or directory' not in err_message:
+                                        err += ' ' + re.sub('not in list', 'unknown item.', err_message)
+
+                            self.report.error.appendDescription('content_mismatch',
+                                                                {'file_name': file_name, 'description': err})
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - {err}\n")
+
+                        else:
+
+                            # NEFTranslator.validate_file() generates this object internally, but not re-used.
+                            _is_done, star_data_type, star_data = self.__nefT.read_input_file(mrPath)
+
+                            self.__has_legacy_sf_issue = False
+
+                            if star_data_type == 'Saveframe':
+                                self.__has_legacy_sf_issue = True
+                                self.__fixFormatIssueOfInputSource(file_path_list_len, file_name, file_type, mrPath, file_subtype, message)
+                                _is_done, star_data_type, star_data = self.__nefT.read_input_file(mrPath)
+
+                            if not (self.__has_legacy_sf_issue and _is_done and star_data_type == 'Entry'):
+
+                                if len(self.__star_data_type) == self.__file_path_list_len:
+                                    del self.__star_data_type[-1]
+                                    del self.__star_data[-1]
+
+                                self.__star_data_type.append(star_data_type)
+                                self.__star_data.append(star_data)
+
+                                self.__rescueFormerNef(file_path_list_len)
+                                self.__rescueImmatureStr(file_path_list_len)
+
+                    elif not self.__fixFormatIssueOfInputSource(file_path_list_len, file_name, file_type, mrPath, file_subtype, message):
+                        pass
+
+                    if mrPath_ is not None:
+                        try:
+                            os.remove(mrPath_)
+                        except:  # noqa: E722 pylint: disable=bare-except
+                            pass
+
+                elif has_cif_format:
+
+                    mrPath = src_file + '.trimmed.cif'
+
+                    header = True
+                    pdb_record = False
+                    has_sharp = False
+
+                    i = 0
+
+                    with open(src_file, 'r') as ifp:
+                        with open(dst_file, 'w') as ofp:
+                            with open(mrPath, 'w') as ofp2:
+                                for line in ifp:
+                                    i += 1
+
+                                    # skip MR header
+                                    if header:
+                                        if line.startswith('*'):
+                                            continue
+                                        header = False
+
+                                    if first_str_line_num <= i and not has_sharp:
+                                        if i <= last_str_line_num:
+                                            ofp2.write(line)
+                                            continue
+                                        ofp2.write(line)
+                                        if line.startswith('#'):
+                                            has_sharp = True
+                                        continue
+
+                                    # skip legacy PDB
+                                    if has_pdb_format:
+                                        if startsWithPdbRecord(line):
+                                            pdb_record = True
+                                            continue
+                                        if pdb_record:
+                                            pdb_record = False
+                                            if line.startswith('END'):
+                                                continue
+
+                                    # skip MR footer
+                                    if 'Submitted Coord H atom name' in line:
+                                        break
+
+                                    ofp.write(line)
+
+                    _mrPath = mrPath + '.cif2str'
+
+                    cif_to_star = CifToNmrStar()
+                    if not cif_to_star.convert(mrPath, _mrPath):
+                        _mrPath = mrPath
+
+                    mrPath = _mrPath
+
+                    self.__file_path_list_len += 1
+
+                    mr_file_path_list = 'restraint_file_path_list'
+
+                    if mr_file_path_list not in self.__inputParamDict:
+                        self.__inputParamDict[mr_file_path_list] = [mrPath]
+                    else:
+                        self.__inputParamDict[mr_file_path_list].append(mrPath)
+
+                    self.report.appendInputSource()
+
+                    input_source = self.report.input_sources[-1]
+
+                    file_type = 'nmr-star'
+                    file_name = os.path.basename(mrPath)
+
+                    input_source.setItemValue('file_name', file_name)
+                    input_source.setItemValue('file_type', file_type)
+                    input_source.setItemValue('content_type', 'nmr-restraints')
+
+                    file_path_list_len = self.__file_path_list_len - 1
+
+                    codec = detect_bom(mrPath, 'utf-8')
+
+                    mrPath_ = None
+
+                    if codec != 'utf-8':
+                        mrPath_ = mrPath + '~'
+                        convert_codec(mrPath, mrPath_, codec, 'utf-8')
+                        mrPath = mrPath_
+
+                    file_subtype = 'O'
+
+                    is_valid, message = self.__nefT.validate_file(mrPath, file_subtype)
+
+                    if not is_valid:
+                        _is_valid, _ = self.__nefT.validate_file(mrPath, 'S')
+                        if _is_valid:
+                            has_cs_str = True
+
+                    self.__original_error_message.append(message)
+
+                    _file_type = message['file_type']  # nef/nmr-star/unknown
+
+                    if is_valid:
+
+                        if _file_type != file_type:
+
+                            err = f"{file_name!r} was selected as {self.readable_file_type[file_type]} file, "\
+                                f"but recognized as {self.readable_file_type[_file_type]} file."
+
+                            if _file_type == 'nef':  # DAOTHER-5673
+                                err += " Please re-upload the NEF file as an NMR combined data file."
+                            else:
+                                err += " Please re-upload the file."
+
+                            if len(message['error']) > 0:
+                                for err_message in message['error']:
+                                    if 'No such file or directory' not in err_message:
+                                        err += ' ' + re.sub('not in list', 'unknown item.', err_message)
+
+                            self.report.error.appendDescription('content_mismatch',
+                                                                {'file_name': file_name, 'description': err})
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - {err}\n")
+
+                        else:
+
+                            # NEFTranslator.validate_file() generates this object internally, but not re-used.
+                            _is_done, star_data_type, star_data = self.__nefT.read_input_file(mrPath)
+
+                            self.__has_legacy_sf_issue = False
+
+                            if star_data_type == 'Saveframe':
+                                self.__has_legacy_sf_issue = True
+                                self.__fixFormatIssueOfInputSource(file_path_list_len, file_name, file_type, mrPath, file_subtype, message)
+                                _is_done, star_data_type, star_data = self.__nefT.read_input_file(mrPath)
+
+                            if not (self.__has_legacy_sf_issue and _is_done and star_data_type == 'Entry'):
+
+                                if len(self.__star_data_type) == self.__file_path_list_len:
+                                    del self.__star_data_type[-1]
+                                    del self.__star_data[-1]
+
+                                self.__star_data_type.append(star_data_type)
+                                self.__star_data.append(star_data)
+
+                                self.__rescueFormerNef(file_path_list_len)
+                                self.__rescueImmatureStr(file_path_list_len)
+
+                    elif not self.__fixFormatIssueOfInputSource(file_path_list_len, file_name, file_type, mrPath, file_subtype, message):
+                        pass
+
+                    if mrPath_ is not None:
+                        try:
+                            os.remove(mrPath_)
+                        except:  # noqa: E722 pylint: disable=bare-except
+                            pass
+
+            except Exception as e:
+
+                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - " + str(e))
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write(f"+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - {str(e)}\n")
+
+                return False
+
+            # has no MR haeder
+            if not has_mr_header:
+
+                _, _, valid_types, possible_types = self.__detectOtherPossibleFormatAsErrorOfLegacyMR(dst_file, file_name, file_type, [], True)
+
+                len_valid_types = len(valid_types)
+                len_possible_types = len(possible_types)
+
+                if len_valid_types == 0 and len_possible_types == 0:
+
+                    ins_msg = ''
+                    if has_pdb_format and has_cs_str:
+                        ins_msg = 'unexpectedly contains PDB coordinates and assigned chemical shifts, but '
+                    elif has_pdb_format:
+                        ins_msg = 'unexpectedly contains PDB coordinates, but '
+                    elif has_cs_str:
+                        ins_msg = 'unexpectedly contains assigned chemical shifts, but '
+
+                    err = f"The NMR restraint file {file_name!r} (MR format) {ins_msg}does not match with any known restraint format. "\
+                        "@todo: It needs to be reviewed or marked as entry wo NMR restraints."
+
+                    self.report.error.appendDescription('internal_error',
+                                                        {'file_name': file_name, 'description': err})
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write(f"+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - {err}\n")
+
+                    return False
+
+                if len_possible_types == 0:
+                    print(f"The NMR restraint file {file_name!r} (MR format) is identified as {valid_types}.")
+
+                    _ar = ar.copy()
+
+                    if len_valid_types == 1:
+                        _ar['file_name'] = dst_file
+                        _ar['file_type'] = valid_types[0]
+                        splitted.append(_ar)
+
+                    elif len_valid_types == 2 and 'nm-res-cns' in valid_types and 'nm-res-xpl' in valid_types:
+                        _ar['file_name'] = dst_file
+                        _ar['file_type'] = 'nm-res-xpl'
+                        splitted.append(_ar)
+
+                    else:
+
+                        err = f"The NMR restraint file {file_name!r} (MR format) is identified as {valid_types}. "\
+                            "@todo: It needs to be split properly."
+
+                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - " + err)
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - {err}\n")
+
+                elif len_valid_types == 0:
+                    print(f"The NMR restraint file {file_name!r} (MR format) can be {possible_types}.")
+
+                    err = f"The NMR restraint file {file_name!r} (MR format) can be {possible_types}. "\
+                        "@todo: It needs to be reviewed."
+
+                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - " + err)
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write(f"+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - {err}\n")
+
+                else:
+                    print(f"The NMR restraint file {file_name!r} (MR format) is identified as {valid_types} and can be {possible_types} as well.")
+
+                    err = f"The NMR restraint file {file_name!r} (MR format) is identified as {valid_types} and can be {possible_types} as well. "\
+                        "@todo: It needs to be reviewed."
+
+                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - " + err)
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write(f"+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - {err}\n")
+
+            # has MR header
+            else:
+
+                dir_path = os.path.dirname(dst_file)
+                original_file_path_list = []
+
+                ofp = None
+                j = 0
+
+                with open(dst_file, 'r') as ifp:
+                    for line in ifp:
+
+                        if mr_file_header_pattern.match(line):
+                            if ofp is not None:
+                                ofp.close()
+                                if j == 0:
+                                    os.remove(original_file_path_list.pop())
+
+                            j = 0
+                            g = mr_file_header_pattern.search(line).groups()
+                            _dst_file = os.path.join(dir_path, g[1])
+                            original_file_path_list.append(_dst_file)
+                            ofp = open(_dst_file, 'w')
+
+                        else:
+                            j += 1
+                            ofp.write(line)
+
+                if ofp is not None:
+                    ofp.close()
+                    if j == 0:
+                        os.remove(original_file_path_list.pop())
+
+                distict = True
+                if len(original_file_path_list) == 0:
+                    distict = False
+                    original_file_path_list.append(dst_file)
+
+                for dst_file in original_file_path_list:
+                    file_name = os.path.basename(dst_file)
+
+                    _, _, valid_types, possible_types = self.__detectOtherPossibleFormatAsErrorOfLegacyMR(dst_file, file_name, file_type, [], True)
+
+                    len_valid_types = len(valid_types)
+                    len_possible_types = len(possible_types)
+
+                    if len_valid_types == 0 and len_possible_types == 0:
+
+                        ins_msg = ''
+                        if not distict or len(original_file_path_list) == 1:
+                            if has_pdb_format and has_cs_str:
+                                ins_msg = 'unexpectedly contains PDB coordinates and assigned chemical shifts, but '
+                            elif has_pdb_format:
+                                ins_msg = 'unexpectedly contains PDB coordinates, but '
+                            elif has_cs_str:
+                                ins_msg = 'unexpectedly contains assigned chemical shifts, but '
+
+                        err = f"The NMR restraint file {file_name!r} (MR format) {ins_msg}does not match with any known restraint format. "\
+                            "@todo: It needs to be reviewed or marked as entry wo NMR restraints."
+
+                        self.report.error.appendDescription('internal_error',
+                                                            {'file_name': file_name, 'description': err})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - {err}\n")
+
+                        return False
+
+                    if len_possible_types == 0:
+                        print(f"The NMR restraint file {file_name!r} (MR format) is identified as {valid_types}.")
+
+                        _ar = ar.copy()
+
+                        if len_valid_types == 1:
+                            _ar['file_name'] = dst_file
+                            _ar['file_type'] = valid_types[0]
+                            if distict:
+                                _ar['original_file_name'] = file_name
+                            splitted.append(_ar)
+
+                        elif len_valid_types == 2 and 'nm-res-cns' in valid_types and 'nm-res-xpl' in valid_types:
+                            _ar['file_name'] = dst_file
+                            _ar['file_type'] = 'nm-res-xpl'
+                            if distict:
+                                _ar['original_file_name'] = file_name
+                            splitted.append(_ar)
+
+                        else:
+
+                            err = f"The NMR restraint file {file_name!r} (MR format) is identified as {valid_types}. "\
+                                "@todo: It needs to be split properly."
+
+                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - " + err)
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - {err}\n")
+
+                    elif len_valid_types == 0:
+                        print(f"The NMR restraint file {file_name!r} (MR format) can be {possible_types}.")
+
+                        err = f"The NMR restraint file {file_name!r} (MR format) can be {possible_types}. "\
+                            "@todo: It needs to be reviewed."
+
+                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - " + err)
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - {err}\n")
+
+                    else:
+                        print(f"The NMR restraint file {file_name!r} (MR format) is identified as {valid_types} and can be {possible_types} as well.")
+
+                        err = f"The NMR restraint file {file_name!r} (MR format) is identified as {valid_types} and can be {possible_types} as well. "\
+                            "@todo: It needs to be reviewed."
+
+                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - " + err)
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - {err}\n")
+
+        if len(splitted) > 0:
+            self.__inputParamDict[ar_file_path_list].extend(splitted)
+
+            for _ar in splitted:
+
+                self.report.appendInputSource()
+
+                input_source = self.report.input_sources[-1]
+
+                input_source.setItemValue('file_name', os.path.basename(_ar['file_name']))
+                input_source.setItemValue('file_type', _ar['file_type'])
+                input_source.setItemValue('content_type', 'nmr-restraints')
+                if 'original_file_name' in _ar:
+                    input_source.setItemValue('original_file_name', _ar['original_file_name'])
+
+        return not self.report.isError()
 
     def __getPolymerSequence(self, file_list_id, sf_data, content_subtype):
         """ Wrapper function to retrieve polymer sequence from loop of a specified saveframe and content subtype via NEFTranslator.
@@ -9133,7 +10160,7 @@ class NmrDpUtility:
         if '_' in comp_id:
             comp_id = comp_id.split('_')[0]
 
-        elif getOneLetterCode(comp_id) == 'X' and self.__ccU.updateChemCompDict(comp_id):
+        elif comp_id not in monDict3 and self.__ccU.updateChemCompDict(comp_id):
             if '_chem_comp.mon_nstd_parent_comp_id' in self.__ccU.lastChemCompDict:  # matches with comp_id in CCD
                 if self.__ccU.lastChemCompDict['_chem_comp.mon_nstd_parent_comp_id'] not in emptyValue:
                     comp_id = self.__ccU.lastChemCompDict['_chem_comp.mon_nstd_parent_comp_id']
@@ -9145,7 +10172,7 @@ class NmrDpUtility:
         if '_' in ref_comp_id:
             ref_comp_id = ref_comp_id.split('_')[0]
 
-        elif getOneLetterCode(ref_comp_id) == 'X' and self.__ccU.updateChemCompDict(ref_comp_id):
+        elif ref_comp_id not in monDict3 and self.__ccU.updateChemCompDict(ref_comp_id):
             if '_chem_comp.mon_nstd_parent_comp_id' in self.__ccU.lastChemCompDict:  # matches with comp_id in CCD
                 if self.__ccU.lastChemCompDict['_chem_comp.mon_nstd_parent_comp_id'] not in emptyValue:
                     ref_comp_id = self.__ccU.lastChemCompDict['_chem_comp.mon_nstd_parent_comp_id']
@@ -9364,7 +10391,7 @@ class NmrDpUtility:
 
                 #                 if length == unmapped + conflict or _matched <= conflict or (len(polymer_sequence) > 1 and _matched < 4 and offset_1 > 0):
                 #                     chain_id_offset += 1
-                #                     s['chain_id'] = indexToLetter(chain_id_offset) if file_type == 'nef' else str(chain_id_offset)
+                #                     s['chain_id'] = indexToLetter(chain_id_offset) if file_type == 'nef' or self.__remediation_mode else str(chain_id_offset)
                 #                     if fileListId in self.__remapped_def_chain_id:
                 #                         self.__remapped_def_chain_id[fileListId] = {}
                 #                     self.__remapped_def_chain_id[fileListId] = {chain_id: s['chain_id']}
@@ -9792,14 +10819,14 @@ class NmrDpUtility:
 
         for s in polymer_sequence:
 
-            has_non_std_comp_id = False
+            has_nstd_res = False
 
             ent = {'chain_id': s['chain_id'], 'seq_id': [], 'comp_id': [], 'chem_comp_name': [], 'exptl_data': []}
 
             for seq_id, comp_id in zip(s['seq_id'], s['comp_id']):
 
-                if getOneLetterCode(comp_id) == 'X':
-                    has_non_std_comp_id = True
+                if comp_id not in monDict3:
+                    has_nstd_res = True
 
                     ent['seq_id'].append(seq_id)
                     ent['comp_id'].append(comp_id)
@@ -9828,7 +10855,7 @@ class NmrDpUtility:
                     ent['exptl_data'].append({'chem_shift': False, 'dist_restraint': False, 'dihed_restraint': False,
                                               'rdc_restraint': False, 'spectral_peak': False, 'coordinate': False})
 
-            if has_non_std_comp_id:
+            if has_nstd_res:
                 asm.append(ent)
 
         if len(asm) > 0:
@@ -10210,13 +11237,13 @@ class NmrDpUtility:
                             seq_align_set.append(seq_align)
 
                             if not self.__combined_mode and input_source_dic['non_standard_residue'] is None:  # no polymer sequence
-                                has_non_std_comp_id = False
+                                has_nstd_res = False
                                 for j, rc in enumerate(ref_code):
                                     if rc == 'X' and j < len(test_code) and test_code[j] == 'X':
-                                        has_non_std_comp_id = True
+                                        has_nstd_res = True
                                         break
 
-                                if not has_non_std_comp_id:
+                                if not has_nstd_res:
                                     continue
 
                                 asm = []
@@ -10226,7 +11253,8 @@ class NmrDpUtility:
                                     ent = {'chain_id': _s['chain_id'], 'seq_id': [], 'comp_id': [], 'chem_comp_name': [], 'exptl_data': []}
 
                                     for _seq_id, _comp_id in zip(_s['seq_id'], _s['comp_id']):
-                                        if getOneLetterCode(_comp_id) == 'X':
+
+                                        if _comp_id not in monDict3:
 
                                             ent['seq_id'].append(_seq_id)
                                             ent['comp_id'].append(_comp_id)
@@ -10531,13 +11559,13 @@ class NmrDpUtility:
                             seq_align_set.append(seq_align)
 
                             if not self.__combined_mode and input_source_dic['non_standard_residue'] is None:  # no polymer sequence
-                                has_non_std_comp_id = False
+                                has_nstd_res = False
                                 for j, rc in enumerate(ref_code):
                                     if rc == 'X' and j < len(test_code) and test_code[j] == 'X':
-                                        has_non_std_comp_id = True
+                                        has_nstd_res = True
                                         break
 
-                                if not has_non_std_comp_id:
+                                if not has_nstd_res:
                                     continue
 
                                 asm = []
@@ -10547,7 +11575,8 @@ class NmrDpUtility:
                                     ent = {'chain_id': _s['chain_id'], 'seq_id': [], 'comp_id': [], 'chem_comp_name': [], 'exptl_data': []}
 
                                     for _seq_id, _comp_id in zip(_s['seq_id'], _s['comp_id']):
-                                        if getOneLetterCode(_comp_id) == 'X':
+
+                                        if _comp_id not in monDict3:
 
                                             ent['seq_id'].append(_seq_id)
                                             ent['comp_id'].append(_comp_id)
@@ -11287,6 +12316,20 @@ class NmrDpUtility:
                 or atom_id.endswith('%') or atom_id.endswith('#')
                 or self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0)
 
+    def __getRepresentativeAtomIdInXplor(self, comp_id, atom_id):
+        """ Return a representative atom ID in IUPAC atom nomenclature for a given atom_id in XPLOR atom nomenclautre.
+        """
+
+        _atom_id = self.__nefT.get_valid_star_atom_in_xplor(comp_id, atom_id, leave_unmatched=False)[0]
+
+        return atom_id if len(_atom_id) == 0 else _atom_id[0]
+
+    def __getAtomIdListInXplor(self, comp_id, atom_id):
+        """ Return atom ID list in IUPAC atom nomenclature for a given atom_id in XPLOR atom nomenclature.
+        """
+
+        return self.__nefT.get_valid_star_atom_in_xplor(comp_id, atom_id, leave_unmatched=False)[0]
+
     def __getRepresentativeAtomId(self, comp_id, atom_id):
         """ Return a representative atom ID in IUPAC atom nomenclature for a given atom_id.
         """
@@ -11326,7 +12369,7 @@ class NmrDpUtility:
                 atom_ids = pair['atom_id']
 
                 # standard residue
-                if getOneLetterCode(comp_id) != 'X':
+                if comp_id in monDict3:
 
                     if file_type == 'nef':
 
@@ -11391,7 +12434,7 @@ class NmrDpUtility:
                                 _atom_id_2 = _atom_id_ + '2'
                                 _atom_id_3 = _atom_id_ + '3'
 
-                                warn = f"{comp_id}:{_atom_id_1}/{_atom_id_2} should be {comp_id}:{_atom_id_2}/{_atom_id_3} "\
+                                warn = f"{comp_id}:{_atom_id_1}/{_atom_id_2} should be {comp_id}:{_atom_id_3}/{_atom_id_2} "\
                                     "according to the IUPAC atom nomenclature, respectively."
 
                                 self.report.warning.appendDescription('auth_atom_nomenclature_mismatch',
@@ -11402,7 +12445,9 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateAtomNomenclature() ++ Warning  - {warn}\n")
 
-                                self.__fixAtomNomenclature(comp_id, {_atom_id_1: _atom_id_2, _atom_id_2: _atom_id_3})
+                                # @see: https://bmrb.io/ref_info/atom_nom.tbl
+                                # self.__fixAtomNomenclature(comp_id, {_atom_id_1: _atom_id_2, _atom_id_2: _atom_id_3})
+                                self.__fixAtomNomenclature(comp_id, {_atom_id_1: _atom_id_3})
 
                             elif self.__nonblk_bad_nterm and atom_id == 'H1' and comp_id in first_comp_ids:
                                 pass
@@ -11494,48 +12539,64 @@ class NmrDpUtility:
 
                 try:
 
+                    peptide_only = all(len(pair['comp_id']) == 3 and pair['comp_id'] in monDict3 for pair in pairs)
+
                     auth_pairs = self.__nefT.get_star_auth_comp_atom_pair(sf_data, lp_category)[0]
 
                     for auth_pair in auth_pairs:
-                        comp_id = auth_pair['comp_id']
+                        auth_comp_id = auth_pair['comp_id']
+                        if peptide_only and len(auth_comp_id) == 1:
+                            comp_id = next((k for k, v in monDict3.items() if v == auth_comp_id), auth_comp_id)
+                        else:
+                            comp_id = auth_comp_id
+                        comp_id = translateToStdResName(comp_id)
                         auth_atom_ids = auth_pair['atom_id']
 
                         # standard residue
-                        if getOneLetterCode(comp_id) != 'X':
+                        if comp_id in monDict3:
 
                             _auth_atom_ids = []
                             for auth_atom_id in auth_atom_ids:
+                                _auth_atom_id = translateToStdAtomName(auth_atom_id)
 
-                                _auth_atom_id = self.__nefT.get_star_atom(comp_id, auth_atom_id, leave_unmatched=False)[0]
+                                auth_atom_ids = self.__getAtomIdList(comp_id, _auth_atom_id)
 
-                                if len(_auth_atom_id) == 0:
-
-                                    if self.__nonblk_bad_nterm and auth_atom_id == 'H1' and comp_id in first_comp_ids:
-                                        continue
-
-                                    warn = f"Unmatched Auth_atom_ID {auth_atom_id!r} (Auth_comp_ID {comp_id})."
-
-                                    self.report.warning.appendDescription('auth_atom_nomenclature_mismatch',
-                                                                          {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                           'description': warn})
-                                    self.report.setWarning()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateAtomNomenclature() ++ Warning  - {warn}\n")
+                                if len(auth_atom_ids) > 0:
+                                    _auth_atom_ids.extend(auth_atom_ids)
 
                                 else:
-                                    _auth_atom_ids.extend(_auth_atom_id)
+
+                                    if self.__nonblk_bad_nterm and _auth_atom_id == 'H1' and comp_id in first_comp_ids:
+                                        continue
+
+                                    auth_atom_ids = self.__getAtomIdListInXplor(comp_id, _auth_atom_id)
+
+                                    if len(auth_atom_ids) > 0:
+                                        _auth_atom_ids.extend(auth_atom_ids)
+
+                                    else:
+
+                                        warn = f"Unmatched Auth_atom_ID {auth_atom_id!r} (Auth_comp_ID {auth_comp_id})."
+
+                                        self.report.warning.appendDescription('auth_atom_nomenclature_mismatch',
+                                                                              {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                                               'description': warn})
+                                        self.report.setWarning()
+
+                                        if self.__verbose:
+                                            self.__lfh.write(f"+NmrDpUtility.__validateAtomNomenclature() ++ Warning  - {warn}\n")
 
                             auth_atom_ids = sorted(set(_auth_atom_ids))
 
                             for auth_atom_id in auth_atom_ids:
 
-                                if not self.__nefT.validate_comp_atom(comp_id, auth_atom_id):
+                                if not self.__nefT.validate_comp_atom(comp_id,
+                                                                      translateToStdAtomName(auth_atom_id)):
 
                                     if self.__nonblk_bad_nterm and auth_atom_id == 'H1' and comp_id in first_comp_ids:
                                         continue
 
-                                    warn = f"Unmatched Auth_atom_ID {auth_atom_id!r} (Auth_comp_ID {comp_id})."
+                                    warn = f"Unmatched Auth_atom_ID {auth_atom_id!r} (Auth_comp_ID {auth_comp_id})."
 
                                     self.report.warning.appendDescription('auth_atom_nomenclature_mismatch',
                                                                           {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
@@ -11602,9 +12663,10 @@ class NmrDpUtility:
                     # self.report.setError()
 
                     # if self.__verbose:
-                    #     self.__lfh.write(f"+NmrDpUtility.__extractPolymerSequence() ++ LookupError  - {str(e)}\n")
+                    #     self.__lfh.write(f"+NmrDpUtility.__validateAtomNomenclature() ++ LookupError  - {str(e)}\n")
                     # """
                     pass
+
                 except ValueError as e:
 
                     self.report.error.appendDescription('invalid_data',
@@ -13945,6 +15007,7 @@ class NmrDpUtility:
         atom_id_name = item_names['atom_id']
         value_name = item_names['value']
         ambig_code_name = 'Ambiguity_code'  # NMR-STAR specific
+        occupancy_name = 'Occupancy'  # NMR-STAR specific
 
         full_value_name = lp_category + '.' + value_name
 
@@ -13989,6 +15052,7 @@ class NmrDpUtility:
                 comp_id = i[comp_id_name]
                 atom_id = i[atom_id_name]
                 value = i[value_name]
+                occupancy = '.' if file_type == 'nef' else i[occupancy_name]
 
                 if value in emptyValue:
                     continue
@@ -14026,7 +15090,7 @@ class NmrDpUtility:
                 has_cs_stat = False
 
                 # non-standard residue
-                if getOneLetterCode(comp_id) == 'X':
+                if comp_id not in monDict3:
 
                     neighbor_comp_ids = set(j[comp_id_name] for j in lp_data if j[chain_id_name] == chain_id and abs(j[seq_id_name] - seq_id) < 4 and j[seq_id_name] != seq_id)
 
@@ -14058,7 +15122,7 @@ class NmrDpUtility:
                                 else:  # For example, HEM HM[A-D]
                                     _atom_id = atom_id
 
-                                methyl_cs_key = f"{chain_id} {seq_id:04d} {_atom_id}"
+                                methyl_cs_key = f"{chain_id} {seq_id:04d} {_atom_id} {occupancy}"
 
                                 if methyl_cs_key not in methyl_cs_vals:
                                     methyl_cs_vals[methyl_cs_key] = value
@@ -14648,7 +15712,7 @@ class NmrDpUtility:
                             has_cs_stat = True
 
                             if atom_id_.startswith('H') and 'methyl' in cs_stat['desc']:
-                                methyl_cs_key = f"{chain_id} {seq_id:04d} {atom_id_[:-1]}"
+                                methyl_cs_key = f"{chain_id} {seq_id:04d} {atom_id_[:-1]} {occupancy}"
 
                                 if methyl_cs_key not in methyl_cs_vals:
                                     methyl_cs_vals[methyl_cs_key] = value
@@ -16907,7 +17971,7 @@ class NmrDpUtility:
                     comp_id_2 = i[comp_id_2_name]
                     atom_id_2 = i[atom_id_2_name]
 
-                    bond = self.__getBondLength(chain_id_1, seq_id_1, atom_id_1, chain_id_2, seq_id_2, atom_id_2)
+                    bond = self.__getNmrBondLength(chain_id_1, seq_id_1, atom_id_1, chain_id_2, seq_id_2, atom_id_2)
 
                     if bond is None:
                         continue
@@ -16943,8 +18007,8 @@ class NmrDpUtility:
             if self.__verbose:
                 self.__lfh.write(f"+NmrDpUtility.__testCovalentBond() ++ Error  - {str(e)}\n")
 
-    def __getBondLength(self, nmr_chain_id_1, nmr_seq_id_1, nmr_atom_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_atom_id_2):
-        """ Return the bond length of given two atoms.
+    def __getNmrBondLength(self, nmr_chain_id_1, nmr_seq_id_1, nmr_atom_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_atom_id_2):
+        """ Return the bond length of given two NMR atoms.
             @return: the bond length
         """
 
@@ -16994,62 +18058,76 @@ class NmrDpUtility:
                 self.__coord_bond_length[seq_key] = None
                 return None
 
-            try:
+            bond = self.__getCoordBondLength(cif_chain_id_1, cif_seq_id_1, nmr_atom_id_1, cif_chain_id_2, cif_seq_id_2, nmr_atom_id_2)
 
-                model_num_name = 'pdbx_PDB_model_num' if self.__cR.hasItem('atom_site', 'pdbx_PDB_model_num') else 'ndb_model'
-
-                atom_site_1 = self.__cR.getDictListWithFilter('atom_site',
-                                                              [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                               {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                               {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
-                                                               {'name': model_num_name, 'type': 'int', 'alt_name': 'model_id'}
-                                                               ],
-                                                              [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id_1},
-                                                               {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id_1},
-                                                               {'name': 'label_atom_id', 'type': 'str', 'value': nmr_atom_id_1},
-                                                               {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}
-                                                               ])
-
-                atom_site_2 = self.__cR.getDictListWithFilter('atom_site',
-                                                              [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                               {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                               {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
-                                                               {'name': model_num_name, 'type': 'int', 'alt_name': 'model_id'}
-                                                               ],
-                                                              [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id_2},
-                                                               {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id_2},
-                                                               {'name': 'label_atom_id', 'type': 'str', 'value': nmr_atom_id_2},
-                                                               {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}
-                                                               ])
-
-            except Exception as e:
-
-                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__getBondLength() ++ Error  - " + str(e))
-                self.report.setError()
-
-                if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__getBondLength() ++ Error  - {str(e)}\n")
-
-                return None
-
-            model_ids = set(a['model_id'] for a in atom_site_1) | set(a['model_id'] for a in atom_site_2)
-
-            bond = []
-
-            for model_id in model_ids:
-                a_1 = next((a for a in atom_site_1 if a['model_id'] == model_id), None)
-                a_2 = next((a for a in atom_site_2 if a['model_id'] == model_id), None)
-
-                if a_1 is None or a_2 is None:
-                    continue
-
-                bond.append({'model_id': model_id, 'distance': float(f"{np.linalg.norm(to_np_array(a_1) - to_np_array(a_2)):.3f}")})
-
-            if len(bond) > 0:
+            if bond is not None:
                 self.__coord_bond_length[seq_key] = bond
+
                 return bond
 
         self.__coord_bond_length[seq_key] = None
+
+        return None
+
+    def __getCoordBondLength(self, cif_chain_id_1, cif_seq_id_1, cif_atom_id_1, cif_chain_id_2, cif_seq_id_2, cif_atom_id_2):
+        """ Return the bond length of given two CIF atoms.
+            @return: the bond length
+        """
+
+        try:
+
+            model_num_name = 'pdbx_PDB_model_num' if self.__cR.hasItem('atom_site', 'pdbx_PDB_model_num') else 'ndb_model'
+
+            atom_site_1 = self.__cR.getDictListWithFilter('atom_site',
+                                                          [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                           {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                           {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
+                                                           {'name': model_num_name, 'type': 'int', 'alt_name': 'model_id'}
+                                                           ],
+                                                          [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id_1},
+                                                           {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id_1},
+                                                           {'name': 'label_atom_id', 'type': 'str', 'value': cif_atom_id_1},
+                                                           {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}
+                                                           ])
+
+            atom_site_2 = self.__cR.getDictListWithFilter('atom_site',
+                                                          [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                           {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                           {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
+                                                           {'name': model_num_name, 'type': 'int', 'alt_name': 'model_id'}
+                                                           ],
+                                                          [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id_2},
+                                                           {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id_2},
+                                                           {'name': 'label_atom_id', 'type': 'str', 'value': cif_atom_id_2},
+                                                           {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}
+                                                           ])
+
+        except Exception as e:
+
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__getCoordBondLength() ++ Error  - " + str(e))
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write(f"+NmrDpUtility.__getCoordBondLength() ++ Error  - {str(e)}\n")
+
+            return None
+
+        model_ids = set(a['model_id'] for a in atom_site_1) | set(a['model_id'] for a in atom_site_2)
+
+        bond = []
+
+        for model_id in model_ids:
+            a_1 = next((a for a in atom_site_1 if a['model_id'] == model_id), None)
+            a_2 = next((a for a in atom_site_2 if a['model_id'] == model_id), None)
+
+            if a_1 is None or a_2 is None:
+                continue
+
+            bond.append({'model_id': model_id, 'distance': float(f"{np.linalg.norm(to_np_array(a_1) - to_np_array(a_2)):.3f}")})
+
+        if len(bond) > 0:
+            return bond
+
         return None
 
     def __testResidueVariant(self):
@@ -17585,7 +18663,7 @@ class NmrDpUtility:
             file_type = input_source_dic['file_type']
             content_subtype = input_source_dic['content_subtype']
 
-            if file_type in ('nm-aux-amb', 'nm-res-oth'):
+            if file_type in ('nm-aux-amb', 'nm-res-oth', 'nm-res-mr'):
                 continue
 
             if content_subtype is None or len(content_subtype) == 0:
@@ -17609,7 +18687,6 @@ class NmrDpUtility:
                 listener, _, _ = reader.parse(file_path, self.__cifPath)
 
                 if listener is not None:
-
                     reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
@@ -17689,7 +18766,6 @@ class NmrDpUtility:
                 listener, _, _ = reader.parse(file_path, self.__cifPath)
 
                 if listener is not None:
-
                     reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
@@ -17856,7 +18932,6 @@ class NmrDpUtility:
                 listener, _, _ = reader.parse(file_path, self.__cifPath)
 
                 if listener is not None:
-
                     reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
@@ -17944,7 +19019,6 @@ class NmrDpUtility:
                 listener, _, _ = reader.parse(file_path, self.__cifPath)
 
                 if listener is not None:
-
                     reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
@@ -18440,7 +19514,7 @@ class NmrDpUtility:
 
                     chain_id = sc['chain_id']
 
-                    _chain_id = chain_id if file_type == 'nef' else str(letterToDigit(chain_id))
+                    _chain_id = chain_id if file_type == 'nef' or self.__remediation_mode else str(letterToDigit(chain_id))
 
                     cc['chain_id'] = chain_id
 
@@ -19083,7 +20157,7 @@ class NmrDpUtility:
                 atom_id = i[atom_id_name]
                 value = i[value_name]
 
-                _chain_id = chain_id if file_type == 'nef' else str(letterToDigit(chain_id))
+                _chain_id = chain_id if file_type == 'nef' or self.__remediation_mode else str(letterToDigit(chain_id))
 
                 if value in emptyValue:
                     continue
@@ -19108,7 +20182,7 @@ class NmrDpUtility:
                 has_cs_stat = False
 
                 # non-standard residue
-                if getOneLetterCode(comp_id) == 'X':
+                if comp_id not in monDict3:
 
                     neighbor_comp_ids = set(j[comp_id_name] for j in lp_data if j[chain_id_name] == _chain_id
                                             and abs(j[seq_id_name] - seq_id) < 4 and j[seq_id_name] != seq_id)
@@ -19222,7 +20296,7 @@ class NmrDpUtility:
 
                     chain_id = sc['chain_id']
 
-                    _chain_id = chain_id if file_type == 'nef' else str(letterToDigit(chain_id))
+                    _chain_id = chain_id if file_type == 'nef' or self.__remediation_mode else str(letterToDigit(chain_id))
 
                     s = next((s for s in polymer_sequence if s['chain_id'] == chain_id), None)
 
@@ -19306,7 +20380,7 @@ class NmrDpUtility:
 
                     chain_id = sc['chain_id']
 
-                    _chain_id = chain_id if file_type == 'nef' else str(letterToDigit(chain_id))
+                    _chain_id = chain_id if file_type == 'nef' or self.__remediation_mode else str(letterToDigit(chain_id))
 
                     s = next((s for s in polymer_sequence if s['chain_id'] == chain_id), None)
 
@@ -19415,7 +20489,7 @@ class NmrDpUtility:
 
                     chain_id = sc['chain_id']
 
-                    _chain_id = chain_id if file_type == 'nef' else str(letterToDigit(chain_id))
+                    _chain_id = chain_id if file_type == 'nef' or self.__remediation_mode else str(letterToDigit(chain_id))
 
                     s = next((s for s in polymer_sequence if s['chain_id'] == chain_id), None)
 
@@ -19525,7 +20599,7 @@ class NmrDpUtility:
 
                     chain_id = sc['chain_id']
 
-                    _chain_id = chain_id if file_type == 'nef' else str(letterToDigit(chain_id))
+                    _chain_id = chain_id if file_type == 'nef' or self.__remediation_mode else str(letterToDigit(chain_id))
 
                     s = next((s for s in polymer_sequence if s['chain_id'] == chain_id), None)
 
@@ -19822,7 +20896,7 @@ class NmrDpUtility:
 
                     chain_id = sc['chain_id']
 
-                    _chain_id = chain_id if file_type == 'nef' else str(letterToDigit(chain_id))
+                    _chain_id = chain_id if file_type == 'nef' or self.__remediation_mode else str(letterToDigit(chain_id))
 
                     s = next((s for s in polymer_sequence if s['chain_id'] == chain_id), None)
 
@@ -19836,7 +20910,7 @@ class NmrDpUtility:
                         for seq_id, comp_id in zip(s['seq_id'], s['comp_id']):
 
                             if comp_id not in emptyValue:
-                                if comp_id not in monDict3.keys():
+                                if comp_id not in monDict3:
                                     continue
                                 if not self.__csStat.peptideLike(comp_id):
                                     continue
@@ -19844,7 +20918,7 @@ class NmrDpUtility:
                             else:
                                 _comp_id = self.__getCoordCompId(chain_id, seq_id)
                                 if _comp_id is not None:
-                                    if _comp_id not in monDict3.keys():
+                                    if _comp_id not in monDict3:
                                         continue
                                     if not self.__csStat.peptideLike(_comp_id):
                                         continue
@@ -20848,7 +21922,7 @@ class NmrDpUtility:
                 atom_id_1 = i[atom_id_1_name]
                 atom_id_2 = i[atom_id_2_name]
 
-                bond = self.__getBondLength(chain_id_1, seq_id_1, atom_id_1, chain_id_2, seq_id_2, atom_id_2)
+                bond = self.__getNmrBondLength(chain_id_1, seq_id_1, atom_id_1, chain_id_2, seq_id_2, atom_id_2)
 
                 if bond is None:
                     continue
@@ -23666,17 +24740,16 @@ class NmrDpUtility:
         """
 
         file_type = 'pdbx'
+
         content_type = self.content_type[file_type]
 
         if self.__parseCoordinate():
-
-            file_name = os.path.basename(self.__cifPath)
 
             self.report.appendInputSource()
 
             input_source = self.report.input_sources[-1]
 
-            input_source.setItemValue('file_name', file_name)
+            input_source.setItemValue('file_name', os.path.basename(self.__cifPath))
             input_source.setItemValue('file_type', file_type)
             input_source.setItemValue('content_type', content_type)
 
@@ -23823,6 +24896,28 @@ class NmrDpUtility:
 
             fPath = self.__inputParamDict['coordinate_file_path']
 
+            if fPath.endswith('.gz'):
+
+                _fPath = os.path.splitext(fPath)[0]
+
+                if not os.path.exists(_fPath):
+
+                    try:
+
+                        uncompress_gzip_file(fPath, _fPath)
+
+                    except Exception as e:
+
+                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__parseCoordFilePath() ++ Error  - " + str(e))
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__parseCoordFilePath() ++ Error  - {str(e)}\n")
+
+                        return False
+
+                fPath = _fPath
+
             try:
 
                 self.__cifPath = fPath
@@ -23856,6 +24951,9 @@ class NmrDpUtility:
 
         input_source = self.report.input_sources[id]
         input_source_dic = input_source.get()
+
+        if has_key_value(input_source_dic, 'content_subtype'):
+            return True
 
         # file_name = input_source_dic['file_name']
         file_type = input_source_dic['file_type']
@@ -23915,6 +25013,9 @@ class NmrDpUtility:
         content_subtype = 'poly_seq'
 
         if content_subtype not in input_source_dic['content_subtype'].keys():
+            return False
+
+        if has_key_value(input_source_dic, 'polymer_sequence'):
             return True
 
         alias = False
@@ -24129,6 +25230,125 @@ class NmrDpUtility:
                 self.__lfh.write(f"+NmrDpUtility.__extractCoordPolymerSequence() ++ Error  - {str(e)}\n")
 
         return False
+
+    def __extractCoordAtomSite(self):
+        """ Extract atom_site of coordinate file.
+        """
+
+        id = self.report.getInputSourceIdOfCoord()  # pylint: disable=redefined-builtin
+
+        if id < 0:
+            return False
+
+        if self.__coord_atom_site is not None:
+            return True
+
+        input_source = self.report.input_sources[id]
+        input_source_dic = input_source.get()
+
+        has_poly_seq = has_key_value(input_source_dic, 'polymer_sequence')
+
+        polymer_sequence = input_source_dic['polymer_sequence'] if has_poly_seq else []
+
+        if has_poly_seq and any('auth_chain_id' not in ps for ps in polymer_sequence):
+            has_poly_seq = False
+
+        try:
+
+            model_num_name = 'pdbx_PDB_model_num' if self.__cR.hasItem('atom_site', 'pdbx_PDB_model_num') else 'ndb_model'
+            has_pdbx_auth_atom_name = self.__cR.hasItem('atom_site', 'pdbx_auth_atom_name')
+
+            if has_pdbx_auth_atom_name:
+                coord = self.__cR.getDictListWithFilter('atom_site',
+                                                        [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                         {'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
+                                                         {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'seq_id'},
+                                                         {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'auth_seq_id'},  # non-polymer
+                                                         {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                         {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'},
+                                                         {'name': 'pdbx_auth_atom_name', 'type': 'str', 'alt_name': 'auth_atom_id'}  # DAOTHER-7665
+                                                         ],
+                                                        [{'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id},
+                                                         {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}
+                                                         ])
+            else:
+                coord = self.__cR.getDictListWithFilter('atom_site',
+                                                        [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                         {'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
+                                                         {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'seq_id'},
+                                                         {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'auth_seq_id'},  # non-polymer
+                                                         {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                         {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
+                                                         ],
+                                                        [{'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id},
+                                                         {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}
+                                                         ])
+
+            if has_poly_seq:
+                label_to_auth_chain = {ps['chain_id']: ps['auth_chain_id'] for ps in polymer_sequence}
+            else:
+                label_to_auth_chain = {}
+                for c in coord:
+                    if c['chain_id'] not in emptyValue and c['auth_chain_id'] not in emptyValue and c['chain_id'] not in label_to_auth_chain:
+                        label_to_auth_chain[c['chain_id']] = c['auth_chain_id']
+
+            self.__coord_atom_site = {}
+            self.__auth_to_label_seq = {}
+            chain_ids = set(c['chain_id'] for c in coord)
+            for chain_id in chain_ids:
+                seq_ids = set((int(c['seq_id']) if c['seq_id'] is not None else c['auth_seq_id']) for c in coord if c['chain_id'] == chain_id)
+                for seq_id in seq_ids:
+                    seq_key = (chain_id, seq_id)
+                    comp_id = next(c['comp_id'] for c in coord
+                                   if c['chain_id'] == chain_id and ((c['seq_id'] is not None and int(c['seq_id']) == seq_id)
+                                                                     or (c['seq_id'] is None and c['auth_seq_id'] == seq_id)))
+                    atom_ids = [c['atom_id'] for c in coord
+                                if c['chain_id'] == chain_id and ((c['seq_id'] is not None and int(c['seq_id']) == seq_id)
+                                                                  or (c['seq_id'] is None and c['auth_seq_id'] == seq_id))]
+                    self.__coord_atom_site[seq_key] = {'comp_id': comp_id, 'atom_id': atom_ids}
+                    if has_pdbx_auth_atom_name:
+                        auth_atom_ids = [c['auth_atom_id'] for c in coord
+                                         if c['chain_id'] == chain_id and ((c['seq_id'] is not None and int(c['seq_id']) == seq_id)
+                                                                           or (c['seq_id'] is None and c['auth_seq_id'] == seq_id))]
+                        self.__coord_atom_site[seq_key]['auth_atom_id'] = auth_atom_ids
+                    elif any(not self.__nefT.validate_comp_atom(comp_id, atom_id) for atom_id in atom_ids):
+                        auth_atom_ids = [self.__getRepresentativeAtomIdInXplor(comp_id, atom_id) for atom_id in atom_ids]
+                        self.__coord_atom_site[seq_key]['auth_atom_id'] = auth_atom_ids
+                    auth_seq_id = next((c['auth_seq_id'] for c in coord if c['chain_id'] == chain_id and c['seq_id'] == seq_id), None)
+                    if auth_seq_id is not None and auth_seq_id.isdigit():
+                        self.__auth_to_label_seq[(label_to_auth_chain[chain_id], int(auth_seq_id))] = seq_key
+            self.__label_to_auth_seq = {v: k for k, v in self.__auth_to_label_seq.items()}
+
+            # DAOTHER-7665
+            self.__coord_unobs_res = []
+            unobs_res = self.__cR.getDictListWithFilter('pdbx_unobs_or_zero_occ_residues',
+                                                        [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                         {'name': 'auth_seq_id', 'type': 'str', 'alt_name': 'seq_id'},
+                                                         {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'}
+                                                         ],
+                                                        [{'name': 'PDB_model_num', 'type': 'int', 'value': self.__representative_model_id}
+                                                         ])
+
+            if len(unobs_res) > 0:
+                chain_ids = set(u['chain_id'] for u in unobs_res)
+                for chain_id in chain_ids:
+                    seq_ids = set(int(u['seq_id']) for u in unobs_res if u['chain_id'] == chain_id and u['seq_id'] is not None)
+                    for seq_id in seq_ids:
+                        seq_key = (chain_id, seq_id)
+                        if seq_key in self.__auth_to_label_seq:
+                            self.__coord_unobs_res.append(self.__auth_to_label_seq[seq_key])
+
+            return True
+
+        except Exception as e:
+
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractCoordAtomSite() ++ Error  - " + str(e))
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write(f"+NmrDpUtility.__extractCoordAtomSite() ++ Error  - {str(e)}\n")
+
+            return False
     # """
     # def __extractCoordNonPolymerScheme(self):
     #     "" Extract non-polymer scheme of coordinate file.
@@ -24175,9 +25395,9 @@ class NmrDpUtility:
 
     #         if len(non_poly) > 0:
 
-    #             poly_seq = input_source_dic['polymer_sequence']
+    #             polymer_sequence = input_source_dic['polymer_sequence']
 
-    #             if poly_seq is None:
+    #             if polymer_sequence is None:
     #                 ""
     #                 err = "Polymer sequence does not exist, __extractCoordPolymerSequence() should be invoked."
 
@@ -24465,14 +25685,14 @@ class NmrDpUtility:
 
         for s in polymer_sequence:
 
-            has_non_std_comp_id = False
+            has_nstd_res = False
 
             ent = {'chain_id': s['chain_id'], 'seq_id': [], 'comp_id': [], 'chem_comp_name': [], 'exptl_data': []}
 
             for seq_id, comp_id in zip(s['seq_id'], s['comp_id']):
 
-                if getOneLetterCode(comp_id) == 'X':
-                    has_non_std_comp_id = True
+                if comp_id not in monDict3:
+                    has_nstd_res = True
 
                     ent['seq_id'].append(seq_id)
                     ent['comp_id'].append(comp_id)
@@ -24490,7 +25710,7 @@ class NmrDpUtility:
 
                     ent['exptl_data'].append({'coordinate': False})
 
-            if has_non_std_comp_id:
+            if has_nstd_res:
                 asm.append(ent)
 
         if len(asm) > 0:
@@ -25696,83 +26916,6 @@ class NmrDpUtility:
 
         __errors = self.report.getTotalErrors()
 
-        if self.__coord_atom_site is None:
-
-            try:
-
-                model_num_name = 'pdbx_PDB_model_num' if self.__cR.hasItem('atom_site', 'pdbx_PDB_model_num') else 'ndb_model'
-                has_pdbx_auth_atom_name = self.__cR.hasItem('atom_site', 'pdbx_auth_atom_name')
-
-                if has_pdbx_auth_atom_name:
-                    coord = self.__cR.getDictListWithFilter('atom_site',
-                                                            [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                                             {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'seq_id'},
-                                                             {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'auth_seq_id'},  # non-polymer
-                                                             {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                             {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'},
-                                                             {'name': 'pdbx_auth_atom_name', 'type': 'str', 'alt_name': 'auth_atom_id'}  # DAOTHER-7665
-                                                             ],
-                                                            [{'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id},
-                                                             {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}
-                                                             ])
-                else:
-                    coord = self.__cR.getDictListWithFilter('atom_site',
-                                                            [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                                             {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'seq_id'},
-                                                             {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'auth_seq_id'},  # non-polymer
-                                                             {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                             {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
-                                                             ],
-                                                            [{'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id},
-                                                             {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}
-                                                             ])
-
-                self.__coord_atom_site = {}
-                chain_ids = set(c['chain_id'] for c in coord)
-                for chain_id in chain_ids:
-                    seq_ids = set((int(c['seq_id']) if c['seq_id'] is not None else c['auth_seq_id']) for c in coord if c['chain_id'] == chain_id)
-                    for seq_id in seq_ids:
-                        seq_key = (chain_id, seq_id)
-                        comp_id = next(c['comp_id'] for c in coord
-                                       if c['chain_id'] == chain_id and ((c['seq_id'] is not None and int(c['seq_id']) == seq_id)
-                                                                         or (c['seq_id'] is None and c['auth_seq_id'] == seq_id)))
-                        atom_ids = [c['atom_id'] for c in coord
-                                    if c['chain_id'] == chain_id and ((c['seq_id'] is not None and int(c['seq_id']) == seq_id)
-                                                                      or (c['seq_id'] is None and c['auth_seq_id'] == seq_id))]
-                        self.__coord_atom_site[seq_key] = {'comp_id': comp_id, 'atom_id': atom_ids}
-                        if has_pdbx_auth_atom_name:
-                            auth_atom_ids = [c['auth_atom_id'] for c in coord
-                                             if c['chain_id'] == chain_id and ((c['seq_id'] is not None and int(c['seq_id']) == seq_id)
-                                                                               or (c['seq_id'] is None and c['auth_seq_id'] == seq_id))]
-                            self.__coord_atom_site[seq_key]['auth_atom_id'] = auth_atom_ids
-
-                # DAOTHER-7665
-                self.__coord_unobs_res = []
-                unobs_res = self.__cR.getDictListWithFilter('pdbx_unobs_or_zero_occ_residues',
-                                                            [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                                             {'name': 'auth_seq_id', 'type': 'str', 'alt_name': 'seq_id'},
-                                                             {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'}
-                                                             ],
-                                                            [{'name': 'PDB_model_num', 'type': 'int', 'value': self.__representative_model_id}
-                                                             ])
-
-                if len(unobs_res) > 0:
-                    chain_ids = set(u['chain_id'] for u in unobs_res)
-                    for chain_id in chain_ids:
-                        seq_ids = set(int(u['seq_id']) for u in unobs_res if u['chain_id'] == chain_id and u['seq_id'] is not None)
-                        for seq_id in seq_ids:
-                            self.__coord_unobs_res.append((chain_id, seq_id))
-
-            except Exception as e:
-
-                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testCoordAtomIdConsistency() ++ Error  - " + str(e))
-                self.report.setError()
-
-                if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__testCoordAtomIdConsistency() ++ Error  - {str(e)}\n")
-
-                return False
-
         for fileListId in range(self.__file_path_list_len):
 
             nmr_input_source = self.report.input_sources[fileListId]
@@ -26156,7 +27299,7 @@ class NmrDpUtility:
 
                     elif ca['conflict'] == 0:  # no conflict in sequenc alignment
 
-                        if getOneLetterCode(comp_id) != 'X':
+                        if comp_id in monDict3:
 
                             self.report.error.appendDescription('atom_not_found',
                                                                 {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
@@ -27506,40 +28649,55 @@ class NmrDpUtility:
 
         if len(struct_conn) == 0:
 
-            try:
+            seq_key_1 = (cif_chain_id, beg_cif_seq_id)
+            seq_key_2 = (cif_chain_id, end_cif_seq_id)
+            close_contact = []
 
-                close_contact = self.__cR.getDictListWithFilter('pdbx_validate_close_contact',
-                                                                [{'name': 'dist', 'type': 'float'}
-                                                                 ],
-                                                                [{'name': 'PDB_model_num', 'type': 'int', 'value': self.__representative_model_id},
-                                                                 {'name': 'auth_asym_id_1', 'type': 'str', 'value': cif_chain_id},
-                                                                 {'name': 'auth_seq_id_1', 'type': 'int', 'value': beg_cif_seq_id},
-                                                                 {'name': 'auth_atom_id_1', 'type': 'str', 'value': 'N'},
-                                                                 {'name': 'auth_asym_id_2', 'type': 'str', 'value': cif_chain_id},
-                                                                 {'name': 'auth_seq_id_2', 'type': 'int', 'value': end_cif_seq_id},
-                                                                 {'name': 'auth_atom_id_2', 'type': 'str', 'value': 'C'}
-                                                                 ])
+            if seq_key_1 in self.__label_to_auth_seq and seq_key_2 in self.__label_to_auth_seq:
+                auth_cif_chain_id, auth_beg_cif_seq_id = self.__label_to_auth_seq[seq_key_1]
+                _, auth_end_cif_seq_id = self.__label_to_auth_seq[seq_key_2]
 
-            except Exception as e:
+                try:
 
-                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__isCyclicPolymer() ++ Error  - " + str(e))
-                self.report.setError()
+                    close_contact = self.__cR.getDictListWithFilter('pdbx_validate_close_contact',
+                                                                    [{'name': 'dist', 'type': 'float'}
+                                                                     ],
+                                                                    [{'name': 'PDB_model_num', 'type': 'int', 'value': self.__representative_model_id},
+                                                                     {'name': 'auth_asym_id_1', 'type': 'str', 'value': auth_cif_chain_id},
+                                                                     {'name': 'auth_seq_id_1', 'type': 'int', 'value': auth_beg_cif_seq_id},
+                                                                     {'name': 'auth_atom_id_1', 'type': 'str', 'value': 'N'},
+                                                                     {'name': 'auth_asym_id_2', 'type': 'str', 'value': auth_cif_chain_id},
+                                                                     {'name': 'auth_seq_id_2', 'type': 'int', 'value': auth_end_cif_seq_id},
+                                                                     {'name': 'auth_atom_id_2', 'type': 'str', 'value': 'C'}
+                                                                     ])
 
-                if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__isCyclicPolymer() ++ Error  - {str(e)}\n")
+                except Exception as e:
 
-                return False
+                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__isCyclicPolymer() ++ Error  - " + str(e))
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write(f"+NmrDpUtility.__isCyclicPolymer() ++ Error  - {str(e)}\n")
+
+                    return False
 
             if len(close_contact) == 0:
-                return False
 
-            if close_contact[0]['dist'] > 1.2 and close_contact[0]['dist'] < 1.4:
-                return True
+                bond = self.__getCoordBondLength(cif_chain_id, beg_cif_seq_id, 'N', cif_chain_id, end_cif_seq_id, 'C')
 
-        elif struct_conn[0]['conn_type_id'] == 'covale':
-            return True
+                if bond is None:
+                    return False
 
-        return False
+                distance = next((b['distance'] for b in bond if b['model_id'] == self.__representative_model_id), None)
+
+                if distance is None:
+                    return False
+
+                return 1.2 < distance < 1.4
+
+            return 1.2 < close_contact[0]['dist'] < 1.4
+
+        return struct_conn[0]['conn_type_id'] == 'covale'
 
     def __isProtCis(self, nmr_chain_id, nmr_seq_id):
         """ Return whether type of peptide conformer of a given sequence is cis based on coordinate annotation.
@@ -29253,7 +30411,7 @@ class NmrDpUtility:
             try:
 
                 _neighbor = self.__cR.getDictListWithFilter('atom_site',
-                                                            [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                            [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                                              {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},  # non-polymer
                                                              {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
                                                              {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'},
@@ -29314,7 +30472,7 @@ class NmrDpUtility:
                                                       {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
                                                       {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
                                                       ],
-                                                     [{'name': 'label_asym_id', 'type': 'str', 'value': p['chain_id']},
+                                                     [{'name': 'auth_asym_id', 'type': 'str', 'value': p['chain_id']},
                                                       {'name': 'auth_seq_id', 'type': 'int', 'value': p['seq_id']},  # non-polymer
                                                       {'name': 'label_comp_id', 'type': 'str', 'value': p['comp_id']},
                                                       {'name': 'label_atom_id', 'type': 'str', 'value': p['atom_id']},
@@ -31421,7 +32579,7 @@ class NmrDpUtility:
 
         except KeyError:  # DAOTHER-7389, issue #4
 
-            if sf_framecode in self.__sf_name_corr[file_list_id]:
+            if file_list_id < len(self.__sf_name_corr) and sf_framecode in self.__sf_name_corr[file_list_id]:
 
                 try:
                     return self.__star_data[file_list_id].get_saveframe_by_name(self.__sf_name_corr[file_list_id][sf_framecode])
@@ -32589,11 +33747,11 @@ class NmrDpUtility:
         if 'nmr-star_file_path' not in self.__outputParamDict:
             raise KeyError("+NmrDpUtility.__translateNef2Str() ++ Error  - Could not find 'nmr-star_file_path' output parameter.")
 
-        out_file_path = self.__outputParamDict['nmr-star_file_path']
+        fPath = self.__outputParamDict['nmr-star_file_path']
 
         try:
 
-            is_valid, message = self.__nefT.nef_to_nmrstar(self.__dstPath, out_file_path,
+            is_valid, message = self.__nefT.nef_to_nmrstar(self.__dstPath, fPath,
                                                            report=self.report, leave_unmatched=self.__leave_intl_note)  # (None if self.__alt_chain else self.report))
 
             if self.__release_mode and self.__tmpPath is not None:
@@ -32615,8 +33773,8 @@ class NmrDpUtility:
             if self.__verbose:
                 self.__lfh.write(f"+NmrDpUtility.__translateNef2Str() ++ Error  - {err}\n")
 
-            if os.path.exists(out_file_path):
-                os.remove(out_file_path)
+            if os.path.exists(fPath):
+                os.remove(fPath)
 
             return False
 
@@ -32629,7 +33787,7 @@ class NmrDpUtility:
                 if 'original_file_name' in self.__inputParamDict:
                     original_file_name = self.__inputParamDict['original_file_name']
 
-                star_to_cif.convert(out_file_path, self.__outputParamDict['nmr-cif_file_path'], original_file_name, 'nm-uni-nef')
+                star_to_cif.convert(fPath, self.__outputParamDict['nmr-cif_file_path'], original_file_name, 'nm-uni-nef')
 
             return True
 
@@ -32648,8 +33806,8 @@ class NmrDpUtility:
         if self.__verbose:
             self.__lfh.write(f"+NmrDpUtility.__translateNef2Str() ++ Error  - {err}\n")
 
-        if os.path.exists(out_file_path):
-            os.remove(out_file_path)
+        if os.path.exists(fPath):
+            os.remove(fPath)
 
         return False
 
@@ -32707,11 +33865,11 @@ class NmrDpUtility:
         if 'nef_file_path' not in self.__outputParamDict:
             raise KeyError("+NmrDpUtility.__translateStr2Nef() ++ Error  - Could not find 'nef_file_path' output parameter.")
 
-        out_file_path = self.__outputParamDict['nef_file_path']
+        fPath = self.__outputParamDict['nef_file_path']
 
         try:
 
-            is_valid, message = self.__nefT.nmrstar_to_nef(self.__dstPath, out_file_path, report=self.report)  # (None if self.__alt_chain else self.report))
+            is_valid, message = self.__nefT.nmrstar_to_nef(self.__dstPath, fPath, report=self.report)  # (None if self.__alt_chain else self.report))
 
             if self.__release_mode and self.__tmpPath is not None:
                 os.remove(self.__tmpPath)
@@ -32732,8 +33890,8 @@ class NmrDpUtility:
             if self.__verbose:
                 self.__lfh.write(f"+NmrDpUtility.__translateStr2Nef() ++ Error  - {err}\n")
 
-            if os.path.exists(out_file_path):
-                os.remove(out_file_path)
+            if os.path.exists(fPath):
+                os.remove(fPath)
 
             return False
 
@@ -32755,8 +33913,8 @@ class NmrDpUtility:
         if self.__verbose:
             self.__lfh.write(f"+NmrDpUtility.__translateStr2Nef() ++ Error  - {err}\n")
 
-        if os.path.exists(out_file_path):
-            os.remove(out_file_path)
+        if os.path.exists(fPath):
+            os.remove(fPath)
 
         return False
 

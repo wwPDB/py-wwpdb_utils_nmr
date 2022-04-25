@@ -81,6 +81,8 @@
 # 15-Dec-2021  M. Yokochi - fix TypeError: unsupported operand type(s) for -: 'NoneType' and 'set' (v3.0.6, DAOTHER-7545)
 # 22-Dec-2021  M. Yokochi - extend validate_file() for uploading NMR restraint files in NMR-STAR format (v3.0.7, DAOTHER-7545, issue #2)
 # 02-Mar-2022  M. Yokochi - revise logging and overall code revision (v3.1.0)
+# 12-Apr-2022  M. Yokochi - add get_valid_star_atom_in_xplor(), which translates XPLOR atom name to IUPAC one (v3.1.1, NMR restraint remediation, DAOTHER-7407)
+# 13-Apr-2022  M. Yokochi - use auth_*_id scheme preferentially in combined format translation (v3.1.2, NMR restraint remediation)
 ##
 """ Bi-directional translator between NEF and NMR-STAR
     @author: Kumaran Baskaran, Masashi Yokochi
@@ -98,19 +100,17 @@ import pynmrstar
 from packaging import version
 
 try:
-    from wwpdb.utils.nmr.AlignUtil import (emptyValue, trueValue,
-                                           getOneLetterCode,
+    from wwpdb.utils.nmr.AlignUtil import (emptyValue, trueValue, monDict3,
                                            letterToDigit, indexToLetter)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 except ImportError:
-    from nmr.AlignUtil import (emptyValue, trueValue,
-                               getOneLetterCode,
+    from nmr.AlignUtil import (emptyValue, trueValue, monDict3,
                                letterToDigit, indexToLetter)
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
 
-__version__ = '3.1.0'
+__version__ = '3.1.2'
 
 __pynmrstar_v3_2__ = version.parse(pynmrstar.__version__) >= version.parse("3.2.0")
 __pynmrstar_v3_1__ = version.parse(pynmrstar.__version__) >= version.parse("3.1.0")
@@ -584,6 +584,9 @@ class NEFTranslator:
         self.__verbose = verbose
         self.__lfh = log
 
+        # whether to enable remediation routine
+        self.__remediation_mode = False
+
         libDirPath = os.path.dirname(__file__) + '/lib/'
 
         self.tagMap = self.load_csv_data(libDirPath + 'NEF_NMRSTAR_equivalence.csv', transpose=True)
@@ -623,6 +626,12 @@ class NEFTranslator:
                                  'range-float': 'a floating point number in a specific range',
                                  'enum': 'an enumeration value',
                                  'enum-int': 'an enumeration value restricted to integers'}
+
+    def set_remediation(self, flag):
+        """ Set remediation mode.
+        """
+
+        self.__remediation_mode = flag
 
     def load_csv_data(self, csv_file, transpose=False):
         """ Load CSV data to list.
@@ -1169,6 +1178,7 @@ class NEFTranslator:
 
     def get_seq_from_cs_loop(self, in_file):
         """ Extract sequence from chemical shift loop.
+            @deprecated: used only for testing
             @param in_file: NEF/NMR-STAR file
             @return: status, message
         """
@@ -1416,6 +1426,8 @@ class NEFTranslator:
             except:  # AttributeError:  # noqa: E722 pylint: disable=bare-except
                 loops = [star_data]
 
+        def_chain_id = 'A' if self.__remediation_mode else '1'
+
         data = []  # data of all loops
 
         tags = [seq_id, comp_id, chain_id]
@@ -1434,15 +1446,15 @@ class NEFTranslator:
                 seq_data = get_lp_tag(loop, tags)
                 for i in seq_data:
                     if i[2] in emptyValue:
-                        i[2] = '1'
+                        i[2] = def_chain_id
             elif set(tags__) & set(loop.tags) == set(tags__):  # DAOTHER-7421
                 seq_data = get_lp_tag(loop, tags__)
                 for i in seq_data:
-                    i[2] = '1' if i[2] in emptyValue else str(letterToDigit(i[2], 1))
+                    i[2] = def_chain_id if i[2] in emptyValue else str(i[2] if self.__remediation_mode else letterToDigit(i[2], 1))
             elif set(tags_) & set(loop.tags) == set(tags_):  # No Entity_assembly_ID tag case
                 seq_data = get_lp_tag(loop, tags_)
                 for i in seq_data:
-                    i.append('1')
+                    i.append(def_chain_id)
             else:
                 _tags_exist = False
                 for j in range(1, MAX_DIM_NUM_OF_SPECTRA):
@@ -1454,19 +1466,19 @@ class NEFTranslator:
                         seq_data_ = get_lp_tag(loop, _tags)
                         for i in seq_data_:
                             if i[2] in emptyValue:
-                                i[2] = '1'
+                                i[2] = def_chain_id
                         seq_data += seq_data_
                     elif set(_tags__) & set(loop.tags) == set(_tags__):  # DAOTHER-7421
                         _tags_exist = True
                         seq_data_ = get_lp_tag(loop, _tags__)
                         for i in seq_data_:
-                            i[2] = '1' if i[2] in emptyValue else str(letterToDigit(i[2], 1))
+                            i[2] = def_chain_id if i[2] in emptyValue else str(i[2] if self.__remediation_mode else letterToDigit(i[2], 1))
                         seq_data += seq_data_
                     elif set(_tags_) & set(loop.tags) == set(_tags_):
                         _tags_exist = True
                         seq_data_ = get_lp_tag(loop, _tags_)
                         for i in seq_data_:
-                            i.append('1')
+                            i.append(def_chain_id)
                         seq_data += seq_data_
 
                 if not _tags_exist:
@@ -1544,7 +1556,7 @@ class NEFTranslator:
                     ent = {}  # entity
 
                     str_c = str(c)
-                    ent['chain_id'] = str_c if str_c.isdigit() else str(letterToDigit(str_c, 1))
+                    ent['chain_id'] = str_c if str_c.isdigit() or self.__remediation_mode else str(letterToDigit(str_c, 1))
 
                     if allow_gap:
                         ent['seq_id'] = []
@@ -1575,7 +1587,7 @@ class NEFTranslator:
                             if seq_dict[_c] == seq_dict[c]:
                                 if cmp_dict[_c] == cmp_dict[c]:
                                     _str_c = str(_c)
-                                    identity.append(_str_c if _str_c.isdigit() else str(letterToDigit(_str_c, 1)))
+                                    identity.append(_str_c if _str_c.isdigit() or self.__remediation_mode else str(letterToDigit(_str_c, 1)))
                             else:
                                 common_seq_id = set(seq_dict[_c]) & set(seq_dict[c])
                                 if len(common_seq_id) == 0:
@@ -1589,7 +1601,7 @@ class NEFTranslator:
                                            and cmp_dict[_c][seq_dict[_c].index(s)] == cmp_dict[c][seq_dict[c].index(s)]):
                                     continue
                                 _str_c = str(_c)
-                                identity.append(_str_c if _str_c.isdigit() else str(letterToDigit(_str_c, 1)))
+                                identity.append(_str_c if _str_c.isdigit() or self.__remediation_mode else str(letterToDigit(_str_c, 1)))
                         if len(identity) > 0:
                             ent['identical_chain_id'] = identity
 
@@ -2119,6 +2131,7 @@ class NEFTranslator:
 
     def get_nef_index(self, star_data, lp_category='nef_sequence', index_id='index'):
         """ Wrapper function of get_index() for an NEF file.
+            @deprecated: used only for testing
             @author: Masashi Yokochi
         """
 
@@ -2126,6 +2139,7 @@ class NEFTranslator:
 
     def get_star_index(self, star_data, lp_category='Chem_comp_assembly', index_id='NEF_index'):
         """ Wrapper function of get_index() for an NMR-STAR file.
+            @deprecated: used only for testing
             @author: Masashi Yokochi
         """
 
@@ -2165,7 +2179,7 @@ class NEFTranslator:
                 raise LookupError(f"Missing mandatory {index_id} loop tag.")
 
             for l, i in enumerate(index_data):  # noqa: E741
-                if is_empty(i) and l < len_loop_data:
+                if i in emptyValue and l < len_loop_data:
                     r = {}
                     for j, t in enumerate(loop.tags):
                         r[t] = loop.data[l][j]
@@ -2173,7 +2187,7 @@ class NEFTranslator:
                         f"#_of_row {l + 1}, data_of_row {r}.\n"
                 else:
                     try:
-                        int(i[0])
+                        int(i)
                     except ValueError:
                         if l < len_loop_data:
                             r = {}
@@ -2431,7 +2445,7 @@ class NEFTranslator:
                             name = tags[j]
                             if name in key_names:
                                 k = key_items[key_names.index(name)]
-                                if not ('remove-bad-pattern' in k and k['remove-bad-pattern']):
+                                if not ('remove-bad-pattern' in k and k['remove-bad-pattern']) and 'default' not in k:
                                     r = {}
                                     for _j, _t in enumerate(loop.tags):  # noqa: E741
                                         r[_t] = loop.data[l][_j]
@@ -2565,7 +2579,9 @@ class NEFTranslator:
                     if j < key_len:
                         k = key_items[j]
                         type = k['type']  # pylint: disable=redefined-builtin
-                        if type == 'bool':
+                        if val in emptyValue and 'default' in k and k['default'] in emptyValue:
+                            ent[name] = k['default']
+                        elif type == 'bool':
                             try:
                                 ent[name] = val.lower() in trueValue
                             except ValueError:
@@ -3782,6 +3798,7 @@ class NEFTranslator:
 
     def validate_atom(self, star_data, lp_category='Atom_chem_shift', comp_id='Comp_ID', atom_id='Atom_ID'):
         """ Validate atom_id in a given loop against CCD.
+            @deprecated: used only for testing
             @change: support non-standard residue by Masashi Yokochi
             @return: list of valid row data
         """
@@ -4053,6 +4070,41 @@ class NEFTranslator:
 
         return out_tag
 
+    def get_valid_star_atom_in_xplor(self, comp_id, atom_id, details=None, leave_unmatched=True):
+        """ Return lists of atom ID, ambiguity_code, details in IUPAC atom nomenclature for a given atom name in XPLOR atom nomenclature.
+            @author: Masashi Yokochi
+            @return: list of instanced atom_id, ambiguity_code, and description
+        """
+
+        if comp_id in emptyValue:
+            return [], None, None
+
+        if '#' in atom_id:
+            atom_id = atom_id.replace('#', '%')
+
+        if atom_id[0] in ('H', 'Q', 'M'):
+
+            if atom_id.endswith('1') and not self.validate_comp_atom(comp_id, atom_id):
+                _atom_id = atom_id[:-1] + '3'
+                if self.validate_comp_atom(comp_id, _atom_id):
+                    return self.get_valid_star_atom(comp_id, _atom_id, details, leave_unmatched)
+
+            if atom_id.endswith('1*') or atom_id.endswith('1%'):
+                _atom_id = atom_id[:-2] + '3' + atom_id[-1]
+                _atom_list, _ambiguity_code, _details = self.get_valid_star_atom(comp_id, _atom_id, None, True)
+                if _details is None:
+                    if leave_unmatched:
+                        return _atom_list, _ambiguity_code, _details
+                    return self.get_valid_star_atom(comp_id, _atom_id, details, leave_unmatched)
+
+                _atom_list, _ambiguity_code, _details = self.get_valid_star_atom(comp_id, _atom_id[:-1], None, True)
+                if _details is None:
+                    if leave_unmatched:
+                        return _atom_list, _ambiguity_code, _details
+                    return self.get_valid_star_atom(comp_id, _atom_id, details, leave_unmatched)
+
+        return self.get_valid_star_atom(comp_id, atom_id, details, leave_unmatched)
+
     def get_valid_star_atom(self, comp_id, atom_id, details=None, leave_unmatched=True):
         """ Return lists of atom ID, ambiguity_code, details in IUPAC atom nomenclature for a given conventional NMR atom name.
             @author: Masashi Yokochi
@@ -4061,6 +4113,9 @@ class NEFTranslator:
 
         if comp_id in emptyValue:
             return [], None, None
+
+        if '#' in atom_id:
+            atom_id = atom_id.replace('#', '%')
 
         if atom_id == 'HN' or atom_id.endswith('%') or atom_id.endswith('*'):
             return self.get_star_atom(comp_id, atom_id, details, leave_unmatched)
@@ -4085,9 +4140,6 @@ class NEFTranslator:
         if (atom_id + '2' in self.__csStat.getAllAtoms(comp_id)) or (atom_id + '22' in self.__csStat.getAllAtoms(comp_id)):
             return self.get_star_atom(comp_id, atom_id + '%', details, leave_unmatched)
 
-        if '#' in atom_id:
-            return self.get_star_atom(comp_id, atom_id.replace('#', '%'))
-
         return self.get_star_atom(comp_id, atom_id, details, leave_unmatched)
 
     def get_star_atom(self, comp_id, nef_atom, details=None, leave_unmatched=True):
@@ -4101,8 +4153,7 @@ class NEFTranslator:
             return [], None, None
 
         comp_id = comp_id.upper()
-
-        comp_code = getOneLetterCode(comp_id)
+        is_std_comp_id = comp_id in monDict3
 
         atom_list = []
         ambiguity_code = 1
@@ -4158,10 +4209,7 @@ class NEFTranslator:
                 wc_code = ref_atom[4]
 
                 if wc_code == '%':
-                    if comp_code == 'X':
-                        pattern = re.compile(fr'{atom_type}\S?$')
-                    else:
-                        pattern = re.compile(fr'{atom_type}\d+')
+                    pattern = re.compile(fr'{atom_type}\d+') if is_std_comp_id else re.compile(fr'{atom_type}\S?$')
                 elif wc_code == '*':
                     pattern = re.compile(fr'{atom_type}\S+')
                 elif self.__verbose:
@@ -4211,7 +4259,7 @@ class NEFTranslator:
 
                 methyl_atoms = self.__csStat.getMethylAtoms(comp_id)
 
-                if comp_code != 'X' and not nef_atom.endswith('%') and comp_code != 'X' and not nef_atom.endswith('*') and nef_atom + '1' in methyl_atoms:
+                if is_std_comp_id and not nef_atom.endswith('%') and not nef_atom.endswith('*') and nef_atom + '1' in methyl_atoms:
                     return self.get_star_atom(comp_id, nef_atom + '%',
                                               f"{nef_atom} converted to {nef_atom}%." if leave_unmatched else None, leave_unmatched)
 
@@ -4219,7 +4267,7 @@ class NEFTranslator:
                     return self.get_star_atom(comp_id, nef_atom[:-1] + '%',
                                               f"{nef_atom} converted to {nef_atom[:-1]}%." if leave_unmatched else None, leave_unmatched)
 
-                if ((comp_code != 'X' and nef_atom[-1] == '%') or nef_atom[-1] == '*') and (nef_atom[:-1] + '1' not in methyl_atoms) and\
+                if ((is_std_comp_id and nef_atom[-1] == '%') or nef_atom[-1] == '*') and (nef_atom[:-1] + '1' not in methyl_atoms) and\
                    len(nef_atom) > 2 and (nef_atom[-2].lower() == 'x' or nef_atom[-2].lower() == 'y'):
                     return self.get_star_atom(comp_id, nef_atom[:-2] + ('1' if nef_atom[-2].lower() == 'x' else '2') + '%',
                                               f"{nef_atom} converted to {nef_atom[:-2] + ('1' if nef_atom[-2].lower() == 'x' else '2')}%." if leave_unmatched else None,
@@ -4726,7 +4774,7 @@ class NEFTranslator:
             return None, None
 
     def nef2star_seq_row(self, nef_tags, star_tags, loop_data, report=None):
-        """ Translate data in sequence loop from NEF into NMR-STAR.
+        """ Translate rows in sequence loop from NEF into NMR-STAR.
             @change: rename the original translate_seq_row() to nef2star_seq_row() by Masashi Yokochi
             @param nef_tags: list of NEF tags
             @param star_tags: list of NMR-STAR tags
@@ -4749,14 +4797,17 @@ class NEFTranslator:
             if len(seq_list) == 0:
                 continue
 
-            cif_chain = None
+            cif_chain = cif_ps = None
             if report is not None:
                 seq_align = report.getSequenceAlignmentWithNmrChainId(nef_chain)
                 if seq_align is not None:
-                    cif_chain = seq_align['test_chain_id']
-
-            if cif_chain is not None:
-                _star_chain = str(letterToDigit(cif_chain))
+                    cif_chain = seq_align['test_chain_id']  # label_asym_id
+                    _star_chain = str(letterToDigit(cif_chain))
+                    cif_ps = report.getModelPolymerSequenceOf(cif_chain, label_scheme=False)
+                    if cif_ps is not None:
+                        cif_chain = cif_ps['auth_chain_id']  # auth_asym_id
+                    if self.__remediation_mode:
+                        _star_chain = cif_chain
 
             offset = None
 
@@ -4765,9 +4816,11 @@ class NEFTranslator:
                 _cif_seq = None
                 if cif_chain is not None:
                     try:
-                        _cif_seq = seq_align['test_seq_id'][seq_align['ref_seq_id'].index(_nef_seq)]
+                        _cif_seq = seq_align['test_seq_id'][seq_align['ref_seq_id'].index(_nef_seq)]  # label_seq_id
                         if offset is None:
                             offset = _cif_seq - _nef_seq
+                        if cif_ps is not None:
+                            _cif_seq = cif_ps['auth_seq_id'][cif_ps['seq_id'].index(_cif_seq)]  # auth_seq_id
                     except:  # noqa: E722 pylint: disable=bare-except
                         pass
 
@@ -4861,7 +4914,7 @@ class NEFTranslator:
         return out_row, aux_row
 
     def star2nef_seq_row(self, star_tags, nef_tags, loop_data, report=None, entity_del_atom_loop=None):
-        """ Translate data in sequence loop from NMR-STAR into NEF.
+        """ Translate rows in sequence loop from NMR-STAR into NEF.
             @author: Masashi Yokochi
             @param star_tags: list of NMR-STAR tags
             @param nef_tags: list of NEF tags
@@ -4887,6 +4940,8 @@ class NEFTranslator:
         self.star2NefChainMapping = {}
         self.star2CifChainMapping = {}
 
+        auth_scheme = {}
+
         seq_list = {}
 
         for cid, star_chain in enumerate(self.authChainId):
@@ -4907,13 +4962,18 @@ class NEFTranslator:
                 if len(seq_list[star_chain]) == 0:
                     continue
 
-                cif_chain = None
+                cif_chain = cif_ps = None
                 if report is not None:
                     seq_align = report.getSequenceAlignmentWithNmrChainId(star_chain)
                     if seq_align is not None:
-                        cif_chain = seq_align['test_chain_id']
+                        cif_chain = seq_align['test_chain_id']  # label_asym_id
+                        cif_ps = report.getModelPolymerSequenceOf(cif_chain, label_scheme=False)
+                        if cif_ps is not None:
+                            cif_chain = cif_ps['auth_chain_id']  # auth_asym_id
 
                 self.star2CifChainMapping[star_chain] = cif_chain
+
+                auth_scheme[star_chain] = cif_ps is not None
 
             for k, v in self.star2NefChainMapping.items():
                 if self.star2CifChainMapping[k] is None:
@@ -4937,10 +4997,12 @@ class NEFTranslator:
 
             nef_chain = self.star2NefChainMapping[star_chain]
 
-            cif_chain = None
+            cif_chain = cif_ps = None
             if report is not None:
                 cif_chain = self.star2CifChainMapping[star_chain]
                 seq_align = report.getSequenceAlignmentWithNmrChainId(star_chain)
+                if star_chain in auth_scheme and auth_scheme[star_chain]:
+                    cif_ps = report.getModelPolymerSequenceOf(cif_chain, label_scheme=False)
 
             offset = None
 
@@ -4949,9 +5011,11 @@ class NEFTranslator:
                 _cif_seq = None
                 if cif_chain is not None:
                     try:
-                        _cif_seq = seq_align['test_seq_id'][seq_align['ref_seq_id'].index(_star_seq)]
+                        _cif_seq = seq_align['test_seq_id'][seq_align['ref_seq_id'].index(_star_seq)]  # label_seq_id
                         if offset is None:
                             offset = _cif_seq - _star_seq
+                        if cif_ps is not None:
+                            _cif_seq = cif_ps['auth_seq_id'][cif_ps['seq_id'].index(_cif_seq)]  # auth_seq_id
                     except:  # noqa: E722 pylint: disable=bare-except
                         pass
 
@@ -5045,14 +5109,17 @@ class NEFTranslator:
             if len(seq_list) == 0:
                 continue
 
-            cif_chain = None
+            cif_chain = cif_ps = None
             if report is not None:
                 seq_align = report.getSequenceAlignmentWithNmrChainId(in_star_chain)
                 if seq_align is not None:
-                    cif_chain = seq_align['test_chain_id']
-
-            if cif_chain is not None:
-                _star_chain = str(letterToDigit(cif_chain))
+                    cif_chain = seq_align['test_chain_id']  # label_asym_id
+                    _star_chain = str(letterToDigit(cif_chain))
+                    cif_ps = report.getModelPolymerSequenceOf(cif_chain, label_scheme=False)
+                    if cif_ps is not None:
+                        cif_chain = cif_ps['auth_chain_id']  # auth_asym_id
+                    if self.__remediation_mode:
+                        _star_chain = cif_chain
 
             offset = None
 
@@ -5061,9 +5128,11 @@ class NEFTranslator:
                 _cif_seq = None
                 if cif_chain is not None:
                     try:
-                        _cif_seq = seq_align['test_seq_id'][seq_align['ref_seq_id'].index(_in_star_seq)]
+                        _cif_seq = seq_align['test_seq_id'][seq_align['ref_seq_id'].index(_in_star_seq)]  # label_seq_id
                         if offset is None:
                             offset = _cif_seq - _in_star_seq
+                        if cif_ps is not None:
+                            _cif_seq = cif_ps['auth_seq_id'][cif_ps['seq_id'].index(_cif_seq)]  # auth_seq_id
                     except:  # noqa: E722 pylint: disable=bare-except
                         pass
 
@@ -5142,7 +5211,7 @@ class NEFTranslator:
                     for _variant in variant.split(','):
                         _variant_ = _variant.strip(' ')
                         if _variant_.startswith('-'):
-                            atom_list = self.get_valid_star_atom(i[comp_index].upper(), _variant_[1:])[0]
+                            atom_list = self.get_valid_star_atom_in_xplor(i[comp_index].upper(), _variant_[1:])[0]
                             if len(atom_list) > 0:
                                 for atom in atom_list:
                                     _aux = copy.copy(aux)
@@ -5159,7 +5228,7 @@ class NEFTranslator:
         return out_row, aux_row
 
     def nef2star_bond_row(self, nef_tags, star_tags, loop_data):
-        """ Translate data in bond loop from NEF into NMR-STAR.
+        """ Translate rows in bond loop from NEF into NMR-STAR.
             @author: Masashi Yokochi
             @param nef_tags: list of NEF tags
             @param star_tags: list of NMR-STAR tags
@@ -5394,8 +5463,8 @@ class NEFTranslator:
             intra_residue = i[in_star_tags.index(chain_tag_1)] == i[in_star_tags.index(chain_tag_2)]\
                 and i[in_star_tags.index(seq_tag_1)] == i[in_star_tags.index(seq_tag_2)]
 
-            atom_list_1 = self.get_valid_star_atom(i[in_star_comp_index_1], i[in_star_atom_index_1])[0]
-            atom_list_2 = self.get_valid_star_atom(i[in_star_comp_index_2], i[in_star_atom_index_2])[0]
+            atom_list_1 = self.get_valid_star_atom_in_xplor(i[in_star_comp_index_1], i[in_star_atom_index_1])[0]
+            atom_list_2 = self.get_valid_star_atom_in_xplor(i[in_star_comp_index_2], i[in_star_atom_index_2])[0]
 
             for k in atom_list_1:
 
@@ -5489,7 +5558,7 @@ class NEFTranslator:
         return out_row
 
     def nef2star_cs_row(self, nef_tags, star_tags, loop_data, leave_unmatched=False):
-        """ Translate data in chemical shift loop from NEF into NMR-STAR.
+        """ Translate rows in chemical shift loop from NEF into NMR-STAR.
             @change: rename from original translate_cs_row() to nef2star_cs_row() by Masashi Yokochi
             @param nef_tags: list of NEF tags
             @param star_tags: list of NMR-STAR tags
@@ -5612,7 +5681,7 @@ class NEFTranslator:
         return out_row
 
     def star2nef_cs_row(self, star_tags, nef_tags, loop_data):
-        """ Translate data in chemical shift loop from NMR-STAR into NEF.
+        """ Translate rows in chemical shift loop from NMR-STAR into NEF.
             @author: Masashi Yokochi
             @param star_tags: list of NMR-STAR tags
             @param nef_tags: list of NEF tags
@@ -5793,7 +5862,7 @@ class NEFTranslator:
 
                 for i in in_row:
 
-                    atom_list, ambiguity_code, details = self.get_valid_star_atom(i[comp_index], i[atom_index], None, leave_unmatched)
+                    atom_list, ambiguity_code, details = self.get_valid_star_atom_in_xplor(i[comp_index], i[atom_index], None, leave_unmatched)
 
                     for atom in atom_list:
 
@@ -5918,7 +5987,7 @@ class NEFTranslator:
         return out_tags
 
     def nef2star_dist_row(self, nef_tags, star_tags, loop_data):
-        """ Translate data in distance restraint loop from NEF into NMR-STAR.
+        """ Translate rows in distance restraint loop from NEF into NMR-STAR.
             @change: rename the original translate_restraint_row() to nef2star_dist_row() by Masashi Yokochi
             @param nef_tags: list of NEF tags
             @param star_tags: list of NMR-STAR tags
@@ -6079,7 +6148,7 @@ class NEFTranslator:
         return out_row
 
     def star2nef_dist_row(self, star_tags, nef_tags, loop_data):
-        """ Translate data in distance restraint loop from NMR-STAR into NEF.
+        """ Translate rows in distance restraint loop from NMR-STAR into NEF.
             @author: Masashi Yokochi
             @param star_tags: list of NMR-STAR tags
             @param nef_tags: list of NEF tags
@@ -6317,8 +6386,8 @@ class NEFTranslator:
                 intra_residue = i[in_star_tags.index(chain_tag_1)] == i[in_star_tags.index(chain_tag_2)]\
                     and i[in_star_tags.index(seq_tag_1)] == i[in_star_tags.index(seq_tag_2)]
 
-                atom_list_1 = self.get_valid_star_atom(i[in_star_comp_index_1], i[in_star_atom_index_1])[0]
-                atom_list_2 = self.get_valid_star_atom(i[in_star_comp_index_2], i[in_star_atom_index_2])[0]
+                atom_list_1 = self.get_valid_star_atom_in_xplor(i[in_star_comp_index_1], i[in_star_atom_index_1])[0]
+                atom_list_2 = self.get_valid_star_atom_in_xplor(i[in_star_comp_index_2], i[in_star_atom_index_2])[0]
 
                 or_code = len(atom_list_1) * len(atom_list_2) > 1
 
@@ -6389,7 +6458,7 @@ class NEFTranslator:
         return out_row
 
     def nef2star_dihed_row(self, nef_tags, star_tags, loop_data):
-        """ Translate data in dihedral angle restraint loop from NEF into NMR-STAR.
+        """ Translate rows in dihedral angle restraint loop from NEF into NMR-STAR.
             @author: Masashi Yokochi
             @param nef_tags: list of NEF tags
             @param star_tags: list of NMR-STAR tags
@@ -6682,10 +6751,10 @@ class NEFTranslator:
                 intra_residue_34 = i[in_star_tags.index(chain_tag_3)] == i[in_star_tags.index(chain_tag_4)]\
                     and i[in_star_tags.index(seq_tag_3)] == i[in_star_tags.index(seq_tag_4)]
 
-                atom_list_1 = self.get_valid_star_atom(i[in_star_comp_index_1], i[in_star_atom_index_1])[0]
-                atom_list_2 = self.get_valid_star_atom(i[in_star_comp_index_2], i[in_star_atom_index_2])[0]
-                atom_list_3 = self.get_valid_star_atom(i[in_star_comp_index_3], i[in_star_atom_index_3])[0]
-                atom_list_4 = self.get_valid_star_atom(i[in_star_comp_index_4], i[in_star_atom_index_4])[0]
+                atom_list_1 = self.get_valid_star_atom_in_xplor(i[in_star_comp_index_1], i[in_star_atom_index_1])[0]
+                atom_list_2 = self.get_valid_star_atom_in_xplor(i[in_star_comp_index_2], i[in_star_atom_index_2])[0]
+                atom_list_3 = self.get_valid_star_atom_in_xplor(i[in_star_comp_index_3], i[in_star_atom_index_3])[0]
+                atom_list_4 = self.get_valid_star_atom_in_xplor(i[in_star_comp_index_4], i[in_star_atom_index_4])[0]
 
                 for k in atom_list_1:
 
@@ -6765,7 +6834,7 @@ class NEFTranslator:
         return out_row
 
     def nef2star_rdc_row(self, nef_tags, star_tags, loop_data):
-        """ Translate data in RDC restraint loop from NEF into NMR-STAR.
+        """ Translate rows in RDC restraint loop from NEF into NMR-STAR.
             @author: Masashi Yokochi
             @param nef_tags: list of NEF tags
             @param star_tags: list of NMR-STAR tags
@@ -6990,8 +7059,8 @@ class NEFTranslator:
                 intra_residue = i[in_star_tags.index(chain_tag_1)] == i[in_star_tags.index(chain_tag_2)]\
                     and i[in_star_tags.index(seq_tag_1)] == i[in_star_tags.index(seq_tag_2)]
 
-                atom_list_1 = self.get_valid_star_atom(i[in_star_comp_index_1], i[in_star_atom_index_1])[0]
-                atom_list_2 = self.get_valid_star_atom(i[in_star_comp_index_2], i[in_star_atom_index_2])[0]
+                atom_list_1 = self.get_valid_star_atom_in_xplor(i[in_star_comp_index_1], i[in_star_atom_index_1])[0]
+                atom_list_2 = self.get_valid_star_atom_in_xplor(i[in_star_comp_index_2], i[in_star_atom_index_2])[0]
 
                 for k in atom_list_1:
 
@@ -7057,7 +7126,8 @@ class NEFTranslator:
         return out_row
 
     def nef2star_peak_row(self, nef_tags, star_tags, loop_data, leave_unmatched=False):
-        """ Translate data in spectral peak loop from NEF into NMR-STAR.
+        """ Translate rows in spectral peak loop from NEF into NMR-STAR.
+            @author: Masashi Yokochi
             @param nef_tags: list of NEF tags
             @param star_tags: list of NMR-STAR tags
             @param loop_data: loop data of NEF
@@ -7236,7 +7306,8 @@ class NEFTranslator:
         return out_row
 
     def __nef2star_peak_row(self, nef_tags, star_tags, tag_map, self_tag_map, row, details, comb):
-        """ Translate data in spectral peak loop from NEF into NMR-STAR.
+        """ Translate rows in spectral peak loop from NEF into NMR-STAR.
+            @author: Masashi Yokochi
         """
 
         buf = [None] * len(star_tags)
@@ -7274,7 +7345,7 @@ class NEFTranslator:
         return buf
 
     def star2nef_peak_row(self, star_tags, nef_tags, loop_data):
-        """ Translate data in spectral peak loop from NMR-STAR into NEF.
+        """ Translate rows in spectral peak loop from NMR-STAR into NEF.
             @author: Masashi Yokochi
             @param star_tags: list of NMR-STAR tags
             @param nef_tags: list of NEF tags
@@ -7411,6 +7482,7 @@ class NEFTranslator:
 
     def star2star_peak_row(self, in_star_tags, star_tags, loop_data, leave_unmatched=False):
         """ Translate rows in spectral peak loop from PyNMRSTAR data object into NMR-STAR.
+            @author: Masashi Yokochi
             @param in_star_tags: list of input NMR-STAR tags
             @param star_tags: list of NMR-STAR tags
             @param loop_data: loop data of input NMR-STAR
@@ -7481,7 +7553,7 @@ class NEFTranslator:
                 a = []
 
                 for in_star_comp_index, in_star_atom_index in zip(in_star_comp_indices, in_star_atom_indices):
-                    atom_list = self.get_valid_star_atom(i[in_star_comp_index], i[in_star_atom_index])[0]
+                    atom_list = self.get_valid_star_atom_in_xplor(i[in_star_comp_index], i[in_star_atom_index])[0]
                     len_atom_list = len(atom_list)
                     if len_atom_list == 0:
                         atom_list.append('.')
@@ -7590,6 +7662,7 @@ class NEFTranslator:
 
     def __star2star_peak_row(self, in_star_tags, star_tags, tag_map, self_tag_map, row, details, comb):
         """ Translate rows in spectral peak loop from PyNMRSTAR data object into NMR-STAR.
+            @author: Masashi Yokochi
         """
 
         buf = [None] * len(star_tags)
@@ -7629,7 +7702,7 @@ class NEFTranslator:
         return buf
 
     def nef2star_row(self, nef_tags, star_tags, in_row):
-        """ Translate data in a loop from NEF into NMR-STAR.
+        """ Translate rows in a loop from NEF into NMR-STAR.
             @change: rename from original translate_row() to nef2star_row() by Masashi Yokochi
             @param nef_tags: list of NEF tags
             @param star_tags: list of NMR-STAR tags
@@ -7699,7 +7772,7 @@ class NEFTranslator:
         return out_row
 
     def star2nef_row(self, star_tags, nef_tags, in_row):
-        """ Translate data in a loop from NMR-STAR into NEF.
+        """ Translate rows in a loop from NMR-STAR into NEF.
             @author: Masashi Yokochi
             @param star_tags: list of NMR-STAR tags
             @param nef_tags: list of NEF tags
@@ -9004,10 +9077,14 @@ class NEFTranslator:
             if len(ps['seq_id']) == 0:
                 continue
 
-            cif_chain = None
-            seq_align = report.getSequenceAlignmentWithNmrChainId(star_chain)
-            if seq_align is not None:
-                cif_chain = seq_align['test_chain_id']
+            cif_chain = cif_ps = None
+            if report is not None:
+                seq_align = report.getSequenceAlignmentWithNmrChainId(star_chain)
+                if seq_align is not None:
+                    cif_chain = seq_align['test_chain_id']  # label_asym_id
+                    cif_ps = report.getModelPolymerSequenceOf(cif_chain, label_scheme=False)
+                    if cif_ps is not None:
+                        cif_chain = cif_ps['auth_chain_id']  # auth_asym_id
 
             # self.star2CifChainMapping[star_chain] = cif_chain
 
@@ -9016,7 +9093,9 @@ class NEFTranslator:
                 _cif_seq = None
                 if cif_chain is not None:
                     try:
-                        _cif_seq = seq_align['test_seq_id'][seq_align['ref_seq_id'].index(star_seq)]
+                        _cif_seq = seq_align['test_seq_id'][seq_align['ref_seq_id'].index(star_seq)]  # label_seq_id
+                        if cif_ps is not None:
+                            _cif_seq = cif_ps['auth_seq_id'][cif_ps['seq_id'].index(_cif_seq)]  # auth_seq_id
                     except:  # noqa: E722 pylint: disable=bare-except
                         pass
 

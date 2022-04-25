@@ -60,6 +60,8 @@
 # 04-Mar-2022  M. Yokochi - add coordinate geometry restraints (DAOTHER-7690, NMR restraint remediation)
 # 22-Mar-2022  M. Yokochi - add 'nm-res-ros' file type for ROSETTA restraint format (DAOTHER-7690)
 # 23-Mar-2022  M. Yokochi - add 'conflicted_mr_data', 'inconsistent_mr_data', 'redundant_mr_data', 'unsupported_mr_data' warning types (DAOTHER-7690)
+# 13-Apr-2022  M. Yokochi - add 'label_scheme' option to select label_*_id or auth_*_id scheme of the coordinate file (NMR restraint remediation)
+# 14 Apr-2022  M. Yokochi - add 'nm-res-mr' file type for NMR restraint remediation and V5.13
 ##
 """ Wrapper class for NMR data processing report.
     @author: Masashi Yokochi
@@ -929,7 +931,7 @@ class NmrDpReport:
 
         return get_value_safe(self.getInputSourceDict(input_source_id), 'polymer_sequence')
 
-    def getNmrPolymerSequenceOf(self, chain_id):
+    def getNmrPolymerSequenceOf(self, nmr_chain_id):
         """ Retrieve NMR polymer sequence having a given chain_id.
         """
 
@@ -946,9 +948,9 @@ class NmrDpReport:
         if nmr_polymer_sequence is None:
             return None
 
-        return next((ps for ps in nmr_polymer_sequence if ps['chain_id'] == chain_id), None)
+        return next((ps for ps in nmr_polymer_sequence if ps['chain_id'] == nmr_chain_id), None)
 
-    def getModelPolymerSequenceOf(self, chain_id):
+    def getModelPolymerSequenceOf(self, cif_chain_id, label_scheme=True):
         """ Retrieve model polymer sequence having a given chain_id.
         """
 
@@ -957,7 +959,9 @@ class NmrDpReport:
         if cif_polymer_sequence is None:
             return None
 
-        return next((ps for ps in cif_polymer_sequence if ps['chain_id'] == chain_id), None)
+        return next((ps for ps in cif_polymer_sequence
+                     if (ps['chain_id'] == cif_chain_id and label_scheme)
+                     or ('auth_chain_id' in ps and ps['auth_chain_id'] == cif_chain_id and not label_scheme)), None)
 
     def getChainIdsForSameEntity(self):
         """ Return mapping of chain_id in the NMR data, which share the same entity.
@@ -1007,7 +1011,7 @@ class NmrDpReport:
 
         return ret
 
-    def getNmrSeq1LetterCodeOf(self, chain_id, fullSequence=True, unmappedSeqId=None):
+    def getNmrSeq1LetterCodeOf(self, nmr_chain_id, fullSequence=True, unmappedSeqId=None):
         """ Retrieve NMR polymer sequence (1-letter code) having a given chain_id.
         """
 
@@ -1024,7 +1028,7 @@ class NmrDpReport:
         if nmr_polymer_sequence is None:
             return None
 
-        ps = next((ps for ps in nmr_polymer_sequence if ps['chain_id'] == chain_id), None)
+        ps = next((ps for ps in nmr_polymer_sequence if ps['chain_id'] == nmr_chain_id), None)
 
         if ps is None:
             return None
@@ -1045,7 +1049,7 @@ class NmrDpReport:
 
         return code
 
-    def getModelSeq1LetterCodeOf(self, chain_id):
+    def getModelSeq1LetterCodeOf(self, cif_chain_id, label_scheme=True):
         """ Retrieve model polymer sequence (1-letter code) having a given chain_id.
         """
 
@@ -1054,7 +1058,9 @@ class NmrDpReport:
         if cif_polymer_sequence is None:
             return None
 
-        ps = next((ps for ps in cif_polymer_sequence if ps['chain_id'] == chain_id), None)
+        ps = next((ps for ps in cif_polymer_sequence
+                   if (ps['chain_id'] == cif_chain_id and label_scheme)
+                   or ('auth_chain_id' in ps and ps['auth_chain_id'] == cif_chain_id and not label_scheme)), None)
 
         if ps is None:
             return None
@@ -1234,11 +1240,11 @@ class NmrDpReport:
 
         return None
 
-    def getAverageRMSDWithinRange(self, cif_chain_id, cif_beg_seq_id, cif_end_seq_id):
+    def getAverageRMSDWithinRange(self, cif_chain_id, cif_beg_seq_id, cif_end_seq_id, label_scheme=True):
         """ Calculate average RMSD of alpha carbons/phosphates within a given range in the ensemble.
         """
 
-        poly_seq = self.getModelPolymerSequenceOf(cif_chain_id)
+        poly_seq = self.getModelPolymerSequenceOf(cif_chain_id, label_scheme)
 
         if poly_seq is None or 'type' not in poly_seq:
             return None
@@ -1255,10 +1261,14 @@ class NmrDpReport:
         if rmsd_label not in poly_seq:
             return None
 
-        if not (cif_beg_seq_id in poly_seq['seq_id'] and cif_end_seq_id in poly_seq['seq_id']):
+        if not (cif_beg_seq_id in poly_seq['seq_id'] and cif_end_seq_id in poly_seq['seq_id'] and label_scheme)\
+           and not('auth_seq_id' in poly_seq and cif_beg_seq_id in poly_seq['auth_seq_id'] and cif_end_seq_id in poly_seq['auth_seq_id'] and not label_scheme):
             return None
 
-        rmsd = [s[rmsd_label] for s in poly_seq if s['seq_id'] >= cif_beg_seq_id and s['seq_id'] <= cif_end_seq_id and s[rmsd_label] is not None]
+        if label_scheme:
+            rmsd = [s[rmsd_label] for s in poly_seq if s['seq_id'] >= cif_beg_seq_id and s['seq_id'] <= cif_end_seq_id and s[rmsd_label] is not None]
+        else:
+            rmsd = [s[rmsd_label] for s in poly_seq if s['auth_seq_id'] >= cif_beg_seq_id and s['auth_seq_id'] <= cif_end_seq_id and s[rmsd_label] is not None]
 
         if len(rmsd) == 0:
             return None
@@ -1643,7 +1653,7 @@ class NmrDpReportInputSource:
         self.file_types = ('pdbx',
                            'nef', 'nmr-star',
                            'nm-res-amb', 'nm-res-cns', 'nm-res-cya', 'nm-res-xpl', 'nm-res-oth',
-                           'nm-aux-amb', 'nm-res-ros')
+                           'nm-aux-amb', 'nm-res-ros', 'nm-res-mr')
         self.content_types = ('model',
                               'nmr-data-nef', 'nmr-data-str',
                               'nmr-chemical-shifts', 'nmr-restraints')

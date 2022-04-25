@@ -166,6 +166,20 @@ XPLOR_RDC_PRINCIPAL_AXIS_NAMES = ('OO', 'X', 'Y', 'Z')
 
 XPLOR_ORIGIN_AXIS_COLS = [0, 1, 2, 3]
 
+LEGACY_PDB_RECORDS = ['HEADER', 'OBSLTE', 'TITLE ', 'SPLIT ', 'CAVEAT', 'COMPND', 'SOURCE', 'KEYWDS', 'EXPDAT',
+                      'NUMMDL', 'MDLTYP', 'AUTHOR', 'REVDAT', 'SPRSDE', 'JRNL', 'REMARK',
+                      'DBREF', 'DBREF1', 'DBREF2', 'SEQADV', 'SEQRES', 'MODRES',
+                      'HET ', 'HETNAM', 'HETSYN', 'FORMUL',
+                      'HELIX ', 'SHEET ',
+                      'SSBOND', 'LINK ', 'CISPEP',
+                      'SITE ',
+                      'CRYST1', 'ORIGX1', 'ORIGX2', 'ORIGX3', 'SCALE1', 'SCALE2', 'SCALE3',
+                      'MTRIX1', 'MTRIX2', 'MTRIX3',
+                      'MODEL ', 'ATOM ', 'ANISOU', 'TER ', 'HETATM', 'ENDMDL',
+                      'CONECT',
+                      'MASTER'
+                      ]
+
 
 def toNpArray(atom):
     """ Return Numpy array of a given Cartesian coordinate in {'x': float, 'y': float, 'z': float} format.
@@ -205,7 +219,7 @@ def toNefEx(string):
 
 
 def translateToStdAtomName(atomId):
-    """ Translate software specific atom nomenclature for standard residues to the CD one.
+    """ Translate software specific atom nomenclature for standard residues to the CCD one.
     """
 
     atomId = atomId.upper()
@@ -313,7 +327,8 @@ def checkCoordinates(verbose=True, log=sys.stdout,
 
         # loop categories
         _lpCategories = {'poly_seq': 'pdbx_poly_seq_scheme',
-                         'non_poly': 'pdbx_nonpoly_scheme'
+                         'non_poly': 'pdbx_nonpoly_scheme',
+                         'coordinate': 'atom_site'
                          }
 
         # key items of loop
@@ -329,21 +344,40 @@ def checkCoordinates(verbose=True, log=sys.stdout,
                                   {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
                                   {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
                                   {'name': nonPolyAuthMonIdName, 'type': 'str', 'alt_name': 'auth_comp_id', 'default': '.'}
-                                  ]
+                                  ],
+                     'coordinate': [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
+                                    {'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                    {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'auth_seq_id'},
+                                    {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'seq_id'},
+                                    {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'auth_comp_id'},
+                                    {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'}
+                                    ]
                      }
 
-        contetSubtype = 'poly_seq'
+        contentSubtype = 'poly_seq'
 
-        lpCategory = _lpCategories[contetSubtype]
-        keyItems = _keyItems[contetSubtype]
+        lpCategory = _lpCategories[contentSubtype]
+        keyItems = _keyItems[contentSubtype]
 
         try:
 
             try:
                 polySeq = cR.getPolymerSequence(lpCategory, keyItems,
-                                                withStructConf=True)
+                                                withStructConf=False)
             except KeyError:  # pdbx_PDB_ins_code throws KeyError
                 polySeq = []
+
+            if len(polySeq) == 0:
+                contentSubtype = 'coordinate'
+
+                lpCategory = _lpCategories[contentSubtype]
+                keyItems = _keyItems[contentSubtype]
+
+                try:
+                    polySeq = cR.getPolymerSequence(lpCategory, keyItems,
+                                                    withStructConf=False)
+                except KeyError:
+                    polySeq = []
 
             if len(polySeq) > 1:
                 ps = copy.copy(polySeq[0])
@@ -379,8 +413,6 @@ def checkCoordinates(verbose=True, log=sys.stdout,
 
     coordAtomSite = None if prevCoordCheck is None or 'coord_atom_site' not in prevCoordCheck else prevCoordCheck['coord_atom_site']
     coordUnobsRes = None if prevCoordCheck is None or 'coord_unobs_res' not in prevCoordCheck else prevCoordCheck['coord_unobs_res']
-    labelToAuthChain = None if prevCoordCheck is None or 'label_to_auth_chain' not in prevCoordCheck else prevCoordCheck['label_to_auth_chain']
-    authToLabelChain = None if prevCoordCheck is None or 'auth_to_label_chain' not in prevCoordCheck else prevCoordCheck['auth_to_label_chain']
     labelToAuthSeq = None if prevCoordCheck is None or 'label_to_auth_seq' not in prevCoordCheck else prevCoordCheck['label_to_auth_seq']
     authToLabelSeq = None if prevCoordCheck is None or 'auth_to_label_seq' not in prevCoordCheck else prevCoordCheck['auth_to_label_seq']
 
@@ -396,7 +428,7 @@ def checkCoordinates(verbose=True, log=sys.stdout,
             authAtomId = 'pdbx_auth_atom_name' if cR.hasItem('atom_site', 'pdbx_auth_atom_name') else 'auth_atom_id'
         altAuthAtomId = None if authAtomId == 'auth_atom_id' else 'auth_atom_id'
 
-        if coordAtomSite is None or labelToAuthChain is None or authToLabelChain is None or labelToAuthSeq is None or authToLabelSeq is None:
+        if coordAtomSite is None or labelToAuthSeq is None or authToLabelSeq is None:
             changed = True
 
             if altAuthAtomId is not None:
@@ -710,3 +742,13 @@ def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms
                             return dataType
 
     return '.'
+
+
+def startsWithPdbRecord(line):
+    """ Return whether a given line string starts with legacy PDB records.
+    """
+
+    if any(line.startswith(pdb_record) for pdb_record in LEGACY_PDB_RECORDS):
+        return True
+
+    return any(line[:-1] == pdb_record[:-1] for pdb_record in LEGACY_PDB_RECORDS if pdb_record.endswith(' '))

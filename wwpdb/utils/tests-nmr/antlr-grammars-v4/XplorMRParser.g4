@@ -43,6 +43,7 @@ xplor_nih_mr:
 	pccr_restraint |
 	hbond_restraint |
 	flag_statement |
+	vector_statement |
 	noe_assign |			// allowing bare assign clauses for Distance restraints
 	dihedral_assign |		// allowing bare assign clauses for Dihedral angle restraints
 	sani_assign |			// allowing bare assign clauses for RDC restraints
@@ -706,7 +707,53 @@ number_a:
 	Real | Integer;
 
 /* XPLOR-NIH: Flags - Syntax
+ See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node125.html
 */
 flag_statement:
-	Flags (Exclude (Class_name* | Any_class))? Include Class_name* End_flag;
+	Flags (Exclude (Class_name* | Any_class))? Include Class_name* End_F;
+
+/* Vector statement - Syntax
+ See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node42.html
+*/
+vector_statement:
+	Vector vector_mode selection;
+
+vector_mode:
+	(Do_Lp | Identify_Lp) vector_expression R_paren_VE |
+	Show vector_show_property;
+
+vector_expression:
+	Atom_properties_VE (Equ_op_VE vector_operation)?;
+
+vector_operation:
+	vflc ((Add_op_VE | Sub_op_VE | Mul_op_VE | Div_op_VE | Exp_op_VE) vector_operation)*;
+
+vflc:
+	Atom_properties_VE | vector_func_call | Integer_VE | Real_VE | Simple_name_VE | Double_quote_string_VE;
+
+vector_func_call:
+	Abs_VE L_paren_VF vflc R_paren_VE |
+	Acos_VE L_paren_VF vflc R_paren_VE |
+	Cos_VE L_paren_VF vflc R_paren_VE |
+	Decode_VE L_paren_VF vflc R_paren_VE |
+	Encode_VE L_paren_VF vflc R_paren_VE |
+	Exp_VE L_paren_VF vflc R_paren_VE |
+	Gauss_VE L_paren_VF vflc R_paren_VE |
+	Heavy_VE L_paren_VF vflc R_paren_VE |
+	Int_VE L_paren_VF vflc R_paren_VE |
+	Log10_VE L_paren_VF vflc R_paren_VE |
+	Log_VE L_paren_VF vflc R_paren_VE |
+	Max_VE L_paren_VF vflc (Comma_VE vflc)* R_paren_VE |
+	Maxw_VE L_paren_VF vflc R_paren_VE |
+	Min_VE L_paren_VF vflc (Comma_VE vflc)* R_paren_VE |
+	Mod_VE L_paren_VF vflc Comma_VE vflc R_paren_VE |
+	Norm_VE L_paren_VF vflc R_paren_VE |
+	Random_VE L_paren_VF R_paren_VE |
+	Sign_VE L_paren_VF vflc R_paren_VE |
+	Sin_VE L_paren_VF vflc R_paren_VE |
+	Sqrt_VE L_paren_VF vflc R_paren_VE |
+	Tan_VE L_paren_VF vflc R_paren_VE;
+
+vector_show_property:
+	(Average_VS | Element_VS | Max_VS | Min_VS | Norm_VS | Rms_VS | Sum_VS) L_paren_VS Atom_properties_VS R_paren_VS;
 

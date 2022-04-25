@@ -227,13 +227,17 @@ class CnsMRParserListener(ParseTreeListener):
     # collection of number selection in factor
     numberFSelection = []
 
+    # store[1-9]
+    storeSet = {i: [] for i in range(1, 10)}
+
     warningMessage = ''
 
     reasonsForReParsing = None
 
     def __init__(self, verbose=True, log=sys.stdout,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
-                 cR=None, cC=None, ccU=None, csStat=None, nefT=None, reasons=None):
+                 cR=None, cC=None, ccU=None, csStat=None, nefT=None,
+                 reasons=None):
         self.__verbose = verbose
         self.__lfh = log
         self.__cR = cR
@@ -2414,13 +2418,11 @@ class CnsMRParserListener(ParseTreeListener):
 
         atomSelection = self.stackSelections.pop() if self.stackSelections else []
         while self.stackSelections:
-            _atomSelection = []
             _selection = self.stackSelections.pop()
             if _selection is not None:
                 for _atom in _selection:
-                    if _atom in atomSelection:
-                        _atomSelection.append(_atom)
-            atomSelection = _atomSelection
+                    if _atom not in atomSelection:
+                        atomSelection.append(_atom)
 
         if self.__sel_expr_debug:
             print("  " * self.depth + f"atom selection: {atomSelection}")
@@ -4372,15 +4374,104 @@ class CnsMRParserListener(ParseTreeListener):
             elif ctx.Sfbox():
                 pass
 
-            elif ctx.Store_1() or ctx.Store_2() or ctx.Store_3()\
-                    or ctx.Store_4() or ctx.Store_5() or ctx.Store_6()\
-                    or ctx.Store_7() or ctx.Store_8() or ctx.Store_9():
+            elif ctx.Store_1():
                 if self.__sel_expr_debug:
-                    print("  " * self.depth + "--> store[1-9]")
-                self.factor['atom_id'] = [None]
-                self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
-                    "The 'store[1-9]' clause has no effect "\
-                    "because the internal vector statement is fragile in the restraint file.\n"
+                    print("  " * self.depth + "--> store1")
+                if len(self.storeSet[1]) == 0:
+                    self.factor['atom_id'] = [None]
+                    self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
+                        "The 'store1' clause has no effect "\
+                        "because the internal vector statement is not set.\n"
+                else:
+                    self.factor = copy.copy(self.storeSet[1])
+
+            elif ctx.Store_2():
+                if self.__sel_expr_debug:
+                    print("  " * self.depth + "--> store2")
+                if len(self.storeSet[2]) == 0:
+                    self.factor['atom_id'] = [None]
+                    self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
+                        "The 'store2' clause has no effect "\
+                        "because the internal vector statement is not set.\n"
+                else:
+                    self.factor = copy.copy(self.storeSet[2])
+
+            elif ctx.Store_3():
+                if self.__sel_expr_debug:
+                    print("  " * self.depth + "--> store3")
+                if len(self.storeSet[3]) == 0:
+                    self.factor['atom_id'] = [None]
+                    self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
+                        "The 'store3' clause has no effect "\
+                        "because the internal vector statement is not set.\n"
+                else:
+                    self.factor = copy.copy(self.storeSet[3])
+
+            elif ctx.Store_4():
+                if self.__sel_expr_debug:
+                    print("  " * self.depth + "--> store4")
+                if len(self.storeSet[4]) == 0:
+                    self.factor['atom_id'] = [None]
+                    self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
+                        "The 'store4' clause has no effect "\
+                        "because the internal vector statement is not set.\n"
+                else:
+                    self.factor = copy.copy(self.storeSet[4])
+
+            elif ctx.Store_5():
+                if self.__sel_expr_debug:
+                    print("  " * self.depth + "--> store5")
+                if len(self.storeSet[5]) == 0:
+                    self.factor['atom_id'] = [None]
+                    self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
+                        "The 'store5' clause has no effect "\
+                        "because the internal vector statement is not set.\n"
+                else:
+                    self.factor = copy.copy(self.storeSet[5])
+
+            elif ctx.Store_6():
+                if self.__sel_expr_debug:
+                    print("  " * self.depth + "--> store6")
+                if len(self.storeSet[6]) == 0:
+                    self.factor['atom_id'] = [None]
+                    self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
+                        "The 'store6' clause has no effect "\
+                        "because the internal vector statement is not set.\n"
+                else:
+                    self.factor = copy.copy(self.storeSet[6])
+
+            elif ctx.Store_7():
+                if self.__sel_expr_debug:
+                    print("  " * self.depth + "--> store7")
+                if len(self.storeSet[7]) == 0:
+                    self.factor['atom_id'] = [None]
+                    self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
+                        "The 'store7' clause has no effect "\
+                        "because the internal vector statement is not set.\n"
+                else:
+                    self.factor = copy.copy(self.storeSet[7])
+
+            elif ctx.Store_8():
+                if self.__sel_expr_debug:
+                    print("  " * self.depth + "--> store8")
+                if len(self.storeSet[8]) == 0:
+                    self.factor['atom_id'] = [None]
+                    self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
+                        "The 'store8' clause has no effect "\
+                        "because the internal vector statement is not set.\n"
+                else:
+                    self.factor = copy.copy(self.storeSet[8])
+
+            elif ctx.Store_9():
+                if self.__sel_expr_debug:
+                    print("  " * self.depth + "--> store9")
+                if len(self.storeSet[9]) == 0:
+                    self.factor['atom_id'] = [None]
+                    self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
+                        "The 'store9' clause has no effect "\
+                        "because the internal vector statement is not set.\n"
+                else:
+                    self.factor = copy.copy(self.storeSet[9])
 
             elif ctx.Tag():
                 if self.__sel_expr_debug:
@@ -4484,6 +4575,64 @@ class CnsMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by CnsMRParser#flag_statement.
     def exitFlag_statement(self, ctx: CnsMRParser.Flag_statementContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by CnsMRParser#vector_statement.
+    def enterVector_statement(self, ctx: CnsMRParser.Vector_statementContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by CnsMRParser#vector_statement.
+    def exitVector_statement(self, ctx: CnsMRParser.Vector_statementContext):  # pylint: disable=unused-argument
+        if self.__cur_subtype.startswith('store'):
+            self.storeSet[int(self.__cur_subtype[-1])] = {'atom_selection': copy.copy(self.atomSelectionSet[0])}
+
+    # Enter a parse tree produced by CnsMRParser#vector_mode.
+    def enterVector_mode(self, ctx: CnsMRParser.Vector_modeContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by CnsMRParser#vector_mode.
+    def exitVector_mode(self, ctx: CnsMRParser.Vector_modeContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by CnsMRParser#vector_expression.
+    def enterVector_expression(self, ctx: CnsMRParser.Vector_expressionContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by CnsMRParser#vector_expression.
+    def exitVector_expression(self, ctx: CnsMRParser.Vector_expressionContext):  # pylint: disable=unused-argument
+        if ctx.Atom_properties_VE():
+            self.__cur_subtype = str(ctx.Atom_properties_VE()).lower()
+
+    # Enter a parse tree produced by CnsMRParser#vector_operation.
+    def enterVector_operation(self, ctx: CnsMRParser.Vector_operationContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by CnsMRParser#vector_operation.
+    def exitVector_operation(self, ctx: CnsMRParser.Vector_operationContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by CnsMRParser#vflc.
+    def enterVflc(self, ctx: CnsMRParser.VflcContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by CnsMRParser#vflc.
+    def exitVflc(self, ctx: CnsMRParser.VflcContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by CnsMRParser#vector_func_call.
+    def enterVector_func_call(self, ctx: CnsMRParser.Vector_func_callContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by CnsMRParser#vector_func_call.
+    def exitVector_func_call(self, ctx: CnsMRParser.Vector_func_callContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by CnsMRParser#vector_show_property.
+    def enterVector_show_property(self, ctx: CnsMRParser.Vector_show_propertyContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by CnsMRParser#vector_show_property.
+    def exitVector_show_property(self, ctx: CnsMRParser.Vector_show_propertyContext):  # pylint: disable=unused-argument
         pass
 
     def __getCurrentRestraint(self):

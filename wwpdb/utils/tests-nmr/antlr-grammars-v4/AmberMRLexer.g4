@@ -60,7 +60,7 @@ RSTWT:			R S T W T
 RESTRAINT:		R E S T R A I N T;			// = " RestraintFunctionCall " [ , " RestraintFunctionCall " ]*
 
 fragment ATNAM_:	A T N A M;
-ATNAM_Lp:		ATNAM_ L_paren
+ATNAM_Lp:		ATNAM_ ' '* L_paren
 			-> pushMode(AQSTR_PARAM_MODE);		// = Quoted_atom_name
 ATNAM:			ATNAM_
 			-> pushMode(QSTR_ARRAY_MODE);		// = Quoted_atom_name [ , Quoted_atom_name ]*
@@ -138,21 +138,21 @@ OUTXYZ:			O U T X Y Z
 			-> pushMode(BINT_PARAM_MODE);		// = Boolint
 
 fragment GRNAM_:	G R N A M;
-GRNAM1_Lp:		GRNAM_ '1' L_paren
+GRNAM1_Lp:		GRNAM_ '1' ' '* L_paren
 			-> pushMode(AQSTR_PARAM_MODE);		// = Quoted_atom_name
-GRNAM2_Lp:		GRNAM_ '2' L_paren
+GRNAM2_Lp:		GRNAM_ '2' ' '* L_paren
 			-> pushMode(AQSTR_PARAM_MODE);
-GRNAM3_Lp:		GRNAM_ '3' L_paren
+GRNAM3_Lp:		GRNAM_ '3' ' '* L_paren
 			-> pushMode(AQSTR_PARAM_MODE);
-GRNAM4_Lp:		GRNAM_ '4' L_paren
+GRNAM4_Lp:		GRNAM_ '4' ' '* L_paren
 			-> pushMode(AQSTR_PARAM_MODE);
-GRNAM5_Lp:		GRNAM_ '5' L_paren
+GRNAM5_Lp:		GRNAM_ '5' ' '* L_paren
 			-> pushMode(AQSTR_PARAM_MODE);
-GRNAM6_Lp:		GRNAM_ '6' L_paren
+GRNAM6_Lp:		GRNAM_ '6' ' '* L_paren
 			-> pushMode(AQSTR_PARAM_MODE);
-GRNAM7_Lp:		GRNAM_ '7' L_paren
+GRNAM7_Lp:		GRNAM_ '7' ' '* L_paren
 			-> pushMode(AQSTR_PARAM_MODE);
-GRNAM8_Lp:		GRNAM_ '8' L_paren
+GRNAM8_Lp:		GRNAM_ '8' ' '* L_paren
 			-> pushMode(AQSTR_PARAM_MODE);
 
 GRNAM1:			GRNAM_ '1'

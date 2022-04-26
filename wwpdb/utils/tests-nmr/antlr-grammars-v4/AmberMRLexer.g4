@@ -312,24 +312,24 @@ DWT:			D W T
 
 DATASET:		D A T A S E T
 			-> pushMode(INT_PARAM_MODE);		// = Integer
-NUM_DATASET:		N U M '_' D A T A S E T
-		 	-> pushMode(INT_PARAM_MODE);		// = Integer
+NUM_DATASETS:		N U M '_' D A T A S E T S
+			-> pushMode(INT_PARAM_MODE);		// = Integer
 
 S11:			S '11'
-			-> pushMode(REAL_PARAM_MODE);		// = Real
+			-> pushMode(REAL_ARRAY_MODE);		// = RealArray
 S12:			S '12'
-			-> pushMode(REAL_PARAM_MODE);		// = Real
+			-> pushMode(REAL_ARRAY_MODE);		// = RealArray
 S13:			S '13'
-			-> pushMode(REAL_PARAM_MODE);		// = Real
+			-> pushMode(REAL_ARRAY_MODE);		// = RealArray
 S22:			S '22'
-			-> pushMode(REAL_PARAM_MODE);		// = Real
+			-> pushMode(REAL_ARRAY_MODE);		// = RealArray
 S23:			S '23'
-			-> pushMode(REAL_PARAM_MODE);		// = Real
+			-> pushMode(REAL_ARRAY_MODE);		// = RealArray
 
 GIGJ:			G I G J
 			-> pushMode(REAL_ARRAY_MODE);		// = RealArray
 DIJ:			D I J
-			-> pushMode(REAL_PARAM_MODE);		// = Real
+			-> pushMode(REAL_ARRAY_MODE);		// = RealArray
 DCUT:			D C U T
 			-> pushMode(REAL_PARAM_MODE);		// = Real
 
@@ -478,44 +478,48 @@ mode INT_ARRAY_MODE;
 
 L_paren_IA:		'(' -> pushMode(ARGUMENT_MODE);
 Equ_op_IA:		SPACE_IA '=' SPACE_IA;
-Comma_IA:		',' -> popMode;
+Comma_IA:		(',' | RETURN_IA) -> popMode;
 Asterisk_IA:		SPACE_IA '*' SPACE_IA;
 
 Integers:		SPACE_IA INTEGER SPACE_IA (Comma_IA SPACE_IA INTEGER SPACE_IA)* SPACE_IA;
-MultiplicativeInt:	SPACE_IA INTEGER Asterisk_IA INTEGER SPACE_IA;
+MultiplicativeInt:	SPACE_IA INTEGER Asterisk_IA INTEGER SPACE_IA (Comma_IA INTEGER Asterisk_IA INTEGER SPACE_IA)* SPACE_IA;
 
-fragment SPACE_IA:	[ \t\r\n]*;
+fragment RETURN_IA:	[\r\n]+;
+fragment SPACE_IA:	[ \t]*;
 
 mode REAL_ARRAY_MODE;
 
 L_paren_RA:		'(' -> pushMode(ARGUMENT_MODE);
 Equ_op_RA:		SPACE_RA '=' SPACE_RA;
-Comma_RA:		',' -> popMode;
+Comma_RA:		(',' | RETURN_RA) -> popMode;
 Asterisk_RA:		SPACE_RA '*' SPACE_RA;
 
 Reals:			SPACE_RA REAL SPACE_RA (Comma_RA SPACE_RA REAL SPACE_RA)* SPACE_RA;
-MultiplicativeReal:	SPACE_RA INTEGER Asterisk_RA REAL SPACE_RA;
+MultiplicativeReal:	SPACE_RA INTEGER Asterisk_RA REAL SPACE_RA (Comma_RA INTEGER Asterisk_RA REAL SPACE_RA)* SPACE_RA;
 
-fragment SPACE_RA:	[ \t\r\n]*;
+fragment RETURN_RA:	[\r\n]+;
+fragment SPACE_RA:	[ \t]*;
 
 mode BINT_ARRAY_MODE;
 
 Equ_op_BA:		SPACE_BA '=' SPACE_BA;
-Comma_BA:		',' -> popMode;
+Comma_BA:		(',' | RETURN_BA) -> popMode;
 
 BoolInts:		SPACE_BA ONE_OR_ZERO SPACE_BA (Comma_BA SPACE_BA ONE_OR_ZERO SPACE_BA)* SPACE_BA;
 
-fragment SPACE_BA:	[ \t\r\n]*;
+fragment RETURN_BA:	[\r\n]+;
+fragment SPACE_BA:	[ \t]*;
 
 mode QSTR_ARRAY_MODE;
 
 L_paren_QA:		'(' -> pushMode(ARGUMENT_MODE);
 Equ_op_QA:		SPACE_QA '=' SPACE_QA;
-Comma_QA:		',' -> popMode;
+Comma_QA:		(',' | RETURN_QA) -> popMode;
 
 Qstrings:		SPACE_QA QSTRING SPACE_QA (Comma_QA SPACE_QA QSTRING SPACE_QA)* SPACE_QA;
 
-fragment SPACE_QA:	[ \t\r\n]*;
+fragment RETURN_QA:	[\r\n]+;
+fragment SPACE_QA:	[ \t]*;
 
 mode ARGUMENT_MODE;
 

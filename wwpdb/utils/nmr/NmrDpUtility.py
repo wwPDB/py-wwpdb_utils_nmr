@@ -8603,8 +8603,15 @@ class NmrDpUtility:
 
                 src_file = dst_file
 
-            dst_file = os.path.splitext(src_file)[0] + '-trimmed.mr'
-            cor_dst_file = os.path.splitext(src_file)[0] + '-corrected.mr'
+            src_basename = os.path.splitext(src_file)[0]
+
+            dst_file = src_basename + '-trimmed.mr'
+            cor_dst_file = src_basename + '-corrected.mr'
+            ign_dst_file = src_basename + '-ignored.mr'
+
+            if os.path.exists(ign_dst_file):  # in case the MR file can be ignored
+                fileListId += 1
+                continue
 
             has_mr_header = False
             has_pdb_format = False
@@ -8991,7 +8998,7 @@ class NmrDpUtility:
 
                 return False
 
-            if os.path.exists(cor_dst_file):  # in case there is corrected MR file
+            if os.path.exists(cor_dst_file):  # in case manually corrected MR file exists
                 dst_file = cor_dst_file
 
             # has no MR haeder
@@ -9113,9 +9120,14 @@ class NmrDpUtility:
                     original_file_path_list.append(dst_file)
 
                 for dst_file in original_file_path_list:
+                    ign_dst_file = dst_file + '-ignored'
+
+                    if os.path.exists(ign_dst_file):  # in case the MR file can be ignored
+                        continue
+
                     cor_dst_file = dst_file + '-corrected'
 
-                    if os.path.exists(cor_dst_file):  # in case there is corrected MR file
+                    if os.path.exists(cor_dst_file):  # in case manually corrected MR file exists
                         dst_file = cor_dst_file
 
                     file_name = os.path.basename(dst_file)

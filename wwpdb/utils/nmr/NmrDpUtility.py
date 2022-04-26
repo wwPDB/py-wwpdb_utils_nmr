@@ -6478,6 +6478,7 @@ class NmrDpUtility:
                     file_name = f"{original_file_name} ({file_name})"
 
             if file_type == 'nm-res-mr':
+                md5_list.append(None)
                 fileListId += 1
                 continue
 
@@ -8026,6 +8027,9 @@ class NmrDpUtility:
             ar_path_len = len(self.__inputParamDict[ar_file_path_list])
 
             for (i, j) in itertools.combinations(range(0, ar_path_len), 2):
+
+                if md5_list[i] is None or md5_list[j] is None:
+                    continue
 
                 if md5_list[i] == md5_list[j]:
 

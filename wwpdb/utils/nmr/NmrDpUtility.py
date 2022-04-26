@@ -153,7 +153,6 @@
 # 20-Mar-2022  M. Yokochi - add support for _atom_site.label_alt_id (DAOTHER-4060, 7544, NMR restraint remediation)
 # 06-Apr-2022  M. Yokochi - detect other possible MR format if the first parsing fails (DAOTHER-7690)
 ##
-from builtins import False
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
 """

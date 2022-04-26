@@ -124,23 +124,23 @@ def serializedATN():
         buf.write("\2\5\5#*\3\2\u00b4\u00b5\4\2\6\6\"\"\3\2\u00ba\u00bb\4")
         buf.write("\2\b\b-\64\4\2\t\t\65<\7\2\n\n\r\16\21\21,,=>\5\2\13\f")
         buf.write("\17\20?A\3\2\22!\3\2EF\3\2GI\4\2JNPP\5\2RR[[]^\4\2SSW")
-        buf.write("W\4\2VVYZ\4\2[[``\4\2WWii\4\2XXbf\4\2ZZhh\4\2kkqr\3\2")
-        buf.write("lm\3\2no\4\2ppxy\3\2sw\4\2}}\u0084\u0084\3\2~\u0080\3")
-        buf.write("\2\u0081\u0082\3\2\u0085\u008b\2\u04af\2I\3\2\2\2\4N\3")
-        buf.write("\2\2\2\6W\3\2\2\2\b[\3\2\2\2\n_\3\2\2\2\fc\3\2\2\2\16")
-        buf.write("g\3\2\2\2\20k\3\2\2\2\22r\3\2\2\2\24\u00c0\3\2\2\2\26")
-        buf.write("\u00c5\3\2\2\2\30\u00fc\3\2\2\2\32\u0101\3\2\2\2\34\u013d")
-        buf.write("\3\2\2\2\36\u0142\3\2\2\2 \u0170\3\2\2\2\"\u0175\3\2\2")
-        buf.write("\2$\u01a4\3\2\2\2&\u01a9\3\2\2\2(\u01ce\3\2\2\2*\u01eb")
-        buf.write("\3\2\2\2,\u0214\3\2\2\2.\u024c\3\2\2\2\60\u0269\3\2\2")
-        buf.write("\2\62\u029e\3\2\2\2\64\u02d3\3\2\2\2\66\u0320\3\2\2\2")
-        buf.write("8\u0385\3\2\2\2:\u039c\3\2\2\2<\u03d1\3\2\2\2>\u03fd\3")
-        buf.write("\2\2\2@H\5\4\3\2AH\5\6\4\2BH\5\b\5\2CH\5\n\6\2DH\5\f\7")
-        buf.write("\2EH\5\16\b\2FH\5\20\t\2G@\3\2\2\2GA\3\2\2\2GB\3\2\2\2")
-        buf.write("GC\3\2\2\2GD\3\2\2\2GE\3\2\2\2GF\3\2\2\2HK\3\2\2\2IG\3")
-        buf.write("\2\2\2IJ\3\2\2\2JL\3\2\2\2KI\3\2\2\2LM\7\2\2\3M\3\3\2")
-        buf.write("\2\2NR\7\u008e\2\2OQ\7\u009a\2\2PO\3\2\2\2QT\3\2\2\2R")
-        buf.write("P\3\2\2\2RS\3\2\2\2SU\3\2\2\2TR\3\2\2\2UV\7\u009c\2\2")
+        buf.write("W\4\2VVYZ\4\2[[``\4\2WWii\4\2XXbf\4\2ZZhh\4\2kkqr\4\2")
+        buf.write("lmqq\3\2no\4\2ppxy\3\2sw\4\2}}\u0084\u0084\3\2~\u0080")
+        buf.write("\3\2\u0081\u0082\3\2\u0085\u008b\2\u04af\2I\3\2\2\2\4")
+        buf.write("N\3\2\2\2\6W\3\2\2\2\b[\3\2\2\2\n_\3\2\2\2\fc\3\2\2\2")
+        buf.write("\16g\3\2\2\2\20k\3\2\2\2\22r\3\2\2\2\24\u00c0\3\2\2\2")
+        buf.write("\26\u00c5\3\2\2\2\30\u00fc\3\2\2\2\32\u0101\3\2\2\2\34")
+        buf.write("\u013d\3\2\2\2\36\u0142\3\2\2\2 \u0170\3\2\2\2\"\u0175")
+        buf.write("\3\2\2\2$\u01a4\3\2\2\2&\u01a9\3\2\2\2(\u01ce\3\2\2\2")
+        buf.write("*\u01eb\3\2\2\2,\u0214\3\2\2\2.\u024c\3\2\2\2\60\u0269")
+        buf.write("\3\2\2\2\62\u029e\3\2\2\2\64\u02d3\3\2\2\2\66\u0320\3")
+        buf.write("\2\2\28\u0385\3\2\2\2:\u039c\3\2\2\2<\u03d1\3\2\2\2>\u03fd")
+        buf.write("\3\2\2\2@H\5\4\3\2AH\5\6\4\2BH\5\b\5\2CH\5\n\6\2DH\5\f")
+        buf.write("\7\2EH\5\16\b\2FH\5\20\t\2G@\3\2\2\2GA\3\2\2\2GB\3\2\2")
+        buf.write("\2GC\3\2\2\2GD\3\2\2\2GE\3\2\2\2GF\3\2\2\2HK\3\2\2\2I")
+        buf.write("G\3\2\2\2IJ\3\2\2\2JL\3\2\2\2KI\3\2\2\2LM\7\2\2\3M\3\3")
+        buf.write("\2\2\2NR\7\u008e\2\2OQ\7\u009a\2\2PO\3\2\2\2QT\3\2\2\2")
+        buf.write("RP\3\2\2\2RS\3\2\2\2SU\3\2\2\2TR\3\2\2\2UV\7\u009c\2\2")
         buf.write("V\5\3\2\2\2WX\7\4\2\2XY\5\22\n\2YZ\7\3\2\2Z\7\3\2\2\2")
         buf.write("[\\\7B\2\2\\]\5\26\f\2]^\7\3\2\2^\t\3\2\2\2_`\7Q\2\2`")
         buf.write("a\5\32\16\2ab\7\3\2\2b\13\3\2\2\2cd\7_\2\2de\5\36\20\2")
@@ -3318,8 +3318,8 @@ class AmberMRParser ( Parser ):
         try:
             self.state = 418
             self._errHandler.sync(self)
-            token = self._input.LA(1)
-            if token in [AmberMRParser.NDIP, AmberMRParser.DATASET, AmberMRParser.NUM_DATASETS]:
+            la_ = self._interp.adaptivePredict(self._input,41,self._ctx)
+            if la_ == 1:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 374
                 _la = self._input.LA(1)
@@ -3341,11 +3341,12 @@ class AmberMRParser ( Parser ):
 
 
                 pass
-            elif token in [AmberMRParser.ID, AmberMRParser.JD]:
+
+            elif la_ == 2:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 380
                 _la = self._input.LA(1)
-                if not(_la==AmberMRParser.ID or _la==AmberMRParser.JD):
+                if not(((((_la - 106)) & ~0x3f) == 0 and ((1 << (_la - 106)) & ((1 << (AmberMRParser.ID - 106)) | (1 << (AmberMRParser.JD - 106)) | (1 << (AmberMRParser.DATASET - 106)))) != 0)):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -3369,7 +3370,8 @@ class AmberMRParser ( Parser ):
 
 
                 pass
-            elif token in [AmberMRParser.DOBSL, AmberMRParser.DOBSU]:
+
+            elif la_ == 3:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 389
                 _la = self._input.LA(1)
@@ -3397,7 +3399,8 @@ class AmberMRParser ( Parser ):
 
 
                 pass
-            elif token in [AmberMRParser.DWT, AmberMRParser.GIGJ, AmberMRParser.DIJ]:
+
+            elif la_ == 4:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 398
                 _la = self._input.LA(1)
@@ -3418,7 +3421,8 @@ class AmberMRParser ( Parser ):
                 self.state = 401
                 self.match(AmberMRParser.Comma_RA)
                 pass
-            elif token in [AmberMRParser.S11, AmberMRParser.S12, AmberMRParser.S13, AmberMRParser.S22, AmberMRParser.S23]:
+
+            elif la_ == 5:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 402
                 _la = self._input.LA(1)
@@ -3434,7 +3438,8 @@ class AmberMRParser ( Parser ):
                 self.state = 405
                 self.match(AmberMRParser.Comma_RA)
                 pass
-            elif token in [AmberMRParser.DCUT]:
+
+            elif la_ == 6:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 406
                 self.match(AmberMRParser.DCUT)
@@ -3451,7 +3456,8 @@ class AmberMRParser ( Parser ):
 
 
                 pass
-            elif token in [AmberMRParser.FREEZEMOL]:
+
+            elif la_ == 7:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 412
                 self.match(AmberMRParser.FREEZEMOL)
@@ -3468,8 +3474,7 @@ class AmberMRParser ( Parser ):
 
 
                 pass
-            else:
-                raise NoViableAltException(self)
+
 
         except RecognitionException as re:
             localctx.exception = re

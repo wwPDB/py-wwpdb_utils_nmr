@@ -4182,18 +4182,29 @@ class AmberMRParserListener(ParseTreeListener):
                     f"The argument value of 'ndip={self.ndip}' must be a positive integer.\n"
                 return
 
-        elif ctx.DATASET():
+        if ctx.DATASET():
+            varName = 'dataset'
+
+            if ctx.Decimal():
+                decimal = int(str(ctx.Decimal()))
+                if self.ndip > 0 and decimal > self.ndip:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ndip}, "\
+                        f"regulated by 'ndip={self.ndip}'.\n"
+                    return
+
             self.dataset = int(str(ctx.Integer()))
+
             if self.dataset <= 0:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The argument value of 'dataset={self.dataset}' must be a positive integer.\n"
+                    f"The argument value of '{varName}={self.dataset}' must be a positive integer.\n"
                 return
 
             if self.dataset > self.numDatasets:
                 self.numDatasets = self.dataset
                 """
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The argument value of 'dataset={self.dataset}' must be in the range 1-{self.numDatasets}, "\
+                    f"The argument value of '{varName}={self.dataset}' must be in the range 1-{self.numDatasets}, "\
                     f"regulated by 'num_dataset={self.numDatasets}'.\n"
                 return
                 """

@@ -357,7 +357,7 @@ class CyanaMRParserListener(ParseTreeListener):
             if DIST_ERROR_MIN <= lower_limit < DIST_ERROR_MAX:
                 dstFunc['lower_limit'] = f"{lower_limit:.3f}"
             else:
-                if lower_limit < DIST_ERROR_MIN and omit_dist_limit_outlier:
+                if lower_limit <= DIST_ERROR_MIN and omit_dist_limit_outlier:
                     self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
                         f"The lower limit value='{lower_limit}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.\n"
                     lower_limit = None

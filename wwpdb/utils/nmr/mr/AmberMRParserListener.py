@@ -1661,7 +1661,7 @@ class AmberMRParserListener(ParseTreeListener):
             if DIST_ERROR_MIN <= self.lowerLimit < DIST_ERROR_MAX:
                 dstFunc['lower_limit'] = f"{self.lowerLimit:.3f}"
             else:
-                if self.lowerLimit < DIST_ERROR_MIN and self.__omitDistLimitOutlier:
+                if self.lowerLimit <= DIST_ERROR_MIN and self.__omitDistLimitOutlier:
                     self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
                         f"The lower limit value 'r2={self.lowerLimit}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.\n"
                     self.lowerLimit = None
@@ -1687,7 +1687,7 @@ class AmberMRParserListener(ParseTreeListener):
             if DIST_ERROR_MIN <= self.lowerLinearLimit < DIST_ERROR_MAX:
                 dstFunc['lower_linear_limit'] = f"{self.lowerLinearLimit:.3f}"
             else:
-                if self.lowerLinearLimit < DIST_ERROR_MIN and self.__omitDistLimitOutlier:
+                if self.lowerLinearLimit <= DIST_ERROR_MIN and self.__omitDistLimitOutlier:
                     self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
                         f"The lower linear limit value 'r1={self.lowerLinearLimit}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.\n"
                     self.lowerLinearLimit = None

@@ -594,7 +594,7 @@ class CnsMRParserListener(ParseTreeListener):
             if DIST_ERROR_MIN <= lower_limit < DIST_ERROR_MAX:
                 dstFunc['lower_limit'] = f"{lower_limit:.3f}"
             else:
-                if lower_limit < DIST_ERROR_MIN and self.__omitDistLimitOutlier:
+                if lower_limit <= DIST_ERROR_MIN and self.__omitDistLimitOutlier:
                     self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
                         f"The lower limit value='{lower_limit}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.\n"
                     lower_limit = None
@@ -620,7 +620,7 @@ class CnsMRParserListener(ParseTreeListener):
             if DIST_ERROR_MIN <= lower_linear_limit < DIST_ERROR_MAX:
                 dstFunc['lower_linear_limit'] = f"{lower_linear_limit:.3f}"
             else:
-                if lower_linear_limit < DIST_ERROR_MIN and self.__omitDistLimitOutlier:
+                if lower_linear_limit <= DIST_ERROR_MIN and self.__omitDistLimitOutlier:
                     self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
                         f"The lower linear limit value='{lower_linear_limit}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.\n"
                     lower_linear_limit = None

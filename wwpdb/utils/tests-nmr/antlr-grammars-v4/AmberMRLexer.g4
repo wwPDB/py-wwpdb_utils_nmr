@@ -311,7 +311,8 @@ DWT:			D W T
 			-> pushMode(REAL_ARRAY_MODE);		// = RealArray
 
 DATASET:		D A T A S E T
-			-> pushMode(INT_PARAM_MODE);		// = dataset(Integer) = Integer [ , Integer ]*
+			-> pushMode(INT_PARAM_MODE);		// = Integer
+								// dataset(Integer) = Integer
 NUM_DATASETS:		N U M '_' D A T A S E T S
 			-> pushMode(INT_PARAM_MODE);		// = Integer
 

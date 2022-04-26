@@ -132,6 +132,7 @@ align_factor:
 	(NDIP | DATASET | NUM_DATASETS) Equ_op_IP Integer Comma? |
 	(ID | JD | DATASET) L_paren_IP Decimal R_paren_A Equ_op_IP Integer Comma? |
 	(DOBSL | DOBSU) L_paren_RP Decimal R_paren_A Equ_op_RP Real Comma? |
+	(DWT | GIGJ | DIJ) L_paren_RA Decimal R_paren_A Equ_op_RA Reals Comma_RA |
 	(DWT | GIGJ | DIJ) Equ_op_RA (Reals | MultiplicativeReal) Comma_RA |
 	(S11 | S12 | S13 | S22 | S23) Equ_op_RA Reals Comma_RA |
 	DCUT Equ_op_RP Real Comma? |

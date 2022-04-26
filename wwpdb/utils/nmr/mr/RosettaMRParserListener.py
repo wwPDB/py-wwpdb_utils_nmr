@@ -310,9 +310,14 @@ class RosettaMRParserListener(ParseTreeListener):
             if DIST_ERROR_MIN < target_value < DIST_ERROR_MAX:
                 dstFunc['target_value'] = f"{target_value:.3f}"
             else:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"{srcFunc}, the target value='{target_value}' must be within range {DIST_RESTRAINT_ERROR}.\n"
+                if target_value <= DIST_ERROR_MIN and self.__omitDistLimitOutlier:
+                    self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                        f"{srcFunc}, the target value='{target_value}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.\n"
+                    target_value = None
+                else:
+                    validRange = False
+                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                        f"{srcFunc}, the target value='{target_value}' must be within range {DIST_RESTRAINT_ERROR}.\n"
 
         if lower_limit is not None:
             if DIST_ERROR_MIN <= lower_limit < DIST_ERROR_MAX:

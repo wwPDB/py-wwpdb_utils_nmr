@@ -321,7 +321,7 @@ tagvalue_pattern = re.compile(r'\s*_(\S*)\.(\S*)\s+(.*)\s*')
 sf_category_pattern = re.compile(r'\s*_\S*\.Sf_category\s*\S+\s*')
 sf_framecode_pattern = re.compile(r'\s*_\S*\.Sf_framecode\s*\s+\s*')
 
-mr_file_header_pattern = re.compile(r'^# Restraints file (\d+): (\S+)\s*')
+mr_file_header_pattern = re.compile(r'^(.*)# Restraints file (\d+): (\S+)\s*')
 
 
 def detect_bom(fPath, default='utf-8'):
@@ -9094,14 +9094,18 @@ class NmrDpUtility:
                     for line in ifp:
 
                         if mr_file_header_pattern.match(line):
+                            g = mr_file_header_pattern.search(line).groups()
+
                             if ofp is not None:
+                                if len(g[0]) > 0:
+                                    j += 1
+                                    ofp.write(g[0] + '\n')
                                 ofp.close()
                                 if j == 0:
                                     os.remove(original_file_path_list.pop())
 
                             j = 0
-                            g = mr_file_header_pattern.search(line).groups()
-                            _dst_file = os.path.join(dir_path, g[1])
+                            _dst_file = os.path.join(dir_path, g[2])
                             original_file_path_list.append(_dst_file)
                             ofp = open(_dst_file, 'w')  # pylint: disable=consider-using-with
 

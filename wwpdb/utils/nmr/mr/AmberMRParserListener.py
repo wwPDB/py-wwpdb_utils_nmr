@@ -381,6 +381,8 @@ class AmberMRParserListener(ParseTreeListener):
         self.numIgrCol = None
         self.setIgrCol = None
         self.igr = None
+        self.ixpk = None
+        self.nxpk = None
 
         # R1, R2, R3, R4
         self.lowerLinearLimit = None
@@ -585,6 +587,8 @@ class AmberMRParserListener(ParseTreeListener):
         self.numIgrCol = None
         self.setIgrCol = None
         self.igr = None
+        self.ixpk = -1
+        self.nxpk = -1
 
         # No need to reset R1/2/3/4 because Amber allows to refer the previous value defined
         # self.lowerLinearLimit = None
@@ -626,9 +630,9 @@ class AmberMRParserListener(ParseTreeListener):
 
                 if iat > 0 and self.igr is not None and varNum in self.igr:
                     if len(self.igr[varNum]) > 0:
-                        nonpCols = [col for col, val in enumerate(self.igr[varNum]) if val <= 0]
+                        nonpCols = [col_ for col_, val in enumerate(self.igr[varNum]) if val <= 0]
                         maxCol = MAX_COL_IGR if len(nonpCols) == 0 else min(nonpCols)
-                        valArray = ','.join([str(val) for col, val in enumerate(self.igr[varNum]) if val > 0 and col < maxCol])
+                        valArray = ','.join([str(val) for col_, val in enumerate(self.igr[varNum]) if val > 0 and col_ < maxCol])
                         if len(valArray) > 0:
                             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                                 f"'{varName}={valArray}' has no effect because 'iat({varNum})={iat}'.\n"
@@ -636,18 +640,36 @@ class AmberMRParserListener(ParseTreeListener):
 
                 elif iat < 0:
                     if varNum not in self.igr or len(self.igr[varNum]) == 0:
+                        hint = ''
+                        if self.ixpk != -1:
+                            hint += f"ixpk={self.ixpk},"
+                        if self.nxpk != -1:
+                            hint += f"nxpk={self.nxpk},"
+                        for _col in range(0, self.numIatCol):
+                            if _col == col:
+                                continue
+                            _varNum = _col + 1
+                            if self.iat[_col] > 0:
+                                hint += f"iat({_col+1})={self.iat[_col]},"
+                            elif _varNum in self.igr:
+                                nonpCols = [col_ for col_, val in enumerate(self.igr[_varNum]) if val <= 0]
+                                maxCol = MAX_COL_IGR if len(nonpCols) == 0 else min(nonpCols)
+                                valArray = ','.join([str(val) for col_, val in enumerate(self.igr[_varNum]) if val > 0 and col_ < maxCol])
+                                hint += f"igr({_col+1})={valArray},"
+                        if len(hint) > 0:
+                            hint = f" The peripheral atom selections are: {hint[:-1]}."
                         self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            f"'{varName}' is missing in spite of 'iat({varNum})={iat}'.\n"
+                            f"'{varName}' is missing in spite of 'iat({varNum})={iat}'.{hint}\n"
                     else:
-                        nonpCols = [col for col, val in enumerate(self.igr[varNum]) if val <= 0]
+                        nonpCols = [col_ for col_, val in enumerate(self.igr[varNum]) if val <= 0]
                         maxCol = MAX_COL_IGR if len(nonpCols) == 0 else min(nonpCols)
-                        valArray = ','.join([str(val) for col, val in enumerate(self.igr[varNum]) if val > 0 and col < maxCol])
+                        valArray = ','.join([str(val) for col_, val in enumerate(self.igr[varNum]) if val > 0 and col_ < maxCol])
                         if len(valArray) == 0:
                             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                                 f"'{varName}' includes non-positive integers.\n"
                             del self.igr[varNum]
                         else:
-                            nonp = [val for col, val in enumerate(self.igr[varNum]) if val > 0 and col < maxCol]
+                            nonp = [val for col_, val in enumerate(self.igr[varNum]) if val > 0 and col_ < maxCol]
                             if len(nonp) != len(set(nonp)):
                                 if self.__hasPolySeq:
                                     self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
@@ -2688,6 +2710,12 @@ class AmberMRParserListener(ParseTreeListener):
             self.inPlane_columnSel = -1
             self.inCom = False
             self.funcExprs = []
+
+        elif ctx.IXPK():
+            self.ixpk = int(str(ctx.Integer()))
+
+        elif ctx.NXPK():
+            self.nxpk = int(str(ctx.Integer()))
 
     def detectRestraintType(self, distLike):
         self.distLike = distLike

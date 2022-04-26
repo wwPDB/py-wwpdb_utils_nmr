@@ -478,14 +478,13 @@ mode INT_ARRAY_MODE;
 
 L_paren_IA:		'(' -> pushMode(ARGUMENT_MODE);
 Equ_op_IA:		SPACE_IA '=' SPACE_IA;
-Comma_IA:		(',' | RETURN_IA) -> popMode;
+Comma_IA:		',' -> popMode;
 Asterisk_IA:		SPACE_IA '*' SPACE_IA;
 
 Integers:		SPACE_IA INTEGER SPACE_IA (Comma_IA SPACE_IA INTEGER SPACE_IA)* SPACE_IA;
 MultiplicativeInt:	SPACE_IA INTEGER Asterisk_IA INTEGER SPACE_IA (Comma_IA INTEGER Asterisk_IA INTEGER SPACE_IA)* SPACE_IA;
 
-fragment RETURN_IA:	[\r\n]+;
-fragment SPACE_IA:	[ \t]*;
+fragment SPACE_IA:	[ \t\r\n]*;
 
 mode REAL_ARRAY_MODE;
 
@@ -503,23 +502,21 @@ fragment SPACE_RA:	[ \t]*;
 mode BINT_ARRAY_MODE;
 
 Equ_op_BA:		SPACE_BA '=' SPACE_BA;
-Comma_BA:		(',' | RETURN_BA) -> popMode;
+Comma_BA:		',' -> popMode;
 
 BoolInts:		SPACE_BA ONE_OR_ZERO SPACE_BA (Comma_BA SPACE_BA ONE_OR_ZERO SPACE_BA)* SPACE_BA;
 
-fragment RETURN_BA:	[\r\n]+;
-fragment SPACE_BA:	[ \t]*;
+fragment SPACE_BA:	[ \t\r\n]*;
 
 mode QSTR_ARRAY_MODE;
 
 L_paren_QA:		'(' -> pushMode(ARGUMENT_MODE);
 Equ_op_QA:		SPACE_QA '=' SPACE_QA;
-Comma_QA:		(',' | RETURN_QA) -> popMode;
+Comma_QA:		',' -> popMode;
 
 Qstrings:		SPACE_QA QSTRING SPACE_QA (Comma_QA SPACE_QA QSTRING SPACE_QA)* SPACE_QA;
 
-fragment RETURN_QA:	[\r\n]+;
-fragment SPACE_QA:	[ \t]*;
+fragment SPACE_QA:	[ \t\r\n]*;
 
 mode ARGUMENT_MODE;
 

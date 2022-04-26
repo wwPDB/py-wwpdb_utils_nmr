@@ -11,7 +11,7 @@ else:
 
 def serializedATN():
     with StringIO() as buf:
-        buf.write("\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3\u00d9")
+        buf.write("\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3\u00da")
         buf.write("\u05c6\4\2\t\2\4\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7")
         buf.write("\4\b\t\b\4\t\t\t\4\n\t\n\4\13\t\13\4\f\t\f\4\r\t\r\4\16")
         buf.write("\t\16\4\17\t\17\4\20\t\20\4\21\t\21\4\22\t\22\4\23\t\23")
@@ -153,7 +153,7 @@ def serializedATN():
         buf.write("\24\26\30\32\34\36 \"$&(*,.\60\62\64\668:<>@BDFHJLNPR")
         buf.write("TVXZ\\^`bdfhjlnprtvxz|~\2\b\3\2\u0091\u0092\4\2\u008d")
         buf.write("\u008d\u0093\u0093\4\2\u008d\u008d\u008f\u008f\3\2\u0083")
-        buf.write("\u0084\3\2\u00ad\u00b1\3\2\u00d1\u00d7\2\u06ea\2\u0095")
+        buf.write("\u0084\3\2\u00ae\u00b2\3\2\u00d2\u00d8\2\u06ea\2\u0095")
         buf.write("\3\2\2\2\4\u009a\3\2\2\2\6\u00a4\3\2\2\2\b\u00b0\3\2\2")
         buf.write("\2\n\u00bc\3\2\2\2\f\u00c7\3\2\2\2\16\u00d0\3\2\2\2\20")
         buf.write("\u00d9\3\2\2\2\22\u00e2\3\2\2\2\24\u00eb\3\2\2\2\26\u00f4")
@@ -648,8 +648,8 @@ def serializedATN():
         buf.write("\7\u0095\2\2\u046f\u04fc\3\2\2\2\u0470\u04fc\7a\2\2\u0471")
         buf.write("\u0472\7c\2\2\u0472\u0473\t\2\2\2\u0473\u0474\t\3\2\2")
         buf.write("\u0474\u04fc\t\2\2\2\u0475\u0477\7d\2\2\u0476\u0478\7")
-        buf.write("\u00a1\2\2\u0477\u0476\3\2\2\2\u0477\u0478\3\2\2\2\u0478")
-        buf.write("\u0479\3\2\2\2\u0479\u047a\7\u00a2\2\2\u047a\u047b\7\u00a3")
+        buf.write("\u00a2\2\2\u0477\u0476\3\2\2\2\u0477\u0478\3\2\2\2\u0478")
+        buf.write("\u0479\3\2\2\2\u0479\u047a\7\u00a3\2\2\u047a\u047b\7\u00a4")
         buf.write("\2\2\u047b\u04fc\5j\66\2\u047c\u047d\7e\2\2\u047d\u04fc")
         buf.write("\5f\64 \u047e\u047f\7f\2\2\u047f\u04fc\5f\64\37\u0480")
         buf.write("\u0481\7g\2\2\u0481\u04fc\5f\64\36\u0482\u0489\7h\2\2")
@@ -726,78 +726,78 @@ def serializedATN():
         buf.write("\t\4\2\2\u0509i\3\2\2\2\u050a\u050b\t\4\2\2\u050bk\3\2")
         buf.write("\2\2\u050c\u050d\t\4\2\2\u050dm\3\2\2\2\u050e\u050f\t")
         buf.write("\4\2\2\u050fo\3\2\2\2\u0510\u051b\7`\2\2\u0511\u0519\7")
-        buf.write("\u00a5\2\2\u0512\u0514\7\u00a8\2\2\u0513\u0512\3\2\2\2")
+        buf.write("\u00a6\2\2\u0512\u0514\7\u00a9\2\2\u0513\u0512\3\2\2\2")
         buf.write("\u0514\u0517\3\2\2\2\u0515\u0513\3\2\2\2\u0515\u0516\3")
         buf.write("\2\2\2\u0516\u051a\3\2\2\2\u0517\u0515\3\2\2\2\u0518\u051a")
-        buf.write("\7\u00a9\2\2\u0519\u0515\3\2\2\2\u0519\u0518\3\2\2\2\u051a")
+        buf.write("\7\u00aa\2\2\u0519\u0515\3\2\2\2\u0519\u0518\3\2\2\2\u051a")
         buf.write("\u051c\3\2\2\2\u051b\u0511\3\2\2\2\u051b\u051c\3\2\2\2")
-        buf.write("\u051c\u051d\3\2\2\2\u051d\u0521\7\u00a6\2\2\u051e\u0520")
-        buf.write("\7\u00a8\2\2\u051f\u051e\3\2\2\2\u0520\u0523\3\2\2\2\u0521")
+        buf.write("\u051c\u051d\3\2\2\2\u051d\u0521\7\u00a7\2\2\u051e\u0520")
+        buf.write("\7\u00a9\2\2\u051f\u051e\3\2\2\2\u0520\u0523\3\2\2\2\u0521")
         buf.write("\u051f\3\2\2\2\u0521\u0522\3\2\2\2\u0522\u0524\3\2\2\2")
-        buf.write("\u0523\u0521\3\2\2\2\u0524\u0525\7\u00a7\2\2\u0525q\3")
+        buf.write("\u0523\u0521\3\2\2\2\u0524\u0525\7\u00a8\2\2\u0525q\3")
         buf.write("\2\2\2\u0526\u0527\7\u0082\2\2\u0527\u0528\5t;\2\u0528")
         buf.write("\u0529\5`\61\2\u0529s\3\2\2\2\u052a\u052b\t\5\2\2\u052b")
-        buf.write("\u052c\5v<\2\u052c\u052d\7\u00ab\2\2\u052d\u0531\3\2\2")
+        buf.write("\u052c\5v<\2\u052c\u052d\7\u00ac\2\2\u052d\u0531\3\2\2")
         buf.write("\2\u052e\u052f\7\u0085\2\2\u052f\u0531\5~@\2\u0530\u052a")
         buf.write("\3\2\2\2\u0530\u052e\3\2\2\2\u0531u\3\2\2\2\u0532\u0535")
-        buf.write("\7\u00b5\2\2\u0533\u0534\7\u00ac\2\2\u0534\u0536\5x=\2")
+        buf.write("\7\u00b6\2\2\u0533\u0534\7\u00ad\2\2\u0534\u0536\5x=\2")
         buf.write("\u0535\u0533\3\2\2\2\u0535\u0536\3\2\2\2\u0536w\3\2\2")
         buf.write("\2\u0537\u053c\5z>\2\u0538\u0539\t\6\2\2\u0539\u053b\5")
         buf.write("x=\2\u053a\u0538\3\2\2\2\u053b\u053e\3\2\2\2\u053c\u053a")
         buf.write("\3\2\2\2\u053c\u053d\3\2\2\2\u053dy\3\2\2\2\u053e\u053c")
-        buf.write("\3\2\2\2\u053f\u0546\7\u00b5\2\2\u0540\u0546\5|?\2\u0541")
-        buf.write("\u0546\7\u00b3\2\2\u0542\u0546\7\u00b4\2\2\u0543\u0546")
-        buf.write("\7\u00cc\2\2\u0544\u0546\7\u00cd\2\2\u0545\u053f\3\2\2")
+        buf.write("\3\2\2\2\u053f\u0546\7\u00b6\2\2\u0540\u0546\5|?\2\u0541")
+        buf.write("\u0546\7\u00b4\2\2\u0542\u0546\7\u00b5\2\2\u0543\u0546")
+        buf.write("\7\u00cd\2\2\u0544\u0546\7\u00ce\2\2\u0545\u053f\3\2\2")
         buf.write("\2\u0545\u0540\3\2\2\2\u0545\u0541\3\2\2\2\u0545\u0542")
         buf.write("\3\2\2\2\u0545\u0543\3\2\2\2\u0545\u0544\3\2\2\2\u0546")
-        buf.write("{\3\2\2\2\u0547\u0548\7\u00b6\2\2\u0548\u0549\7\u00ce")
-        buf.write("\2\2\u0549\u054a\5z>\2\u054a\u054b\7\u00ab\2\2\u054b\u05bf")
-        buf.write("\3\2\2\2\u054c\u054d\7\u00b7\2\2\u054d\u054e\7\u00ce\2")
-        buf.write("\2\u054e\u054f\5z>\2\u054f\u0550\7\u00ab\2\2\u0550\u05bf")
-        buf.write("\3\2\2\2\u0551\u0552\7\u00b9\2\2\u0552\u0553\7\u00ce\2")
-        buf.write("\2\u0553\u0554\5z>\2\u0554\u0555\7\u00ab\2\2\u0555\u05bf")
-        buf.write("\3\2\2\2\u0556\u0557\7\u00ba\2\2\u0557\u0558\7\u00ce\2")
-        buf.write("\2\u0558\u0559\5z>\2\u0559\u055a\7\u00ab\2\2\u055a\u05bf")
-        buf.write("\3\2\2\2\u055b\u055c\7\u00bb\2\2\u055c\u055d\7\u00ce\2")
-        buf.write("\2\u055d\u055e\5z>\2\u055e\u055f\7\u00ab\2\2\u055f\u05bf")
-        buf.write("\3\2\2\2\u0560\u0561\7\u00bc\2\2\u0561\u0562\7\u00ce\2")
-        buf.write("\2\u0562\u0563\5z>\2\u0563\u0564\7\u00ab\2\2\u0564\u05bf")
-        buf.write("\3\2\2\2\u0565\u0566\7\u00bd\2\2\u0566\u0567\7\u00ce\2")
-        buf.write("\2\u0567\u0568\5z>\2\u0568\u0569\7\u00ab\2\2\u0569\u05bf")
-        buf.write("\3\2\2\2\u056a\u056b\7\u00be\2\2\u056b\u056c\7\u00ce\2")
-        buf.write("\2\u056c\u056d\5z>\2\u056d\u056e\7\u00ab\2\2\u056e\u05bf")
-        buf.write("\3\2\2\2\u056f\u0570\7\u00bf\2\2\u0570\u0571\7\u00ce\2")
-        buf.write("\2\u0571\u0572\5z>\2\u0572\u0573\7\u00ab\2\2\u0573\u05bf")
-        buf.write("\3\2\2\2\u0574\u0575\7\u00c0\2\2\u0575\u0576\7\u00ce\2")
-        buf.write("\2\u0576\u0577\5z>\2\u0577\u0578\7\u00ab\2\2\u0578\u05bf")
-        buf.write("\3\2\2\2\u0579\u057a\7\u00c1\2\2\u057a\u057b\7\u00ce\2")
-        buf.write("\2\u057b\u057c\5z>\2\u057c\u057d\7\u00ab\2\2\u057d\u05bf")
-        buf.write("\3\2\2\2\u057e\u057f\7\u00c2\2\2\u057f\u0580\7\u00ce\2")
-        buf.write("\2\u0580\u0585\5z>\2\u0581\u0582\7\u00b2\2\2\u0582\u0584")
+        buf.write("{\3\2\2\2\u0547\u0548\7\u00b7\2\2\u0548\u0549\7\u00cf")
+        buf.write("\2\2\u0549\u054a\5z>\2\u054a\u054b\7\u00ac\2\2\u054b\u05bf")
+        buf.write("\3\2\2\2\u054c\u054d\7\u00b8\2\2\u054d\u054e\7\u00cf\2")
+        buf.write("\2\u054e\u054f\5z>\2\u054f\u0550\7\u00ac\2\2\u0550\u05bf")
+        buf.write("\3\2\2\2\u0551\u0552\7\u00ba\2\2\u0552\u0553\7\u00cf\2")
+        buf.write("\2\u0553\u0554\5z>\2\u0554\u0555\7\u00ac\2\2\u0555\u05bf")
+        buf.write("\3\2\2\2\u0556\u0557\7\u00bb\2\2\u0557\u0558\7\u00cf\2")
+        buf.write("\2\u0558\u0559\5z>\2\u0559\u055a\7\u00ac\2\2\u055a\u05bf")
+        buf.write("\3\2\2\2\u055b\u055c\7\u00bc\2\2\u055c\u055d\7\u00cf\2")
+        buf.write("\2\u055d\u055e\5z>\2\u055e\u055f\7\u00ac\2\2\u055f\u05bf")
+        buf.write("\3\2\2\2\u0560\u0561\7\u00bd\2\2\u0561\u0562\7\u00cf\2")
+        buf.write("\2\u0562\u0563\5z>\2\u0563\u0564\7\u00ac\2\2\u0564\u05bf")
+        buf.write("\3\2\2\2\u0565\u0566\7\u00be\2\2\u0566\u0567\7\u00cf\2")
+        buf.write("\2\u0567\u0568\5z>\2\u0568\u0569\7\u00ac\2\2\u0569\u05bf")
+        buf.write("\3\2\2\2\u056a\u056b\7\u00bf\2\2\u056b\u056c\7\u00cf\2")
+        buf.write("\2\u056c\u056d\5z>\2\u056d\u056e\7\u00ac\2\2\u056e\u05bf")
+        buf.write("\3\2\2\2\u056f\u0570\7\u00c0\2\2\u0570\u0571\7\u00cf\2")
+        buf.write("\2\u0571\u0572\5z>\2\u0572\u0573\7\u00ac\2\2\u0573\u05bf")
+        buf.write("\3\2\2\2\u0574\u0575\7\u00c1\2\2\u0575\u0576\7\u00cf\2")
+        buf.write("\2\u0576\u0577\5z>\2\u0577\u0578\7\u00ac\2\2\u0578\u05bf")
+        buf.write("\3\2\2\2\u0579\u057a\7\u00c2\2\2\u057a\u057b\7\u00cf\2")
+        buf.write("\2\u057b\u057c\5z>\2\u057c\u057d\7\u00ac\2\2\u057d\u05bf")
+        buf.write("\3\2\2\2\u057e\u057f\7\u00c3\2\2\u057f\u0580\7\u00cf\2")
+        buf.write("\2\u0580\u0585\5z>\2\u0581\u0582\7\u00b3\2\2\u0582\u0584")
         buf.write("\5z>\2\u0583\u0581\3\2\2\2\u0584\u0587\3\2\2\2\u0585\u0583")
         buf.write("\3\2\2\2\u0585\u0586\3\2\2\2\u0586\u0588\3\2\2\2\u0587")
-        buf.write("\u0585\3\2\2\2\u0588\u0589\7\u00ab\2\2\u0589\u05bf\3\2")
-        buf.write("\2\2\u058a\u058b\7\u00c3\2\2\u058b\u058c\7\u00ce\2\2\u058c")
-        buf.write("\u058d\5z>\2\u058d\u058e\7\u00ab\2\2\u058e\u05bf\3\2\2")
-        buf.write("\2\u058f\u0590\7\u00c4\2\2\u0590\u0591\7\u00ce\2\2\u0591")
-        buf.write("\u0596\5z>\2\u0592\u0593\7\u00b2\2\2\u0593\u0595\5z>\2")
+        buf.write("\u0585\3\2\2\2\u0588\u0589\7\u00ac\2\2\u0589\u05bf\3\2")
+        buf.write("\2\2\u058a\u058b\7\u00c4\2\2\u058b\u058c\7\u00cf\2\2\u058c")
+        buf.write("\u058d\5z>\2\u058d\u058e\7\u00ac\2\2\u058e\u05bf\3\2\2")
+        buf.write("\2\u058f\u0590\7\u00c5\2\2\u0590\u0591\7\u00cf\2\2\u0591")
+        buf.write("\u0596\5z>\2\u0592\u0593\7\u00b3\2\2\u0593\u0595\5z>\2")
         buf.write("\u0594\u0592\3\2\2\2\u0595\u0598\3\2\2\2\u0596\u0594\3")
         buf.write("\2\2\2\u0596\u0597\3\2\2\2\u0597\u0599\3\2\2\2\u0598\u0596")
-        buf.write("\3\2\2\2\u0599\u059a\7\u00ab\2\2\u059a\u05bf\3\2\2\2\u059b")
-        buf.write("\u059c\7\u00c5\2\2\u059c\u059d\7\u00ce\2\2\u059d\u059e")
-        buf.write("\5z>\2\u059e\u059f\7\u00b2\2\2\u059f\u05a0\5z>\2\u05a0")
-        buf.write("\u05a1\7\u00ab\2\2\u05a1\u05bf\3\2\2\2\u05a2\u05a3\7\u00c6")
-        buf.write("\2\2\u05a3\u05a4\7\u00ce\2\2\u05a4\u05a5\5z>\2\u05a5\u05a6")
-        buf.write("\7\u00ab\2\2\u05a6\u05bf\3\2\2\2\u05a7\u05a8\7\u00c7\2")
-        buf.write("\2\u05a8\u05a9\7\u00ce\2\2\u05a9\u05bf\7\u00ab\2\2\u05aa")
-        buf.write("\u05ab\7\u00c8\2\2\u05ab\u05ac\7\u00ce\2\2\u05ac\u05ad")
-        buf.write("\5z>\2\u05ad\u05ae\7\u00ab\2\2\u05ae\u05bf\3\2\2\2\u05af")
-        buf.write("\u05b0\7\u00c9\2\2\u05b0\u05b1\7\u00ce\2\2\u05b1\u05b2")
-        buf.write("\5z>\2\u05b2\u05b3\7\u00ab\2\2\u05b3\u05bf\3\2\2\2\u05b4")
-        buf.write("\u05b5\7\u00ca\2\2\u05b5\u05b6\7\u00ce\2\2\u05b6\u05b7")
-        buf.write("\5z>\2\u05b7\u05b8\7\u00ab\2\2\u05b8\u05bf\3\2\2\2\u05b9")
-        buf.write("\u05ba\7\u00cb\2\2\u05ba\u05bb\7\u00ce\2\2\u05bb\u05bc")
-        buf.write("\5z>\2\u05bc\u05bd\7\u00ab\2\2\u05bd\u05bf\3\2\2\2\u05be")
+        buf.write("\3\2\2\2\u0599\u059a\7\u00ac\2\2\u059a\u05bf\3\2\2\2\u059b")
+        buf.write("\u059c\7\u00c6\2\2\u059c\u059d\7\u00cf\2\2\u059d\u059e")
+        buf.write("\5z>\2\u059e\u059f\7\u00b3\2\2\u059f\u05a0\5z>\2\u05a0")
+        buf.write("\u05a1\7\u00ac\2\2\u05a1\u05bf\3\2\2\2\u05a2\u05a3\7\u00c7")
+        buf.write("\2\2\u05a3\u05a4\7\u00cf\2\2\u05a4\u05a5\5z>\2\u05a5\u05a6")
+        buf.write("\7\u00ac\2\2\u05a6\u05bf\3\2\2\2\u05a7\u05a8\7\u00c8\2")
+        buf.write("\2\u05a8\u05a9\7\u00cf\2\2\u05a9\u05bf\7\u00ac\2\2\u05aa")
+        buf.write("\u05ab\7\u00c9\2\2\u05ab\u05ac\7\u00cf\2\2\u05ac\u05ad")
+        buf.write("\5z>\2\u05ad\u05ae\7\u00ac\2\2\u05ae\u05bf\3\2\2\2\u05af")
+        buf.write("\u05b0\7\u00ca\2\2\u05b0\u05b1\7\u00cf\2\2\u05b1\u05b2")
+        buf.write("\5z>\2\u05b2\u05b3\7\u00ac\2\2\u05b3\u05bf\3\2\2\2\u05b4")
+        buf.write("\u05b5\7\u00cb\2\2\u05b5\u05b6\7\u00cf\2\2\u05b6\u05b7")
+        buf.write("\5z>\2\u05b7\u05b8\7\u00ac\2\2\u05b8\u05bf\3\2\2\2\u05b9")
+        buf.write("\u05ba\7\u00cc\2\2\u05ba\u05bb\7\u00cf\2\2\u05bb\u05bc")
+        buf.write("\5z>\2\u05bc\u05bd\7\u00ac\2\2\u05bd\u05bf\3\2\2\2\u05be")
         buf.write("\u0547\3\2\2\2\u05be\u054c\3\2\2\2\u05be\u0551\3\2\2\2")
         buf.write("\u05be\u0556\3\2\2\2\u05be\u055b\3\2\2\2\u05be\u0560\3")
         buf.write("\2\2\2\u05be\u0565\3\2\2\2\u05be\u056a\3\2\2\2\u05be\u056f")
@@ -806,8 +806,8 @@ def serializedATN():
         buf.write("\u05be\u059b\3\2\2\2\u05be\u05a2\3\2\2\2\u05be\u05a7\3")
         buf.write("\2\2\2\u05be\u05aa\3\2\2\2\u05be\u05af\3\2\2\2\u05be\u05b4")
         buf.write("\3\2\2\2\u05be\u05b9\3\2\2\2\u05bf}\3\2\2\2\u05c0\u05c1")
-        buf.write("\t\7\2\2\u05c1\u05c2\7\u00cf\2\2\u05c2\u05c3\7\u00d8\2")
-        buf.write("\2\u05c3\u05c4\7\u00d0\2\2\u05c4\177\3\2\2\2\u00ae\u0093")
+        buf.write("\t\7\2\2\u05c1\u05c2\7\u00d0\2\2\u05c2\u05c3\7\u00d9\2")
+        buf.write("\2\u05c3\u05c4\7\u00d1\2\2\u05c4\177\3\2\2\2\u00ae\u0093")
         buf.write("\u0095\u009e\u00a4\u00aa\u00b0\u00b6\u00bc\u00c2\u00cb")
         buf.write("\u00d4\u00dd\u00e6\u00ef\u00f8\u0101\u010a\u0111\u0120")
         buf.write("\u0125\u012c\u0135\u013a\u0145\u0151\u0157\u0164\u016b")
@@ -877,12 +877,12 @@ class CnsMRParser ( Parser ):
                      "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
                      "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
                      "<INVALID>", "<INVALID>", "<INVALID>", "':'", "<INVALID>", 
-                     "'<'", "'>'", "'<='", "'>='", "'#'", "<INVALID>", "<INVALID>", 
+                     "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
+                     "<INVALID>", "'<'", "'>'", "'<='", "'>='", "'#'", "<INVALID>", 
                      "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
                      "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
-                     "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
-                     "<INVALID>", "<INVALID>", "'+'", "'-'", "<INVALID>", 
-                     "'/'" ]
+                     "<INVALID>", "<INVALID>", "<INVALID>", "'+'", "'-'", 
+                     "<INVALID>", "'/'" ]
 
     symbolicNames = [ "<INVALID>", "Set", "End", "Noe", "Analysis", "Assign", 
                       "Asymptote", "Averaging", "Bgig", "Ceiling", "Classification", 
@@ -914,21 +914,22 @@ class CnsMRParser ( Parser ):
                       "And_op", "Not_op", "Comma", "Complex", "Integer", 
                       "Logical", "Real", "Double_quote_string", "Simple_name", 
                       "Simple_names", "Integers", "L_paren", "R_paren", 
-                      "Colon", "Equ_op", "Lt_op", "Gt_op", "Leq_op", "Geq_op", 
-                      "Neq_op", "SPACE", "COMMENT", "LINE_COMMENT", "SET_VARIABLE", 
-                      "Abs", "Attr_properties", "Comparison_ops", "SPACE_A", 
-                      "Exclude", "Include", "End_F", "Class_name", "Any_class", 
-                      "SPACE_F", "R_paren_VE", "Equ_op_VE", "Add_op_VE", 
-                      "Sub_op_VE", "Mul_op_VE", "Div_op_VE", "Exp_op_VE", 
-                      "Comma_VE", "Integer_VE", "Real_VE", "Atom_properties_VE", 
-                      "Abs_VE", "Acos_VE", "Asin_VE", "Cos_VE", "Decode_VE", 
-                      "Encode_VE", "Exp_VE", "Gauss_VE", "Heavy_VE", "Int_VE", 
-                      "Log10_VE", "Log_VE", "Max_VE", "Maxw_VE", "Min_VE", 
-                      "Mod_VE", "Norm_VE", "Random_VE", "Sign_VE", "Sin_VE", 
-                      "Sqrt_VE", "Tan_VE", "Simple_name_VE", "Double_quote_string_VE", 
-                      "L_paren_VF", "L_paren_VS", "R_paren_VS", "Average_VS", 
-                      "Element_VS", "Max_VS", "Min_VS", "Norm_VS", "Rms_VS", 
-                      "Sum_VS", "Atom_properties_VS", "SPACE_VS" ]
+                      "Colon", "Equ_op", "SPACE", "COMMENT", "SECTION_COMMENT", 
+                      "LINE_COMMENT", "SET_VARIABLE", "Lt_op", "Gt_op", 
+                      "Leq_op", "Geq_op", "Neq_op", "Abs", "Attr_properties", 
+                      "Comparison_ops", "SPACE_A", "Exclude", "Include", 
+                      "End_F", "Class_name", "Any_class", "SPACE_F", "R_paren_VE", 
+                      "Equ_op_VE", "Add_op_VE", "Sub_op_VE", "Mul_op_VE", 
+                      "Div_op_VE", "Exp_op_VE", "Comma_VE", "Integer_VE", 
+                      "Real_VE", "Atom_properties_VE", "Abs_VE", "Acos_VE", 
+                      "Asin_VE", "Cos_VE", "Decode_VE", "Encode_VE", "Exp_VE", 
+                      "Gauss_VE", "Heavy_VE", "Int_VE", "Log10_VE", "Log_VE", 
+                      "Max_VE", "Maxw_VE", "Min_VE", "Mod_VE", "Norm_VE", 
+                      "Random_VE", "Sign_VE", "Sin_VE", "Sqrt_VE", "Tan_VE", 
+                      "Simple_name_VE", "Double_quote_string_VE", "L_paren_VF", 
+                      "L_paren_VS", "R_paren_VS", "Average_VS", "Element_VS", 
+                      "Max_VS", "Min_VS", "Norm_VS", "Rms_VS", "Sum_VS", 
+                      "Atom_properties_VS", "SPACE_VS" ]
 
     RULE_cns_mr = 0
     RULE_distance_restraint = 1
@@ -1165,72 +1166,73 @@ class CnsMRParser ( Parser ):
     R_paren=147
     Colon=148
     Equ_op=149
-    Lt_op=150
-    Gt_op=151
-    Leq_op=152
-    Geq_op=153
-    Neq_op=154
-    SPACE=155
-    COMMENT=156
-    LINE_COMMENT=157
-    SET_VARIABLE=158
-    Abs=159
-    Attr_properties=160
-    Comparison_ops=161
-    SPACE_A=162
-    Exclude=163
-    Include=164
-    End_F=165
-    Class_name=166
-    Any_class=167
-    SPACE_F=168
-    R_paren_VE=169
-    Equ_op_VE=170
-    Add_op_VE=171
-    Sub_op_VE=172
-    Mul_op_VE=173
-    Div_op_VE=174
-    Exp_op_VE=175
-    Comma_VE=176
-    Integer_VE=177
-    Real_VE=178
-    Atom_properties_VE=179
-    Abs_VE=180
-    Acos_VE=181
-    Asin_VE=182
-    Cos_VE=183
-    Decode_VE=184
-    Encode_VE=185
-    Exp_VE=186
-    Gauss_VE=187
-    Heavy_VE=188
-    Int_VE=189
-    Log10_VE=190
-    Log_VE=191
-    Max_VE=192
-    Maxw_VE=193
-    Min_VE=194
-    Mod_VE=195
-    Norm_VE=196
-    Random_VE=197
-    Sign_VE=198
-    Sin_VE=199
-    Sqrt_VE=200
-    Tan_VE=201
-    Simple_name_VE=202
-    Double_quote_string_VE=203
-    L_paren_VF=204
-    L_paren_VS=205
-    R_paren_VS=206
-    Average_VS=207
-    Element_VS=208
-    Max_VS=209
-    Min_VS=210
-    Norm_VS=211
-    Rms_VS=212
-    Sum_VS=213
-    Atom_properties_VS=214
-    SPACE_VS=215
+    SPACE=150
+    COMMENT=151
+    SECTION_COMMENT=152
+    LINE_COMMENT=153
+    SET_VARIABLE=154
+    Lt_op=155
+    Gt_op=156
+    Leq_op=157
+    Geq_op=158
+    Neq_op=159
+    Abs=160
+    Attr_properties=161
+    Comparison_ops=162
+    SPACE_A=163
+    Exclude=164
+    Include=165
+    End_F=166
+    Class_name=167
+    Any_class=168
+    SPACE_F=169
+    R_paren_VE=170
+    Equ_op_VE=171
+    Add_op_VE=172
+    Sub_op_VE=173
+    Mul_op_VE=174
+    Div_op_VE=175
+    Exp_op_VE=176
+    Comma_VE=177
+    Integer_VE=178
+    Real_VE=179
+    Atom_properties_VE=180
+    Abs_VE=181
+    Acos_VE=182
+    Asin_VE=183
+    Cos_VE=184
+    Decode_VE=185
+    Encode_VE=186
+    Exp_VE=187
+    Gauss_VE=188
+    Heavy_VE=189
+    Int_VE=190
+    Log10_VE=191
+    Log_VE=192
+    Max_VE=193
+    Maxw_VE=194
+    Min_VE=195
+    Mod_VE=196
+    Norm_VE=197
+    Random_VE=198
+    Sign_VE=199
+    Sin_VE=200
+    Sqrt_VE=201
+    Tan_VE=202
+    Simple_name_VE=203
+    Double_quote_string_VE=204
+    L_paren_VF=205
+    L_paren_VS=206
+    R_paren_VS=207
+    Average_VS=208
+    Element_VS=209
+    Max_VS=210
+    Min_VS=211
+    Norm_VS=212
+    Rms_VS=213
+    Sum_VS=214
+    Atom_properties_VS=215
+    SPACE_VS=216
 
     def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
         super().__init__(input, output)
@@ -8344,7 +8346,7 @@ class CnsMRParser ( Parser ):
                 if _alt==1:
                     self.state = 1334
                     _la = self._input.LA(1)
-                    if not(((((_la - 171)) & ~0x3f) == 0 and ((1 << (_la - 171)) & ((1 << (CnsMRParser.Add_op_VE - 171)) | (1 << (CnsMRParser.Sub_op_VE - 171)) | (1 << (CnsMRParser.Mul_op_VE - 171)) | (1 << (CnsMRParser.Div_op_VE - 171)) | (1 << (CnsMRParser.Exp_op_VE - 171)))) != 0)):
+                    if not(((((_la - 172)) & ~0x3f) == 0 and ((1 << (_la - 172)) & ((1 << (CnsMRParser.Add_op_VE - 172)) | (1 << (CnsMRParser.Sub_op_VE - 172)) | (1 << (CnsMRParser.Mul_op_VE - 172)) | (1 << (CnsMRParser.Div_op_VE - 172)) | (1 << (CnsMRParser.Exp_op_VE - 172)))) != 0)):
                         self._errHandler.recoverInline(self)
                     else:
                         self._errHandler.reportMatch(self)
@@ -8892,7 +8894,7 @@ class CnsMRParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 1470
             _la = self._input.LA(1)
-            if not(((((_la - 207)) & ~0x3f) == 0 and ((1 << (_la - 207)) & ((1 << (CnsMRParser.Average_VS - 207)) | (1 << (CnsMRParser.Element_VS - 207)) | (1 << (CnsMRParser.Max_VS - 207)) | (1 << (CnsMRParser.Min_VS - 207)) | (1 << (CnsMRParser.Norm_VS - 207)) | (1 << (CnsMRParser.Rms_VS - 207)) | (1 << (CnsMRParser.Sum_VS - 207)))) != 0)):
+            if not(((((_la - 208)) & ~0x3f) == 0 and ((1 << (_la - 208)) & ((1 << (CnsMRParser.Average_VS - 208)) | (1 << (CnsMRParser.Element_VS - 208)) | (1 << (CnsMRParser.Max_VS - 208)) | (1 << (CnsMRParser.Min_VS - 208)) | (1 << (CnsMRParser.Norm_VS - 208)) | (1 << (CnsMRParser.Rms_VS - 208)) | (1 << (CnsMRParser.Sum_VS - 208)))) != 0)):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)

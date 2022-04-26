@@ -408,8 +408,7 @@ Equ_op:			'=';
 
 L_QUOT:			'"' -> pushMode(FUNC_CALL_MODE);
 SPACE:			[ \t\r\n]+ -> skip;
-//HIDDEN_COMMENT:	'{*' (HIDDEN_COMMENT | .)*? '*}' -> channel(HIDDEN);
-EMPTY_COMMENT:		('#' | '!' | ';' | '*' '*'+ | '-' '-'+ | '+' '+'+) ' '* [\r\n]+ -> channel(HIDDEN);
+SECTION_COMMENT:	('#' | '!' | ';' | '*' '*'+ | '-' '-'+ | '+' '+'+) ' '* [\r\n]+ -> channel(HIDDEN);
 
 mode COMMENT_MODE;
 

@@ -1277,7 +1277,7 @@ class AmberMRLexer(Lexer):
     Equ_op = 148
     L_QUOT = 149
     SPACE = 150
-    EMPTY_COMMENT = 151
+    SECTION_COMMENT = 151
     Any_name = 152
     SPACE_C = 153
     RETURN_C = 154
@@ -1375,7 +1375,7 @@ class AmberMRLexer(Lexer):
             "SIGMA12", "SIGMA13", "SIGMA22", "SIGMA23", "CCUT", "Comma", 
             "Ampersand", "COMMENT", "Logical", "L_paren", "R_paren", "L_brace", 
             "R_brace", "L_brakt", "R_brakt", "Equ_op", "L_QUOT", "SPACE", 
-            "EMPTY_COMMENT", "Any_name", "SPACE_C", "RETURN_C", "Equ_op_IP", 
+            "SECTION_COMMENT", "Any_name", "SPACE_C", "RETURN_C", "Equ_op_IP", 
             "L_paren_IP", "Integer", "SPACE_IP", "Equ_op_RP", "L_paren_RP", 
             "Real", "SPACE_RP", "Equ_op_BP", "BoolInt", "SPACE_BP", "L_paren_QP", 
             "Equ_op_QP", "Qstring", "Decimal_AQP", "R_paren_AQP", "Equ_op_AQP", 
@@ -1417,7 +1417,7 @@ class AmberMRLexer(Lexer):
                   "DECIMAL", "ONE_OR_ZERO", "ALPHA", "ALPHA_NUM", "START_CHAR", 
                   "NAME_CHAR", "SIMPLE_NAME", "QSTRING", "L_paren", "R_paren", 
                   "L_brace", "R_brace", "L_brakt", "R_brakt", "Equ_op", 
-                  "L_QUOT", "SPACE", "EMPTY_COMMENT", "Any_name", "SPACE_C", 
+                  "L_QUOT", "SPACE", "SECTION_COMMENT", "Any_name", "SPACE_C", 
                   "RETURN_C", "Equ_op_IP", "L_paren_IP", "Integer", "SPACE_IP", 
                   "Equ_op_RP", "L_paren_RP", "Real", "SPACE_RP", "Equ_op_BP", 
                   "BoolInt", "SPACE_BP", "L_paren_QP", "Equ_op_QP", "Qstring", 

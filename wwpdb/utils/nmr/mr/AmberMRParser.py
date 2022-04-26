@@ -663,21 +663,22 @@ class AmberMRParser ( Parser ):
                       "SIGMA13", "SIGMA22", "SIGMA23", "CCUT", "Comma", 
                       "Ampersand", "COMMENT", "Logical", "L_paren", "R_paren", 
                       "L_brace", "R_brace", "L_brakt", "R_brakt", "Equ_op", 
-                      "L_QUOT", "SPACE", "EMPTY_COMMENT", "Any_name", "SPACE_C", 
-                      "RETURN_C", "Equ_op_IP", "L_paren_IP", "Integer", 
-                      "SPACE_IP", "Equ_op_RP", "L_paren_RP", "Real", "SPACE_RP", 
-                      "Equ_op_BP", "BoolInt", "SPACE_BP", "L_paren_QP", 
-                      "Equ_op_QP", "Qstring", "Decimal_AQP", "R_paren_AQP", 
-                      "Equ_op_AQP", "SPACE_AQP", "Qstring_AQP", "L_paren_IA", 
-                      "Equ_op_IA", "Comma_IA", "Asterisk_IA", "Integers", 
-                      "MultiplicativeInt", "L_paren_RA", "Equ_op_RA", "Comma_RA", 
-                      "Asterisk_RA", "Reals", "MultiplicativeReal", "Equ_op_BA", 
-                      "Comma_BA", "BoolInts", "L_paren_QA", "Equ_op_QA", 
-                      "Comma_QA", "Qstrings", "Comma_A", "R_paren_A", "Decimal", 
-                      "SPACE_A", "DISTANCE_F", "ANGLE_F", "TORSION_F", "COORDINATE_F", 
-                      "PLANE_F", "COM_F", "Integer_F", "Real_F", "Ambmask_F", 
-                      "Comma_F", "L_paren_F", "R_paren_F", "L_brace_F", 
-                      "R_brace_F", "L_brakt_F", "R_brakt_F", "R_QUOT", "SPACE_F" ]
+                      "L_QUOT", "SPACE", "SECTION_COMMENT", "Any_name", 
+                      "SPACE_C", "RETURN_C", "Equ_op_IP", "L_paren_IP", 
+                      "Integer", "SPACE_IP", "Equ_op_RP", "L_paren_RP", 
+                      "Real", "SPACE_RP", "Equ_op_BP", "BoolInt", "SPACE_BP", 
+                      "L_paren_QP", "Equ_op_QP", "Qstring", "Decimal_AQP", 
+                      "R_paren_AQP", "Equ_op_AQP", "SPACE_AQP", "Qstring_AQP", 
+                      "L_paren_IA", "Equ_op_IA", "Comma_IA", "Asterisk_IA", 
+                      "Integers", "MultiplicativeInt", "L_paren_RA", "Equ_op_RA", 
+                      "Comma_RA", "Asterisk_RA", "Reals", "MultiplicativeReal", 
+                      "Equ_op_BA", "Comma_BA", "BoolInts", "L_paren_QA", 
+                      "Equ_op_QA", "Comma_QA", "Qstrings", "Comma_A", "R_paren_A", 
+                      "Decimal", "SPACE_A", "DISTANCE_F", "ANGLE_F", "TORSION_F", 
+                      "COORDINATE_F", "PLANE_F", "COM_F", "Integer_F", "Real_F", 
+                      "Ambmask_F", "Comma_F", "L_paren_F", "R_paren_F", 
+                      "L_brace_F", "R_brace_F", "L_brakt_F", "R_brakt_F", 
+                      "R_QUOT", "SPACE_F" ]
 
     RULE_amber_mr = 0
     RULE_comment = 1
@@ -874,7 +875,7 @@ class AmberMRParser ( Parser ):
     Equ_op=148
     L_QUOT=149
     SPACE=150
-    EMPTY_COMMENT=151
+    SECTION_COMMENT=151
     Any_name=152
     SPACE_C=153
     RETURN_C=154

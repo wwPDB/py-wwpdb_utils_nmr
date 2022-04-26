@@ -127,7 +127,6 @@ FORMAT:			'%FORMAT'
 			-> pushMode(FORMAT_MODE);
 
 SPACE:			[ \t\r\n]+ -> skip;
-//COMMENT:		'{*' (COMMENT | .)*? '*}' -> channel(HIDDEN);
 LINE_COMMENT:		('#' | '!' | ';' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+) ~[\r\n]* -> channel(HIDDEN);
 
 mode VERSION_MODE;

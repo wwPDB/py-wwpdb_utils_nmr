@@ -217,12 +217,26 @@ class AmberMRParserListener(ParseTreeListener):
     numIatCol = 0
     setIatCol = None
     iat = None
-    distLike = None
+
+    likeDist = None
 
     # IGRn
     numIgrCol = None
     setIgrCol = None
     igr = None
+
+    ixpk = -1
+    inpk = -1
+
+    iresid = 0
+
+    numAtnamCol = 0
+    setAtnamCol = None
+    atnam = None
+
+    numGrnamCol = None
+    setGrnamCol = None
+    grnam = None
 
     # R1, R2, R3, R4
     lowerLinearLimit = None
@@ -375,14 +389,26 @@ class AmberMRParserListener(ParseTreeListener):
         self.numIatCol = 0
         self.setIatCol = None
         self.iat = None
-        self.distLike = None
+
+        self.likeDist = None
 
         # IGRn
         self.numIgrCol = None
         self.setIgrCol = None
         self.igr = None
-        self.ixpk = None
-        self.nxpk = None
+
+        self.ixpk = -1
+        self.nxpk = -1
+
+        self.iresid = 0
+
+        self.numAtnamCol = 0
+        self.setAtnamCol = None
+        self.atnam = None
+
+        self.numGrnamCol = None
+        self.setGrnamCol = None
+        self.grnam = None
 
         # R1, R2, R3, R4
         self.lowerLinearLimit = None
@@ -582,13 +608,25 @@ class AmberMRParserListener(ParseTreeListener):
         self.numIatCol = 0
         self.setIatCol = None
         self.iat = [0] * 8
-        self.distLike = False
+
+        self.likeDist = False
 
         self.numIgrCol = None
         self.setIgrCol = None
         self.igr = None
+
         self.ixpk = -1
         self.nxpk = -1
+
+        self.iresid = 0
+
+        self.numAtnamCol = 0
+        self.setAtnamCol = None
+        self.atnam = [''] * 8
+
+        self.numGrnamCol = None
+        self.setGrnamCol = None
+        self.grnam = None
 
         # No need to reset R1/2/3/4 because Amber allows to refer the previous value defined
         # self.lowerLinearLimit = None
@@ -602,7 +640,7 @@ class AmberMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by AmberMRParser#restraint_statement.
     def exitRestraint_statement(self, ctx: AmberMRParser.Restraint_statementContext):  # pylint: disable=unused-argument
-        self.detectRestraintType(self.distLike)
+        self.detectRestraintType(self.likeDist)
 
         if len(self.__cur_subtype) == 0:
             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
@@ -659,7 +697,7 @@ class AmberMRParserListener(ParseTreeListener):
                         if len(hint) > 0:
                             hint = f" The peripheral atom selections are: {hint[:-1]}."
                         self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            f"'{varName}' is missing in spite of 'iat({varNum})={iat}'.{hint}\n"
+                            f"'{varName}' is missing despite being set 'iat({varNum})={iat}'.{hint}\n"
                     else:
                         nonpCols = [col_ for col_, val in enumerate(self.igr[varNum]) if val <= 0]
                         maxCol = MAX_COL_IGR if len(nonpCols) == 0 else min(nonpCols)
@@ -670,7 +708,7 @@ class AmberMRParserListener(ParseTreeListener):
                             del self.igr[varNum]
                         else:
                             nonp = [val for col_, val in enumerate(self.igr[varNum]) if val > 0 and col_ < maxCol]
-                            if len(nonp) != len(set(nonp)):
+                            if len(nonp) != len(set(nonp)) and self.iresid == 0:
                                 if self.__hasPolySeq:
                                     self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
                                         f"'{varName}={valArray}' includes redundant integers.\n"
@@ -687,21 +725,47 @@ class AmberMRParserListener(ParseTreeListener):
                 for col, iat in enumerate(self.iat):
                     atomSelection = []
 
-                    if iat > 0:
-                        if iat in self.__atomNumberDict:
-                            atomSelection.append(self.__atomNumberDict[iat])
-                        else:
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                f"'iat({col+1})={iat}' is not defined in the AMBER parameter/topology file.\n"
-                    elif iat < 0:
-                        varNum = col + 1
-                        if varNum in self.igr:
-                            for igr in self.igr[varNum]:
-                                if igr in self.__atomNumberDict:
-                                    atomSelection.append(self.__atomNumberDict[igr])
-                                else:
-                                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                        f"'igr({varNum})={igr}' is not defined in the AMBER parameter/topology file.\n"
+                    if self.iresid == 0:
+
+                        if iat > 0:
+                            if iat in self.__atomNumberDict:
+                                atomSelection.append(self.__atomNumberDict[iat])
+                            else:
+                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                    f"'iat({col+1})={iat}' is not defined in the AMBER parameter/topology file.\n"
+                        elif iat < 0:
+                            varNum = col + 1
+                            if varNum in self.igr:
+                                for igr in self.igr[varNum]:
+                                    if igr in self.__atomNumberDict:
+                                        atomSelection.append(self.__atomNumberDict[igr])
+                                    else:
+                                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                            f"'igr({varNum})={igr}' is not defined in the AMBER parameter/topology file.\n"
+
+                    else:
+
+                        if iat > 0:
+                            atnam = self.atnam[col]
+                            if len(atnam) == 0:
+                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                    f"'atnam({col+1})={atnam}' is missing/empty despite being set iresid=1, iat({col+1})={iat}.\n"
+                            else:
+                                factor = self.getAtomNumberDictFromAmbmaskInfo(iat, self.atnam[col])
+                                if factor is not None:
+                                    atomSelection.append(factor)
+
+                        elif iat < 0:
+                            varNum = col + 1
+                            if varNum in self.igr:
+                                for igr, grnam in zip(self.igr[varNum], self.grnam[varNum]):
+                                    if len(grnam) == 0:
+                                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                            f"'grnam({varNum})={self.grnam[varNum]}' is missing/empty despite being set iresid=1, igr({varNum})={self.igr}.\n"
+                                    else:
+                                        factor = self.getAtomNumberDictFromAmbmaskInfo(igr, grnam)
+                                        if factor is not None:
+                                            atomSelection.append(factor)
 
                     self.atomSelectionSet.append(atomSelection)
 
@@ -880,7 +944,7 @@ class AmberMRParserListener(ParseTreeListener):
                                       f"{dstFunc}")
 
             # try to update AMBER atom number dictionary based on Sander comments
-            elif self.__hasPolySeq:
+            elif self.__hasPolySeq and self.iresid == 0:
 
                 if self.__cur_subtype == 'dist' and len(self.iat) == COL_DIST:
                     subtype_name = 'distance restraint'
@@ -2717,8 +2781,185 @@ class AmberMRParserListener(ParseTreeListener):
         elif ctx.NXPK():
             self.nxpk = int(str(ctx.Integer()))
 
-    def detectRestraintType(self, distLike):
-        self.distLike = distLike
+        elif ctx.IRESID():
+            self.iresid = int(str(ctx.BoolInt()))
+
+        elif ctx.ATNAM():
+            varName = 'atnam'
+
+            if ctx.Qstrings():
+                if self.setAtnamCol is not None and len(self.setAtnamCol) > 0:
+                    valArray = ','.join([f"{varName}({valCol})={self.atnam[valCol - 1]}"
+                                         for valCol in self.setAtnamCol if len(self.atnam[valCol - 1]) > 0])
+                    self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
+                        f"You have mixed different syntaxes for the '{varName}' variable, '{varName}={valArray}' "\
+                        f"and '{varName}={str(ctx.Qstrings())}', which will overwrite.\n"
+                if self.numAtnamCol > 0:
+                    zeroCols = [col for col, val in enumerate(self.atnam) if len(val) == 0]
+                    maxCol = MAX_COL_IAT if len(zeroCols) == 0 else min(zeroCols)
+                    valArray = ','.join([str(val) for col, val in enumerate(self.atnam) if len(val) > 0 and col < maxCol])
+                    self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
+                        f"You have overwritten the '{varName}' variable, '{varName}={valArray}' "\
+                        f"and '{varName}={str(ctx.Qstrings())}', which will overwrite.\n"
+                rawStrArray = str(ctx.Qstrings()).split(',')
+                numAtnamCol = 0
+                for col, rawStr in enumerate(rawStrArray):
+                    val = rawStr.strip('\'').strip('"').rstrip()
+                    if len(val) == 0:
+                        break
+                    self.atnam[col] = val
+                    numAtnamCol += 1
+                self.numAtnamCol = numAtnamCol
+
+        elif ctx.ATNAM_Lp():
+            varName = 'atnam'
+
+            if ctx.Decimal_AQP():
+                decimal = int(str(ctx.Decimal_AQP()))
+                if decimal <= 0 or decimal > MAX_COL_IAT:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"The argument value of '{varName}({decimal})' must be in the range 1-{MAX_COL_IAT}.\n"
+                    return
+                if self.numAtnamCol > 0:
+                    zeroCols = [col for col, val in enumerate(self.atnam) if len(val) == 0]
+                    maxCol = MAX_COL_IAT if len(zeroCols) == 0 else min(zeroCols)
+                    valArray = ','.join([str(val) for col, val in enumerate(self.atnam) if len(val) > 0 and col < maxCol])
+                    self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
+                        f"You have mixed different syntaxes for the '{varName}' variable, '{varName}={valArray}' "\
+                        f"and '{varName}({decimal})={str(ctx.Qstring_AQP())}', which will overwrite.\n"
+                if self.setAtnamCol is None:
+                    self.setAtnamCol = []
+                if decimal in self.setAtnamCol:
+                    self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
+                        f"The argument value of '{varName}({decimal})' must be unique. "\
+                        f"'{varName}({decimal})={str(ctx.Qstring_AQP())}' will overwrite.\n"
+                else:
+                    self.setAtnamCol.append(decimal)
+                rawStrArray = str(ctx.Qstring_AQP()).split(',')
+                val = rawStrArray[0].strip('\'').strip('"').rstrip()
+                if len(rawStrArray) > 1:
+                    self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
+                        f"The '{varName}({decimal})={str(ctx.Qstring_AQP())}' can not be an array of strings, "\
+                        f"hence the first value '{varName}({decimal})={val}' will be evaluated as a valid value.\n"
+                self.atnam[decimal - 1] = val
+                if len(val) == 0:
+                    self.setAtnamCol.remove(decimal)
+                    if self.numAtnamCol >= decimal:
+                        self.numAtnamCol = decimal - 1
+
+        elif ctx.GRNAM1() or ctx.GRNAM2() or ctx.GRNAM3() or ctx.GRNAM4()\
+                or ctx.GRNAM5() or ctx.GRNAM6() or ctx.GRNAM7() or ctx.GRNAM8():
+            varNum = 0
+            if ctx.GRNAM1():
+                varNum = 1
+            if ctx.GRNAM2():
+                varNum = 2
+            if ctx.GRNAM3():
+                varNum = 3
+            if ctx.GRNAM4():
+                varNum = 4
+            if ctx.GRNAM5():
+                varNum = 5
+            if ctx.GRNAM6():
+                varNum = 6
+            if ctx.GRNAM7():
+                varNum = 7
+            if ctx.GRNAM8():
+                varNum = 8
+
+            varName = 'grnam' + str(varNum)
+
+            if ctx.Qstrings():
+                if self.setGrnamCol[varNum] is not None and len(self.setGrnamCol[varNum]) > 0:
+                    valArray = ','.join([f"{varName}({valCol})={self.grnam[varNum][valCol - 1]}"
+                                         for valCol in self.setGrnamCol[varNum] if len(self.grnam[varNum][valCol - 1]) > 0])
+                    self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
+                        f"You have mixed different syntaxes for the '{varName}' variable, '{varName}={valArray}' "\
+                        f"and '{varName}={str(ctx.Qstrings())}', which will overwrite.\n"
+                if self.numGrnamCol[varNum] > 0:
+                    nonpCols = [col for col, val in enumerate(self.grnam[varNum]) if len(val) == 0]
+                    maxCol = MAX_COL_IGR if len(nonpCols) == 0 else min(nonpCols)
+                    valArray = ','.join([str(val) for col, val in enumerate(self.grnam[varNum]) if len(val) > 0 and col < maxCol])
+                    self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
+                        f"You have overwritten the '{varName}' variable, '{varName}={valArray}' "\
+                        f"and '{varName}={str(ctx.Qstrings())}', which will overwrite.\n"
+                rawStrArray = str(ctx.Qstrings()).split(',')
+                numGrnamCol = 0
+                for col, rawStr in enumerate(rawStrArray):
+                    val = rawStr.strip('\'').strip('"').rstrip()
+                    if len(val) == 0:
+                        break
+                    self.grnam[varNum][col] = val
+                    numGrnamCol += 1
+                self.numGrnamCol[varNum] = numGrnamCol
+
+        elif ctx.GRNAM1_Lp() or ctx.GRNAM2_Lp() or ctx.GRNAM3_Lp() or ctx.GRNAM4_Lp()\
+                or ctx.GRNAM5_Lp() or ctx.GRNAM6_Lp() or ctx.GRNAM7_Lp() or ctx.GRNAM8_Lp():
+            varNum = 0
+            if ctx.GRNAM1_Lp():
+                varNum = 1
+            if ctx.GRNAM2_Lp():
+                varNum = 2
+            if ctx.GRNAM3_Lp():
+                varNum = 3
+            if ctx.GRNAM4_Lp():
+                varNum = 4
+            if ctx.GRNAM5_Lp():
+                varNum = 5
+            if ctx.GRNAM6_Lp():
+                varNum = 6
+            if ctx.GRNAM7_Lp():
+                varNum = 7
+            if ctx.GRNAM8_Lp():
+                varNum = 8
+
+            varName = 'grnam' + str(varNum)
+
+            if self.grnam is None:
+                self.grnam = {}
+                self.numGrnamCol = {}
+                self.setGrnamCol = {}
+
+            if varNum not in self.grnam:
+                self.grnam[varNum] = [''] * MAX_COL_IGR
+                self.numGrnamCol[varNum] = 0
+                self.setGrnamCol[varNum] = None
+
+            if ctx.Decimal_AQP():
+                decimal = int(str(ctx.Decimal_AQP()))
+                if decimal <= 0 or decimal > MAX_COL_IGR:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"The argument value of '{varName}({decimal})' must be in the range 1-{MAX_COL_IGR}.\n"
+                    return
+                if self.numGrnamCol[varNum] > 0:
+                    nonpCols = [col for col, val in enumerate(self.grnam[varNum]) if len(val) == 0]
+                    maxCol = MAX_COL_IGR if len(nonpCols) == 0 else min(nonpCols)
+                    valArray = ','.join([str(val) for col, val in enumerate(self.grnam[varNum]) if len(val) > 0 and col < maxCol])
+                    self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
+                        f"You have mixed different syntaxes for the '{varName}' variable, '{varName}={valArray}' "\
+                        f"and '{varName}({decimal})={str(ctx.Qstring_AQP())}', which will overwrite.\n"
+                if self.setGrnamCol[varNum] is None:
+                    self.setGrnamCol[varNum] = []
+                if decimal in self.setGrnamCol[varNum]:
+                    self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
+                        f"The argument value of '{varName}({decimal})' must be unique. "\
+                        f"'{varName}({decimal})={str(ctx.Qstring_AQP())}' will overwrite.\n"
+                else:
+                    self.setGrnamCol[varNum].append(decimal)
+                rawStrArray = str(ctx.Qstring_AQP()).split(',')
+                val = rawStrArray[0].strip('\'').strip('"').rstrip()
+                if len(rawStrArray) > 1:
+                    self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
+                        f"The '{varName}({decimal})={str(ctx.Qstring_AQP())}' can not be an array of strings, "\
+                        f"hence the first value '{varName}({decimal})={val}' will be evaluated as a valid value.\n"
+                self.grnam[varNum][decimal - 1] = val
+                if len(val) == 0:
+                    self.setGrnamCol[varNum].remove(decimal)
+                    if self.numGrnamCol[varNum] >= decimal:
+                        self.numGrnamCol[varNum] = decimal - 1
+
+    def detectRestraintType(self, likeDist):
+        self.likeDist = likeDist
 
         if len(self.__cur_subtype) > 0:
             return
@@ -2732,7 +2973,7 @@ class AmberMRParserListener(ParseTreeListener):
             self.__cur_subtype = 'ang'
 
         elif self.numIatCol == COL_DIHED:  # torsional angle or generalized distance 2
-            if distLike:
+            if likeDist:
                 self.distRestraints += 1
                 self.__cur_subtype = 'dist'
             else:
@@ -2748,7 +2989,7 @@ class AmberMRParserListener(ParseTreeListener):
             self.__cur_subtype = 'dist'
 
         elif self.numIatCol == COL_PLANE_PLANE:  # plane-plane angle or generalized distance 4
-            if distLike:
+            if likeDist:
                 self.distRestraints += 1
                 self.__cur_subtype = 'dist'
             else:

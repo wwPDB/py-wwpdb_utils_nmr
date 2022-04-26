@@ -396,8 +396,9 @@ fragment ALPHA:		[A-Za-z];
 fragment ALPHA_NUM:	ALPHA | DEC_DIGIT;
 fragment START_CHAR:	ALPHA_NUM | '_';
 fragment NAME_CHAR:	START_CHAR | '\'' | '-' | '+' | '.';
+fragment QEXT_CHAR:	ALPHA_NUM | '\'' | '"' | ' ';
 fragment SIMPLE_NAME:	START_CHAR NAME_CHAR*;
-fragment QSTRING:	('\'' | '"')? SIMPLE_NAME ('\'' | '"')?;
+fragment QSTRING:	SIMPLE_NAME | '\'' SIMPLE_NAME QEXT_CHAR* '\'' | '"' SIMPLE_NAME QEXT_CHAR* '"';
 
 L_paren:		'(';
 R_paren:		')';

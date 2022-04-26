@@ -153,6 +153,7 @@
 # 20-Mar-2022  M. Yokochi - add support for _atom_site.label_alt_id (DAOTHER-4060, 7544, NMR restraint remediation)
 # 06-Apr-2022  M. Yokochi - detect other possible MR format if the first parsing fails (DAOTHER-7690)
 ##
+from builtins import False
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
 """
@@ -4032,9 +4033,11 @@ class NmrDpUtility:
 
                     _csPath = csPath + '.cif2str'
 
-                    cif_to_star = CifToNmrStar()
-                    if not cif_to_star.convert(csPath, _csPath):
-                        _csPath = csPath
+                    if not os.path.exists(_csPath):
+
+                        cif_to_star = CifToNmrStar()
+                        if not cif_to_star.convert(csPath, _csPath):
+                            _csPath = csPath
 
                     csPath = _csPath
 
@@ -8597,7 +8600,8 @@ class NmrDpUtility:
 
                 src_file = dst_file
 
-            dst_file = src_file + '.trimmed'
+            dst_file = os.path.splitext(src_file)[0] + '-trimmed.mr'
+            cor_dst_file = os.path.splitext(src_file)[0] + '-corrected.mr'
 
             has_mr_header = False
             has_pdb_format = False
@@ -8678,7 +8682,7 @@ class NmrDpUtility:
                 # split STAR and others
                 if has_str_format:
 
-                    mrPath = src_file + '.trimmed.str'
+                    mrPath = os.path.splitext(src_file)[0] + '-trimmed.str'
 
                     header = True
                     pdb_record = False
@@ -8820,7 +8824,7 @@ class NmrDpUtility:
 
                 elif has_cif_format:
 
-                    mrPath = src_file + '.trimmed.cif'
+                    mrPath = os.path.splitext(src_file)[0] + '-trimmed.cif'
 
                     header = True
                     pdb_record = False
@@ -8865,7 +8869,7 @@ class NmrDpUtility:
 
                                     ofp.write(line)
 
-                    _mrPath = mrPath + '.cif2str'
+                    _mrPath = os.path.splitext(mrPath)[0] + '.cif2str'
 
                     cif_to_star = CifToNmrStar()
                     if not cif_to_star.convert(mrPath, _mrPath):
@@ -8984,6 +8988,9 @@ class NmrDpUtility:
 
                 return False
 
+            if os.path.exists(cor_dst_file):  # in case there is corrected MR file
+                dst_file = cor_dst_file
+
             # has no MR haeder
             if not has_mr_header:
 
@@ -9086,7 +9093,7 @@ class NmrDpUtility:
                             g = mr_file_header_pattern.search(line).groups()
                             _dst_file = os.path.join(dir_path, g[1])
                             original_file_path_list.append(_dst_file)
-                            ofp = open(_dst_file, 'w')
+                            ofp = open(_dst_file, 'w')  # pylint: disable=consider-using-with
 
                         else:
                             j += 1
@@ -9103,6 +9110,11 @@ class NmrDpUtility:
                     original_file_path_list.append(dst_file)
 
                 for dst_file in original_file_path_list:
+                    cor_dst_file = dst_file + '-corrected'
+
+                    if os.path.exists(cor_dst_file):  # in case there is corrected MR file
+                        dst_file = cor_dst_file
+
                     file_name = os.path.basename(dst_file)
 
                     _, _, valid_types, possible_types = self.__detectOtherPossibleFormatAsErrorOfLegacyMR(dst_file, file_name, file_type, [], True)

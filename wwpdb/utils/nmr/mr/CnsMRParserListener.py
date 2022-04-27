@@ -1383,7 +1383,7 @@ class CnsMRParserListener(ParseTreeListener):
                 self.potential = 'square'
             elif code.startswith('HARM'):
                 self.potential = 'harmonic'
-            elif code.statswith('MULT'):
+            elif code.startswith('MULT'):
                 self.potential = 'multiple'
             else:
                 self.potential = 'square'
@@ -1724,7 +1724,7 @@ class CnsMRParserListener(ParseTreeListener):
                 self.potential = 'square'
             elif code.startswith('HARM'):
                 self.potential = 'harmonic'
-            elif code.statswith('MULT'):
+            elif code.startswith('MULT'):
                 self.potential = 'multiple'
             else:
                 self.potential = 'square'

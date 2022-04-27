@@ -3,22 +3,46 @@
 # Date: 18-Feb-2022
 #
 # Updates:
+# 27-Apr-2022  M. Yokochi - enable to use cached data for standard residues
 ##
 """ Wrapper class for retrieving chemical component dictionary.
     @author: Masashi Yokochi
 """
 import os
 import sys
+import pickle
 
 try:
     from wwpdb.utils.config.ConfigInfo import getSiteId
     from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommon
     from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
+    from wwpdb.utils.nmr.AlignUtil import monDict3
     cICommon = ConfigInfoAppCommon(getSiteId())
     CC_CVS_PATH = cICommon.get_site_cc_cvs_path()
 except ImportError:
     from nmr.io.ChemCompIo import ChemCompReader
+    from nmr.AlignUtil import monDict3
     CC_CVS_PATH = os.path.dirname(__file__) + '/ligand_dict'  # need to setup 'ligand_dict' CCD resource for NMR restraint processing
+
+
+def load_dict_from_pickle(file_name):
+    """ Load cached dictionary from pickle file.
+    """
+
+    if os.path.exists(file_name):
+
+        with open(file_name, 'rb') as ifp:
+            return pickle.load(ifp)
+
+    return {}
+
+
+def write_dict_as_pickle(dict, file_name):
+    """ Write dictionary as pickle file.
+    """
+
+    with open(file_name, 'wb') as ofp:
+        pickle.dump(dict, ofp)
 
 
 class ChemCompUtil:
@@ -26,6 +50,10 @@ class ChemCompUtil:
     """
 
     def __init__(self, verbose=False, log=sys.stderr):
+
+        # pickle file name of cached dictionary for standard residues
+        self.__cacheFile = os.path.dirname(__file__) + '/chem_comp_util/std_chem_comp.pkl'
+
         self.__ccR = ChemCompReader(verbose, log)
         self.__ccR.setCachePath(CC_CVS_PATH)
 
@@ -96,7 +124,7 @@ class ChemCompUtil:
         aromaticFlag = next(d for d in _chemCompBondDict if d[0] == '_chem_comp_bond.pdbx_aromatic_flag')
         self.ccbAromaticFlag = _chemCompBondDict.index(aromaticFlag)
 
-        self.__cachedDict = {}
+        self.__cachedDict = load_dict_from_pickle(self.__cacheFile)
         self.__failedCompId = []
 
     def updateChemCompDict(self, compId):
@@ -133,3 +161,12 @@ class ChemCompUtil:
                 self.__failedCompId.append(compId)
 
         return self.lastStatus
+
+    def write_standard_dict_as_pickle(self):
+        """ Write dictionary for standard residues as pickle file.
+        """
+
+        for compId in monDict3:
+            self.updateChemCompDict(compId)
+
+        write_dict_as_pickle(self.__cachedDict, self.__cacheFile)

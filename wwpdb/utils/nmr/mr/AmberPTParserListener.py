@@ -328,7 +328,7 @@ class AmberPTParserListener(ParseTreeListener):
                 if self.__ccU.updateChemCompDict(atomNum['comp_id']):
                     chemCompAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]
 
-                    atomId = translateToStdAtomName(atomNum['auth_atom_id'])
+                    atomId = translateToStdAtomName(atomNum['auth_atom_id'], atomNum['comp_id'], chemCompAtomIds)
 
                     if atomId is not None and atomId in chemCompAtomIds:
                         atomNum['atom_id'] = atomId

@@ -12586,9 +12586,12 @@ class NmrDpUtility:
                         # standard residue
                         if comp_id in monDict3:
 
+                            self.__ccU.updateChemCompDict(comp_id)
+                            ref_atom_ids = [a[self.__ccU.ccaAtomId] for a in self.__ccU.lastAtomList]
+
                             _auth_atom_ids = []
                             for auth_atom_id in auth_atom_ids:
-                                _auth_atom_id = translateToStdAtomName(auth_atom_id)
+                                _auth_atom_id = translateToStdAtomName(auth_atom_id, comp_id, ref_atom_ids)
 
                                 auth_atom_ids = self.__getAtomIdList(comp_id, _auth_atom_id)
 
@@ -12622,7 +12625,7 @@ class NmrDpUtility:
                             for auth_atom_id in auth_atom_ids:
 
                                 if not self.__nefT.validate_comp_atom(comp_id,
-                                                                      translateToStdAtomName(auth_atom_id)):
+                                                                      translateToStdAtomName(auth_atom_id, comp_id, ref_atom_ids)):
 
                                     if self.__nonblk_bad_nterm and auth_atom_id == 'H1' and comp_id in first_comp_ids:
                                         continue

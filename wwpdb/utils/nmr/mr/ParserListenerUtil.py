@@ -218,26 +218,38 @@ def toNefEx(string):
     return string
 
 
-def translateToStdAtomName(atomId):
+def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None):
     """ Translate software specific atom nomenclature for standard residues to the CCD one.
     """
 
     atomId = atomId.upper()
+
+    if refAtomIdList is not None:
+        if atomId in refAtomIdList:
+            return atomId
+
+    elif refCompId is not None and ccU is not None:
+        refCompId = translateToStdResName(refCompId)
+        if ccU.updateChemCompDict(refCompId):
+            refAtomIdList = [cca[ccU.ccaAtomId] for cca in ccU.lastAtomList]
+            if atomId in refAtomIdList:
+                return atomId
+
     if atomId.endswith("O'1"):
-        atomId = atomId[0:len(atomId) - 3] + "O1'"
+        atomId = atomId[:len(atomId) - 3] + "O1'"
     elif atomId.endswith("O'2"):
-        atomId = atomId[0:len(atomId) - 3] + "O2'"
+        atomId = atomId[:len(atomId) - 3] + "O2'"
     elif atomId.endswith("O'3"):
-        atomId = atomId[0:len(atomId) - 3] + "O3'"
+        atomId = atomId[:len(atomId) - 3] + "O3'"
     elif atomId.endswith("O'4"):
-        atomId = atomId[0:len(atomId) - 3] + "O4'"
+        atomId = atomId[:len(atomId) - 3] + "O4'"
     elif atomId.endswith("O'5"):
-        atomId = atomId[0:len(atomId) - 3] + "O5'"
+        atomId = atomId[:len(atomId) - 3] + "O5'"
     elif atomId.endswith("O'6"):
-        atomId = atomId[0:len(atomId) - 3] + "O6'"
-    elif atomId.endswith("'1"):
+        atomId = atomId[:len(atomId) - 3] + "O6'"
+    elif atomId.endswith("'1") and not atomId.endswith("''1"):
         atomId = atomId.rstrip('1')
-    elif atomId.endswith("'2"):
+    elif atomId.endswith("'2") and not atomId.endswith("''2"):
         atomId = atomId.rstrip('2') + "'"
     elif atomId == 'O1P':
         atomId = 'OP1'
@@ -249,8 +261,30 @@ def translateToStdAtomName(atomId):
         atomId = "HO3'"
     elif atomId == 'H5T':
         atomId = 'HOP2'
+    elif atomId.endswith("''"):
+        if atomId[0] in ('C', 'O') and atomId[1].isdigit():
+            atomId = atomId[:len(atomId) - 1]
     elif atomId.endswith('"'):
-        atomId = atomId[0:len(atomId) - 1] + "''"
+        atomId = atomId[:len(atomId) - 1] + "''"
+
+    if refAtomIdList is not None and atomId not in refAtomIdList:
+        if not atomId.endswith("'") and (atomId + "'") in refAtomIdList:
+            return atomId + "'"
+        if atomId.endswith("'''") and atomId[:-1] in refAtomIdList:
+            return atomId[:-1]
+        if atomId == "H2''1" and "H2'" in refAtomIdList:
+            return "H2'"
+        if atomId == "H2''2":
+            if "HO2'" in refAtomIdList:
+                return "HO2'"
+            if "H2''" in refAtomIdList:
+                return "H2''"
+        if atomId[0] == 'H' and len(atomId) == 3 and atomId[1].isdigit() and atomId[2] in ('1', '2'):
+            n = atomId[1]
+            if atomId.endswith('1') and ('HN' + n) in refAtomIdList:
+                return 'HN' + n
+            if atomId.endswith('2') and ('HN' + n + 'A') in refAtomIdList:
+                return 'HN' + n + 'A'
 
     return atomId
 

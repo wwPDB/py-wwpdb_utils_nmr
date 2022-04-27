@@ -708,13 +708,28 @@ class AmberMRParserListener(ParseTreeListener):
                             del self.igr[varNum]
                         else:
                             nonp = [val for col_, val in enumerate(self.igr[varNum]) if val > 0 and col_ < maxCol]
-                            if len(nonp) != len(set(nonp)) and self.iresid == 0:
-                                if self.__hasPolySeq:
-                                    self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
-                                        f"'{varName}={valArray}' includes redundant integers.\n"
-                            elif len(nonp) < 2:
-                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                    f"Surprisingly '{varName}={valArray}' is consist of a single integer.\n"
+                            if self.iresid == 0:
+                                if len(nonp) != len(set(nonp)):
+                                    if self.__hasPolySeq:
+                                        self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
+                                            f"'{varName}={valArray}' includes redundant integers.\n"
+                                elif len(nonp) < 2:
+                                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                        f"Surprisingly '{varName}={valArray}' consists of a single integer.\n"
+                            else:
+                                mask = [str(val) + '@' + grnam
+                                        for col_, val, grnam in enumerate(zip(self.igr[varNum], self.grnam[varNum]))
+                                        if val > 0 and col_ < maxCol]
+                                varName2 = 'grnam' + str(varNum)
+                                valArray2 = ','.join([val for col_, val in enumerate(self.grnam[varNum]) if len(val) > 0 and col_ < maxCol])
+                                if len(mask) != len(set(mask)):
+                                    if self.__hasPolySeq:
+                                        self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
+                                            f"'{varName}={valArray}' and '{varName2}={valArray2}' include redundant atoms.\n"
+                                elif len(nonp) < 2 or len(mask) < 2:
+                                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                        f"Surprisingly '{varName}={valArray}' consists of a single integer "\
+                                        f"or '{varName2}={valArray2}' consists of a single string.\n"
                             self.igr[varNum] = list(set(nonp))  # trimming non-positive/redundant integer
 
             self.iat = self.iat[0:self.numIatCol]  # trimming default zero integer
@@ -746,26 +761,35 @@ class AmberMRParserListener(ParseTreeListener):
                     else:
 
                         if iat > 0:
-                            atnam = self.atnam[col]
-                            if len(atnam) == 0:
+                            if col >= len(self.atnam):
                                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                    f"'atnam({col+1})={atnam}' is missing/empty despite being set iresid=1, iat({col+1})={iat}.\n"
+                                    f"'atnam({col+1})' is missing despite being set iresid=1, iat({col+1})={iat}.\n"
                             else:
-                                factor = self.getAtomNumberDictFromAmbmaskInfo(iat, self.atnam[col])
-                                if factor is not None:
-                                    atomSelection.append(factor)
+                                atnam = self.atnam[col]
+                                if len(atnam) == 0:
+                                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                        f"'atnam({col+1})={atnam}' is empty despite being set iresid=1, iat({col+1})={iat}.\n"
+                                else:
+                                    factor = self.getAtomNumberDictFromAmbmaskInfo(iat, self.atnam[col])
+                                    if factor is not None:
+                                        atomSelection.append(factor)
 
                         elif iat < 0:
                             varNum = col + 1
                             if varNum in self.igr:
-                                for igr, grnam in zip(self.igr[varNum], self.grnam[varNum]):
-                                    if len(grnam) == 0:
-                                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                            f"'grnam({varNum})={self.grnam[varNum]}' is missing/empty despite being set iresid=1, igr({varNum})={self.igr}.\n"
-                                    else:
-                                        factor = self.getAtomNumberDictFromAmbmaskInfo(igr, grnam)
-                                        if factor is not None:
-                                            atomSelection.append(factor)
+                                if varNum not in self.grnam:
+                                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                        f"'grnam({varNum})' is missing despite being set iresid=1, igr({varNum})={self.igr[varNum]}.\n"
+                                else:
+                                    for igr, grnam in zip(self.igr[varNum], self.grnam[varNum]):
+                                        if len(grnam) == 0:
+                                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                                f"'grnam({varNum})={self.grnam[varNum]}' is empty "\
+                                                f"despite being set iresid=1, igr({varNum})={self.igr[varNum]}.\n"
+                                        else:
+                                            factor = self.getAtomNumberDictFromAmbmaskInfo(igr, grnam)
+                                            if factor is not None:
+                                                atomSelection.append(factor)
 
                     self.atomSelectionSet.append(atomSelection)
 
@@ -2119,7 +2143,7 @@ class AmberMRParserListener(ParseTreeListener):
 
                 seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId if cifSeqId is None else cifSeqId, cifCheck)
 
-                atomId = translateToStdAtomName(atomId)
+                atomId = translateToStdAtomName(atomId, compId, ccU=self.__ccU)
 
                 atomIds = self.__nefT.get_valid_star_atom(compId, atomId)[0]
 
@@ -2203,7 +2227,7 @@ class AmberMRParserListener(ParseTreeListener):
                         compId = ps['comp_id'][ps['seq_id'].index(seqId)]
                         seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck)
 
-                        atomId = translateToStdAtomName(atomId)
+                        atomId = translateToStdAtomName(atomId, compId, ccU=self.__ccU)
 
                         atomIds = self.__nefT.get_valid_star_atom(compId, atomId)[0]
 
@@ -2320,7 +2344,7 @@ class AmberMRParserListener(ParseTreeListener):
 
                     seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId if cifSeqId is None else cifSeqId, cifCheck)
 
-                    authAtomId = translateToStdAtomName(factor['auth_atom_id'])
+                    authAtomId = translateToStdAtomName(factor['auth_atom_id'], compId, ccU=self.__ccU)
 
                     atomIds = self.__nefT.get_valid_star_atom(compId, authAtomId)[0]
 

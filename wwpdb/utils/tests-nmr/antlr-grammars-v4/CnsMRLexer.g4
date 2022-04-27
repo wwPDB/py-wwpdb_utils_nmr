@@ -72,7 +72,7 @@ Ncount:			N C O U N? T?;				// Class_names Integer
 Nrestraints:		N R E S T? R? A? I? N? T? S?;		// = Integer
 Outd:			O U T D;
 Partition:		P A R T I? T? I? O? N?;			// = Integer
-Potential:		P O T E N? T? I? A? L?;			// Class_names Noe_potential
+Potential:		P O T E N? T? I? A? L? -> pushMode(POTE_MODE);	// Class_names Noe_potential
 Predict:		P R E D I? C? T?;			// { predict_statement } End
 Print:			P R I N T?;
 Raverage:		R A V E R? A? G? E?;			// Class_name Raverage_statement End
@@ -99,7 +99,7 @@ Kappa:			K A P P A?;
 Noe_avr_methods:	R '-6' | R '-3' | S U M | C E N T E? R?;
 
 // NOE potential statement
-Noe_potential:		B I H A R? M? O? N? I? C? | L O G N O? R? M? A? L? | S Q U A R? E? | S O F T S? Q? U? A? R? E? | S Y M M E? T? R? Y? | H I G H | '3' D P O;
+//Noe_potential:	B I H A R? M? O? N? I? C? | L O G N O? R? M? A? L? | S Q U A R? E? | S O F T S? Q? U? A? R? E? | S Y M M E? T? R? Y? | H I G H | '3' D P O;
 
 // Predict statement
 Cutoff:			C U T O F F;				// = Real
@@ -163,13 +163,13 @@ Sanisotropy:		S A N I S? O? T? R? O? P? Y?;		// Sanisotropy { sani_statement } E
 Coefficients:		C O E F F? I? C? I? E? N? T? S?;	// Real Real Real
 ForceConstant:		F O R C E? C? O? N? S? T? A? N? T?;	// = Real
 //Nrestraints:		N R E S T? R? A? I? N? T? S?;		// = Integer
-//Potential:		P O T E N? T? I? A? L?;			// = Rdc_potential
+//Potential:		P O T E N? T? I? A? L? -> pushMode(POTE_MODE);	// = Rdc_potential
 //Print:		P R I N T?;
 //Threshold:		T H R E S? H? O? L? D?;			// Real
 //Reset:		R E S E T?;
 
 // RDC potential statement
-Rdc_potential:		S Q U A R? E? | H A R M O? N? I? C?;
+//Rdc_potential:	S Q U A R? E? | H A R M O? N? I? C?;
 
 /* CNS: Scalar J-coupling restraints - Syntax
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
@@ -182,12 +182,12 @@ Coupling:		C O U P L? I? N? G?;			// Coupling { coupling_statement } End
 //ForceConstant:	F O R C E? C? O? N? S? T? A? N? T?;	// Real [ Real ]
 //Nrestraints:		N R E S T? R? A? I? N? T? S?;		// = Integer
 //Partition:		P A R T I? T? I? O? N?;			// = Integer
-//Potential:		P O T E N? T? I? A? L?;			// = Coupling_potential
+//Potential:		P O T E N? T? I? A? L? -> pushMode(POTE_MODE);	// = Coupling_potential
 //Print:		P R I N T?;
 //Threshold:		T H R E S? H? O? L? D?;			// Real ( All | Class = Class_name )
 //Reset:		R E S E T?;
 
-Coupling_potential:	Rdc_potential | M U L T I? P? L? E?;
+//Coupling_potential:	Rdc_potential | M U L T I? P? L? E?;
 
 /* CNS: Carbon chemical shift restraints - Syntax
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
@@ -200,7 +200,7 @@ Expectation:		E X P E C? T? A? T? I? O? N?;		// Integer Integer Real Real Real R
 //Nrestraints:		N R E S T? R? A? I? N? T? S?;		// = Integer
 PhiStep:		P H I S T? E? P?;			// = Real
 PsiStep:		P S I S T? E? P?;			// = Real
-//Potential:		P O T E N? T? I? A? L?;			// = Rdc_potential
+//Potential:		P O T E N? T? I? A? L? -> pushMode(POTE_MODE);	// = Rdc_potential
 //Print:		P R I N T?;
 //Threshold:		T H R E S? H? O? L? D?;			// Real
 Rcoil:			R C O I L?;				// selection Real Real
@@ -210,12 +210,12 @@ Zero:			Z E R O;
 /* CNS: Proton chemical shift restraints - Syntax
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
 */
-Proton:			P R O T O? N? S? H? I? F? T? S?;	// Proton { proton_shift_statement } End
+Proton:			P R O T O N S? H? I? F? T? S?;	// Proton { proton_shift_statement } End
 Observed:		O B S E R? V? E? D?;			// selection [ selection ] Real [ Real ]
 //Rcoil:		R C O I L?;				// selection Real
 Anisotropy:		A N I S O? T? R? O? P? Y?;		// selection selection selection Co_or_Cn Logical? SC_or_BB
 Amides:			A M I D E? S?;				// selection
-Carbons:		C A R B O? N? S?;			// selection
+//Carbons:		C A R B O? N? S?;			// selection
 Nitrogens:		N I T R O? G? E? N? S?;			// selection
 Oxygens:		O X Y G E? N? S?;			// selection
 RingAtoms:		R I N G A? T? O? M? S?;			// Ring_resname selection selection selection selection selection [ selection ]
@@ -223,7 +223,7 @@ AlphasAndAmides:	A L P H A? S? A? N? D? A? M? I? D? E? S?;	// selection
 //Classification:	C L A S S? I? F? I? C? A? T? I? O? N?;	// = Class_name
 Error:			E R R O R?;				// Real
 //ForceConstant:	F O R C E? C? O? N? S? T? A? N? T?;	// Real [ Real ]
-//Potential:		P O T E N? T? I? A? L?;			// Coupling_potential
+//Potential:		P O T E N? T? I? A? L? -> pushMode(POTE_MODE);	// Coupling_potential
 //Print:		P R I N T?;
 //Threshold:		T H R E S? H? O? L? D?;			// Real ( All | Class = Class_name ) Rmsd_or_Not
 //Reset:		R E S E T?;
@@ -245,7 +245,7 @@ Compressed:		C O M P R? E? S? S? E? D?;
 //ForceConstant:	F O R C E? C? O? N? S? T? A? N? T?;	// = Real
 //Nrestraints:		N R E S T? R? A? I? N? T? S?;		// = Integer
 Phase:			P H A S E?;				// Integer Integer Integer [ Integer Integer Integer ] (Integer Integer Integer ] (Integer Integer Integer ]
-//Potential:		P O T E N? T? I? A? L?;			// = Rdc_potential
+//Potential:		P O T E N? T? I? A? L? -> pushMode(POTE_MODE);	// = Rdc_potential
 //Print:		P R I N T?;
 //Threshold:		T H R E S? H? O? L? D?;			// Real ( All | Class = Class_name )
 //Reset:		R E S E T?;
@@ -263,7 +263,7 @@ Danisotropy:		D A N I S? O? T? R? O? P? Y?;		// Danisotropy { diffusion_statemen
 //Coefficients:		C O E F F? I? C? I? E? N? T? S?;	// Real Real Real Real Real
 //ForceConstant:	F O R C E? C? O? N? S? T? A? N? T?;	// = Real
 //Nrestraints:		N R E S T? R? A? I? N? T? S?;		// = Integer
-//Potential:		P O T E N? T? I? A? L?;			// = Rdc_potential
+//Potential:		P O T E N? T? I? A? L? -> pushMode(POTE_MODE);	// = Rdc_potential
 //Print:		P R I N T?;
 //Threshold:		T H R E S? H? O? L? D?;			// Real
 //Reset:		R E S E T?;
@@ -277,7 +277,7 @@ OneBond:		O N E B O? N? D?;			// OneBond { one_bond_statement } End
 //Coefficients:		C O E F F? I? C? I? E? N? T? S?;	// Real Real Real Real Real Real Real
 //ForceConstant:	F O R C E? C? O? N? S? T? A? N? T?;	// = Real
 //Nrestraints:		N R E S T? R? A? I? N? T? S?;		// = Integer
-//Potential:		P O T E N? T? I? A? L?;			// = Rdc_potential
+//Potential:		P O T E N? T? I? A? L? -> pushMode(POTE_MODE);	// = Rdc_potential
 //Print:		P R I N T?;
 //Threshold:		T H R E S? H? O? L? D?;			// Real
 //Reset:		R E S E T?;
@@ -293,7 +293,7 @@ DerivFlag:		D E R I V? F? L? A? G?;			// On_or_Off
 //Error:		E R R O R?;				// = Real
 //ForceConstant:	F O R C E? C? O? N? S? T? A? N? T?;	// = Real
 //Nrestraints:		N R E S T? R? A? I? N? T? S?;		// = Integer
-//Potential:		P O T E N? T? I? A? L?;			// = Rdc_potential
+//Potential:		P O T E N? T? I? A? L? -> pushMode(POTE_MODE);	// = Rdc_potential
 //Print:		P R I N T?;
 //Threshold:		T H R E S? H? O? L? D?;			// Real ( All | Class = Class_name )
 //Reset:		R E S E T?;
@@ -438,7 +438,18 @@ Attr_properties:	(B | B C O M P? | C H A R G? E? | D X | D Y | D Z | F B E T A? 
 Comparison_ops:		(Equ_op | Lt_op | Gt_op | Leq_op | Geq_op | Neq_op)
 			-> popMode;
 
-SPACE_A:		[ \t\r\n]+ -> skip;
+SPACE_ATTR:		[ \t\r\n]+ -> skip;
+
+mode POTE_MODE; // Insidte of Potential tag
+
+Equ_op_P:		'=';
+
+Potential_types:	(B I H A R? M? O? N? I? C? | L O G N O? R? M? A? L? | S Q U A R? E? | S O F T S? Q? U? A? R? E? | S Y M M E? T? R? Y? | H I G H | '3' D P O | H A R M O? N? I? C? | M U L T I? P? L? E?)
+			-> popMode;
+
+Simple_name_P:		SIMPLE_NAME;
+
+SPACE_POTE:		[ \t\r\n]+ -> skip;
 
 mode FLAG_MODE; // Inside of flag statement
 
@@ -451,7 +462,7 @@ End_F:			E N D
 Class_name:		SIMPLE_NAME;
 Any_class:		'*';
 
-SPACE_F:		[ \t\r\n]+ -> skip;
+SPACE_FLAG:		[ \t\r\n]+ -> skip;
 
 mode VECTOR_EXPR_MODE; // vector expression
 

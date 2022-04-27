@@ -574,8 +574,8 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#noe_statement.
     def enterNoe_statement(self, ctx: XplorMRParser.Noe_statementContext):
-        if ctx.Noe_potential():
-            code = str(ctx.Noe_potential()).upper()
+        if ctx.Potential_types():
+            code = str(ctx.Potential_types()).upper()
             if code.startswith('BIHA'):
                 self.noePotential = 'biharmonic'
             elif code.startswith('LOGN'):
@@ -588,29 +588,34 @@ class XplorMRParserListener(ParseTreeListener):
                 self.noePotential = 'symmetry'
             elif code.startswith('HIGH'):
                 self.noePotential = 'high'
-            else:  # 3DPO
+            elif code.startswith('3DPO'):
                 self.noePotential = '3dpo'
+            else:
+                self.noePotential = 'biharmonic'
+                self.warningMessage += "[Enum mismatch ignorable] "\
+                    f"The potential type {str(ctx.Potential_types())!r} is unknown potential type for the 'NOE' statements. "\
+                    f"Instead, set the default potential {self.noePotential}.\n"
 
         elif ctx.SqExponent():
             self.squareExponent = self.getNumber_s(ctx.number_s())
             if self.squareExponent <= 0.0:
                 self.warningMessage += "[Invalid data] "\
                     "The exponent value of square-well or soft-square function "\
-                    f"NOE {str(ctx.SqExponent())} {str(ctx.Simple_name())} {self.squareExponent} END' must be a positive value.\n"
+                    f"'NOE {str(ctx.SqExponent())} {str(ctx.Simple_name())} {self.squareExponent} END' must be a positive value.\n"
 
         elif ctx.SqOffset():
             self.squareOffset = self.getNumber_s(ctx.number_s())
             if self.squareOffset < 0.0:
                 self.warningMessage += "[Invalid data] "\
                     "The offset value of square-well or soft-square function "\
-                    f"NOE {str(ctx.SqOffset())} {str(ctx.Simple_name())} {self.squareOffset} END' must not be a negative value.\n"
+                    f"'NOE {str(ctx.SqOffset())} {str(ctx.Simple_name())} {self.squareOffset} END' must not be a negative value.\n"
 
         elif ctx.Rswitch():
             self.rSwitch = self.getNumber_s(ctx.number_s())
             if self.rSwitch < 0.0:
                 self.warningMessage += "[Invalid data] "\
                     "The smoothing parameter of soft-square function "\
-                    f"NOE {str(ctx.Rswitch())} {str(ctx.Simple_name())} {self.rSwitch} END' must not be a negative value.\n"
+                    f"'NOE {str(ctx.Rswitch())} {str(ctx.Simple_name())} {self.rSwitch} END' must not be a negative value.\n"
 
         elif ctx.Scale():
             self.scale = self.getNumber_s(ctx.number_s())
@@ -1197,12 +1202,17 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#sani_statement.
     def enterSani_statement(self, ctx: XplorMRParser.Sani_statementContext):
-        if ctx.Rdc_potential():
-            code = str(ctx.Rdc_potential()).upper()
+        if ctx.Potential_types():
+            code = str(ctx.Potential_types()).upper()
             if code.startswith('SQUA'):
                 self.potential = 'square'
             elif code.startswith('HARM'):
                 self.potential = 'harmonic'
+            else:
+                self.potential = 'square'
+                self.warningMessage += "[Enum mismatch ignorable] "\
+                    f"The potential type {str(ctx.Potential_types())!r} is unknown potential type for the 'SANIsotropy' statements. "\
+                    f"Instead, set the default potential {self.potential}.\n"
 
         elif ctx.Reset():
             self.potential = 'square'
@@ -1488,12 +1498,17 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#xdip_statement.
     def enterXdip_statement(self, ctx: XplorMRParser.Xdip_statementContext):
-        if ctx.Rdc_potential():
-            code = str(ctx.Rdc_potential()).upper()
+        if ctx.Potential_types():
+            code = str(ctx.Potential_types()).upper()
             if code.startswith('SQUA'):
                 self.potential = 'square'
             elif code.startswith('HARM'):
                 self.potential = 'harmonic'
+            else:
+                self.potential = 'square'
+                self.warningMessage += "[Enum mismatch ignorable] "\
+                    f"The potential type {str(ctx.Potential_types())!r} is unknown potential type for the 'XDIPolar' statements. "\
+                    f"Instead, set the default potential {self.potential}.\n"
 
         elif ctx.Rdc_avr_methods():
             code = str(ctx.Rdc_avr_methods()).upper()
@@ -2008,12 +2023,17 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#tenso_statement.
     def enterTenso_statement(self, ctx: XplorMRParser.Tenso_statementContext):
-        if ctx.Rdc_potential():
-            code = str(ctx.Rdc_potential()).upper()
+        if ctx.Potential_types():
+            code = str(ctx.Potential_types()).upper()
             if code.startswith('SQUA'):
                 self.potential = 'square'
             elif code.startswith('HARM'):
                 self.potential = 'harmonic'
+            else:
+                self.potential = 'square'
+                self.warningMessage += "[Enum mismatch ignorable] "\
+                    f"The potential type {str(ctx.Potential_types())!r} is unknown potential type for 'TENSOr' statements. "\
+                    f"Instead, set the default potential {self.potential}.\n"
 
         elif ctx.Reset():
             self.potential = 'square'
@@ -2135,12 +2155,17 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#anis_statement.
     def enterAnis_statement(self, ctx: XplorMRParser.Anis_statementContext):
-        if ctx.Rdc_potential():
-            code = str(ctx.Rdc_potential()).upper()
+        if ctx.Potential_types():
+            code = str(ctx.Potential_types()).upper()
             if code.startswith('SQUA'):
                 self.potential = 'square'
             elif code.startswith('HARM'):
                 self.potential = 'harmonic'
+            else:
+                self.potential = 'square'
+                self.warningMessage += "[Enum mismatch ignorable] "\
+                    f"The potential type {str(ctx.Potential_types())!r} is unknown potential type for the 'ANISotropy' statements. "\
+                    f"Instead, set the default potential {self.potential}.\n"
 
         elif ctx.Reset():
             self.potential = 'square'
@@ -2345,12 +2370,17 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#coupling_statement.
     def enterCoupling_statement(self, ctx: XplorMRParser.Coupling_statementContext):  # pylint: disable=unused-argument
-        if ctx.Coupling_potential():
-            code = str(ctx.Coupling_potential()).upper()
+        if ctx.Potential_types():
+            code = str(ctx.Potential_types()).upper()
             if code.startswith('SQUA'):
                 self.potential = 'square'
             elif code.startswith('HARM'):
                 self.potential = 'harmonic'
+            else:
+                self.potential = 'square'
+                self.warningMessage += "[Enum mismatch ignorable] "\
+                    f"The potential type {str(ctx.Potential_types())!r} is unknown potential type for the 'COUPling' statements. "\
+                    f"Instead, set the default potential {self.potential}.\n"
 
         elif ctx.Reset():
             self.potential = 'square'
@@ -2533,12 +2563,17 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#carbon_shift_statement.
     def enterCarbon_shift_statement(self, ctx: XplorMRParser.Carbon_shift_statementContext):
-        if ctx.Rdc_potential():
-            code = str(ctx.Rdc_potential()).upper()
+        if ctx.Potential_types():
+            code = str(ctx.Potential_types()).upper()
             if code.startswith('SQUA'):
                 self.potential = 'square'
             elif code.startswith('HARM'):
                 self.potential = 'harmonic'
+            else:
+                self.potential = 'square'
+                self.warningMessage += "[Enum mismatch ignorable] "\
+                    f"The potential type {str(ctx.Potential_types())!r} is unknown potential type for the 'CARBon' statements. "\
+                    f"Instead, set the default potential {self.potential}.\n"
 
         elif ctx.Reset():
             self.potential = 'square'
@@ -2674,12 +2709,17 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#proton_shift_statement.
     def enterProton_shift_statement(self, ctx: XplorMRParser.Proton_shift_statementContext):
-        if ctx.Coupling_potential():
-            code = str(ctx.Coupling_potential()).upper()
+        if ctx.Potential_types():
+            code = str(ctx.Potential_types()).upper()
             if code.startswith('SQUA'):
                 self.potential = 'square'
             elif code.startswith('HARM'):
                 self.potential = 'harmonic'
+            else:
+                self.potential = 'square'
+                self.warningMessage += "[Enum mismatch ignorable] "\
+                    f"The potential type {str(ctx.Potential_types())!r} is unknown potential type for the 'PROTONshift' statements. "\
+                    f"Instead, set the default potential {self.potential}.\n"
 
         elif ctx.Reset():
             self.potential = 'square'
@@ -2691,7 +2731,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by XplorMRParser#proton_shift_statement.
     def exitProton_shift_statement(self, ctx: XplorMRParser.Proton_shift_statementContext):  # pylint: disable=unused-argument
         if self.__debug:
-            print(f"subtype={self.__cur_subtype} (PROT) classification={self.classification}")
+            print(f"subtype={self.__cur_subtype} (PROTON) classification={self.classification}")
 
     # Enter a parse tree produced by XplorMRParser#observed.
     def enterObserved(self, ctx: XplorMRParser.ObservedContext):  # pylint: disable=unused-argument
@@ -2748,14 +2788,14 @@ class XplorMRParserListener(ParseTreeListener):
         if lenAtomSelectionSet == 1:
             for atom1 in self.atomSelectionSet[0]:
                 if self.__debug:
-                    print(f"subtype={self.__cur_subtype} (PROT/OBSE) id={self.procsRestraints} "
+                    print(f"subtype={self.__cur_subtype} (PROTON/OBSE) id={self.procsRestraints} "
                           f"atom={atom1} {dstFunc}")
 
         else:
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
                 if self.__debug:
-                    print(f"subtype={self.__cur_subtype} (PROT/OBSE) id={self.procsRestraints} "
+                    print(f"subtype={self.__cur_subtype} (PROTON/OBSE) id={self.procsRestraints} "
                           f"atom1={atom1} atom2={atom2} {dstFunc}")
 
     # Enter a parse tree produced by XplorMRParser#proton_shift_rcoil.
@@ -2783,7 +2823,7 @@ class XplorMRParserListener(ParseTreeListener):
 
         for atom1 in self.atomSelectionSet[0]:
             if self.__debug:
-                print(f"subtype={self.__cur_subtype} (PROT/RCOI) id={self.procsRestraints} "
+                print(f"subtype={self.__cur_subtype} (PROTON/RCOI) id={self.procsRestraints} "
                       f"atom={atom1} {dstFunc}")
 
     # Enter a parse tree produced by XplorMRParser#proton_shift_anisotropy.
@@ -2798,7 +2838,7 @@ class XplorMRParserListener(ParseTreeListener):
             is_cooh = str(ctx.Logical()) in ('TRUE', 'ON')
         sc_or_bb = str(ctx.Simple_name(1))
 
-        if not self.areUniqueCoordAtoms('a proton chemical shift (PROT/ANIS)'):
+        if not self.areUniqueCoordAtoms('a proton chemical shift (PROTON/ANIS)'):
             return
 
         dstFunc = {'co_or_cn': co_or_cn.lower(), 'is_cooh': is_cooh, 'sc_or_bb': sc_or_bb.lower()}
@@ -2829,7 +2869,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                      self.atomSelectionSet[1],
                                                      self.atomSelectionSet[2]):
             if self.__debug:
-                print(f"subtype={self.__cur_subtype} (PROT/ANIS) id={self.procsRestraints} "
+                print(f"subtype={self.__cur_subtype} (PROTON/ANIS) id={self.procsRestraints} "
                       f"atom1={atom1} atom2={atom2} atom3={atom3} {dstFunc}")
 
     # Enter a parse tree produced by XplorMRParser#proton_shift_amides.
@@ -2845,7 +2885,7 @@ class XplorMRParserListener(ParseTreeListener):
                 return
 
         for atom1 in self.atomSelectionSet[0]:
-            print(f"subtype={self.__cur_subtype} (PROT/AMID) id={self.procsRestraints} "
+            print(f"subtype={self.__cur_subtype} (PROTON/AMID) id={self.procsRestraints} "
                   f"atom={atom1}")
 
     # Enter a parse tree produced by XplorMRParser#proton_shift_carbons.
@@ -2861,7 +2901,7 @@ class XplorMRParserListener(ParseTreeListener):
                 return
 
         for atom1 in self.atomSelectionSet[0]:
-            print(f"subtype={self.__cur_subtype} (PROT/CARB) id={self.procsRestraints} "
+            print(f"subtype={self.__cur_subtype} (PROTON/CARB) id={self.procsRestraints} "
                   f"atom={atom1}")
 
     # Enter a parse tree produced by XplorMRParser#proton_shift_nitrogens.
@@ -2877,7 +2917,7 @@ class XplorMRParserListener(ParseTreeListener):
                 return
 
         for atom1 in self.atomSelectionSet[0]:
-            print(f"subtype={self.__cur_subtype} (PROT/NITR) id={self.procsRestraints} "
+            print(f"subtype={self.__cur_subtype} (PROTON/NITR) id={self.procsRestraints} "
                   f"atom={atom1}")
 
     # Enter a parse tree produced by XplorMRParser#proton_shift_oxygens.
@@ -2893,7 +2933,7 @@ class XplorMRParserListener(ParseTreeListener):
                 return
 
         for atom1 in self.atomSelectionSet[0]:
-            print(f"subtype={self.__cur_subtype} (PROT/OXYG) id={self.procsRestraints} "
+            print(f"subtype={self.__cur_subtype} (PROTON/OXYG) id={self.procsRestraints} "
                   f"atom={atom1}")
 
     # Enter a parse tree produced by XplorMRParser#proton_shift_ring_atoms.
@@ -2911,7 +2951,7 @@ class XplorMRParserListener(ParseTreeListener):
                 f"{ring_name!r} must be one of {ringNames}.\n"
             return
 
-        if not self.areUniqueCoordAtoms('a proton chemical shift (PROT/RING)'):
+        if not self.areUniqueCoordAtoms('a proton chemical shift (PROTON/RING)'):
             return
 
         if len(self.atomSelectionSet) == 5:
@@ -2921,7 +2961,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                                        self.atomSelectionSet[3],
                                                                        self.atomSelectionSet[4]):
                 if self.__debug:
-                    print(f"subtype={self.__cur_subtype} (PROT/RING) id={self.procsRestraints} "
+                    print(f"subtype={self.__cur_subtype} (PROTON/RING) id={self.procsRestraints} "
                           f"ring_name={ring_name} atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} atom5={atom5}")
 
         else:
@@ -2932,7 +2972,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                                               self.atomSelectionSet[4],
                                                                               self.atomSelectionSet[5]):
                 if self.__debug:
-                    print(f"subtype={self.__cur_subtype} (PROT/RING) id={self.procsRestraints} "
+                    print(f"subtype={self.__cur_subtype} (PROTON/RING) id={self.procsRestraints} "
                           f"ring_name={ring_name} atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} atom5={atom5} atom6={atom6}")
 
     # Enter a parse tree produced by XplorMRParser#proton_shift_alphas_and_amides.
@@ -2950,7 +2990,7 @@ class XplorMRParserListener(ParseTreeListener):
                 return
 
         for atom1 in self.atomSelectionSet[0]:
-            print(f"subtype={self.__cur_subtype} (PROT/ALPH) id={self.procsRestraints} "
+            print(f"subtype={self.__cur_subtype} (PROTON/ALPH) id={self.procsRestraints} "
                   f"atom={atom1}")
 
     # Enter a parse tree produced by XplorMRParser#ramachandran_statement.
@@ -3113,12 +3153,17 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#diffusion_statement.
     def enterDiffusion_statement(self, ctx: XplorMRParser.Diffusion_statementContext):
-        if ctx.Rdc_potential():
-            code = str(ctx.Rdc_potential()).upper()
+        if ctx.Potential_types():
+            code = str(ctx.Potential_types()).upper()
             if code.startswith('SQUA'):
                 self.potential = 'square'
             elif code.startswith('HARM'):
                 self.potential = 'harmonic'
+            else:
+                self.potential = 'square'
+                self.warningMessage += "[Enum mismatch ignorable] "\
+                    f"The potential type {str(ctx.Potential_types())!r} is unknown potential type for the 'DANIsotropy' statements. "\
+                    f"Instead, set the default potential {self.potential}.\n"
 
         elif ctx.Reset():
             self.potential = 'square'
@@ -3505,12 +3550,17 @@ class XplorMRParserListener(ParseTreeListener):
             elif code.startswith('NITR'):
                 self.csaType = 'nitr'
 
-        elif ctx.Rdc_potential():
-            code = str(ctx.Rdc_potential()).upper()
+        elif ctx.Potential_types():
+            code = str(ctx.Potential_types()).upper()
             if code.startswith('SQUA'):
                 self.potential = 'square'
             elif code.startswith('HARM'):
                 self.potential = 'harmonic'
+            else:
+                self.potential = 'square'
+                self.warningMessage += "[Enum mismatch ignorable] "\
+                    f"The potential type {str(ctx.Potential_types())!r} is unknown potential type for the 'DCSA' statements. "\
+                    f"Instead, set the default potential {self.potential}.\n"
 
         elif ctx.Scale():
             self.scale = self.getNumber_s(ctx.number_s(0))
@@ -3873,12 +3923,17 @@ class XplorMRParserListener(ParseTreeListener):
     def enterPcsa_statement(self, ctx: XplorMRParser.Pcsa_statementContext):
         self.csaType = None
 
-        if ctx.Rdc_potential():
-            code = str(ctx.Rdc_potential()).upper()
+        if ctx.Potential_types():
+            code = str(ctx.Potential_types()).upper()
             if code.startswith('SQUA'):
                 self.potential = 'square'
             elif code.startswith('HARM'):
                 self.potential = 'harmonic'
+            else:
+                self.potential = 'square'
+                self.warningMessage += "[Enum mismatch ignorable] "\
+                    f"The potential type {str(ctx.Potential_types())!r} is unknown potential type for the 'PCSA' statements. "\
+                    f"Instead, set the default potential {self.potential}.\n"
 
         elif ctx.Scale():
             self.scale = self.getNumber_s(ctx.number_s(0))
@@ -3952,12 +4007,17 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#pre_statement.
     def enterPre_statement(self, ctx: XplorMRParser.Pre_statementContext):
-        if ctx.Rdc_potential():
-            code = str(ctx.Rdc_potential()).upper()
+        if ctx.Potential_types():
+            code = str(ctx.Potential_types()).upper()
             if code.startswith('SQUA'):
                 self.potential = 'square'
             elif code.startswith('HARM'):
                 self.potential = 'harmonic'
+            else:
+                self.potential = 'square'
+                self.warningMessage += "[Enum mismatch ignorable] "\
+                    f"The potential type {str(ctx.Potential_types())!r} is unknown potential type for the 'PMAGnetic' statements. "\
+                    f"Instead, set the default potential {self.potential}.\n"
 
         elif ctx.Reset():
             self.potential = 'square'

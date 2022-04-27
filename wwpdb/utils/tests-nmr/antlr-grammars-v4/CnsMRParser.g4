@@ -100,7 +100,7 @@ noe_statement:
 	Nrestraints Equ_op? Integer |
 	Outd |
 	Partition Equ_op? Integer |
-	Potential Simple_name Noe_potential |
+	Potential Simple_name_P Potential_types |
 	Predict predict_statement End |
 	Print Threshold Equ_op? number_s |
 	Raverage Simple_name *? End |
@@ -174,7 +174,7 @@ sani_statement:
 	Coefficients number_s number_s number_s |
 	ForceConstant Equ_op? number_s |
 	Nrestraints Equ_op? Integer |
-	Potential Equ_op? Rdc_potential |
+	Potential Equ_op_P? Potential_types |
 	Print Threshold number_s |
 	Reset;
 
@@ -192,7 +192,7 @@ coupling_statement:
 	ForceConstant number_s number_s? |
 	Nrestraints Equ_op? Integer |
 	Partition Equ_op? Integer |
-	Potential Equ_op? Coupling_potential |
+	Potential Equ_op_P? Potential_types |
 	Print Threshold number_s (All | (Classification Equ_op? Simple_name)) |
 	Reset;
 
@@ -210,7 +210,7 @@ carbon_shift_statement:
 	Nrestraints Equ_op? Integer |
 	PhiStep Equ_op? number_s |
 	PsiStep Equ_op? number_s |
-	Potential Equ_op? Rdc_potential |
+	Potential Equ_op_P? Potential_types |
 	Print Threshold number_s |
 	carbon_shift_rcoil |
 	Reset |
@@ -238,7 +238,7 @@ proton_shift_statement:
 	Classification Equ_op? Simple_name |
 	Error Equ_op? number_s |
 	ForceConstant number_s number_s? |
-	Potential Coupling_potential |
+	Potential Potential_types |
 	Print Threshold number_s (All | (Classification Equ_op? Simple_name)) Simple_name |
 	Reset;
 
@@ -255,7 +255,7 @@ proton_shift_amides:
 	Amides selection;
 
 proton_shift_carbons:
-	Carbons selection;
+	Carbon selection;
 
 proton_shift_nitrogens:
 	Nitrogens selection;
@@ -281,7 +281,7 @@ conformation_statement:
 	ForceConstant Equ_op? number_s |
 	Nrestraints Equ_op? Integer |
 	Phase Integer Integer Integer (Integer Integer Integer)? (Integer Integer Integer)? (Integer Integer Integer)? |
-	Potential Equ_op? Rdc_potential |
+	Potential Equ_op_P? Potential_types |
 	Print Threshold number_s (All | (Classification Equ_op? Simple_name)) |
 	Reset |
 	Size Dimensions Integer Integer? Integer? Integer? |
@@ -299,7 +299,7 @@ diffusion_statement:
 	Coefficients number_s number_s number_s number_s number_s |
 	ForceConstant Equ_op? number_s |
 	Nrestraints Equ_op? Integer |
-	Potential Equ_op? Rdc_potential |
+	Potential Equ_op_P? Potential_types |
 	Print Threshold number_s |
 	Reset;
 
@@ -315,7 +315,7 @@ one_bond_coupling_statement:
 	Coefficients number_s number_s number_s number_s number_s number_s number_s |
 	ForceConstant Equ_op? number_s |
 	Nrestraints Equ_op? Integer |
-	Potential Equ_op? Rdc_potential |
+	Potential Equ_op_P? Potential_types |
 	Print Threshold number_s |
 	Reset;
 
@@ -333,7 +333,7 @@ angle_db_statement:
 	Error Equ_op? number_s |
 	ForceConstant Equ_op? number_s |
 	Nrestraints Equ_op? Integer |
-	Potential Equ_op? Rdc_potential |
+	Potential Equ_op_P? Potential_types |
 	Print Threshold number_s (All | (Classification Equ_op? Simple_name)) |
 	Reset |
 	Size Angle_dihedral Integer Integer |

@@ -66,7 +66,7 @@ Distribute:		D I S T R? I? B? U? T? E?;		// Class_name Class_name Real
 Monomers:		M O N O M? E? R? S?;			// Class_names Integer
 Ncount:			N C O U N? T?;				// Class_names Integer
 Nrestraints:		N R E S T? R? A? I? N? T? S?;		// = Integer
-Potential:		P O T E N? T? I? A? L?;			// Class_names Noe_potential
+Potential:		P O T E N? T? I? A? L? -> pushMode(POTE_MODE);	// Class_names Noe_potential
 Predict:		P R E D I? C? T?;			// { predict_statement } End
 Print:			P R I N T?;
 Threshold:		T H R E S? H? O? L? D?;			// = Real
@@ -83,7 +83,7 @@ Temperature:		T E M P E? R? A? T? U? R? E?;		// = Real
 Noe_avr_methods:	R '-6' | R '-3' | S U M | C E N T E? R?;
 
 // NOE potential statement
-Noe_potential:		B I H A R? M? O? N? I? C? | L O G N O? R? M? A? L? | S Q U A R? E? | S O F T S? Q? U? A? R? E? | S Y M M E? T? R? Y? | H I G H | '3' D P O;
+//Noe_potential:	B I H A R? M? O? N? I? C? | L O G N O? R? M? A? L? | S Q U A R? E? | S O F T S? Q? U? A? R? E? | S Y M M E? T? R? Y? | H I G H | '3' D P O;
 
 // Predict statement
 Cutoff:			C U T O F F;				// = Real
@@ -119,13 +119,13 @@ Sanisotropy:		S A N I S? O? T? R? O? P? Y?;		// Sanisotropy { sani_statement } E
 Coefficients:		C O E F F? I? C? I? E? N? T? S?;	// Real Real Real
 ForceConstant:		F O R C E? C? O? N? S? T? A? N? T?;	// Real
 //Nrestraints:		N R E S T? R? A? I? N? T? S?;		// Integer
-//Potential:		P O T E N? T? I? A? L?;			// Rdc_potential
+//Potential:		P O T E N? T? I? A? L? -> pushMode(POTE_MODE);	// Rdc_potential
 //Print:		P R I N T?;
 //Threshold:		T H R E S? H? O? L? D?;			// Real
 //Reset:		R E S E T?;
 
 // RDC potential statement
-Rdc_potential:		S Q U A R? E? | H A R M O? N? I? C?;
+//Rdc_potential:	S Q U A R? E? | H A R M O? N? I? C?;
 
 /* XPLOR-NIH: RDC - Syntax (XDIP)
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node419.html
@@ -134,20 +134,20 @@ Xdipolar:		X D I P O? L? A? R?;			// Xdipolar { xdip_statement } End
 Dipolar:		D I P O L? A? R?;			// Dipolar { xdip_statement } End
 //Assign:		A S S I G? N?;				// selection selection selection selection selection selection Real Real Real [ Real Real Real ]
 //Classification:	C L A S S? I? F? I? C? A? T? I? O? N?;	// Class_name
-Type:			T Y P E;				// Rdc_dist_fix_types
+Type:			T Y P E -> pushMode(TYPE_MODE);		// Rdc_dist_fix_types
 //Scale:		S C A L E?;				// Real
 Sign:			S I G N;				// Logical
 Average:		A V E R A? G? E?;			// Rdc_avr_methods
 //Coefficients:		C O E F F? I? C? I? E? N? T? S?;	// Real Real Real
 //ForceConstant:	F O R C E? C? O? N? S? T? A? N? T?;	// Real
 //Nrestraints:		N R E S T? R? A? I? N? T? S?;		// Integer
-//Potential:		P O T E N? T? I? A? L?;			// Rdc_potential
+//Potential:		P O T E N? T? I? A? L? -> pushMode(POTE_MODE);	// Rdc_potential
 //Print:		P R I N T?;
 //Threshold:		T H R E S? H? O? L? D?;			// Real
 //Reset:		R E S E T?;
 
 // RDC distance fixing types
-Rdc_dist_fix_types:	F I X D | V A R D;
+//Rdc_dist_fix_types:	F I X D | V A R D;
 // RDC averaging methods
 Rdc_avr_methods:	S U M | S U M D I? F? | A V E R A? G? E?;
 
@@ -173,7 +173,7 @@ Tensor:			T E N S O R?;				// Tensor { tens_statement } End
 //Classification:	C L A S S? I? F? I? C? A? T? I? O? N?;	// Class_name
 //Coefficients:		C O E F F? I? C? I? E? N? T? S?;	// Real
 //Nrestraints:		N R E S T? R? A? I? N? T? S?;		// Integer
-//Potential:		P O T E N? T? I? A? L?;			// Rdc_potential
+//Potential:		P O T E N? T? I? A? L? -> pushMode(POTE_MODE);	// Rdc_potential
 //Print:		P R I N T?;
 //Threshold:		T H R E S? H? O? L? D?;			// Real
 //Reset:		R E S E T?;
@@ -187,14 +187,14 @@ Anisotropy:		A N I S O? T? R? O? P? Y?;		// Anisotropy { anis_statement } End
 //Coefficients:		C O E F F? I? C? I? E? N? T? S?;	// Real Real Real Real
 //ForceConstant:	F O R C E? C? O? N? S? T? A? N? T?;	// Real
 //Nrestraints:		N R E S T? R? A? I? N? T? S?;		// Integer
-//Potential:		P O T E N? T? I? A? L?;			// Rdc_potential
+//Potential:		P O T E N? T? I? A? L? -> pushMode(POTE_MODE);	// Rdc_potential
 //Print:		P R I N T?;
 //Threshold:		T H R E S? H? O? L? D?;			// Real
 //Reset:		R E S E T?;
-//Type:			T Y P E;				// Rdc_anis_types
+//Type:			T Y P E -> pushMode(TYPE_MODE);		// Rdc_anis_types
 
 // RDC anisotropy types
-Rdc_anis_types:		R E L A X | M I S C;
+//Rdc_anis_types:	R E L A X | M I S C;
 
 /* XPLOR-NIH: Planality restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/plan_syntax.html
@@ -237,13 +237,13 @@ DegEnergy:		D E G E N? E? R? G? Y?;			// Number_of_couplings
 //ForceConstant:	F O R C E? C? O? N? S? T? A? N? T?;	// Real [ Real ]
 //Nrestraints:		N R E S T? R? A? I? N? T? S?;		// Integer
 //Partition:		P A R T I? T? I? O? N?;			// = Integer
-//Potential:		P O T E N? T? I? A? L?;			// Coupling_potential
+//Potential:		P O T E N? T? I? A? L? -> pushMode(POTE_MODE);	// Coupling_potential
 //Print:		P R I N T?;
 //Threshold:		T H R E S? H? O? L? D?;			// Real ( All | Class Class_name )
 //Reset:		R E S E T?;
 
 //Number_of_couplings:	'1' | '2';
-Coupling_potential:	Rdc_potential;
+//Coupling_potential:	Rdc_potential;
 
 /* XPLOR-NIH: Carbon chemical shift restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node404.html
@@ -256,7 +256,7 @@ Carbon:			C A R B O? N?;				// Carbon { carbon_shift_statement } End
 //Nrestraints:		N R E S T? R? A? I? N? T? S?;		// Integer
 PhiStep:		P H I S T? E? P?;			// Real
 PsiStep:		P S I S T? E? P?;			// Real
-//Potential:		P O T E N? T? I? A? L?;			// Rdc_potential
+//Potential:		P O T E N? T? I? A? L? -> pushMode(POTE_MODE);	// Rdc_potential
 //Print:		P R I N T?;
 //Threshold:		T H R E S? H? O? L? D?;			// Real
 Rcoil:			R C O I L?;				// selection Real Real
@@ -266,12 +266,12 @@ Rcoil:			R C O I L?;				// selection Real Real
 /* XPLOR-NIH: Proton chemical shift restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node407.html
 */
-Proton:			P R O T O? N? S? H? I? F? T? S?;	// Proton { proton_shift_statement } End
+Proton:			P R O T O N S? H? I? F? T? S?;	// Proton { proton_shift_statement } End
 Observed:		O B S E R? V? E? D?;			// selection [ selection ] Real [ Real ]
 //Rcoil:		R C O I L?;				// selection Real
 //Anisotropy:		A N I S O? T? R? O? P? Y?;		// selection selection selection Co_or_Cn Logical? SC_or_BB
 Amides:			A M I D E? S?;				// selection
-Carbons:		C A R B O? N? S?;			// selection
+//Carbons:		C A R B O? N? S?;			// selection
 Nitrogens:		N I T R O? G? E? N? S?;			// selection
 Oxygens:		O X Y G E? N? S?;			// selection
 RingAtoms:		R I N G A? T? O? M? S?;			// Ring_resname selection selection selection selection selection [ selection ]
@@ -280,7 +280,7 @@ AlphasAndAmides:	A L P H A? S? A? N? D? A? M? I? D? E? S?;	// selection
 Error:			E R R O R?;				// Real
 //DegEnergy:		D E G E N? E? R? G? Y?;			// Number_of_shifts
 //ForceConstant:	F O R C E? C? O? N? S? T? A? N? T?;	// Real [ Real ]
-//Potential:		P O T E N? T? I? A? L?;			// Coupling_potential
+//Potential:		P O T E N? T? I? A? L? -> pushMode(POTE_MODE);	// Coupling_potential
 //Print:		P R I N T?;
 //Threshold:		T H R E S? H? O? L? D?;			// Real ( All | Class Class_name ) Rmsd_or_Not
 //Reset:		R E S E T?;
@@ -333,14 +333,14 @@ Danisotropy:		D A N I S? O? T? R? O? P? Y?;		// Danisotropy { diffusion_statemen
 //Coefficients:		C O E F F? I? C? I? E? N? T? S?;	// Real Real Real Real Real
 //ForceConstant:	F O R C E? C? O? N? S? T? A? N? T?;	// Real
 //Nrestraints:		N R E S T? R? A? I? N? T? S?;		// Integer
-//Potential:		P O T E N? T? I? A? L?;			// Rdc_potential
+//Potential:		P O T E N? T? I? A? L? -> pushMode(POTE_MODE);	// Rdc_potential
 //Print:		P R I N T?;
 //Threshold:		T H R E S? H? O? L? D?;			// Real
 //Reset:		R E S E T?;
-//Type:			T Y P E;				// Diff_anis_types
+//Type:			T Y P E -> pushMode(TYPE_MODE);		// Diff_anis_types
 
 // Diffusion anisotropy types
-Diff_anis_types:	D I F F | M I S C;
+//Diff_anis_types:	D I F F | M I S C;
 
 /* XPLOR-NIH: Residue-residue position/orientation database restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node425.html
@@ -370,17 +370,18 @@ Dcsa:			D C S A;				// Dcsa { csa_statement } End
 //Assign:		A S S I G? N?;				// selection selection selection selection selection selection selection Real Real Real
 //Classification:	C L A S S? I? F? I? C? A? T? I? O? N?;	// Class_name
 //Scale:		S C A L E?:				// Real
-//Type:			T Y P E;				// Csa_types
+//Type:			T Y P E -> pushMode(TYPE_MODE);		// Csa_types
 //Coefficients:		C O E F F? I? C? I? E? N? T? S?;	// Real Real Real
 Sigma:			S I G M A?;				// Real Real Real
 //ForceConstant:	F O R C E? C? O? N? S? T? A? N? T?;	// Real
 //Nrestraints:		N R E S T? R? A? I? N? T? S?;		// Integer
-//Potential:		P O T E N? T? I? A? L?;			// Rdc_potential
+//Potential:		P O T E N? T? I? A? L? -> pushMode(POTE_MODE);	// Rdc_potential
 //Print:		P R I N T?;
 //Threshold:		T H R E S? H? O? L? D?;			// Real
 //Reset:		R E S E T?;
 
-Csa_types:		P H O S | C A R B | N I T R;
+// Chemical shift anisotropy types
+//Csa_types:		P H O S | C A R B | N I T R;
 
 /* XPLOR-NIH: Pseudo chemical shift anisotropy restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node430.html
@@ -393,7 +394,7 @@ Pcsa:			P C S A;				// Pcsa { pcsa_statement } End
 //Sigma:		S I G M A?;				// Real Real Real Real
 //ForceConstant:	F O R C E? C? O? N? S? T? A? N? T?;	// Real
 //Nrestraints:		N R E S T? R? A? I? N? T? S?;		// Integer
-//Potential:		P O T E N? T? I? A? L?;			// Rdc_potential
+//Potential:		P O T E N? T? I? A? L? -> pushMode(POTE_MODE);	// Rdc_potential
 //Print:		P R I N T?;
 //Threshold:		T H R E S? H? O? L? D?;			// Real
 //Reset:		R E S E T?;
@@ -407,7 +408,7 @@ OneBond:		O N E B O? N? D?;			// OneBond { one_bond_statement } End
 //Coefficients:		C O E F F? I? C? I? E? N? T? S?;	// Real Real Real Real Real Real Real
 //ForceConstant:	F O R C E? C? O? N? S? T? A? N? T?;	// Real
 //Nrestraints:		N R E S T? R? A? I? N? T? S?;		// Integer
-//Potential:		P O T E N? T? I? A? L?;			// Rdc_potential
+//Potential:		P O T E N? T? I? A? L? -> pushMode(POTE_MODE);	// Rdc_potential
 //Print:		P R I N T?;
 //Threshold:		T H R E S? H? O? L? D?;			// Real
 //Reset:		R E S E T?;
@@ -423,7 +424,7 @@ DerivFlag:		D E R I V? F? L? A? G?;			// On_or_Off
 //Error:		E R R O R?;				// Real
 //ForceConstant:	F O R C E? C? O? N? S? T? A? N? T?;	// Real
 //Nrestraints:		N R E S T? R? A? I? N? T? S?;		// Integer
-//Potential:		P O T E N? T? I? A? L?;			// Rdc_potential
+//Potential:		P O T E N? T? I? A? L? -> pushMode(POTE_MODE);	// Rdc_potential
 //Print:		P R I N T?;
 //Threshold:		T H R E S? H? O? L? D?;			// Real ( All | Class Class_name )
 //Reset:		R E S E T?;
@@ -441,7 +442,7 @@ Paramagnetic:		P M A G N? E? T? I? C?;			// Paramagnetic { pre_statement } End
 //Classification:	C L A S S? I? F? I? C? A? T? I? O? N?;	// = Class_name
 //ForceConstant:	F O R C E? C? O? N? S? T? A? N? T?;	// = Class_name Real
 //Nrestraints:		N R E S T? R? A? I? N? T? S?;		// = Integer
-//Potential:		P O T E N? T? I? A? L?;			// = Class_name Rdc_potential
+//Potential:		P O T E N? T? I? A? L? -> pushMode(POTE_MODE);	// = Class_name Rdc_potential
 Kconst:			K C O N S? T?;				// = Class_name Real
 Omega:			O M E G A?;				// = Class_name Real
 Tauc:			T A U C;				// = Class_name Real Real
@@ -669,7 +670,31 @@ Attr_properties:	(B | B C O M P? | C H A R G? E? | D X | D Y | D Z | F B E T A? 
 Comparison_ops:		(Equ_op | Lt_op | Gt_op | Leq_op | Geq_op | Neq_op)
 			-> popMode;
 
-SPACE_A:		[ \t\r\n]+ -> skip;
+SPACE_ATTR:		[ \t\r\n]+ -> skip;
+
+mode POTE_MODE; // Insidte of Potential tag
+
+Equ_op_P:		'=';
+
+Potential_types:	(B I H A R? M? O? N? I? C? | L O G N O? R? M? A? L? | S Q U A R? E? | S O F T S? Q? U? A? R? E? | S Y M M E? T? R? Y? | H I G H | '3' D P O | H A R M O? N? I? C?)
+			-> popMode;
+
+Simple_name_P:		SIMPLE_NAME;
+
+SPACE_POTE:		[ \t\r\n]+ -> skip;
+
+mode TYPE_MODE; // Inside of Type tag
+
+// RDC distance fixing types
+Rdc_dist_fix_types:	(F I X D | V A R D) -> popMode;
+
+// RDC/Diffusion anisotropy types
+Rdc_or_Diff_anis_types:	(R E L A X | D I F F | M I S C) -> popMode;
+
+// Chemical shift anisotropy types
+Csa_types:		(P H O S | C A R B | N I T R) -> popMode;
+
+SPACE_TYPE:		[ \t\r\n]+ -> skip;
 
 mode FLAG_MODE; // Inside of flag statement
 
@@ -682,7 +707,7 @@ End_F:			E N D
 Class_name:		SIMPLE_NAME;
 Any_class:		'*';
 
-SPACE_F:		[ \t\r\n]+ -> skip;
+SPACE_FLAG:		[ \t\r\n]+ -> skip;
 
 mode VECTOR_EXPR_MODE; // vector expression
 

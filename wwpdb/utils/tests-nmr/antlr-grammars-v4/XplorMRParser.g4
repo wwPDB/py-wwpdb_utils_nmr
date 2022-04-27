@@ -143,7 +143,7 @@ noe_statement:
 	Monomers Simple_name Integer |
 	Ncount Simple_name Integer |
 	Nrestraints Equ_op? Integer |
-	Potential Simple_name Noe_potential |
+	Potential Simple_name_P Potential_types |
 	Predict predict_statement End |
 	Print Threshold Equ_op? number_s |
 	Reset |
@@ -193,7 +193,7 @@ sani_statement:
 	Coefficients number_s number_s number_s |
 	ForceConstant number_s |
 	Nrestraints Integer |
-	Potential Rdc_potential |
+	Potential Potential_types |
 	Print Threshold number_s |
 	Reset;
 
@@ -213,7 +213,7 @@ xdip_statement:
 	Coefficients number_s number_s number_s |
 	ForceConstant number_s |
 	Nrestraints Integer |
-	Potential Rdc_potential |
+	Potential Potential_types |
 	Print Threshold number_s |
 	Reset;
 
@@ -244,7 +244,7 @@ tenso_statement:
 	Classification Simple_name |
 	Coefficients number_s |
 	Nrestraints Integer |
-	Potential Rdc_potential |
+	Potential Potential_types |
 	Print Threshold number_s |
 	Reset;
 
@@ -260,10 +260,10 @@ anis_statement:
 	Coefficients number_s number_s number_s number_s |
 	ForceConstant number_s |
 	Nrestraints Integer |
-	Potential Rdc_potential |
+	Potential Potential_types |
 	Print Threshold number_s |
 	Reset |
-	Type Rdc_anis_types;
+	Type Rdc_or_Diff_anis_types;
 
 anis_assign:
 	Assign selection selection selection selection number number;
@@ -308,7 +308,7 @@ coupling_statement:
 	ForceConstant number_s number_s? |
 	Nrestraints Integer |
 	Partition Equ_op? Integer |
-	Potential Coupling_potential |
+	Potential Potential_types |
 	Print Threshold number_s (All | (Classification Simple_name)) |
 	Reset;
 
@@ -326,7 +326,7 @@ carbon_shift_statement:
 	Nrestraints Integer |
 	PhiStep number_s |
 	PsiStep number_s |
-	Potential Rdc_potential |
+	Potential Potential_types |
 	Print Threshold number_s |
 	carbon_shift_rcoil |
 	Reset |
@@ -355,7 +355,7 @@ proton_shift_statement:
 	Error number_s |
 	DegEnergy Integer |
 	ForceConstant number_s number_s? |
-	Potential Coupling_potential |
+	Potential Potential_types |
 	Print Threshold number_s (All | (Classification Simple_name)) Simple_name |
 	Reset;
 
@@ -372,7 +372,7 @@ proton_shift_amides:
 	Amides selection;
 
 proton_shift_carbons:
-	Carbons selection;
+	Carbon selection;
 
 proton_shift_nitrogens:
 	Nitrogens selection;
@@ -430,10 +430,10 @@ diffusion_statement:
 	Coefficients number_s number_s number_s number_s number_s |
 	ForceConstant number_s |
 	Nrestraints Integer |
-	Potential Rdc_potential |
+	Potential Potential_types |
 	Print Threshold number_s |
 	Reset |
-	Type Diff_anis_types;
+	Type Rdc_or_Diff_anis_types;
 
 dani_assign:
 	Assign selection selection selection selection selection selection number number;
@@ -473,7 +473,7 @@ csa_statement:
 	Sigma number_s number_s number_s |
 	ForceConstant number_s |
 	Nrestraints Integer |
-	Potential Rdc_potential |
+	Potential Potential_types |
 	Print Threshold number_s |
 	Reset;
 
@@ -491,7 +491,7 @@ pcsa_statement:
 	Sigma number_s number_s number_s number_s |
 	ForceConstant number_s |
 	Nrestraints Integer |
-	Potential Rdc_potential |
+	Potential Potential_types |
 	Print Threshold number_s |
 	Reset;
 
@@ -504,7 +504,7 @@ one_bond_coupling_statement:
 	Coefficients number_s number_s number_s number_s number_s number_s number_s |
 	ForceConstant number_s |
 	Nrestraints Integer |
-	Potential Rdc_potential |
+	Potential Potential_types |
 	Print Threshold number_s |
 	Reset;
 
@@ -522,7 +522,7 @@ angle_db_statement:
 	Error number_s |
 	ForceConstant number_s |
 	Nrestraints Integer |
-	Potential Rdc_potential |
+	Potential Potential_types |
 	Print Threshold number_s (All | (Classification Simple_name)) |
 	Reset |
 	Size Angle_dihedral Integer Integer |
@@ -539,7 +539,7 @@ pre_statement:
 	Classification Equ_op? Simple_name |
 	ForceConstant Equ_op? Simple_name number_s |
 	Nrestraints Equ_op? Integer |
-	Potential Equ_op? Simple_name Rdc_potential |
+	Potential Equ_op_P? Simple_name_P Potential_types |
 	Kconst Equ_op? Simple_name number_s |
 	Omega Equ_op? Simple_name number_s |
 	Tauc Equ_op? Simple_name number_s number_s |

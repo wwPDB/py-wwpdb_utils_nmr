@@ -149,12 +149,12 @@ class CifToNmrStar:
                         tag = '_' + category + '.' + _item
                         tag = tag.lower()
                         if tag in self.schema:
-                            dict = {k: v for k, v in self.schema[tag].items() if v not in emptyValue}
+                            sdict = {k: v for k, v in self.schema[tag].items() if v not in emptyValue}
                             if 'sf_category' not in item:
-                                item['sf_category'] = dict['SFCategory']
+                                item['sf_category'] = sdict['SFCategory']
                             if 'super_category' not in item:
-                                item['super_category'] = dict['ADIT super category']
-                            if 'Sf category flag' in dict and dict['Sf category flag'].lower() in trueValue:
+                                item['super_category'] = sdict['ADIT super category']
+                            if 'Sf category flag' in sdict and sdict['Sf category flag'].lower() in trueValue:
                                 item['sf_category_flag'] = True
                             if _item == 'Entry_ID' and entry_id in emptyValue:
                                 entry_id = _value
@@ -162,12 +162,12 @@ class CifToNmrStar:
                     if 'Sf_category' not in itVals['Items']:
                         _tag = '_' + category.lower() + '.sf_category'
                         if _tag in self.schema:
-                            dict = {k: v for k, v in self.schema[_tag].items() if v not in emptyValue}
+                            sdict = {k: v for k, v in self.schema[_tag].items() if v not in emptyValue}
                             if 'sf_category' not in item:
-                                item['sf_category'] = dict['SFCategory']
+                                item['sf_category'] = sdict['SFCategory']
                             if 'super_category' not in item:
-                                item['super_category'] = dict['ADIT super category']
-                            if 'Sf category flag' in dict and dict['Sf category flag'].lower() in trueValue:
+                                item['super_category'] = sdict['ADIT super category']
+                            if 'Sf category flag' in sdict and sdict['Sf category flag'].lower() in trueValue:
                                 item['sf_category_flag'] = True
 
                     if len(sf_category) == 0:

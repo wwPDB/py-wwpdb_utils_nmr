@@ -315,13 +315,23 @@ sf_anonymous_pattern = re.compile(r'\s*save_\S+\s*')
 save_pattern = re.compile(r'\s*save_\s*')
 loop_pattern = re.compile(r'\s*loop_\s*')
 stop_pattern = re.compile(r'\s*stop_\s*')
+cif_stop_pattern = re.compile(r'^#\s*')
+ws_pattern = re.compile(r'\s+')
 
 category_pattern = re.compile(r'\s*_(\S*)\..*\s*')
 tagvalue_pattern = re.compile(r'\s*_(\S*)\.(\S*)\s+(.*)\s*')
 sf_category_pattern = re.compile(r'\s*_\S*\.Sf_category\s*\S+\s*')
 sf_framecode_pattern = re.compile(r'\s*_\S*\.Sf_framecode\s*\s+\s*')
 
+onedep_upload_file_pattern = re.compile(r'(.*)\-upload_(.*)\.V(.*)$')
+onedep_file_pattern = re.compile(r'(.*)\.V(.*)$')
 mr_file_header_pattern = re.compile(r'^(.*)# Restraints file (\d+): (\S+)\s*')
+
+pynmrstar_lp_obj_pattern = re.compile(r"\<pynmrstar\.Loop '(.*)'\>")
+pdb_first_atom_pattern = re.compile(r'^ATOM +1 .*')
+amber_a_format_pattern = re.compile(r'^%FORMAT\((\d+)a(\d+)\)\s*')
+amber_i_format_pattern = re.compile(r'^%FORMAT\((\d+)I(\d+)\)\s*')
+amber_r_pattern = re.compile(r'r(\d+)=(.*)')
 
 
 def detect_bom(fPath, default='utf-8'):
@@ -345,10 +355,10 @@ def convert_codec(inPath, outPath, in_codec='utf-8', out_codec='utf-8'):
     """ Convert codec of input file.
     """
 
-    with open(inPath, 'rb') as ifp:
-        with open(outPath, 'w+b') as ofp:
-            contents = ifp.read()
-            ofp.write(contents.decode(in_codec).encode(out_codec))
+    with open(inPath, 'rb') as ifp,\
+            open(outPath, 'w+b') as ofp:
+        contents = ifp.read()
+        ofp.write(contents.decode(in_codec).encode(out_codec))
 
 
 def is_ascii_file(fPath):
@@ -379,10 +389,9 @@ def uncompress_gzip_file(inPath, outPath):
     """ Uncompress a given gzip file.
     """
 
-    with gzip.open(inPath, mode='rt') as ifp:
-        with open(outPath, 'w') as ofp:
-            for line in ifp:
-                ofp.write(line)
+    with gzip.open(inPath, mode='rt') as ifp, open(outPath, 'w') as ofp:
+        for line in ifp:
+            ofp.write(line)
 
 
 def has_key_value(d=None, key=None):
@@ -4603,15 +4612,15 @@ class NmrDpUtility:
             if self.__verbose:
                 self.__lfh.write(f"+NmrDpUtility.__validateInputSource() ++ Warning  - {warn}\n")
 
-            with open(_srcPath, 'r', encoding='utf-8') as ifp:
-                with open(_srcPath + '~', 'w', encoding='utf-8') as ofp:
-                    for line in ifp:
-                        ofp.write(line)
+            with open(_srcPath, 'r', encoding='utf-8') as ifp,\
+                    open(_srcPath + '~', 'w', encoding='utf-8') as ofp:
+                for line in ifp:
+                    ofp.write(line)
 
-                    ofp.write('save_\n')
+                ofp.write('save_\n')
 
-                    _srcPath = ofp.name
-                    tmpPaths.append(_srcPath)
+                _srcPath = ofp.name
+                tmpPaths.append(_srcPath)
 
         msg_template = "Loop improperly terminated at end of file."
 
@@ -4625,15 +4634,15 @@ class NmrDpUtility:
             if self.__verbose:
                 self.__lfh.write(f"+NmrDpUtility.__validateInputSource() ++ Warning  - {warn}\n")
 
-            with open(_srcPath, 'r', encoding='utf-8') as ifp:
-                with open(_srcPath + '~', 'w', encoding='utf-8') as ofp:
-                    for line in ifp:
-                        ofp.write(line)
+            with open(_srcPath, 'r', encoding='utf-8') as ifp,\
+                    open(_srcPath + '~', 'w', encoding='utf-8') as ofp:
+                for line in ifp:
+                    ofp.write(line)
 
-                    ofp.write('save_\n')
+                ofp.write('save_\n')
 
-                    _srcPath = ofp.name
-                    tmpPaths.append(_srcPath)
+                _srcPath = ofp.name
+                tmpPaths.append(_srcPath)
 
 #        if __pynmrstar_v3_1__:
 #            msg_template = 'Invalid token found in loop contents. Expecting \'loop_\' but found:' # \'*\' Error detected on line *.'
@@ -4667,16 +4676,16 @@ class NmrDpUtility:
             j += 1
             i = 1
 
-            with open(_srcPath, 'r', encoding='utf-8') as ifp:
-                with open(_srcPath + '~', 'w', encoding='utf-8') as ofp:
-                    ofp.write('data_' + os.path.basename(srcPath) + '\n\n')
-                    for line in ifp:
-                        if i <= j:
-                            ofp.write(line)
-                        i += 1
+            with open(_srcPath, 'r', encoding='utf-8') as ifp,\
+                    open(_srcPath + '~', 'w', encoding='utf-8') as ofp:
+                ofp.write('data_' + os.path.basename(srcPath) + '\n\n')
+                for line in ifp:
+                    if i <= j:
+                        ofp.write(line)
+                    i += 1
 
-                    _srcPath = ofp.name
-                    tmpPaths.append(_srcPath)
+                _srcPath = ofp.name
+                tmpPaths.append(_srcPath)
 
         msg_template = "Only 'save_NAME' is valid in the body of a NMR-STAR file. Found 'loop_'."
 
@@ -4692,18 +4701,18 @@ class NmrDpUtility:
 
             pass_datablock = False
 
-            with open(_srcPath, 'r', encoding='utf-8') as ifp:
-                with open(_srcPath + '~', 'w', encoding='utf-8') as ofp:
-                    for line in ifp:
-                        if pass_datablock:
-                            ofp.write(line)
-                        elif datablock_pattern.match(line):
-                            pass_datablock = True
-                        else:
-                            ofp.write(line)
+            with open(_srcPath, 'r', encoding='utf-8') as ifp,\
+                    open(_srcPath + '~', 'w', encoding='utf-8') as ofp:
+                for line in ifp:
+                    if pass_datablock:
+                        ofp.write(line)
+                    elif datablock_pattern.match(line):
+                        pass_datablock = True
+                    else:
+                        ofp.write(line)
 
-                    _srcPath = ofp.name
-                    tmpPaths.append(_srcPath)
+                _srcPath = ofp.name
+                tmpPaths.append(_srcPath)
 
         msg_template = "Cannot use keywords as data values unless quoted or semi-colon delineated. Perhaps this is a loop that wasn't properly terminated? Illegal value:"
 
@@ -4734,13 +4743,13 @@ class NmrDpUtility:
 
                 i = 1
 
-                with open(_srcPath, 'r', encoding='utf-8') as ifp:
-                    with open(_srcPath + '~', 'w', encoding='utf-8') as ofp:
-                        for line in ifp:
-                            if i == line_num:
-                                ofp.write('stop_\n')
-                            ofp.write(line)
-                            i += 1
+                with open(_srcPath, 'r', encoding='utf-8') as ifp,\
+                        open(_srcPath + '~', 'w', encoding='utf-8') as ofp:
+                    for line in ifp:
+                        if i == line_num:
+                            ofp.write('stop_\n')
+                        ofp.write(line)
+                        i += 1
 
                     _srcPath = ofp.name
                     tmpPaths.append(_srcPath)
@@ -4778,13 +4787,13 @@ class NmrDpUtility:
 
                 i = 1
 
-                with open(_srcPath, 'r', encoding='utf-8') as ifp:
-                    with open(_srcPath + '~', 'w', encoding='utf-8') as ofp:
-                        for line in ifp:
-                            if i == line_num - 1:
-                                ofp.write('loop_\n')
-                            ofp.write(line)
-                            i += 1
+                with open(_srcPath, 'r', encoding='utf-8') as ifp,\
+                        open(_srcPath + '~', 'w', encoding='utf-8') as ofp:
+                    for line in ifp:
+                        if i == line_num - 1:
+                            ofp.write('loop_\n')
+                        ofp.write(line)
+                        i += 1
 
                     _srcPath = ofp.name
                     tmpPaths.append(_srcPath)
@@ -4803,7 +4812,6 @@ class NmrDpUtility:
 
             if self.__op == 'nmr-cs-str-consistency-check':
 
-                cif_stop_pattern = re.compile(r'^#\s*')
                 # """
                 # cs_cif_pattern = re.compile(r'D_\d+_cs_P\d+.cif.V\d+$')
 
@@ -4838,28 +4846,28 @@ class NmrDpUtility:
 
                             in_loop = False
 
-                            with open(_srcPath, 'r', encoding='utf-8') as ifp:
-                                with open(_srcPath + '~', 'w', encoding='utf-8') as ofp:
-                                    for line in ifp:
-                                        if datablock_pattern.match(line):
-                                            g = datablock_pattern.search(line).groups()
+                            with open(_srcPath, 'r', encoding='utf-8') as ifp,\
+                                    open(_srcPath + '~', 'w', encoding='utf-8') as ofp:
+                                for line in ifp:
+                                    if datablock_pattern.match(line):
+                                        g = datablock_pattern.search(line).groups()
+                                        if loop_count < 2:
+                                            ofp.write(f"save_{g[0]}\n")
+                                    elif cif_stop_pattern.match(line):
+                                        if in_loop:
                                             if loop_count < 2:
-                                                ofp.write(f"save_{g[0]}\n")
-                                        elif cif_stop_pattern.match(line):
-                                            if in_loop:
-                                                if loop_count < 2:
-                                                    ofp.write('stop_\nsave_\n')
-                                                else:
-                                                    ofp.write('stop_\n')
+                                                ofp.write('stop_\nsave_\n')
                                             else:
-                                                ofp.write(line)
-                                            in_loop = False
-                                        elif loop_pattern.match(line):
-                                            in_loop = True
-                                            ofp.write(line)
+                                                ofp.write('stop_\n')
                                         else:
-                                            if in_loop or loop_count < 2:
-                                                ofp.write(line)
+                                            ofp.write(line)
+                                        in_loop = False
+                                    elif loop_pattern.match(line):
+                                        in_loop = True
+                                        ofp.write(line)
+                                    else:
+                                        if in_loop or loop_count < 2:
+                                            ofp.write(line)
 
                                 _srcPath = ofp.name
                                 tmpPaths.append(_srcPath)
@@ -4896,13 +4904,13 @@ class NmrDpUtility:
 
                     tag_name_pattern = re.compile(r'\s*' + tag_name + r'\s*')
 
-                    with open(_srcPath, 'r', encoding='utf-8') as ifp:
-                        with open(_srcPath + '~', 'w', encoding='utf-8') as ofp:
-                            for line in ifp:
-                                if tag_name_pattern.match(line) is None:
-                                    ofp.write(line)
-                                else:
-                                    ofp.write('loop_\n')
+                    with open(_srcPath, 'r', encoding='utf-8') as ifp,\
+                            open(_srcPath + '~', 'w', encoding='utf-8') as ofp:
+                        for line in ifp:
+                            if tag_name_pattern.match(line) is None:
+                                ofp.write(line)
+                            else:
+                                ofp.write('loop_\n')
 
                         _srcPath = ofp.name
                         tmpPaths.append(_srcPath)
@@ -4940,14 +4948,14 @@ class NmrDpUtility:
 
                 i = 1
 
-                with open(_srcPath, 'r', encoding='utf-8') as ifp:
-                    with open(_srcPath + '~', 'w', encoding='utf-8') as ofp:
-                        for line in ifp:
-                            if i != line_num:
-                                ofp.write(line)
-                            else:
-                                ofp.write(f"save_{os.path.basename(srcPath)}\n")
-                            i += 1
+                with open(_srcPath, 'r', encoding='utf-8') as ifp,\
+                        open(_srcPath + '~', 'w', encoding='utf-8') as ofp:
+                    for line in ifp:
+                        if i != line_num:
+                            ofp.write(line)
+                        else:
+                            ofp.write(f"save_{os.path.basename(srcPath)}\n")
+                        i += 1
 
                     _srcPath = ofp.name
                     tmpPaths.append(_srcPath)
@@ -5033,27 +5041,27 @@ class NmrDpUtility:
 
                 sf_named_pattern = re.compile(r'\s*save_' + sf_framecode + r'\s*')
 
-                with open(_srcPath, 'r', encoding='utf-8') as ifp:
-                    with open(_srcPath + '~', 'w', encoding='utf-8') as ofp:
-                        for line in ifp:
-                            if pass_sf_loop:
+                with open(_srcPath, 'r', encoding='utf-8') as ifp,\
+                        open(_srcPath + '~', 'w', encoding='utf-8') as ofp:
+                    for line in ifp:
+                        if pass_sf_loop:
+                            ofp.write(line)
+                        elif pass_sf_framecode:
+                            if loop_pattern.match(line):
+                                pass_sf_loop = True
+                                if 'sf_category' in target:
+                                    ofp.write(target['sf_tag_prefix'] + '.' + ('sf_framecode' if file_type == 'nef' else 'Sf_framecode') + '   ' + sf_framecode + '\n')
+                                    ofp.write(target['sf_tag_prefix'] + '.' + ('sf_category' if file_type == 'nef' else 'Sf_category') + '    ' + target['sf_category'] + '\n')
+                                    ofp.write('#\n')
                                 ofp.write(line)
-                            elif pass_sf_framecode:
-                                if loop_pattern.match(line):
-                                    pass_sf_loop = True
-                                    if 'sf_category' in target:
-                                        ofp.write(target['sf_tag_prefix'] + '.' + ('sf_framecode' if file_type == 'nef' else 'Sf_framecode') + '   ' + sf_framecode + '\n')
-                                        ofp.write(target['sf_tag_prefix'] + '.' + ('sf_category' if file_type == 'nef' else 'Sf_category') + '    ' + target['sf_category'] + '\n')
-                                        ofp.write('#\n')
-                                    ofp.write(line)
-                            elif sf_named_pattern.match(line):
-                                pass_sf_framecode = True
-                                ofp.write(line)
-                            elif not pass_sf_framecode:
-                                ofp.write(line)
+                        elif sf_named_pattern.match(line):
+                            pass_sf_framecode = True
+                            ofp.write(line)
+                        elif not pass_sf_framecode:
+                            ofp.write(line)
 
-                        _srcPath = ofp.name
-                        tmpPaths.append(_srcPath)
+                    _srcPath = ofp.name
+                    tmpPaths.append(_srcPath)
 
         except StopIteration:
             pass
@@ -5075,7 +5083,6 @@ class NmrDpUtility:
                 self.__lfh.write(f"+NmrDpUtility.__validateInputSource() ++ Warning  - {warn}\n")
 
             msg_pattern = re.compile(r'^' + msg_template + r" \[(.*)\]$")
-            lp_obj_pattern = re.compile(r"\<pynmrstar\.Loop '(.*)'\>")
 
             targets = []
 
@@ -5090,7 +5097,7 @@ class NmrDpUtility:
 
                     for lp_obj in g[0].split(', '):
 
-                        lp_category = str(lp_obj_pattern.search(lp_obj).groups()[0])
+                        lp_category = str(pynmrstar_lp_obj_pattern.search(lp_obj).groups()[0])
 
                         target = {'lp_category': lp_category}
 
@@ -5136,28 +5143,28 @@ class NmrDpUtility:
 
             i = 1
 
-            with open(_srcPath, 'r', encoding='utf-8') as ifp:
-                with open(_srcPath + '~', 'w', encoding='utf-8') as ofp:
-                    ofp.write('data_' + os.path.basename(srcPath) + '\n\n')
-                    for line in ifp:
-                        if i in target_loop_locations:
-                            target = next(target for target in targets if target['loop_location'] == i)
-                            if 'sf_category' in target:
-                                ofp.write('save_' + target['sf_framecode'] + '\n')
-                                ofp.write(target['sf_tag_prefix'] + '.' + ('sf_framecode' if file_type == 'nef' else 'Sf_framecode') + '   ' + target['sf_framecode'] + '\n')
-                                ofp.write(target['sf_tag_prefix'] + '.' + ('sf_category' if file_type == 'nef' else 'Sf_category') + '    ' + target['sf_category'] + '\n')
-                                ofp.write('#\n')
-                        if i not in ignored_loop_locations:
-                            ofp.write(line)
-                        if i in target_stop_locations:
-                            target = next(target for target in targets if target['stop_location'] == i)
-                            if 'sf_category' in target:
-                                ofp.write('save_\n')
+            with open(_srcPath, 'r', encoding='utf-8') as ifp,\
+                    open(_srcPath + '~', 'w', encoding='utf-8') as ofp:
+                ofp.write('data_' + os.path.basename(srcPath) + '\n\n')
+                for line in ifp:
+                    if i in target_loop_locations:
+                        target = next(target for target in targets if target['loop_location'] == i)
+                        if 'sf_category' in target:
+                            ofp.write('save_' + target['sf_framecode'] + '\n')
+                            ofp.write(target['sf_tag_prefix'] + '.' + ('sf_framecode' if file_type == 'nef' else 'Sf_framecode') + '   ' + target['sf_framecode'] + '\n')
+                            ofp.write(target['sf_tag_prefix'] + '.' + ('sf_category' if file_type == 'nef' else 'Sf_category') + '    ' + target['sf_category'] + '\n')
+                            ofp.write('#\n')
+                    if i not in ignored_loop_locations:
+                        ofp.write(line)
+                    if i in target_stop_locations:
+                        target = next(target for target in targets if target['stop_location'] == i)
+                        if 'sf_category' in target:
+                            ofp.write('save_\n')
 
-                        i += 1
+                    i += 1
 
-                    _srcPath = ofp.name
-                    tmpPaths.append(_srcPath)
+                _srcPath = ofp.name
+                tmpPaths.append(_srcPath)
 
         except StopIteration:
             pass
@@ -5284,55 +5291,55 @@ class NmrDpUtility:
 
                 i = 1
 
-                with open(_srcPath, 'r', encoding='utf-8') as ifp:
-                    with open(_srcPath + '~', 'w', encoding='utf-8') as ofp:
-                        for line in ifp:
-                            if i in target_category_begins:
-                                target = next(target for target in targets if target['category_2_begin'] == i)
-                                if target['content_subtype_1'] != target['content_subtype_2']:
-                                    ofp.write('save_\n')
-                                    if target['category_type_2'] == 'saveframe':
-                                        ofp.write('save_' + target['sf_framecode_2'] + '\n')
-                                    else:
-                                        ofp.write('save_' + target['sf_framecode_2'] + '\n')
-                                        ofp.write(target['sf_tag_prefix_2'] + '.' + ('sf_framecode' if file_type == 'nef' else 'Sf_framecode')
-                                                  + '   ' + target['sf_framecode_2'] + '\n')
-                                        ofp.write(target['sf_tag_prefix_2'] + '.' + ('sf_category' if file_type == 'nef' else 'Sf_category')
-                                                  + '    ' + target['category_2'] + '\n')
-                                        ofp.write('loop_\n')
-                                        lp_tags = ''
-                                        lp_values = ''
-                                elif target['category_type_2'] == 'loop':
+                with open(_srcPath, 'r', encoding='utf-8') as ifp,\
+                        open(_srcPath + '~', 'w', encoding='utf-8') as ofp:
+                    for line in ifp:
+                        if i in target_category_begins:
+                            target = next(target for target in targets if target['category_2_begin'] == i)
+                            if target['content_subtype_1'] != target['content_subtype_2']:
+                                ofp.write('save_\n')
+                                if target['category_type_2'] == 'saveframe':
+                                    ofp.write('save_' + target['sf_framecode_2'] + '\n')
+                                else:
+                                    ofp.write('save_' + target['sf_framecode_2'] + '\n')
+                                    ofp.write(target['sf_tag_prefix_2'] + '.' + ('sf_framecode' if file_type == 'nef' else 'Sf_framecode')
+                                              + '   ' + target['sf_framecode_2'] + '\n')
+                                    ofp.write(target['sf_tag_prefix_2'] + '.' + ('sf_category' if file_type == 'nef' else 'Sf_category')
+                                              + '    ' + target['category_2'] + '\n')
                                     ofp.write('loop_\n')
                                     lp_tags = ''
                                     lp_values = ''
-                            if i not in loop_category_locations:
-                                ofp.write(line)
-                            else:
-                                g = tagvalue_pattern.search(line).groups()
-                                try:
-                                    lp_tags += f"_{g[0]}.{g[1]}\n"
-                                    lp_values += ' ' + g[2].strip(' ') + ' '
-                                except IndexError:
-                                    continue
-                            if i in target_category_ends:
-                                target = next(target for target in targets if target['category_2_end'] == i)
-                                if target['content_subtype_1'] != target['content_subtype_2']:
-                                    if target['category_type_2'] == 'saveframe':
-                                        pass
-                                    else:
-                                        ofp.write(lp_tags)
-                                        ofp.write(lp_values.rstrip(' ') + '\n')
-                                        ofp.write('stop_\n')
-                                elif target['category_type_2'] == 'loop':
+                            elif target['category_type_2'] == 'loop':
+                                ofp.write('loop_\n')
+                                lp_tags = ''
+                                lp_values = ''
+                        if i not in loop_category_locations:
+                            ofp.write(line)
+                        else:
+                            g = tagvalue_pattern.search(line).groups()
+                            try:
+                                lp_tags += f"_{g[0]}.{g[1]}\n"
+                                lp_values += ' ' + g[2].strip(' ') + ' '
+                            except IndexError:
+                                continue
+                        if i in target_category_ends:
+                            target = next(target for target in targets if target['category_2_end'] == i)
+                            if target['content_subtype_1'] != target['content_subtype_2']:
+                                if target['category_type_2'] == 'saveframe':
+                                    pass
+                                else:
                                     ofp.write(lp_tags)
                                     ofp.write(lp_values.rstrip(' ') + '\n')
                                     ofp.write('stop_\n')
+                            elif target['category_type_2'] == 'loop':
+                                ofp.write(lp_tags)
+                                ofp.write(lp_values.rstrip(' ') + '\n')
+                                ofp.write('stop_\n')
 
-                            i += 1
+                        i += 1
 
-                        _srcPath = ofp.name
-                        tmpPaths.append(_srcPath)
+                    _srcPath = ofp.name
+                    tmpPaths.append(_srcPath)
 
         except StopIteration:
             pass
@@ -5368,14 +5375,14 @@ class NmrDpUtility:
 
                 i = 1
 
-                with open(_srcPath, 'r', encoding='utf-8') as ifp:
-                    with open(_srcPath + '~', 'w', encoding='utf-8') as ofp:
-                        for line in ifp:
-                            if i == line_num:
-                                ofp.write(re.sub(sf_framecode + r'\s$', saveframe_name + r'\n', line))
-                            else:
-                                ofp.write(line)
-                            i += 1
+                with open(_srcPath, 'r', encoding='utf-8') as ifp,\
+                        open(_srcPath + '~', 'w', encoding='utf-8') as ofp:
+                    for line in ifp:
+                        if i == line_num:
+                            ofp.write(re.sub(sf_framecode + r'\s$', saveframe_name + r'\n', line))
+                        else:
+                            ofp.write(line)
+                        i += 1
 
                     _srcPath = ofp.name
                     tmpPaths.append(_srcPath)
@@ -5469,12 +5476,10 @@ class NmrDpUtility:
                 self.__rescueImmatureStr(file_list_id)
 
                 if rescued:
-                    onedep_file_pattern = re.compile(r'(.*)\-upload_(.*)\.V(.*)$')
-                    if onedep_file_pattern.match(srcPath):
-                        g = onedep_file_pattern.search(srcPath).groups()
+                    if onedep_upload_file_pattern.match(srcPath):
+                        g = onedep_upload_file_pattern.search(srcPath).groups()
                         srcPath = g[0] + '-upload-convert_' + g[1] + '.V' + g[2]
                     else:
-                        onedep_file_pattern = re.compile(r'(.*)\.V(.*)$')
                         if onedep_file_pattern.match(srcPath):
                             g = onedep_file_pattern.search(srcPath).groups()
                             srcPath = g[0] + '.V' + str(int(g[1]) + 1)
@@ -6457,7 +6462,6 @@ class NmrDpUtility:
         if ar_file_path_list not in self.__inputParamDict:
             return True
 
-        first_atom_pattern = re.compile(r'^ATOM +1 .*')
         hbond_da_atom_types = ('O', 'N', 'F')
         rdc_origins = ('OO', 'X', 'Y', 'Z')
 
@@ -6546,7 +6550,7 @@ class NmrDpUtility:
 
                         if line.startswith('ATOM ') and line.count('.') >= 3:
                             has_coordinate = True
-                            if first_atom_pattern.match(line):
+                            if pdb_first_atom_pattern.match(line):
                                 if has_first_atom:
                                     has_ens_coord = True
                                 has_first_atom = True
@@ -6717,9 +6721,6 @@ class NmrDpUtility:
 
             elif file_type == 'nm-res-amb':
 
-                ws_pattern = re.compile(r'\s+')
-                r_pattern = re.compile(r'r(\d+)=(.*)')
-
                 with open(file_path, 'r', encoding='utf-8') as ifp:
 
                     in_rst = False
@@ -6736,7 +6737,7 @@ class NmrDpUtility:
 
                         if line.startswith('ATOM ') and line.count('.') >= 3:
                             has_coordinate = True
-                            if first_atom_pattern.match(line):
+                            if pdb_first_atom_pattern.match(line):
                                 if has_first_atom:
                                     has_ens_coord = True
                                 has_first_atom = True
@@ -6855,9 +6856,9 @@ class NmrDpUtility:
                                     except ValueError:
                                         pass
 
-                                elif r_pattern.match(t):
+                                elif amber_r_pattern.match(t):
                                     len_values = len(values)
-                                    g = r_pattern.search(t).groups()
+                                    g = amber_r_pattern.search(t).groups()
                                     try:
                                         r_idx = int(g[0]) - 1
                                         v = float(g[1])
@@ -6935,9 +6936,6 @@ class NmrDpUtility:
                     in_residue_label = False
                     in_residue_pointer = False
 
-                    a_format_pattern = re.compile(r'^%FORMAT\((\d+)a(\d+)\)\s*')
-                    i_format_pattern = re.compile(r'^%FORMAT\((\d+)I(\d+)\)\s*')
-
                     atom_names = []
                     residue_labels = []
                     residue_pointers = []
@@ -6959,7 +6957,7 @@ class NmrDpUtility:
 
                         if line.startswith('ATOM ') and line.count('.') >= 3:
                             has_coordinate = True
-                            if first_atom_pattern.match(line):
+                            if pdb_first_atom_pattern.match(line):
                                 if has_first_atom:
                                     has_ens_coord = True
                                 has_first_atom = True
@@ -7004,10 +7002,10 @@ class NmrDpUtility:
                                     chk_residue_pointer_format = True
 
                             elif chk_atom_name_format:
-                                chk_atom_name_format = a_format_pattern.match(line)
+                                chk_atom_name_format = amber_a_format_pattern.match(line)
                                 if chk_atom_name_format:
                                     in_atom_name = True
-                                    g = a_format_pattern.search(line).groups()
+                                    g = amber_a_format_pattern.search(line).groups()
                                     max_cols = int(g[0])
                                     max_char = int(g[1])
                                 else:
@@ -7015,10 +7013,10 @@ class NmrDpUtility:
                                 chk_atom_name_format = False
 
                             elif chk_residue_label_format:
-                                chk_residue_label_format = a_format_pattern.match(line)
+                                chk_residue_label_format = amber_a_format_pattern.match(line)
                                 if chk_residue_label_format:
                                     in_residue_label = True
-                                    g = a_format_pattern.search(line).groups()
+                                    g = amber_a_format_pattern.search(line).groups()
                                     max_cols = int(g[0])
                                     max_char = int(g[1])
                                 else:
@@ -7026,10 +7024,10 @@ class NmrDpUtility:
                                 chk_residue_label_format = False
 
                             elif chk_residue_pointer_format:
-                                chk_residue_pointer_format = i_format_pattern.match(line)
+                                chk_residue_pointer_format = amber_i_format_pattern.match(line)
                                 if chk_residue_pointer_format:
                                     in_residue_pointer = True
-                                    g = i_format_pattern.search(line).groups()
+                                    g = amber_i_format_pattern.search(line).groups()
                                     max_cols = int(g[0])
                                     max_char = int(g[1])
                                 else:
@@ -8635,56 +8633,56 @@ class NmrDpUtility:
 
                 i = 0
 
-                with open(src_file, 'r') as ifp:
-                    with open(dst_file, 'w') as ofp:
-                        for line in ifp:
-                            i += 1
+                with open(src_file, 'r') as ifp,\
+                        open(dst_file, 'w') as ofp:
+                    for line in ifp:
+                        i += 1
 
-                            # skip MR header
-                            if header:
-                                if line.startswith('*'):
-                                    continue
-                                header = False
-
-                            if mr_file_header_pattern.match(line):
-                                has_mr_header = True
-
-                            # skip legacy PDB
-                            if startsWithPdbRecord(line):
-                                has_pdb_format = pdb_record = True
+                        # skip MR header
+                        if header:
+                            if line.startswith('*'):
                                 continue
-                            if pdb_record:
-                                pdb_record = False
-                                if line.startswith('END'):
-                                    continue
+                            header = False
 
-                            # check STAR
-                            str_syntax = False
-                            if datablock_pattern.match(line):
-                                str_syntax = has_datablock = True
-                            elif sf_anonymous_pattern.match(line):
-                                str_syntax = has_anonymous_saveframe = True
-                            elif save_pattern.match(line):
-                                str_syntax = has_save = True
-                            elif loop_pattern.match(line):
-                                str_syntax = has_loop = True
-                            elif stop_pattern.match(line):
-                                str_syntax = has_stop = True
+                        if mr_file_header_pattern.match(line):
+                            has_mr_header = True
 
-                            if str_syntax:
-                                if first_str_line_num < 0:
-                                    first_str_line_num = i
-                                last_str_line_num = i
-                                if (has_anonymous_saveframe and has_save) or (has_loop and has_stop):
-                                    has_str_format = True
-                                elif has_datablock and has_loop and not has_stop:
-                                    has_cif_format = True
+                        # skip legacy PDB
+                        if startsWithPdbRecord(line):
+                            has_pdb_format = pdb_record = True
+                            continue
+                        if pdb_record:
+                            pdb_record = False
+                            if line.startswith('END'):
+                                continue
 
-                            # skip MR footer
-                            if 'Submitted Coord H atom name' in line:
-                                break
+                        # check STAR
+                        str_syntax = False
+                        if datablock_pattern.match(line):
+                            str_syntax = has_datablock = True
+                        elif sf_anonymous_pattern.match(line):
+                            str_syntax = has_anonymous_saveframe = True
+                        elif save_pattern.match(line):
+                            str_syntax = has_save = True
+                        elif loop_pattern.match(line):
+                            str_syntax = has_loop = True
+                        elif stop_pattern.match(line):
+                            str_syntax = has_stop = True
 
-                            ofp.write(line)
+                        if str_syntax:
+                            if first_str_line_num < 0:
+                                first_str_line_num = i
+                            last_str_line_num = i
+                            if (has_anonymous_saveframe and has_save) or (has_loop and has_stop):
+                                has_str_format = True
+                            elif has_datablock and has_loop and not has_stop:
+                                has_cif_format = True
+
+                        # skip MR footer
+                        if 'Submitted Coord H atom name' in line:
+                            break
+
+                        ofp.write(line)
 
                 if last_str_line_num - first_str_line_num < 10:
                     has_str_format = has_cif_format = False
@@ -8699,37 +8697,37 @@ class NmrDpUtility:
 
                     i = 0
 
-                    with open(src_file, 'r') as ifp:
-                        with open(dst_file, 'w') as ofp:
-                            with open(mrPath, 'w') as ofp2:
-                                for line in ifp:
-                                    i += 1
+                    with open(src_file, 'r') as ifp,\
+                            open(dst_file, 'w') as ofp,\
+                            open(mrPath, 'w') as ofp2:
+                        for line in ifp:
+                            i += 1
 
-                                    # skip MR header
-                                    if header:
-                                        if line.startswith('*'):
-                                            continue
-                                        header = False
+                            # skip MR header
+                            if header:
+                                if line.startswith('*'):
+                                    continue
+                                header = False
 
-                                    # skip legacy PDB
-                                    if has_pdb_format:
-                                        if startsWithPdbRecord(line):
-                                            pdb_record = True
-                                            continue
-                                        if pdb_record:
-                                            pdb_record = False
-                                            if line.startswith('END'):
-                                                continue
-
-                                    if first_str_line_num <= i <= last_str_line_num:
-                                        ofp2.write(line)
+                            # skip legacy PDB
+                            if has_pdb_format:
+                                if startsWithPdbRecord(line):
+                                    pdb_record = True
+                                    continue
+                                if pdb_record:
+                                    pdb_record = False
+                                    if line.startswith('END'):
                                         continue
 
-                                    # skip MR footer
-                                    if 'Submitted Coord H atom name' in line:
-                                        break
+                            if first_str_line_num <= i <= last_str_line_num:
+                                ofp2.write(line)
+                                continue
 
-                                    ofp.write(line)
+                            # skip MR footer
+                            if 'Submitted Coord H atom name' in line:
+                                break
+
+                            ofp.write(line)
 
                     self.__file_path_list_len += 1
 
@@ -8842,42 +8840,42 @@ class NmrDpUtility:
 
                     i = 0
 
-                    with open(src_file, 'r') as ifp:
-                        with open(dst_file, 'w') as ofp:
-                            with open(mrPath, 'w') as ofp2:
-                                for line in ifp:
-                                    i += 1
+                    with open(src_file, 'r') as ifp,\
+                            open(dst_file, 'w') as ofp,\
+                            open(mrPath, 'w') as ofp2:
+                        for line in ifp:
+                            i += 1
 
-                                    # skip MR header
-                                    if header:
-                                        if line.startswith('*'):
-                                            continue
-                                        header = False
+                            # skip MR header
+                            if header:
+                                if line.startswith('*'):
+                                    continue
+                                header = False
 
-                                    if first_str_line_num <= i and not has_sharp:
-                                        if i <= last_str_line_num:
-                                            ofp2.write(line)
-                                            continue
-                                        ofp2.write(line)
-                                        if line.startswith('#'):
-                                            has_sharp = True
+                            if first_str_line_num <= i and not has_sharp:
+                                if i <= last_str_line_num:
+                                    ofp2.write(line)
+                                    continue
+                                ofp2.write(line)
+                                if line.startswith('#'):
+                                    has_sharp = True
+                                continue
+
+                            # skip legacy PDB
+                            if has_pdb_format:
+                                if startsWithPdbRecord(line):
+                                    pdb_record = True
+                                    continue
+                                if pdb_record:
+                                    pdb_record = False
+                                    if line.startswith('END'):
                                         continue
 
-                                    # skip legacy PDB
-                                    if has_pdb_format:
-                                        if startsWithPdbRecord(line):
-                                            pdb_record = True
-                                            continue
-                                        if pdb_record:
-                                            pdb_record = False
-                                            if line.startswith('END'):
-                                                continue
+                            # skip MR footer
+                            if 'Submitted Coord H atom name' in line:
+                                break
 
-                                    # skip MR footer
-                                    if 'Submitted Coord H atom name' in line:
-                                        break
-
-                                    ofp.write(line)
+                            ofp.write(line)
 
                     _mrPath = os.path.splitext(mrPath)[0] + '.cif2str'
 

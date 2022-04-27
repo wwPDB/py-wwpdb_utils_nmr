@@ -37,12 +37,14 @@ def load_dict_from_pickle(file_name):
     return {}
 
 
-def write_dict_as_pickle(dict, file_name):
+def write_dict_as_pickle(obj, file_name):
     """ Write dictionary as pickle file.
     """
 
-    with open(file_name, 'wb') as ofp:
-        pickle.dump(dict, ofp)
+    if isinstance(obj, dict):
+
+        with open(file_name, 'wb') as ofp:
+            pickle.dump(obj, ofp)
 
 
 class ChemCompUtil:
@@ -162,7 +164,7 @@ class ChemCompUtil:
 
         return self.lastStatus
 
-    def write_standard_dict_as_pickle(self):
+    def write_std_dict_as_pickle(self):
         """ Write dictionary for standard residues as pickle file.
         """
 

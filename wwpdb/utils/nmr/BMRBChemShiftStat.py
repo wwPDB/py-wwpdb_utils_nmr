@@ -45,12 +45,14 @@ def load_stat_from_pickle(file_name):
     return []
 
 
-def write_stat_as_pickle(atm_list, file_name):
+def write_stat_as_pickle(obj, file_name):
     """ Write BMRB chemical shift statistics as pickle file.
     """
 
-    with open(file_name, 'wb') as ofp:
-        pickle.dump(atm_list, ofp)
+    if isinstance(obj, list):
+
+        with open(file_name, 'wb') as ofp:
+            pickle.dump(obj, ofp)
 
 
 class BMRBChemShiftStat:

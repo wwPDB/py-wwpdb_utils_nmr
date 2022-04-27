@@ -34,12 +34,12 @@ def load_schema_from_pickle(file_name):
     return None
 
 
-def write_schema_as_pickle(schema, file_name):
+def write_schema_as_pickle(obj, file_name):
     """ Write NMR-STAR schema as pickle file.
     """
 
     with open(file_name, 'wb') as ofp:
-        pickle.dump(schema, ofp)
+        pickle.dump(obj, ofp)
 
 
 class CifToNmrStar:
@@ -176,7 +176,7 @@ class CifToNmrStar:
                         for item2 in category_order:
                             if item2['block_name'] == block_name:
                                 item2['ordered'] = False
-                        item['orderd'] = False
+                        item['ordered'] = False
 
                     if item not in category_order:
                         category_order.append(item)

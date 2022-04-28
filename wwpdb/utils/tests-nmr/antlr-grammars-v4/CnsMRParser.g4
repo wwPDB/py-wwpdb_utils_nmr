@@ -336,7 +336,7 @@ angle_db_statement:
 	Potential Equ_op_P? Potential_types |
 	Print Threshold number_s (All | (Classification Equ_op? Simple_name)) |
 	Reset |
-	Size Angle_dihedral Integer Integer |
+	Size Angle_or_Dihedral Integer Integer |
 	Zero;
 
 angle_db_assign:

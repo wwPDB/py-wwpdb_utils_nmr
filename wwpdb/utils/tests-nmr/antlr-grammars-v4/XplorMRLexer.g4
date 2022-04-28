@@ -288,7 +288,7 @@ Error:			E R R O R?;				// Real
 //CO_or_CN:		C O | C N;
 //SC_or_BB:		S C | B B;
 //Ring_resname:		P H E | T Y R | H I S | T R P ('5' | '6') | A D E ('5' | '6') | G U A ('5' | '6') | T H Y | C Y T | U R A;
-Rmsd_or_Not:		R M S D | N O R M S? D?;
+//Rmsd_or_Not:		R M S D | N O R M S? D?;
 //Number_of_shifts:	'1' | '2';
 
 /* XPLOR-NIH: Dihedral angle database restraints - Syntax
@@ -307,12 +307,12 @@ Phase:			P H A S E?;				// Real Real Real [ Real Real Real ] (Real Real Real ] (
 Quartic:		Q U A R T? I? C?;			// Real Real Real [ Real Real Real ] [ Real Real Real ] [ Real Real Real ]
 //Reset:		R E S E T?;
 //Scale:		S C A L E?;				// Real
-Shape:			S H A P E?;				// Gauss_or_Quart
+Shape:			S H A P E? -> pushMode(SHAP_MODE);	// Gauss_or_Quart
 //Size:			S I Z E;				// Dimensions Real [ Real ] [ Real ] [ Real ]
 Sort:			S O R T;
 //Zero:			Z E R O;
 
-Gauss_or_Quart:		G A U S S | Q U A R T;
+//Gauss_or_Quart:	G A U S S | Q U A R T;
 Dimensions:		O N E D | T W O D | T H R E E D | F O U R D;
 
 /* XPLOR-NIH: Radius of gyration restraints - Syntax
@@ -428,11 +428,11 @@ DerivFlag:		D E R I V? F? L? A? G?;			// On_or_Off
 //Print:		P R I N T?;
 //Threshold:		T H R E S? H? O? L? D?;			// Real ( All | Class Class_name )
 //Reset:		R E S E T?;
-//Size:			S I Z E;				// Angle_dihedral Integer Integer
+//Size:			S I Z E;				// Angle_or_Dihedral Integer Integer
 //Zero:			Z E R O;
 
 //On_or_Off:		O N | O F F;
-Angle_dihedral:		A N G L E? | D I H E D? R? A? L?;
+Angle_or_Dihedral:	A N G L E? | D I H E D? R? A? L?;
 
 /* XPLOR-NIH: Paramagnetic relaxation enhancement restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node438.html
@@ -704,6 +704,12 @@ Rdc_or_Diff_anis_types:	(R E L A X | D I F F | M I S C) -> popMode;
 Csa_types:		(P H O S | C A R B | N I T R) -> popMode;
 
 SPACE_TYPE:		[ \t\r\n]+ -> skip;
+
+mode SHAP_MODE; // Inside of Shape tag
+
+Gauss_or_Quart:		(G A U S S | Q U A R T) -> popMode;
+
+SPACE_SHAP:		[ \t\r\n]+ -> skip;
 
 mode FLAG_MODE; // Inside of flag statement
 

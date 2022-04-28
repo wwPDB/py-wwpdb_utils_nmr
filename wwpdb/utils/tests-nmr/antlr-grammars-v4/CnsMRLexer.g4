@@ -55,7 +55,7 @@ End:			E N D;
 Noe:			N O E;					// Noe { noe_statement } End
 
 // noe_statement
-Analysis:		A N A L Y? S? I? S;			// = Noe_analysis
+Analysis:		A N A L Y? S? I? S -> pushMode(ANAL_MODE);	// = Noe_analysis
 Assign:			A S S I G? N?;				// selection selection Real Real Real [ Or_op selection selection ... ]
 Asymptote:		A S Y M P? T? O? T? E?;			// Class_names Real
 Averaging:		A V E R A? G? I? N? G? -> pushMode(AVER_MODE);	// Class_names Noe_avr_methods
@@ -88,7 +88,7 @@ Taverage:		T A V E R? A? G? E?;			// Class_name Taverage_statement End
 Temperature:		T E M P E? R? A? T? U? R? E?;		// = Real
 
 // NOE analysis
-Noe_analysis:		C U R R E? N? T | T A V E R? A? G? E? | R A V E R? A? G? E?;
+//Noe_analysis:		C U R R E? N? T | T A V E R? A? G? E? | R A V E R? A? G? E?;
 
 Initialize:		I N I T I? A? L? I? Z? E?;
 Update:			U P D A T? E?;				// Gamma = Real Kappa = Real
@@ -297,11 +297,11 @@ DerivFlag:		D E R I V? F? L? A? G?;			// On_or_Off
 //Print:		P R I N T?;
 //Threshold:		T H R E S? H? O? L? D?;			// Real ( All | Class = Class_name )
 //Reset:		R E S E T?;
-//Size:			S I Z E;				// Angle_dihedral Integer Integer
+//Size:			S I Z E;				// Angle_or_Dihedral Integer Integer
 //Zero:			Z E R O;
 
 //On_or_Off:		O N | O F F;
-Angle_dihedral:		A N G L E? | D I H E D? R? A? L?;
+Angle_or_Dihedral:	A N G L E? | D I H E D? R? A? L?;
 
 /* CNS: Flags - Syntax
  See alos https://nmr.cit.nih.gov/xplor-nih/xplorMan/node125.html (compatible with XPLOR-NIH)
@@ -457,6 +457,13 @@ Potential_types:	(B I H A R? M? O? N? I? C? | L O G N O? R? M? A? L? | S Q U A R
 Simple_name_P:		SIMPLE_NAME;
 
 SPACE_POTE:		[ \t\r\n]+ -> skip;
+
+mode ANAL_MODE; // Inside of Noe/Analysis tag
+
+Noe_analysis:		(C U R R E? N? T | T A V E R? A? G? E? | R A V E R? A? G? E?)
+			-> popMode;
+
+SPACE_ANAL:		[ \t\r\n]+ -> skip;
 
 mode FLAG_MODE; // Inside of flag statement
 

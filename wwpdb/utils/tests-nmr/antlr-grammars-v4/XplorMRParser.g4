@@ -525,7 +525,7 @@ angle_db_statement:
 	Potential Potential_types |
 	Print Threshold number_s (All | (Classification Simple_name)) |
 	Reset |
-	Size Angle_dihedral Integer Integer |
+	Size Angle_or_Dihedral Integer Integer |
 	Zero;
 
 angle_db_assign:

@@ -58,7 +58,7 @@ Noe:			N O E;					// Noe { noe_statement } End
 Analysis:		A N A L Y? S? I? S;			// = Noe_analysis
 Assign:			A S S I G? N?;				// selection selection Real Real Real [ Or_op selection selection ... ]
 Asymptote:		A S Y M P? T? O? T? E?;			// Class_names Real
-Averaging:		A V E R A? G? I? N? G?;			// Class_names Noe_avr_methods
+Averaging:		A V E R A? G? I? N? G? -> pushMode(AVER_MODE);	// Class_names Noe_avr_methods
 Bgig:			B H I G;				// Class_names Real
 Ceiling:		C E I L I? N? G?;			// = Real
 Classification:		C L A S S? I? F? I? C? A? T? I? O? N?;	// Class_name
@@ -96,7 +96,7 @@ Gamma:			G A M M A?;
 Kappa:			K A P P A?;
 
 // NOE averaging methods
-Noe_avr_methods:	R '-6' | R '-3' | S U M | C E N T E? R?;
+//Noe_avr_methods:	R '-6' | R '-3' | S U M | C E N T E? R?;
 
 // NOE potential statement
 //Noe_potential:	B I H A R? M? O? N? I? C? | L O G N O? R? M? A? L? | S Q U A R? E? | S O F T S? Q? U? A? R? E? | S Y M M E? T? R? Y? | H I G H | '3' D P O;
@@ -440,7 +440,14 @@ Comparison_ops:		(Equ_op | Lt_op | Gt_op | Leq_op | Geq_op | Neq_op)
 
 SPACE_ATTR:		[ \t\r\n]+ -> skip;
 
-mode POTE_MODE; // Insidte of Potential tag
+mode AVER_MODE; // Inside of Averaging tag
+
+Averaging_methods:	(R '-6' | R '-3' | S U M | C E N T E? R?)
+			-> popMode;
+
+Simple_name_A:		SIMPLE_NAME;
+
+mode POTE_MODE; // Inside of Potential tag
 
 Equ_op_P:		'=';
 

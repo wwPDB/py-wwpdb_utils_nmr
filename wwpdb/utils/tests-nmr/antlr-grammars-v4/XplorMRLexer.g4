@@ -57,7 +57,7 @@ Noe:			N O E;					// Noe { noe_statement } End
 // noe_statement
 Assign:			A S S I G? N?;				// selection selection Real Real Real [ Or_op selection selection ... ]
 Asymptote:		A S Y M P? T? O? T? E?;			// Class_names Real
-Averaging:		A V E R A? G? I? N? G?;			// Class_names Noe_avr_methods
+Averaging:		A V E R A? G? I? N? G? -> pushMode(AVER_MODE);	// Class_names Noe_avr_methods
 Bhig:			B H I G;				// Class_names Real
 Ceiling:		C E I L I? N? G?;			// = Real
 Classification:		C L A S S? I? F? I? C? A? T? I? O? N?;	// Class_name
@@ -80,7 +80,7 @@ SqOffset:		S Q O F F? S? E? T?;			// Class_names Real
 Temperature:		T E M P E? R? A? T? U? R? E?;		// = Real
 
 // NOE averaging methods
-Noe_avr_methods:	R '-6' | R '-3' | S U M | C E N T E? R?;
+//Noe_avr_methods:	R '-6' | R '-3' | S U M | C E N T E? R?;
 
 // NOE potential statement
 //Noe_potential:	B I H A R? M? O? N? I? C? | L O G N O? R? M? A? L? | S Q U A R? E? | S O F T S? Q? U? A? R? E? | S Y M M E? T? R? Y? | H I G H | '3' D P O;
@@ -137,7 +137,7 @@ Dipolar:		D I P O L? A? R?;			// Dipolar { xdip_statement } End
 Type:			T Y P E -> pushMode(TYPE_MODE);		// Rdc_dist_fix_types
 //Scale:		S C A L E?;				// Real
 Sign:			S I G N;				// Logical
-Average:		A V E R A? G? E?;			// Rdc_avr_methods
+Average:		A V E R A? G? E? -> pushMode(AVER_MODE);	// Rdc_avr_methods
 //Coefficients:		C O E F F? I? C? I? E? N? T? S?;	// Real Real Real
 //ForceConstant:	F O R C E? C? O? N? S? T? A? N? T?;	// Real
 //Nrestraints:		N R E S T? R? A? I? N? T? S?;		// Integer
@@ -149,7 +149,7 @@ Average:		A V E R A? G? E?;			// Rdc_avr_methods
 // RDC distance fixing types
 //Rdc_dist_fix_types:	F I X D | V A R D;
 // RDC averaging methods
-Rdc_avr_methods:	S U M | S U M D I? F? | A V E R A? G? E?;
+//Rdc_avr_methods:	S U M | S U M D I? F? | A V E R A? G? E?;
 
 /* XPLOR-NIH: RDC - Syntax (VEAN)
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node420.html
@@ -672,7 +672,16 @@ Comparison_ops:		(Equ_op | Lt_op | Gt_op | Leq_op | Geq_op | Neq_op)
 
 SPACE_ATTR:		[ \t\r\n]+ -> skip;
 
-mode POTE_MODE; // Insidte of Potential tag
+mode AVER_MODE; // Inside of Average tag
+
+Averaging_methods:	(R '-6' | R '-3' | S U M | C E N T E? R? | S U M D I? F? | A V E R A? G? E?)
+			-> popMode;
+
+Simple_name_A:		SIMPLE_NAME;
+
+SPACE_AVER:		[ \t\r\n]+ -> skip;
+
+mode POTE_MODE; // Inside of Potential tag
 
 Equ_op_P:		'=';
 

@@ -258,6 +258,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # distance
     noePotential = 'biharmonic'
+    noeAverage = 'r-6'
     squareExponent = 2.0
     squareOffset = 0.0
     rSwitch = 10.0
@@ -277,7 +278,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # RDC
     potential = 'square'
-    average = 'average'
+    average = 'sum'
 
     # CSA
     csaType = None
@@ -368,6 +369,7 @@ class XplorMRParserListener(ParseTreeListener):
         self.__cur_subtype = 'dist'
 
         self.noePotential = 'biharmonic'  # default potential
+        self.noeAverage = 'r-6'  # default averaging method
         self.squareExponent = 2.0
         self.squareOffset = 0.0
         self.rSwitch = 10.0
@@ -594,7 +596,23 @@ class XplorMRParserListener(ParseTreeListener):
                 self.noePotential = 'biharmonic'
                 self.warningMessage += "[Enum mismatch ignorable] "\
                     f"The potential type {str(ctx.Potential_types())!r} is unknown potential type for the 'NOE' statements. "\
-                    f"Instead, set the default potential {self.noePotential}.\n"
+                    f"Instead, set the default potential {self.noePotential!r}.\n"
+
+        elif ctx.Averaging_methods():
+            code = str(ctx.Averaging_methods()).upper()
+            if code == 'R-6':
+                self.noeAverage = 'r-6'
+            elif code == 'R-3':
+                self.noeAverage = 'r-3'
+            elif code == 'SUM':
+                self.noeAverage = 'sum'
+            elif code.startswith('CENT'):
+                self.noeAverage = 'center'
+            else:
+                self.noeAverage = 'r-6'
+                self.warningMessage += "[Enum mismatch ignorable] "\
+                    f"The averaging method {str(ctx.Averaging_methods())!r} is unknown method for the 'NOE' statements. "\
+                    f"Instead, set the default method {self.noeAverage!r}.\n"
 
         elif ctx.SqExponent():
             self.squareExponent = self.getNumber_s(ctx.number_s())
@@ -750,7 +768,7 @@ class XplorMRParserListener(ParseTreeListener):
         """
 
         validRange = True
-        dstFunc = {'weight': weight, 'potential': self.noePotential}
+        dstFunc = {'weight': weight, 'potential': self.noePotential, 'average': self.noeAverage}
 
         if target_value is not None:
             if DIST_ERROR_MIN < target_value < DIST_ERROR_MAX:
@@ -1212,7 +1230,7 @@ class XplorMRParserListener(ParseTreeListener):
                 self.potential = 'square'
                 self.warningMessage += "[Enum mismatch ignorable] "\
                     f"The potential type {str(ctx.Potential_types())!r} is unknown potential type for the 'SANIsotropy' statements. "\
-                    f"Instead, set the default potential {self.potential}.\n"
+                    f"Instead, set the default potential {self.potential!r}.\n"
 
         elif ctx.Reset():
             self.potential = 'square'
@@ -1508,23 +1526,28 @@ class XplorMRParserListener(ParseTreeListener):
                 self.potential = 'square'
                 self.warningMessage += "[Enum mismatch ignorable] "\
                     f"The potential type {str(ctx.Potential_types())!r} is unknown potential type for the 'XDIPolar' statements. "\
-                    f"Instead, set the default potential {self.potential}.\n"
+                    f"Instead, set the default potential {self.potential!r}.\n"
 
-        elif ctx.Rdc_avr_methods():
-            code = str(ctx.Rdc_avr_methods()).upper()
+        elif ctx.Averaging_methods():
+            code = str(ctx.Averaging_methods()).upper()
             if code.startswith('SUMD'):
                 self.average = 'sum_diff'
             elif code == 'SUM':
                 self.average = 'sum'
             elif code.startswith('AVER'):
                 self.average = 'average'
+            else:
+                self.average = 'sum'
+                self.warningMessage += "[Enum mismatch ignorable] "\
+                    f"The averaging method {str(ctx.Averaging_methods())!r} is unknown method for the 'XDIPolar' statements. "\
+                    f"Instead, set the default method {self.average!r}.\n"
 
         elif ctx.Scale():
             self.scale = self.getNumber_s(ctx.number_s(0))
 
         elif ctx.Reset():
             self.potential = 'square'
-            self.average = 'average'
+            self.average = 'sum'
             self.scale = 1.0
             self.coefficients = None
 
@@ -2033,7 +2056,7 @@ class XplorMRParserListener(ParseTreeListener):
                 self.potential = 'square'
                 self.warningMessage += "[Enum mismatch ignorable] "\
                     f"The potential type {str(ctx.Potential_types())!r} is unknown potential type for 'TENSOr' statements. "\
-                    f"Instead, set the default potential {self.potential}.\n"
+                    f"Instead, set the default potential {self.potential!r}.\n"
 
         elif ctx.Reset():
             self.potential = 'square'
@@ -2165,7 +2188,7 @@ class XplorMRParserListener(ParseTreeListener):
                 self.potential = 'square'
                 self.warningMessage += "[Enum mismatch ignorable] "\
                     f"The potential type {str(ctx.Potential_types())!r} is unknown potential type for the 'ANISotropy' statements. "\
-                    f"Instead, set the default potential {self.potential}.\n"
+                    f"Instead, set the default potential {self.potential!r}.\n"
 
         elif ctx.Reset():
             self.potential = 'square'
@@ -2380,7 +2403,7 @@ class XplorMRParserListener(ParseTreeListener):
                 self.potential = 'square'
                 self.warningMessage += "[Enum mismatch ignorable] "\
                     f"The potential type {str(ctx.Potential_types())!r} is unknown potential type for the 'COUPling' statements. "\
-                    f"Instead, set the default potential {self.potential}.\n"
+                    f"Instead, set the default potential {self.potential!r}.\n"
 
         elif ctx.Reset():
             self.potential = 'square'
@@ -2573,7 +2596,7 @@ class XplorMRParserListener(ParseTreeListener):
                 self.potential = 'square'
                 self.warningMessage += "[Enum mismatch ignorable] "\
                     f"The potential type {str(ctx.Potential_types())!r} is unknown potential type for the 'CARBon' statements. "\
-                    f"Instead, set the default potential {self.potential}.\n"
+                    f"Instead, set the default potential {self.potential!r}.\n"
 
         elif ctx.Reset():
             self.potential = 'square'
@@ -2719,7 +2742,7 @@ class XplorMRParserListener(ParseTreeListener):
                 self.potential = 'square'
                 self.warningMessage += "[Enum mismatch ignorable] "\
                     f"The potential type {str(ctx.Potential_types())!r} is unknown potential type for the 'PROTONshift' statements. "\
-                    f"Instead, set the default potential {self.potential}.\n"
+                    f"Instead, set the default potential {self.potential!r}.\n"
 
         elif ctx.Reset():
             self.potential = 'square'
@@ -3163,7 +3186,7 @@ class XplorMRParserListener(ParseTreeListener):
                 self.potential = 'square'
                 self.warningMessage += "[Enum mismatch ignorable] "\
                     f"The potential type {str(ctx.Potential_types())!r} is unknown potential type for the 'DANIsotropy' statements. "\
-                    f"Instead, set the default potential {self.potential}.\n"
+                    f"Instead, set the default potential {self.potential!r}.\n"
 
         elif ctx.Reset():
             self.potential = 'square'
@@ -3560,7 +3583,7 @@ class XplorMRParserListener(ParseTreeListener):
                 self.potential = 'square'
                 self.warningMessage += "[Enum mismatch ignorable] "\
                     f"The potential type {str(ctx.Potential_types())!r} is unknown potential type for the 'DCSA' statements. "\
-                    f"Instead, set the default potential {self.potential}.\n"
+                    f"Instead, set the default potential {self.potential!r}.\n"
 
         elif ctx.Scale():
             self.scale = self.getNumber_s(ctx.number_s(0))
@@ -3933,7 +3956,7 @@ class XplorMRParserListener(ParseTreeListener):
                 self.potential = 'square'
                 self.warningMessage += "[Enum mismatch ignorable] "\
                     f"The potential type {str(ctx.Potential_types())!r} is unknown potential type for the 'PCSA' statements. "\
-                    f"Instead, set the default potential {self.potential}.\n"
+                    f"Instead, set the default potential {self.potential!r}.\n"
 
         elif ctx.Scale():
             self.scale = self.getNumber_s(ctx.number_s(0))
@@ -4017,7 +4040,7 @@ class XplorMRParserListener(ParseTreeListener):
                 self.potential = 'square'
                 self.warningMessage += "[Enum mismatch ignorable] "\
                     f"The potential type {str(ctx.Potential_types())!r} is unknown potential type for the 'PMAGnetic' statements. "\
-                    f"Instead, set the default potential {self.potential}.\n"
+                    f"Instead, set the default potential {self.potential!r}.\n"
 
         elif ctx.Reset():
             self.potential = 'square'

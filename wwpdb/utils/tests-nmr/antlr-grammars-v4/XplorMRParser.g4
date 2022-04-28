@@ -134,7 +134,7 @@ hbond_restraint:
 noe_statement:
 	noe_assign |
 	Asymptote Simple_name number_s |
-	Averaging Simple_name Noe_avr_methods |
+	Averaging Simple_name_A Averaging_methods |
 	Bhig Simple_name number_s |
 	Ceiling Equ_op? number_s |
 	Classification Simple_name |
@@ -209,7 +209,7 @@ xdip_statement:
 	Type Rdc_dist_fix_types |
 	Scale number_s |
 	Sign Logical |
-	Average Rdc_avr_methods |
+	Average Averaging_methods |
 	Coefficients number_s number_s number_s |
 	ForceConstant number_s |
 	Nrestraints Integer |

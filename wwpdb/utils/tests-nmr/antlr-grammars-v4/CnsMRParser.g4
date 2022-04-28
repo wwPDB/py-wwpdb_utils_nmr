@@ -85,7 +85,7 @@ noe_statement:
 	Analysis Equ_op? Noe_analysis |
 	noe_assign |
 	Asymptote Simple_name number_s |
-	Averaging Simple_name Noe_avr_methods |
+	Averaging Simple_name_A Averaging_methods |
 	Bgig Simple_name number_s |
 	Ceiling Equ_op? number_s |
 	Classification Equ_op? Simple_name |

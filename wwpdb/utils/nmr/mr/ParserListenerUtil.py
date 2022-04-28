@@ -274,7 +274,7 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None)
             return atomId[:-1]
         if atomId == "H2''1" and "H2'" in refAtomIdList:
             return "H2'"
-        if atomId == "H2''2":
+        if atomId in ("H2''2", "H2''"):
             if "HO2'" in refAtomIdList:
                 return "HO2'"
             if "H2''" in refAtomIdList:

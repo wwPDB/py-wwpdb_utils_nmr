@@ -6506,7 +6506,7 @@ class NmrDpUtility:
             elif file_type == 'nm-res-mr':
                 mr_format_name = 'MR'
             else:
-                mr_format_name = 'other format'
+                mr_format_name = 'other'
 
             atom_like_names = self.__csStat.getAtomLikeNameSet(minimum_len=(2 if file_type in ('nm-res-ros', 'nm-res-oth') or is_aux_amb else 1))
             cs_atom_like_names = list(filter(is_half_spin_nuclei, atom_like_names))  # DAOTHER-7491
@@ -7295,7 +7295,7 @@ class NmrDpUtility:
                         messageList = lexer_err_listener.getMessageList()
 
                         if messageList is not None:
-                            for description in messageList:
+                            for msg_id, description in enumerate(messageList):
                                 err_lines.append(description['line_number'])
                                 err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
                                 if 'input' in description:
@@ -7304,6 +7304,8 @@ class NmrDpUtility:
                                     enc = detect_encoding(description['input'])
                                     if enc is not None and enc != 'ascii':
                                         err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r}.\n"
+                                    elif msg_id == 0 and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
+                                        self.__divideLegacyMRIfNecessary(file_path, file_type, description['line_number'])
 
                     if parser_err_listener is not None:
                         messageList = parser_err_listener.getMessageList()
@@ -7391,7 +7393,7 @@ class NmrDpUtility:
                         messageList = lexer_err_listener.getMessageList()
 
                         if messageList is not None:
-                            for description in messageList:
+                            for msg_id, description in enumerate(messageList):
                                 err_lines.append(description['line_number'])
                                 err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
                                 if 'input' in description:
@@ -7400,6 +7402,8 @@ class NmrDpUtility:
                                     enc = detect_encoding(description['input'])
                                     if enc is not None and enc != 'ascii':
                                         err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r}.\n"
+                                    elif msg_id == 0 and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
+                                        self.__divideLegacyMRIfNecessary(file_path, file_type, description['line_number'])
 
                     if parser_err_listener is not None:
                         messageList = parser_err_listener.getMessageList()
@@ -7477,7 +7481,7 @@ class NmrDpUtility:
                         messageList = lexer_err_listener.getMessageList()
 
                         if messageList is not None:
-                            for description in messageList:
+                            for msg_id, description in enumerate(messageList):
                                 err_lines.append(description['line_number'])
                                 err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
                                 if 'input' in description:
@@ -7486,6 +7490,8 @@ class NmrDpUtility:
                                     enc = detect_encoding(description['input'])
                                     if enc is not None and enc != 'ascii':
                                         err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r}.\n"
+                                    elif msg_id == 0 and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
+                                        self.__divideLegacyMRIfNecessary(file_path, file_type, description['line_number'])
 
                     if parser_err_listener is not None:
                         messageList = parser_err_listener.getMessageList()
@@ -7563,7 +7569,7 @@ class NmrDpUtility:
                         messageList = lexer_err_listener.getMessageList()
 
                         if messageList is not None:
-                            for description in messageList:
+                            for msg_id, description in enumerate(messageList):
                                 err_lines.append(description['line_number'])
                                 err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
                                 if 'input' in description:
@@ -7572,6 +7578,8 @@ class NmrDpUtility:
                                     enc = detect_encoding(description['input'])
                                     if enc is not None and enc != 'ascii':
                                         err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r}.\n"
+                                    elif msg_id == 0 and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
+                                        self.__divideLegacyMRIfNecessary(file_path, file_type, description['line_number'])
 
                     if parser_err_listener is not None:
                         messageList = parser_err_listener.getMessageList()
@@ -7656,7 +7664,7 @@ class NmrDpUtility:
                         messageList = lexer_err_listener.getMessageList()
 
                         if messageList is not None:
-                            for description in messageList:
+                            for msg_id, description in enumerate(messageList):
                                 err_lines.append(description['line_number'])
                                 err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
                                 if 'input' in description:
@@ -7665,6 +7673,8 @@ class NmrDpUtility:
                                     enc = detect_encoding(description['input'])
                                     if enc is not None and enc != 'ascii':
                                         err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r}.\n"
+                                    elif msg_id == 0 and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
+                                        self.__divideLegacyMRIfNecessary(file_path, file_type, description['line_number'])
 
                     if parser_err_listener is not None:
                         messageList = parser_err_listener.getMessageList()
@@ -7752,7 +7762,7 @@ class NmrDpUtility:
                         messageList = lexer_err_listener.getMessageList()
 
                         if messageList is not None:
-                            for description in messageList:
+                            for msg_id, description in enumerate(messageList):
                                 err_lines.append(description['line_number'])
                                 err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
                                 if 'input' in description:
@@ -7761,6 +7771,8 @@ class NmrDpUtility:
                                     enc = detect_encoding(description['input'])
                                     if enc is not None and enc != 'ascii':
                                         err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r}.\n"
+                                    elif msg_id == 0 and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
+                                        self.__divideLegacyMRIfNecessary(file_path, file_type, description['line_number'])
 
                     if parser_err_listener is not None:
                         messageList = parser_err_listener.getMessageList()
@@ -8046,6 +8058,230 @@ class NmrDpUtility:
 
         return not self.report.isError()
 
+    def __divideLegacyMRIfNecessary(self, file_path, file_type, line_number):
+        """ Divive legacy NMR restraint file if necessary.
+        """
+
+        if not self.__remediation_mode:
+            return
+
+        if file_type == 'nm-res-xpl':
+            mr_format_name = 'XPLOR-NIH'
+        elif file_type == 'nm-res-cns':
+            mr_format_name = 'CNS'
+        elif file_type in ('nm-res-amb', 'nm-aux-amb'):
+            mr_format_name = 'AMBER'
+        elif file_type == 'nm-res-cya':
+            mr_format_name = 'CYANA'
+        elif file_type == 'nm-res-ros':
+            mr_format_name = 'ROSETTA'
+        elif file_type == 'nm-res-mr':
+            mr_format_name = 'MR'
+            return
+        else:
+            mr_format_name = 'other'
+            return
+
+        src_basename = os.path.splitext(file_path)[0]
+        divided_src = 'div_dst' in src_basename
+        div_src_file = src_basename + '-div_src.mr'
+        div_try_file = src_basename + '-div_try.mr'
+        div_dst_file = src_basename + '-div_dst.mr'
+
+        i = 0
+
+        with open(file_path, 'r') as ifp,\
+                open(div_src_file, 'w') as ofp,\
+                open(div_try_file, 'w') as ofp2:
+            for line in ifp:
+                i += 1
+                if i < line_number:
+                    ofp.write(line)
+                    continue
+                ofp2.write(line)
+
+        if i < line_number:
+            os.remove(div_src_file)
+            if os.path.exists(div_try_file):
+                os.remove(div_try_file)
+            return
+
+        file_name = os.path.basename(div_try_file)
+
+        _, _, valid_types, possible_types = self.__detectOtherPossibleFormatAsErrorOfLegacyMR(div_try_file, file_name, file_type, [], True)
+
+        len_valid_types = len(valid_types)
+        len_possible_types = len(possible_types)
+
+        if (len_valid_types == 0 and len_possible_types == 0) or len_possible_types > 0:
+            os.remove(div_src_file)
+            os.remove(div_try_file)
+            return
+
+        self.__lfh.write(f"The NMR restraint file {file_name!r} ({mr_format_name} format) is identified as {valid_types}.\n")
+
+        if divided_src:
+            os.remove(file_path)
+
+        os.rename(div_try_file, div_dst_file)
+
+        file_path = div_dst_file
+        file_type = valid_types[0]
+
+        try:
+
+            if file_type == 'nm-res-xpl':
+
+                reader = XplorMRReader(self.__verbose, self.__lfh, None, None, None,
+                                       self.__ccU, self.__csStat, self.__nefT)
+                listener, _, lexer_err_listener = reader.parse(file_path, None)
+
+                if listener is not None:
+                    reasons = listener.getReasonsForReparsing()
+
+                    if reasons is not None:
+                        reader = XplorMRReader(self.__verbose, self.__lfh, None, None, None,
+                                               self.__ccU, self.__csStat, self.__nefT,
+                                               reasons)
+                        listener, _, lexer_err_listener = reader.parse(file_path, None)
+
+                if lexer_err_listener is not None:
+                    messageList = lexer_err_listener.getMessageList()
+
+                    if messageList is not None:
+                        for msg_id, description in enumerate(messageList):
+                            if 'input' in description:
+                                enc = detect_encoding(description['input'])
+                                if enc is not None and enc != 'ascii':
+                                    pass
+                                elif msg_id == 0 and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
+                                    self.__divideLegacyMRIfNecessary(file_path, file_type, description['line_number'])
+
+            elif file_type == 'nm-res-cns':
+
+                reader = CnsMRReader(self.__verbose, self.__lfh, None, None, None,
+                                     self.__ccU, self.__csStat, self.__nefT)
+                listener, _, lexer_err_listener = reader.parse(file_path, None)
+
+                if listener is not None:
+                    reasons = listener.getReasonsForReparsing()
+
+                    if reasons is not None:
+                        reader = CnsMRReader(self.__verbose, self.__lfh, None, None, None,
+                                             self.__ccU, self.__csStat, self.__nefT,
+                                             reasons)
+                        listener, _, lexer_err_listener = reader.parse(file_path, None)
+
+                if lexer_err_listener is not None:
+                    messageList = lexer_err_listener.getMessageList()
+
+                    if messageList is not None:
+                        for msg_id, description in enumerate(messageList):
+                            if 'input' in description:
+                                enc = detect_encoding(description['input'])
+                                if enc is not None and enc != 'ascii':
+                                    pass
+                                elif msg_id == 0 and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
+                                    self.__divideLegacyMRIfNecessary(file_path, file_type, description['line_number'])
+
+            elif file_type == 'nm-res-amb':
+
+                reader = AmberMRReader(self.__verbose, self.__lfh, None, None, None,
+                                       self.__ccU, self.__csStat, self.__nefT)
+                listener, _, lexer_err_listener = reader.parse(file_path, None, None)
+
+                if lexer_err_listener is not None:
+                    messageList = lexer_err_listener.getMessageList()
+
+                    if messageList is not None:
+                        for msg_id, description in enumerate(messageList):
+                            if 'input' in description:
+                                enc = detect_encoding(description['input'])
+                                if enc is not None and enc != 'ascii':
+                                    pass
+                                elif msg_id == 0 and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
+                                    self.__divideLegacyMRIfNecessary(file_path, file_type, description['line_number'])
+
+            elif file_type == 'nm-aux-amb':
+
+                reader = AmberPTReader(self.__verbose, self.__lfh, None, None, None,
+                                       self.__ccU, self.__csStat)
+                listener, _, lexer_err_listener = reader.parse(file_path, None)
+
+                if lexer_err_listener is not None:
+                    messageList = lexer_err_listener.getMessageList()
+
+                    if messageList is not None:
+                        for msg_id, description in enumerate(messageList):
+                            if 'input' in description:
+                                enc = detect_encoding(description['input'])
+                                if enc is not None and enc != 'ascii':
+                                    pass
+                                elif msg_id == 0 and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
+                                    self.__divideLegacyMRIfNecessary(file_path, file_type, description['line_number'])
+
+            elif file_type == 'nm-res-cya':
+
+                reader = CyanaMRReader(self.__verbose, self.__lfh, None, None, None,
+                                       self.__ccU, self.__csStat, self.__nefT)
+                listener, _, lexer_err_listener = reader.parse(file_path, None)
+
+                if listener is not None:
+                    reasons = listener.getReasonsForReparsing()
+
+                    if reasons is not None:
+                        reader = CyanaMRReader(self.__verbose, self.__lfh, None, None, None,
+                                               self.__ccU, self.__csStat, self.__nefT,
+                                               reasons)
+                        listener, _, lexer_err_listener = reader.parse(file_path, None)
+
+                if lexer_err_listener is not None:
+                    messageList = lexer_err_listener.getMessageList()
+
+                    if messageList is not None:
+                        for msg_id, description in enumerate(messageList):
+                            if 'input' in description:
+                                enc = detect_encoding(description['input'])
+                                if enc is not None and enc != 'ascii':
+                                    pass
+                                elif msg_id == 0 and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
+                                    self.__divideLegacyMRIfNecessary(file_path, file_type, description['line_number'])
+
+            elif file_type == 'nm-res-ros':
+
+                reader = RosettaMRReader(self.__verbose, self.__lfh, None, None, None,
+                                         self.__ccU, self.__csStat, self.__nefT)
+                listener, _, lexer_err_listener = reader.parse(file_path, None)
+
+                if listener is not None:
+                    reasons = listener.getReasonsForReparsing()
+
+                    if reasons is not None:
+                        reader = RosettaMRReader(self.__verbose, self.__lfh, None, None, None,
+                                                 self.__ccU, self.__csStat, self.__nefT,
+                                                 reasons)
+                        listener, _, lexer_err_listener = reader.parse(file_path, None)
+
+                if lexer_err_listener is not None:
+                    messageList = lexer_err_listener.getMessageList()
+
+                    if messageList is not None:
+                        for msg_id, description in enumerate(messageList):
+                            if 'input' in description:
+                                enc = detect_encoding(description['input'])
+                                if enc is not None and enc != 'ascii':
+                                    pass
+                                elif msg_id == 0 and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
+                                    self.__divideLegacyMRIfNecessary(file_path, file_type, description['line_number'])
+
+        except ValueError as e:
+
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__divideLegacyMRIfNecessary() ++ Error  - " + str(e))
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write(f"+NmrDpUtility.__divideLegacyMRIfNecessary() ++ Error  - {str(e)}\n")
+
     def __detectOtherPossibleFormatAsErrorOfLegacyMR(self, file_path, file_name, file_type, dismiss_err_lines, multiple_check=False):
         """ Report other possible format as error of a given legacy NMR restraint file.
         """
@@ -8063,7 +8299,7 @@ class NmrDpUtility:
         elif file_type == 'nm-res-mr':
             mr_format_name = 'MR'
         else:
-            mr_format_name = 'other format'
+            mr_format_name = 'other'
 
         try:
 
@@ -8601,7 +8837,16 @@ class NmrDpUtility:
 
                 src_file = dst_file
 
+            dir_path = os.path.dirname(src_file)
+
+            div_file_names = [div_file_name
+                              for div_file_name in os.listdir(dir_path)
+                              if os.path.isfile(os.path.join(dir_path, div_file_name))
+                              and (div_file_name.endswith('-div_src.mr')
+                                   or div_file_name.endswith('-div_dst.mr'))]
+
             src_basename = os.path.splitext(src_file)[0]
+            ar['original_file_name'] = src_basename + '.mr'
 
             dst_file = src_basename + '-trimmed.mr'
             cor_dst_file = src_basename + '-corrected.mr'
@@ -9002,52 +9247,80 @@ class NmrDpUtility:
             # has no MR haeder
             if not has_mr_header:
 
-                _, _, valid_types, possible_types = self.__detectOtherPossibleFormatAsErrorOfLegacyMR(dst_file, file_name, file_type, [], True)
+                dst_name_prefix = os.path.splitext(os.path.basename(dst_file))[0]
 
-                len_valid_types = len(valid_types)
-                len_possible_types = len(possible_types)
+                dst_file_list = [os.path.join(dir_path, div_name) for div_name in div_file_names if div_name.startswith(dst_name_prefix)]
 
-                if len_valid_types == 0 and len_possible_types == 0:
+                if len(dst_file_list) == 0:
+                    dst_file_list.append(dst_file)
 
-                    ins_msg = ''
-                    if has_pdb_format and has_cs_str:
-                        ins_msg = 'unexpectedly contains PDB coordinates and assigned chemical shifts, but '
-                    elif has_pdb_format:
-                        ins_msg = 'unexpectedly contains PDB coordinates, but '
-                    elif has_cs_str:
-                        ins_msg = 'unexpectedly contains assigned chemical shifts, but '
+                for dst_file in dst_file_list:
 
-                    err = f"The NMR restraint file {file_name!r} (MR format) {ins_msg}does not match with any known restraint format. "\
-                        "@todo: It needs to be reviewed or marked as entry wo NMR restraints."
+                    _, _, valid_types, possible_types = self.__detectOtherPossibleFormatAsErrorOfLegacyMR(dst_file, file_name, file_type, [], True)
 
-                    self.report.error.appendDescription('internal_error',
-                                                        {'file_name': file_name, 'description': err})
-                    self.report.setError()
+                    len_valid_types = len(valid_types)
+                    len_possible_types = len(possible_types)
 
-                    if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - {err}\n")
+                    if len_valid_types == 0 and len_possible_types == 0:
 
-                    return False
+                        ins_msg = ''
+                        if has_pdb_format and has_cs_str:
+                            ins_msg = 'unexpectedly contains PDB coordinates and assigned chemical shifts, but '
+                        elif has_pdb_format:
+                            ins_msg = 'unexpectedly contains PDB coordinates, but '
+                        elif has_cs_str:
+                            ins_msg = 'unexpectedly contains assigned chemical shifts, but '
 
-                if len_possible_types == 0:
-                    print(f"The NMR restraint file {file_name!r} (MR format) is identified as {valid_types}.")
+                        err = f"The NMR restraint file {file_name!r} (MR format) {ins_msg}does not match with any known restraint format. "\
+                            "@todo: It needs to be reviewed or marked as entry wo NMR restraints."
 
-                    _ar = ar.copy()
+                        self.report.error.appendDescription('internal_error',
+                                                            {'file_name': file_name, 'description': err})
+                        self.report.setError()
 
-                    if len_valid_types == 1:
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - {err}\n")
+
+                        return False
+
+                    if len_possible_types == 0:
+                        self.__lfh.write(f"The NMR restraint file {file_name!r} (MR format) is identified as {valid_types}.\n")
+
+                        _ar = ar.copy()
+
+                        if len_valid_types == 1:
+                            _ar['file_name'] = dst_file
+                            _ar['file_type'] = valid_types[0]
+                            splitted.append(_ar)
+
+                        elif len_valid_types == 2 and 'nm-res-cns' in valid_types and 'nm-res-xpl' in valid_types:
+                            _ar['file_name'] = dst_file
+                            _ar['file_type'] = 'nm-res-xpl'
+                            splitted.append(_ar)
+
+                        else:
+                            _ar['file_name'] = dst_file
+                            _ar['file_type'] = valid_types[0]
+                            splitted.append(_ar)
+
+                            err = f"The NMR restraint file {file_name!r} (MR format) is identified as {valid_types}. "\
+                                "@todo: It needs to be split properly."
+
+                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - " + err)
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - {err}\n")
+
+                    elif len_valid_types == 0:
+                        self.__lfh.write(f"The NMR restraint file {file_name!r} (MR format) can be {possible_types}.\n")
+
                         _ar['file_name'] = dst_file
-                        _ar['file_type'] = valid_types[0]
+                        _ar['file_type'] = possible_types[0]
                         splitted.append(_ar)
 
-                    elif len_valid_types == 2 and 'nm-res-cns' in valid_types and 'nm-res-xpl' in valid_types:
-                        _ar['file_name'] = dst_file
-                        _ar['file_type'] = 'nm-res-xpl'
-                        splitted.append(_ar)
-
-                    else:
-
-                        err = f"The NMR restraint file {file_name!r} (MR format) is identified as {valid_types}. "\
-                            "@todo: It needs to be split properly."
+                        err = f"The NMR restraint file {file_name!r} (MR format) can be {possible_types}. "\
+                            "@todo: It needs to be reviewed."
 
                         self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - " + err)
                         self.report.setError()
@@ -9055,34 +9328,25 @@ class NmrDpUtility:
                         if self.__verbose:
                             self.__lfh.write(f"+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - {err}\n")
 
-                elif len_valid_types == 0:
-                    print(f"The NMR restraint file {file_name!r} (MR format) can be {possible_types}.")
+                    else:
+                        self.__lfh.write(f"The NMR restraint file {file_name!r} (MR format) is identified as {valid_types} and can be {possible_types} as well.\n")
 
-                    err = f"The NMR restraint file {file_name!r} (MR format) can be {possible_types}. "\
-                        "@todo: It needs to be reviewed."
+                        _ar['file_name'] = dst_file
+                        _ar['file_type'] = valid_types[0]
+                        splitted.append(_ar)
 
-                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - " + err)
-                    self.report.setError()
+                        err = f"The NMR restraint file {file_name!r} (MR format) is identified as {valid_types} and can be {possible_types} as well. "\
+                            "@todo: It needs to be reviewed."
 
-                    if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - {err}\n")
+                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - " + err)
+                        self.report.setError()
 
-                else:
-                    print(f"The NMR restraint file {file_name!r} (MR format) is identified as {valid_types} and can be {possible_types} as well.")
-
-                    err = f"The NMR restraint file {file_name!r} (MR format) is identified as {valid_types} and can be {possible_types} as well. "\
-                        "@todo: It needs to be reviewed."
-
-                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - " + err)
-                    self.report.setError()
-
-                    if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - {err}\n")
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - {err}\n")
 
             # has MR header
             else:
 
-                dir_path = os.path.dirname(dst_file)
                 original_file_path_list = []
 
                 ofp = None
@@ -9134,57 +9398,85 @@ class NmrDpUtility:
 
                     file_name = os.path.basename(dst_file)
 
-                    _, _, valid_types, possible_types = self.__detectOtherPossibleFormatAsErrorOfLegacyMR(dst_file, file_name, file_type, [], True)
+                    dst_file_list = [os.path.join(dir_path, div_name) for div_name in div_file_names if div_name.startswith(file_name)]
 
-                    len_valid_types = len(valid_types)
-                    len_possible_types = len(possible_types)
+                    if len(dst_file_list) == 0:
+                        dst_file_list.append(dst_file)
 
-                    if len_valid_types == 0 and len_possible_types == 0:
+                    for _dst_file in dst_file_list:
 
-                        ins_msg = ''
-                        if not distict or len(original_file_path_list) == 1:
-                            if has_pdb_format and has_cs_str:
-                                ins_msg = 'unexpectedly contains PDB coordinates and assigned chemical shifts, but '
-                            elif has_pdb_format:
-                                ins_msg = 'unexpectedly contains PDB coordinates, but '
-                            elif has_cs_str:
-                                ins_msg = 'unexpectedly contains assigned chemical shifts, but '
+                        _, _, valid_types, possible_types = self.__detectOtherPossibleFormatAsErrorOfLegacyMR(_dst_file, file_name, file_type, [], True)
 
-                        err = f"The NMR restraint file {file_name!r} (MR format) {ins_msg}does not match with any known restraint format. "\
-                            "@todo: It needs to be reviewed or marked as entry wo NMR restraints."
+                        len_valid_types = len(valid_types)
+                        len_possible_types = len(possible_types)
 
-                        self.report.error.appendDescription('internal_error',
-                                                            {'file_name': file_name, 'description': err})
-                        self.report.setError()
+                        if len_valid_types == 0 and len_possible_types == 0:
 
-                        if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - {err}\n")
+                            ins_msg = ''
+                            if not distict or len(original_file_path_list) == 1:
+                                if has_pdb_format and has_cs_str:
+                                    ins_msg = 'unexpectedly contains PDB coordinates and assigned chemical shifts, but '
+                                elif has_pdb_format:
+                                    ins_msg = 'unexpectedly contains PDB coordinates, but '
+                                elif has_cs_str:
+                                    ins_msg = 'unexpectedly contains assigned chemical shifts, but '
 
-                        return False
+                            err = f"The NMR restraint file {file_name!r} (MR format) {ins_msg}does not match with any known restraint format. "\
+                                "@todo: It needs to be reviewed or marked as entry wo NMR restraints."
 
-                    if len_possible_types == 0:
-                        print(f"The NMR restraint file {file_name!r} (MR format) is identified as {valid_types}.")
+                            self.report.error.appendDescription('internal_error',
+                                                                {'file_name': file_name, 'description': err})
+                            self.report.setError()
 
-                        _ar = ar.copy()
+                            if self.__verbose:
+                                self.__lfh.write(f"+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - {err}\n")
 
-                        if len_valid_types == 1:
-                            _ar['file_name'] = dst_file
-                            _ar['file_type'] = valid_types[0]
+                            return False
+
+                        if len_possible_types == 0:
+                            self.__lfh.write(f"The NMR restraint file {file_name!r} (MR format) is identified as {valid_types}.\n")
+
+                            _ar = ar.copy()
+
+                            if len_valid_types == 1:
+                                _ar['file_name'] = _dst_file
+                                _ar['file_type'] = valid_types[0]
+                                if distict:
+                                    _ar['original_file_name'] = file_name
+                                splitted.append(_ar)
+
+                            elif len_valid_types == 2 and 'nm-res-cns' in valid_types and 'nm-res-xpl' in valid_types:
+                                _ar['file_name'] = _dst_file
+                                _ar['file_type'] = 'nm-res-xpl'
+                                if distict:
+                                    _ar['original_file_name'] = file_name
+                                splitted.append(_ar)
+
+                            else:
+                                _ar['file_name'] = _dst_file
+                                _ar['file_type'] = valid_types[0]
+                                if distict:
+                                    _ar['original_file_name'] = file_name
+
+                                err = f"The NMR restraint file {file_name!r} (MR format) is identified as {valid_types}. "\
+                                    "@todo: It needs to be split properly."
+
+                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - " + err)
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - {err}\n")
+
+                        elif len_valid_types == 0:
+                            self.__lfh.write(f"The NMR restraint file {file_name!r} (MR format) can be {possible_types}.\n")
+
+                            _ar['file_name'] = _dst_file
+                            _ar['file_type'] = possible_types[0]
                             if distict:
                                 _ar['original_file_name'] = file_name
-                            splitted.append(_ar)
 
-                        elif len_valid_types == 2 and 'nm-res-cns' in valid_types and 'nm-res-xpl' in valid_types:
-                            _ar['file_name'] = dst_file
-                            _ar['file_type'] = 'nm-res-xpl'
-                            if distict:
-                                _ar['original_file_name'] = file_name
-                            splitted.append(_ar)
-
-                        else:
-
-                            err = f"The NMR restraint file {file_name!r} (MR format) is identified as {valid_types}. "\
-                                "@todo: It needs to be split properly."
+                            err = f"The NMR restraint file {file_name!r} (MR format) can be {possible_types}. "\
+                                "@todo: It needs to be reviewed."
 
                             self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - " + err)
                             self.report.setError()
@@ -9192,29 +9484,22 @@ class NmrDpUtility:
                             if self.__verbose:
                                 self.__lfh.write(f"+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - {err}\n")
 
-                    elif len_valid_types == 0:
-                        print(f"The NMR restraint file {file_name!r} (MR format) can be {possible_types}.")
+                        else:
+                            self.__lfh.write(f"The NMR restraint file {file_name!r} (MR format) is identified as {valid_types} and can be {possible_types} as well.\n")
 
-                        err = f"The NMR restraint file {file_name!r} (MR format) can be {possible_types}. "\
-                            "@todo: It needs to be reviewed."
+                            _ar['file_name'] = _dst_file
+                            _ar['file_type'] = valid_types[0]
+                            if distict:
+                                _ar['original_file_name'] = file_name
 
-                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - " + err)
-                        self.report.setError()
+                            err = f"The NMR restraint file {file_name!r} (MR format) is identified as {valid_types} and can be {possible_types} as well. "\
+                                "@todo: It needs to be reviewed."
 
-                        if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - {err}\n")
+                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - " + err)
+                            self.report.setError()
 
-                    else:
-                        print(f"The NMR restraint file {file_name!r} (MR format) is identified as {valid_types} and can be {possible_types} as well.")
-
-                        err = f"The NMR restraint file {file_name!r} (MR format) is identified as {valid_types} and can be {possible_types} as well. "\
-                            "@todo: It needs to be reviewed."
-
-                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - " + err)
-                        self.report.setError()
-
-                        if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - {err}\n")
+                            if self.__verbose:
+                                self.__lfh.write(f"+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - {err}\n")
 
         if len(splitted) > 0:
             self.__inputParamDict[ar_file_path_list].extend(splitted)

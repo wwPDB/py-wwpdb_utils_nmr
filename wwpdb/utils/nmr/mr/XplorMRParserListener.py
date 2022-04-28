@@ -992,9 +992,9 @@ class XplorMRParserListener(ParseTreeListener):
                 f"The energy constant value {energyConst} must be a positive value.\n"
             return
 
-        if exponent not in (1, 2):
+        if exponent not in (1, 2, 4):
             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                f"The exponent value of dihedral angle restraint 'ed={exponent}' must be one (linear well) or two (square well).\n"
+                f"The exponent value of dihedral angle restraint 'ed={exponent}' must be one (linear well), two (square well) or four (quartic well).\n"
             return
 
         target_value = target
@@ -1003,14 +1003,14 @@ class XplorMRParserListener(ParseTreeListener):
         lower_linear_limit = None
         upper_linear_limit = None
 
-        if exponent == 2:
+        if exponent in (2, 4):
             lower_limit = target - delta
             upper_limit = target + delta
         else:
             lower_linear_limit = target - delta
             upper_linear_limit = target + delta
 
-        dstFunc = self.validateAngleRange(self.scale, {'energy_const': energyConst},
+        dstFunc = self.validateAngleRange(self.scale, {'energy_const': energyConst, 'exponent': exponent},
                                           target_value, lower_limit, upper_limit,
                                           lower_linear_limit, upper_linear_limit)
 

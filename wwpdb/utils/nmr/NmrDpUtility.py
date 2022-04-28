@@ -8131,7 +8131,7 @@ class NmrDpUtility:
         div_try_file = src_basename + '-div_try.mr'
         div_dst_file = src_basename + '-div_dst.mr'
 
-        i = 0
+        i = j = 0
 
         with open(file_path, 'r') as ifp,\
                 open(div_src_file, 'w') as ofp,\
@@ -8140,10 +8140,11 @@ class NmrDpUtility:
                 i += 1
                 if i < line_number:
                     ofp.write(line)
+                    j += 1
                     continue
                 ofp2.write(line)
 
-        if i < line_number:
+        if i < line_number or j == 0:
             os.remove(div_src_file)
             if os.path.exists(div_try_file):
                 os.remove(div_try_file)

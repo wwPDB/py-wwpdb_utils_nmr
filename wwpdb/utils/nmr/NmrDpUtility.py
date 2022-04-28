@@ -8179,7 +8179,7 @@ class NmrDpUtility:
 
                 reader = XplorMRReader(self.__verbose, self.__lfh, None, None, None,
                                        self.__ccU, self.__csStat, self.__nefT)
-                listener, _, lexer_err_listener = reader.parse(file_path, None)
+                listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
                 if listener is not None:
                     reasons = listener.getReasonsForReparsing()

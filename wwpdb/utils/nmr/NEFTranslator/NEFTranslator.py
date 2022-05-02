@@ -2799,7 +2799,10 @@ class NEFTranslator:
                             try:
                                 enum = k['enum']
                                 if val not in enum:
-                                    if 'enum-alt' in k and val in k['enum-alt']:
+                                    if 'default-from' in k and k['default-from'] in tags:
+                                        if i[tags.index(k['default-from'])][0].upper() in enum:
+                                            val = i[tags.index(k['default-from'])][0].upper()
+                                    elif 'enum-alt' in k and val in k['enum-alt']:
                                         val = k['enum-alt'][val]
                                         i[j] = val
                                     elif 'enforce-enum' in k and k['enforce-enum']:
@@ -2824,6 +2827,9 @@ class NEFTranslator:
                             try:
                                 enum = k['enum']
                                 if int(val) not in enum:
+                                    if 'default-from' in k and k['default-from'] in tags:
+                                        if i[tags.index(k['default-from'])][0].upper() in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
+                                            val = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[i[tags.index(k['default-from'])][0].upper()][0]
                                     if 'enforce-enum' in k and k['enforce-enum']:
                                         raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
                                                          + f"{name} {val!r} must be one of {enum}.")
@@ -3101,7 +3107,10 @@ class NEFTranslator:
                                     try:
                                         enum = d['enum']
                                         if val not in enum:
-                                            if 'enum-alt' in d and val in d['enum-alt']:
+                                            if 'default-from' in d and d['default-from'] in tags:
+                                                if i[tags.index(d['default-from'])][0].upper() in enum:
+                                                    val = i[tags.index(d['default-from'])][0].upper()
+                                            elif 'enum-alt' in d and val in d['enum-alt']:
                                                 val = d['enum-alt'][val]
                                                 i[j] = val
                                             elif 'enforce-enum' in d and d['enforce-enum']:
@@ -3126,6 +3135,9 @@ class NEFTranslator:
                                     try:
                                         enum = d['enum']
                                         if int(val) not in enum:
+                                            if 'default-from' in d and d['default-from'] in tags:
+                                                if i[tags.index(d['default-from'])][0].upper() in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
+                                                    val = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[i[tags.index(d['default-from'])][0].upper()][0]
                                             if 'enforce-enum' in d and d['enforce-enum']:
                                                 raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
                                                                  + f"{name} {val!r} must be one of {enum}.")

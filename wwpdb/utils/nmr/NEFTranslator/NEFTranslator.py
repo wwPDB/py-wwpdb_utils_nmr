@@ -83,6 +83,7 @@
 # 02-Mar-2022  M. Yokochi - revise logging and overall code revision (v3.1.0)
 # 12-Apr-2022  M. Yokochi - add get_valid_star_atom_in_xplor(), which translates XPLOR atom name to IUPAC one (v3.1.1, NMR restraint remediation, DAOTHER-7407)
 # 13-Apr-2022  M. Yokochi - use auth_*_id scheme preferentially in combined format translation (v3.1.2, NMR restraint remediation)
+# 02-May-2022  M. Yokochi - remediate inconsistent _Atom_chem_shift.Chem_comp_ID tag values in reference to _Atom_chem_shift.Seq_ID (v3.1.3, NMR restraint remediation)
 ##
 """ Bi-directional translator between NEF and NMR-STAR
     @author: Kumaran Baskaran, Masashi Yokochi
@@ -110,7 +111,7 @@ except ImportError:
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
 
-__version__ = '3.1.2'
+__version__ = '3.1.3'
 
 __pynmrstar_v3_2__ = version.parse(pynmrstar.__version__) >= version.parse("3.2.0")
 __pynmrstar_v3_1__ = version.parse(pynmrstar.__version__) >= version.parse("3.1.0")
@@ -1407,7 +1408,8 @@ class NEFTranslator:
         return data
 
     def get_star_seq(self, star_data, lp_category='Atom_chem_shift', seq_id='Comp_index_ID', comp_id='Comp_ID',  # pylint: disable=no-self-use
-                     chain_id='Entity_assembly_ID', alt_chain_id='Auth_asym_ID', allow_empty=False, allow_gap=False):
+                     chain_id='Entity_assembly_ID', alt_seq_id='Seq_ID', alt_seq_id_offset=0, alt_chain_id='Auth_asym_ID',
+                     allow_empty=False, allow_gap=False):
         """ Extract sequence from any given loops in an NMR-STAR file.
             @change: re-written by Masashi Yokochi
             @return: list of sequence information for each loop
@@ -1465,6 +1467,8 @@ class NEFTranslator:
                         _tags_exist = True
                         seq_data_ = get_lp_tag(loop, _tags)
                         for i in seq_data_:
+                            if alt_seq_id_offset != 0:
+                                i[0] += alt_seq_id_offset
                             if i[2] in emptyValue:
                                 i[2] = def_chain_id
                         seq_data += seq_data_
@@ -1528,6 +1532,27 @@ class NEFTranslator:
                 for i in seq_data:
                     chk_key = f"{i[2]} {int(i[0]):04d}"
                     if chk_dict[chk_key] != i[1]:
+
+                        if seq_id != alt_seq_id and alt_seq_id in loop.tags:
+                            to_idx = loop.tags.index(seq_id)
+                            fr_idx = loop.tags.index(alt_seq_id)
+
+                            seq_tags = [seq_id, alt_seq_id]
+                            _seq_data = get_lp_tag(loop, seq_tags)
+
+                            offset = None
+
+                            for _i in _seq_data:
+                                try:
+                                    offset = int(_i[to_idx]) - int(_i[fr_idx])
+                                    break
+                                except ValueError:
+                                    continue
+
+                            if offset is not None:
+                                return self.get_star_seq(star_data, lp_category, alt_seq_id, comp_id, chain_id,
+                                                         alt_seq_id, offset, alt_chain_id, allow_empty, allow_gap)
+
                         raise KeyError(f"{lp_category[1:]} loop contains different {comp_id} ({i[1]} and {chk_dict[chk_key]}) "
                                        f"with the same {chain_id} {i[2]}, {seq_id} {i[0]}.")
 
@@ -2466,7 +2491,7 @@ class NEFTranslator:
 
                 rechk = False
 
-                for l, i in enumerate(tag_data):  # noqa: E741
+                for i in tag_data:
 
                     key = ''
                     for j in range(key_len):
@@ -2519,7 +2544,7 @@ class NEFTranslator:
                 if rechk:
                     keys = set()
 
-                    for l, i in enumerate(tag_data):  # noqa: E741
+                    for i in tag_data:
 
                         key = ''
                         for j in range(key_len):
@@ -2563,6 +2588,141 @@ class NEFTranslator:
 
                         else:
                             keys.add(key)
+
+            if len(user_warn_msg) > 0:
+                _user_warn_msg = ''
+
+                for k in key_items:
+                    if k['type'] == 'int' and 'default-from' in k and k['default-from'] in loop.tags:
+                        to_idx = loop.tags.index(k['name'])
+                        fr_idx = loop.tags.index(k['default-from'])
+
+                        offset = None
+
+                        for i in loop.data:
+                            if i[to_idx] not in emptyValue and i[fr_idx] not in emptyValue:
+                                try:
+                                    offset = int(i[to_idx]) - int(i[fr_idx])
+                                    break
+                                except ValueError:
+                                    continue
+
+                        if offset is not None:
+
+                            for l, i in enumerate(loop.data):  # noqa: E741
+                                if i[to_idx] not in emptyValue and i[fr_idx] not in emptyValue:
+                                    try:
+                                        loop.data[l][to_idx] = str(int(i[fr_idx]) + offset)
+                                    except ValueError:
+                                        continue
+
+                tag_data = get_lp_tag(loop, tags)
+
+                if test_on_index and key_len > 0:
+                    keys = set()
+
+                    rechk = False
+
+                    for i in tag_data:
+
+                        key = ''
+                        for j in range(key_len):
+                            key += ' ' + i[j]
+                        key.rstrip()
+
+                        if key in keys:
+
+                            relax_key = False
+
+                            if len(relax_key_ids) > 0:
+                                for j in relax_key_ids:
+                                    if i[j] is not emptyValue:
+                                        relax_key = True
+                                        break
+
+                            if relax_key:
+                                rechk = True
+
+                            else:
+                                msg = ''
+                                for j in range(key_len):
+                                    msg += key_names[j] + ' ' + i[j] + ', '
+
+                                idx_msg = ''
+
+                                if len(idx_tag_ids) > 0:
+                                    for _j in idx_tag_ids:
+                                        idx_msg += tags[_j] + ' '
+
+                                        for _i in tag_data:
+                                            _key = ''
+                                            for j in range(key_len):
+                                                _key += " " + _i[j]
+                                                _key.rstrip()
+
+                                            if key == _key:
+                                                idx_msg += _i[_j] + ' vs '
+
+                                        idx_msg = idx_msg[:-4] + ', '
+
+                                    idx_msg = "[Check rows of " + idx_msg[:-2] + "] "
+
+                                _user_warn_msg += "[Multiple data] "\
+                                    f"{idx_msg}Duplicated rows having the following values {msg.rstrip().rstrip(',')} exist in a loop.\n"
+
+                        else:
+                            keys.add(key)
+
+                    if rechk:
+                        keys = set()
+
+                        for i in tag_data:
+
+                            key = ''
+                            for j in range(key_len):
+                                key += ' ' + i[j]
+                            for j in relax_key_ids:
+                                key += ' ' + i[j]
+                            key.rstrip()
+
+                            if key in keys:
+
+                                msg = ''
+                                for j in range(key_len):
+                                    msg += key_names[j] + ' ' + i[j] + ', '
+                                for j in relax_key_ids:
+                                    if i[j] not in emptyValue:
+                                        msg += tags[j] + ' ' + i[j] + ', '
+
+                                idx_msg = ''
+
+                                if len(idx_tag_ids) > 0:
+                                    for _j in idx_tag_ids:
+                                        idx_msg += tags[_j] + ' '
+
+                                        for _i in tag_data:
+                                            _key = ''
+                                            for j in range(key_len):
+                                                _key += " " + _i[j]
+                                            for j in relax_key_ids:
+                                                _key += " " + _i[j]
+                                                _key.rstrip()
+
+                                            if key == _key:
+                                                idx_msg += _i[_j] + ' vs '
+
+                                        idx_msg = idx_msg[:-4] + ', '
+
+                                    idx_msg = "[Check rows of " + idx_msg[:-2] + "] "
+
+                                _user_warn_msg += "[Multiple data] "\
+                                    f"{idx_msg}Duplicated rows having the following values {msg.rstrip().rstrip(',')} exist in a loop.\n"
+
+                            else:
+                                keys.add(key)
+
+                if len(_user_warn_msg) == 0:
+                    user_warn_msg = ''
 
             asm = []  # assembly of a loop
 

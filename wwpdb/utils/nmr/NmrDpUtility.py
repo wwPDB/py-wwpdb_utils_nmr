@@ -902,6 +902,9 @@ class NmrDpUtility:
         # auxiliary input resource
         self.__inputParamDict = {}
 
+        # copy of  __inputParamDict to restart remediation
+        self.__inputParamDictCopy = None
+
         # auxiliary output resource
         self.__outputParamDict = {}
 
@@ -3706,6 +3709,10 @@ class NmrDpUtility:
         self.__remediation_mode = (op == 'nmr-cs-mr-merge')
 
         if self.__remediation_mode:
+
+            if self.__inputParamDictCopy is None:
+                self.__inputParamDictCopy = copy.deepcopy(self.__inputParamDict)
+
             for v in self.key_items['nmr-star'].values():
                 if v is None:
                     continue
@@ -6463,6 +6470,8 @@ class NmrDpUtility:
         if ar_file_path_list not in self.__inputParamDict:
             return True
 
+        corrected = False
+
         hbond_da_atom_types = ('O', 'N', 'F')
         rdc_origins = ('OO', 'X', 'Y', 'Z')
 
@@ -7308,7 +7317,7 @@ class NmrDpUtility:
                                     if enc is not None and enc != 'ascii':
                                         err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r}.\n"
                                     elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
-                                        self.__divideLegacyMRIfNecessary(file_path, file_type, description['line_number'], str(file_path), 0)
+                                        corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description['line_number'], str(file_path), 0)
                                         div_test = True
 
                     if parser_err_listener is not None:
@@ -7325,7 +7334,7 @@ class NmrDpUtility:
                                     if enc is not None and enc != 'ascii':
                                         pass
                                     elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
-                                        self.__divideLegacyMRIfNecessary(file_path, file_type, description['line_number'], str(file_path), 0)
+                                        corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description['line_number'], str(file_path), 0)
                                         div_test = True
 
                     if len(err) > 0:
@@ -7413,7 +7422,7 @@ class NmrDpUtility:
                                     if enc is not None and enc != 'ascii':
                                         err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r}.\n"
                                     elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
-                                        self.__divideLegacyMRIfNecessary(file_path, file_type, description['line_number'], str(file_path), 0)
+                                        corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description['line_number'], str(file_path), 0)
                                         div_test = True
 
                     if parser_err_listener is not None:
@@ -7430,7 +7439,7 @@ class NmrDpUtility:
                                     if enc is not None and enc != 'ascii':
                                         pass
                                     elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
-                                        self.__divideLegacyMRIfNecessary(file_path, file_type, description['line_number'], str(file_path), 0)
+                                        corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description['line_number'], str(file_path), 0)
                                         div_test = True
 
                     if len(err) > 0:
@@ -7508,7 +7517,7 @@ class NmrDpUtility:
                                     if enc is not None and enc != 'ascii':
                                         err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r}.\n"
                                     elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
-                                        self.__divideLegacyMRIfNecessary(file_path, file_type, description['line_number'], str(file_path), 0)
+                                        corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description['line_number'], str(file_path), 0)
                                         div_test = True
 
                     if parser_err_listener is not None:
@@ -7525,7 +7534,7 @@ class NmrDpUtility:
                                     if enc is not None and enc != 'ascii':
                                         pass
                                     elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
-                                        self.__divideLegacyMRIfNecessary(file_path, file_type, description['line_number'], str(file_path), 0)
+                                        corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description['line_number'], str(file_path), 0)
                                         div_test = True
 
                     if len(err) > 0:
@@ -7603,7 +7612,7 @@ class NmrDpUtility:
                                     if enc is not None and enc != 'ascii':
                                         err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r}.\n"
                                     elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
-                                        self.__divideLegacyMRIfNecessary(file_path, file_type, description['line_number'], str(file_path), 0)
+                                        corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description['line_number'], str(file_path), 0)
                                         div_test = True
 
                     if parser_err_listener is not None:
@@ -7620,7 +7629,7 @@ class NmrDpUtility:
                                     if enc is not None and enc != 'ascii':
                                         pass
                                     elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
-                                        self.__divideLegacyMRIfNecessary(file_path, file_type, description['line_number'], str(file_path), 0)
+                                        corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description['line_number'], str(file_path), 0)
                                         div_test = True
 
                     if len(err) > 0:
@@ -7705,7 +7714,7 @@ class NmrDpUtility:
                                     if enc is not None and enc != 'ascii':
                                         err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r}.\n"
                                     elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
-                                        self.__divideLegacyMRIfNecessary(file_path, file_type, description['line_number'], str(file_path), 0)
+                                        corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description['line_number'], str(file_path), 0)
                                         div_test = True
 
                     if parser_err_listener is not None:
@@ -7722,7 +7731,7 @@ class NmrDpUtility:
                                     if enc is not None and enc != 'ascii':
                                         pass
                                     elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
-                                        self.__divideLegacyMRIfNecessary(file_path, file_type, description['line_number'], str(file_path), 0)
+                                        corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description['line_number'], str(file_path), 0)
                                         div_test = True
 
                     if len(err) > 0:
@@ -7810,7 +7819,7 @@ class NmrDpUtility:
                                     if enc is not None and enc != 'ascii':
                                         err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r}.\n"
                                     elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
-                                        self.__divideLegacyMRIfNecessary(file_path, file_type, description['line_number'], str(file_path), 0)
+                                        corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description['line_number'], str(file_path), 0)
                                         div_test = True
 
                     if parser_err_listener is not None:
@@ -7827,7 +7836,7 @@ class NmrDpUtility:
                                     if enc is not None and enc != 'ascii':
                                         pass
                                     elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
-                                        self.__divideLegacyMRIfNecessary(file_path, file_type, description['line_number'], str(file_path), 0)
+                                        corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description['line_number'], str(file_path), 0)
                                         div_test = True
 
                     if len(err) > 0:
@@ -8101,14 +8110,27 @@ class NmrDpUtility:
                     if self.__verbose:
                         self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMR() ++ Error  - {err}\n")
 
+        # restart using format issue resolved input files
+        if self.__remediation_mode and corrected:
+
+            self.__inputParamDict = copy.deepcopy(self.__inputParamDictCopy)
+
+            self.__initializeDpReport()
+            self.__validateInputSource()
+            self.__detectContentSubType()
+            self.__extractPublicMRFileIntoLegacyMR()
+            self.__detectContentSubTypeOfLegacyMR()
+
         return not self.report.isError()
 
     def __divideLegacyMRIfNecessary(self, file_path, file_type, line_number, src_path, offset):
         """ Divive legacy NMR restraint file if necessary.
         """
 
+        corrected = False
+
         if not self.__remediation_mode:
-            return
+            return corrected
 
         if file_type == 'nm-res-xpl':
             mr_format_name = 'XPLOR-NIH'
@@ -8122,10 +8144,10 @@ class NmrDpUtility:
             mr_format_name = 'ROSETTA'
         elif file_type == 'nm-res-mr':
             mr_format_name = 'MR'
-            return
+            return corrected
         else:
             mr_format_name = 'other'
-            return
+            return corrected
 
         src_basename = os.path.splitext(file_path)[0]
         div_src = 'div_dst' in src_basename
@@ -8195,11 +8217,14 @@ class NmrDpUtility:
                     if cor_test:
                         os.rename(cor_src_path, src_path)
 
+                    corrected = True
+
             if os.path.exists(div_src_file):
                 os.remove(div_src_file)
             if os.path.exists(div_try_file):
                 os.remove(div_try_file)
-            return
+
+            return corrected
 
         file_name = os.path.basename(div_try_file)
 
@@ -8211,7 +8236,10 @@ class NmrDpUtility:
         if (len_valid_types == 0 and len_possible_types == 0) or len_possible_types > 0:
             os.remove(div_src_file)
             os.remove(div_try_file)
-            return
+
+            return corrected
+
+        corrected = True
 
         self.__lfh.write(f"The NMR restraint file {file_name!r} ({mr_format_name} format) is identified as {valid_types}.\n")
 
@@ -8462,6 +8490,8 @@ class NmrDpUtility:
 
             if self.__verbose:
                 self.__lfh.write(f"+NmrDpUtility.__divideLegacyMRIfNecessary() ++ Error  - {str(e)}\n")
+
+        return corrected
 
     def __detectOtherPossibleFormatAsErrorOfLegacyMR(self, file_path, file_name, file_type, dismiss_err_lines, multiple_check=False):
         """ Report other possible format as error of a given legacy NMR restraint file.

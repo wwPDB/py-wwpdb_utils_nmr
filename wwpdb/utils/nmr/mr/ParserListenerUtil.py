@@ -19,6 +19,9 @@ except ImportError:
     from nmr.AlignUtil import monDict3
 
 
+MAX_ERROR_REPORT = 1
+
+
 REPRESENTATIVE_MODEL_ID = 1
 
 

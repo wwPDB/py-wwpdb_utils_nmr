@@ -306,6 +306,10 @@ class XplorMRParserListener(ParseTreeListener):
     # store[1-9]
     storeSet = {i: [] for i in range(1, 10)}
 
+    # Hydrogen bond database restraint
+    donor_columnSel = -1
+    acceptor_columnSel = -1
+
     warningMessage = ''
 
     reasonsForReParsing = None
@@ -5101,20 +5105,64 @@ class XplorMRParserListener(ParseTreeListener):
                       f"donor={atom1} hydrogen={atom2} acceptor={atom3}")
 
     # Enter a parse tree produced by XplorMRParser#hbond_db_statement.
-    def enterHbond_db_statement(self, ctx: XplorMRParser.Hbond_db_statementContext):
+    def enterHbond_db_statement(self, ctx: XplorMRParser.Hbond_db_statementContext):  # pylint: disable=unused-argument
         pass
 
     # Exit a parse tree produced by XplorMRParser#hbond_db_statement.
-    def exitHbond_db_statement(self, ctx: XplorMRParser.Hbond_db_statementContext):
-        pass
+    def exitHbond_db_statement(self, ctx: XplorMRParser.Hbond_db_statementContext):  # pylint: disable=unused-argument
+        if self.__debug:
+            print(f"subtype={self.__cur_subtype} (HBDB)")
 
     # Enter a parse tree produced by XplorMRParser#hbond_db_assign.
-    def enterHbond_db_assign(self, ctx: XplorMRParser.Hbond_db_assignContext):
-        pass
+    def enterHbond_db_assign(self, ctx: XplorMRParser.Hbond_db_assignContext):  # pylint: disable=unused-argument
+        self.hbondRestraints += 1
+        if self.__cur_subtype != 'hbond':
+            self.hbondStatements += 1
+        self.__cur_subtype = 'hbond'
+
+        self.atomSelectionSet.clear()
+        self.donor_columnSel = self.acceptor_columnSel = -1
 
     # Exit a parse tree produced by XplorMRParser#hbond_db_assign.
-    def exitHbond_db_assign(self, ctx: XplorMRParser.Hbond_db_assignContext):
-        pass
+    def exitHbond_db_assign(self, ctx: XplorMRParser.Hbond_db_assignContext):  # pylint: disable=unused-argument
+        if not self.__hasPolySeq:
+            return
+
+        if not self.areUniqueCoordAtoms('a hydrogen bond database (HBDB)'):
+            return
+
+        if self.donor_columnSel < 0:
+            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                "The donor atom has not been selected. 'don' tag must be exist in an atom selection expression of each Hydrogen bond database (HBDB) statement. "\
+                "e.g. assign (don and resid 2 and segid A and name O ) (acc and resid 8 and segid A and name HN)\n"
+            return
+
+        if self.acceptor_columnSel < 0:
+            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                "The acceptor atom has not been selected. 'acc' tag must be exist in an atom selection expression of each Hydrogen bond database (HBDB) statement. "\
+                "e.g. assign (don and resid 2 and segid A and name O ) (acc and resid 8 and segid A and name HN)\n"
+            return
+
+        donor = self.atomSelectionSet[self.donor_columnSel][0]
+        acceptor = self.atomSelectionSet[self.acceptor_columnSel][0]
+
+        if donor['atom_id'][0] not in ('N', 'O', 'F'):
+            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                "The donor atom type should be one of Nitrogen, Oxygen, Fluorine; "\
+                f"{donor['chain_id']}:{donor['seq_id']}:{donor['comp_id']}:{donor['atom_id']}."
+            return
+
+        if acceptor['atom_id'][0] != 'H':
+            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                "The acceptor atom type should be Hydrogen; "\
+                f"{acceptor['chain_id']}:{acceptor['seq_id']}:{acceptor['comp_id']}:{acceptor['atom_id']}.\n"
+            return
+
+        for atom1, atom2 in itertools.product(self.atomSelectionSet[self.donor_columnSel],
+                                              self.atomSelectionSet[self.acceptor_columnSel]):
+            if self.__debug:
+                print(f"subtype={self.__cur_subtype} (HBDB) id={self.hbondRestraints} "
+                      f"donor={atom1} acceptor={atom2}")
 
     # Enter a parse tree produced by XplorMRParser#selection.
     def enterSelection(self, ctx: XplorMRParser.SelectionContext):  # pylint: disable=unused-argument
@@ -7129,6 +7177,12 @@ class XplorMRParserListener(ParseTreeListener):
                     self.factor['atom_id'] = [None]
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                         "The 'tag' clause has no effect.\n"
+
+            elif ctx.Donor():
+                self.donor_columnSel = len(self.atomSelectionSet)
+
+            elif ctx.Acceptor():
+                self.acceptor_columnSel = len(self.atomSelectionSet)
 
             self.stackFactors.append(self.factor)
 

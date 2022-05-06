@@ -17,6 +17,7 @@ try:
     from wwpdb.utils.nmr.mr.RosettaMRParser import RosettaMRParser
     from wwpdb.utils.nmr.mr.RosettaMRParserListener import RosettaMRParserListener
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (checkCoordinates,
+                                                       MAX_ERROR_REPORT,
                                                        REPRESENTATIVE_MODEL_ID)
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
@@ -29,6 +30,7 @@ except ImportError:
     from nmr.mr.RosettaMRParser import RosettaMRParser
     from nmr.mr.RosettaMRParserListener import RosettaMRParserListener
     from nmr.mr.ParserListenerUtil import (checkCoordinates,
+                                           MAX_ERROR_REPORT,
                                            REPRESENTATIVE_MODEL_ID)
     from nmr.io.CifReader import CifReader
     from nmr.ChemCompUtil import ChemCompUtil
@@ -47,6 +49,9 @@ class RosettaMRReader:
         self.__verbose = verbose
         self.__lfh = log
         self.__debug = False
+
+        self.__maxLexerErrorReport = MAX_ERROR_REPORT
+        self.__maxParserErrorReport = MAX_ERROR_REPORT
 
         self.__representativeModelId = representativeModelId
 
@@ -70,6 +75,12 @@ class RosettaMRReader:
 
     def setDebugMode(self, debug):
         self.__debug = debug
+
+    def setLexerMaxErrorReport(self, maxErrReport):
+        self.__maxLexerErrorReport = maxErrReport
+
+    def setParserMaxErrorReport(self, maxErrReport):
+        self.__maxParserErrorReport = maxErrReport
 
     def parse(self, mrFilePath, cifFilePath=None):
         """ Parse ROSETTA MR file.
@@ -101,7 +112,7 @@ class RosettaMRReader:
                 lexer = RosettaMRLexer(ifs)
                 lexer.removeErrorListeners()
 
-                lexer_error_listener = LexerErrorListener(mrFilePath)
+                lexer_error_listener = LexerErrorListener(mrFilePath, self.__maxLexerErrorReport)
                 lexer.addErrorListener(lexer_error_listener)
 
                 messageList = lexer_error_listener.getMessageList()
@@ -116,7 +127,7 @@ class RosettaMRReader:
                 stream = CommonTokenStream(lexer)
                 parser = RosettaMRParser(stream)
                 parser.removeErrorListeners()
-                parser_error_listener = ParserErrorListener(mrFilePath)
+                parser_error_listener = ParserErrorListener(mrFilePath, self.__maxParserErrorReport)
                 parser.addErrorListener(parser_error_listener)
                 tree = parser.rosetta_mr()
 

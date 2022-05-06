@@ -6,41 +6,44 @@
 """ Inheritance of ANTLR ErrorListener for Lexer.
     @author: Masashi Yokochi
 """
-import os
-
 from antlr4.error.ErrorListener import ErrorListener
 
-
-MAX_ERROR_REPORT = 1
+try:
+    from wwpdb.utils.nmr.mr.ParserListenerUtil import MAX_ERROR_REPORT
+except ImportError:
+    from nmr.mr.ParserListenerUtil import MAX_ERROR_REPORT
 
 
 class LexerErrorListener(ErrorListener):
 
     __messageList = None
+    __errorLineNumber = None
 
     __filePath = None
-    __fileName = None
 
-    def __init__(self, filePath, fileName=None):
+    __maxErrorReport = MAX_ERROR_REPORT
+
+    def __init__(self, filePath, maxErrorReport=MAX_ERROR_REPORT):
+
+        self.__messageList = []
+        self.__errorLineNumber = []
 
         self.__filePath = filePath
 
-        self.__fileName = fileName\
-            if fileName is not None and len(fileName) > 0\
-            else os.path.basename(filePath)
+        self.__maxErrorReport = maxErrorReport
 
     def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
-        if self.__messageList is None:
-            self.__messageList = []
 
-        if len(self.__messageList) >= MAX_ERROR_REPORT:
+        if line not in self.__errorLineNumber:
+            self.__errorLineNumber.append(line)
+
+        if len(self.__messageList) >= self.__maxErrorReport:
             return
 
         _msg = msg.split("'")
         length = 1 if 'alternative' in msg or len(_msg) < 2 else len(_msg[1])
 
         _dict = {'file_path': self.__filePath,
-                 'file_name': self.__fileName,
                  'line_number': line,
                  'column_position': column,
                  'message': msg,
@@ -75,4 +78,7 @@ class LexerErrorListener(ErrorListener):
         pass
 
     def getMessageList(self):
-        return self.__messageList
+        return self.__messageList if len(self.__messageList) > 0 else None
+
+    def getErrorLineNumber(self):
+        return self.__errorLineNumber if len(self.__errorLineNumber) > 0 else None

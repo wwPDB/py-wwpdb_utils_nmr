@@ -7307,42 +7307,43 @@ class NmrDpUtility:
                     err = ''
                     err_lines = []
 
-                    if lexer_err_listener is not None:
+                    has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
+                    has_parser_error = parser_err_listener is not None and parser_err_listener.getMessageList() is not None
+
+                    if has_lexer_error:
                         messageList = lexer_err_listener.getMessageList()
 
-                        if messageList is not None:
-                            for description in messageList:
-                                err_lines.append(description['line_number'])
-                                err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
-                                if 'input' in description:
-                                    err += f"{description['input']}\n"
-                                    err += f"{description['marker']}\n"
-                                    enc = detect_encoding(description['input'])
-                                    if enc is not None and enc != 'ascii':
-                                        err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r}.\n"
-                                    elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
-                                        corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
-                                        div_test = True
-
-                    if parser_err_listener is not None:
-                        messageList = parser_err_listener.getMessageList()
-
-                        if messageList is not None:
-                            for description in messageList:
-                                err_lines.append(description['line_number'])
-                                err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
-                                if 'input' in description:
-                                    err += f"{description['input']}\n"
-                                    err += f"{description['marker']}\n"
-                                    enc = detect_encoding(description['input'])
-                                    if enc is not None and enc != 'ascii':
-                                        pass
-                                    elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
-                                        corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
-                                        div_test = True
+                        for description in messageList:
+                            err_lines.append(description['line_number'])
+                            err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                            if 'input' in description:
+                                err += f"{description['input']}\n"
+                                err += f"{description['marker']}\n"
+                                enc = detect_encoding(description['input'])
+                                if enc is not None and enc != 'ascii':
+                                    err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r}.\n"
                                 elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
                                     corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
                                     div_test = True
+
+                    if has_parser_error:
+                        messageList = parser_err_listener.getMessageList()
+
+                        for description in messageList:
+                            err_lines.append(description['line_number'])
+                            err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                            if 'input' in description:
+                                err += f"{description['input']}\n"
+                                err += f"{description['marker']}\n"
+                                enc = detect_encoding(description['input'])
+                                if enc is not None and enc != 'ascii':
+                                    pass
+                                elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
+                                    corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
+                                    div_test = True
+                            elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
+                                corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
+                                div_test = True
 
                     if len(err) > 0:
                         valid = False
@@ -7415,42 +7416,43 @@ class NmrDpUtility:
                     err = ''
                     err_lines = []
 
-                    if lexer_err_listener is not None:
+                    has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
+                    has_parser_error = parser_err_listener is not None and parser_err_listener.getMessageList() is not None
+
+                    if has_lexer_error:
                         messageList = lexer_err_listener.getMessageList()
 
-                        if messageList is not None:
-                            for description in messageList:
-                                err_lines.append(description['line_number'])
-                                err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
-                                if 'input' in description:
-                                    err += f"{description['input']}\n"
-                                    err += f"{description['marker']}\n"
-                                    enc = detect_encoding(description['input'])
-                                    if enc is not None and enc != 'ascii':
-                                        err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r}.\n"
-                                    elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
-                                        corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
-                                        div_test = True
-
-                    if parser_err_listener is not None:
-                        messageList = parser_err_listener.getMessageList()
-
-                        if messageList is not None:
-                            for description in messageList:
-                                err_lines.append(description['line_number'])
-                                err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
-                                if 'input' in description:
-                                    err += f"{description['input']}\n"
-                                    err += f"{description['marker']}\n"
-                                    enc = detect_encoding(description['input'])
-                                    if enc is not None and enc != 'ascii':
-                                        pass
-                                    elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
-                                        corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
-                                        div_test = True
+                        for description in messageList:
+                            err_lines.append(description['line_number'])
+                            err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                            if 'input' in description:
+                                err += f"{description['input']}\n"
+                                err += f"{description['marker']}\n"
+                                enc = detect_encoding(description['input'])
+                                if enc is not None and enc != 'ascii':
+                                    err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r}.\n"
                                 elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
                                     corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
                                     div_test = True
+
+                    if has_parser_error:
+                        messageList = parser_err_listener.getMessageList()
+
+                        for description in messageList:
+                            err_lines.append(description['line_number'])
+                            err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                            if 'input' in description:
+                                err += f"{description['input']}\n"
+                                err += f"{description['marker']}\n"
+                                enc = detect_encoding(description['input'])
+                                if enc is not None and enc != 'ascii':
+                                    pass
+                                elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
+                                    corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
+                                    div_test = True
+                            elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
+                                corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
+                                div_test = True
 
                     if len(err) > 0:
                         valid = False
@@ -7513,39 +7515,40 @@ class NmrDpUtility:
                     err = ''
                     err_lines = []
 
-                    if lexer_err_listener is not None:
+                    has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
+                    has_parser_error = parser_err_listener is not None and parser_err_listener.getMessageList() is not None
+
+                    if has_lexer_error:
                         messageList = lexer_err_listener.getMessageList()
 
-                        if messageList is not None:
-                            for description in messageList:
-                                err_lines.append(description['line_number'])
-                                err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
-                                if 'input' in description:
-                                    err += f"{description['input']}\n"
-                                    err += f"{description['marker']}\n"
-                                    enc = detect_encoding(description['input'])
-                                    if enc is not None and enc != 'ascii':
-                                        err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r}.\n"
-                                    elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
-                                        corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
-                                        div_test = True
+                        for description in messageList:
+                            err_lines.append(description['line_number'])
+                            err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                            if 'input' in description:
+                                err += f"{description['input']}\n"
+                                err += f"{description['marker']}\n"
+                                enc = detect_encoding(description['input'])
+                                if enc is not None and enc != 'ascii':
+                                    err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r}.\n"
+                                elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
+                                    corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
+                                    div_test = True
 
-                    if parser_err_listener is not None:
+                    if has_parser_error:
                         messageList = parser_err_listener.getMessageList()
 
-                        if messageList is not None:
-                            for description in messageList:
-                                err_lines.append(description['line_number'])
-                                err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
-                                if 'input' in description:
-                                    err += f"{description['input']}\n"
-                                    err += f"{description['marker']}\n"
-                                    enc = detect_encoding(description['input'])
-                                    if enc is not None and enc != 'ascii':
-                                        pass
-                                    elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
-                                        corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
-                                        div_test = True
+                        for description in messageList:
+                            err_lines.append(description['line_number'])
+                            err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                            if 'input' in description:
+                                err += f"{description['input']}\n"
+                                err += f"{description['marker']}\n"
+                                enc = detect_encoding(description['input'])
+                                if enc is not None and enc != 'ascii':
+                                    pass
+                                elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
+                                    corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
+                                    div_test = True
 
                     if len(err) > 0:
                         valid = False
@@ -7608,39 +7611,40 @@ class NmrDpUtility:
                     err = ''
                     err_lines = []
 
-                    if lexer_err_listener is not None:
+                    has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
+                    has_parser_error = parser_err_listener is not None and parser_err_listener.getMessageList() is not None
+
+                    if has_lexer_error:
                         messageList = lexer_err_listener.getMessageList()
 
-                        if messageList is not None:
-                            for description in messageList:
-                                err_lines.append(description['line_number'])
-                                err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
-                                if 'input' in description:
-                                    err += f"{description['input']}\n"
-                                    err += f"{description['marker']}\n"
-                                    enc = detect_encoding(description['input'])
-                                    if enc is not None and enc != 'ascii':
-                                        err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r}.\n"
-                                    elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
-                                        corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
-                                        div_test = True
+                        for description in messageList:
+                            err_lines.append(description['line_number'])
+                            err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                            if 'input' in description:
+                                err += f"{description['input']}\n"
+                                err += f"{description['marker']}\n"
+                                enc = detect_encoding(description['input'])
+                                if enc is not None and enc != 'ascii':
+                                    err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r}.\n"
+                                elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
+                                    corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
+                                    div_test = True
 
-                    if parser_err_listener is not None:
+                    if has_parser_error:
                         messageList = parser_err_listener.getMessageList()
 
-                        if messageList is not None:
-                            for description in messageList:
-                                err_lines.append(description['line_number'])
-                                err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
-                                if 'input' in description:
-                                    err += f"{description['input']}\n"
-                                    err += f"{description['marker']}\n"
-                                    enc = detect_encoding(description['input'])
-                                    if enc is not None and enc != 'ascii':
-                                        pass
-                                    elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
-                                        corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
-                                        div_test = True
+                        for description in messageList:
+                            err_lines.append(description['line_number'])
+                            err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                            if 'input' in description:
+                                err += f"{description['input']}\n"
+                                err += f"{description['marker']}\n"
+                                enc = detect_encoding(description['input'])
+                                if enc is not None and enc != 'ascii':
+                                    pass
+                                elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
+                                    corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
+                                    div_test = True
 
                     if len(err) > 0:
                         valid = False
@@ -7710,39 +7714,40 @@ class NmrDpUtility:
                     err = ''
                     err_lines = []
 
-                    if lexer_err_listener is not None:
+                    has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
+                    has_parser_error = parser_err_listener is not None and parser_err_listener.getMessageList() is not None
+
+                    if has_lexer_error:
                         messageList = lexer_err_listener.getMessageList()
 
-                        if messageList is not None:
-                            for description in messageList:
-                                err_lines.append(description['line_number'])
-                                err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
-                                if 'input' in description:
-                                    err += f"{description['input']}\n"
-                                    err += f"{description['marker']}\n"
-                                    enc = detect_encoding(description['input'])
-                                    if enc is not None and enc != 'ascii':
-                                        err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r}.\n"
-                                    elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
-                                        corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
-                                        div_test = True
+                        for description in messageList:
+                            err_lines.append(description['line_number'])
+                            err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                            if 'input' in description:
+                                err += f"{description['input']}\n"
+                                err += f"{description['marker']}\n"
+                                enc = detect_encoding(description['input'])
+                                if enc is not None and enc != 'ascii':
+                                    err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r}.\n"
+                                elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
+                                    corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
+                                    div_test = True
 
-                    if parser_err_listener is not None:
+                    if has_parser_error:
                         messageList = parser_err_listener.getMessageList()
 
-                        if messageList is not None:
-                            for description in messageList:
-                                err_lines.append(description['line_number'])
-                                err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
-                                if 'input' in description:
-                                    err += f"{description['input']}\n"
-                                    err += f"{description['marker']}\n"
-                                    enc = detect_encoding(description['input'])
-                                    if enc is not None and enc != 'ascii':
-                                        pass
-                                    elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
-                                        corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
-                                        div_test = True
+                        for description in messageList:
+                            err_lines.append(description['line_number'])
+                            err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                            if 'input' in description:
+                                err += f"{description['input']}\n"
+                                err += f"{description['marker']}\n"
+                                enc = detect_encoding(description['input'])
+                                if enc is not None and enc != 'ascii':
+                                    pass
+                                elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
+                                    corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
+                                    div_test = True
 
                     if len(err) > 0:
                         valid = False
@@ -7815,39 +7820,40 @@ class NmrDpUtility:
                     err = ''
                     err_lines = []
 
-                    if lexer_err_listener is not None:
+                    has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
+                    has_parser_error = parser_err_listener is not None and parser_err_listener.getMessageList() is not None
+
+                    if has_lexer_error:
                         messageList = lexer_err_listener.getMessageList()
 
-                        if messageList is not None:
-                            for description in messageList:
-                                err_lines.append(description['line_number'])
-                                err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
-                                if 'input' in description:
-                                    err += f"{description['input']}\n"
-                                    err += f"{description['marker']}\n"
-                                    enc = detect_encoding(description['input'])
-                                    if enc is not None and enc != 'ascii':
-                                        err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r}.\n"
-                                    elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
-                                        corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
-                                        div_test = True
+                        for description in messageList:
+                            err_lines.append(description['line_number'])
+                            err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                            if 'input' in description:
+                                err += f"{description['input']}\n"
+                                err += f"{description['marker']}\n"
+                                enc = detect_encoding(description['input'])
+                                if enc is not None and enc != 'ascii':
+                                    err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r}.\n"
+                                elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
+                                    corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
+                                    div_test = True
 
-                    if parser_err_listener is not None:
+                    if has_parser_error:
                         messageList = parser_err_listener.getMessageList()
 
-                        if messageList is not None:
-                            for description in messageList:
-                                err_lines.append(description['line_number'])
-                                err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
-                                if 'input' in description:
-                                    err += f"{description['input']}\n"
-                                    err += f"{description['marker']}\n"
-                                    enc = detect_encoding(description['input'])
-                                    if enc is not None and enc != 'ascii':
-                                        pass
-                                    elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
-                                        corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
-                                        div_test = True
+                        for description in messageList:
+                            err_lines.append(description['line_number'])
+                            err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                            if 'input' in description:
+                                err += f"{description['input']}\n"
+                                err += f"{description['marker']}\n"
+                                enc = detect_encoding(description['input'])
+                                if enc is not None and enc != 'ascii':
+                                    pass
+                                elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
+                                    corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
+                                    div_test = True
 
                     if len(err) > 0:
                         valid = False
@@ -8309,7 +8315,7 @@ class NmrDpUtility:
 
         file_name = os.path.basename(div_try_file)
 
-        _, _, valid_types, possible_types = self.__detectOtherPossibleFormatAsErrorOfLegacyMR(div_try_file, file_name, file_type, [], True)
+        _, _, valid_types, possible_types = self.__detectOtherPossibleFormatAsErrorOfLegacyMR(div_try_file, file_name, 'nm-res-mr', [], True)
 
         len_valid_types = len(valid_types)
         len_possible_types = len(possible_types)
@@ -8351,34 +8357,35 @@ class NmrDpUtility:
                                                reasons)
                         listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
-                if lexer_err_listener is not None:
+                has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
+                has_parser_error = parser_err_listener is not None and parser_err_listener.getMessageList() is not None
+
+                if has_lexer_error:
                     messageList = lexer_err_listener.getMessageList()
 
-                    if messageList is not None:
-                        for description in messageList:
-                            if 'input' in description:
-                                enc = detect_encoding(description['input'])
-                                if enc is not None and enc != 'ascii':
-                                    pass
-                                elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
-                                    self.__divideLegacyMRIfNecessary(file_path, file_type, description, src_path, offset)
-                                    div_test = True
+                    for description in messageList:
+                        if 'input' in description:
+                            enc = detect_encoding(description['input'])
+                            if enc is not None and enc != 'ascii':
+                                pass
+                            elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
+                                self.__divideLegacyMRIfNecessary(file_path, file_type, description, src_path, offset)
+                                div_test = True
 
-                if parser_err_listener is not None:
+                if has_parser_error:
                     messageList = parser_err_listener.getMessageList()
 
-                    if messageList is not None:
-                        for description in messageList:
-                            if 'input' in description:
-                                enc = detect_encoding(description['input'])
-                                if enc is not None and enc != 'ascii':
-                                    pass
-                                elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
-                                    self.__divideLegacyMRIfNecessary(file_path, file_type, description, src_path, offset)
-                                    div_test = True
+                    for description in messageList:
+                        if 'input' in description:
+                            enc = detect_encoding(description['input'])
+                            if enc is not None and enc != 'ascii':
+                                pass
                             elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
-                                self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), offset)
+                                self.__divideLegacyMRIfNecessary(file_path, file_type, description, src_path, offset)
                                 div_test = True
+                        elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
+                            self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), offset)
+                            div_test = True
 
             elif file_type == 'nm-res-cns':
 
@@ -8395,34 +8402,35 @@ class NmrDpUtility:
                                              reasons)
                         listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
-                if lexer_err_listener is not None:
+                has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
+                has_parser_error = parser_err_listener is not None and parser_err_listener.getMessageList() is not None
+
+                if has_lexer_error:
                     messageList = lexer_err_listener.getMessageList()
 
-                    if messageList is not None:
-                        for description in messageList:
-                            if 'input' in description:
-                                enc = detect_encoding(description['input'])
-                                if enc is not None and enc != 'ascii':
-                                    pass
-                                elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
-                                    self.__divideLegacyMRIfNecessary(file_path, file_type, description, src_path, offset)
-                                    div_test = True
+                    for description in messageList:
+                        if 'input' in description:
+                            enc = detect_encoding(description['input'])
+                            if enc is not None and enc != 'ascii':
+                                pass
+                            elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
+                                self.__divideLegacyMRIfNecessary(file_path, file_type, description, src_path, offset)
+                                div_test = True
 
-                if parser_err_listener is not None:
+                if has_parser_error:
                     messageList = parser_err_listener.getMessageList()
 
-                    if messageList is not None:
-                        for description in messageList:
-                            if 'input' in description:
-                                enc = detect_encoding(description['input'])
-                                if enc is not None and enc != 'ascii':
-                                    pass
-                                elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
-                                    self.__divideLegacyMRIfNecessary(file_path, file_type, description, src_path, offset)
-                                    div_test = True
+                    for description in messageList:
+                        if 'input' in description:
+                            enc = detect_encoding(description['input'])
+                            if enc is not None and enc != 'ascii':
+                                pass
                             elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
-                                self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), offset)
+                                self.__divideLegacyMRIfNecessary(file_path, file_type, description, src_path, offset)
                                 div_test = True
+                        elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
+                            self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), offset)
+                            div_test = True
 
             elif file_type == 'nm-res-amb':
 
@@ -8430,31 +8438,32 @@ class NmrDpUtility:
                                        self.__ccU, self.__csStat, self.__nefT)
                 listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None, None)
 
-                if lexer_err_listener is not None:
+                has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
+                has_parser_error = parser_err_listener is not None and parser_err_listener.getMessageList() is not None
+
+                if has_lexer_error:
                     messageList = lexer_err_listener.getMessageList()
 
-                    if messageList is not None:
-                        for description in messageList:
-                            if 'input' in description:
-                                enc = detect_encoding(description['input'])
-                                if enc is not None and enc != 'ascii':
-                                    pass
-                                elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
-                                    self.__divideLegacyMRIfNecessary(file_path, file_type, description, src_path, offset)
-                                    div_test = True
+                    for description in messageList:
+                        if 'input' in description:
+                            enc = detect_encoding(description['input'])
+                            if enc is not None and enc != 'ascii':
+                                pass
+                            elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
+                                self.__divideLegacyMRIfNecessary(file_path, file_type, description, src_path, offset)
+                                div_test = True
 
-                if parser_err_listener is not None:
+                if has_parser_error:
                     messageList = parser_err_listener.getMessageList()
 
-                    if messageList is not None:
-                        for description in messageList:
-                            if 'input' in description:
-                                enc = detect_encoding(description['input'])
-                                if enc is not None and enc != 'ascii':
-                                    pass
-                                elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
-                                    self.__divideLegacyMRIfNecessary(file_path, file_type, description, src_path, offset)
-                                    div_test = True
+                    for description in messageList:
+                        if 'input' in description:
+                            enc = detect_encoding(description['input'])
+                            if enc is not None and enc != 'ascii':
+                                pass
+                            elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
+                                self.__divideLegacyMRIfNecessary(file_path, file_type, description, src_path, offset)
+                                div_test = True
 
             elif file_type == 'nm-aux-amb':
 
@@ -8462,31 +8471,32 @@ class NmrDpUtility:
                                        self.__ccU, self.__csStat)
                 listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
-                if lexer_err_listener is not None:
+                has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
+                has_parser_error = parser_err_listener is not None and parser_err_listener.getMessageList() is not None
+
+                if has_lexer_error:
                     messageList = lexer_err_listener.getMessageList()
 
-                    if messageList is not None:
-                        for description in messageList:
-                            if 'input' in description:
-                                enc = detect_encoding(description['input'])
-                                if enc is not None and enc != 'ascii':
-                                    pass
-                                elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
-                                    self.__divideLegacyMRIfNecessary(file_path, file_type, description, src_path, offset)
-                                    div_test = True
+                    for description in messageList:
+                        if 'input' in description:
+                            enc = detect_encoding(description['input'])
+                            if enc is not None and enc != 'ascii':
+                                pass
+                            elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
+                                self.__divideLegacyMRIfNecessary(file_path, file_type, description, src_path, offset)
+                                div_test = True
 
-                if parser_err_listener is not None:
+                if has_parser_error:
                     messageList = parser_err_listener.getMessageList()
 
-                    if messageList is not None:
-                        for description in messageList:
-                            if 'input' in description:
-                                enc = detect_encoding(description['input'])
-                                if enc is not None and enc != 'ascii':
-                                    pass
-                                elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
-                                    self.__divideLegacyMRIfNecessary(file_path, file_type, description, src_path, offset)
-                                    div_test = True
+                    for description in messageList:
+                        if 'input' in description:
+                            enc = detect_encoding(description['input'])
+                            if enc is not None and enc != 'ascii':
+                                pass
+                            elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
+                                self.__divideLegacyMRIfNecessary(file_path, file_type, description, src_path, offset)
+                                div_test = True
 
             elif file_type == 'nm-res-cya':
 
@@ -8503,31 +8513,32 @@ class NmrDpUtility:
                                                reasons)
                         listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
-                if lexer_err_listener is not None:
+                has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
+                has_parser_error = parser_err_listener is not None and parser_err_listener.getMessageList() is not None
+
+                if has_lexer_error:
                     messageList = lexer_err_listener.getMessageList()
 
-                    if messageList is not None:
-                        for description in messageList:
-                            if 'input' in description:
-                                enc = detect_encoding(description['input'])
-                                if enc is not None and enc != 'ascii':
-                                    pass
-                                elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
-                                    self.__divideLegacyMRIfNecessary(file_path, file_type, description, src_path, offset)
-                                    div_test = True
+                    for description in messageList:
+                        if 'input' in description:
+                            enc = detect_encoding(description['input'])
+                            if enc is not None and enc != 'ascii':
+                                pass
+                            elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
+                                self.__divideLegacyMRIfNecessary(file_path, file_type, description, src_path, offset)
+                                div_test = True
 
-                if parser_err_listener is not None:
+                if has_parser_error:
                     messageList = parser_err_listener.getMessageList()
 
-                    if messageList is not None:
-                        for description in messageList:
-                            if 'input' in description:
-                                enc = detect_encoding(description['input'])
-                                if enc is not None and enc != 'ascii':
-                                    pass
-                                elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
-                                    self.__divideLegacyMRIfNecessary(file_path, file_type, description, src_path, offset)
-                                    div_test = True
+                    for description in messageList:
+                        if 'input' in description:
+                            enc = detect_encoding(description['input'])
+                            if enc is not None and enc != 'ascii':
+                                pass
+                            elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
+                                self.__divideLegacyMRIfNecessary(file_path, file_type, description, src_path, offset)
+                                div_test = True
 
             elif file_type == 'nm-res-ros':
 
@@ -8544,31 +8555,32 @@ class NmrDpUtility:
                                                  reasons)
                         listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
-                if lexer_err_listener is not None:
+                has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
+                has_parser_error = parser_err_listener is not None and parser_err_listener.getMessageList() is not None
+
+                if has_lexer_error:
                     messageList = lexer_err_listener.getMessageList()
 
-                    if messageList is not None:
-                        for description in messageList:
-                            if 'input' in description:
-                                enc = detect_encoding(description['input'])
-                                if enc is not None and enc != 'ascii':
-                                    pass
-                                elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
-                                    self.__divideLegacyMRIfNecessary(file_path, file_type, description, src_path, offset)
-                                    div_test = True
+                    for description in messageList:
+                        if 'input' in description:
+                            enc = detect_encoding(description['input'])
+                            if enc is not None and enc != 'ascii':
+                                pass
+                            elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
+                                self.__divideLegacyMRIfNecessary(file_path, file_type, description, src_path, offset)
+                                div_test = True
 
-                if parser_err_listener is not None:
+                if has_parser_error:
                     messageList = parser_err_listener.getMessageList()
 
-                    if messageList is not None:
-                        for description in messageList:
-                            if 'input' in description:
-                                enc = detect_encoding(description['input'])
-                                if enc is not None and enc != 'ascii':
-                                    pass
-                                elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
-                                    self.__divideLegacyMRIfNecessary(file_path, file_type, description, src_path, offset)
-                                    div_test = True
+                    for description in messageList:
+                        if 'input' in description:
+                            enc = detect_encoding(description['input'])
+                            if enc is not None and enc != 'ascii':
+                                pass
+                            elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
+                                self.__divideLegacyMRIfNecessary(file_path, file_type, description, src_path, offset)
+                                div_test = True
 
         except ValueError as e:
 
@@ -8604,7 +8616,7 @@ class NmrDpUtility:
             checked = False
             err = ''
             valid_types = []
-            possible_types = []
+            possible_types = {}
 
             if (not checked or multiple_check) and file_type != 'nm-res-cns':
 
@@ -8671,7 +8683,7 @@ class NmrDpUtility:
                         if checked:
                             valid_types.append(_mr_format_type)
                         else:
-                            possible_types.append(_mr_format_type)
+                            possible_types[_mr_format_type] = len(_content_subtype)
 
                     if file_type == 'nm-res-oth':
                         self.report.error.appendDescription('content_mismatch',
@@ -8746,7 +8758,7 @@ class NmrDpUtility:
                         if checked:
                             valid_types.append(_mr_format_type)
                         else:
-                            possible_types.append(_mr_format_type)
+                            possible_types[_mr_format_type] = len(_content_subtype)
 
                     if file_type == 'nm-res-oth':
                         self.report.error.appendDescription('content_mismatch',
@@ -8821,7 +8833,7 @@ class NmrDpUtility:
                         if checked:
                             valid_types.append(_mr_format_type)
                         else:
-                            possible_types.append(_mr_format_type)
+                            possible_types[_mr_format_type] = len(_content_subtype)
 
                     if file_type == 'nm-res-oth':
                         self.report.error.appendDescription('content_mismatch',
@@ -8895,7 +8907,7 @@ class NmrDpUtility:
                         if checked:
                             valid_types.append(_mr_format_type)
                         else:
-                            possible_types.append(_mr_format_type)
+                            possible_types[_mr_format_type] = len(_content_subtype)
 
                     if file_type == 'nm-res-oth':
                         self.report.error.appendDescription('content_mismatch',
@@ -8970,7 +8982,7 @@ class NmrDpUtility:
                         if checked:
                             valid_types.append(_mr_format_type)
                         else:
-                            possible_types.append(_mr_format_type)
+                            possible_types[_mr_format_type] = len(_content_subtype)
 
                     if file_type == 'nm-res-oth':
                         self.report.error.appendDescription('content_mismatch',
@@ -9052,7 +9064,7 @@ class NmrDpUtility:
                         if checked:
                             valid_types.append(_mr_format_type)
                         else:
-                            possible_types.append(_mr_format_type)
+                            possible_types[_mr_format_type] = len(_content_subtype)
 
                     if file_type == 'nm-res-oth':
                         self.report.error.appendDescription('content_mismatch',
@@ -9065,7 +9077,7 @@ class NmrDpUtility:
         except ValueError:
             pass
 
-        return checked, err, valid_types, possible_types
+        return checked, err, valid_types, sorted(possible_types.items(), key=lambda x: x[1], reverse=True)
 
     def __extractPublicMRFileIntoLegacyMR(self):
         """ Extract/split public MR file into legacy NMR restraint files for NMR restraint remediation.
@@ -9615,7 +9627,7 @@ class NmrDpUtility:
                         self.__lfh.write(f"The NMR restraint file {file_name!r} (MR format) can be {possible_types}.\n")
 
                         _ar['file_name'] = dst_file
-                        _ar['file_type'] = possible_types[0]
+                        _ar['file_type'] = list(possible_types.keys())[0]
                         splitted.append(_ar)
 
                         err = f"The NMR restraint file {file_name!r} (MR format) can be {possible_types}. "\

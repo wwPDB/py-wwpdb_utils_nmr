@@ -17,6 +17,7 @@ try:
     from wwpdb.utils.nmr.mr.CyanaMRParser import CyanaMRParser
     from wwpdb.utils.nmr.mr.CyanaMRParserListener import CyanaMRParserListener
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (checkCoordinates,
+                                                       MAX_ERROR_REPORT,
                                                        REPRESENTATIVE_MODEL_ID)
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
@@ -29,6 +30,7 @@ except ImportError:
     from nmr.mr.CyanaMRParser import CyanaMRParser
     from nmr.mr.CyanaMRParserListener import CyanaMRParserListener
     from nmr.mr.ParserListenerUtil import (checkCoordinates,
+                                           MAX_ERROR_REPORT,
                                            REPRESENTATIVE_MODEL_ID)
     from nmr.io.CifReader import CifReader
     from nmr.ChemCompUtil import ChemCompUtil
@@ -47,6 +49,9 @@ class CyanaMRReader:
         self.__verbose = verbose
         self.__lfh = log
         self.__debug = False
+
+        self.__maxLexerErrorReport = MAX_ERROR_REPORT
+        self.__maxParserErrorReport = MAX_ERROR_REPORT
 
         self.__representativeModelId = representativeModelId
 
@@ -72,6 +77,12 @@ class CyanaMRReader:
 
     def setDebugMode(self, debug):
         self.__debug = debug
+
+    def setLexerMaxErrorReport(self, maxErrReport):
+        self.__maxLexerErrorReport = maxErrReport
+
+    def setParserMaxErrorReport(self, maxErrReport):
+        self.__maxParserErrorReport = maxErrReport
 
     def parse(self, mrFilePath, cifFilePath=None):
         """ Parse CYANA MR file.
@@ -103,7 +114,7 @@ class CyanaMRReader:
                 lexer = CyanaMRLexer(ifs)
                 lexer.removeErrorListeners()
 
-                lexer_error_listener = LexerErrorListener(mrFilePath)
+                lexer_error_listener = LexerErrorListener(mrFilePath, self.__maxLexerErrorReport)
                 lexer.addErrorListener(lexer_error_listener)
 
                 messageList = lexer_error_listener.getMessageList()
@@ -118,7 +129,7 @@ class CyanaMRReader:
                 stream = CommonTokenStream(lexer)
                 parser = CyanaMRParser(stream)
                 parser.removeErrorListeners()
-                parser_error_listener = ParserErrorListener(mrFilePath)
+                parser_error_listener = ParserErrorListener(mrFilePath, self.__maxParserErrorReport)
                 parser.addErrorListener(parser_error_listener)
                 tree = parser.cyana_mr()
 

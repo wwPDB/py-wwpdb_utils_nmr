@@ -17,6 +17,7 @@ try:
     from wwpdb.utils.nmr.mr.AmberPTParser import AmberPTParser
     from wwpdb.utils.nmr.mr.AmberPTParserListener import AmberPTParserListener
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (checkCoordinates,
+                                                       MAX_ERROR_REPORT,
                                                        REPRESENTATIVE_MODEL_ID)
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
@@ -28,6 +29,7 @@ except ImportError:
     from nmr.mr.AmberPTParser import AmberPTParser
     from nmr.mr.AmberPTParserListener import AmberPTParserListener
     from nmr.mr.ParserListenerUtil import (checkCoordinates,
+                                           MAX_ERROR_REPORT,
                                            REPRESENTATIVE_MODEL_ID)
     from nmr.io.CifReader import CifReader
     from nmr.ChemCompUtil import ChemCompUtil
@@ -44,6 +46,9 @@ class AmberPTReader:
         self.__verbose = verbose
         self.__lfh = log
 
+        self.__maxLexerErrorReport = MAX_ERROR_REPORT
+        self.__maxParserErrorReport = MAX_ERROR_REPORT
+
         self.__representativeModelId = representativeModelId
 
         if cR is not None and cC is None:
@@ -57,6 +62,12 @@ class AmberPTReader:
 
         # BMRB chemical shift statistics
         self.__csStat = BMRBChemShiftStat(verbose, log, self.__ccU) if csStat is None else csStat
+
+    def setLexerMaxErrorReport(self, maxErrReport):
+        self.__maxLexerErrorReport = maxErrReport
+
+    def setParserMaxErrorReport(self, maxErrReport):
+        self.__maxParserErrorReport = maxErrReport
 
     def parse(self, ptFilePath, cifFilePath=None):
         """ Parse AMBER PT file.
@@ -88,7 +99,7 @@ class AmberPTReader:
                 lexer = AmberPTLexer(ifs)
                 lexer.removeErrorListeners()
 
-                lexer_error_listener = LexerErrorListener(ptFilePath)
+                lexer_error_listener = LexerErrorListener(ptFilePath, self.__maxLexerErrorReport)
                 lexer.addErrorListener(lexer_error_listener)
 
                 messageList = lexer_error_listener.getMessageList()
@@ -103,7 +114,7 @@ class AmberPTReader:
                 stream = CommonTokenStream(lexer)
                 parser = AmberPTParser(stream)
                 parser.removeErrorListeners()
-                parser_error_listener = ParserErrorListener(ptFilePath)
+                parser_error_listener = ParserErrorListener(ptFilePath, self.__maxParserErrorReport)
                 parser.addErrorListener(parser_error_listener)
                 tree = parser.amber_pt()
 

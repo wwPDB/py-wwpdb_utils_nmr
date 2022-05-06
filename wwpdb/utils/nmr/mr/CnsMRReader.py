@@ -17,6 +17,7 @@ try:
     from wwpdb.utils.nmr.mr.CnsMRParser import CnsMRParser
     from wwpdb.utils.nmr.mr.CnsMRParserListener import CnsMRParserListener
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (checkCoordinates,
+                                                       MAX_ERROR_REPORT,
                                                        REPRESENTATIVE_MODEL_ID)
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
@@ -29,6 +30,7 @@ except ImportError:
     from nmr.mr.CnsMRParser import CnsMRParser
     from nmr.mr.CnsMRParserListener import CnsMRParserListener
     from nmr.mr.ParserListenerUtil import (checkCoordinates,
+                                           MAX_ERROR_REPORT,
                                            REPRESENTATIVE_MODEL_ID)
     from nmr.io.CifReader import CifReader
     from nmr.ChemCompUtil import ChemCompUtil
@@ -47,6 +49,9 @@ class CnsMRReader:
         self.__verbose = verbose
         self.__lfh = log
         self.__debug = False
+
+        self.__maxLexerErrorReport = MAX_ERROR_REPORT
+        self.__maxParserErrorReport = MAX_ERROR_REPORT
 
         self.__representativeModelId = representativeModelId
 
@@ -70,6 +75,12 @@ class CnsMRReader:
 
     def setDebugMode(self, debug):
         self.__debug = debug
+
+    def setLexerMaxErrorReport(self, maxErrReport):
+        self.__maxLexerErrorReport = maxErrReport
+
+    def setParserMaxErrorReport(self, maxErrReport):
+        self.__maxParserErrorReport = maxErrReport
 
     def parse(self, mrFilePath, cifFilePath=None):
         """ Parse CNS MR file.
@@ -101,7 +112,7 @@ class CnsMRReader:
                 lexer = CnsMRLexer(ifs)
                 lexer.removeErrorListeners()
 
-                lexer_error_listener = LexerErrorListener(mrFilePath)
+                lexer_error_listener = LexerErrorListener(mrFilePath, self.__maxLexerErrorReport)
                 lexer.addErrorListener(lexer_error_listener)
 
                 messageList = lexer_error_listener.getMessageList()
@@ -116,7 +127,7 @@ class CnsMRReader:
                 stream = CommonTokenStream(lexer)
                 parser = CnsMRParser(stream)
                 parser.removeErrorListeners()
-                parser_error_listener = ParserErrorListener(mrFilePath)
+                parser_error_listener = ParserErrorListener(mrFilePath, self.__maxParserErrorReport)
                 parser.addErrorListener(parser_error_listener)
                 tree = parser.cns_mr()
 

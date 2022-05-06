@@ -538,6 +538,27 @@ Hbda:			H B D A;				// Hbda { hbda_statement } End
 //Threshold:		T H R E S? H? O? L? D?;			// Real
 //Reset:		R E S E T?;
 
+/* XPLOR-NIH: Hydrogen bond database restraints - Syntax
+ See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node454.html
+*/
+Hbdb:			H B D B;				// Hbdb { hbdb_statement } End
+//Assign:		A S S I G? N?;				// selection selection
+Kdir:			K D I R;				// = Real
+Klin:			K L I N;				// = Reala
+Nseg:			N S E G;				// = Integer
+Nmin:			N M I N;				// = Integer
+Nmax:			N M A X;				// = Integer
+Segm:			S E G M;				// = Segment_name
+Ohcut:			O H C U T;				// = Real
+Coh1cut:		C O H '1' C? U? T?;			// = Real
+Coh2cut:		C O H '2' C? U? T?;			// = Real
+Ohncut:			O H N C U? T?;				// = Real
+Updfrq:			U P D F R Q;				// = Integer
+Prnfrq:			P R N F R Q;				// = Integer
+Freemode:		F R E E M O D E;			// = One_or_Zero
+Donor:			D O N O? R?;
+Acceptor:		A C C E? P? T? O? R?;
+
 /* XPLOR-NIH: Flags - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node125.html
 */

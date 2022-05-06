@@ -185,7 +185,7 @@ class XplorMRParserListener(ParseTreeListener):
     prdcRestraints = 0      # XPLOR-NIH: Paramagnetic residual dipolar coupling restraints
     pangRestraints = 0      # XPLOR-NIH: Paramagnetic orientation restraints
     pccrRestraints = 0      # XPLOR-NIH: Paramagnetic cross-correlation rate restraints
-    hbondRestraints = 0     # XPLOR-NIH: Hydrogen bond geometry restraints
+    hbondRestraints = 0     # XPLOR-NIH: Hydrogen bond geometry/database restraints
 
     distStatements = 0      # XPLOR-NIH: Distance statements
     dihedStatements = 0     # XPLOR-NIH: Dihedral angle statements
@@ -206,7 +206,7 @@ class XplorMRParserListener(ParseTreeListener):
     prdcStatements = 0      # XPLOR-NIH: Paramagnetic residual dipolar coupling statements
     pangStatements = 0      # XPLOR-NIH: Paramagnetic orientation statements
     pccrStatements = 0      # XPLOR-NIH: Paramagnetic cross-correlation rate statements
-    hbondStatements = 0     # XPLOR-NIH: Hydrogen bond geometry statements
+    hbondStatements = 0     # XPLOR-NIH: Hydrogen bond geometry/database statements
 
     # CCD accessing utility
     __ccU = None
@@ -572,6 +572,15 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#hbond_restraint.
     def exitHbond_restraint(self, ctx: XplorMRParser.Hbond_restraintContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by XplorMRParser#hbond_db_restraint.
+    def enterHbond_db_restraint(self, ctx: XplorMRParser.Hbond_db_restraintContext):  # pylint: disable=unused-argument
+        self.hbondStatements += 1
+        self.__cur_subtype = 'hbond'
+
+    # Exit a parse tree produced by XplorMRParser#hbond_db_restraint.
+    def exitHbond_db_restraint(self, ctx: XplorMRParser.Hbond_db_restraintContext):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by XplorMRParser#noe_statement.
@@ -2392,7 +2401,7 @@ class XplorMRParserListener(ParseTreeListener):
                       f"atom1={atom1} atom2={atom2}")
 
     # Enter a parse tree produced by XplorMRParser#coupling_statement.
-    def enterCoupling_statement(self, ctx: XplorMRParser.Coupling_statementContext):  # pylint: disable=unused-argument
+    def enterCoupling_statement(self, ctx: XplorMRParser.Coupling_statementContext):
         if ctx.Potential_types():
             code = str(ctx.Potential_types()).upper()
             if code.startswith('SQUA'):
@@ -2764,7 +2773,7 @@ class XplorMRParserListener(ParseTreeListener):
         self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by XplorMRParser#observed.
-    def exitObserved(self, ctx: XplorMRParser.ObservedContext):  # pylint: disable=unused-argument
+    def exitObserved(self, ctx: XplorMRParser.ObservedContext):
         obs_value = self.getNumber_s(ctx.number_s(0))
         obs_value_2 = None
         if ctx.number_s(1):
@@ -4998,7 +5007,7 @@ class XplorMRParserListener(ParseTreeListener):
         return dstFunc
 
     # Enter a parse tree produced by XplorMRParser#hbond_statement.
-    def enterHbond_statement(self, ctx: XplorMRParser.Hbond_statementContext):  # pylint: disable=unused-argument
+    def enterHbond_statement(self, ctx: XplorMRParser.Hbond_statementContext):
         if ctx.Reset():
             pass
 
@@ -5090,6 +5099,22 @@ class XplorMRParserListener(ParseTreeListener):
             if self.__debug:
                 print(f"subtype={self.__cur_subtype} (HBDA) id={self.hbondRestraints} "
                       f"donor={atom1} hydrogen={atom2} acceptor={atom3}")
+
+    # Enter a parse tree produced by XplorMRParser#hbond_db_statement.
+    def enterHbond_db_statement(self, ctx: XplorMRParser.Hbond_db_statementContext):
+        pass
+
+    # Exit a parse tree produced by XplorMRParser#hbond_db_statement.
+    def exitHbond_db_statement(self, ctx: XplorMRParser.Hbond_db_statementContext):
+        pass
+
+    # Enter a parse tree produced by XplorMRParser#hbond_db_assign.
+    def enterHbond_db_assign(self, ctx: XplorMRParser.Hbond_db_assignContext):
+        pass
+
+    # Exit a parse tree produced by XplorMRParser#hbond_db_assign.
+    def exitHbond_db_assign(self, ctx: XplorMRParser.Hbond_db_assignContext):
+        pass
 
     # Enter a parse tree produced by XplorMRParser#selection.
     def enterSelection(self, ctx: XplorMRParser.SelectionContext):  # pylint: disable=unused-argument

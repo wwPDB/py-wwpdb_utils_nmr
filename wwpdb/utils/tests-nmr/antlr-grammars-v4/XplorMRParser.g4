@@ -42,13 +42,15 @@ xplor_nih_mr:
 	porientation_restraint |
 	pccr_restraint |
 	hbond_restraint |
+	hbond_db_restraint |
 	flag_statement |
 	vector_statement |
 	noe_assign |			// allowing bare assign clauses for Distance restraints
 	dihedral_assign |		// allowing bare assign clauses for Dihedral angle restraints
 	sani_assign |			// allowing bare assign clauses for RDC restraints
 	planar_statement |		// allowing bare group clauses for Planality restraints
-	hbond_assign |			// allowing bare assign clauses for Hydrogen bond restraints
+	hbond_assign |			// allowing bare assign clauses for Hydrogen bond geometry restraints
+	hbond_db_assign |		// allowing bare assign clauses for Hydrogen bond database restraints
 	coup_assign |			// allowing bare assign clauses for Scaler J-coupling restraints
 	xadc_assign |			// allowing bare assign clauses for Antidistance restraints
 	coll_assign |			// allowing bare assign clauses for Radius of gyration restraints
@@ -127,6 +129,9 @@ pccr_restraint:
 
 hbond_restraint:
 	Hbda hbond_statement* End;
+
+hbond_db_restraint:
+	Hbdb hbond_db_statement* End;
 
 /* XPLOR-NIH: Distance restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node377.html
@@ -645,6 +650,28 @@ hbond_statement:
 hbond_assign:
 	Assign selection selection selection;
 
+/* XPLOR-NIH: Hydrogen bond database restraints - Syntax
+ See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node454.html
+*/
+hbond_db_statement:
+	hbond_db_assign |
+	Kdir Equ_op? number_s |
+	Klin Equ_op? number_s |
+	Nseg Equ_op? Integer |
+	Nmin Equ_op? Integer |
+	Nmax Equ_op? Integer |
+	Segm Equ_op? Simple_name |
+	Ohcut Equ_op? number_s |
+	Coh1cut Equ_op? number_s |
+	Coh2cut Equ_op? number_s |
+	Ohncut Equ_op? number_s |
+	Updfrq Equ_op? Integer |
+	Prnfrq Equ_op? Integer |
+	Freemode Equ_op? Integer;
+
+hbond_db_assign:
+	Assign selection selection;
+
 /* Atom selection - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node39.html
 */
@@ -681,7 +708,8 @@ factor:
 	factor Saround number_f |
 	SegIdentifier (Simple_names | Simple_name (Colon Simple_name)? | Double_quote_string (Colon Double_quote_string)?) |
 	Store_1 | Store_2 | Store_3 | Store_4 | Store_5 | Store_6 | Store_7 | Store_8 | Store_9 |
-	Tag;
+	Tag |
+	Donor | Acceptor;
 
 /* Three-dimentional vectors - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node15.html

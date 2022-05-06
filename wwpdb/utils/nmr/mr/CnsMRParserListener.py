@@ -1770,7 +1770,7 @@ class CnsMRParserListener(ParseTreeListener):
         self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by CnsMRParser#observed.
-    def exitObserved(self, ctx: CnsMRParser.ObservedContext):  # pylint: disable=unused-argument
+    def exitObserved(self, ctx: CnsMRParser.ObservedContext):
         obs_value = self.getNumber_s(ctx.number_s(0))
         obs_value_2 = None
         if ctx.number_s(1):
@@ -1860,7 +1860,7 @@ class CnsMRParserListener(ParseTreeListener):
         self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by CnsMRParser#proton_shift_anisotropy.
-    def exitProton_shift_anisotropy(self, ctx: CnsMRParser.Proton_shift_anisotropyContext):  # pylint: disable=unused-argument
+    def exitProton_shift_anisotropy(self, ctx: CnsMRParser.Proton_shift_anisotropyContext):
         co_or_cn = str(ctx.Simple_name(0))
         is_cooh = None
         if ctx.Logical():
@@ -1970,7 +1970,7 @@ class CnsMRParserListener(ParseTreeListener):
         self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by CnsMRParser#proton_shift_ring_atoms.
-    def exitProton_shift_ring_atoms(self, ctx: CnsMRParser.Proton_shift_ring_atomsContext):  # pylint: disable=unused-argument
+    def exitProton_shift_ring_atoms(self, ctx: CnsMRParser.Proton_shift_ring_atomsContext):
         ring_name = str(ctx.Simple_name())
 
         ringNames = ('PHE', 'TYR', 'HIS', 'TRP5', 'TRP6', 'ADE6', 'ADE5', 'GUA6', 'GUA5', 'THY', 'CYT', 'URA')
@@ -4660,7 +4660,7 @@ class CnsMRParserListener(ParseTreeListener):
         pass
 
     # Exit a parse tree produced by CnsMRParser#vector_expression.
-    def exitVector_expression(self, ctx: CnsMRParser.Vector_expressionContext):  # pylint: disable=unused-argument
+    def exitVector_expression(self, ctx: CnsMRParser.Vector_expressionContext):
         if ctx.Atom_properties_VE():
             self.__cur_subtype = str(ctx.Atom_properties_VE()).lower()
 

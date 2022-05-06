@@ -316,7 +316,7 @@ sf_anonymous_pattern = re.compile(r'\s*save_\S+\s*')
 save_pattern = re.compile(r'\s*save_\s*')
 loop_pattern = re.compile(r'\s*loop_\s*')
 stop_pattern = re.compile(r'\s*stop_\s*')
-cif_stop_pattern = re.compile(r'^#\s*')
+cif_stop_pattern = re.compile(r'#\s*')
 ws_pattern = re.compile(r'\s+')
 
 category_pattern = re.compile(r'\s*_(\S*)\..*\s*')
@@ -326,15 +326,16 @@ sf_framecode_pattern = re.compile(r'\s*_\S*\.Sf_framecode\s*\s+\s*')
 
 onedep_upload_file_pattern = re.compile(r'(.*)\-upload_(.*)\.V(.*)$')
 onedep_file_pattern = re.compile(r'(.*)\.V(.*)$')
-mr_file_header_pattern = re.compile(r'^(.*)# Restraints file (\d+): (\S+)\s*')
+mr_file_header_pattern = re.compile(r'(.*)# Restraints file (\d+): (\S+)\s*')
 
 pynmrstar_lp_obj_pattern = re.compile(r"\<pynmrstar\.Loop '(.*)'\>")
-pdb_first_atom_pattern = re.compile(r'^ATOM +1 .*')
-amber_a_format_pattern = re.compile(r'^%FORMAT\((\d+)a(\d+)\)\s*')
-amber_i_format_pattern = re.compile(r'^%FORMAT\((\d+)I(\d+)\)\s*')
+pdb_first_atom_pattern = re.compile(r'ATOM +1 .*')
+amber_a_format_pattern = re.compile(r'%FORMAT\((\d+)a(\d+)\)\s*')
+amber_i_format_pattern = re.compile(r'%FORMAT\((\d+)I(\d+)\)\s*')
 amber_r_pattern = re.compile(r'r(\d+)=(.*)')
 xplor_end_pattern = re.compile(r'\s*[Ee][Nn][Dd]\s*')
 xplor_missing_end_at_eof_err_msg = "missing End at '<EOF>'"
+xplor_extra_end_err_msg_pattern = re.compile(r"extraneous input '[Ee][Nn][Dd]' expecting .*")
 
 
 def detect_bom(fPath, default='utf-8'):
@@ -7225,7 +7226,7 @@ class NmrDpUtility:
                     if has_amb_coord and (not has_first_atom or has_ens_coord):
                         has_amb_coord = False
 
-            if file_type in ('nm-res-cya', 'nmr-res-ros', 'nm-res-oth') and not has_dist_restraint:  # DAOTHER-7491
+            if file_type in ('nm-res-cya', 'nm-res-ros', 'nm-res-oth') and not has_dist_restraint:  # DAOTHER-7491
 
                 with open(file_path, 'r', encoding='utf-8') as ifp:
 
@@ -8143,8 +8144,6 @@ class NmrDpUtility:
 
             self.__suspended_errors_for_polypeptide = []
 
-            # reset cache dictionaries
-
             for content_subtype in self.__lp_data:
                 self.__lp_data[content_subtype] = []
 
@@ -8194,6 +8193,7 @@ class NmrDpUtility:
         err_line_number = err_desc['line_number']
 
         xplor_missing_end_at_eof = err_message == xplor_missing_end_at_eof_err_msg
+        xplor_ends_wo_statement = bool(xplor_extra_end_err_msg_pattern.match(err_message))
 
         src_basename = os.path.splitext(file_path)[0]
         div_src = 'div_dst' in src_basename
@@ -8216,21 +8216,26 @@ class NmrDpUtility:
 
         offset += err_line_number - 1
 
-        if i < err_line_number or j == 0:
+        if j == 0 and not xplor_ends_wo_statement:
+            xplor_ends_wo_statement = True
 
-            if j == 0:
+        if xplor_ends_wo_statement or i < err_line_number:
 
-                xplor_ends_wo_statement = False
+            if xplor_ends_wo_statement and file_type in ('nm-res-xpl', 'nm-res-cns'):
+
+                has_end_tag = False
+
+                j = 0
 
                 with open(src_path, 'r') as ifp:
                     for line in ifp:
                         if j == offset:
-                            if file_type in ('nm-res-xpl', 'nm-res-cns') and xplor_end_pattern.match(line):
-                                xplor_ends_wo_statement = True
+                            if xplor_end_pattern.match(line):
+                                has_end_tag = True
                             break
                         j += 1
 
-                if xplor_ends_wo_statement:
+                if has_end_tag:
 
                     dir_path = os.path.dirname(src_path)
 
@@ -8659,7 +8664,7 @@ class NmrDpUtility:
 
                         if len(_err) > 0:
                             err += f"\nEven assuming that the format is the {_mr_format_name!r}, the following issues need to be fixed.\n" + _err[:-1]
-                        elif file_type != 'nmr-res-oth' and (lexer_err_listener.getMessageList() is not None or parser_err_listener.getMessageList() is not None):
+                        elif file_type != 'nm-res-oth' and (lexer_err_listener.getMessageList() is not None or parser_err_listener.getMessageList() is not None):
                             checked = False
                             err = ''
 
@@ -8734,7 +8739,7 @@ class NmrDpUtility:
 
                         if len(_err) > 0:
                             err += f"\nEven assuming that the format is the {_mr_format_name!r}, the following issues need to be fixed.\n" + _err[:-1]
-                        elif file_type != 'nmr-res-oth' and (lexer_err_listener.getMessageList() is not None or parser_err_listener.getMessageList() is not None):
+                        elif file_type != 'nm-res-oth' and (lexer_err_listener.getMessageList() is not None or parser_err_listener.getMessageList() is not None):
                             checked = False
                             err = ''
 
@@ -8809,7 +8814,7 @@ class NmrDpUtility:
 
                         if len(_err) > 0:
                             err += f"\nEven assuming that the format is the {_mr_format_name!r}, the following issues need to be fixed.\n" + _err[:-1]
-                        elif file_type != 'nmr-res-oth' and (lexer_err_listener.getMessageList() is not None or parser_err_listener.getMessageList() is not None):
+                        elif file_type != 'nm-res-oth' and (lexer_err_listener.getMessageList() is not None or parser_err_listener.getMessageList() is not None):
                             checked = False
                             err = ''
 
@@ -8883,7 +8888,7 @@ class NmrDpUtility:
 
                         if len(_err) > 0:
                             err += f"\nEven assuming that the format is the {_mr_format_name!r}, the following issues need to be fixed.\n" + _err[:-1]
-                        elif file_type != 'nmr-res-oth' and (lexer_err_listener.getMessageList() is not None or parser_err_listener.getMessageList() is not None):
+                        elif file_type != 'nm-res-oth' and (lexer_err_listener.getMessageList() is not None or parser_err_listener.getMessageList() is not None):
                             checked = False
                             err = ''
 
@@ -8958,7 +8963,7 @@ class NmrDpUtility:
 
                         if len(_err) > 0:
                             err += f"\nEven assuming that the format is the {_mr_format_name!r}, the following issues need to be fixed.\n" + _err[:-1]
-                        elif file_type != 'nmr-res-oth' and (lexer_err_listener.getMessageList() is not None or parser_err_listener.getMessageList() is not None):
+                        elif file_type != 'nm-res-oth' and (lexer_err_listener.getMessageList() is not None or parser_err_listener.getMessageList() is not None):
                             checked = False
                             err = ''
 
@@ -9040,7 +9045,7 @@ class NmrDpUtility:
 
                         if len(_err) > 0:
                             err += f"\nEven assuming that the format is the {_mr_format_name!r}, the following issues need to be fixed.\n" + _err[:-1]
-                        elif file_type != 'nmr-res-oth' and (lexer_err_listener.getMessageList() is not None or parser_err_listener.getMessageList() is not None):
+                        elif file_type != 'nm-res-oth' and (lexer_err_listener.getMessageList() is not None or parser_err_listener.getMessageList() is not None):
                             checked = False
                             err = ''
 

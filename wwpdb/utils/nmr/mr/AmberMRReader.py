@@ -84,17 +84,28 @@ class AmberMRReader:
     def setParserMaxErrorReport(self, maxErrReport):
         self.__maxParserErrorReport = maxErrReport
 
-    def parse(self, mrFilePath, cifFilePath=None, ptFilePath=None):
+    def parse(self, mrFilePath, cifFilePath=None, ptFilePath=None, isFilePath=True):
         """ Parse AMBER MR file.
             @return: AmberMRParserListener for success or None otherwise, ParserErrorListener, LexerErrorListener.
         """
 
         try:
 
-            if not os.access(mrFilePath, os.R_OK):
-                if self.__verbose:
-                    self.__lfh.write(f"AmberMRReader.parse() {mrFilePath} is not accessible.\n")
-                return None, None, None
+            if isFilePath:
+                mrString = None
+
+                if not os.access(mrFilePath, os.R_OK):
+                    if self.__verbose:
+                        self.__lfh.write(f"AmberMRReader.parse() {mrFilePath} is not accessible.\n")
+                    return None, None, None
+
+            else:
+                mrFilePath, mrString = None, mrFilePath
+
+                if mrString is None or len(mrString) == 0:
+                    if self.__verbose:
+                        self.__lfh.write("AmberMRReader.parse() Empty string.\n")
+                    return None, None, None
 
             if cifFilePath is not None:
                 if not os.access(cifFilePath, os.R_OK):
@@ -118,64 +129,72 @@ class AmberMRReader:
 
             while True:
 
-                with open(mrFilePath) as ifp:
+                if isFilePath:
+                    ifp = open(mrFilePath, 'r')  # pylint: disable=consider-using-with
+                    input = InputStream(ifp.read())
+                else:
+                    input = InputStream(mrString)
 
-                    ifs = InputStream(ifp.read())
+                lexer = AmberMRLexer(input)
+                lexer.removeErrorListeners()
 
-                    lexer = AmberMRLexer(ifs)
-                    lexer.removeErrorListeners()
+                lexer_error_listener = LexerErrorListener(mrFilePath, maxErrorReport=self.__maxLexerErrorReport)
+                lexer.addErrorListener(lexer_error_listener)
 
-                    lexer_error_listener = LexerErrorListener(mrFilePath, self.__maxLexerErrorReport)
-                    lexer.addErrorListener(lexer_error_listener)
+                messageList = lexer_error_listener.getMessageList()
 
-                    messageList = lexer_error_listener.getMessageList()
+                if messageList is not None and self.__verbose:
+                    for description in messageList:
+                        self.__lfh.write(f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n")
+                        if 'input' in description:
+                            self.__lfh.write(f"{description['input']}\n")
+                            self.__lfh.write(f"{description['marker']}\n")
 
-                    if messageList is not None and self.__verbose:
-                        for description in messageList:
-                            self.__lfh.write(f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n")
-                            if 'input' in description:
-                                self.__lfh.write(f"{description['input']}\n")
-                                self.__lfh.write(f"{description['marker']}\n")
+                stream = CommonTokenStream(lexer)
+                parser = AmberMRParser(stream)
+                parser.removeErrorListeners()
+                parser_error_listener = ParserErrorListener(mrFilePath, maxErrorReport=self.__maxParserErrorReport)
+                parser.addErrorListener(parser_error_listener)
+                tree = parser.amber_mr()
 
-                    stream = CommonTokenStream(lexer)
-                    parser = AmberMRParser(stream)
-                    parser.removeErrorListeners()
-                    parser_error_listener = ParserErrorListener(mrFilePath, self.__maxParserErrorReport)
-                    parser.addErrorListener(parser_error_listener)
-                    tree = parser.amber_mr()
+                walker = ParseTreeWalker()
+                listener = AmberMRParserListener(self.__verbose, self.__lfh,
+                                                 self.__representativeModelId,
+                                                 self.__cR, self.__cC,
+                                                 self.__ccU, self.__csStat, self.__nefT,
+                                                 self.__atomNumberDict)
+                listener.setDebugMode(self.__debug)
+                walker.walk(listener, tree)
 
-                    walker = ParseTreeWalker()
-                    listener = AmberMRParserListener(self.__verbose, self.__lfh,
-                                                     self.__representativeModelId,
-                                                     self.__cR, self.__cC,
-                                                     self.__ccU, self.__csStat, self.__nefT,
-                                                     self.__atomNumberDict)
-                    listener.setDebugMode(self.__debug)
-                    walker.walk(listener, tree)
+                messageList = parser_error_listener.getMessageList()
 
-                    messageList = parser_error_listener.getMessageList()
+                if messageList is not None and self.__verbose:
+                    for description in messageList:
+                        self.__lfh.write(f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n")
+                        if 'input' in description:
+                            self.__lfh.write(f"{description['input']}\n")
+                            self.__lfh.write(f"{description['marker']}\n")
 
-                    if messageList is not None and self.__verbose:
-                        for description in messageList:
-                            self.__lfh.write(f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n")
-                            if 'input' in description:
-                                self.__lfh.write(f"{description['input']}\n")
-                                self.__lfh.write(f"{description['marker']}\n")
+                if self.__verbose:
+                    if listener.warningMessage is not None:
+                        print(listener.warningMessage)
 
+                if self.__atomNumberDict is not None:
                     if self.__verbose:
-                        if listener.warningMessage is not None:
-                            print(listener.warningMessage)
+                        print(listener.getContentSubtype())
+                    break
 
-                    if self.__atomNumberDict is not None:
-                        if self.__verbose:
-                            print(listener.getContentSubtype())
-                        break
+                sanderAtomNumberDict = listener.getSanderAtomNumberDict()
+                if len(sanderAtomNumberDict) > 0:
+                    self.__atomNumberDict = sanderAtomNumberDict
+                else:
+                    break
 
-                    sanderAtomNumberDict = listener.getSanderAtomNumberDict()
-                    if len(sanderAtomNumberDict) > 0:
-                        self.__atomNumberDict = sanderAtomNumberDict
-                    else:
-                        break
+                if isFilePath:
+                    ifp.close()
+
+            if isFilePath:
+                ifp.close()
 
             return listener, parser_error_listener, lexer_error_listener
 

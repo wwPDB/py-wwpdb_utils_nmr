@@ -2520,6 +2520,17 @@ class RosettaMRParserListener(ParseTreeListener):
 
         return {k: 1 for k, v in contentSubtype.items() if v > 0}
 
+    def getEffectiveContentSubtype(self):
+        """ Return effective content subtype of ROSETTA MR file (excluding CS-ROSETTA).
+        """
+
+        contentSubtype = {'dist_restraint': self.distRestraints,
+                          'ang_restraint': self.angRestraints,
+                          'dihed_restraint': self.dihedRestraints
+                          }
+
+        return {k: 1 for k, v in contentSubtype.items() if v > 0}
+
     def getReasonsForReparsing(self):
         """ Return reasons for re-parsing ROSETTA MR file.
         """

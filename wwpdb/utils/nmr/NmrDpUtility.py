@@ -769,6 +769,8 @@ def concat_nmr_restraint_names(content_subtype):
     """
 
     subtype_name = ""
+    if content_subtype is None:
+        return subtype_name
     if 'dist_restraint' in content_subtype:
         subtype_name += "Distance restraints, "
     if 'dihed_restraint' in content_subtype:
@@ -7309,6 +7311,19 @@ class NmrDpUtility:
 
                     has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
                     has_parser_error = parser_err_listener is not None and parser_err_listener.getMessageList() is not None
+                    content_subtype = listener.getContentSubtype() if listener is not None else None
+                    if content_subtype is not None and len(content_subtype) == 0:
+                        content_subtype = None
+                    has_content = content_subtype is not None
+
+                    if has_lexer_error and has_parser_error and has_content:
+                        # parser error occurrs before occurrenece of lexer error that implies mixing of different MR formats in a file
+                        if lexer_err_listener.getErrorLineNumber()[0] > parser_err_listener.getErrorLineNumber()[0]:
+                            corrected |= self.__extractUninterpretableLegacyMR(file_path, file_type,
+                                                                               parser_err_listener.getErrorLineNumber()[0],
+                                                                               lexer_err_listener.getErrorLineNumber()[0],
+                                                                               str(file_path), 0)
+                            div_test = True
 
                     if has_lexer_error:
                         messageList = lexer_err_listener.getMessageList()
@@ -7322,7 +7337,7 @@ class NmrDpUtility:
                                 enc = detect_encoding(description['input'])
                                 if enc is not None and enc != 'ascii':
                                     err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r}.\n"
-                                elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
+                                elif not div_test and has_content and self.__remediation_mode:
                                     corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
                                     div_test = True
 
@@ -7338,10 +7353,10 @@ class NmrDpUtility:
                                 enc = detect_encoding(description['input'])
                                 if enc is not None and enc != 'ascii':
                                     pass
-                                elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
+                                elif not div_test and has_content and self.__remediation_mode:
                                     corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
                                     div_test = True
-                            elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
+                            elif not div_test and has_content and self.__remediation_mode:
                                 corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
                                 div_test = True
 
@@ -7387,10 +7402,7 @@ class NmrDpUtility:
 
                             has_chem_shift = has_coordinate = False
 
-                            content_subtype = listener.getContentSubtype()
-                            if len(content_subtype) == 0:
-                                content_subtype = None
-                            else:
+                            if content_subtype is not None:
                                 has_dist_restraint = 'dist_restraint' in content_subtype
                                 has_dihed_restraint = 'dihed_restraint' in content_subtype
                                 has_rdc_restraint = 'rdc_restraint' in content_subtype
@@ -7418,6 +7430,19 @@ class NmrDpUtility:
 
                     has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
                     has_parser_error = parser_err_listener is not None and parser_err_listener.getMessageList() is not None
+                    content_subtype = listener.getContentSubtype() if listener is not None else None
+                    if content_subtype is not None and len(content_subtype) == 0:
+                        content_subtype = None
+                    has_content = content_subtype is not None
+
+                    if has_lexer_error and has_parser_error and has_content:
+                        # parser error occurrs before occurrenece of lexer error that implies mixing of different MR formats in a file
+                        if lexer_err_listener.getErrorLineNumber()[0] > parser_err_listener.getErrorLineNumber()[0]:
+                            corrected |= self.__extractUninterpretableLegacyMR(file_path, file_type,
+                                                                               parser_err_listener.getErrorLineNumber()[0],
+                                                                               lexer_err_listener.getErrorLineNumber()[0],
+                                                                               str(file_path), 0)
+                            div_test = True
 
                     if has_lexer_error:
                         messageList = lexer_err_listener.getMessageList()
@@ -7431,7 +7456,7 @@ class NmrDpUtility:
                                 enc = detect_encoding(description['input'])
                                 if enc is not None and enc != 'ascii':
                                     err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r}.\n"
-                                elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
+                                elif not div_test and has_content and self.__remediation_mode:
                                     corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
                                     div_test = True
 
@@ -7447,10 +7472,10 @@ class NmrDpUtility:
                                 enc = detect_encoding(description['input'])
                                 if enc is not None and enc != 'ascii':
                                     pass
-                                elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
+                                elif not div_test and has_content and self.__remediation_mode:
                                     corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
                                     div_test = True
-                            elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
+                            elif not div_test and has_content and self.__remediation_mode:
                                 corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
                                 div_test = True
 
@@ -7496,10 +7521,7 @@ class NmrDpUtility:
 
                             has_chem_shift = has_coordinate = False
 
-                            content_subtype = listener.getContentSubtype()
-                            if len(content_subtype) == 0:
-                                content_subtype = None
-                            else:
+                            if content_subtype is not None:
                                 has_dist_restraint = 'dist_restraint' in content_subtype
                                 has_dihed_restraint = 'dihed_restraint' in content_subtype
                                 has_rdc_restraint = 'rdc_restraint' in content_subtype
@@ -7517,6 +7539,19 @@ class NmrDpUtility:
 
                     has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
                     has_parser_error = parser_err_listener is not None and parser_err_listener.getMessageList() is not None
+                    content_subtype = listener.getContentSubtype() if listener is not None else None
+                    if content_subtype is not None and len(content_subtype) == 0:
+                        content_subtype = None
+                    has_content = content_subtype is not None
+
+                    if has_lexer_error and has_parser_error and has_content:
+                        # parser error occurrs before occurrenece of lexer error that implies mixing of different MR formats in a file
+                        if lexer_err_listener.getErrorLineNumber()[0] > parser_err_listener.getErrorLineNumber()[0]:
+                            corrected |= self.__extractUninterpretableLegacyMR(file_path, file_type,
+                                                                               parser_err_listener.getErrorLineNumber()[0],
+                                                                               lexer_err_listener.getErrorLineNumber()[0],
+                                                                               str(file_path), 0)
+                            div_test = True
 
                     if has_lexer_error:
                         messageList = lexer_err_listener.getMessageList()
@@ -7530,7 +7565,7 @@ class NmrDpUtility:
                                 enc = detect_encoding(description['input'])
                                 if enc is not None and enc != 'ascii':
                                     err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r}.\n"
-                                elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
+                                elif not div_test and has_content and self.__remediation_mode:
                                     corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
                                     div_test = True
 
@@ -7546,7 +7581,7 @@ class NmrDpUtility:
                                 enc = detect_encoding(description['input'])
                                 if enc is not None and enc != 'ascii':
                                     pass
-                                elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
+                                elif not div_test and has_content and self.__remediation_mode:
                                     corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
                                     div_test = True
 
@@ -7592,10 +7627,7 @@ class NmrDpUtility:
 
                             has_chem_shift = has_coordinate = False
 
-                            content_subtype = listener.getContentSubtype()
-                            if len(content_subtype) == 0:
-                                content_subtype = None
-                            else:
+                            if content_subtype is not None:
                                 has_dist_restraint = 'dist_restraint' in content_subtype
                                 has_dihed_restraint = 'dihed_restraint' in content_subtype
                                 has_rdc_restraint = 'rdc_restraint' in content_subtype
@@ -7613,6 +7645,19 @@ class NmrDpUtility:
 
                     has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
                     has_parser_error = parser_err_listener is not None and parser_err_listener.getMessageList() is not None
+                    content_subtype = listener.getContentSubtype() if listener is not None else None
+                    if content_subtype is not None and len(content_subtype) == 0:
+                        content_subtype = None
+                    has_content = content_subtype is not None
+
+                    if has_lexer_error and has_parser_error and has_content:
+                        # parser error occurrs before occurrenece of lexer error that implies mixing of different MR formats in a file
+                        if lexer_err_listener.getErrorLineNumber()[0] > parser_err_listener.getErrorLineNumber()[0]:
+                            corrected |= self.__extractUninterpretableLegacyMR(file_path, file_type,
+                                                                               parser_err_listener.getErrorLineNumber()[0],
+                                                                               lexer_err_listener.getErrorLineNumber()[0],
+                                                                               str(file_path), 0)
+                            div_test = True
 
                     if has_lexer_error:
                         messageList = lexer_err_listener.getMessageList()
@@ -7626,7 +7671,7 @@ class NmrDpUtility:
                                 enc = detect_encoding(description['input'])
                                 if enc is not None and enc != 'ascii':
                                     err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r}.\n"
-                                elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
+                                elif not div_test and has_content and self.__remediation_mode:
                                     corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
                                     div_test = True
 
@@ -7642,7 +7687,7 @@ class NmrDpUtility:
                                 enc = detect_encoding(description['input'])
                                 if enc is not None and enc != 'ascii':
                                     pass
-                                elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
+                                elif not div_test and has_content and self.__remediation_mode:
                                     corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
                                     div_test = True
 
@@ -7688,10 +7733,7 @@ class NmrDpUtility:
 
                             has_chem_shift = has_coordinate = False
 
-                            content_subtype = listener.getContentSubtype()
-                            if len(content_subtype) == 0:
-                                content_subtype = None
-                            else:
+                            if content_subtype is not None:
                                 has_topology = True
                                 content_subtype = {'topology': 1}
                                 ar['is_valid'] = True
@@ -7716,6 +7758,19 @@ class NmrDpUtility:
 
                     has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
                     has_parser_error = parser_err_listener is not None and parser_err_listener.getMessageList() is not None
+                    content_subtype = listener.getContentSubtype() if listener is not None else None
+                    if content_subtype is not None and len(content_subtype) == 0:
+                        content_subtype = None
+                    has_content = content_subtype is not None
+
+                    if has_lexer_error and has_parser_error and has_content:
+                        # parser error occurrs before occurrenece of lexer error that implies mixing of different MR formats in a file
+                        if lexer_err_listener.getErrorLineNumber()[0] > parser_err_listener.getErrorLineNumber()[0]:
+                            corrected |= self.__extractUninterpretableLegacyMR(file_path, file_type,
+                                                                               parser_err_listener.getErrorLineNumber()[0],
+                                                                               lexer_err_listener.getErrorLineNumber()[0],
+                                                                               str(file_path), 0)
+                            div_test = True
 
                     if has_lexer_error:
                         messageList = lexer_err_listener.getMessageList()
@@ -7729,7 +7784,7 @@ class NmrDpUtility:
                                 enc = detect_encoding(description['input'])
                                 if enc is not None and enc != 'ascii':
                                     err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r}.\n"
-                                elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
+                                elif not div_test and has_content and self.__remediation_mode:
                                     corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
                                     div_test = True
 
@@ -7745,7 +7800,7 @@ class NmrDpUtility:
                                 enc = detect_encoding(description['input'])
                                 if enc is not None and enc != 'ascii':
                                     pass
-                                elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
+                                elif not div_test and has_content and self.__remediation_mode:
                                     corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
                                     div_test = True
 
@@ -7791,10 +7846,7 @@ class NmrDpUtility:
 
                             has_chem_shift = has_coordinate = False
 
-                            content_subtype = listener.getContentSubtype()
-                            if len(content_subtype) == 0:
-                                content_subtype = None
-                            else:
+                            if content_subtype is not None:
                                 has_dist_restraint = 'dist_restraint' in content_subtype
                                 has_dihed_restraint = 'dihed_restraint' in content_subtype
                                 has_rdc_restraint = 'rdc_restraint' in content_subtype
@@ -7822,6 +7874,19 @@ class NmrDpUtility:
 
                     has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
                     has_parser_error = parser_err_listener is not None and parser_err_listener.getMessageList() is not None
+                    content_subtype = listener.getContentSubtype() if listener is not None else None
+                    if content_subtype is not None and len(content_subtype) == 0:
+                        content_subtype = None
+                    has_content = content_subtype is not None
+
+                    if has_lexer_error and has_parser_error and has_content:
+                        # parser error occurrs before occurrenece of lexer error that implies mixing of different MR formats in a file
+                        if lexer_err_listener.getErrorLineNumber()[0] > parser_err_listener.getErrorLineNumber()[0]:
+                            corrected |= self.__extractUninterpretableLegacyMR(file_path, file_type,
+                                                                               parser_err_listener.getErrorLineNumber()[0],
+                                                                               lexer_err_listener.getErrorLineNumber()[0],
+                                                                               str(file_path), 0)
+                            div_test = True
 
                     if has_lexer_error:
                         messageList = lexer_err_listener.getMessageList()
@@ -7835,7 +7900,7 @@ class NmrDpUtility:
                                 enc = detect_encoding(description['input'])
                                 if enc is not None and enc != 'ascii':
                                     err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r}.\n"
-                                elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
+                                elif not div_test and has_content and self.__remediation_mode:
                                     corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
                                     div_test = True
 
@@ -7851,7 +7916,7 @@ class NmrDpUtility:
                                 enc = detect_encoding(description['input'])
                                 if enc is not None and enc != 'ascii':
                                     pass
-                                elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
+                                elif not div_test and has_content and self.__remediation_mode:
                                     corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
                                     div_test = True
 
@@ -7897,10 +7962,7 @@ class NmrDpUtility:
 
                             has_chem_shift = has_coordinate = False
 
-                            content_subtype = listener.getContentSubtype()
-                            if len(content_subtype) == 0:
-                                content_subtype = None
-                            else:
+                            if content_subtype is not None:
                                 ar['is_valid'] = True
                                 has_dist_restraint = 'dist_restraint' in content_subtype
                                 has_dihed_restraint = 'dihed_restraint' in content_subtype
@@ -8173,10 +8235,8 @@ class NmrDpUtility:
         """ Divive legacy NMR restraint file if necessary.
         """
 
-        corrected = False
-
         if not self.__remediation_mode:
-            return corrected
+            return False
 
         if file_type == 'nm-res-xpl':
             mr_format_name = 'XPLOR-NIH'
@@ -8190,10 +8250,10 @@ class NmrDpUtility:
             mr_format_name = 'ROSETTA'
         elif file_type == 'nm-res-mr':
             mr_format_name = 'MR'
-            return corrected
+            return False
         else:
             mr_format_name = 'other'
-            return corrected
+            return False
 
         err_message = err_desc['message']
         err_line_number = err_desc['line_number']
@@ -8226,6 +8286,8 @@ class NmrDpUtility:
             xplor_ends_wo_statement = True
 
         if xplor_ends_wo_statement or i < err_line_number:
+
+            corrected = False
 
             if xplor_ends_wo_statement and file_type in ('nm-res-xpl', 'nm-res-cns'):
 
@@ -8324,9 +8386,7 @@ class NmrDpUtility:
             os.remove(div_src_file)
             os.remove(div_try_file)
 
-            return corrected
-
-        corrected = True
+            return False
 
         self.__lfh.write(f"The NMR restraint file {file_name!r} ({mr_format_name} format) is identified as {valid_types}.\n")
 
@@ -8338,259 +8398,223 @@ class NmrDpUtility:
         file_path = div_dst_file
         file_type = valid_types[0]
 
+        self.__testFormatValidityOfLegacyMR(file_path, file_type, src_path, offset)
+
+        return True
+
+    def __extractUninterpretableLegacyMR(self, file_path, file_type, err_line_number_1, err_line_number_2, src_path, offset):
+        """ Extract uninterpretable legacy NMR restraints if necessary.
+        """
+
+        if not self.__remediation_mode:
+            return False
+
+        if file_type == 'nm-res-xpl':
+            mr_format_name = 'XPLOR-NIH'
+        elif file_type == 'nm-res-cns':
+            mr_format_name = 'CNS'
+        elif file_type in ('nm-res-amb', 'nm-aux-amb'):
+            mr_format_name = 'AMBER'
+        elif file_type == 'nm-res-cya':
+            mr_format_name = 'CYANA'
+        elif file_type == 'nm-res-ros':
+            mr_format_name = 'ROSETTA'
+        elif file_type == 'nm-res-mr':
+            mr_format_name = 'MR'
+            return False
+        else:
+            mr_format_name = 'other'
+            return False
+
+        src_basename = os.path.splitext(file_path)[0]
+        div_src = 'div_dst' in src_basename
+        div_src_file = src_basename + '-div_src.mr'
+        div_ext_file = src_basename + '-div_ext.mr'
+        div_try_file = src_basename + '-div_try.mr'
+        div_dst_file = src_basename + '-div_dst.mr'
+
+        i = j = j2 = j3 = 0
+
+        checked = False
+        ws_cont = True
+
+        with open(file_path, 'r') as ifp,\
+                open(div_src_file, 'w') as ofp,\
+                open(div_ext_file, 'w') as ofp2,\
+                open(div_try_file, 'w') as ofp3:
+            for line in ifp:
+                i += 1
+                if i < err_line_number_1:
+                    ofp.write(line)
+                    j += 1
+                    continue
+                if i < err_line_number_2:
+                    ofp2.write(line)
+                    j2 += 1
+                    continue
+                if not checked:
+                    if file_type == 'nm-res-xpl':
+                        reader = XplorMRReader(False, self.__lfh, None, None, None,
+                                               self.__ccU, self.__csStat, self.__nefT)
+                    elif file_type == 'nm-res-cns':
+                        reader = CnsMRReader(False, self.__lfh, None, None, None,
+                                             self.__ccU, self.__csStat, self.__nefT)
+                    elif file_type == 'nm-res-amb':
+                        reader = AmberMRReader(self.__verbose, self.__lfh, None, None, None,
+                                               self.__ccU, self.__csStat, self.__nefT)
+                    elif file_type == 'nm-aux-amb':
+                        reader = AmberPTReader(self.__verbose, self.__lfh, None, None, None,
+                                               self.__ccU, self.__csStat)
+                    elif file_type == 'nm-res-cya':
+                        reader = CyanaMRReader(self.__verbose, self.__lfh, None, None, None,
+                                               self.__ccU, self.__csStat, self.__nefT)
+                    elif file_type == 'nm-res-ros':
+                        reader = RosettaMRReader(self.__verbose, self.__lfh, None, None, None,
+                                                 self.__ccU, self.__csStat, self.__nefT)
+                    _, parser_err_listener, lexer_err_listener = reader.parse(line, None, isFilePath=False)
+                    if lexer_err_listener is None or lexer_err_listener.getMessageList() is not None:
+                        ofp2.write(line)
+                        j2 += 1
+                        continue
+                    if parser_err_listener is not None:
+                        messageList = parser_err_listener.getMessageList()
+                        if messageList is not None and messageList[0]['line_number'] == 1:
+                            ofp2.write(line)
+                            j2 += 1
+                            continue
+                    checked = True
+                if ws_cont and ws_pattern.match(line):
+                    ofp2.write(line)
+                    j2 += 1
+                    continue
+                ws_cont = False
+                ofp3.write(line)
+                j3 += 1
+
+        offset += j + j2
+
+        if j3 == 0:
+
+            if div_src:
+                os.remove(file_path)
+            if os.path.exists(div_try_file):
+                os.remove(div_try_file)
+
+            return False
+
+        file_name = os.path.basename(div_try_file)
+
+        _, _, valid_types, possible_types = self.__detectOtherPossibleFormatAsErrorOfLegacyMR(div_try_file, file_name, 'nm-res-mr', [], True)
+
+        len_valid_types = len(valid_types)
+        len_possible_types = len(possible_types)
+
+        if (len_valid_types == 0 and len_possible_types == 0) or len_possible_types > 0:
+            os.remove(div_src_file)
+            os.remove(div_ext_file)
+            os.remove(div_try_file)
+
+            return False
+
+        self.__lfh.write(f"The NMR restraint file {file_name!r} ({mr_format_name} format) is identified as {valid_types}.\n")
+
+        if div_src:
+            os.remove(file_path)
+
+        os.rename(div_try_file, div_dst_file)
+
+        file_path = div_dst_file
+        file_type = valid_types[0]
+
+        self.__testFormatValidityOfLegacyMR(file_path, file_type, src_path, offset)
+
+        return True
+
+    def __testFormatValidityOfLegacyMR(self, file_path, file_type, src_path, offset):
+        """ Perform format check of legacy NMR restraint file.
+        """
+
         div_test = False
 
         try:
 
             if file_type == 'nm-res-xpl':
-
-                reader = XplorMRReader(self.__verbose, self.__lfh, None, None, None,
+                reader = XplorMRReader(False, self.__lfh, None, None, None,
                                        self.__ccU, self.__csStat, self.__nefT)
-                listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
-
-                if listener is not None:
-                    reasons = listener.getReasonsForReparsing()
-
-                    if reasons is not None:
-                        reader = XplorMRReader(self.__verbose, self.__lfh, None, None, None,
-                                               self.__ccU, self.__csStat, self.__nefT,
-                                               reasons)
-                        listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
-
-                has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
-                has_parser_error = parser_err_listener is not None and parser_err_listener.getMessageList() is not None
-
-                if has_lexer_error:
-                    messageList = lexer_err_listener.getMessageList()
-
-                    for description in messageList:
-                        if 'input' in description:
-                            enc = detect_encoding(description['input'])
-                            if enc is not None and enc != 'ascii':
-                                pass
-                            elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
-                                self.__divideLegacyMRIfNecessary(file_path, file_type, description, src_path, offset)
-                                div_test = True
-
-                if has_parser_error:
-                    messageList = parser_err_listener.getMessageList()
-
-                    for description in messageList:
-                        if 'input' in description:
-                            enc = detect_encoding(description['input'])
-                            if enc is not None and enc != 'ascii':
-                                pass
-                            elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
-                                self.__divideLegacyMRIfNecessary(file_path, file_type, description, src_path, offset)
-                                div_test = True
-                        elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
-                            self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), offset)
-                            div_test = True
-
             elif file_type == 'nm-res-cns':
-
-                reader = CnsMRReader(self.__verbose, self.__lfh, None, None, None,
+                reader = CnsMRReader(False, self.__lfh, None, None, None,
                                      self.__ccU, self.__csStat, self.__nefT)
-                listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
-
-                if listener is not None:
-                    reasons = listener.getReasonsForReparsing()
-
-                    if reasons is not None:
-                        reader = CnsMRReader(self.__verbose, self.__lfh, None, None, None,
-                                             self.__ccU, self.__csStat, self.__nefT,
-                                             reasons)
-                        listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
-
-                has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
-                has_parser_error = parser_err_listener is not None and parser_err_listener.getMessageList() is not None
-
-                if has_lexer_error:
-                    messageList = lexer_err_listener.getMessageList()
-
-                    for description in messageList:
-                        if 'input' in description:
-                            enc = detect_encoding(description['input'])
-                            if enc is not None and enc != 'ascii':
-                                pass
-                            elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
-                                self.__divideLegacyMRIfNecessary(file_path, file_type, description, src_path, offset)
-                                div_test = True
-
-                if has_parser_error:
-                    messageList = parser_err_listener.getMessageList()
-
-                    for description in messageList:
-                        if 'input' in description:
-                            enc = detect_encoding(description['input'])
-                            if enc is not None and enc != 'ascii':
-                                pass
-                            elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
-                                self.__divideLegacyMRIfNecessary(file_path, file_type, description, src_path, offset)
-                                div_test = True
-                        elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
-                            self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), offset)
-                            div_test = True
-
             elif file_type == 'nm-res-amb':
-
                 reader = AmberMRReader(self.__verbose, self.__lfh, None, None, None,
                                        self.__ccU, self.__csStat, self.__nefT)
-                listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None, None)
-
-                has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
-                has_parser_error = parser_err_listener is not None and parser_err_listener.getMessageList() is not None
-
-                if has_lexer_error:
-                    messageList = lexer_err_listener.getMessageList()
-
-                    for description in messageList:
-                        if 'input' in description:
-                            enc = detect_encoding(description['input'])
-                            if enc is not None and enc != 'ascii':
-                                pass
-                            elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
-                                self.__divideLegacyMRIfNecessary(file_path, file_type, description, src_path, offset)
-                                div_test = True
-
-                if has_parser_error:
-                    messageList = parser_err_listener.getMessageList()
-
-                    for description in messageList:
-                        if 'input' in description:
-                            enc = detect_encoding(description['input'])
-                            if enc is not None and enc != 'ascii':
-                                pass
-                            elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
-                                self.__divideLegacyMRIfNecessary(file_path, file_type, description, src_path, offset)
-                                div_test = True
-
             elif file_type == 'nm-aux-amb':
-
                 reader = AmberPTReader(self.__verbose, self.__lfh, None, None, None,
                                        self.__ccU, self.__csStat)
-                listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
-
-                has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
-                has_parser_error = parser_err_listener is not None and parser_err_listener.getMessageList() is not None
-
-                if has_lexer_error:
-                    messageList = lexer_err_listener.getMessageList()
-
-                    for description in messageList:
-                        if 'input' in description:
-                            enc = detect_encoding(description['input'])
-                            if enc is not None and enc != 'ascii':
-                                pass
-                            elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
-                                self.__divideLegacyMRIfNecessary(file_path, file_type, description, src_path, offset)
-                                div_test = True
-
-                if has_parser_error:
-                    messageList = parser_err_listener.getMessageList()
-
-                    for description in messageList:
-                        if 'input' in description:
-                            enc = detect_encoding(description['input'])
-                            if enc is not None and enc != 'ascii':
-                                pass
-                            elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
-                                self.__divideLegacyMRIfNecessary(file_path, file_type, description, src_path, offset)
-                                div_test = True
-
             elif file_type == 'nm-res-cya':
-
                 reader = CyanaMRReader(self.__verbose, self.__lfh, None, None, None,
                                        self.__ccU, self.__csStat, self.__nefT)
-                listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
-
-                if listener is not None:
-                    reasons = listener.getReasonsForReparsing()
-
-                    if reasons is not None:
-                        reader = CyanaMRReader(self.__verbose, self.__lfh, None, None, None,
-                                               self.__ccU, self.__csStat, self.__nefT,
-                                               reasons)
-                        listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
-
-                has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
-                has_parser_error = parser_err_listener is not None and parser_err_listener.getMessageList() is not None
-
-                if has_lexer_error:
-                    messageList = lexer_err_listener.getMessageList()
-
-                    for description in messageList:
-                        if 'input' in description:
-                            enc = detect_encoding(description['input'])
-                            if enc is not None and enc != 'ascii':
-                                pass
-                            elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
-                                self.__divideLegacyMRIfNecessary(file_path, file_type, description, src_path, offset)
-                                div_test = True
-
-                if has_parser_error:
-                    messageList = parser_err_listener.getMessageList()
-
-                    for description in messageList:
-                        if 'input' in description:
-                            enc = detect_encoding(description['input'])
-                            if enc is not None and enc != 'ascii':
-                                pass
-                            elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
-                                self.__divideLegacyMRIfNecessary(file_path, file_type, description, src_path, offset)
-                                div_test = True
-
             elif file_type == 'nm-res-ros':
-
                 reader = RosettaMRReader(self.__verbose, self.__lfh, None, None, None,
                                          self.__ccU, self.__csStat, self.__nefT)
-                listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
-                if listener is not None:
-                    reasons = listener.getReasonsForReparsing()
+            listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
-                    if reasons is not None:
-                        reader = RosettaMRReader(self.__verbose, self.__lfh, None, None, None,
-                                                 self.__ccU, self.__csStat, self.__nefT,
-                                                 reasons)
-                        listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
+            if listener is not None:
+                reasons = listener.getReasonsForReparsing()
 
-                has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
-                has_parser_error = parser_err_listener is not None and parser_err_listener.getMessageList() is not None
+                if reasons is not None:
+                    reader = XplorMRReader(self.__verbose, self.__lfh, None, None, None,
+                                           self.__ccU, self.__csStat, self.__nefT,
+                                           reasons)
+                    listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
-                if has_lexer_error:
-                    messageList = lexer_err_listener.getMessageList()
+            has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
+            has_parser_error = parser_err_listener is not None and parser_err_listener.getMessageList() is not None
+            has_content = bool(listener is not None and len(listener.getContentSubtype()) > 0)
 
-                    for description in messageList:
-                        if 'input' in description:
-                            enc = detect_encoding(description['input'])
-                            if enc is not None and enc != 'ascii':
-                                pass
-                            elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
-                                self.__divideLegacyMRIfNecessary(file_path, file_type, description, src_path, offset)
-                                div_test = True
+            if has_lexer_error and has_parser_error and has_content:
+                # parser error occurrs before occurrenece of lexer error that implies mixing of different MR formats in a file
+                if lexer_err_listener.getErrorLineNumber()[0] > parser_err_listener.getErrorLineNumber()[0]:
+                    self.__extractUninterpretableLegacyMR(file_path, file_type,
+                                                          parser_err_listener.getErrorLineNumber()[0],
+                                                          lexer_err_listener.getErrorLineNumber()[0],
+                                                          src_path, offset)
+                    div_test = True
 
-                if has_parser_error:
-                    messageList = parser_err_listener.getMessageList()
+            if has_lexer_error:
+                messageList = lexer_err_listener.getMessageList()
 
-                    for description in messageList:
-                        if 'input' in description:
-                            enc = detect_encoding(description['input'])
-                            if enc is not None and enc != 'ascii':
-                                pass
-                            elif not div_test and listener is not None and len(listener.getContentSubtype()) > 0 and self.__remediation_mode:
-                                self.__divideLegacyMRIfNecessary(file_path, file_type, description, src_path, offset)
-                                div_test = True
+                for description in messageList:
+                    if 'input' in description:
+                        enc = detect_encoding(description['input'])
+                        if enc is not None and enc != 'ascii':
+                            pass
+                        elif not div_test and has_content:
+                            self.__divideLegacyMRIfNecessary(file_path, file_type, description, src_path, offset)
+                            div_test = True
+
+            if has_parser_error:
+                messageList = parser_err_listener.getMessageList()
+
+                for description in messageList:
+                    if 'input' in description:
+                        enc = detect_encoding(description['input'])
+                        if enc is not None and enc != 'ascii':
+                            pass
+                        elif not div_test and has_content:
+                            self.__divideLegacyMRIfNecessary(file_path, file_type, description, src_path, offset)
+                            div_test = True
+                    elif not div_test and has_content and file_type in ('nm-res-xpl', 'nm-res-cns'):
+                        self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), offset)
+                        div_test = True
 
         except ValueError as e:
 
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__divideLegacyMRIfNecessary() ++ Error  - " + str(e))
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testFormatValidityOfLegacyMR() ++ Error  - " + str(e))
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__divideLegacyMRIfNecessary() ++ Error  - {str(e)}\n")
-
-        return corrected
+                self.__lfh.write(f"+NmrDpUtility.__testFormatValidityOfLegacyMR() ++ Error  - {str(e)}\n")
 
     def __detectOtherPossibleFormatAsErrorOfLegacyMR(self, file_path, file_name, file_type, dismiss_err_lines, multiple_check=False):
         """ Report other possible format as error of a given legacy NMR restraint file.
@@ -8624,11 +8648,10 @@ class NmrDpUtility:
                                      self.__ccU, self.__csStat, self.__nefT)
                 listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
-                has_content = False
-                if listener is not None:
-                    _content_subtype = listener.getContentSubtype()
-                    if len(_content_subtype) > 0:
-                        has_content = True
+                _content_subtype = listener.getContentSubtype() if listener is not None else None
+                if _content_subtype is not None and len(_content_subtype) == 0:
+                    _content_subtype = None
+                has_content = _content_subtype is not None
 
                 if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
                    and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None) or has_content):
@@ -8637,7 +8660,6 @@ class NmrDpUtility:
 
                     _mr_format_name = 'CNS'
                     _mr_format_type = 'nm-res-cns'
-                    _content_subtype = listener.getContentSubtype()
 
                     err = f"The NMR restraint file {file_name!r} ({mr_format_name}) looks like a {_mr_format_name} or XPLOR-NIH restraint file, "\
                         f"which has {concat_nmr_restraint_names(_content_subtype)}. "\
@@ -8699,11 +8721,10 @@ class NmrDpUtility:
                                        self.__ccU, self.__csStat, self.__nefT)
                 listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
-                has_content = False
-                if listener is not None:
-                    _content_subtype = listener.getContentSubtype()
-                    if len(_content_subtype) > 0:
-                        has_content = True
+                _content_subtype = listener.getContentSubtype() if listener is not None else None
+                if _content_subtype is not None and len(_content_subtype) == 0:
+                    _content_subtype = None
+                has_content = _content_subtype is not None
 
                 if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
                    and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None) or has_content):
@@ -8712,7 +8733,6 @@ class NmrDpUtility:
 
                     _mr_format_name = 'XPLOR-NIH'
                     _mr_format_type = 'nm-res-xpl'
-                    _content_subtype = listener.getContentSubtype()
 
                     err = f"The NMR restraint file {file_name!r} ({mr_format_name}) looks like an {_mr_format_name} restraint file, "\
                         f"which has {concat_nmr_restraint_names(_content_subtype)}. "\
@@ -8774,11 +8794,10 @@ class NmrDpUtility:
                                        self.__ccU, self.__csStat, self.__nefT)
                 listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None, None)
 
-                has_content = False
-                if listener is not None:
-                    _content_subtype = listener.getContentSubtype()
-                    if len(_content_subtype) > 0:
-                        has_content = True
+                _content_subtype = listener.getContentSubtype() if listener is not None else None
+                if _content_subtype is not None and len(_content_subtype) == 0:
+                    _content_subtype = None
+                has_content = _content_subtype is not None
 
                 if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
                    and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None) or has_content):
@@ -8787,7 +8806,6 @@ class NmrDpUtility:
 
                     _mr_format_name = 'AMBER'
                     _mr_format_type = 'nm-res-amb'
-                    _content_subtype = listener.getContentSubtype()
 
                     err = f"The NMR restraint file {file_name!r} ({mr_format_name}) looks like an {_mr_format_name} restraint file, "\
                         f"which has {concat_nmr_restraint_names(_content_subtype)}. "\
@@ -8849,11 +8867,10 @@ class NmrDpUtility:
                                        self.__ccU, self.__csStat)
                 listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
-                has_content = False
-                if listener is not None:
-                    _content_subtype = listener.getContentSubtype()
-                    if len(_content_subtype) > 0:
-                        has_content = True
+                _content_subtype = listener.getContentSubtype() if listener is not None else None
+                if _content_subtype is not None and len(_content_subtype) == 0:
+                    _content_subtype = None
+                has_content = _content_subtype is not None
 
                 if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
                    and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None) or has_content):
@@ -8862,7 +8879,6 @@ class NmrDpUtility:
 
                     _mr_format_name = 'AMBER'
                     _mr_format_type = 'nm-aux-amb'
-                    _content_subtype = listener.getContentSubtype()
 
                     err = f"The NMR restraint file {file_name!r} ({mr_format_name}) looks like an {_mr_format_name} parameter/topology file. "\
                         "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
@@ -8923,11 +8939,10 @@ class NmrDpUtility:
                                        self.__ccU, self.__csStat, self.__nefT)
                 listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
-                has_content = False
-                if listener is not None:
-                    _content_subtype = listener.getContentSubtype()
-                    if len(_content_subtype) > 0:
-                        has_content = True
+                _content_subtype = listener.getContentSubtype() if listener is not None else None
+                if _content_subtype is not None and len(_content_subtype) == 0:
+                    _content_subtype = None
+                has_content = _content_subtype is not None
 
                 if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
                    and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None) or has_content):
@@ -8936,7 +8951,6 @@ class NmrDpUtility:
 
                     _mr_format_name = 'CYANA'
                     _mr_format_type = 'nm-res-cya'
-                    _content_subtype = listener.getContentSubtype()
 
                     err = f"The NMR restraint file {file_name!r} ({mr_format_name}) looks like a {_mr_format_name} restraint file, "\
                         f"which has {concat_nmr_restraint_names(_content_subtype)}. "\
@@ -8998,18 +9012,12 @@ class NmrDpUtility:
                                          self.__ccU, self.__csStat, self.__nefT)
                 listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
-                has_content = False
-                if listener is not None:
-                    _content_subtype = listener.getContentSubtype()
-                    # 'rdc_restraint' occasionally matches with CYANA restraints
-                    # 'geo_restraint' include CS-ROSETTA disulfide bond linkage, which matches any integer array
-                    if len(_content_subtype) > 0:
-                        eff_content_subtypes = 0
-                        for k, v in _content_subtype.items():
-                            if k not in ('rdc_restraint', 'geo_restraint'):
-                                eff_content_subtypes += v
-                        if eff_content_subtypes > 0:
-                            has_content = True
+                # 'rdc_restraint' occasionally matches with CYANA restraints
+                # 'geo_restraint' include CS-ROSETTA disulfide bond linkage, which matches any integer array
+                _content_subtype = listener.getEffectiveContentSubtype() if listener is not None else None
+                if _content_subtype is not None and len(_content_subtype) == 0:
+                    _content_subtype = None
+                has_content = _content_subtype is not None
 
                 if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
                    and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None) or has_content):
@@ -9018,7 +9026,6 @@ class NmrDpUtility:
 
                     _mr_format_name = 'ROSETTA'
                     _mr_format_type = 'nm-res-ros'
-                    _content_subtype = listener.getContentSubtype()
 
                     err = f"The NMR restraint file {file_name!r} ({mr_format_name}) looks like a {_mr_format_name} restraint file, "\
                         f"which has {concat_nmr_restraint_names(_content_subtype)}. "\

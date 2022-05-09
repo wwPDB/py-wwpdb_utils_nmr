@@ -20,15 +20,21 @@ class ParserErrorListener(ErrorListener):
     __errorLineNumber = None
 
     __filePath = None
+    __inputString = None
 
     __maxErrorReport = MAX_ERROR_REPORT
 
-    def __init__(self, filePath, maxErrorReport=MAX_ERROR_REPORT):
+    def __init__(self, filePath, inputString=None, maxErrorReport=MAX_ERROR_REPORT):
 
         self.__messageList = []
         self.__errorLineNumber = []
 
         self.__filePath = filePath
+
+        if filePath is None and inputString is not None:
+            self.__inputString = inputString.split('\n')
+            if len(self.__inputString) == 0:
+                self.__inputString = None
 
         self.__maxErrorReport = maxErrorReport
 
@@ -49,15 +55,22 @@ class ParserErrorListener(ErrorListener):
                  'message': msg,
                  'marker': " " * (column) + "^" * (length)}
 
-        _line = 1
-        with open(self.__filePath, 'r', encoding='utf-8') as ifp:
-            for content in ifp:
-                if _line == line:
-                    _dict['input'] = content.replace('\t', ' ')\
-                        .replace('\r', ' ').replace('\n', ' ')\
-                        .rstrip(' ')
-                    break
-                _line += 1
+        if self.__filePath is not None:
+            _line = 1
+            with open(self.__filePath, 'r', encoding='utf-8') as ifp:
+                for content in ifp:
+                    if _line == line:
+                        _dict['input'] = content.replace('\t', ' ')\
+                            .replace('\r', ' ').replace('\n', ' ')\
+                            .rstrip(' ')
+                        break
+                    _line += 1
+
+        elif self.__inputString is not None:
+            if line - 1 < len(self.__inputString):
+                _dict['input'] = self.__inputString[line - 1].replace('\t', ' ')\
+                    .replace('\r', ' ').replace('\n', ' ')\
+                    .rstrip(' ')
 
         if 'at input' in _dict['message']:  # parser error
             try:

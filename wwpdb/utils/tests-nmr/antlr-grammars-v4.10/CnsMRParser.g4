@@ -38,7 +38,8 @@ cns_mr:
 	dihedral_assign |		// allowing bare assign clauses for Dihedral angle restraints
 	sani_assign |			// allowing bare assign clauses for RDC restraints
 	plane_statement |		// allowing bare group clauses for Plane restraints
-	coup_assign			// allowing bare assign clauses for Scaler J-coupling restraints
+	coup_assign |			// allowing bare assign clauses for Scaler J-coupling restraints
+	carbon_shift_assign		// allowing bare assign clauses for Carbon chemical shift restraints
 	)*
 	EOF;
 

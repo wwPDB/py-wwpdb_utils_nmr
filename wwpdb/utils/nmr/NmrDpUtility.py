@@ -8560,13 +8560,28 @@ class NmrDpUtility:
             listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
             if listener is not None:
-                reasons = listener.getReasonsForReparsing()
+                if file_type in ('nm-res-xpl', 'nm-res-cns', 'nm-res-cya', 'nm-res-ros'):
+                    reasons = listener.getReasonsForReparsing()
 
-                if reasons is not None:
-                    reader = XplorMRReader(self.__verbose, self.__lfh, None, None, None,
-                                           self.__ccU, self.__csStat, self.__nefT,
-                                           reasons)
-                    listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
+                    if reasons is not None:
+                        if file_type == 'nm-res-xpl':
+                            reader = XplorMRReader(self.__verbose, self.__lfh, None, None, None,
+                                                   self.__ccU, self.__csStat, self.__nefT,
+                                                   reasons)
+                        elif file_type == 'nm-res-cns':
+                            reader = CnsMRReader(False, self.__lfh, None, None, None,
+                                                 self.__ccU, self.__csStat, self.__nefT,
+                                                 reasons)
+                        elif file_type == 'nm-res-cya':
+                            reader = CyanaMRReader(self.__verbose, self.__lfh, None, None, None,
+                                                   self.__ccU, self.__csStat, self.__nefT,
+                                                   reasons)
+                        elif file_type == 'nm-res-ros':
+                            reader = RosettaMRReader(self.__verbose, self.__lfh, None, None, None,
+                                                     self.__ccU, self.__csStat, self.__nefT,
+                                                     reasons)
+
+                        listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
             has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
             has_parser_error = parser_err_listener is not None and parser_err_listener.getMessageList() is not None

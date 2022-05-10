@@ -56,7 +56,7 @@ xplor_nih_mr:
 	coll_assign |			// allowing bare assign clauses for Radius of gyration restraints
 	csa_assign |			// allowing bare assign clauses for CSA restraints
 	pre_assign |			// allowing bare assign clauses for PRE restraints
-	pcs_assign			// allowing bare assign clauses for PCS restraints
+	pcs_assign			// allowing bare assign clauses for PCS restraints or Carbon chemical shift restraints
 	)*
 	EOF;
 

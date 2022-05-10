@@ -4331,12 +4331,28 @@ class XplorMRParserListener(ParseTreeListener):
         target = self.numberSelection[0]
         delta = abs(self.numberSelection[0])
 
-        # check whether if carbon shift restraints or not
-        atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
-        atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
-        atom_id_3 = self.atomSelectionSet[2][0]['atom_id']
-        atom_id_4 = self.atomSelectionSet[3][0]['atom_id']
-        atom_id_5 = self.atomSelectionSet[4][0]['atom_id']
+        try:
+            # check whether if carbon shift restraints or not
+            atom_id_5 = self.atomSelectionSet[4][0]['atom_id']
+        except IndexError:
+            self.pcsRestraints -= 1
+            self.hvycsRestraints += 1
+            if self.__cur_subtype_altered:
+                self.pcsStatements -= 1
+                if self.hvycsStatements == 0:
+                    self.hvycsStatements += 1
+            self.__cur_subtype = 'hvycs'
+            self.exitCarbon_shift_assign(ctx)
+            return
+
+        try:
+            # check whether if carbon shift restraints or not
+            atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
+            atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+            atom_id_3 = self.atomSelectionSet[2][0]['atom_id']
+            atom_id_4 = self.atomSelectionSet[3][0]['atom_id']
+        except IndexError:
+            atom_id_1, atom_id_2, atom_id_3, atom_id_4 = 'OO', 'X', 'Y', 'Z'
 
         atom_ids = [atom_id_1, atom_id_2, atom_id_3, atom_id_4, atom_id_5]
 

@@ -769,52 +769,57 @@ def concat_nmr_restraint_names(content_subtype):
     """
 
     subtype_name = ""
+
     if content_subtype is None:
         return subtype_name
-    if 'dist_restraint' in content_subtype:
-        subtype_name += "Distance restraints, "
-    if 'dihed_restraint' in content_subtype:
-        subtype_name += "Dihedral angle restraints, "
-    if 'rdc_restraint' in content_subtype:
-        subtype_name += "RDC restraints, "
-    if 'plane_restraint' in content_subtype:
-        subtype_name += "Planarity restraints, "
-    if 'hbond_restraint' in content_subtype:
-        subtype_name += "Hydrogen bond restraints, "
-    if 'adist_restraint' in content_subtype:
-        subtype_name += "Anti-distance restraints, "
-    if 'jcoup_restraint' in content_subtype:
-        subtype_name += "Scalar J-coupling restraints, "
-    if 'hcycs_restraint' in content_subtype:
-        subtype_name += "Carbon chemical shift restraints, "
-    if 'procs_restraint' in content_subtype:
-        subtype_name += "Proton chemical shift restraints, "
-    if 'rama_restraint' in content_subtype:
-        subtype_name += "Dihedral angle database restraints, "
-    if 'radi_restraint' in content_subtype:
-        subtype_name += "Radius of gyration restraints, "
-    if 'diff_restraint' in content_subtype:
-        subtype_name += "Diffusion anisotropy restraints, "
-    if 'nbase_restraint' in content_subtype:
-        subtype_name += "Nucleic acid base orientation database restraints, "
-    if 'csa_restraint' in content_subtype:
-        subtype_name += "CSA restraints, "
-    if 'ang_restraint' in content_subtype:
-        subtype_name += "Angle database restraints, "
-    if 'pre_restraint' in content_subtype:
-        subtype_name += "PRE restraints, "
-    if 'pcs_restraint' in content_subtype:
-        subtype_name += "PCS restraints, "
-    if 'prdc_restraint' in content_subtype:
-        subtype_name += "Paramagnetic RDC restraints, "
-    if 'pang_restraint' in content_subtype:
-        subtype_name += "Paramagnetic orientation restraints, "
-    if 'pccr_restraint' in content_subtype:
-        subtype_name += "Paramagnetic CCR restraints, "
-    if 'geo_restraint' in content_subtype:
-        subtype_name += "Coordinate geometry restraints, "
-    if 'noepk_restraint' in content_subtype:
-        subtype_name += "NOESY peak volume restraints, "
+
+    for k, v in content_subtype.items():
+        if v == 0:
+            continue
+        if k == 'dist_restraint':
+            subtype_name += "Distance restraints, "
+        if k == 'dihed_restraint':
+            subtype_name += "Dihedral angle restraints, "
+        if k == 'rdc_restraint':
+            subtype_name += "RDC restraints, "
+        if k == 'plane_restraint':
+            subtype_name += "Planarity restraints, "
+        if k == 'hbond_restraint':
+            subtype_name += "Hydrogen bond restraints, "
+        if k == 'adist_restraint':
+            subtype_name += "Anti-distance restraints, "
+        if k == 'jcoup_restraint':
+            subtype_name += "Scalar J-coupling restraints, "
+        if k == 'hvycs_restraint':
+            subtype_name += "Carbon chemical shift restraints, "
+        if k == 'procs_restraint':
+            subtype_name += "Proton chemical shift restraints, "
+        if k == 'rama_restraint':
+            subtype_name += "Dihedral angle database restraints, "
+        if k == 'radi_restraint':
+            subtype_name += "Radius of gyration restraints, "
+        if k == 'diff_restraint':
+            subtype_name += "Diffusion anisotropy restraints, "
+        if k == 'nbase_restraint':
+            subtype_name += "Nucleic acid base orientation database restraints, "
+        if k == 'csa_restraint':
+            subtype_name += "CSA restraints, "
+        if k == 'ang_restraint':
+            subtype_name += "Angle database restraints, "
+        if k == 'pre_restraint':
+            subtype_name += "PRE restraints, "
+        if k == 'pcs_restraint':
+            subtype_name += "PCS restraints, "
+        if k == 'prdc_restraint':
+            subtype_name += "Paramagnetic RDC restraints, "
+        if k == 'pang_restraint':
+            subtype_name += "Paramagnetic orientation restraints, "
+        if k == 'pccr_restraint':
+            subtype_name += "Paramagnetic CCR restraints, "
+        if k == 'geo_restraint':
+            subtype_name += "Coordinate geometry restraints, "
+        if k == 'noepk_restraint':
+            subtype_name += "NOESY peak volume restraints, "
 
     return '' if len(subtype_name) == 0 else subtype_name[:-2]
 
@@ -8049,7 +8054,7 @@ class NmrDpUtility:
                                    'topology': 1 if has_topology else 0}
 
             if not is_aux_amb and not has_chem_shift and not has_dist_restraint and not has_dihed_restraint and not has_rdc_restraint\
-               and not has_plane_restraint and not has_hbond_restraint and valid:
+               and not has_plane_restraint and not has_hbond_restraint and valid and len(concat_nmr_restraint_names(content_subtype)) == 0:
 
                 hint = ""
                 if file_type in ('nm-res-xpl', 'nm-res-cns') and not has_rdc_origins:

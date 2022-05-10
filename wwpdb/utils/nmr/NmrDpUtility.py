@@ -8383,7 +8383,7 @@ class NmrDpUtility:
                 os.remove(file_path)
             os.rename(div_try_file, div_ext_file)
 
-            return False
+            return True  # succeeded in eliminating uninterpretable parts
 
         if len_possible_types > 0:
             os.remove(div_src_file)
@@ -8512,7 +8512,7 @@ class NmrDpUtility:
                     ofp.write(line)
             os.remove(div_try_file)
 
-            return False
+            return True  # succeeded in eliminating uninterpretable parts
 
         if len_possible_types > 0:
             os.remove(div_src_file)

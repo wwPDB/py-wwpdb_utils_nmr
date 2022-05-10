@@ -3,7 +3,7 @@
 # Date: 27-Jan-2022
 #
 # Updates:
-# Generated from CyanaMRParser.g4 by ANTLR 4.9
+# Generated from CyanaMRParser.g4 by ANTLR 4.10.1
 """ ParserLister class for CYANA MR files.
     @author: Masashi Yokochi
 """

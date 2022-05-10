@@ -55,11 +55,11 @@ End:			E N D;
 Noe:			N O E;					// Noe { noe_statement } End
 
 // noe_statement
-Analysis:		A N A L Y? S? I? S -> pushMode(ANAL_MODE);	// = Noe_analysis
+Analysis:		A N A L Y? S? I? S? -> pushMode(ANAL_MODE);	// = Noe_analysis
 Assign:			A S S I G? N?;				// selection selection Real Real Real [ Or_op selection selection ... ]
 Asymptote:		A S Y M P? T? O? T? E?;			// Class_names Real
 Averaging:		A V E R A? G? I? N? G? -> pushMode(AVER_MODE);	// Class_names Noe_avr_methods
-Bgig:			B H I G;				// Class_names Real
+Bhig:			B H I G;				// Class_names Real
 Ceiling:		C E I L I? N? G?;			// = Real
 Classification:		C L A S S? I? F? I? C? A? T? I? O? N?;	// Class_name
 CountViol:		C O U N T? V? I? O? L?;			// Class_name
@@ -88,7 +88,7 @@ Taverage:		T A V E R? A? G? E?;			// Class_name Taverage_statement End
 Temperature:		T E M P E? R? A? T? U? R? E?;		// = Real
 
 // NOE analysis
-//Noe_analysis:		C U R R E? N? T | T A V E R? A? G? E? | R A V E R? A? G? E?;
+//Noe_analysis:		C U R R E? N? T? | T A V E R? A? G? E? | R A V E R? A? G? E?;
 
 Initialize:		I N I T I? A? L? I? Z? E?;
 Update:			U P D A T? E?;				// Gamma = Real Kappa = Real
@@ -306,8 +306,7 @@ Angle_or_Dihedral:	A N G L E? | D I H E D? R? A? L?;
 /* CNS: Flags - Syntax
  See alos https://nmr.cit.nih.gov/xplor-nih/xplorMan/node125.html (compatible with XPLOR-NIH)
 */
-Flags:			F L A G S?
-			-> pushMode(FLAG_MODE);			// Flags { flag_statement } End
+Flags:			F L A G S? -> pushMode(FLAG_MODE);	// Flags { flag_statement } End
 
 /* Atom selection - Syntax - identity/atom-selection
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
@@ -315,8 +314,7 @@ Flags:			F L A G S?
 All:			A L L;
 Around:			A R O U N? D?;				// Real (factor as subject)
 Atom:			A T O M;				// Segment_names Residue_numbers Atom_names
-Attribute:		A T T R I? B? U? T? E?
-			-> pushMode(ATTR_MODE);			// Abs? Attr_property Comparison_ops Real
+Attribute:		A T T R I? B? U? T? E? -> pushMode(ATTR_MODE);	// Abs? Attr_property Comparison_ops Real
 BondedTo:		B O N D E? D? T? O?;			// factor
 ByGroup:		B Y G R O? U? P?;			// factor
 ByRes:			B Y R E S?;				// factor
@@ -353,12 +351,9 @@ Tag:			T A G;
 */
 Vector:			V E C T O? R?;				// vector_mode vector_expression selection
 
-Do_Lp:			D O ' '* L_paren
-			-> pushMode(VECTOR_EXPR_MODE);
-Identify_Lp:		I D E N T? I? F? Y? ' '* L_paren
-			-> pushMode(VECTOR_EXPR_MODE);
-Show:			S H O W
-			-> pushMode(VECTOR_SHOW_MODE);		// Vector_show_property
+Do_Lp:			D O ' '* L_paren -> pushMode(VECTOR_EXPR_MODE);
+Identify_Lp:		I D E N T? I? F? Y? ' '* L_paren -> pushMode(VECTOR_EXPR_MODE);
+Show:			S H O W -> pushMode(VECTOR_SHOW_MODE);	// Vector_show_property
 
 /* Three-dimentional vectors - Syntax
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
@@ -417,6 +412,11 @@ L_paren:		'(';
 R_paren:		')';
 Colon:			':';
 Equ_op:			'=';
+Lt_op:			'<';
+Gt_op:			'>';
+Leq_op:			'<=';
+Geq_op:			'>=';
+Neq_op:			'#';
 
 SPACE:			[ \t\r\n]+ -> skip;
 COMMENT:		'{' (COMMENT | .)*? '}' -> channel(HIDDEN);
@@ -426,24 +426,16 @@ SET_VARIABLE:		Set ~[\r\n]* End -> channel(HIDDEN);
 
 mode ATTR_MODE; // Inside of Attribute tag
 
-Lt_op:			'<';
-Gt_op:			'>';
-Leq_op:			'<=';
-Geq_op:			'>=';
-Neq_op:			'#';
-
 // Attribute properties
 Abs:			A B S;
 Attr_properties:	(B | B C O M P? | C H A R G? E? | D X | D Y | D Z | F B E T A? | H A R M O? N? I? C? S? | M A S S | Q | Q C O M P? | R E F X | R E F Y | R E F Z | R M S D | V X | V Y | V Z | X | X C O M P? | Y | Y C O M P? | Z | Z C O M P? | S C A T T E R '_' A '1' | S C A T T E R '_' A '2' | S C A T T E R '_' A '3' | S C A T T E R '_' A '4' | S C A T T E R '_' B '1' | S C A T T E R '_' B '2' | S C A T T E R '_' B '3' | S C A T T E R '_' B '4' | S C A T T E R '_' C | S C A T T E R '_' F P | S C A T T E R '_' F D P);
-Comparison_ops:		(Equ_op | Lt_op | Gt_op | Leq_op | Geq_op | Neq_op)
-			-> popMode;
+Comparison_ops:		(Equ_op | Lt_op | Gt_op | Leq_op | Geq_op | Neq_op) -> popMode;
 
 SPACE_ATTR:		[ \t\r\n]+ -> skip;
 
 mode AVER_MODE; // Inside of Averaging tag
 
-Averaging_methods:	(R '-6' | R '-3' | S U M | C E N T E? R?)
-			-> popMode;
+Averaging_methods:	(R '-6' | R '-3' | S U M | C E N T E? R?) -> popMode;
 
 Simple_name_A:		SIMPLE_NAME;
 
@@ -451,8 +443,7 @@ mode POTE_MODE; // Inside of Potential tag
 
 Equ_op_P:		'=';
 
-Potential_types:	(B I H A R? M? O? N? I? C? | L O G N O? R? M? A? L? | S Q U A R? E? | S O F T S? Q? U? A? R? E? | S Y M M E? T? R? Y? | H I G H | '3' D P O | H A R M O? N? I? C? | M U L T I? P? L? E?)
-			-> popMode;
+Potential_types:	(B I H A R? M? O? N? I? C? | L O G N O? R? M? A? L? | S Q U A R? E? | S O F T S? Q? U? A? R? E? | S Y M M E? T? R? Y? | H I G H | '3' D P O | H A R M O? N? I? C? | M U L T I? P? L? E?) -> popMode;
 
 Simple_name_P:		SIMPLE_NAME;
 
@@ -460,8 +451,7 @@ SPACE_POTE:		[ \t\r\n]+ -> skip;
 
 mode ANAL_MODE; // Inside of Noe/Analysis tag
 
-Noe_analysis:		(C U R R E? N? T | T A V E R? A? G? E? | R A V E R? A? G? E?)
-			-> popMode;
+Noe_analysis:		(C U R R E? N? T? | T A V E R? A? G? E? | R A V E R? A? G? E?) -> popMode;
 
 SPACE_ANAL:		[ \t\r\n]+ -> skip;
 
@@ -470,8 +460,7 @@ mode FLAG_MODE; // Inside of flag statement
 Exclude:		E X C L U? D? E?;			// Class_name* | Any_class
 Include:		I N C L U? D? E?;			// Class_name*
 
-End_F:			E N D
-			-> popMode;
+End_F:			E N D -> popMode;
 
 Class_name:		SIMPLE_NAME;
 Any_class:		'*';

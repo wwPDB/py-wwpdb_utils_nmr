@@ -3,7 +3,7 @@
 # Date: 09-Feb-2022
 #
 # Updates:
-# Generated from CnsMRParser.g4 by ANTLR 4.9
+# Generated from CnsMRParser.g4 by ANTLR 4.10.1
 """ ParserLister class for CNS MR files.
     @author: Masashi Yokochi
 """

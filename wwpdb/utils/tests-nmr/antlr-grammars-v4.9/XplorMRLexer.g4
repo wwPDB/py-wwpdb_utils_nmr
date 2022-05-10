@@ -1,5 +1,5 @@
 /*
- XPLOR-NIH MR (Magnetic Restraint) lexer grammar for ANTLR v4.
+ XPLOR-NIH MR (Magnetic Restraint) lexer grammar for ANTLR v4.9
  Copyright 2022 Masashi Yokochi
 
 you may not use this file except in compliance with the License.
@@ -94,7 +94,7 @@ To:			T O;					// = selection
 // 3rd party software extensions for NOE assign clause
 Peak:			P E A K;				// = Integer
 Spectrum:		S P E C T R U M;			// = Integer
-//Weight:		W E I G H T; 				// = Real
+//Weight:		W E I G H T;				// = Real
 Volume:			V O L U M E;				// = Real
 Ppm1:			P P M '1';				// = Real
 Ppm2:			P P M '2';				// = Real
@@ -562,8 +562,7 @@ Acceptor:		A C C E? P? T? O? R?;
 /* XPLOR-NIH: Flags - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node125.html
 */
-Flags:			F L A G S?
-			-> pushMode(FLAG_MODE);			// Flags { flag_statement } End
+Flags:			F L A G S? -> pushMode(FLAG_MODE);	// Flags { flag_statement } End
 
 /* Atom selection - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node39.html
@@ -571,8 +570,7 @@ Flags:			F L A G S?
 All:			A L L;
 Around:			A R O U N? D?;				// Real (factor as subject)
 Atom:			A T O M;				// Segment_names Residue_numbers Atom_names
-Attribute:		A T T R I? B? U? T? E?
-			-> pushMode(ATTR_MODE);			// Abs? Attr_property Comparison_ops Real
+Attribute:		A T T R I? B? U? T? E? -> pushMode(ATTR_MODE);	// Abs? Attr_property Comparison_ops Real
 BondedTo:		B O N D E? D? T? O?;			// factor
 ByGroup:		B Y G R O? U? P?;			// factor
 ByRes:			B Y R E S?;				// factor
@@ -606,12 +604,9 @@ Tag:			T A G;
 */
 Vector:			V E C T O? R?;				// vector_mode vector_expression selection
 
-Do_Lp:			D O ' '* L_paren
-			-> pushMode(VECTOR_EXPR_MODE);
-Identify_Lp:		I D E N T? I? F? Y? ' '* L_paren
-			-> pushMode(VECTOR_EXPR_MODE);
-Show:			S H O W
-			-> pushMode(VECTOR_SHOW_MODE);		// Vector_show_property
+Do_Lp:			D O ' '* L_paren -> pushMode(VECTOR_EXPR_MODE);
+Identify_Lp:		I D E N T? I? F? Y? ' '* L_paren -> pushMode(VECTOR_EXPR_MODE);
+Show:			S H O W -> pushMode(VECTOR_SHOW_MODE);		// Vector_show_property
 
 /* Three-dimentional vectors - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node15.html
@@ -670,6 +665,11 @@ L_paren:		'(';
 R_paren:		')';
 Colon:			':';
 Equ_op:			'=';
+Lt_op:			'<';
+Gt_op:			'>';
+Leq_op:			'<=';
+Geq_op:			'>=';
+Neq_op:			'#';
 
 SPACE:			[ \t\r\n]+ -> skip;
 COMMENT:		'{' (COMMENT | .)*? '}' -> channel(HIDDEN);
@@ -679,24 +679,16 @@ SET_VARIABLE:		Set ~[\r\n]* End -> channel(HIDDEN);
 
 mode ATTR_MODE; // Inside of Attribute tag
 
-Lt_op:			'<';
-Gt_op:			'>';
-Leq_op:			'<=';
-Geq_op:			'>=';
-Neq_op:			'#';
-
 // Attribute properties
 Abs:			A B S;
 Attr_properties:	(B | B C O M P? | C H A R G? E? | D X | D Y | D Z | F B E T A? | H A R M O? N? I? C? S? | M A S S | Q | Q C O M P? | R E F X | R E F Y | R E F Z | R M S D | V X | V Y | V Z | X | X C O M P? | Y | Y C O M P? | Z | Z C O M P?);
-Comparison_ops:		(Equ_op | Lt_op | Gt_op | Leq_op | Geq_op | Neq_op)
-			-> popMode;
+Comparison_ops:		(Equ_op | Lt_op | Gt_op | Leq_op | Geq_op | Neq_op) -> popMode;
 
 SPACE_ATTR:		[ \t\r\n]+ -> skip;
 
 mode AVER_MODE; // Inside of Average tag
 
-Averaging_methods:	(R '-6' | R '-3' | S U M | C E N T E? R? | S U M D I? F? | A V E R A? G? E?)
-			-> popMode;
+Averaging_methods:	(R '-6' | R '-3' | S U M | C E N T E? R? | S U M D I? F? | A V E R A? G? E?) -> popMode;
 
 Simple_name_A:		SIMPLE_NAME;
 
@@ -706,8 +698,7 @@ mode POTE_MODE; // Inside of Potential tag
 
 Equ_op_P:		'=';
 
-Potential_types:	(B I H A R? M? O? N? I? C? | L O G N O? R? M? A? L? | S Q U A R? E? | S O F T S? Q? U? A? R? E? | S Y M M E? T? R? Y? | H I G H | '3' D P O | H A R M O? N? I? C?)
-			-> popMode;
+Potential_types:	(B I H A R? M? O? N? I? C? | L O G N O? R? M? A? L? | S Q U A R? E? | S O F T S? Q? U? A? R? E? | S Y M M E? T? R? Y? | H I G H | '3' D P O | H A R M O? N? I? C?) -> popMode;
 
 Simple_name_P:		SIMPLE_NAME;
 
@@ -737,8 +728,7 @@ mode FLAG_MODE; // Inside of flag statement
 Exclude:		E X C L U? D? E?;			// Class_name* | Any_class
 Include:		I N C L U? D? E?;			// Class_name*
 
-End_F:			E N D
-			-> popMode;
+End_F:			E N D -> popMode;
 
 Class_name:		SIMPLE_NAME;
 Any_class:		'*';

@@ -46,12 +46,12 @@ fragment X:		[xX];
 fragment Y:		[yY];
 fragment Z:		[zZ];
 
-END:			((Ampersand E N D) | '/') -> mode(DEFAULT_MODE);
+END:			(('&' E N D) | '/') -> mode(DEFAULT_MODE);
 
 /* Amber: NMR restraints - 29.1 Distance, angle and torsional restraints - Syntax
  See also https://ambermd.org/Manuals.php (Amber 2021 Reference Manual)
 */
-RST:			Ampersand R S T;
+RST:			'&' R S T;
 
 IAT:			I A T
 			-> pushMode(INT_ARRAY_MODE);		// = Integer [ , Integer ]*
@@ -188,7 +188,7 @@ ICONSTR:		I C O N S T R
 /* Amber: NMR restraints - 29.2. NOESY volume restraints - Syntax
  See also https://ambermd.org/Manuals.php (Amber 2021 Reference Manual)
 */
-NOEEXP:			Ampersand N O E E X P;
+NOEEXP:			'&' N O E E X P;
 
 NPEAK:			N P E A K
 			-> pushMode(INT_ARRAY_MODE);		// = IntArray
@@ -226,7 +226,7 @@ OSCALE:			O S C A L E
 /* Amber: NMR restraints - 29.3. Chemical shift restraints - Syntax
  See also https://ambermd.org/Manuals.php (Amber 2021 Reference Manual)
 */
-SHF:			Ampersand S H F;
+SHF:			'&' S H F;
 
 NRING:			N R I N G
 			-> pushMode(INT_PARAM_MODE);		// = Integer
@@ -259,7 +259,7 @@ CTER:			C T E R
 /* Amber: NMR restraints - 29.4. Psuedocontact shift restraints - Syntax
  See also https://ambermd.org/Manuals.php (Amber 2021 Reference Manual)
 */
-PCSHF:			Ampersand P C S H F;
+PCSHF:			'&' P C S H F;
 
 //NPROT:		N P R O T;				// = Integer
 NME:			N M E
@@ -292,7 +292,7 @@ MLTPRO:			M L T P R O
 /* Amber: NMR restraints - 29.5. Direct dipolar coupling restraints - Syntax
  See also https://ambermd.org/Manuals.php (Amber 2021 Reference Manual)
 */
-ALIGN:			Ampersand A L I G N;
+ALIGN:			'&' A L I G N;
 
 NDIP:			N D I P
 			-> pushMode(INT_PARAM_MODE);		// = Integer
@@ -339,7 +339,7 @@ FREEZEMOL:		F R E E Z E M O L;			// = Logical
 /* Amber: NMR restraints - 29.6. Residual CSA or pseudo-CSA restraints - Syntax
  See also https://ambermd.org/Manuals.php (Amber 2021 Reference Manual)
 */
-CSA:			Ampersand C S A;
+CSA:			'&' C S A;
 
 NCSA:			N C S A
 			-> pushMode(INT_PARAM_MODE);		// = Integer
@@ -380,7 +380,7 @@ CCUT:			C C U T
 			-> pushMode(REAL_PARAM_MODE);		// = Real
 
 Comma:			',' -> mode(DEFAULT_MODE);
-Ampersand:		'&';
+//Ampersand:		'&';
 
 COMMENT:		('#' | '!')+ -> mode(COMMENT_MODE);
 

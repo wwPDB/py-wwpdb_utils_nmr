@@ -7326,7 +7326,6 @@ class NmrDpUtility:
                         if lexer_err_listener.getErrorLineNumber()[0] > parser_err_listener.getErrorLineNumber()[0]:
                             corrected |= self.__extractUninterpretableLegacyMR(file_path, file_type,
                                                                                parser_err_listener.getErrorLineNumber()[0],
-                                                                               lexer_err_listener.getErrorLineNumber()[0],
                                                                                str(file_path), 0)
                             div_test = True
 
@@ -7445,7 +7444,6 @@ class NmrDpUtility:
                         if lexer_err_listener.getErrorLineNumber()[0] > parser_err_listener.getErrorLineNumber()[0]:
                             corrected |= self.__extractUninterpretableLegacyMR(file_path, file_type,
                                                                                parser_err_listener.getErrorLineNumber()[0],
-                                                                               lexer_err_listener.getErrorLineNumber()[0],
                                                                                str(file_path), 0)
                             div_test = True
 
@@ -7554,7 +7552,6 @@ class NmrDpUtility:
                         if lexer_err_listener.getErrorLineNumber()[0] > parser_err_listener.getErrorLineNumber()[0]:
                             corrected |= self.__extractUninterpretableLegacyMR(file_path, file_type,
                                                                                parser_err_listener.getErrorLineNumber()[0],
-                                                                               lexer_err_listener.getErrorLineNumber()[0],
                                                                                str(file_path), 0)
                             div_test = True
 
@@ -7660,7 +7657,6 @@ class NmrDpUtility:
                         if lexer_err_listener.getErrorLineNumber()[0] > parser_err_listener.getErrorLineNumber()[0]:
                             corrected |= self.__extractUninterpretableLegacyMR(file_path, file_type,
                                                                                parser_err_listener.getErrorLineNumber()[0],
-                                                                               lexer_err_listener.getErrorLineNumber()[0],
                                                                                str(file_path), 0)
                             div_test = True
 
@@ -7773,7 +7769,6 @@ class NmrDpUtility:
                         if lexer_err_listener.getErrorLineNumber()[0] > parser_err_listener.getErrorLineNumber()[0]:
                             corrected |= self.__extractUninterpretableLegacyMR(file_path, file_type,
                                                                                parser_err_listener.getErrorLineNumber()[0],
-                                                                               lexer_err_listener.getErrorLineNumber()[0],
                                                                                str(file_path), 0)
                             div_test = True
 
@@ -7889,7 +7884,6 @@ class NmrDpUtility:
                         if lexer_err_listener.getErrorLineNumber()[0] > parser_err_listener.getErrorLineNumber()[0]:
                             corrected |= self.__extractUninterpretableLegacyMR(file_path, file_type,
                                                                                parser_err_listener.getErrorLineNumber()[0],
-                                                                               lexer_err_listener.getErrorLineNumber()[0],
                                                                                str(file_path), 0)
                             div_test = True
 
@@ -8253,11 +8247,7 @@ class NmrDpUtility:
             mr_format_name = 'CYANA'
         elif file_type == 'nm-res-ros':
             mr_format_name = 'ROSETTA'
-        elif file_type == 'nm-res-mr':
-            mr_format_name = 'MR'
-            return False
         else:
-            mr_format_name = 'other'
             return False
 
         err_message = err_desc['message']
@@ -8269,6 +8259,7 @@ class NmrDpUtility:
         src_basename = os.path.splitext(file_path)[0]
         div_src = 'div_dst' in src_basename
         div_src_file = src_basename + '-div_src.mr'
+        div_ext_file = src_basename + '-div_ext.mr'
         div_try_file = src_basename + '-div_try.mr'
         div_dst_file = src_basename + '-div_dst.mr'
 
@@ -8387,7 +8378,14 @@ class NmrDpUtility:
         len_valid_types = len(valid_types)
         len_possible_types = len(possible_types)
 
-        if (len_valid_types == 0 and len_possible_types == 0) or len_possible_types > 0:
+        if len_valid_types == 0 and len_possible_types == 0:
+            if div_src:
+                os.remove(file_path)
+            os.rename(div_try_file, div_ext_file)
+
+            return False
+
+        if len_possible_types > 0:
             os.remove(div_src_file)
             os.remove(div_try_file)
 
@@ -8407,7 +8405,7 @@ class NmrDpUtility:
 
         return True
 
-    def __extractUninterpretableLegacyMR(self, file_path, file_type, err_line_number_1, err_line_number_2, src_path, offset):
+    def __extractUninterpretableLegacyMR(self, file_path, file_type, err_line_number, src_path, offset):
         """ Extract uninterpretable legacy NMR restraints if necessary.
         """
 
@@ -8416,19 +8414,29 @@ class NmrDpUtility:
 
         if file_type == 'nm-res-xpl':
             mr_format_name = 'XPLOR-NIH'
+            reader = XplorMRReader(False, self.__lfh, None, None, None,
+                                   self.__ccU, self.__csStat, self.__nefT)
         elif file_type == 'nm-res-cns':
             mr_format_name = 'CNS'
-        elif file_type in ('nm-res-amb', 'nm-aux-amb'):
+            reader = CnsMRReader(False, self.__lfh, None, None, None,
+                                 self.__ccU, self.__csStat, self.__nefT)
+        elif file_type == 'nm-res-amb':
             mr_format_name = 'AMBER'
+            reader = AmberMRReader(self.__verbose, self.__lfh, None, None, None,
+                                   self.__ccU, self.__csStat, self.__nefT)
+        elif file_type == 'nm-aux-amb':
+            mr_format_name = 'AMBER'
+            reader = AmberPTReader(self.__verbose, self.__lfh, None, None, None,
+                                   self.__ccU, self.__csStat)
         elif file_type == 'nm-res-cya':
             mr_format_name = 'CYANA'
+            reader = CyanaMRReader(self.__verbose, self.__lfh, None, None, None,
+                                   self.__ccU, self.__csStat, self.__nefT)
         elif file_type == 'nm-res-ros':
             mr_format_name = 'ROSETTA'
-        elif file_type == 'nm-res-mr':
-            mr_format_name = 'MR'
-            return False
+            reader = RosettaMRReader(self.__verbose, self.__lfh, None, None, None,
+                                     self.__ccU, self.__csStat, self.__nefT)
         else:
-            mr_format_name = 'other'
             return False
 
         src_basename = os.path.splitext(file_path)[0]
@@ -8449,33 +8457,15 @@ class NmrDpUtility:
                 open(div_try_file, 'w') as ofp3:
             for line in ifp:
                 i += 1
-                if i < err_line_number_1:
+                if i < err_line_number:
                     ofp.write(line)
                     j += 1
                     continue
-                if i < err_line_number_2:
-                    ofp2.write(line)
-                    j2 += 1
-                    continue
                 if not checked:
-                    if file_type == 'nm-res-xpl':
-                        reader = XplorMRReader(False, self.__lfh, None, None, None,
-                                               self.__ccU, self.__csStat, self.__nefT)
-                    elif file_type == 'nm-res-cns':
-                        reader = CnsMRReader(False, self.__lfh, None, None, None,
-                                             self.__ccU, self.__csStat, self.__nefT)
-                    elif file_type == 'nm-res-amb':
-                        reader = AmberMRReader(self.__verbose, self.__lfh, None, None, None,
-                                               self.__ccU, self.__csStat, self.__nefT)
-                    elif file_type == 'nm-aux-amb':
-                        reader = AmberPTReader(self.__verbose, self.__lfh, None, None, None,
-                                               self.__ccU, self.__csStat)
-                    elif file_type == 'nm-res-cya':
-                        reader = CyanaMRReader(self.__verbose, self.__lfh, None, None, None,
-                                               self.__ccU, self.__csStat, self.__nefT)
-                    elif file_type == 'nm-res-ros':
-                        reader = RosettaMRReader(self.__verbose, self.__lfh, None, None, None,
-                                                 self.__ccU, self.__csStat, self.__nefT)
+                    if ws_pattern.match(line):
+                        ofp2.write(line)
+                        j2 += 1
+                        continue
                     _, parser_err_listener, lexer_err_listener = reader.parse(line, None, isFilePath=False)
                     if lexer_err_listener is None or lexer_err_listener.getMessageList() is not None:
                         ofp2.write(line)
@@ -8499,7 +8489,6 @@ class NmrDpUtility:
         offset += j + j2
 
         if j3 == 0:
-
             if div_src:
                 os.remove(file_path)
             if os.path.exists(div_try_file):
@@ -8514,7 +8503,18 @@ class NmrDpUtility:
         len_valid_types = len(valid_types)
         len_possible_types = len(possible_types)
 
-        if (len_valid_types == 0 and len_possible_types == 0) or len_possible_types > 0:
+        if len_valid_types == 0 and len_possible_types == 0:
+            if div_src:
+                os.remove(file_path)
+            with open(div_try_file, 'r') as ifp,\
+                    open(div_ext_file, 'a') as ofp:
+                for line in ifp:
+                    ofp.write(line)
+            os.remove(div_try_file)
+
+            return False
+
+        if len_possible_types > 0:
             os.remove(div_src_file)
             os.remove(div_ext_file)
             os.remove(div_try_file)
@@ -8597,7 +8597,6 @@ class NmrDpUtility:
                 if lexer_err_listener.getErrorLineNumber()[0] > parser_err_listener.getErrorLineNumber()[0]:
                     self.__extractUninterpretableLegacyMR(file_path, file_type,
                                                           parser_err_listener.getErrorLineNumber()[0],
-                                                          lexer_err_listener.getErrorLineNumber()[0],
                                                           src_path, offset)
                     div_test = True
 
@@ -8659,7 +8658,7 @@ class NmrDpUtility:
 
             checked = False
             err = ''
-            valid_types = []
+            valid_types = {}
             possible_types = {}
 
             if (not checked or multiple_check) and file_type != 'nm-res-cns':
@@ -8723,7 +8722,7 @@ class NmrDpUtility:
                             err = ''
 
                         if checked:
-                            valid_types.append(_mr_format_type)
+                            valid_types[_mr_format_type] = len(_content_subtype)
                         else:
                             possible_types[_mr_format_type] = len(_content_subtype)
 
@@ -8796,7 +8795,7 @@ class NmrDpUtility:
                             err = ''
 
                         if checked:
-                            valid_types.append(_mr_format_type)
+                            valid_types[_mr_format_type] = len(_content_subtype)
                         else:
                             possible_types[_mr_format_type] = len(_content_subtype)
 
@@ -8869,7 +8868,7 @@ class NmrDpUtility:
                             err = ''
 
                         if checked:
-                            valid_types.append(_mr_format_type)
+                            valid_types[_mr_format_type] = len(_content_subtype)
                         else:
                             possible_types[_mr_format_type] = len(_content_subtype)
 
@@ -8941,7 +8940,7 @@ class NmrDpUtility:
                             err = ''
 
                         if checked:
-                            valid_types.append(_mr_format_type)
+                            valid_types[_mr_format_type] = len(_content_subtype)
                         else:
                             possible_types[_mr_format_type] = len(_content_subtype)
 
@@ -9014,7 +9013,7 @@ class NmrDpUtility:
                             err = ''
 
                         if checked:
-                            valid_types.append(_mr_format_type)
+                            valid_types[_mr_format_type] = len(_content_subtype)
                         else:
                             possible_types[_mr_format_type] = len(_content_subtype)
 
@@ -9089,7 +9088,7 @@ class NmrDpUtility:
                             err = ''
 
                         if checked:
-                            valid_types.append(_mr_format_type)
+                            valid_types[_mr_format_type] = len(_content_subtype)
                         else:
                             possible_types[_mr_format_type] = len(_content_subtype)
 
@@ -9104,7 +9103,10 @@ class NmrDpUtility:
         except ValueError:
             pass
 
-        return checked, err, valid_types, sorted(possible_types.items(), key=lambda x: x[1], reverse=True)
+        _valid_types = [k for k, v in sorted(valid_types.items(), key=lambda x: x[1], reverse=True)]
+        _possible_types = [k for k, v in sorted(possible_types.items(), key=lambda x: x[1], reverse=True)]
+
+        return checked, err, _valid_types, _possible_types
 
     def __extractPublicMRFileIntoLegacyMR(self):
         """ Extract/split public MR file into legacy NMR restraint files for NMR restraint remediation.
@@ -9654,7 +9656,7 @@ class NmrDpUtility:
                         self.__lfh.write(f"The NMR restraint file {file_name!r} (MR format) can be {possible_types}.\n")
 
                         _ar['file_name'] = dst_file
-                        _ar['file_type'] = list(possible_types.keys())[0]
+                        _ar['file_type'] = possible_types[0]
                         splitted.append(_ar)
 
                         err = f"The NMR restraint file {file_name!r} (MR format) can be {possible_types}. "\

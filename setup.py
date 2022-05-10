@@ -49,7 +49,7 @@ setup(
                       'mmcif', 'numpy', "scikit-learn",
                       "rmsd", "packaging", "chardet",
                       "antlr4-python2-runtime; python_version == '2.7'",
-                      "antlr4-python3-runtime ~= 4.9.3; python_version >= '3'"],
+                      "antlr4-python3-runtime ~= 4.10.0; python_version >= '3'"],
     packages=find_packages(exclude=['wwpdb.utils.tests-nmr', 'wwpdb.utils.tests-nmr-tox', 'mock-data']),
     # Enables Manifest to be used
     include_package_data=True,

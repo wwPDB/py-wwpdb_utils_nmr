@@ -8048,13 +8048,14 @@ class NmrDpUtility:
                                    'topology': 1 if has_topology else 0}
 
             if not is_aux_amb and not has_chem_shift and not has_dist_restraint and not has_dihed_restraint and not has_rdc_restraint\
-               and not has_plane_restraint and not has_hbond_restraint and valid and len(concat_nmr_restraint_names(content_subtype)) == 0:
+               and not has_plane_restraint and not has_hbond_restraint and valid:
 
                 hint = ""
-                if file_type in ('nm-res-xpl', 'nm-res-cns') and not has_rdc_origins:
-                    hint = 'assign ( segid $ and resid # and name $ ) ( segid $ and resid # and name $ ) #.# #.# #.#'
-                elif file_type == 'nm-res-amb':
-                    hint = '&rst iat=#[,#], r1=#.#, r2=#.#, r3=#.#, r4=#.#, [igr1=#[,#],] [igr2=#[,#],] &end'
+                if len(concat_nmr_restraint_names(content_subtype)) == 0:
+                    if file_type in ('nm-res-xpl', 'nm-res-cns') and not has_rdc_origins:
+                        hint = 'assign ( segid $ and resid # and name $ ) ( segid $ and resid # and name $ ) #.# #.# #.#'
+                    elif file_type == 'nm-res-amb':
+                        hint = '&rst iat=#[,#], r1=#.#, r2=#.#, r3=#.#, r4=#.#, [igr1=#[,#],] [igr2=#[,#],] &end'
 
                 if len(hint) > 0:
                     hint = f" Tips for {mr_format_name} restraints: {hint!r} pattern must be present in the file."

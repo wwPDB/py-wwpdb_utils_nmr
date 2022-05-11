@@ -1527,9 +1527,9 @@ class RosettaMRParserListener(ParseTreeListener):
     def exitFunc_type_def(self, ctx: RosettaMRParser.Func_type_defContext):
         """
         (CIRCULARHARMONIC | HARMONIC | SIGMOID | SQUARE_WELL) Float Float |
-        BOUNDED Float Float Float Float? Simple_name? |
-        PERIODICBOUNDED Float Float Float Float Float? Simple_name? |
-        OFFSETPERIODICBOUNDED Float Float Float Float Float Float? Simple_name? |
+        BOUNDED Float Float Float Float? Simple_name* |
+        PERIODICBOUNDED Float Float Float Float Float? Simple_name* |
+        OFFSETPERIODICBOUNDED Float Float Float Float Float Float? Simple_name* |
         (AMBERPERIODIC | CHARMMPERIODIC | FLAT_HARMONIC | TOPOUT) Float Float Float |
         (CIRCULARSIGMOIDAL | LINEAR_PENALTY) Float Float Float Float |
         CIRCULARSPLINE Float+ |

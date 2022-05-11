@@ -128,9 +128,9 @@ any_restraint:
 */
 func_type_def:
 	(CIRCULARHARMONIC | HARMONIC | SIGMOID | SQUARE_WELL) number_f number_f |
-	BOUNDED number_f number_f number_f number_f? Simple_name? |
-	PERIODICBOUNDED number_f number_f number_f number_f number_f? Simple_name? |
-	OFFSETPERIODICBOUNDED number_f number_f number_f number_f number_f number_f? Simple_name? |
+	BOUNDED number_f number_f number_f number_f? Simple_name* |
+	PERIODICBOUNDED number_f number_f number_f number_f number_f? Simple_name* |
+	OFFSETPERIODICBOUNDED number_f number_f number_f number_f number_f number_f? Simple_name* |
 	(AMBERPERIODIC | CHARMMPERIODIC | FLAT_HARMONIC | TOPOUT) number_f number_f number_f |
 	(CIRCULARSIGMOIDAL | LINEAR_PENALTY) number_f number_f number_f number_f |
 	CIRCULARSPLINE number_f+ |

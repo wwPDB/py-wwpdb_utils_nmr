@@ -1088,6 +1088,8 @@ class NmrDpUtility:
         self.__sf_name_corr = []
 
         self.__original_error_message = []
+        self.__divide_mr_error_message = []
+        self.__peel_mr_error_message = []
 
         self.__sf_category_list = []
         self.__lp_category_list = []
@@ -7325,9 +7327,9 @@ class NmrDpUtility:
                     if has_lexer_error and has_parser_error and has_content:
                         # parser error occurrs before occurrenece of lexer error that implies mixing of different MR formats in a file
                         if lexer_err_listener.getErrorLineNumber()[0] > parser_err_listener.getErrorLineNumber()[0]:
-                            corrected |= self.__extractUninterpretableLegacyMR(file_path, file_type,
-                                                                               parser_err_listener.getErrorLineNumber()[0],
-                                                                               str(file_path), 0)
+                            corrected |= self.__peelLegacyMRIfNecessary(file_path, file_type,
+                                                                        parser_err_listener.getErrorLineNumber()[0],
+                                                                        str(file_path), 0)
                             div_test = True
 
                     if has_lexer_error:
@@ -7443,9 +7445,9 @@ class NmrDpUtility:
                     if has_lexer_error and has_parser_error and has_content:
                         # parser error occurrs before occurrenece of lexer error that implies mixing of different MR formats in a file
                         if lexer_err_listener.getErrorLineNumber()[0] > parser_err_listener.getErrorLineNumber()[0]:
-                            corrected |= self.__extractUninterpretableLegacyMR(file_path, file_type,
-                                                                               parser_err_listener.getErrorLineNumber()[0],
-                                                                               str(file_path), 0)
+                            corrected |= self.__peelLegacyMRIfNecessary(file_path, file_type,
+                                                                        parser_err_listener.getErrorLineNumber()[0],
+                                                                        str(file_path), 0)
                             div_test = True
 
                     if has_lexer_error:
@@ -7551,9 +7553,9 @@ class NmrDpUtility:
                     if has_lexer_error and has_parser_error and has_content:
                         # parser error occurrs before occurrenece of lexer error that implies mixing of different MR formats in a file
                         if lexer_err_listener.getErrorLineNumber()[0] > parser_err_listener.getErrorLineNumber()[0]:
-                            corrected |= self.__extractUninterpretableLegacyMR(file_path, file_type,
-                                                                               parser_err_listener.getErrorLineNumber()[0],
-                                                                               str(file_path), 0)
+                            corrected |= self.__peelLegacyMRIfNecessary(file_path, file_type,
+                                                                        parser_err_listener.getErrorLineNumber()[0],
+                                                                        str(file_path), 0)
                             div_test = True
 
                     if has_lexer_error:
@@ -7656,9 +7658,9 @@ class NmrDpUtility:
                     if has_lexer_error and has_parser_error and has_content:
                         # parser error occurrs before occurrenece of lexer error that implies mixing of different MR formats in a file
                         if lexer_err_listener.getErrorLineNumber()[0] > parser_err_listener.getErrorLineNumber()[0]:
-                            corrected |= self.__extractUninterpretableLegacyMR(file_path, file_type,
-                                                                               parser_err_listener.getErrorLineNumber()[0],
-                                                                               str(file_path), 0)
+                            corrected |= self.__peelLegacyMRIfNecessary(file_path, file_type,
+                                                                        parser_err_listener.getErrorLineNumber()[0],
+                                                                        str(file_path), 0)
                             div_test = True
 
                     if has_lexer_error:
@@ -7768,9 +7770,9 @@ class NmrDpUtility:
                     if has_lexer_error and has_parser_error and has_content:
                         # parser error occurrs before occurrenece of lexer error that implies mixing of different MR formats in a file
                         if lexer_err_listener.getErrorLineNumber()[0] > parser_err_listener.getErrorLineNumber()[0]:
-                            corrected |= self.__extractUninterpretableLegacyMR(file_path, file_type,
-                                                                               parser_err_listener.getErrorLineNumber()[0],
-                                                                               str(file_path), 0)
+                            corrected |= self.__peelLegacyMRIfNecessary(file_path, file_type,
+                                                                        parser_err_listener.getErrorLineNumber()[0],
+                                                                        str(file_path), 0)
                             div_test = True
 
                     if has_lexer_error:
@@ -7883,9 +7885,9 @@ class NmrDpUtility:
                     if has_lexer_error and has_parser_error and has_content:
                         # parser error occurrs before occurrenece of lexer error that implies mixing of different MR formats in a file
                         if lexer_err_listener.getErrorLineNumber()[0] > parser_err_listener.getErrorLineNumber()[0]:
-                            corrected |= self.__extractUninterpretableLegacyMR(file_path, file_type,
-                                                                               parser_err_listener.getErrorLineNumber()[0],
-                                                                               str(file_path), 0)
+                            corrected |= self.__peelLegacyMRIfNecessary(file_path, file_type,
+                                                                        parser_err_listener.getErrorLineNumber()[0],
+                                                                        str(file_path), 0)
                             div_test = True
 
                     if has_lexer_error:
@@ -8240,6 +8242,24 @@ class NmrDpUtility:
         if not self.__remediation_mode:
             return False
 
+        src_basename = os.path.splitext(file_path)[0]
+        div_src = 'div_dst' in src_basename
+        div_src_file = src_basename + '-div_src.mr'
+        div_ext_file = src_basename + '-div_ext.mr'
+        div_try_file = src_basename + '-div_try.mr'
+        div_dst_file = src_basename + '-div_dst.mr'
+
+        if err_desc in self.__divide_mr_error_message:
+            if os.path.exists(div_src_file):
+                os.remove(div_src_file)
+            if os.path.exists(div_dst_file):
+                os.remove(div_dst_file)
+            if os.path.exists(div_ext_file):
+                os.remove(div_ext_file)
+            return False
+
+        self.__divide_mr_error_message.append(err_desc)
+
         if file_type == 'nm-res-xpl':
             mr_format_name = 'XPLOR-NIH'
         elif file_type == 'nm-res-cns':
@@ -8258,13 +8278,6 @@ class NmrDpUtility:
 
         xplor_missing_end_at_eof = err_message == xplor_missing_end_at_eof_err_msg
         xplor_ends_wo_statement = bool(xplor_extra_end_err_msg_pattern.match(err_message))
-
-        src_basename = os.path.splitext(file_path)[0]
-        div_src = 'div_dst' in src_basename
-        div_src_file = src_basename + '-div_src.mr'
-        div_ext_file = src_basename + '-div_ext.mr'
-        div_try_file = src_basename + '-div_try.mr'
-        div_dst_file = src_basename + '-div_dst.mr'
 
         i = j = 0
 
@@ -8421,12 +8434,32 @@ class NmrDpUtility:
 
         return True
 
-    def __extractUninterpretableLegacyMR(self, file_path, file_type, err_line_number, src_path, offset):
-        """ Extract uninterpretable legacy NMR restraints if necessary.
+    def __peelLegacyMRIfNecessary(self, file_path, file_type, err_line_number, src_path, offset):
+        """ Peel uninterpretable restraints from the legacy NMR file if necessary.
         """
 
         if not self.__remediation_mode:
             return False
+
+        src_basename = os.path.splitext(file_path)[0]
+        div_src = 'div_dst' in src_basename
+        div_src_file = src_basename + '-div_src.mr'
+        div_ext_file = src_basename + '-div_ext.mr'
+        div_try_file = src_basename + '-div_try.mr'
+        div_dst_file = src_basename + '-div_dst.mr'
+
+        err_desc = {'file_path': file_path, 'line_number': err_line_number}
+
+        if err_desc in self.__peel_mr_error_message:
+            if os.path.exists(div_src_file):
+                os.remove(div_src_file)
+            if os.path.exists(div_dst_file):
+                os.remove(div_dst_file)
+            if os.path.exists(div_ext_file):
+                os.remove(div_ext_file)
+            return False
+
+        self.__peel_mr_error_message.append(err_desc)
 
         if file_type == 'nm-res-xpl':
             mr_format_name = 'XPLOR-NIH'
@@ -8454,13 +8487,6 @@ class NmrDpUtility:
                                      self.__ccU, self.__csStat, self.__nefT)
         else:
             return False
-
-        src_basename = os.path.splitext(file_path)[0]
-        div_src = 'div_dst' in src_basename
-        div_src_file = src_basename + '-div_src.mr'
-        div_ext_file = src_basename + '-div_ext.mr'
-        div_try_file = src_basename + '-div_try.mr'
-        div_dst_file = src_basename + '-div_dst.mr'
 
         i = j = j2 = j3 = 0
 
@@ -8612,9 +8638,9 @@ class NmrDpUtility:
             if has_lexer_error and has_parser_error and has_content:
                 # parser error occurrs before occurrenece of lexer error that implies mixing of different MR formats in a file
                 if lexer_err_listener.getErrorLineNumber()[0] > parser_err_listener.getErrorLineNumber()[0]:
-                    self.__extractUninterpretableLegacyMR(file_path, file_type,
-                                                          parser_err_listener.getErrorLineNumber()[0],
-                                                          src_path, offset)
+                    self.__peelLegacyMRIfNecessary(file_path, file_type,
+                                                   parser_err_listener.getErrorLineNumber()[0],
+                                                   src_path, offset)
                     div_test = True
 
             if has_lexer_error:

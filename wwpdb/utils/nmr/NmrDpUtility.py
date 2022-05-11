@@ -8288,41 +8288,43 @@ class NmrDpUtility:
         err_line_number = err_desc['line_number']
         err_column_position = err_desc['column_position']
 
-        if err_column_position > 0 and 'input' in err_desc and not err_desc['input'][0:err_column_position].isspace():
-            test_line = err_desc['input'][0:err_column_position]
-
-            if file_type == 'nm-res-xpl':
-                reader = XplorMRReader(False, self.__lfh, None, None, None,
-                                       self.__ccU, self.__csStat, self.__nefT)
-            elif file_type == 'nm-res-cns':
-                reader = CnsMRReader(False, self.__lfh, None, None, None,
-                                     self.__ccU, self.__csStat, self.__nefT)
-            elif file_type == 'nm-res-amb':
-                reader = AmberMRReader(self.__verbose, self.__lfh, None, None, None,
-                                       self.__ccU, self.__csStat, self.__nefT)
-            elif file_type == 'nm-aux-amb':
-                reader = AmberPTReader(self.__verbose, self.__lfh, None, None, None,
-                                       self.__ccU, self.__csStat)
-            elif file_type == 'nm-res-cya':
-                reader = CyanaMRReader(self.__verbose, self.__lfh, None, None, None,
-                                       self.__ccU, self.__csStat, self.__nefT)
-            elif file_type == 'nm-res-ros':
-                reader = RosettaMRReader(self.__verbose, self.__lfh, None, None, None,
-                                         self.__ccU, self.__csStat, self.__nefT)
-
-            _, parser_err_listener, lexer_err_listener = reader.parse(test_line, None, isFilePath=False)
-
-            has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
-            has_parser_error = parser_err_listener is not None and parser_err_listener.getMessageList() is not None
-
-            if not has_lexer_error and not has_parser_error:
-                return self.__divideLegacyMR(file_path, file_type, err_desc, src_path, offset)
-
         xplor_missing_end_at_eof = err_message == xplor_missing_end_at_eof_err_msg
         xplor_ends_wo_statement = bool(xplor_extra_end_err_msg_pattern.match(err_message))
 
         amber_missing_end_at_eof = err_message == amber_missing_end_at_eof_err_msg
         amber_ends_wo_statement = bool(amber_extra_end_err_msg_pattern.match(err_message))
+
+        if not(xplor_ends_wo_statement or amber_ends_wo_statement):
+
+            if err_column_position > 0 and 'input' in err_desc and not err_desc['input'][0:err_column_position].isspace():
+                test_line = err_desc['input'][0:err_column_position]
+
+                if file_type == 'nm-res-xpl':
+                    reader = XplorMRReader(False, self.__lfh, None, None, None,
+                                           self.__ccU, self.__csStat, self.__nefT)
+                elif file_type == 'nm-res-cns':
+                    reader = CnsMRReader(False, self.__lfh, None, None, None,
+                                         self.__ccU, self.__csStat, self.__nefT)
+                elif file_type == 'nm-res-amb':
+                    reader = AmberMRReader(self.__verbose, self.__lfh, None, None, None,
+                                           self.__ccU, self.__csStat, self.__nefT)
+                elif file_type == 'nm-aux-amb':
+                    reader = AmberPTReader(self.__verbose, self.__lfh, None, None, None,
+                                           self.__ccU, self.__csStat)
+                elif file_type == 'nm-res-cya':
+                    reader = CyanaMRReader(self.__verbose, self.__lfh, None, None, None,
+                                           self.__ccU, self.__csStat, self.__nefT)
+                elif file_type == 'nm-res-ros':
+                    reader = RosettaMRReader(self.__verbose, self.__lfh, None, None, None,
+                                             self.__ccU, self.__csStat, self.__nefT)
+
+                _, parser_err_listener, lexer_err_listener = reader.parse(test_line, None, isFilePath=False)
+
+                has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
+                has_parser_error = parser_err_listener is not None and parser_err_listener.getMessageList() is not None
+
+                if not has_lexer_error and not has_parser_error:
+                    return self.__divideLegacyMR(file_path, file_type, err_desc, src_path, offset)
 
         i = j = 0
 

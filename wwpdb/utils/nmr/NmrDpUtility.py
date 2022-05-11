@@ -318,6 +318,7 @@ loop_pattern = re.compile(r'\s*loop_\s*')
 stop_pattern = re.compile(r'\s*stop_\s*')
 cif_stop_pattern = re.compile(r'#\s*')
 ws_pattern = re.compile(r'\s+')
+comment_pattern = re.compile(r'[#!].*')
 
 category_pattern = re.compile(r'\s*_(\S*)\..*\s*')
 tagvalue_pattern = re.compile(r'\s*_(\S*)\.(\S*)\s+(.*)\s*')
@@ -8267,12 +8268,19 @@ class NmrDpUtility:
 
         i = j = 0
 
+        ws_or_comment = True
+
         with open(file_path, 'r') as ifp,\
                 open(div_src_file, 'w') as ofp,\
                 open(div_try_file, 'w') as ofp2:
             for line in ifp:
                 i += 1
                 if i < err_line_number:
+                    if ws_or_comment:
+                        if ws_pattern.match(line) or comment_pattern.match(line):
+                            pass
+                        else:
+                            ws_or_comment = False
                     ofp.write(line)
                     j += 1
                     continue
@@ -8373,6 +8381,12 @@ class NmrDpUtility:
 
             return corrected
 
+        if ws_or_comment:
+            os.remove(div_src_file)
+            os.remove(div_try_file)
+
+            return False
+
         file_name = os.path.basename(div_try_file)
 
         _, _, valid_types, possible_types = self.__detectOtherPossibleFormatAsErrorOfLegacyMR(div_try_file, file_name, 'nm-res-mr', [], True)
@@ -8450,8 +8464,8 @@ class NmrDpUtility:
 
         i = j = j2 = j3 = 0
 
-        checked = False
-        ws_cont = True
+        is_valid = False
+        ws_or_comment = True
 
         with open(file_path, 'r') as ifp,\
                 open(div_src_file, 'w') as ofp,\
@@ -8463,8 +8477,8 @@ class NmrDpUtility:
                     ofp.write(line)
                     j += 1
                     continue
-                if not checked:
-                    if ws_pattern.match(line):
+                if not is_valid:
+                    if ws_pattern.match(line) or comment_pattern.match(line):
                         ofp2.write(line)
                         j2 += 1
                         continue
@@ -8479,12 +8493,13 @@ class NmrDpUtility:
                             ofp2.write(line)
                             j2 += 1
                             continue
-                    checked = True
-                if ws_cont and ws_pattern.match(line):
-                    ofp2.write(line)
-                    j2 += 1
-                    continue
-                ws_cont = False
+                    is_valid = True
+                if ws_or_comment:
+                    if ws_pattern.match(line) or comment_pattern.match(line):
+                        ofp2.write(line)
+                        j2 += 1
+                        continue
+                ws_or_comment = False
                 ofp3.write(line)
                 j3 += 1
 
@@ -8658,12 +8673,12 @@ class NmrDpUtility:
 
         try:
 
-            checked = False
+            is_valid = False
             err = ''
             valid_types = {}
             possible_types = {}
 
-            if (not checked or multiple_check) and file_type != 'nm-res-cns':
+            if (not is_valid or multiple_check) and file_type != 'nm-res-cns':
 
                 reader = CnsMRReader(False, self.__lfh, None, None, None,
                                      self.__ccU, self.__csStat, self.__nefT)
@@ -8677,7 +8692,7 @@ class NmrDpUtility:
                 if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
                    and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None) or has_content):
 
-                    checked = True
+                    is_valid = True
 
                     _mr_format_name = 'CNS'
                     _mr_format_type = 'nm-res-cns'
@@ -8720,10 +8735,10 @@ class NmrDpUtility:
                         if len(_err) > 0:
                             err += f"\nEven assuming that the format is the {_mr_format_name!r}, the following issues need to be fixed.\n" + _err[:-1]
                         elif file_type != 'nm-res-oth' and (lexer_err_listener.getMessageList() is not None or parser_err_listener.getMessageList() is not None):
-                            checked = False
+                            is_valid = False
                             err = ''
 
-                        if checked:
+                        if is_valid:
                             valid_types[_mr_format_type] = len(_content_subtype)
                         else:
                             possible_types[_mr_format_type] = len(_content_subtype)
@@ -8736,7 +8751,7 @@ class NmrDpUtility:
                         if self.__verbose:
                             self.__lfh.write(f"+NmrDpUtility.__detectOtherPossibleFormatAsErrorOfLegacyMR() ++ Error  - {err}\n")
 
-            if (not checked or multiple_check) and file_type != 'nm-res-xpl':
+            if (not is_valid or multiple_check) and file_type != 'nm-res-xpl':
 
                 reader = XplorMRReader(False, self.__lfh, None, None, None,
                                        self.__ccU, self.__csStat, self.__nefT)
@@ -8750,7 +8765,7 @@ class NmrDpUtility:
                 if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
                    and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None) or has_content):
 
-                    checked = True
+                    is_valid = True
 
                     _mr_format_name = 'XPLOR-NIH'
                     _mr_format_type = 'nm-res-xpl'
@@ -8793,10 +8808,10 @@ class NmrDpUtility:
                         if len(_err) > 0:
                             err += f"\nEven assuming that the format is the {_mr_format_name!r}, the following issues need to be fixed.\n" + _err[:-1]
                         elif file_type != 'nm-res-oth' and (lexer_err_listener.getMessageList() is not None or parser_err_listener.getMessageList() is not None):
-                            checked = False
+                            is_valid = False
                             err = ''
 
-                        if checked:
+                        if is_valid:
                             valid_types[_mr_format_type] = len(_content_subtype)
                         else:
                             possible_types[_mr_format_type] = len(_content_subtype)
@@ -8809,7 +8824,7 @@ class NmrDpUtility:
                         if self.__verbose:
                             self.__lfh.write(f"+NmrDpUtility.__detectOtherPossibleFormatAsErrorOfLegacyMR() ++ Error  - {err}\n")
 
-            if (not checked or multiple_check) and file_type != 'nm-res-amb':
+            if (not is_valid or multiple_check) and file_type != 'nm-res-amb':
 
                 reader = AmberMRReader(False, self.__lfh, None, None, None,
                                        self.__ccU, self.__csStat, self.__nefT)
@@ -8823,7 +8838,7 @@ class NmrDpUtility:
                 if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
                    and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None) or has_content):
 
-                    checked = True
+                    is_valid = True
 
                     _mr_format_name = 'AMBER'
                     _mr_format_type = 'nm-res-amb'
@@ -8866,10 +8881,10 @@ class NmrDpUtility:
                         if len(_err) > 0:
                             err += f"\nEven assuming that the format is the {_mr_format_name!r}, the following issues need to be fixed.\n" + _err[:-1]
                         elif file_type != 'nm-res-oth' and (lexer_err_listener.getMessageList() is not None or parser_err_listener.getMessageList() is not None):
-                            checked = False
+                            is_valid = False
                             err = ''
 
-                        if checked:
+                        if is_valid:
                             valid_types[_mr_format_type] = len(_content_subtype)
                         else:
                             possible_types[_mr_format_type] = len(_content_subtype)
@@ -8882,7 +8897,7 @@ class NmrDpUtility:
                         if self.__verbose:
                             self.__lfh.write(f"+NmrDpUtility.__detectOtherPossibleFormatAsErrorOfLegacyMR() ++ Error  - {err}\n")
 
-            if (not checked or multiple_check) and file_type != 'nm-aux-amb':
+            if (not is_valid or multiple_check) and file_type != 'nm-aux-amb':
 
                 reader = AmberPTReader(False, self.__lfh, None, None, None,
                                        self.__ccU, self.__csStat)
@@ -8896,7 +8911,7 @@ class NmrDpUtility:
                 if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
                    and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None) or has_content):
 
-                    checked = True
+                    is_valid = True
 
                     _mr_format_name = 'AMBER'
                     _mr_format_type = 'nm-aux-amb'
@@ -8938,10 +8953,10 @@ class NmrDpUtility:
                         if len(_err) > 0:
                             err += f"\nEven assuming that the format is the {_mr_format_name!r}, the following issues need to be fixed.\n" + _err[:-1]
                         elif file_type != 'nm-res-oth' and (lexer_err_listener.getMessageList() is not None or parser_err_listener.getMessageList() is not None):
-                            checked = False
+                            is_valid = False
                             err = ''
 
-                        if checked:
+                        if is_valid:
                             valid_types[_mr_format_type] = len(_content_subtype)
                         else:
                             possible_types[_mr_format_type] = len(_content_subtype)
@@ -8954,7 +8969,7 @@ class NmrDpUtility:
                         if self.__verbose:
                             self.__lfh.write(f"+NmrDpUtility.__detectOtherPossibleFormatAsErrorOfLegacyMR() ++ Error  - {err}\n")
 
-            if (not checked or multiple_check) and file_type != 'nm-res-cya':
+            if (not is_valid or multiple_check) and file_type != 'nm-res-cya':
 
                 reader = CyanaMRReader(False, self.__lfh, None, None, None,
                                        self.__ccU, self.__csStat, self.__nefT)
@@ -8968,7 +8983,7 @@ class NmrDpUtility:
                 if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
                    and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None) or has_content):
 
-                    checked = True
+                    is_valid = True
 
                     _mr_format_name = 'CYANA'
                     _mr_format_type = 'nm-res-cya'
@@ -9011,10 +9026,10 @@ class NmrDpUtility:
                         if len(_err) > 0:
                             err += f"\nEven assuming that the format is the {_mr_format_name!r}, the following issues need to be fixed.\n" + _err[:-1]
                         elif file_type != 'nm-res-oth' and (lexer_err_listener.getMessageList() is not None or parser_err_listener.getMessageList() is not None):
-                            checked = False
+                            is_valid = False
                             err = ''
 
-                        if checked:
+                        if is_valid:
                             valid_types[_mr_format_type] = len(_content_subtype)
                         else:
                             possible_types[_mr_format_type] = len(_content_subtype)
@@ -9027,7 +9042,7 @@ class NmrDpUtility:
                         if self.__verbose:
                             self.__lfh.write(f"+NmrDpUtility.__detectOtherPossibleFormatAsErrorOfLegacyMR() ++ Error  - {err}\n")
 
-            if (not checked or multiple_check) and file_type != 'nm-res-ros':
+            if (not is_valid or multiple_check) and file_type != 'nm-res-ros':
 
                 reader = RosettaMRReader(False, self.__lfh, None, None, None,
                                          self.__ccU, self.__csStat, self.__nefT)
@@ -9043,7 +9058,7 @@ class NmrDpUtility:
                 if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
                    and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None) or has_content):
 
-                    checked = True
+                    is_valid = True
 
                     _mr_format_name = 'ROSETTA'
                     _mr_format_type = 'nm-res-ros'
@@ -9086,10 +9101,10 @@ class NmrDpUtility:
                         if len(_err) > 0:
                             err += f"\nEven assuming that the format is the {_mr_format_name!r}, the following issues need to be fixed.\n" + _err[:-1]
                         elif file_type != 'nm-res-oth' and (lexer_err_listener.getMessageList() is not None or parser_err_listener.getMessageList() is not None):
-                            checked = False
+                            is_valid = False
                             err = ''
 
-                        if checked:
+                        if is_valid:
                             valid_types[_mr_format_type] = len(_content_subtype)
                         else:
                             possible_types[_mr_format_type] = len(_content_subtype)
@@ -9108,7 +9123,7 @@ class NmrDpUtility:
         _valid_types = [k for k, v in sorted(valid_types.items(), key=lambda x: x[1], reverse=True)]
         _possible_types = [k for k, v in sorted(possible_types.items(), key=lambda x: x[1], reverse=True)]
 
-        return checked, err, _valid_types, _possible_types
+        return is_valid, err, _valid_types, _possible_types
 
     def __extractPublicMRFileIntoLegacyMR(self):
         """ Extract/split public MR file into legacy NMR restraint files for NMR restraint remediation.

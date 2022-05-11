@@ -331,9 +331,15 @@ mr_file_header_pattern = re.compile(r'(.*)# Restraints file (\d+): (\S+)\s*')
 
 pynmrstar_lp_obj_pattern = re.compile(r"\<pynmrstar\.Loop '(.*)'\>")
 pdb_first_atom_pattern = re.compile(r'ATOM +1 .*')
+
 amber_a_format_pattern = re.compile(r'%FORMAT\((\d+)a(\d+)\)\s*')
 amber_i_format_pattern = re.compile(r'%FORMAT\((\d+)I(\d+)\)\s*')
 amber_r_pattern = re.compile(r'r(\d+)=(.*)')
+
+amber_end_pattern = re.compile(r'\s*(?:&[Ee][Nn][Dd]|\/)\s*')
+amber_missing_end_at_eof_err_msg = "missing END at '<EOF>'"
+amber_extra_end_err_msg_pattern = re.compile(r"extraneous input '(?:&[Ee][Nn][Dd]|\/)' expecting .*")
+
 xplor_end_pattern = re.compile(r'\s*[Ee][Nn][Dd]\s*')
 xplor_missing_end_at_eof_err_msg = "missing End at '<EOF>'"
 xplor_extra_end_err_msg_pattern = re.compile(r"extraneous input '[Ee][Nn][Dd]' expecting .*")
@@ -8279,6 +8285,9 @@ class NmrDpUtility:
         xplor_missing_end_at_eof = err_message == xplor_missing_end_at_eof_err_msg
         xplor_ends_wo_statement = bool(xplor_extra_end_err_msg_pattern.match(err_message))
 
+        amber_missing_end_at_eof = err_message == amber_missing_end_at_eof_err_msg
+        amber_ends_wo_statement = bool(amber_extra_end_err_msg_pattern.match(err_message))
+
         i = j = 0
 
         ws_or_comment = True
@@ -8301,10 +8310,13 @@ class NmrDpUtility:
 
         offset += err_line_number - 1
 
-        if j == 0 and not xplor_ends_wo_statement:
-            xplor_ends_wo_statement = True
+        if j == 0:
+            if not xplor_ends_wo_statement:
+                xplor_ends_wo_statement = True
+            if not amber_ends_wo_statement:
+                amber_ends_wo_statement = True
 
-        if xplor_ends_wo_statement or i < err_line_number:
+        if (xplor_ends_wo_statement or amber_ends_wo_statement) or i < err_line_number:
 
             corrected = False
 
@@ -8318,6 +8330,55 @@ class NmrDpUtility:
                     for line in ifp:
                         if j == offset:
                             if xplor_end_pattern.match(line):
+                                has_end_tag = True
+                            break
+                        j += 1
+
+                if has_end_tag:
+
+                    dir_path = os.path.dirname(src_path)
+
+                    for div_file_name in os.listdir(dir_path):
+                        if os.path.isfile(os.path.join(dir_path, div_file_name))\
+                           and (div_file_name.endswith('-div_src.mr') or div_file_name.endswith('-div_dst.mr')):
+                            os.remove(os.path.join(dir_path, div_file_name))
+
+                    src_file_name = os.path.basename(src_path)
+                    cor_test = '-corrected' in src_file_name
+                    if cor_test:
+                        cor_src_path = src_path + '~'
+                    else:
+                        if src_path.endswith('.mr'):
+                            cor_src_path = re.sub(r'\-trimmed$', '', os.path.splitext(src_path)[0]) + '-corrected.mr'
+                        else:
+                            cor_src_path = re.sub(r'\-trimmed$', '', src_path) + '-corrected'
+
+                    j = 0
+
+                    with open(src_path, 'r') as ifp,\
+                            open(cor_src_path, 'w') as ofp:
+                        for line in ifp:
+                            if j == offset:
+                                ofp.write('#' + line)
+                            else:
+                                ofp.write(line)
+                            j += 1
+
+                    if cor_test:
+                        os.rename(cor_src_path, src_path)
+
+                    corrected = True
+
+            if amber_ends_wo_statement and file_type == 'nm-res-amb':
+
+                has_end_tag = False
+
+                j = 0
+
+                with open(src_path, 'r') as ifp:
+                    for line in ifp:
+                        if j == offset:
+                            if amber_end_pattern.match(line):
                                 has_end_tag = True
                             break
                         j += 1
@@ -8381,6 +8442,36 @@ class NmrDpUtility:
                     for line in ifp:
                         ofp.write(line)
                     ofp.write('END\n')
+
+                if cor_test:
+                    os.rename(cor_src_path, src_path)
+
+                corrected = True
+
+            if i == err_line_number - 1 and amber_missing_end_at_eof:
+
+                dir_path = os.path.dirname(src_path)
+
+                for div_file_name in os.listdir(dir_path):
+                    if os.path.isfile(os.path.join(dir_path, div_file_name))\
+                       and (div_file_name.endswith('-div_src.mr') or div_file_name.endswith('-div_dst.mr')):
+                        os.remove(os.path.join(dir_path, div_file_name))
+
+                src_file_name = os.path.basename(src_path)
+                cor_test = '-corrected' in src_file_name
+                if cor_test:
+                    cor_src_path = src_path + '~'
+                else:
+                    if src_path.endswith('.mr'):
+                        cor_src_path = re.sub(r'\-trimmed$', '', os.path.splitext(src_path)[0]) + '-corrected.mr'
+                    else:
+                        cor_src_path = re.sub(r'\-trimmed$', '', src_path) + '-corrected'
+
+                with open(src_path, 'r') as ifp,\
+                        open(cor_src_path, 'w') as ofp:
+                    for line in ifp:
+                        ofp.write(line)
+                    ofp.write('&end\n')
 
                 if cor_test:
                     os.rename(cor_src_path, src_path)

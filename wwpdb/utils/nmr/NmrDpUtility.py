@@ -7968,7 +7968,8 @@ class NmrDpUtility:
                                 has_rdc_restraint = 'rdc_restraint' in content_subtype
 
                 elif file_type == 'nm-res-oth':
-                    ar['format_mismatch'], _, _, _ = self.__detectOtherPossibleFormatAsErrorOfLegacyMR(file_path, file_name, file_type, [])
+                    if not(self.__remediation_mode and file_path.endswith('-div_ext.mr')):
+                        ar['format_mismatch'], _, _, _ = self.__detectOtherPossibleFormatAsErrorOfLegacyMR(file_path, file_name, file_type, [])
 
             except ValueError as e:
 
@@ -9180,11 +9181,14 @@ class NmrDpUtility:
 
             dir_path = os.path.dirname(src_file)
 
-            div_file_names = [div_file_name
-                              for div_file_name in os.listdir(dir_path)
-                              if os.path.isfile(os.path.join(dir_path, div_file_name))
-                              and (div_file_name.endswith('-div_src.mr')
-                                   or div_file_name.endswith('-div_dst.mr'))]
+            _div_file_names = {div_file_name: len(div_file_name) + (0 if div_file_name.endswith('-div_src.mr') else (1 if div_file_name.endswith('-div_ext.mr') else 2))
+                               for div_file_name in os.listdir(dir_path)
+                               if os.path.isfile(os.path.join(dir_path, div_file_name))
+                               and (div_file_name.endswith('-div_src.mr')
+                                    or div_file_name.endswith('-div_dst.mr')
+                                    or div_file_name.endswith('-div_ext.mr'))}
+
+            div_file_names = [k for k, v in sorted(_div_file_names.items(), key=lambda x: x[1])]
 
             src_basename = os.path.splitext(src_file)[0]
             ar['original_file_name'] = src_basename + '.mr'
@@ -9597,6 +9601,15 @@ class NmrDpUtility:
 
                 for dst_file in dst_file_list:
 
+                    if dst_file.endswith('-div_ext.mr'):
+                        _ar = ar.copy()
+
+                        _ar['file_name'] = dst_file
+                        _ar['file_type'] = 'nm-res-oth'
+                        splitted.append(_ar)
+
+                        continue
+
                     _, _, valid_types, possible_types = self.__detectOtherPossibleFormatAsErrorOfLegacyMR(dst_file, file_name, file_type, [], True)
 
                     len_valid_types = len(valid_types)
@@ -9745,6 +9758,15 @@ class NmrDpUtility:
                         dst_file_list.append(dst_file)
 
                     for _dst_file in dst_file_list:
+
+                        if _dst_file.endswith('-div_ext.mr'):
+                            _ar = ar.copy()
+
+                            _ar['file_name'] = _dst_file
+                            _ar['file_type'] = 'nm-res-oth'
+                            splitted.append(_ar)
+
+                            continue
 
                         _, _, valid_types, possible_types = self.__detectOtherPossibleFormatAsErrorOfLegacyMR(_dst_file, file_name, file_type, [], True)
 

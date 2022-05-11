@@ -329,8 +329,8 @@ class CnsMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by CnsMRParser#harmonic_restraint.
     def enterHarmonic_restraint(self, ctx: CnsMRParser.Harmonic_restraintContext):  # pylint: disable=unused-argument
-        # self.angStatements += 1
-        pass
+        self.planeStatements += 1
+        self.__cur_subtype = 'plane'
 
     # Exit a parse tree produced by CnsMRParser#harmonic_restraint.
     def exitHarmonic_restraint(self, ctx: CnsMRParser.Harmonic_restraintContext):  # pylint: disable=unused-argument
@@ -513,7 +513,7 @@ class CnsMRParserListener(ParseTreeListener):
         scale = self.scale if self.scale_a is None else self.scale_a
 
         if scale <= 0.0:
-            self.warningMessage += "[Invalid data] "\
+            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                 f"The weight value '{scale}' must be a positive value.\n"
 
         self.numberSelection.clear()
@@ -1096,6 +1096,31 @@ class CnsMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by CnsMRParser#harmonic_statement.
     def exitHarmonic_statement(self, ctx: CnsMRParser.Harmonic_statementContext):  # pylint: disable=unused-argument
         pass
+
+    # Enter a parse tree produced by CnsMRParser#harmonic_assign.
+    def enterHarmonic_assign(self, ctx: CnsMRParser.Harmonic_assignContext):  # pylint: disable=unused-argument
+        self.planeRestraints += 1
+        if self.__cur_subtype != 'plane':
+            self.planeStatements += 1
+        self.__cur_subtype = 'plane'
+
+        self.atomSelectionSet.clear()
+
+    # Exit a parse tree produced by CnsMRParser#harmonic_assign.
+    def exitHarmonic_assign(self, ctx: CnsMRParser.Harmonic_assignContext):  # pylint: disable=unused-argument
+        vector_x = self.numberSelection[0]
+        vector_y = self.numberSelection[1]
+        vector_z = self.numberSelection[2]
+
+        self.numberSelection.clear()
+
+        if not self.__hasPolySeq:
+            return
+
+        for atom1 in self.atomSelectionSet[0]:
+            if self.__debug:
+                print(f"subtype={self.__cur_subtype} (HARM) id={self.planeRestraints} "
+                      f"atom={atom1} normal_vector=({vector_x}, {vector_y}, {vector_z})")
 
     # Enter a parse tree produced by CnsMRParser#sani_statement.
     def enterSani_statement(self, ctx: CnsMRParser.Sani_statementContext):
@@ -1684,8 +1709,8 @@ class CnsMRParserListener(ParseTreeListener):
         offsets = [seq_id - seq_id_3 for seq_id in seq_ids]
         atom_ids = [atom_id_1, atom_id_2, atom_id_3, atom_id_4, atom_id_5]
 
-        if chain_ids != [chain_id_1] * 5 or offsets != [0] * 5 or atom_ids != ['C', 'N', 'CA', 'C', 'N']:
-            self.warningMessage += "[Invalid data] "\
+        if chain_ids != [chain_id_1] * 5 or offsets != [-1, 0, 0, 0, 1] or atom_ids != ['C', 'N', 'CA', 'C', 'N']:
+            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                 "The atom selection order must be [C(i-1), N(i), CA(i), C(i), N(i+1)].\n"
             return
 
@@ -1779,7 +1804,7 @@ class CnsMRParserListener(ParseTreeListener):
         if CS_ERROR_MIN < obs_value < CS_ERROR_MAX:
             pass
         else:
-            self.warningMessage += "[Range value error] "\
+            self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
                 f"The observed chemical shift value '{obs_value}' must be within range {CS_RESTRAINT_ERROR}.\n"
             return
 
@@ -1787,7 +1812,7 @@ class CnsMRParserListener(ParseTreeListener):
             if CS_ERROR_MIN < obs_value_2 < CS_ERROR_MAX:
                 pass
             else:
-                self.warningMessage += "[Range value error] "\
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
                     f"The 2nd observed chemical shift value '{obs_value_2}' must be within range {CS_RESTRAINT_ERROR}.\n"
                 return
 
@@ -1799,18 +1824,18 @@ class CnsMRParserListener(ParseTreeListener):
         lenAtomSelectionSet = len(self.atomSelectionSet)
 
         if obs_value_2 is None and lenAtomSelectionSet == 1:
-            self.warningMessage += "[Invalid data] "\
+            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                 "Missing observed chemical shift value for the 2nd atom selection.\n"
             return
 
         if obs_value_2 is not None and lenAtomSelectionSet == 2:
-            self.warningMessage += "[Invalid data] "\
+            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                 f"Missing 2nd atom selection for the observed chemical shift value '{obs_value_2}'.\n"
             return
 
         for atom1 in self.atomSelectionSet[0]:
             if atom1['atom_id'][0] != 'H':
-                self.warningMessage += "[Invalid data] "\
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                     f"Not a proton; {atom1}.\n"
             return
 
@@ -1890,7 +1915,7 @@ class CnsMRParserListener(ParseTreeListener):
         atom_ids = [atom_id_1, atom_id_2, atom_id_3]
 
         if chain_ids != [chain_id_1] * 3 or offsets != [0] * 3 or atom_ids != ['CA', 'C', 'O']:
-            self.warningMessage += "[Invalid data] "\
+            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                 "The atom selection order must be [CA(i), C(i), O(i)].\n"
             return
 

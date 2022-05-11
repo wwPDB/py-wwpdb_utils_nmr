@@ -210,6 +210,16 @@ Initialize:		I N I T I? A? L? I? Z? E?;
 Selection:		S E L E C? T? I? O? N?;			// = selection
 Weight:			W E I G H? T?;				// = Real
 
+/* XPLOR-NIH: Harmonic coordiate restraints - Syntax
+ See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node176.html
+*/
+//Restraints:		R E S T R? A? I? N? T? S?;		// Harmonic
+Harmonic:		H A R M O? N? I? C?;			// Harmonic { harmonic_statement } End
+
+// harmonic_stetement
+Exponent:		E X P O N? E? N? T?;			// = Integer
+Normal:			N O R M A? L?;				// = vector_3d
+
 /* XPLOR-NIH: Antidiatance restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node398.html
 */

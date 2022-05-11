@@ -38,6 +38,7 @@ cns_mr:
 	dihedral_assign |		// allowing bare assign clauses for Dihedral angle restraints
 	sani_assign |			// allowing bare assign clauses for RDC restraints
 	plane_statement |		// allowing bare group clauses for Plane restraints
+	harmonic_assign |		// allowing individual assign clauses for Harmonic coordinate (plane) restraints
 	coup_assign |			// allowing bare assign clauses for Scaler J-coupling restraints
 	carbon_shift_assign		// allowing bare assign clauses for Carbon chemical shift restraints
 	)*
@@ -165,6 +166,9 @@ group_statement:
 harmonic_statement:
 	Exponent Equ_op? Integer |
 	Normal Equ_op? L_paren (number_s Comma? number_s Comma? number_s | Tail Equ_op? selection Comma? (Head Equ_op? selection)?) R_paren;
+
+harmonic_assign:
+	Assign selection number number number;
 
 /* CNS: Suscetibility anisotropy restraints - Syntax
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html

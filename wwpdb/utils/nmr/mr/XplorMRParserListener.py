@@ -419,6 +419,15 @@ class XplorMRParserListener(ParseTreeListener):
     def exitPlanar_restraint(self, ctx: XplorMRParser.Planar_restraintContext):  # pylint: disable=unused-argument
         pass
 
+    # Enter a parse tree produced by XplorMRParser#harmonic_restraint.
+    def enterHarmonic_restraint(self, ctx: XplorMRParser.Harmonic_restraintContext):  # pylint: disable=unused-argument
+        self.planeStatements += 1
+        self.__cur_subtype = 'plane'
+
+    # Exit a parse tree produced by XplorMRParser#harmonic_restraint.
+    def exitHarmonic_restraint(self, ctx: XplorMRParser.Harmonic_restraintContext):  # pylint: disable=unused-argument
+        pass
+
     # Enter a parse tree produced by XplorMRParser#antidistance_restraint.
     def enterAntidistance_restraint(self, ctx: XplorMRParser.Antidistance_restraintContext):  # pylint: disable=unused-argument
         self.adistStatements += 1
@@ -2360,6 +2369,39 @@ class XplorMRParserListener(ParseTreeListener):
             if self.__debug:
                 print(f"subtype={self.__cur_subtype} (GROU) id={self.planeRestraints} "
                       f"atom={atom1} weight={self.scale}")
+
+    # Enter a parse tree produced by XplorMRParser#harmonic_statement.
+    def enterHarmonic_statement(self, ctx: XplorMRParser.Harmonic_statementContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by XplorMRParser#harmonic_statement.
+    def exitHarmonic_statement(self, ctx: XplorMRParser.Harmonic_statementContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by XplorMRParser#harmonic_assign.
+    def enterHarmonic_assign(self, ctx: XplorMRParser.Harmonic_assignContext):  # pylint: disable=unused-argument
+        self.planeRestraints += 1
+        if self.__cur_subtype != 'plane':
+            self.planeStatements += 1
+        self.__cur_subtype = 'plane'
+
+        self.atomSelectionSet.clear()
+
+    # Exit a parse tree produced by XplorMRParser#harmonic_assign.
+    def exitHarmonic_assign(self, ctx: XplorMRParser.Harmonic_assignContext):  # pylint: disable=unused-argument
+        vector_x = self.numberSelection[0]
+        vector_y = self.numberSelection[1]
+        vector_z = self.numberSelection[2]
+
+        self.numberSelection.clear()
+
+        if not self.__hasPolySeq:
+            return
+
+        for atom1 in self.atomSelectionSet[0]:
+            if self.__debug:
+                print(f"subtype={self.__cur_subtype} (HARM) id={self.planeRestraints} "
+                      f"atom={atom1} normal_vector=({vector_x}, {vector_y}, {vector_z})")
 
     # Enter a parse tree produced by XplorMRParser#antidistance_statement.
     def enterAntidistance_statement(self, ctx: XplorMRParser.Antidistance_statementContext):

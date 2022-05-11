@@ -182,6 +182,16 @@ Initialize:		'INIT' 'I'? 'A'? 'L'? 'I'? 'Z'? 'E'?;
 Selection:		'SELE' 'C'? 'T'? 'I'? 'O'? 'N'?;	// = selection
 Weight:			'WEIG' 'H'? 'T'?;			// = Real
 
+/* XPLOR-NIH: Harmonic coordiate restraints - Syntax
+ See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node176.html
+*/
+//Restraints:		'REST' 'R'? 'A'? 'I'? 'N'? 'T'? 'S'?;	// Harmonic
+Harmonic:		'HARM' 'O'? 'N'? 'I'? 'C'?;		// Harmonic { harmonic_statement } End
+
+// harmonic_stetement
+Exponent:		'EXPO' 'N'? 'E'? 'N'? 'T'?;		// = Integer
+Normal:			'NORM' 'A'? 'L'?;			// = vector_3d
+
 /* XPLOR-NIH: Antidiatance restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node398.html
 */

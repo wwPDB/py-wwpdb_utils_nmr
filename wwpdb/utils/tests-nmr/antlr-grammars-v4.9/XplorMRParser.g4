@@ -24,6 +24,7 @@ xplor_nih_mr:
 	dihedral_angle_restraint |
 	rdc_restraint |
 	planar_restraint |
+	harmonic_restraint |
 	antidistance_restraint |
 	coupling_restraint |
 	carbon_shift_restraint |
@@ -49,6 +50,7 @@ xplor_nih_mr:
 	dihedral_assign |		// allowing bare assign clauses for Dihedral angle restraints
 	sani_assign |			// allowing bare assign clauses for RDC restraints
 	planar_statement |		// allowing bare group clauses for Planality restraints
+	harmonic_assign |		// allowing individual assign clauses for Harmonic coordinate (plane) restraints
 	hbond_assign |			// allowing bare assign clauses for Hydrogen bond geometry restraints
 	hbond_db_assign |		// allowing bare assign clauses for Hydrogen bond database restraints
 	coup_assign |			// allowing bare assign clauses for Scaler J-coupling restraints
@@ -75,6 +77,9 @@ rdc_restraint:
 
 planar_restraint:
 	Restraints? Planar planar_statement* End;
+
+harmonic_restraint:
+	Restraints? Harmonic harmonic_statement* End;
 
 antidistance_restraint:
 	Xadc antidistance_statement* End;
@@ -283,6 +288,16 @@ planar_statement:
 group_statement:
 	Selection Equ_op? selection |
 	Weight Equ_op? number_s;
+
+/* XPLOR-NIH: Harmonic coordiate restraints - Syntax
+ See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node176.html
+*/
+harmonic_statement:
+	Exponent Equ_op? Integer |
+	Normal Equ_op? L_paren (number_s Comma? number_s Comma? number_s | Tail Equ_op? selection Comma? (Head Equ_op? selection)?) R_paren;
+
+harmonic_assign:
+	Assign selection number number number;
 
 /* XPLOR-NIH: Antidiatance restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node398.html

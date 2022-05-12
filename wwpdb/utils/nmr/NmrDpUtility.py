@@ -331,9 +331,15 @@ mr_file_header_pattern = re.compile(r'(.*)# Restraints file (\d+): (\S+)\s*')
 
 pynmrstar_lp_obj_pattern = re.compile(r"\<pynmrstar\.Loop '(.*)'\>")
 pdb_first_atom_pattern = re.compile(r'ATOM +1 .*')
+
 amber_a_format_pattern = re.compile(r'%FORMAT\((\d+)a(\d+)\)\s*')
 amber_i_format_pattern = re.compile(r'%FORMAT\((\d+)I(\d+)\)\s*')
 amber_r_pattern = re.compile(r'r(\d+)=(.*)')
+
+amber_end_pattern = re.compile(r'\s*(?:&[Ee][Nn][Dd]|\/)\s*')
+amber_missing_end_at_eof_err_msg = "missing END at '<EOF>'"
+amber_extra_end_err_msg_pattern = re.compile(r"extraneous input '(?:&[Ee][Nn][Dd]|\/)' expecting .*")
+
 xplor_end_pattern = re.compile(r'\s*[Ee][Nn][Dd]\s*')
 xplor_missing_end_at_eof_err_msg = "missing End at '<EOF>'"
 xplor_extra_end_err_msg_pattern = re.compile(r"extraneous input '[Ee][Nn][Dd]' expecting .*")
@@ -834,6 +840,7 @@ class NmrDpUtility:
         self.__lfh = log
 
         self.__debug = False
+        self.__split_mr_debug = False
 
         # current workflow operation
         self.__op = None
@@ -7328,7 +7335,7 @@ class NmrDpUtility:
                         # parser error occurrs before occurrenece of lexer error that implies mixing of different MR formats in a file
                         if lexer_err_listener.getErrorLineNumber()[0] > parser_err_listener.getErrorLineNumber()[0]:
                             corrected |= self.__peelLegacyMRIfNecessary(file_path, file_type,
-                                                                        parser_err_listener.getErrorLineNumber()[0],
+                                                                        parser_err_listener.getMessageList()[0],
                                                                         str(file_path), 0)
                             div_test = True
 
@@ -7366,6 +7373,11 @@ class NmrDpUtility:
                             elif not div_test and has_content and self.__remediation_mode:
                                 corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
                                 div_test = True
+
+                            _err = self.__retrieveErroneousPreviousInput(description)
+                            if _err is not None:
+                                err += "However, the cause of the error seems to exist at the previous input "\
+                                    f"(line {description['line_number']-1}):\n{_err}"
 
                     if len(err) > 0:
                         valid = False
@@ -7446,7 +7458,7 @@ class NmrDpUtility:
                         # parser error occurrs before occurrenece of lexer error that implies mixing of different MR formats in a file
                         if lexer_err_listener.getErrorLineNumber()[0] > parser_err_listener.getErrorLineNumber()[0]:
                             corrected |= self.__peelLegacyMRIfNecessary(file_path, file_type,
-                                                                        parser_err_listener.getErrorLineNumber()[0],
+                                                                        parser_err_listener.getMessageList()[0],
                                                                         str(file_path), 0)
                             div_test = True
 
@@ -7484,6 +7496,11 @@ class NmrDpUtility:
                             elif not div_test and has_content and self.__remediation_mode:
                                 corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
                                 div_test = True
+
+                            _err = self.__retrieveErroneousPreviousInput(description)
+                            if _err is not None:
+                                err += "However, the cause of the error seems to exist at the previous input "\
+                                    f"(line {description['line_number']-1}):\n{_err}"
 
                     if len(err) > 0:
                         valid = False
@@ -7554,7 +7571,7 @@ class NmrDpUtility:
                         # parser error occurrs before occurrenece of lexer error that implies mixing of different MR formats in a file
                         if lexer_err_listener.getErrorLineNumber()[0] > parser_err_listener.getErrorLineNumber()[0]:
                             corrected |= self.__peelLegacyMRIfNecessary(file_path, file_type,
-                                                                        parser_err_listener.getErrorLineNumber()[0],
+                                                                        parser_err_listener.getMessageList()[0],
                                                                         str(file_path), 0)
                             div_test = True
 
@@ -7589,6 +7606,11 @@ class NmrDpUtility:
                                 elif not div_test and has_content and self.__remediation_mode:
                                     corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
                                     div_test = True
+
+                            _err = self.__retrieveErroneousPreviousInput(description)
+                            if _err is not None:
+                                err += "However, the cause of the error seems to exist at the previous input "\
+                                    f"(line {description['line_number']-1}):\n{_err}"
 
                     if len(err) > 0:
                         valid = False
@@ -7659,7 +7681,7 @@ class NmrDpUtility:
                         # parser error occurrs before occurrenece of lexer error that implies mixing of different MR formats in a file
                         if lexer_err_listener.getErrorLineNumber()[0] > parser_err_listener.getErrorLineNumber()[0]:
                             corrected |= self.__peelLegacyMRIfNecessary(file_path, file_type,
-                                                                        parser_err_listener.getErrorLineNumber()[0],
+                                                                        parser_err_listener.getMessageList()[0],
                                                                         str(file_path), 0)
                             div_test = True
 
@@ -7694,6 +7716,11 @@ class NmrDpUtility:
                                 elif not div_test and has_content and self.__remediation_mode:
                                     corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
                                     div_test = True
+
+                            _err = self.__retrieveErroneousPreviousInput(description)
+                            if _err is not None:
+                                err += "However, the cause of the error seems to exist at the previous input "\
+                                    f"(line {description['line_number']-1}):\n{_err}"
 
                     if len(err) > 0:
                         valid = False
@@ -7771,7 +7798,7 @@ class NmrDpUtility:
                         # parser error occurrs before occurrenece of lexer error that implies mixing of different MR formats in a file
                         if lexer_err_listener.getErrorLineNumber()[0] > parser_err_listener.getErrorLineNumber()[0]:
                             corrected |= self.__peelLegacyMRIfNecessary(file_path, file_type,
-                                                                        parser_err_listener.getErrorLineNumber()[0],
+                                                                        parser_err_listener.getMessageList()[0],
                                                                         str(file_path), 0)
                             div_test = True
 
@@ -7806,6 +7833,11 @@ class NmrDpUtility:
                                 elif not div_test and has_content and self.__remediation_mode:
                                     corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
                                     div_test = True
+
+                            _err = self.__retrieveErroneousPreviousInput(description)
+                            if _err is not None:
+                                err += "However, the cause of the error seems to exist at the previous input "\
+                                    f"(line {description['line_number']-1}):\n{_err}"
 
                     if len(err) > 0:
                         valid = False
@@ -7886,7 +7918,7 @@ class NmrDpUtility:
                         # parser error occurrs before occurrenece of lexer error that implies mixing of different MR formats in a file
                         if lexer_err_listener.getErrorLineNumber()[0] > parser_err_listener.getErrorLineNumber()[0]:
                             corrected |= self.__peelLegacyMRIfNecessary(file_path, file_type,
-                                                                        parser_err_listener.getErrorLineNumber()[0],
+                                                                        parser_err_listener.getMessageList()[0],
                                                                         str(file_path), 0)
                             div_test = True
 
@@ -7921,6 +7953,11 @@ class NmrDpUtility:
                                 elif not div_test and has_content and self.__remediation_mode:
                                     corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
                                     div_test = True
+
+                            _err = self.__retrieveErroneousPreviousInput(description)
+                            if _err is not None:
+                                err += "However, the cause of the error seems to exist at the previous input "\
+                                    f"(line {description['line_number']-1}):\n{_err}"
 
                     if len(err) > 0:
                         valid = False
@@ -8235,6 +8272,19 @@ class NmrDpUtility:
 
         return not self.report.isError()
 
+    def __retrieveErroneousPreviousInput(self, err_desc):
+        """ Retrieve erroneous previous input if possible.
+        """
+
+        try:
+            _err_desc = next(_err_desc for _err_desc in self.__divide_mr_error_message
+                             if _err_desc['file_path'] == err_desc['file_path']
+                             and _err_desc['line_number'] == err_desc['line_number']
+                             and _err_desc['message'] == err_desc['message'])
+            return None if 'previous_input' not in _err_desc else _err_desc['previous_input']
+        except StopIteration:
+            return None
+
     def __divideLegacyMRIfNecessary(self, file_path, file_type, err_desc, src_path, offset):
         """ Divive legacy NMR restraint file if necessary.
         """
@@ -8260,24 +8310,129 @@ class NmrDpUtility:
 
         self.__divide_mr_error_message.append(err_desc)
 
+        if self.__split_mr_debug:
+            print('DIV-MR')
+
         if file_type == 'nm-res-xpl':
-            mr_format_name = 'XPLOR-NIH'
+            # mr_format_name = 'XPLOR-NIH'
+            pass
         elif file_type == 'nm-res-cns':
-            mr_format_name = 'CNS'
+            # mr_format_name = 'CNS'
+            pass
         elif file_type in ('nm-res-amb', 'nm-aux-amb'):
-            mr_format_name = 'AMBER'
+            # mr_format_name = 'AMBER'
+            pass
         elif file_type == 'nm-res-cya':
-            mr_format_name = 'CYANA'
+            # mr_format_name = 'CYANA'
+            pass
         elif file_type == 'nm-res-ros':
-            mr_format_name = 'ROSETTA'
+            # mr_format_name = 'ROSETTA'
+            pass
         else:
             return False
 
         err_message = err_desc['message']
         err_line_number = err_desc['line_number']
+        err_column_position = err_desc['column_position']
 
         xplor_missing_end_at_eof = err_message == xplor_missing_end_at_eof_err_msg
         xplor_ends_wo_statement = bool(xplor_extra_end_err_msg_pattern.match(err_message))
+
+        amber_missing_end_at_eof = err_message == amber_missing_end_at_eof_err_msg
+        amber_ends_wo_statement = bool(amber_extra_end_err_msg_pattern.match(err_message))
+
+        reader = None
+
+        prev_input = None
+
+        if not(xplor_ends_wo_statement or amber_ends_wo_statement):
+
+            if err_column_position > 0 and 'input' in err_desc and not err_desc['input'][0:err_column_position].isspace():
+                test_line = err_desc['input'][0:err_column_position]
+
+                if file_type == 'nm-res-xpl':
+                    reader = XplorMRReader(False, self.__lfh, None, None, None,
+                                           self.__ccU, self.__csStat, self.__nefT)
+                elif file_type == 'nm-res-cns':
+                    reader = CnsMRReader(False, self.__lfh, None, None, None,
+                                         self.__ccU, self.__csStat, self.__nefT)
+                elif file_type == 'nm-res-amb':
+                    reader = AmberMRReader(self.__verbose, self.__lfh, None, None, None,
+                                           self.__ccU, self.__csStat, self.__nefT)
+                elif file_type == 'nm-aux-amb':
+                    reader = AmberPTReader(self.__verbose, self.__lfh, None, None, None,
+                                           self.__ccU, self.__csStat)
+                elif file_type == 'nm-res-cya':
+                    reader = CyanaMRReader(self.__verbose, self.__lfh, None, None, None,
+                                           self.__ccU, self.__csStat, self.__nefT)
+                elif file_type == 'nm-res-ros':
+                    reader = RosettaMRReader(self.__verbose, self.__lfh, None, None, None,
+                                             self.__ccU, self.__csStat, self.__nefT)
+
+                _, parser_err_listener, lexer_err_listener = reader.parse(test_line, None, isFilePath=False)
+
+                has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
+                has_parser_error = parser_err_listener is not None and parser_err_listener.getMessageList() is not None
+
+                if not has_lexer_error and not has_parser_error:
+
+                    if self.__split_mr_debug:
+                        print('DIV-MR-EXIT #1')
+
+                    return self.__divideLegacyMR(file_path, file_type, err_desc, src_path, offset)
+
+                # try to resolve unexcepted concatenation
+                test_line = err_desc['input'][err_column_position + 1:]
+
+                _, parser_err_listener, lexer_err_listener = reader.parse(test_line, None, isFilePath=False)
+
+                has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
+                has_parser_error = parser_err_listener is not None and parser_err_listener.getMessageList() is not None
+
+                if not has_lexer_error and not has_parser_error:
+                    err_desc['column_position'] += 1
+
+                    corrected = self.__divideLegacyMR(file_path, file_type, err_desc, src_path, offset)
+
+                    if corrected:
+                        dir_path = os.path.dirname(src_path)
+
+                        for div_file_name in os.listdir(dir_path):
+                            if os.path.isfile(os.path.join(dir_path, div_file_name))\
+                               and (div_file_name.endswith('-div_src.mr') or div_file_name.endswith('-div_dst.mr')):
+                                os.remove(os.path.join(dir_path, div_file_name))
+
+                        src_file_name = os.path.basename(src_path)
+                        cor_test = '-corrected' in src_file_name
+                        if cor_test:
+                            cor_src_path = src_path + '~'
+                        else:
+                            if src_path.endswith('.mr'):
+                                cor_src_path = re.sub(r'\-trimmed$', '', os.path.splitext(src_path)[0]) + '-corrected.mr'
+                            else:
+                                cor_src_path = re.sub(r'\-trimmed$', '', src_path) + '-corrected'
+
+                        offset += err_line_number - 1
+
+                        j = 0
+
+                        with open(src_path, 'r') as ifp,\
+                                open(cor_src_path, 'w') as ofp:
+                            for line in ifp:
+                                if j == offset:
+                                    ofp.write(line[:err_column_position + 1] + '\n')
+                                    ofp.write(line[err_column_position + 1:])
+                                else:
+                                    ofp.write(line)
+                                j += 1
+
+                        if cor_test:
+                            os.rename(cor_src_path, src_path)
+
+                    if self.__split_mr_debug:
+                        print('DIV-MR-EXIT #2')
+
+                    return corrected
 
         i = j = 0
 
@@ -8289,8 +8444,10 @@ class NmrDpUtility:
             for line in ifp:
                 i += 1
                 if i < err_line_number:
+                    if i == err_line_number - 1:
+                        prev_input = line
                     if ws_or_comment:
-                        if ws_pattern.match(line) or comment_pattern.match(line):
+                        if line.isspace() or comment_pattern.match(line):
                             pass
                         else:
                             ws_or_comment = False
@@ -8301,10 +8458,13 @@ class NmrDpUtility:
 
         offset += err_line_number - 1
 
-        if j == 0 and not xplor_ends_wo_statement:
-            xplor_ends_wo_statement = True
+        if j == 0:
+            if not xplor_ends_wo_statement:
+                xplor_ends_wo_statement = True
+            if not amber_ends_wo_statement:
+                amber_ends_wo_statement = True
 
-        if xplor_ends_wo_statement or i < err_line_number:
+        if (xplor_ends_wo_statement or amber_ends_wo_statement) or i < err_line_number:
 
             corrected = False
 
@@ -8318,6 +8478,55 @@ class NmrDpUtility:
                     for line in ifp:
                         if j == offset:
                             if xplor_end_pattern.match(line):
+                                has_end_tag = True
+                            break
+                        j += 1
+
+                if has_end_tag:
+
+                    dir_path = os.path.dirname(src_path)
+
+                    for div_file_name in os.listdir(dir_path):
+                        if os.path.isfile(os.path.join(dir_path, div_file_name))\
+                           and (div_file_name.endswith('-div_src.mr') or div_file_name.endswith('-div_dst.mr')):
+                            os.remove(os.path.join(dir_path, div_file_name))
+
+                    src_file_name = os.path.basename(src_path)
+                    cor_test = '-corrected' in src_file_name
+                    if cor_test:
+                        cor_src_path = src_path + '~'
+                    else:
+                        if src_path.endswith('.mr'):
+                            cor_src_path = re.sub(r'\-trimmed$', '', os.path.splitext(src_path)[0]) + '-corrected.mr'
+                        else:
+                            cor_src_path = re.sub(r'\-trimmed$', '', src_path) + '-corrected'
+
+                    j = 0
+
+                    with open(src_path, 'r') as ifp,\
+                            open(cor_src_path, 'w') as ofp:
+                        for line in ifp:
+                            if j == offset:
+                                ofp.write('#' + line)
+                            else:
+                                ofp.write(line)
+                            j += 1
+
+                    if cor_test:
+                        os.rename(cor_src_path, src_path)
+
+                    corrected = True
+
+            if amber_ends_wo_statement and file_type == 'nm-res-amb':
+
+                has_end_tag = False
+
+                j = 0
+
+                with open(src_path, 'r') as ifp:
+                    for line in ifp:
+                        if j == offset:
+                            if amber_end_pattern.match(line):
                                 has_end_tag = True
                             break
                         j += 1
@@ -8387,16 +8596,52 @@ class NmrDpUtility:
 
                 corrected = True
 
+            if i == err_line_number - 1 and amber_missing_end_at_eof:
+
+                dir_path = os.path.dirname(src_path)
+
+                for div_file_name in os.listdir(dir_path):
+                    if os.path.isfile(os.path.join(dir_path, div_file_name))\
+                       and (div_file_name.endswith('-div_src.mr') or div_file_name.endswith('-div_dst.mr')):
+                        os.remove(os.path.join(dir_path, div_file_name))
+
+                src_file_name = os.path.basename(src_path)
+                cor_test = '-corrected' in src_file_name
+                if cor_test:
+                    cor_src_path = src_path + '~'
+                else:
+                    if src_path.endswith('.mr'):
+                        cor_src_path = re.sub(r'\-trimmed$', '', os.path.splitext(src_path)[0]) + '-corrected.mr'
+                    else:
+                        cor_src_path = re.sub(r'\-trimmed$', '', src_path) + '-corrected'
+
+                with open(src_path, 'r') as ifp,\
+                        open(cor_src_path, 'w') as ofp:
+                    for line in ifp:
+                        ofp.write(line)
+                    ofp.write('&end\n')
+
+                if cor_test:
+                    os.rename(cor_src_path, src_path)
+
+                corrected = True
+
             if os.path.exists(div_src_file):
                 os.remove(div_src_file)
             if os.path.exists(div_try_file):
                 os.remove(div_try_file)
+
+            if self.__split_mr_debug:
+                print('DIV-MR-EXIT #3')
 
             return corrected
 
         if ws_or_comment:
             os.remove(div_src_file)
             os.remove(div_try_file)
+
+            if self.__split_mr_debug:
+                print('DIV-MR-EXIT #4')
 
             return False
 
@@ -8408,9 +8653,50 @@ class NmrDpUtility:
         len_possible_types = len(possible_types)
 
         if len_valid_types == 0 and len_possible_types == 0:
+            if err_column_position > 0 and 'input' in err_desc and not err_desc['input'][0:err_column_position].isspace():
+                test_line = err_desc['input'][0:err_column_position]
+
+                if reader is not None:
+                    pass
+
+                elif file_type == 'nm-res-xpl':
+                    reader = XplorMRReader(False, self.__lfh, None, None, None,
+                                           self.__ccU, self.__csStat, self.__nefT)
+                elif file_type == 'nm-res-cns':
+                    reader = CnsMRReader(False, self.__lfh, None, None, None,
+                                         self.__ccU, self.__csStat, self.__nefT)
+                elif file_type == 'nm-res-amb':
+                    reader = AmberMRReader(self.__verbose, self.__lfh, None, None, None,
+                                           self.__ccU, self.__csStat, self.__nefT)
+                elif file_type == 'nm-aux-amb':
+                    reader = AmberPTReader(self.__verbose, self.__lfh, None, None, None,
+                                           self.__ccU, self.__csStat)
+                elif file_type == 'nm-res-cya':
+                    reader = CyanaMRReader(self.__verbose, self.__lfh, None, None, None,
+                                           self.__ccU, self.__csStat, self.__nefT)
+                elif file_type == 'nm-res-ros':
+                    reader = RosettaMRReader(self.__verbose, self.__lfh, None, None, None,
+                                             self.__ccU, self.__csStat, self.__nefT)
+
+                _, _, lexer_err_listener = reader.parse(test_line, None, isFilePath=False)
+
+                has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
+
+                if not has_lexer_error:
+                    os.remove(div_src_file)
+                    os.remove(div_try_file)
+
+                    if self.__split_mr_debug:
+                        print('DIV-MR-EXIT #5')
+
+                    return False  # not split MR file because of internal lexer errors to be hundled by manual
+
             if div_src:
                 os.remove(file_path)
             os.rename(div_try_file, div_ext_file)
+
+            if self.__split_mr_debug:
+                print('DIV-MR-EXIT #6')
 
             return True  # succeeded in eliminating uninterpretable parts
 
@@ -8418,9 +8704,24 @@ class NmrDpUtility:
             os.remove(div_src_file)
             os.remove(div_try_file)
 
+            if self.__split_mr_debug:
+                print('DIV-MR-EXIT #7')
+
             return False
 
-        self.__lfh.write(f"The NMR restraint file {file_name!r} ({mr_format_name} format) is identified as {valid_types}.\n")
+        # self.__lfh.write(f"The NMR restraint file {file_name!r} ({mr_format_name} format) is identified as {valid_types}.\n")
+
+        if file_type in valid_types:
+            os.remove(div_src_file)
+            os.remove(div_try_file)
+
+            if prev_input is not None:
+                err_desc['previous_input'] = prev_input
+
+            if self.__split_mr_debug:
+                print('DIV-MR-EXIT #8')
+
+            return False  # actual issue in the line before the parser error should be hundled by manual
 
         if div_src:
             os.remove(file_path)
@@ -8432,9 +8733,12 @@ class NmrDpUtility:
 
         self.__testFormatValidityOfLegacyMR(file_path, file_type, src_path, offset)
 
+        if self.__split_mr_debug:
+            print('DIV-MR-DONE')
+
         return True
 
-    def __peelLegacyMRIfNecessary(self, file_path, file_type, err_line_number, src_path, offset):
+    def __peelLegacyMRIfNecessary(self, file_path, file_type, err_desc, src_path, offset):
         """ Peel uninterpretable restraints from the legacy NMR file if necessary.
         """
 
@@ -8448,8 +8752,6 @@ class NmrDpUtility:
         div_try_file = src_basename + '-div_try.mr'
         div_dst_file = src_basename + '-div_dst.mr'
 
-        err_desc = {'file_path': file_path, 'line_number': err_line_number}
-
         if err_desc in self.__peel_mr_error_message:
             if os.path.exists(div_src_file):
                 os.remove(div_src_file)
@@ -8461,31 +8763,88 @@ class NmrDpUtility:
 
         self.__peel_mr_error_message.append(err_desc)
 
+        if self.__split_mr_debug:
+            print('PEEL-MR')
+
+        reader = None
+
         if file_type == 'nm-res-xpl':
-            mr_format_name = 'XPLOR-NIH'
+            # mr_format_name = 'XPLOR-NIH'
             reader = XplorMRReader(False, self.__lfh, None, None, None,
                                    self.__ccU, self.__csStat, self.__nefT)
         elif file_type == 'nm-res-cns':
-            mr_format_name = 'CNS'
+            # mr_format_name = 'CNS'
             reader = CnsMRReader(False, self.__lfh, None, None, None,
                                  self.__ccU, self.__csStat, self.__nefT)
         elif file_type == 'nm-res-amb':
-            mr_format_name = 'AMBER'
+            # mr_format_name = 'AMBER'
             reader = AmberMRReader(self.__verbose, self.__lfh, None, None, None,
                                    self.__ccU, self.__csStat, self.__nefT)
         elif file_type == 'nm-aux-amb':
-            mr_format_name = 'AMBER'
+            # mr_format_name = 'AMBER'
             reader = AmberPTReader(self.__verbose, self.__lfh, None, None, None,
                                    self.__ccU, self.__csStat)
         elif file_type == 'nm-res-cya':
-            mr_format_name = 'CYANA'
+            # mr_format_name = 'CYANA'
             reader = CyanaMRReader(self.__verbose, self.__lfh, None, None, None,
                                    self.__ccU, self.__csStat, self.__nefT)
         elif file_type == 'nm-res-ros':
-            mr_format_name = 'ROSETTA'
+            # mr_format_name = 'ROSETTA'
             reader = RosettaMRReader(self.__verbose, self.__lfh, None, None, None,
                                      self.__ccU, self.__csStat, self.__nefT)
         else:
+            return False
+
+        err_line_number = err_desc['line_number']
+        err_column_position = err_desc['column_position']
+
+        if err_column_position > 0 and 'input' in err_desc and not err_desc['input'][0:err_column_position].isspace():
+            test_line = err_desc['input'][err_column_position:]
+
+            if comment_pattern.match(test_line):
+
+                if self.__split_mr_debug:
+                    print('PEEL-MR-EXIT #1')
+
+                return self.__divideLegacyMR(file_path, file_type, err_desc, src_path, offset)
+
+            for test_file_type in ['nm-res-xpl', 'nm-res-cns', 'nm-res-amb', 'nm-aux-amb', 'nm-res-cya', 'nm-res-ros']:
+                if test_file_type == file_type:
+                    continue
+                if test_file_type == 'nm-res-xpl':
+                    test_reader = XplorMRReader(False, self.__lfh, None, None, None,
+                                                self.__ccU, self.__csStat, self.__nefT)
+                elif test_file_type == 'nm-res-cns':
+                    test_reader = CnsMRReader(False, self.__lfh, None, None, None,
+                                              self.__ccU, self.__csStat, self.__nefT)
+                elif test_file_type == 'nm-res-amb':
+                    test_reader = AmberMRReader(self.__verbose, self.__lfh, None, None, None,
+                                                self.__ccU, self.__csStat, self.__nefT)
+                elif test_file_type == 'nm-aux-amb':
+                    test_reader = AmberPTReader(self.__verbose, self.__lfh, None, None, None,
+                                                self.__ccU, self.__csStat)
+                elif test_file_type == 'nm-res-cya':
+                    test_reader = CyanaMRReader(self.__verbose, self.__lfh, None, None, None,
+                                                self.__ccU, self.__csStat, self.__nefT)
+                elif test_file_type == 'nm-res-ros':
+                    test_reader = RosettaMRReader(self.__verbose, self.__lfh, None, None, None,
+                                                  self.__ccU, self.__csStat, self.__nefT)
+
+                _, parser_err_listener, lexer_err_listener = test_reader.parse(test_line, None, isFilePath=False)
+
+                has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
+                has_parser_error = parser_err_listener is not None and parser_err_listener.getMessageList() is not None
+
+                if not has_lexer_error and not has_parser_error:
+
+                    if self.__split_mr_debug:
+                        print('PEEL-MR-EXIT #2')
+
+                    return self.__divideLegacyMR(file_path, file_type, err_desc, src_path, offset)
+
+            if self.__split_mr_debug:
+                print('PEEL-MR-EXIT #3')
+
             return False
 
         i = j = j2 = j3 = 0
@@ -8504,7 +8863,7 @@ class NmrDpUtility:
                     j += 1
                     continue
                 if not is_valid:
-                    if ws_pattern.match(line) or comment_pattern.match(line):
+                    if line.isspace() or comment_pattern.match(line):
                         ofp2.write(line)
                         j2 += 1
                         continue
@@ -8521,7 +8880,7 @@ class NmrDpUtility:
                             continue
                     is_valid = True
                 if ws_or_comment:
-                    if ws_pattern.match(line) or comment_pattern.match(line):
+                    if line.isspace() or comment_pattern.match(line):
                         ofp2.write(line)
                         j2 += 1
                         continue
@@ -8537,6 +8896,9 @@ class NmrDpUtility:
             if os.path.exists(div_try_file):
                 os.remove(div_try_file)
 
+            if self.__split_mr_debug:
+                print('PEEL-MR-EXIT #4')
+
             return False
 
         file_name = os.path.basename(div_try_file)
@@ -8547,6 +8909,46 @@ class NmrDpUtility:
         len_possible_types = len(possible_types)
 
         if len_valid_types == 0 and len_possible_types == 0:
+
+            if err_column_position > 0 and 'input' in err_desc and not err_desc['input'][0:err_column_position].isspace():
+                test_line = err_desc['input'][0:err_column_position]
+
+                if reader is not None:
+                    pass
+
+                if file_type == 'nm-res-xpl':
+                    reader = XplorMRReader(False, self.__lfh, None, None, None,
+                                           self.__ccU, self.__csStat, self.__nefT)
+                elif file_type == 'nm-res-cns':
+                    reader = CnsMRReader(False, self.__lfh, None, None, None,
+                                         self.__ccU, self.__csStat, self.__nefT)
+                elif file_type == 'nm-res-amb':
+                    reader = AmberMRReader(self.__verbose, self.__lfh, None, None, None,
+                                           self.__ccU, self.__csStat, self.__nefT)
+                elif file_type == 'nm-aux-amb':
+                    reader = AmberPTReader(self.__verbose, self.__lfh, None, None, None,
+                                           self.__ccU, self.__csStat)
+                elif file_type == 'nm-res-cya':
+                    reader = CyanaMRReader(self.__verbose, self.__lfh, None, None, None,
+                                           self.__ccU, self.__csStat, self.__nefT)
+                elif file_type == 'nm-res-ros':
+                    reader = RosettaMRReader(self.__verbose, self.__lfh, None, None, None,
+                                             self.__ccU, self.__csStat, self.__nefT)
+
+                _, _, lexer_err_listener = reader.parse(test_line, None, isFilePath=False)
+
+                has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
+
+                if not has_lexer_error:
+                    os.remove(div_src_file)
+                    os.remove(div_ext_file)
+                    os.remove(div_try_file)
+
+                    if self.__split_mr_debug:
+                        print('PEEL-MR-EXIT #5')
+
+                    return False  # not split MR file because of internal lexer errors to be hundled by manual
+
             if div_src:
                 os.remove(file_path)
             with open(div_try_file, 'r') as ifp,\
@@ -8555,6 +8957,9 @@ class NmrDpUtility:
                     ofp.write(line)
             os.remove(div_try_file)
 
+            if self.__split_mr_debug:
+                print('PEEL-MR-EXIT #6')
+
             return True  # succeeded in eliminating uninterpretable parts
 
         if len_possible_types > 0:
@@ -8562,9 +8967,12 @@ class NmrDpUtility:
             os.remove(div_ext_file)
             os.remove(div_try_file)
 
+            if self.__split_mr_debug:
+                print('PEEL-MR-EXIT #7')
+
             return False
 
-        self.__lfh.write(f"The NMR restraint file {file_name!r} ({mr_format_name} format) is identified as {valid_types}.\n")
+        # self.__lfh.write(f"The NMR restraint file {file_name!r} ({mr_format_name} format) is identified as {valid_types}.\n")
 
         if div_src:
             os.remove(file_path)
@@ -8575,6 +8983,363 @@ class NmrDpUtility:
         file_type = valid_types[0]
 
         self.__testFormatValidityOfLegacyMR(file_path, file_type, src_path, offset)
+
+        if self.__split_mr_debug:
+            print('PEEL-MR-DONE')
+
+        return True
+
+    def __divideLegacyMR(self, file_path, file_type, err_desc, src_path, offset):
+        """ Divive legacy NMR restraint file.
+        """
+
+        if not self.__remediation_mode:
+            return False
+
+        src_basename = os.path.splitext(file_path)[0]
+        div_src = 'div_dst' in src_basename
+        div_src_file = src_basename + '-div_src.mr'
+        div_ext_file = src_basename + '-div_ext.mr'
+        div_try_file = src_basename + '-div_try.mr'
+        div_dst_file = src_basename + '-div_dst.mr'
+        """
+        if err_desc in self.__divide_mr_error_message:
+            if os.path.exists(div_src_file):
+                os.remove(div_src_file)
+            if os.path.exists(div_dst_file):
+                os.remove(div_dst_file)
+            if os.path.exists(div_ext_file):
+                os.remove(div_ext_file)
+            return False
+
+        self.__divide_mr_error_message.append(err_desc)
+        """
+
+        if self.__split_mr_debug:
+            print('DO-DIV-MR')
+
+        if file_type == 'nm-res-xpl':
+            # mr_format_name = 'XPLOR-NIH'
+            pass
+        elif file_type == 'nm-res-cns':
+            # mr_format_name = 'CNS'
+            pass
+        elif file_type in ('nm-res-amb', 'nm-aux-amb'):
+            # mr_format_name = 'AMBER'
+            pass
+        elif file_type == 'nm-res-cya':
+            # mr_format_name = 'CYANA'
+            pass
+        elif file_type == 'nm-res-ros':
+            # mr_format_name = 'ROSETTA'
+            pass
+        else:
+            return False
+
+        err_message = err_desc['message']
+        err_line_number = err_desc['line_number']
+        err_column_position = err_desc['column_position']
+
+        if not(err_column_position > 0 and 'input' in err_desc):
+
+            if self.__split_mr_debug:
+                print('DO-DIV-MR-EXIT #1')
+
+            return False
+
+        xplor_missing_end_at_eof = err_message == xplor_missing_end_at_eof_err_msg
+        xplor_ends_wo_statement = bool(xplor_extra_end_err_msg_pattern.match(err_message))
+
+        amber_missing_end_at_eof = err_message == amber_missing_end_at_eof_err_msg
+        amber_ends_wo_statement = bool(amber_extra_end_err_msg_pattern.match(err_message))
+
+        i = j = 0
+
+        ws_or_comment = True
+
+        with open(file_path, 'r') as ifp,\
+                open(div_src_file, 'w') as ofp,\
+                open(div_try_file, 'w') as ofp2:
+            for line in ifp:
+                i += 1
+                if i < err_line_number:
+                    if ws_or_comment:
+                        if line.isspace() or comment_pattern.match(line):
+                            pass
+                        else:
+                            ws_or_comment = False
+                    ofp.write(line)
+                    j += 1
+                    continue
+                if i == err_line_number:
+                    ofp.write(line[0:err_column_position] + '\n')
+                    j += 1
+                    ofp2.write(line[err_column_position:])
+                    continue
+                ofp2.write(line)
+
+        offset += err_line_number - 1
+
+        if j == 0:
+            if not xplor_ends_wo_statement:
+                xplor_ends_wo_statement = True
+            if not amber_ends_wo_statement:
+                amber_ends_wo_statement = True
+
+        if (xplor_ends_wo_statement or amber_ends_wo_statement) or i < err_line_number:
+
+            corrected = False
+
+            if xplor_ends_wo_statement and file_type in ('nm-res-xpl', 'nm-res-cns'):
+
+                has_end_tag = False
+
+                j = 0
+
+                with open(src_path, 'r') as ifp:
+                    for line in ifp:
+                        if j == offset:
+                            if xplor_end_pattern.match(line):
+                                has_end_tag = True
+                            break
+                        j += 1
+
+                if has_end_tag:
+
+                    dir_path = os.path.dirname(src_path)
+
+                    for div_file_name in os.listdir(dir_path):
+                        if os.path.isfile(os.path.join(dir_path, div_file_name))\
+                           and (div_file_name.endswith('-div_src.mr') or div_file_name.endswith('-div_dst.mr')):
+                            os.remove(os.path.join(dir_path, div_file_name))
+
+                    src_file_name = os.path.basename(src_path)
+                    cor_test = '-corrected' in src_file_name
+                    if cor_test:
+                        cor_src_path = src_path + '~'
+                    else:
+                        if src_path.endswith('.mr'):
+                            cor_src_path = re.sub(r'\-trimmed$', '', os.path.splitext(src_path)[0]) + '-corrected.mr'
+                        else:
+                            cor_src_path = re.sub(r'\-trimmed$', '', src_path) + '-corrected'
+
+                    j = 0
+
+                    with open(src_path, 'r') as ifp,\
+                            open(cor_src_path, 'w') as ofp:
+                        for line in ifp:
+                            if j == offset:
+                                ofp.write('#' + line)
+                            else:
+                                ofp.write(line)
+                            j += 1
+
+                    if cor_test:
+                        os.rename(cor_src_path, src_path)
+
+                    corrected = True
+
+            if amber_ends_wo_statement and file_type == 'nm-res-amb':
+
+                has_end_tag = False
+
+                j = 0
+
+                with open(src_path, 'r') as ifp:
+                    for line in ifp:
+                        if j == offset:
+                            if amber_end_pattern.match(line):
+                                has_end_tag = True
+                            break
+                        j += 1
+
+                if has_end_tag:
+
+                    dir_path = os.path.dirname(src_path)
+
+                    for div_file_name in os.listdir(dir_path):
+                        if os.path.isfile(os.path.join(dir_path, div_file_name))\
+                           and (div_file_name.endswith('-div_src.mr') or div_file_name.endswith('-div_dst.mr')):
+                            os.remove(os.path.join(dir_path, div_file_name))
+
+                    src_file_name = os.path.basename(src_path)
+                    cor_test = '-corrected' in src_file_name
+                    if cor_test:
+                        cor_src_path = src_path + '~'
+                    else:
+                        if src_path.endswith('.mr'):
+                            cor_src_path = re.sub(r'\-trimmed$', '', os.path.splitext(src_path)[0]) + '-corrected.mr'
+                        else:
+                            cor_src_path = re.sub(r'\-trimmed$', '', src_path) + '-corrected'
+
+                    j = 0
+
+                    with open(src_path, 'r') as ifp,\
+                            open(cor_src_path, 'w') as ofp:
+                        for line in ifp:
+                            if j == offset:
+                                ofp.write('#' + line)
+                            else:
+                                ofp.write(line)
+                            j += 1
+
+                    if cor_test:
+                        os.rename(cor_src_path, src_path)
+
+                    corrected = True
+
+            if i == err_line_number - 1 and xplor_missing_end_at_eof:
+
+                dir_path = os.path.dirname(src_path)
+
+                for div_file_name in os.listdir(dir_path):
+                    if os.path.isfile(os.path.join(dir_path, div_file_name))\
+                       and (div_file_name.endswith('-div_src.mr') or div_file_name.endswith('-div_dst.mr')):
+                        os.remove(os.path.join(dir_path, div_file_name))
+
+                src_file_name = os.path.basename(src_path)
+                cor_test = '-corrected' in src_file_name
+                if cor_test:
+                    cor_src_path = src_path + '~'
+                else:
+                    if src_path.endswith('.mr'):
+                        cor_src_path = re.sub(r'\-trimmed$', '', os.path.splitext(src_path)[0]) + '-corrected.mr'
+                    else:
+                        cor_src_path = re.sub(r'\-trimmed$', '', src_path) + '-corrected'
+
+                with open(src_path, 'r') as ifp,\
+                        open(cor_src_path, 'w') as ofp:
+                    for line in ifp:
+                        ofp.write(line)
+                    ofp.write('END\n')
+
+                if cor_test:
+                    os.rename(cor_src_path, src_path)
+
+                corrected = True
+
+            if i == err_line_number - 1 and amber_missing_end_at_eof:
+
+                dir_path = os.path.dirname(src_path)
+
+                for div_file_name in os.listdir(dir_path):
+                    if os.path.isfile(os.path.join(dir_path, div_file_name))\
+                       and (div_file_name.endswith('-div_src.mr') or div_file_name.endswith('-div_dst.mr')):
+                        os.remove(os.path.join(dir_path, div_file_name))
+
+                src_file_name = os.path.basename(src_path)
+                cor_test = '-corrected' in src_file_name
+                if cor_test:
+                    cor_src_path = src_path + '~'
+                else:
+                    if src_path.endswith('.mr'):
+                        cor_src_path = re.sub(r'\-trimmed$', '', os.path.splitext(src_path)[0]) + '-corrected.mr'
+                    else:
+                        cor_src_path = re.sub(r'\-trimmed$', '', src_path) + '-corrected'
+
+                with open(src_path, 'r') as ifp,\
+                        open(cor_src_path, 'w') as ofp:
+                    for line in ifp:
+                        ofp.write(line)
+                    ofp.write('&end\n')
+
+                if cor_test:
+                    os.rename(cor_src_path, src_path)
+
+                corrected = True
+
+            if os.path.exists(div_src_file):
+                os.remove(div_src_file)
+            if os.path.exists(div_try_file):
+                os.remove(div_try_file)
+
+            if self.__split_mr_debug:
+                print('DO-DIV-MR-EXIT #2')
+
+            return corrected
+
+        if ws_or_comment:
+            os.remove(div_src_file)
+            os.remove(div_try_file)
+
+            if self.__split_mr_debug:
+                print('DO-DIV-MR-EXIT #3')
+
+            return False
+
+        file_name = os.path.basename(div_try_file)
+
+        _, _, valid_types, possible_types = self.__detectOtherPossibleFormatAsErrorOfLegacyMR(div_try_file, file_name, 'nm-res-mr', [], True)
+
+        len_valid_types = len(valid_types)
+        len_possible_types = len(possible_types)
+
+        if len_valid_types == 0 and len_possible_types == 0:
+            """
+            if err_column_position > 0 and 'input' in err_desc and not err_desc['input'][0:err_column_position].isspace():
+                test_line = err_desc['input'][0:err_column_position]
+
+                if file_type == 'nm-res-xpl':
+                    reader = XplorMRReader(False, self.__lfh, None, None, None,
+                                           self.__ccU, self.__csStat, self.__nefT)
+                elif file_type == 'nm-res-cns':
+                    reader = CnsMRReader(False, self.__lfh, None, None, None,
+                                         self.__ccU, self.__csStat, self.__nefT)
+                elif file_type == 'nm-res-amb':
+                    reader = AmberMRReader(self.__verbose, self.__lfh, None, None, None,
+                                           self.__ccU, self.__csStat, self.__nefT)
+                elif file_type == 'nm-aux-amb':
+                    reader = AmberPTReader(self.__verbose, self.__lfh, None, None, None,
+                                           self.__ccU, self.__csStat)
+                elif file_type == 'nm-res-cya':
+                    reader = CyanaMRReader(self.__verbose, self.__lfh, None, None, None,
+                                           self.__ccU, self.__csStat, self.__nefT)
+                elif file_type == 'nm-res-ros':
+                    reader = RosettaMRReader(self.__verbose, self.__lfh, None, None, None,
+                                             self.__ccU, self.__csStat, self.__nefT)
+
+                _, _, lexer_err_listener = reader.parse(test_line, None, isFilePath=False)
+
+                has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
+
+                if not has_lexer_error:
+                    os.remove(div_src_file)
+                    os.remove(div_try_file)
+
+                    return False  # not split MR file because of internal lexer errors to be hundled by manual
+            """
+            if div_src:
+                os.remove(file_path)
+            os.rename(div_try_file, div_ext_file)
+
+            if self.__split_mr_debug:
+                print('DO-DIV-MR-EXIT #4')
+
+            return True  # succeeded in eliminating uninterpretable parts
+
+        if len_possible_types > 0:
+            os.remove(div_src_file)
+            os.remove(div_try_file)
+
+            if self.__split_mr_debug:
+                print('DO-DIV-MR-EXIT #5')
+
+            return False
+
+        # self.__lfh.write(f"The NMR restraint file {file_name!r} ({mr_format_name} format) is identified as {valid_types}.\n")
+
+        if div_src:
+            os.remove(file_path)
+
+        os.rename(div_try_file, div_dst_file)
+
+        file_path = div_dst_file
+        file_type = valid_types[0]
+
+        self.__testFormatValidityOfLegacyMR(file_path, file_type, src_path, offset)
+
+        if self.__split_mr_debug:
+            print('DO-DIV-MR-DONE')
 
         return True
 
@@ -8639,7 +9404,7 @@ class NmrDpUtility:
                 # parser error occurrs before occurrenece of lexer error that implies mixing of different MR formats in a file
                 if lexer_err_listener.getErrorLineNumber()[0] > parser_err_listener.getErrorLineNumber()[0]:
                     self.__peelLegacyMRIfNecessary(file_path, file_type,
-                                                   parser_err_listener.getErrorLineNumber()[0],
+                                                   parser_err_listener.getMessageList()[0],
                                                    src_path, offset)
                     div_test = True
 
@@ -8850,7 +9615,7 @@ class NmrDpUtility:
                         if self.__verbose:
                             self.__lfh.write(f"+NmrDpUtility.__detectOtherPossibleFormatAsErrorOfLegacyMR() ++ Error  - {err}\n")
 
-            if (not is_valid or multiple_check) and file_type != 'nm-res-amb':
+            if (not is_valid) and file_type != 'nm-res-amb':
 
                 reader = AmberMRReader(False, self.__lfh, None, None, None,
                                        self.__ccU, self.__csStat, self.__nefT)
@@ -8923,7 +9688,7 @@ class NmrDpUtility:
                         if self.__verbose:
                             self.__lfh.write(f"+NmrDpUtility.__detectOtherPossibleFormatAsErrorOfLegacyMR() ++ Error  - {err}\n")
 
-            if (not is_valid or multiple_check) and file_type != 'nm-aux-amb':
+            if (not is_valid) and file_type != 'nm-aux-amb':
 
                 reader = AmberPTReader(False, self.__lfh, None, None, None,
                                        self.__ccU, self.__csStat)
@@ -8995,7 +9760,7 @@ class NmrDpUtility:
                         if self.__verbose:
                             self.__lfh.write(f"+NmrDpUtility.__detectOtherPossibleFormatAsErrorOfLegacyMR() ++ Error  - {err}\n")
 
-            if (not is_valid or multiple_check) and file_type != 'nm-res-cya':
+            if (not is_valid) and file_type != 'nm-res-cya':
 
                 reader = CyanaMRReader(False, self.__lfh, None, None, None,
                                        self.__ccU, self.__csStat, self.__nefT)
@@ -9068,7 +9833,7 @@ class NmrDpUtility:
                         if self.__verbose:
                             self.__lfh.write(f"+NmrDpUtility.__detectOtherPossibleFormatAsErrorOfLegacyMR() ++ Error  - {err}\n")
 
-            if (not is_valid or multiple_check) and file_type != 'nm-res-ros':
+            if (not is_valid) and file_type != 'nm-res-ros':
 
                 reader = RosettaMRReader(False, self.__lfh, None, None, None,
                                          self.__ccU, self.__csStat, self.__nefT)
@@ -9679,7 +10444,7 @@ class NmrDpUtility:
                         return False
 
                     if len_possible_types == 0:
-                        self.__lfh.write(f"The NMR restraint file {file_name!r} (MR format) is identified as {valid_types}.\n")
+                        # self.__lfh.write(f"The NMR restraint file {file_name!r} (MR format) is identified as {valid_types}.\n")
 
                         _ar = ar.copy()
 
@@ -9708,7 +10473,7 @@ class NmrDpUtility:
                                 self.__lfh.write(f"+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - {err}\n")
 
                     elif len_valid_types == 0:
-                        self.__lfh.write(f"The NMR restraint file {file_name!r} (MR format) can be {possible_types}.\n")
+                        # self.__lfh.write(f"The NMR restraint file {file_name!r} (MR format) can be {possible_types}.\n")
 
                         _ar['file_name'] = dst_file
                         _ar['file_type'] = possible_types[0]
@@ -9724,7 +10489,7 @@ class NmrDpUtility:
                             self.__lfh.write(f"+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - {err}\n")
 
                     else:
-                        self.__lfh.write(f"The NMR restraint file {file_name!r} (MR format) is identified as {valid_types} and can be {possible_types} as well.\n")
+                        # self.__lfh.write(f"The NMR restraint file {file_name!r} (MR format) is identified as {valid_types} and can be {possible_types} as well.\n")
 
                         _ar['file_name'] = dst_file
                         _ar['file_type'] = valid_types[0]
@@ -9838,7 +10603,7 @@ class NmrDpUtility:
                             return False
 
                         if len_possible_types == 0:
-                            self.__lfh.write(f"The NMR restraint file {file_name!r} (MR format) is identified as {valid_types}.\n")
+                            # self.__lfh.write(f"The NMR restraint file {file_name!r} (MR format) is identified as {valid_types}.\n")
 
                             _ar = ar.copy()
 
@@ -9872,7 +10637,7 @@ class NmrDpUtility:
                                     self.__lfh.write(f"+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - {err}\n")
 
                         elif len_valid_types == 0:
-                            self.__lfh.write(f"The NMR restraint file {file_name!r} (MR format) can be {possible_types}.\n")
+                            # self.__lfh.write(f"The NMR restraint file {file_name!r} (MR format) can be {possible_types}.\n")
 
                             _ar['file_name'] = _dst_file
                             _ar['file_type'] = possible_types[0]
@@ -9889,7 +10654,7 @@ class NmrDpUtility:
                                 self.__lfh.write(f"+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - {err}\n")
 
                         else:
-                            self.__lfh.write(f"The NMR restraint file {file_name!r} (MR format) is identified as {valid_types} and can be {possible_types} as well.\n")
+                            # self.__lfh.write(f"The NMR restraint file {file_name!r} (MR format) is identified as {valid_types} and can be {possible_types} as well.\n")
 
                             _ar['file_name'] = _dst_file
                             _ar['file_type'] = valid_types[0]

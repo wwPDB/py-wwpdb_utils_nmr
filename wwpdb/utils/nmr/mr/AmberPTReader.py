@@ -151,15 +151,16 @@ class AmberPTReader:
                     print(listener.warningMessage)
                 print(listener.getContentSubtype())
 
-            if isFilePath:
-                ifp.close()
-
             return listener, parser_error_listener, lexer_error_listener
 
         except IOError as e:
             if self.__verbose:
                 self.__lfh.write(f"+AmberPTReader.parse() ++ Error - {str(e)}\n")
             return None, None, None
+
+        finally:
+            if isFilePath:
+                ifp.close()
 
 
 if __name__ == "__main__":

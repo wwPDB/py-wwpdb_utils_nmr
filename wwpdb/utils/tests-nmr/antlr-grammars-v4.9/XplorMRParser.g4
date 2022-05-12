@@ -50,7 +50,7 @@ xplor_nih_mr:
 	dihedral_assign |		// allowing bare assign clauses for Dihedral angle restraints
 	sani_assign |			// allowing bare assign clauses for RDC restraints
 	planar_statement |		// allowing bare group clauses for Planality restraints
-	harmonic_assign |		// allowing individual assign clauses for Harmonic coordinate (plane) restraints
+	harmonic_assign |		// allowing individual assign clauses for Harmonic coordinate restraints
 	hbond_assign |			// allowing bare assign clauses for Hydrogen bond geometry restraints
 	hbond_db_assign |		// allowing bare assign clauses for Hydrogen bond database restraints
 	coup_assign |			// allowing bare assign clauses for Scaler J-coupling restraints

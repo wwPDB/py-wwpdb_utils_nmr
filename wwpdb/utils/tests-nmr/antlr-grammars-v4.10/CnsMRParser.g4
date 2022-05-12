@@ -38,7 +38,7 @@ cns_mr:
 	dihedral_assign |		// allowing bare assign clauses for Dihedral angle restraints
 	sani_assign |			// allowing bare assign clauses for RDC restraints
 	plane_statement |		// allowing bare group clauses for Plane restraints
-	harmonic_assign |		// allowing individual assign clauses for Harmonic coordinate (plane) restraints
+	harmonic_assign |		// allowing individual assign clauses for Harmonic coordinate restraints
 	coup_assign |			// allowing bare assign clauses for Scaler J-coupling restraints
 	carbon_shift_assign		// allowing bare assign clauses for Carbon chemical shift restraints
 	)*
@@ -160,7 +160,7 @@ group_statement:
 	Selection Equ_op? selection |
 	Weight Equ_op? number_s;
 
-/* CNS: Plane restraints - Syntax - restraints/harmonic
+/* CNS: Harmonic coordiatie restraints - Syntax - restraints/harmonic
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
 */
 harmonic_statement:

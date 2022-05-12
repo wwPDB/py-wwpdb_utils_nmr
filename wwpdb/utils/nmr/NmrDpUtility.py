@@ -8328,6 +8328,18 @@ class NmrDpUtility:
                 if not has_lexer_error and not has_parser_error:
                     return self.__divideLegacyMR(file_path, file_type, err_desc, src_path, offset)
 
+                # try to resolve unexcepted concatenation
+                test_line = err_desc['input'][err_column_position + 1:]
+
+                _, parser_err_listener, lexer_err_listener = reader.parse(test_line, None, isFilePath=False)
+
+                has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
+                has_parser_error = parser_err_listener is not None and parser_err_listener.getMessageList() is not None
+
+                if not has_lexer_error and not has_parser_error:
+                    err_desc['column_position'] += 1
+                    return self.__divideLegacyMR(file_path, file_type, err_desc, src_path, offset)
+
         i = j = 0
 
         ws_or_comment = True

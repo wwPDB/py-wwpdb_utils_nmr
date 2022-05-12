@@ -840,6 +840,7 @@ class NmrDpUtility:
         self.__lfh = log
 
         self.__debug = False
+        self.__split_mr_debug = False
 
         # current workflow operation
         self.__op = None
@@ -8266,8 +8267,8 @@ class NmrDpUtility:
 
         self.__divide_mr_error_message.append(err_desc)
 
-        if self.__debug:
-            print('DIV')
+        if self.__split_mr_debug:
+            print('DIV-MR')
 
         if file_type == 'nm-res-xpl':
             # mr_format_name = 'XPLOR-NIH'
@@ -8330,8 +8331,8 @@ class NmrDpUtility:
 
                 if not has_lexer_error and not has_parser_error:
 
-                    if self.__debug:
-                        print('DIV-EXIT #1')
+                    if self.__split_mr_debug:
+                        print('DIV-MR-EXIT #1')
 
                     return self.__divideLegacyMR(file_path, file_type, err_desc, src_path, offset)
 
@@ -8346,8 +8347,8 @@ class NmrDpUtility:
                 if not has_lexer_error and not has_parser_error:
                     err_desc['column_position'] += 1
 
-                    if self.__debug:
-                        print('DIV-EXIT #2')
+                    if self.__split_mr_debug:
+                        print('DIV-MR-EXIT #2')
 
                     return self.__divideLegacyMR(file_path, file_type, err_desc, src_path, offset)
 
@@ -8546,8 +8547,8 @@ class NmrDpUtility:
             if os.path.exists(div_try_file):
                 os.remove(div_try_file)
 
-            if self.__debug:
-                print('DIV-EXIT #3')
+            if self.__split_mr_debug:
+                print('DIV-MR-EXIT #3')
 
             return corrected
 
@@ -8555,8 +8556,8 @@ class NmrDpUtility:
             os.remove(div_src_file)
             os.remove(div_try_file)
 
-            if self.__debug:
-                print('DIV-EXIT #4')
+            if self.__split_mr_debug:
+                print('DIV-MR-EXIT #4')
 
             return False
 
@@ -8601,8 +8602,8 @@ class NmrDpUtility:
                     os.remove(div_src_file)
                     os.remove(div_try_file)
 
-                    if self.__debug:
-                        print('DIV-EXIT #5')
+                    if self.__split_mr_debug:
+                        print('DIV-MR-EXIT #5')
 
                     return False  # not split MR file because of internal lexer errors to be hundled by manual
 
@@ -8610,8 +8611,8 @@ class NmrDpUtility:
                 os.remove(file_path)
             os.rename(div_try_file, div_ext_file)
 
-            if self.__debug:
-                print('DIV-EXIT #6')
+            if self.__split_mr_debug:
+                print('DIV-MR-EXIT #6')
 
             return True  # succeeded in eliminating uninterpretable parts
 
@@ -8619,8 +8620,8 @@ class NmrDpUtility:
             os.remove(div_src_file)
             os.remove(div_try_file)
 
-            if self.__debug:
-                print('DIV-EXIT #7')
+            if self.__split_mr_debug:
+                print('DIV-MR-EXIT #7')
 
             return False
 
@@ -8630,8 +8631,8 @@ class NmrDpUtility:
             os.remove(div_src_file)
             os.remove(div_try_file)
 
-            if self.__debug:
-                print('DIV-EXIT #8')
+            if self.__split_mr_debug:
+                print('DIV-MR-EXIT #8')
 
             return False  # actual issue in the line before the parser error should be hundled by manual
 
@@ -8645,8 +8646,8 @@ class NmrDpUtility:
 
         self.__testFormatValidityOfLegacyMR(file_path, file_type, src_path, offset)
 
-        if self.__debug:
-            print('DIV-DONE')
+        if self.__split_mr_debug:
+            print('DIV-MR-DONE')
 
         return True
 
@@ -8675,8 +8676,8 @@ class NmrDpUtility:
 
         self.__peel_mr_error_message.append(err_desc)
 
-        if self.__debug:
-            print('PEEL')
+        if self.__split_mr_debug:
+            print('PEEL-MR')
 
         reader = None
 
@@ -8715,8 +8716,8 @@ class NmrDpUtility:
 
             if comment_pattern.match(test_line):
 
-                if self.__debug:
-                    print('PEEL-EXIT #1')
+                if self.__split_mr_debug:
+                    print('PEEL-MR-EXIT #1')
 
                 return self.__divideLegacyMR(file_path, file_type, err_desc, src_path, offset)
 
@@ -8749,13 +8750,13 @@ class NmrDpUtility:
 
                 if not has_lexer_error and not has_parser_error:
 
-                    if self.__debug:
-                        print('PEEL-EXIT #2')
+                    if self.__split_mr_debug:
+                        print('PEEL-MR-EXIT #2')
 
                     return self.__divideLegacyMR(file_path, file_type, err_desc, src_path, offset)
 
-            if self.__debug:
-                print('PEEL-EXIT #3')
+            if self.__split_mr_debug:
+                print('PEEL-MR-EXIT #3')
 
             return False
 
@@ -8808,8 +8809,8 @@ class NmrDpUtility:
             if os.path.exists(div_try_file):
                 os.remove(div_try_file)
 
-            if self.__debug:
-                print('PEEL-EXIT #4')
+            if self.__split_mr_debug:
+                print('PEEL-MR-EXIT #4')
 
             return False
 
@@ -8856,8 +8857,8 @@ class NmrDpUtility:
                     os.remove(div_ext_file)
                     os.remove(div_try_file)
 
-                    if self.__debug:
-                        print('PEEL-EXIT #5')
+                    if self.__split_mr_debug:
+                        print('PEEL-MR-EXIT #5')
 
                     return False  # not split MR file because of internal lexer errors to be hundled by manual
 
@@ -8869,8 +8870,8 @@ class NmrDpUtility:
                     ofp.write(line)
             os.remove(div_try_file)
 
-            if self.__debug:
-                print('PEEL-EXIT #6')
+            if self.__split_mr_debug:
+                print('PEEL-MR-EXIT #6')
 
             return True  # succeeded in eliminating uninterpretable parts
 
@@ -8879,8 +8880,8 @@ class NmrDpUtility:
             os.remove(div_ext_file)
             os.remove(div_try_file)
 
-            if self.__debug:
-                print('PEEL-EXIT #7')
+            if self.__split_mr_debug:
+                print('PEEL-MR-EXIT #7')
 
             return False
 
@@ -8896,8 +8897,8 @@ class NmrDpUtility:
 
         self.__testFormatValidityOfLegacyMR(file_path, file_type, src_path, offset)
 
-        if self.__debug:
-            print('PEEL-DONE')
+        if self.__split_mr_debug:
+            print('PEEL-MR-DONE')
 
         return True
 
@@ -8927,8 +8928,8 @@ class NmrDpUtility:
         self.__divide_mr_error_message.append(err_desc)
         """
 
-        if self.__debug:
-            print('DO-DIV')
+        if self.__split_mr_debug:
+            print('DO-DIV-MR')
 
         if file_type == 'nm-res-xpl':
             # mr_format_name = 'XPLOR-NIH'
@@ -8954,8 +8955,8 @@ class NmrDpUtility:
 
         if not(err_column_position > 0 and 'input' in err_desc):
 
-            if self.__debug:
-                print('DO-DIV-EXIT #1')
+            if self.__split_mr_debug:
+                print('DO-DIV-MR-EXIT #1')
 
             return False
 
@@ -9165,8 +9166,8 @@ class NmrDpUtility:
             if os.path.exists(div_try_file):
                 os.remove(div_try_file)
 
-            if self.__debug:
-                print('DO-DIV-EXIT #2')
+            if self.__split_mr_debug:
+                print('DO-DIV-MR-EXIT #2')
 
             return corrected
 
@@ -9174,8 +9175,8 @@ class NmrDpUtility:
             os.remove(div_src_file)
             os.remove(div_try_file)
 
-            if self.__debug:
-                print('DO-DIV-EXIT #3')
+            if self.__split_mr_debug:
+                print('DO-DIV-MR-EXIT #3')
 
             return False
 
@@ -9224,8 +9225,8 @@ class NmrDpUtility:
                 os.remove(file_path)
             os.rename(div_try_file, div_ext_file)
 
-            if self.__debug:
-                print('DO-DIV-EXIT #4')
+            if self.__split_mr_debug:
+                print('DO-DIV-MR-EXIT #4')
 
             return True  # succeeded in eliminating uninterpretable parts
 
@@ -9233,8 +9234,8 @@ class NmrDpUtility:
             os.remove(div_src_file)
             os.remove(div_try_file)
 
-            if self.__debug:
-                print('DO-DIV-EXIT #5')
+            if self.__split_mr_debug:
+                print('DO-DIV-MR-EXIT #5')
 
             return False
 
@@ -9250,8 +9251,8 @@ class NmrDpUtility:
 
         self.__testFormatValidityOfLegacyMR(file_path, file_type, src_path, offset)
 
-        if self.__debug:
-            print('DO-DIV-DONE')
+        if self.__split_mr_debug:
+            print('DO-DIV-MR-DONE')
 
         return True
 

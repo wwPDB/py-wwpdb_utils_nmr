@@ -352,20 +352,20 @@ fragment DEC_DIGIT:	[0-9];
 fragment DECIMAL:	DEC_DIGIT+;
 
 Simple_name:		SIMPLE_NAME;
-Simple_names:		WILDCARD | WILDCARD* SIMPLE_NAME WILDCARD+ DEC_DIGIT*;
-Integers:		WILDCARD | WILDCARD* Integer WILDCARD+ DEC_DIGIT*;
+Simple_names:		(WILDCARD | WILDCARD* SIMPLE_NAME WILDCARD+) ATM_NAME_CHAR*;
+Integers:		(WILDCARD | WILDCARD* Integer WILDCARD+) DEC_DIGIT*;
 //Class_name:		SIMPLE_NAME;
-//Class_names:		WILDCARD | WILDCARD* SIMPLE_NAME WILDCARD+ DEC_DIGIT*;
+//Class_names:		(WILDCARD | WILDCARD* SIMPLE_NAME WILDCARD+) ATM_NAME_CHAR*;
 //Segment_name:		SIMPLE_NAME;
-//Segment_names:	WILDCARD | WILDCARD* SIMPLE_NAME WILDCARD+ DEC_DIGIT*;
+//Segment_names:	(WILDCARD | WILDCARD* SIMPLE_NAME WILDCARD+) ATM_NAME_CHAR*;
 //Residue_number:	Integer;
-//Residue_numbers:	WILDCARD | WILDCARD* Residue_number WILDCARD+ DEC_DIGIT*;
+//Residue_numbers:	(WILDCARD | WILDCARD* Residue_number WILDCARD+) DEC_DIGIT*;
 //Residue_name:		SIMPLE_NAME;
-//Residue_names:	WILDCARD | WILDCARD* SIMPLE_NAME WILDCARD+ DEC_DIGIT*;
+//Residue_names:	(WILDCARD | WILDCARD* SIMPLE_NAME WILDCARD+) ATM_NAME_CHAR*;
 //Atom_name:		ALPHA_NUM ATM_NAME_CHAR*;
-//Atom_names:		WILDCARD | WILDCARD* Atom_name WILDCARD+ DEC_DIGIT*;
+//Atom_names:		(WILDCARD | WILDCARD* Atom_name WILDCARD+) ATM_NAME_CHAR*;
 //Atom_type:		ALPHA ATM_TYPE_CHAR*;
-//Atom_types:		WILDCARD | WILDCARD* Atom_type WILDCARD+ DEC_DIGIT*;
+//Atom_types:		(WILDCARD | WILDCARD* Atom_type WILDCARD+) ATM_NAME_CHAR*;
 
 /* Wildcard - Syntax
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html

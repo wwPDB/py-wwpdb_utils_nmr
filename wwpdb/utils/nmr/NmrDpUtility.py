@@ -7374,6 +7374,11 @@ class NmrDpUtility:
                                 corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
                                 div_test = True
 
+                            _err = self.__retrieveErroneousPreviousInput(description)
+                            if _err is not None:
+                                err += "However, the cause of the error seems to exist at the previous input "\
+                                    f"(line {description['line_number']-1}):\n{_err}"
+
                     if len(err) > 0:
                         valid = False
 
@@ -7492,6 +7497,11 @@ class NmrDpUtility:
                                 corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
                                 div_test = True
 
+                            _err = self.__retrieveErroneousPreviousInput(description)
+                            if _err is not None:
+                                err += "However, the cause of the error seems to exist at the previous input "\
+                                    f"(line {description['line_number']-1}):\n{_err}"
+
                     if len(err) > 0:
                         valid = False
 
@@ -7597,6 +7607,11 @@ class NmrDpUtility:
                                     corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
                                     div_test = True
 
+                            _err = self.__retrieveErroneousPreviousInput(description)
+                            if _err is not None:
+                                err += "However, the cause of the error seems to exist at the previous input "\
+                                    f"(line {description['line_number']-1}):\n{_err}"
+
                     if len(err) > 0:
                         valid = False
 
@@ -7701,6 +7716,11 @@ class NmrDpUtility:
                                 elif not div_test and has_content and self.__remediation_mode:
                                     corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
                                     div_test = True
+
+                            _err = self.__retrieveErroneousPreviousInput(description)
+                            if _err is not None:
+                                err += "However, the cause of the error seems to exist at the previous input "\
+                                    f"(line {description['line_number']-1}):\n{_err}"
 
                     if len(err) > 0:
                         valid = False
@@ -7813,6 +7833,11 @@ class NmrDpUtility:
                                 elif not div_test and has_content and self.__remediation_mode:
                                     corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
                                     div_test = True
+
+                            _err = self.__retrieveErroneousPreviousInput(description)
+                            if _err is not None:
+                                err += "However, the cause of the error seems to exist at the previous input "\
+                                    f"(line {description['line_number']-1}):\n{_err}"
 
                     if len(err) > 0:
                         valid = False
@@ -7928,6 +7953,11 @@ class NmrDpUtility:
                                 elif not div_test and has_content and self.__remediation_mode:
                                     corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
                                     div_test = True
+
+                            _err = self.__retrieveErroneousPreviousInput(description)
+                            if _err is not None:
+                                err += "However, the cause of the error seems to exist at the previous input "\
+                                    f"(line {description['line_number']-1}):\n{_err}"
 
                     if len(err) > 0:
                         valid = False
@@ -8242,6 +8272,19 @@ class NmrDpUtility:
 
         return not self.report.isError()
 
+    def __retrieveErroneousPreviousInput(self, err_desc):
+        """ Retrieve erroneous previous input if possible.
+        """
+
+        try:
+            _err_desc = next(_err_desc for _err_desc in self.__divide_mr_error_message
+                             if _err_desc['file_path'] == err_desc['file_path']
+                             and _err_desc['line_number'] == err_desc['line_number']
+                             and _err_desc['message'] == err_desc['message'])
+            return None if 'previous_input' not in _err_desc else _err_desc['previous_input']
+        except StopIteration:
+            return None
+
     def __divideLegacyMRIfNecessary(self, file_path, file_type, err_desc, src_path, offset):
         """ Divive legacy NMR restraint file if necessary.
         """
@@ -8299,6 +8342,8 @@ class NmrDpUtility:
         amber_ends_wo_statement = bool(amber_extra_end_err_msg_pattern.match(err_message))
 
         reader = None
+
+        prev_input = None
 
         if not(xplor_ends_wo_statement or amber_ends_wo_statement):
 
@@ -8399,6 +8444,8 @@ class NmrDpUtility:
             for line in ifp:
                 i += 1
                 if i < err_line_number:
+                    if i == err_line_number - 1:
+                        prev_input = line
                     if ws_or_comment:
                         if line.isspace() or comment_pattern.match(line):
                             pass
@@ -8667,6 +8714,9 @@ class NmrDpUtility:
         if file_type in valid_types:
             os.remove(div_src_file)
             os.remove(div_try_file)
+
+            if prev_input is not None:
+                err_desc['previous_input'] = prev_input
 
             if self.__split_mr_debug:
                 print('DIV-MR-EXIT #8')

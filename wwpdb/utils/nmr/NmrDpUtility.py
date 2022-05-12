@@ -8266,6 +8266,9 @@ class NmrDpUtility:
 
         self.__divide_mr_error_message.append(err_desc)
 
+        if self.__debug:
+            print('DIV')
+
         if file_type == 'nm-res-xpl':
             # mr_format_name = 'XPLOR-NIH'
             pass
@@ -8326,6 +8329,10 @@ class NmrDpUtility:
                 has_parser_error = parser_err_listener is not None and parser_err_listener.getMessageList() is not None
 
                 if not has_lexer_error and not has_parser_error:
+
+                    if self.__debug:
+                        print('DIV-EXIT #1')
+
                     return self.__divideLegacyMR(file_path, file_type, err_desc, src_path, offset)
 
                 # try to resolve unexcepted concatenation
@@ -8338,6 +8345,10 @@ class NmrDpUtility:
 
                 if not has_lexer_error and not has_parser_error:
                     err_desc['column_position'] += 1
+
+                    if self.__debug:
+                        print('DIV-EXIT #2')
+
                     return self.__divideLegacyMR(file_path, file_type, err_desc, src_path, offset)
 
         i = j = 0
@@ -8535,11 +8546,17 @@ class NmrDpUtility:
             if os.path.exists(div_try_file):
                 os.remove(div_try_file)
 
+            if self.__debug:
+                print('DIV-EXIT #3')
+
             return corrected
 
         if ws_or_comment:
             os.remove(div_src_file)
             os.remove(div_try_file)
+
+            if self.__debug:
+                print('DIV-EXIT #4')
 
             return False
 
@@ -8584,11 +8601,17 @@ class NmrDpUtility:
                     os.remove(div_src_file)
                     os.remove(div_try_file)
 
+                    if self.__debug:
+                        print('DIV-EXIT #5')
+
                     return False  # not split MR file because of internal lexer errors to be hundled by manual
 
             if div_src:
                 os.remove(file_path)
             os.rename(div_try_file, div_ext_file)
+
+            if self.__debug:
+                print('DIV-EXIT #6')
 
             return True  # succeeded in eliminating uninterpretable parts
 
@@ -8596,9 +8619,21 @@ class NmrDpUtility:
             os.remove(div_src_file)
             os.remove(div_try_file)
 
+            if self.__debug:
+                print('DIV-EXIT #7')
+
             return False
 
         # self.__lfh.write(f"The NMR restraint file {file_name!r} ({mr_format_name} format) is identified as {valid_types}.\n")
+
+        if file_type in valid_types:
+            os.remove(div_src_file)
+            os.remove(div_try_file)
+
+            if self.__debug:
+                print('DIV-EXIT #8')
+
+            return False  # actual issue in the line before the parser error should be hundled by manual
 
         if div_src:
             os.remove(file_path)
@@ -8609,6 +8644,9 @@ class NmrDpUtility:
         file_type = valid_types[0]
 
         self.__testFormatValidityOfLegacyMR(file_path, file_type, src_path, offset)
+
+        if self.__debug:
+            print('DIV-DONE')
 
         return True
 
@@ -8636,6 +8674,9 @@ class NmrDpUtility:
             return False
 
         self.__peel_mr_error_message.append(err_desc)
+
+        if self.__debug:
+            print('PEEL')
 
         reader = None
 
@@ -8673,6 +8714,10 @@ class NmrDpUtility:
             test_line = err_desc['input'][err_column_position:]
 
             if comment_pattern.match(test_line):
+
+                if self.__debug:
+                    print('PEEL-EXIT #1')
+
                 return self.__divideLegacyMR(file_path, file_type, err_desc, src_path, offset)
 
             for test_file_type in ['nm-res-xpl', 'nm-res-cns', 'nm-res-amb', 'nm-aux-amb', 'nm-res-cya', 'nm-res-ros']:
@@ -8703,7 +8748,14 @@ class NmrDpUtility:
                 has_parser_error = parser_err_listener is not None and parser_err_listener.getMessageList() is not None
 
                 if not has_lexer_error and not has_parser_error:
+
+                    if self.__debug:
+                        print('PEEL-EXIT #2')
+
                     return self.__divideLegacyMR(file_path, file_type, err_desc, src_path, offset)
+
+            if self.__debug:
+                print('PEEL-EXIT #3')
 
             return False
 
@@ -8756,6 +8808,9 @@ class NmrDpUtility:
             if os.path.exists(div_try_file):
                 os.remove(div_try_file)
 
+            if self.__debug:
+                print('PEEL-EXIT #4')
+
             return False
 
         file_name = os.path.basename(div_try_file)
@@ -8801,6 +8856,9 @@ class NmrDpUtility:
                     os.remove(div_ext_file)
                     os.remove(div_try_file)
 
+                    if self.__debug:
+                        print('PEEL-EXIT #5')
+
                     return False  # not split MR file because of internal lexer errors to be hundled by manual
 
             if div_src:
@@ -8811,12 +8869,18 @@ class NmrDpUtility:
                     ofp.write(line)
             os.remove(div_try_file)
 
+            if self.__debug:
+                print('PEEL-EXIT #6')
+
             return True  # succeeded in eliminating uninterpretable parts
 
         if len_possible_types > 0:
             os.remove(div_src_file)
             os.remove(div_ext_file)
             os.remove(div_try_file)
+
+            if self.__debug:
+                print('PEEL-EXIT #7')
 
             return False
 
@@ -8831,6 +8895,9 @@ class NmrDpUtility:
         file_type = valid_types[0]
 
         self.__testFormatValidityOfLegacyMR(file_path, file_type, src_path, offset)
+
+        if self.__debug:
+            print('PEEL-DONE')
 
         return True
 
@@ -8859,6 +8926,10 @@ class NmrDpUtility:
 
         self.__divide_mr_error_message.append(err_desc)
         """
+
+        if self.__debug:
+            print('DO-DIV')
+
         if file_type == 'nm-res-xpl':
             # mr_format_name = 'XPLOR-NIH'
             pass
@@ -8882,6 +8953,10 @@ class NmrDpUtility:
         err_column_position = err_desc['column_position']
 
         if not(err_column_position > 0 and 'input' in err_desc):
+
+            if self.__debug:
+                print('DO-DIV-EXIT #1')
+
             return False
 
         xplor_missing_end_at_eof = err_message == xplor_missing_end_at_eof_err_msg
@@ -9090,11 +9165,17 @@ class NmrDpUtility:
             if os.path.exists(div_try_file):
                 os.remove(div_try_file)
 
+            if self.__debug:
+                print('DO-DIV-EXIT #2')
+
             return corrected
 
         if ws_or_comment:
             os.remove(div_src_file)
             os.remove(div_try_file)
+
+            if self.__debug:
+                print('DO-DIV-EXIT #3')
 
             return False
 
@@ -9143,11 +9224,17 @@ class NmrDpUtility:
                 os.remove(file_path)
             os.rename(div_try_file, div_ext_file)
 
+            if self.__debug:
+                print('DO-DIV-EXIT #4')
+
             return True  # succeeded in eliminating uninterpretable parts
 
         if len_possible_types > 0:
             os.remove(div_src_file)
             os.remove(div_try_file)
+
+            if self.__debug:
+                print('DO-DIV-EXIT #5')
 
             return False
 
@@ -9162,6 +9249,9 @@ class NmrDpUtility:
         file_type = valid_types[0]
 
         self.__testFormatValidityOfLegacyMR(file_path, file_type, src_path, offset)
+
+        if self.__debug:
+            print('DO-DIV-DONE')
 
         return True
 
@@ -9437,7 +9527,7 @@ class NmrDpUtility:
                         if self.__verbose:
                             self.__lfh.write(f"+NmrDpUtility.__detectOtherPossibleFormatAsErrorOfLegacyMR() ++ Error  - {err}\n")
 
-            if (not is_valid or multiple_check) and file_type != 'nm-res-amb':
+            if (not is_valid) and file_type != 'nm-res-amb':
 
                 reader = AmberMRReader(False, self.__lfh, None, None, None,
                                        self.__ccU, self.__csStat, self.__nefT)
@@ -9510,7 +9600,7 @@ class NmrDpUtility:
                         if self.__verbose:
                             self.__lfh.write(f"+NmrDpUtility.__detectOtherPossibleFormatAsErrorOfLegacyMR() ++ Error  - {err}\n")
 
-            if (not is_valid or multiple_check) and file_type != 'nm-aux-amb':
+            if (not is_valid) and file_type != 'nm-aux-amb':
 
                 reader = AmberPTReader(False, self.__lfh, None, None, None,
                                        self.__ccU, self.__csStat)
@@ -9582,7 +9672,7 @@ class NmrDpUtility:
                         if self.__verbose:
                             self.__lfh.write(f"+NmrDpUtility.__detectOtherPossibleFormatAsErrorOfLegacyMR() ++ Error  - {err}\n")
 
-            if (not is_valid or multiple_check) and file_type != 'nm-res-cya':
+            if (not is_valid) and file_type != 'nm-res-cya':
 
                 reader = CyanaMRReader(False, self.__lfh, None, None, None,
                                        self.__ccU, self.__csStat, self.__nefT)
@@ -9655,7 +9745,7 @@ class NmrDpUtility:
                         if self.__verbose:
                             self.__lfh.write(f"+NmrDpUtility.__detectOtherPossibleFormatAsErrorOfLegacyMR() ++ Error  - {err}\n")
 
-            if (not is_valid or multiple_check) and file_type != 'nm-res-ros':
+            if (not is_valid) and file_type != 'nm-res-ros':
 
                 reader = RosettaMRReader(False, self.__lfh, None, None, None,
                                          self.__ccU, self.__csStat, self.__nefT)

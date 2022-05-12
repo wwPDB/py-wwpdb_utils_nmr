@@ -184,6 +184,11 @@ class CnsMRParserListener(ParseTreeListener):
     # current restraint subtype
     __cur_subtype = ''
 
+    # vector statement
+    __cur_vector_mode = ''
+    __cur_vector_atom_prop_type = ''
+    __cur_vector_atom_prop_value = None
+
     depth = 0
 
     stackSelections = None  # stack of selection
@@ -232,6 +237,8 @@ class CnsMRParserListener(ParseTreeListener):
 
     # store[1-9]
     storeSet = {i: [] for i in range(1, 10)}
+    # vector mode: do
+    vectorDo = {}
 
     warningMessage = ''
 
@@ -333,6 +340,9 @@ class CnsMRParserListener(ParseTreeListener):
     def enterHarmonic_restraint(self, ctx: CnsMRParser.Harmonic_restraintContext):  # pylint: disable=unused-argument
         self.geoStatements += 1
         self.__cur_subtype = 'geo'
+
+        self.squareExponent = 2.0
+        self.vector3D = [0.0] * 3
 
     # Exit a parse tree produced by CnsMRParser#harmonic_restraint.
     def exitHarmonic_restraint(self, ctx: CnsMRParser.Harmonic_restraintContext):  # pylint: disable=unused-argument
@@ -1092,12 +1102,48 @@ class CnsMRParserListener(ParseTreeListener):
                       f"atom={atom1} weight={self.scale}")
 
     # Enter a parse tree produced by CnsMRParser#harmonic_statement.
-    def enterHarmonic_statement(self, ctx: CnsMRParser.Harmonic_statementContext):  # pylint: disable=unused-argument
-        pass
+    def enterHarmonic_statement(self, ctx: CnsMRParser.Harmonic_statementContext):
+        if ctx.Exponent():
+            self.squareExponent = int(str(ctx.Integer()))
+            if self.squareExponent <= 0.0:
+                self.warningMessage += "[Invalid data] "\
+                    "The exponent value  "\
+                    f"'RESTRAINTS HARMONIC {str(ctx.Exponent())}={self.squareExponent} END' must be a positive value.\n"
+
+        elif ctx.Normal():
+            if ctx.number_s(0):
+                self.vector3D = [self.getNumber_s(ctx.number_s(0)),
+                                 self.getNumber_s(ctx.number_s(1)),
+                                 self.getNumber_s(ctx.number_s(2))]
+
+            elif ctx.Tail():
+                self.inVector3D = True
+                self.inVector3D_columnSel = -1
+                self.inVector3D_tail = None
+                self.inVector3D_head = None
+                self.vector3D = None
 
     # Exit a parse tree produced by CnsMRParser#harmonic_statement.
     def exitHarmonic_statement(self, ctx: CnsMRParser.Harmonic_statementContext):  # pylint: disable=unused-argument
-        pass
+        if self.vector3D is None:
+            self.vector3D = [0.0] * 3  # set default vector if not available
+
+        if 'harm' not in self.vectorDo or len(self.vector3D['harm']) == 0:
+            self.warningMessage += "[Invalid data] "\
+                "No vector statement for harmonic coordinate restraints exists.\n"
+            return
+
+        for col, vector in enumerate(self.vector3D['harm'], start=1):
+            dstFunc = {}
+            if 'value' in vector:
+                dstFunc['energy_const'] = vector['value']
+            dstFunc['exponent'] = self.squareExponent
+            for atom1 in vector['atom_selection']:
+                if self.__debug:
+                    print(f"subtype={self.__cur_subtype} (HARM) id={col} "
+                          f"atom={atom1} {dstFunc} normal_vector={self.vector3D}")
+
+        self.vector3D['harm'] = []
 
     # Enter a parse tree produced by CnsMRParser#harmonic_assign.
     def enterHarmonic_assign(self, ctx: CnsMRParser.Harmonic_assignContext):  # pylint: disable=unused-argument
@@ -1110,9 +1156,7 @@ class CnsMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by CnsMRParser#harmonic_assign.
     def exitHarmonic_assign(self, ctx: CnsMRParser.Harmonic_assignContext):  # pylint: disable=unused-argument
-        vector_x = self.numberSelection[0]
-        vector_y = self.numberSelection[1]
-        vector_z = self.numberSelection[2]
+        self.vector3D = [self.numberSelection[0], self.numberSelection[1],self.numberSelection[2]]
 
         self.numberSelection.clear()
 
@@ -1122,7 +1166,7 @@ class CnsMRParserListener(ParseTreeListener):
         for atom1 in self.atomSelectionSet[0]:
             if self.__debug:
                 print(f"subtype={self.__cur_subtype} (HARM) id={self.planeRestraints} "
-                      f"atom={atom1} normal_vector=({vector_x}, {vector_y}, {vector_z})")
+                      f"atom={atom1} normal_vector={self.vector3D}")
 
     # Enter a parse tree produced by CnsMRParser#sani_statement.
     def enterSani_statement(self, ctx: CnsMRParser.Sani_statementContext):
@@ -4667,16 +4711,38 @@ class CnsMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by CnsMRParser#vector_statement.
     def enterVector_statement(self, ctx: CnsMRParser.Vector_statementContext):  # pylint: disable=unused-argument
-        pass
+        self.__cur_vector_mode = ''
+        self.__cur_vector_atom_prop_type = ''
+        self.__cur_vector_atom_prop_value = None
+
+        self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by CnsMRParser#vector_statement.
     def exitVector_statement(self, ctx: CnsMRParser.Vector_statementContext):  # pylint: disable=unused-argument
-        if self.__cur_subtype.startswith('store'):
-            self.storeSet[int(self.__cur_subtype[-1])] = {'atom_selection': copy.copy(self.atomSelectionSet[0])}
+        if self.__cur_vector_mode == 'identity':
+            if self.__cur_vector_atom_prop_type.startswith('store'):
+                self.storeSet[int(self.__cur_vector_atom_prop_type[-1])] = {'atom_selection': copy.copy(self.atomSelectionSet[0])}
+
+        elif self.__cur_vector_mode == 'do':
+            if len(self.__cur_vector_atom_prop_type) > 0:
+                vector_name = self.__cur_vector_atom_prop_type
+                if len(vector_name) > 4:
+                    vector_name = vector_name[:4]
+                if vector_name not in self.vectorDo:
+                    self.vectorDo[vector_name] = []
+                vector = {'atom_selection': copy.copy(self.atomSelectionSet[0])}
+                if self.__cur_vector_atom_prop_value is not None:
+                    vector['value'] = self.__cur_vector_atom_prop_value
+                self.vectorDo[vector_name].append(vector)
 
     # Enter a parse tree produced by CnsMRParser#vector_mode.
-    def enterVector_mode(self, ctx: CnsMRParser.Vector_modeContext):  # pylint: disable=unused-argument
-        pass
+    def enterVector_mode(self, ctx: CnsMRParser.Vector_modeContext):
+        if ctx.Identify_Lp():
+            self.__cur_vector_mode = 'identity'
+        elif ctx.Do_Lp():
+            self.__cur_vector_mode = 'do'
+        elif ctx.Show():
+            self.__cur_vector_mode = 'show'
 
     # Exit a parse tree produced by CnsMRParser#vector_mode.
     def exitVector_mode(self, ctx: CnsMRParser.Vector_modeContext):  # pylint: disable=unused-argument
@@ -4689,7 +4755,7 @@ class CnsMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by CnsMRParser#vector_expression.
     def exitVector_expression(self, ctx: CnsMRParser.Vector_expressionContext):
         if ctx.Atom_properties_VE():
-            self.__cur_subtype = str(ctx.Atom_properties_VE()).lower()
+            self.__cur_vector_atom_prop_type = str(ctx.Atom_properties_VE()).lower()
 
     # Enter a parse tree produced by CnsMRParser#vector_operation.
     def enterVector_operation(self, ctx: CnsMRParser.Vector_operationContext):  # pylint: disable=unused-argument
@@ -4704,8 +4770,16 @@ class CnsMRParserListener(ParseTreeListener):
         pass
 
     # Exit a parse tree produced by CnsMRParser#vflc.
-    def exitVflc(self, ctx: CnsMRParser.VflcContext):  # pylint: disable=unused-argument
-        pass
+    def exitVflc(self, ctx: CnsMRParser.VflcContext):
+        if self.__cur_vector_atom_prop_value is None:
+            if ctx.Double_quote_string_VE():
+                self.__cur_vector_atom_prop_value = str(ctx.Double_quote_string_VE()).strip('"').strip()
+            elif ctx.Integer_VE():
+                self.__cur_vector_atom_prop_value = int(str(ctx.Integer_VE()))
+            elif ctx.Real_VE():
+                self.__cur_vector_atom_prop_value = float(str(ctx.Integer_VE()))
+            elif ctx.Simple_name_VE():
+                self.__cur_vector_atom_prop_value = str(ctx.Simple_name_VE())
 
     # Enter a parse tree produced by CnsMRParser#vector_func_call.
     def enterVector_func_call(self, ctx: CnsMRParser.Vector_func_callContext):  # pylint: disable=unused-argument

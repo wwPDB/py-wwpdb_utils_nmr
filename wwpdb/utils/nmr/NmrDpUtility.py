@@ -8844,9 +8844,9 @@ class NmrDpUtility:
             if os.path.exists(div_ext_file):
                 os.remove(div_ext_file)
             return False
-        """
-        self.__divide_mr_error_message.append(err_desc)
 
+        self.__divide_mr_error_message.append(err_desc)
+        """
         if file_type == 'nm-res-xpl':
             # mr_format_name = 'XPLOR-NIH'
             pass
@@ -9094,7 +9094,7 @@ class NmrDpUtility:
         len_possible_types = len(possible_types)
 
         if len_valid_types == 0 and len_possible_types == 0:
-
+            """
             if err_column_position > 0 and 'input' in err_desc and not err_desc['input'][0:err_column_position].isspace():
                 test_line = err_desc['input'][0:err_column_position]
 
@@ -9126,7 +9126,7 @@ class NmrDpUtility:
                     os.remove(div_try_file)
 
                     return False  # not split MR file because of internal lexer errors to be hundled by manual
-
+            """
             if div_src:
                 os.remove(file_path)
             os.rename(div_try_file, div_ext_file)

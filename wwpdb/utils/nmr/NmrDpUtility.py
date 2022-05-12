@@ -8347,10 +8347,47 @@ class NmrDpUtility:
                 if not has_lexer_error and not has_parser_error:
                     err_desc['column_position'] += 1
 
+                    corrected = self.__divideLegacyMR(file_path, file_type, err_desc, src_path, offset)
+
+                    if corrected:
+                        dir_path = os.path.dirname(src_path)
+
+                        for div_file_name in os.listdir(dir_path):
+                            if os.path.isfile(os.path.join(dir_path, div_file_name))\
+                               and (div_file_name.endswith('-div_src.mr') or div_file_name.endswith('-div_dst.mr')):
+                                os.remove(os.path.join(dir_path, div_file_name))
+
+                        src_file_name = os.path.basename(src_path)
+                        cor_test = '-corrected' in src_file_name
+                        if cor_test:
+                            cor_src_path = src_path + '~'
+                        else:
+                            if src_path.endswith('.mr'):
+                                cor_src_path = re.sub(r'\-trimmed$', '', os.path.splitext(src_path)[0]) + '-corrected.mr'
+                            else:
+                                cor_src_path = re.sub(r'\-trimmed$', '', src_path) + '-corrected'
+
+                        offset += err_line_number - 1
+
+                        j = 0
+
+                        with open(src_path, 'r') as ifp,\
+                                open(cor_src_path, 'w') as ofp:
+                            for line in ifp:
+                                if j == offset:
+                                    ofp.write(line[:err_column_position + 1] + '\n')
+                                    ofp.write(line[err_column_position + 1:])
+                                else:
+                                    ofp.write(line)
+                                j += 1
+
+                        if cor_test:
+                            os.rename(cor_src_path, src_path)
+
                     if self.__split_mr_debug:
                         print('DIV-MR-EXIT #2')
 
-                    return self.__divideLegacyMR(file_path, file_type, err_desc, src_path, offset)
+                    return corrected
 
         i = j = 0
 

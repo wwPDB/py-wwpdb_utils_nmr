@@ -8294,6 +8294,8 @@ class NmrDpUtility:
         amber_missing_end_at_eof = err_message == amber_missing_end_at_eof_err_msg
         amber_ends_wo_statement = bool(amber_extra_end_err_msg_pattern.match(err_message))
 
+        reader = None
+
         if not(xplor_ends_wo_statement or amber_ends_wo_statement):
 
             if err_column_position > 0 and 'input' in err_desc and not err_desc['input'][0:err_column_position].isspace():
@@ -8540,7 +8542,10 @@ class NmrDpUtility:
             if err_column_position > 0 and 'input' in err_desc and not err_desc['input'][0:err_column_position].isspace():
                 test_line = err_desc['input'][0:err_column_position]
 
-                if file_type == 'nm-res-xpl':
+                if reader is not None:
+                    pass
+
+                elif file_type == 'nm-res-xpl':
                     reader = XplorMRReader(False, self.__lfh, None, None, None,
                                            self.__ccU, self.__csStat, self.__nefT)
                 elif file_type == 'nm-res-cns':
@@ -8619,6 +8624,8 @@ class NmrDpUtility:
             return False
 
         self.__peel_mr_error_message.append(err_desc)
+
+        reader = None
 
         if file_type == 'nm-res-xpl':
             # mr_format_name = 'XPLOR-NIH'
@@ -8750,6 +8757,9 @@ class NmrDpUtility:
 
             if err_column_position > 0 and 'input' in err_desc and not err_desc['input'][0:err_column_position].isspace():
                 test_line = err_desc['input'][0:err_column_position]
+
+                if reader is not None:
+                    pass
 
                 if file_type == 'nm-res-xpl':
                     reader = XplorMRReader(False, self.__lfh, None, None, None,

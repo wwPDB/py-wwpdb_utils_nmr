@@ -186,6 +186,7 @@ class XplorMRParserListener(ParseTreeListener):
     pangRestraints = 0      # XPLOR-NIH: Paramagnetic orientation restraints
     pccrRestraints = 0      # XPLOR-NIH: Paramagnetic cross-correlation rate restraints
     hbondRestraints = 0     # XPLOR-NIH: Hydrogen bond geometry/database restraints
+    geoRestraints = 0       # XPLOR-NIH: Harmonic coordinate restraints
 
     distStatements = 0      # XPLOR-NIH: Distance statements
     dihedStatements = 0     # XPLOR-NIH: Dihedral angle statements
@@ -207,6 +208,7 @@ class XplorMRParserListener(ParseTreeListener):
     pangStatements = 0      # XPLOR-NIH: Paramagnetic orientation statements
     pccrStatements = 0      # XPLOR-NIH: Paramagnetic cross-correlation rate statements
     hbondStatements = 0     # XPLOR-NIH: Hydrogen bond geometry/database statements
+    geoStatements = 0       # XPLOR-NIH: Harmonic coordinate restraints
 
     # CCD accessing utility
     __ccU = None
@@ -421,8 +423,8 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#harmonic_restraint.
     def enterHarmonic_restraint(self, ctx: XplorMRParser.Harmonic_restraintContext):  # pylint: disable=unused-argument
-        self.planeStatements += 1
-        self.__cur_subtype = 'plane'
+        self.geoStatements += 1
+        self.__cur_subtype = 'geo'
 
     # Exit a parse tree produced by XplorMRParser#harmonic_restraint.
     def exitHarmonic_restraint(self, ctx: XplorMRParser.Harmonic_restraintContext):  # pylint: disable=unused-argument
@@ -2380,10 +2382,10 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#harmonic_assign.
     def enterHarmonic_assign(self, ctx: XplorMRParser.Harmonic_assignContext):  # pylint: disable=unused-argument
-        self.planeRestraints += 1
-        if self.__cur_subtype != 'plane':
-            self.planeStatements += 1
-        self.__cur_subtype = 'plane'
+        self.geoRestraints += 1
+        if self.__cur_subtype != 'geo':
+            self.geoStatements += 1
+        self.__cur_subtype = 'geo'
 
         self.atomSelectionSet.clear()
 
@@ -7424,6 +7426,8 @@ class XplorMRParserListener(ParseTreeListener):
             return f"[Check the {self.pccrRestraints}th row of paramagnetic cross-correlation rate restraints] "
         if self.__cur_subtype == 'hbond':
             return f"[Check the {self.hbondRestraints}th row of hydrogen bond geometry restraints] "
+        if self.__cur_subtype == 'geo':
+            return f"[Check the {self.geoRestraints}th row of harmonic coordinate restraints] "
         return ''
 
     def getContentSubtype(self):
@@ -7490,6 +7494,9 @@ class XplorMRParserListener(ParseTreeListener):
         if self.hbondStatements == 0 and self.hbondRestraints > 0:
             self.hbondStatements = 1
 
+        if self.geoStatements == 0 and self.geoRestraints > 0:
+            self.geoStatements = 1
+
         contentSubtype = {'dist_restraint': self.distStatements,
                           'dihed_restraint': self.dihedStatements,
                           'rdc_restraint': self.rdcStatements,
@@ -7509,7 +7516,8 @@ class XplorMRParserListener(ParseTreeListener):
                           'prdc_restraint': self.prdcStatements,
                           'pang_restraint': self.pangStatements,
                           'pccr_restraint': self.pccrStatements,
-                          'hbond_restraint': self.hbondStatements
+                          'hbond_restraint': self.hbondStatements,
+                          'geo_restraint': self.geoStatements
                           }
 
         return {k: v for k, v in contentSubtype.items() if v > 0}

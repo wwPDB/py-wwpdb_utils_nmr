@@ -129,6 +129,7 @@ class CnsMRParserListener(ParseTreeListener):
     diffRestraints = 0      # CNS: Diffusion anisotropy restraints
     nbaseRestraints = 0     # CNS: Residue-residue position/orientation database restraints
     # angRestraints = 0       # CNS: Angle database restraints
+    geoRestraints = 0       # CNS: Harmonic coordinate restraints
 
     distStatements = 0      # CNS: Distance statements
     dihedStatements = 0     # CNS: Dihedral angle statements
@@ -141,6 +142,7 @@ class CnsMRParserListener(ParseTreeListener):
     diffStatements = 0      # CNS: Diffusion anisotropy statements
     nbaseStatements = 0     # CNS: Residue-residue position/orientation database statements
     # angStatements = 0       # CNS: Angle database statements
+    geoStatements = 0       # CNS: Harmonic coordinate restraints
 
     # CCD accessing utility
     __ccU = None
@@ -329,8 +331,8 @@ class CnsMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by CnsMRParser#harmonic_restraint.
     def enterHarmonic_restraint(self, ctx: CnsMRParser.Harmonic_restraintContext):  # pylint: disable=unused-argument
-        self.planeStatements += 1
-        self.__cur_subtype = 'plane'
+        self.geoStatements += 1
+        self.__cur_subtype = 'geo'
 
     # Exit a parse tree produced by CnsMRParser#harmonic_restraint.
     def exitHarmonic_restraint(self, ctx: CnsMRParser.Harmonic_restraintContext):  # pylint: disable=unused-argument
@@ -1099,10 +1101,10 @@ class CnsMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by CnsMRParser#harmonic_assign.
     def enterHarmonic_assign(self, ctx: CnsMRParser.Harmonic_assignContext):  # pylint: disable=unused-argument
-        self.planeRestraints += 1
-        if self.__cur_subtype != 'plane':
-            self.planeStatements += 1
-        self.__cur_subtype = 'plane'
+        self.geoRestraints += 1
+        if self.__cur_subtype != 'geo':
+            self.geoStatements += 1
+        self.__cur_subtype = 'geo'
 
         self.atomSelectionSet.clear()
 
@@ -4744,6 +4746,8 @@ class CnsMRParserListener(ParseTreeListener):
             return f"[Check the {self.nbaseRestraints}th row of residue-residue position/orientation database restraints] "
         # if self.__cur_subtype == 'ang':
         #    return f"[Check the {self.angRestraints}th row of angle database restraints] "
+        if self.__cur_subtype == 'geo':
+            return f"[Check the {self.geoRestraints}th row of harmonic coordinate restraints] "
         return ''
 
     def getContentSubtype(self):
@@ -4783,6 +4787,9 @@ class CnsMRParserListener(ParseTreeListener):
         # if self.angStatements == 0 and self.angRestraints > 0:
         #    self.angStatements = 1
 
+        if self.geoStatements == 0 and self.geoRestraints > 0:
+            self.geoStatements = 1
+
         contentSubtype = {'dist_restraint': self.distStatements,
                           'dihed_restraint': self.dihedStatements,
                           'rdc_restraint': self.rdcStatements,
@@ -4794,6 +4801,7 @@ class CnsMRParserListener(ParseTreeListener):
                           'diff_restraint': self.diffStatements,
                           'nbase_restraint': self.nbaseStatements,
                           # 'ang_restraint': self.angStatements
+                          'geo_restraint': self.geoStatements
                           }
 
         return {k: v for k, v in contentSubtype.items() if v > 0}

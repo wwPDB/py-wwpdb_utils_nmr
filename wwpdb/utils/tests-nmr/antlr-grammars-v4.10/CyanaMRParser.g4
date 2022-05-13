@@ -43,7 +43,8 @@ distance_restraints:
 distance_restraint:
 	Integer Simple_name Simple_name
 	Integer Simple_name Simple_name
-	number number? number?;
+	number number? number?
+	number? number? number?;	// extensions for .cco file
 
 /* CYANA 3.0 Reference Manual - Torsion angle restraint file
  See also http://www.cyana.org/wiki/index.php/Torsion_angle_restraint_file

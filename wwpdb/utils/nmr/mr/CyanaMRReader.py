@@ -45,7 +45,7 @@ class CyanaMRReader:
     def __init__(self, verbose=True, log=sys.stdout,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
                  cR=None, cC=None, ccU=None, csStat=None, nefT=None,
-                 reasons=None, upl_or_lol=None):
+                 reasons=None, upl_or_lol=None, file_ext=None):
         self.__verbose = verbose
         self.__lfh = log
         self.__debug = False
@@ -73,7 +73,9 @@ class CyanaMRReader:
         # reasons for re-parsing request from the previous trial
         self.__reasons = reasons
 
-        self.__utl_or_lol = upl_or_lol
+        self.__upl_or_lol = upl_or_lol
+
+        self.__file_ext = file_ext
 
     def setDebugMode(self, debug):
         self.__debug = debug
@@ -150,7 +152,7 @@ class CyanaMRReader:
                                              self.__representativeModelId,
                                              self.__cR, self.__cC,
                                              self.__ccU, self.__csStat, self.__nefT,
-                                             self.__reasons, self.__utl_or_lol)
+                                             self.__reasons, self.__upl_or_lol, self.__file_ext)
             listener.setDebugMode(self.__debug)
             walker.walk(listener, tree)
 

@@ -29,7 +29,8 @@ try:
                                                        KNOWN_ANGLE_ATOM_NAMES,
                                                        KNOWN_ANGLE_SEQ_OFFSET,
                                                        KNOWN_ANGLE_CARBO_ATOM_NAMES,
-                                                       KNOWN_ANGLE_CARBO_SEQ_OFFSET)
+                                                       KNOWN_ANGLE_CARBO_SEQ_OFFSET,
+                                                       CYANA_MR_FILE_EXTS)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import (NEFTranslator,
@@ -51,7 +52,8 @@ except ImportError:
                                            KNOWN_ANGLE_ATOM_NAMES,
                                            KNOWN_ANGLE_SEQ_OFFSET,
                                            KNOWN_ANGLE_CARBO_ATOM_NAMES,
-                                           KNOWN_ANGLE_CARBO_SEQ_OFFSET)
+                                           KNOWN_ANGLE_CARBO_SEQ_OFFSET,
+                                           CYANA_MR_FILE_EXTS)
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.NEFTranslator.NEFTranslator import (NEFTranslator,
@@ -115,6 +117,8 @@ class CyanaMRParserListener(ParseTreeListener):
 
     __upl_or_lol = None  # must be one of (None, 'upl_only', 'upl_w_lol', 'lol_only', 'lol_w_upl')
 
+    __file_ext = None  # must be one of (None, 'upl', 'lol', 'aco', 'rdc', 'pcs', 'upv', 'lov', 'cco')
+
     # CIF reader
     # __cR = None
     __hasCoord = False
@@ -161,7 +165,7 @@ class CyanaMRParserListener(ParseTreeListener):
     def __init__(self, verbose=True, log=sys.stdout,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
                  cR=None, cC=None, ccU=None, csStat=None, nefT=None,
-                 reasons=None, upl_or_lol=None):
+                 reasons=None, upl_or_lol=None, file_ext=None):
         # self.__verbose = verbose
         # self.__lfh = log
         # self.__cR = cR
@@ -202,6 +206,21 @@ class CyanaMRParserListener(ParseTreeListener):
             log.write(f"'+CyanaMRParserListener.__init__() ++ ValueError  -  {msg}\n")
             raise ValueError(f"'+CyanaMRParserListener.__init__() ++ ValueError  -  {msg}")
 
+        self.__file_ext = file_ext
+
+        if file_ext not in CYANA_MR_FILE_EXTS:
+            msg = f"The argument 'file_ext' must be one of {CYANA_MR_FILE_EXTS}"
+            log.write(f"'+CyanaMRParserListener.__init__() ++ ValueError  -  {msg}\n")
+            raise ValueError(f"'+CyanaMRParserListener.__init__() ++ ValueError  -  {msg}")
+
+        if upl_or_lol is None and file_ext is not None:
+
+            if file_ext == 'upl':
+                self.__upl_or_lol = 'upl_w_lol'
+
+            if file_ext == 'lol':
+                self.__upl_or_lol = 'lol_w_upl'
+
         self.__max_dist_value = None
 
     def setDebugMode(self, debug):
@@ -221,7 +240,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by CyanaMRParser#distance_restraints.
     def enterDistance_restraints(self, ctx: CyanaMRParser.Distance_restraintsContext):  # pylint: disable=unused-argument
-        self.__cur_subtype = 'dist'
+        self.__cur_subtype = 'dist' if self.__file_ext is None or self.__file_ext != 'cco' else 'jcoup'
 
     # Exit a parse tree produced by CyanaMRParser#distance_restraints.
     def exitDistance_restraints(self, ctx: CyanaMRParser.Distance_restraintsContext):  # pylint: disable=unused-argument
@@ -229,7 +248,10 @@ class CyanaMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by CyanaMRParser#distance_restraint.
     def enterDistance_restraint(self, ctx: CyanaMRParser.Distance_restraintContext):  # pylint: disable=unused-argument
-        self.distRestraints += 1
+        if self.__cur_subtype == 'dist':
+            self.distRestraints += 1
+        elif self.__cur_subtype == 'jcoup':
+            self.jcoupRestraints += 1
 
         self.atomSelectionSet.clear()
 
@@ -252,96 +274,196 @@ class CyanaMRParserListener(ParseTreeListener):
             if None in self.numberSelection:
                 return
 
-            value = self.numberSelection[0]
-            weight = 1.0
+            if self.__cur_subtype == 'dist':
 
-            has_square = False
-            if len(self.numberSelection) > 2:
-                value2 = self.numberSelection[1]
-                weight = self.numberSelection[2]
+                value = self.numberSelection[0]
+                weight = 1.0
 
-                has_square = True
+                has_square = False
+                if len(self.numberSelection) > 2:
+                    value2 = self.numberSelection[1]
+                    weight = self.numberSelection[2]
 
-            elif len(self.numberSelection) > 1:
-                value2 = self.numberSelection[1]
-
-                if value2 <= 1.0 or value2 < value:
-                    weight = value2
-                else:
                     has_square = True
 
-            if weight <= 0.0:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The relative weight value of '{weight}' must be a positive value.\n"
-                return
+                elif len(self.numberSelection) > 1:
+                    value2 = self.numberSelection[1]
 
-            if DIST_RANGE_MIN <= value <= DIST_RANGE_MAX:
-                if self.__max_dist_value is None:
-                    self.__max_dist_value = value
-                if value > self.__max_dist_value:
-                    self.__max_dist_value = value
+                    if value2 <= 1.0 or value2 < value:
+                        weight = value2
+                    else:
+                        has_square = True
 
-            if has_square:
-                if value2 > DIST_RANGE_MAX:  # lol_only
-                    lower_limit = value
+                if weight <= 0.0:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"The relative weight value of '{weight}' must be a positive value.\n"
+                    return
 
-                elif 1.8 <= value <= DIST_ERROR_MAX and DIST_RANGE_MIN <= value2 <= DIST_RANGE_MAX:
-                    upper_limit = value2
-                    lower_limit = value
-                    target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                if DIST_RANGE_MIN <= value <= DIST_RANGE_MAX:
+                    if self.__max_dist_value is None:
+                        self.__max_dist_value = value
+                    if value > self.__max_dist_value:
+                        self.__max_dist_value = value
 
-                else:  # upl_only
-                    if value2 > 1.8:
+                if has_square:
+                    if value2 > DIST_RANGE_MAX:  # lol_only
+                        lower_limit = value
+
+                    elif 1.8 <= value <= DIST_ERROR_MAX and DIST_RANGE_MIN <= value2 <= DIST_RANGE_MAX:
                         upper_limit = value2
+                        lower_limit = value
+                        target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+
+                    else:  # upl_only
+                        if value2 > 1.8:
+                            upper_limit = value2
+                            lower_limit = 1.8  # default value of PDBStat
+                            target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                        else:
+                            upper_limit = value2
+
+                elif self.__upl_or_lol is None or self.__upl_or_lol == 'upl_only':
+                    if value > 1.8:
+                        upper_limit = value
                         lower_limit = 1.8  # default value of PDBStat
                         target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
                     else:
-                        upper_limit = value2
+                        lower_limit = value
 
-            elif self.__upl_or_lol is None or self.__upl_or_lol == 'upl_only':
-                if value > 1.8:
+                elif self.__upl_or_lol == 'upl_w_lol':
                     upper_limit = value
-                    lower_limit = 1.8  # default value of PDBStat
+
+                elif self.__upl_or_lol == 'lol_only':
+                    lower_limit = value
+                    upper_limit = 5.5  # default value of PDBStat
                     target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
-                else:
+
+                else:  # 'lol_w_upl'
                     lower_limit = value
 
-            elif self.__upl_or_lol == 'upl_w_lol':
-                upper_limit = value
+                dstFunc = self.validateDistanceRange(weight, target_value, lower_limit, upper_limit, self.__omitDistLimitOutlier)
 
-            elif self.__upl_or_lol == 'lol_only':
-                lower_limit = value
-                upper_limit = 5.5  # default value of PDBStat
-                target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                if dstFunc is None:
+                    return
 
-            else:  # 'lol_w_upl'
-                lower_limit = value
+                if not self.__hasPolySeq:
+                    return
 
-            dstFunc = self.validateDistanceRange(weight, target_value, lower_limit, upper_limit, self.__omitDistLimitOutlier)
+                chainAssign1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
+                chainAssign2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
 
-            if dstFunc is None:
-                return
+                if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+                    return
 
-            if not self.__hasPolySeq:
-                return
+                self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1)
+                self.selectCoordAtoms(chainAssign2, seqId2, compId2, atomId2)
 
-            chainAssign1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
-            chainAssign2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
+                if len(self.atomSelectionSet) < 2:
+                    return
 
-            if len(chainAssign1) == 0 or len(chainAssign2) == 0:
-                return
+                for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
+                                                      self.atomSelectionSet[1]):
+                    if self.__debug:
+                        print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
+                              f"atom1={atom1} atom2={atom2} {dstFunc}")
 
-            self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1)
-            self.selectCoordAtoms(chainAssign2, seqId2, compId2, atomId2)
+            else:  # cco
 
-            if len(self.atomSelectionSet) < 2:
-                return
+                target = self.numberSelection[0]
+                error = None
 
-            for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
-                                                  self.atomSelectionSet[1]):
-                if self.__debug:
-                    print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
-                          f"atom1={atom1} atom2={atom2} {dstFunc}")
+                weight = 1.0
+                if len(self.numberSelection) > 2:
+                    error = abs(self.numberSelection[1])
+                    weight = self.numberSelection[2]
+
+                elif len(self.numberSelection) > 1:
+                    error = abs(self.numberSelection[1])
+
+                if weight <= 0.0:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"The relative weight value of '{weight}' must be a positive value.\n"
+                    return
+
+                target_value = target
+                lower_limit = target - error if error is not None else None
+                upper_limit = target + error if error is not None else None
+
+                dstFunc = self.validateRdcRange(weight, None, target_value, lower_limit, upper_limit)
+
+                if dstFunc is None:
+                    return
+
+                if not self.__hasPolySeq:
+                    return
+
+                chainAssign1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
+                chainAssign2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
+
+                if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+                    return
+
+                self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1)
+                self.selectCoordAtoms(chainAssign2, seqId2, compId2, atomId2)
+
+                if len(self.atomSelectionSet) < 2:
+                    return
+
+                if not self.areUniqueCoordAtoms('a Scalar coupling constant'):
+                    return
+
+                chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
+                seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
+                comp_id_1 = self.atomSelectionSet[0][0]['comp_id']
+                atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
+
+                chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
+                seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
+                comp_id_2 = self.atomSelectionSet[1][0]['comp_id']
+                atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+
+                if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"Non-magnetic susceptible spin appears in scalar coupling constant; "\
+                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
+                        f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    return
+
+                if chain_id_1 != chain_id_2:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"Found inter-chain scalar coupling constant; "\
+                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    return
+
+                if abs(seq_id_1 - seq_id_2) > 1:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"Found inter-residue scalar coupling constant; "\
+                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    return
+
+                if abs(seq_id_1 - seq_id_2) == 1:
+
+                    if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
+                       ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H')) or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H') and atom_id_2 == 'C')):
+                        pass
+
+                    else:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            "Found inter-residue scalar coupling constant; "\
+                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                        return
+
+                elif atom_id_1 == atom_id_2:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        "Found zero scalar coupling constant; "\
+                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    return
+
+                for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
+                                                      self.atomSelectionSet[1]):
+                    if self.__debug:
+                        print(f"subtype={self.__cur_subtype} id={self.jcoupRestraints} "
+                              f"atom1={atom1} atom2={atom2} {dstFunc}")
 
         finally:
             self.numberSelection.clear()
@@ -683,9 +805,13 @@ class CyanaMRParserListener(ParseTreeListener):
                 return
 
             if angleName not in KNOWN_ANGLE_NAMES:
-                self.warningMessage += f"[Enum mismatch ignorable] {self.__getCurrentRestraint()}"\
-                    f"The angle identifier '{str(ctx.Simple_name(1))}' is unknown.\n"
-                return
+                lenAngleName = len(angleName)
+                try:
+                    angleName = next(name for name in KNOWN_ANGLE_NAMES if len(name) >= lenAngleName and name[:lenAngleName] == angleName)
+                except StopIteration:
+                    self.warningMessage += f"[Enum mismatch ignorable] {self.__getCurrentRestraint()}"\
+                        f"The angle identifier {str(ctx.Simple_name(1))!r} is unknown.\n"
+                    return
 
             target_value = (upper_limit + lower_limit) / 2.0
 
@@ -1243,7 +1369,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by CyanaMRParser#fixres_distance_restraints.
     def enterFixres_distance_restraints(self, ctx: CyanaMRParser.Fixres_distance_restraintsContext):  # pylint: disable=unused-argument
-        self.__cur_subtype = 'dist'  # or 'noepk'
+        self.__cur_subtype = 'dist' if self.__file_ext is None or self.__file_ext not in ('upv', 'lov') else 'noepk'
         if self.__reasons is not None and 'noepk_fixres' in self.__reasons:
             self.__cur_subtype = 'noepk'
 
@@ -1361,7 +1487,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by CyanaMRParser#fixresw_distance_restraints.
     def enterFixresw_distance_restraints(self, ctx: CyanaMRParser.Fixresw_distance_restraintsContext):  # pylint: disable=unused-argument
-        self.__cur_subtype = 'dist'  # or 'noepk'
+        self.__cur_subtype = 'dist' if self.__file_ext is None or self.__file_ext not in ('upv', 'lov') else 'noepk'
         if self.__reasons is not None and 'noepk_fixresw' in self.__reasons:
             self.__cur_subtype = 'noepk'
 
@@ -1515,7 +1641,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by CyanaMRParser#fixresw2_distance_restraints.
     def enterFixresw2_distance_restraints(self, ctx: CyanaMRParser.Fixresw2_distance_restraintsContext):  # pylint: disable=unused-argument
-        self.__cur_subtype = 'dist'  # or 'noepk'
+        self.__cur_subtype = 'dist' if self.__file_ext is None or self.__file_ext not in ('upv', 'lov') else 'noepk'
         if self.__reasons is not None and 'noepk_fixresw2' in self.__reasons:
             self.__cur_subtype = 'noepk'
 
@@ -1640,7 +1766,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by CyanaMRParser#fixatm_distance_restraints.
     def enterFixatm_distance_restraints(self, ctx: CyanaMRParser.Fixatm_distance_restraintsContext):  # pylint: disable=unused-argument
-        self.__cur_subtype = 'dist'  # or 'noepk'
+        self.__cur_subtype = 'dist' if self.__file_ext is None or self.__file_ext not in ('upv', 'lov') else 'noepk'
         if self.__reasons is not None and 'noepk_fixatm' in self.__reasons:
             self.__cur_subtype = 'noepk'
 
@@ -1758,7 +1884,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by CyanaMRParser#fixatmw_distance_restraints.
     def enterFixatmw_distance_restraints(self, ctx: CyanaMRParser.Fixatmw_distance_restraintsContext):  # pylint: disable=unused-argument
-        self.__cur_subtype = 'dist'  # or 'noepk'
+        self.__cur_subtype = 'dist' if self.__file_ext is None or self.__file_ext not in ('upv', 'lov') else 'noepk'
         if self.__reasons is not None and 'noepk_fixatmw' in self.__reasons:
             self.__cur_subtype = 'noepk'
 
@@ -1912,7 +2038,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by CyanaMRParser#fixatmw2_distance_restraints.
     def enterFixatmw2_distance_restraints(self, ctx: CyanaMRParser.Fixatmw2_distance_restraintsContext):  # pylint: disable=unused-argument
-        self.__cur_subtype = 'dist'  # or 'noepk'
+        self.__cur_subtype = 'dist' if self.__file_ext is None or self.__file_ext not in ('upv', 'lov') else 'noepk'
         if self.__reasons is not None and 'noepk_fixatmw2' in self.__reasons:
             self.__cur_subtype = 'noepk'
 

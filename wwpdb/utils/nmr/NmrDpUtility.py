@@ -220,7 +220,8 @@ try:
                                                        RDC_UNCERTAINTY_RANGE,
                                                        WEIGHT_RANGE,
                                                        SCALE_RANGE,
-                                                       REPRESENTATIVE_MODEL_ID)
+                                                       REPRESENTATIVE_MODEL_ID,
+                                                       CYANA_MR_FILE_EXTS)
     from wwpdb.utils.nmr.mr.AmberMRReader import AmberMRReader
     from wwpdb.utils.nmr.mr.CnsMRReader import CnsMRReader
     from wwpdb.utils.nmr.mr.CyanaMRReader import CyanaMRReader
@@ -272,7 +273,8 @@ except ImportError:
                                            RDC_UNCERTAINTY_RANGE,
                                            WEIGHT_RANGE,
                                            SCALE_RANGE,
-                                           REPRESENTATIVE_MODEL_ID)
+                                           REPRESENTATIVE_MODEL_ID,
+                                           CYANA_MR_FILE_EXTS)
     from nmr.mr.AmberMRReader import AmberMRReader
     from nmr.mr.CnsMRReader import CnsMRReader
     from nmr.mr.CyanaMRReader import CyanaMRReader
@@ -1105,6 +1107,8 @@ class NmrDpUtility:
 
         self.__alt_chain = False
         self.__valid_seq = False
+
+        self.__cur_original_ar_file_name = None
 
         # NMR content types
         self.nmr_content_subtypes = ('entry_info', 'poly_seq', 'entity', 'chem_shift', 'chem_shift_ref',
@@ -6517,10 +6521,13 @@ class NmrDpUtility:
 
             file_path = ar['file_name']
 
+            original_file_name = None
             if 'original_file_name' in input_source_dic:
                 original_file_name = input_source_dic['original_file_name']
                 if file_name != original_file_name and original_file_name is not None:
                     file_name = f"{original_file_name} ({file_name})"
+
+            self.__cur_original_ar_file_name = original_file_name
 
             with open(file_path, 'r', encoding='utf-8', errors='ignore') as ifp:
                 md5_list.append(hashlib.md5(ifp.read().encode('utf-8')).hexdigest())
@@ -7773,8 +7780,11 @@ class NmrDpUtility:
 
                 elif file_type == 'nm-res-cya':
 
+                    cya_file_ext = self.__retrieveOriginalFileExtensionOfCyanaMRFile()
+
                     reader = CyanaMRReader(self.__verbose, self.__lfh, None, None, None,
-                                           self.__ccU, self.__csStat, self.__nefT)
+                                           self.__ccU, self.__csStat, self.__nefT,
+                                           file_ext=cya_file_ext)
                     listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
                     if listener is not None:
@@ -7783,7 +7793,8 @@ class NmrDpUtility:
                         if reasons is not None:
                             reader = CyanaMRReader(self.__verbose, self.__lfh, None, None, None,
                                                    self.__ccU, self.__csStat, self.__nefT,
-                                                   reasons)
+                                                   reasons,
+                                                   file_ext=cya_file_ext)
                             listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
                     err = ''
@@ -8285,6 +8296,34 @@ class NmrDpUtility:
 
         return not self.report.isError()
 
+    def __retrieveOriginalFileExtensionOfCyanaMRFile(self):
+        """ Retrieve original file extension of CYANA MR file.
+        """
+
+        if self.__cur_original_ar_file_name is None:
+            return None
+
+        if self.__cur_original_ar_file_name.endswith('.gz'):
+            self.__cur_original_ar_file_name = os.path.splitext(self.__cur_original_ar_file_name)[0]
+
+        if self.__cur_original_ar_file_name.endswith('.mr'):
+            return None
+
+        if self.__cur_original_ar_file_name.endswith('-corrected'):
+            self.__cur_original_ar_file_name = self.__cur_original_ar_file_name.replace('-corrected', '')
+
+        split_ext = os.path.splitext(self.__cur_original_ar_file_name)
+
+        if len(split_ext) < 2:
+            return None
+
+        file_ext = split_ext[1][1:].lower()
+
+        if file_ext not in CYANA_MR_FILE_EXTS:
+            return None
+
+        return file_ext
+
     def __retrieveErroneousPreviousInput(self, err_desc):
         """ Retrieve erroneous previous input if possible.
         """
@@ -8302,8 +8341,8 @@ class NmrDpUtility:
         """ Divive legacy NMR restraint file if necessary.
         """
 
-        if not self.__remediation_mode:
-            return False
+        # if not self.__remediation_mode:
+        #    return False
 
         src_basename = os.path.splitext(file_path)[0]
         div_src = 'div_dst' in src_basename
@@ -8381,7 +8420,8 @@ class NmrDpUtility:
                                            self.__ccU, self.__csStat)
                 elif file_type == 'nm-res-cya':
                     reader = CyanaMRReader(self.__verbose, self.__lfh, None, None, None,
-                                           self.__ccU, self.__csStat, self.__nefT)
+                                           self.__ccU, self.__csStat, self.__nefT,
+                                           file_ext=self.__retrieveOriginalFileExtensionOfCyanaMRFile())
                 elif file_type == 'nm-res-ros':
                     reader = RosettaMRReader(self.__verbose, self.__lfh, None, None, None,
                                              self.__ccU, self.__csStat, self.__nefT)
@@ -8602,7 +8642,8 @@ class NmrDpUtility:
 
                     elif file_type == 'nm-res-cya':
                         reader = CyanaMRReader(self.__verbose, self.__lfh, None, None, None,
-                                               self.__ccU, self.__csStat, self.__nefT)
+                                               self.__ccU, self.__csStat, self.__nefT,
+                                               file_ext=self.__retrieveOriginalFileExtensionOfCyanaMRFile())
                     elif file_type == 'nm-res-ros':
                         reader = RosettaMRReader(self.__verbose, self.__lfh, None, None, None,
                                                  self.__ccU, self.__csStat, self.__nefT)
@@ -8754,7 +8795,8 @@ class NmrDpUtility:
                                            self.__ccU, self.__csStat)
                 elif file_type == 'nm-res-cya':
                     reader = CyanaMRReader(self.__verbose, self.__lfh, None, None, None,
-                                           self.__ccU, self.__csStat, self.__nefT)
+                                           self.__ccU, self.__csStat, self.__nefT,
+                                           file_ext=self.__retrieveOriginalFileExtensionOfCyanaMRFile())
                 elif file_type == 'nm-res-ros':
                     reader = RosettaMRReader(self.__verbose, self.__lfh, None, None, None,
                                              self.__ccU, self.__csStat, self.__nefT)
@@ -8823,8 +8865,8 @@ class NmrDpUtility:
         """ Peel uninterpretable restraints from the legacy NMR file if necessary.
         """
 
-        if not self.__remediation_mode:
-            return False
+        # if not self.__remediation_mode:
+        #    return False
 
         src_basename = os.path.splitext(file_path)[0]
         div_src = 'div_dst' in src_basename
@@ -8868,7 +8910,8 @@ class NmrDpUtility:
         elif file_type == 'nm-res-cya':
             # mr_format_name = 'CYANA'
             reader = CyanaMRReader(self.__verbose, self.__lfh, None, None, None,
-                                   self.__ccU, self.__csStat, self.__nefT)
+                                   self.__ccU, self.__csStat, self.__nefT,
+                                   file_ext=self.__retrieveOriginalFileExtensionOfCyanaMRFile())
         elif file_type == 'nm-res-ros':
             # mr_format_name = 'ROSETTA'
             reader = RosettaMRReader(self.__verbose, self.__lfh, None, None, None,
@@ -8906,7 +8949,8 @@ class NmrDpUtility:
                                                 self.__ccU, self.__csStat)
                 elif test_file_type == 'nm-res-cya':
                     test_reader = CyanaMRReader(self.__verbose, self.__lfh, None, None, None,
-                                                self.__ccU, self.__csStat, self.__nefT)
+                                                self.__ccU, self.__csStat, self.__nefT,
+                                                file_ext=self.__retrieveOriginalFileExtensionOfCyanaMRFile())
                 elif test_file_type == 'nm-res-ros':
                     test_reader = RosettaMRReader(self.__verbose, self.__lfh, None, None, None,
                                                   self.__ccU, self.__csStat, self.__nefT)
@@ -9011,7 +9055,8 @@ class NmrDpUtility:
                                            self.__ccU, self.__csStat)
                 elif file_type == 'nm-res-cya':
                     reader = CyanaMRReader(self.__verbose, self.__lfh, None, None, None,
-                                           self.__ccU, self.__csStat, self.__nefT)
+                                           self.__ccU, self.__csStat, self.__nefT,
+                                           file_ext=self.__retrieveOriginalFileExtensionOfCyanaMRFile())
                 elif file_type == 'nm-res-ros':
                     reader = RosettaMRReader(self.__verbose, self.__lfh, None, None, None,
                                              self.__ccU, self.__csStat, self.__nefT)
@@ -9074,8 +9119,8 @@ class NmrDpUtility:
         """ Divive legacy NMR restraint file.
         """
 
-        if not self.__remediation_mode:
-            return False
+        # if not self.__remediation_mode:
+        #    return False
 
         src_basename = os.path.splitext(file_path)[0]
         div_src = 'div_dst' in src_basename
@@ -9289,7 +9334,8 @@ class NmrDpUtility:
 
                     if file_type == 'nm-res-cya':
                         reader = CyanaMRReader(self.__verbose, self.__lfh, None, None, None,
-                                               self.__ccU, self.__csStat, self.__nefT)
+                                               self.__ccU, self.__csStat, self.__nefT,
+                                               file_ext=self.__retrieveOriginalFileExtensionOfCyanaMRFile())
                     elif file_type == 'nm-res-ros':
                         reader = RosettaMRReader(self.__verbose, self.__lfh, None, None, None,
                                                  self.__ccU, self.__csStat, self.__nefT)
@@ -9439,7 +9485,8 @@ class NmrDpUtility:
                                            self.__ccU, self.__csStat)
                 elif file_type == 'nm-res-cya':
                     reader = CyanaMRReader(self.__verbose, self.__lfh, None, None, None,
-                                           self.__ccU, self.__csStat, self.__nefT)
+                                           self.__ccU, self.__csStat, self.__nefT,
+                                           file_ext=self.__retrieveOriginalFileExtensionOfCyanaMRFile())
                 elif file_type == 'nm-res-ros':
                     reader = RosettaMRReader(self.__verbose, self.__lfh, None, None, None,
                                              self.__ccU, self.__csStat, self.__nefT)
@@ -9510,8 +9557,10 @@ class NmrDpUtility:
                 reader = AmberPTReader(self.__verbose, self.__lfh, None, None, None,
                                        self.__ccU, self.__csStat)
             elif file_type == 'nm-res-cya':
+                cya_file_ext = self.__retrieveOriginalFileExtensionOfCyanaMRFile()
                 reader = CyanaMRReader(self.__verbose, self.__lfh, None, None, None,
-                                       self.__ccU, self.__csStat, self.__nefT)
+                                       self.__ccU, self.__csStat, self.__nefT,
+                                       file_ext=cya_file_ext)
             elif file_type == 'nm-res-ros':
                 reader = RosettaMRReader(self.__verbose, self.__lfh, None, None, None,
                                          self.__ccU, self.__csStat, self.__nefT)
@@ -9534,7 +9583,7 @@ class NmrDpUtility:
                         elif file_type == 'nm-res-cya':
                             reader = CyanaMRReader(self.__verbose, self.__lfh, None, None, None,
                                                    self.__ccU, self.__csStat, self.__nefT,
-                                                   reasons)
+                                                   reasons, file_ext=cya_file_ext)
                         elif file_type == 'nm-res-ros':
                             reader = RosettaMRReader(self.__verbose, self.__lfh, None, None, None,
                                                      self.__ccU, self.__csStat, self.__nefT,
@@ -9909,7 +9958,8 @@ class NmrDpUtility:
             if (not is_valid) and file_type != 'nm-res-cya':
 
                 reader = CyanaMRReader(False, self.__lfh, None, None, None,
-                                       self.__ccU, self.__csStat, self.__nefT)
+                                       self.__ccU, self.__csStat, self.__nefT,
+                                       file_ext=self.__retrieveOriginalFileExtensionOfCyanaMRFile())
                 listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
                 _content_subtype = listener.getContentSubtype() if listener is not None else None
@@ -10092,10 +10142,13 @@ class NmrDpUtility:
                 fileListId += 1
                 continue
 
+            original_file_name = None
             if 'original_file_name' in input_source_dic:
                 original_file_name = input_source_dic['original_file_name']
                 if file_name != original_file_name and original_file_name is not None:
                     file_name = f"{original_file_name} ({file_name})"
+
+            self.__cur_original_ar_file_name = original_file_name
 
             if not is_ascii_file(src_file):
 
@@ -20213,10 +20266,14 @@ class NmrDpUtility:
                 if 'is_valid' in ar and ar['is_valid']:
 
                     file_name = input_source_dic['file_name']
+
+                    original_file_name = None
                     if 'original_file_name' in input_source_dic:
                         original_file_name = input_source_dic['original_file_name']
                         if file_name != original_file_name and original_file_name is not None:
                             file_name = f"{original_file_name} ({file_name})"
+
+                    self.__cur_original_ar_file_name = original_file_name
 
                     reader = AmberPTReader(self.__verbose, self.__lfh,
                                            self.__representative_model_id,
@@ -20305,10 +20362,14 @@ class NmrDpUtility:
                 continue
 
             file_name = input_source_dic['file_name']
+
+            original_file_name = None
             if 'original_file_name' in input_source_dic:
                 original_file_name = input_source_dic['original_file_name']
                 if file_name != original_file_name and original_file_name is not None:
                     file_name = f"{original_file_name} ({file_name})"
+
+            self.__cur_original_ar_file_name = original_file_name
 
             if file_type == 'nm-res-xpl':
                 reader = XplorMRReader(self.__verbose, self.__lfh,
@@ -20571,11 +20632,13 @@ class NmrDpUtility:
                     else:
                         upl_or_lol = 'lol_w_upl'
 
+                cya_file_ext = self.__retrieveOriginalFileExtensionOfCyanaMRFile()
+
                 reader = CyanaMRReader(self.__verbose, self.__lfh,
                                        self.__representative_model_id,
                                        self.__cR, cC,
                                        self.__ccU, self.__csStat, self.__nefT,
-                                       None, upl_or_lol)
+                                       None, upl_or_lol, cya_file_ext)
 
                 listener, _, _ = reader.parse(file_path, self.__cifPath)
 
@@ -20587,7 +20650,7 @@ class NmrDpUtility:
                                                self.__representative_model_id,
                                                self.__cR, cC,
                                                self.__ccU, self.__csStat, self.__nefT,
-                                               reasons, upl_or_lol)
+                                               reasons, upl_or_lol, cya_file_ext)
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath)
 

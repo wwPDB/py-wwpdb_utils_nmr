@@ -99,6 +99,7 @@ class CyanaMRParserListener(ParseTreeListener):
     rdcRestraints = 0       # CYANA: Residual dipolar coupling restraint file (.rdc)
     pcsRestraints = 0       # CYANA: Pseudocontact shift restraint file (.pcs)
     noepkRestraints = 0     # CYANA: NOESY volume restraint file (.upv or .lov)
+    jcoupRestraints = 0     # CYANA: Scalar coupling constant restraint file (.cco)
 
     # CCD accessing utility
     __ccU = None
@@ -1053,7 +1054,10 @@ class CyanaMRParserListener(ParseTreeListener):
         """
 
         validRange = True
-        dstFunc = {'weight': weight, 'orientation': orientation}
+        dstFunc = {'weight': weight}
+
+        if orientation is not None:
+            dstFunc['orientation'] = orientation
 
         if target_value is not None:
             if RDC_ERROR_MIN < target_value < RDC_ERROR_MAX:
@@ -2031,6 +2035,132 @@ class CyanaMRParserListener(ParseTreeListener):
         finally:
             self.numberSelection.clear()
 
+    # Enter a parse tree produced by CyanaMRParser#cco_restraints.
+    def enterCco_restraints(self, ctx: CyanaMRParser.Cco_restraintsContext):  # pylint: disable=unused-argument
+        self.__cur_subtype = 'jcoup'
+
+    # Exit a parse tree produced by CyanaMRParser#cco_restraints.
+    def exitCco_restraints(self, ctx: CyanaMRParser.Cco_restraintsContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by CyanaMRParser#cco_restraint.
+    def enterCco_restraint(self, ctx: CyanaMRParser.Cco_restraintContext):  # pylint: disable=unused-argument
+        self.jcoupRestraints += 1
+
+        self.atomSelectionSet.clear()
+
+    # Exit a parse tree produced by CyanaMRParser#cco_restraint.
+    def exitCco_restraint(self, ctx: CyanaMRParser.Cco_restraintContext):
+
+        try:
+
+            seqId1 = int(str(ctx.Integer()))
+            compId1 = str(ctx.Simple_name(0)).upper()
+            atomId1 = str(ctx.Simple_name(1)).upper()
+            atomId2 = str(ctx.Simple_name(2)).upper()
+
+            if None in self.numberSelection:
+                return
+
+            target = self.numberSelection[0]
+            error = None
+
+            weight = 1.0
+            if len(self.numberSelection) > 2:
+                error = abs(self.numberSelection[1])
+                weight = self.numberSelection[2]
+
+            elif len(self.numberSelection) > 1:
+                error = abs(self.numberSelection[1])
+
+            if weight <= 0.0:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"The relative weight value of '{weight}' must be a positive value.\n"
+                return
+
+            target_value = target
+            lower_limit = target - error if error is not None else None
+            upper_limit = target + error if error is not None else None
+
+            dstFunc = self.validateRdcRange(weight, None, target_value, lower_limit, upper_limit)
+
+            if dstFunc is None:
+                return
+
+            if not self.__hasPolySeq:
+                return
+
+            chainAssign1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
+            chainAssign2 = self.assignCoordPolymerSequence(seqId1, compId1, atomId2)
+
+            if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+                return
+
+            self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1)
+            self.selectCoordAtoms(chainAssign2, seqId1, compId1, atomId2)
+
+            if len(self.atomSelectionSet) < 2:
+                return
+
+            if not self.areUniqueCoordAtoms('a Scalar coupling constant'):
+                return
+
+            chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
+            seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
+            comp_id_1 = self.atomSelectionSet[0][0]['comp_id']
+            atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
+
+            chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
+            seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
+            comp_id_2 = self.atomSelectionSet[1][0]['comp_id']
+            atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+
+            if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"Non-magnetic susceptible spin appears in scalar coupling constant; "\
+                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
+                    f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                return
+
+            if chain_id_1 != chain_id_2:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"Found inter-chain scalar coupling constant; "\
+                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                return
+
+            if abs(seq_id_1 - seq_id_2) > 1:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"Found inter-residue scalar coupling constant; "\
+                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                return
+
+            if abs(seq_id_1 - seq_id_2) == 1:
+
+                if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
+                   ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H')) or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H') and atom_id_2 == 'C')):
+                    pass
+
+                else:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        "Found inter-residue scalar coupling constant; "\
+                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    return
+
+            elif atom_id_1 == atom_id_2:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    "Found zero scalar coupling constant; "\
+                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                return
+
+            for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
+                                                  self.atomSelectionSet[1]):
+                if self.__debug:
+                    print(f"subtype={self.__cur_subtype} id={self.jcoupRestraints} "
+                          f"atom1={atom1} atom2={atom2} {dstFunc}")
+
+        finally:
+            self.numberSelection.clear()
+
     # Enter a parse tree produced by CyanaMRParser#number.
     def enterNumber(self, ctx: CyanaMRParser.NumberContext):  # pylint: disable=unused-argument
         pass
@@ -2127,7 +2257,9 @@ class CyanaMRParserListener(ParseTreeListener):
         if self.__cur_subtype == 'pcs':
             return f"[Check the {self.pcsRestraints}th row of pseudocontact shift restraints] "
         if self.__cur_subtype == 'noepk':
-            return f"[Check the {self.distRestraints}th row of NOESY volume restraints] "
+            return f"[Check the {self.noepkRestraints}th row of NOESY volume restraints] "
+        if self.__cur_subtype == 'jcoup':
+            return f"[Check the {self.jcoupRestraints}th row of scalar coupling constant restraints] "
         return ''
 
     def getContentSubtype(self):
@@ -2138,7 +2270,8 @@ class CyanaMRParserListener(ParseTreeListener):
                           'dihed_restraint': self.dihedRestraints,
                           'rdc_restraint': self.rdcRestraints,
                           'pcs_restraint': self.pcsRestraints,
-                          'noepk_restraint': self.noepkRestraints
+                          'noepk_restraint': self.noepkRestraints,
+                          'jcoup_restraint': self.jcoupRestraints
                           }
 
         return {k: 1 for k, v in contentSubtype.items() if v > 0}

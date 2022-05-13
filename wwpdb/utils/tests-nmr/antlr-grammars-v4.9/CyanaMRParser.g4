@@ -29,7 +29,8 @@ cyana_mr:
 	fixatmw2_distance_restraints |
 	torsion_angle_restraints |
 	rdc_restraints |
-	pcs_restraints
+	pcs_restraints |
+	cco_restraints
 	)*
 	EOF;
 
@@ -139,6 +140,14 @@ fixatmw2_distance_restraints:
 fixatmw2_distance_restraint:
 	Integer Simple_name Simple_name
 	(Integer Simple_name Simple_name number number number)+;
+
+/* CYANA (undocumented) - Scalar coupling constant restraint
+*/
+cco_restraints:
+	cco_restraint+;
+
+cco_restraint:
+	Integer Simple_name Simple_name Simple_name number number? number?;
 
 /* number expression in restrains */
 number:	Float | Integer;

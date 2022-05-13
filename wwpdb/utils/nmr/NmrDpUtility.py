@@ -9140,7 +9140,6 @@ class NmrDpUtility:
 
         # self.__divide_mr_error_message.append(err_desc)
 
-
         if self.__split_mr_debug:
             print('DO-DIV-MR')
 

@@ -8089,9 +8089,20 @@ class NmrDpUtility:
                                    'hbond_restraint': 1 if has_hbond_restraint else 0,
                                    'coordinate': 1 if has_coordinate else 0,
                                    'topology': 1 if has_topology else 0}
+            else:
+                if 'dist_restraint' in content_subtype:
+                    has_dist_restraint = True
+                if 'dihed_restraint' in content_subtype:
+                    has_dihed_restraint = True
+                if 'rdc_restraint' in content_subtype:
+                    has_rdc_restraint = True
+                if 'plane_restraint' in content_subtype:
+                    has_plane_restraint = True
+                if 'hbond_restraint' in content_subtype:
+                    has_hbond_restraint = True
 
             if not is_aux_amb and not has_chem_shift and not has_dist_restraint and not has_dihed_restraint and not has_rdc_restraint\
-               and not has_plane_restraint and not has_hbond_restraint and valid:
+               and not has_plane_restraint and not has_hbond_restraint and not valid:
 
                 hint = ""
                 if len(concat_nmr_restraint_names(content_subtype)) == 0:

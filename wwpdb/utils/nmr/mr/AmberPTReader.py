@@ -149,7 +149,8 @@ class AmberPTReader:
             if self.__verbose:
                 if listener.warningMessage is not None:
                     print(listener.warningMessage)
-                print(listener.getContentSubtype())
+                if isFilePath:
+                    print(listener.getContentSubtype())
 
             return listener, parser_error_listener, lexer_error_listener
 

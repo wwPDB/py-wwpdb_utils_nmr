@@ -234,109 +234,116 @@ class CyanaMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by CyanaMRParser#distance_restraint.
     def exitDistance_restraint(self, ctx: CyanaMRParser.Distance_restraintContext):
-        seqId1 = int(str(ctx.Integer(0)))
-        compId1 = str(ctx.Simple_name(0)).upper()
-        atomId1 = str(ctx.Simple_name(1)).upper()
-        seqId2 = int(str(ctx.Integer(1)))
-        compId2 = str(ctx.Simple_name(2)).upper()
-        atomId2 = str(ctx.Simple_name(3)).upper()
 
-        target_value = None
-        lower_limit = None
-        upper_limit = None
+        try:
 
-        value = self.numberSelection[0]
-        weight = 1.0
+            seqId1 = int(str(ctx.Integer(0)))
+            compId1 = str(ctx.Simple_name(0)).upper()
+            atomId1 = str(ctx.Simple_name(1)).upper()
+            seqId2 = int(str(ctx.Integer(1)))
+            compId2 = str(ctx.Simple_name(2)).upper()
+            atomId2 = str(ctx.Simple_name(3)).upper()
 
-        has_square = False
-        if len(self.numberSelection) > 2:
-            value2 = self.numberSelection[1]
-            weight = self.numberSelection[2]
+            target_value = None
+            lower_limit = None
+            upper_limit = None
 
-            has_square = True
+            if None in self.numberSelection:
+                return
 
-        elif len(self.numberSelection) > 1:
-            value2 = self.numberSelection[1]
+            value = self.numberSelection[0]
+            weight = 1.0
 
-            if value2 <= 1.0 or value2 < value:
-                weight = value2
-            else:
+            has_square = False
+            if len(self.numberSelection) > 2:
+                value2 = self.numberSelection[1]
+                weight = self.numberSelection[2]
+
                 has_square = True
 
-        if weight <= 0.0:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                f"The relative weight value of '{weight}' must be a positive value.\n"
-            return
+            elif len(self.numberSelection) > 1:
+                value2 = self.numberSelection[1]
 
-        self.numberSelection.clear()
+                if value2 <= 1.0 or value2 < value:
+                    weight = value2
+                else:
+                    has_square = True
 
-        if DIST_RANGE_MIN <= value <= DIST_RANGE_MAX:
-            if self.__max_dist_value is None:
-                self.__max_dist_value = value
-            if value > self.__max_dist_value:
-                self.__max_dist_value = value
+            if weight <= 0.0:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"The relative weight value of '{weight}' must be a positive value.\n"
+                return
 
-        if has_square:
-            if value2 > DIST_RANGE_MAX:  # lol_only
-                lower_limit = value
+            if DIST_RANGE_MIN <= value <= DIST_RANGE_MAX:
+                if self.__max_dist_value is None:
+                    self.__max_dist_value = value
+                if value > self.__max_dist_value:
+                    self.__max_dist_value = value
 
-            elif 1.8 <= value <= DIST_ERROR_MAX and DIST_RANGE_MIN <= value2 <= DIST_RANGE_MAX:
-                upper_limit = value2
-                lower_limit = value
-                target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+            if has_square:
+                if value2 > DIST_RANGE_MAX:  # lol_only
+                    lower_limit = value
 
-            else:  # upl_only
-                if value2 > 1.8:
+                elif 1.8 <= value <= DIST_ERROR_MAX and DIST_RANGE_MIN <= value2 <= DIST_RANGE_MAX:
                     upper_limit = value2
+                    lower_limit = value
+                    target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+
+                else:  # upl_only
+                    if value2 > 1.8:
+                        upper_limit = value2
+                        lower_limit = 1.8  # default value of PDBStat
+                        target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                    else:
+                        upper_limit = value2
+
+            elif self.__upl_or_lol is None or self.__upl_or_lol == 'upl_only':
+                if value > 1.8:
+                    upper_limit = value
                     lower_limit = 1.8  # default value of PDBStat
                     target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
                 else:
-                    upper_limit = value2
+                    lower_limit = value
 
-        elif self.__upl_or_lol is None or self.__upl_or_lol == 'upl_only':
-            if value > 1.8:
+            elif self.__upl_or_lol == 'upl_w_lol':
                 upper_limit = value
-                lower_limit = 1.8  # default value of PDBStat
+
+            elif self.__upl_or_lol == 'lol_only':
+                lower_limit = value
+                upper_limit = 5.5  # default value of PDBStat
                 target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
-            else:
+
+            else:  # 'lol_w_upl'
                 lower_limit = value
 
-        elif self.__upl_or_lol == 'upl_w_lol':
-            upper_limit = value
+            dstFunc = self.validateDistanceRange(weight, target_value, lower_limit, upper_limit, self.__omitDistLimitOutlier)
 
-        elif self.__upl_or_lol == 'lol_only':
-            lower_limit = value
-            upper_limit = 5.5  # default value of PDBStat
-            target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+            if dstFunc is None:
+                return
 
-        else:  # 'lol_w_upl'
-            lower_limit = value
+            if not self.__hasPolySeq:
+                return
 
-        dstFunc = self.validateDistanceRange(weight, target_value, lower_limit, upper_limit, self.__omitDistLimitOutlier)
+            chainAssign1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
+            chainAssign2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
 
-        if dstFunc is None:
-            return
+            if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+                return
 
-        if not self.__hasPolySeq:
-            return
+            self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1)
+            self.selectCoordAtoms(chainAssign2, seqId2, compId2, atomId2)
 
-        chainAssign1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
-        chainAssign2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
+            if len(self.atomSelectionSet) < 2:
+                return
 
-        if len(chainAssign1) == 0 or len(chainAssign2) == 0:
-            return
+            for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
+                                                  self.atomSelectionSet[1]):
+                if self.__debug:
+                    print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
+                          f"atom1={atom1} atom2={atom2} {dstFunc}")
 
-        self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1)
-        self.selectCoordAtoms(chainAssign2, seqId2, compId2, atomId2)
-
-        if len(self.atomSelectionSet) < 2:
-            return
-
-        for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
-                                              self.atomSelectionSet[1]):
-            if self.__debug:
-                print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
-                      f"atom1={atom1} atom2={atom2} {dstFunc}")
+        finally:
+            self.numberSelection.clear()
 
     def validateDistanceRange(self, weight, target_value, lower_limit, upper_limit, omit_dist_limit_outlier):
         """ Validate distance value range.
@@ -647,148 +654,156 @@ class CyanaMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by CyanaMRParser#torsion_angle_restraint.
     def exitTorsion_angle_restraint(self, ctx: CyanaMRParser.Torsion_angle_restraintContext):  # pylint: disable=unused-argument
-        seqId = int(str(ctx.Integer(0)))
-        compId = str(ctx.Simple_name(0)).upper()
-        angleName = str(ctx.Simple_name(1)).upper()
-        lower_limit = self.numberSelection[0]
-        upper_limit = self.numberSelection[1]
 
-        weight = 1.0
-        if len(self.numberSelection) > 2:
-            weight = self.numberSelection[2]
+        try:
 
-        if weight <= 0.0:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                f"The relative weight value of '{weight}' must be a positive value.\n"
-            return
+            seqId = int(str(ctx.Integer(0)))
+            compId = str(ctx.Simple_name(0)).upper()
+            angleName = str(ctx.Simple_name(1)).upper()
 
-        self.numberSelection.clear()
+            if None in self.numberSelection:
+                return
 
-        if lower_limit > upper_limit:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                f"The angle's lower limit '{lower_limit}' must be less than or equal to the upper limit '{upper_limit}'.\n"
-            return
+            lower_limit = self.numberSelection[0]
+            upper_limit = self.numberSelection[1]
 
-        if angleName not in KNOWN_ANGLE_NAMES:
-            self.warningMessage += f"[Enum mismatch ignorable] {self.__getCurrentRestraint()}"\
-                f"The angle identifier '{str(ctx.Simple_name(1))}' is unknown.\n"
-            return
+            weight = 1.0
+            if len(self.numberSelection) > 2:
+                weight = self.numberSelection[2]
 
-        target_value = (upper_limit + lower_limit) / 2.0
+            if weight <= 0.0:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"The relative weight value of '{weight}' must be a positive value.\n"
+                return
 
-        while target_value > ANGLE_RANGE_MAX:
-            target_value -= 360.0
-        while target_value < ANGLE_RANGE_MIN:
-            target_value += 360.0
+            if lower_limit > upper_limit:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"The angle's lower limit '{lower_limit}' must be less than or equal to the upper limit '{upper_limit}'.\n"
+                return
 
-        dstFunc = self.validateAngleRange(weight, target_value, lower_limit, upper_limit)
+            if angleName not in KNOWN_ANGLE_NAMES:
+                self.warningMessage += f"[Enum mismatch ignorable] {self.__getCurrentRestraint()}"\
+                    f"The angle identifier '{str(ctx.Simple_name(1))}' is unknown.\n"
+                return
 
-        if dstFunc is None:
-            return
+            target_value = (upper_limit + lower_limit) / 2.0
 
-        if not self.__hasPolySeq:
-            return
+            while target_value > ANGLE_RANGE_MAX:
+                target_value -= 360.0
+            while target_value < ANGLE_RANGE_MIN:
+                target_value += 360.0
 
-        peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
+            dstFunc = self.validateAngleRange(weight, target_value, lower_limit, upper_limit)
 
-        if carbohydrate:
-            atomNames = KNOWN_ANGLE_CARBO_ATOM_NAMES[angleName]
-            seqOffset = KNOWN_ANGLE_CARBO_SEQ_OFFSET[angleName]
-        else:
-            atomNames = KNOWN_ANGLE_ATOM_NAMES[angleName]
-            seqOffset = KNOWN_ANGLE_SEQ_OFFSET[angleName]
+            if dstFunc is None:
+                return
 
-        if isinstance(atomNames, list):
-            atomId = next(name for name, offset in zip(atomNames, seqOffset) if offset == 0)
-        else:  # nucleic CHI angle
-            atomId = next(name for name, offset in zip(atomNames['Y'], seqOffset['Y']) if offset == 0)
+            if not self.__hasPolySeq:
+                return
 
-        chainAssign = self.assignCoordPolymerSequence(seqId, compId, atomId)
-
-        if len(chainAssign) == 0:
-            self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                f"{seqId}:{compId} is not present in the coordinates.\n"
-            return
-
-        for chainId, cifSeqId, cifCompId in chainAssign:
-            ps = next(ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId)
-
-            peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(cifCompId)
-
-            atomNames = None
-            seqOffset = None
+            peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
 
             if carbohydrate:
                 atomNames = KNOWN_ANGLE_CARBO_ATOM_NAMES[angleName]
                 seqOffset = KNOWN_ANGLE_CARBO_SEQ_OFFSET[angleName]
-            elif nucleotide and angleName == 'CHI':
-                if self.__ccU.updateChemCompDict(cifCompId):
-                    try:
-                        next(cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == 'N9')
-                        atomNames = KNOWN_ANGLE_ATOM_NAMES['CHI']['R']
-                        seqOffset = KNOWN_ANGLE_SEQ_OFFSET['CHI']['R']
-                    except StopIteration:
-                        atomNames = KNOWN_ANGLE_ATOM_NAMES['CHI']['Y']
-                        seqOffset = KNOWN_ANGLE_SEQ_OFFSET['CHI']['Y']
             else:
                 atomNames = KNOWN_ANGLE_ATOM_NAMES[angleName]
                 seqOffset = KNOWN_ANGLE_SEQ_OFFSET[angleName]
 
-            if peptide and angleName in ('PHI', 'PSI', 'OMEGA',
-                                         'CHI1', 'CHI2', 'CHI3', 'CHI4', 'CHI5',
-                                         'CHI21', 'CHI22', 'CHI31', 'CHI32', 'CHI42'):
-                pass
-            elif nucleotide and angleName in ('ALPHA', 'BETA', 'GAMMA', 'DELTA', 'EPSILON', 'ZETA',
-                                              'CHI', 'ETA', 'THETA', "ETA'", "THETA'",
-                                              'NU0', 'NU1', 'NU2', 'NU3', 'NU4',
-                                              'TAU0', 'TAU1', 'TAU2', 'TAU3', 'TAU4'):
-                pass
-            elif carbohydrate and angleName in ('PHI', 'PSI', 'OMEGA'):
-                pass
-            else:
-                self.warningMessage += f"[Enum mismatch ignorable] {self.__getCurrentRestraint()}"\
-                    f"The angle identifier {str(ctx.Simple_name(1))!r} did not match with residue {compId!r}.\n"
+            if isinstance(atomNames, list):
+                atomId = next(name for name, offset in zip(atomNames, seqOffset) if offset == 0)
+            else:  # nucleic CHI angle
+                atomId = next(name for name, offset in zip(atomNames['Y'], seqOffset['Y']) if offset == 0)
+
+            chainAssign = self.assignCoordPolymerSequence(seqId, compId, atomId)
+
+            if len(chainAssign) == 0:
+                self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                    f"{seqId}:{compId} is not present in the coordinates.\n"
                 return
 
-            for atomId, offset in zip(atomNames, seqOffset):
+            for chainId, cifSeqId, cifCompId in chainAssign:
+                ps = next(ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId)
 
-                atomSelection = []
+                peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(cifCompId)
 
-                _cifSeqId = cifSeqId + offset
-                _cifCompId = cifCompId if offset == 0 else (ps['comp_id'][ps['auth_seq_id'].index(_cifSeqId)] if _cifSeqId in ps['auth_seq_id'] else None)
+                atomNames = None
+                seqOffset = None
 
-                if _cifCompId is None:
-                    self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                        f"The sequence number '{seqId+offset}' is not present in polymer sequence of chain {chainId} of the coordinates.\n"
-                    return
-
-                self.__ccU.updateChemCompDict(_cifCompId)
-
-                if isinstance(atomId, str):
-                    cifAtomId = next((cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId), None)
+                if carbohydrate:
+                    atomNames = KNOWN_ANGLE_CARBO_ATOM_NAMES[angleName]
+                    seqOffset = KNOWN_ANGLE_CARBO_SEQ_OFFSET[angleName]
+                elif nucleotide and angleName == 'CHI':
+                    if self.__ccU.updateChemCompDict(cifCompId):
+                        try:
+                            next(cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == 'N9')
+                            atomNames = KNOWN_ANGLE_ATOM_NAMES['CHI']['R']
+                            seqOffset = KNOWN_ANGLE_SEQ_OFFSET['CHI']['R']
+                        except StopIteration:
+                            atomNames = KNOWN_ANGLE_ATOM_NAMES['CHI']['Y']
+                            seqOffset = KNOWN_ANGLE_SEQ_OFFSET['CHI']['Y']
                 else:
-                    cifAtomId = next((cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if atomId.match(cca[self.__ccU.ccaAtomId])), None)
+                    atomNames = KNOWN_ANGLE_ATOM_NAMES[angleName]
+                    seqOffset = KNOWN_ANGLE_SEQ_OFFSET[angleName]
 
-                if cifAtomId is None:
-                    self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                        f"{seqId+offset}:{compId}:{atomId} is not present in the coordinates.\n"
+                if peptide and angleName in ('PHI', 'PSI', 'OMEGA',
+                                             'CHI1', 'CHI2', 'CHI3', 'CHI4', 'CHI5',
+                                             'CHI21', 'CHI22', 'CHI31', 'CHI32', 'CHI42'):
+                    pass
+                elif nucleotide and angleName in ('ALPHA', 'BETA', 'GAMMA', 'DELTA', 'EPSILON', 'ZETA',
+                                                  'CHI', 'ETA', 'THETA', "ETA'", "THETA'",
+                                                  'NU0', 'NU1', 'NU2', 'NU3', 'NU4',
+                                                  'TAU0', 'TAU1', 'TAU2', 'TAU3', 'TAU4'):
+                    pass
+                elif carbohydrate and angleName in ('PHI', 'PSI', 'OMEGA'):
+                    pass
+                else:
+                    self.warningMessage += f"[Enum mismatch ignorable] {self.__getCurrentRestraint()}"\
+                        f"The angle identifier {str(ctx.Simple_name(1))!r} did not match with residue {compId!r}.\n"
                     return
 
-                atomSelection.append({'chain_id': chainId, 'seq_id': _cifSeqId, 'comp_id': _cifCompId, 'atom_id': cifAtomId})
+                for atomId, offset in zip(atomNames, seqOffset):
 
-                if len(atomSelection) > 0:
-                    self.atomSelectionSet.append(atomSelection)
+                    atomSelection = []
 
-            if len(self.atomSelectionSet) < 4:
-                return
+                    _cifSeqId = cifSeqId + offset
+                    _cifCompId = cifCompId if offset == 0 else (ps['comp_id'][ps['auth_seq_id'].index(_cifSeqId)] if _cifSeqId in ps['auth_seq_id'] else None)
 
-            for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
-                                                                self.atomSelectionSet[1],
-                                                                self.atomSelectionSet[2],
-                                                                self.atomSelectionSet[3]):
-                if self.__debug:
-                    print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} "
-                          f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
+                    if _cifCompId is None:
+                        self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                            f"The sequence number '{seqId+offset}' is not present in polymer sequence of chain {chainId} of the coordinates.\n"
+                        return
+
+                    self.__ccU.updateChemCompDict(_cifCompId)
+
+                    if isinstance(atomId, str):
+                        cifAtomId = next((cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId), None)
+                    else:
+                        cifAtomId = next((cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if atomId.match(cca[self.__ccU.ccaAtomId])), None)
+
+                    if cifAtomId is None:
+                        self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                            f"{seqId+offset}:{compId}:{atomId} is not present in the coordinates.\n"
+                        return
+
+                    atomSelection.append({'chain_id': chainId, 'seq_id': _cifSeqId, 'comp_id': _cifCompId, 'atom_id': cifAtomId})
+
+                    if len(atomSelection) > 0:
+                        self.atomSelectionSet.append(atomSelection)
+
+                if len(self.atomSelectionSet) < 4:
+                    return
+
+                for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
+                                                                    self.atomSelectionSet[1],
+                                                                    self.atomSelectionSet[2],
+                                                                    self.atomSelectionSet[3]):
+                    if self.__debug:
+                        print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} "
+                              f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
+
+        finally:
+            self.numberSelection.clear()
 
     def validateAngleRange(self, weight, target_value, lower_limit, upper_limit):
         """ Validate angle value range.
@@ -898,132 +913,140 @@ class CyanaMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by CyanaMRParser#rdc_restraint.
     def exitRdc_restraint(self, ctx: CyanaMRParser.Rdc_restraintContext):
-        seqId1 = int(str(ctx.Integer(0)))
-        compId1 = str(ctx.Simple_name(0)).upper()
-        atomId1 = str(ctx.Simple_name(1)).upper()
-        seqId2 = int(str(ctx.Integer(1)))
-        compId2 = str(ctx.Simple_name(2)).upper()
-        atomId2 = str(ctx.Simple_name(3)).upper()
-        target = self.numberSelection[0]
-        error = abs(self.numberSelection[1])
-        weight = self.numberSelection[2]
-        orientation = int(str(ctx.Integer(2)))
 
-        self.numberSelection.clear()
+        try:
 
-        if weight <= 0.0:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                f"The relative weight value of '{weight}' must be a positive value.\n"
-            return
+            seqId1 = int(str(ctx.Integer(0)))
+            compId1 = str(ctx.Simple_name(0)).upper()
+            atomId1 = str(ctx.Simple_name(1)).upper()
+            seqId2 = int(str(ctx.Integer(1)))
+            compId2 = str(ctx.Simple_name(2)).upper()
+            atomId2 = str(ctx.Simple_name(3)).upper()
 
-        if orientation not in self.rdcParameterDict:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                f"The orientation '{orientation}' must be defined before you start to describe RDC restraints.\n"
-            return
+            if None in self.numberSelection:
+                return
 
-        if seqId1 == self.rdcParameterDict[orientation]['orientation_center_seq_id']:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                f"The residue number '{seqId1}' must not be the same as the center of orientation.\n"
-            return
+            target = self.numberSelection[0]
+            error = abs(self.numberSelection[1])
+            weight = self.numberSelection[2]
+            orientation = int(str(ctx.Integer(2)))
 
-        if seqId2 == self.rdcParameterDict[orientation]['orientation_center_seq_id']:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                f"The residue number '{seqId2}' must not be the same as the center of orientation.\n"
-            return
-
-        target_value = target
-        lower_limit = target - error
-        upper_limit = target + error
-
-        dstFunc = self.validateRdcRange(weight, orientation, target_value, lower_limit, upper_limit)
-
-        if dstFunc is None:
-            return
-
-        if not self.__hasPolySeq:
-            return
-
-        chainAssign1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
-        chainAssign2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
-
-        if len(chainAssign1) == 0 or len(chainAssign2) == 0:
-            return
-
-        self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1)
-        self.selectCoordAtoms(chainAssign2, seqId2, compId2, atomId2)
-
-        if len(self.atomSelectionSet) < 2:
-            return
-
-        if not self.areUniqueCoordAtoms('an RDC'):
-            return
-
-        chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
-        seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
-        comp_id_1 = self.atomSelectionSet[0][0]['comp_id']
-        atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
-
-        chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
-        seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
-        comp_id_2 = self.atomSelectionSet[1][0]['comp_id']
-        atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
-
-        if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                f"Non-magnetic susceptible spin appears in RDC vector; "\
-                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-            return
-
-        if chain_id_1 != chain_id_2:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                f"Found inter-chain RDC vector; "\
-                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-            return
-
-        if abs(seq_id_1 - seq_id_2) > 1:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                f"Found inter-residue RDC vector; "\
-                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-            return
-
-        if abs(seq_id_1 - seq_id_2) == 1:
-
-            if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
-               ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H')) or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H') and atom_id_2 == 'C')):
-                pass
-
-            else:
+            if weight <= 0.0:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    "Found inter-residue RDC vector; "\
+                    f"The relative weight value of '{weight}' must be a positive value.\n"
+                return
+
+            if orientation not in self.rdcParameterDict:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"The orientation '{orientation}' must be defined before you start to describe RDC restraints.\n"
+                return
+
+            if seqId1 == self.rdcParameterDict[orientation]['orientation_center_seq_id']:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"The residue number '{seqId1}' must not be the same as the center of orientation.\n"
+                return
+
+            if seqId2 == self.rdcParameterDict[orientation]['orientation_center_seq_id']:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"The residue number '{seqId2}' must not be the same as the center of orientation.\n"
+                return
+
+            target_value = target
+            lower_limit = target - error
+            upper_limit = target + error
+
+            dstFunc = self.validateRdcRange(weight, orientation, target_value, lower_limit, upper_limit)
+
+            if dstFunc is None:
+                return
+
+            if not self.__hasPolySeq:
+                return
+
+            chainAssign1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
+            chainAssign2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
+
+            if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+                return
+
+            self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1)
+            self.selectCoordAtoms(chainAssign2, seqId2, compId2, atomId2)
+
+            if len(self.atomSelectionSet) < 2:
+                return
+
+            if not self.areUniqueCoordAtoms('an RDC'):
+                return
+
+            chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
+            seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
+            comp_id_1 = self.atomSelectionSet[0][0]['comp_id']
+            atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
+
+            chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
+            seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
+            comp_id_2 = self.atomSelectionSet[1][0]['comp_id']
+            atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+
+            if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"Non-magnetic susceptible spin appears in RDC vector; "\
+                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
+                    f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                return
+
+            if chain_id_1 != chain_id_2:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"Found inter-chain RDC vector; "\
                     f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
                 return
 
-        elif atom_id_1 == atom_id_2:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                "Found zero RDC vector; "\
-                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-            return
+            if abs(seq_id_1 - seq_id_2) > 1:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"Found inter-residue RDC vector; "\
+                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                return
 
-        else:
+            if abs(seq_id_1 - seq_id_2) == 1:
 
-            if self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
+                if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
+                   ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H')) or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H') and atom_id_2 == 'C')):
+                    pass
 
-                if not any(b for b in self.__ccU.lastBonds
-                           if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
-                               or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
+                else:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        "Found inter-residue RDC vector; "\
+                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    return
 
-                    if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            "Found an RDC vector over multiple covalent bonds; "\
-                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-                        return
+            elif atom_id_1 == atom_id_2:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    "Found zero RDC vector; "\
+                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                return
 
-        for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
-                                              self.atomSelectionSet[1]):
-            if self.__debug:
-                print(f"subtype={self.__cur_subtype} id={self.rdcRestraints} "
-                      f"atom1={atom1} atom2={atom2} {dstFunc}")
+            else:
+
+                if self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
+
+                    if not any(b for b in self.__ccU.lastBonds
+                               if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
+                                   or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
+
+                        if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
+                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                "Found an RDC vector over multiple covalent bonds; "\
+                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                            return
+
+            for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
+                                                  self.atomSelectionSet[1]):
+                if self.__debug:
+                    print(f"subtype={self.__cur_subtype} id={self.rdcRestraints} "
+                          f"atom1={atom1} atom2={atom2} {dstFunc}")
+
+        finally:
+            self.numberSelection.clear()
 
     def validateRdcRange(self, weight, orientation, target_value, lower_limit, upper_limit):
         """ Validate RDC value range.
@@ -1154,57 +1177,65 @@ class CyanaMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by CyanaMRParser#pcs_restraint.
     def exitPcs_restraint(self, ctx: CyanaMRParser.Pcs_restraintContext):  # pylint: disable=unused-argument
-        seqId = int(str(ctx.Integer(0)))
-        compId = str(ctx.Simple_name(0)).upper()
-        atomId = str(ctx.Simple_name(1)).upper()
-        target = self.numberSelection[0]
-        error = abs(self.numberSelection[1])
-        weight = self.numberSelection[2]
-        orientation = int(str(ctx.Integer(1)))
 
-        self.numberSelection.clear()
+        try:
 
-        if weight <= 0.0:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                f"The relative weight value of '{weight}' must be a positive value.\n"
-            return
+            seqId = int(str(ctx.Integer(0)))
+            compId = str(ctx.Simple_name(0)).upper()
+            atomId = str(ctx.Simple_name(1)).upper()
 
-        if orientation not in self.pcsParameterDict:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                f"The orientation '{orientation}' must be defined before you start to describe PCS restraints.\n"
-            return
+            if None in self.numberSelection:
+                return
 
-        if seqId == self.pcsParameterDict[orientation]['orientation_center_seq_id']:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                f"The residue number '{seqId}' must not be the same as the center of orientation.\n"
-            return
+            target = self.numberSelection[0]
+            error = abs(self.numberSelection[1])
+            weight = self.numberSelection[2]
+            orientation = int(str(ctx.Integer(1)))
 
-        target_value = target
-        lower_limit = target - error
-        upper_limit = target + error
+            if weight <= 0.0:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"The relative weight value of '{weight}' must be a positive value.\n"
+                return
 
-        dstFunc = self.validatePcsRange(weight, orientation, target_value, lower_limit, upper_limit)
+            if orientation not in self.pcsParameterDict:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"The orientation '{orientation}' must be defined before you start to describe PCS restraints.\n"
+                return
 
-        if dstFunc is None:
-            return
+            if seqId == self.pcsParameterDict[orientation]['orientation_center_seq_id']:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"The residue number '{seqId}' must not be the same as the center of orientation.\n"
+                return
 
-        if not self.__hasPolySeq:
-            return
+            target_value = target
+            lower_limit = target - error
+            upper_limit = target + error
 
-        chainAssign = self.assignCoordPolymerSequence(seqId, compId, atomId)
+            dstFunc = self.validatePcsRange(weight, orientation, target_value, lower_limit, upper_limit)
 
-        if len(chainAssign) == 0:
-            return
+            if dstFunc is None:
+                return
 
-        self.selectCoordAtoms(chainAssign, seqId, compId, atomId)
+            if not self.__hasPolySeq:
+                return
 
-        if len(self.atomSelectionSet) < 1:
-            return
+            chainAssign = self.assignCoordPolymerSequence(seqId, compId, atomId)
 
-        for atom in self.atomSelectionSet[0]:
-            if self.__debug:
-                print(f"subtype={self.__cur_subtype} id={self.pcsRestraints} "
-                      f"atom={atom} {dstFunc}")
+            if len(chainAssign) == 0:
+                return
+
+            self.selectCoordAtoms(chainAssign, seqId, compId, atomId)
+
+            if len(self.atomSelectionSet) < 1:
+                return
+
+            for atom in self.atomSelectionSet[0]:
+                if self.__debug:
+                    print(f"subtype={self.__cur_subtype} id={self.pcsRestraints} "
+                          f"atom={atom} {dstFunc}")
+
+        finally:
+            self.numberSelection.clear()
 
     # Enter a parse tree produced by CyanaMRParser#fixres_distance_restraints.
     def enterFixres_distance_restraints(self, ctx: CyanaMRParser.Fixres_distance_restraintsContext):  # pylint: disable=unused-argument
@@ -1227,15 +1258,19 @@ class CyanaMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by CyanaMRParser#fixres_distance_restraint.
     def exitFixres_distance_restraint(self, ctx: CyanaMRParser.Fixres_distance_restraintContext):
-        seqId1 = int(str(ctx.Integer(0)))
-        compId1 = str(ctx.Simple_name(0)).upper()
-
-        int_col = 1
-        str_col = 1
-
-        omit_dist_limit_outlier = self.__reasons is not None and self.__omitDistLimitOutlier
 
         try:
+
+            seqId1 = int(str(ctx.Integer(0)))
+            compId1 = str(ctx.Simple_name(0)).upper()
+
+            int_col = 1
+            str_col = 1
+
+            omit_dist_limit_outlier = self.__reasons is not None and self.__omitDistLimitOutlier
+
+            if None in self.numberSelection:
+                return
 
             for num_col, value in enumerate(self.numberSelection):
                 atomId1 = str(ctx.Simple_name(str_col)).upper()
@@ -1341,15 +1376,19 @@ class CyanaMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by CyanaMRParser#fixresw_distance_restraint.
     def exitFixresw_distance_restraint(self, ctx: CyanaMRParser.Fixresw_distance_restraintContext):
-        seqId1 = int(str(ctx.Integer(0)))
-        compId1 = str(ctx.Simple_name(0)).upper()
-
-        int_col = 1
-        str_col = 1
-
-        omit_dist_limit_outlier = self.__reasons is not None and self.__omitDistLimitOutlier
 
         try:
+
+            seqId1 = int(str(ctx.Integer(0)))
+            compId1 = str(ctx.Simple_name(0)).upper()
+
+            int_col = 1
+            str_col = 1
+
+            omit_dist_limit_outlier = self.__reasons is not None and self.__omitDistLimitOutlier
+
+            if None in self.numberSelection:
+                return
 
             for num_col in range(0, len(self.numberSelection), 2):
                 atomId1 = str(ctx.Simple_name(str_col)).upper()
@@ -1491,15 +1530,19 @@ class CyanaMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by CyanaMRParser#fixresw2_distance_restraint.
     def exitFixresw2_distance_restraint(self, ctx: CyanaMRParser.Fixresw2_distance_restraintContext):
-        seqId1 = int(str(ctx.Integer(0)))
-        compId1 = str(ctx.Simple_name(0)).upper()
-
-        int_col = 1
-        str_col = 1
-
-        omit_dist_limit_outlier = self.__reasons is not None and self.__omitDistLimitOutlier
 
         try:
+
+            seqId1 = int(str(ctx.Integer(0)))
+            compId1 = str(ctx.Simple_name(0)).upper()
+
+            int_col = 1
+            str_col = 1
+
+            omit_dist_limit_outlier = self.__reasons is not None and self.__omitDistLimitOutlier
+
+            if None in self.numberSelection:
+                return
 
             for num_col in range(0, len(self.numberSelection), 3):
                 atomId1 = str(ctx.Simple_name(str_col)).upper()
@@ -1612,16 +1655,20 @@ class CyanaMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by CyanaMRParser#fixatm_distance_restraint.
     def exitFixatm_distance_restraint(self, ctx: CyanaMRParser.Fixatm_distance_restraintContext):
-        seqId1 = int(str(ctx.Integer(0)))
-        compId1 = str(ctx.Simple_name(0)).upper()
-        atomId1 = str(ctx.Simple_name(1)).upper()
-
-        int_col = 1
-        str_col = 2
-
-        omit_dist_limit_outlier = self.__reasons is not None and self.__omitDistLimitOutlier
 
         try:
+
+            seqId1 = int(str(ctx.Integer(0)))
+            compId1 = str(ctx.Simple_name(0)).upper()
+            atomId1 = str(ctx.Simple_name(1)).upper()
+
+            int_col = 1
+            str_col = 2
+
+            omit_dist_limit_outlier = self.__reasons is not None and self.__omitDistLimitOutlier
+
+            if None in self.numberSelection:
+                return
 
             for num_col, value in enumerate(self.numberSelection):
                 seqId2 = int(str(ctx.Integer(int_col)))
@@ -1726,16 +1773,20 @@ class CyanaMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by CyanaMRParser#fixatmw_distance_restraint.
     def exitFixatmw_distance_restraint(self, ctx: CyanaMRParser.Fixatmw_distance_restraintContext):
-        seqId1 = int(str(ctx.Integer(0)))
-        compId1 = str(ctx.Simple_name(0)).upper()
-        atomId1 = str(ctx.Simple_name(1)).upper()
-
-        int_col = 1
-        str_col = 2
-
-        omit_dist_limit_outlier = self.__reasons is not None and self.__omitDistLimitOutlier
 
         try:
+
+            seqId1 = int(str(ctx.Integer(0)))
+            compId1 = str(ctx.Simple_name(0)).upper()
+            atomId1 = str(ctx.Simple_name(1)).upper()
+
+            int_col = 1
+            str_col = 2
+
+            omit_dist_limit_outlier = self.__reasons is not None and self.__omitDistLimitOutlier
+
+            if None in self.numberSelection:
+                return
 
             for num_col in range(0, len(self.numberSelection), 2):
                 seqId2 = int(str(ctx.Integer(int_col)))
@@ -1876,16 +1927,20 @@ class CyanaMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by CyanaMRParser#fixatmw2_distance_restraint.
     def exitFixatmw2_distance_restraint(self, ctx: CyanaMRParser.Fixatmw2_distance_restraintContext):
-        seqId1 = int(str(ctx.Integer(0)))
-        compId1 = str(ctx.Simple_name(0)).upper()
-        atomId1 = str(ctx.Simple_name(1)).upper()
-
-        int_col = 1
-        str_col = 2
-
-        omit_dist_limit_outlier = self.__reasons is not None and self.__omitDistLimitOutlier
 
         try:
+
+            seqId1 = int(str(ctx.Integer(0)))
+            compId1 = str(ctx.Simple_name(0)).upper()
+            atomId1 = str(ctx.Simple_name(1)).upper()
+
+            int_col = 1
+            str_col = 2
+
+            omit_dist_limit_outlier = self.__reasons is not None and self.__omitDistLimitOutlier
+
+            if None in self.numberSelection:
+                return
 
             for num_col in range(0, len(self.numberSelection), 3):
                 seqId2 = int(str(ctx.Integer(int_col)))
@@ -1984,8 +2039,12 @@ class CyanaMRParserListener(ParseTreeListener):
     def exitNumber(self, ctx: CyanaMRParser.NumberContext):
         if ctx.Float():
             self.numberSelection.append(float(str(ctx.Float())))
-        else:
+
+        elif ctx.Integer():
             self.numberSelection.append(float(str(ctx.Integer())))
+
+        else:
+            self.numberSelection.append(None)
 
     def validatePcsRange(self, weight, orientation, target_value, lower_limit, upper_limit):
         """ Validate PCS value range.

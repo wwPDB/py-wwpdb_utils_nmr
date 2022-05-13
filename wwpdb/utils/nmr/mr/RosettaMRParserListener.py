@@ -1090,62 +1090,69 @@ class RosettaMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by RosettaMRParser#coordinate_restraint.
     def exitCoordinate_restraint(self, ctx: RosettaMRParser.Coordinate_restraintContext):
-        atomId1 = str(ctx.Simple_name(0)).upper()
-        _seqId1 = str(ctx.Simple_name(1)).upper()
-        atomId2 = str(ctx.Simple_name(2)).upper()
-        _seqId2 = str(ctx.Simple_name(3)).upper()
 
-        cartX = self.numberSelection[0]
-        cartY = self.numberSelection[1]
-        cartZ = self.numberSelection[2]
+        try:
 
-        self.numberSelection.clear()
+            atomId1 = str(ctx.Simple_name(0)).upper()
+            _seqId1 = str(ctx.Simple_name(1)).upper()
+            atomId2 = str(ctx.Simple_name(2)).upper()
+            _seqId2 = str(ctx.Simple_name(3)).upper()
 
-        if _seqId1.isdecimal():
-            seqId1 = int(_seqId1)
-            fixedChainId1 = None
-        else:
-            g = self.concat_resnum_chain_pat.search(_seqId1).groups()
-            seqId1 = int(g[0])
-            fixedChainId1 = g[1]
+            if None in self.numberSelection:
+                return
 
-        if _seqId2.isdecimal():
-            seqId2 = int(_seqId2)
-            fixedChainId2 = None
-        else:
-            g = self.concat_resnum_chain_pat.search(_seqId2).groups()
-            seqId2 = int(g[0])
-            fixedChainId2 = g[1]
+            cartX = self.numberSelection[0]
+            cartY = self.numberSelection[1]
+            cartZ = self.numberSelection[2]
 
-        dstFunc = self.validateDistanceRange(1.0)
+            if _seqId1.isdecimal():
+                seqId1 = int(_seqId1)
+                fixedChainId1 = None
+            else:
+                g = self.concat_resnum_chain_pat.search(_seqId1).groups()
+                seqId1 = int(g[0])
+                fixedChainId1 = g[1]
 
-        if dstFunc is None:
-            return
+            if _seqId2.isdecimal():
+                seqId2 = int(_seqId2)
+                fixedChainId2 = None
+            else:
+                g = self.concat_resnum_chain_pat.search(_seqId2).groups()
+                seqId2 = int(g[0])
+                fixedChainId2 = g[1]
 
-        if not self.__hasPolySeq:
-            return
+            dstFunc = self.validateDistanceRange(1.0)
 
-        chainAssign1 = self.assignCoordPolymerSequence(seqId1, atomId1, fixedChainId1)
-        chainAssign2 = self.assignCoordPolymerSequence(seqId2, atomId2, fixedChainId2)
+            if dstFunc is None:
+                return
 
-        if len(chainAssign1) == 0 or len(chainAssign2) == 0:
-            return
+            if not self.__hasPolySeq:
+                return
 
-        self.selectCoordAtoms(chainAssign1, seqId1, atomId1)
-        self.selectCoordAtoms(chainAssign2, seqId2, atomId2, False, 'a coordinate')  # refAtom
+            chainAssign1 = self.assignCoordPolymerSequence(seqId1, atomId1, fixedChainId1)
+            chainAssign2 = self.assignCoordPolymerSequence(seqId2, atomId2, fixedChainId2)
 
-        if len(self.atomSelectionSet) < 2:
-            return
+            if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+                return
 
-        if self.__cur_nest is not None:
-            if self.__debug:
-                print(f"NESTED: {self.__cur_nest}")
+            self.selectCoordAtoms(chainAssign1, seqId1, atomId1)
+            self.selectCoordAtoms(chainAssign2, seqId2, atomId2, False, 'a coordinate')  # refAtom
 
-        for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
-                                              self.atomSelectionSet[1]):
-            if self.__debug:
-                print(f"subtype={self.__cur_subtype} (Coordinate) id={self.geoRestraints} "
-                      f"atom={atom1} refAtom={atom2} coord=({cartX}, {cartY}, {cartZ}) {dstFunc}")
+            if len(self.atomSelectionSet) < 2:
+                return
+
+            if self.__cur_nest is not None:
+                if self.__debug:
+                    print(f"NESTED: {self.__cur_nest}")
+
+            for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
+                                                  self.atomSelectionSet[1]):
+                if self.__debug:
+                    print(f"subtype={self.__cur_subtype} (Coordinate) id={self.geoRestraints} "
+                          f"atom={atom1} refAtom={atom2} coord=({cartX}, {cartY}, {cartZ}) {dstFunc}")
+
+        finally:
+            self.numberSelection.clear()
 
     # Enter a parse tree produced by RosettaMRParser#local_coordinate_restraints.
     def enterLocal_coordinate_restraints(self, ctx: RosettaMRParser.Local_coordinate_restraintsContext):  # pylint: disable=unused-argument
@@ -1164,56 +1171,63 @@ class RosettaMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by RosettaMRParser#local_coordinate_restraint.
     def exitLocal_coordinate_restraint(self, ctx: RosettaMRParser.Local_coordinate_restraintContext):
-        seqId1 = int(str(ctx.Integer(0)))
-        atomId1 = str(ctx.Simple_name(0)).upper()
-        seqId234 = int(str(ctx.Integer(1)))
-        atomId2 = str(ctx.Simple_name(1)).upper()
-        atomId3 = str(ctx.Simple_name(2)).upper()
-        atomId4 = str(ctx.Simple_name(3)).upper()
 
-        cartX = self.numberSelection[0]
-        cartY = self.numberSelection[1]
-        cartZ = self.numberSelection[2]
+        try:
 
-        self.numberSelection.clear()
+            seqId1 = int(str(ctx.Integer(0)))
+            atomId1 = str(ctx.Simple_name(0)).upper()
+            seqId234 = int(str(ctx.Integer(1)))
+            atomId2 = str(ctx.Simple_name(1)).upper()
+            atomId3 = str(ctx.Simple_name(2)).upper()
+            atomId4 = str(ctx.Simple_name(3)).upper()
 
-        dstFunc = self.validateDistanceRange(1.0)
+            if None in self.numberSelection:
+                return
 
-        if dstFunc is None:
-            return
+            cartX = self.numberSelection[0]
+            cartY = self.numberSelection[1]
+            cartZ = self.numberSelection[2]
 
-        if not self.__hasPolySeq:
-            return
+            dstFunc = self.validateDistanceRange(1.0)
 
-        chainAssign1 = self.assignCoordPolymerSequence(seqId1, atomId1)
-        chainAssign2 = self.assignCoordPolymerSequence(seqId234, atomId2)
-        chainAssign3 = self.assignCoordPolymerSequence(seqId234, atomId3)
-        chainAssign4 = self.assignCoordPolymerSequence(seqId234, atomId4)
+            if dstFunc is None:
+                return
 
-        if len(chainAssign1) == 0 or len(chainAssign2) == 0\
-           or len(chainAssign3) == 0 or len(chainAssign4) == 0:
-            return
+            if not self.__hasPolySeq:
+                return
 
-        self.selectCoordAtoms(chainAssign1, seqId1, atomId1)
-        self.selectCoordAtoms(chainAssign2, seqId234, atomId2, False, 'a local coordinate')  # originAtom1
-        self.selectCoordAtoms(chainAssign3, seqId234, atomId3, False, 'a local coordinate')  # originAtom2
-        self.selectCoordAtoms(chainAssign4, seqId234, atomId4, False, 'a local coordiante')  # originAtom3
+            chainAssign1 = self.assignCoordPolymerSequence(seqId1, atomId1)
+            chainAssign2 = self.assignCoordPolymerSequence(seqId234, atomId2)
+            chainAssign3 = self.assignCoordPolymerSequence(seqId234, atomId3)
+            chainAssign4 = self.assignCoordPolymerSequence(seqId234, atomId4)
 
-        if len(self.atomSelectionSet) < 4:
-            return
+            if len(chainAssign1) == 0 or len(chainAssign2) == 0\
+               or len(chainAssign3) == 0 or len(chainAssign4) == 0:
+                return
 
-        if self.__cur_nest is not None:
-            if self.__debug:
-                print(f"NESTED: {self.__cur_nest}")
+            self.selectCoordAtoms(chainAssign1, seqId1, atomId1)
+            self.selectCoordAtoms(chainAssign2, seqId234, atomId2, False, 'a local coordinate')  # originAtom1
+            self.selectCoordAtoms(chainAssign3, seqId234, atomId3, False, 'a local coordinate')  # originAtom2
+            self.selectCoordAtoms(chainAssign4, seqId234, atomId4, False, 'a local coordiante')  # originAtom3
 
-        for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
-                                                            self.atomSelectionSet[1],
-                                                            self.atomSelectionSet[2],
-                                                            self.atomSelectionSet[3]):
-            if self.__debug:
-                print(f"subtype={self.__cur_subtype} (LocalCoordinate) id={self.geoRestraints} "
-                      f"atom={atom1} originAtom1={atom2} originAtom2={atom3} originAtom3={atom4} "
-                      f"localCoord=({cartX}, {cartY}, {cartZ}) {dstFunc}")
+            if len(self.atomSelectionSet) < 4:
+                return
+
+            if self.__cur_nest is not None:
+                if self.__debug:
+                    print(f"NESTED: {self.__cur_nest}")
+
+            for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
+                                                                self.atomSelectionSet[1],
+                                                                self.atomSelectionSet[2],
+                                                                self.atomSelectionSet[3]):
+                if self.__debug:
+                    print(f"subtype={self.__cur_subtype} (LocalCoordinate) id={self.geoRestraints} "
+                          f"atom={atom1} originAtom1={atom2} originAtom2={atom3} originAtom3={atom4} "
+                          f"localCoord=({cartX}, {cartY}, {cartZ}) {dstFunc}")
+
+        finally:
+            self.numberSelection.clear()
 
     # Enter a parse tree produced by RosettaMRParser#site_restraints.
     def enterSite_restraints(self, ctx: RosettaMRParser.Site_restraintsContext):  # pylint: disable=unused-argument
@@ -1361,55 +1375,63 @@ class RosettaMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by RosettaMRParser#min_residue_atomic_distance_restraint.
     def exitMin_residue_atomic_distance_restraint(self, ctx: RosettaMRParser.Min_residue_atomic_distance_restraintContext):
-        seqId1 = int(str(ctx.Integer(0)))
-        seqId2 = int(str(ctx.Integer(1)))
-        target_value = self.numberSelection[0]
 
-        self.numberSelection.clear()
+        try:
 
-        if not self.__hasPolySeq:
-            return
+            seqId1 = int(str(ctx.Integer(0)))
+            seqId2 = int(str(ctx.Integer(1)))
 
-        chainAssign1 = self.assignCoordPolymerSequence(seqId1)
-        chainAssign2 = self.assignCoordPolymerSequence(seqId2)
+            if None in self.numberSelection:
+                return
 
-        if len(chainAssign1) == 0 or len(chainAssign2) == 0:
-            return
+            target_value = self.numberSelection[0]
 
-        self.selectCoordResidues(chainAssign1, seqId1)
-        self.selectCoordResidues(chainAssign2, seqId2)
+            if not self.__hasPolySeq:
+                return
 
-        if len(self.atomSelectionSet) < 2:
-            return
+            chainAssign1 = self.assignCoordPolymerSequence(seqId1)
+            chainAssign2 = self.assignCoordPolymerSequence(seqId2)
 
-        dstFunc = {}
-        validRange = True
+            if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+                return
 
-        if DIST_ERROR_MIN < target_value < DIST_ERROR_MAX:
-            dstFunc['target_value'] = f"{target_value:.3f}"
-        else:
-            validRange = False
-            self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                f"The target value='{target_value}' must be within range {DIST_RESTRAINT_ERROR}.\n"
+            self.selectCoordResidues(chainAssign1, seqId1)
+            self.selectCoordResidues(chainAssign2, seqId2)
 
-        if not validRange:
-            return
+            if len(self.atomSelectionSet) < 2:
+                return
 
-        if DIST_RANGE_MIN <= target_value <= DIST_RANGE_MAX:
-            pass
-        else:
-            self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                f"The target value='{target_value}' should be within range {DIST_RESTRAINT_RANGE}.\n"
+            dstFunc = {}
+            validRange = True
 
-        if self.__cur_nest is not None:
-            if self.__debug:
-                print(f"NESTED: {self.__cur_nest}")
+            if DIST_ERROR_MIN < target_value < DIST_ERROR_MAX:
+                dstFunc['target_value'] = f"{target_value:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The target value='{target_value}' must be within range {DIST_RESTRAINT_ERROR}.\n"
 
-        for res1, res2 in itertools.product(self.atomSelectionSet[0],
-                                            self.atomSelectionSet[1]):
-            if self.__debug:
-                print(f"subtype={self.__cur_subtype} (MinResidueAtomicDistance) id={self.geoRestraints} "
-                      f"resudue1={res1} residue2={res2} {dstFunc}")
+            if not validRange:
+                return
+
+            if DIST_RANGE_MIN <= target_value <= DIST_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                    f"The target value='{target_value}' should be within range {DIST_RESTRAINT_RANGE}.\n"
+
+            if self.__cur_nest is not None:
+                if self.__debug:
+                    print(f"NESTED: {self.__cur_nest}")
+
+            for res1, res2 in itertools.product(self.atomSelectionSet[0],
+                                                self.atomSelectionSet[1]):
+                if self.__debug:
+                    print(f"subtype={self.__cur_subtype} (MinResidueAtomicDistance) id={self.geoRestraints} "
+                          f"resudue1={res1} residue2={res2} {dstFunc}")
+
+        finally:
+            self.numberSelection.clear()
 
     # Enter a parse tree produced by RosettaMRParser#big_bin_restraints.
     def enterBig_bin_restraints(self, ctx: RosettaMRParser.Big_bin_restraintsContext):  # pylint: disable=unused-argument
@@ -1428,57 +1450,65 @@ class RosettaMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by RosettaMRParser#big_bin_restraint.
     def exitBig_bin_restraint(self, ctx: RosettaMRParser.Big_bin_restraintContext):
-        seqId = int(str(ctx.Simple_name()))
-        binChar = str(ctx.Simple_name())
-        sDev = self.numberSelection[0]
 
-        self.numberSelection.clear()
+        try:
 
-        if not self.__hasPolySeq:
-            return
+            seqId = int(str(ctx.Simple_name()))
+            binChar = str(ctx.Simple_name())
 
-        chainAssign = self.assignCoordPolymerSequence(seqId)
+            if None in self.numberSelection:
+                return
 
-        if len(chainAssign) == 0:
-            return
+            sDev = self.numberSelection[0]
 
-        self.selectCoordResidues(chainAssign, seqId)
+            if not self.__hasPolySeq:
+                return
 
-        if len(self.atomSelectionSet) < 1:
-            return
+            chainAssign = self.assignCoordPolymerSequence(seqId)
 
-        if binChar not in ('O', 'G', 'E', 'A', 'B'):
-            self.warningMessage += f"[Enum mismatch] {self.__getCurrentRestraint()}"\
-                f"The BigBin identifier '{binChar}' must be one of {('O', 'G', 'E', 'A', 'B')}.\n"
-            return
+            if len(chainAssign) == 0:
+                return
 
-        dstFunc = {}
-        validRange = True
+            self.selectCoordResidues(chainAssign, seqId)
 
-        if DIST_ERROR_MIN < sDev < DIST_ERROR_MAX:
-            dstFunc['standard_deviation'] = f"{sDev:.3f}"
-        else:
-            validRange = False
-            self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                f"The 'sdev={sDev}' must be within range {DIST_RESTRAINT_ERROR}.\n"
+            if len(self.atomSelectionSet) < 1:
+                return
 
-        if not validRange:
-            return
+            if binChar not in ('O', 'G', 'E', 'A', 'B'):
+                self.warningMessage += f"[Enum mismatch] {self.__getCurrentRestraint()}"\
+                    f"The BigBin identifier '{binChar}' must be one of {('O', 'G', 'E', 'A', 'B')}.\n"
+                return
 
-        if DIST_RANGE_MIN <= sDev <= DIST_RANGE_MAX:
-            pass
-        else:
-            self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                f"The 'sdev={sDev}' should be within range {DIST_RESTRAINT_RANGE}.\n"
+            dstFunc = {}
+            validRange = True
 
-        if self.__cur_nest is not None:
-            if self.__debug:
-                print(f"NESTED: {self.__cur_nest}")
+            if DIST_ERROR_MIN < sDev < DIST_ERROR_MAX:
+                dstFunc['standard_deviation'] = f"{sDev:.3f}"
+            else:
+                validRange = False
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The 'sdev={sDev}' must be within range {DIST_RESTRAINT_ERROR}.\n"
 
-        for res in self.atomSelectionSet[0]:
-            if self.__debug:
-                print(f"subtype={self.__cur_subtype} (BigBin) id={self.geoRestraints} "
-                      f"residue={res} binChar={binChar} {dstFunc}")
+            if not validRange:
+                return
+
+            if DIST_RANGE_MIN <= sDev <= DIST_RANGE_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                    f"The 'sdev={sDev}' should be within range {DIST_RESTRAINT_RANGE}.\n"
+
+            if self.__cur_nest is not None:
+                if self.__debug:
+                    print(f"NESTED: {self.__cur_nest}")
+
+            for res in self.atomSelectionSet[0]:
+                if self.__debug:
+                    print(f"subtype={self.__cur_subtype} (BigBin) id={self.geoRestraints} "
+                          f"residue={res} binChar={binChar} {dstFunc}")
+
+        finally:
+            self.numberSelection.clear()
 
     # Enter a parse tree produced by RosettaMRParser#nested_restraints.
     def enterNested_restraints(self, ctx: RosettaMRParser.Nested_restraintsContext):  # pylint: disable=unused-argument
@@ -1548,720 +1578,726 @@ class RosettaMRParserListener(ParseTreeListener):
         SOG Integer (Float Float Float Float Float Float)+;
         """
 
-        func = {}
-        valid = True
+        try:
 
-        if ctx.CIRCULARHARMONIC() or ctx.HARMONIC() or ctx.SIGMOID() or ctx.SQUARE_WELL():
-            x0 = self.numberFSelection[0]
+            func = {}
+            valid = True
 
-            func['x0'] = x0
+            if None in self.numberFSelection:
+                return
 
-            if ctx.CIRCULARHARMONIC():  # x0 sd
-                funcType = 'CIRCULARHARMONIC'
-
-                sd = self.numberFSelection[1]
-
-                func['sd'] = sd
-
-                if sd <= 0.0:
-                    valid = False
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"{funcType} standard deviation 'sd={sd}' must be a positive value.\n"
-
-                func['target_value'] = x0
-                func['lower_limit'] = x0 - sd
-                func['upper_limit'] = x0 + sd
-
-            elif ctx.HARMONIC():  # x0 sd
-                funcType = 'HARMONIC'
-
-                sd = self.numberFSelection[1]
-
-                func['sd'] = sd
-
-                if sd <= 0.0:
-                    valid = False
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"{funcType} standard deviation 'sd={sd}' must be a positive value.\n"
-
-                func['target_value'] = x0
-                func['lower_limit'] = x0 - sd
-                func['upper_limit'] = x0 + sd
-
-            elif ctx.SIGMOID():  # x0 m
-                funcType = 'SIGMOID'
-
-                m = self.numberFSelection[1]
-
-                func['m'] = m
-
-                if m > 0.0:
-                    func['upper_linear_limit'] = x0
-                else:
-                    func['lower_lienar_limit'] = x0
-
-            else:  # x0 depth
-                funcType = 'SQUARE_WELL'
-
-                depth = self.numberFSelection[1]
-
-                func['depth'] = depth
-
-                if depth > 0.0:
-                    func['lower_linear_limit'] = x0
-                elif depth < 0.0:
-                    func['upper_linear_limit'] = x0
-
-            func['name'] = funcType
-
-        elif ctx.BOUNDED():  # lb ub sd rswitch tag
-            funcType = 'BOUNDED'
-            lb = self.numberFSelection[0]
-            ub = self.numberFSelection[1]
-            sd = self.numberFSelection[2]
-            rswitch = 0.5
-
-            func['name'] = funcType
-            func['lb'] = lb
-            func['ub'] = ub
-            func['sd'] = sd
-
-            if lb > ub:
-                valid = False
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"{funcType} lower boundary 'lb={lb}' must be less than or equal to upper boundary 'ub={ub}'.\n"
-            if sd <= 0.0:
-                valid = False
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"{funcType} standard deviation 'sd={sd}' must be a positive value.\n"
-
-            if len(self.numberFSelection) > 3:
-                rswitch = self.numberFSelection[3]
-
-                func['rswitch'] = rswitch
-
-                if rswitch < 0.0:
-                    valid = False
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"{funcType} additional value for switching from the upper limit to the upper linear limit 'rswitch={rswitch}' must not be a negative value.\n"
-
-            if ctx.Simple_name(0):
-                func['tag'] = str(ctx.Simple_name(0))
-
-            func['lower_limit'] = lb
-            func['upper_limit'] = ub
-            func['upper_linear_limit'] = ub + rswitch
-            func['lower_linear_limit'] = lb - rswitch
-
-        elif ctx.PERIODICBOUNDED():  # period lb ub sd rswitch tag
-            funcType = 'PERIODICBOUNDED'
-
-            period = self.numberFSelection[0]
-            lb = self.numberFSelection[1]
-            ub = self.numberFSelection[2]
-            sd = self.numberFSelection[3]
-            rswitch = 0.5
-
-            func['name'] = funcType
-            func['period'] = period
-            func['lb'] = lb
-            func['ub'] = ub
-            func['sd'] = sd
-
-            if period < 0.0:
-                valid = False
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"{funcType} 'period={period}' must not be a negative value.\n"
-            if lb > ub:
-                valid = False
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"{funcType} lower boundary 'lb={lb}' must be less than or equal to upper boundary 'ub={ub}'.\n"
-            if sd <= 0.0:
-                valid = False
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"{funcType} standard deviation 'sd={sd}' must be a positive value.\n"
-
-            if len(self.numberFSelection) > 4:
-                rswitch = self.numberFSelection[4]
-
-                func['rswitch'] = rswitch
-
-                if rswitch < 0.0:
-                    valid = False
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"{funcType} additional value for switching from the upper limit to the upper linear limit 'rswitch={rswitch}' must not be a negative value.\n"
-
-            if ctx.Simple_name(0):
-                func['tag'] = str(ctx.Simple_name(0))
-
-            func['lower_limit'] = lb
-            func['upper_limit'] = ub
-            func['upper_linear_limit'] = ub + rswitch
-            func['lower_linear_limit'] = lb - rswitch
-
-        elif ctx.OFFSETPERIODICBOUNDED():  # offset period lb ub sd rswitch tag
-            funcType = 'OFFSETPERIODICBOUNDED'
-
-            offset = self.numberFSelection[0]
-            period = self.numberFSelection[1]
-            lb = self.numberFSelection[2]
-            ub = self.numberFSelection[3]
-            sd = self.numberFSelection[4]
-            rswitch = 0.5
-
-            func['name'] = funcType
-            func['offset'] = offset
-            func['period'] = period
-            func['lb'] = lb
-            func['ub'] = ub
-            func['sd'] = sd
-
-            if period < 0.0:
-                valid = False
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"{funcType} 'period={period}' must not be a negative value.\n"
-            if lb > ub:
-                valid = False
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"{funcType} lower boundary 'lb={lb}' must be less than or equal to upper boundary 'ub={ub}'.\n"
-            if sd <= 0.0:
-                valid = False
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"{funcType} standard deviation 'sd={sd}' must be a positive value.\n"
-
-            if len(self.numberFSelection) > 5:
-                rswitch = self.numberFSelection[5]
-
-                func['rswitch'] = rswitch
-
-                if rswitch < 0.0:
-                    valid = False
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"{funcType} additional value for switching from the upper limit to the upper linear limit 'rswitch={rswitch}' must not be a negative value.\n"
-
-            if ctx.Simple_name(0):
-                func['tag'] = str(ctx.Simple_name(0))
-
-            func['lower_limit'] = lb + offset
-            func['upper_limit'] = ub + offset
-            func['upper_linear_limit'] = ub + rswitch + offset
-            func['lower_linear_limit'] = lb - rswitch + offset
-
-        elif ctx.AMBERPERIODIC() or ctx.CHARMMPERIODIC():  # x0 n_period k
-            funcType = 'AMBERPERIODIC' if ctx.AMBERPERIODIC() else 'CHARMMPERIODIC'
-            x0 = self.numberFSelection[0]
-            n_period = self.numberFSelection[1]
-            k = self.numberFSelection[2]
-
-            func['name'] = funcType
-            func['x0'] = x0
-            func['n_period'] = n_period
-            func['k'] = k
-
-            if period < 0.0:
-                valid = False
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"{funcType} periodicity 'n_period={n_period}' must not be a negative value.\n"
-
-        elif ctx.FLAT_HARMONIC() or ctx.TOPOUT():
-            funcType = 'FLAT_HARMONIC' if ctx.FLAT_HARMONIC() else 'TOPOUT'
-
-            if ctx.FLAT_HARMONIC():  # x0 sd tol
+            if ctx.CIRCULARHARMONIC() or ctx.HARMONIC() or ctx.SIGMOID() or ctx.SQUARE_WELL():
                 x0 = self.numberFSelection[0]
-                sd = self.numberFSelection[1]
-                tol = self.numberFSelection[2]
 
                 func['x0'] = x0
-                func['sd'] = sd
-                func['tol'] = tol
 
-                if sd <= 0.0:
-                    valid = False
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"{funcType} standard deviation 'sd={sd}' must be a positive value.\n"
-                if tol < 0.0:
-                    valid = False
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"{funcType} tolerance 'tol={tol}' must not be a negative value.\n"
+                if ctx.CIRCULARHARMONIC():  # x0 sd
+                    funcType = 'CIRCULARHARMONIC'
 
-                func['target_value'] = x0
-                func['lower_limit'] = x0 - tol - sd
-                func['upper_limit'] = x0 + tol + sd
+                    sd = self.numberFSelection[1]
 
-            else:  # weight x0 limit
-                weight = self.numberFSelection[0]
-                x0 = self.numberFSelection[1]
-                limit = self.numberFSelection[2]
+                    func['sd'] = sd
 
-                func['weight'] = weight
-                func['x0'] = x0
-                func['limit'] = limit
-
-                if weight < 0.0:
-                    valid = False
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"{funcType} 'weight={weight}' must not be a negative value.\n"
-                if limit <= 0.0:
-                    valid = False
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"{funcType} 'limit={limit}' must be a positive value.\n"
-
-                func['target_value'] = x0
-                func['lower_limit'] = x0 - limit
-                func['upper_limit'] = x0 + limit
-
-            func['name'] = funcType
-
-        elif ctx.CIRCULARSIGMOIDAL() or ctx.LINEAR_PENALTY():
-            funcType = 'CIRCULARSIGMOIDAL' if ctx.CIRCULARSIGMOIDAL() else 'LINEAR_PENALTY'
-
-            if ctx.CIRCULARSIGMOIDAL():  # xC m o1 o2
-                xC = self.numberFSelection[0]
-                m = self.numberFSelection[1]
-                o1 = self.numberFSelection[2]
-                o2 = self.numberFSelection[3]
-
-                func['xC'] = xC
-                func['m'] = m
-                func['o1'] = o1
-                func['o2'] = o2
-
-                if m < 0.0:
-                    valid = False
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"{funcType} periodicity 'm={m}' must not be a negative value.\n"
-
-            else:  # x0 depth width slope
-                x0 = self.numberFSelection[0]
-                depth = self.numberFSelection[1]
-                width = self.numberFSelection[2]
-                slope = self.numberFSelection[3]
-
-                func['x0'] = x0
-                func['depth'] = depth
-                func['width'] = width
-                func['slope'] = slope
-
-                if width < 0.0:
-                    valid = False
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"{funcType} 'width={width}' must not be a negative value.\n"
-                if slope < 0.0:
-                    valid = False
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"{funcType} 'slope={slope}' must not be a negative value.\n"
-
-                func['lower_linear_limit'] = x0 - width
-                func['upper_linear_limit'] = x0 + width
-
-            func['name'] = funcType
-
-        elif ctx.CIRCULARSPLINE():  # weight [36 energy values]
-            funcType = 'CIRCULARSPLINE'
-            weight = self.numberFSelection[0]
-
-            func['name'] = funcType
-            func['weight'] = weight
-
-            if weight < 0.0:
-                valid = False
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"{funcType} 'weight={weight}' must not be a negative value.\n"
-
-            if len(self.numberFSelection) > 36:
-                func['energy'] = []
-                for i in range(36):
-                    func['energy'].append(self.numberFSelection[i + 1])
-            else:
-                valid = False
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"{funcType} requires consecutive 36 energy values, following the first weight value.\n"
-
-        elif ctx.GAUSSIANFUNC():  # mean sd tag WEIGHT weight
-            funcType = 'GAUSSIANFUNC'
-            mean = self.numberFSelection[0]
-            sd = self.numberFSelection[1]
-
-            func['name'] = funcType
-            func['mean'] = mean
-            func['sd'] = sd
-            func['tag'] = str(ctx.Simple_name(0))
-
-            if sd <= 0.0:
-                valid = False
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"{funcType} standard deviation 'sd={sd}' must be a positive value.\n"
-
-            if ctx.WEIGHT():
-                weight = self.numberFSelection[2]
-
-                func['weight'] = weight
-
-                if weight < 0.0:
-                    valid = False
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"{funcType} 'weight={weight}' must not be a negative value.\n"
-
-            func['target_value'] = mean
-            func['lower_limit'] = mean - sd
-            func['upper_limit'] = mean + sd
-
-        elif ctx.SOGFUNC():  # n_funcs [mean1 sdev1 weight1 [mean2 sdev2 weight2 [...]]]
-            funcType = 'SOGFUNC'
-            n_funcs = int(str(ctx.Integer()))
-
-            func['name'] = funcType
-            func['n_funcs'] = n_funcs
-
-            if n_funcs <= 0:
-                valid = False
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"{funcType} the number of Gaussian functions 'n_funcs={n_funcs}' must be a positive value.\n"
-            elif len(self.numberFSelection) > n_funcs * 3 - 1:
-                func['mean'] = []
-                func['sdev'] = []
-                func['weight'] = []
-                for n in range(n_funcs):
-                    p = n * 3
-                    mean = self.numberFSelection[p]
-                    sdev = self.numberFSelection[p + 1]
-                    weight = self.numberFSelection[p + 2]
-
-                    func['mean'].append(mean)
-                    func['sdev'].append(sdev)
-                    func['weight'].append(weight)
-
-                    if n_funcs == 1:
-                        func['target_value'] = mean
-                        func['lower_limit'] = mean - sdev
-                        func['upper_limit'] = mean + sdev
-
-                    if sdev <= 0.0:
+                    if sd <= 0.0:
                         valid = False
                         self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            f"{funcType} standard deviation 'sdev={sdev}' of {n+1}th function must be a positive value.\n"
-                    if weight < 0.0:
+                            f"{funcType} standard deviation 'sd={sd}' must be a positive value.\n"
+
+                    func['target_value'] = x0
+                    func['lower_limit'] = x0 - sd
+                    func['upper_limit'] = x0 + sd
+
+                elif ctx.HARMONIC():  # x0 sd
+                    funcType = 'HARMONIC'
+
+                    sd = self.numberFSelection[1]
+
+                    func['sd'] = sd
+
+                    if sd <= 0.0:
                         valid = False
                         self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            f"{funcType} 'weight={weight}' of {n+1}th function must not be a negative value.\n"
-            else:
-                valid = False
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"{funcType} requires consecutive 3 parameters (mean, sdev, weight) for each Gaussian function after the first 'n_funcs' value.\n"
+                            f"{funcType} standard deviation 'sd={sd}' must be a positive value.\n"
 
-        elif ctx.MIXTUREFUNC() or ctx.KARPLUS() or ctx.SOEDINGFUNC():
-            if ctx.MIXTUREFUNC():  # anchor gaussian_param exp_param mixture_param bg_mean bg_sd
-                funcType = 'MIXTUREFUNC'
-                anchor = self.numberFSelection[0]
-                gaussian_param = self.numberFSelection[1]
-                exp_param = self.numberFSelection[2]
-                mixture_param = self.numberFSelection[3]
-                bg_mean = self.numberFSelection[4]
-                bg_sd = self.numberFSelection[5]
+                    func['target_value'] = x0
+                    func['lower_limit'] = x0 - sd
+                    func['upper_limit'] = x0 + sd
+
+                elif ctx.SIGMOID():  # x0 m
+                    funcType = 'SIGMOID'
+
+                    m = self.numberFSelection[1]
+
+                    func['m'] = m
+
+                    if m > 0.0:
+                        func['upper_linear_limit'] = x0
+                    else:
+                        func['lower_lienar_limit'] = x0
+
+                else:  # x0 depth
+                    funcType = 'SQUARE_WELL'
+
+                    depth = self.numberFSelection[1]
+
+                    func['depth'] = depth
+
+                    if depth > 0.0:
+                        func['lower_linear_limit'] = x0
+                    elif depth < 0.0:
+                        func['upper_linear_limit'] = x0
 
                 func['name'] = funcType
-                func['anchor'] = anchor
-                func['gaussian_param'] = gaussian_param
-                func['exp_param'] = exp_param
-                func['mixture_param'] = mixture_param
-                func['bg_mean'] = bg_mean
-                func['bg_sd'] = bg_sd
 
-                if gaussian_param <= 0.0:
-                    valid = False
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"{funcType} standard deviation of a Gaussian distribution 'gaussian_param={gaussian_param}' must be a positive value.\n"
-                if exp_param <= 0.0:
-                    valid = False
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"{funcType} rate at which the exponential distribution drops off 'exp_param={exp_param}' must be a positive value.\n"
-                if mixture_param <= 0.0:
-                    valid = False
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"{funcType} mixture of the Gaussian and Exponential functions 'mixture_param={mixture_param}' that make up g(r) function must be a positive value.\n"
-                if bg_sd <= 0.0:
-                    valid = False
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"{funcType} standard deviation 'bg_sd={bg_sd}' of h(r) function must be a positive value.\n"
+            elif ctx.BOUNDED():  # lb ub sd rswitch tag
+                funcType = 'BOUNDED'
+                lb = self.numberFSelection[0]
+                ub = self.numberFSelection[1]
+                sd = self.numberFSelection[2]
+                rswitch = 0.5
 
-            elif ctx.KARPLUS():  # A B C D x0 sd
-                funcType = 'KARPLUS'
-                A = self.numberFSelection[0]
-                B = self.numberFSelection[1]
-                C = self.numberFSelection[2]
-                D = self.numberFSelection[3]
-                x0 = self.numberFSelection[4]
-                sd = self.numberFSelection[5]
-
-                func['A'] = A
-                func['B'] = B
-                func['C'] = C
-                func['D'] = D
-                func['x0'] = x0
+                func['name'] = funcType
+                func['lb'] = lb
+                func['ub'] = ub
                 func['sd'] = sd
+
+                if lb > ub:
+                    valid = False
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"{funcType} lower boundary 'lb={lb}' must be less than or equal to upper boundary 'ub={ub}'.\n"
+                if sd <= 0.0:
+                    valid = False
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"{funcType} standard deviation 'sd={sd}' must be a positive value.\n"
+
+                if len(self.numberFSelection) > 3:
+                    rswitch = self.numberFSelection[3]
+
+                    func['rswitch'] = rswitch
+
+                    if rswitch < 0.0:
+                        valid = False
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            f"{funcType} additional value for switching from the upper limit to the upper linear limit 'rswitch={rswitch}' must not be a negative value.\n"
+
+                if ctx.Simple_name(0):
+                    func['tag'] = str(ctx.Simple_name(0))
+
+                func['lower_limit'] = lb
+                func['upper_limit'] = ub
+                func['upper_linear_limit'] = ub + rswitch
+                func['lower_linear_limit'] = lb - rswitch
+
+            elif ctx.PERIODICBOUNDED():  # period lb ub sd rswitch tag
+                funcType = 'PERIODICBOUNDED'
+
+                period = self.numberFSelection[0]
+                lb = self.numberFSelection[1]
+                ub = self.numberFSelection[2]
+                sd = self.numberFSelection[3]
+                rswitch = 0.5
+
+                func['name'] = funcType
+                func['period'] = period
+                func['lb'] = lb
+                func['ub'] = ub
+                func['sd'] = sd
+
+                if period < 0.0:
+                    valid = False
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"{funcType} 'period={period}' must not be a negative value.\n"
+                if lb > ub:
+                    valid = False
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"{funcType} lower boundary 'lb={lb}' must be less than or equal to upper boundary 'ub={ub}'.\n"
+                if sd <= 0.0:
+                    valid = False
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"{funcType} standard deviation 'sd={sd}' must be a positive value.\n"
+
+                if len(self.numberFSelection) > 4:
+                    rswitch = self.numberFSelection[4]
+
+                    func['rswitch'] = rswitch
+
+                    if rswitch < 0.0:
+                        valid = False
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            f"{funcType} additional value for switching from the upper limit to the upper linear limit 'rswitch={rswitch}' must not be a negative value.\n"
+
+                if ctx.Simple_name(0):
+                    func['tag'] = str(ctx.Simple_name(0))
+
+                func['lower_limit'] = lb
+                func['upper_limit'] = ub
+                func['upper_linear_limit'] = ub + rswitch
+                func['lower_linear_limit'] = lb - rswitch
+
+            elif ctx.OFFSETPERIODICBOUNDED():  # offset period lb ub sd rswitch tag
+                funcType = 'OFFSETPERIODICBOUNDED'
+
+                offset = self.numberFSelection[0]
+                period = self.numberFSelection[1]
+                lb = self.numberFSelection[2]
+                ub = self.numberFSelection[3]
+                sd = self.numberFSelection[4]
+                rswitch = 0.5
+
+                func['name'] = funcType
+                func['offset'] = offset
+                func['period'] = period
+                func['lb'] = lb
+                func['ub'] = ub
+                func['sd'] = sd
+
+                if period < 0.0:
+                    valid = False
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"{funcType} 'period={period}' must not be a negative value.\n"
+                if lb > ub:
+                    valid = False
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"{funcType} lower boundary 'lb={lb}' must be less than or equal to upper boundary 'ub={ub}'.\n"
+                if sd <= 0.0:
+                    valid = False
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"{funcType} standard deviation 'sd={sd}' must be a positive value.\n"
+
+                if len(self.numberFSelection) > 5:
+                    rswitch = self.numberFSelection[5]
+
+                    func['rswitch'] = rswitch
+
+                    if rswitch < 0.0:
+                        valid = False
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            f"{funcType} additional value for switching from the upper limit to the upper linear limit 'rswitch={rswitch}' must not be a negative value.\n"
+
+                if ctx.Simple_name(0):
+                    func['tag'] = str(ctx.Simple_name(0))
+
+                func['lower_limit'] = lb + offset
+                func['upper_limit'] = ub + offset
+                func['upper_linear_limit'] = ub + rswitch + offset
+                func['lower_linear_limit'] = lb - rswitch + offset
+
+            elif ctx.AMBERPERIODIC() or ctx.CHARMMPERIODIC():  # x0 n_period k
+                funcType = 'AMBERPERIODIC' if ctx.AMBERPERIODIC() else 'CHARMMPERIODIC'
+                x0 = self.numberFSelection[0]
+                n_period = self.numberFSelection[1]
+                k = self.numberFSelection[2]
+
+                func['name'] = funcType
+                func['x0'] = x0
+                func['n_period'] = n_period
+                func['k'] = k
+
+                if period < 0.0:
+                    valid = False
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"{funcType} periodicity 'n_period={n_period}' must not be a negative value.\n"
+
+            elif ctx.FLAT_HARMONIC() or ctx.TOPOUT():
+                funcType = 'FLAT_HARMONIC' if ctx.FLAT_HARMONIC() else 'TOPOUT'
+
+                if ctx.FLAT_HARMONIC():  # x0 sd tol
+                    x0 = self.numberFSelection[0]
+                    sd = self.numberFSelection[1]
+                    tol = self.numberFSelection[2]
+
+                    func['x0'] = x0
+                    func['sd'] = sd
+                    func['tol'] = tol
+
+                    if sd <= 0.0:
+                        valid = False
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            f"{funcType} standard deviation 'sd={sd}' must be a positive value.\n"
+                    if tol < 0.0:
+                        valid = False
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            f"{funcType} tolerance 'tol={tol}' must not be a negative value.\n"
+
+                    func['target_value'] = x0
+                    func['lower_limit'] = x0 - tol - sd
+                    func['upper_limit'] = x0 + tol + sd
+
+                else:  # weight x0 limit
+                    weight = self.numberFSelection[0]
+                    x0 = self.numberFSelection[1]
+                    limit = self.numberFSelection[2]
+
+                    func['weight'] = weight
+                    func['x0'] = x0
+                    func['limit'] = limit
+
+                    if weight < 0.0:
+                        valid = False
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            f"{funcType} 'weight={weight}' must not be a negative value.\n"
+                    if limit <= 0.0:
+                        valid = False
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            f"{funcType} 'limit={limit}' must be a positive value.\n"
+
+                    func['target_value'] = x0
+                    func['lower_limit'] = x0 - limit
+                    func['upper_limit'] = x0 + limit
+
+                func['name'] = funcType
+
+            elif ctx.CIRCULARSIGMOIDAL() or ctx.LINEAR_PENALTY():
+                funcType = 'CIRCULARSIGMOIDAL' if ctx.CIRCULARSIGMOIDAL() else 'LINEAR_PENALTY'
+
+                if ctx.CIRCULARSIGMOIDAL():  # xC m o1 o2
+                    xC = self.numberFSelection[0]
+                    m = self.numberFSelection[1]
+                    o1 = self.numberFSelection[2]
+                    o2 = self.numberFSelection[3]
+
+                    func['xC'] = xC
+                    func['m'] = m
+                    func['o1'] = o1
+                    func['o2'] = o2
+
+                    if m < 0.0:
+                        valid = False
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            f"{funcType} periodicity 'm={m}' must not be a negative value.\n"
+
+                else:  # x0 depth width slope
+                    x0 = self.numberFSelection[0]
+                    depth = self.numberFSelection[1]
+                    width = self.numberFSelection[2]
+                    slope = self.numberFSelection[3]
+
+                    func['x0'] = x0
+                    func['depth'] = depth
+                    func['width'] = width
+                    func['slope'] = slope
+
+                    if width < 0.0:
+                        valid = False
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            f"{funcType} 'width={width}' must not be a negative value.\n"
+                    if slope < 0.0:
+                        valid = False
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            f"{funcType} 'slope={slope}' must not be a negative value.\n"
+
+                    func['lower_linear_limit'] = x0 - width
+                    func['upper_linear_limit'] = x0 + width
+
+                func['name'] = funcType
+
+            elif ctx.CIRCULARSPLINE():  # weight [36 energy values]
+                funcType = 'CIRCULARSPLINE'
+                weight = self.numberFSelection[0]
+
+                func['name'] = funcType
+                func['weight'] = weight
+
+                if weight < 0.0:
+                    valid = False
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"{funcType} 'weight={weight}' must not be a negative value.\n"
+
+                if len(self.numberFSelection) > 36:
+                    func['energy'] = []
+                    for i in range(36):
+                        func['energy'].append(self.numberFSelection[i + 1])
+                else:
+                    valid = False
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"{funcType} requires consecutive 36 energy values, following the first weight value.\n"
+
+            elif ctx.GAUSSIANFUNC():  # mean sd tag WEIGHT weight
+                funcType = 'GAUSSIANFUNC'
+                mean = self.numberFSelection[0]
+                sd = self.numberFSelection[1]
+
+                func['name'] = funcType
+                func['mean'] = mean
+                func['sd'] = sd
+                func['tag'] = str(ctx.Simple_name(0))
 
                 if sd <= 0.0:
                     valid = False
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                         f"{funcType} standard deviation 'sd={sd}' must be a positive value.\n"
 
-            else:  # w1 mean1 sd1 w2 mean2 sd2
-                funcType = 'SOEDINGFUNC'
-                w1 = self.numberFSelection[0]
-                mean1 = self.numberFSelection[1]
-                sd1 = self.numberFSelection[2]
-                w2 = self.numberFSelection[3]
-                mean2 = self.numberFSelection[4]
-                sd2 = self.numberFSelection[5]
+                if ctx.WEIGHT():
+                    weight = self.numberFSelection[2]
 
-                func['w1'] = w1
-                func['mean1'] = mean1
-                func['sd1'] = sd1
-                func['w2'] = w2
-                func['mean2'] = mean2
-                func['sd2'] = sd2
+                    func['weight'] = weight
 
-                if w1 < 0.0:
-                    valid = False
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"{funcType} weight of the 1st Gaussian function 'w1={w1}' must not be a negative value.\n"
-                if w2 < 0.0:
-                    valid = False
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"{funcType} weight of the 2nd Gaussian function 'w2={w2}' must not be a negative value.\n"
-                if sd1 <= 0.0:
-                    valid = False
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"{funcType} standard deviation of the 1st Gaussian function 'sd1={sd1}' must be a positive value.\n"
-                if sd2 <= 0.0:
-                    valid = False
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"{funcType} standard deviation of the 2nd Gaussian function 'sd2={sd2}' must be a positive value.\n"
-
-        elif ctx.CONSTANTFUNC():  # return_val
-            funcType = 'CONSTANTFUNC'
-            return_val = self.numberFSelection[0]
-
-            func['name'] = funcType
-            func['return_val'] = return_val
-
-        elif ctx.IDENTITY():
-            func['name'] = 'IDENTITY'
-
-        elif ctx.SCALARWEIGHTEDFUNC():  # weight func_type_def
-            funcType = 'SCALARWEIGHTEDFUNC'
-            weight = self.numberFSelection[0]
-
-            func['name'] = funcType
-            func['weight'] = weight
-
-            if weight < 0.0:
-                valid = False
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"{funcType} 'weight={weight}' of {n+1}th function must not be a negative value.\n"
-
-            func['func_types'] = []
-
-        elif ctx.SUMFUNC():  # n_funcs Func_Type1 Func_Def1 [Func_Type2 Func_Def2 [...]]
-            funcType = 'SUMFUNC'
-            n_funcs = int(str(ctx.Integer()))
-
-            func['name'] = funcType
-            func['n_funcs'] = n_funcs
-
-            if n_funcs <= 0:
-                valid = False
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"{funcType} the number of functions 'n_funcs={n_funcs}' must be a positive value.\n"
-            elif ctx.func_type_def(n_funcs - 1):
-                pass
-            else:
-                valid = False
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"{funcType} requires {n_funcs} function definitions after the first 'n_funcs' value.\n"
-
-            func['func_types'] = []
-
-        elif ctx.SPLINE():  # description (NONE) experimental_value weight bin_size (x_axis val*)+
-            funcType = 'SPLINE'
-            description = str(ctx.Simple_name(0))
-            experimental_value = self.numberFSelection[0]
-            weight = self.numberFSelection[1]
-            bin_size = self.numberFSelection[2]
-
-            func['name'] = funcType
-            func['description'] = description
-            func['experimental_value'] = experimental_value
-            func['weight'] = weight
-            func['bin_size'] = bin_size
-
-            if weight < 0.0:
-                valid = False
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"{funcType} 'weight={weight}' must not be a negative value.\n"
-            if bin_size <= 0.0:
-                valid = False
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"{funcType} 'bin_size={bin_size}' must be a positive value.\n"
-
-        elif ctx.FADE():  # lb ub d wd [ wo ]
-            funcType = 'FADE'
-            lb = self.numberFSelection[0]
-            ub = self.numberFSelection[1]
-            d = self.numberFSelection[2]
-            wd = self.numberFSelection[3]
-            wo = 0.0
-
-            func['name'] = funcType
-            func['lb'] = lb
-            func['ub'] = ub
-            func['d'] = d  # fade zone
-            func['wd'] = wd  # well depth
-
-            if lb > ub:
-                valid = False
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"{funcType} lower boundary 'lb={lb}' must be less than or equal to upper boundary 'ub={ub}'.\n"
-
-            if d < 0.0:
-                valid = False
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"{funcType} fade zone 'd={d}' must not be a negative value.\n"
-
-            if len(self.numberFSelection) > 4:
-                wo = self.numberFSelection[4]
-
-                func['wo'] = wo  # well offset
-
-        elif ctx.SQUARE_WELL2():  # x0 width depth [DEGREES]
-            funcType = 'SQUARE_WELL2'
-            x0 = self.numberFSelection[0]
-            width = self.numberFSelection[2]
-            depth = self.numberFSelection[1]
-
-            func['name'] = funcType
-            func['x0'] = x0
-            func['width'] = width
-            func['depth'] = depth
-
-            if weight < 0.0:
-                valid = False
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"{funcType} 'weight={weight}' must not be a negative value.\n"
-
-            if ctx.DEGREES():
-                func['unit'] = 'degrees'
-                func['lower_linear_limit'] = x0 - width
-                func['upper_linear_limit'] = x0 + width
-            else:
-                func['unit'] = 'radians'
-                func['lower_linear_limit'] = np.degrees(x0 - width)
-                func['upper_linear_limit'] = np.degrees(x0 + width)
-
-        elif ctx.ETABLE():  # min max [many numbers]
-            funcType = 'ETABLE'
-            _min = self.numberFSelection[0]
-            _max = self.numberFSelection[1]
-
-            func['name'] = funcType
-            func['min'] = _min
-            func['max'] = _max
-
-            if _min > _max:
-                valid = False
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"{funcType} 'min={_min}' must be less than or equal to 'max={_max}'.\n"
-
-            if len(self.numberFSelection) > 2:
-                pass
-            else:
-                valid = False
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"{funcType} requires parameters after the first 'min' and the second 'max' values.\n"
-
-        elif ctx.USOG():  # num_gaussians mean1 sd1 mean2 sd2...
-            funcType = 'USOG'
-            num_gaussians = int(str(ctx.Integer()))
-
-            func['name'] = funcType
-            func['num_gaussians'] = num_gaussians
-
-            if num_gaussians <= 0:
-                valid = False
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"{funcType} the number of Gaussian functions 'num_gaussians={num_gaussians}' must be a positive value.\n"
-            elif len(self.numberFSelection) > num_gaussians * 2 - 1:
-                func['mean'] = []
-                func['sd'] = []
-                for n in range(num_gaussians):
-                    p = n * 2
-                    mean = self.numberFSelection[p]
-                    sd = self.numberFSelection[p + 1]
-
-                    func['mean'].append(mean)
-                    func['sd'].append(sd)
-
-                    if num_gaussians == 1:
-                        func['target_value'] = mean
-                        func['lower_limit'] = mean - sd
-                        func['upper_limit'] = mean + sd
-
-                    if sd <= 0.0:
-                        valid = False
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            f"{funcType} standard deviation 'sd={sd}' of {n+1}th function must be a positive value.\n"
-            else:
-                valid = False
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"{funcType} requires consecutive 2 parameters (mean, sd) for each Gaussian function after the first 'num_gaussians' value.\n"
-
-        elif ctx.SOG():  # num_gaussians mean1 sd1 weight1 mean2 sd2 weight2...
-            funcType = 'SOG'
-            num_gaussians = int(str(ctx.Integer()))
-
-            func['name'] = funcType
-            func['num_gaussians'] = num_gaussians
-
-            if num_gaussians <= 0:
-                valid = False
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"{funcType} the number of Gaussian functions 'num_gaussians={num_gaussians}' must be a positive value.\n"
-            elif len(self.numberFSelection) > num_gaussians * 3 - 1:
-                func['mean'] = []
-                func['sd'] = []
-                func['weight'] = []
-                for n in range(num_gaussians):
-                    p = n * 3
-                    mean = self.numberFSelection[p]
-                    sd = self.numberFSelection[p + 1]
-                    weight = self.numberFSelection[p + 2]
-
-                    func['mean'].append(mean)
-                    func['sd'].append(sd)
-                    func['weight'].append(weight)
-
-                    if num_gaussians == 1:
-                        func['target_value'] = mean
-                        func['lower_limit'] = mean - sd
-                        func['upper_limit'] = mean + sd
-
-                    if sd <= 0.0:
-                        valid = False
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            f"{funcType} standard deviation 'sd={sd}' of {n+1}th function must be a positive value.\n"
                     if weight < 0.0:
                         valid = False
                         self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            f"{funcType} 'weight={weight}' of {n+1}th function must not be a negative value.\n"
-            else:
-                valid = False
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"{funcType} requires consecutive 3 parameters (mean, sd, weight) for each Gaussian function after the first 'num_gaussians' value.\n"
+                            f"{funcType} 'weight={weight}' must not be a negative value.\n"
 
-        if valid:
-            self.stackFuncs.append(func)
+                func['target_value'] = mean
+                func['lower_limit'] = mean - sd
+                func['upper_limit'] = mean + sd
 
-        self.numberFSelection.clear()
+            elif ctx.SOGFUNC():  # n_funcs [mean1 sdev1 weight1 [mean2 sdev2 weight2 [...]]]
+                funcType = 'SOGFUNC'
+                n_funcs = int(str(ctx.Integer()))
+
+                func['name'] = funcType
+                func['n_funcs'] = n_funcs
+
+                if n_funcs <= 0:
+                    valid = False
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"{funcType} the number of Gaussian functions 'n_funcs={n_funcs}' must be a positive value.\n"
+                elif len(self.numberFSelection) > n_funcs * 3 - 1:
+                    func['mean'] = []
+                    func['sdev'] = []
+                    func['weight'] = []
+                    for n in range(n_funcs):
+                        p = n * 3
+                        mean = self.numberFSelection[p]
+                        sdev = self.numberFSelection[p + 1]
+                        weight = self.numberFSelection[p + 2]
+
+                        func['mean'].append(mean)
+                        func['sdev'].append(sdev)
+                        func['weight'].append(weight)
+
+                        if n_funcs == 1:
+                            func['target_value'] = mean
+                            func['lower_limit'] = mean - sdev
+                            func['upper_limit'] = mean + sdev
+
+                        if sdev <= 0.0:
+                            valid = False
+                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                f"{funcType} standard deviation 'sdev={sdev}' of {n+1}th function must be a positive value.\n"
+                        if weight < 0.0:
+                            valid = False
+                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                f"{funcType} 'weight={weight}' of {n+1}th function must not be a negative value.\n"
+                else:
+                    valid = False
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"{funcType} requires consecutive 3 parameters (mean, sdev, weight) for each Gaussian function after the first 'n_funcs' value.\n"
+
+            elif ctx.MIXTUREFUNC() or ctx.KARPLUS() or ctx.SOEDINGFUNC():
+                if ctx.MIXTUREFUNC():  # anchor gaussian_param exp_param mixture_param bg_mean bg_sd
+                    funcType = 'MIXTUREFUNC'
+                    anchor = self.numberFSelection[0]
+                    gaussian_param = self.numberFSelection[1]
+                    exp_param = self.numberFSelection[2]
+                    mixture_param = self.numberFSelection[3]
+                    bg_mean = self.numberFSelection[4]
+                    bg_sd = self.numberFSelection[5]
+
+                    func['name'] = funcType
+                    func['anchor'] = anchor
+                    func['gaussian_param'] = gaussian_param
+                    func['exp_param'] = exp_param
+                    func['mixture_param'] = mixture_param
+                    func['bg_mean'] = bg_mean
+                    func['bg_sd'] = bg_sd
+
+                    if gaussian_param <= 0.0:
+                        valid = False
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            f"{funcType} standard deviation of a Gaussian distribution 'gaussian_param={gaussian_param}' must be a positive value.\n"
+                    if exp_param <= 0.0:
+                        valid = False
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            f"{funcType} rate at which the exponential distribution drops off 'exp_param={exp_param}' must be a positive value.\n"
+                    if mixture_param <= 0.0:
+                        valid = False
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            f"{funcType} mixture of the Gaussian and Exponential functions 'mixture_param={mixture_param}' that make up g(r) function must be a positive value.\n"
+                    if bg_sd <= 0.0:
+                        valid = False
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            f"{funcType} standard deviation 'bg_sd={bg_sd}' of h(r) function must be a positive value.\n"
+
+                elif ctx.KARPLUS():  # A B C D x0 sd
+                    funcType = 'KARPLUS'
+                    A = self.numberFSelection[0]
+                    B = self.numberFSelection[1]
+                    C = self.numberFSelection[2]
+                    D = self.numberFSelection[3]
+                    x0 = self.numberFSelection[4]
+                    sd = self.numberFSelection[5]
+
+                    func['A'] = A
+                    func['B'] = B
+                    func['C'] = C
+                    func['D'] = D
+                    func['x0'] = x0
+                    func['sd'] = sd
+
+                    if sd <= 0.0:
+                        valid = False
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            f"{funcType} standard deviation 'sd={sd}' must be a positive value.\n"
+
+                else:  # w1 mean1 sd1 w2 mean2 sd2
+                    funcType = 'SOEDINGFUNC'
+                    w1 = self.numberFSelection[0]
+                    mean1 = self.numberFSelection[1]
+                    sd1 = self.numberFSelection[2]
+                    w2 = self.numberFSelection[3]
+                    mean2 = self.numberFSelection[4]
+                    sd2 = self.numberFSelection[5]
+
+                    func['w1'] = w1
+                    func['mean1'] = mean1
+                    func['sd1'] = sd1
+                    func['w2'] = w2
+                    func['mean2'] = mean2
+                    func['sd2'] = sd2
+
+                    if w1 < 0.0:
+                        valid = False
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            f"{funcType} weight of the 1st Gaussian function 'w1={w1}' must not be a negative value.\n"
+                    if w2 < 0.0:
+                        valid = False
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            f"{funcType} weight of the 2nd Gaussian function 'w2={w2}' must not be a negative value.\n"
+                    if sd1 <= 0.0:
+                        valid = False
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            f"{funcType} standard deviation of the 1st Gaussian function 'sd1={sd1}' must be a positive value.\n"
+                    if sd2 <= 0.0:
+                        valid = False
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            f"{funcType} standard deviation of the 2nd Gaussian function 'sd2={sd2}' must be a positive value.\n"
+
+            elif ctx.CONSTANTFUNC():  # return_val
+                funcType = 'CONSTANTFUNC'
+                return_val = self.numberFSelection[0]
+
+                func['name'] = funcType
+                func['return_val'] = return_val
+
+            elif ctx.IDENTITY():
+                func['name'] = 'IDENTITY'
+
+            elif ctx.SCALARWEIGHTEDFUNC():  # weight func_type_def
+                funcType = 'SCALARWEIGHTEDFUNC'
+                weight = self.numberFSelection[0]
+
+                func['name'] = funcType
+                func['weight'] = weight
+
+                if weight < 0.0:
+                    valid = False
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"{funcType} 'weight={weight}' of {n+1}th function must not be a negative value.\n"
+
+                func['func_types'] = []
+
+            elif ctx.SUMFUNC():  # n_funcs Func_Type1 Func_Def1 [Func_Type2 Func_Def2 [...]]
+                funcType = 'SUMFUNC'
+                n_funcs = int(str(ctx.Integer()))
+
+                func['name'] = funcType
+                func['n_funcs'] = n_funcs
+
+                if n_funcs <= 0:
+                    valid = False
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"{funcType} the number of functions 'n_funcs={n_funcs}' must be a positive value.\n"
+                elif ctx.func_type_def(n_funcs - 1):
+                    pass
+                else:
+                    valid = False
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"{funcType} requires {n_funcs} function definitions after the first 'n_funcs' value.\n"
+
+                func['func_types'] = []
+
+            elif ctx.SPLINE():  # description (NONE) experimental_value weight bin_size (x_axis val*)+
+                funcType = 'SPLINE'
+                description = str(ctx.Simple_name(0))
+                experimental_value = self.numberFSelection[0]
+                weight = self.numberFSelection[1]
+                bin_size = self.numberFSelection[2]
+
+                func['name'] = funcType
+                func['description'] = description
+                func['experimental_value'] = experimental_value
+                func['weight'] = weight
+                func['bin_size'] = bin_size
+
+                if weight < 0.0:
+                    valid = False
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"{funcType} 'weight={weight}' must not be a negative value.\n"
+                if bin_size <= 0.0:
+                    valid = False
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"{funcType} 'bin_size={bin_size}' must be a positive value.\n"
+
+            elif ctx.FADE():  # lb ub d wd [ wo ]
+                funcType = 'FADE'
+                lb = self.numberFSelection[0]
+                ub = self.numberFSelection[1]
+                d = self.numberFSelection[2]
+                wd = self.numberFSelection[3]
+                wo = 0.0
+
+                func['name'] = funcType
+                func['lb'] = lb
+                func['ub'] = ub
+                func['d'] = d  # fade zone
+                func['wd'] = wd  # well depth
+
+                if lb > ub:
+                    valid = False
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"{funcType} lower boundary 'lb={lb}' must be less than or equal to upper boundary 'ub={ub}'.\n"
+
+                if d < 0.0:
+                    valid = False
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"{funcType} fade zone 'd={d}' must not be a negative value.\n"
+
+                if len(self.numberFSelection) > 4:
+                    wo = self.numberFSelection[4]
+
+                    func['wo'] = wo  # well offset
+
+            elif ctx.SQUARE_WELL2():  # x0 width depth [DEGREES]
+                funcType = 'SQUARE_WELL2'
+                x0 = self.numberFSelection[0]
+                width = self.numberFSelection[2]
+                depth = self.numberFSelection[1]
+
+                func['name'] = funcType
+                func['x0'] = x0
+                func['width'] = width
+                func['depth'] = depth
+
+                if weight < 0.0:
+                    valid = False
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"{funcType} 'weight={weight}' must not be a negative value.\n"
+
+                if ctx.DEGREES():
+                    func['unit'] = 'degrees'
+                    func['lower_linear_limit'] = x0 - width
+                    func['upper_linear_limit'] = x0 + width
+                else:
+                    func['unit'] = 'radians'
+                    func['lower_linear_limit'] = np.degrees(x0 - width)
+                    func['upper_linear_limit'] = np.degrees(x0 + width)
+
+            elif ctx.ETABLE():  # min max [many numbers]
+                funcType = 'ETABLE'
+                _min = self.numberFSelection[0]
+                _max = self.numberFSelection[1]
+
+                func['name'] = funcType
+                func['min'] = _min
+                func['max'] = _max
+
+                if _min > _max:
+                    valid = False
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"{funcType} 'min={_min}' must be less than or equal to 'max={_max}'.\n"
+
+                if len(self.numberFSelection) > 2:
+                    pass
+                else:
+                    valid = False
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"{funcType} requires parameters after the first 'min' and the second 'max' values.\n"
+
+            elif ctx.USOG():  # num_gaussians mean1 sd1 mean2 sd2...
+                funcType = 'USOG'
+                num_gaussians = int(str(ctx.Integer()))
+
+                func['name'] = funcType
+                func['num_gaussians'] = num_gaussians
+
+                if num_gaussians <= 0:
+                    valid = False
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"{funcType} the number of Gaussian functions 'num_gaussians={num_gaussians}' must be a positive value.\n"
+                elif len(self.numberFSelection) > num_gaussians * 2 - 1:
+                    func['mean'] = []
+                    func['sd'] = []
+                    for n in range(num_gaussians):
+                        p = n * 2
+                        mean = self.numberFSelection[p]
+                        sd = self.numberFSelection[p + 1]
+
+                        func['mean'].append(mean)
+                        func['sd'].append(sd)
+
+                        if num_gaussians == 1:
+                            func['target_value'] = mean
+                            func['lower_limit'] = mean - sd
+                            func['upper_limit'] = mean + sd
+
+                        if sd <= 0.0:
+                            valid = False
+                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                f"{funcType} standard deviation 'sd={sd}' of {n+1}th function must be a positive value.\n"
+                else:
+                    valid = False
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"{funcType} requires consecutive 2 parameters (mean, sd) for each Gaussian function after the first 'num_gaussians' value.\n"
+
+            elif ctx.SOG():  # num_gaussians mean1 sd1 weight1 mean2 sd2 weight2...
+                funcType = 'SOG'
+                num_gaussians = int(str(ctx.Integer()))
+
+                func['name'] = funcType
+                func['num_gaussians'] = num_gaussians
+
+                if num_gaussians <= 0:
+                    valid = False
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"{funcType} the number of Gaussian functions 'num_gaussians={num_gaussians}' must be a positive value.\n"
+                elif len(self.numberFSelection) > num_gaussians * 3 - 1:
+                    func['mean'] = []
+                    func['sd'] = []
+                    func['weight'] = []
+                    for n in range(num_gaussians):
+                        p = n * 3
+                        mean = self.numberFSelection[p]
+                        sd = self.numberFSelection[p + 1]
+                        weight = self.numberFSelection[p + 2]
+
+                        func['mean'].append(mean)
+                        func['sd'].append(sd)
+                        func['weight'].append(weight)
+
+                        if num_gaussians == 1:
+                            func['target_value'] = mean
+                            func['lower_limit'] = mean - sd
+                            func['upper_limit'] = mean + sd
+
+                        if sd <= 0.0:
+                            valid = False
+                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                f"{funcType} standard deviation 'sd={sd}' of {n+1}th function must be a positive value.\n"
+                        if weight < 0.0:
+                            valid = False
+                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                f"{funcType} 'weight={weight}' of {n+1}th function must not be a negative value.\n"
+                else:
+                    valid = False
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"{funcType} requires consecutive 3 parameters (mean, sd, weight) for each Gaussian function after the first 'num_gaussians' value.\n"
+
+            if valid:
+                self.stackFuncs.append(func)
+
+        finally:
+            self.numberFSelection.clear()
 
     # Enter a parse tree produced by RosettaMRParser#rdc_restraints.
     def enterRdc_restraints(self, ctx: RosettaMRParser.Rdc_restraintsContext):  # pylint: disable=unused-argument
@@ -2279,123 +2315,129 @@ class RosettaMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by RosettaMRParser#rdc_restraint.
     def exitRdc_restraint(self, ctx: RosettaMRParser.Rdc_restraintContext):
+
         try:
+
             seqId1 = int(str(ctx.Integer(0)))
             atomId1 = str(ctx.Simple_name(0)).upper()
             seqId2 = int(str(ctx.Integer(1)))
             atomId2 = str(ctx.Simple_name(1)).upper()
+
+            if None in self.numberSelection:
+                return
+
             target_value = self.numberSelection[0]
-        except ValueError:
-            self.rdcRestraints -= 1
-            return
-        finally:
-            self.numberSelection.clear()
 
-        validRange = True
-        dstFunc = {'weight': 1.0}
+            validRange = True
+            dstFunc = {'weight': 1.0}
 
-        if target_value is not None:
-            if RDC_ERROR_MIN < target_value < RDC_ERROR_MAX:
-                dstFunc['target_value'] = f"{target_value:.3f}"
-            else:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The target value='{target_value}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+            if target_value is not None:
+                if RDC_ERROR_MIN < target_value < RDC_ERROR_MAX:
+                    dstFunc['target_value'] = f"{target_value:.3f}"
+                else:
+                    validRange = False
+                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                        f"The target value='{target_value}' must be within range {RDC_RESTRAINT_ERROR}.\n"
 
-        if not validRange:
-            return
+            if not validRange:
+                return
 
-        if target_value is not None:
-            if RDC_RANGE_MIN < target_value < RDC_RANGE_MAX:
-                pass
-            else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The target value='{target_value}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+            if target_value is not None:
+                if RDC_RANGE_MIN < target_value < RDC_RANGE_MAX:
+                    pass
+                else:
+                    self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                        f"The target value='{target_value}' should be within range {RDC_RESTRAINT_RANGE}.\n"
 
-        if not self.__hasPolySeq:
-            return
+            if not self.__hasPolySeq:
+                return
 
-        chainAssign1 = self.assignCoordPolymerSequence(seqId1, atomId1)
-        chainAssign2 = self.assignCoordPolymerSequence(seqId2, atomId2)
+            chainAssign1 = self.assignCoordPolymerSequence(seqId1, atomId1)
+            chainAssign2 = self.assignCoordPolymerSequence(seqId2, atomId2)
 
-        if len(chainAssign1) == 0 or len(chainAssign2) == 0:
-            return
+            if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+                return
 
-        self.selectCoordAtoms(chainAssign1, seqId1, atomId1, False, 'an RDC')
-        self.selectCoordAtoms(chainAssign2, seqId2, atomId2, False, 'an RDC')
+            self.selectCoordAtoms(chainAssign1, seqId1, atomId1, False, 'an RDC')
+            self.selectCoordAtoms(chainAssign2, seqId2, atomId2, False, 'an RDC')
 
-        if len(self.atomSelectionSet) < 2:
-            return
+            if len(self.atomSelectionSet) < 2:
+                return
 
-        if not self.areUniqueCoordAtoms('an RDC'):
-            return
+            if not self.areUniqueCoordAtoms('an RDC'):
+                return
 
-        chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
-        seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
-        comp_id_1 = self.atomSelectionSet[0][0]['comp_id']
-        atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
+            chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
+            seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
+            comp_id_1 = self.atomSelectionSet[0][0]['comp_id']
+            atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
 
-        chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
-        seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
-        comp_id_2 = self.atomSelectionSet[1][0]['comp_id']
-        atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+            chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
+            seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
+            comp_id_2 = self.atomSelectionSet[1][0]['comp_id']
+            atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
 
-        if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                f"Non-magnetic susceptible spin appears in RDC vector; "\
-                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-            return
-
-        if chain_id_1 != chain_id_2:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                f"Found inter-chain RDC vector; "\
-                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-            return
-
-        if abs(seq_id_1 - seq_id_2) > 1:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                f"Found inter-residue RDC vector; "\
-                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-            return
-
-        if abs(seq_id_1 - seq_id_2) == 1:
-
-            if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
-               ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H')) or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H') and atom_id_2 == 'C')):
-                pass
-
-            else:
+            if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    "Found inter-residue RDC vector; "\
+                    f"Non-magnetic susceptible spin appears in RDC vector; "\
+                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
+                    f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                return
+
+            if chain_id_1 != chain_id_2:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"Found inter-chain RDC vector; "\
                     f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
                 return
 
-        elif atom_id_1 == atom_id_2:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                "Found zero RDC vector; "\
-                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-            return
+            if abs(seq_id_1 - seq_id_2) > 1:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"Found inter-residue RDC vector; "\
+                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                return
 
-        else:
+            if abs(seq_id_1 - seq_id_2) == 1:
 
-            if self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
+                if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
+                   ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H')) or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H') and atom_id_2 == 'C')):
+                    pass
 
-                if not any(b for b in self.__ccU.lastBonds
-                           if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
-                               or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
+                else:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        "Found inter-residue RDC vector; "\
+                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    return
 
-                    if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            "Found an RDC vector over multiple covalent bonds; "\
-                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-                        return
+            elif atom_id_1 == atom_id_2:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    "Found zero RDC vector; "\
+                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                return
 
-        for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
-                                              self.atomSelectionSet[1]):
-            if self.__debug:
-                print(f"subtype={self.__cur_subtype} (CS-ROSETTA: RDC) id={self.rdcRestraints} "
-                      f"atom1={atom1} atom2={atom2} {dstFunc}")
+            else:
+
+                if self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
+
+                    if not any(b for b in self.__ccU.lastBonds
+                               if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
+                                   or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
+
+                        if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
+                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                "Found an RDC vector over multiple covalent bonds; "\
+                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                            return
+
+            for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
+                                                  self.atomSelectionSet[1]):
+                if self.__debug:
+                    print(f"subtype={self.__cur_subtype} (CS-ROSETTA: RDC) id={self.rdcRestraints} "
+                          f"atom1={atom1} atom2={atom2} {dstFunc}")
+
+        except ValueError:
+            self.rdcRestraints -= 1
+        finally:
+            self.numberSelection.clear()
 
     def areUniqueCoordAtoms(self, subtype_name):
         """ Check whether atom selection sets are uniquely assigned.
@@ -2480,8 +2522,12 @@ class RosettaMRParserListener(ParseTreeListener):
     def exitNumber(self, ctx: RosettaMRParser.NumberContext):
         if ctx.Float():
             self.numberSelection.append(float(str(ctx.Float())))
-        else:
+
+        elif ctx.Integer():
             self.numberSelection.append(float(str(ctx.Integer())))
+
+        else:
+            self.numberSelection.append(None)
 
     # Enter a parse tree produced by RosettaMRParser#number_f.
     def enterNumber_f(self, ctx: RosettaMRParser.Number_fContext):  # pylint: disable=unused-argument
@@ -2491,8 +2537,12 @@ class RosettaMRParserListener(ParseTreeListener):
     def exitNumber_f(self, ctx: RosettaMRParser.Number_fContext):
         if ctx.Float():
             self.numberFSelection.append(float(str(ctx.Float())))
-        else:
+
+        elif ctx.Integer():
             self.numberFSelection.append(float(str(ctx.Integer())))
+
+        else:
+            self.numberFSelection.append(None)
 
     def __getCurrentRestraint(self):
         if self.__cur_subtype == 'dist':

@@ -181,7 +181,8 @@ class AmberMRReader:
 
                 if self.__atomNumberDict is not None:
                     if self.__verbose:
-                        print(listener.getContentSubtype())
+                        if isFilePath:
+                            print(listener.getContentSubtype())
                     break
 
                 sanderAtomNumberDict = listener.getSanderAtomNumberDict()

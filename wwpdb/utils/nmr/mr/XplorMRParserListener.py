@@ -706,95 +706,102 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#noe_assign.
     def exitNoe_assign(self, ctx: XplorMRParser.Noe_assignContext):  # pylint: disable=unused-argument
-        target = self.numberSelection[0]
-        dminus = self.numberSelection[1]
-        dplus = self.numberSelection[2]
 
-        scale = self.scale if self.scale_a is None else self.scale_a
+        try:
 
-        if scale <= 0.0:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                f"The weight value '{scale}' must be a positive value.\n"
+            target = self.numberSelection[0]
+            dminus = self.numberSelection[1]
+            dplus = self.numberSelection[2]
 
-        self.numberSelection.clear()
+            if None in self.numberSelection:
+                return
 
-        target_value = target
-        lower_limit = None
-        upper_limit = None
-        lower_linear_limit = None
-        upper_linear_limit = None
+            scale = self.scale if self.scale_a is None else self.scale_a
 
-        if self.noePotential == 'biharmonic':
-            lower_limit = target - dminus
-            upper_limit = target + dplus
-        elif self.noePotential == 'lognormal':
-            pass
-        elif self.noePotential == 'square':
-            if abs(self.squareExponent - 2.0) < abs(self.squareExponent - 1.0):
-                lower_linear = target - dminus
-                upper_linear = target + dplus - self.squareOffset
-            else:
-                lower_linear_limit = target - dminus
-                upper_linear_limit = target + dplus - self.squareOffset
-        elif self.noePotential == 'softsquare':
-            if abs(self.squareExponent - 2.0) < abs(self.squareExponent - 1.0):
-                lower_linear = target - dminus
-                upper_linear = target + dplus - self.squareOffset
-                upper_linear_limit = target + dplus - self.squareOffset + self.rSwitch
-            else:
-                lower_linear_limit = target - dminus
-                upper_linear_limit = target + dplus - self.squareOffset
-        elif self.noePotential == 'symmetry':
-            if target == 0.0:
-                target = self.symmTarget
-                dminus = self.symmDminus
-                dplus = self.symmDplus
-            else:
-                self.symmTarget = target
-                self.symmDminus = dminus
-                self.symmDplus = dplus
+            if scale <= 0.0:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"The weight value '{scale}' must be a positive value.\n"
+
             target_value = target
-            if abs(self.squareExponent - 2.0) < abs(self.squareExponent - 1.0):
+            lower_limit = None
+            upper_limit = None
+            lower_linear_limit = None
+            upper_linear_limit = None
+
+            if self.noePotential == 'biharmonic':
+                lower_limit = target - dminus
+                upper_limit = target + dplus
+            elif self.noePotential == 'lognormal':
+                pass
+            elif self.noePotential == 'square':
+                if abs(self.squareExponent - 2.0) < abs(self.squareExponent - 1.0):
+                    lower_linear = target - dminus
+                    upper_linear = target + dplus - self.squareOffset
+                else:
+                    lower_linear_limit = target - dminus
+                    upper_linear_limit = target + dplus - self.squareOffset
+            elif self.noePotential == 'softsquare':
+                if abs(self.squareExponent - 2.0) < abs(self.squareExponent - 1.0):
+                    lower_linear = target - dminus
+                    upper_linear = target + dplus - self.squareOffset
+                    upper_linear_limit = target + dplus - self.squareOffset + self.rSwitch
+                else:
+                    lower_linear_limit = target - dminus
+                    upper_linear_limit = target + dplus - self.squareOffset
+            elif self.noePotential == 'symmetry':
+                if target == 0.0:
+                    target = self.symmTarget
+                    dminus = self.symmDminus
+                    dplus = self.symmDplus
+                else:
+                    self.symmTarget = target
+                    self.symmDminus = dminus
+                    self.symmDplus = dplus
+                target_value = target
+                if abs(self.squareExponent - 2.0) < abs(self.squareExponent - 1.0):
+                    lower_linear = target - dminus
+                    upper_linear = target + dplus - self.squareOffset
+                    upper_linear_limit = target + dplus - self.squareOffset + self.rSwitch
+                else:
+                    lower_linear_limit = target - dminus
+                    upper_linear_limit = target + dplus - self.squareOffset
+            elif self.noePotential == 'high':
                 lower_linear = target - dminus
-                upper_linear = target + dplus - self.squareOffset
-                upper_linear_limit = target + dplus - self.squareOffset + self.rSwitch
-            else:
-                lower_linear_limit = target - dminus
-                upper_linear_limit = target + dplus - self.squareOffset
-        elif self.noePotential == 'high':
-            lower_linear = target - dminus
-            upper_linear = target + dplus
-            lower_linear_limit = lower_linear - 0.1
-            upper_linear_limit = upper_linear + 0.1
-        else:  # 3dpo
-            if target == 0.0:
-                target = self.symmTarget
-                dminus = self.symmDminus
-                dplus = self.symmDplus
-            else:
-                self.symmTarget = target
-                self.symmDminus = dminus
-                self.symmDplus = dplus
-            target_value = target
-            lower_limit = target - dminus
-            upper_limit = target + dplus
+                upper_linear = target + dplus
+                lower_linear_limit = lower_linear - 0.1
+                upper_linear_limit = upper_linear + 0.1
+            else:  # 3dpo
+                if target == 0.0:
+                    target = self.symmTarget
+                    dminus = self.symmDminus
+                    dplus = self.symmDplus
+                else:
+                    self.symmTarget = target
+                    self.symmDminus = dminus
+                    self.symmDplus = dplus
+                target_value = target
+                lower_limit = target - dminus
+                upper_limit = target + dplus
 
-        dstFunc = self.validateDistanceRange(scale,
-                                             target_value, lower_limit, upper_limit,
-                                             lower_linear_limit, upper_linear_limit)
+            dstFunc = self.validateDistanceRange(scale,
+                                                 target_value, lower_limit, upper_limit,
+                                                 lower_linear_limit, upper_linear_limit)
 
-        if dstFunc is None:
-            return
+            if dstFunc is None:
+                return
 
-        if not self.__hasPolySeq:
-            return
+            if not self.__hasPolySeq:
+                return
 
-        for i in range(0, len(self.atomSelectionSet), 2):
-            for atom1, atom2 in itertools.product(self.atomSelectionSet[i],
-                                                  self.atomSelectionSet[i + 1]):
-                if self.__debug:
-                    print(f"subtype={self.__cur_subtype} (NOE) id={self.distRestraints} "
-                          f"atom1={atom1} atom2={atom2} {dstFunc}")
+            for i in range(0, len(self.atomSelectionSet), 2):
+                for atom1, atom2 in itertools.product(self.atomSelectionSet[i],
+                                                      self.atomSelectionSet[i + 1]):
+                    if self.__debug:
+                        print(f"subtype={self.__cur_subtype} (NOE) id={self.distRestraints} "
+                              f"atom1={atom1} atom2={atom2} {dstFunc}")
+
+        finally:
+            self.numberSelection.clear()
 
     def validateDistanceRange(self, weight,
                               target_value, lower_limit, upper_limit,
@@ -1015,61 +1022,68 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#dihedral_assign.
     def exitDihedral_assign(self, ctx: XplorMRParser.Dihedral_assignContext):
-        energyConst = self.numberSelection[0]
-        target = self.numberSelection[1]
-        delta = abs(self.numberSelection[2])
-        exponent = int(str(ctx.Integer()))
 
-        self.numberSelection.clear()
+        try:
 
-        if energyConst <= 0.0:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                f"The energy constant value {energyConst} must be a positive value.\n"
-            return
+            if None in self.numberSelection:
+                return
 
-        if exponent not in (1, 2, 4):
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                f"The exponent value of dihedral angle restraint 'ed={exponent}' must be one (linear well), two (square well) or four (quartic well).\n"
-            return
+            energyConst = self.numberSelection[0]
+            target = self.numberSelection[1]
+            delta = abs(self.numberSelection[2])
+            exponent = int(str(ctx.Integer()))
 
-        target_value = target
-        lower_limit = None
-        upper_limit = None
-        lower_linear_limit = None
-        upper_linear_limit = None
+            if energyConst <= 0.0:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"The energy constant value {energyConst} must be a positive value.\n"
+                return
 
-        if exponent in (2, 4):
-            lower_limit = target - delta
-            upper_limit = target + delta
-        else:
-            lower_linear_limit = target - delta
-            upper_linear_limit = target + delta
+            if exponent not in (1, 2, 4):
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"The exponent value of dihedral angle restraint 'ed={exponent}' must be one (linear well), two (square well) or four (quartic well).\n"
+                return
 
-        dstFunc = self.validateAngleRange(self.scale, {'energy_const': energyConst, 'exponent': exponent},
-                                          target_value, lower_limit, upper_limit,
-                                          lower_linear_limit, upper_linear_limit)
+            target_value = target
+            lower_limit = None
+            upper_limit = None
+            lower_linear_limit = None
+            upper_linear_limit = None
 
-        if dstFunc is None:
-            return
+            if exponent in (2, 4):
+                lower_limit = target - delta
+                upper_limit = target + delta
+            else:
+                lower_linear_limit = target - delta
+                upper_linear_limit = target + delta
 
-        if not self.__hasPolySeq:
-            return
+            dstFunc = self.validateAngleRange(self.scale, {'energy_const': energyConst, 'exponent': exponent},
+                                              target_value, lower_limit, upper_limit,
+                                              lower_linear_limit, upper_linear_limit)
 
-        if not self.areUniqueCoordAtoms('a dihedral angle (DIHE)'):
-            return
+            if dstFunc is None:
+                return
 
-        compId = self.atomSelectionSet[0][0]['comp_id']
-        peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
+            if not self.__hasPolySeq:
+                return
 
-        for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
-                                                            self.atomSelectionSet[1],
-                                                            self.atomSelectionSet[2],
-                                                            self.atomSelectionSet[3]):
-            if self.__debug:
-                angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
-                                                       [atom1, atom2, atom3, atom4])
-                print(f"subtype={self.__cur_subtype} (DIHE) id={self.dihedRestraints} angleName={angleName} "
-                      f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
+            if not self.areUniqueCoordAtoms('a dihedral angle (DIHE)'):
+                return
+
+            compId = self.atomSelectionSet[0][0]['comp_id']
+            peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
+
+            for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
+                                                                self.atomSelectionSet[1],
+                                                                self.atomSelectionSet[2],
+                                                                self.atomSelectionSet[3]):
+                if self.__debug:
+                    angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
+                                                           [atom1, atom2, atom3, atom4])
+                    print(f"subtype={self.__cur_subtype} (DIHE) id={self.dihedRestraints} angleName={angleName} "
+                          f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
+
+        finally:
+            self.numberSelection.clear()
 
     def validateAngleRange(self, weight, misc_dict,
                            target_value, lower_limit, upper_limit,
@@ -1297,102 +1311,109 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#sani_assign.
     def exitSani_assign(self, ctx: XplorMRParser.Sani_assignContext):  # pylint: disable=unused-argument
-        target = self.numberSelection[0]
-        delta = abs(self.numberSelection[1])
 
-        target_value = target
-        lower_limit = None
-        upper_limit = None
+        try:
 
-        if self.potential == 'square':
-            lower_limit = target - delta
-            upper_limit = target + delta
-            if len(self.numberSelection) > 2:
-                error_grater = delta
-                error_less = abs(self.numberSelection[2])
-                lower_limit = target - error_less
-                upper_limit = target + error_grater
+            if None in self.numberSelection:
+                return
 
-        self.numberSelection.clear()
+            target = self.numberSelection[0]
+            delta = abs(self.numberSelection[1])
 
-        dstFunc = self.validateRdcRange(1.0, {'potential': self.potential},
-                                        target_value, lower_limit, upper_limit)
+            target_value = target
+            lower_limit = None
+            upper_limit = None
 
-        if dstFunc is None:
-            return
+            if self.potential == 'square':
+                lower_limit = target - delta
+                upper_limit = target + delta
+                if len(self.numberSelection) > 2:
+                    error_grater = delta
+                    error_less = abs(self.numberSelection[2])
+                    lower_limit = target - error_less
+                    upper_limit = target + error_grater
 
-        if not self.__hasPolySeq:
-            return
+            dstFunc = self.validateRdcRange(1.0, {'potential': self.potential},
+                                            target_value, lower_limit, upper_limit)
 
-        if not self.areUniqueCoordAtoms('an RDC (SANI)', XPLOR_ORIGIN_AXIS_COLS):
-            return
+            if dstFunc is None:
+                return
 
-        chain_id_1 = self.atomSelectionSet[4][0]['chain_id']
-        seq_id_1 = self.atomSelectionSet[4][0]['seq_id']
-        comp_id_1 = self.atomSelectionSet[4][0]['comp_id']
-        atom_id_1 = self.atomSelectionSet[4][0]['atom_id']
+            if not self.__hasPolySeq:
+                return
 
-        chain_id_2 = self.atomSelectionSet[5][0]['chain_id']
-        seq_id_2 = self.atomSelectionSet[5][0]['seq_id']
-        comp_id_2 = self.atomSelectionSet[5][0]['comp_id']
-        atom_id_2 = self.atomSelectionSet[5][0]['atom_id']
+            if not self.areUniqueCoordAtoms('an RDC (SANI)', XPLOR_ORIGIN_AXIS_COLS):
+                return
 
-        if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                f"Non-magnetic susceptible spin appears in RDC vector; "\
-                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-            return
+            chain_id_1 = self.atomSelectionSet[4][0]['chain_id']
+            seq_id_1 = self.atomSelectionSet[4][0]['seq_id']
+            comp_id_1 = self.atomSelectionSet[4][0]['comp_id']
+            atom_id_1 = self.atomSelectionSet[4][0]['atom_id']
 
-        if chain_id_1 != chain_id_2:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                f"Found inter-chain RDC vector; "\
-                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-            return
+            chain_id_2 = self.atomSelectionSet[5][0]['chain_id']
+            seq_id_2 = self.atomSelectionSet[5][0]['seq_id']
+            comp_id_2 = self.atomSelectionSet[5][0]['comp_id']
+            atom_id_2 = self.atomSelectionSet[5][0]['atom_id']
 
-        if abs(seq_id_1 - seq_id_2) > 1:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                f"Found inter-residue RDC vector; "\
-                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-            return
-
-        if abs(seq_id_1 - seq_id_2) == 1:
-
-            if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
-               ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H')) or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H') and atom_id_2 == 'C')):
-                pass
-
-            else:
+            if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    "Found inter-residue RDC vector; "\
+                    f"Non-magnetic susceptible spin appears in RDC vector; "\
+                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
+                    f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                return
+
+            if chain_id_1 != chain_id_2:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"Found inter-chain RDC vector; "\
                     f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
                 return
 
-        elif atom_id_1 == atom_id_2:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                "Found zero RDC vector; "\
-                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-            return
+            if abs(seq_id_1 - seq_id_2) > 1:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"Found inter-residue RDC vector; "\
+                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                return
 
-        else:
+            if abs(seq_id_1 - seq_id_2) == 1:
 
-            if self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
+                if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
+                   ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H')) or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H') and atom_id_2 == 'C')):
+                    pass
 
-                if not any(b for b in self.__ccU.lastBonds
-                           if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
-                               or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
+                else:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        "Found inter-residue RDC vector; "\
+                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    return
 
-                    if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            "Found an RDC vector over multiple covalent bonds in the 'SANIsotropy' statement; "\
-                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-                        return
+            elif atom_id_1 == atom_id_2:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    "Found zero RDC vector; "\
+                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                return
 
-        for atom1, atom2 in itertools.product(self.atomSelectionSet[4],
-                                              self.atomSelectionSet[5]):
-            if self.__debug:
-                print(f"subtype={self.__cur_subtype} (SANI) id={self.rdcRestraints} "
-                      f"atom1={atom1} atom2={atom2} {dstFunc}")
+            else:
+
+                if self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
+
+                    if not any(b for b in self.__ccU.lastBonds
+                               if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
+                                   or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
+
+                        if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
+                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                "Found an RDC vector over multiple covalent bonds in the 'SANIsotropy' statement; "\
+                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                            return
+
+            for atom1, atom2 in itertools.product(self.atomSelectionSet[4],
+                                                  self.atomSelectionSet[5]):
+                if self.__debug:
+                    print(f"subtype={self.__cur_subtype} (SANI) id={self.rdcRestraints} "
+                          f"atom1={atom1} atom2={atom2} {dstFunc}")
+
+        finally:
+            self.numberSelection.clear()
 
     def validateRdcRange(self, weight, misc_dict,
                          target_value, lower_limit, upper_limit,
@@ -1610,10 +1631,14 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#xdip_assign.
     def exitXdip_assign(self, ctx: XplorMRParser.Xdip_assignContext):  # pylint: disable=unused-argument
-        target = self.numberSelection[0]
-        delta = abs(self.numberSelection[1])
 
         try:
+
+            if None in self.numberSelection:
+                return
+
+            target = self.numberSelection[0]
+            delta = abs(self.numberSelection[1])
 
             if len(self.numberSelection) > 3:
                 lower_limit_1 = None
@@ -1663,74 +1688,74 @@ class XplorMRParserListener(ParseTreeListener):
                 if dstFunc is None:
                     return
 
-        finally:
-            self.numberSelection.clear()
+            if not self.__hasPolySeq:
+                return
 
-        if not self.__hasPolySeq:
-            return
+            if not self.areUniqueCoordAtoms('an RDC (XDIP)', XPLOR_ORIGIN_AXIS_COLS):
+                return
 
-        if not self.areUniqueCoordAtoms('an RDC (XDIP)', XPLOR_ORIGIN_AXIS_COLS):
-            return
+            chain_id_1 = self.atomSelectionSet[4][0]['chain_id']
+            seq_id_1 = self.atomSelectionSet[4][0]['seq_id']
+            comp_id_1 = self.atomSelectionSet[4][0]['comp_id']
+            atom_id_1 = self.atomSelectionSet[4][0]['atom_id']
 
-        chain_id_1 = self.atomSelectionSet[4][0]['chain_id']
-        seq_id_1 = self.atomSelectionSet[4][0]['seq_id']
-        comp_id_1 = self.atomSelectionSet[4][0]['comp_id']
-        atom_id_1 = self.atomSelectionSet[4][0]['atom_id']
+            chain_id_2 = self.atomSelectionSet[5][0]['chain_id']
+            seq_id_2 = self.atomSelectionSet[5][0]['seq_id']
+            comp_id_2 = self.atomSelectionSet[5][0]['comp_id']
+            atom_id_2 = self.atomSelectionSet[5][0]['atom_id']
 
-        chain_id_2 = self.atomSelectionSet[5][0]['chain_id']
-        seq_id_2 = self.atomSelectionSet[5][0]['seq_id']
-        comp_id_2 = self.atomSelectionSet[5][0]['comp_id']
-        atom_id_2 = self.atomSelectionSet[5][0]['atom_id']
+            if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"Non-magnetic susceptible spin appears in 1H-1H dipolar coupling vector; "\
+                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
+                    f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                return
 
-        if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                f"Non-magnetic susceptible spin appears in 1H-1H dipolar coupling vector; "\
-                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-            return
+            if chain_id_1 != chain_id_2:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"Found inter-chain 1H-1H dipolar coupling vector; "\
+                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                return
 
-        if chain_id_1 != chain_id_2:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                f"Found inter-chain 1H-1H dipolar coupling vector; "\
-                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-            return
+            if abs(seq_id_1 - seq_id_2) > 1:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"Found inter-residue 1H-1H dipolar coupling vector; "\
+                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                return
 
-        if abs(seq_id_1 - seq_id_2) > 1:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                f"Found inter-residue 1H-1H dipolar coupling vector; "\
-                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-            return
+            if abs(seq_id_1 - seq_id_2) == 1:
 
-        if abs(seq_id_1 - seq_id_2) == 1:
+                if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
+                   ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H')) or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H') and atom_id_2 == 'C')):
+                    pass
 
-            if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
-               ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H')) or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H') and atom_id_2 == 'C')):
-                pass
+                else:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        "Found inter-residue 1H-1H dipolar coupling vector; "\
+                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    return
+
+            elif atom_id_1 == atom_id_2:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    "Found zero 1H-1H dipolar coupling vector; "\
+                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                return
 
             else:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    "Found inter-residue 1H-1H dipolar coupling vector; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-                return
+                if atom_id_1[0] != 'H' or atom_id_2[0] != 'H':
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        "Not an 1H-1H dipolar coupling vector in the 'XDIPolar' statement; "\
+                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    return
 
-        elif atom_id_1 == atom_id_2:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                "Found zero 1H-1H dipolar coupling vector; "\
-                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-            return
+            for atom1, atom2 in itertools.product(self.atomSelectionSet[4],
+                                                  self.atomSelectionSet[5]):
+                if self.__debug:
+                    print(f"subtype={self.__cur_subtype} (XDIP) id={self.rdcRestraints} "
+                          f"atom1={atom1} atom2={atom2} {dstFunc}")
 
-        else:
-            if atom_id_1[0] != 'H' or atom_id_2[0] != 'H':
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    "Not an 1H-1H dipolar coupling vector in the 'XDIPolar' statement; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-                return
-
-        for atom1, atom2 in itertools.product(self.atomSelectionSet[4],
-                                              self.atomSelectionSet[5]):
-            if self.__debug:
-                print(f"subtype={self.__cur_subtype} (XDIP) id={self.rdcRestraints} "
-                      f"atom1={atom1} atom2={atom2} {dstFunc}")
+        finally:
+            self.numberSelection.clear()
 
     def validateRdcRange2(self, weight, misc_dict,
                           target_value_1, lower_limit_1, upper_limit_1,
@@ -1870,102 +1895,109 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#vean_assign.
     def exitVean_assign(self, ctx: XplorMRParser.Vean_assignContext):  # pylint: disable=unused-argument
-        center_1 = self.numberSelection[0]
-        range_1 = abs(self.numberSelection[1])
-        center_2 = self.numberSelection[2]
-        range_2 = abs(self.numberSelection[3])
 
-        self.numberSelection.clear()
+        try:
 
-        target_value_1 = center_1
-        target_value_2 = center_2
-        lower_limit_1 = center_1 - range_1
-        upper_limit_1 = center_1 + range_1
-        lower_limit_2 = center_2 - range_2
-        upper_limit_2 = center_2 + range_2
-
-        dstFunc = self.validateAngleRange2(1.0,
-                                           target_value_1, lower_limit_1, upper_limit_1,
-                                           target_value_2, lower_limit_2, upper_limit_2)
-
-        if dstFunc is None:
-            return
-
-        if not self.__hasPolySeq:
-            return
-
-        if not self.areUniqueCoordAtoms('an RDC (VEAN)'):
-            return
-
-        for i in range(0, 4, 2):
-            chain_id_1 = self.atomSelectionSet[i][0]['chain_id']
-            seq_id_1 = self.atomSelectionSet[i][0]['seq_id']
-            comp_id_1 = self.atomSelectionSet[i][0]['comp_id']
-            atom_id_1 = self.atomSelectionSet[i][0]['atom_id']
-
-            chain_id_2 = self.atomSelectionSet[i + 1][0]['chain_id']
-            seq_id_2 = self.atomSelectionSet[i + 1][0]['seq_id']
-            comp_id_2 = self.atomSelectionSet[i + 1][0]['comp_id']
-            atom_id_2 = self.atomSelectionSet[i + 1][0]['atom_id']
-
-            if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Non-magnetic susceptible spin appears in RDC vector; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                    f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+            if None in self.numberSelection:
                 return
 
-            if chain_id_1 != chain_id_2:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Found inter-chain RDC vector; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+            center_1 = self.numberSelection[0]
+            range_1 = abs(self.numberSelection[1])
+            center_2 = self.numberSelection[2]
+            range_2 = abs(self.numberSelection[3])
+
+            target_value_1 = center_1
+            target_value_2 = center_2
+            lower_limit_1 = center_1 - range_1
+            upper_limit_1 = center_1 + range_1
+            lower_limit_2 = center_2 - range_2
+            upper_limit_2 = center_2 + range_2
+
+            dstFunc = self.validateAngleRange2(1.0,
+                                               target_value_1, lower_limit_1, upper_limit_1,
+                                               target_value_2, lower_limit_2, upper_limit_2)
+
+            if dstFunc is None:
                 return
 
-            if abs(seq_id_1 - seq_id_2) > 1:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Found inter-residue RDC vector; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+            if not self.__hasPolySeq:
                 return
 
-            if abs(seq_id_1 - seq_id_2) == 1:
+            if not self.areUniqueCoordAtoms('an RDC (VEAN)'):
+                return
 
-                if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
-                   ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H')) or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H') and atom_id_2 == 'C')):
-                    pass
+            for i in range(0, 4, 2):
+                chain_id_1 = self.atomSelectionSet[i][0]['chain_id']
+                seq_id_1 = self.atomSelectionSet[i][0]['seq_id']
+                comp_id_1 = self.atomSelectionSet[i][0]['comp_id']
+                atom_id_1 = self.atomSelectionSet[i][0]['atom_id']
 
-                else:
+                chain_id_2 = self.atomSelectionSet[i + 1][0]['chain_id']
+                seq_id_2 = self.atomSelectionSet[i + 1][0]['seq_id']
+                comp_id_2 = self.atomSelectionSet[i + 1][0]['comp_id']
+                atom_id_2 = self.atomSelectionSet[i + 1][0]['atom_id']
+
+                if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        "Found inter-residue RDC vector; "\
+                        f"Non-magnetic susceptible spin appears in RDC vector; "\
+                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
+                        f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    return
+
+                if chain_id_1 != chain_id_2:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"Found inter-chain RDC vector; "\
                         f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
                     return
 
-            elif atom_id_1 == atom_id_2:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    "Found zero RDC vector; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-                return
+                if abs(seq_id_1 - seq_id_2) > 1:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"Found inter-residue RDC vector; "\
+                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    return
 
-            else:
+                if abs(seq_id_1 - seq_id_2) == 1:
 
-                if self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
+                    if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
+                       ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H')) or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H') and atom_id_2 == 'C')):
+                        pass
 
-                    if not any(b for b in self.__ccU.lastBonds
-                               if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
-                                   or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
+                    else:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            "Found inter-residue RDC vector; "\
+                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                        return
 
-                        if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                "Found an RDC vector over multiple covalent bonds in the 'VEANgle' statement; "\
-                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-                            return
+                elif atom_id_1 == atom_id_2:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        "Found zero RDC vector; "\
+                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    return
 
-        for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
-                                                            self.atomSelectionSet[1],
-                                                            self.atomSelectionSet[2],
-                                                            self.atomSelectionSet[3]):
-            if self.__debug:
-                print(f"subtype={self.__cur_subtype} (VEAN) id={self.rdcRestraints} "
-                      f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
+                else:
+
+                    if self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
+
+                        if not any(b for b in self.__ccU.lastBonds
+                                   if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
+                                       or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
+
+                            if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
+                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                    "Found an RDC vector over multiple covalent bonds in the 'VEANgle' statement; "\
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                                return
+
+            for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
+                                                                self.atomSelectionSet[1],
+                                                                self.atomSelectionSet[2],
+                                                                self.atomSelectionSet[3]):
+                if self.__debug:
+                    print(f"subtype={self.__cur_subtype} (VEAN) id={self.rdcRestraints} "
+                          f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
+
+        finally:
+            self.numberSelection.clear()
 
     def validateAngleRange2(self, weight,
                             target_value_1, lower_limit_1, upper_limit_1,
@@ -2119,173 +2151,44 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#tenso_assign.
     def exitTenso_assign(self, ctx: XplorMRParser.Tenso_assignContext):  # pylint: disable=unused-argument
-        target = self.numberSelection[0]
-        delta = abs(self.numberSelection[1])
 
-        self.numberSelection.clear()
+        try:
 
-        target_value = target
-        lower_limit = None
-        upper_limit = None
-
-        if self.potential == 'square':
-            lower_limit = target - delta
-            upper_limit = target + delta
-
-        dstFunc = self.validateRdcRange(1.0, {'potential': self.potential},
-                                        target_value, lower_limit, upper_limit)
-
-        if dstFunc is None:
-            return
-
-        if not self.__hasPolySeq:
-            return
-
-        if not self.areUniqueCoordAtoms('an RDC (TENSO)'):
-            return
-
-        chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
-        seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
-        comp_id_1 = self.atomSelectionSet[0][0]['comp_id']
-        atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
-
-        chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
-        seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
-        comp_id_2 = self.atomSelectionSet[1][0]['comp_id']
-        atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
-
-        if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                f"Non-magnetic susceptible spin appears in RDC vector; "\
-                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-            return
-
-        if chain_id_1 != chain_id_2:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                f"Found inter-chain RDC vector; "\
-                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-            return
-
-        if abs(seq_id_1 - seq_id_2) > 1:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                f"Found inter-residue RDC vector; "\
-                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-            return
-
-        if abs(seq_id_1 - seq_id_2) == 1:
-
-            if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
-               ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H')) or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H') and atom_id_2 == 'C')):
-                pass
-
-            else:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    "Found inter-residue RDC vector; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+            if None in self.numberSelection:
                 return
 
-        elif atom_id_1 == atom_id_2:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                "Found zero RDC vector; "\
-                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-            return
+            target = self.numberSelection[0]
+            delta = abs(self.numberSelection[1])
 
-        else:
+            target_value = target
+            lower_limit = None
+            upper_limit = None
 
-            if self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
+            if self.potential == 'square':
+                lower_limit = target - delta
+                upper_limit = target + delta
 
-                if not any(b for b in self.__ccU.lastBonds
-                           if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
-                               or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
+            dstFunc = self.validateRdcRange(1.0, {'potential': self.potential},
+                                            target_value, lower_limit, upper_limit)
 
-                    if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            "Found an RDC vector over multiple covalent bonds in the 'TENSOr' statement; "\
-                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-                        return
+            if dstFunc is None:
+                return
 
-        for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
-                                              self.atomSelectionSet[1]):
-            if self.__debug:
-                print(f"subtype={self.__cur_subtype} (TENSO) id={self.rdcRestraints} "
-                      f"atom1={atom1} atom2={atom2} {dstFunc}")
+            if not self.__hasPolySeq:
+                return
 
-    # Enter a parse tree produced by XplorMRParser#anis_statement.
-    def enterAnis_statement(self, ctx: XplorMRParser.Anis_statementContext):
-        if ctx.Potential_types():
-            code = str(ctx.Potential_types()).upper()
-            if code.startswith('SQUA'):
-                self.potential = 'square'
-            elif code.startswith('HARM'):
-                self.potential = 'harmonic'
-            else:
-                self.potential = 'square'
-                self.warningMessage += "[Enum mismatch ignorable] "\
-                    f"The potential type {str(ctx.Potential_types())!r} is unknown potential type for the 'ANISotropy' statements. "\
-                    f"Instead, set the default potential {self.potential!r}.\n"
+            if not self.areUniqueCoordAtoms('an RDC (TENSO)'):
+                return
 
-        elif ctx.Reset():
-            self.potential = 'square'
-            self.coefficients = None
+            chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
+            seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
+            comp_id_1 = self.atomSelectionSet[0][0]['comp_id']
+            atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
 
-        elif ctx.Classification():
-            self.classification = str(ctx.Simple_name())
-
-        elif ctx.Coefficients():
-            self.coefficients = {'a0': self.getNumber_s(ctx.number_s(0)),
-                                 'a1': self.getNumber_s(ctx.number_s(1)),
-                                 'a2': self.getNumber_s(ctx.number_s(2)),
-                                 'a3': self.getNumber_s(ctx.number_s(3))
-                                 }
-
-    # Exit a parse tree produced by XplorMRParser#anis_statement.
-    def exitAnis_statement(self, ctx: XplorMRParser.Anis_statementContext):  # pylint: disable=unused-argument
-        if self.__debug:
-            print(f"subtype={self.__cur_subtype} (ANIS) classification={self.classification} "
-                  f"coefficients={self.coefficients}")
-
-    # Enter a parse tree produced by XplorMRParser#anis_assign.
-    def enterAnis_assign(self, ctx: XplorMRParser.Anis_assignContext):  # pylint: disable=unused-argument
-        self.rdcRestraints += 1
-        self.__cur_subtype = 'rdc'
-
-        self.atomSelectionSet.clear()
-
-    # Exit a parse tree produced by XplorMRParser#anis_assign.
-    def exitAnis_assign(self, ctx: XplorMRParser.Anis_assignContext):  # pylint: disable=unused-argument
-        target = self.numberSelection[0]
-        delta = abs(self.numberSelection[1])
-
-        self.numberSelection.clear()
-
-        target_value = target
-        lower_limit = None
-        upper_limit = None
-
-        if self.potential == 'square':
-            lower_limit = target - delta
-            upper_limit = target + delta
-
-        dstFunc = self.validateRdcRange(1.0, {'potential': self.potential},
-                                        target_value, lower_limit, upper_limit)
-
-        if not self.__hasPolySeq:
-            return
-
-        if not self.areUniqueCoordAtoms('an RDC (ANIS)'):
-            return
-
-        for i in range(0, 4, 2):
-            chain_id_1 = self.atomSelectionSet[i][0]['chain_id']
-            seq_id_1 = self.atomSelectionSet[i][0]['seq_id']
-            comp_id_1 = self.atomSelectionSet[i][0]['comp_id']
-            atom_id_1 = self.atomSelectionSet[i][0]['atom_id']
-
-            chain_id_2 = self.atomSelectionSet[i + 1][0]['chain_id']
-            seq_id_2 = self.atomSelectionSet[i + 1][0]['seq_id']
-            comp_id_2 = self.atomSelectionSet[i + 1][0]['comp_id']
-            atom_id_2 = self.atomSelectionSet[i + 1][0]['atom_id']
+            chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
+            seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
+            comp_id_2 = self.atomSelectionSet[1][0]['comp_id']
+            atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
 
             if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
@@ -2334,17 +2237,160 @@ class XplorMRParserListener(ParseTreeListener):
 
                         if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
                             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                "Found an RDC vector over multiple covalent bonds in the 'ANISotropy' statement; "\
+                                "Found an RDC vector over multiple covalent bonds in the 'TENSOr' statement; "\
                                 f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
                             return
 
-        for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
-                                                            self.atomSelectionSet[1],
-                                                            self.atomSelectionSet[2],
-                                                            self.atomSelectionSet[3]):
-            if self.__debug:
-                print(f"subtype={self.__cur_subtype} (ANIS) id={self.rdcRestraints} "
-                      f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
+            for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
+                                                  self.atomSelectionSet[1]):
+                if self.__debug:
+                    print(f"subtype={self.__cur_subtype} (TENSO) id={self.rdcRestraints} "
+                          f"atom1={atom1} atom2={atom2} {dstFunc}")
+
+        finally:
+            self.numberSelection.clear()
+
+    # Enter a parse tree produced by XplorMRParser#anis_statement.
+    def enterAnis_statement(self, ctx: XplorMRParser.Anis_statementContext):
+        if ctx.Potential_types():
+            code = str(ctx.Potential_types()).upper()
+            if code.startswith('SQUA'):
+                self.potential = 'square'
+            elif code.startswith('HARM'):
+                self.potential = 'harmonic'
+            else:
+                self.potential = 'square'
+                self.warningMessage += "[Enum mismatch ignorable] "\
+                    f"The potential type {str(ctx.Potential_types())!r} is unknown potential type for the 'ANISotropy' statements. "\
+                    f"Instead, set the default potential {self.potential!r}.\n"
+
+        elif ctx.Reset():
+            self.potential = 'square'
+            self.coefficients = None
+
+        elif ctx.Classification():
+            self.classification = str(ctx.Simple_name())
+
+        elif ctx.Coefficients():
+            self.coefficients = {'a0': self.getNumber_s(ctx.number_s(0)),
+                                 'a1': self.getNumber_s(ctx.number_s(1)),
+                                 'a2': self.getNumber_s(ctx.number_s(2)),
+                                 'a3': self.getNumber_s(ctx.number_s(3))
+                                 }
+
+    # Exit a parse tree produced by XplorMRParser#anis_statement.
+    def exitAnis_statement(self, ctx: XplorMRParser.Anis_statementContext):  # pylint: disable=unused-argument
+        if self.__debug:
+            print(f"subtype={self.__cur_subtype} (ANIS) classification={self.classification} "
+                  f"coefficients={self.coefficients}")
+
+    # Enter a parse tree produced by XplorMRParser#anis_assign.
+    def enterAnis_assign(self, ctx: XplorMRParser.Anis_assignContext):  # pylint: disable=unused-argument
+        self.rdcRestraints += 1
+        self.__cur_subtype = 'rdc'
+
+        self.atomSelectionSet.clear()
+
+    # Exit a parse tree produced by XplorMRParser#anis_assign.
+    def exitAnis_assign(self, ctx: XplorMRParser.Anis_assignContext):  # pylint: disable=unused-argument
+
+        try:
+
+            if None in self.numberSelection:
+                return
+
+            target = self.numberSelection[0]
+            delta = abs(self.numberSelection[1])
+
+            target_value = target
+            lower_limit = None
+            upper_limit = None
+
+            if self.potential == 'square':
+                lower_limit = target - delta
+                upper_limit = target + delta
+
+            dstFunc = self.validateRdcRange(1.0, {'potential': self.potential},
+                                            target_value, lower_limit, upper_limit)
+
+            if not self.__hasPolySeq:
+                return
+
+            if not self.areUniqueCoordAtoms('an RDC (ANIS)'):
+                return
+
+            for i in range(0, 4, 2):
+                chain_id_1 = self.atomSelectionSet[i][0]['chain_id']
+                seq_id_1 = self.atomSelectionSet[i][0]['seq_id']
+                comp_id_1 = self.atomSelectionSet[i][0]['comp_id']
+                atom_id_1 = self.atomSelectionSet[i][0]['atom_id']
+
+                chain_id_2 = self.atomSelectionSet[i + 1][0]['chain_id']
+                seq_id_2 = self.atomSelectionSet[i + 1][0]['seq_id']
+                comp_id_2 = self.atomSelectionSet[i + 1][0]['comp_id']
+                atom_id_2 = self.atomSelectionSet[i + 1][0]['atom_id']
+
+                if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"Non-magnetic susceptible spin appears in RDC vector; "\
+                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
+                        f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    return
+
+                if chain_id_1 != chain_id_2:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"Found inter-chain RDC vector; "\
+                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    return
+
+                if abs(seq_id_1 - seq_id_2) > 1:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"Found inter-residue RDC vector; "\
+                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    return
+
+                if abs(seq_id_1 - seq_id_2) == 1:
+
+                    if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
+                       ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H')) or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H') and atom_id_2 == 'C')):
+                        pass
+
+                    else:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            "Found inter-residue RDC vector; "\
+                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                        return
+
+                elif atom_id_1 == atom_id_2:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        "Found zero RDC vector; "\
+                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    return
+
+                else:
+
+                    if self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
+
+                        if not any(b for b in self.__ccU.lastBonds
+                                   if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
+                                       or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
+
+                            if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
+                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                    "Found an RDC vector over multiple covalent bonds in the 'ANISotropy' statement; "\
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                                return
+
+            for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
+                                                                self.atomSelectionSet[1],
+                                                                self.atomSelectionSet[2],
+                                                                self.atomSelectionSet[3]):
+                if self.__debug:
+                    print(f"subtype={self.__cur_subtype} (ANIS) id={self.rdcRestraints} "
+                          f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
+
+        finally:
+            self.numberSelection.clear()
 
     # Enter a parse tree produced by XplorMRParser#planar_statement.
     def enterPlanar_statement(self, ctx: XplorMRParser.Planar_statementContext):  # pylint: disable=unused-argument
@@ -2437,17 +2483,24 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#harmonic_assign.
     def exitHarmonic_assign(self, ctx: XplorMRParser.Harmonic_assignContext):  # pylint: disable=unused-argument
-        self.vector3D = [self.numberSelection[0], self.numberSelection[1],self.numberSelection[2]]
 
-        self.numberSelection.clear()
+        try:
 
-        if not self.__hasPolySeq:
-            return
+            if None in self.numberSelection:
+                return
 
-        for atom1 in self.atomSelectionSet[0]:
-            if self.__debug:
-                print(f"subtype={self.__cur_subtype} (HARM) id={self.planeRestraints} "
-                      f"atom={atom1} normal_vector={self.vector3D}")
+            self.vector3D = [self.numberSelection[0], self.numberSelection[1], self.numberSelection[2]]
+
+            if not self.__hasPolySeq:
+                return
+
+            for atom1 in self.atomSelectionSet[0]:
+                if self.__debug:
+                    print(f"subtype={self.__cur_subtype} (HARM) id={self.planeRestraints} "
+                          f"atom={atom1} normal_vector={self.vector3D}")
+
+        finally:
+            self.numberSelection.clear()
 
     # Enter a parse tree produced by XplorMRParser#antidistance_statement.
     def enterAntidistance_statement(self, ctx: XplorMRParser.Antidistance_statementContext):
@@ -2538,14 +2591,18 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#coup_assign.
     def exitCoup_assign(self, ctx: XplorMRParser.Coup_assignContext):  # pylint: disable=unused-argument
-        target = self.numberSelection[0]
-        delta = abs(self.numberSelection[1])
-
-        target_value = target
-        lower_limit = None
-        upper_limit = None
 
         try:
+
+            if None in self.numberSelection:
+                return
+
+            target = self.numberSelection[0]
+            delta = abs(self.numberSelection[1])
+
+            target_value = target
+            lower_limit = None
+            upper_limit = None
 
             if self.potential != 'harmonic':
                 lower_limit = target - delta
@@ -2577,114 +2634,114 @@ class XplorMRParserListener(ParseTreeListener):
                 if dstFunc2 is None:
                     return
 
-        finally:
-            self.numberSelection.clear()
-
-        if not self.__hasPolySeq:
-            return
-
-        if not self.areUniqueCoordAtoms('a J-coupling (COUP)'):
-            return
-
-        for i in range(0, len(self.atomSelectionSet), 2):
-            chain_id_1 = self.atomSelectionSet[i][0]['chain_id']
-            seq_id_1 = self.atomSelectionSet[i][0]['seq_id']
-            comp_id_1 = self.atomSelectionSet[i][0]['comp_id']
-            atom_id_1 = self.atomSelectionSet[i][0]['atom_id']
-
-            chain_id_2 = self.atomSelectionSet[i + 1][0]['chain_id']
-            seq_id_2 = self.atomSelectionSet[i + 1][0]['seq_id']
-            comp_id_2 = self.atomSelectionSet[i + 1][0]['comp_id']
-            atom_id_2 = self.atomSelectionSet[i + 1][0]['atom_id']
-
-            if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Non-magnetic susceptible spin appears in J-coupling vector; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                    f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+            if not self.__hasPolySeq:
                 return
 
-            if chain_id_1 != chain_id_2:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Found inter-chain J-coupling vector; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+            if not self.areUniqueCoordAtoms('a J-coupling (COUP)'):
                 return
 
-            if abs(seq_id_1 - seq_id_2) > 1:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Found inter-residue J-coupling vector; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-                return
+            for i in range(0, len(self.atomSelectionSet), 2):
+                chain_id_1 = self.atomSelectionSet[i][0]['chain_id']
+                seq_id_1 = self.atomSelectionSet[i][0]['seq_id']
+                comp_id_1 = self.atomSelectionSet[i][0]['comp_id']
+                atom_id_1 = self.atomSelectionSet[i][0]['atom_id']
 
-            if abs(seq_id_1 - seq_id_2) == 1:
+                chain_id_2 = self.atomSelectionSet[i + 1][0]['chain_id']
+                seq_id_2 = self.atomSelectionSet[i + 1][0]['seq_id']
+                comp_id_2 = self.atomSelectionSet[i + 1][0]['comp_id']
+                atom_id_2 = self.atomSelectionSet[i + 1][0]['atom_id']
 
-                if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
-                   ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H')) or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H') and atom_id_2 == 'C')):
-                    pass
-
-                else:
+                if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        "Found inter-residue J-coupling vector; "\
+                        f"Non-magnetic susceptible spin appears in J-coupling vector; "\
+                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
+                        f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    return
+
+                if chain_id_1 != chain_id_2:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"Found inter-chain J-coupling vector; "\
                         f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
                     return
 
-            elif atom_id_1 == atom_id_2:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    "Found zero J-coupling vector; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-                return
+                if abs(seq_id_1 - seq_id_2) > 1:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"Found inter-residue J-coupling vector; "\
+                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    return
+
+                if abs(seq_id_1 - seq_id_2) == 1:
+
+                    if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
+                       ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H')) or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H') and atom_id_2 == 'C')):
+                        pass
+
+                    else:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            "Found inter-residue J-coupling vector; "\
+                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                        return
+
+                elif atom_id_1 == atom_id_2:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        "Found zero J-coupling vector; "\
+                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    return
+
+                else:
+
+                    if self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
+
+                        if not any(b for b in self.__ccU.lastBonds
+                                   if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
+                                       or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
+
+                            if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
+                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                    "Found an J-coupling vector over multiple covalent bonds in the 'COUPling' statement; "\
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                                return
+
+            if len(self.atomSelectionSet) == 4:
+                for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
+                                                                    self.atomSelectionSet[1],
+                                                                    self.atomSelectionSet[2],
+                                                                    self.atomSelectionSet[3]):
+                    if self.__debug:
+                        if dstFunc2 is None:
+                            print(f"subtype={self.__cur_subtype} (COUP) id={self.jcoupRestraints} "
+                                  f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
+                        else:
+                            print(f"subtype={self.__cur_subtype} (COUP) id={self.jcoupRestraints} "
+                                  f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc} {dstFunc2}")
 
             else:
+                for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
+                                                                    self.atomSelectionSet[1],
+                                                                    self.atomSelectionSet[2],
+                                                                    self.atomSelectionSet[3]):
+                    if self.__debug:
+                        if dstFunc2 is None:
+                            print(f"subtype={self.__cur_subtype} (COUP) id={self.jcoupRestraints} "
+                                  f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
+                        else:
+                            print(f"subtype={self.__cur_subtype} (COUP) id={self.jcoupRestraints} "
+                                  f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc} {dstFunc2}")
 
-                if self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
+                for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[4],
+                                                                    self.atomSelectionSet[5],
+                                                                    self.atomSelectionSet[6],
+                                                                    self.atomSelectionSet[7]):
+                    if self.__debug:
+                        if dstFunc2 is None:
+                            print(f"subtype={self.__cur_subtype} (COUP) id={self.jcoupRestraints} "
+                                  f"atom4={atom1} atom5={atom2} atom6={atom3} atom7={atom4} {dstFunc}")
+                        else:
+                            print(f"subtype={self.__cur_subtype} (COUP) id={self.jcoupRestraints} "
+                                  f"atom4={atom1} atom5={atom2} atom6={atom3} atom7={atom4} {dstFunc} {dstFunc2}")
 
-                    if not any(b for b in self.__ccU.lastBonds
-                               if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
-                                   or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
-
-                        if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                "Found an J-coupling vector over multiple covalent bonds in the 'COUPling' statement; "\
-                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-                            return
-
-        if len(self.atomSelectionSet) == 4:
-            for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
-                                                                self.atomSelectionSet[1],
-                                                                self.atomSelectionSet[2],
-                                                                self.atomSelectionSet[3]):
-                if self.__debug:
-                    if dstFunc2 is None:
-                        print(f"subtype={self.__cur_subtype} (COUP) id={self.jcoupRestraints} "
-                              f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
-                    else:
-                        print(f"subtype={self.__cur_subtype} (COUP) id={self.jcoupRestraints} "
-                              f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc} {dstFunc2}")
-
-        else:
-            for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
-                                                                self.atomSelectionSet[1],
-                                                                self.atomSelectionSet[2],
-                                                                self.atomSelectionSet[3]):
-                if self.__debug:
-                    if dstFunc2 is None:
-                        print(f"subtype={self.__cur_subtype} (COUP) id={self.jcoupRestraints} "
-                              f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
-                    else:
-                        print(f"subtype={self.__cur_subtype} (COUP) id={self.jcoupRestraints} "
-                              f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc} {dstFunc2}")
-
-            for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[4],
-                                                                self.atomSelectionSet[5],
-                                                                self.atomSelectionSet[6],
-                                                                self.atomSelectionSet[7]):
-                if self.__debug:
-                    if dstFunc2 is None:
-                        print(f"subtype={self.__cur_subtype} (COUP) id={self.jcoupRestraints} "
-                              f"atom4={atom1} atom5={atom2} atom6={atom3} atom7={atom4} {dstFunc}")
-                    else:
-                        print(f"subtype={self.__cur_subtype} (COUP) id={self.jcoupRestraints} "
-                              f"atom4={atom1} atom5={atom2} atom6={atom3} atom7={atom4} {dstFunc} {dstFunc2}")
+        finally:
+            self.numberSelection.clear()
 
     # Enter a parse tree produced by XplorMRParser#carbon_shift_statement.
     def enterCarbon_shift_statement(self, ctx: XplorMRParser.Carbon_shift_statementContext):
@@ -2730,71 +2787,78 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#carbon_shift_assign.
     def exitCarbon_shift_assign(self, ctx: XplorMRParser.Carbon_shift_assignContext):  # pylint: disable=unused-argument
-        ca_shift = self.numberSelection[0]
-        cb_shift = self.numberSelection[1]
 
-        self.numberSelection.clear()
+        try:
 
-        if CS_ERROR_MIN < ca_shift < CS_ERROR_MAX:
-            pass
-        else:
-            self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                f"CA chemical shift value '{ca_shift}' must be within range {CS_RESTRAINT_ERROR}.\n"
-            return
+            if None in self.numberSelection:
+                return
 
-        if CS_ERROR_MIN < cb_shift < CS_ERROR_MAX:
-            pass
-        else:
-            self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                f"CB chemical shift value '{ca_shift}' must be within range {CS_RESTRAINT_ERROR}.\n"
-            return
+            ca_shift = self.numberSelection[0]
+            cb_shift = self.numberSelection[1]
 
-        if not self.__hasPolySeq:
-            return
+            if CS_ERROR_MIN < ca_shift < CS_ERROR_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"CA chemical shift value '{ca_shift}' must be within range {CS_RESTRAINT_ERROR}.\n"
+                return
 
-        if not self.areUniqueCoordAtoms('a carbon chemical shift (CARB)'):
-            return
+            if CS_ERROR_MIN < cb_shift < CS_ERROR_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"CB chemical shift value '{ca_shift}' must be within range {CS_RESTRAINT_ERROR}.\n"
+                return
 
-        dstFunc = {'ca_shift': ca_shift, 'cb_shift': cb_shift, 'weight': 1.0, 'potential': self.potential}
+            if not self.__hasPolySeq:
+                return
 
-        chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
-        seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
-        atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
+            if not self.areUniqueCoordAtoms('a carbon chemical shift (CARB)'):
+                return
 
-        chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
-        seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
-        atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+            dstFunc = {'ca_shift': ca_shift, 'cb_shift': cb_shift, 'weight': 1.0, 'potential': self.potential}
 
-        chain_id_3 = self.atomSelectionSet[2][0]['chain_id']
-        seq_id_3 = self.atomSelectionSet[2][0]['seq_id']
-        atom_id_3 = self.atomSelectionSet[2][0]['atom_id']
+            chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
+            seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
+            atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
 
-        chain_id_4 = self.atomSelectionSet[3][0]['chain_id']
-        seq_id_4 = self.atomSelectionSet[3][0]['seq_id']
-        atom_id_4 = self.atomSelectionSet[3][0]['atom_id']
+            chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
+            seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
+            atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
 
-        chain_id_5 = self.atomSelectionSet[4][0]['chain_id']
-        seq_id_5 = self.atomSelectionSet[4][0]['seq_id']
-        atom_id_5 = self.atomSelectionSet[4][0]['atom_id']
+            chain_id_3 = self.atomSelectionSet[2][0]['chain_id']
+            seq_id_3 = self.atomSelectionSet[2][0]['seq_id']
+            atom_id_3 = self.atomSelectionSet[2][0]['atom_id']
 
-        chain_ids = [chain_id_1, chain_id_2, chain_id_3, chain_id_4, chain_id_5]
-        seq_ids = [seq_id_1, seq_id_2, seq_id_3, seq_id_4, seq_id_5]
-        offsets = [seq_id - seq_id_3 for seq_id in seq_ids]
-        atom_ids = [atom_id_1, atom_id_2, atom_id_3, atom_id_4, atom_id_5]
+            chain_id_4 = self.atomSelectionSet[3][0]['chain_id']
+            seq_id_4 = self.atomSelectionSet[3][0]['seq_id']
+            atom_id_4 = self.atomSelectionSet[3][0]['atom_id']
 
-        if chain_ids != [chain_id_1] * 5 or offsets != [-1, 0, 0, 0, 1] or atom_ids != ['C', 'N', 'CA', 'C', 'N']:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                "The atom selection order must be [C(i-1), N(i), CA(i), C(i), N(i+1)].\n"
-            return
+            chain_id_5 = self.atomSelectionSet[4][0]['chain_id']
+            seq_id_5 = self.atomSelectionSet[4][0]['seq_id']
+            atom_id_5 = self.atomSelectionSet[4][0]['atom_id']
 
-        for atom1, atom2, atom3, atom4, atom5 in itertools.product(self.atomSelectionSet[0],
-                                                                   self.atomSelectionSet[1],
-                                                                   self.atomSelectionSet[2],
-                                                                   self.atomSelectionSet[3],
-                                                                   self.atomSelectionSet[4]):
-            if self.__debug:
-                print(f"subtype={self.__cur_subtype} (CARB) id={self.hvycsRestraints} "
-                      f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} atom5={atom5} {dstFunc}")
+            chain_ids = [chain_id_1, chain_id_2, chain_id_3, chain_id_4, chain_id_5]
+            seq_ids = [seq_id_1, seq_id_2, seq_id_3, seq_id_4, seq_id_5]
+            offsets = [seq_id - seq_id_3 for seq_id in seq_ids]
+            atom_ids = [atom_id_1, atom_id_2, atom_id_3, atom_id_4, atom_id_5]
+
+            if chain_ids != [chain_id_1] * 5 or offsets != [-1, 0, 0, 0, 1] or atom_ids != ['C', 'N', 'CA', 'C', 'N']:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    "The atom selection order must be [C(i-1), N(i), CA(i), C(i), N(i+1)].\n"
+                return
+
+            for atom1, atom2, atom3, atom4, atom5 in itertools.product(self.atomSelectionSet[0],
+                                                                       self.atomSelectionSet[1],
+                                                                       self.atomSelectionSet[2],
+                                                                       self.atomSelectionSet[3],
+                                                                       self.atomSelectionSet[4]):
+                if self.__debug:
+                    print(f"subtype={self.__cur_subtype} (CARB) id={self.hvycsRestraints} "
+                          f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} atom5={atom5} {dstFunc}")
+
+        finally:
+            self.numberSelection.clear()
 
     # Enter a parse tree produced by XplorMRParser#carbon_shift_rcoil.
     def enterCarbon_shift_rcoil(self, ctx: XplorMRParser.Carbon_shift_rcoilContext):  # pylint: disable=unused-argument
@@ -3249,32 +3313,39 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#coll_assign.
     def exitColl_assign(self, ctx: XplorMRParser.Coll_assignContext):  # pylint: disable=unused-argument
-        forceConst = self.numberSelection[0]
-        targetRgyr = self.numberSelection[1]
 
-        self.numberSelection.clear()
+        try:
 
-        if forceConst <= 0.0:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                f"The force constant value {forceConst} must be a positive value.\n"
-            return
+            if None in self.numberSelection:
+                return
 
-        if DIST_ERROR_MIN < targetRgyr < DIST_ERROR_MAX:
-            pass
-        else:
-            self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                f"The target Rgyr value {targetRgyr} must be within range {DIST_RESTRAINT_ERROR}.\n"
-            return
+            forceConst = self.numberSelection[0]
+            targetRgyr = self.numberSelection[1]
 
-        dstFunc = {'weight': self.scale, 'target_Rgyr': targetRgyr, 'force_const': forceConst}
+            if forceConst <= 0.0:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"The force constant value {forceConst} must be a positive value.\n"
+                return
 
-        if not self.__hasPolySeq:
-            return
+            if DIST_ERROR_MIN < targetRgyr < DIST_ERROR_MAX:
+                pass
+            else:
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"The target Rgyr value {targetRgyr} must be within range {DIST_RESTRAINT_ERROR}.\n"
+                return
 
-        for atom1 in self.atomSelectionSet[0]:
-            if self.__debug:
-                print(f"subtype={self.__cur_subtype} (COLL) id={self.radiRestraints} "
-                      f"atom={atom1} {dstFunc}")
+            dstFunc = {'weight': self.scale, 'target_Rgyr': targetRgyr, 'force_const': forceConst}
+
+            if not self.__hasPolySeq:
+                return
+
+            for atom1 in self.atomSelectionSet[0]:
+                if self.__debug:
+                    print(f"subtype={self.__cur_subtype} (COLL) id={self.radiRestraints} "
+                          f"atom={atom1} {dstFunc}")
+
+        finally:
+            self.numberSelection.clear()
 
     # Enter a parse tree produced by XplorMRParser#diffusion_statement.
     def enterDiffusion_statement(self, ctx: XplorMRParser.Diffusion_statementContext):
@@ -3320,97 +3391,104 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#dani_assign.
     def exitDani_assign(self, ctx: XplorMRParser.Dani_assignContext):  # pylint: disable=unused-argument
-        target = self.numberSelection[0]
-        delta = abs(self.numberSelection[1])
 
-        self.numberSelection.clear()
+        try:
 
-        target_value = target
-        lower_limit = None
-        upper_limit = None
+            if None in self.numberSelection:
+                return
 
-        if self.potential == 'square':
-            lower_limit = target - delta
-            upper_limit = target + delta
+            target = self.numberSelection[0]
+            delta = abs(self.numberSelection[1])
 
-        dstFunc = self.validateT1T2Range(1.0,
-                                         target_value, lower_limit, upper_limit)
+            target_value = target
+            lower_limit = None
+            upper_limit = None
 
-        if dstFunc is None:
-            return
+            if self.potential == 'square':
+                lower_limit = target - delta
+                upper_limit = target + delta
 
-        if not self.__hasPolySeq:
-            return
+            dstFunc = self.validateT1T2Range(1.0,
+                                             target_value, lower_limit, upper_limit)
 
-        if not self.areUniqueCoordAtoms('a diffusion anisotropy (DANI)', XPLOR_ORIGIN_AXIS_COLS):
-            return
+            if dstFunc is None:
+                return
 
-        chain_id_1 = self.atomSelectionSet[4][0]['chain_id']
-        seq_id_1 = self.atomSelectionSet[4][0]['seq_id']
-        comp_id_1 = self.atomSelectionSet[4][0]['comp_id']
-        atom_id_1 = self.atomSelectionSet[4][0]['atom_id']
+            if not self.__hasPolySeq:
+                return
 
-        chain_id_2 = self.atomSelectionSet[5][0]['chain_id']
-        seq_id_2 = self.atomSelectionSet[5][0]['seq_id']
-        comp_id_2 = self.atomSelectionSet[5][0]['comp_id']
-        atom_id_2 = self.atomSelectionSet[5][0]['atom_id']
+            if not self.areUniqueCoordAtoms('a diffusion anisotropy (DANI)', XPLOR_ORIGIN_AXIS_COLS):
+                return
 
-        if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                f"Non-magnetic susceptible spin appears in diffusion anisotropy vector; "\
-                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-            return
+            chain_id_1 = self.atomSelectionSet[4][0]['chain_id']
+            seq_id_1 = self.atomSelectionSet[4][0]['seq_id']
+            comp_id_1 = self.atomSelectionSet[4][0]['comp_id']
+            atom_id_1 = self.atomSelectionSet[4][0]['atom_id']
 
-        if chain_id_1 != chain_id_2:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                f"Found inter-chain diffusion anisotropy vector; "\
-                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-            return
+            chain_id_2 = self.atomSelectionSet[5][0]['chain_id']
+            seq_id_2 = self.atomSelectionSet[5][0]['seq_id']
+            comp_id_2 = self.atomSelectionSet[5][0]['comp_id']
+            atom_id_2 = self.atomSelectionSet[5][0]['atom_id']
 
-        if abs(seq_id_1 - seq_id_2) > 1:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                f"Found inter-residue diffusion anisotropy vector; "\
-                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-            return
-
-        if abs(seq_id_1 - seq_id_2) == 1:
-
-            if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
-               ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H')) or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H') and atom_id_2 == 'C')):
-                pass
-
-            else:
+            if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    "Found inter-residue diffusion anisotropy vector; "\
+                    f"Non-magnetic susceptible spin appears in diffusion anisotropy vector; "\
+                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
+                    f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                return
+
+            if chain_id_1 != chain_id_2:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"Found inter-chain diffusion anisotropy vector; "\
                     f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
                 return
 
-        elif atom_id_1 == atom_id_2:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                "Found zero diffusion anisotropy vector; "\
-                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-            return
+            if abs(seq_id_1 - seq_id_2) > 1:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"Found inter-residue diffusion anisotropy vector; "\
+                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                return
 
-        else:
+            if abs(seq_id_1 - seq_id_2) == 1:
 
-            if self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
+                if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
+                   ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H')) or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H') and atom_id_2 == 'C')):
+                    pass
 
-                if not any(b for b in self.__ccU.lastBonds
-                           if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
-                               or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
+                else:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        "Found inter-residue diffusion anisotropy vector; "\
+                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    return
 
-                    if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            "Found a diffusion anisotropy vector over multiple covalent bonds in the 'DANIsotropy' statement; "\
-                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-                        return
+            elif atom_id_1 == atom_id_2:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    "Found zero diffusion anisotropy vector; "\
+                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                return
 
-        for atom1, atom2 in itertools.product(self.atomSelectionSet[4],
-                                              self.atomSelectionSet[5]):
-            if self.__debug:
-                print(f"subtype={self.__cur_subtype} (DANI) id={self.diffRestraints} "
-                      f"atom1={atom1} atom2={atom2} {dstFunc}")
+            else:
+
+                if self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
+
+                    if not any(b for b in self.__ccU.lastBonds
+                               if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
+                                   or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
+
+                        if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
+                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                "Found a diffusion anisotropy vector over multiple covalent bonds in the 'DANIsotropy' statement; "\
+                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                            return
+
+            for atom1, atom2 in itertools.product(self.atomSelectionSet[4],
+                                                  self.atomSelectionSet[5]):
+                if self.__debug:
+                    print(f"subtype={self.__cur_subtype} (DANI) id={self.diffRestraints} "
+                          f"atom1={atom1} atom2={atom2} {dstFunc}")
+
+        finally:
+            self.numberSelection.clear()
 
     def validateT1T2Range(self, weight,
                           target_value, lower_limit, upper_limit,
@@ -3732,166 +3810,173 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#csa_assign.
     def exitCsa_assign(self, ctx: XplorMRParser.Csa_assignContext):  # pylint: disable=unused-argument
-        target = self.numberSelection[0]
-        cminus = self.numberSelection[1]
-        cplus = self.numberSelection[2]
 
-        self.numberSelection.clear()
+        try:
 
-        target_value = target
-        lower_limit = None
-        upper_limit = None
+            if None in self.numberSelection:
+                return
 
-        if self.potential == 'square':
-            lower_limit = target - cminus
-            upper_limit = target + cplus
+            target = self.numberSelection[0]
+            cminus = self.numberSelection[1]
+            cplus = self.numberSelection[2]
 
-        dstFunc = self.validateCsaRange(1.0,
-                                        target_value, lower_limit, upper_limit)
+            target_value = target
+            lower_limit = None
+            upper_limit = None
 
-        if dstFunc is None:
-            return
+            if self.potential == 'square':
+                lower_limit = target - cminus
+                upper_limit = target + cplus
 
-        if not self.__hasPolySeq:
-            return
+            dstFunc = self.validateCsaRange(1.0,
+                                            target_value, lower_limit, upper_limit)
 
-        if not self.areUniqueCoordAtoms('a CSA (DCSA)', XPLOR_ORIGIN_AXIS_COLS):
-            return
+            if dstFunc is None:
+                return
 
-        chain_id_1 = self.atomSelectionSet[4][0]['chain_id']
-        seq_id_1 = self.atomSelectionSet[4][0]['seq_id']
-        comp_id_1 = self.atomSelectionSet[4][0]['comp_id']
-        atom_id_1 = self.atomSelectionSet[4][0]['atom_id']
+            if not self.__hasPolySeq:
+                return
 
-        chain_id_2 = self.atomSelectionSet[5][0]['chain_id']
-        seq_id_2 = self.atomSelectionSet[5][0]['seq_id']
-        comp_id_2 = self.atomSelectionSet[5][0]['comp_id']
-        atom_id_2 = self.atomSelectionSet[5][0]['atom_id']
+            if not self.areUniqueCoordAtoms('a CSA (DCSA)', XPLOR_ORIGIN_AXIS_COLS):
+                return
 
-        chain_id_3 = self.atomSelectionSet[6][0]['chain_id']
-        seq_id_3 = self.atomSelectionSet[6][0]['seq_id']
-        comp_id_3 = self.atomSelectionSet[6][0]['comp_id']
-        atom_id_3 = self.atomSelectionSet[6][0]['atom_id']
+            chain_id_1 = self.atomSelectionSet[4][0]['chain_id']
+            seq_id_1 = self.atomSelectionSet[4][0]['seq_id']
+            comp_id_1 = self.atomSelectionSet[4][0]['comp_id']
+            atom_id_1 = self.atomSelectionSet[4][0]['atom_id']
 
-        if self.csaType is not None and atom_id_1[0] != self.csaType[0].upper():
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                f"Central atom {atom_id_1!r} and 'type={self.csaType}' are not consistent; "\
-                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
-                f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
-            return
+            chain_id_2 = self.atomSelectionSet[5][0]['chain_id']
+            seq_id_2 = self.atomSelectionSet[5][0]['seq_id']
+            comp_id_2 = self.atomSelectionSet[5][0]['comp_id']
+            atom_id_2 = self.atomSelectionSet[5][0]['atom_id']
 
-        if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS)\
-           or (atom_id_3[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                f"Non-magnetic susceptible spin appears in CSA vector; "\
-                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
-                f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
-            return
+            chain_id_3 = self.atomSelectionSet[6][0]['chain_id']
+            seq_id_3 = self.atomSelectionSet[6][0]['seq_id']
+            comp_id_3 = self.atomSelectionSet[6][0]['comp_id']
+            atom_id_3 = self.atomSelectionSet[6][0]['atom_id']
 
-        if chain_id_1 != chain_id_2 or chain_id_2 != chain_id_3:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                f"Found inter-chain CSA vector; "\
-                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
-                f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
-            return
-
-        if abs(seq_id_1 - seq_id_2) > 1 or abs(seq_id_2 - seq_id_3) > 1 or abs(seq_id_3 - seq_id_1) > 1:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                f"Found inter-residue CSA vector; "\
-                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
-                f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
-            return
-
-        if abs(seq_id_1 - seq_id_2) == 1:
-
-            if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
-               ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H')) or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H') and atom_id_2 == 'C')):
-                pass
-
-            else:
+            if self.csaType is not None and atom_id_1[0] != self.csaType[0].upper():
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    "Found inter-residue CSA vector; "\
+                    f"Central atom {atom_id_1!r} and 'type={self.csaType}' are not consistent; "\
                     f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
                     f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
                     f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
                 return
 
-        elif abs(seq_id_2 - seq_id_3) == 1:
-
-            if self.__csStat.peptideLike(comp_id_2) and self.__csStat.peptideLike(comp_id_3) and\
-               ((seq_id_2 < seq_id_3 and atom_id_2 == 'C' and atom_id_3 in ('N', 'H')) or (seq_id_2 > seq_id_3 and atom_id_2 in ('N', 'H') and atom_id_3 == 'C')):
-                pass
-
-            else:
+            if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS)\
+               or (atom_id_3[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    "Found inter-residue CSA vector; "\
+                    f"Non-magnetic susceptible spin appears in CSA vector; "\
                     f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
                     f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
                     f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
                 return
 
-        elif abs(seq_id_3 - seq_id_1) == 1:
-
-            if self.__csStat.peptideLike(comp_id_3) and self.__csStat.peptideLike(comp_id_1) and\
-               ((seq_id_3 < seq_id_1 and atom_id_3 == 'C' and atom_id_1 in ('N', 'H')) or (seq_id_3 > seq_id_1 and atom_id_3 in ('N', 'H') and atom_id_1 == 'C')):
-                pass
-
-            else:
+            if chain_id_1 != chain_id_2 or chain_id_2 != chain_id_3:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    "Found inter-residue CSA vector; "\
+                    f"Found inter-chain CSA vector; "\
                     f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
                     f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
                     f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
                 return
 
-        elif atom_id_1 == atom_id_2 or atom_id_2 == atom_id_3 or atom_id_3 == atom_id_1:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                "Found zero CSA vector; "\
-                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
-                f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
-            return
+            if abs(seq_id_1 - seq_id_2) > 1 or abs(seq_id_2 - seq_id_3) > 1 or abs(seq_id_3 - seq_id_1) > 1:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"Found inter-residue CSA vector; "\
+                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
+                    f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
+                    f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
+                return
 
-        else:
+            if abs(seq_id_1 - seq_id_2) == 1:
 
-            if self.__ccU.updateChemCompDict(comp_id_1) and seq_id_1 == seq_id_2:  # matches with comp_id in CCD
+                if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
+                   ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H')) or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H') and atom_id_2 == 'C')):
+                    pass
 
-                if not any(b for b in self.__ccU.lastBonds
-                           if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
-                               or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
+                else:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        "Found inter-residue CSA vector; "\
+                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
+                        f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
+                        f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
+                    return
 
-                    if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            "Found an CSA vector over multiple covalent bonds; "\
-                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                            f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
-                            f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
-                        return
+            elif abs(seq_id_2 - seq_id_3) == 1:
 
-            if self.__ccU.updateChemCompDict(comp_id_1) and seq_id_1 == seq_id_3:  # matches with comp_id in CCD
+                if self.__csStat.peptideLike(comp_id_2) and self.__csStat.peptideLike(comp_id_3) and\
+                   ((seq_id_2 < seq_id_3 and atom_id_2 == 'C' and atom_id_3 in ('N', 'H')) or (seq_id_2 > seq_id_3 and atom_id_2 in ('N', 'H') and atom_id_3 == 'C')):
+                    pass
 
-                if not any(b for b in self.__ccU.lastBonds
-                           if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_3)
-                               or (b[self.__ccU.ccbAtomId1] == atom_id_3 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
+                else:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        "Found inter-residue CSA vector; "\
+                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
+                        f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
+                        f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
+                    return
 
-                    if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_3, atom_id_3):
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            "Found an CSA vector over multiple covalent bonds; "\
-                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                            f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
-                            f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
-                        return
+            elif abs(seq_id_3 - seq_id_1) == 1:
 
-        for atom1, atom2, atom3 in itertools.product(self.atomSelectionSet[4],
-                                                     self.atomSelectionSet[5],
-                                                     self.atomSelectionSet[6]):
-            if self.__debug:
-                print(f"subtype={self.__cur_subtype} id={self.csaRestraints} "
-                      f"atom1(CSA central)={atom1} atom2={atom2} atom3={atom3} {dstFunc}")
+                if self.__csStat.peptideLike(comp_id_3) and self.__csStat.peptideLike(comp_id_1) and\
+                   ((seq_id_3 < seq_id_1 and atom_id_3 == 'C' and atom_id_1 in ('N', 'H')) or (seq_id_3 > seq_id_1 and atom_id_3 in ('N', 'H') and atom_id_1 == 'C')):
+                    pass
+
+                else:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        "Found inter-residue CSA vector; "\
+                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
+                        f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
+                        f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
+                    return
+
+            elif atom_id_1 == atom_id_2 or atom_id_2 == atom_id_3 or atom_id_3 == atom_id_1:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    "Found zero CSA vector; "\
+                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
+                    f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
+                    f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
+                return
+
+            else:
+
+                if self.__ccU.updateChemCompDict(comp_id_1) and seq_id_1 == seq_id_2:  # matches with comp_id in CCD
+
+                    if not any(b for b in self.__ccU.lastBonds
+                               if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
+                                   or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
+
+                        if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
+                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                "Found an CSA vector over multiple covalent bonds; "\
+                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
+                                f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
+                                f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
+                            return
+
+                if self.__ccU.updateChemCompDict(comp_id_1) and seq_id_1 == seq_id_3:  # matches with comp_id in CCD
+
+                    if not any(b for b in self.__ccU.lastBonds
+                               if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_3)
+                                   or (b[self.__ccU.ccbAtomId1] == atom_id_3 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
+
+                        if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_3, atom_id_3):
+                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                "Found an CSA vector over multiple covalent bonds; "\
+                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
+                                f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
+                                f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
+                            return
+
+            for atom1, atom2, atom3 in itertools.product(self.atomSelectionSet[4],
+                                                         self.atomSelectionSet[5],
+                                                         self.atomSelectionSet[6]):
+                if self.__debug:
+                    print(f"subtype={self.__cur_subtype} id={self.csaRestraints} "
+                          f"atom1(CSA central)={atom1} atom2={atom2} atom3={atom3} {dstFunc}")
+
+        finally:
+            self.numberSelection.clear()
 
     def validateCsaRange(self, weight,
                          target_value, lower_limit, upper_limit,
@@ -4195,44 +4280,51 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#pre_assign.
     def exitPre_assign(self, ctx: XplorMRParser.Pre_assignContext):  # pylint: disable=unused-argument
-        target = self.numberSelection[0]
-        delta = abs(self.numberSelection[1])
 
-        self.numberSelection.clear()
+        try:
 
-        target_value = target
-        lower_limit = None
-        upper_limit = None
+            if None in self.numberSelection:
+                return
 
-        if self.potential == 'square':
-            lower_limit = target - delta
-            upper_limit = target + delta
+            target = self.numberSelection[0]
+            delta = abs(self.numberSelection[1])
 
-        dstFunc = self.validatePreRange(1.0,
-                                        target_value, lower_limit, upper_limit)
+            target_value = target
+            lower_limit = None
+            upper_limit = None
 
-        if dstFunc is None:
-            return
+            if self.potential == 'square':
+                lower_limit = target - delta
+                upper_limit = target + delta
 
-        if not self.__hasPolySeq:
-            return
+            dstFunc = self.validatePreRange(1.0,
+                                            target_value, lower_limit, upper_limit)
 
-        atom_id_0 = self.atomSelectionSet[0][0]['atom_id'] if len(self.atomSelectionSet[0]) > 0 and 'atom_id' in self.atomSelectionSet[0][0] else 'paramagnetic center'
+            if dstFunc is None:
+                return
 
-        chain_id = self.atomSelectionSet[1][0]['chain_id']
-        seq_id = self.atomSelectionSet[1][0]['seq_id']
-        comp_id = self.atomSelectionSet[1][0]['comp_id']
-        atom_id = self.atomSelectionSet[1][0]['atom_id']
+            if not self.__hasPolySeq:
+                return
 
-        if atom_id[0] != 'H':
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                f"Not a proton;  {chain_id}:{seq_id}:{comp_id}:{atom_id}.\n"
-            return
+            atom_id_0 = self.atomSelectionSet[0][0]['atom_id'] if len(self.atomSelectionSet[0]) > 0 and 'atom_id' in self.atomSelectionSet[0][0] else 'paramagnetic center'
 
-        for atom1 in self.atomSelectionSet[1]:
-            if self.__debug:
-                print(f"subtype={self.__cur_subtype} id={self.preRestraints} "
-                      f"paramag={atom_id_0} atom={atom1} {dstFunc}")
+            chain_id = self.atomSelectionSet[1][0]['chain_id']
+            seq_id = self.atomSelectionSet[1][0]['seq_id']
+            comp_id = self.atomSelectionSet[1][0]['comp_id']
+            atom_id = self.atomSelectionSet[1][0]['atom_id']
+
+            if atom_id[0] != 'H':
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"Not a proton;  {chain_id}:{seq_id}:{comp_id}:{atom_id}.\n"
+                return
+
+            for atom1 in self.atomSelectionSet[1]:
+                if self.__debug:
+                    print(f"subtype={self.__cur_subtype} id={self.preRestraints} "
+                          f"paramag={atom_id_0} atom={atom1} {dstFunc}")
+
+        finally:
+            self.numberSelection.clear()
 
     def validatePreRange(self, weight,
                          target_value, lower_limit, upper_limit,
@@ -4416,65 +4508,72 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#pcs_assign.
     def exitPcs_assign(self, ctx: XplorMRParser.Pcs_assignContext):  # pylint: disable=unused-argument
-        target = self.numberSelection[0]
-        delta = abs(self.numberSelection[0])
 
         try:
-            # check whether if carbon shift restraints or not
-            atom_id_5 = self.atomSelectionSet[4][0]['atom_id']
-        except IndexError:
-            self.pcsRestraints -= 1
-            self.hvycsRestraints += 1
-            if self.__cur_subtype_altered:
-                self.pcsStatements -= 1
-                if self.hvycsStatements == 0:
-                    self.hvycsStatements += 1
-            self.__cur_subtype = 'hvycs'
-            self.exitCarbon_shift_assign(ctx)
-            return
 
-        try:
-            # check whether if carbon shift restraints or not
-            atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
-            atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
-            atom_id_3 = self.atomSelectionSet[2][0]['atom_id']
-            atom_id_4 = self.atomSelectionSet[3][0]['atom_id']
-        except IndexError:
-            atom_id_1, atom_id_2, atom_id_3, atom_id_4 = 'OO', 'X', 'Y', 'Z'
+            if None in self.numberSelection:
+                return
 
-        atom_ids = [atom_id_1, atom_id_2, atom_id_3, atom_id_4, atom_id_5]
+            target = self.numberSelection[0]
+            delta = abs(self.numberSelection[0])
 
-        if atom_ids == ['C', 'N', 'CA', 'C', 'N']:
-            self.pcsRestraints -= 1
-            self.hvycsRestraints += 1
-            if self.__cur_subtype_altered:
-                self.pcsStatements -= 1
-                if self.hvycsStatements == 0:
-                    self.hvycsStatements += 1
-            self.__cur_subtype = 'hvycs'
-            self.exitCarbon_shift_assign(ctx)
-            return
+            try:
+                # check whether if carbon shift restraints or not
+                atom_id_5 = self.atomSelectionSet[4][0]['atom_id']
+            except IndexError:
+                self.pcsRestraints -= 1
+                self.hvycsRestraints += 1
+                if self.__cur_subtype_altered:
+                    self.pcsStatements -= 1
+                    if self.hvycsStatements == 0:
+                        self.hvycsStatements += 1
+                self.__cur_subtype = 'hvycs'
+                self.exitCarbon_shift_assign(ctx)
+                return
 
-        self.numberSelection.clear()
+            try:
+                # check whether if carbon shift restraints or not
+                atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
+                atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+                atom_id_3 = self.atomSelectionSet[2][0]['atom_id']
+                atom_id_4 = self.atomSelectionSet[3][0]['atom_id']
+            except IndexError:
+                atom_id_1, atom_id_2, atom_id_3, atom_id_4 = 'OO', 'X', 'Y', 'Z'
 
-        target_value = target
-        lower_limit = target - delta
-        upper_limit = target + delta
+            atom_ids = [atom_id_1, atom_id_2, atom_id_3, atom_id_4, atom_id_5]
 
-        dstFunc = self.validatePcsRange(1.0, target_value, lower_limit, upper_limit)
+            if atom_ids == ['C', 'N', 'CA', 'C', 'N']:
+                self.pcsRestraints -= 1
+                self.hvycsRestraints += 1
+                if self.__cur_subtype_altered:
+                    self.pcsStatements -= 1
+                    if self.hvycsStatements == 0:
+                        self.hvycsStatements += 1
+                self.__cur_subtype = 'hvycs'
+                self.exitCarbon_shift_assign(ctx)
+                return
 
-        if dstFunc is None:
-            return
+            target_value = target
+            lower_limit = target - delta
+            upper_limit = target + delta
 
-        if not self.__hasPolySeq:
-            return
+            dstFunc = self.validatePcsRange(1.0, target_value, lower_limit, upper_limit)
 
-        atom_id_0 = self.atomSelectionSet[0][0]['atom_id'] if len(self.atomSelectionSet[0]) > 0 and 'atom_id' in self.atomSelectionSet[0][0] else 'paramagnetic center'
+            if dstFunc is None:
+                return
 
-        for atom1 in self.atomSelectionSet[4]:
-            if self.__debug:
-                print(f"subtype={self.__cur_subtype} id={self.pcsRestraints} "
-                      f"paramag={atom_id_0} atom={atom1} {dstFunc}")
+            if not self.__hasPolySeq:
+                return
+
+            atom_id_0 = self.atomSelectionSet[0][0]['atom_id'] if len(self.atomSelectionSet[0]) > 0 and 'atom_id' in self.atomSelectionSet[0][0] else 'paramagnetic center'
+
+            for atom1 in self.atomSelectionSet[4]:
+                if self.__debug:
+                    print(f"subtype={self.__cur_subtype} id={self.pcsRestraints} "
+                          f"paramag={atom_id_0} atom={atom1} {dstFunc}")
+
+        finally:
+            self.numberSelection.clear()
 
     def validatePcsRange(self, weight,
                          target_value, lower_limit, upper_limit,
@@ -4656,95 +4755,102 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#prdc_assign.
     def exitPrdc_assign(self, ctx: XplorMRParser.Prdc_assignContext):  # pylint: disable=unused-argument
-        target = self.numberSelection[0]
-        delta = abs(self.numberSelection[1])
 
-        self.numberSelection.clear()
+        try:
 
-        target_value = target
-        lower_limit = target - delta
-        upper_limit = target + delta
+            if None in self.numberSelection:
+                return
 
-        dstFunc = self.validateRdcRange(1.0, {'potential': self.potential},
-                                        target_value, lower_limit, upper_limit)
+            target = self.numberSelection[0]
+            delta = abs(self.numberSelection[1])
 
-        if dstFunc is None:
-            return
+            target_value = target
+            lower_limit = target - delta
+            upper_limit = target + delta
 
-        if not self.__hasPolySeq:
-            return
+            dstFunc = self.validateRdcRange(1.0, {'potential': self.potential},
+                                            target_value, lower_limit, upper_limit)
 
-        if not self.areUniqueCoordAtoms('a paramagnetic RDC (XRDC)', XPLOR_ORIGIN_AXIS_COLS):
-            return
+            if dstFunc is None:
+                return
 
-        atom_id_0 = self.atomSelectionSet[0][0]['atom_id'] if len(self.atomSelectionSet[0]) > 0 and 'atom_id' in self.atomSelectionSet[0][0] else 'paramagnetic center'
+            if not self.__hasPolySeq:
+                return
 
-        chain_id_1 = self.atomSelectionSet[4][0]['chain_id']
-        seq_id_1 = self.atomSelectionSet[4][0]['seq_id']
-        comp_id_1 = self.atomSelectionSet[4][0]['comp_id']
-        atom_id_1 = self.atomSelectionSet[4][0]['atom_id']
+            if not self.areUniqueCoordAtoms('a paramagnetic RDC (XRDC)', XPLOR_ORIGIN_AXIS_COLS):
+                return
 
-        chain_id_2 = self.atomSelectionSet[5][0]['chain_id']
-        seq_id_2 = self.atomSelectionSet[5][0]['seq_id']
-        comp_id_2 = self.atomSelectionSet[5][0]['comp_id']
-        atom_id_2 = self.atomSelectionSet[5][0]['atom_id']
+            atom_id_0 = self.atomSelectionSet[0][0]['atom_id'] if len(self.atomSelectionSet[0]) > 0 and 'atom_id' in self.atomSelectionSet[0][0] else 'paramagnetic center'
 
-        if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                f"Non-magnetic susceptible spin appears in RDC vector; "\
-                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-            return
+            chain_id_1 = self.atomSelectionSet[4][0]['chain_id']
+            seq_id_1 = self.atomSelectionSet[4][0]['seq_id']
+            comp_id_1 = self.atomSelectionSet[4][0]['comp_id']
+            atom_id_1 = self.atomSelectionSet[4][0]['atom_id']
 
-        if chain_id_1 != chain_id_2:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                f"Found inter-chain RDC vector; "\
-                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-            return
+            chain_id_2 = self.atomSelectionSet[5][0]['chain_id']
+            seq_id_2 = self.atomSelectionSet[5][0]['seq_id']
+            comp_id_2 = self.atomSelectionSet[5][0]['comp_id']
+            atom_id_2 = self.atomSelectionSet[5][0]['atom_id']
 
-        if abs(seq_id_1 - seq_id_2) > 1:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                f"Found inter-residue RDC vector; "\
-                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-            return
-
-        if abs(seq_id_1 - seq_id_2) == 1:
-
-            if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
-               ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H')) or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H') and atom_id_2 == 'C')):
-                pass
-
-            else:
+            if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    "Found inter-residue RDC vector; "\
+                    f"Non-magnetic susceptible spin appears in RDC vector; "\
+                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
+                    f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                return
+
+            if chain_id_1 != chain_id_2:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"Found inter-chain RDC vector; "\
                     f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
                 return
 
-        elif atom_id_1 == atom_id_2:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                "Found zero RDC vector; "\
-                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-            return
+            if abs(seq_id_1 - seq_id_2) > 1:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"Found inter-residue RDC vector; "\
+                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                return
 
-        else:
+            if abs(seq_id_1 - seq_id_2) == 1:
 
-            if self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
+                if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
+                   ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H')) or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H') and atom_id_2 == 'C')):
+                    pass
 
-                if not any(b for b in self.__ccU.lastBonds
-                           if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
-                               or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
+                else:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        "Found inter-residue RDC vector; "\
+                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    return
 
-                    if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            "Found an RDC vector over multiple covalent bonds in the 'XRDCoupling' statement; "\
-                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-                        return
+            elif atom_id_1 == atom_id_2:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    "Found zero RDC vector; "\
+                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                return
 
-        for atom1, atom2 in itertools.product(self.atomSelectionSet[4],
-                                              self.atomSelectionSet[5]):
-            if self.__debug:
-                print(f"subtype={self.__cur_subtype} (XRDC) id={self.prdcRestraints} "
-                      f"paramag={atom_id_0} atom1={atom1} atom2={atom2} {dstFunc}")
+            else:
+
+                if self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
+
+                    if not any(b for b in self.__ccU.lastBonds
+                               if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
+                                   or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
+
+                        if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
+                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                "Found an RDC vector over multiple covalent bonds in the 'XRDCoupling' statement; "\
+                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                            return
+
+            for atom1, atom2 in itertools.product(self.atomSelectionSet[4],
+                                                  self.atomSelectionSet[5]):
+                if self.__debug:
+                    print(f"subtype={self.__cur_subtype} (XRDC) id={self.prdcRestraints} "
+                          f"paramag={atom_id_0} atom1={atom1} atom2={atom2} {dstFunc}")
+
+        finally:
+            self.numberSelection.clear()
 
     # Enter a parse tree produced by XplorMRParser#porientation_statement.
     def enterPorientation_statement(self, ctx: XplorMRParser.Porientation_statementContext):
@@ -4768,106 +4874,113 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#porientation_assign.
     def exitPorientation_assign(self, ctx: XplorMRParser.Porientation_assignContext):  # pylint: disable=unused-argument
-        theta = self.numberSelection[0]
-        phi = self.numberSelection[1]
-        delta = abs(self.numberSelection[2])
 
-        self.numberSelection.clear()
+        try:
 
-        target_value = theta
-        lower_limit = theta - delta
-        upper_limit = theta + delta
+            if None in self.numberSelection:
+                return
 
-        dstFunc = self.validateAngleRange(1.0, {'angle_name': 'theta'},
-                                          target_value, lower_limit, upper_limit)
+            theta = self.numberSelection[0]
+            phi = self.numberSelection[1]
+            delta = abs(self.numberSelection[2])
 
-        if dstFunc is None:
-            return
+            target_value = theta
+            lower_limit = theta - delta
+            upper_limit = theta + delta
 
-        dstFunc2 = {'weight': 1.0, 'angle_name': 'phi'}
+            dstFunc = self.validateAngleRange(1.0, {'angle_name': 'theta'},
+                                              target_value, lower_limit, upper_limit)
 
-        target_value = phi
-        lower_limit = phi - delta
-        upper_limit = phi + delta
+            if dstFunc is None:
+                return
 
-        dstFunc2 = self.validateAngleRange(1.0, {'angle_name': 'phi'},
-                                           target_value, lower_limit, upper_limit)
+            dstFunc2 = {'weight': 1.0, 'angle_name': 'phi'}
 
-        if dstFunc2 is None:
-            return
+            target_value = phi
+            lower_limit = phi - delta
+            upper_limit = phi + delta
 
-        if not self.__hasPolySeq:
-            return
+            dstFunc2 = self.validateAngleRange(1.0, {'angle_name': 'phi'},
+                                               target_value, lower_limit, upper_limit)
 
-        if not self.areUniqueCoordAtoms('a paramagnetic orientation (XANG)'):
-            return
+            if dstFunc2 is None:
+                return
 
-        chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
-        seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
-        comp_id_1 = self.atomSelectionSet[0][0]['comp_id']
-        atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
+            if not self.__hasPolySeq:
+                return
 
-        chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
-        seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
-        comp_id_2 = self.atomSelectionSet[1][0]['comp_id']
-        atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+            if not self.areUniqueCoordAtoms('a paramagnetic orientation (XANG)'):
+                return
 
-        if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                f"Non-magnetic susceptible spin appears in orientation vector; "\
-                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-            return
+            chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
+            seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
+            comp_id_1 = self.atomSelectionSet[0][0]['comp_id']
+            atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
 
-        if chain_id_1 != chain_id_2:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                f"Found inter-chain orientation vector; "\
-                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-            return
+            chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
+            seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
+            comp_id_2 = self.atomSelectionSet[1][0]['comp_id']
+            atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
 
-        if abs(seq_id_1 - seq_id_2) > 1:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                f"Found inter-residue orientation vector; "\
-                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-            return
-
-        if abs(seq_id_1 - seq_id_2) == 1:
-
-            if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
-               ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H')) or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H') and atom_id_2 == 'C')):
-                pass
-
-            else:
+            if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    "Found inter-residue orientation vector; "\
+                    f"Non-magnetic susceptible spin appears in orientation vector; "\
+                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
+                    f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                return
+
+            if chain_id_1 != chain_id_2:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"Found inter-chain orientation vector; "\
                     f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
                 return
 
-        elif atom_id_1 == atom_id_2:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                "Found zero orientation vector; "\
-                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-            return
+            if abs(seq_id_1 - seq_id_2) > 1:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"Found inter-residue orientation vector; "\
+                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                return
 
-        else:
+            if abs(seq_id_1 - seq_id_2) == 1:
 
-            if self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
+                if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
+                   ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H')) or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H') and atom_id_2 == 'C')):
+                    pass
 
-                if not any(b for b in self.__ccU.lastBonds
-                           if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
-                               or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
+                else:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        "Found inter-residue orientation vector; "\
+                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    return
 
-                    if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            "Found an orientation vector over multiple covalent bonds in the 'XANGle' statement; "\
-                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-                        return
+            elif atom_id_1 == atom_id_2:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    "Found zero orientation vector; "\
+                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                return
 
-        for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
-                                              self.atomSelectionSet[1]):
-            if self.__debug:
-                print(f"subtype={self.__cur_subtype} (XANG) id={self.pangRestraints} "
-                      f"atom1={atom1} atom2={atom2} {dstFunc} {dstFunc2}")
+            else:
+
+                if self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
+
+                    if not any(b for b in self.__ccU.lastBonds
+                               if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
+                                   or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
+
+                        if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
+                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                "Found an orientation vector over multiple covalent bonds in the 'XANGle' statement; "\
+                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                            return
+
+            for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
+                                                  self.atomSelectionSet[1]):
+                if self.__debug:
+                    print(f"subtype={self.__cur_subtype} (XANG) id={self.pangRestraints} "
+                          f"atom1={atom1} atom2={atom2} {dstFunc} {dstFunc2}")
+
+        finally:
+            self.numberSelection.clear()
 
     # Enter a parse tree produced by XplorMRParser#pccr_statement.
     def enterPccr_statement(self, ctx: XplorMRParser.Pccr_statementContext):
@@ -4895,95 +5008,102 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#pccr_assign.
     def exitPccr_assign(self, ctx: XplorMRParser.Pccr_assignContext):  # pylint: disable=unused-argument
-        target = self.numberSelection[0]
-        delta = abs(self.numberSelection[1])
 
-        self.numberSelection.clear()
+        try:
 
-        target_value = target
-        lower_limit = target - delta
-        upper_limit = target + delta
+            if None in self.numberSelection:
+                return
 
-        dstFunc = self.validateCcrRange(1.0,
-                                        target_value, lower_limit, upper_limit)
+            target = self.numberSelection[0]
+            delta = abs(self.numberSelection[1])
 
-        if dstFunc is None:
-            return
+            target_value = target
+            lower_limit = target - delta
+            upper_limit = target + delta
 
-        if not self.__hasPolySeq:
-            return
+            dstFunc = self.validateCcrRange(1.0,
+                                            target_value, lower_limit, upper_limit)
 
-        if not self.areUniqueCoordAtoms('a paramagnetic cross-correlation rate (XCCR)'):
-            return
+            if dstFunc is None:
+                return
 
-        atom_id_0 = self.atomSelectionSet[0][0]['atom_id'] if len(self.atomSelectionSet[0]) > 0 and 'atom_id' in self.atomSelectionSet[0][0] else 'paramagnetic center'
+            if not self.__hasPolySeq:
+                return
 
-        chain_id_1 = self.atomSelectionSet[1][0]['chain_id']
-        seq_id_1 = self.atomSelectionSet[1][0]['seq_id']
-        comp_id_1 = self.atomSelectionSet[1][0]['comp_id']
-        atom_id_1 = self.atomSelectionSet[1][0]['atom_id']
+            if not self.areUniqueCoordAtoms('a paramagnetic cross-correlation rate (XCCR)'):
+                return
 
-        chain_id_2 = self.atomSelectionSet[2][0]['chain_id']
-        seq_id_2 = self.atomSelectionSet[2][0]['seq_id']
-        comp_id_2 = self.atomSelectionSet[2][0]['comp_id']
-        atom_id_2 = self.atomSelectionSet[2][0]['atom_id']
+            atom_id_0 = self.atomSelectionSet[0][0]['atom_id'] if len(self.atomSelectionSet[0]) > 0 and 'atom_id' in self.atomSelectionSet[0][0] else 'paramagnetic center'
 
-        if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                f"Non-magnetic susceptible spin appears in CCR vector; "\
-                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-            return
+            chain_id_1 = self.atomSelectionSet[1][0]['chain_id']
+            seq_id_1 = self.atomSelectionSet[1][0]['seq_id']
+            comp_id_1 = self.atomSelectionSet[1][0]['comp_id']
+            atom_id_1 = self.atomSelectionSet[1][0]['atom_id']
 
-        if chain_id_1 != chain_id_2:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                f"Found inter-chain CCR vector; "\
-                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-            return
+            chain_id_2 = self.atomSelectionSet[2][0]['chain_id']
+            seq_id_2 = self.atomSelectionSet[2][0]['seq_id']
+            comp_id_2 = self.atomSelectionSet[2][0]['comp_id']
+            atom_id_2 = self.atomSelectionSet[2][0]['atom_id']
 
-        if abs(seq_id_1 - seq_id_2) > 1:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                f"Found inter-residue CCR vector; "\
-                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-            return
-
-        if abs(seq_id_1 - seq_id_2) == 1:
-
-            if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
-               ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H')) or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H') and atom_id_2 == 'C')):
-                pass
-
-            else:
+            if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    "Found inter-residue CCR vector; "\
+                    f"Non-magnetic susceptible spin appears in CCR vector; "\
+                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
+                    f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                return
+
+            if chain_id_1 != chain_id_2:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"Found inter-chain CCR vector; "\
                     f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
                 return
 
-        elif atom_id_1 == atom_id_2:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                "Found zero CCR vector; "\
-                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-            return
+            if abs(seq_id_1 - seq_id_2) > 1:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"Found inter-residue CCR vector; "\
+                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                return
 
-        else:
+            if abs(seq_id_1 - seq_id_2) == 1:
 
-            if self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
+                if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
+                   ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H')) or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H') and atom_id_2 == 'C')):
+                    pass
 
-                if not any(b for b in self.__ccU.lastBonds
-                           if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
-                               or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
+                else:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        "Found inter-residue CCR vector; "\
+                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    return
 
-                    if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            "Found an CCR vector over multiple covalent bonds in the 'XCCR' statement; "\
-                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-                        return
+            elif atom_id_1 == atom_id_2:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    "Found zero CCR vector; "\
+                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                return
 
-        for atom1, atom2 in itertools.product(self.atomSelectionSet[1],
-                                              self.atomSelectionSet[2]):
-            if self.__debug:
-                print(f"subtype={self.__cur_subtype} (XCCR) id={self.prdcRestraints} "
-                      f"paramag={atom_id_0} atom1={atom1} atom2={atom2} {dstFunc}")
+            else:
+
+                if self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
+
+                    if not any(b for b in self.__ccU.lastBonds
+                               if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
+                                   or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
+
+                        if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
+                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                "Found an CCR vector over multiple covalent bonds in the 'XCCR' statement; "\
+                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                            return
+
+            for atom1, atom2 in itertools.product(self.atomSelectionSet[1],
+                                                  self.atomSelectionSet[2]):
+                if self.__debug:
+                    print(f"subtype={self.__cur_subtype} (XCCR) id={self.prdcRestraints} "
+                          f"paramag={atom_id_0} atom1={atom1} atom2={atom2} {dstFunc}")
+
+        finally:
+            self.numberSelection.clear()
 
     def validateCcrRange(self, weight,
                          target_value, lower_limit, upper_limit,
@@ -5996,6 +6116,8 @@ class XplorMRParserListener(ParseTreeListener):
                     print("  " * self.depth + f"--> {clauseName}")
                 if not self.__hasCoord:
                     return
+                if None in self.numberFSelection:
+                    return
                 around = self.numberFSelection[0]
                 _atomSelection = []
 
@@ -6267,6 +6389,8 @@ class XplorMRParserListener(ParseTreeListener):
                 _attr_prop = str(ctx.Attr_properties())
                 attr_prop = _attr_prop.lower()
                 opCode = str(ctx.Comparison_ops())
+                if None in self.numberFSelection:
+                    return
                 attr_value = self.numberFSelection[0]
 
                 validProp = True
@@ -6964,9 +7088,13 @@ class XplorMRParserListener(ParseTreeListener):
                                 self.__lfh.write(f"+XplorMRParserListener.exitFactor() ++ Error  - {str(e)}\n")
 
                     self.inVector3D_tail = self.inVector3D_head = None
+                    if None in self.numberFSelection:
+                        return
                     cut = self.numberFSelection[0]
 
                 else:
+                    if None in self.numberFSelection:
+                        return
                     self.vector3D = [self.numberFSelection[0], self.numberFSelection[1], self.numberFSelection[2]]
                     cut = self.numberFSelection[3]
 
@@ -7323,8 +7451,12 @@ class XplorMRParserListener(ParseTreeListener):
     def exitNumber(self, ctx: XplorMRParser.NumberContext):
         if ctx.Real():
             self.numberSelection.append(float(str(ctx.Real())))
-        else:
+
+        elif ctx.Integer():
             self.numberSelection.append(float(str(ctx.Integer())))
+
+        else:
+            self.numberSelection.append(None)
 
     # Enter a parse tree produced by XplorMRParser#number_f.
     def enterNumber_f(self, ctx: XplorMRParser.Number_fContext):  # pylint: disable=unused-argument
@@ -7334,8 +7466,12 @@ class XplorMRParserListener(ParseTreeListener):
     def exitNumber_f(self, ctx: XplorMRParser.Number_fContext):
         if ctx.Real():
             self.numberFSelection.append(float(str(ctx.Real())))
-        else:
+
+        elif ctx.Integer():
             self.numberFSelection.append(float(str(ctx.Integer())))
+
+        else:
+            self.numberFSelection.append(None)
 
     # Enter a parse tree produced by XplorMRParser#number_s.
     def enterNumber_s(self, ctx: XplorMRParser.Number_sContext):  # pylint: disable=unused-argument
@@ -7348,7 +7484,11 @@ class XplorMRParserListener(ParseTreeListener):
     def getNumber_s(self, ctx: XplorMRParser.Number_sContext):  # pylint: disable=no-self-use
         if ctx.Real():
             return float(str(ctx.Real()))
-        return float(str(ctx.Integer()))
+
+        if ctx.Integer():
+            return float(str(ctx.Integer()))
+
+        return None
 
     # Enter a parse tree produced by XplorMRParser#number_a.
     def enterNumber_a(self, ctx: XplorMRParser.Number_aContext):  # pylint: disable=unused-argument
@@ -7361,7 +7501,11 @@ class XplorMRParserListener(ParseTreeListener):
     def getNumber_a(self, ctx: XplorMRParser.Number_aContext):  # pylint: disable=no-self-use
         if ctx.Real():
             return float(str(ctx.Real()))
-        return float(str(ctx.Integer()))
+
+        if ctx.Integer():
+            return float(str(ctx.Integer()))
+
+        return None
 
     # Enter a parse tree produced by XplorMRParser#flag_statement.
     def enterFlag_statement(self, ctx: XplorMRParser.Flag_statementContext):  # pylint: disable=unused-argument
@@ -7401,8 +7545,10 @@ class XplorMRParserListener(ParseTreeListener):
     def enterVector_mode(self, ctx: XplorMRParser.Vector_modeContext):
         if ctx.Identify_Lp():
             self.__cur_vector_mode = 'identity'
+
         elif ctx.Do_Lp():
             self.__cur_vector_mode = 'do'
+
         elif ctx.Show():
             self.__cur_vector_mode = 'show'
 

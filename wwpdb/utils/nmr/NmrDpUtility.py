@@ -344,6 +344,8 @@ xplor_end_pattern = re.compile(r'\s*[Ee][Nn][Dd]\s*')
 xplor_missing_end_at_eof_err_msg = "missing End at '<EOF>'"
 xplor_extra_end_err_msg_pattern = re.compile(r"extraneous input '[Ee][Nn][Dd]' expecting .*")
 
+no_viable_alt_err_msg = "no viable alternative at input"
+
 
 def detect_bom(fPath, default='utf-8'):
     """ Detect BOM of input file.
@@ -8335,17 +8337,21 @@ class NmrDpUtility:
         err_line_number = err_desc['line_number']
         err_column_position = err_desc['column_position']
 
-        xplor_missing_end_at_eof = err_message == xplor_missing_end_at_eof_err_msg
-        xplor_ends_wo_statement = bool(xplor_extra_end_err_msg_pattern.match(err_message))
+        xplor_missing_end_at_eof = (file_type in ('nm-res-xpl', 'nm-res-cns')) and (err_message == xplor_missing_end_at_eof_err_msg)
+        xplor_ends_wo_statement = (file_type in ('nm-res-xpl', 'nm-res-cns')) and bool(xplor_extra_end_err_msg_pattern.match(err_message))
 
-        amber_missing_end_at_eof = err_message == amber_missing_end_at_eof_err_msg
-        amber_ends_wo_statement = bool(amber_extra_end_err_msg_pattern.match(err_message))
+        amber_missing_end_at_eof = file_type == 'nm-res-amb' and (err_message == amber_missing_end_at_eof_err_msg)
+        amber_ends_wo_statement = file_type == 'nm-res-amb' and bool(amber_extra_end_err_msg_pattern.match(err_message))
+
+        concat_comment_at_eol = (file_type in ('nm-res-cya', 'nm-res-ros')
+                                 and err_message.startswith(no_viable_alt_err_msg)
+                                 and 'input' in err_desc and bool(comment_pattern.search(err_desc['input'])))
 
         reader = None
 
         prev_input = None
 
-        if not(xplor_ends_wo_statement or amber_ends_wo_statement):
+        if not(xplor_ends_wo_statement or amber_ends_wo_statement or concat_comment_at_eol):
 
             if err_column_position > 0 and 'input' in err_desc and not err_desc['input'][0:err_column_position].isspace():
                 test_line = err_desc['input'][0:err_column_position]
@@ -8464,11 +8470,11 @@ class NmrDpUtility:
             if not amber_ends_wo_statement:
                 amber_ends_wo_statement = True
 
-        if (xplor_ends_wo_statement or amber_ends_wo_statement) or i < err_line_number:
+        if (xplor_ends_wo_statement or amber_ends_wo_statement or concat_comment_at_eol) or i < err_line_number:
 
             corrected = False
 
-            if xplor_ends_wo_statement and file_type in ('nm-res-xpl', 'nm-res-cns'):
+            if xplor_ends_wo_statement:
 
                 has_end_tag = False
 
@@ -8517,7 +8523,7 @@ class NmrDpUtility:
 
                     corrected = True
 
-            if amber_ends_wo_statement and file_type == 'nm-res-amb':
+            if amber_ends_wo_statement:
 
                 has_end_tag = False
 
@@ -8565,6 +8571,70 @@ class NmrDpUtility:
                         os.rename(cor_src_path, src_path)
 
                     corrected = True
+
+            if concat_comment_at_eol:
+
+                comment_code_index = -1
+                if '#' in err_desc['input']:
+                    comment_code_index = err_desc['input'].index('#')
+                if '!' in err_desc['input']:
+                    if comment_code_index == -1:
+                        comment_code_index = err_desc['input'].index('!')
+                    elif err_desc['input'].index('!') < comment_code_index:
+                        comment_code_index = err_desc['input'].index('!')
+
+                if comment_code_index != -1:
+                    test_line = err_desc['input'][0:comment_code_index]
+
+                    if reader is not None:
+                        pass
+
+                    elif file_type == 'nm-res-cya':
+                        reader = CyanaMRReader(self.__verbose, self.__lfh, None, None, None,
+                                               self.__ccU, self.__csStat, self.__nefT)
+                    elif file_type == 'nm-res-ros':
+                        reader = RosettaMRReader(self.__verbose, self.__lfh, None, None, None,
+                                                 self.__ccU, self.__csStat, self.__nefT)
+
+                    _, parser_err_listener, lexer_err_listener = reader.parse(test_line, None, isFilePath=False)
+
+                    has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
+                    has_parser_error = parser_err_listener is not None and parser_err_listener.getMessageList() is not None
+
+                    if not has_lexer_error and not has_parser_error:
+
+                        dir_path = os.path.dirname(src_path)
+
+                        for div_file_name in os.listdir(dir_path):
+                            if os.path.isfile(os.path.join(dir_path, div_file_name))\
+                               and (div_file_name.endswith('-div_src.mr') or div_file_name.endswith('-div_dst.mr')):
+                                os.remove(os.path.join(dir_path, div_file_name))
+
+                        src_file_name = os.path.basename(src_path)
+                        cor_test = '-corrected' in src_file_name
+                        if cor_test:
+                            cor_src_path = src_path + '~'
+                        else:
+                            if src_path.endswith('.mr'):
+                                cor_src_path = re.sub(r'\-trimmed$', '', os.path.splitext(src_path)[0]) + '-corrected.mr'
+                            else:
+                                cor_src_path = re.sub(r'\-trimmed$', '', src_path) + '-corrected'
+
+                        j = 0
+
+                        with open(src_path, 'r') as ifp,\
+                                open(cor_src_path, 'w') as ofp:
+                            for line in ifp:
+                                if j == offset:
+                                    ofp.write(f"{test_line} {err_desc['input'][comment_code_index:]}\n")
+                                else:
+                                    ofp.write(line)
+                                j += 1
+
+                        if cor_test:
+                            os.rename(cor_src_path, src_path)
+
+                        corrected = True
 
             if i == err_line_number - 1 and xplor_missing_end_at_eof:
 
@@ -8689,7 +8759,7 @@ class NmrDpUtility:
                     if self.__split_mr_debug:
                         print('DIV-MR-EXIT #5')
 
-                    return False  # not split MR file because of internal lexer errors to be hundled by manual
+                    return False  # not split MR file because of the lexer errors to be hundled by manual
 
             if div_src:
                 os.remove(file_path)
@@ -8947,7 +9017,7 @@ class NmrDpUtility:
                     if self.__split_mr_debug:
                         print('PEEL-MR-EXIT #5')
 
-                    return False  # not split MR file because of internal lexer errors to be hundled by manual
+                    return False  # not split MR file because of the lexer errors to be hundled by manual
 
             if div_src:
                 os.remove(file_path)
@@ -9047,11 +9117,15 @@ class NmrDpUtility:
 
             return False
 
-        xplor_missing_end_at_eof = err_message == xplor_missing_end_at_eof_err_msg
-        xplor_ends_wo_statement = bool(xplor_extra_end_err_msg_pattern.match(err_message))
+        xplor_missing_end_at_eof = (file_type in ('nm-res-xpl', 'nm-res-cns')) and (err_message == xplor_missing_end_at_eof_err_msg)
+        xplor_ends_wo_statement = (file_type in ('nm-res-xpl', 'nm-res-cns')) and bool(xplor_extra_end_err_msg_pattern.match(err_message))
 
-        amber_missing_end_at_eof = err_message == amber_missing_end_at_eof_err_msg
-        amber_ends_wo_statement = bool(amber_extra_end_err_msg_pattern.match(err_message))
+        amber_missing_end_at_eof = file_type == 'nm-res-amb' and (err_message == amber_missing_end_at_eof_err_msg)
+        amber_ends_wo_statement = file_type == 'nm-res-amb' and bool(amber_extra_end_err_msg_pattern.match(err_message))
+
+        concat_comment_at_eol = (file_type in ('nm-res-cya', 'nm-res-ros')
+                                 and err_message.startswith(no_viable_alt_err_msg)
+                                 and 'input' in err_desc and bool(comment_pattern.search(err_desc['input'])))
 
         i = j = 0
 
@@ -9086,11 +9160,11 @@ class NmrDpUtility:
             if not amber_ends_wo_statement:
                 amber_ends_wo_statement = True
 
-        if (xplor_ends_wo_statement or amber_ends_wo_statement) or i < err_line_number:
+        if (xplor_ends_wo_statement or amber_ends_wo_statement or concat_comment_at_eol) or i < err_line_number:
 
             corrected = False
 
-            if xplor_ends_wo_statement and file_type in ('nm-res-xpl', 'nm-res-cns'):
+            if xplor_ends_wo_statement:
 
                 has_end_tag = False
 
@@ -9139,7 +9213,7 @@ class NmrDpUtility:
 
                     corrected = True
 
-            if amber_ends_wo_statement and file_type == 'nm-res-amb':
+            if amber_ends_wo_statement:
 
                 has_end_tag = False
 
@@ -9187,6 +9261,67 @@ class NmrDpUtility:
                         os.rename(cor_src_path, src_path)
 
                     corrected = True
+
+            if concat_comment_at_eol:
+
+                comment_code_index = -1
+                if '#' in err_desc['input']:
+                    comment_code_index = err_desc['input'].index('#')
+                if '!' in err_desc['input']:
+                    if comment_code_index == -1:
+                        comment_code_index = err_desc['input'].index('!')
+                    elif err_desc['input'].index('!') < comment_code_index:
+                        comment_code_index = err_desc['input'].index('!')
+
+                if comment_code_index != -1:
+                    test_line = err_desc['input'][0:comment_code_index]
+
+                    if file_type == 'nm-res-cya':
+                        reader = CyanaMRReader(self.__verbose, self.__lfh, None, None, None,
+                                               self.__ccU, self.__csStat, self.__nefT)
+                    elif file_type == 'nm-res-ros':
+                        reader = RosettaMRReader(self.__verbose, self.__lfh, None, None, None,
+                                                 self.__ccU, self.__csStat, self.__nefT)
+
+                    _, parser_err_listener, lexer_err_listener = reader.parse(test_line, None, isFilePath=False)
+
+                    has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
+                    has_parser_error = parser_err_listener is not None and parser_err_listener.getMessageList() is not None
+
+                    if not has_lexer_error and not has_parser_error:
+
+                        dir_path = os.path.dirname(src_path)
+
+                        for div_file_name in os.listdir(dir_path):
+                            if os.path.isfile(os.path.join(dir_path, div_file_name))\
+                               and (div_file_name.endswith('-div_src.mr') or div_file_name.endswith('-div_dst.mr')):
+                                os.remove(os.path.join(dir_path, div_file_name))
+
+                        src_file_name = os.path.basename(src_path)
+                        cor_test = '-corrected' in src_file_name
+                        if cor_test:
+                            cor_src_path = src_path + '~'
+                        else:
+                            if src_path.endswith('.mr'):
+                                cor_src_path = re.sub(r'\-trimmed$', '', os.path.splitext(src_path)[0]) + '-corrected.mr'
+                            else:
+                                cor_src_path = re.sub(r'\-trimmed$', '', src_path) + '-corrected'
+
+                        j = 0
+
+                        with open(src_path, 'r') as ifp,\
+                                open(cor_src_path, 'w') as ofp:
+                            for line in ifp:
+                                if j == offset:
+                                    ofp.write(f"{test_line} {err_desc['input'][comment_code_index:]}\n")
+                                else:
+                                    ofp.write(line)
+                                j += 1
+
+                        if cor_test:
+                            os.rename(cor_src_path, src_path)
+
+                        corrected = True
 
             if i == err_line_number - 1 and xplor_missing_end_at_eof:
 
@@ -9306,7 +9441,7 @@ class NmrDpUtility:
                     os.remove(div_src_file)
                     os.remove(div_try_file)
 
-                    return False  # not split MR file because of internal lexer errors to be hundled by manual
+                    return False  # not split MR file because of the lexer errors to be hundled by manual
             """
             if div_src:
                 os.remove(file_path)

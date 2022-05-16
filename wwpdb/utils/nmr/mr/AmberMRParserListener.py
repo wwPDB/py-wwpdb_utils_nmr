@@ -1769,7 +1769,7 @@ class AmberMRParserListener(ParseTreeListener):
 
         if self.lowerLimit is not None:
             if DIST_ERROR_MIN <= self.lowerLimit < DIST_ERROR_MAX:
-                dstFunc['lower_limit'] = f"{self.lowerLimit:.3f}"
+                dstFunc['lower_limit'] = f"{self.lowerLimit}"
             else:
                 if self.lowerLimit <= DIST_ERROR_MIN and self.__omitDistLimitOutlier:
                     self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
@@ -1782,7 +1782,7 @@ class AmberMRParserListener(ParseTreeListener):
 
         if self.upperLimit is not None:
             if DIST_ERROR_MIN < self.upperLimit <= DIST_ERROR_MAX:
-                dstFunc['upper_limit'] = f"{self.upperLimit:.3f}"
+                dstFunc['upper_limit'] = f"{self.upperLimit}"
             else:
                 if self.upperLimit > DIST_ERROR_MAX and self.__omitDistLimitOutlier:
                     self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
@@ -1795,7 +1795,7 @@ class AmberMRParserListener(ParseTreeListener):
 
         if self.lowerLinearLimit is not None:
             if DIST_ERROR_MIN <= self.lowerLinearLimit < DIST_ERROR_MAX:
-                dstFunc['lower_linear_limit'] = f"{self.lowerLinearLimit:.3f}"
+                dstFunc['lower_linear_limit'] = f"{self.lowerLinearLimit}"
             else:
                 if self.lowerLinearLimit <= DIST_ERROR_MIN and self.__omitDistLimitOutlier:
                     self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
@@ -1808,7 +1808,7 @@ class AmberMRParserListener(ParseTreeListener):
 
         if self.upperLinearLimit is not None:
             if DIST_ERROR_MIN < self.upperLinearLimit <= DIST_ERROR_MAX:
-                dstFunc['upper_linear_limit'] = f"{self.upperLinearLimit:.3f}"
+                dstFunc['upper_linear_limit'] = f"{self.upperLinearLimit}"
             else:
                 if self.upperLinearLimit > DIST_ERROR_MAX and self.__omitDistLimitOutlier:
                     self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
@@ -1898,7 +1898,7 @@ class AmberMRParserListener(ParseTreeListener):
 
         if self.lowerLimit is not None:
             if ANGLE_ERROR_MIN <= self.lowerLimit < ANGLE_ERROR_MAX:
-                dstFunc['lower_limit'] = f"{self.lowerLimit:.3f}"
+                dstFunc['lower_limit'] = f"{self.lowerLimit}"
             else:
                 validRange = False
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
@@ -1906,7 +1906,7 @@ class AmberMRParserListener(ParseTreeListener):
 
         if self.upperLimit is not None:
             if ANGLE_ERROR_MIN < self.upperLimit <= ANGLE_ERROR_MAX:
-                dstFunc['upper_limit'] = f"{self.upperLimit:.3f}"
+                dstFunc['upper_limit'] = f"{self.upperLimit}"
             else:
                 validRange = False
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
@@ -1914,7 +1914,7 @@ class AmberMRParserListener(ParseTreeListener):
 
         if self.lowerLinearLimit is not None:
             if ANGLE_ERROR_MIN <= self.lowerLinearLimit < ANGLE_ERROR_MAX:
-                dstFunc['lower_linear_limit'] = f"{self.lowerLinearLimit:.3f}"
+                dstFunc['lower_linear_limit'] = f"{self.lowerLinearLimit}"
             else:
                 validRange = False
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
@@ -1922,7 +1922,7 @@ class AmberMRParserListener(ParseTreeListener):
 
         if self.upperLinearLimit is not None:
             if ANGLE_ERROR_MIN < self.upperLinearLimit <= ANGLE_ERROR_MAX:
-                dstFunc['upper_linear_limit'] = f"{self.upperLinearLimit:.3f}"
+                dstFunc['upper_linear_limit'] = f"{self.upperLinearLimit}"
             else:
                 validRange = False
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
@@ -2009,7 +2009,7 @@ class AmberMRParserListener(ParseTreeListener):
 
         if obs is not None:
             if PCS_ERROR_MIN < obs < PCS_ERROR_MAX:
-                dstFunc['target_value'] = f"{obs:.3f}"
+                dstFunc['target_value'] = f"{obs}"
             else:
                 validRange = False
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint(self.nmpmc,n)}"\
@@ -2040,7 +2040,7 @@ class AmberMRParserListener(ParseTreeListener):
 
         if dobsl is not None:
             if RDC_ERROR_MIN < dobsl < RDC_ERROR_MAX:
-                dstFunc['lower_limit'] = f"{dobsl:.3f}"
+                dstFunc['lower_limit'] = f"{dobsl}"
             else:
                 validRange = False
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint(self.dataset,n)}"\
@@ -2048,7 +2048,7 @@ class AmberMRParserListener(ParseTreeListener):
 
         if dobsu is not None:
             if RDC_ERROR_MIN < dobsu < RDC_ERROR_MAX:
-                dstFunc['upper_limit'] = f"{dobsu:.3f}"
+                dstFunc['upper_limit'] = f"{dobsu}"
             else:
                 validRange = False
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint(self.dataset,n)}"\
@@ -2086,7 +2086,7 @@ class AmberMRParserListener(ParseTreeListener):
 
         if cobsl is not None:
             if CSA_ERROR_MIN < cobsl < CSA_ERROR_MAX:
-                dstFunc['lower_limit'] = f"{cobsl:.3f}"
+                dstFunc['lower_limit'] = f"{cobsl}"
             else:
                 validRange = False
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint(self.datasetc,n)}"\
@@ -2094,7 +2094,7 @@ class AmberMRParserListener(ParseTreeListener):
 
         if cobsu is not None:
             if CSA_ERROR_MIN < cobsu < CSA_ERROR_MAX:
-                dstFunc['upper_limit'] = f"{cobsu:.3f}"
+                dstFunc['upper_limit'] = f"{cobsu}"
             else:
                 validRange = False
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint(self.datasetc,n)}"\
@@ -3163,7 +3163,7 @@ class AmberMRParserListener(ParseTreeListener):
 
         dstFunc = {'weight': awt, 'tolerance': arange}
 
-        dstFunc['target_value'] = f"{aexp:.3f}"
+        dstFunc['target_value'] = f"{aexp}"
 
         return dstFunc
 
@@ -3453,7 +3453,7 @@ class AmberMRParserListener(ParseTreeListener):
 
         if obs is not None:
             if CS_ERROR_MIN < obs < CS_ERROR_MAX:
-                dstFunc['target_value'] = f"{obs:.3f}"
+                dstFunc['target_value'] = f"{obs}"
             else:
                 validRange = False
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint(n=n)}"\

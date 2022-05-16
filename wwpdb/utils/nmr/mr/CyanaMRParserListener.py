@@ -495,12 +495,12 @@ class CyanaMRParserListener(ParseTreeListener):
             else:
                 if target_value <= DIST_ERROR_MIN and omit_dist_limit_outlier:
                     self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                        f"The target value='{target_value}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.\n"
+                        f"The target value='{target_value:.3f}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.\n"
                     target_value = None
                 else:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The target value='{target_value}' must be within range {DIST_RESTRAINT_ERROR}.\n"
+                        f"The target value='{target_value:.3f}' must be within range {DIST_RESTRAINT_ERROR}.\n"
 
         if lower_limit is not None:
             if DIST_ERROR_MIN <= lower_limit < DIST_ERROR_MAX:
@@ -508,12 +508,12 @@ class CyanaMRParserListener(ParseTreeListener):
             else:
                 if lower_limit <= DIST_ERROR_MIN and omit_dist_limit_outlier:
                     self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value='{lower_limit}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.\n"
+                        f"The lower limit value='{lower_limit:.3f}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.\n"
                     lower_limit = None
                 else:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value='{lower_limit}' must be within range {DIST_RESTRAINT_ERROR}.\n"
+                        f"The lower limit value='{lower_limit:.3f}' must be within range {DIST_RESTRAINT_ERROR}.\n"
 
         if upper_limit is not None:
             if DIST_ERROR_MIN < upper_limit <= DIST_ERROR_MAX:
@@ -521,12 +521,12 @@ class CyanaMRParserListener(ParseTreeListener):
             else:
                 if upper_limit > DIST_ERROR_MAX and omit_dist_limit_outlier:
                     self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                        f"The upper limit value='{upper_limit}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.\n"
+                        f"The upper limit value='{upper_limit:.3f}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.\n"
                     upper_limit = None
                 else:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper limit value='{upper_limit}' must be within range {DIST_RESTRAINT_ERROR}.\n"
+                        f"The upper limit value='{upper_limit:.3f}' must be within range {DIST_RESTRAINT_ERROR}.\n"
 
         if target_value is not None:
 
@@ -534,13 +534,13 @@ class CyanaMRParserListener(ParseTreeListener):
                 if lower_limit > target_value:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value='{lower_limit}' must be less than the target value '{target_value}'.\n"
+                        f"The lower limit value='{lower_limit:.3f}' must be less than the target value '{target_value:.3f}'.\n"
 
             if upper_limit is not None:
                 if upper_limit < target_value:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper limit value='{upper_limit}' must be grater than the target value '{target_value}'.\n"
+                        f"The upper limit value='{upper_limit:.3f}' must be grater than the target value '{target_value:.3f}'.\n"
 
         if not validRange:
             return None
@@ -550,21 +550,21 @@ class CyanaMRParserListener(ParseTreeListener):
                 pass
             else:
                 self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The target value='{target_value}' should be within range {DIST_RESTRAINT_RANGE}.\n"
+                    f"The target value='{target_value:.3f}' should be within range {DIST_RESTRAINT_RANGE}.\n"
 
         if lower_limit is not None:
             if DIST_RANGE_MIN <= lower_limit <= DIST_RANGE_MAX:
                 pass
             else:
                 self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit}' should be within range {DIST_RESTRAINT_RANGE}.\n"
+                    f"The lower limit value='{lower_limit:.3f}' should be within range {DIST_RESTRAINT_RANGE}.\n"
 
         if upper_limit is not None:
             if DIST_RANGE_MIN <= upper_limit <= DIST_RANGE_MAX:
                 pass
             else:
                 self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit}' should be within range {DIST_RESTRAINT_RANGE}.\n"
+                    f"The upper limit value='{upper_limit:.3f}' should be within range {DIST_RESTRAINT_RANGE}.\n"
 
         return dstFunc
 
@@ -965,7 +965,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
         if target_value is not None:
             if ANGLE_ERROR_MIN < target_value < ANGLE_ERROR_MAX:
-                dstFunc['target_value'] = f"{target_value:.3f}"
+                dstFunc['target_value'] = f"{target_value}"
             else:
                 validRange = False
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
@@ -973,7 +973,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
         if lower_limit is not None:
             if ANGLE_ERROR_MIN <= lower_limit < ANGLE_ERROR_MAX:
-                dstFunc['lower_limit'] = f"{lower_limit:.3f}"
+                dstFunc['lower_limit'] = f"{lower_limit}"
             else:
                 validRange = False
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
@@ -981,7 +981,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
         if upper_limit is not None:
             if ANGLE_ERROR_MIN < upper_limit <= ANGLE_ERROR_MAX:
-                dstFunc['upper_limit'] = f"{upper_limit:.3f}"
+                dstFunc['upper_limit'] = f"{upper_limit}"
             else:
                 validRange = False
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
@@ -1211,7 +1211,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
         if target_value is not None:
             if RDC_ERROR_MIN < target_value < RDC_ERROR_MAX:
-                dstFunc['target_value'] = f"{target_value:.3f}"
+                dstFunc['target_value'] = f"{target_value}"
             else:
                 validRange = False
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
@@ -1223,7 +1223,7 @@ class CyanaMRParserListener(ParseTreeListener):
             else:
                 validRange = False
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+                    f"The lower limit value='{lower_limit:.3f}' must be within range {RDC_RESTRAINT_ERROR}.\n"
 
         if upper_limit is not None:
             if RDC_ERROR_MIN < upper_limit <= RDC_ERROR_MAX:
@@ -1231,7 +1231,7 @@ class CyanaMRParserListener(ParseTreeListener):
             else:
                 validRange = False
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+                    f"The upper limit value='{upper_limit:.3f}' must be within range {RDC_RESTRAINT_ERROR}.\n"
 
         if target_value is not None:
 
@@ -1239,13 +1239,13 @@ class CyanaMRParserListener(ParseTreeListener):
                 if lower_limit > target_value:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value='{lower_limit}' must be less than the target value '{target_value}'.\n"
+                        f"The lower limit value='{lower_limit:.3f}' must be less than the target value '{target_value}'.\n"
 
             if upper_limit is not None:
                 if upper_limit < target_value:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper limit value='{upper_limit}' must be grater than the target value '{target_value}'.\n"
+                        f"The upper limit value='{upper_limit:.3f}' must be grater than the target value '{target_value}'.\n"
 
         if not validRange:
             return None
@@ -1262,14 +1262,14 @@ class CyanaMRParserListener(ParseTreeListener):
                 pass
             else:
                 self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+                    f"The lower limit value='{lower_limit:.3f}' should be within range {RDC_RESTRAINT_RANGE}.\n"
 
         if upper_limit is not None:
             if RDC_RANGE_MIN <= upper_limit <= RDC_RANGE_MAX:
                 pass
             else:
                 self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+                    f"The upper limit value='{upper_limit:.3f}' should be within range {RDC_RESTRAINT_RANGE}.\n"
 
         return dstFunc
 
@@ -2335,7 +2335,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
         if target_value is not None:
             if PCS_ERROR_MIN < target_value < PCS_ERROR_MAX:
-                dstFunc['target_value'] = f"{target_value:.3f}"
+                dstFunc['target_value'] = f"{target_value}"
             else:
                 validRange = False
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
@@ -2347,7 +2347,7 @@ class CyanaMRParserListener(ParseTreeListener):
             else:
                 validRange = False
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit}' must be within range {PCS_RESTRAINT_ERROR}.\n"
+                    f"The lower limit value='{lower_limit:.3f}' must be within range {PCS_RESTRAINT_ERROR}.\n"
 
         if upper_limit is not None:
             if PCS_ERROR_MIN < upper_limit <= PCS_ERROR_MAX:
@@ -2355,7 +2355,7 @@ class CyanaMRParserListener(ParseTreeListener):
             else:
                 validRange = False
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit}' must be within range {PCS_RESTRAINT_ERROR}.\n"
+                    f"The upper limit value='{upper_limit:.3f}' must be within range {PCS_RESTRAINT_ERROR}.\n"
 
         if target_value is not None:
 
@@ -2363,13 +2363,13 @@ class CyanaMRParserListener(ParseTreeListener):
                 if lower_limit > target_value:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value='{lower_limit}' must be less than the target value '{target_value}'.\n"
+                        f"The lower limit value='{lower_limit:.3f}' must be less than the target value '{target_value}'.\n"
 
             if upper_limit is not None:
                 if upper_limit < target_value:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper limit value='{upper_limit}' must be grater than the target value '{target_value}'.\n"
+                        f"The upper limit value='{upper_limit:.3f}' must be grater than the target value '{target_value}'.\n"
 
         if not validRange:
             return None
@@ -2386,14 +2386,14 @@ class CyanaMRParserListener(ParseTreeListener):
                 pass
             else:
                 self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit}' should be within range {PCS_RESTRAINT_RANGE}.\n"
+                    f"The lower limit value='{lower_limit:.3f}' should be within range {PCS_RESTRAINT_RANGE}.\n"
 
         if upper_limit is not None:
             if PCS_RANGE_MIN <= upper_limit <= PCS_RANGE_MAX:
                 pass
             else:
                 self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit}' should be within range {PCS_RESTRAINT_RANGE}.\n"
+                    f"The upper limit value='{upper_limit:.3f}' should be within range {PCS_RESTRAINT_RANGE}.\n"
 
         return dstFunc
 

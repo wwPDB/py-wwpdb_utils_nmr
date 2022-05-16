@@ -322,7 +322,7 @@ class RosettaMRParserListener(ParseTreeListener):
 
         if target_value is not None:
             if DIST_ERROR_MIN < target_value < DIST_ERROR_MAX:
-                dstFunc['target_value'] = f"{target_value:.3f}"
+                dstFunc['target_value'] = f"{target_value}"
             else:
                 if target_value <= DIST_ERROR_MIN and self.__omitDistLimitOutlier:
                     self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
@@ -335,7 +335,7 @@ class RosettaMRParserListener(ParseTreeListener):
 
         if lower_limit is not None:
             if DIST_ERROR_MIN <= lower_limit < DIST_ERROR_MAX:
-                dstFunc['lower_limit'] = f"{lower_limit:.3f}"
+                dstFunc['lower_limit'] = f"{lower_limit}"
             else:
                 if lower_limit <= DIST_ERROR_MIN and self.__omitDistLimitOutlier:
                     self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
@@ -348,7 +348,7 @@ class RosettaMRParserListener(ParseTreeListener):
 
         if upper_limit is not None:
             if DIST_ERROR_MIN < upper_limit <= DIST_ERROR_MAX:
-                dstFunc['upper_limit'] = f"{upper_limit:.3f}"
+                dstFunc['upper_limit'] = f"{upper_limit}"
             else:
                 if upper_limit > DIST_ERROR_MAX and self.__omitDistLimitOutlier:
                     self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
@@ -361,7 +361,7 @@ class RosettaMRParserListener(ParseTreeListener):
 
         if lower_linear_limit is not None:
             if DIST_ERROR_MIN <= lower_linear_limit < DIST_ERROR_MAX:
-                dstFunc['lower_linear_limit'] = f"{lower_linear_limit:.3f}"
+                dstFunc['lower_linear_limit'] = f"{lower_linear_limit}"
             else:
                 if lower_linear_limit <= DIST_ERROR_MIN and self.__omitDistLimitOutlier:
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
@@ -374,7 +374,7 @@ class RosettaMRParserListener(ParseTreeListener):
 
         if upper_linear_limit is not None:
             if DIST_ERROR_MIN < upper_linear_limit <= DIST_ERROR_MAX:
-                dstFunc['upper_linear_limit'] = f"{upper_linear_limit:.3f}"
+                dstFunc['upper_linear_limit'] = f"{upper_linear_limit}"
             else:
                 if upper_linear_limit > DIST_ERROR_MAX and self.__omitDistLimitOutlier:
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
@@ -779,7 +779,7 @@ class RosettaMRParserListener(ParseTreeListener):
 
         if target_value is not None:
             if ANGLE_ERROR_MIN < target_value < ANGLE_ERROR_MAX:
-                dstFunc['target_value'] = f"{target_value:.3f}"
+                dstFunc['target_value'] = f"{target_value}"
             else:
                 validRange = False
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
@@ -787,7 +787,7 @@ class RosettaMRParserListener(ParseTreeListener):
 
         if lower_limit is not None:
             if ANGLE_ERROR_MIN <= lower_limit < ANGLE_ERROR_MAX:
-                dstFunc['lower_limit'] = f"{lower_limit:.3f}"
+                dstFunc['lower_limit'] = f"{lower_limit}"
             else:
                 validRange = False
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
@@ -795,7 +795,7 @@ class RosettaMRParserListener(ParseTreeListener):
 
         if upper_limit is not None:
             if ANGLE_ERROR_MIN < upper_limit <= ANGLE_ERROR_MAX:
-                dstFunc['upper_limit'] = f"{upper_limit:.3f}"
+                dstFunc['upper_limit'] = f"{upper_limit}"
             else:
                 validRange = False
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
@@ -803,7 +803,7 @@ class RosettaMRParserListener(ParseTreeListener):
 
         if lower_linear_limit is not None:
             if ANGLE_ERROR_MIN <= lower_linear_limit < ANGLE_ERROR_MAX:
-                dstFunc['lower_linear_limit'] = f"{lower_linear_limit:.3f}"
+                dstFunc['lower_linear_limit'] = f"{lower_linear_limit}"
             else:
                 validRange = False
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
@@ -811,7 +811,7 @@ class RosettaMRParserListener(ParseTreeListener):
 
         if upper_linear_limit is not None:
             if ANGLE_ERROR_MIN < upper_linear_limit <= ANGLE_ERROR_MAX:
-                dstFunc['upper_linear_limit'] = f"{upper_linear_limit:.3f}"
+                dstFunc['upper_linear_limit'] = f"{upper_linear_limit}"
             else:
                 validRange = False
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
@@ -1419,7 +1419,7 @@ class RosettaMRParserListener(ParseTreeListener):
             validRange = True
 
             if DIST_ERROR_MIN < target_value < DIST_ERROR_MAX:
-                dstFunc['target_value'] = f"{target_value:.3f}"
+                dstFunc['target_value'] = f"{target_value}"
             else:
                 validRange = False
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
@@ -1497,7 +1497,7 @@ class RosettaMRParserListener(ParseTreeListener):
             validRange = True
 
             if DIST_ERROR_MIN < sDev < DIST_ERROR_MAX:
-                dstFunc['standard_deviation'] = f"{sDev:.3f}"
+                dstFunc['standard_deviation'] = f"{sDev}"
             else:
                 validRange = False
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
@@ -2386,7 +2386,7 @@ class RosettaMRParserListener(ParseTreeListener):
 
             if target_value is not None:
                 if RDC_ERROR_MIN < target_value < RDC_ERROR_MAX:
-                    dstFunc['target_value'] = f"{target_value:.3f}"
+                    dstFunc['target_value'] = f"{target_value}"
                 else:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\

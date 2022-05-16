@@ -20625,7 +20625,7 @@ class NmrDpUtility:
                     elif cyanaLolDistRest == 0:
                         upl_or_lol = 'upl_only'
                     elif cyanaUplDistRest == 0:
-                        upl_or_lol = 'lpl_only'
+                        upl_or_lol = 'lol_only'
                     elif is_upl:
                         upl_or_lol = 'upl_w_lol'
                     else:

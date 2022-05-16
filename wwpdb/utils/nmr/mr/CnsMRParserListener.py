@@ -862,7 +862,7 @@ class CnsMRParserListener(ParseTreeListener):
 
             if exponent not in (1, 2, 4):
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The exponent value of dihedral angle restraint 'ed={exponent}' must be one (linear well), two (square well) or four (quartic well).\n"
+                    f"The exponent value of dihedral angle restraint 'ed={exponent}' should be 1 (linear well), 2 (square well) or 4 (quartic well).\n"
                 return
 
             target_value = target

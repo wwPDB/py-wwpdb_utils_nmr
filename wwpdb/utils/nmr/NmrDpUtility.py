@@ -7355,10 +7355,15 @@ class NmrDpUtility:
                             err_lines.append(description['line_number'])
                             err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
                             if 'input' in description:
-                                err += f"{description['input']}\n"
-                                err += f"{description['marker']}\n"
                                 enc = detect_encoding(description['input'])
+                                is_not_ascii = False
                                 if enc is not None and enc != 'ascii':
+                                    err += f"{description['input']}\n".encode().decode('ascii', 'backslashreplace')
+                                    is_not_ascii = True
+                                else:
+                                    err += f"{description['input']}\n"
+                                err += f"{description['marker']}\n"
+                                if is_not_ascii:
                                     err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r} and must be 'ascii'.\n"
                                 elif not div_test and has_content and self.__remediation_mode:
                                     corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
@@ -7373,10 +7378,7 @@ class NmrDpUtility:
                             if 'input' in description:
                                 err += f"{description['input']}\n"
                                 err += f"{description['marker']}\n"
-                                enc = detect_encoding(description['input'])
-                                if enc is not None and enc != 'ascii':
-                                    pass
-                                elif not div_test and has_content and self.__remediation_mode:
+                                if not div_test and has_content and self.__remediation_mode:
                                     corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
                                     div_test = True
                             elif not div_test and has_content and self.__remediation_mode:
@@ -7478,10 +7480,15 @@ class NmrDpUtility:
                             err_lines.append(description['line_number'])
                             err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
                             if 'input' in description:
-                                err += f"{description['input']}\n"
-                                err += f"{description['marker']}\n"
                                 enc = detect_encoding(description['input'])
+                                is_not_ascii = False
                                 if enc is not None and enc != 'ascii':
+                                    err += f"{description['input']}\n".encode().decode('ascii', 'backslashreplace')
+                                    is_not_ascii = True
+                                else:
+                                    err += f"{description['input']}\n"
+                                err += f"{description['marker']}\n"
+                                if is_not_ascii:
                                     err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r} and must be 'ascii'.\n"
                                 elif not div_test and has_content and self.__remediation_mode:
                                     corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
@@ -7496,10 +7503,7 @@ class NmrDpUtility:
                             if 'input' in description:
                                 err += f"{description['input']}\n"
                                 err += f"{description['marker']}\n"
-                                enc = detect_encoding(description['input'])
-                                if enc is not None and enc != 'ascii':
-                                    pass
-                                elif not div_test and has_content and self.__remediation_mode:
+                                if not div_test and has_content and self.__remediation_mode:
                                     corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
                                     div_test = True
                             elif not div_test and has_content and self.__remediation_mode:
@@ -7591,10 +7595,15 @@ class NmrDpUtility:
                             err_lines.append(description['line_number'])
                             err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
                             if 'input' in description:
-                                err += f"{description['input']}\n"
-                                err += f"{description['marker']}\n"
                                 enc = detect_encoding(description['input'])
+                                is_not_ascii = False
                                 if enc is not None and enc != 'ascii':
+                                    err += f"{description['input']}\n".encode().decode('ascii', 'backslashreplace')
+                                    is_not_ascii = True
+                                else:
+                                    err += f"{description['input']}\n"
+                                err += f"{description['marker']}\n"
+                                if is_not_ascii:
                                     err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r} and must be 'ascii'.\n"
                                 elif not div_test and has_content and self.__remediation_mode:
                                     corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
@@ -7609,10 +7618,7 @@ class NmrDpUtility:
                             if 'input' in description:
                                 err += f"{description['input']}\n"
                                 err += f"{description['marker']}\n"
-                                enc = detect_encoding(description['input'])
-                                if enc is not None and enc != 'ascii':
-                                    pass
-                                elif not div_test and has_content and self.__remediation_mode:
+                                if not div_test and has_content and self.__remediation_mode:
                                     corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
                                     div_test = True
 
@@ -7701,10 +7707,15 @@ class NmrDpUtility:
                             err_lines.append(description['line_number'])
                             err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
                             if 'input' in description:
-                                err += f"{description['input']}\n"
-                                err += f"{description['marker']}\n"
                                 enc = detect_encoding(description['input'])
+                                is_not_ascii = False
                                 if enc is not None and enc != 'ascii':
+                                    err += f"{description['input']}\n".encode().decode('ascii', 'backslashreplace')
+                                    is_not_ascii = True
+                                else:
+                                    err += f"{description['input']}\n"
+                                err += f"{description['marker']}\n"
+                                if is_not_ascii:
                                     err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r} and must be 'ascii'.\n"
                                 elif not div_test and has_content and self.__remediation_mode:
                                     corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
@@ -7719,10 +7730,7 @@ class NmrDpUtility:
                             if 'input' in description:
                                 err += f"{description['input']}\n"
                                 err += f"{description['marker']}\n"
-                                enc = detect_encoding(description['input'])
-                                if enc is not None and enc != 'ascii':
-                                    pass
-                                elif not div_test and has_content and self.__remediation_mode:
+                                if not div_test and has_content and self.__remediation_mode:
                                     corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
                                     div_test = True
 
@@ -7824,10 +7832,15 @@ class NmrDpUtility:
                             err_lines.append(description['line_number'])
                             err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
                             if 'input' in description:
-                                err += f"{description['input']}\n"
-                                err += f"{description['marker']}\n"
                                 enc = detect_encoding(description['input'])
+                                is_not_ascii = False
                                 if enc is not None and enc != 'ascii':
+                                    err += f"{description['input']}\n".encode().decode('ascii', 'backslashreplace')
+                                    is_not_ascii = True
+                                else:
+                                    err += f"{description['input']}\n"
+                                err += f"{description['marker']}\n"
+                                if is_not_ascii:
                                     err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r} and must be 'ascii'.\n"
                                 elif not div_test and has_content and self.__remediation_mode:
                                     corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
@@ -7842,10 +7855,7 @@ class NmrDpUtility:
                             if 'input' in description:
                                 err += f"{description['input']}\n"
                                 err += f"{description['marker']}\n"
-                                enc = detect_encoding(description['input'])
-                                if enc is not None and enc != 'ascii':
-                                    pass
-                                elif not div_test and has_content and self.__remediation_mode:
+                                if not div_test and has_content and self.__remediation_mode:
                                     corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
                                     div_test = True
 
@@ -7946,10 +7956,15 @@ class NmrDpUtility:
                             err_lines.append(description['line_number'])
                             err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
                             if 'input' in description:
-                                err += f"{description['input']}\n"
-                                err += f"{description['marker']}\n"
                                 enc = detect_encoding(description['input'])
+                                is_not_ascii = False
                                 if enc is not None and enc != 'ascii':
+                                    err += f"{description['input']}\n".encode().decode('ascii', 'backslashreplace')
+                                    is_not_ascii = True
+                                else:
+                                    err += f"{description['input']}\n"
+                                err += f"{description['marker']}\n"
+                                if is_not_ascii:
                                     err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r} and must be 'ascii'.\n"
                                 elif not div_test and has_content and self.__remediation_mode:
                                     corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
@@ -7964,10 +7979,7 @@ class NmrDpUtility:
                             if 'input' in description:
                                 err += f"{description['input']}\n"
                                 err += f"{description['marker']}\n"
-                                enc = detect_encoding(description['input'])
-                                if enc is not None and enc != 'ascii':
-                                    pass
-                                elif not div_test and has_content and self.__remediation_mode:
+                                if not div_test and has_content and self.__remediation_mode:
                                     corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
                                     div_test = True
 
@@ -9627,10 +9639,7 @@ class NmrDpUtility:
 
                 for description in messageList:
                     if 'input' in description:
-                        enc = detect_encoding(description['input'])
-                        if enc is not None and enc != 'ascii':
-                            pass
-                        elif not div_test and has_content:
+                        if not div_test and has_content:
                             self.__divideLegacyMRIfNecessary(file_path, file_type, description, src_path, offset)
                             div_test = True
                     elif not div_test and has_content and file_type in ('nm-res-xpl', 'nm-res-cns'):
@@ -9706,10 +9715,15 @@ class NmrDpUtility:
                                     _err += f"[Syntax error as {_mr_format_name} restraint file] "\
                                         f"line {description['line_number']}:{description['column_position']} {description['message']}\n"
                                     if 'input' in description:
-                                        _err += f"{description['input']}\n"
-                                        _err += f"{description['marker']}\n"
                                         enc = detect_encoding(description['input'])
+                                        is_not_ascii = False
                                         if enc is not None and enc != 'ascii':
+                                            _err += f"{description['input']}\n".encode().decode('ascii', 'backslashreplace')
+                                            is_not_ascii = True
+                                        else:
+                                            _err += f"{description['input']}\n"
+                                        _err += f"{description['marker']}\n"
+                                        if is_not_ascii:
                                             _err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r} and must be 'ascii'.\n"
 
                         if parser_err_listener is not None and len(_err) == 0:
@@ -9779,10 +9793,15 @@ class NmrDpUtility:
                                     _err += f"[Syntax error as an {_mr_format_name} restraint file] "\
                                         f"line {description['line_number']}:{description['column_position']} {description['message']}\n"
                                     if 'input' in description:
-                                        _err += f"{description['input']}\n"
-                                        _err += f"{description['marker']}\n"
                                         enc = detect_encoding(description['input'])
+                                        is_not_ascii = False
                                         if enc is not None and enc != 'ascii':
+                                            _err += f"{description['input']}\n".encode().decode('ascii', 'backslashreplace')
+                                            is_not_ascii = True
+                                        else:
+                                            _err += f"{description['input']}\n"
+                                        _err += f"{description['marker']}\n"
+                                        if is_not_ascii:
                                             _err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r} and must be 'ascii'.\n"
 
                         if parser_err_listener is not None and len(_err) == 0:
@@ -9852,10 +9871,15 @@ class NmrDpUtility:
                                     _err += f"[Syntax error as an {_mr_format_name} restraint file] "\
                                         f"line {description['line_number']}:{description['column_position']} {description['message']}\n"
                                     if 'input' in description:
-                                        _err += f"{description['input']}\n"
-                                        _err += f"{description['marker']}\n"
                                         enc = detect_encoding(description['input'])
+                                        is_not_ascii = False
                                         if enc is not None and enc != 'ascii':
+                                            _err += f"{description['input']}\n".encode().decode('ascii', 'backslashreplace')
+                                            is_not_ascii = True
+                                        else:
+                                            _err += f"{description['input']}\n"
+                                        _err += f"{description['marker']}\n"
+                                        if is_not_ascii:
                                             _err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r} and must be 'ascii'.\n"
 
                         if parser_err_listener is not None and len(_err) == 0:
@@ -9924,10 +9948,15 @@ class NmrDpUtility:
                                     _err += f"[Syntax error as an {_mr_format_name} parameter/topology file] "\
                                         f"line {description['line_number']}:{description['column_position']} {description['message']}\n"
                                     if 'input' in description:
-                                        _err += f"{description['input']}\n"
-                                        _err += f"{description['marker']}\n"
                                         enc = detect_encoding(description['input'])
+                                        is_not_ascii = False
                                         if enc is not None and enc != 'ascii':
+                                            _err += f"{description['input']}\n".encode().decode('ascii', 'backslashreplace')
+                                            is_not_ascii = True
+                                        else:
+                                            _err += f"{description['input']}\n"
+                                        _err += f"{description['marker']}\n"
+                                        if is_not_ascii:
                                             _err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r} and must be 'ascii'.\n"
 
                         if parser_err_listener is not None and len(_err) == 0:
@@ -9998,10 +10027,15 @@ class NmrDpUtility:
                                     _err += f"[Syntax error as a {_mr_format_name} restraint file] "\
                                         f"line {description['line_number']}:{description['column_position']} {description['message']}\n"
                                     if 'input' in description:
-                                        _err += f"{description['input']}\n"
-                                        _err += f"{description['marker']}\n"
                                         enc = detect_encoding(description['input'])
+                                        is_not_ascii = False
                                         if enc is not None and enc != 'ascii':
+                                            _err += f"{description['input']}\n".encode().decode('ascii', 'backslashreplace')
+                                            is_not_ascii = True
+                                        else:
+                                            _err += f"{description['input']}\n"
+                                        _err += f"{description['marker']}\n"
+                                        if is_not_ascii:
                                             _err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r} and must be 'ascii'.\n"
 
                         if parser_err_listener is not None and len(_err) == 0:
@@ -10073,10 +10107,15 @@ class NmrDpUtility:
                                     _err += f"[Syntax error as a {_mr_format_name} restraint file] "\
                                         f"line {description['line_number']}:{description['column_position']} {description['message']}\n"
                                     if 'input' in description:
-                                        _err += f"{description['input']}\n"
-                                        _err += f"{description['marker']}\n"
                                         enc = detect_encoding(description['input'])
+                                        is_not_ascii = False
                                         if enc is not None and enc != 'ascii':
+                                            _err += f"{description['input']}\n".encode().decode('ascii', 'backslashreplace')
+                                            is_not_ascii = True
+                                        else:
+                                            _err += f"{description['input']}\n"
+                                        _err += f"{description['marker']}\n"
+                                        if is_not_ascii:
                                             _err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r} and must be 'ascii'.\n"
 
                         if parser_err_listener is not None and len(_err) == 0:

@@ -7359,7 +7359,7 @@ class NmrDpUtility:
                                 err += f"{description['marker']}\n"
                                 enc = detect_encoding(description['input'])
                                 if enc is not None and enc != 'ascii':
-                                    err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r}.\n"
+                                    err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r} and must be 'ascii'.\n"
                                 elif not div_test and has_content and self.__remediation_mode:
                                     corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
                                     div_test = True
@@ -7482,7 +7482,7 @@ class NmrDpUtility:
                                 err += f"{description['marker']}\n"
                                 enc = detect_encoding(description['input'])
                                 if enc is not None and enc != 'ascii':
-                                    err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r}.\n"
+                                    err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r} and must be 'ascii'.\n"
                                 elif not div_test and has_content and self.__remediation_mode:
                                     corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
                                     div_test = True
@@ -7595,7 +7595,7 @@ class NmrDpUtility:
                                 err += f"{description['marker']}\n"
                                 enc = detect_encoding(description['input'])
                                 if enc is not None and enc != 'ascii':
-                                    err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r}.\n"
+                                    err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r} and must be 'ascii'.\n"
                                 elif not div_test and has_content and self.__remediation_mode:
                                     corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
                                     div_test = True
@@ -7705,7 +7705,7 @@ class NmrDpUtility:
                                 err += f"{description['marker']}\n"
                                 enc = detect_encoding(description['input'])
                                 if enc is not None and enc != 'ascii':
-                                    err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r}.\n"
+                                    err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r} and must be 'ascii'.\n"
                                 elif not div_test and has_content and self.__remediation_mode:
                                     corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
                                     div_test = True
@@ -7828,7 +7828,7 @@ class NmrDpUtility:
                                 err += f"{description['marker']}\n"
                                 enc = detect_encoding(description['input'])
                                 if enc is not None and enc != 'ascii':
-                                    err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r}.\n"
+                                    err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r} and must be 'ascii'.\n"
                                 elif not div_test and has_content and self.__remediation_mode:
                                     corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
                                     div_test = True
@@ -7950,7 +7950,7 @@ class NmrDpUtility:
                                 err += f"{description['marker']}\n"
                                 enc = detect_encoding(description['input'])
                                 if enc is not None and enc != 'ascii':
-                                    err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r}.\n"
+                                    err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r} and must be 'ascii'.\n"
                                 elif not div_test and has_content and self.__remediation_mode:
                                     corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
                                     div_test = True
@@ -9710,7 +9710,7 @@ class NmrDpUtility:
                                         _err += f"{description['marker']}\n"
                                         enc = detect_encoding(description['input'])
                                         if enc is not None and enc != 'ascii':
-                                            _err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r}.\n"
+                                            _err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r} and must be 'ascii'.\n"
 
                         if parser_err_listener is not None and len(_err) == 0:
                             messageList = parser_err_listener.getMessageList()
@@ -9783,7 +9783,7 @@ class NmrDpUtility:
                                         _err += f"{description['marker']}\n"
                                         enc = detect_encoding(description['input'])
                                         if enc is not None and enc != 'ascii':
-                                            _err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r}.\n"
+                                            _err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r} and must be 'ascii'.\n"
 
                         if parser_err_listener is not None and len(_err) == 0:
                             messageList = parser_err_listener.getMessageList()
@@ -9856,7 +9856,7 @@ class NmrDpUtility:
                                         _err += f"{description['marker']}\n"
                                         enc = detect_encoding(description['input'])
                                         if enc is not None and enc != 'ascii':
-                                            _err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r}.\n"
+                                            _err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r} and must be 'ascii'.\n"
 
                         if parser_err_listener is not None and len(_err) == 0:
                             messageList = parser_err_listener.getMessageList()
@@ -9928,7 +9928,7 @@ class NmrDpUtility:
                                         _err += f"{description['marker']}\n"
                                         enc = detect_encoding(description['input'])
                                         if enc is not None and enc != 'ascii':
-                                            _err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r}.\n"
+                                            _err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r} and must be 'ascii'.\n"
 
                         if parser_err_listener is not None and len(_err) == 0:
                             messageList = parser_err_listener.getMessageList()
@@ -10002,7 +10002,7 @@ class NmrDpUtility:
                                         _err += f"{description['marker']}\n"
                                         enc = detect_encoding(description['input'])
                                         if enc is not None and enc != 'ascii':
-                                            _err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r}.\n"
+                                            _err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r} and must be 'ascii'.\n"
 
                         if parser_err_listener is not None and len(_err) == 0:
                             messageList = parser_err_listener.getMessageList()
@@ -10077,7 +10077,7 @@ class NmrDpUtility:
                                         _err += f"{description['marker']}\n"
                                         enc = detect_encoding(description['input'])
                                         if enc is not None and enc != 'ascii':
-                                            _err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r}.\n"
+                                            _err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r} and must be 'ascii'.\n"
 
                         if parser_err_listener is not None and len(_err) == 0:
                             messageList = parser_err_listener.getMessageList()

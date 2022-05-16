@@ -7785,6 +7785,7 @@ class NmrDpUtility:
                     reader = CyanaMRReader(self.__verbose, self.__lfh, None, None, None,
                                            self.__ccU, self.__csStat, self.__nefT,
                                            file_ext=cya_file_ext)
+                    reader.setRemediateMode(self.__remediation_mode)
                     listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
                     if listener is not None:
@@ -7795,6 +7796,7 @@ class NmrDpUtility:
                                                    self.__ccU, self.__csStat, self.__nefT,
                                                    reasons,
                                                    file_ext=cya_file_ext)
+                            reader.setRemediateMode(self.__remediation_mode)
                             listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
                     err = ''
@@ -7906,6 +7908,7 @@ class NmrDpUtility:
 
                     reader = RosettaMRReader(self.__verbose, self.__lfh, None, None, None,
                                              self.__ccU, self.__csStat, self.__nefT)
+                    reader.setRemediateMode(self.__remediation_mode)
                     listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
                     if listener is not None:
@@ -7915,6 +7918,7 @@ class NmrDpUtility:
                             reader = RosettaMRReader(self.__verbose, self.__lfh, None, None, None,
                                                      self.__ccU, self.__csStat, self.__nefT,
                                                      reasons)
+                            reader.setRemediateMode(self.__remediation_mode)
                             listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
                     err = ''
@@ -9536,7 +9540,7 @@ class NmrDpUtility:
         return True
 
     def __testFormatValidityOfLegacyMR(self, file_path, file_type, src_path, offset):
-        """ Perform format check of legacy NMR restraint file.
+        """ Perform format check of a given MR file, then split MR recursively if necessary.
         """
 
         div_test = False
@@ -9560,9 +9564,11 @@ class NmrDpUtility:
                 reader = CyanaMRReader(self.__verbose, self.__lfh, None, None, None,
                                        self.__ccU, self.__csStat, self.__nefT,
                                        file_ext=cya_file_ext)
+                reader.setRemediateMode(self.__remediation_mode)
             elif file_type == 'nm-res-ros':
                 reader = RosettaMRReader(self.__verbose, self.__lfh, None, None, None,
                                          self.__ccU, self.__csStat, self.__nefT)
+                reader.setRemediateMode(self.__remediation_mode)
 
             listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
@@ -9583,10 +9589,12 @@ class NmrDpUtility:
                             reader = CyanaMRReader(self.__verbose, self.__lfh, None, None, None,
                                                    self.__ccU, self.__csStat, self.__nefT,
                                                    reasons, file_ext=cya_file_ext)
+                            reader.setRemediateMode(self.__remediation_mode)
                         elif file_type == 'nm-res-ros':
                             reader = RosettaMRReader(self.__verbose, self.__lfh, None, None, None,
                                                      self.__ccU, self.__csStat, self.__nefT,
                                                      reasons)
+                            reader.setRemediateMode(self.__remediation_mode)
 
                         listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
@@ -20638,6 +20646,7 @@ class NmrDpUtility:
                                        self.__cR, cC,
                                        self.__ccU, self.__csStat, self.__nefT,
                                        None, upl_or_lol, cya_file_ext)
+                reader.setRemediateMode(self.__remediation_mode)
 
                 listener, _, _ = reader.parse(file_path, self.__cifPath)
 
@@ -20650,6 +20659,7 @@ class NmrDpUtility:
                                                self.__cR, cC,
                                                self.__ccU, self.__csStat, self.__nefT,
                                                reasons, upl_or_lol, cya_file_ext)
+                        reader.setRemediateMode(self.__remediation_mode)
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath)
 
@@ -20725,6 +20735,7 @@ class NmrDpUtility:
                                          self.__representative_model_id,
                                          self.__cR, cC,
                                          self.__ccU, self.__csStat, self.__nefT)
+                reader.setRemediateMode(self.__remediation_mode)
 
                 listener, _, _ = reader.parse(file_path, self.__cifPath)
 
@@ -20737,6 +20748,7 @@ class NmrDpUtility:
                                                  self.__cR, cC,
                                                  self.__ccU, self.__csStat, self.__nefT,
                                                  reasons)
+                        reader.setRemediateMode(self.__remediation_mode)
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath)
 

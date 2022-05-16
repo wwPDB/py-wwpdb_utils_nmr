@@ -94,6 +94,7 @@ class CyanaMRParserListener(ParseTreeListener):
     # __verbose = None
     # __lfh = None
     __debug = False
+    __remediate = False
     __omitDistLimitOutlier = True
 
     distRestraints = 0      # CYANA: Distance restraint file (.upl or .lol)
@@ -223,8 +224,14 @@ class CyanaMRParserListener(ParseTreeListener):
 
         self.__max_dist_value = None
 
+        self.__dihed_lb_grater_than_ub = False
+        self.__dihed_ub_always_positive = True
+
     def setDebugMode(self, debug):
         self.__debug = debug
+
+    def setRemediateMode(self, remediate):
+        self.__remediate = remediate
 
     # Enter a parse tree produced by CyanaMRParser#cyana_mr.
     def enterCyana_mr(self, ctx: CyanaMRParser.Cyana_mrContext):  # pylint: disable=unused-argument
@@ -237,6 +244,13 @@ class CyanaMRParserListener(ParseTreeListener):
         else:
             self.warningMessage = self.warningMessage[0:-1]
             self.warningMessage = '\n'.join(set(self.warningMessage.split('\n')))
+
+        if self.__remediate:
+            if self.__dihed_lb_grater_than_ub and self.__dihed_ub_always_positive:
+                if self.reasonsForReParsing is None:
+                    self.reasonsForReParsing = {}
+                if 'dihed_unusual_order' not in self.reasonsForReParsing:
+                    self.reasonsForReParsing['dihed_unusual_order'] = True
 
     # Enter a parse tree produced by CyanaMRParser#distance_restraints.
     def enterDistance_restraints(self, ctx: CyanaMRParser.Distance_restraintsContext):  # pylint: disable=unused-argument
@@ -790,6 +804,11 @@ class CyanaMRParserListener(ParseTreeListener):
             lower_limit = self.numberSelection[0]
             upper_limit = self.numberSelection[1]
 
+            if self.__remediate and self.__reasons is not None and 'dihed_unusual_order' in self.__reasons:
+                target_value, deviation = lower_limit, upper_limit
+                lower_limit = target_value - deviation
+                upper_limit = target_value + deviation
+
             weight = 1.0
             if len(self.numberSelection) > 2:
                 weight = self.numberSelection[2]
@@ -802,7 +821,12 @@ class CyanaMRParserListener(ParseTreeListener):
             if lower_limit > upper_limit:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                     f"The angle's lower limit '{lower_limit}' must be less than or equal to the upper limit '{upper_limit}'.\n"
+                if self.__remediate:
+                    self.__dihed_lb_grater_than_ub = True
                 return
+
+            if self.__remediate and upper_limit < 0.0:
+                self.__dihed_ub_always_positive = False
 
             if angleName not in KNOWN_ANGLE_NAMES:
                 lenAngleName = len(angleName)

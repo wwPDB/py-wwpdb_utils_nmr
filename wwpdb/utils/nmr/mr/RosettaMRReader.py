@@ -49,6 +49,7 @@ class RosettaMRReader:
         self.__verbose = verbose
         self.__lfh = log
         self.__debug = False
+        self.__remediate = False
 
         self.__maxLexerErrorReport = MAX_ERROR_REPORT
         self.__maxParserErrorReport = MAX_ERROR_REPORT
@@ -75,6 +76,9 @@ class RosettaMRReader:
 
     def setDebugMode(self, debug):
         self.__debug = debug
+
+    def setRemediateMode(self, remediate):
+        self.__remediate = remediate
 
     def setLexerMaxErrorReport(self, maxErrReport):
         self.__maxLexerErrorReport = maxErrReport
@@ -150,6 +154,7 @@ class RosettaMRReader:
                                                self.__ccU, self.__csStat, self.__nefT,
                                                self.__reasons)
             listener.setDebugMode(self.__debug)
+            listener.setRemediateMode(self.__remediate)
             walker.walk(listener, tree)
 
             messageList = parser_error_listener.getMessageList()

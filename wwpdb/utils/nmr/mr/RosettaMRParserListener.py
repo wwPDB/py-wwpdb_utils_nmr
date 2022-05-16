@@ -75,6 +75,7 @@ class RosettaMRParserListener(ParseTreeListener):
     # __verbose = None
     # __lfh = None
     __debug = False
+    __remediate = False
     __omitDistLimitOutlier = True
 
     distRestraints = 0      # ROSETTA: Distance restraints
@@ -180,8 +181,14 @@ class RosettaMRParserListener(ParseTreeListener):
 
         self.concat_resnum_chain_pat = re.compile(r'^(\d+)(\S+)$')
 
+        self.__dist_lb_grater_than_ub = False
+        self.__dist_ub_always_positive = True
+
     def setDebugMode(self, debug):
         self.__debug = debug
+
+    def setRemediateMode(self, remediate):
+        self.__remediate = remediate
 
     # Enter a parse tree produced by RosettaMRParser#rosetta_mr.
     def enterRosetta_mr(self, ctx: RosettaMRParser.Rosetta_mrContext):  # pylint: disable=unused-argument
@@ -194,6 +201,13 @@ class RosettaMRParserListener(ParseTreeListener):
         else:
             self.warningMessage = self.warningMessage[0:-1]
             self.warningMessage = '\n'.join(set(self.warningMessage.split('\n')))
+
+        if self.__remediate:
+            if self.__dist_lb_grater_than_ub and self.__dist_ub_always_positive:
+                if self.reasonsForReParsing is None:
+                    self.reasonsForReParsing = {}
+                if 'dist_unusual_order' not in self.reasonsForReParsing:
+                    self.reasonsForReParsing['dist_unusual_order'] = True
 
     # Enter a parse tree produced by RosettaMRParser#atom_pair_restraints.
     def enterAtom_pair_restraints(self, ctx: RosettaMRParser.Atom_pair_restraintsContext):  # pylint: disable=unused-argument
@@ -1661,10 +1675,23 @@ class RosettaMRParserListener(ParseTreeListener):
                 func['ub'] = ub
                 func['sd'] = sd
 
+                if self.__remediate and self.__reasons is not None:
+                    if self.__cur_subtype == 'dist' and 'dist_unusual_order' in self.__reasons:
+                        target_value, dminus, dplus = lb, ub, sd
+                        func['lb'] = target_value - dminus
+                        func['ub'] = target_value + dplus
+                        func['sd'] = (dminus + dplus) / 2.0
+
                 if lb > ub:
                     valid = False
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                         f"{funcType} lower boundary 'lb={lb}' must be less than or equal to upper boundary 'ub={ub}'.\n"
+                    if self.__remediate:
+                        if self.__cur_subtype == 'dist' and lb > sd:
+                            self.__dist_lb_grater_than_ub = True
+                if self.__remediate:
+                    if self.__cur_subtype == 'dist' and (ub > lb or sd > lb):
+                        self.__dist_ub_always_positive = False
                 if sd <= 0.0:
                     valid = False
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
@@ -1703,6 +1730,13 @@ class RosettaMRParserListener(ParseTreeListener):
                 func['ub'] = ub
                 func['sd'] = sd
 
+                if self.__remediate and self.__reasons is not None:
+                    if self.__cur_subtype == 'dist' and 'dist_unusual_order' in self.__reasons:
+                        target_value, dminus, dplus = lb, ub, sd
+                        func['lb'] = target_value - dminus
+                        func['ub'] = target_value + dplus
+                        func['sd'] = (dminus + dplus) / 2.0
+
                 if period < 0.0:
                     valid = False
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
@@ -1711,6 +1745,12 @@ class RosettaMRParserListener(ParseTreeListener):
                     valid = False
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                         f"{funcType} lower boundary 'lb={lb}' must be less than or equal to upper boundary 'ub={ub}'.\n"
+                    if self.__remediate:
+                        if self.__cur_subtype == 'dist' and lb > sd:
+                            self.__dist_lb_grater_than_ub = True
+                if self.__remediate:
+                    if self.__cur_subtype == 'dist' and (ub > lb or sd > lb):
+                        self.__dist_ub_always_positive = False
                 if sd <= 0.0:
                     valid = False
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
@@ -1751,6 +1791,13 @@ class RosettaMRParserListener(ParseTreeListener):
                 func['ub'] = ub
                 func['sd'] = sd
 
+                if self.__remediate and self.__reasons is not None:
+                    if self.__cur_subtype == 'dist' and 'dist_unusual_order' in self.__reasons:
+                        target_value, dminus, dplus = lb, ub, sd
+                        func['lb'] = target_value - dminus
+                        func['ub'] = target_value + dplus
+                        func['sd'] = (dminus + dplus) / 2.0
+
                 if period < 0.0:
                     valid = False
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
@@ -1759,6 +1806,12 @@ class RosettaMRParserListener(ParseTreeListener):
                     valid = False
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                         f"{funcType} lower boundary 'lb={lb}' must be less than or equal to upper boundary 'ub={ub}'.\n"
+                    if self.__remediate:
+                        if self.__cur_subtype == 'dist' and lb > sd:
+                            self.__dist_lb_grater_than_ub = True
+                if self.__remediate:
+                    if self.__cur_subtype == 'dist' and (ub > lb or sd > lb):
+                        self.__dist_ub_always_positive = False
                 if sd <= 0.0:
                     valid = False
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\

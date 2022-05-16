@@ -8531,13 +8531,7 @@ class NmrDpUtility:
 
         offset += err_line_number - 1
 
-        if j == 0:
-            if not xplor_ends_wo_statement:
-                xplor_ends_wo_statement = True
-            if not amber_ends_wo_statement:
-                amber_ends_wo_statement = True
-
-        if (xplor_ends_wo_statement or amber_ends_wo_statement or concat_comment_at_eol) or i < err_line_number:
+        if (xplor_ends_wo_statement or amber_ends_wo_statement or concat_comment_at_eol) or i <= err_line_number or j == 0:
 
             corrected = False
 
@@ -8545,15 +8539,15 @@ class NmrDpUtility:
 
                 has_end_tag = False
 
-                j = 0
+                k = 0
 
                 with open(src_path, 'r') as ifp:
                     for line in ifp:
-                        if j == offset:
+                        if k == offset:
                             if xplor_end_pattern.match(line):
                                 has_end_tag = True
                             break
-                        j += 1
+                        k += 1
 
                 if has_end_tag:
 
@@ -8574,16 +8568,16 @@ class NmrDpUtility:
                         else:
                             cor_src_path = re.sub(r'\-trimmed$', '', src_path) + '-corrected'
 
-                    j = 0
+                    k = 0
 
                     with open(src_path, 'r') as ifp,\
                             open(cor_src_path, 'w') as ofp:
                         for line in ifp:
-                            if j == offset:
+                            if k == offset:
                                 ofp.write('#' + line)
                             else:
                                 ofp.write(line)
-                            j += 1
+                            k += 1
 
                     if cor_test:
                         os.rename(cor_src_path, src_path)
@@ -8594,15 +8588,15 @@ class NmrDpUtility:
 
                 has_end_tag = False
 
-                j = 0
+                k = 0
 
                 with open(src_path, 'r') as ifp:
                     for line in ifp:
-                        if j == offset:
+                        if k == offset:
                             if amber_end_pattern.match(line):
                                 has_end_tag = True
                             break
-                        j += 1
+                        k += 1
 
                 if has_end_tag:
 
@@ -8623,16 +8617,16 @@ class NmrDpUtility:
                         else:
                             cor_src_path = re.sub(r'\-trimmed$', '', src_path) + '-corrected'
 
-                    j = 0
+                    k = 0
 
                     with open(src_path, 'r') as ifp,\
                             open(cor_src_path, 'w') as ofp:
                         for line in ifp:
-                            if j == offset:
+                            if k == offset:
                                 ofp.write('#' + line)
                             else:
                                 ofp.write(line)
-                            j += 1
+                            k += 1
 
                     if cor_test:
                         os.rename(cor_src_path, src_path)
@@ -8688,16 +8682,16 @@ class NmrDpUtility:
                             else:
                                 cor_src_path = re.sub(r'\-trimmed$', '', src_path) + '-corrected'
 
-                        j = 0
+                        k = 0
 
                         with open(src_path, 'r') as ifp,\
                                 open(cor_src_path, 'w') as ofp:
                             for line in ifp:
-                                if j == offset:
+                                if k == offset:
                                     ofp.write(f"{test_line} {err_desc['input'][comment_code_index:]}\n")
                                 else:
                                     ofp.write(line)
-                                j += 1
+                                k += 1
 
                         if cor_test:
                             os.rename(cor_src_path, src_path)
@@ -8763,6 +8757,72 @@ class NmrDpUtility:
                     os.rename(cor_src_path, src_path)
 
                 corrected = True
+
+            if not corrected and j in (0, err_line_number - 1):
+
+                test_line = err_desc['input']
+
+                if reader is not None:
+                    pass
+
+                elif file_type == 'nm-res-xpl':
+                    reader = XplorMRReader(False, self.__lfh, None, None, None,
+                                           self.__ccU, self.__csStat, self.__nefT)
+                elif file_type == 'nm-res-cns':
+                    reader = CnsMRReader(False, self.__lfh, None, None, None,
+                                         self.__ccU, self.__csStat, self.__nefT)
+                elif file_type == 'nm-res-amb':
+                    reader = AmberMRReader(self.__verbose, self.__lfh, None, None, None,
+                                           self.__ccU, self.__csStat, self.__nefT)
+                elif file_type == 'nm-aux-amb':
+                    reader = AmberPTReader(self.__verbose, self.__lfh, None, None, None,
+                                           self.__ccU, self.__csStat)
+                elif file_type == 'nm-res-cya':
+                    reader = CyanaMRReader(self.__verbose, self.__lfh, None, None, None,
+                                           self.__ccU, self.__csStat, self.__nefT,
+                                           file_ext=self.__retrieveOriginalFileExtensionOfCyanaMRFile())
+                elif file_type == 'nm-res-ros':
+                    reader = RosettaMRReader(self.__verbose, self.__lfh, None, None, None,
+                                             self.__ccU, self.__csStat, self.__nefT)
+
+                _, _, lexer_err_listener = reader.parse(test_line, None, isFilePath=False)
+
+                has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
+
+                if not has_lexer_error:
+
+                    dir_path = os.path.dirname(src_path)
+
+                    for div_file_name in os.listdir(dir_path):
+                        if os.path.isfile(os.path.join(dir_path, div_file_name))\
+                           and (div_file_name.endswith('-div_src.mr') or div_file_name.endswith('-div_dst.mr')):
+                            os.remove(os.path.join(dir_path, div_file_name))
+
+                    src_file_name = os.path.basename(src_path)
+                    cor_test = '-corrected' in src_file_name
+                    if cor_test:
+                        cor_src_path = src_path + '~'
+                    else:
+                        if src_path.endswith('.mr'):
+                            cor_src_path = re.sub(r'\-trimmed$', '', os.path.splitext(src_path)[0]) + '-corrected.mr'
+                        else:
+                            cor_src_path = re.sub(r'\-trimmed$', '', src_path) + '-corrected'
+
+                    k = 0
+
+                    with open(src_path, 'r') as ifp,\
+                            open(cor_src_path, 'w') as ofp:
+                        for line in ifp:
+                            if k == offset:
+                                ofp.write('#' + line)
+                            else:
+                                ofp.write(line)
+                            k += 1
+
+                    if cor_test:
+                        os.rename(cor_src_path, src_path)
+
+                    corrected = True
 
             if os.path.exists(div_src_file):
                 os.remove(div_src_file)
@@ -9225,13 +9285,7 @@ class NmrDpUtility:
 
         offset += err_line_number - 1
 
-        if j == 0:
-            if not xplor_ends_wo_statement:
-                xplor_ends_wo_statement = True
-            if not amber_ends_wo_statement:
-                amber_ends_wo_statement = True
-
-        if (xplor_ends_wo_statement or amber_ends_wo_statement or concat_comment_at_eol) or i < err_line_number:
+        if (xplor_ends_wo_statement or amber_ends_wo_statement or concat_comment_at_eol) or i <= err_line_number or j == 0:
 
             corrected = False
 
@@ -9239,15 +9293,15 @@ class NmrDpUtility:
 
                 has_end_tag = False
 
-                j = 0
+                k = 0
 
                 with open(src_path, 'r') as ifp:
                     for line in ifp:
-                        if j == offset:
+                        if k == offset:
                             if xplor_end_pattern.match(line):
                                 has_end_tag = True
                             break
-                        j += 1
+                        k += 1
 
                 if has_end_tag:
 
@@ -9268,16 +9322,16 @@ class NmrDpUtility:
                         else:
                             cor_src_path = re.sub(r'\-trimmed$', '', src_path) + '-corrected'
 
-                    j = 0
+                    k = 0
 
                     with open(src_path, 'r') as ifp,\
                             open(cor_src_path, 'w') as ofp:
                         for line in ifp:
-                            if j == offset:
+                            if k == offset:
                                 ofp.write('#' + line)
                             else:
                                 ofp.write(line)
-                            j += 1
+                            k += 1
 
                     if cor_test:
                         os.rename(cor_src_path, src_path)
@@ -9288,15 +9342,15 @@ class NmrDpUtility:
 
                 has_end_tag = False
 
-                j = 0
+                k = 0
 
                 with open(src_path, 'r') as ifp:
                     for line in ifp:
-                        if j == offset:
+                        if k == offset:
                             if amber_end_pattern.match(line):
                                 has_end_tag = True
                             break
-                        j += 1
+                        k += 1
 
                 if has_end_tag:
 
@@ -9317,16 +9371,16 @@ class NmrDpUtility:
                         else:
                             cor_src_path = re.sub(r'\-trimmed$', '', src_path) + '-corrected'
 
-                    j = 0
+                    k = 0
 
                     with open(src_path, 'r') as ifp,\
                             open(cor_src_path, 'w') as ofp:
                         for line in ifp:
-                            if j == offset:
+                            if k == offset:
                                 ofp.write('#' + line)
                             else:
                                 ofp.write(line)
-                            j += 1
+                            k += 1
 
                     if cor_test:
                         os.rename(cor_src_path, src_path)
@@ -9379,16 +9433,16 @@ class NmrDpUtility:
                             else:
                                 cor_src_path = re.sub(r'\-trimmed$', '', src_path) + '-corrected'
 
-                        j = 0
+                        k = 0
 
                         with open(src_path, 'r') as ifp,\
                                 open(cor_src_path, 'w') as ofp:
                             for line in ifp:
-                                if j == offset:
+                                if k == offset:
                                     ofp.write(f"{test_line} {err_desc['input'][comment_code_index:]}\n")
                                 else:
                                     ofp.write(line)
-                                j += 1
+                                k += 1
 
                         if cor_test:
                             os.rename(cor_src_path, src_path)
@@ -9454,6 +9508,72 @@ class NmrDpUtility:
                     os.rename(cor_src_path, src_path)
 
                 corrected = True
+
+            if not corrected and j in (0, err_line_number - 1):
+
+                test_line = err_desc['input']
+
+                if reader is not None:
+                    pass
+
+                elif file_type == 'nm-res-xpl':
+                    reader = XplorMRReader(False, self.__lfh, None, None, None,
+                                           self.__ccU, self.__csStat, self.__nefT)
+                elif file_type == 'nm-res-cns':
+                    reader = CnsMRReader(False, self.__lfh, None, None, None,
+                                         self.__ccU, self.__csStat, self.__nefT)
+                elif file_type == 'nm-res-amb':
+                    reader = AmberMRReader(self.__verbose, self.__lfh, None, None, None,
+                                           self.__ccU, self.__csStat, self.__nefT)
+                elif file_type == 'nm-aux-amb':
+                    reader = AmberPTReader(self.__verbose, self.__lfh, None, None, None,
+                                           self.__ccU, self.__csStat)
+                elif file_type == 'nm-res-cya':
+                    reader = CyanaMRReader(self.__verbose, self.__lfh, None, None, None,
+                                           self.__ccU, self.__csStat, self.__nefT,
+                                           file_ext=self.__retrieveOriginalFileExtensionOfCyanaMRFile())
+                elif file_type == 'nm-res-ros':
+                    reader = RosettaMRReader(self.__verbose, self.__lfh, None, None, None,
+                                             self.__ccU, self.__csStat, self.__nefT)
+
+                _, _, lexer_err_listener = reader.parse(test_line, None, isFilePath=False)
+
+                has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
+
+                if not has_lexer_error:
+
+                    dir_path = os.path.dirname(src_path)
+
+                    for div_file_name in os.listdir(dir_path):
+                        if os.path.isfile(os.path.join(dir_path, div_file_name))\
+                           and (div_file_name.endswith('-div_src.mr') or div_file_name.endswith('-div_dst.mr')):
+                            os.remove(os.path.join(dir_path, div_file_name))
+
+                    src_file_name = os.path.basename(src_path)
+                    cor_test = '-corrected' in src_file_name
+                    if cor_test:
+                        cor_src_path = src_path + '~'
+                    else:
+                        if src_path.endswith('.mr'):
+                            cor_src_path = re.sub(r'\-trimmed$', '', os.path.splitext(src_path)[0]) + '-corrected.mr'
+                        else:
+                            cor_src_path = re.sub(r'\-trimmed$', '', src_path) + '-corrected'
+
+                    k = 0
+
+                    with open(src_path, 'r') as ifp,\
+                            open(cor_src_path, 'w') as ofp:
+                        for line in ifp:
+                            if k == offset:
+                                ofp.write('#' + line)
+                            else:
+                                ofp.write(line)
+                            k += 1
+
+                    if cor_test:
+                        os.rename(cor_src_path, src_path)
+
+                    corrected = True
 
             if os.path.exists(div_src_file):
                 os.remove(div_src_file)

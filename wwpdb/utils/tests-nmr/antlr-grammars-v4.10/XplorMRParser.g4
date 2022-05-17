@@ -46,6 +46,7 @@ xplor_nih_mr:
 	hbond_db_restraint |
 	flag_statement |
 	vector_statement |
+	evaluate_statement |
 	noe_assign |			// allowing bare assign clauses for Distance restraints
 	dihedral_assign |		// allowing bare assign clauses for Dihedral angle restraints
 	sani_assign |			// allowing bare assign clauses for RDC restraints
@@ -189,7 +190,7 @@ dihedral_statement:
 	dihedral_assign |
 	Nassign Equ_op? Integer |
 	Reset |
-	Scale number_s;
+	Scale Equ_op? number_s;
 
 dihedral_assign:
 	Assign selection selection selection selection number number number Integer;
@@ -743,7 +744,7 @@ number_f:
 
 /* number expression in statement */
 number_s:
-	Real | Integer;
+	Real | Integer | Symbol_name;
 
 /* number expression in annotation */
 number_a:
@@ -799,4 +800,13 @@ vector_func_call:
 
 vector_show_property:
 	(Average_VS | Element_VS | Max_VS | Min_VS | Norm_VS | Rms_VS | Sum_VS) L_paren_VS Atom_properties_VS R_paren_VS;
+
+/* XPLOR-NIH: Evaluate statement - Syntax_
+ See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node36.html
+*/
+evaluate_statement:
+	Evaluate_Lp Symbol_name_VE Equ_op_VE evaluate_operation R_paren_VE;
+
+evaluate_operation:
+	vflc ((Add_op_VE | Sub_op_VE | Mul_op_VE | Div_op_VE | Exp_op_VE) evaluate_operation)*;
 

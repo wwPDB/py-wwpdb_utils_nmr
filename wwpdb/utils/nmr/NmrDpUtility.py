@@ -7412,7 +7412,8 @@ class NmrDpUtility:
                     elif listener is not None:
 
                         if listener.warningMessage is not None:
-                            messages = [msg for msg in listener.warningMessage.split('\n') if 'warning' not in msg]
+                            messages = [msg for msg in listener.warningMessage.split('\n')
+                                        if 'warning' not in msg and 'Unsupported' not in msg]
                             if len(messages) > 0:
                                 valid = False
 
@@ -7537,7 +7538,8 @@ class NmrDpUtility:
                     elif listener is not None:
 
                         if listener.warningMessage is not None:
-                            messages = [msg for msg in listener.warningMessage.split('\n') if 'warning' not in msg]
+                            messages = [msg for msg in listener.warningMessage.split('\n')
+                                        if 'warning' not in msg and 'Unsupported' not in msg]
                             if len(messages) > 0:
                                 valid = False
 
@@ -7649,7 +7651,8 @@ class NmrDpUtility:
                     elif listener is not None:
 
                         if listener.warningMessage is not None:
-                            messages = [msg for msg in listener.warningMessage.split('\n') if 'warning' not in msg]
+                            messages = [msg for msg in listener.warningMessage.split('\n')
+                                        if 'warning' not in msg and 'Unsupported' not in msg]
                             if len(messages) > 0:
                                 valid = False
 
@@ -7761,7 +7764,8 @@ class NmrDpUtility:
                     elif listener is not None:
 
                         if listener.warningMessage is not None:
-                            messages = [msg for msg in listener.warningMessage.split('\n') if 'warning' not in msg]
+                            messages = [msg for msg in listener.warningMessage.split('\n')
+                                        if 'warning' not in msg and 'Unsupported' not in msg]
                             if len(messages) > 0:
                                 valid = False
 
@@ -7886,7 +7890,8 @@ class NmrDpUtility:
                     elif listener is not None:
 
                         if listener.warningMessage is not None:
-                            messages = [msg for msg in listener.warningMessage.split('\n') if 'warning' not in msg]
+                            messages = [msg for msg in listener.warningMessage.split('\n')
+                                        if 'warning' not in msg and 'Unsupported' not in msg]
                             if len(messages) > 0:
                                 valid = False
 
@@ -8010,7 +8015,8 @@ class NmrDpUtility:
                     elif listener is not None:
 
                         if listener.warningMessage is not None:
-                            messages = [msg for msg in listener.warningMessage.split('\n') if 'warning' not in msg]
+                            messages = [msg for msg in listener.warningMessage.split('\n')
+                                        if 'warning' not in msg and 'Unsupported' not in msg]
                             if len(messages) > 0:
                                 valid = False
 

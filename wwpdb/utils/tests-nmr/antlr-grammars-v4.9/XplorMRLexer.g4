@@ -618,6 +618,12 @@ Do_Lp:			D O ' '* L_paren -> pushMode(VECTOR_EXPR_MODE);
 Identify_Lp:		I D E N T? I? F? Y? ' '* L_paren -> pushMode(VECTOR_EXPR_MODE);
 Show:			S H O W -> pushMode(VECTOR_SHOW_MODE);		// Vector_show_property
 
+/* XPLOR-NIH: Evaluate statement - Syntax_
+ See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node36.html
+*/
+Evaluate_Lp:		E V A L U? A? T? E? ' '* L_paren -> pushMode(VECTOR_EXPR_MODE);
+								// ( evaluate_statement )
+
 /* Three-dimentional vectors - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node15.html
 */
@@ -681,6 +687,8 @@ Gt_op:			'>';
 Leq_op:			'<=';
 Geq_op:			'>=';
 Neq_op:			'#';
+
+Symbol_name:		'$' SIMPLE_NAME;
 
 SPACE:			[ \t\r\n]+ -> skip;
 COMMENT:		'{' (COMMENT | .)*? '}' -> channel(HIDDEN);
@@ -787,6 +795,7 @@ Sqrt_VE:		S Q R T -> pushMode(VECTOR_FUNC_MODE);
 Tan_VE:			T A N -> pushMode(VECTOR_FUNC_MODE);
 
 Simple_name_VE:		SIMPLE_NAME;
+Symbol_name_VE:		'$' SIMPLE_NAME;
 Double_quote_string_VE:	'"' ~'"'* '"';
 
 mode VECTOR_FUNC_MODE; // vector function

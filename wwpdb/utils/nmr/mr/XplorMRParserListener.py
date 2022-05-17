@@ -254,7 +254,12 @@ class XplorMRParserListener(ParseTreeListener):
     # vector statement
     __cur_vector_mode = ''
     __cur_vector_atom_prop_type = ''
-    __cur_vector_atom_prop_value = None
+
+    # vlfc
+    __cur_vlfc_value = None
+
+    # evaluate statement
+    __cur_symbol_name = ''
 
     depth = 0
 
@@ -313,8 +318,12 @@ class XplorMRParserListener(ParseTreeListener):
 
     # store[1-9]
     storeSet = {i: [] for i in range(1, 10)}
+
     # vector mode: do
     vectorDo = {}
+
+    # evaluate
+    evaluate = {}
 
     # Hydrogen bond database restraint
     donor_columnSel = -1
@@ -651,6 +660,13 @@ class XplorMRParserListener(ParseTreeListener):
 
         elif ctx.SqExponent():
             self.squareExponent = self.getNumber_s(ctx.number_s())
+            if isinstance(self.squareExponent, str):
+                if self.squareExponent in self.evaluate:
+                    self.squareExponent = self.evaluate[self.squareExponent]
+                else:
+                    self.warningMessage += "[Unsupported data] "\
+                        f"The symbol {self.squareExponent!r} in the 'NOE' statement is not defined so that set the default value.\n"
+                    self.squareExponent = 2.0
             if self.squareExponent <= 0.0:
                 self.warningMessage += "[Invalid data] "\
                     "The exponent value of square-well or soft-square function "\
@@ -658,6 +674,13 @@ class XplorMRParserListener(ParseTreeListener):
 
         elif ctx.SqOffset():
             self.squareOffset = self.getNumber_s(ctx.number_s())
+            if isinstance(self.squareOffset, str):
+                if self.squareOffset in self.evaluate:
+                    self.squareOffset = self.evaluate[self.squareOffset]
+                else:
+                    self.warningMessage += "[Unsupported data] "\
+                        f"The symbol {self.squareOffset!r} in the 'NOE' statement is not defined so that set the default value.\n"
+                    self.squareOffset = 0.0
             if self.squareOffset < 0.0:
                 self.warningMessage += "[Invalid data] "\
                     "The offset value of square-well or soft-square function "\
@@ -665,6 +688,13 @@ class XplorMRParserListener(ParseTreeListener):
 
         elif ctx.Rswitch():
             self.rSwitch = self.getNumber_s(ctx.number_s())
+            if isinstance(self.rSwitch, str):
+                if self.rSwitch in self.evaluate:
+                    self.rSwitch = self.evaluate[self.rSwitch]
+                else:
+                    self.warningMessage += "[Unsupported data] "\
+                        f"The symbol {self.rSwitch!r} in the 'NOE' statement is not defined so that set the default value.\n"
+                    self.rSwitch = 10.0
             if self.rSwitch < 0.0:
                 self.warningMessage += "[Invalid data] "\
                     "The smoothing parameter of soft-square function "\
@@ -672,6 +702,13 @@ class XplorMRParserListener(ParseTreeListener):
 
         elif ctx.Scale():
             self.scale = self.getNumber_s(ctx.number_s())
+            if isinstance(self.scale, str):
+                if self.scale in self.evaluate:
+                    self.scale = self.evaluate[self.scale]
+                else:
+                    self.warningMessage += "[Unsupported data] "\
+                        f"The symbol {self.scale!r} in the 'NOE' statement is not defined so that set the default value.\n"
+                    self.scale = 1.0
             if self.scale <= 0.0:
                 self.warningMessage += "[Invalid data] "\
                     f"The scale value 'NOE {str(ctx.Scale())} {str(ctx.Simple_name())} {self.scale} END' must be a positive value.\n"
@@ -1010,9 +1047,17 @@ class XplorMRParserListener(ParseTreeListener):
     def enterDihedral_statement(self, ctx: XplorMRParser.Dihedral_statementContext):
         if ctx.Scale():
             self.scale = self.getNumber_s(ctx.number_s())
+            if isinstance(self.scale, str):
+                if self.scale in self.evaluate:
+                    self.scale = self.evaluate[self.scale]
+                else:
+                    self.warningMessage += "[Unsupported data] "\
+                        f"The scale value 'RESTRAINT DIHEDRAL {str(ctx.Scale())}={self.scale} END' "\
+                        f"where the symbol {self.scale!r} is not defined so that set the default value.\n"
+                    self.scale = 1.0
             if self.scale <= 0.0:
                 self.warningMessage += "[Invalid data] "\
-                    f"The scale value 'RESTRAINT DIHEDRAL {str(ctx.Scale())} {self.scale} END' must be a positive value.\n"
+                    f"The scale value 'RESTRAINT DIHEDRAL {str(ctx.Scale())}={self.scale} END' must be a positive value.\n"
 
         elif ctx.Reset():
             self.scale = 1.0
@@ -1610,6 +1655,16 @@ class XplorMRParserListener(ParseTreeListener):
 
         elif ctx.Scale():
             self.scale = self.getNumber_s(ctx.number_s(0))
+            if isinstance(self.scale, str):
+                if self.scale in self.evaluate:
+                    self.scale = self.evaluate[self.scale]
+                else:
+                    self.warningMessage += "[Unsupported data] "\
+                        f"The symbol {self.scale!r} in the 'XDIPolar' statement is not defined so that set the default value.\n"
+                    self.scale = 1.0
+            if self.scale <= 0.0:
+                self.warningMessage += "[Invalid data] "\
+                    f"The scale value 'XDIPOLAR {str(ctx.Scale())} {self.scale} END' must be a positive value.\n"
 
         elif ctx.Reset():
             self.potential = 'square'
@@ -2421,9 +2476,17 @@ class XplorMRParserListener(ParseTreeListener):
 
         if ctx.Weight():
             self.scale = self.getNumber_s(ctx.number_s())
+            if isinstance(self.scale, str):
+                if self.scale in self.evaluate:
+                    self.scale = self.evaluate[self.scale]
+                else:
+                    self.warningMessage += "[Unsupported data] "\
+                        f"The scale value 'GROUP {str(ctx.Weight())}={self.scale} END' "\
+                        f"where the symbol {self.scale!r} is not defined so that set the default value.\n"
+                    self.scale = 1.0
             if self.scale <= 0.0:
                 self.warningMessage += "[Invalid data] "\
-                    f"The weight value 'GROUP {str(ctx.Weight())} {self.scale} END' must be a positive value.\n"
+                    f"The weight value 'GROUP {str(ctx.Weight())}={self.scale} END' must be a positive value.\n"
 
     # Exit a parse tree produced by XplorMRParser#group_statement.
     def exitGroup_statement(self, ctx: XplorMRParser.Group_statementContext):  # pylint: disable=unused-argument
@@ -2522,6 +2585,13 @@ class XplorMRParserListener(ParseTreeListener):
 
         elif ctx.Expectation():
             self.adistExpect = self.getNumber_s(ctx.number_s())
+            if isinstance(self.adistExpect, str):
+                if self.adistExpect in self.evaluate:
+                    self.adistExpect = self.evaluate[self.adistExpect]
+                else:
+                    self.warningMessage += "[Invalid data] "\
+                        f"The symbol {self.adistExpect!r} in the 'XADC' statement is not defined.\n"
+                    return
 
             if DIST_ERROR_MIN < self.adistExpect < DIST_ERROR_MAX:
                 pass
@@ -2879,6 +2949,22 @@ class XplorMRParserListener(ParseTreeListener):
         rcoil_a = self.getNumber_s(ctx.number_s(0))
         rcoil_b = self.getNumber_s(ctx.number_s(1))
 
+        if isinstance(rcoil_a, str):
+            if rcoil_a in self.evaluate:
+                rcoil_a = self.evaluate[rcoil_a]
+            else:
+                self.warningMessage += "[Invalid data] "\
+                    f"The symbol {rcoil_a!r} in the 'CARB/RCOIL' statement is not defined.\n"
+                return
+
+        if isinstance(rcoil_b, str):
+            if rcoil_b in self.evaluate:
+                rcoil_b = self.evaluate[rcoil_b]
+            else:
+                self.warningMessage += "[Invalid data] "\
+                    f"The symbol {rcoil_b!r} in the 'CARB/RCOIL' statement is not defined.\n"
+                return
+
         if CS_ERROR_MIN < rcoil_a < CS_ERROR_MAX:
             pass
         else:
@@ -2942,9 +3028,26 @@ class XplorMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by XplorMRParser#observed.
     def exitObserved(self, ctx: XplorMRParser.ObservedContext):
         obs_value = self.getNumber_s(ctx.number_s(0))
+
+        if isinstance(obs_value, str):
+            if obs_value in self.evaluate:
+                obs_value = self.evaluate[obs_value]
+            else:
+                self.warningMessage += "[Invalid data] "\
+                    f"The symbol {obs_value!r} in the 'PROTON/OBSE' statement is not defined.\n"
+                return
+
         obs_value_2 = None
         if ctx.number_s(1):
             obs_value_2 = self.getNumber_s(ctx.number_s(1))
+
+            if isinstance(obs_value_2, str):
+                if obs_value_2 in self.evaluate:
+                    obs_value_2 = self.evaluate[obs_value_2]
+                else:
+                    self.warningMessage += "[Invalid data] "\
+                        f"The symbol {obs_value_2!r} in the 'PROTON/OBSE' statement is not defined.\n"
+                return
 
         if CS_ERROR_MIN < obs_value < CS_ERROR_MAX:
             pass
@@ -3004,6 +3107,14 @@ class XplorMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by XplorMRParser#proton_shift_rcoil.
     def exitProton_shift_rcoil(self, ctx: XplorMRParser.Proton_shift_rcoilContext):
         rcoil = self.getNumber_s(ctx.number_s())
+
+        if isinstance(rcoil, str):
+            if rcoil in self.evaluate:
+                rcoil = self.evaluate[rcoil]
+            else:
+                self.warningMessage += "[Invalid data] "\
+                    f"The symbol {rcoil!r} in the 'PROTON/RCOIL' statement is not defined.\n"
+                return
 
         if CS_ERROR_MIN < rcoil < CS_ERROR_MAX:
             pass
@@ -3196,6 +3307,14 @@ class XplorMRParserListener(ParseTreeListener):
     def enterRamachandran_statement(self, ctx: XplorMRParser.Ramachandran_statementContext):
         if ctx.Scale():
             self.scale = self.getNumber_s(ctx.number_s(0))
+            if isinstance(self.scale, str):
+                if self.scale in self.evaluate:
+                    self.scale = self.evaluate[self.scale]
+                else:
+                    self.warningMessage += "[Unsupported data] "\
+                        f"The scale value 'RAMA {str(ctx.Scale())} {self.scale} END' "\
+                        f"where the symbol {self.scale!r} is not defined so that set the default value.\n"
+                    self.scale = 1.0
             if self.scale <= 0.0:
                 self.warningMessage += "[Invalid data] "\
                     f"The scale value 'RAMA {str(ctx.Scale())} {self.scale} END' must be a positive value.\n"
@@ -3301,6 +3420,14 @@ class XplorMRParserListener(ParseTreeListener):
     def enterCollapse_statement(self, ctx: XplorMRParser.Collapse_statementContext):
         if ctx.Scale():
             self.scale = self.getNumber_s(ctx.number_s(0))
+            if isinstance(self.scale, str):
+                if self.scale in self.evaluate:
+                    self.scale = self.evaluate[self.scale]
+                else:
+                    self.warningMessage += "[Unsupported data] "\
+                        f"The scale value 'COLL {str(ctx.Scale())} {self.scale} END' "\
+                        f"where the symbol {self.scale!r} is not defined so that set the default value.\n"
+                    self.scale = 1.0
             if self.scale <= 0.0:
                 self.warningMessage += "[Invalid data] "\
                     f"The scale value 'COLL {str(ctx.Scale())} {self.scale} END' must be a positive value.\n"
@@ -3777,6 +3904,14 @@ class XplorMRParserListener(ParseTreeListener):
 
         elif ctx.Scale():
             self.scale = self.getNumber_s(ctx.number_s(0))
+            if isinstance(self.scale, str):
+                if self.scale in self.evaluate:
+                    self.scale = self.evaluate[self.scale]
+                else:
+                    self.warningMessage += "[Unsupported data] "\
+                        f"The scale value 'DCSA {str(ctx.Scale())} {self.scale} END' "\
+                        f"where the symbol {self.scale!r} is not defined so that set the default value.\n"
+                    self.scale = 1.0
             if self.scale <= 0.0:
                 self.warningMessage += "[Invalid data] "\
                     f"The scale value 'DCSA {str(ctx.Scale())} {self.scale} END' must be a positive value.\n"
@@ -4157,6 +4292,14 @@ class XplorMRParserListener(ParseTreeListener):
 
         elif ctx.Scale():
             self.scale = self.getNumber_s(ctx.number_s(0))
+            if isinstance(self.scale, str):
+                if self.scale in self.evaluate:
+                    self.scale = self.evaluate[self.scale]
+                else:
+                    self.warningMessage += "[Unsupported data] "\
+                        f"The scale value 'PCSA {str(ctx.Scale())} {self.scale} END' "\
+                        f"where the symbol {self.scale!r} is not defined so that set the default value.\n"
+                    self.scale = 1.0
             if self.scale <= 0.0:
                 self.warningMessage += "[Invalid data] "\
                     f"The scale value 'PCSA {str(ctx.Scale())} {self.scale} END' must be a positive value.\n"
@@ -7498,6 +7641,9 @@ class XplorMRParserListener(ParseTreeListener):
         if ctx.Integer():
             return float(str(ctx.Integer()))
 
+        if ctx.Symbol_name():
+            return str(ctx.Symbol_name())
+
         return None
 
     # Enter a parse tree produced by XplorMRParser#number_a.
@@ -7529,7 +7675,7 @@ class XplorMRParserListener(ParseTreeListener):
     def enterVector_statement(self, ctx: XplorMRParser.Vector_statementContext):  # pylint: disable=unused-argument
         self.__cur_vector_mode = ''
         self.__cur_vector_atom_prop_type = ''
-        self.__cur_vector_atom_prop_value = None
+        self.__cur_vlfc_value = None
 
         self.atomSelectionSet.clear()
 
@@ -7547,8 +7693,8 @@ class XplorMRParserListener(ParseTreeListener):
                 if vector_name not in self.vectorDo:
                     self.vectorDo[vector_name] = []
                 vector = {'atom_selection': copy.copy(self.atomSelectionSet[0])}
-                if self.__cur_vector_atom_prop_value is not None:
-                    vector['value'] = self.__cur_vector_atom_prop_value
+                if self.__cur_vlfc_value is not None:
+                    vector['value'] = self.__cur_vlfc_value
                 self.vectorDo[vector_name].append(vector)
 
     # Enter a parse tree produced by XplorMRParser#vector_mode.
@@ -7589,15 +7735,15 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#vflc.
     def exitVflc(self, ctx: XplorMRParser.VflcContext):
-        if self.__cur_vector_atom_prop_value is None:
+        if self.__cur_vlfc_value is None:
             if ctx.Double_quote_string_VE():
-                self.__cur_vector_atom_prop_value = str(ctx.Double_quote_string_VE()).strip('"').strip()
+                self.__cur_vlfc_value = str(ctx.Double_quote_string_VE()).strip('"').strip()
             elif ctx.Integer_VE():
-                self.__cur_vector_atom_prop_value = int(str(ctx.Integer_VE()))
+                self.__cur_vlfc_value = int(str(ctx.Integer_VE()))
             elif ctx.Real_VE():
-                self.__cur_vector_atom_prop_value = float(str(ctx.Integer_VE()))
+                self.__cur_vlfc_value = float(str(ctx.Integer_VE()))
             elif ctx.Simple_name_VE():
-                self.__cur_vector_atom_prop_value = str(ctx.Simple_name_VE())
+                self.__cur_vlfc_value = str(ctx.Simple_name_VE())
 
     # Enter a parse tree produced by XplorMRParser#vector_func_call.
     def enterVector_func_call(self, ctx: XplorMRParser.Vector_func_callContext):  # pylint: disable=unused-argument
@@ -7613,6 +7759,25 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#vector_show_property.
     def exitVector_show_property(self, ctx: XplorMRParser.Vector_show_propertyContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by XplorMRParser#evaluate_statement.
+    def enterEvaluate_statement(self, ctx: XplorMRParser.Evaluate_statementContext):
+        if ctx.Symbol_name_VE():
+            self.__cur_symbol_name = str(ctx.Symbol_name_VE())
+        self.__cur_vlfc_value = None
+
+    # Exit a parse tree produced by XplorMRParser#evaluate_statement.
+    def exitEvaluate_statement(self, ctx: XplorMRParser.Evaluate_statementContext):  # pylint: disable=unused-argument
+        if self.__cur_vlfc_value is not None:
+            self.evaluate[self.__cur_symbol_name] = self.__cur_vlfc_value
+
+    # Enter a parse tree produced by XplorMRParser#evaluate_operation.
+    def enterEvaluate_operation(self, ctx: XplorMRParser.Evaluate_operationContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by XplorMRParser#evaluate_operation.
+    def exitEvaluate_operation(self, ctx: XplorMRParser.Evaluate_operationContext):  # pylint: disable=unused-argument
         pass
 
     def __getCurrentRestraint(self):

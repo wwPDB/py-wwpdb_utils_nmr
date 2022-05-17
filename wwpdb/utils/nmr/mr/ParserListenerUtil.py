@@ -111,7 +111,8 @@ KNOWN_ANGLE_ATOM_NAMES = {'PHI': ['C', 'N', 'CA', 'C'],  # i-1, i, i, i
                           'TAU1': ["O4'", "C1'", "C2'", "C3'"],  # identical to NU1
                           'TAU2': ["C1'", "C2'", "C3'", "C4'"],  # identical to NU2
                           'TAU3': ["C2'", "C3'", "C4'", "O4'"],  # identical to NU3
-                          'TAU4': ["C3'", "C4'", "O4'", "C1'"]  # identical to NU4
+                          'TAU4': ["C3'", "C4'", "O4'", "C1'"],  # identical to NU4
+                          'PPA': ["C1'", "C2'", "C3'", "C4'", "O4'"]  # phase angle of pseudorotation made up from five NU[0-4] dihedral angles
                           }
 
 # @see: http://dx.doi.org/10.1107/S0907444909001905
@@ -157,7 +158,8 @@ KNOWN_ANGLE_SEQ_OFFSET = {'PHI': [-1, 0, 0, 0],  # i-1, i, i, i
                           'TAU1': [0] * 4,  # identical to NU1
                           'TAU2': [0] * 4,  # identical to NU2
                           'TAU3': [0] * 4,  # identical to NU3
-                          'TAU4': [0] * 4  # identical to NU4
+                          'TAU4': [0] * 4,  # identical to NU4
+                          'PPA': [0] * 5  # phase angle of pseudorotation made up from five NU[0-4] dihedral angles
                           }
 
 KNOWN_ANGLE_CARBO_SEQ_OFFSET = {'PHI': [0, 0, 0, -1],  # i, i, i, i-n; for n > 0

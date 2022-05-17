@@ -7386,7 +7386,7 @@ class NmrDpUtility:
                                 div_test = True
 
                             _err = self.__retrieveErroneousPreviousInput(description)
-                            if _err is not None:
+                            if _err is not None and not comment_pattern.match(_err):
                                 err += "However, the cause of the error seems to exist at the previous input "\
                                     f"(line {description['line_number']-1}):\n{_err}"
 
@@ -7511,7 +7511,7 @@ class NmrDpUtility:
                                 div_test = True
 
                             _err = self.__retrieveErroneousPreviousInput(description)
-                            if _err is not None:
+                            if _err is not None and not comment_pattern.match(_err):
                                 err += "However, the cause of the error seems to exist at the previous input "\
                                     f"(line {description['line_number']-1}):\n{_err}"
 
@@ -7623,7 +7623,7 @@ class NmrDpUtility:
                                     div_test = True
 
                             _err = self.__retrieveErroneousPreviousInput(description)
-                            if _err is not None:
+                            if _err is not None and not comment_pattern.match(_err):
                                 err += "However, the cause of the error seems to exist at the previous input "\
                                     f"(line {description['line_number']-1}):\n{_err}"
 
@@ -7735,7 +7735,7 @@ class NmrDpUtility:
                                     div_test = True
 
                             _err = self.__retrieveErroneousPreviousInput(description)
-                            if _err is not None:
+                            if _err is not None and not comment_pattern.match(_err):
                                 err += "However, the cause of the error seems to exist at the previous input "\
                                     f"(line {description['line_number']-1}):\n{_err}"
 
@@ -7860,7 +7860,7 @@ class NmrDpUtility:
                                     div_test = True
 
                             _err = self.__retrieveErroneousPreviousInput(description)
-                            if _err is not None:
+                            if _err is not None and not comment_pattern.match(_err):
                                 err += "However, the cause of the error seems to exist at the previous input "\
                                     f"(line {description['line_number']-1}):\n{_err}"
 
@@ -7984,7 +7984,7 @@ class NmrDpUtility:
                                     div_test = True
 
                             _err = self.__retrieveErroneousPreviousInput(description)
-                            if _err is not None:
+                            if _err is not None and not comment_pattern.match(_err):
                                 err += "However, the cause of the error seems to exist at the previous input "\
                                     f"(line {description['line_number']-1}):\n{_err}"
 
@@ -8758,7 +8758,7 @@ class NmrDpUtility:
 
                 corrected = True
 
-            if not corrected and j in (0, err_line_number - 1):
+            if not corrected and j in (0, err_line_number - 1) and 'input' in err_desc:
 
                 test_line = err_desc['input']
 
@@ -9509,7 +9509,7 @@ class NmrDpUtility:
 
                 corrected = True
 
-            if not corrected and j in (0, err_line_number - 1):
+            if not corrected and j in (0, err_line_number - 1) and 'input' in err_desc:
 
                 test_line = err_desc['input']
 
@@ -10797,7 +10797,7 @@ class NmrDpUtility:
                             ins_msg = 'unexpectedly contains assigned chemical shifts, but '
 
                         err = f"The NMR restraint file {file_name!r} (MR format) {ins_msg}does not match with any known restraint format. "\
-                            "@todo: It needs to be reviewed or marked as entry wo NMR restraints."
+                            "@todo: It needs to be reviewed or marked as entry without NMR restraints."
 
                         self.report.error.appendDescription('internal_error',
                                                             {'file_name': file_name, 'description': err})
@@ -10956,7 +10956,7 @@ class NmrDpUtility:
                                     ins_msg = 'unexpectedly contains assigned chemical shifts, but '
 
                             err = f"The NMR restraint file {file_name!r} (MR format) {ins_msg}does not match with any known restraint format. "\
-                                "@todo: It needs to be reviewed or marked as entry wo NMR restraints."
+                                "@todo: It needs to be reviewed or marked as entry without NMR restraints."
 
                             self.report.error.appendDescription('internal_error',
                                                                 {'file_name': file_name, 'description': err})

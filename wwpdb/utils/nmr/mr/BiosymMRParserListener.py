@@ -1154,11 +1154,11 @@ class BiosymMRParserListener(ParseTreeListener):
         return True
 
     # Enter a parse tree produced by BiosymMRParser#mixing_time.
-    def enterMixing_time(self, ctx:BiosymMRParser.Mixing_timeContext):  # pylint: disable=unused-argument
+    def enterMixing_time(self, ctx: BiosymMRParser.Mixing_timeContext):  # pylint: disable=unused-argument
         pass
 
     # Exit a parse tree produced by BiosymMRParser#mixing_time.
-    def exitMixing_time(self, ctx:BiosymMRParser.Mixing_timeContext):  # pylint: disable=unused-argument
+    def exitMixing_time(self, ctx: BiosymMRParser.Mixing_timeContext):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by BiosymMRParser#number.

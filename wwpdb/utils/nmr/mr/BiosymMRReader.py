@@ -145,10 +145,10 @@ class BiosymMRReader:
 
             walker = ParseTreeWalker()
             listener = BiosymMRParserListener(self.__verbose, self.__lfh,
-                                             self.__representativeModelId,
-                                             self.__cR, self.__cC,
-                                             self.__ccU, self.__csStat, self.__nefT,
-                                             self.__reasons)
+                                              self.__representativeModelId,
+                                              self.__cR, self.__cC,
+                                              self.__ccU, self.__csStat, self.__nefT,
+                                              self.__reasons)
             listener.setDebugMode(self.__debug)
             walker.walk(listener, tree)
 
@@ -182,6 +182,5 @@ class BiosymMRReader:
 if __name__ == "__main__":
     reader = BiosymMRReader(True)
     reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-remediation/7acb/7acb-trimmed.mr',
-                 '../../tests-nmr/mock-data-remediation/7acb/7acb.cif')
-
+    reader.parse('../../tests-nmr/mock-data-remediation/2mug/2mug-trimmed.mr',
+                 '../../tests-nmr/mock-data-remediation/2mug/2mug.cif')

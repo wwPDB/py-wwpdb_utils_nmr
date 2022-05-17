@@ -9001,8 +9001,116 @@ class NmrDpUtility:
         else:
             return False
 
+        err_message = err_desc['message']
         err_line_number = err_desc['line_number']
         err_column_position = err_desc['column_position']
+
+        xplor_ends_wo_statement = (file_type in ('nm-res-xpl', 'nm-res-cns')) and bool(xplor_extra_end_err_msg_pattern.match(err_message))
+        amber_ends_wo_statement = file_type == 'nm-res-amb' and bool(amber_extra_end_err_msg_pattern.match(err_message))
+
+        corrected = False
+
+        if xplor_ends_wo_statement or amber_ends_wo_statement:
+
+            _offset = offset + err_line_number - 1
+
+            if xplor_ends_wo_statement:
+
+                has_end_tag = False
+
+                k = 0
+
+                with open(src_path, 'r') as ifp:
+                    for line in ifp:
+                        if k == _offset:
+                            if xplor_end_pattern.match(line):
+                                has_end_tag = True
+                            break
+                        k += 1
+
+                if has_end_tag:
+
+                    dir_path = os.path.dirname(src_path)
+
+                    for div_file_name in os.listdir(dir_path):
+                        if os.path.isfile(os.path.join(dir_path, div_file_name))\
+                           and (div_file_name.endswith('-div_src.mr') or div_file_name.endswith('-div_dst.mr')):
+                            os.remove(os.path.join(dir_path, div_file_name))
+
+                    src_file_name = os.path.basename(src_path)
+                    cor_test = '-corrected' in src_file_name
+                    if cor_test:
+                        cor_src_path = src_path + '~'
+                    else:
+                        if src_path.endswith('.mr'):
+                            cor_src_path = re.sub(r'\-trimmed$', '', os.path.splitext(src_path)[0]) + '-corrected.mr'
+                        else:
+                            cor_src_path = re.sub(r'\-trimmed$', '', src_path) + '-corrected'
+
+                    k = 0
+
+                    with open(src_path, 'r') as ifp,\
+                            open(cor_src_path, 'w') as ofp:
+                        for line in ifp:
+                            if k == _offset:
+                                ofp.write('#' + line)
+                            else:
+                                ofp.write(line)
+                            k += 1
+
+                    if cor_test:
+                        os.rename(cor_src_path, src_path)
+
+                    corrected = True
+
+            if amber_ends_wo_statement:
+
+                has_end_tag = False
+
+                k = 0
+
+                with open(src_path, 'r') as ifp:
+                    for line in ifp:
+                        if k == _offset:
+                            if amber_end_pattern.match(line):
+                                has_end_tag = True
+                            break
+                        k += 1
+
+                if has_end_tag:
+
+                    dir_path = os.path.dirname(src_path)
+
+                    for div_file_name in os.listdir(dir_path):
+                        if os.path.isfile(os.path.join(dir_path, div_file_name))\
+                           and (div_file_name.endswith('-div_src.mr') or div_file_name.endswith('-div_dst.mr')):
+                            os.remove(os.path.join(dir_path, div_file_name))
+
+                    src_file_name = os.path.basename(src_path)
+                    cor_test = '-corrected' in src_file_name
+                    if cor_test:
+                        cor_src_path = src_path + '~'
+                    else:
+                        if src_path.endswith('.mr'):
+                            cor_src_path = re.sub(r'\-trimmed$', '', os.path.splitext(src_path)[0]) + '-corrected.mr'
+                        else:
+                            cor_src_path = re.sub(r'\-trimmed$', '', src_path) + '-corrected'
+
+                    k = 0
+
+                    with open(src_path, 'r') as ifp,\
+                            open(cor_src_path, 'w') as ofp:
+                        for line in ifp:
+                            if k == _offset:
+                                ofp.write('#' + line)
+                            else:
+                                ofp.write(line)
+                            k += 1
+
+                    if cor_test:
+                        os.rename(cor_src_path, src_path)
+
+                    corrected = True
 
         if err_column_position > 0 and 'input' in err_desc and not err_desc['input'][0:err_column_position].isspace():
             test_line = err_desc['input'][err_column_position:]
@@ -9012,7 +9120,7 @@ class NmrDpUtility:
                 if self.__split_mr_debug:
                     print('PEEL-MR-EXIT #1')
 
-                return self.__divideLegacyMR(file_path, file_type, err_desc, src_path, offset)
+                return self.__divideLegacyMR(file_path, file_type, err_desc, src_path, offset) | corrected
 
             for test_file_type in ['nm-res-xpl', 'nm-res-cns', 'nm-res-amb', 'nm-aux-amb', 'nm-res-cya', 'nm-res-ros']:
                 if test_file_type == file_type:
@@ -9047,12 +9155,12 @@ class NmrDpUtility:
                     if self.__split_mr_debug:
                         print('PEEL-MR-EXIT #2')
 
-                    return self.__divideLegacyMR(file_path, file_type, err_desc, src_path, offset)
+                    return self.__divideLegacyMR(file_path, file_type, err_desc, src_path, offset) | corrected
 
             if self.__split_mr_debug:
                 print('PEEL-MR-EXIT #3')
 
-            return False
+            return False | corrected
 
         i = j = j2 = j3 = 0
 
@@ -9106,7 +9214,7 @@ class NmrDpUtility:
             if self.__split_mr_debug:
                 print('PEEL-MR-EXIT #4')
 
-            return False
+            return False | corrected
 
         file_name = os.path.basename(div_try_file)
 
@@ -9155,7 +9263,7 @@ class NmrDpUtility:
                     if self.__split_mr_debug:
                         print('PEEL-MR-EXIT #5')
 
-                    return False  # not split MR file because of the lexer errors to be hundled by manual
+                    return False | corrected  # not split MR file because of the lexer errors to be hundled by manual
 
             if div_src:
                 os.remove(file_path)
@@ -9178,7 +9286,7 @@ class NmrDpUtility:
             if self.__split_mr_debug:
                 print('PEEL-MR-EXIT #7')
 
-            return False
+            return False | corrected
 
         # self.__lfh.write(f"The NMR restraint file {file_name!r} ({mr_format_name} format) is identified as {valid_types}.\n")
 

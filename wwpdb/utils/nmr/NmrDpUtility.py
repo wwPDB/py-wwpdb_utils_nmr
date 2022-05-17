@@ -153,6 +153,7 @@
 # 20-Mar-2022  M. Yokochi - add support for _atom_site.label_alt_id (DAOTHER-4060, 7544, NMR restraint remediation)
 # 06-Apr-2022  M. Yokochi - detect other possible MR format if the first parsing fails (DAOTHER-7690)
 # 02-May-2022  M. Yokochi - implement recursive MR splitter guided by MR parsers (NMR restraint remediation)
+# 17-May-2022  M. Yokochi - add support for BIOSYM MR format (NMR restraint remediation)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -223,6 +224,7 @@ try:
                                                        REPRESENTATIVE_MODEL_ID,
                                                        CYANA_MR_FILE_EXTS)
     from wwpdb.utils.nmr.mr.AmberMRReader import AmberMRReader
+    from wwpdb.utils.nmr.mr.BiosymMRReader import BiosymMRReader
     from wwpdb.utils.nmr.mr.CnsMRReader import CnsMRReader
     from wwpdb.utils.nmr.mr.CyanaMRReader import CyanaMRReader
     from wwpdb.utils.nmr.mr.RosettaMRReader import RosettaMRReader
@@ -276,6 +278,7 @@ except ImportError:
                                            REPRESENTATIVE_MODEL_ID,
                                            CYANA_MR_FILE_EXTS)
     from nmr.mr.AmberMRReader import AmberMRReader
+    from nmr.mr.BiosymMRReader import BiosymMRReader
     from nmr.mr.CnsMRReader import CnsMRReader
     from nmr.mr.CyanaMRReader import CyanaMRReader
     from nmr.mr.RosettaMRReader import RosettaMRReader
@@ -6544,12 +6547,14 @@ class NmrDpUtility:
                 mr_format_name = 'CYANA'
             elif file_type == 'nm-res-ros':
                 mr_format_name = 'ROSETTA'
+            elif file_type == 'nm-res-bio':
+                mr_format_name = 'BIOSYM'
             elif file_type == 'nm-res-mr':
                 mr_format_name = 'MR'
             else:
                 mr_format_name = 'other'
 
-            atom_like_names = self.__csStat.getAtomLikeNameSet(minimum_len=(2 if file_type in ('nm-res-ros', 'nm-res-oth') or is_aux_amb else 1))
+            atom_like_names = self.__csStat.getAtomLikeNameSet(minimum_len=(2 if file_type in ('nm-res-ros', 'nm-res-bio', 'nm-res-oth') or is_aux_amb else 1))
             cs_atom_like_names = list(filter(is_half_spin_nuclei, atom_like_names))  # DAOTHER-7491
 
             has_chem_shift = False
@@ -6961,7 +6966,7 @@ class NmrDpUtility:
                                     in_igr1 = False
                                     in_igr2 = False
 
-            elif file_type in ('nm-res-cya', 'nm-res-ros', 'nm-res-oth') or is_aux_amb:
+            elif file_type in ('nm-res-cya', 'nm-res-ros', 'nm-res-bio', 'nm-res-oth') or is_aux_amb:
 
                 if is_aux_amb:
 
@@ -7252,7 +7257,7 @@ class NmrDpUtility:
                     if has_amb_coord and (not has_first_atom or has_ens_coord):
                         has_amb_coord = False
 
-            if file_type in ('nm-res-cya', 'nm-res-ros', 'nm-res-oth') and not has_dist_restraint:  # DAOTHER-7491
+            if file_type in ('nm-res-cya', 'nm-res-ros', 'nm-res-bio', 'nm-res-oth') and not has_dist_restraint:  # DAOTHER-7491
 
                 with open(file_path, 'r', encoding='utf-8') as ifp:
 
@@ -8042,6 +8047,126 @@ class NmrDpUtility:
                                 has_dihed_restraint = 'dihed_restraint' in content_subtype
                                 has_rdc_restraint = 'rdc_restraint' in content_subtype
 
+                elif file_type == 'nm-res-bio':
+
+                    reader = BiosymMRReader(self.__verbose, self.__lfh, None, None, None,
+                                            self.__ccU, self.__csStat, self.__nefT)
+                    listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
+
+                    if listener is not None:
+                        reasons = listener.getReasonsForReparsing()
+
+                        if reasons is not None:
+                            reader = BiosymMRReader(self.__verbose, self.__lfh, None, None, None,
+                                                    self.__ccU, self.__csStat, self.__nefT,
+                                                    reasons)
+                            listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
+
+                    err = ''
+                    err_lines = []
+
+                    has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
+                    has_parser_error = parser_err_listener is not None and parser_err_listener.getMessageList() is not None
+                    content_subtype = listener.getContentSubtype() if listener is not None else None
+                    if content_subtype is not None and len(content_subtype) == 0:
+                        content_subtype = None
+                    has_content = content_subtype is not None
+
+                    if has_lexer_error and has_parser_error and has_content:
+                        # parser error occurrs before occurrenece of lexer error that implies mixing of different MR formats in a file
+                        if lexer_err_listener.getErrorLineNumber()[0] > parser_err_listener.getErrorLineNumber()[0]:
+                            corrected |= self.__peelLegacyMRIfNecessary(file_path, file_type,
+                                                                        parser_err_listener.getMessageList()[0],
+                                                                        str(file_path), 0)
+                            div_test = True
+
+                    if has_lexer_error:
+                        messageList = lexer_err_listener.getMessageList()
+
+                        for description in messageList:
+                            err_lines.append(description['line_number'])
+                            err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                            if 'input' in description:
+                                enc = detect_encoding(description['input'])
+                                is_not_ascii = False
+                                if enc is not None and enc != 'ascii':
+                                    err += f"{description['input']}\n".encode().decode('ascii', 'backslashreplace')
+                                    is_not_ascii = True
+                                else:
+                                    err += f"{description['input']}\n"
+                                err += f"{description['marker']}\n"
+                                if is_not_ascii:
+                                    err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r} and must be 'ascii'.\n"
+                                elif not div_test and has_content and self.__remediation_mode:
+                                    corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
+                                    div_test = True
+
+                    if has_parser_error:
+                        messageList = parser_err_listener.getMessageList()
+
+                        for description in messageList:
+                            err_lines.append(description['line_number'])
+                            err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                            if 'input' in description:
+                                err += f"{description['input']}\n"
+                                err += f"{description['marker']}\n"
+                                if not div_test and has_content and self.__remediation_mode:
+                                    corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
+                                    div_test = True
+
+                            _err = self.__retrieveErroneousPreviousInput(description)
+                            if _err is not None and not comment_pattern.match(_err):
+                                err += "However, the cause of the error seems to exist at the previous input "\
+                                    f"(line {description['line_number']-1}):\n{_err}"
+
+                    if len(err) > 0:
+                        valid = False
+
+                        err = f"Could not interpret {file_name!r} as a {mr_format_name} restraint file:\n{err[0:-1]}"
+
+                        ar['format_mismatch'], _err, _, _ = self.__detectOtherPossibleFormatAsErrorOfLegacyMR(file_path, file_name, file_type, err_lines)
+
+                        if ar['format_mismatch']:
+                            err += '\n' + _err
+
+                        self.report.error.appendDescription('format_issue',
+                                                            {'file_name': file_name, 'description': err})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMR() ++ Error  - {err}\n")
+
+                        has_dist_restraint = has_dihed_restraint = has_rdc_restraint = False
+
+                    elif listener is not None:
+
+                        if listener.warningMessage is not None:
+                            messages = [msg for msg in listener.warningMessage.split('\n')
+                                        if 'warning' not in msg and 'Unsupported' not in msg]
+                            if len(messages) > 0:
+                                valid = False
+
+                                if len(messages) > 5:
+                                    messages = messages[:5]
+                                    msg = '\n'.join(messages)
+                                    msg += '\nThose similar errors may continue...'
+                                else:
+                                    msg = '\n'.join(messages)
+                                err = f"Could not interpret {file_name!r} due to the following data issue(s):\n{msg}"
+
+                                self.report.error.appendDescription('format_issue',
+                                                                    {'file_name': file_name, 'description': err})
+                                self.report.setError()
+
+                        if valid:
+
+                            has_chem_shift = has_coordinate = False
+
+                            if content_subtype is not None:
+                                ar['is_valid'] = True
+                                has_dist_restraint = 'dist_restraint' in content_subtype
+                                has_dihed_restraint = 'dihed_restraint' in content_subtype
+
                 elif file_type == 'nm-res-oth':
                     if not(self.__remediation_mode and file_path.endswith('-div_ext.mr')):
                         ar['format_mismatch'], _, _, _ = self.__detectOtherPossibleFormatAsErrorOfLegacyMR(file_path, file_name, file_type, [])
@@ -8402,6 +8527,9 @@ class NmrDpUtility:
         elif file_type == 'nm-res-ros':
             # mr_format_name = 'ROSETTA'
             pass
+        elif file_type == 'nm-res-bio':
+            # mr_format_name = 'BIOSYM'
+            pass
         else:
             return False
 
@@ -8415,7 +8543,7 @@ class NmrDpUtility:
         amber_missing_end_at_eof = file_type == 'nm-res-amb' and (err_message == amber_missing_end_at_eof_err_msg)
         amber_ends_wo_statement = file_type == 'nm-res-amb' and bool(amber_extra_end_err_msg_pattern.match(err_message))
 
-        concat_comment_at_eol = (file_type in ('nm-res-cya', 'nm-res-ros')
+        concat_comment_at_eol = (file_type in ('nm-res-cya', 'nm-res-ros', 'nm-res-bio')
                                  and err_message.startswith(no_viable_alt_err_msg)
                                  and 'input' in err_desc and bool(comment_pattern.search(err_desc['input'])))
 
@@ -8447,6 +8575,9 @@ class NmrDpUtility:
                 elif file_type == 'nm-res-ros':
                     reader = RosettaMRReader(self.__verbose, self.__lfh, None, None, None,
                                              self.__ccU, self.__csStat, self.__nefT)
+                elif file_type == 'nm-res-bio':
+                    reader = BiosymMRReader(self.__verbose, self.__lfh, None, None, None,
+                                            self.__ccU, self.__csStat, self.__nefT)
 
                 _, parser_err_listener, lexer_err_listener = reader.parse(test_line, None, isFilePath=False)
 
@@ -8663,6 +8794,9 @@ class NmrDpUtility:
                     elif file_type == 'nm-res-ros':
                         reader = RosettaMRReader(self.__verbose, self.__lfh, None, None, None,
                                                  self.__ccU, self.__csStat, self.__nefT)
+                    elif file_type == 'nm-res-bio':
+                        reader = BiosymMRReader(self.__verbose, self.__lfh, None, None, None,
+                                                self.__ccU, self.__csStat, self.__nefT)
 
                     _, parser_err_listener, lexer_err_listener = reader.parse(test_line, None, isFilePath=False)
 
@@ -8790,6 +8924,9 @@ class NmrDpUtility:
                 elif file_type == 'nm-res-ros':
                     reader = RosettaMRReader(self.__verbose, self.__lfh, None, None, None,
                                              self.__ccU, self.__csStat, self.__nefT)
+                elif file_type == 'nm-res-bio':
+                    reader = BiosymMRReader(self.__verbose, self.__lfh, None, None, None,
+                                            self.__ccU, self.__csStat, self.__nefT)
 
                 _, _, lexer_err_listener = reader.parse(test_line, None, isFilePath=False)
 
@@ -8882,6 +9019,9 @@ class NmrDpUtility:
                 elif file_type == 'nm-res-ros':
                     reader = RosettaMRReader(self.__verbose, self.__lfh, None, None, None,
                                              self.__ccU, self.__csStat, self.__nefT)
+                elif file_type == 'nm-res-bio':
+                    reader = BiosymMRReader(self.__verbose, self.__lfh, None, None, None,
+                                            self.__ccU, self.__csStat, self.__nefT)
 
                 _, _, lexer_err_listener = reader.parse(test_line, None, isFilePath=False)
 
@@ -8998,6 +9138,10 @@ class NmrDpUtility:
             # mr_format_name = 'ROSETTA'
             reader = RosettaMRReader(self.__verbose, self.__lfh, None, None, None,
                                      self.__ccU, self.__csStat, self.__nefT)
+        elif file_type == 'nm-res-bio':
+            # mr_format_name = 'BIOSYM'
+            reader = BiosymMRReader(self.__verbose, self.__lfh, None, None, None,
+                                    self.__ccU, self.__csStat, self.__nefT)
         else:
             return False
 
@@ -9122,7 +9266,7 @@ class NmrDpUtility:
 
                 return self.__divideLegacyMR(file_path, file_type, err_desc, src_path, offset) | corrected
 
-            for test_file_type in ['nm-res-xpl', 'nm-res-cns', 'nm-res-amb', 'nm-aux-amb', 'nm-res-cya', 'nm-res-ros']:
+            for test_file_type in ['nm-res-xpl', 'nm-res-cns', 'nm-res-amb', 'nm-aux-amb', 'nm-res-cya', 'nm-res-ros', 'nm-res-bio']:
                 if test_file_type == file_type:
                     continue
                 if test_file_type == 'nm-res-xpl':
@@ -9144,6 +9288,9 @@ class NmrDpUtility:
                 elif test_file_type == 'nm-res-ros':
                     test_reader = RosettaMRReader(self.__verbose, self.__lfh, None, None, None,
                                                   self.__ccU, self.__csStat, self.__nefT)
+                elif test_file_type == 'nm-res-bio':
+                    test_reader = BiosymMRReader(self.__verbose, self.__lfh, None, None, None,
+                                                 self.__ccU, self.__csStat, self.__nefT)
 
                 _, parser_err_listener, lexer_err_listener = test_reader.parse(test_line, None, isFilePath=False)
 
@@ -9250,6 +9397,9 @@ class NmrDpUtility:
                 elif file_type == 'nm-res-ros':
                     reader = RosettaMRReader(self.__verbose, self.__lfh, None, None, None,
                                              self.__ccU, self.__csStat, self.__nefT)
+                elif file_type == 'nm-res-bio':
+                    reader = BiosymMRReader(self.__verbose, self.__lfh, None, None, None,
+                                            self.__ccU, self.__csStat, self.__nefT)
 
                 _, _, lexer_err_listener = reader.parse(test_line, None, isFilePath=False)
 
@@ -9348,6 +9498,9 @@ class NmrDpUtility:
         elif file_type == 'nm-res-ros':
             # mr_format_name = 'ROSETTA'
             pass
+        elif file_type == 'nm-res-bio':
+            # mr_format_name = 'BIOSYM'
+            pass
         else:
             return False
 
@@ -9368,7 +9521,7 @@ class NmrDpUtility:
         amber_missing_end_at_eof = file_type == 'nm-res-amb' and (err_message == amber_missing_end_at_eof_err_msg)
         amber_ends_wo_statement = file_type == 'nm-res-amb' and bool(amber_extra_end_err_msg_pattern.match(err_message))
 
-        concat_comment_at_eol = (file_type in ('nm-res-cya', 'nm-res-ros')
+        concat_comment_at_eol = (file_type in ('nm-res-cya', 'nm-res-ros', 'nm-res-bio')
                                  and err_message.startswith(no_viable_alt_err_msg)
                                  and 'input' in err_desc and bool(comment_pattern.search(err_desc['input'])))
 
@@ -9522,6 +9675,9 @@ class NmrDpUtility:
                     elif file_type == 'nm-res-ros':
                         reader = RosettaMRReader(self.__verbose, self.__lfh, None, None, None,
                                                  self.__ccU, self.__csStat, self.__nefT)
+                    elif file_type == 'nm-res-bio':
+                        reader = BiosymMRReader(self.__verbose, self.__lfh, None, None, None,
+                                                self.__ccU, self.__csStat, self.__nefT)
 
                     _, parser_err_listener, lexer_err_listener = reader.parse(test_line, None, isFilePath=False)
 
@@ -9649,6 +9805,9 @@ class NmrDpUtility:
                 elif file_type == 'nm-res-ros':
                     reader = RosettaMRReader(self.__verbose, self.__lfh, None, None, None,
                                              self.__ccU, self.__csStat, self.__nefT)
+                elif file_type == 'nm-res-bio':
+                    reader = BiosymMRReader(self.__verbose, self.__lfh, None, None, None,
+                                            self.__ccU, self.__csStat, self.__nefT)
 
                 _, _, lexer_err_listener = reader.parse(test_line, None, isFilePath=False)
 
@@ -9716,40 +9875,6 @@ class NmrDpUtility:
         len_possible_types = len(possible_types)
 
         if len_valid_types == 0 and len_possible_types == 0:
-            #
-            # if err_column_position > 0 and 'input' in err_desc and not err_desc['input'][0:err_column_position].isspace():
-            #     test_line = err_desc['input'][0:err_column_position]
-
-            #     if file_type == 'nm-res-xpl':
-            #         reader = XplorMRReader(False, self.__lfh, None, None, None,
-            #                                self.__ccU, self.__csStat, self.__nefT)
-            #     elif file_type == 'nm-res-cns':
-            #         reader = CnsMRReader(False, self.__lfh, None, None, None,
-            #                              self.__ccU, self.__csStat, self.__nefT)
-            #     elif file_type == 'nm-res-amb':
-            #         reader = AmberMRReader(self.__verbose, self.__lfh, None, None, None,
-            #                                self.__ccU, self.__csStat, self.__nefT)
-            #     elif file_type == 'nm-aux-amb':
-            #         reader = AmberPTReader(self.__verbose, self.__lfh, None, None, None,
-            #                                self.__ccU, self.__csStat)
-            #     elif file_type == 'nm-res-cya':
-            #         reader = CyanaMRReader(self.__verbose, self.__lfh, None, None, None,
-            #                                self.__ccU, self.__csStat, self.__nefT,
-            #                                file_ext=self.__retrieveOriginalFileExtensionOfCyanaMRFile())
-            #     elif file_type == 'nm-res-ros':
-            #         reader = RosettaMRReader(self.__verbose, self.__lfh, None, None, None,
-            #                                  self.__ccU, self.__csStat, self.__nefT)
-
-            #     _, _, lexer_err_listener = reader.parse(test_line, None, isFilePath=False)
-
-            #     has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
-
-            #     if not has_lexer_error:
-            #         os.remove(div_src_file)
-            #         os.remove(div_try_file)
-
-            #         return False  # not split MR file because of the lexer errors to be hundled by manual
-            #
             if div_src:
                 os.remove(file_path)
             os.rename(div_try_file, div_ext_file)
@@ -9815,6 +9940,9 @@ class NmrDpUtility:
                 reader = RosettaMRReader(self.__verbose, self.__lfh, None, None, None,
                                          self.__ccU, self.__csStat, self.__nefT)
                 reader.setRemediateMode(self.__remediation_mode)
+            elif file_type == 'nm-res-bio':
+                reader = BiosymMRReader(self.__verbose, self.__lfh, None, None, None,
+                                        self.__ccU, self.__csStat, self.__nefT)
 
             listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
@@ -9841,6 +9969,10 @@ class NmrDpUtility:
                                                      self.__ccU, self.__csStat, self.__nefT,
                                                      reasons)
                             reader.setRemediateMode(self.__remediation_mode)
+                        elif file_type == 'nm-res-bio':
+                            reader = BiosymMRReader(self.__verbose, self.__lfh, None, None, None,
+                                                    self.__ccU, self.__csStat, self.__nefT,
+                                                    reasons)
 
                         listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
@@ -9902,6 +10034,8 @@ class NmrDpUtility:
             mr_format_name = 'CYANA'
         elif file_type == 'nm-res-ros':
             mr_format_name = 'ROSETTA'
+        elif file_type == 'nm-res-bio':
+            mr_format_name = 'BIOSYM'
         elif file_type == 'nm-res-mr':
             mr_format_name = 'MR'
         else:
@@ -10070,7 +10204,7 @@ class NmrDpUtility:
                         if self.__verbose:
                             self.__lfh.write(f"+NmrDpUtility.__detectOtherPossibleFormatAsErrorOfLegacyMR() ++ Error  - {err}\n")
 
-            if (not is_valid) and file_type != 'nm-res-amb':
+            if (not is_valid or multiple_check) and file_type != 'nm-res-amb':
 
                 reader = AmberMRReader(False, self.__lfh, None, None, None,
                                        self.__ccU, self.__csStat, self.__nefT)
@@ -10148,7 +10282,7 @@ class NmrDpUtility:
                         if self.__verbose:
                             self.__lfh.write(f"+NmrDpUtility.__detectOtherPossibleFormatAsErrorOfLegacyMR() ++ Error  - {err}\n")
 
-            if (not is_valid) and file_type != 'nm-aux-amb':
+            if (not is_valid or multiple_check) and file_type != 'nm-aux-amb':
 
                 reader = AmberPTReader(False, self.__lfh, None, None, None,
                                        self.__ccU, self.__csStat)
@@ -10225,7 +10359,7 @@ class NmrDpUtility:
                         if self.__verbose:
                             self.__lfh.write(f"+NmrDpUtility.__detectOtherPossibleFormatAsErrorOfLegacyMR() ++ Error  - {err}\n")
 
-            if (not is_valid) and file_type != 'nm-res-cya':
+            if (not is_valid or multiple_check) and file_type != 'nm-res-cya':
 
                 reader = CyanaMRReader(False, self.__lfh, None, None, None,
                                        self.__ccU, self.__csStat, self.__nefT,
@@ -10304,7 +10438,7 @@ class NmrDpUtility:
                         if self.__verbose:
                             self.__lfh.write(f"+NmrDpUtility.__detectOtherPossibleFormatAsErrorOfLegacyMR() ++ Error  - {err}\n")
 
-            if (not is_valid) and file_type != 'nm-res-ros':
+            if (not is_valid or multiple_check) and file_type != 'nm-res-ros':
 
                 reader = RosettaMRReader(False, self.__lfh, None, None, None,
                                          self.__ccU, self.__csStat, self.__nefT)
@@ -10324,6 +10458,84 @@ class NmrDpUtility:
 
                     _mr_format_name = 'ROSETTA'
                     _mr_format_type = 'nm-res-ros'
+
+                    err = f"The NMR restraint file {file_name!r} ({mr_format_name}) looks like a {_mr_format_name} restraint file, "\
+                        f"which has {concat_nmr_restraint_names(_content_subtype)}. "\
+                        "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
+
+                    if has_content:
+                        _err = ''
+                        if lexer_err_listener is not None:
+                            messageList = lexer_err_listener.getMessageList()
+
+                            if messageList is not None:
+                                for description in messageList:
+                                    if description['line_number'] in dismiss_err_lines:
+                                        continue
+                                    _err += f"[Syntax error as a {_mr_format_name} restraint file] "\
+                                        f"line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                                    if 'input' in description:
+                                        enc = detect_encoding(description['input'])
+                                        is_not_ascii = False
+                                        if enc is not None and enc != 'ascii':
+                                            _err += f"{description['input']}\n".encode().decode('ascii', 'backslashreplace')
+                                            is_not_ascii = True
+                                        else:
+                                            _err += f"{description['input']}\n"
+                                        _err += f"{description['marker']}\n"
+                                        if is_not_ascii:
+                                            _err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r} and must be 'ascii'.\n"
+
+                        if parser_err_listener is not None and len(_err) == 0:
+                            messageList = parser_err_listener.getMessageList()
+
+                            if messageList is not None:
+                                for description in messageList:
+                                    if description['line_number'] in dismiss_err_lines:
+                                        continue
+                                    _err += f"[Syntax error as a {_mr_format_name} restraint file] "\
+                                        f"line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                                    if 'input' in description:
+                                        _err += f"{description['input']}\n"
+                                        _err += f"{description['marker']}\n"
+
+                        if len(_err) > 0:
+                            err += f"\nEven assuming that the format is the {_mr_format_name!r}, the following issues need to be fixed.\n" + _err[:-1]
+                        elif file_type != 'nm-res-oth' and (lexer_err_listener.getMessageList() is not None or parser_err_listener.getMessageList() is not None):
+                            is_valid = False
+                            err = ''
+
+                        if is_valid:
+                            valid_types[_mr_format_type] = len(_content_subtype)
+                        else:
+                            possible_types[_mr_format_type] = len(_content_subtype)
+
+                    if file_type == 'nm-res-oth':
+                        self.report.error.appendDescription('content_mismatch',
+                                                            {'file_name': file_name, 'description': err})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__detectOtherPossibleFormatAsErrorOfLegacyMR() ++ Error  - {err}\n")
+
+            if (not is_valid or multiple_check) and file_type != 'nm-res-bio':
+
+                reader = BiosymMRReader(False, self.__lfh, None, None, None,
+                                        self.__ccU, self.__csStat, self.__nefT)
+                listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
+
+                _content_subtype = listener.getContentSubtype() if listener is not None else None
+                if _content_subtype is not None and len(_content_subtype) == 0:
+                    _content_subtype = None
+                has_content = _content_subtype is not None
+
+                if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
+                   and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None) or has_content):
+
+                    is_valid = True
+
+                    _mr_format_name = 'BIOSYM'
+                    _mr_format_type = 'nm-res-bio'
 
                     err = f"The NMR restraint file {file_name!r} ({mr_format_name}) looks like a {_mr_format_name} restraint file, "\
                         f"which has {concat_nmr_restraint_names(_content_subtype)}. "\
@@ -10937,6 +11149,11 @@ class NmrDpUtility:
                             _ar['file_type'] = 'nm-res-xpl'
                             splitted.append(_ar)
 
+                        elif len_valid_types == 2 and 'nm-res-bio' in valid_types and 'nm-res-cya' in valid_types:
+                            _ar['file_name'] = dst_file
+                            _ar['file_type'] = 'nm-res-bio'
+                            splitted.append(_ar)
+
                         else:
                             _ar['file_name'] = dst_file
                             _ar['file_type'] = valid_types[0]
@@ -11096,6 +11313,13 @@ class NmrDpUtility:
                             elif len_valid_types == 2 and 'nm-res-cns' in valid_types and 'nm-res-xpl' in valid_types:
                                 _ar['file_name'] = _dst_file
                                 _ar['file_type'] = 'nm-res-xpl'
+                                if distict:
+                                    _ar['original_file_name'] = file_name
+                                splitted.append(_ar)
+
+                            elif len_valid_types == 2 and 'nm-res-bio' in valid_types and 'nm-res-cya' in valid_types:
+                                _ar['file_name'] = _dst_file
+                                _ar['file_type'] = 'nm-res-bio'
                                 if distict:
                                     _ar['original_file_name'] = file_name
                                 splitted.append(_ar)
@@ -21079,6 +21303,93 @@ class NmrDpUtility:
 
                             elif warn.startswith('[Unsupported data]'):
                                 self.report.warning.appendDescription('unsupported_mr_data',
+                                                                      {'file_name': file_name, 'description': warn})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning - {warn}\n")
+
+                            else:
+                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMR() ++ KeyError  - " + warn)
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ KeyError  - {warn}\n")
+
+            elif file_type == 'nm-res-bio':
+                reader = BiosymMRReader(self.__verbose, self.__lfh,
+                                        self.__representative_model_id,
+                                        self.__cR, cC,
+                                        self.__ccU, self.__csStat, self.__nefT)
+
+                listener, _, _ = reader.parse(file_path, self.__cifPath)
+
+                if listener is not None:
+                    reasons = listener.getReasonsForReparsing()
+
+                    if reasons is not None:
+                        reader = BiosymMRReader(self.__verbose, self.__lfh,
+                                                self.__representative_model_id,
+                                                self.__cR, cC,
+                                                self.__ccU, self.__csStat, self.__nefT,
+                                                reasons)
+
+                        listener, _, _ = reader.parse(file_path, self.__cifPath)
+
+                    if listener.warningMessage is not None:
+                        messages = listener.warningMessage.split('\n')
+
+                        for warn in messages:
+                            if warn.startswith('[Atom not found]'):
+                                self.report.error.appendDescription('atom_not_found',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+
+                            elif warn.startswith('[Invalid atom nomenclature]'):
+                                self.report.error.appendDescription('invalid_atom_nomenclature',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+
+                            elif warn.startswith('[Invalid atom selection]') or warn.startswith('[Invalid data]'):
+                                self.report.error.appendDescription('invalid_data',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError  - {warn}\n")
+
+                            elif warn.startswith('[Enum mismatch ignorable]'):
+                                self.report.warning.appendDescription('enum_mismatch_ignorable',
+                                                                      {'file_name': file_name, 'description': warn})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning - {warn}\n")
+
+                            elif warn.startswith('[Range value error]'):
+                                self.report.error.appendDescription('anomalous_data',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError - {warn}\n")
+
+                            elif warn.startswith('[Range value warning]'):
+                                self.report.warning.appendDescription('unusual_data',
+                                                                      {'file_name': file_name, 'description': warn})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning - {warn}\n")
+
+                            elif warn.startswith('[Unmatched residue name]'):
+                                self.report.warning.appendDescription('conflicted_mr_data',
                                                                       {'file_name': file_name, 'description': warn})
                                 self.report.setWarning()
 

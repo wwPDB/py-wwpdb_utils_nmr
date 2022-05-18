@@ -153,7 +153,7 @@
 # 20-Mar-2022  M. Yokochi - add support for _atom_site.label_alt_id (DAOTHER-4060, 7544, NMR restraint remediation)
 # 06-Apr-2022  M. Yokochi - detect other possible MR format if the first parsing fails (DAOTHER-7690)
 # 02-May-2022  M. Yokochi - implement recursive MR splitter guided by MR parsers (NMR restraint remediation)
-# 17-May-2022  M. Yokochi - add support for BIOSYM MR format (NMR restraint remediation)
+# 17-May-2022  M. Yokochi - add support for BIOSYM MR format (DAOTHER-7825, NMR restraint remediation)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -353,6 +353,7 @@ xplor_extra_end_err_msg_pattern = re.compile(r"extraneous input '[Ee][Nn][Dd]' e
 
 mismatched_input_err_msg = "mismatched input"
 no_viable_alt_err_msg = "no viable alternative at input"
+expecting_l_paren = "expecting L_paren"
 
 
 def detect_bom(fPath, default='utf-8'):
@@ -8554,19 +8555,28 @@ class NmrDpUtility:
 
         concat_xplor_assi_at_eol = (file_type in ('nm-res-xpl', 'nm-res-cns')
                                     and err_message.startswith(mismatched_input_err_msg)
-                                    and 'input' in err_desc and bool(xplor_assi_pattern.search(err_desc['input'])))
+                                    and 'input' in err_desc
+                                    and bool(xplor_assi_pattern.search(err_desc['input'])))
         concat_amber_rst_at_eol = (file_type == 'nm-res-amb'
                                    and err_message.startswith(mismatched_input_err_msg)
-                                   and 'input' in err_desc and bool(amber_rst_pattern.search(err_desc['input'])))
+                                   and 'input' in err_desc
+                                   and bool(amber_rst_pattern.search(err_desc['input']))
+                                   and not bool(amber_rst_pattern.match(err_desc['input'])))
         concat_comment_at_eol = (file_type in ('nm-res-cya', 'nm-res-ros', 'nm-res-bio')
                                  and err_message.startswith(no_viable_alt_err_msg)
                                  and 'input' in err_desc and bool(comment_pattern.search(err_desc['input'])))
+
+        if concat_xplor_assi_at_eol and bool(xplor_assi_pattern.match(err_desc['input'])):
+            concat_xplor_assi_at_eol = False
+            if expecting_l_paren in err_message:
+                xplor_missing_end_at_eof = True
 
         reader = None
 
         prev_input = None
 
-        if not(xplor_ends_wo_statement or amber_ends_wo_statement
+        if not(xplor_missing_end_at_eof or xplor_ends_wo_statement
+               or amber_missing_end_at_eof or amber_ends_wo_statement
                or concat_xplor_assi_at_eol or concat_amber_rst_at_eol
                or concat_comment_at_eol):
 
@@ -8685,7 +8695,8 @@ class NmrDpUtility:
 
         offset += err_line_number - 1
 
-        if (xplor_ends_wo_statement or amber_ends_wo_statement
+        if (xplor_missing_end_at_eof or xplor_ends_wo_statement
+                or amber_missing_end_at_eof or amber_ends_wo_statement
                 or concat_xplor_assi_at_eol or concat_amber_rst_at_eol
                 or concat_comment_at_eol) or i <= err_line_number or j == 0:
 
@@ -8969,7 +8980,7 @@ class NmrDpUtility:
 
                         corrected = True
 
-            if i == err_line_number - 1 and xplor_missing_end_at_eof:
+            if err_line_number - 1 in (i, j) and xplor_missing_end_at_eof:
 
                 dir_path = os.path.dirname(src_path)
 
@@ -8988,11 +8999,19 @@ class NmrDpUtility:
                     else:
                         cor_src_path = re.sub(r'\-trimmed$', '', src_path) + '-corrected'
 
+                middle = (j == err_line_number - 1)
+
+                k = 0
+
                 with open(src_path, 'r') as ifp,\
                         open(cor_src_path, 'w') as ofp:
                     for line in ifp:
+                        if middle and k == err_line_number - 1:
+                            ofp.write('END\n')
                         ofp.write(line)
-                    ofp.write('END\n')
+                        k += 1
+                    if not middle:
+                        ofp.write('END\n')
 
                 if cor_test:
                     os.rename(cor_src_path, src_path)
@@ -9435,10 +9454,16 @@ class NmrDpUtility:
 
                     return self.__divideLegacyMR(file_path, file_type, err_desc, src_path, offset) | corrected
 
-            if self.__mr_debug:
-                print('PEEL-MR-EXIT #3')
+            _, parser_err_listener, lexer_err_listener = reader.parse(test_line, None, isFilePath=False)
+            has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
+            has_parser_error = parser_err_listener is not None and parser_err_listener.getMessageList() is not None
 
-            return False | corrected
+            if has_lexer_error or not has_parser_error:
+
+                if self.__mr_debug:
+                    print('PEEL-MR-EXIT #3')
+
+                return False | corrected
 
         i = j = j2 = j3 = 0
 
@@ -9654,13 +9679,21 @@ class NmrDpUtility:
 
         concat_xplor_assi_at_eol = (file_type in ('nm-res-xpl', 'nm-res-cns')
                                     and err_message.startswith(mismatched_input_err_msg)
-                                    and 'input' in err_desc and bool(xplor_assi_pattern.search(err_desc['input'])))
+                                    and 'input' in err_desc
+                                    and bool(xplor_assi_pattern.search(err_desc['input'])))
         concat_amber_rst_at_eol = (file_type == 'nm-res-amb'
                                    and err_message.startswith(mismatched_input_err_msg)
-                                   and 'input' in err_desc and bool(amber_rst_pattern.search(err_desc['input'])))
+                                   and 'input' in err_desc
+                                   and bool(amber_rst_pattern.search(err_desc['input']))
+                                   and not bool(amber_rst_pattern.match(err_desc['input'])))
         concat_comment_at_eol = (file_type in ('nm-res-cya', 'nm-res-ros', 'nm-res-bio')
                                  and err_message.startswith(no_viable_alt_err_msg)
                                  and 'input' in err_desc and bool(comment_pattern.search(err_desc['input'])))
+
+        if concat_xplor_assi_at_eol and bool(xplor_assi_pattern.match(err_desc['input'])):
+            concat_xplor_assi_at_eol = False
+            if expecting_l_paren in err_message:
+                xplor_missing_end_at_eof = True
 
         i = j = 0
 
@@ -9689,7 +9722,8 @@ class NmrDpUtility:
 
         offset += err_line_number - 1
 
-        if (xplor_ends_wo_statement or amber_ends_wo_statement
+        if (xplor_missing_end_at_eof or xplor_ends_wo_statement
+                or amber_missing_end_at_eof or amber_ends_wo_statement
                 or concat_xplor_assi_at_eol or concat_amber_rst_at_eol
                 or concat_comment_at_eol) or i <= err_line_number or j == 0:
 
@@ -9966,7 +10000,7 @@ class NmrDpUtility:
 
                         corrected = True
 
-            if i == err_line_number - 1 and xplor_missing_end_at_eof:
+            if err_line_number - 1 in (i, j) and xplor_missing_end_at_eof:
 
                 dir_path = os.path.dirname(src_path)
 
@@ -9985,11 +10019,19 @@ class NmrDpUtility:
                     else:
                         cor_src_path = re.sub(r'\-trimmed$', '', src_path) + '-corrected'
 
+                middle = (j == err_line_number - 1)
+
+                k = 0
+
                 with open(src_path, 'r') as ifp,\
                         open(cor_src_path, 'w') as ofp:
                     for line in ifp:
+                        if middle and k == err_line_number - 1:
+                            ofp.write('END\n')
                         ofp.write(line)
-                    ofp.write('END\n')
+                        k += 1
+                    if not middle:
+                        ofp.write('END\n')
 
                 if cor_test:
                     os.rename(cor_src_path, src_path)

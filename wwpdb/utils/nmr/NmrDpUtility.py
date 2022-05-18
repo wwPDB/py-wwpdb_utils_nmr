@@ -850,7 +850,7 @@ class NmrDpUtility:
         self.__lfh = log
 
         self.__debug = False
-        self.__mr_debug = True
+        self.__mr_debug = False
 
         # current workflow operation
         self.__op = None

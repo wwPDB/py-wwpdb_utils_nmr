@@ -1,5 +1,5 @@
 /*
- BIOSYM MR (Magnetic Restraint) lexer grammar for ANTLR v4.
+ BIOSYM MR (Magnetic Restraint) lexer grammar for ANTLR v4.10
  Copyright 2022 Masashi Yokochi
 
 you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ fragment DEC_DIGIT:	[0-9];
 fragment DECIMAL:	DEC_DIGIT+;
 
 Chiral_code:		'R' | 'S';
-Atom_selection:		DECIMAL ':' ALPHA_NUM* '_' DECIMAL ALPHA? ':' SIMPLE_NAME;
+Atom_selection:		DECIMAL ':' SIMPLE_NAME '_' DECIMAL ALPHA? ':' SIMPLE_NAME;
 //Simple_name:		SIMPLE_NAME;
 //Residue_number:	Integer;
 //Residue_name:		SIMPLE_NAME;

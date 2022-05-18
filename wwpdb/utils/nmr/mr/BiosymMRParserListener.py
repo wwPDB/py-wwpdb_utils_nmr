@@ -189,28 +189,8 @@ class BiosymMRParserListener(ParseTreeListener):
 
         try:
 
-            atomSel1 = str(ctx.Atom_selection(0)).upper().split(':')
-            atomSel2 = str(ctx.Atom_selection(1)).upper().split(':')
-
-            chainId1 = int(atomSel1[0])
-            residue1 = atomSel1[1].split('_')
-            compId1 = residue1[0]
-            try:
-                seqId1 = int(residue1[1])
-            except ValueError:
-                seqId1 = int(''.join(c for c in residue1[1] if c.isdigit()))
-                chainId1 = None
-            atomId1 = atomSel1[2]
-
-            chainId2 = int(atomSel2[0])
-            residue2 = atomSel2[1].split('_')
-            compId2 = residue2[0]
-            try:
-                seqId2 = int(residue2[1])
-            except ValueError:
-                seqId2 = int(''.join(c for c in residue2[1] if c.isdigit()))
-                chainId2 = None
-            atomId2 = atomSel2[2]
+            chainId1, seqId1, compId1, atomId1 = self.splitAtomSelectionExpr(str(ctx.Atom_selection(0)))
+            chainId2, seqId2, compId2, atomId2 = self.splitAtomSelectionExpr(str(ctx.Atom_selection(1)))
 
             if None in self.numberSelection:
                 return
@@ -271,28 +251,8 @@ class BiosymMRParserListener(ParseTreeListener):
 
         try:
 
-            atomSel1 = str(ctx.Atom_selection(0)).upper().split(':')
-            atomSel2 = str(ctx.Atom_selection(1)).upper().split(':')
-
-            chainId1 = int(atomSel1[0])
-            residue1 = atomSel1[1].split('_')
-            compId1 = residue1[0]
-            try:
-                seqId1 = int(residue1[1])
-            except ValueError:
-                seqId1 = int(''.join(c for c in residue1[1] if c.isdigit()))
-                chainId1 = None
-            atomId1 = atomSel1[2]
-
-            chainId2 = int(atomSel2[0])
-            residue2 = atomSel2[1].split('_')
-            compId2 = residue2[0]
-            try:
-                seqId2 = int(residue2[1])
-            except ValueError:
-                seqId2 = int(''.join(c for c in residue2[1] if c.isdigit()))
-                chainId2 = None
-            atomId2 = atomSel2[2]
+            chainId1, seqId1, compId1, atomId1 = self.splitAtomSelectionExpr(str(ctx.Atom_selection(0)))
+            chainId2, seqId2, compId2, atomId2 = self.splitAtomSelectionExpr(str(ctx.Atom_selection(1)))
 
             if None in self.numberSelection:
                 return
@@ -332,6 +292,24 @@ class BiosymMRParserListener(ParseTreeListener):
 
         finally:
             self.numberSelection.clear()
+
+    def splitAtomSelectionExpr(self, atomSelection):  # pylint: disable=no-self-use
+        """ Split BIOSYM atom selection expression.
+        """
+
+        atomSel = atomSelection.upper().split(':')
+
+        chainId = int(atomSel[0])
+        residue = atomSel[1].split('_')
+        compId = residue[0]
+        try:
+            seqId = int(residue[1])
+        except ValueError:
+            seqId = int(''.join(c for c in residue[1] if c.isdigit()))
+            chainId = None
+        atomId = atomSel[2]
+
+        return chainId, seqId, compId, atomId
 
     def validateDistanceRange(self, weight, target_value, lower_limit, upper_limit, omit_dist_limit_outlier):
         """ Validate distance value range.
@@ -629,51 +607,10 @@ class BiosymMRParserListener(ParseTreeListener):
 
         try:
 
-            atomSel1 = str(ctx.Atom_selection(0)).upper().split(':')
-            atomSel2 = str(ctx.Atom_selection(1)).upper().split(':')
-            atomSel3 = str(ctx.Atom_selection(2)).upper().split(':')
-            atomSel4 = str(ctx.Atom_selection(3)).upper().split(':')
-
-            chainId1 = int(atomSel1[0])
-            residue1 = atomSel1[1].split('_')
-            compId1 = residue1[0]
-            try:
-                seqId1 = int(residue1[1])
-            except ValueError:
-                seqId1 = int(''.join(c for c in residue1[1] if c.isdigit()))
-                chainId1 = None
-            seqId1 = int(residue1[1])
-            atomId1 = atomSel1[2]
-
-            chainId2 = int(atomSel2[0])
-            residue2 = atomSel2[1].split('_')
-            compId2 = residue2[0]
-            try:
-                seqId2 = int(residue2[1])
-            except ValueError:
-                seqId2 = int(''.join(c for c in residue2[1] if c.isdigit()))
-                chainId2 = None
-            atomId2 = atomSel2[2]
-
-            chainId3 = int(atomSel3[0])
-            residue3 = atomSel3[1].split('_')
-            compId3 = residue3[0]
-            try:
-                seqId3 = int(residue3[1])
-            except ValueError:
-                seqId3 = int(''.join(c for c in residue3[1] if c.isdigit()))
-                chainId3 = None
-            atomId3 = atomSel3[2]
-
-            chainId4 = int(atomSel4[0])
-            residue4 = atomSel4[1].split('_')
-            compId4 = residue4[0]
-            try:
-                seqId4 = int(residue4[1])
-            except ValueError:
-                seqId4 = int(''.join(c for c in residue4[1] if c.isdigit()))
-                chainId4 = None
-            atomId4 = atomSel4[2]
+            chainId1, seqId1, compId1, atomId1 = self.splitAtomSelectionExpr(str(ctx.Atom_selection(0)))
+            chainId2, seqId2, compId2, atomId2 = self.splitAtomSelectionExpr(str(ctx.Atom_selection(1)))
+            chainId3, seqId3, compId3, atomId3 = self.splitAtomSelectionExpr(str(ctx.Atom_selection(2)))
+            chainId4, seqId4, compId4, atomId4 = self.splitAtomSelectionExpr(str(ctx.Atom_selection(3)))
 
             if None in self.numberSelection:
                 return
@@ -800,50 +737,10 @@ class BiosymMRParserListener(ParseTreeListener):
 
         try:
 
-            atomSel1 = str(ctx.Atom_selection(0)).upper().split(':')
-            atomSel2 = str(ctx.Atom_selection(1)).upper().split(':')
-            atomSel3 = str(ctx.Atom_selection(2)).upper().split(':')
-            atomSel4 = str(ctx.Atom_selection(3)).upper().split(':')
-
-            chainId1 = int(atomSel1[0])
-            residue1 = atomSel1[1].split('_')
-            compId1 = residue1[0]
-            try:
-                seqId1 = int(residue1[1])
-            except ValueError:
-                seqId1 = int(''.join(c for c in residue1[1] if c.isdigit()))
-                chainId1 = None
-            atomId1 = atomSel1[2]
-
-            chainId2 = int(atomSel2[0])
-            residue2 = atomSel2[1].split('_')
-            compId2 = residue2[0]
-            try:
-                seqId2 = int(residue2[1])
-            except ValueError:
-                seqId2 = int(''.join(c for c in residue2[1] if c.isdigit()))
-                chainId2 = None
-            atomId2 = atomSel2[2]
-
-            chainId3 = int(atomSel3[0])
-            residue3 = atomSel3[1].split('_')
-            compId3 = residue3[0]
-            try:
-                seqId3 = int(residue3[1])
-            except ValueError:
-                seqId3 = int(''.join(c for c in residue3[1] if c.isdigit()))
-                chainId3 = None
-            atomId3 = atomSel3[2]
-
-            chainId4 = int(atomSel4[0])
-            residue4 = atomSel4[1].split('_')
-            compId4 = residue4[0]
-            try:
-                seqId4 = int(residue4[1])
-            except ValueError:
-                seqId4 = int(''.join(c for c in residue4[1] if c.isdigit()))
-                chainId4 = None
-            atomId4 = atomSel4[2]
+            chainId1, seqId1, compId1, atomId1 = self.splitAtomSelectionExpr(str(ctx.Atom_selection(0)))
+            chainId2, seqId2, compId2, atomId2 = self.splitAtomSelectionExpr(str(ctx.Atom_selection(1)))
+            chainId3, seqId3, compId3, atomId3 = self.splitAtomSelectionExpr(str(ctx.Atom_selection(2)))
+            chainId4, seqId4, compId4, atomId4 = self.splitAtomSelectionExpr(str(ctx.Atom_selection(3)))
 
             if None in self.numberSelection:
                 return
@@ -993,17 +890,7 @@ class BiosymMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by BiosymMRParser#chirality_constraint.
     def exitChirality_constraint(self, ctx: BiosymMRParser.Chirality_constraintContext):
-        atomSel1 = str(ctx.Atom_selection()).upper().split(':')
-
-        chainId1 = int(atomSel1[0])
-        residue1 = atomSel1[1].split('_')
-        compId1 = residue1[0]
-        try:
-            seqId1 = int(residue1[1])
-        except ValueError:
-            seqId1 = int(''.join(c for c in residue1[1] if c.isdigit()))
-            chainId1 = None
-        atomId1 = atomSel1[2]
+        chainId1, seqId1, compId1, atomId1 = self.splitAtomSelectionExpr(str(ctx.Atom_selection()))
 
         chirality = str(ctx.Chiral_code())
 
@@ -1044,61 +931,11 @@ class BiosymMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by BiosymMRParser#prochirality_constraint.
     def exitProchirality_constraint(self, ctx: BiosymMRParser.Prochirality_constraintContext):
-        atomSel1 = str(ctx.Atom_selection(0)).upper().split(':')
-        atomSel2 = str(ctx.Atom_selection(1)).upper().split(':')
-        atomSel3 = str(ctx.Atom_selection(2)).upper().split(':')
-        atomSel4 = str(ctx.Atom_selection(3)).upper().split(':')
-        atomSel5 = str(ctx.Atom_selection(4)).upper().split(':')
-
-        chainId1 = int(atomSel1[0])
-        residue1 = atomSel1[1].split('_')
-        compId1 = residue1[0]
-        try:
-            seqId1 = int(residue1[1])
-        except ValueError:
-            seqId1 = int(''.join(c for c in residue1[1] if c.isdigit()))
-            chainId1 = None
-        atomId1 = atomSel1[2]
-
-        chainId2 = int(atomSel2[0])
-        residue2 = atomSel2[1].split('_')
-        compId2 = residue2[0]
-        try:
-            seqId2 = int(residue2[1])
-        except ValueError:
-            seqId2 = int(''.join(c for c in residue2[1] if c.isdigit()))
-            chainId2 = None
-        atomId2 = atomSel2[2]
-
-        chainId3 = int(atomSel3[0])
-        residue3 = atomSel3[1].split('_')
-        compId3 = residue3[0]
-        try:
-            seqId3 = int(residue3[1])
-        except ValueError:
-            seqId3 = int(''.join(c for c in residue3[1] if c.isdigit()))
-            chainId3 = None
-        atomId3 = atomSel3[2]
-
-        chainId4 = int(atomSel4[0])
-        residue4 = atomSel4[1].split('_')
-        compId4 = residue4[0]
-        try:
-            seqId4 = int(residue4[1])
-        except ValueError:
-            seqId4 = int(''.join(c for c in residue4[1] if c.isdigit()))
-            chainId4 = None
-        atomId4 = atomSel4[2]
-
-        chainId5 = int(atomSel5[0])
-        residue5 = atomSel5[1].split('_')
-        compId5 = residue5[0]
-        try:
-            seqId5 = int(residue5[1])
-        except ValueError:
-            seqId5 = int(''.join(c for c in residue5[1] if c.isdigit()))
-            chainId5 = None
-        atomId5 = atomSel5[2]
+        chainId1, seqId1, compId1, atomId1 = self.splitAtomSelectionExpr(str(ctx.Atom_selection(0)))
+        chainId2, seqId2, compId2, atomId2 = self.splitAtomSelectionExpr(str(ctx.Atom_selection(1)))
+        chainId3, seqId3, compId3, atomId3 = self.splitAtomSelectionExpr(str(ctx.Atom_selection(2)))
+        chainId4, seqId4, compId4, atomId4 = self.splitAtomSelectionExpr(str(ctx.Atom_selection(3)))
+        chainId5, seqId5, compId5, atomId5 = self.splitAtomSelectionExpr(str(ctx.Atom_selection(4)))
 
         if not self.__hasPolySeq:
             return

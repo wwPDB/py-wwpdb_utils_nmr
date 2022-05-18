@@ -16,24 +16,53 @@ limitations under the License.
 
 lexer grammar BiosymMRLexer;
 
-options { caseInsensitive=true; }
+/* Case-Insensitive Lexing
+ See also https://github.com/antlr/antlr4/blob/master/doc/case-insensitive-lexing.md
+*/
+fragment A:		[aA]; // match either an 'a' or 'A'
+fragment B:		[bB];
+fragment C:		[cC];
+fragment D:		[dD];
+fragment E:		[eE];
+fragment F:		[fF];
+fragment G:		[gG];
+fragment H:		[hH];
+fragment I:		[iI];
+fragment J:		[jJ];
+fragment K:		[kK];
+fragment L:		[lL];
+fragment M:		[mM];
+fragment N:		[nN];
+fragment O:		[oO];
+fragment P:		[pP];
+fragment Q:		[qQ];
+fragment R:		[rR];
+fragment S:		[sS];
+fragment T:		[tT];
+fragment U:		[uU];
+fragment V:		[vV];
+fragment W:		[wW];
+fragment X:		[xX];
+fragment Y:		[yY];
+fragment Z:		[zZ];
+
 
 Integer:		('+' | '-')? DECIMAL;
 Float:			('+' | '-')? (DECIMAL | DEC_DOT_DEC);
-Real:			('+' | '-')? (DECIMAL | DEC_DOT_DEC) ('E' ('+' | '-')? DECIMAL)?;
+Real:			('+' | '-')? (DECIMAL | DEC_DOT_DEC) (E ('+' | '-')? DECIMAL)?;
 fragment DEC_DOT_DEC:	(DECIMAL '.' DECIMAL?) | ('.' DECIMAL);
 fragment DEC_DIGIT:	[0-9];
 fragment DECIMAL:	DEC_DIGIT+;
 
-Chiral_code:		'R' | 'S';
-Atom_selection:		DECIMAL ':' ALPHA_NUM* '_' DECIMAL ALPHA? ':' SIMPLE_NAME;
+Chiral_code:		R | S;
+Atom_selection:		DECIMAL ':' SIMPLE_NAME '_' DECIMAL ALPHA? ':' SIMPLE_NAME;
 //Simple_name:		SIMPLE_NAME;
 //Residue_number:	Integer;
 //Residue_name:		SIMPLE_NAME;
 //Atom_name:		ALPHA_NUM ATM_NAME_CHAR*;
 //Atom_type:		ALPHA ATM_TYPE_CHAR*;
 
-fragment ALPHA:		[A-Z];
+fragment ALPHA:		[A-Za-z];
 fragment ALPHA_NUM:	ALPHA | DEC_DIGIT;
 fragment START_CHAR:	ALPHA_NUM | '_';
 fragment NAME_CHAR:	START_CHAR | '\'' | '-' | '+' | '.' | '"' | '*' | '#';
@@ -43,6 +72,6 @@ fragment SIMPLE_NAME:	START_CHAR NAME_CHAR*;
 
 SPACE:			[ \t\r\n]+ -> skip;
 COMMENT:		'{' (COMMENT | .)*? '}' -> channel(HIDDEN);
-SECTION_COMMENT:	('#' | '!' | ';' | '/' | '&' | '*' '*'+ | '-' '-'+ | '+' '+'+ | 'REMARK') ' '* [\r\n]+ -> channel(HIDDEN);
-LINE_COMMENT:		('#' | '!' | ';' | '/' | '&' | '*' '*'+ | '-' '-'+ | '+' '+'+ | 'REMARK') ~[\r\n]* -> channel(HIDDEN);
+SECTION_COMMENT:	('#' | '!' | ';' | '/' | '&' | '*' '*'+ | '-' '-'+ | '+' '+'+ | R E M A R K) ' '* [\r\n]+ -> channel(HIDDEN);
+LINE_COMMENT:		('#' | '!' | ';' | '/' | '&' | '*' '*'+ | '-' '-'+ | '+' '+'+ | R E M A R K) ~[\r\n]* -> channel(HIDDEN);
 

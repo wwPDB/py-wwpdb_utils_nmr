@@ -374,7 +374,7 @@ factor:
 	Hydrogen |
 	Id Integer |
 	Known |
-	Name (Simple_names | Simple_name (Colon Simple_name)?) |
+	Name (Simple_names | Simple_name (Colon Simple_name)? | Double_quote_string (Colon Double_quote_string)?) |
 	NONE |
 	Not_op factor |
 	Point L_paren number_f Comma? number_f Comma? number_f R_paren Cut number_f |

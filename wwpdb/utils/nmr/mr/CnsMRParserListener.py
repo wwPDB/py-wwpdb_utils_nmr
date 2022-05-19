@@ -4364,11 +4364,21 @@ class CnsMRParserListener(ParseTreeListener):
                 if self.__sel_expr_debug:
                     print("  " * self.depth + "--> name")
                 if ctx.Colon():  # range expression
-                    self.factor['atom_ids'] = [str(ctx.Simple_name(0)),
-                                               str(ctx.Simple_name(1))]
+                    if ctx.Simple_name(0):
+                        begAtomId = str(ctx.Simple_name(0))
+                    elif ctx.Double_quote_string(0):
+                        begAtomId = str(ctx.Double_quote_string(0)).strip('"').strip()
+                    if ctx.Simple_name(1):
+                        endAtomId = str(ctx.Simple_name(1))
+                    elif ctx.Double_quote_string(1):
+                        endAtomId = str(ctx.Double_quote_string(1)).strip('"').strip()
+                    self.factor['chain_id'] = [begAtomId, endAtomId]
 
-                elif ctx.Simple_name(0):
-                    self.factor['atom_id'] = [str(ctx.Simple_name(0))]
+                elif ctx.Simple_name(0) or ctx.Double_quote_string(0):
+                    if ctx.Simple_name(0):
+                        self.factor['atom_id'] = [str(ctx.Simple_name(0))]
+                    elif ctx.Double_quote_string(0):
+                        self.factor['atom_id'] = [str(ctx.Double_quote_string(0)).strip('"').strip()]
 
                 elif ctx.Simple_names(0):
                     self.factor['atom_ids'] = [str(ctx.Simple_names(0))]
@@ -4625,11 +4635,11 @@ class CnsMRParserListener(ParseTreeListener):
                     if ctx.Simple_name(0):
                         begChainId = str(ctx.Simple_name(0))
                     elif ctx.Double_quote_string(0):
-                        begChainId = str(ctx.Simple_name(0)).strip('"').strip()
+                        begChainId = str(ctx.Double_quote_string(0)).strip('"').strip()
                     if ctx.Simple_name(1):
                         endChainId = str(ctx.Simple_name(1))
                     elif ctx.Double_quote_string(1):
-                        endChainId = str(ctx.Simple_name(1)).strip('"').strip()
+                        endChainId = str(ctx.Double_quote_string(1)).strip('"').strip()
                     self.factor['chain_id'] = [ps['auth_chain_id'] for ps in self.__polySeq
                                                if begChainId <= ps['auth_chain_id'] <= endChainId]
 
@@ -4646,7 +4656,7 @@ class CnsMRParserListener(ParseTreeListener):
                         if ctx.Simple_name(0):
                             chainId = str(ctx.Simple_name(0))
                         elif ctx.Double_quote_string(0):
-                            chainId = str(ctx.Simple_name(0)).strip('"').strip()
+                            chainId = str(ctx.Double_quote_string(0)).strip('"').strip()
                         self.factor['chain_id'] = [ps['auth_chain_id'] for ps in self.__polySeq
                                                    if ps['auth_chain_id'] == self.getRealChainId(chainId)]
                     if ctx.Simple_names(0):

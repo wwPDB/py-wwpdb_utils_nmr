@@ -37,7 +37,7 @@ distance_restraints:
 	distance_restraint+;
 
 distance_restraint:
-	Atom_selection Atom_selection
+	Ordinal? Atom_selection Atom_selection
 	number number number					// lower limit, upper limit, observation
 	number number number					// weights for lower bound, upper bound, maximum penalty
 	number?;
@@ -48,7 +48,7 @@ distance_constraints:
 	distance_constraint+;
 
 distance_constraint:
-	Atom_selection Atom_selection
+	Ordinal? Atom_selection Atom_selection
 	number number						// lower limit, upper limit
 	number number number;					// weights for lower bound, upper bound, maximum penalty
 
@@ -59,7 +59,7 @@ dihedral_angle_restraints:
 	dihedral_angle_restraint+;
 
 dihedral_angle_restraint:
-	Atom_selection Atom_selection Atom_selection Atom_selection
+	Ordinal? Atom_selection Atom_selection Atom_selection Atom_selection
 	number number						// coupling constant, uncertainty of coupling constant
 	number number number					// weights for lower bound, upper bound, maximum penalty
 	number number						// range for lower bound, upper bound
@@ -71,7 +71,7 @@ dihedral_angle_constraints:
 	dihedral_angle_constraint+;
 
 dihedral_angle_constraint:
-	Atom_selection Atom_selection Atom_selection Atom_selection
+	Ordinal? Atom_selection Atom_selection Atom_selection Atom_selection
 	number number						// range for lower bound, upper bound
 	number number number;					// weights for lower bound, upper bound, maximum penalty
 
@@ -82,7 +82,7 @@ chirality_constraints:
 	chirality_constraint+;
 
 chirality_constraint:
-	Atom_selection
+	Ordinal? Atom_selection
 	Chiral_code;
 
 /* BIOSYM - Prochirality constraints
@@ -91,11 +91,7 @@ prochirality_constraints:
 	prochirality_constraint+;
 
 prochirality_constraint:
-	Atom_selection
-	Atom_selection
-	Atom_selection
-	Atom_selection
-	Atom_selection;
+	Ordinal? Atom_selection Atom_selection Atom_selection Atom_selection Atom_selection;
 
 mixing_time:
 	Real;

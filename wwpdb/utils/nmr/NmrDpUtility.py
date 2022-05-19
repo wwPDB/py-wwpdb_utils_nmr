@@ -350,6 +350,7 @@ xplor_assi_pattern = re.compile(r'\s*[Aa][Ss][Ss][Ii][Gg]?[Nn]?.*')
 xplor_end_pattern = re.compile(r'\s*[Ee][Nn][Dd].*')
 xplor_missing_end_at_eof_err_msg = "missing End at '<EOF>'"  # NOTICE: depends on ANTLR v4 and (Xplor|Cns)MRLexer.g4
 xplor_extra_end_err_msg_pattern = re.compile(r"extraneous input '[Ee][Nn][Dd]' expecting .*")  # NOTICE: depends on ANTLR v4
+xplor_extra_assi_err_msg_pattern = re.compile(r"extraneous input '[Aa][Ss][Ss][Ii][Gg]?[Nn]?' expecting L_paren")  # NOTICE: depends on ANTLR v4 and (Xplor|Cns)MRLexer.g4
 
 mismatched_input_err_msg = "mismatched input"  # NOTICE: depends on ANTLR v4
 no_viable_alt_err_msg = "no viable alternative at input"  # NOTICE: depends on ANTLR v4
@@ -8554,17 +8555,21 @@ class NmrDpUtility:
         err_line_number = err_desc['line_number']
         err_column_position = err_desc['column_position']
 
-        xplor_missing_end_at_eof = (file_type in ('nm-res-xpl', 'nm-res-cns')) and (err_message == xplor_missing_end_at_eof_err_msg)
-        xplor_ends_wo_statement = (file_type in ('nm-res-xpl', 'nm-res-cns')) and bool(xplor_extra_end_err_msg_pattern.match(err_message))
+        xplor_file_type = file_type in ('nm-res-xpl', 'nm-res-cns')
+        amber_file_type = (file_type == 'nm-res-amb')
 
-        amber_missing_end_at_eof = file_type == 'nm-res-amb' and (err_message == amber_missing_end_at_eof_err_msg)
-        amber_ends_wo_statement = file_type == 'nm-res-amb' and bool(amber_extra_end_err_msg_pattern.match(err_message))
+        xplor_missing_end_at_eof = xplor_file_type and (err_message == xplor_missing_end_at_eof_err_msg)
+        xplor_ends_wo_statement = xplor_file_type and bool(xplor_extra_end_err_msg_pattern.match(err_message))
+        xplor_assi_after_or_tag = xplor_file_type and bool(xplor_extra_assi_err_msg_pattern.match(err_message))
 
-        concat_xplor_assi_at_eol = (file_type in ('nm-res-xpl', 'nm-res-cns')
+        amber_missing_end_at_eof = amber_file_type and (err_message == amber_missing_end_at_eof_err_msg)
+        amber_ends_wo_statement = amber_file_type and bool(amber_extra_end_err_msg_pattern.match(err_message))
+
+        concat_xplor_assi_at_eol = (xplor_file_type
                                     and err_message.startswith(mismatched_input_err_msg)
                                     and 'input' in err_desc
                                     and bool(xplor_assi_pattern.search(err_desc['input'])))
-        concat_amber_rst_at_eol = (file_type == 'nm-res-amb'
+        concat_amber_rst_at_eol = (amber_file_type
                                    and err_message.startswith(mismatched_input_err_msg)
                                    and 'input' in err_desc
                                    and bool(amber_rst_pattern.search(err_desc['input']))
@@ -9222,7 +9227,7 @@ class NmrDpUtility:
             os.remove(div_src_file)
             os.remove(div_try_file)
 
-            if prev_input is not None:
+            if prev_input is not None and not xplor_assi_after_or_tag:
                 err_desc['previous_input'] = prev_input
 
             if self.__mr_debug:
@@ -9311,8 +9316,11 @@ class NmrDpUtility:
         err_line_number = err_desc['line_number']
         err_column_position = err_desc['column_position']
 
-        xplor_ends_wo_statement = (file_type in ('nm-res-xpl', 'nm-res-cns')) and bool(xplor_extra_end_err_msg_pattern.match(err_message))
-        amber_ends_wo_statement = file_type == 'nm-res-amb' and bool(amber_extra_end_err_msg_pattern.match(err_message))
+        xplor_file_type = file_type in ('nm-res-xpl', 'nm-res-cns')
+        amber_file_type = file_type = 'nm-res-amb'
+
+        xplor_ends_wo_statement = xplor_file_type and bool(xplor_extra_end_err_msg_pattern.match(err_message))
+        amber_ends_wo_statement = amber_file_type and bool(amber_extra_end_err_msg_pattern.match(err_message))
 
         corrected = False
 
@@ -9683,17 +9691,20 @@ class NmrDpUtility:
 
             return False
 
-        xplor_missing_end_at_eof = (file_type in ('nm-res-xpl', 'nm-res-cns')) and (err_message == xplor_missing_end_at_eof_err_msg)
-        xplor_ends_wo_statement = (file_type in ('nm-res-xpl', 'nm-res-cns')) and bool(xplor_extra_end_err_msg_pattern.match(err_message))
+        xplor_file_type = file_type in ('nm-res-xpl', 'nm-res-cns')
+        amber_file_type = file_type = 'nm-res-amb'
 
-        amber_missing_end_at_eof = file_type == 'nm-res-amb' and (err_message == amber_missing_end_at_eof_err_msg)
-        amber_ends_wo_statement = file_type == 'nm-res-amb' and bool(amber_extra_end_err_msg_pattern.match(err_message))
+        xplor_missing_end_at_eof = xplor_file_type and (err_message == xplor_missing_end_at_eof_err_msg)
+        xplor_ends_wo_statement = xplor_file_type and bool(xplor_extra_end_err_msg_pattern.match(err_message))
 
-        concat_xplor_assi_at_eol = (file_type in ('nm-res-xpl', 'nm-res-cns')
+        amber_missing_end_at_eof = amber_file_type and (err_message == amber_missing_end_at_eof_err_msg)
+        amber_ends_wo_statement = amber_file_type and bool(amber_extra_end_err_msg_pattern.match(err_message))
+
+        concat_xplor_assi_at_eol = (xplor_file_type
                                     and err_message.startswith(mismatched_input_err_msg)
                                     and 'input' in err_desc
                                     and bool(xplor_assi_pattern.search(err_desc['input'])))
-        concat_amber_rst_at_eol = (file_type == 'nm-res-amb'
+        concat_amber_rst_at_eol = (amber_file_type
                                    and err_message.startswith(mismatched_input_err_msg)
                                    and 'input' in err_desc
                                    and bool(amber_rst_pattern.search(err_desc['input']))
@@ -10253,7 +10264,7 @@ class NmrDpUtility:
             listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
             if listener is not None:
-                if file_type in ('nm-res-xpl', 'nm-res-cns', 'nm-res-cya', 'nm-res-ros'):
+                if file_type in ('nm-res-xpl', 'nm-res-cns', 'nm-res-cya', 'nm-res-ros', 'nm-res-bio'):
                     reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:

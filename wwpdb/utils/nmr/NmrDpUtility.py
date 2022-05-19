@@ -7390,6 +7390,7 @@ class NmrDpUtility:
                         for description in messageList:
                             err_lines.append(description['line_number'])
                             err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                            len_err = len(err)
                             if 'input' in description:
                                 err += f"{description['input']}\n"
                                 err += f"{description['marker']}\n"
@@ -7402,8 +7403,8 @@ class NmrDpUtility:
 
                             _err = self.__retrieveErroneousPreviousInput(description)
                             if _err is not None and not comment_pattern.match(_err):
-                                err += "However, the cause of the error may be due to the previous input "\
-                                    f"(line {description['line_number']-1}):\n{_err}"
+                                err = err[:len_err] + "However, the error may be due to the previous input "\
+                                    f"(line {description['line_number']-1}):\n{_err}" + err[len_err:]
 
                     if len(err) > 0:
                         valid = False
@@ -7516,6 +7517,7 @@ class NmrDpUtility:
                         for description in messageList:
                             err_lines.append(description['line_number'])
                             err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                            len_err = len(err)
                             if 'input' in description:
                                 err += f"{description['input']}\n"
                                 err += f"{description['marker']}\n"
@@ -7528,8 +7530,8 @@ class NmrDpUtility:
 
                             _err = self.__retrieveErroneousPreviousInput(description)
                             if _err is not None and not comment_pattern.match(_err):
-                                err += "However, the cause of the error may be due to the previous input "\
-                                    f"(line {description['line_number']-1}):\n{_err}"
+                                err = err[:len_err] + "However, the error may be due to the previous input "\
+                                    f"(line {description['line_number']-1}):\n{_err}" + err[len_err:]
 
                     if len(err) > 0:
                         valid = False
@@ -7632,6 +7634,7 @@ class NmrDpUtility:
                         for description in messageList:
                             err_lines.append(description['line_number'])
                             err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                            len_err = len(err)
                             if 'input' in description:
                                 err += f"{description['input']}\n"
                                 err += f"{description['marker']}\n"
@@ -7641,8 +7644,8 @@ class NmrDpUtility:
 
                             _err = self.__retrieveErroneousPreviousInput(description)
                             if _err is not None and not comment_pattern.match(_err):
-                                err += "However, the cause of the error may be due to the previous input "\
-                                    f"(line {description['line_number']-1}):\n{_err}"
+                                err = err[:len_err] + "However, the error may be due to the previous input "\
+                                    f"(line {description['line_number']-1}):\n{_err}" + err[len_err:]
 
                     if len(err) > 0:
                         valid = False
@@ -7745,6 +7748,7 @@ class NmrDpUtility:
                         for description in messageList:
                             err_lines.append(description['line_number'])
                             err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                            len_err = len(err)
                             if 'input' in description:
                                 err += f"{description['input']}\n"
                                 err += f"{description['marker']}\n"
@@ -7754,8 +7758,8 @@ class NmrDpUtility:
 
                             _err = self.__retrieveErroneousPreviousInput(description)
                             if _err is not None and not comment_pattern.match(_err):
-                                err += "However, the cause of the error may be due to the previous input "\
-                                    f"(line {description['line_number']-1}):\n{_err}"
+                                err = err[:len_err] + "However, the error may be due to the previous input "\
+                                    f"(line {description['line_number']-1}):\n{_err}" + err[len_err:]
 
                     if len(err) > 0:
                         valid = False
@@ -7871,6 +7875,7 @@ class NmrDpUtility:
                         for description in messageList:
                             err_lines.append(description['line_number'])
                             err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                            len_err = len(err)
                             if 'input' in description:
                                 err += f"{description['input']}\n"
                                 err += f"{description['marker']}\n"
@@ -7880,8 +7885,8 @@ class NmrDpUtility:
 
                             _err = self.__retrieveErroneousPreviousInput(description)
                             if _err is not None and not comment_pattern.match(_err):
-                                err += "However, the cause of the error may be due to the previous input "\
-                                    f"(line {description['line_number']-1}):\n{_err}"
+                                err = err[:len_err] + "However, the error may be due to the previous input "\
+                                    f"(line {description['line_number']-1}):\n{_err}" + err[len_err:]
 
                     if len(err) > 0:
                         valid = False
@@ -7996,6 +8001,7 @@ class NmrDpUtility:
                         for description in messageList:
                             err_lines.append(description['line_number'])
                             err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                            len_err = len(err)
                             if 'input' in description:
                                 err += f"{description['input']}\n"
                                 err += f"{description['marker']}\n"
@@ -8005,8 +8011,8 @@ class NmrDpUtility:
 
                             _err = self.__retrieveErroneousPreviousInput(description)
                             if _err is not None and not comment_pattern.match(_err):
-                                err += "However, the cause of the error may be due to the previous input "\
-                                    f"(line {description['line_number']-1}):\n{_err}"
+                                err = err[:len_err] + "However, the error may be due to the previous input "\
+                                    f"(line {description['line_number']-1}):\n{_err}" + err[len_err:]
 
                     if len(err) > 0:
                         valid = False
@@ -8117,6 +8123,7 @@ class NmrDpUtility:
                         for description in messageList:
                             err_lines.append(description['line_number'])
                             err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                            len_err = len(err)
                             if 'input' in description:
                                 err += f"{description['input']}\n"
                                 err += f"{description['marker']}\n"
@@ -8126,8 +8133,8 @@ class NmrDpUtility:
 
                             _err = self.__retrieveErroneousPreviousInput(description)
                             if _err is not None and not comment_pattern.match(_err):
-                                err += "However, the cause of the error may be due to the previous input "\
-                                    f"(line {description['line_number']-1}):\n{_err}"
+                                err = err[:len_err] + "However, the error may be due to the previous input "\
+                                    f"(line {description['line_number']-1}):\n{_err}" + err[len_err:]
 
                     if len(err) > 0:
                         valid = False

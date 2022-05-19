@@ -352,6 +352,8 @@ xplor_missing_end_at_eof_err_msg = "missing End at '<EOF>'"  # NOTICE: depends o
 xplor_extra_end_err_msg_pattern = re.compile(r"extraneous input '[Ee][Nn][Dd]' expecting .*")  # NOTICE: depends on ANTLR v4
 xplor_extra_assi_err_msg_pattern = re.compile(r"extraneous input '[Aa][Ss][Ss][Ii][Gg]?[Nn]?' expecting L_paren")  # NOTICE: depends on ANTLR v4 and (Xplor|Cns)MRLexer.g4
 
+cyana_ambig_pattern = re.compile(r'0\s+AMB\s.*')
+
 mismatched_input_err_msg = "mismatched input"  # NOTICE: depends on ANTLR v4
 no_viable_alt_err_msg = "no viable alternative at input"  # NOTICE: depends on ANTLR v4
 expecting_l_paren = "expecting L_paren"  # NOTICE: depends on ANTLR v4 and (Xplor|Cns)MRLexer.g4
@@ -8565,6 +8567,10 @@ class NmrDpUtility:
         amber_missing_end_at_eof = amber_file_type and (err_message == amber_missing_end_at_eof_err_msg)
         amber_ends_wo_statement = amber_file_type and bool(amber_extra_end_err_msg_pattern.match(err_message))
 
+        cyana_ambig_restraint = (file_type == 'nm-res-cya'
+                                 and 'input' in err_desc
+                                 and bool(cyana_ambig_pattern.search(err_desc['input'])))
+
         concat_xplor_assi_at_eol = (xplor_file_type
                                     and err_message.startswith(mismatched_input_err_msg)
                                     and 'input' in err_desc
@@ -8589,6 +8595,7 @@ class NmrDpUtility:
 
         if not(xplor_missing_end_at_eof or xplor_ends_wo_statement
                or amber_missing_end_at_eof or amber_ends_wo_statement
+               or cyana_ambig_restraint
                or concat_xplor_assi_at_eol or concat_amber_rst_at_eol
                or concat_comment_at_eol):
 
@@ -8709,6 +8716,7 @@ class NmrDpUtility:
 
         if (xplor_missing_end_at_eof or xplor_ends_wo_statement
                 or amber_missing_end_at_eof or amber_ends_wo_statement
+                or cyana_ambig_restraint
                 or concat_xplor_assi_at_eol or concat_amber_rst_at_eol
                 or concat_comment_at_eol) or i <= err_line_number or j == 0:
 
@@ -8802,6 +8810,57 @@ class NmrDpUtility:
                             open(cor_src_path, 'w') as ofp:
                         for line in ifp:
                             if k == offset:
+                                ofp.write('#' + line)
+                            else:
+                                ofp.write(line)
+                            k += 1
+
+                    if cor_test:
+                        os.rename(cor_src_path, src_path)
+
+                    corrected = True
+
+            if cyana_ambig_restraint:
+
+                has_amb_tag = False
+
+                k = 0
+
+                with open(src_path, 'r') as ifp:
+                    for line in ifp:
+                        if k == offset:
+                            if cyana_ambig_pattern.search(line):
+                                has_amb_tag = True
+                            break
+                        k += 1
+
+                if has_amb_tag:
+
+                    dir_path = os.path.dirname(src_path)
+
+                    for div_file_name in os.listdir(dir_path):
+                        if os.path.isfile(os.path.join(dir_path, div_file_name))\
+                           and (div_file_name.endswith('-div_src.mr') or div_file_name.endswith('-div_dst.mr')):
+                            os.remove(os.path.join(dir_path, div_file_name))
+
+                    src_file_name = os.path.basename(src_path)
+                    cor_test = '-corrected' in src_file_name
+                    if cor_test:
+                        cor_src_path = src_path + '~'
+                    else:
+                        if src_path.endswith('.mr'):
+                            cor_src_path = re.sub(r'\-trimmed$', '', os.path.splitext(src_path)[0]) + '-corrected.mr'
+                        else:
+                            cor_src_path = re.sub(r'\-trimmed$', '', src_path) + '-corrected'
+
+                    k = 0
+
+                    with open(src_path, 'r') as ifp,\
+                            open(cor_src_path, 'w') as ofp:
+                        for line in ifp:
+                            if k < offset:
+                                ofp.write(line)
+                            elif cyana_ambig_pattern.search(line) and not comment_pattern.match(line):
                                 ofp.write('#' + line)
                             else:
                                 ofp.write(line)
@@ -9700,6 +9759,10 @@ class NmrDpUtility:
         amber_missing_end_at_eof = amber_file_type and (err_message == amber_missing_end_at_eof_err_msg)
         amber_ends_wo_statement = amber_file_type and bool(amber_extra_end_err_msg_pattern.match(err_message))
 
+        cyana_ambig_restraint = (file_type == 'nm-res-cya'
+                                 and 'input' in err_desc
+                                 and bool(cyana_ambig_pattern.search(err_desc['input'])))
+
         concat_xplor_assi_at_eol = (xplor_file_type
                                     and err_message.startswith(mismatched_input_err_msg)
                                     and 'input' in err_desc
@@ -9747,6 +9810,7 @@ class NmrDpUtility:
 
         if (xplor_missing_end_at_eof or xplor_ends_wo_statement
                 or amber_missing_end_at_eof or amber_ends_wo_statement
+                or cyana_ambig_restraint
                 or concat_xplor_assi_at_eol or concat_amber_rst_at_eol
                 or concat_comment_at_eol) or i <= err_line_number or j == 0:
 
@@ -9840,6 +9904,57 @@ class NmrDpUtility:
                             open(cor_src_path, 'w') as ofp:
                         for line in ifp:
                             if k == offset:
+                                ofp.write('#' + line)
+                            else:
+                                ofp.write(line)
+                            k += 1
+
+                    if cor_test:
+                        os.rename(cor_src_path, src_path)
+
+                    corrected = True
+
+            if cyana_ambig_restraint:
+
+                has_amb_tag = False
+
+                k = 0
+
+                with open(src_path, 'r') as ifp:
+                    for line in ifp:
+                        if k == offset:
+                            if cyana_ambig_pattern.search(line):
+                                has_amb_tag = True
+                            break
+                        k += 1
+
+                if has_amb_tag:
+
+                    dir_path = os.path.dirname(src_path)
+
+                    for div_file_name in os.listdir(dir_path):
+                        if os.path.isfile(os.path.join(dir_path, div_file_name))\
+                           and (div_file_name.endswith('-div_src.mr') or div_file_name.endswith('-div_dst.mr')):
+                            os.remove(os.path.join(dir_path, div_file_name))
+
+                    src_file_name = os.path.basename(src_path)
+                    cor_test = '-corrected' in src_file_name
+                    if cor_test:
+                        cor_src_path = src_path + '~'
+                    else:
+                        if src_path.endswith('.mr'):
+                            cor_src_path = re.sub(r'\-trimmed$', '', os.path.splitext(src_path)[0]) + '-corrected.mr'
+                        else:
+                            cor_src_path = re.sub(r'\-trimmed$', '', src_path) + '-corrected'
+
+                    k = 0
+
+                    with open(src_path, 'r') as ifp,\
+                            open(cor_src_path, 'w') as ofp:
+                        for line in ifp:
+                            if k < offset:
+                                ofp.write(line)
+                            elif cyana_ambig_pattern.search(line) and not comment_pattern.match(line):
                                 ofp.write('#' + line)
                             else:
                                 ofp.write(line)

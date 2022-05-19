@@ -747,8 +747,16 @@ class XplorMRParserListener(ParseTreeListener):
         try:
 
             target = self.numberSelection[0]
-            dminus = self.numberSelection[1]
-            dplus = self.numberSelection[2]
+
+            if len(self.numberSelection) > 2:
+                dminus = self.numberSelection[1]
+                dplus = self.numberSelection[2]
+
+            elif len(self.numberSelection) > 1:
+                dminus = dplus = self.numberSelection[1]
+
+            else:
+                dminus = dplus = 0.0
 
             if None in self.numberSelection:
                 return
@@ -3968,9 +3976,7 @@ class XplorMRParserListener(ParseTreeListener):
                 cplus = self.numberSelection[2]
 
             else:
-                delta = self.numberSelection[1]
-                cminus = delta
-                cplus = delta
+                cminus = cplus = self.numberSelection[1]
 
             target_value = target
             lower_limit = None

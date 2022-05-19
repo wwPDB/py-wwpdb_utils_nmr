@@ -118,7 +118,7 @@ noe_statement:
 	Temperature Equ_op? number_s;
 
 noe_assign:
-	Assign selection selection number number number
+	Assign selection selection number number? number?
 	noe_annotation*
 	(Or_op selection selection)*;
 

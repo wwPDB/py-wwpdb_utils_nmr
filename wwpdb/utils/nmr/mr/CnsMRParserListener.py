@@ -562,8 +562,16 @@ class CnsMRParserListener(ParseTreeListener):
                 return
 
             target = self.numberSelection[0]
-            dminus = self.numberSelection[1]
-            dplus = self.numberSelection[2]
+
+            if len(self.numberSelection) > 2:
+                dminus = self.numberSelection[1]
+                dplus = self.numberSelection[2]
+
+            elif len(self.numberSelection) > 1:
+                dminus = dplus = self.numberSelection[1]
+
+            else:
+                dminus = dplus = 0.0
 
             scale = self.scale if self.scale_a is None else self.scale_a
 

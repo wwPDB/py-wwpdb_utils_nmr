@@ -341,19 +341,19 @@ amber_a_format_pattern = re.compile(r'%FORMAT\((\d+)a(\d+)\)\s*')
 amber_i_format_pattern = re.compile(r'%FORMAT\((\d+)I(\d+)\)\s*')
 amber_r_pattern = re.compile(r'r(\d+)=(.*)')
 
-amber_rst_pattern = re.compile(r'&[Rr][Ss][Tt].*')
+amber_rst_pattern = re.compile(r'\s*&[Rr][Ss][Tt].*')
 amber_end_pattern = re.compile(r'\s*(?:&[Ee][Nn][Dd]|\/)\s*')
-amber_missing_end_at_eof_err_msg = "missing END at '<EOF>'"
-amber_extra_end_err_msg_pattern = re.compile(r"extraneous input '(?:&[Ee][Nn][Dd]|\/)' expecting .*")
+amber_missing_end_at_eof_err_msg = "missing END at '<EOF>'"  # NOTICE: depends on ANTLR v4 and (Xplor|Cns)MRLexer.g4
+amber_extra_end_err_msg_pattern = re.compile(r"extraneous input '(?:&[Ee][Nn][Dd]|\/)' expecting .*")  # NOTICE: depends on ANTLR v4
 
-xplor_assi_pattern = re.compile(r'[Aa][Ss][Ss][Ii][Gg]?[Nn]?.*')
-xplor_end_pattern = re.compile(r'\s*[Ee][Nn][Dd]\s*')
-xplor_missing_end_at_eof_err_msg = "missing End at '<EOF>'"
-xplor_extra_end_err_msg_pattern = re.compile(r"extraneous input '[Ee][Nn][Dd]' expecting .*")
+xplor_assi_pattern = re.compile(r'\s*[Aa][Ss][Ss][Ii][Gg]?[Nn]?.*')
+xplor_end_pattern = re.compile(r'\s*[Ee][Nn][Dd].*')
+xplor_missing_end_at_eof_err_msg = "missing End at '<EOF>'"  # NOTICE: depends on ANTLR v4 and (Xplor|Cns)MRLexer.g4
+xplor_extra_end_err_msg_pattern = re.compile(r"extraneous input '[Ee][Nn][Dd]' expecting .*")  # NOTICE: depends on ANTLR v4
 
-mismatched_input_err_msg = "mismatched input"
-no_viable_alt_err_msg = "no viable alternative at input"
-expecting_l_paren = "expecting L_paren"
+mismatched_input_err_msg = "mismatched input"  # NOTICE: depends on ANTLR v4
+no_viable_alt_err_msg = "no viable alternative at input"  # NOTICE: depends on ANTLR v4
+expecting_l_paren = "expecting L_paren"  # NOTICE: depends on ANTLR v4 and (Xplor|Cns)MRLexer.g4
 
 
 def detect_bom(fPath, default='utf-8'):
@@ -9000,18 +9000,23 @@ class NmrDpUtility:
                         cor_src_path = re.sub(r'\-trimmed$', '', src_path) + '-corrected'
 
                 middle = (j == err_line_number - 1)
+                is_done = False
 
                 k = 0
 
                 with open(src_path, 'r') as ifp,\
                         open(cor_src_path, 'w') as ofp:
                     for line in ifp:
-                        if middle and k == err_line_number - 1:
-                            ofp.write('END\n')
+                        if middle:
+                            if k == err_line_number - 2 and comment_pattern.match(line):
+                                ofp.write('end\n')
+                                is_done = True
+                            elif k == err_line_number - 1 and not is_done:
+                                ofp.write('end\n')
                         ofp.write(line)
                         k += 1
                     if not middle:
-                        ofp.write('END\n')
+                        ofp.write('end\n')
 
                 if cor_test:
                     os.rename(cor_src_path, src_path)
@@ -10020,18 +10025,23 @@ class NmrDpUtility:
                         cor_src_path = re.sub(r'\-trimmed$', '', src_path) + '-corrected'
 
                 middle = (j == err_line_number - 1)
+                is_done = False
 
                 k = 0
 
                 with open(src_path, 'r') as ifp,\
                         open(cor_src_path, 'w') as ofp:
                     for line in ifp:
-                        if middle and k == err_line_number - 1:
-                            ofp.write('END\n')
+                        if middle:
+                            if k == err_line_number - 2 and comment_pattern.match(line):
+                                ofp.write('end\n')
+                                is_done = True
+                            elif k == err_line_number - 1 and not is_done:
+                                ofp.write('end\n')
                         ofp.write(line)
                         k += 1
                     if not middle:
-                        ofp.write('END\n')
+                        ofp.write('end\n')
 
                 if cor_test:
                     os.rename(cor_src_path, src_path)

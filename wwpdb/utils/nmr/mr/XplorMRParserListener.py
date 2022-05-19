@@ -3962,8 +3962,15 @@ class XplorMRParserListener(ParseTreeListener):
                 return
 
             target = self.numberSelection[0]
-            cminus = self.numberSelection[1]
-            cplus = self.numberSelection[2]
+
+            if len(self.numberSelection) > 2:
+                cminus = self.numberSelection[1]
+                cplus = self.numberSelection[2]
+
+            else:
+                delta = self.numberSelection[1]
+                cminus = delta
+                cplus = delta
 
             target_value = target
             lower_limit = None

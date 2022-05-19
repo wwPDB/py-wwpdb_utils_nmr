@@ -99,7 +99,7 @@ FORMAT:			'%FORMAT'
 			-> pushMode(FORMAT_MODE);
 
 SPACE:			[ \t\r\n]+ -> skip;
-LINE_COMMENT:		('#' | '!' | ';' | '/' '/'+ | '\\' | '*' '*'+ | '-' '-'+ | '+' '+'+ | 'REMARK') ~[\r\n]* -> channel(HIDDEN);
+LINE_COMMENT:		('#' | '!' | ';' | '\\' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | 'REMARK') ~[\r\n]* -> channel(HIDDEN);
 
 mode VERSION_MODE;
 

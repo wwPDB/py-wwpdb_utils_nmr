@@ -398,7 +398,7 @@ vector_3d:
 */
 
 /* number expression in assign */
-number:	Real | Integer;
+number:	Real | Integer | Symbol_name;
 
 /* number expression in factor */
 number_f:

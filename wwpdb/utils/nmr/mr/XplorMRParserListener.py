@@ -7608,6 +7608,14 @@ class XplorMRParserListener(ParseTreeListener):
         elif ctx.Integer():
             self.numberSelection.append(float(str(ctx.Integer())))
 
+        elif ctx.Symbol_name():
+            symbol_name = str(ctx.Symbol_name())
+            if symbol_name in self.evaluate:
+                self.numberSelection.append(float(self.evaluate[symbol_name]))
+            else:
+                self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
+                    f"The symbol {symbol_name!r} is not defined.\n"
+                self.numberSelection.append(None)
         else:
             self.numberSelection.append(None)
 

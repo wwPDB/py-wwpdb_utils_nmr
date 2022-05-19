@@ -141,8 +141,8 @@ def serializedATN():
         1,102,66,0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,
         40,42,44,46,48,50,52,54,56,58,60,62,64,66,68,70,72,74,76,78,80,82,
         84,86,88,90,92,94,96,98,100,102,104,106,108,110,112,114,116,118,
-        120,122,124,126,128,130,0,7,1,0,138,139,2,0,134,134,140,140,2,0,
-        134,134,136,136,3,0,134,134,136,136,150,150,1,0,123,124,1,0,176,
+        120,122,124,126,128,130,0,7,1,0,138,139,2,0,134,134,140,140,3,0,
+        134,134,136,136,150,150,2,0,134,134,136,136,1,0,123,124,1,0,176,
         180,1,0,215,221,1798,0,156,1,0,0,0,2,161,1,0,0,0,4,171,1,0,0,0,6,
         183,1,0,0,0,8,195,1,0,0,0,10,206,1,0,0,0,12,215,1,0,0,0,14,224,1,
         0,0,0,16,233,1,0,0,0,18,242,1,0,0,0,20,251,1,0,0,0,22,260,1,0,0,
@@ -557,9 +557,9 @@ def serializedATN():
         0,0,1292,1297,3,106,53,0,1293,1294,10,13,0,0,1294,1295,5,109,0,0,
         1295,1297,3,106,53,0,1296,1290,1,0,0,0,1296,1293,1,0,0,0,1297,1300,
         1,0,0,0,1298,1296,1,0,0,0,1298,1299,1,0,0,0,1299,103,1,0,0,0,1300,
-        1298,1,0,0,0,1301,1302,7,2,0,0,1302,105,1,0,0,0,1303,1304,7,2,0,
-        0,1304,107,1,0,0,0,1305,1306,7,3,0,0,1306,109,1,0,0,0,1307,1308,
-        7,2,0,0,1308,111,1,0,0,0,1309,1320,5,88,0,0,1310,1318,5,168,0,0,
+        1298,1,0,0,0,1301,1302,7,2,0,0,1302,105,1,0,0,0,1303,1304,7,3,0,
+        0,1304,107,1,0,0,0,1305,1306,7,2,0,0,1306,109,1,0,0,0,1307,1308,
+        7,3,0,0,1308,111,1,0,0,0,1309,1320,5,88,0,0,1310,1318,5,168,0,0,
         1311,1313,5,171,0,0,1312,1311,1,0,0,0,1313,1316,1,0,0,0,1314,1312,
         1,0,0,0,1314,1315,1,0,0,0,1315,1319,1,0,0,0,1316,1314,1,0,0,0,1317,
         1319,5,172,0,0,1318,1314,1,0,0,0,1318,1317,1,0,0,0,1319,1321,1,0,
@@ -4065,7 +4065,7 @@ class CnsMRParser ( Parser ):
             self.state = 630
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==CnsMRParser.Integer or _la==CnsMRParser.Real:
+            if ((((_la - 134)) & ~0x3f) == 0 and ((1 << (_la - 134)) & ((1 << (CnsMRParser.Integer - 134)) | (1 << (CnsMRParser.Real - 134)) | (1 << (CnsMRParser.Symbol_name - 134)))) != 0):
                 self.state = 629
                 self.number()
 
@@ -4402,7 +4402,7 @@ class CnsMRParser ( Parser ):
             self.state = 700
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==CnsMRParser.Integer or _la==CnsMRParser.Real:
+            if ((((_la - 134)) & ~0x3f) == 0 and ((1 << (_la - 134)) & ((1 << (CnsMRParser.Integer - 134)) | (1 << (CnsMRParser.Real - 134)) | (1 << (CnsMRParser.Symbol_name - 134)))) != 0):
                 self.state = 697
                 self.number()
                 self.state = 698
@@ -7795,6 +7795,9 @@ class CnsMRParser ( Parser ):
         def Integer(self):
             return self.getToken(CnsMRParser.Integer, 0)
 
+        def Symbol_name(self):
+            return self.getToken(CnsMRParser.Symbol_name, 0)
+
         def getRuleIndex(self):
             return CnsMRParser.RULE_number
 
@@ -7818,7 +7821,7 @@ class CnsMRParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 1301
             _la = self._input.LA(1)
-            if not(_la==CnsMRParser.Integer or _la==CnsMRParser.Real):
+            if not(((((_la - 134)) & ~0x3f) == 0 and ((1 << (_la - 134)) & ((1 << (CnsMRParser.Integer - 134)) | (1 << (CnsMRParser.Real - 134)) | (1 << (CnsMRParser.Symbol_name - 134)))) != 0)):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)

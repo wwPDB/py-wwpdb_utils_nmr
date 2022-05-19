@@ -202,7 +202,7 @@ def serializedATN():
         144,146,148,150,152,154,156,158,160,162,164,166,168,170,172,174,
         176,178,180,182,184,186,188,190,192,194,196,198,200,202,204,206,
         208,210,212,214,216,0,8,1,0,42,43,1,0,182,183,2,0,178,178,184,184,
-        2,0,178,178,180,180,3,0,178,178,180,180,194,194,1,0,167,168,1,0,
+        3,0,178,178,180,180,194,194,2,0,178,178,180,180,1,0,167,168,1,0,
         225,229,1,0,264,270,2595,0,260,1,0,0,0,2,265,1,0,0,0,4,275,1,0,0,
         0,6,326,1,0,0,0,8,329,1,0,0,0,10,341,1,0,0,0,12,352,1,0,0,0,14,361,
         1,0,0,0,16,370,1,0,0,0,18,379,1,0,0,0,20,388,1,0,0,0,22,397,1,0,
@@ -855,8 +855,8 @@ def serializedATN():
         192,96,0,1973,1974,10,14,0,0,1974,1975,5,154,0,0,1975,1977,3,192,
         96,0,1976,1970,1,0,0,0,1976,1973,1,0,0,0,1977,1980,1,0,0,0,1978,
         1976,1,0,0,0,1978,1979,1,0,0,0,1979,189,1,0,0,0,1980,1978,1,0,0,
-        0,1981,1982,7,3,0,0,1982,191,1,0,0,0,1983,1984,7,3,0,0,1984,193,
-        1,0,0,0,1985,1986,7,4,0,0,1986,195,1,0,0,0,1987,1988,7,3,0,0,1988,
+        0,1981,1982,7,3,0,0,1982,191,1,0,0,0,1983,1984,7,4,0,0,1984,193,
+        1,0,0,0,1985,1986,7,3,0,0,1986,195,1,0,0,0,1987,1988,7,4,0,0,1988,
         197,1,0,0,0,1989,2000,5,135,0,0,1990,1998,5,217,0,0,1991,1993,5,
         220,0,0,1992,1991,1,0,0,0,1993,1996,1,0,0,0,1994,1992,1,0,0,0,1994,
         1995,1,0,0,0,1995,1999,1,0,0,0,1996,1994,1,0,0,0,1997,1999,5,221,
@@ -4860,7 +4860,7 @@ class XplorMRParser ( Parser ):
             self.state = 724
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==XplorMRParser.Integer or _la==XplorMRParser.Real:
+            if ((((_la - 178)) & ~0x3f) == 0 and ((1 << (_la - 178)) & ((1 << (XplorMRParser.Integer - 178)) | (1 << (XplorMRParser.Real - 178)) | (1 << (XplorMRParser.Symbol_name - 178)))) != 0):
                 self.state = 723
                 self.number()
 
@@ -6732,7 +6732,7 @@ class XplorMRParser ( Parser ):
             self.state = 1016
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==XplorMRParser.Integer or _la==XplorMRParser.Real:
+            if ((((_la - 178)) & ~0x3f) == 0 and ((1 << (_la - 178)) & ((1 << (XplorMRParser.Integer - 178)) | (1 << (XplorMRParser.Real - 178)) | (1 << (XplorMRParser.Symbol_name - 178)))) != 0):
                 self.state = 1013
                 self.number()
                 self.state = 1014
@@ -12614,6 +12614,9 @@ class XplorMRParser ( Parser ):
         def Integer(self):
             return self.getToken(XplorMRParser.Integer, 0)
 
+        def Symbol_name(self):
+            return self.getToken(XplorMRParser.Symbol_name, 0)
+
         def getRuleIndex(self):
             return XplorMRParser.RULE_number
 
@@ -12637,7 +12640,7 @@ class XplorMRParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 1981
             _la = self._input.LA(1)
-            if not(_la==XplorMRParser.Integer or _la==XplorMRParser.Real):
+            if not(((((_la - 178)) & ~0x3f) == 0 and ((1 << (_la - 178)) & ((1 << (XplorMRParser.Integer - 178)) | (1 << (XplorMRParser.Real - 178)) | (1 << (XplorMRParser.Symbol_name - 178)))) != 0)):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)

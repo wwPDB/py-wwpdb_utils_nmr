@@ -9011,7 +9011,7 @@ class NmrDpUtility:
                     else:
                         cor_src_path = re.sub(r'\-trimmed$', '', src_path) + '-corrected'
 
-                middle = (j == err_line_number - 1)
+                middle = (i != err_line_number - 1)
                 is_done = False
 
                 k = 0
@@ -10042,7 +10042,7 @@ class NmrDpUtility:
                     else:
                         cor_src_path = re.sub(r'\-trimmed$', '', src_path) + '-corrected'
 
-                middle = (j == err_line_number - 1)
+                middle = (i != err_line_number - 1)
                 is_done = False
 
                 k = 0

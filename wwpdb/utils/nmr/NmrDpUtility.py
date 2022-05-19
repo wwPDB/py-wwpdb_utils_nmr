@@ -7402,7 +7402,7 @@ class NmrDpUtility:
 
                             _err = self.__retrieveErroneousPreviousInput(description)
                             if _err is not None and not comment_pattern.match(_err):
-                                err += "However, the cause of the error seems to exist at the previous input "\
+                                err += "However, the cause of the error may be due to the previous input "\
                                     f"(line {description['line_number']-1}):\n{_err}"
 
                     if len(err) > 0:
@@ -7528,7 +7528,7 @@ class NmrDpUtility:
 
                             _err = self.__retrieveErroneousPreviousInput(description)
                             if _err is not None and not comment_pattern.match(_err):
-                                err += "However, the cause of the error seems to exist at the previous input "\
+                                err += "However, the cause of the error may be due to the previous input "\
                                     f"(line {description['line_number']-1}):\n{_err}"
 
                     if len(err) > 0:
@@ -7641,7 +7641,7 @@ class NmrDpUtility:
 
                             _err = self.__retrieveErroneousPreviousInput(description)
                             if _err is not None and not comment_pattern.match(_err):
-                                err += "However, the cause of the error seems to exist at the previous input "\
+                                err += "However, the cause of the error may be due to the previous input "\
                                     f"(line {description['line_number']-1}):\n{_err}"
 
                     if len(err) > 0:
@@ -7754,7 +7754,7 @@ class NmrDpUtility:
 
                             _err = self.__retrieveErroneousPreviousInput(description)
                             if _err is not None and not comment_pattern.match(_err):
-                                err += "However, the cause of the error seems to exist at the previous input "\
+                                err += "However, the cause of the error may be due to the previous input "\
                                     f"(line {description['line_number']-1}):\n{_err}"
 
                     if len(err) > 0:
@@ -7880,7 +7880,7 @@ class NmrDpUtility:
 
                             _err = self.__retrieveErroneousPreviousInput(description)
                             if _err is not None and not comment_pattern.match(_err):
-                                err += "However, the cause of the error seems to exist at the previous input "\
+                                err += "However, the cause of the error may be due to the previous input "\
                                     f"(line {description['line_number']-1}):\n{_err}"
 
                     if len(err) > 0:
@@ -8005,7 +8005,7 @@ class NmrDpUtility:
 
                             _err = self.__retrieveErroneousPreviousInput(description)
                             if _err is not None and not comment_pattern.match(_err):
-                                err += "However, the cause of the error seems to exist at the previous input "\
+                                err += "However, the cause of the error may be due to the previous input "\
                                     f"(line {description['line_number']-1}):\n{_err}"
 
                     if len(err) > 0:
@@ -8126,7 +8126,7 @@ class NmrDpUtility:
 
                             _err = self.__retrieveErroneousPreviousInput(description)
                             if _err is not None and not comment_pattern.match(_err):
-                                err += "However, the cause of the error seems to exist at the previous input "\
+                                err += "However, the cause of the error may be due to the previous input "\
                                     f"(line {description['line_number']-1}):\n{_err}"
 
                     if len(err) > 0:
@@ -8216,7 +8216,7 @@ class NmrDpUtility:
                     hint = 'assign ( resid # and name OO ) ( resid # and name X ) ( resid # and name Y ) ( resid # and name Z ) "\
                         "( segid $ and resid # and name $ ) ( segid $ and resid # and name $ ) #.# #.#'
 
-                    err = f"The NMR restraint file {file_name!r} seems to be a malformed XPLOR-NIH RDC restraint file. "\
+                    err = f"The NMR restraint file {file_name!r} may be a malformed XPLOR-NIH RDC restraint file. "\
                         f"Tips for XPLOR-NIH RDC restraints: {hint!r} pattern must be present in the file. "\
                         "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
 

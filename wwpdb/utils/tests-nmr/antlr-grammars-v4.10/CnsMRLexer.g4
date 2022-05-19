@@ -492,9 +492,13 @@ Simple_name_VE:		SIMPLE_NAME;
 Symbol_name_VE:		'$' SIMPLE_NAME;
 Double_quote_string_VE:	'"' ~'"'* '"';
 
+SPACE_VE:		[ \t\r\n]+ -> skip;
+
 mode VECTOR_FUNC_MODE; // vector function
 
 L_paren_VF:		'(' -> pushMode(VECTOR_EXPR_MODE);
+
+SPACE_VF:               [ \t\r\n]+ -> skip;
 
 mode VECTOR_SHOW_MODE; // vector show
 

@@ -488,6 +488,8 @@ MultiplicativeInt:	SPACE_IA INTEGER Asterisk_IA INTEGER SPACE_IA (Comma_IA INTEG
 
 fragment SPACE_IA:	[ \t\r\n]*;
 
+COMMENT_IA:		('#' | '!') -> popMode;
+
 mode REAL_ARRAY_MODE;
 
 L_paren_RA:		'(' -> pushMode(ARGUMENT_MODE);
@@ -502,6 +504,8 @@ MultiplicativeReal:	SPACE_RA INTEGER Asterisk_RA REAL SPACE_RA (Comma_RA INTEGER
 fragment RETURN_RA:	[\r\n]+;
 fragment SPACE_RA:	[ \t]*;
 
+COMMENT_RA:		('#' | '!') -> popMode;
+
 mode BINT_ARRAY_MODE;
 
 Equ_op_BA:		SPACE_BA '=' SPACE_BA;
@@ -511,6 +515,8 @@ End_BA:			'/' -> popMode;
 BoolInts:		SPACE_BA ONE_OR_ZERO SPACE_BA (Comma_BA SPACE_BA ONE_OR_ZERO SPACE_BA)* SPACE_BA;
 
 fragment SPACE_BA:	[ \t\r\n]*;
+
+COMMENT_BA:		('#' | '!') -> popMode;
 
 mode QSTR_ARRAY_MODE;
 
@@ -522,6 +528,8 @@ End_QA:			'/' -> popMode;
 Qstrings:		SPACE_QA QSTRING SPACE_QA (Comma_QA SPACE_QA QSTRING SPACE_QA)* SPACE_QA;
 
 fragment SPACE_QA:	[ \t\r\n]*;
+
+COMMENT_QA:		('#' | '!') -> popMode;
 
 mode ARGUMENT_MODE;
 

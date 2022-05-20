@@ -8586,11 +8586,13 @@ class NmrDpUtility:
                                  and bool(cyana_ambig_pattern.search(err_desc['input'])))
 
         concat_xplor_assi = (xplor_file_type
-                             and err_message.startswith(mismatched_input_err_msg)
+                             and (err_message.startswith(mismatched_input_err_msg)
+                                  or err_message.startswith(extraneous_input_err_msg))
                              and 'input' in err_desc
                              and bool(xplor_assi_pattern.search(err_desc['input'])))
         concat_amber_rst = (amber_file_type
-                            and err_message.startswith(mismatched_input_err_msg)
+                            and (err_message.startswith(mismatched_input_err_msg)
+                                 or err_message.startswith(extraneous_input_err_msg))
                             and 'input' in err_desc
                             and bool(amber_rst_pattern.search(err_desc['input']))
                             and not bool(amber_rst_pattern.match(err_desc['input'])))
@@ -9401,8 +9403,7 @@ class NmrDpUtility:
                     os.remove(div_src_file)
                     os.remove(div_try_file)
 
-                    if not xplor_assi_after_or_tag:
-                        err_desc['previous_input'] = f"Do you need to comment out the succeeding lines as well?\n{prev_input}"
+                    err_desc['previous_input'] = f"Do you need to comment out the succeeding lines as well?\n{prev_input}"
 
                     if self.__mr_debug:
                         print('DIV-MR-EXIT #10')
@@ -9894,11 +9895,13 @@ class NmrDpUtility:
                                  and bool(cyana_ambig_pattern.search(err_desc['input'])))
 
         concat_xplor_assi = (xplor_file_type
-                             and err_message.startswith(mismatched_input_err_msg)
+                             and (err_message.startswith(mismatched_input_err_msg)
+                                  or err_message.startswith(extraneous_input_err_msg))
                              and 'input' in err_desc
                              and bool(xplor_assi_pattern.search(err_desc['input'])))
         concat_amber_rst = (amber_file_type
-                            and err_message.startswith(mismatched_input_err_msg)
+                            and (err_message.startswith(mismatched_input_err_msg)
+                                 or err_message.startswith(extraneous_input_err_msg))
                             and 'input' in err_desc
                             and bool(amber_rst_pattern.search(err_desc['input']))
                             and not bool(amber_rst_pattern.match(err_desc['input'])))
@@ -10479,6 +10482,58 @@ class NmrDpUtility:
                 print('DO-DIV-MR-EXIT #6')
 
             return False
+
+        if prev_input is not None and comment_pattern.match(prev_input):
+
+            try:
+
+                g = comment_pattern.search(prev_input).groups()
+
+                test_line = g[0]
+
+                if reader is not None:
+                    pass
+
+                elif file_type == 'nm-res-xpl':
+                    reader = XplorMRReader(False, self.__lfh, None, None, None,
+                                           self.__ccU, self.__csStat, self.__nefT)
+                elif file_type == 'nm-res-cns':
+                    reader = CnsMRReader(False, self.__lfh, None, None, None,
+                                         self.__ccU, self.__csStat, self.__nefT)
+                elif file_type == 'nm-res-amb':
+                    reader = AmberMRReader(self.__verbose, self.__lfh, None, None, None,
+                                           self.__ccU, self.__csStat, self.__nefT)
+                elif file_type == 'nm-aux-amb':
+                    reader = AmberPTReader(self.__verbose, self.__lfh, None, None, None,
+                                           self.__ccU, self.__csStat)
+                elif file_type == 'nm-res-cya':
+                    reader = CyanaMRReader(self.__verbose, self.__lfh, None, None, None,
+                                           self.__ccU, self.__csStat, self.__nefT,
+                                           file_ext=self.__retrieveOriginalFileExtensionOfCyanaMRFile())
+                elif file_type == 'nm-res-ros':
+                    reader = RosettaMRReader(self.__verbose, self.__lfh, None, None, None,
+                                             self.__ccU, self.__csStat, self.__nefT)
+                elif file_type == 'nm-res-bio':
+                    reader = BiosymMRReader(self.__verbose, self.__lfh, None, None, None,
+                                            self.__ccU, self.__csStat, self.__nefT)
+
+                _, _, lexer_err_listener = reader.parse(test_line, None, isFilePath=False)
+
+                has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
+
+                if not has_lexer_error:
+                    os.remove(div_src_file)
+                    os.remove(div_try_file)
+
+                    err_desc['previous_input'] = f"Do you need to comment out the succeeding lines as well?\n{prev_input}"
+
+                    if self.__mr_debug:
+                        print('DO-DIV-MR-EXIT #7')
+
+                    return False  # actual issue in the line before the parser error should be hundled by manual
+
+            except AttributeError:
+                pass
 
         # self.__lfh.write(f"The NMR restraint file {file_name!r} ({mr_format_name} format) is identified as {valid_types}.\n")
 

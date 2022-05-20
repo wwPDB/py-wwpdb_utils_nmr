@@ -8589,9 +8589,7 @@ class NmrDpUtility:
             if expecting_l_paren in err_message:
                 xplor_missing_end_at_eof = True
 
-        reader = None
-
-        prev_input = None
+        reader = prev_input = next_input = None
 
         if not(xplor_missing_end_at_eof or xplor_ends_wo_statement
                or amber_missing_end_at_eof or amber_ends_wo_statement
@@ -8710,6 +8708,8 @@ class NmrDpUtility:
                     ofp.write(line)
                     j += 1
                     continue
+                if i == err_line_number + 1:
+                    next_input = line
                 ofp2.write(line)
 
         offset += err_line_number - 1
@@ -9198,6 +9198,9 @@ class NmrDpUtility:
             if os.path.exists(div_try_file):
                 os.remove(div_try_file)
 
+            if err_message.startswith(no_viable_alt_err_msg):
+                err_desc['previous_input'] = prev_input
+
             if self.__mr_debug:
                 print('DIV-MR-EXIT #3')
 
@@ -9257,8 +9260,56 @@ class NmrDpUtility:
                     os.remove(div_src_file)
                     os.remove(div_try_file)
 
+                    if err_message.startswith(no_viable_alt_err_msg):
+                        err_desc['previous_input'] = prev_input
+
                     if self.__mr_debug:
                         print('DIV-MR-EXIT #5')
+
+                    return False  # not split MR file because of the lexer errors to be hundled by manual
+
+            if next_input is not None:
+                test_line = next_input
+
+                if reader is not None:
+                    pass
+
+                elif file_type == 'nm-res-xpl':
+                    reader = XplorMRReader(False, self.__lfh, None, None, None,
+                                           self.__ccU, self.__csStat, self.__nefT)
+                elif file_type == 'nm-res-cns':
+                    reader = CnsMRReader(False, self.__lfh, None, None, None,
+                                         self.__ccU, self.__csStat, self.__nefT)
+                elif file_type == 'nm-res-amb':
+                    reader = AmberMRReader(self.__verbose, self.__lfh, None, None, None,
+                                           self.__ccU, self.__csStat, self.__nefT)
+                elif file_type == 'nm-aux-amb':
+                    reader = AmberPTReader(self.__verbose, self.__lfh, None, None, None,
+                                           self.__ccU, self.__csStat)
+                elif file_type == 'nm-res-cya':
+                    reader = CyanaMRReader(self.__verbose, self.__lfh, None, None, None,
+                                           self.__ccU, self.__csStat, self.__nefT,
+                                           file_ext=self.__retrieveOriginalFileExtensionOfCyanaMRFile())
+                elif file_type == 'nm-res-ros':
+                    reader = RosettaMRReader(self.__verbose, self.__lfh, None, None, None,
+                                             self.__ccU, self.__csStat, self.__nefT)
+                elif file_type == 'nm-res-bio':
+                    reader = BiosymMRReader(self.__verbose, self.__lfh, None, None, None,
+                                            self.__ccU, self.__csStat, self.__nefT)
+
+                _, _, lexer_err_listener = reader.parse(test_line, None, isFilePath=False)
+
+                has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
+
+                if not has_lexer_error:
+                    os.remove(div_src_file)
+                    os.remove(div_try_file)
+
+                    if err_message.startswith(no_viable_alt_err_msg):
+                        err_desc['previous_input'] = prev_input
+
+                    if self.__mr_debug:
+                        print('DIV-MR-EXIT #6')
 
                     return False  # not split MR file because of the lexer errors to be hundled by manual
 
@@ -9267,7 +9318,7 @@ class NmrDpUtility:
             os.rename(div_try_file, div_ext_file)
 
             if self.__mr_debug:
-                print('DIV-MR-EXIT #6')
+                print('DIV-MR-EXIT #7')
 
             return True  # succeeded in eliminating uninterpretable parts
 
@@ -9276,7 +9327,7 @@ class NmrDpUtility:
             os.remove(div_try_file)
 
             if self.__mr_debug:
-                print('DIV-MR-EXIT #7')
+                print('DIV-MR-EXIT #8')
 
             return False
 
@@ -9290,7 +9341,7 @@ class NmrDpUtility:
                 err_desc['previous_input'] = prev_input
 
             if self.__mr_debug:
-                print('DIV-MR-EXIT #8')
+                print('DIV-MR-EXIT #9')
 
             return False  # actual issue in the line before the parser error should be hundled by manual
 

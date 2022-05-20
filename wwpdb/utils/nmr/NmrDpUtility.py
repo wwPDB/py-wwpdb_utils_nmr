@@ -343,12 +343,12 @@ amber_r_pattern = re.compile(r'r(\d+)=(.*)')
 
 amber_rst_pattern = re.compile(r'\s*&[Rr][Ss][Tt].*')
 amber_end_pattern = re.compile(r'\s*(?:&[Ee][Nn][Dd]|\/)\s*')
-amber_missing_end_at_err_msg = "missing END at"  # NOTICE: depends on ANTLR v4 and (Xplor|Cns)MRLexer.g4
+amber_missing_end_err_msg = "missing END at"  # NOTICE: depends on ANTLR v4 and (Xplor|Cns)MRLexer.g4
 amber_extra_end_err_msg_pattern = re.compile(r"extraneous input '(?:&[Ee][Nn][Dd]|\/)' expecting .*")  # NOTICE: depends on ANTLR v4
 
 xplor_assi_pattern = re.compile(r'\s*[Aa][Ss][Ss][Ii][Gg]?[Nn]?.*')
 xplor_end_pattern = re.compile(r'\s*[Ee][Nn][Dd].*')
-xplor_missing_end_at_err_msg = "missing End at"  # NOTICE: depends on ANTLR v4 and (Xplor|Cns)MRLexer.g4
+xplor_missing_end_err_msg = "missing End at"  # NOTICE: depends on ANTLR v4 and (Xplor|Cns)MRLexer.g4
 xplor_extra_end_err_msg_pattern = re.compile(r"extraneous input '[Ee][Nn][Dd]' expecting .*")  # NOTICE: depends on ANTLR v4
 xplor_extra_assi_err_msg_pattern = re.compile(r"extraneous input '[Aa][Ss][Ss][Ii][Gg]?[Nn]?' expecting L_paren")  # NOTICE: depends on ANTLR v4 and (Xplor|Cns)MRLexer.g4
 
@@ -8561,12 +8561,18 @@ class NmrDpUtility:
         xplor_file_type = file_type in ('nm-res-xpl', 'nm-res-cns')
         amber_file_type = (file_type == 'nm-res-amb')
 
-        xplor_missing_end_at = xplor_file_type and err_message.startswith(xplor_missing_end_at_err_msg)
-        xplor_ends_wo_statement = xplor_file_type and bool(xplor_extra_end_err_msg_pattern.match(err_message))
+        xplor_missing_end = xplor_file_type and err_message.startswith(xplor_missing_end_err_msg)
+        xplor_ends_wo_statement = xplor_file_type and (bool(xplor_extra_end_err_msg_pattern.match(err_message))
+                                                       or (err_message.startswith(no_viable_alt_err_msg)
+                                                           and 'input' in err_desc
+                                                           and xplor_end_pattern.match(err_desc['input'])))
         xplor_assi_after_or_tag = xplor_file_type and bool(xplor_extra_assi_err_msg_pattern.match(err_message))
 
-        amber_missing_end_at = amber_file_type and err_message.startswith(amber_missing_end_at_err_msg)
-        amber_ends_wo_statement = amber_file_type and bool(amber_extra_end_err_msg_pattern.match(err_message))
+        amber_missing_end = amber_file_type and err_message.startswith(amber_missing_end_err_msg)
+        amber_ends_wo_statement = amber_file_type and (bool(amber_extra_end_err_msg_pattern.match(err_message))
+                                                       or (err_message.startswith(no_viable_alt_err_msg)
+                                                           and 'input' in err_desc
+                                                           and amber_end_pattern.match(err_desc['input'])))
 
         cyana_ambig_restraint = (file_type == 'nm-res-cya'
                                  and 'input' in err_desc
@@ -8588,12 +8594,12 @@ class NmrDpUtility:
         if concat_xplor_assi and bool(xplor_assi_pattern.match(err_desc['input'])):
             concat_xplor_assi = False
             if expecting_l_paren in err_message:
-                xplor_missing_end_at = True
+                xplor_missing_end = True
 
         reader = prev_input = next_input = None
 
-        if not(xplor_missing_end_at or xplor_ends_wo_statement
-               or amber_missing_end_at or amber_ends_wo_statement
+        if not(xplor_missing_end or xplor_ends_wo_statement
+               or amber_missing_end or amber_ends_wo_statement
                or cyana_ambig_restraint
                or concat_xplor_assi or concat_amber_rst
                or concat_comment):
@@ -8715,8 +8721,8 @@ class NmrDpUtility:
 
         offset += err_line_number - 1
 
-        if (xplor_missing_end_at or xplor_ends_wo_statement
-                or amber_missing_end_at or amber_ends_wo_statement
+        if (xplor_missing_end or xplor_ends_wo_statement
+                or amber_missing_end or amber_ends_wo_statement
                 or cyana_ambig_restraint
                 or concat_xplor_assi or concat_amber_rst
                 or concat_comment) or i <= err_line_number or j == 0:
@@ -9052,7 +9058,7 @@ class NmrDpUtility:
 
                         corrected = True
 
-            if err_line_number - 1 in (i, j) and xplor_missing_end_at:
+            if err_line_number - 1 in (i, j) and xplor_missing_end:
 
                 dir_path = os.path.dirname(src_path)
 
@@ -9095,7 +9101,7 @@ class NmrDpUtility:
 
                 corrected = True
 
-            if i == err_line_number - 1 and amber_missing_end_at:
+            if i == err_line_number - 1 and amber_missing_end:
 
                 dir_path = os.path.dirname(src_path)
 
@@ -9430,8 +9436,14 @@ class NmrDpUtility:
         xplor_file_type = file_type in ('nm-res-xpl', 'nm-res-cns')
         amber_file_type = file_type = 'nm-res-amb'
 
-        xplor_ends_wo_statement = xplor_file_type and bool(xplor_extra_end_err_msg_pattern.match(err_message))
-        amber_ends_wo_statement = amber_file_type and bool(amber_extra_end_err_msg_pattern.match(err_message))
+        xplor_ends_wo_statement = xplor_file_type and (bool(xplor_extra_end_err_msg_pattern.match(err_message))
+                                                       or (err_message.startswith(no_viable_alt_err_msg)
+                                                           and 'input' in err_desc
+                                                           and xplor_end_pattern.match(err_desc['input'])))
+        amber_ends_wo_statement = amber_file_type and (bool(amber_extra_end_err_msg_pattern.match(err_message))
+                                                       or (err_message.startswith(no_viable_alt_err_msg)
+                                                           and 'input' in err_desc
+                                                           and amber_end_pattern.match(err_desc['input'])))
 
         corrected = False
 
@@ -9805,11 +9817,17 @@ class NmrDpUtility:
         xplor_file_type = file_type in ('nm-res-xpl', 'nm-res-cns')
         amber_file_type = file_type = 'nm-res-amb'
 
-        xplor_missing_end_at = xplor_file_type and err_message.startswith(xplor_missing_end_at_err_msg)
-        xplor_ends_wo_statement = xplor_file_type and bool(xplor_extra_end_err_msg_pattern.match(err_message))
+        xplor_missing_end = xplor_file_type and err_message.startswith(xplor_missing_end_err_msg)
+        xplor_ends_wo_statement = xplor_file_type and (bool(xplor_extra_end_err_msg_pattern.match(err_message))
+                                                       or (err_message.startswith(no_viable_alt_err_msg)
+                                                           and 'input' in err_desc
+                                                           and xplor_end_pattern.match(err_desc['input'])))
 
-        amber_missing_end_at = amber_file_type and err_message.startswith(amber_missing_end_at_err_msg)
-        amber_ends_wo_statement = amber_file_type and bool(amber_extra_end_err_msg_pattern.match(err_message))
+        amber_missing_end = amber_file_type and err_message.startswith(amber_missing_end_err_msg)
+        amber_ends_wo_statement = amber_file_type and (bool(amber_extra_end_err_msg_pattern.match(err_message))
+                                                       or (err_message.startswith(no_viable_alt_err_msg)
+                                                           and 'input' in err_desc
+                                                           and amber_end_pattern.match(err_desc['input'])))
 
         cyana_ambig_restraint = (file_type == 'nm-res-cya'
                                  and 'input' in err_desc
@@ -9831,7 +9849,7 @@ class NmrDpUtility:
         if concat_xplor_assi and bool(xplor_assi_pattern.match(err_desc['input'])):
             concat_xplor_assi = False
             if expecting_l_paren in err_message:
-                xplor_missing_end_at = True
+                xplor_missing_end = True
 
         i = j = 0
 
@@ -9860,8 +9878,8 @@ class NmrDpUtility:
 
         offset += err_line_number - 1
 
-        if (xplor_missing_end_at or xplor_ends_wo_statement
-                or amber_missing_end_at or amber_ends_wo_statement
+        if (xplor_missing_end or xplor_ends_wo_statement
+                or amber_missing_end or amber_ends_wo_statement
                 or cyana_ambig_restraint
                 or concat_xplor_assi or concat_amber_rst
                 or concat_comment) or i <= err_line_number or j == 0:
@@ -10190,7 +10208,7 @@ class NmrDpUtility:
 
                         corrected = True
 
-            if err_line_number - 1 in (i, j) and xplor_missing_end_at:
+            if err_line_number - 1 in (i, j) and xplor_missing_end:
 
                 dir_path = os.path.dirname(src_path)
 
@@ -10233,7 +10251,7 @@ class NmrDpUtility:
 
                 corrected = True
 
-            if i == err_line_number - 1 and amber_missing_end_at:
+            if i == err_line_number - 1 and amber_missing_end:
 
                 dir_path = os.path.dirname(src_path)
 

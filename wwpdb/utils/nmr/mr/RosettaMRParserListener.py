@@ -2489,6 +2489,8 @@ class RosettaMRParserListener(ParseTreeListener):
 
         except ValueError:
             self.rdcRestraints -= 1
+        except IndexError:
+            self.rdcRestraints -= 1
         finally:
             self.numberSelection.clear()
 

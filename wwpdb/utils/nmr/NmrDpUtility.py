@@ -7405,7 +7405,7 @@ class NmrDpUtility:
                                 div_test = True
 
                             _err = self.__retrieveErroneousPreviousInput(description)
-                            if _err is not None and not comment_pattern.match(_err) and not ws_pattern.match(_err):
+                            if _err is not None and not comment_pattern.match(_err) and not _err.isspace():
                                 err = err[:len_err] + "However, the error may be due to the previous input "\
                                     f"(line {description['line_number']-1}):\n{_err}" + err[len_err:]
 
@@ -7532,7 +7532,7 @@ class NmrDpUtility:
                                 div_test = True
 
                             _err = self.__retrieveErroneousPreviousInput(description)
-                            if _err is not None and not comment_pattern.match(_err) and not ws_pattern.match(_err):
+                            if _err is not None and not comment_pattern.match(_err) and not _err.isspace():
                                 err = err[:len_err] + "However, the error may be due to the previous input "\
                                     f"(line {description['line_number']-1}):\n{_err}" + err[len_err:]
 
@@ -7646,7 +7646,7 @@ class NmrDpUtility:
                                     div_test = True
 
                             _err = self.__retrieveErroneousPreviousInput(description)
-                            if _err is not None and not comment_pattern.match(_err) and not ws_pattern.match(_err):
+                            if _err is not None and not comment_pattern.match(_err) and not _err.isspace():
                                 err = err[:len_err] + "However, the error may be due to the previous input "\
                                     f"(line {description['line_number']-1}):\n{_err}" + err[len_err:]
 
@@ -7760,7 +7760,7 @@ class NmrDpUtility:
                                     div_test = True
 
                             _err = self.__retrieveErroneousPreviousInput(description)
-                            if _err is not None and not comment_pattern.match(_err) and not ws_pattern.match(_err):
+                            if _err is not None and not comment_pattern.match(_err) and not _err.isspace():
                                 err = err[:len_err] + "However, the error may be due to the previous input "\
                                     f"(line {description['line_number']-1}):\n{_err}" + err[len_err:]
 
@@ -7887,7 +7887,7 @@ class NmrDpUtility:
                                     div_test = True
 
                             _err = self.__retrieveErroneousPreviousInput(description)
-                            if _err is not None and not comment_pattern.match(_err) and not ws_pattern.match(_err):
+                            if _err is not None and not comment_pattern.match(_err) and not _err.isspace():
                                 err = err[:len_err] + "However, the error may be due to the previous input "\
                                     f"(line {description['line_number']-1}):\n{_err}" + err[len_err:]
 
@@ -8013,7 +8013,7 @@ class NmrDpUtility:
                                     div_test = True
 
                             _err = self.__retrieveErroneousPreviousInput(description)
-                            if _err is not None and not comment_pattern.match(_err) and not ws_pattern.match(_err):
+                            if _err is not None and not comment_pattern.match(_err) and not _err.isspace():
                                 err = err[:len_err] + "However, the error may be due to the previous input "\
                                     f"(line {description['line_number']-1}):\n{_err}" + err[len_err:]
 
@@ -8135,7 +8135,7 @@ class NmrDpUtility:
                                     div_test = True
 
                             _err = self.__retrieveErroneousPreviousInput(description)
-                            if _err is not None and not comment_pattern.match(_err) and not ws_pattern.match(_err):
+                            if _err is not None and not comment_pattern.match(_err) and not _err.isspace():
                                 err = err[:len_err] + "However, the error may be due to the previous input "\
                                     f"(line {description['line_number']-1}):\n{_err}" + err[len_err:]
 

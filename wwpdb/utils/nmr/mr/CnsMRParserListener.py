@@ -2783,7 +2783,8 @@ class CnsMRParserListener(ParseTreeListener):
             _factor = self.__consumeFactor_expressions(self.stackFactors.pop(), cifCheck=False)
             self.factor = self.__intersectionFactor_expressions(self.factor, None if 'atom_selection' not in _factor else _factor['atom_selection'])
 
-        self.stackTerms.append(self.factor['atom_selection'])
+        if 'atom_selection' in self.factor:
+            self.stackTerms.append(self.factor['atom_selection'])
 
     def consumeFactor_expressions(self, clauseName='atom selection expression', cifCheck=True):
         """ Consume factor expressions as atom selection if possible.

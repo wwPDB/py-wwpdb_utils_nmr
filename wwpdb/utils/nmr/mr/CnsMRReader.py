@@ -180,6 +180,11 @@ class CnsMRReader:
 
 
 if __name__ == "__main__":
+    reader = XplorMRReader(True)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/4by9/4by9-trimmed.mr',
+                 '../../tests-nmr/mock-data-remediation/4by9/4by9.cif')
+
     reader = CnsMRReader(True)
     reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-daother-7690/D_1300022442_mr-upload_P1.cns.V1',

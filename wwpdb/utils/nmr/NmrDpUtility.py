@@ -9816,9 +9816,9 @@ class NmrDpUtility:
                                  and bool(cyana_ambig_pattern.search(err_desc['input'])))
 
         concat_xplor_assi = (xplor_file_type
-                                    and err_message.startswith(mismatched_input_err_msg)
-                                    and 'input' in err_desc
-                                    and bool(xplor_assi_pattern.search(err_desc['input'])))
+                             and err_message.startswith(mismatched_input_err_msg)
+                             and 'input' in err_desc
+                             and bool(xplor_assi_pattern.search(err_desc['input'])))
         concat_amber_rst = (amber_file_type
                             and err_message.startswith(mismatched_input_err_msg)
                             and 'input' in err_desc

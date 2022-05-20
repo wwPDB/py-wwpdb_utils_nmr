@@ -355,6 +355,7 @@ xplor_extra_assi_err_msg_pattern = re.compile(r"extraneous input '[Aa][Ss][Ss][I
 cyana_ambig_pattern = re.compile(r'0\s+AMB\s.*')
 
 mismatched_input_err_msg = "mismatched input"  # NOTICE: depends on ANTLR v4
+extraneous_input_err_msg = "extraneous input"  # NOTICE: depends on ANTLR v4
 no_viable_alt_err_msg = "no viable alternative at input"  # NOTICE: depends on ANTLR v4
 expecting_l_paren = "expecting L_paren"  # NOTICE: depends on ANTLR v4 and (Xplor|Cns)MRLexer.g4
 
@@ -10358,12 +10359,37 @@ class NmrDpUtility:
         len_possible_types = len(possible_types)
 
         if len_valid_types == 0 and len_possible_types == 0:
+
+            if xplor_file_type and 'input' in err_desc and bool(xplor_assi_pattern.search(err_desc['input'])):
+
+                prev_input = None
+
+                i = 0
+
+                with open(file_path, 'r') as ifp:
+                    for line in ifp:
+                        i += 1
+                        if i == err_line_number - 1:
+                            prev_input = line
+                            break
+
+                if err_message.startswith(extraneous_input_err_msg):
+                    err_desc['previous_input'] = prev_input
+
+                os.remove(div_src_file)
+                os.remove(div_try_file)
+
+                if self.__mr_debug:
+                    print('DO-DIV-MR-EXIT #4')
+
+                return False
+
             if div_src:
                 os.remove(file_path)
             os.rename(div_try_file, div_ext_file)
 
             if self.__mr_debug:
-                print('DO-DIV-MR-EXIT #4')
+                print('DO-DIV-MR-EXIT #5')
 
             return True  # succeeded in eliminating uninterpretable parts
 
@@ -10372,7 +10398,7 @@ class NmrDpUtility:
             os.remove(div_try_file)
 
             if self.__mr_debug:
-                print('DO-DIV-MR-EXIT #5')
+                print('DO-DIV-MR-EXIT #6')
 
             return False
 

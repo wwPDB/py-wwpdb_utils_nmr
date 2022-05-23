@@ -346,6 +346,7 @@ amber_end_pattern = re.compile(r'\s*(?:&[Ee][Nn][Dd]|\/)\s*')
 amber_missing_end_err_msg = "missing END at"  # NOTICE: depends on ANTLR v4 and (Xplor|Cns)MRLexer.g4
 amber_extra_end_err_msg_pattern = re.compile(r"extraneous input '(?:&[Ee][Nn][Dd]|\/)' expecting .*")  # NOTICE: depends on ANTLR v4
 
+xplor_any_assi_pattern = re.compile(r'[Aa][Ss][Ss][Ii][Gg]?[Nn]?')
 xplor_assi_pattern = re.compile(r'\s*[Aa][Ss][Ss][Ii][Gg]?[Nn]?.*')
 xplor_end_pattern = re.compile(r'\s*[Ee][Nn][Dd].*')
 xplor_missing_end_err_msg = "missing End at"  # NOTICE: depends on ANTLR v4 and (Xplor|Cns)MRLexer.g4
@@ -8599,9 +8600,9 @@ class NmrDpUtility:
                           and bool(comment_pattern.search(err_input)))
 
         if concat_xplor_assi and bool(xplor_assi_pattern.match(err_input)):
-            concat_xplor_assi = False
             if expecting_l_paren in err_message:
                 xplor_missing_end = True
+                concat_xplor_assi = False
 
         reader = prev_input = next_input = None
 
@@ -8888,9 +8889,8 @@ class NmrDpUtility:
             if concat_xplor_assi:
 
                 assi_code_index = -1
-                m = xplor_assi_pattern.search(err_input)
-                if m is not None:
-                    assi_code_index = m.span()[0]
+                for m in xplor_any_assi_pattern.finditer(err_input):
+                    assi_code_index = m.start()
 
                 if assi_code_index != -1:
                     test_line = err_input[0:assi_code_index]
@@ -9931,9 +9931,9 @@ class NmrDpUtility:
                           and bool(comment_pattern.search(err_input)))
 
         if concat_xplor_assi and bool(xplor_assi_pattern.match(err_input)):
-            concat_xplor_assi = False
             if expecting_l_paren in err_message:
                 xplor_missing_end = True
+                concat_xplor_assi = False
 
         i = j = 0
 
@@ -10122,9 +10122,8 @@ class NmrDpUtility:
             if concat_xplor_assi:
 
                 assi_code_index = -1
-                m = xplor_assi_pattern.search(err_input)
-                if m is not None:
-                    assi_code_index = m.span()[0]
+                for m in xplor_any_assi_pattern.finditer(err_input):
+                    assi_code_index = m.start()
 
                 if assi_code_index != -1:
                     test_line = err_input[0:assi_code_index]

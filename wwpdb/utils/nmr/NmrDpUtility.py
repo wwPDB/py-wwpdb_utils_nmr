@@ -9237,7 +9237,7 @@ class NmrDpUtility:
         if len_valid_types == 0 and len_possible_types == 0:
             if err_column_position > 0 and not err_input[0:err_column_position].isspace():
                 test_line = err_input[0:err_column_position]
-
+                
                 if reader is not None:
                     pass
 
@@ -9271,9 +9271,6 @@ class NmrDpUtility:
                 if not has_lexer_error:
                     os.remove(div_src_file)
                     os.remove(div_try_file)
-
-                    if err_message.startswith(no_viable_alt_err_msg):
-                        err_desc['previous_input'] = prev_input
 
                     if self.__mr_debug:
                         print('DIV-MR-EXIT #5')
@@ -9316,9 +9313,6 @@ class NmrDpUtility:
                 if not has_lexer_error:
                     os.remove(div_src_file)
                     os.remove(div_try_file)
-
-                    if err_message.startswith(no_viable_alt_err_msg):
-                        err_desc['previous_input'] = prev_input
 
                     if self.__mr_debug:
                         print('DIV-MR-EXIT #6')

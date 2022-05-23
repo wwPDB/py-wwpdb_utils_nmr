@@ -8564,6 +8564,7 @@ class NmrDpUtility:
         err_message = err_desc['message']
         err_line_number = err_desc['line_number']
         err_column_position = err_desc['column_position']
+        err_input = err_desc['input'] if 'input' in err_desc else ''
 
         xplor_file_type = file_type in ('nm-res-xpl', 'nm-res-cns')
         amber_file_type = (file_type == 'nm-res-amb')
@@ -8571,36 +8572,31 @@ class NmrDpUtility:
         xplor_missing_end = xplor_file_type and err_message.startswith(xplor_missing_end_err_msg)
         xplor_ends_wo_statement = xplor_file_type and (bool(xplor_extra_end_err_msg_pattern.match(err_message))
                                                        or (err_message.startswith(no_viable_alt_err_msg)
-                                                           and 'input' in err_desc
-                                                           and xplor_end_pattern.match(err_desc['input'])))
+                                                           and xplor_end_pattern.match(err_input)))
         xplor_assi_after_or_tag = xplor_file_type and bool(xplor_extra_assi_err_msg_pattern.match(err_message))
 
         amber_missing_end = amber_file_type and err_message.startswith(amber_missing_end_err_msg)
         amber_ends_wo_statement = amber_file_type and (bool(amber_extra_end_err_msg_pattern.match(err_message))
                                                        or (err_message.startswith(no_viable_alt_err_msg)
-                                                           and 'input' in err_desc
-                                                           and amber_end_pattern.match(err_desc['input'])))
+                                                           and amber_end_pattern.match(err_input)))
 
         cyana_ambig_restraint = (file_type == 'nm-res-cya'
-                                 and 'input' in err_desc
-                                 and bool(cyana_ambig_pattern.search(err_desc['input'])))
+                                 and bool(cyana_ambig_pattern.search(err_input)))
 
         concat_xplor_assi = (xplor_file_type
                              and (err_message.startswith(mismatched_input_err_msg)
                                   or err_message.startswith(extraneous_input_err_msg))
-                             and 'input' in err_desc
-                             and bool(xplor_assi_pattern.search(err_desc['input'])))
+                             and bool(xplor_assi_pattern.search(err_input)))
         concat_amber_rst = (amber_file_type
                             and (err_message.startswith(mismatched_input_err_msg)
                                  or err_message.startswith(extraneous_input_err_msg))
-                            and 'input' in err_desc
-                            and bool(amber_rst_pattern.search(err_desc['input']))
-                            and not bool(amber_rst_pattern.match(err_desc['input'])))
+                            and bool(amber_rst_pattern.search(err_input))
+                            and not bool(amber_rst_pattern.match(err_input)))
         concat_comment = (file_type in ('nm-res-cya', 'nm-res-ros', 'nm-res-bio')
                           and err_message.startswith(no_viable_alt_err_msg)
-                          and 'input' in err_desc and bool(comment_pattern.search(err_desc['input'])))
+                          and bool(comment_pattern.search(err_input)))
 
-        if concat_xplor_assi and bool(xplor_assi_pattern.match(err_desc['input'])):
+        if concat_xplor_assi and bool(xplor_assi_pattern.match(err_input)):
             concat_xplor_assi = False
             if expecting_l_paren in err_message:
                 xplor_missing_end = True
@@ -8613,8 +8609,8 @@ class NmrDpUtility:
                or concat_xplor_assi or concat_amber_rst
                or concat_comment):
 
-            if err_column_position > 0 and 'input' in err_desc and not err_desc['input'][0:err_column_position].isspace():
-                test_line = err_desc['input'][0:err_column_position]
+            if err_column_position > 0 and not err_input[0:err_column_position].isspace():
+                test_line = err_input[0:err_column_position]
 
                 if file_type == 'nm-res-xpl':
                     reader = XplorMRReader(False, self.__lfh, None, None, None,
@@ -8652,7 +8648,7 @@ class NmrDpUtility:
                     return self.__divideLegacyMR(file_path, file_type, err_desc, src_path, offset)
 
                 # try to resolve unexcepted concatenation
-                test_line = err_desc['input'][err_column_position + 1:]
+                test_line = err_input[err_column_position + 1:]
 
                 _, parser_err_listener, lexer_err_listener = reader.parse(test_line, None, isFilePath=False)
 
@@ -8890,12 +8886,12 @@ class NmrDpUtility:
             if concat_xplor_assi:
 
                 assi_code_index = -1
-                m = xplor_assi_pattern.search(err_desc['input'])
+                m = xplor_assi_pattern.search(err_input)
                 if m is not None:
                     assi_code_index = m.span()[0]
 
                 if assi_code_index != -1:
-                    test_line = err_desc['input'][0:assi_code_index]
+                    test_line = err_input[0:assi_code_index]
 
                     if reader is not None:
                         pass
@@ -8936,7 +8932,7 @@ class NmrDpUtility:
                                 open(cor_src_path, 'w') as ofp:
                             for line in ifp:
                                 if k == offset:
-                                    ofp.write(f"{test_line}\n{err_desc['input'][assi_code_index:]}\n")
+                                    ofp.write(f"{test_line}\n{err_input[assi_code_index:]}\n")
                                 else:
                                     ofp.write(line)
                                 k += 1
@@ -8949,12 +8945,12 @@ class NmrDpUtility:
             if concat_amber_rst:
 
                 rst_code_index = -1
-                m = amber_rst_pattern.search(err_desc['input'])
+                m = amber_rst_pattern.search(err_input)
                 if m is not None:
                     rst_code_index = m.span()[0]
 
                 if rst_code_index != -1:
-                    test_line = err_desc['input'][0:rst_code_index]
+                    test_line = err_input[0:rst_code_index]
 
                     if reader is None:
                         reader = AmberMRReader(self.__verbose, self.__lfh, None, None, None,
@@ -8989,7 +8985,7 @@ class NmrDpUtility:
                                 open(cor_src_path, 'w') as ofp:
                             for line in ifp:
                                 if k == offset:
-                                    ofp.write(f"{test_line}\n{err_desc['input'][rst_code_index:]}\n")
+                                    ofp.write(f"{test_line}\n{err_input[rst_code_index:]}\n")
                                 else:
                                     ofp.write(line)
                                 k += 1
@@ -9002,16 +8998,16 @@ class NmrDpUtility:
             if concat_comment:
 
                 comment_code_index = -1
-                if '#' in err_desc['input']:
-                    comment_code_index = err_desc['input'].index('#')
-                if '!' in err_desc['input']:
+                if '#' in err_input:
+                    comment_code_index = err_input.index('#')
+                if '!' in err_input:
                     if comment_code_index == -1:
-                        comment_code_index = err_desc['input'].index('!')
-                    elif err_desc['input'].index('!') < comment_code_index:
-                        comment_code_index = err_desc['input'].index('!')
+                        comment_code_index = err_input.index('!')
+                    elif err_input.index('!') < comment_code_index:
+                        comment_code_index = err_input.index('!')
 
                 if comment_code_index != -1:
-                    test_line = err_desc['input'][0:comment_code_index]
+                    test_line = err_input[0:comment_code_index]
 
                     if reader is not None:
                         pass
@@ -9057,7 +9053,7 @@ class NmrDpUtility:
                                 open(cor_src_path, 'w') as ofp:
                             for line in ifp:
                                 if k == offset:
-                                    ofp.write(f"{test_line} {err_desc['input'][comment_code_index:]}\n")
+                                    ofp.write(f"{test_line} {err_input[comment_code_index:]}\n")
                                 else:
                                     ofp.write(line)
                                 k += 1
@@ -9140,9 +9136,9 @@ class NmrDpUtility:
 
                 corrected = True
 
-            if not corrected and j in (0, err_line_number - 1) and 'input' in err_desc:
+            if not corrected and j in (0, err_line_number - 1):
 
-                test_line = err_desc['input']
+                test_line = err_input
 
                 if reader is not None:
                     pass
@@ -9239,8 +9235,8 @@ class NmrDpUtility:
         len_possible_types = len(possible_types)
 
         if len_valid_types == 0 and len_possible_types == 0:
-            if err_column_position > 0 and 'input' in err_desc and not err_desc['input'][0:err_column_position].isspace():
-                test_line = err_desc['input'][0:err_column_position]
+            if err_column_position > 0 and not err_input[0:err_column_position].isspace():
+                test_line = err_input[0:err_column_position]
 
                 if reader is not None:
                     pass
@@ -9361,7 +9357,8 @@ class NmrDpUtility:
 
             return False  # actual issue in the line before the parser error should be hundled by manual
 
-        if prev_input is not None and comment_pattern.match(prev_input):
+        if prev_input is not None and comment_pattern.match(prev_input)\
+           and file_type != 'nm-res-cya':  # CYANA MR grammar is too loose to check comment
 
             try:
 
@@ -9395,7 +9392,7 @@ class NmrDpUtility:
                     reader = BiosymMRReader(self.__verbose, self.__lfh, None, None, None,
                                             self.__ccU, self.__csStat, self.__nefT)
 
-                _, _, lexer_err_listener = reader.parse(test_line, None, isFilePath=False)
+                _, parser_err_listener, lexer_err_listener = reader.parse(test_line, None, isFilePath=False)
 
                 has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
 
@@ -9493,18 +9490,17 @@ class NmrDpUtility:
         err_message = err_desc['message']
         err_line_number = err_desc['line_number']
         err_column_position = err_desc['column_position']
+        err_input = err_desc['input'] if 'input' in err_desc else ''
 
         xplor_file_type = file_type in ('nm-res-xpl', 'nm-res-cns')
         amber_file_type = file_type = 'nm-res-amb'
 
         xplor_ends_wo_statement = xplor_file_type and (bool(xplor_extra_end_err_msg_pattern.match(err_message))
                                                        or (err_message.startswith(no_viable_alt_err_msg)
-                                                           and 'input' in err_desc
-                                                           and xplor_end_pattern.match(err_desc['input'])))
+                                                           and xplor_end_pattern.match(err_input)))
         amber_ends_wo_statement = amber_file_type and (bool(amber_extra_end_err_msg_pattern.match(err_message))
                                                        or (err_message.startswith(no_viable_alt_err_msg)
-                                                           and 'input' in err_desc
-                                                           and amber_end_pattern.match(err_desc['input'])))
+                                                           and amber_end_pattern.match(err_input)))
 
         corrected = False
 
@@ -9610,8 +9606,8 @@ class NmrDpUtility:
 
                     corrected = True
 
-        if err_column_position > 0 and 'input' in err_desc and not err_desc['input'][0:err_column_position].isspace():
-            test_line = err_desc['input'][err_column_position:]
+        if err_column_position > 0 and not err_input[0:err_column_position].isspace():
+            test_line = err_input[err_column_position:]
 
             if comment_pattern.match(test_line):
 
@@ -9732,8 +9728,8 @@ class NmrDpUtility:
 
         if len_valid_types == 0 and len_possible_types == 0:
 
-            if err_column_position > 0 and 'input' in err_desc and not err_desc['input'][0:err_column_position].isspace():
-                test_line = err_desc['input'][0:err_column_position]
+            if err_column_position > 0 and not err_input[0:err_column_position].isspace():
+                test_line = err_input[0:err_column_position]
 
                 if reader is not None:
                     pass
@@ -9867,8 +9863,9 @@ class NmrDpUtility:
         err_message = err_desc['message']
         err_line_number = err_desc['line_number']
         err_column_position = err_desc['column_position']
+        err_input = err_desc['input'] if 'input' in err_desc else ''
 
-        if not(err_column_position > 0 and 'input' in err_desc):
+        if not(err_column_position > 0 and len(err_input) > 0):
 
             if self.__mr_debug:
                 print('DO-DIV-MR-EXIT #1')
@@ -9881,35 +9878,30 @@ class NmrDpUtility:
         xplor_missing_end = xplor_file_type and err_message.startswith(xplor_missing_end_err_msg)
         xplor_ends_wo_statement = xplor_file_type and (bool(xplor_extra_end_err_msg_pattern.match(err_message))
                                                        or (err_message.startswith(no_viable_alt_err_msg)
-                                                           and 'input' in err_desc
-                                                           and xplor_end_pattern.match(err_desc['input'])))
+                                                           and xplor_end_pattern.match(err_input)))
 
         amber_missing_end = amber_file_type and err_message.startswith(amber_missing_end_err_msg)
         amber_ends_wo_statement = amber_file_type and (bool(amber_extra_end_err_msg_pattern.match(err_message))
                                                        or (err_message.startswith(no_viable_alt_err_msg)
-                                                           and 'input' in err_desc
-                                                           and amber_end_pattern.match(err_desc['input'])))
+                                                           and amber_end_pattern.match(err_input)))
 
         cyana_ambig_restraint = (file_type == 'nm-res-cya'
-                                 and 'input' in err_desc
-                                 and bool(cyana_ambig_pattern.search(err_desc['input'])))
+                                 and bool(cyana_ambig_pattern.search(err_input)))
 
         concat_xplor_assi = (xplor_file_type
                              and (err_message.startswith(mismatched_input_err_msg)
                                   or err_message.startswith(extraneous_input_err_msg))
-                             and 'input' in err_desc
-                             and bool(xplor_assi_pattern.search(err_desc['input'])))
+                             and bool(xplor_assi_pattern.search(err_input)))
         concat_amber_rst = (amber_file_type
                             and (err_message.startswith(mismatched_input_err_msg)
                                  or err_message.startswith(extraneous_input_err_msg))
-                            and 'input' in err_desc
-                            and bool(amber_rst_pattern.search(err_desc['input']))
-                            and not bool(amber_rst_pattern.match(err_desc['input'])))
+                            and bool(amber_rst_pattern.search(err_input))
+                            and not bool(amber_rst_pattern.match(err_input)))
         concat_comment = (file_type in ('nm-res-cya', 'nm-res-ros', 'nm-res-bio')
                           and err_message.startswith(no_viable_alt_err_msg)
-                          and 'input' in err_desc and bool(comment_pattern.search(err_desc['input'])))
+                          and bool(comment_pattern.search(err_input)))
 
-        if concat_xplor_assi and bool(xplor_assi_pattern.match(err_desc['input'])):
+        if concat_xplor_assi and bool(xplor_assi_pattern.match(err_input)):
             concat_xplor_assi = False
             if expecting_l_paren in err_message:
                 xplor_missing_end = True
@@ -10101,12 +10093,12 @@ class NmrDpUtility:
             if concat_xplor_assi:
 
                 assi_code_index = -1
-                m = xplor_assi_pattern.search(err_desc['input'])
+                m = xplor_assi_pattern.search(err_input)
                 if m is not None:
                     assi_code_index = m.span()[0]
 
                 if assi_code_index != -1:
-                    test_line = err_desc['input'][0:assi_code_index]
+                    test_line = err_input[0:assi_code_index]
 
                     if file_type == 'nm-res-xpl':
                         reader = XplorMRReader(self.__verbose, self.__lfh, None, None, None,
@@ -10144,7 +10136,7 @@ class NmrDpUtility:
                                 open(cor_src_path, 'w') as ofp:
                             for line in ifp:
                                 if k == offset:
-                                    ofp.write(f"{test_line}\n{err_desc['input'][assi_code_index:]}\n")
+                                    ofp.write(f"{test_line}\n{err_input[assi_code_index:]}\n")
                                 else:
                                     ofp.write(line)
                                 k += 1
@@ -10157,12 +10149,12 @@ class NmrDpUtility:
             if concat_amber_rst:
 
                 rst_code_index = -1
-                m = amber_rst_pattern.search(err_desc['input'])
+                m = amber_rst_pattern.search(err_input)
                 if m is not None:
                     rst_code_index = m.span()[0]
 
                 if rst_code_index != -1:
-                    test_line = err_desc['input'][0:rst_code_index]
+                    test_line = err_input[0:rst_code_index]
 
                     reader = AmberMRReader(self.__verbose, self.__lfh, None, None, None,
                                            self.__ccU, self.__csStat, self.__nefT)
@@ -10196,7 +10188,7 @@ class NmrDpUtility:
                                 open(cor_src_path, 'w') as ofp:
                             for line in ifp:
                                 if k == offset:
-                                    ofp.write(f"{test_line}\n{err_desc['input'][rst_code_index:]}\n")
+                                    ofp.write(f"{test_line}\n{err_input[rst_code_index:]}\n")
                                 else:
                                     ofp.write(line)
                                 k += 1
@@ -10209,16 +10201,16 @@ class NmrDpUtility:
             if concat_comment:
 
                 comment_code_index = -1
-                if '#' in err_desc['input']:
-                    comment_code_index = err_desc['input'].index('#')
-                if '!' in err_desc['input']:
+                if '#' in err_input:
+                    comment_code_index = err_input.index('#')
+                if '!' in err_input:
                     if comment_code_index == -1:
-                        comment_code_index = err_desc['input'].index('!')
-                    elif err_desc['input'].index('!') < comment_code_index:
-                        comment_code_index = err_desc['input'].index('!')
+                        comment_code_index = err_input.index('!')
+                    elif err_input.index('!') < comment_code_index:
+                        comment_code_index = err_input.index('!')
 
                 if comment_code_index != -1:
-                    test_line = err_desc['input'][0:comment_code_index]
+                    test_line = err_input[0:comment_code_index]
 
                     if file_type == 'nm-res-cya':
                         reader = CyanaMRReader(self.__verbose, self.__lfh, None, None, None,
@@ -10261,7 +10253,7 @@ class NmrDpUtility:
                                 open(cor_src_path, 'w') as ofp:
                             for line in ifp:
                                 if k == offset:
-                                    ofp.write(f"{test_line} {err_desc['input'][comment_code_index:]}\n")
+                                    ofp.write(f"{test_line} {err_input[comment_code_index:]}\n")
                                 else:
                                     ofp.write(line)
                                 k += 1
@@ -10344,9 +10336,9 @@ class NmrDpUtility:
 
                 corrected = True
 
-            if not corrected and j in (0, err_line_number - 1) and 'input' in err_desc:
+            if not corrected and j in (0, err_line_number - 1):
 
-                test_line = err_desc['input']
+                test_line = err_input
 
                 if reader is not None:
                     pass
@@ -10441,7 +10433,7 @@ class NmrDpUtility:
 
         if len_valid_types == 0 and len_possible_types == 0:
 
-            if xplor_file_type and 'input' in err_desc and bool(xplor_assi_pattern.search(err_desc['input'])):
+            if xplor_file_type and bool(xplor_assi_pattern.search(err_input)):
 
                 prev_input = None
 
@@ -10482,58 +10474,6 @@ class NmrDpUtility:
                 print('DO-DIV-MR-EXIT #6')
 
             return False
-
-        if prev_input is not None and comment_pattern.match(prev_input):
-
-            try:
-
-                g = comment_pattern.search(prev_input).groups()
-
-                test_line = g[0]
-
-                if reader is not None:
-                    pass
-
-                elif file_type == 'nm-res-xpl':
-                    reader = XplorMRReader(False, self.__lfh, None, None, None,
-                                           self.__ccU, self.__csStat, self.__nefT)
-                elif file_type == 'nm-res-cns':
-                    reader = CnsMRReader(False, self.__lfh, None, None, None,
-                                         self.__ccU, self.__csStat, self.__nefT)
-                elif file_type == 'nm-res-amb':
-                    reader = AmberMRReader(self.__verbose, self.__lfh, None, None, None,
-                                           self.__ccU, self.__csStat, self.__nefT)
-                elif file_type == 'nm-aux-amb':
-                    reader = AmberPTReader(self.__verbose, self.__lfh, None, None, None,
-                                           self.__ccU, self.__csStat)
-                elif file_type == 'nm-res-cya':
-                    reader = CyanaMRReader(self.__verbose, self.__lfh, None, None, None,
-                                           self.__ccU, self.__csStat, self.__nefT,
-                                           file_ext=self.__retrieveOriginalFileExtensionOfCyanaMRFile())
-                elif file_type == 'nm-res-ros':
-                    reader = RosettaMRReader(self.__verbose, self.__lfh, None, None, None,
-                                             self.__ccU, self.__csStat, self.__nefT)
-                elif file_type == 'nm-res-bio':
-                    reader = BiosymMRReader(self.__verbose, self.__lfh, None, None, None,
-                                            self.__ccU, self.__csStat, self.__nefT)
-
-                _, _, lexer_err_listener = reader.parse(test_line, None, isFilePath=False)
-
-                has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
-
-                if not has_lexer_error:
-                    os.remove(div_src_file)
-                    os.remove(div_try_file)
-
-                    err_desc['previous_input'] = f"Do you need to comment out the succeeding lines as well?\n{prev_input}"
-
-                    if self.__mr_debug:
-                        print('DO-DIV-MR-EXIT #7')
-
-                    return False  # actual issue in the line before the parser error should be hundled by manual
-
-            except AttributeError:
-                pass
 
         # self.__lfh.write(f"The NMR restraint file {file_name!r} ({mr_format_name} format) is identified as {valid_types}.\n")
 

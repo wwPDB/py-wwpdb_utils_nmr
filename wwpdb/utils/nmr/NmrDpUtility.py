@@ -359,6 +359,8 @@ extraneous_input_err_msg = "extraneous input"  # NOTICE: depends on ANTLR v4
 no_viable_alt_err_msg = "no viable alternative at input"  # NOTICE: depends on ANTLR v4
 expecting_l_paren = "expecting L_paren"  # NOTICE: depends on ANTLR v4 and (Xplor|Cns)MRLexer.g4
 
+possible_typo_for_comment_out_pattern = re.compile(r'\s*([13])$')
+
 
 def detect_bom(fPath, default='utf-8'):
     """ Detect BOM of input file.
@@ -8892,6 +8894,7 @@ class NmrDpUtility:
 
                 if assi_code_index != -1:
                     test_line = err_input[0:assi_code_index]
+                    typo_for_comment_out = bool(possible_typo_for_comment_out_pattern.match(test_line))
 
                     if reader is not None:
                         pass
@@ -8932,7 +8935,15 @@ class NmrDpUtility:
                                 open(cor_src_path, 'w') as ofp:
                             for line in ifp:
                                 if k == offset:
-                                    ofp.write(f"{test_line}\n{err_input[assi_code_index:]}\n")
+                                    if typo_for_comment_out:
+                                        g = possible_typo_for_comment_out_pattern.search(test_line).groups()
+                                        if g[0] == '1':
+                                            test_line = re.sub(r'1', '!', test_line)
+                                        else:
+                                            test_line = re.sub(r'3', '#', test_line)
+                                        ofp.write(f"{test_line}{err_input[assi_code_index:]}\n")
+                                    else:
+                                        ofp.write(f"{test_line}\n{err_input[assi_code_index:]}\n")
                                 else:
                                     ofp.write(line)
                                 k += 1
@@ -8951,6 +8962,7 @@ class NmrDpUtility:
 
                 if rst_code_index != -1:
                     test_line = err_input[0:rst_code_index]
+                    typo_for_comment_out = bool(possible_typo_for_comment_out_pattern.match(test_line))
 
                     if reader is None:
                         reader = AmberMRReader(self.__verbose, self.__lfh, None, None, None,
@@ -8985,7 +8997,15 @@ class NmrDpUtility:
                                 open(cor_src_path, 'w') as ofp:
                             for line in ifp:
                                 if k == offset:
-                                    ofp.write(f"{test_line}\n{err_input[rst_code_index:]}\n")
+                                    if typo_for_comment_out:
+                                        g = possible_typo_for_comment_out_pattern.search(test_line).groups()
+                                        if g[0] == '1':
+                                            test_line = re.sub(r'1', '!', test_line)
+                                        else:
+                                            test_line = re.sub(r'3', '#', test_line)
+                                        ofp.write(f"{test_line}{err_input[assi_code_index:]}\n")
+                                    else:
+                                        ofp.write(f"{test_line}\n{err_input[rst_code_index:]}\n")
                                 else:
                                     ofp.write(line)
                                 k += 1
@@ -10108,6 +10128,7 @@ class NmrDpUtility:
 
                 if assi_code_index != -1:
                     test_line = err_input[0:assi_code_index]
+                    typo_for_comment_out = bool(possible_typo_for_comment_out_pattern.match(test_line))
 
                     if file_type == 'nm-res-xpl':
                         reader = XplorMRReader(self.__verbose, self.__lfh, None, None, None,
@@ -10145,7 +10166,15 @@ class NmrDpUtility:
                                 open(cor_src_path, 'w') as ofp:
                             for line in ifp:
                                 if k == offset:
-                                    ofp.write(f"{test_line}\n{err_input[assi_code_index:]}\n")
+                                    if typo_for_comment_out:
+                                        g = possible_typo_for_comment_out_pattern.search(test_line).groups()
+                                        if g[0] == '1':
+                                            test_line = re.sub(r'1', '!', test_line)
+                                        else:
+                                            test_line = re.sub(r'3', '#', test_line)
+                                        ofp.write(f"{test_line}{err_input[assi_code_index:]}\n")
+                                    else:
+                                        ofp.write(f"{test_line}\n{err_input[assi_code_index:]}\n")
                                 else:
                                     ofp.write(line)
                                 k += 1
@@ -10164,6 +10193,7 @@ class NmrDpUtility:
 
                 if rst_code_index != -1:
                     test_line = err_input[0:rst_code_index]
+                    typo_for_comment_out = bool(possible_typo_for_comment_out_pattern.match(test_line))
 
                     reader = AmberMRReader(self.__verbose, self.__lfh, None, None, None,
                                            self.__ccU, self.__csStat, self.__nefT)
@@ -10197,7 +10227,15 @@ class NmrDpUtility:
                                 open(cor_src_path, 'w') as ofp:
                             for line in ifp:
                                 if k == offset:
-                                    ofp.write(f"{test_line}\n{err_input[rst_code_index:]}\n")
+                                    if typo_for_comment_out:
+                                        g = possible_typo_for_comment_out_pattern.search(test_line).groups()
+                                        if g[0] == '1':
+                                            test_line = re.sub(r'1', '!', test_line)
+                                        else:
+                                            test_line = re.sub(r'3', '#', test_line)
+                                        ofp.write(f"{test_line}{err_input[assi_code_index:]}\n")
+                                    else:
+                                        ofp.write(f"{test_line}\n{err_input[rst_code_index:]}\n")
                                 else:
                                     ofp.write(line)
                                 k += 1

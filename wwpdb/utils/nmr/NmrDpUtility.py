@@ -9237,7 +9237,7 @@ class NmrDpUtility:
         if len_valid_types == 0 and len_possible_types == 0:
             if err_column_position > 0 and not err_input[0:err_column_position].isspace():
                 test_line = err_input[0:err_column_position]
-                
+
                 if reader is not None:
                     pass
 
@@ -9314,6 +9314,12 @@ class NmrDpUtility:
                     os.remove(div_src_file)
                     os.remove(div_try_file)
 
+                    if prev_input is not None:
+                        if comment_pattern.match(prev_input):
+                            err_desc['previous_input'] = f"Do you need to comment out the succeeding lines as well?\n{prev_input}"
+                        elif not xplor_assi_after_or_tag:
+                            err_desc['previous_input'] = prev_input
+
                     if self.__mr_debug:
                         print('DIV-MR-EXIT #6')
 
@@ -9332,6 +9338,12 @@ class NmrDpUtility:
             os.remove(div_src_file)
             os.remove(div_try_file)
 
+            if prev_input is not None:
+                if comment_pattern.match(prev_input):
+                    err_desc['previous_input'] = f"Do you need to comment out the succeeding lines as well?\n{prev_input}"
+                elif not xplor_assi_after_or_tag:
+                    err_desc['previous_input'] = prev_input
+
             if self.__mr_debug:
                 print('DIV-MR-EXIT #8')
 
@@ -9343,8 +9355,11 @@ class NmrDpUtility:
             os.remove(div_src_file)
             os.remove(div_try_file)
 
-            if prev_input is not None and not xplor_assi_after_or_tag:
-                err_desc['previous_input'] = prev_input
+            if prev_input is not None:
+                if comment_pattern.match(prev_input):
+                    err_desc['previous_input'] = f"Do you need to comment out the succeeding lines as well?\n{prev_input}"
+                elif not xplor_assi_after_or_tag:
+                    err_desc['previous_input'] = prev_input
 
             if self.__mr_debug:
                 print('DIV-MR-EXIT #9')
@@ -9352,7 +9367,7 @@ class NmrDpUtility:
             return False  # actual issue in the line before the parser error should be hundled by manual
 
         if prev_input is not None and comment_pattern.match(prev_input)\
-           and file_type != 'nm-res-cya':  # CYANA MR grammar is too loose to check comment
+           and file_type != 'nm-res-cya' and 'nm-res-cya' not in valid_types:  # CYANA MR grammar is lax to check comment
 
             try:
 
@@ -9386,7 +9401,7 @@ class NmrDpUtility:
                     reader = BiosymMRReader(self.__verbose, self.__lfh, None, None, None,
                                             self.__ccU, self.__csStat, self.__nefT)
 
-                _, parser_err_listener, lexer_err_listener = reader.parse(test_line, None, isFilePath=False)
+                _, _, lexer_err_listener = reader.parse(test_line, None, isFilePath=False)
 
                 has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
 
@@ -10942,7 +10957,7 @@ class NmrDpUtility:
                                        file_ext=self.__retrieveOriginalFileExtensionOfCyanaMRFile())
                 listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
-                _content_subtype = listener.getContentSubtype() if listener is not None else None
+                _content_subtype = listener.getEffectiveContentSubtype() if listener is not None else None
                 if _content_subtype is not None and len(_content_subtype) == 0:
                     _content_subtype = None
                 has_content = _content_subtype is not None
@@ -11746,6 +11761,8 @@ class NmrDpUtility:
 
                     elif len_valid_types == 0:
                         # self.__lfh.write(f"The NMR restraint file {file_name!r} (MR format) can be {possible_types}.\n")
+
+                        _ar = ar.copy()
 
                         _ar['file_name'] = dst_file
                         _ar['file_type'] = possible_types[0]

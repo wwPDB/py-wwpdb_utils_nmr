@@ -2502,6 +2502,18 @@ class CyanaMRParserListener(ParseTreeListener):
 
         return {k: 1 for k, v in contentSubtype.items() if v > 0}
 
+    def getEffectiveContentSubtype(self):
+        """ Return effective content subtype of CYANA MR file (excluding .upv, lov, and .cco).
+        """
+
+        contentSubtype = {'dist_restraint': self.distRestraints,
+                          'dihed_restraint': self.dihedRestraints,
+                          'rdc_restraint': self.rdcRestraints,
+                          'pcs_restraint': self.pcsRestraints
+                          }
+
+        return {k: 1 for k, v in contentSubtype.items() if v > 0}
+
     def getReasonsForReparsing(self):
         """ Return reasons for re-parsing CYANA MR file.
         """

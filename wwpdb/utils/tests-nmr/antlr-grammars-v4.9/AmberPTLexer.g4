@@ -123,6 +123,10 @@ fragment START_CHAR:	ALPHA_NUM | '_' |
 fragment ANY_CHAR:	~[ \t\r\n];
 fragment SIMPLE_NAME:	START_CHAR ANY_CHAR*;
 
+SHARP_COMMENT:		'#'+ ~[\r\n]* '#'+ ~[\r\n]* -> channel(HIDDEN);
+EXCLM_COMMENT:		'!'+ ~[\r\n]* '!'+ ~[\r\n]* -> channel(HIDDEN);
+SMCLN_COMMENT:		';'+ ~[\r\n]* ';'+ ~[\r\n]* -> channel(HIDDEN);
+
 FORMAT:			'%FORMAT'
 			-> pushMode(FORMAT_MODE);
 

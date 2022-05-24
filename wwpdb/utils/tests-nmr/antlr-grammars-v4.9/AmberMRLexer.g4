@@ -382,6 +382,10 @@ CCUT:			C C U T
 Comma:			',' -> mode(DEFAULT_MODE);
 //Ampersand:		'&';
 
+SHARP_COMMENT:		'#'+ ~[\r\n]* '#'+ ~[\r\n]* -> channel(HIDDEN);
+EXCLM_COMMENT:		'!'+ ~[\r\n]* '!'+ ~[\r\n]* -> channel(HIDDEN);
+SMCLN_COMMENT:		';'+ ~[\r\n]* ';'+ ~[\r\n]* -> channel(HIDDEN);
+
 COMMENT:		('#' | '!')+ -> mode(COMMENT_MODE);
 
 fragment INTEGER:	('+' | '-')? DECIMAL;

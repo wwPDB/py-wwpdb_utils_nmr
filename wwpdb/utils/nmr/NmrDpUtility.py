@@ -8709,7 +8709,7 @@ class NmrDpUtility:
 
                     return corrected
 
-        i = j = 0
+        i = j = j_offset = 0
 
         ws_or_comment = True
 
@@ -8752,6 +8752,7 @@ class NmrDpUtility:
                             j += 1
                         else:
                             ofp2.write(_interval['line'])
+                            j_offset += 1
                     continue
                 if i == err_line_number + 1:
                     next_input = line
@@ -9135,7 +9136,7 @@ class NmrDpUtility:
 
                         corrected = True
 
-            if err_line_number - 1 in (i, j) and xplor_missing_end:
+            if err_line_number - 1 in (i, j + j_offset) and xplor_missing_end:
 
                 dir_path = os.path.dirname(src_path)
 

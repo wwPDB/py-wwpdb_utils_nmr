@@ -9730,23 +9730,35 @@ class NmrDpUtility:
         is_valid = False
         ws_or_comment = True
 
+        _interval = []
+
         with open(file_path, 'r') as ifp,\
                 open(div_src_file, 'w') as ofp,\
                 open(div_ext_file, 'w') as ofp2,\
                 open(div_try_file, 'w') as ofp3:
             for line in ifp:
                 i += 1
-                if i < err_line_number - 1:
+                if i < err_line_number - 5:
                     ofp.write(line)
                     j += 1
                     continue
                 if i < err_line_number:
-                    if comment_pattern.match(line):
-                        ofp2.write(line)
-                        j2 += 1
-                    else:
-                        ofp.write(line)
-                        j += 1
+                    _interval.append({'line': line, 'ws_or_comment': line.isspace() or comment_pattern.match(line)})
+                    if i < err_line_number - 1:
+                        continue
+                    _k = len(_interval) - 1
+                    for k in reversed(range(len(_interval))):
+                        if _interval[k]['ws_or_comment']:
+                            continue
+                        _k = k
+                        break
+                    for k in range(len(_interval)):
+                        if k <= _k:
+                            ofp.write(_interval[k]['line'])
+                            j += 1
+                        else:
+                            ofp2.write(_interval[k]['line'])
+                            j2 += 1
                     continue
                 if not is_valid:
                     if line.isspace() or comment_pattern.match(line):

@@ -11943,6 +11943,10 @@ class NmrDpUtility:
 
                         else:
                             j += 1
+                            if ofp is None:
+                                _dst_file = os.path.join(dir_path, src_basename + '-noname.mr')
+                                original_file_path_list.append(_dst_file)
+                                ofp = open(_dst_file, 'w')  # pylint: disable=consider-using-with
                             ofp.write(line)
 
                 if ofp is not None:

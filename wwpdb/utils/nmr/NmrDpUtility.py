@@ -352,6 +352,7 @@ xplor_end_pattern = re.compile(r'\s*[Ee][Nn][Dd].*')
 xplor_missing_end_err_msg = "missing End at"  # NOTICE: depends on ANTLR v4 and (Xplor|Cns)MRLexer.g4
 xplor_extra_end_err_msg_pattern = re.compile(r"extraneous input '[Ee][Nn][Dd]' expecting .*")  # NOTICE: depends on ANTLR v4
 xplor_extra_assi_err_msg_pattern = re.compile(r"extraneous input '[Aa][Ss][Ss][Ii][Gg]?[Nn]?' expecting L_paren")  # NOTICE: depends on ANTLR v4 and (Xplor|Cns)MRLexer.g4
+xplor_extra_ssi_err_msg_pattern = re.compile(r"extraneous input '[Aa]?[Ss][Ss][Ii][Gg]?[Nn]?' .*")  # NOTICE: depends on ANTLR v4
 
 cyana_ambig_pattern = re.compile(r'0\s+AMB\s.*')
 
@@ -8577,6 +8578,7 @@ class NmrDpUtility:
                                                        or (err_message.startswith(no_viable_alt_err_msg)
                                                            and xplor_end_pattern.match(err_input)))
         xplor_assi_after_or_tag = xplor_file_type and bool(xplor_extra_assi_err_msg_pattern.match(err_message))
+        xplor_assi_imcompl_tag = xplor_file_type and bool(xplor_extra_ssi_err_msg_pattern.match(err_message))
 
         amber_missing_end = amber_file_type and err_message.startswith(amber_missing_end_err_msg)
         amber_ends_wo_statement = amber_file_type and (bool(amber_extra_end_err_msg_pattern.match(err_message))
@@ -9368,7 +9370,7 @@ class NmrDpUtility:
                     if prev_input is not None:
                         if comment_pattern.match(prev_input):
                             err_desc['previous_input'] = f"Do you need to comment out the succeeding lines as well?\n{prev_input}"
-                        elif not xplor_assi_after_or_tag:
+                        elif not xplor_assi_after_or_tag and not xplor_assi_imcompl_tag:
                             err_desc['previous_input'] = prev_input
 
                     if self.__mr_debug:
@@ -9392,7 +9394,7 @@ class NmrDpUtility:
             if prev_input is not None:
                 if comment_pattern.match(prev_input):
                     err_desc['previous_input'] = f"Do you need to comment out the succeeding lines as well?\n{prev_input}"
-                elif not xplor_assi_after_or_tag:
+                elif not xplor_assi_after_or_tag and not xplor_assi_imcompl_tag:
                     err_desc['previous_input'] = prev_input
 
             if self.__mr_debug:
@@ -9409,7 +9411,7 @@ class NmrDpUtility:
             if prev_input is not None:
                 if comment_pattern.match(prev_input):
                     err_desc['previous_input'] = f"Do you need to comment out the succeeding lines as well?\n{prev_input}"
-                elif not xplor_assi_after_or_tag:
+                elif not xplor_assi_after_or_tag and not xplor_assi_imcompl_tag:
                     err_desc['previous_input'] = prev_input
 
             if self.__mr_debug:
@@ -9730,7 +9732,7 @@ class NmrDpUtility:
         is_valid = False
         ws_or_comment = True
 
-        _interval = []
+        interval = []
 
         with open(file_path, 'r') as ifp,\
                 open(div_src_file, 'w') as ofp,\
@@ -9743,21 +9745,21 @@ class NmrDpUtility:
                     j += 1
                     continue
                 if i < err_line_number:
-                    _interval.append({'line': line, 'ws_or_comment': line.isspace() or comment_pattern.match(line)})
+                    interval.append({'line': line, 'ws_or_comment': line.isspace() or comment_pattern.match(line)})
                     if i < err_line_number - 1:
                         continue
-                    _k = len(_interval) - 1
-                    for k in reversed(range(len(_interval))):
-                        if _interval[k]['ws_or_comment']:
+                    _k = len(interval) - 1
+                    for _interval in reversed(interval):
+                        if _interval['ws_or_comment']:
+                            _k -= 1
                             continue
-                        _k = k
                         break
-                    for k in range(len(_interval)):
+                    for k, _interval in enumerate(interval):
                         if k <= _k:
-                            ofp.write(_interval[k]['line'])
+                            ofp.write(_interval['line'])
                             j += 1
                         else:
-                            ofp2.write(_interval[k]['line'])
+                            ofp2.write(_interval['line'])
                             j2 += 1
                     continue
                 if not is_valid:

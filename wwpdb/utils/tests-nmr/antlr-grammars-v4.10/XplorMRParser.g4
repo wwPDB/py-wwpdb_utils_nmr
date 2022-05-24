@@ -209,7 +209,7 @@ sani_statement:
 	Reset;
 
 sani_assign:
-	Assign selection selection selection selection selection selection number number number?;
+	Assign selection selection selection selection selection selection number number? number?;
 
 /* XPLOR-NIH: Residual Dipolar Couplings - Syntax (XDIP)
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node419.html
@@ -499,7 +499,7 @@ csa_statement:
 	Reset;
 
 csa_assign:
-	Assign selection selection selection selection selection selection selection number number number?;
+	Assign selection selection selection selection selection selection selection number number? number?;
 
 /* XPLOR-NIH: Pseudo chemical shift anisotropy restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node430.html

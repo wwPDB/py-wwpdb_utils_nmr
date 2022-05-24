@@ -1311,7 +1311,11 @@ class CnsMRParserListener(ParseTreeListener):
                 return
 
             target = self.numberSelection[0]
-            delta = abs(self.numberSelection[1])
+
+            if len(self.numberSelection) > 1:
+                delta = abs(self.numberSelection[1])
+            else:
+                delta = 0.0
 
             target_value = target
             lower_limit = None

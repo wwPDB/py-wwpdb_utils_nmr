@@ -456,7 +456,7 @@ End_IA:			'/' -> popMode;
 Asterisk_IA:		SPACE_IA '*' SPACE_IA;
 
 Integers:		SPACE_IA INTEGER SPACE_IA (Comma_IA SPACE_IA INTEGER SPACE_IA)* SPACE_IA;
-MultiplicativeInt:	SPACE_IA INTEGER Asterisk_IA INTEGER SPACE_IA (Comma_IA INTEGER Asterisk_IA INTEGER SPACE_IA)* SPACE_IA;
+MultiplicativeInt:	SPACE_IA INTEGER Asterisk_IA INTEGER SPACE_IA (Comma_IA SPACE_IA INTEGER Asterisk_IA INTEGER SPACE_IA)* SPACE_IA;
 
 fragment SPACE_IA:	[ \t\r\n]*;
 
@@ -471,7 +471,7 @@ End_RA:			'/' -> popMode;
 Asterisk_RA:		SPACE_RA '*' SPACE_RA;
 
 Reals:			SPACE_RA REAL SPACE_RA (Comma_RA SPACE_RA REAL SPACE_RA)* SPACE_RA;
-MultiplicativeReal:	SPACE_RA INTEGER Asterisk_RA REAL SPACE_RA (Comma_RA INTEGER Asterisk_RA REAL SPACE_RA)* SPACE_RA;
+MultiplicativeReal:	SPACE_RA INTEGER Asterisk_RA REAL SPACE_RA (Comma_RA SPACE_RA INTEGER Asterisk_RA REAL SPACE_RA)* SPACE_RA;
 
 fragment RETURN_RA:	[\r\n]+;
 fragment SPACE_RA:	[ \t]*;

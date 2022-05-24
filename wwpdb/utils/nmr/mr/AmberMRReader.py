@@ -209,6 +209,12 @@ class AmberMRReader:
 if __name__ == "__main__":
     reader = AmberMRReader(True)
     reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/5n8m/RST-2-tensors.dip',
+                 '../../tests-nmr/mock-data-remediation/5n8m/5n8m.cif',
+                 None)
+
+    reader = AmberMRReader(True)
+    reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/2lar/2lar-trimmed.mr',
                  '../../tests-nmr/mock-data-remediation/2lar/2lar.cif',
                  None)

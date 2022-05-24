@@ -11078,7 +11078,7 @@ class NmrDpUtility:
                                        file_ext=self.__retrieveOriginalFileExtensionOfCyanaMRFile())
                 listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
-                _content_subtype = listener.getEffectiveContentSubtype() if listener is not None else None
+                _content_subtype = listener.getContentSubtype() if listener is not None else None
                 if _content_subtype is not None and len(_content_subtype) == 0:
                     _content_subtype = None
                 has_content = _content_subtype is not None

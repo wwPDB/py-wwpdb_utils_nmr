@@ -9736,9 +9736,17 @@ class NmrDpUtility:
                 open(div_try_file, 'w') as ofp3:
             for line in ifp:
                 i += 1
-                if i < err_line_number:
+                if i < err_line_number - 1:
                     ofp.write(line)
                     j += 1
+                    continue
+                if i < err_line_number:
+                    if comment_pattern.match(line):
+                        ofp2.write(line)
+                        j2 += 1
+                    else:
+                        ofp.write(line)
+                        j += 1
                     continue
                 if not is_valid:
                     if line.isspace() or comment_pattern.match(line):

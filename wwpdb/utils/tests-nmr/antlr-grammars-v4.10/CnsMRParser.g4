@@ -161,7 +161,7 @@ group_statement:
 	Selection Equ_op? selection |
 	Weight Equ_op? number_s;
 
-/* CNS: Harmonic coordiatie restraints - Syntax - restraints/harmonic
+/* CNS: Harmonic coordinate restraints - Syntax - restraints/harmonic
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
 */
 harmonic_statement:
@@ -310,7 +310,7 @@ diffusion_statement:
 	Reset;
 
 dani_assign:
-	Assign selection selection selection selection selection selection number number;
+	Assign selection selection selection selection selection selection number number?;
 
 /* CNS: One-bond coupling restraints - Syntax
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html

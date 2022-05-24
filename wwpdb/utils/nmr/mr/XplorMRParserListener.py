@@ -1978,10 +1978,16 @@ class XplorMRParserListener(ParseTreeListener):
             if None in self.numberSelection:
                 return
 
-            center_1 = self.numberSelection[0]
-            range_1 = abs(self.numberSelection[1])
-            center_2 = self.numberSelection[2]
-            range_2 = abs(self.numberSelection[3])
+            if len(self.numberSelection) > 3:
+                center_1 = self.numberSelection[0]
+                range_1 = abs(self.numberSelection[1])
+                center_2 = self.numberSelection[2]
+                range_2 = abs(self.numberSelection[3])
+            else:
+                center_1 = self.numberSelection[0]
+                range_1 = 0.0
+                center_2 = self.numberSelection[1]
+                range_2 = 0.0
 
             target_value_1 = center_1
             target_value_2 = center_2
@@ -2235,7 +2241,11 @@ class XplorMRParserListener(ParseTreeListener):
                 return
 
             target = self.numberSelection[0]
-            delta = abs(self.numberSelection[1])
+
+            if len(self.numberSelection) > 1:
+                delta = abs(self.numberSelection[1])
+            else:
+                delta = 0.0
 
             target_value = target
             lower_limit = None
@@ -2377,7 +2387,11 @@ class XplorMRParserListener(ParseTreeListener):
                 return
 
             target = self.numberSelection[0]
-            delta = abs(self.numberSelection[1])
+
+            if len(self.numberSelection) > 1:
+                delta = abs(self.numberSelection[1])
+            else:
+                delta = 0.0
 
             target_value = target
             lower_limit = None
@@ -2708,7 +2722,7 @@ class XplorMRParserListener(ParseTreeListener):
 
             dstFunc2 = None
 
-            if len(self.numberSelection) > 2:
+            if len(self.numberSelection) > 3:
                 target = self.numberSelection[2]
                 delta = abs(self.numberSelection[3])
 
@@ -3547,7 +3561,11 @@ class XplorMRParserListener(ParseTreeListener):
                 return
 
             target = self.numberSelection[0]
-            delta = abs(self.numberSelection[1])
+
+            if len(self.numberSelection) > 1:
+                delta = abs(self.numberSelection[1])
+            else:
+                delta = 0.0
 
             target_value = target
             lower_limit = None
@@ -4460,7 +4478,11 @@ class XplorMRParserListener(ParseTreeListener):
                 return
 
             target = self.numberSelection[0]
-            delta = abs(self.numberSelection[1])
+
+            if len(self.numberSelection) > 1:
+                delta = abs(self.numberSelection[1])
+            else:
+                delta = 0.0
 
             target_value = target
             lower_limit = None
@@ -4688,7 +4710,11 @@ class XplorMRParserListener(ParseTreeListener):
                 return
 
             target = self.numberSelection[0]
-            delta = abs(self.numberSelection[0])
+
+            if len(self.numberSelection) > 1:
+                delta = abs(self.numberSelection[1])
+            else:
+                delta = 0.0
 
             try:
                 # check whether if carbon shift restraints or not
@@ -4935,7 +4961,11 @@ class XplorMRParserListener(ParseTreeListener):
                 return
 
             target = self.numberSelection[0]
-            delta = abs(self.numberSelection[1])
+
+            if len(self.numberSelection) > 1:
+                delta = abs(self.numberSelection[1])
+            else:
+                delta = 0.0
 
             target_value = target
             lower_limit = target - delta
@@ -5188,7 +5218,11 @@ class XplorMRParserListener(ParseTreeListener):
                 return
 
             target = self.numberSelection[0]
-            delta = abs(self.numberSelection[1])
+
+            if len(self.numberSelection) > 1:
+                delta = abs(self.numberSelection[1])
+            else:
+                delta = 0.0
 
             target_value = target
             lower_limit = target - delta

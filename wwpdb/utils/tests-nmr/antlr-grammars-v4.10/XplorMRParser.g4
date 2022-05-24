@@ -245,7 +245,7 @@ vean_statement:
 	Reset;
 
 vean_assign:
-	Assign selection selection selection selection number number number number;
+	Assign selection selection selection selection number number (number number)?;
 
 /* XPLOR-NIH: Residual Dipolar Couplings - Syntax (TENSO)
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node421.html
@@ -260,7 +260,7 @@ tenso_statement:
 	Reset;
 
 tenso_assign:
-	Assign selection selection number number;
+	Assign selection selection number number?;
 
 /* XPLOR-NIH: Residual Dipolar Couplings - Syntax (ANIS)
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node422.html
@@ -277,7 +277,7 @@ anis_statement:
 	Type Rdc_or_Diff_anis_types;
 
 anis_assign:
-	Assign selection selection selection selection number number;
+	Assign selection selection selection selection number number?;
 
 /* XPLOR-NIH: Planality restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/plan_syntax.html
@@ -457,7 +457,7 @@ diffusion_statement:
 	Type Rdc_or_Diff_anis_types;
 
 dani_assign:
-	Assign selection selection selection selection selection selection number number;
+	Assign selection selection selection selection selection selection number number?;
 
 /* XPLOR-NIH: Residue-residue position/orientation database restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node425.html
@@ -569,7 +569,7 @@ pre_statement:
 	Debug;
 
 pre_assign:
-	Assign selection selection number number;
+	Assign selection selection number number?;
 
 /* XPLOR-NIH: Paramagnetic pseudocontact shift restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node442.html
@@ -594,7 +594,7 @@ pcs_statement:
 	Frun Integer;
 
 pcs_assign:
-	Assign selection selection selection selection selection number number;
+	Assign selection selection selection selection selection number number?;
 
 /* XPLOR-NIH: Paramagnetic residual dipolar coupling restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node445.html
@@ -619,7 +619,7 @@ prdc_statement:
 	Soff;
 
 prdc_assign:
-	Assign selection selection selection selection selection selection number number;
+	Assign selection selection selection selection selection selection number number?;
 
 /* XPLOR-NIH: Paramagnetic orientation restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node448.html
@@ -650,7 +650,7 @@ pccr_statement:
 	Frun Integer;
 
 pccr_assign:
-	Assign selection selection selection number number;
+	Assign selection selection selection number number?;
 
 /* XPLOR-NIH: Hydrogen bond geometry restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node452.html

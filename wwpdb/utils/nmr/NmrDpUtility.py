@@ -6797,6 +6797,10 @@ class NmrDpUtility:
 
                     pos = 0
 
+                    dist_range_like = False
+                    dihed_range_like = False
+                    rdc_range_like = False
+
                     for line in ifp:
 
                         if line.startswith('ATOM ') and line.count('.') >= 3:

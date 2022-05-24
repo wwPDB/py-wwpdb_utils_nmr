@@ -323,7 +323,7 @@ loop_pattern = re.compile(r'\s*loop_\s*')
 stop_pattern = re.compile(r'\s*stop_\s*')
 cif_stop_pattern = re.compile(r'#\s*')
 ws_pattern = re.compile(r'\s+')
-comment_pattern = re.compile(r'[#!]+(.*)')
+comment_pattern = re.compile(r'\s*[#!]+(.*)')
 
 category_pattern = re.compile(r'\s*_(\S*)\..*\s*')
 tagvalue_pattern = re.compile(r'\s*_(\S*)\.(\S*)\s+(.*)\s*')
@@ -8709,14 +8709,14 @@ class NmrDpUtility:
 
         ws_or_comment = True
 
+        interval = []
+
         with open(file_path, 'r') as ifp,\
                 open(div_src_file, 'w') as ofp,\
                 open(div_try_file, 'w') as ofp2:
             for line in ifp:
                 i += 1
-                if i < err_line_number:
-                    if i == err_line_number - 1:
-                        prev_input = line
+                if i < err_line_number - 20:
                     if ws_or_comment:
                         if line.isspace() or comment_pattern.match(line):
                             pass
@@ -8724,6 +8724,30 @@ class NmrDpUtility:
                             ws_or_comment = False
                     ofp.write(line)
                     j += 1
+                    continue
+                if i < err_line_number:
+                    if ws_or_comment:
+                        if line.isspace() or comment_pattern.match(line):
+                            pass
+                        else:
+                            ws_or_comment = False
+                    interval.append({'line': line, 'ws_or_comment': line.isspace() or bool(comment_pattern.match(line))})
+                    if i < err_line_number - 1:
+                        continue
+                    if i == err_line_number - 1:
+                        prev_input = line
+                    _k = len(interval) - 1
+                    for _interval in reversed(interval):
+                        if _interval['ws_or_comment']:
+                            _k -= 1
+                            continue
+                        break
+                    for k, _interval in enumerate(interval):
+                        if k <= _k:
+                            ofp.write(_interval['line'])
+                            j += 1
+                        else:
+                            ofp2.write(_interval['line'])
                     continue
                 if i == err_line_number + 1:
                     next_input = line
@@ -9330,7 +9354,7 @@ class NmrDpUtility:
 
                     return False  # not split MR file because of the lexer errors to be hundled by manual
 
-            if next_input is not None:
+            if next_input is not None and re.search(r'[A-Za-z]', next_input) is not None:
                 test_line = next_input
 
                 if reader is not None:
@@ -9359,7 +9383,7 @@ class NmrDpUtility:
                     reader = BiosymMRReader(self.__verbose, self.__lfh, None, None, None,
                                             self.__ccU, self.__csStat, self.__nefT)
 
-                _, _, lexer_err_listener = reader.parse(test_line, None, isFilePath=False)
+                _, parser_err_listener, lexer_err_listener = reader.parse(test_line, None, isFilePath=False)
 
                 has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
 
@@ -9740,12 +9764,12 @@ class NmrDpUtility:
                 open(div_try_file, 'w') as ofp3:
             for line in ifp:
                 i += 1
-                if i < err_line_number - 5:
+                if i < err_line_number - 20:
                     ofp.write(line)
                     j += 1
                     continue
                 if i < err_line_number:
-                    interval.append({'line': line, 'ws_or_comment': line.isspace() or comment_pattern.match(line)})
+                    interval.append({'line': line, 'ws_or_comment': line.isspace() or bool(comment_pattern.match(line))})
                     if i < err_line_number - 1:
                         continue
                     _k = len(interval) - 1

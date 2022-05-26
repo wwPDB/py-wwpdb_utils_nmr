@@ -347,8 +347,10 @@ amber_missing_end_err_msg = "missing END at"  # NOTICE: depends on ANTLR v4 and 
 amber_extra_end_err_msg_pattern = re.compile(r"extraneous input '(?:&[Ee][Nn][Dd]|\/)' expecting .*")  # NOTICE: depends on ANTLR v4
 
 xplor_any_assi_pattern = re.compile(r'[Aa][Ss][Ss][Ii][Gg]?[Nn]?')
+xplor_any_rest_pattern = re.compile(r'[Rr][Ee][Ss][Tt][Rr]?[Aa]?[Ii]?[Nn]?[Tt]?[Ss]?')
 xplor_assi_pattern = re.compile(r'\s*[Aa][Ss][Ss][Ii][Gg]?[Nn]?.*')
 xplor_end_pattern = re.compile(r'\s*[Ee][Nn][Dd].*')
+xplor_rest_pattern = re.compile(r'\s*[Rr][Ee][Ss][Tt][Rr]?[Aa]?[Ii]?[Nn]?[Tt]?[Ss]?.*')
 xplor_missing_end_err_msg = "missing End at"  # NOTICE: depends on ANTLR v4 and (Xplor|Cns)MRLexer.g4
 xplor_extra_end_err_msg_pattern = re.compile(r"extraneous input '[Ee][Nn][Dd]' expecting .*")  # NOTICE: depends on ANTLR v4
 xplor_extra_assi_err_msg_pattern = re.compile(r"extraneous input '[Aa][Ss][Ss][Ii][Gg]?[Nn]?' expecting L_paren")  # NOTICE: depends on ANTLR v4 and (Xplor|Cns)MRLexer.g4
@@ -8632,6 +8634,10 @@ class NmrDpUtility:
                              and (err_message.startswith(mismatched_input_err_msg)
                                   or err_message.startswith(extraneous_input_err_msg))
                              and bool(xplor_assi_pattern.search(err_input)))
+        concat_xplor_rest = (xplor_file_type
+                             and (err_message.startswith(mismatched_input_err_msg)
+                                  or err_message.startswith(extraneous_input_err_msg))
+                             and bool(xplor_rest_pattern.search(err_input)))
         concat_amber_rst = (amber_file_type
                             and (err_message.startswith(mismatched_input_err_msg)
                                  or err_message.startswith(extraneous_input_err_msg))
@@ -8651,7 +8657,8 @@ class NmrDpUtility:
         if not(xplor_missing_end or xplor_ends_wo_statement or xplor_l_paren_wo_assi
                or amber_missing_end or amber_ends_wo_statement
                or cyana_ambig_restraint
-               or concat_xplor_assi or concat_amber_rst
+               or concat_xplor_assi or concat_xplor_rest
+               or concat_amber_rst
                or concat_comment):
 
             if err_column_position > 0 and not err_input[0:err_column_position].isspace():
@@ -8793,7 +8800,8 @@ class NmrDpUtility:
                 or xplor_l_paren_wo_assi or xplor_missing_end_before
                 or amber_missing_end or amber_ends_wo_statement
                 or cyana_ambig_restraint
-                or concat_xplor_assi or concat_amber_rst
+                or concat_xplor_assi or concat_xplor_rest
+                or concat_amber_rst
                 or concat_comment) or i <= err_line_number or j == 0:
 
             corrected = False
@@ -8990,6 +8998,65 @@ class NmrDpUtility:
 
                                 corrected = True
 
+            if concat_xplor_rest:
+
+                rest_code_index = -1
+                for m in xplor_any_rest_pattern.finditer(err_input):
+                    rest_code_index = m.start()
+
+                if rest_code_index != -1:
+                    test_line = err_input[0:rest_code_index]
+
+                    if len(test_line.strip()) > 0:
+                        typo_for_comment_out = bool(possible_typo_for_comment_out_pattern.match(test_line))
+
+                        if reader is not None:
+                            pass
+
+                        elif file_type == 'nm-res-xpl':
+                            reader = XplorMRReader(self.__verbose, self.__lfh, None, None, None,
+                                                   self.__ccU, self.__csStat, self.__nefT)
+                        elif file_type == 'nm-res-cns':
+                            reader = CnsMRReader(self.__verbose, self.__lfh, None, None, None,
+                                                 self.__ccU, self.__csStat, self.__nefT)
+
+                        _, _, lexer_err_listener = reader.parse(test_line, None, isFilePath=False)
+
+                        has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
+
+                        if not has_lexer_error:
+
+                            cor_src_path, cor_test = self.__getCorrectedMRFilePath(src_path)
+
+                            if cor_src_path is not None:
+
+                                k = 0
+
+                                with open(src_path, 'r') as ifp,\
+                                        open(cor_src_path, 'w') as ofp:
+                                    for line in ifp:
+                                        if k == offset:
+                                            if typo_for_comment_out:
+                                                g = possible_typo_for_comment_out_pattern.search(test_line).groups()
+                                                if g[0] == '1':
+                                                    test_line = re.sub(r'1', '!', test_line)
+                                                else:
+                                                    test_line = re.sub(r'3', '#', test_line)
+                                                ofp.write(f"{test_line}{err_input[rest_code_index:]}\n")
+                                            else:
+                                                ofp.write(f"{test_line}\n{err_input[rest_code_index:]}\n")
+                                        else:
+                                            ofp.write(line)
+                                        k += 1
+
+                                if cor_test:
+                                    os.rename(cor_src_path, src_path)
+
+                                if self.__mr_debug:
+                                    print('DIV-MR-EXIT #3-6')
+
+                                corrected = True
+
             if concat_amber_rst:
 
                 rst_code_index = -1
@@ -9029,7 +9096,7 @@ class NmrDpUtility:
                                                     test_line = re.sub(r'1', '!', test_line)
                                                 else:
                                                     test_line = re.sub(r'3', '#', test_line)
-                                                ofp.write(f"{test_line}{err_input[assi_code_index:]}\n")
+                                                ofp.write(f"{test_line}{err_input[rst_code_index:]}\n")
                                             else:
                                                 ofp.write(f"{test_line}\n{err_input[rst_code_index:]}\n")
                                         else:
@@ -9040,7 +9107,7 @@ class NmrDpUtility:
                                     os.rename(cor_src_path, src_path)
 
                                 if self.__mr_debug:
-                                    print('DIV-MR-EXIT #3-6')
+                                    print('DIV-MR-EXIT #3-7')
 
                                 corrected = True
 
@@ -9098,7 +9165,7 @@ class NmrDpUtility:
                                 os.rename(cor_src_path, src_path)
 
                             if self.__mr_debug:
-                                print('DIV-MR-EXIT #3-7')
+                                print('DIV-MR-EXIT #3-8')
 
                             corrected = True
 
@@ -9131,7 +9198,7 @@ class NmrDpUtility:
                         os.rename(cor_src_path, src_path)
 
                     if self.__mr_debug:
-                        print('DIV-MR-EXIT #3-8')
+                        print('DIV-MR-EXIT #3-9')
 
                     corrected = True
 
@@ -9164,7 +9231,7 @@ class NmrDpUtility:
                         os.rename(cor_src_path, src_path)
 
                     if self.__mr_debug:
-                        print('DIV-MR-EXIT #3-9')
+                        print('DIV-MR-EXIT #3-10')
 
                     corrected = True
 
@@ -9184,11 +9251,11 @@ class NmrDpUtility:
                         os.rename(cor_src_path, src_path)
 
                     if self.__mr_debug:
-                        print('DIV-MR-EXIT #3-10')
+                        print('DIV-MR-EXIT #3-11')
 
                     corrected = True
 
-            if not corrected and not concat_xplor_assi and not concat_amber_rst and (j + j_offset) in (0, err_line_number - 1):
+            if not (corrected or concat_xplor_assi or concat_xplor_rest or concat_amber_rst) and (j + j_offset) in (0, err_line_number - 1):
 
                 test_line = err_input
 
@@ -9243,7 +9310,7 @@ class NmrDpUtility:
                             os.rename(cor_src_path, src_path)
 
                         if self.__mr_debug:
-                            print('DIV-MR-EXIT #3-11')
+                            print('DIV-MR-EXIT #3-12')
 
                         corrected = True
 
@@ -9936,6 +10003,10 @@ class NmrDpUtility:
                              and (err_message.startswith(mismatched_input_err_msg)
                                   or err_message.startswith(extraneous_input_err_msg))
                              and bool(xplor_assi_pattern.search(err_input)))
+        concat_xplor_rest = (xplor_file_type
+                             and (err_message.startswith(mismatched_input_err_msg)
+                                  or err_message.startswith(extraneous_input_err_msg))
+                             and bool(xplor_rest_pattern.search(err_input)))
         concat_amber_rst = (amber_file_type
                             and (err_message.startswith(mismatched_input_err_msg)
                                  or err_message.startswith(extraneous_input_err_msg))
@@ -9980,7 +10051,8 @@ class NmrDpUtility:
         if (xplor_missing_end or xplor_ends_wo_statement
                 or amber_missing_end or amber_ends_wo_statement
                 or cyana_ambig_restraint
-                or concat_xplor_assi or concat_amber_rst
+                or concat_xplor_assi or concat_xplor_rest
+                or concat_amber_rst
                 or concat_comment) or i <= err_line_number or j == 0:
 
             corrected = False
@@ -10160,6 +10232,62 @@ class NmrDpUtility:
 
                                 corrected = True
 
+            if concat_xplor_assi:
+
+                rest_code_index = -1
+                for m in xplor_any_rest_pattern.finditer(err_input):
+                    rest_code_index = m.start()
+
+                if rest_code_index != -1:
+                    test_line = err_input[0:rest_code_index]
+
+                    if len(test_line.strip()) > 0:
+                        typo_for_comment_out = bool(possible_typo_for_comment_out_pattern.match(test_line))
+
+                        if file_type == 'nm-res-xpl':
+                            reader = XplorMRReader(self.__verbose, self.__lfh, None, None, None,
+                                                   self.__ccU, self.__csStat, self.__nefT)
+                        elif file_type == 'nm-res-cns':
+                            reader = CnsMRReader(self.__verbose, self.__lfh, None, None, None,
+                                                 self.__ccU, self.__csStat, self.__nefT)
+
+                        _, _, lexer_err_listener = reader.parse(test_line, None, isFilePath=False)
+
+                        has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
+
+                        if not has_lexer_error:
+
+                            cor_src_path, cor_test = self.__getCorrectedMRFilePath(src_path)
+
+                            if cor_src_path is not None:
+
+                                k = 0
+
+                                with open(src_path, 'r') as ifp,\
+                                        open(cor_src_path, 'w') as ofp:
+                                    for line in ifp:
+                                        if k == offset:
+                                            if typo_for_comment_out:
+                                                g = possible_typo_for_comment_out_pattern.search(test_line).groups()
+                                                if g[0] == '1':
+                                                    test_line = re.sub(r'1', '!', test_line)
+                                                else:
+                                                    test_line = re.sub(r'3', '#', test_line)
+                                                ofp.write(f"{test_line}{err_input[rest_code_index:]}\n")
+                                            else:
+                                                ofp.write(f"{test_line}\n{err_input[rest_code_index:]}\n")
+                                        else:
+                                            ofp.write(line)
+                                        k += 1
+
+                                if cor_test:
+                                    os.rename(cor_src_path, src_path)
+
+                                if self.__mr_debug:
+                                    print('DO-DIV-MR-EXIT #2-5')
+
+                                corrected = True
+
             if concat_amber_rst:
 
                 rst_code_index = -1
@@ -10198,7 +10326,7 @@ class NmrDpUtility:
                                                     test_line = re.sub(r'1', '!', test_line)
                                                 else:
                                                     test_line = re.sub(r'3', '#', test_line)
-                                                ofp.write(f"{test_line}{err_input[assi_code_index:]}\n")
+                                                ofp.write(f"{test_line}{err_input[rst_code_index:]}\n")
                                             else:
                                                 ofp.write(f"{test_line}\n{err_input[rst_code_index:]}\n")
                                         else:
@@ -10209,7 +10337,7 @@ class NmrDpUtility:
                                     os.rename(cor_src_path, src_path)
 
                                 if self.__mr_debug:
-                                    print('DO-DIV-MR-EXIT #2-5')
+                                    print('DO-DIV-MR-EXIT #2-6')
 
                                 corrected = True
 
@@ -10264,7 +10392,7 @@ class NmrDpUtility:
                                 os.rename(cor_src_path, src_path)
 
                             if self.__mr_debug:
-                                print('DO-DIV-MR-EXIT #2-6')
+                                print('DO-DIV-MR-EXIT #2-7')
 
                             corrected = True
 
@@ -10297,7 +10425,7 @@ class NmrDpUtility:
                         os.rename(cor_src_path, src_path)
 
                     if self.__mr_debug:
-                        print('DO-DIV-MR-EXIT #2-7')
+                        print('DO-DIV-MR-EXIT #2-8')
 
                     corrected = True
 
@@ -10317,11 +10445,11 @@ class NmrDpUtility:
                         os.rename(cor_src_path, src_path)
 
                     if self.__mr_debug:
-                        print('DO-DIV-MR-EXIT #2-8')
+                        print('DO-DIV-MR-EXIT #2-9')
 
                     corrected = True
 
-            if not corrected and not concat_xplor_assi and not concat_amber_rst and j in (0, err_line_number - 1):
+            if not (corrected or concat_xplor_assi or concat_xplor_rest or concat_amber_rst) and j in (0, err_line_number - 1):
 
                 test_line = err_input
 
@@ -10376,7 +10504,7 @@ class NmrDpUtility:
                             os.rename(cor_src_path, src_path)
 
                         if self.__mr_debug:
-                            print('DO-DIV-MR-EXIT #2-9')
+                            print('DO-DIV-MR-EXIT #2-10')
 
                         corrected = True
 

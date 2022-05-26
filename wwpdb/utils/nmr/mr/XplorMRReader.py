@@ -87,6 +87,8 @@ class XplorMRReader:
             @return: XplorMRParserListener for success or None otherwise, ParserErrorListener, LexerErrorListener.
         """
 
+        ifp = None
+
         try:
 
             if isFilePath:
@@ -175,7 +177,7 @@ class XplorMRReader:
             return None, None, None
 
         finally:
-            if isFilePath:
+            if isFilePath and ifp is not None:
                 ifp.close()
 
 

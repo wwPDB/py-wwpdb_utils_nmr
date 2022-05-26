@@ -8521,6 +8521,36 @@ class NmrDpUtility:
         except StopIteration:
             return None
 
+    def __getCorrectedMRFilePath(self, src_path):
+        """ Return corrected MR file path.
+        """
+
+        ar_file_path_list = 'atypical_restraint_file_path_list'
+
+        dir_path = os.path.dirname(src_path)
+
+        for div_file_name in os.listdir(dir_path):
+            if os.path.isfile(os.path.join(dir_path, div_file_name))\
+               and (div_file_name.endswith('-div_src.mr') or div_file_name.endswith('-div_dst.mr')):
+                div_file_path = os.path.join(dir_path, div_file_name)
+                if not any(ar for ar in self.__inputParamDict[ar_file_path_list] if ar['file_name'] == div_file_path):
+                    os.remove(div_file_path)
+
+        if os.path.exists(src_path):
+            src_file_name = os.path.basename(src_path)
+            cor_test = '-corrected' in src_file_name
+            if cor_test:
+                cor_src_path = src_path + '~'
+            else:
+                if src_path.endswith('.mr'):
+                    cor_src_path = re.sub(r'\-trimmed$', '', os.path.splitext(src_path)[0]) + '-corrected.mr'
+                else:
+                    cor_src_path = re.sub(r'\-trimmed$', '', src_path) + '-corrected'
+
+            return cor_src_path, cor_test
+
+        return None, False
+
     def __divideLegacyMRIfNecessary(self, file_path, file_type, err_desc, src_path, offset):
         """ Divive legacy NMR restraint file if necessary.
         """
@@ -8535,7 +8565,11 @@ class NmrDpUtility:
         div_try_file = src_basename + '-div_try.mr'
         div_dst_file = src_basename + '-div_dst.mr'
 
-        if err_desc in self.__divide_mr_error_message:
+        if any(_err_desc for _err_desc in self.__divide_mr_error_message
+               if err_desc['file_path'] == _err_desc['file_path']
+               and err_desc['line_number'] == _err_desc['line_number']
+               and err_desc['column_position'] == _err_desc['column_position']
+               and err_desc['message'] == _err_desc['message']):
             if os.path.exists(div_src_file):
                 os.remove(div_src_file)
             if os.path.exists(div_dst_file):
@@ -8671,40 +8705,31 @@ class NmrDpUtility:
 
                     corrected = self.__divideLegacyMR(file_path, file_type, err_desc, src_path, offset)
 
-                    if corrected:
-                        dir_path = os.path.dirname(src_path)
+                    if corrected and os.path.exists(src_path):
 
-                        for div_file_name in os.listdir(dir_path):
-                            if os.path.isfile(os.path.join(dir_path, div_file_name))\
-                               and (div_file_name.endswith('-div_src.mr') or div_file_name.endswith('-div_dst.mr')):
-                                os.remove(os.path.join(dir_path, div_file_name))
+                        cor_src_path, cor_test = self.__getCorrectedMRFilePath(src_path)
 
-                        src_file_name = os.path.basename(src_path)
-                        cor_test = '-corrected' in src_file_name
-                        if cor_test:
-                            cor_src_path = src_path + '~'
+                        if cor_src_path is not None:
+
+                            offset += err_line_number - 1
+
+                            j = 0
+
+                            with open(src_path, 'r') as ifp,\
+                                    open(cor_src_path, 'w') as ofp:
+                                for line in ifp:
+                                    if j == offset:
+                                        ofp.write(line[:err_column_position + 1] + '\n')
+                                        ofp.write(line[err_column_position + 1:])
+                                    else:
+                                        ofp.write(line)
+                                    j += 1
+
+                            if cor_test:
+                                os.rename(cor_src_path, src_path)
+
                         else:
-                            if src_path.endswith('.mr'):
-                                cor_src_path = re.sub(r'\-trimmed$', '', os.path.splitext(src_path)[0]) + '-corrected.mr'
-                            else:
-                                cor_src_path = re.sub(r'\-trimmed$', '', src_path) + '-corrected'
-
-                        offset += err_line_number - 1
-
-                        j = 0
-
-                        with open(src_path, 'r') as ifp,\
-                                open(cor_src_path, 'w') as ofp:
-                            for line in ifp:
-                                if j == offset:
-                                    ofp.write(line[:err_column_position + 1] + '\n')
-                                    ofp.write(line[err_column_position + 1:])
-                                else:
-                                    ofp.write(line)
-                                j += 1
-
-                        if cor_test:
-                            os.rename(cor_src_path, src_path)
+                            corrected = False
 
                     if self.__mr_debug:
                         print('DIV-MR-EXIT #2')
@@ -8789,41 +8814,28 @@ class NmrDpUtility:
 
                 if has_end_tag:
 
-                    dir_path = os.path.dirname(src_path)
+                    cor_src_path, cor_test = self.__getCorrectedMRFilePath(src_path)
 
-                    for div_file_name in os.listdir(dir_path):
-                        if os.path.isfile(os.path.join(dir_path, div_file_name))\
-                           and (div_file_name.endswith('-div_src.mr') or div_file_name.endswith('-div_dst.mr')):
-                            os.remove(os.path.join(dir_path, div_file_name))
+                    if cor_src_path is not None:
 
-                    src_file_name = os.path.basename(src_path)
-                    cor_test = '-corrected' in src_file_name
-                    if cor_test:
-                        cor_src_path = src_path + '~'
-                    else:
-                        if src_path.endswith('.mr'):
-                            cor_src_path = re.sub(r'\-trimmed$', '', os.path.splitext(src_path)[0]) + '-corrected.mr'
-                        else:
-                            cor_src_path = re.sub(r'\-trimmed$', '', src_path) + '-corrected'
+                        k = 0
 
-                    k = 0
+                        with open(src_path, 'r') as ifp,\
+                                open(cor_src_path, 'w') as ofp:
+                            for line in ifp:
+                                if k == offset:
+                                    ofp.write('#' + line)
+                                else:
+                                    ofp.write(line)
+                                k += 1
 
-                    with open(src_path, 'r') as ifp,\
-                            open(cor_src_path, 'w') as ofp:
-                        for line in ifp:
-                            if k == offset:
-                                ofp.write('#' + line)
-                            else:
-                                ofp.write(line)
-                            k += 1
+                        if cor_test:
+                            os.rename(cor_src_path, src_path)
 
-                    if cor_test:
-                        os.rename(cor_src_path, src_path)
+                        if self.__mr_debug:
+                            print('DIV-MR-EXIT #3-1')
 
-                    if self.__mr_debug:
-                        print('DIV-MR-EXIT #3-1')
-
-                    corrected = True
+                        corrected = True
 
             if amber_ends_wo_statement:
 
@@ -8841,41 +8853,28 @@ class NmrDpUtility:
 
                 if has_end_tag:
 
-                    dir_path = os.path.dirname(src_path)
+                    cor_src_path, cor_test = self.__getCorrectedMRFilePath(src_path)
 
-                    for div_file_name in os.listdir(dir_path):
-                        if os.path.isfile(os.path.join(dir_path, div_file_name))\
-                           and (div_file_name.endswith('-div_src.mr') or div_file_name.endswith('-div_dst.mr')):
-                            os.remove(os.path.join(dir_path, div_file_name))
+                    if cor_src_path is not None:
 
-                    src_file_name = os.path.basename(src_path)
-                    cor_test = '-corrected' in src_file_name
-                    if cor_test:
-                        cor_src_path = src_path + '~'
-                    else:
-                        if src_path.endswith('.mr'):
-                            cor_src_path = re.sub(r'\-trimmed$', '', os.path.splitext(src_path)[0]) + '-corrected.mr'
-                        else:
-                            cor_src_path = re.sub(r'\-trimmed$', '', src_path) + '-corrected'
+                        k = 0
 
-                    k = 0
+                        with open(src_path, 'r') as ifp,\
+                                open(cor_src_path, 'w') as ofp:
+                            for line in ifp:
+                                if k == offset:
+                                    ofp.write('#' + line)
+                                else:
+                                    ofp.write(line)
+                                k += 1
 
-                    with open(src_path, 'r') as ifp,\
-                            open(cor_src_path, 'w') as ofp:
-                        for line in ifp:
-                            if k == offset:
-                                ofp.write('#' + line)
-                            else:
-                                ofp.write(line)
-                            k += 1
+                        if cor_test:
+                            os.rename(cor_src_path, src_path)
 
-                    if cor_test:
-                        os.rename(cor_src_path, src_path)
+                        if self.__mr_debug:
+                            print('DIV-MR-EXIT #3-2')
 
-                    if self.__mr_debug:
-                        print('DIV-MR-EXIT #3-2')
-
-                    corrected = True
+                        corrected = True
 
             if err_line_number - 1 in (i, j + j_offset) and xplor_l_paren_wo_assi:  # this should be before 'concat_comment' routine
 
@@ -8907,43 +8906,30 @@ class NmrDpUtility:
 
                 if has_amb_tag:
 
-                    dir_path = os.path.dirname(src_path)
+                    cor_src_path, cor_test = self.__getCorrectedMRFilePath(src_path)
 
-                    for div_file_name in os.listdir(dir_path):
-                        if os.path.isfile(os.path.join(dir_path, div_file_name))\
-                           and (div_file_name.endswith('-div_src.mr') or div_file_name.endswith('-div_dst.mr')):
-                            os.remove(os.path.join(dir_path, div_file_name))
+                    if cor_src_path is not None:
 
-                    src_file_name = os.path.basename(src_path)
-                    cor_test = '-corrected' in src_file_name
-                    if cor_test:
-                        cor_src_path = src_path + '~'
-                    else:
-                        if src_path.endswith('.mr'):
-                            cor_src_path = re.sub(r'\-trimmed$', '', os.path.splitext(src_path)[0]) + '-corrected.mr'
-                        else:
-                            cor_src_path = re.sub(r'\-trimmed$', '', src_path) + '-corrected'
+                        k = 0
 
-                    k = 0
+                        with open(src_path, 'r') as ifp,\
+                                open(cor_src_path, 'w') as ofp:
+                            for line in ifp:
+                                if k < offset:
+                                    ofp.write(line)
+                                elif cyana_ambig_pattern.search(line) and not comment_pattern.match(line):
+                                    ofp.write('#' + line)
+                                else:
+                                    ofp.write(line)
+                                k += 1
 
-                    with open(src_path, 'r') as ifp,\
-                            open(cor_src_path, 'w') as ofp:
-                        for line in ifp:
-                            if k < offset:
-                                ofp.write(line)
-                            elif cyana_ambig_pattern.search(line) and not comment_pattern.match(line):
-                                ofp.write('#' + line)
-                            else:
-                                ofp.write(line)
-                            k += 1
+                        if cor_test:
+                            os.rename(cor_src_path, src_path)
 
-                    if cor_test:
-                        os.rename(cor_src_path, src_path)
+                        if self.__mr_debug:
+                            print('DIV-MR-EXIT #3-4')
 
-                    if self.__mr_debug:
-                        print('DIV-MR-EXIT #3-4')
-
-                    corrected = True
+                        corrected = True
 
             if concat_xplor_assi:
 
@@ -8973,49 +8959,36 @@ class NmrDpUtility:
 
                         if not has_lexer_error:
 
-                            dir_path = os.path.dirname(src_path)
+                            cor_src_path, cor_test = self.__getCorrectedMRFilePath(src_path)
 
-                            for div_file_name in os.listdir(dir_path):
-                                if os.path.isfile(os.path.join(dir_path, div_file_name))\
-                                   and (div_file_name.endswith('-div_src.mr') or div_file_name.endswith('-div_dst.mr')):
-                                    os.remove(os.path.join(dir_path, div_file_name))
+                            if cor_src_path is not None:
 
-                            src_file_name = os.path.basename(src_path)
-                            cor_test = '-corrected' in src_file_name
-                            if cor_test:
-                                cor_src_path = src_path + '~'
-                            else:
-                                if src_path.endswith('.mr'):
-                                    cor_src_path = re.sub(r'\-trimmed$', '', os.path.splitext(src_path)[0]) + '-corrected.mr'
-                                else:
-                                    cor_src_path = re.sub(r'\-trimmed$', '', src_path) + '-corrected'
+                                k = 0
 
-                            k = 0
-
-                            with open(src_path, 'r') as ifp,\
-                                    open(cor_src_path, 'w') as ofp:
-                                for line in ifp:
-                                    if k == offset:
-                                        if typo_for_comment_out:
-                                            g = possible_typo_for_comment_out_pattern.search(test_line).groups()
-                                            if g[0] == '1':
-                                                test_line = re.sub(r'1', '!', test_line)
+                                with open(src_path, 'r') as ifp,\
+                                        open(cor_src_path, 'w') as ofp:
+                                    for line in ifp:
+                                        if k == offset:
+                                            if typo_for_comment_out:
+                                                g = possible_typo_for_comment_out_pattern.search(test_line).groups()
+                                                if g[0] == '1':
+                                                    test_line = re.sub(r'1', '!', test_line)
+                                                else:
+                                                    test_line = re.sub(r'3', '#', test_line)
+                                                ofp.write(f"{test_line}{err_input[assi_code_index:]}\n")
                                             else:
-                                                test_line = re.sub(r'3', '#', test_line)
-                                            ofp.write(f"{test_line}{err_input[assi_code_index:]}\n")
+                                                ofp.write(f"{test_line}\n{err_input[assi_code_index:]}\n")
                                         else:
-                                            ofp.write(f"{test_line}\n{err_input[assi_code_index:]}\n")
-                                    else:
-                                        ofp.write(line)
-                                    k += 1
+                                            ofp.write(line)
+                                        k += 1
 
-                            if cor_test:
-                                os.rename(cor_src_path, src_path)
+                                if cor_test:
+                                    os.rename(cor_src_path, src_path)
 
-                            if self.__mr_debug:
-                                print('DIV-MR-EXIT #3-5')
+                                if self.__mr_debug:
+                                    print('DIV-MR-EXIT #3-5')
 
-                            corrected = True
+                                corrected = True
 
             if concat_amber_rst:
 
@@ -9040,49 +9013,36 @@ class NmrDpUtility:
 
                         if not has_lexer_error:
 
-                            dir_path = os.path.dirname(src_path)
+                            cor_src_path, cor_test = self.__getCorrectedMRFilePath(src_path)
 
-                            for div_file_name in os.listdir(dir_path):
-                                if os.path.isfile(os.path.join(dir_path, div_file_name))\
-                                   and (div_file_name.endswith('-div_src.mr') or div_file_name.endswith('-div_dst.mr')):
-                                    os.remove(os.path.join(dir_path, div_file_name))
+                            if cor_src_path is not None:
 
-                            src_file_name = os.path.basename(src_path)
-                            cor_test = '-corrected' in src_file_name
-                            if cor_test:
-                                cor_src_path = src_path + '~'
-                            else:
-                                if src_path.endswith('.mr'):
-                                    cor_src_path = re.sub(r'\-trimmed$', '', os.path.splitext(src_path)[0]) + '-corrected.mr'
-                                else:
-                                    cor_src_path = re.sub(r'\-trimmed$', '', src_path) + '-corrected'
+                                k = 0
 
-                            k = 0
-
-                            with open(src_path, 'r') as ifp,\
-                                    open(cor_src_path, 'w') as ofp:
-                                for line in ifp:
-                                    if k == offset:
-                                        if typo_for_comment_out:
-                                            g = possible_typo_for_comment_out_pattern.search(test_line).groups()
-                                            if g[0] == '1':
-                                                test_line = re.sub(r'1', '!', test_line)
+                                with open(src_path, 'r') as ifp,\
+                                        open(cor_src_path, 'w') as ofp:
+                                    for line in ifp:
+                                        if k == offset:
+                                            if typo_for_comment_out:
+                                                g = possible_typo_for_comment_out_pattern.search(test_line).groups()
+                                                if g[0] == '1':
+                                                    test_line = re.sub(r'1', '!', test_line)
+                                                else:
+                                                    test_line = re.sub(r'3', '#', test_line)
+                                                ofp.write(f"{test_line}{err_input[assi_code_index:]}\n")
                                             else:
-                                                test_line = re.sub(r'3', '#', test_line)
-                                            ofp.write(f"{test_line}{err_input[assi_code_index:]}\n")
+                                                ofp.write(f"{test_line}\n{err_input[rst_code_index:]}\n")
                                         else:
-                                            ofp.write(f"{test_line}\n{err_input[rst_code_index:]}\n")
-                                    else:
-                                        ofp.write(line)
-                                    k += 1
+                                            ofp.write(line)
+                                        k += 1
 
-                            if cor_test:
-                                os.rename(cor_src_path, src_path)
+                                if cor_test:
+                                    os.rename(cor_src_path, src_path)
 
-                            if self.__mr_debug:
-                                print('DIV-MR-EXIT #3-6')
+                                if self.__mr_debug:
+                                    print('DIV-MR-EXIT #3-6')
 
-                            corrected = True
+                                corrected = True
 
             if concat_comment:
 
@@ -9119,166 +9079,114 @@ class NmrDpUtility:
 
                     if not has_lexer_error and not has_parser_error:
 
-                        dir_path = os.path.dirname(src_path)
+                        cor_src_path, cor_test = self.__getCorrectedMRFilePath(src_path)
 
-                        for div_file_name in os.listdir(dir_path):
-                            if os.path.isfile(os.path.join(dir_path, div_file_name))\
-                               and (div_file_name.endswith('-div_src.mr') or div_file_name.endswith('-div_dst.mr')):
-                                os.remove(os.path.join(dir_path, div_file_name))
+                        if cor_src_path is not None:
 
-                        src_file_name = os.path.basename(src_path)
-                        cor_test = '-corrected' in src_file_name
-                        if cor_test:
-                            cor_src_path = src_path + '~'
-                        else:
-                            if src_path.endswith('.mr'):
-                                cor_src_path = re.sub(r'\-trimmed$', '', os.path.splitext(src_path)[0]) + '-corrected.mr'
-                            else:
-                                cor_src_path = re.sub(r'\-trimmed$', '', src_path) + '-corrected'
+                            k = 0
 
-                        k = 0
+                            with open(src_path, 'r') as ifp,\
+                                    open(cor_src_path, 'w') as ofp:
+                                for line in ifp:
+                                    if k == offset:
+                                        ofp.write(f"{test_line} {err_input[comment_code_index:]}\n")
+                                    else:
+                                        ofp.write(line)
+                                    k += 1
 
-                        with open(src_path, 'r') as ifp,\
-                                open(cor_src_path, 'w') as ofp:
-                            for line in ifp:
-                                if k == offset:
-                                    ofp.write(f"{test_line} {err_input[comment_code_index:]}\n")
-                                else:
-                                    ofp.write(line)
-                                k += 1
+                            if cor_test:
+                                os.rename(cor_src_path, src_path)
 
-                        if cor_test:
-                            os.rename(cor_src_path, src_path)
+                            if self.__mr_debug:
+                                print('DIV-MR-EXIT #3-7')
 
-                        if self.__mr_debug:
-                            print('DIV-MR-EXIT #3-7')
-
-                        corrected = True
+                            corrected = True
 
             if err_line_number - 1 in (i, j + j_offset) and xplor_missing_end:
 
-                dir_path = os.path.dirname(src_path)
+                cor_src_path, cor_test = self.__getCorrectedMRFilePath(src_path)
 
-                for div_file_name in os.listdir(dir_path):
-                    if os.path.isfile(os.path.join(dir_path, div_file_name))\
-                       and (div_file_name.endswith('-div_src.mr') or div_file_name.endswith('-div_dst.mr')):
-                        os.remove(os.path.join(dir_path, div_file_name))
+                if cor_src_path is not None:
 
-                src_file_name = os.path.basename(src_path)
-                cor_test = '-corrected' in src_file_name
-                if cor_test:
-                    cor_src_path = src_path + '~'
-                else:
-                    if src_path.endswith('.mr'):
-                        cor_src_path = re.sub(r'\-trimmed$', '', os.path.splitext(src_path)[0]) + '-corrected.mr'
-                    else:
-                        cor_src_path = re.sub(r'\-trimmed$', '', src_path) + '-corrected'
+                    middle = (i != err_line_number - 1)
+                    is_done = False
 
-                middle = (i != err_line_number - 1)
-                is_done = False
+                    k = 0
 
-                k = 0
+                    with open(src_path, 'r') as ifp,\
+                            open(cor_src_path, 'w') as ofp:
+                        for line in ifp:
+                            if middle:
+                                if k == err_line_number - 2 and comment_pattern.match(line):
+                                    ofp.write('end\n')
+                                    is_done = True
+                                elif k == err_line_number - 1 and not is_done:
+                                    ofp.write('end\n')
+                            ofp.write(line)
+                            k += 1
+                        if not middle:
+                            ofp.write('end\n')
 
-                with open(src_path, 'r') as ifp,\
-                        open(cor_src_path, 'w') as ofp:
-                    for line in ifp:
-                        if middle:
-                            if k == err_line_number - 2 and comment_pattern.match(line):
-                                ofp.write('end\n')
-                                is_done = True
-                            elif k == err_line_number - 1 and not is_done:
-                                ofp.write('end\n')
-                        ofp.write(line)
-                        k += 1
-                    if not middle:
-                        ofp.write('end\n')
+                    if cor_test:
+                        os.rename(cor_src_path, src_path)
 
-                if cor_test:
-                    os.rename(cor_src_path, src_path)
+                    if self.__mr_debug:
+                        print('DIV-MR-EXIT #3-8')
 
-                if self.__mr_debug:
-                    print('DIV-MR-EXIT #3-8')
-
-                corrected = True
+                    corrected = True
 
             if err_line_number - 1 in (i, j + j_offset) and xplor_missing_end_before:
 
-                dir_path = os.path.dirname(src_path)
+                cor_src_path = self.__getCorrectedMRFilePath(src_path)
 
-                for div_file_name in os.listdir(dir_path):
-                    if os.path.isfile(os.path.join(dir_path, div_file_name))\
-                       and (div_file_name.endswith('-div_src.mr') or div_file_name.endswith('-div_dst.mr')):
-                        os.remove(os.path.join(dir_path, div_file_name))
+                if cor_src_path is not None:
 
-                src_file_name = os.path.basename(src_path)
-                cor_test = '-corrected' in src_file_name
-                if cor_test:
-                    cor_src_path = src_path + '~'
-                else:
-                    if src_path.endswith('.mr'):
-                        cor_src_path = re.sub(r'\-trimmed$', '', os.path.splitext(src_path)[0]) + '-corrected.mr'
-                    else:
-                        cor_src_path = re.sub(r'\-trimmed$', '', src_path) + '-corrected'
+                    middle = (i != err_line_number - 1)
+                    is_done = False
 
-                middle = (i != err_line_number - 1)
-                is_done = False
+                    k = 0
 
-                k = 0
+                    with open(src_path, 'r') as ifp,\
+                            open(cor_src_path, 'w') as ofp:
+                        for line in ifp:
+                            if middle:
+                                if k == err_line_number - 3 and comment_pattern.match(line):
+                                    ofp.write('end\n')
+                                    is_done = True
+                                elif k == err_line_number - 2 and not is_done:
+                                    ofp.write('end\n')
+                            ofp.write(line)
+                            k += 1
+                        if not middle:
+                            ofp.write('end\n')
 
-                with open(src_path, 'r') as ifp,\
-                        open(cor_src_path, 'w') as ofp:
-                    for line in ifp:
-                        if middle:
-                            if k == err_line_number - 3 and comment_pattern.match(line):
-                                ofp.write('end\n')
-                                is_done = True
-                            elif k == err_line_number - 2 and not is_done:
-                                ofp.write('end\n')
-                        ofp.write(line)
-                        k += 1
-                    if not middle:
-                        ofp.write('end\n')
+                    if cor_test:
+                        os.rename(cor_src_path, src_path)
 
-                if cor_test:
-                    os.rename(cor_src_path, src_path)
+                    if self.__mr_debug:
+                        print('DIV-MR-EXIT #3-9')
 
-                if self.__mr_debug:
-                    print('DIV-MR-EXIT #3-9')
-
-                corrected = True
+                    corrected = True
 
             if i == err_line_number - 1 and amber_missing_end:
 
-                dir_path = os.path.dirname(src_path)
+                cor_src_path, cor_test = self.__getCorrectedMRFilePath(src_path)
 
-                for div_file_name in os.listdir(dir_path):
-                    if os.path.isfile(os.path.join(dir_path, div_file_name))\
-                       and (div_file_name.endswith('-div_src.mr') or div_file_name.endswith('-div_dst.mr')):
-                        os.remove(os.path.join(dir_path, div_file_name))
+                if cor_src_path is not None:
 
-                src_file_name = os.path.basename(src_path)
-                cor_test = '-corrected' in src_file_name
-                if cor_test:
-                    cor_src_path = src_path + '~'
-                else:
-                    if src_path.endswith('.mr'):
-                        cor_src_path = re.sub(r'\-trimmed$', '', os.path.splitext(src_path)[0]) + '-corrected.mr'
-                    else:
-                        cor_src_path = re.sub(r'\-trimmed$', '', src_path) + '-corrected'
+                    with open(src_path, 'r') as ifp,\
+                            open(cor_src_path, 'w') as ofp:
+                        for line in ifp:
+                            ofp.write(line)
+                        ofp.write('&end\n')
 
-                with open(src_path, 'r') as ifp,\
-                        open(cor_src_path, 'w') as ofp:
-                    for line in ifp:
-                        ofp.write(line)
-                    ofp.write('&end\n')
+                    if cor_test:
+                        os.rename(cor_src_path, src_path)
 
-                if cor_test:
-                    os.rename(cor_src_path, src_path)
+                    if self.__mr_debug:
+                        print('DIV-MR-EXIT #3-10')
 
-                if self.__mr_debug:
-                    print('DIV-MR-EXIT #3-10')
-
-                corrected = True
+                    corrected = True
 
             if not corrected and not concat_xplor_assi and not concat_amber_rst and (j + j_offset) in (0, err_line_number - 1):
 
@@ -9316,41 +9224,28 @@ class NmrDpUtility:
 
                 if not has_lexer_error:
 
-                    dir_path = os.path.dirname(src_path)
+                    cor_src_path, cor_test = self.__getCorrectedMRFilePath(src_path)
 
-                    for div_file_name in os.listdir(dir_path):
-                        if os.path.isfile(os.path.join(dir_path, div_file_name))\
-                           and (div_file_name.endswith('-div_src.mr') or div_file_name.endswith('-div_dst.mr')):
-                            os.remove(os.path.join(dir_path, div_file_name))
+                    if cor_src_path is not None:
 
-                    src_file_name = os.path.basename(src_path)
-                    cor_test = '-corrected' in src_file_name
-                    if cor_test:
-                        cor_src_path = src_path + '~'
-                    else:
-                        if src_path.endswith('.mr'):
-                            cor_src_path = re.sub(r'\-trimmed$', '', os.path.splitext(src_path)[0]) + '-corrected.mr'
-                        else:
-                            cor_src_path = re.sub(r'\-trimmed$', '', src_path) + '-corrected'
+                        k = 0
 
-                    k = 0
+                        with open(src_path, 'r') as ifp,\
+                                open(cor_src_path, 'w') as ofp:
+                            for line in ifp:
+                                if k == offset:
+                                    ofp.write('#' + line)
+                                else:
+                                    ofp.write(line)
+                                k += 1
 
-                    with open(src_path, 'r') as ifp,\
-                            open(cor_src_path, 'w') as ofp:
-                        for line in ifp:
-                            if k == offset:
-                                ofp.write('#' + line)
-                            else:
-                                ofp.write(line)
-                            k += 1
+                        if cor_test:
+                            os.rename(cor_src_path, src_path)
 
-                    if cor_test:
-                        os.rename(cor_src_path, src_path)
+                        if self.__mr_debug:
+                            print('DIV-MR-EXIT #3-11')
 
-                    if self.__mr_debug:
-                        print('DIV-MR-EXIT #3-11')
-
-                    corrected = True
+                        corrected = True
 
             if os.path.exists(div_src_file):
                 os.remove(div_src_file)
@@ -9372,6 +9267,9 @@ class NmrDpUtility:
             if self.__mr_debug:
                 print('DIV-MR-EXIT #4')
 
+            return False
+
+        if not os.path.exists(div_try_file):
             return False
 
         file_name = os.path.basename(div_try_file)
@@ -9595,7 +9493,11 @@ class NmrDpUtility:
         div_try_file = src_basename + '-div_try.mr'
         div_dst_file = src_basename + '-div_dst.mr'
 
-        if err_desc in self.__peel_mr_error_message:
+        if any(_err_desc for _err_desc in self.__peel_mr_error_message
+               if err_desc['file_path'] == _err_desc['file_path']
+               and err_desc['line_number'] == _err_desc['line_number']
+               and err_desc['column_position'] == _err_desc['column_position']
+               and err_desc['message'] == _err_desc['message']):
             if os.path.exists(div_src_file):
                 os.remove(div_src_file)
             if os.path.exists(div_dst_file):
@@ -9680,38 +9582,25 @@ class NmrDpUtility:
 
                 if has_end_tag:
 
-                    dir_path = os.path.dirname(src_path)
+                    cor_src_path, cor_test = self.__getCorrectedMRFilePath(src_path)
 
-                    for div_file_name in os.listdir(dir_path):
-                        if os.path.isfile(os.path.join(dir_path, div_file_name))\
-                           and (div_file_name.endswith('-div_src.mr') or div_file_name.endswith('-div_dst.mr')):
-                            os.remove(os.path.join(dir_path, div_file_name))
+                    if cor_src_path is not None:
 
-                    src_file_name = os.path.basename(src_path)
-                    cor_test = '-corrected' in src_file_name
-                    if cor_test:
-                        cor_src_path = src_path + '~'
-                    else:
-                        if src_path.endswith('.mr'):
-                            cor_src_path = re.sub(r'\-trimmed$', '', os.path.splitext(src_path)[0]) + '-corrected.mr'
-                        else:
-                            cor_src_path = re.sub(r'\-trimmed$', '', src_path) + '-corrected'
+                        k = 0
 
-                    k = 0
+                        with open(src_path, 'r') as ifp,\
+                                open(cor_src_path, 'w') as ofp:
+                            for line in ifp:
+                                if k == _offset:
+                                    ofp.write('#' + line)
+                                else:
+                                    ofp.write(line)
+                                k += 1
 
-                    with open(src_path, 'r') as ifp,\
-                            open(cor_src_path, 'w') as ofp:
-                        for line in ifp:
-                            if k == _offset:
-                                ofp.write('#' + line)
-                            else:
-                                ofp.write(line)
-                            k += 1
+                        if cor_test:
+                            os.rename(cor_src_path, src_path)
 
-                    if cor_test:
-                        os.rename(cor_src_path, src_path)
-
-                    corrected = True
+                        corrected = True
 
             if amber_ends_wo_statement:
 
@@ -9729,38 +9618,25 @@ class NmrDpUtility:
 
                 if has_end_tag:
 
-                    dir_path = os.path.dirname(src_path)
+                    cor_src_path, cor_test = self.__getCorrectedMRFilePath(src_path)
 
-                    for div_file_name in os.listdir(dir_path):
-                        if os.path.isfile(os.path.join(dir_path, div_file_name))\
-                           and (div_file_name.endswith('-div_src.mr') or div_file_name.endswith('-div_dst.mr')):
-                            os.remove(os.path.join(dir_path, div_file_name))
+                    if cor_src_path is not None:
 
-                    src_file_name = os.path.basename(src_path)
-                    cor_test = '-corrected' in src_file_name
-                    if cor_test:
-                        cor_src_path = src_path + '~'
-                    else:
-                        if src_path.endswith('.mr'):
-                            cor_src_path = re.sub(r'\-trimmed$', '', os.path.splitext(src_path)[0]) + '-corrected.mr'
-                        else:
-                            cor_src_path = re.sub(r'\-trimmed$', '', src_path) + '-corrected'
+                        k = 0
 
-                    k = 0
+                        with open(src_path, 'r') as ifp,\
+                                open(cor_src_path, 'w') as ofp:
+                            for line in ifp:
+                                if k == _offset:
+                                    ofp.write('#' + line)
+                                else:
+                                    ofp.write(line)
+                                k += 1
 
-                    with open(src_path, 'r') as ifp,\
-                            open(cor_src_path, 'w') as ofp:
-                        for line in ifp:
-                            if k == _offset:
-                                ofp.write('#' + line)
-                            else:
-                                ofp.write(line)
-                            k += 1
+                        if cor_test:
+                            os.rename(cor_src_path, src_path)
 
-                    if cor_test:
-                        os.rename(cor_src_path, src_path)
-
-                    corrected = True
+                        corrected = True
 
         if err_column_position > 0 and not err_input[0:err_column_position].isspace():
             test_line = err_input[err_column_position:]
@@ -9895,6 +9771,9 @@ class NmrDpUtility:
 
             return False | corrected
 
+        if not os.path.exists(div_try_file):
+            return False
+
         file_name = os.path.basename(div_try_file)
 
         _, _, valid_types, possible_types = self.__detectOtherPossibleFormatAsErrorOfLegacyMR(div_try_file, file_name, 'nm-res-mr', [], True)
@@ -10000,17 +9879,6 @@ class NmrDpUtility:
         div_ext_file = src_basename + '-div_ext.mr'
         div_try_file = src_basename + '-div_try.mr'
         div_dst_file = src_basename + '-div_dst.mr'
-
-        # if err_desc in self.__divide_mr_error_message:
-        #     if os.path.exists(div_src_file):
-        #         os.remove(div_src_file)
-        #     if os.path.exists(div_dst_file):
-        #         os.remove(div_dst_file)
-        #     if os.path.exists(div_ext_file):
-        #         os.remove(div_ext_file)
-        #     return False
-
-        # self.__divide_mr_error_message.append(err_desc)
 
         if self.__mr_debug:
             print('DO-DIV-MR')
@@ -10133,41 +10001,28 @@ class NmrDpUtility:
 
                 if has_end_tag:
 
-                    dir_path = os.path.dirname(src_path)
+                    cor_src_path, cor_test = self.__getCorrectedMRFilePath(src_path)
 
-                    for div_file_name in os.listdir(dir_path):
-                        if os.path.isfile(os.path.join(dir_path, div_file_name))\
-                           and (div_file_name.endswith('-div_src.mr') or div_file_name.endswith('-div_dst.mr')):
-                            os.remove(os.path.join(dir_path, div_file_name))
+                    if cor_src_path is not None:
 
-                    src_file_name = os.path.basename(src_path)
-                    cor_test = '-corrected' in src_file_name
-                    if cor_test:
-                        cor_src_path = src_path + '~'
-                    else:
-                        if src_path.endswith('.mr'):
-                            cor_src_path = re.sub(r'\-trimmed$', '', os.path.splitext(src_path)[0]) + '-corrected.mr'
-                        else:
-                            cor_src_path = re.sub(r'\-trimmed$', '', src_path) + '-corrected'
+                        k = 0
 
-                    k = 0
+                        with open(src_path, 'r') as ifp,\
+                                open(cor_src_path, 'w') as ofp:
+                            for line in ifp:
+                                if k == offset:
+                                    ofp.write('#' + line)
+                                else:
+                                    ofp.write(line)
+                                k += 1
 
-                    with open(src_path, 'r') as ifp,\
-                            open(cor_src_path, 'w') as ofp:
-                        for line in ifp:
-                            if k == offset:
-                                ofp.write('#' + line)
-                            else:
-                                ofp.write(line)
-                            k += 1
+                        if cor_test:
+                            os.rename(cor_src_path, src_path)
 
-                    if cor_test:
-                        os.rename(cor_src_path, src_path)
+                        if self.__mr_debug:
+                            print('DO-DIV-MR-EXIT #2-1')
 
-                    if self.__mr_debug:
-                        print('DO-DIV-MR-EXIT #2-1')
-
-                    corrected = True
+                        corrected = True
 
             if amber_ends_wo_statement:
 
@@ -10185,41 +10040,28 @@ class NmrDpUtility:
 
                 if has_end_tag:
 
-                    dir_path = os.path.dirname(src_path)
+                    cor_src_path, cor_test = self.__getCorrectedMRFilePath(src_path)
 
-                    for div_file_name in os.listdir(dir_path):
-                        if os.path.isfile(os.path.join(dir_path, div_file_name))\
-                           and (div_file_name.endswith('-div_src.mr') or div_file_name.endswith('-div_dst.mr')):
-                            os.remove(os.path.join(dir_path, div_file_name))
+                    if cor_src_path is not None:
 
-                    src_file_name = os.path.basename(src_path)
-                    cor_test = '-corrected' in src_file_name
-                    if cor_test:
-                        cor_src_path = src_path + '~'
-                    else:
-                        if src_path.endswith('.mr'):
-                            cor_src_path = re.sub(r'\-trimmed$', '', os.path.splitext(src_path)[0]) + '-corrected.mr'
-                        else:
-                            cor_src_path = re.sub(r'\-trimmed$', '', src_path) + '-corrected'
+                        k = 0
 
-                    k = 0
+                        with open(src_path, 'r') as ifp,\
+                                open(cor_src_path, 'w') as ofp:
+                            for line in ifp:
+                                if k == offset:
+                                    ofp.write('#' + line)
+                                else:
+                                    ofp.write(line)
+                                k += 1
 
-                    with open(src_path, 'r') as ifp,\
-                            open(cor_src_path, 'w') as ofp:
-                        for line in ifp:
-                            if k == offset:
-                                ofp.write('#' + line)
-                            else:
-                                ofp.write(line)
-                            k += 1
+                        if cor_test:
+                            os.rename(cor_src_path, src_path)
 
-                    if cor_test:
-                        os.rename(cor_src_path, src_path)
+                        if self.__mr_debug:
+                            print('DO-DIV-MR-EXIT #2-2')
 
-                    if self.__mr_debug:
-                        print('DO-DIV-MR-EXIT #2-2')
-
-                    corrected = True
+                        corrected = True
 
             if cyana_ambig_restraint:
 
@@ -10237,43 +10079,30 @@ class NmrDpUtility:
 
                 if has_amb_tag:
 
-                    dir_path = os.path.dirname(src_path)
+                    cor_src_path, cor_test = self.__getCorrectedMRFilePath(src_path)
 
-                    for div_file_name in os.listdir(dir_path):
-                        if os.path.isfile(os.path.join(dir_path, div_file_name))\
-                           and (div_file_name.endswith('-div_src.mr') or div_file_name.endswith('-div_dst.mr')):
-                            os.remove(os.path.join(dir_path, div_file_name))
+                    if cor_src_path is not None:
 
-                    src_file_name = os.path.basename(src_path)
-                    cor_test = '-corrected' in src_file_name
-                    if cor_test:
-                        cor_src_path = src_path + '~'
-                    else:
-                        if src_path.endswith('.mr'):
-                            cor_src_path = re.sub(r'\-trimmed$', '', os.path.splitext(src_path)[0]) + '-corrected.mr'
-                        else:
-                            cor_src_path = re.sub(r'\-trimmed$', '', src_path) + '-corrected'
+                        k = 0
 
-                    k = 0
+                        with open(src_path, 'r') as ifp,\
+                                open(cor_src_path, 'w') as ofp:
+                            for line in ifp:
+                                if k < offset:
+                                    ofp.write(line)
+                                elif cyana_ambig_pattern.search(line) and not comment_pattern.match(line):
+                                    ofp.write('#' + line)
+                                else:
+                                    ofp.write(line)
+                                k += 1
 
-                    with open(src_path, 'r') as ifp,\
-                            open(cor_src_path, 'w') as ofp:
-                        for line in ifp:
-                            if k < offset:
-                                ofp.write(line)
-                            elif cyana_ambig_pattern.search(line) and not comment_pattern.match(line):
-                                ofp.write('#' + line)
-                            else:
-                                ofp.write(line)
-                            k += 1
+                        if cor_test:
+                            os.rename(cor_src_path, src_path)
 
-                    if cor_test:
-                        os.rename(cor_src_path, src_path)
+                        if self.__mr_debug:
+                            print('DO-DIV-MR-EXIT #2-3')
 
-                    if self.__mr_debug:
-                        print('DO-DIV-MR-EXIT #2-3')
-
-                    corrected = True
+                        corrected = True
 
             if concat_xplor_assi:
 
@@ -10300,49 +10129,36 @@ class NmrDpUtility:
 
                         if not has_lexer_error:
 
-                            dir_path = os.path.dirname(src_path)
+                            cor_src_path, cor_test = self.__getCorrectedMRFilePath(src_path)
 
-                            for div_file_name in os.listdir(dir_path):
-                                if os.path.isfile(os.path.join(dir_path, div_file_name))\
-                                   and (div_file_name.endswith('-div_src.mr') or div_file_name.endswith('-div_dst.mr')):
-                                    os.remove(os.path.join(dir_path, div_file_name))
+                            if cor_src_path is not None:
 
-                            src_file_name = os.path.basename(src_path)
-                            cor_test = '-corrected' in src_file_name
-                            if cor_test:
-                                cor_src_path = src_path + '~'
-                            else:
-                                if src_path.endswith('.mr'):
-                                    cor_src_path = re.sub(r'\-trimmed$', '', os.path.splitext(src_path)[0]) + '-corrected.mr'
-                                else:
-                                    cor_src_path = re.sub(r'\-trimmed$', '', src_path) + '-corrected'
+                                k = 0
 
-                            k = 0
-
-                            with open(src_path, 'r') as ifp,\
-                                    open(cor_src_path, 'w') as ofp:
-                                for line in ifp:
-                                    if k == offset:
-                                        if typo_for_comment_out:
-                                            g = possible_typo_for_comment_out_pattern.search(test_line).groups()
-                                            if g[0] == '1':
-                                                test_line = re.sub(r'1', '!', test_line)
+                                with open(src_path, 'r') as ifp,\
+                                        open(cor_src_path, 'w') as ofp:
+                                    for line in ifp:
+                                        if k == offset:
+                                            if typo_for_comment_out:
+                                                g = possible_typo_for_comment_out_pattern.search(test_line).groups()
+                                                if g[0] == '1':
+                                                    test_line = re.sub(r'1', '!', test_line)
+                                                else:
+                                                    test_line = re.sub(r'3', '#', test_line)
+                                                ofp.write(f"{test_line}{err_input[assi_code_index:]}\n")
                                             else:
-                                                test_line = re.sub(r'3', '#', test_line)
-                                            ofp.write(f"{test_line}{err_input[assi_code_index:]}\n")
+                                                ofp.write(f"{test_line}\n{err_input[assi_code_index:]}\n")
                                         else:
-                                            ofp.write(f"{test_line}\n{err_input[assi_code_index:]}\n")
-                                    else:
-                                        ofp.write(line)
-                                    k += 1
+                                            ofp.write(line)
+                                        k += 1
 
-                            if cor_test:
-                                os.rename(cor_src_path, src_path)
+                                if cor_test:
+                                    os.rename(cor_src_path, src_path)
 
-                            if self.__mr_debug:
-                                print('DO-DIV-MR-EXIT #2-4')
+                                if self.__mr_debug:
+                                    print('DO-DIV-MR-EXIT #2-4')
 
-                            corrected = True
+                                corrected = True
 
             if concat_amber_rst:
 
@@ -10366,49 +10182,36 @@ class NmrDpUtility:
 
                         if not has_lexer_error:
 
-                            dir_path = os.path.dirname(src_path)
+                            cor_src_path, cor_test = self.__getCorrectedMRFilePath(src_path)
 
-                            for div_file_name in os.listdir(dir_path):
-                                if os.path.isfile(os.path.join(dir_path, div_file_name))\
-                                   and (div_file_name.endswith('-div_src.mr') or div_file_name.endswith('-div_dst.mr')):
-                                    os.remove(os.path.join(dir_path, div_file_name))
+                            if cor_src_path is not None:
 
-                            src_file_name = os.path.basename(src_path)
-                            cor_test = '-corrected' in src_file_name
-                            if cor_test:
-                                cor_src_path = src_path + '~'
-                            else:
-                                if src_path.endswith('.mr'):
-                                    cor_src_path = re.sub(r'\-trimmed$', '', os.path.splitext(src_path)[0]) + '-corrected.mr'
-                                else:
-                                    cor_src_path = re.sub(r'\-trimmed$', '', src_path) + '-corrected'
+                                k = 0
 
-                            k = 0
-
-                            with open(src_path, 'r') as ifp,\
-                                    open(cor_src_path, 'w') as ofp:
-                                for line in ifp:
-                                    if k == offset:
-                                        if typo_for_comment_out:
-                                            g = possible_typo_for_comment_out_pattern.search(test_line).groups()
-                                            if g[0] == '1':
-                                                test_line = re.sub(r'1', '!', test_line)
+                                with open(src_path, 'r') as ifp,\
+                                        open(cor_src_path, 'w') as ofp:
+                                    for line in ifp:
+                                        if k == offset:
+                                            if typo_for_comment_out:
+                                                g = possible_typo_for_comment_out_pattern.search(test_line).groups()
+                                                if g[0] == '1':
+                                                    test_line = re.sub(r'1', '!', test_line)
+                                                else:
+                                                    test_line = re.sub(r'3', '#', test_line)
+                                                ofp.write(f"{test_line}{err_input[assi_code_index:]}\n")
                                             else:
-                                                test_line = re.sub(r'3', '#', test_line)
-                                            ofp.write(f"{test_line}{err_input[assi_code_index:]}\n")
+                                                ofp.write(f"{test_line}\n{err_input[rst_code_index:]}\n")
                                         else:
-                                            ofp.write(f"{test_line}\n{err_input[rst_code_index:]}\n")
-                                    else:
-                                        ofp.write(line)
-                                    k += 1
+                                            ofp.write(line)
+                                        k += 1
 
-                            if cor_test:
-                                os.rename(cor_src_path, src_path)
+                                if cor_test:
+                                    os.rename(cor_src_path, src_path)
 
-                            if self.__mr_debug:
-                                print('DO-DIV-MR-EXIT #2-5')
+                                if self.__mr_debug:
+                                    print('DO-DIV-MR-EXIT #2-5')
 
-                            corrected = True
+                                corrected = True
 
             if concat_comment:
 
@@ -10442,120 +10245,81 @@ class NmrDpUtility:
 
                     if not has_lexer_error and not has_parser_error:
 
-                        dir_path = os.path.dirname(src_path)
+                        cor_src_path, cor_test = self.__getCorrectedMRFilePath(src_path)
 
-                        for div_file_name in os.listdir(dir_path):
-                            if os.path.isfile(os.path.join(dir_path, div_file_name))\
-                               and (div_file_name.endswith('-div_src.mr') or div_file_name.endswith('-div_dst.mr')):
-                                os.remove(os.path.join(dir_path, div_file_name))
+                        if cor_src_path is not None:
 
-                        src_file_name = os.path.basename(src_path)
-                        cor_test = '-corrected' in src_file_name
-                        if cor_test:
-                            cor_src_path = src_path + '~'
-                        else:
-                            if src_path.endswith('.mr'):
-                                cor_src_path = re.sub(r'\-trimmed$', '', os.path.splitext(src_path)[0]) + '-corrected.mr'
-                            else:
-                                cor_src_path = re.sub(r'\-trimmed$', '', src_path) + '-corrected'
+                            k = 0
 
-                        k = 0
+                            with open(src_path, 'r') as ifp,\
+                                    open(cor_src_path, 'w') as ofp:
+                                for line in ifp:
+                                    if k == offset:
+                                        ofp.write(f"{test_line} {err_input[comment_code_index:]}\n")
+                                    else:
+                                        ofp.write(line)
+                                    k += 1
 
-                        with open(src_path, 'r') as ifp,\
-                                open(cor_src_path, 'w') as ofp:
-                            for line in ifp:
-                                if k == offset:
-                                    ofp.write(f"{test_line} {err_input[comment_code_index:]}\n")
-                                else:
-                                    ofp.write(line)
-                                k += 1
+                            if cor_test:
+                                os.rename(cor_src_path, src_path)
 
-                        if cor_test:
-                            os.rename(cor_src_path, src_path)
+                            if self.__mr_debug:
+                                print('DO-DIV-MR-EXIT #2-6')
 
-                        if self.__mr_debug:
-                            print('DO-DIV-MR-EXIT #2-6')
-
-                        corrected = True
+                            corrected = True
 
             if err_line_number - 1 in (i, j) and xplor_missing_end:
 
-                dir_path = os.path.dirname(src_path)
+                cor_src_path, cor_test = self.__getCorrectedMRFilePath(src_path)
 
-                for div_file_name in os.listdir(dir_path):
-                    if os.path.isfile(os.path.join(dir_path, div_file_name))\
-                       and (div_file_name.endswith('-div_src.mr') or div_file_name.endswith('-div_dst.mr')):
-                        os.remove(os.path.join(dir_path, div_file_name))
+                if cor_src_path is not None:
 
-                src_file_name = os.path.basename(src_path)
-                cor_test = '-corrected' in src_file_name
-                if cor_test:
-                    cor_src_path = src_path + '~'
-                else:
-                    if src_path.endswith('.mr'):
-                        cor_src_path = re.sub(r'\-trimmed$', '', os.path.splitext(src_path)[0]) + '-corrected.mr'
-                    else:
-                        cor_src_path = re.sub(r'\-trimmed$', '', src_path) + '-corrected'
+                    middle = (i != err_line_number - 1)
+                    is_done = False
 
-                middle = (i != err_line_number - 1)
-                is_done = False
+                    k = 0
 
-                k = 0
+                    with open(src_path, 'r') as ifp,\
+                            open(cor_src_path, 'w') as ofp:
+                        for line in ifp:
+                            if middle:
+                                if k == err_line_number - 2 and comment_pattern.match(line):
+                                    ofp.write('end\n')
+                                    is_done = True
+                                elif k == err_line_number - 1 and not is_done:
+                                    ofp.write('end\n')
+                            ofp.write(line)
+                            k += 1
+                        if not middle:
+                            ofp.write('end\n')
 
-                with open(src_path, 'r') as ifp,\
-                        open(cor_src_path, 'w') as ofp:
-                    for line in ifp:
-                        if middle:
-                            if k == err_line_number - 2 and comment_pattern.match(line):
-                                ofp.write('end\n')
-                                is_done = True
-                            elif k == err_line_number - 1 and not is_done:
-                                ofp.write('end\n')
-                        ofp.write(line)
-                        k += 1
-                    if not middle:
-                        ofp.write('end\n')
+                    if cor_test:
+                        os.rename(cor_src_path, src_path)
 
-                if cor_test:
-                    os.rename(cor_src_path, src_path)
+                    if self.__mr_debug:
+                        print('DO-DIV-MR-EXIT #2-7')
 
-                if self.__mr_debug:
-                    print('DO-DIV-MR-EXIT #2-7')
-
-                corrected = True
+                    corrected = True
 
             if i == err_line_number - 1 and amber_missing_end:
 
-                dir_path = os.path.dirname(src_path)
+                cor_src_path, cor_test = self.__getCorrectedMRFilePath(src_path)
 
-                for div_file_name in os.listdir(dir_path):
-                    if os.path.isfile(os.path.join(dir_path, div_file_name))\
-                       and (div_file_name.endswith('-div_src.mr') or div_file_name.endswith('-div_dst.mr')):
-                        os.remove(os.path.join(dir_path, div_file_name))
+                if cor_src_path is not None:
 
-                src_file_name = os.path.basename(src_path)
-                cor_test = '-corrected' in src_file_name
-                if cor_test:
-                    cor_src_path = src_path + '~'
-                else:
-                    if src_path.endswith('.mr'):
-                        cor_src_path = re.sub(r'\-trimmed$', '', os.path.splitext(src_path)[0]) + '-corrected.mr'
-                    else:
-                        cor_src_path = re.sub(r'\-trimmed$', '', src_path) + '-corrected'
+                    with open(src_path, 'r') as ifp,\
+                            open(cor_src_path, 'w') as ofp:
+                        for line in ifp:
+                            ofp.write(line)
+                        ofp.write('&end\n')
 
-                with open(src_path, 'r') as ifp,\
-                        open(cor_src_path, 'w') as ofp:
-                    for line in ifp:
-                        ofp.write(line)
-                    ofp.write('&end\n')
+                    if cor_test:
+                        os.rename(cor_src_path, src_path)
 
-                if cor_test:
-                    os.rename(cor_src_path, src_path)
+                    if self.__mr_debug:
+                        print('DO-DIV-MR-EXIT #2-8')
 
-                if self.__mr_debug:
-                    print('DO-DIV-MR-EXIT #2-8')
-
-                corrected = True
+                    corrected = True
 
             if not corrected and not concat_xplor_assi and not concat_amber_rst and j in (0, err_line_number - 1):
 
@@ -10593,41 +10357,28 @@ class NmrDpUtility:
 
                 if not has_lexer_error:
 
-                    dir_path = os.path.dirname(src_path)
+                    cor_src_path, cor_test = self.__getCorrectedMRFilePath(src_path)
 
-                    for div_file_name in os.listdir(dir_path):
-                        if os.path.isfile(os.path.join(dir_path, div_file_name))\
-                           and (div_file_name.endswith('-div_src.mr') or div_file_name.endswith('-div_dst.mr')):
-                            os.remove(os.path.join(dir_path, div_file_name))
+                    if cor_src_path is not None:
 
-                    src_file_name = os.path.basename(src_path)
-                    cor_test = '-corrected' in src_file_name
-                    if cor_test:
-                        cor_src_path = src_path + '~'
-                    else:
-                        if src_path.endswith('.mr'):
-                            cor_src_path = re.sub(r'\-trimmed$', '', os.path.splitext(src_path)[0]) + '-corrected.mr'
-                        else:
-                            cor_src_path = re.sub(r'\-trimmed$', '', src_path) + '-corrected'
+                        k = 0
 
-                    k = 0
+                        with open(src_path, 'r') as ifp,\
+                                open(cor_src_path, 'w') as ofp:
+                            for line in ifp:
+                                if k == offset:
+                                    ofp.write('#' + line)
+                                else:
+                                    ofp.write(line)
+                                k += 1
 
-                    with open(src_path, 'r') as ifp,\
-                            open(cor_src_path, 'w') as ofp:
-                        for line in ifp:
-                            if k == offset:
-                                ofp.write('#' + line)
-                            else:
-                                ofp.write(line)
-                            k += 1
+                        if cor_test:
+                            os.rename(cor_src_path, src_path)
 
-                    if cor_test:
-                        os.rename(cor_src_path, src_path)
+                        if self.__mr_debug:
+                            print('DO-DIV-MR-EXIT #2-9')
 
-                    if self.__mr_debug:
-                        print('DO-DIV-MR-EXIT #2-9')
-
-                    corrected = True
+                        corrected = True
 
             if os.path.exists(div_src_file):
                 os.remove(div_src_file)
@@ -10646,6 +10397,9 @@ class NmrDpUtility:
             if self.__mr_debug:
                 print('DO-DIV-MR-EXIT #3')
 
+            return False
+
+        if not os.path.exists(div_try_file):
             return False
 
         file_name = os.path.basename(div_try_file)

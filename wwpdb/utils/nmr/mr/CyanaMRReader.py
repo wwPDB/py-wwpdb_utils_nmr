@@ -95,6 +95,8 @@ class CyanaMRReader:
             @return: CyanaMRParserListener for success or None otherwise, ParserErrorListener, LexerErrorListener.
         """
 
+        ifp = None
+
         try:
 
             if isFilePath:
@@ -184,7 +186,7 @@ class CyanaMRReader:
             return None, None, None
 
         finally:
-            if isFilePath:
+            if isFilePath and ifp is not None:
                 ifp.close()
 
 

@@ -89,6 +89,8 @@ class AmberMRReader:
             @return: AmberMRParserListener for success or None otherwise, ParserErrorListener, LexerErrorListener.
         """
 
+        ifp = None
+
         try:
 
             if isFilePath:
@@ -191,7 +193,7 @@ class AmberMRReader:
                 else:
                     break
 
-                if isFilePath:
+                if isFilePath and ifp is not None:
                     ifp.close()
 
             return listener, parser_error_listener, lexer_error_listener
@@ -202,7 +204,7 @@ class AmberMRReader:
             return None, None, None
 
         finally:
-            if isFilePath:
+            if isFilePath and ifp is not None:
                 ifp.close()
 
 

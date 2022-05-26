@@ -87,6 +87,8 @@ class CnsMRReader:
             @return: CnsMRParserListener for success or None otherwise, ParserErrorListener, LexerErrorListener.
         """
 
+        ifp = None
+
         try:
 
             if isFilePath:
@@ -175,12 +177,12 @@ class CnsMRReader:
             return None, None, None
 
         finally:
-            if isFilePath:
+            if isFilePath and ifp is not None:
                 ifp.close()
 
 
 if __name__ == "__main__":
-    reader = XplorMRReader(True)
+    reader = CnsMRReader(True)
     reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/4by9/4by9-trimmed.mr',
                  '../../tests-nmr/mock-data-remediation/4by9/4by9.cif')

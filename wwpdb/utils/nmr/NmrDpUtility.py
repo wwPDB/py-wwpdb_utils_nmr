@@ -8762,7 +8762,10 @@ class NmrDpUtility:
 
         offset += err_line_number - 1
 
-        if (xplor_missing_end or xplor_ends_wo_statement or xplor_l_paren_wo_assi
+        xplor_missing_end_before = xplor_file_type and err_message.startswith(mismatched_input_err_msg) and bool(xplor_assi_pattern.search(prev_input))
+
+        if (xplor_missing_end or xplor_ends_wo_statement
+                or xplor_l_paren_wo_assi or xplor_missing_end_before
                 or amber_missing_end or amber_ends_wo_statement
                 or cyana_ambig_restraint
                 or concat_xplor_assi or concat_amber_rst
@@ -9198,6 +9201,52 @@ class NmrDpUtility:
 
                 corrected = True
 
+            if err_line_number - 1 in (i, j + j_offset) and xplor_missing_end_before:
+
+                dir_path = os.path.dirname(src_path)
+
+                for div_file_name in os.listdir(dir_path):
+                    if os.path.isfile(os.path.join(dir_path, div_file_name))\
+                       and (div_file_name.endswith('-div_src.mr') or div_file_name.endswith('-div_dst.mr')):
+                        os.remove(os.path.join(dir_path, div_file_name))
+
+                src_file_name = os.path.basename(src_path)
+                cor_test = '-corrected' in src_file_name
+                if cor_test:
+                    cor_src_path = src_path + '~'
+                else:
+                    if src_path.endswith('.mr'):
+                        cor_src_path = re.sub(r'\-trimmed$', '', os.path.splitext(src_path)[0]) + '-corrected.mr'
+                    else:
+                        cor_src_path = re.sub(r'\-trimmed$', '', src_path) + '-corrected'
+
+                middle = (i != err_line_number - 1)
+                is_done = False
+
+                k = 0
+
+                with open(src_path, 'r') as ifp,\
+                        open(cor_src_path, 'w') as ofp:
+                    for line in ifp:
+                        if middle:
+                            if k == err_line_number - 3 and comment_pattern.match(line):
+                                ofp.write('end\n')
+                                is_done = True
+                            elif k == err_line_number - 2 and not is_done:
+                                ofp.write('end\n')
+                        ofp.write(line)
+                        k += 1
+                    if not middle:
+                        ofp.write('end\n')
+
+                if cor_test:
+                    os.rename(cor_src_path, src_path)
+
+                if self.__mr_debug:
+                    print('DIV-MR-EXIT #3-9')
+
+                corrected = True
+
             if i == err_line_number - 1 and amber_missing_end:
 
                 dir_path = os.path.dirname(src_path)
@@ -9227,7 +9276,7 @@ class NmrDpUtility:
                     os.rename(cor_src_path, src_path)
 
                 if self.__mr_debug:
-                    print('DIV-MR-EXIT #3-9')
+                    print('DIV-MR-EXIT #3-10')
 
                 corrected = True
 
@@ -9299,7 +9348,7 @@ class NmrDpUtility:
                         os.rename(cor_src_path, src_path)
 
                     if self.__mr_debug:
-                        print('DIV-MR-EXIT #3-10')
+                        print('DIV-MR-EXIT #3-11')
 
                     corrected = True
 
@@ -10222,7 +10271,7 @@ class NmrDpUtility:
                         os.rename(cor_src_path, src_path)
 
                     if self.__mr_debug:
-                        print('DO-DIV-MR-EXIT #2-4')
+                        print('DO-DIV-MR-EXIT #2-3')
 
                     corrected = True
 
@@ -10291,7 +10340,7 @@ class NmrDpUtility:
                                 os.rename(cor_src_path, src_path)
 
                             if self.__mr_debug:
-                                print('DO-DIV-MR-EXIT #2-5')
+                                print('DO-DIV-MR-EXIT #2-4')
 
                             corrected = True
 
@@ -10357,7 +10406,7 @@ class NmrDpUtility:
                                 os.rename(cor_src_path, src_path)
 
                             if self.__mr_debug:
-                                print('DO-DIV-MR-EXIT #2-6')
+                                print('DO-DIV-MR-EXIT #2-5')
 
                             corrected = True
 
@@ -10425,7 +10474,7 @@ class NmrDpUtility:
                             os.rename(cor_src_path, src_path)
 
                         if self.__mr_debug:
-                            print('DO-DIV-MR-EXIT #2-7')
+                            print('DO-DIV-MR-EXIT #2-6')
 
                         corrected = True
 
@@ -10471,7 +10520,7 @@ class NmrDpUtility:
                     os.rename(cor_src_path, src_path)
 
                 if self.__mr_debug:
-                    print('DO-DIV-MR-EXIT #2-8')
+                    print('DO-DIV-MR-EXIT #2-7')
 
                 corrected = True
 
@@ -10504,7 +10553,7 @@ class NmrDpUtility:
                     os.rename(cor_src_path, src_path)
 
                 if self.__mr_debug:
-                    print('DO-DIV-MR-EXIT #2-9')
+                    print('DO-DIV-MR-EXIT #2-8')
 
                 corrected = True
 
@@ -10576,7 +10625,7 @@ class NmrDpUtility:
                         os.rename(cor_src_path, src_path)
 
                     if self.__mr_debug:
-                        print('DO-DIV-MR-EXIT #2-10')
+                        print('DO-DIV-MR-EXIT #2-9')
 
                     corrected = True
 

@@ -333,6 +333,12 @@ Show:			'SHOW' -> pushMode(VECTOR_SHOW_MODE);	// Vector_show_property
 Evaluate_Lp:		'EVAL' 'U'? 'A'? 'T'? 'E'? ' '* L_paren -> pushMode(VECTOR_EXPR_MODE);
 								// ( evaluate_statement )
 
+/* Control statement - Syntax
+ See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
+*/
+For:			'FOR' -> pushMode(CTL_FOR_MODE);	// Symbol_name In ( Words ) Loop Loop_label { statements } End Loop Loop_label
+Loop:			'LOOP' -> pushMode(LOOP_LABEL_MODE);
+
 /* Three-dimentional vectors - Syntax
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
 */
@@ -502,7 +508,7 @@ mode VECTOR_FUNC_MODE; // vector function
 
 L_paren_VF:		'(' -> pushMode(VECTOR_EXPR_MODE);
 
-SPACE_VF:               [ \t\r\n]+ -> skip;
+SPACE_VF:		[ \t\r\n]+ -> skip;
 
 mode VECTOR_SHOW_MODE; // vector show
 
@@ -520,4 +526,24 @@ Sum_VS:			'SUM';
 Atom_properties_VS:	('B' | 'BCOM' 'P'? | 'CHAR' 'G'? 'E'? | 'DX' | 'DY' | 'DZ' | 'FBET' 'A'? | 'HARM' 'O'? 'N'? 'I'? 'C'? 'S'? | 'MASS' | 'Q' | 'QCOM' 'P'? | 'REFX' | 'REFY' | 'REFZ' | 'RMSD' | 'VX' | 'VY' | 'VZ' | 'X' | 'XCOM' 'P'? | 'Y' | 'YCOM' 'P'? | 'Z' | 'ZCOM' 'P'?);
 
 SPACE_VS:		[ \t\r\n]+ -> skip;
+
+mode CTL_FOR_MODE; // control statement for
+
+L_paren_CF:		'(';
+R_paren_CF:		')' -> popMode;
+In_CF:			'IN';
+
+Integer_CF:		'-'? DECIMAL;
+Real_CF:		('+' | '-')? (DECIMAL | DEC_DOT_DEC) ('E' ('+' | '-')? DECIMAL)?;
+Symbol_name_CF:		'$' SIMPLE_NAME;
+Simple_name_CF:		SIMPLE_NAME;
+
+SPACE_CF:		[ \t\r\n]+ -> skip;
+COMMENT_CF:		'{' (COMMENT_CF | .)*? '}' -> channel(HIDDEN);
+
+mode LOOP_LABEL_MODE; // loop label
+
+Simple_name_LL:		SIMPLE_NAME -> mode(DEFAULT_MODE);
+
+SPACE_LL:		[ \t\r\n]+ -> skip;
 

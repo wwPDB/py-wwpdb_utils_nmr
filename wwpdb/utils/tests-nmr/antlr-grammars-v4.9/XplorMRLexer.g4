@@ -624,6 +624,12 @@ Show:			S H O W -> pushMode(VECTOR_SHOW_MODE);		// Vector_show_property
 Evaluate_Lp:		E V A L U? A? T? E? ' '* L_paren -> pushMode(VECTOR_EXPR_MODE);
 								// ( evaluate_statement )
 
+/* XPLOR-NIH: Control statement - Syntax
+ See also https://nmr.cit.nih.gov/xplor-nih/doc/current/xplor/node24.html
+*/
+For:			F O R -> pushMode(CTL_FOR_MODE);	// Symbol_name In ( Words ) Loop Loop_label { statements } End Loop Loop_label
+Loop:			L O O P -> pushMode(LOOP_LABEL_MODE);
+
 /* Three-dimentional vectors - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node15.html
 */
@@ -826,4 +832,24 @@ Sum_VS:			S U M;
 Atom_properties_VS:	(B | B C O M P? | C H A R G? E? | D X | D Y | D Z | F B E T A? | H A R M O? N? I? C? S? | M A S S | Q | Q C O M P? | R E F X | R E F Y | R E F Z | R M S D | V X | V Y | V Z | X | X C O M P? | Y | Y C O M P? | Z | Z C O M P?);
 
 SPACE_VS:		[ \t\r\n]+ -> skip;
+
+mode CTL_FOR_MODE; // control statement for
+
+L_paren_CF:		'(';
+R_paren_CF:		')' -> popMode;
+In_CF:			I N;
+
+Integer_CF:		'-'? DECIMAL;
+Real_CF:		('+' | '-')? (DECIMAL | DEC_DOT_DEC) (E ('+' | '-')? DECIMAL)?;
+Symbol_name_CF:		'$' SIMPLE_NAME;
+Simple_name_CF:		SIMPLE_NAME;
+
+SPACE_CF:		[ \t\r\n]+ -> skip;
+COMMENT_CF:		'{' (COMMENT_CF | .)*? '}' -> channel(HIDDEN);
+
+mode LOOP_LABEL_MODE; // loop label
+
+Simple_name_LL:		SIMPLE_NAME -> mode(DEFAULT_MODE);
+
+SPACE_LL:		[ \t\r\n]+ -> skip;
 

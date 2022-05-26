@@ -188,6 +188,7 @@ noe_annotation:
 */
 dihedral_statement:
 	dihedral_assign |
+	dihedral_assign_loop |
 	Nassign Equ_op? Integer |
 	Reset |
 	Scale Equ_op? number_s;
@@ -719,7 +720,7 @@ factor:
 	Point L_paren Tail Equ_op? selection Comma? (Head Equ_op? selection)? R_paren Cut number_f |
 	Previous |
 	Pseudo |
-	Residue (Integers | Integer (Colon Integer)?) |
+	Residue (Integers | Integer (Colon Integer)? | Symbol_name) |
 	Resname (Simple_names | Simple_name (Colon Simple_name)?) |
 	factor Saround number_f |
 	SegIdentifier (Simple_names | Simple_name (Colon Simple_name)? | Double_quote_string (Colon Double_quote_string)?) |
@@ -770,10 +771,10 @@ vector_expression:
 	Atom_properties_VE (Equ_op_VE vector_operation)?;
 
 vector_operation:
-	vflc ((Add_op_VE | Sub_op_VE | Mul_op_VE | Div_op_VE | Exp_op_VE) vector_operation)*;
+	vflc ((Add_op_VE | Sub_op_VE | Mul_op_VE | Div_op_VE | Exp_op_VE) vector_operation)?;
 
 vflc:
-	Atom_properties_VE | vector_func_call | Integer_VE | Real_VE | Simple_name_VE | Double_quote_string_VE;
+	Atom_properties_VE | vector_func_call | Integer_VE | Real_VE | Simple_name_VE | Symbol_name_VE | Double_quote_string_VE;
 
 vector_func_call:
 	Abs_VE L_paren_VF vflc R_paren_VE |
@@ -808,5 +809,14 @@ evaluate_statement:
 	Evaluate_Lp Symbol_name_VE Equ_op_VE evaluate_operation R_paren_VE;
 
 evaluate_operation:
-	vflc ((Add_op_VE | Sub_op_VE | Mul_op_VE | Div_op_VE | Exp_op_VE) evaluate_operation)*;
+	vflc ((Add_op_VE | Sub_op_VE | Mul_op_VE | Div_op_VE | Exp_op_VE) evaluate_operation)?;
+
+/* XPLOR-NIH: Control statement - Syntax
+ See also https://nmr.cit.nih.gov/xplor-nih/doc/current/xplor/node24.html
+*/
+dihedral_assign_loop:
+	For Symbol_name_CF
+	In_CF L_paren_CF (Integer_CF* | Real_CF* | Simple_name_CF*) R_paren_CF Loop Simple_name_LL
+	(evaluate_statement | dihedral_assign)*
+	End Loop Simple_name_LL;
 

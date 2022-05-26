@@ -4623,6 +4623,14 @@ class CnsMRParserListener(ParseTreeListener):
                 elif ctx.Integers():
                     self.factor['seq_ids'] = [str(ctx.Integers())]
 
+                elif ctx.Symbol_name():
+                    symbol_name = str(ctx.Symbol_name())
+                    if symbol_name in self.evaluate:
+                        self.factor['seq_id'] = [int(self.evaluate[symbol_name])]
+                    else:
+                        self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
+                            f"The symbol {symbol_name!r} is not defined.\n"
+
             elif ctx.Resname():
                 if self.__sel_expr_debug:
                     print("  " * self.depth + "--> resname")
@@ -4997,6 +5005,13 @@ class CnsMRParserListener(ParseTreeListener):
                 self.__cur_vlfc_value = float(str(ctx.Integer_VE()))
             elif ctx.Simple_name_VE():
                 self.__cur_vlfc_value = str(ctx.Simple_name_VE())
+            elif ctx.Symbol_name_VE():
+                symbol_name = str(ctx.Symbol_name_VE())
+                if symbol_name in self.evaluate:
+                    self.__cur_vlfc_value = self.evaluate[symbol_name]
+                else:
+                    self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
+                        f"The symbol {symbol_name!r} is not defined.\n"
 
     # Enter a parse tree produced by CnsMRParser#vector_func_call.
     def enterVector_func_call(self, ctx: CnsMRParser.Vector_func_callContext):  # pylint: disable=unused-argument

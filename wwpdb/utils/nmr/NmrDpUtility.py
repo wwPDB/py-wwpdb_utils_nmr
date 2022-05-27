@@ -8794,7 +8794,7 @@ class NmrDpUtility:
 
         offset += err_line_number - 1
 
-        xplor_missing_end_before = xplor_file_type and err_message.startswith(mismatched_input_err_msg) and bool(xplor_assi_pattern.search(prev_input))
+        xplor_missing_end_before = xplor_file_type and err_message.startswith(mismatched_input_err_msg) and prev_input is not None and bool(xplor_assi_pattern.search(prev_input))
 
         if (xplor_missing_end or xplor_ends_wo_statement
                 or xplor_l_paren_wo_assi or xplor_missing_end_before
@@ -8891,7 +8891,8 @@ class NmrDpUtility:
                 if os.path.exists(div_try_file):
                     os.remove(div_try_file)
 
-                err_desc['previous_input'] = f"Do you need to comment out the succeeding lines as well?\n{prev_input}"
+                if prev_input is not None:
+                    err_desc['previous_input'] = f"Do you need to comment out the succeeding lines as well?\n{prev_input}"
 
                 if self.__mr_debug and not corrected:
                     print('DIV-MR-EXIT #3-3')
@@ -9319,7 +9320,7 @@ class NmrDpUtility:
             if os.path.exists(div_try_file):
                 os.remove(div_try_file)
 
-            if err_message.startswith(no_viable_alt_err_msg) or err_message.startswith(extraneous_input_err_msg):
+            if prev_input is not None and (err_message.startswith(no_viable_alt_err_msg) or err_message.startswith(extraneous_input_err_msg)):
                 if comment_pattern.match(prev_input):
                     err_desc['previous_input'] = f"Do you need to comment out the succeeding lines as well?\n{prev_input}"
                 elif not xplor_assi_after_or_tag and not xplor_assi_incompl_tag:
@@ -10555,7 +10556,7 @@ class NmrDpUtility:
                             prev_input = line
                             break
 
-                if err_message.startswith(extraneous_input_err_msg):
+                if prev_input is not None and err_message.startswith(extraneous_input_err_msg):
                     err_desc['previous_input'] = prev_input
 
                 os.remove(div_src_file)

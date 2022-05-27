@@ -50,7 +50,7 @@ def serializedATN():
         27,11,27,12,27,443,1,28,1,28,1,28,1,29,1,29,1,30,1,30,1,30,0,0,31,
         0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,
         46,48,50,52,54,56,58,60,0,8,2,0,1,2,9,9,1,0,3,4,3,0,18,18,25,25,
-        39,40,2,0,50,50,55,55,3,0,21,22,26,26,46,46,2,0,23,23,43,43,2,0,
+        39,40,2,0,50,51,55,55,3,0,21,22,26,26,46,46,2,0,23,23,43,43,2,0,
         31,31,44,45,1,0,50,51,496,0,77,1,0,0,0,2,83,1,0,0,0,4,87,1,0,0,0,
         6,95,1,0,0,0,8,99,1,0,0,0,10,109,1,0,0,0,12,113,1,0,0,0,14,125,1,
         0,0,0,16,129,1,0,0,0,18,149,1,0,0,0,20,153,1,0,0,0,22,164,1,0,0,
@@ -2158,6 +2158,12 @@ class RosettaMRParser ( Parser ):
             else:
                 return self.getToken(RosettaMRParser.Simple_name, i)
 
+        def Float(self, i:int=None):
+            if i is None:
+                return self.getTokens(RosettaMRParser.Float)
+            else:
+                return self.getToken(RosettaMRParser.Float, i)
+
         def Integer(self, i:int=None):
             if i is None:
                 return self.getTokens(RosettaMRParser.Integer)
@@ -2314,7 +2320,7 @@ class RosettaMRParser ( Parser ):
                     if _alt==1:
                         self.state = 264
                         _la = self._input.LA(1)
-                        if not(_la==RosettaMRParser.Integer or _la==RosettaMRParser.Simple_name):
+                        if not((((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << RosettaMRParser.Integer) | (1 << RosettaMRParser.Float) | (1 << RosettaMRParser.Simple_name))) != 0)):
                             self._errHandler.recoverInline(self)
                         else:
                             self._errHandler.reportMatch(self)
@@ -2351,7 +2357,7 @@ class RosettaMRParser ( Parser ):
                     if _alt==1:
                         self.state = 278
                         _la = self._input.LA(1)
-                        if not(_la==RosettaMRParser.Integer or _la==RosettaMRParser.Simple_name):
+                        if not((((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << RosettaMRParser.Integer) | (1 << RosettaMRParser.Float) | (1 << RosettaMRParser.Simple_name))) != 0)):
                             self._errHandler.recoverInline(self)
                         else:
                             self._errHandler.reportMatch(self)
@@ -2390,7 +2396,7 @@ class RosettaMRParser ( Parser ):
                     if _alt==1:
                         self.state = 293
                         _la = self._input.LA(1)
-                        if not(_la==RosettaMRParser.Integer or _la==RosettaMRParser.Simple_name):
+                        if not((((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << RosettaMRParser.Integer) | (1 << RosettaMRParser.Float) | (1 << RosettaMRParser.Simple_name))) != 0)):
                             self._errHandler.recoverInline(self)
                         else:
                             self._errHandler.reportMatch(self)

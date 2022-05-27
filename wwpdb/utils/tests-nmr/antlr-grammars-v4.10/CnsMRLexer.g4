@@ -395,7 +395,7 @@ fragment NAME_CHAR:	START_CHAR | '\'' | '-' | '+' | '.' | '"';
 fragment ATM_NAME_CHAR:	ALPHA_NUM | '\'';
 fragment ATM_TYPE_CHAR:	ALPHA_NUM | '-' | '+';
 fragment SIMPLE_NAME:	START_CHAR NAME_CHAR*;
-fragment POST_WC_CHAR:	DEC_DIGIT | '\'';
+fragment POST_WC_CHAR:	DEC_DIGIT | '\'' | 'P';
 
 L_paren:		'(';
 R_paren:		')';

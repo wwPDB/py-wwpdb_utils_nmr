@@ -27,9 +27,9 @@ fragment DEC_DOT_DEC:	(DECIMAL '.' DECIMAL?) | ('.' DECIMAL);
 fragment DEC_DIGIT:	[0-9];
 fragment DECIMAL:	DEC_DIGIT+;
 
-SHARP_COMMENT:		'#'+ ~[\r\n]* '#'+ ~[\r\n]* -> channel(HIDDEN);
-EXCLM_COMMENT:		'!'+ ~[\r\n]* '!'+ ~[\r\n]* -> channel(HIDDEN);
-SMCLN_COMMENT:		';'+ ~[\r\n]* ';'+ ~[\r\n]* -> channel(HIDDEN);
+SHARP_COMMENT:		'#'+ ~[\r\n]* '#'* ~[\r\n]* -> channel(HIDDEN);
+EXCLM_COMMENT:		'!'+ ~[\r\n]* '!'* ~[\r\n]* -> channel(HIDDEN);
+SMCLN_COMMENT:		';'+ ~[\r\n]* ';'* ~[\r\n]* -> channel(HIDDEN);
 
 /* extensions for torsion angle restraints */
 Type:			'TYPE';		// = Integer

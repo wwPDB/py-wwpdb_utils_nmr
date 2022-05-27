@@ -9204,7 +9204,7 @@ class NmrDpUtility:
 
             if err_line_number - 1 in (i, j + j_offset) and xplor_missing_end_before:
 
-                cor_src_path = self.__getCorrectedMRFilePath(src_path)
+                cor_src_path, cor_test = self.__getCorrectedMRFilePath(src_path)
 
                 if cor_src_path is not None:
 

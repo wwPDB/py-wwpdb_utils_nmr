@@ -8700,54 +8700,69 @@ class NmrDpUtility:
 
                 if not has_lexer_error and not has_parser_error:
 
-                    if self.__mr_debug:
-                        print('DIV-MR-EXIT #1')
+                    concat_input = err_input[err_column_position:]
 
-                    return self.__divideLegacyMR(file_path, file_type, err_desc, src_path, offset)
+                    if comment_pattern.match(concat_input) or concat_input[0].isalnum():
+
+                        if self.__mr_debug:
+                            print('DIV-MR-EXIT #1-1')
+
+                        return self.__divideLegacyMR(file_path, file_type, err_desc, src_path, offset)
+
+                    if self.__mr_debug:
+                        print('DIV-MR-EXIT #1-2')
+
+                    return False
 
                 # try to resolve unexcepted concatenation
                 test_line = err_input[err_column_position + 1:]
 
-                _, parser_err_listener, lexer_err_listener = reader.parse(test_line, None, isFilePath=False)
+                if len(test_line) > 0:
 
-                has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
-                has_parser_error = parser_err_listener is not None and parser_err_listener.getMessageList() is not None
+                    _, parser_err_listener, lexer_err_listener = reader.parse(test_line, None, isFilePath=False)
 
-                if not has_lexer_error and not has_parser_error:
-                    err_desc['column_position'] += 1
+                    has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
+                    has_parser_error = parser_err_listener is not None and parser_err_listener.getMessageList() is not None
 
-                    corrected = self.__divideLegacyMR(file_path, file_type, err_desc, src_path, offset)
+                    if not has_lexer_error and not has_parser_error:
+                        err_desc['column_position'] += 1
 
-                    if corrected and os.path.exists(src_path):
+                        corrected = self.__divideLegacyMR(file_path, file_type, err_desc, src_path, offset)
 
-                        cor_src_path, cor_test = self.__getCorrectedMRFilePath(src_path)
+                        if corrected and os.path.exists(src_path):
 
-                        if cor_src_path is not None:
+                            cor_src_path, cor_test = self.__getCorrectedMRFilePath(src_path)
 
-                            offset += err_line_number - 1
+                            if cor_src_path is not None:
 
-                            j = 0
+                                offset += err_line_number - 1
 
-                            with open(src_path, 'r') as ifp,\
-                                    open(cor_src_path, 'w') as ofp:
-                                for line in ifp:
-                                    if j == offset:
-                                        ofp.write(line[:err_column_position + 1] + '\n')
-                                        ofp.write(line[err_column_position + 1:])
-                                    else:
-                                        ofp.write(line)
-                                    j += 1
+                                j = 0
 
-                            if cor_test:
-                                os.rename(cor_src_path, src_path)
+                                with open(src_path, 'r') as ifp,\
+                                        open(cor_src_path, 'w') as ofp:
+                                    for line in ifp:
+                                        if j == offset:
+                                            ofp.write(line[:err_column_position + 1] + '\n')
+                                            ofp.write(line[err_column_position + 1:])
+                                        else:
+                                            ofp.write(line)
+                                        j += 1
 
-                        else:
-                            corrected = False
+                                if cor_test:
+                                    os.rename(cor_src_path, src_path)
 
-                    if self.__mr_debug:
-                        print('DIV-MR-EXIT #2')
+                                if self.__mr_debug:
+                                    print('DIV-MR-EXIT #2-1')
 
-                    return corrected
+                            else:
+
+                                if self.__mr_debug:
+                                    print('DIV-MR-EXIT #2-2')
+
+                                corrected = False
+
+                        return corrected
 
         i = j = j_offset = 0
 
@@ -8813,6 +8828,21 @@ class NmrDpUtility:
 
             corrected = False
 
+            if err_line_number - 1 in (i, j + j_offset) and xplor_l_paren_wo_assi:  # this should be before 'concat_comment' routine
+
+                if os.path.exists(div_src_file):
+                    os.remove(div_src_file)
+                if os.path.exists(div_try_file):
+                    os.remove(div_try_file)
+
+                if prev_input is not None:
+                    err_desc['previous_input'] = f"Do you need to comment out the succeeding lines as well?\n{prev_input}"
+
+                if self.__mr_debug and not corrected:
+                    print('DIV-MR-EXIT #3-1')
+
+                return False
+
             if xplor_ends_wo_statement or amber_ends_wo_statement:
 
                 has_end_tag = False
@@ -8850,24 +8880,9 @@ class NmrDpUtility:
                             os.rename(cor_src_path, src_path)
 
                         if self.__mr_debug:
-                            print('DIV-MR-EXIT #3-1')
+                            print('DIV-MR-EXIT #3-2')
 
                         corrected = True
-
-            if err_line_number - 1 in (i, j + j_offset) and xplor_l_paren_wo_assi:  # this should be before 'concat_comment' routine
-
-                if os.path.exists(div_src_file):
-                    os.remove(div_src_file)
-                if os.path.exists(div_try_file):
-                    os.remove(div_try_file)
-
-                if prev_input is not None:
-                    err_desc['previous_input'] = f"Do you need to comment out the succeeding lines as well?\n{prev_input}"
-
-                if self.__mr_debug and not corrected:
-                    print('DIV-MR-EXIT #3-2')
-
-                return False
 
             if cyana_ambig_restraint:
 
@@ -9797,6 +9812,7 @@ class NmrDpUtility:
         xplor_ends_wo_statement = xplor_file_type and (bool(xplor_extra_end_err_msg_pattern.match(err_message))
                                                        or (err_message.startswith(no_viable_alt_err_msg)
                                                            and xplor_end_pattern.match(err_input)))
+        xplor_l_paren_wo_assi = xplor_file_type and bool(xplor_extra_l_paren_err_msg_pattern.match(err_message))
 
         amber_missing_end = amber_file_type and err_message.startswith(amber_missing_end_err_msg)
         amber_ends_wo_statement = amber_file_type and (bool(amber_extra_end_err_msg_pattern.match(err_message))
@@ -9866,7 +9882,8 @@ class NmrDpUtility:
         xplor_missing_end_before = (xplor_file_type and err_message.startswith(mismatched_input_err_msg)
                                     and prev_input is not None and bool(xplor_assi_pattern.search(prev_input)))
 
-        if (xplor_missing_end or xplor_ends_wo_statement or xplor_missing_end_before
+        if (xplor_missing_end or xplor_ends_wo_statement
+                or xplor_l_paren_wo_assi or xplor_missing_end_before
                 or amber_missing_end or amber_ends_wo_statement
                 or cyana_ambig_restraint
                 or concat_xplor_assi or concat_xplor_rest or concat_xplor_set
@@ -9874,6 +9891,21 @@ class NmrDpUtility:
                 or concat_comment) or i <= err_line_number or j == 0:
 
             corrected = False
+
+            if err_line_number - 1 in (i, j) and xplor_l_paren_wo_assi:  # this should be before 'concat_comment' routine
+
+                if os.path.exists(div_src_file):
+                    os.remove(div_src_file)
+                if os.path.exists(div_try_file):
+                    os.remove(div_try_file)
+
+                if prev_input is not None:
+                    err_desc['previous_input'] = f"Do you need to comment out the succeeding lines as well?\n{prev_input}"
+
+                if self.__mr_debug and not corrected:
+                    print('DO-DIV-MR-EXIT #2-1')
+
+                return False
 
             if xplor_ends_wo_statement or amber_ends_wo_statement:
 
@@ -9912,7 +9944,7 @@ class NmrDpUtility:
                             os.rename(cor_src_path, src_path)
 
                         if self.__mr_debug:
-                            print('DO-DIV-MR-EXIT #2-1')
+                            print('DO-DIV-MR-EXIT #2-2')
 
                         corrected = True
 
@@ -9953,7 +9985,7 @@ class NmrDpUtility:
                             os.rename(cor_src_path, src_path)
 
                         if self.__mr_debug:
-                            print('DO-DIV-MR-EXIT #2-2')
+                            print('DO-DIV-MR-EXIT #2-3')
 
                         corrected = True
 
@@ -10023,7 +10055,7 @@ class NmrDpUtility:
                                     os.rename(cor_src_path, src_path)
 
                                 if self.__mr_debug:
-                                    print('DIV-MR-EXIT #2-3')
+                                    print('DIV-MR-EXIT #2-4')
 
                                 corrected = True
 
@@ -10078,7 +10110,7 @@ class NmrDpUtility:
                                 os.rename(cor_src_path, src_path)
 
                             if self.__mr_debug:
-                                print('DO-DIV-MR-EXIT #2-4')
+                                print('DO-DIV-MR-EXIT #2-5')
 
                             corrected = True
 
@@ -10111,7 +10143,7 @@ class NmrDpUtility:
                         os.rename(cor_src_path, src_path)
 
                     if self.__mr_debug:
-                        print('DO-DIV-MR-EXIT #2-5')
+                        print('DO-DIV-MR-EXIT #2-6')
 
                     corrected = True
 

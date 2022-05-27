@@ -59,7 +59,8 @@ xplor_nih_mr:
 	coll_assign |			// allowing bare assign clauses for Radius of gyration restraints
 	csa_assign |			// allowing bare assign clauses for CSA restraints
 	pre_assign |			// allowing bare assign clauses for PRE restraints
-	pcs_assign			// allowing bare assign clauses for PCS restraints or Carbon chemical shift restraints
+	pcs_assign |			// allowing bare assign clauses for PCS restraints or Carbon chemical shift restraints
+	observed			// allowing bare observed clauses for Proton chemical shift restraints
 	)*
 	EOF;
 
@@ -358,7 +359,7 @@ carbon_shift_assign:
 	Assign selection selection selection selection selection number number;
 
 carbon_shift_rcoil:
-	Rcoil selection number_s number_s;
+	Rcoil selection number number;
 
 /* XPLOR-NIH: Proton chemical shift restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node407.html
@@ -382,10 +383,10 @@ proton_shift_statement:
 	Reset;
 
 observed:
-	Observed selection selection? number_s number_s?;
+	Observed selection selection? number number?;
 
 proton_shift_rcoil:
-	Rcoil selection number_s;
+	Rcoil selection number;
 
 proton_shift_anisotropy:
 	Anisotropy selection selection selection Simple_name Logical? Simple_name;

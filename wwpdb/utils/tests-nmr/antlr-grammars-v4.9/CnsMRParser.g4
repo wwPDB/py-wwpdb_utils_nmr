@@ -41,7 +41,8 @@ cns_mr:
 	plane_statement |		// allowing bare group clauses for Plane restraints
 	harmonic_assign |		// allowing individual assign clauses for Harmonic coordinate restraints
 	coup_assign |			// allowing bare assign clauses for Scaler J-coupling restraints
-	carbon_shift_assign		// allowing bare assign clauses for Carbon chemical shift restraints
+	carbon_shift_assign |		// allowing bare assign clauses for Carbon chemical shift restraints
+	observed			// allowing bare observed clauses for Proton chemical shift restraints
 	)*
 	EOF;
 
@@ -227,7 +228,7 @@ carbon_shift_assign:
 	Assign selection selection selection selection selection number number;
 
 carbon_shift_rcoil:
-	Rcoil selection number_s number_s;
+	Rcoil selection number number;
 
 /* CNS: Proton chemical shift restraints - Syntax
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
@@ -250,10 +251,10 @@ proton_shift_statement:
 	Reset;
 
 observed:
-	Observed selection selection? number_s number_s?;
+	Observed selection selection? number number?;
 
 proton_shift_rcoil:
-	Rcoil selection number_s;
+	Rcoil selection number;
 
 proton_shift_anisotropy:
 	Anisotropy selection selection selection Simple_name Logical? Simple_name;

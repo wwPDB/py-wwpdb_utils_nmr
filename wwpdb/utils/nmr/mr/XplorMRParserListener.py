@@ -2971,52 +2971,45 @@ class XplorMRParserListener(ParseTreeListener):
         self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by XplorMRParser#carbon_shift_rcoil.
-    def exitCarbon_shift_rcoil(self, ctx: XplorMRParser.Carbon_shift_rcoilContext):
-        rcoil_a = self.getNumber_s(ctx.number_s(0))
-        rcoil_b = self.getNumber_s(ctx.number_s(1))
+    def exitCarbon_shift_rcoil(self, ctx: XplorMRParser.Carbon_shift_rcoilContext):  # pylint: disable=unused-argument
 
-        if isinstance(rcoil_a, str):
-            if rcoil_a in self.evaluate:
-                rcoil_a = self.evaluate[rcoil_a]
+        try:
+
+            if None in self.numberSelection:
+                return
+
+            rcoil_a = self.numberSelection[0]
+            rcoil_b = self.numberSelection[1]
+
+            if CS_ERROR_MIN < rcoil_a < CS_ERROR_MAX:
+                pass
             else:
-                self.warningMessage += "[Invalid data] "\
-                    f"The symbol {rcoil_a!r} in the 'CARB/RCOIL' statement is not defined.\n"
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"Random coil 'a' chemical shift value '{rcoil_a}' must be within range {CS_RESTRAINT_ERROR}.\n"
                 return
 
-        if isinstance(rcoil_b, str):
-            if rcoil_b in self.evaluate:
-                rcoil_b = self.evaluate[rcoil_b]
+            if CS_ERROR_MIN < rcoil_b < CS_ERROR_MAX:
+                pass
             else:
-                self.warningMessage += "[Invalid data] "\
-                    f"The symbol {rcoil_b!r} in the 'CARB/RCOIL' statement is not defined.\n"
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"Random coil 'b' chemical shift value '{rcoil_b}' must be within range {CS_RESTRAINT_ERROR}.\n"
                 return
 
-        if CS_ERROR_MIN < rcoil_a < CS_ERROR_MAX:
-            pass
-        else:
-            self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                f"Random coil 'a' chemical shift value '{rcoil_a}' must be within range {CS_RESTRAINT_ERROR}.\n"
-            return
+            dstFunc = {'rcoil_a': rcoil_a, 'rcoil_b': rcoil_b}
 
-        if CS_ERROR_MIN < rcoil_b < CS_ERROR_MAX:
-            pass
-        else:
-            self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                f"Random coil 'b' chemical shift value '{rcoil_b}' must be within range {CS_RESTRAINT_ERROR}.\n"
-            return
+            for atom1 in self.atomSelectionSet[0]:
+                if atom1['atom_id'][0] != 'C':
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"Not a carbon; {atom1}.\n"
+                    return
 
-        dstFunc = {'rcoil_a': rcoil_a, 'rcoil_b': rcoil_b}
+            for atom1 in self.atomSelectionSet[0]:
+                if self.__debug:
+                    print(f"subtype={self.__cur_subtype} (CARB/RCOI) id={self.hvycsRestraints} "
+                          f"atom={atom1} {dstFunc}")
 
-        for atom1 in self.atomSelectionSet[0]:
-            if atom1['atom_id'][0] != 'C':
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Not a carbon; {atom1}.\n"
-                return
-
-        for atom1 in self.atomSelectionSet[0]:
-            if self.__debug:
-                print(f"subtype={self.__cur_subtype} (CARB/RCOI) id={self.hvycsRestraints} "
-                      f"atom={atom1} {dstFunc}")
+        finally:
+            self.numberSelection.clear()
 
     # Enter a parse tree produced by XplorMRParser#proton_shift_statement.
     def enterProton_shift_statement(self, ctx: XplorMRParser.Proton_shift_statementContext):
@@ -3052,115 +3045,109 @@ class XplorMRParserListener(ParseTreeListener):
         self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by XplorMRParser#observed.
-    def exitObserved(self, ctx: XplorMRParser.ObservedContext):
-        obs_value = self.getNumber_s(ctx.number_s(0))
+    def exitObserved(self, ctx: XplorMRParser.ObservedContext):  # pylint: disable=unused-argument
 
-        if isinstance(obs_value, str):
-            if obs_value in self.evaluate:
-                obs_value = self.evaluate[obs_value]
-            else:
-                self.warningMessage += "[Invalid data] "\
-                    f"The symbol {obs_value!r} in the 'PROTON/OBSE' statement is not defined.\n"
+        try:
+
+            if None in self.numberSelection:
                 return
 
-        obs_value_2 = None
-        if ctx.number_s(1):
-            obs_value_2 = self.getNumber_s(ctx.number_s(1))
+            obs_value = self.numberSelection[0]
 
-            if isinstance(obs_value_2, str):
-                if obs_value_2 in self.evaluate:
-                    obs_value_2 = self.evaluate[obs_value_2]
-                else:
-                    self.warningMessage += "[Invalid data] "\
-                        f"The symbol {obs_value_2!r} in the 'PROTON/OBSE' statement is not defined.\n"
-                return
+            obs_value_2 = None
+            if len(self.numberSelection) > 1:
+                obs_value_2 = self.numberSelection[1]
 
-        if CS_ERROR_MIN < obs_value < CS_ERROR_MAX:
-            pass
-        else:
-            self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                f"The observed chemical shift value '{obs_value}' must be within range {CS_RESTRAINT_ERROR}.\n"
-            return
-
-        if obs_value_2 is not None:
-            if CS_ERROR_MIN < obs_value_2 < CS_ERROR_MAX:
+            if CS_ERROR_MIN < obs_value < CS_ERROR_MAX:
                 pass
             else:
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The 2nd observed chemical shift value '{obs_value_2}' must be within range {CS_RESTRAINT_ERROR}.\n"
+                    f"The observed chemical shift value '{obs_value}' must be within range {CS_RESTRAINT_ERROR}.\n"
                 return
 
-        if obs_value_2 is None:
-            dstFunc = {'obs_value': obs_value}
-        else:
-            dstFunc = {'obs_value_1': obs_value, 'obs_value_2': obs_value_2}
+            if obs_value_2 is not None:
+                if CS_ERROR_MIN < obs_value_2 < CS_ERROR_MAX:
+                    pass
+                else:
+                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                        f"The 2nd observed chemical shift value '{obs_value_2}' must be within range {CS_RESTRAINT_ERROR}.\n"
+                    return
 
-        lenAtomSelectionSet = len(self.atomSelectionSet)
+            if obs_value_2 is None:
+                dstFunc = {'obs_value': obs_value}
+            else:
+                dstFunc = {'obs_value_1': obs_value, 'obs_value_2': obs_value_2}
 
-        if obs_value_2 is None and lenAtomSelectionSet == 1:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                "Missing observed chemical shift value for the 2nd atom selection.\n"
-            return
+            lenAtomSelectionSet = len(self.atomSelectionSet)
 
-        if obs_value_2 is not None and lenAtomSelectionSet == 2:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                f"Missing 2nd atom selection for the observed chemical shift value '{obs_value_2}'.\n"
-            return
-
-        for atom1 in self.atomSelectionSet[0]:
-            if atom1['atom_id'][0] != 'H':
+            if obs_value_2 is None and lenAtomSelectionSet == 2:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Not a proton; {atom1}.\n"
-            return
+                    "Missing observed chemical shift value for the 2nd atom selection.\n"
+                return
 
-        if lenAtomSelectionSet == 1:
+            if obs_value_2 is not None and lenAtomSelectionSet == 1:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"Missing 2nd atom selection for the observed chemical shift value '{obs_value_2}'.\n"
+                return
+
             for atom1 in self.atomSelectionSet[0]:
-                if self.__debug:
-                    print(f"subtype={self.__cur_subtype} (PROTON/OBSE) id={self.procsRestraints} "
-                          f"atom={atom1} {dstFunc}")
+                if atom1['atom_id'][0] != 'H':
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"Not a proton; {atom1}.\n"
+                return
 
-        else:
-            for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
-                                                  self.atomSelectionSet[1]):
-                if self.__debug:
-                    print(f"subtype={self.__cur_subtype} (PROTON/OBSE) id={self.procsRestraints} "
-                          f"atom1={atom1} atom2={atom2} {dstFunc}")
+            if lenAtomSelectionSet == 1:
+                for atom1 in self.atomSelectionSet[0]:
+                    if self.__debug:
+                        print(f"subtype={self.__cur_subtype} (PROTON/OBSE) id={self.procsRestraints} "
+                              f"atom={atom1} {dstFunc}")
+
+            else:
+                for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
+                                                      self.atomSelectionSet[1]):
+                    if self.__debug:
+                        print(f"subtype={self.__cur_subtype} (PROTON/OBSE) id={self.procsRestraints} "
+                              f"atom1={atom1} atom2={atom2} {dstFunc}")
+
+        finally:
+            self.numberSelection.clear()
 
     # Enter a parse tree produced by XplorMRParser#proton_shift_rcoil.
     def enterProton_shift_rcoil(self, ctx: XplorMRParser.Proton_shift_rcoilContext):  # pylint: disable=unused-argument
         self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by XplorMRParser#proton_shift_rcoil.
-    def exitProton_shift_rcoil(self, ctx: XplorMRParser.Proton_shift_rcoilContext):
-        rcoil = self.getNumber_s(ctx.number_s())
+    def exitProton_shift_rcoil(self, ctx: XplorMRParser.Proton_shift_rcoilContext):  # pylint: disable=unused-argument
 
-        if isinstance(rcoil, str):
-            if rcoil in self.evaluate:
-                rcoil = self.evaluate[rcoil]
+        try:
+
+            if None in self.numberSelection:
+                return
+
+            rcoil = self.numberSelection[0]
+
+            if CS_ERROR_MIN < rcoil < CS_ERROR_MAX:
+                pass
             else:
-                self.warningMessage += "[Invalid data] "\
-                    f"The symbol {rcoil!r} in the 'PROTON/RCOIL' statement is not defined.\n"
+                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    f"Random coil chemical shift value '{rcoil}' must be within range {CS_RESTRAINT_ERROR}.\n"
                 return
 
-        if CS_ERROR_MIN < rcoil < CS_ERROR_MAX:
-            pass
-        else:
-            self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                f"Random coil chemical shift value '{rcoil}' must be within range {CS_RESTRAINT_ERROR}.\n"
-            return
+            dstFunc = {'rcoil': rcoil}
 
-        dstFunc = {'rcoil': rcoil}
+            for atom1 in self.atomSelectionSet[0]:
+                if atom1['atom_id'][0] != 'H':
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"Not a proton; {atom1}.\n"
+                    return
 
-        for atom1 in self.atomSelectionSet[0]:
-            if atom1['atom_id'][0] != 'H':
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Not a proton; {atom1}.\n"
-                return
+            for atom1 in self.atomSelectionSet[0]:
+                if self.__debug:
+                    print(f"subtype={self.__cur_subtype} (PROTON/RCOI) id={self.procsRestraints} "
+                          f"atom={atom1} {dstFunc}")
 
-        for atom1 in self.atomSelectionSet[0]:
-            if self.__debug:
-                print(f"subtype={self.__cur_subtype} (PROTON/RCOI) id={self.procsRestraints} "
-                      f"atom={atom1} {dstFunc}")
+        finally:
+            self.numberSelection.clear()
 
     # Enter a parse tree produced by XplorMRParser#proton_shift_anisotropy.
     def enterProton_shift_anisotropy(self, ctx: XplorMRParser.Proton_shift_anisotropyContext):  # pylint: disable=unused-argument

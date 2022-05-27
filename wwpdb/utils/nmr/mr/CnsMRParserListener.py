@@ -4248,6 +4248,8 @@ class CnsMRParserListener(ParseTreeListener):
             elif ctx.Hydrogen():
                 if self.__sel_expr_debug:
                     print("  " * self.depth + "--> hydrogen")
+                if not self.__hasCoord:
+                    return
                 _typeSymbolSelect = set()
                 atomTypes = self.__cR.getDictList('atom_type')
                 if len(atomTypes) > 0 and 'symbol' in atomTypes[0]:

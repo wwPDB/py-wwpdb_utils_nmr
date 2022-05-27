@@ -677,7 +677,7 @@ class AmberMRParserListener(ParseTreeListener):
                     del self.igr[varNum]
 
                 elif iat < 0:
-                    if varNum not in self.igr or len(self.igr[varNum]) == 0:
+                    if self.igr is None or varNum not in self.igr or len(self.igr[varNum]) == 0:
                         hint = ''
                         if self.ixpk != -1:
                             hint += f"ixpk={self.ixpk},"
@@ -689,7 +689,7 @@ class AmberMRParserListener(ParseTreeListener):
                             _varNum = _col + 1
                             if self.iat[_col] > 0:
                                 hint += f"iat({_col+1})={self.iat[_col]},"
-                            elif _varNum in self.igr:
+                            elif self.igr is not None and _varNum in self.igr:
                                 nonpCols = [col_ for col_, val in enumerate(self.igr[_varNum]) if val <= 0]
                                 maxCol = MAX_COL_IGR if len(nonpCols) == 0 else min(nonpCols)
                                 valArray = ','.join([str(val) for col_, val in enumerate(self.igr[_varNum]) if val > 0 and col_ < maxCol])
@@ -750,7 +750,10 @@ class AmberMRParserListener(ParseTreeListener):
                                     f"'iat({col+1})={iat}' is not defined in the AMBER parameter/topology file.\n"
                         elif iat < 0:
                             varNum = col + 1
-                            if varNum in self.igr:
+                            if self.igr is None:
+                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                    f"'igr({varNum})' is not defined in the AMBER parameter/topology file.\n"
+                            elif varNum in self.igr:
                                 for igr in self.igr[varNum]:
                                     if igr in self.__atomNumberDict:
                                         atomSelection.append(self.__atomNumberDict[igr])
@@ -776,7 +779,10 @@ class AmberMRParserListener(ParseTreeListener):
 
                         elif iat < 0:
                             varNum = col + 1
-                            if varNum in self.igr:
+                            if self.igr is None:
+                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                    f"'igr({varNum})' is not defined in the AMBER parameter/topology file.\n"
+                            elif varNum in self.igr:
                                 if varNum not in self.grnam:
                                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                                         f"'grnam({varNum})' is missing despite being set iresid=1, igr({varNum})={self.igr[varNum]}.\n"
@@ -999,7 +1005,10 @@ class AmberMRParserListener(ParseTreeListener):
 
                         elif iat < 0:
                             varNum = col + 1
-                            if varNum in self.igr:
+                            if self.igr is None:
+                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                    f"'igr({varNum})' is not defined in the AMBER parameter/topology file.\n"
+                            elif varNum in self.igr:
                                 igr = self.igr[varNum]
                                 if igr[0] not in self.__sanderAtomNumberDict:
                                     if g is None:

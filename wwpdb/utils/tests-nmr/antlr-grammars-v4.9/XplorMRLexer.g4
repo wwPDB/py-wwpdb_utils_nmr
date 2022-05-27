@@ -539,7 +539,7 @@ Weip:			W E I P;				// One_or_Zero
 /* XPLOR-NIH: Hydrogen bond geometry restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node452.html
 */
-Hbda:			H B D A;				// Hbda { hbda_statement } End
+//Hbda:			H B D A;				// Hbda { hbda_statement } End
 //Assign:		A S S I G? N?;				// selection selection selection
 //Classification:	C L A S S? I? F? I? C? A? T? I? O? N?;	// Class_name
 //ForceConstant:	F O R C E? C? O? N? S? T? A? N? T?;	// Real
@@ -551,7 +551,7 @@ Hbda:			H B D A;				// Hbda { hbda_statement } End
 /* XPLOR-NIH: Hydrogen bond database restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node454.html
 */
-Hbdb:			H B D B;				// Hbdb { hbdb_statement } End
+//Hbdb:			H B D B;				// Hbdb { hbdb_statement } End
 //Assign:		A S S I G? N?;				// selection selection
 Kdir:			K D I R;				// = Real
 Klin:			K L I N;				// = Reala
@@ -673,6 +673,9 @@ Integers:		(WILDCARD | WILDCARD* Integer WILDCARD+) DEC_DIGIT*;
 //Atom_names:		(WILDCARD | WILDCARD* Atom_name WILDCARD+) POST_WC_CHAR*;
 //Atom_type:		ALPHA ATM_TYPE_CHAR*;
 //Atom_types:		(WILDCARD | WILDCARD* Atom_type WILDCARD+) POST_WC_CHAR*;
+
+Hbda:			H B D A;				// Hbda { hbda_statement } End
+Hbdb:			H B D B;				// Hbdb { hbdb_statement } End
 
 /* Wildcard - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node19.html

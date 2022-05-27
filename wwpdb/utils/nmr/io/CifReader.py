@@ -164,7 +164,7 @@ class CifReader:
         self.__dBlock = None
 
         # preset values
-        self.emptyValue = (None, '', '.', '?')
+        self.emptyValue = (None, '', '.', '?', 'null')
         self.trueValue = ('true', 't', 'yes', 'y', '1')
 
         # allowed item types

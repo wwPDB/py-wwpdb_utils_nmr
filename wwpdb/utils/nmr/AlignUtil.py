@@ -9,7 +9,7 @@
 
 
 # empty value
-emptyValue = (None, '', '.', '?')
+emptyValue = (None, '', '.', '?', 'null')
 
 
 # true value

@@ -9634,7 +9634,7 @@ class NmrDpUtility:
 
         offset += j + j2
 
-        if j3 == 0:
+        if j == 0 or j3 == 0:
             if div_src:
                 os.remove(file_path)
             if os.path.exists(div_try_file):
@@ -27536,25 +27536,31 @@ class NmrDpUtility:
                             self.__lfh.write(f"+NmrDpUtility.__parseCoordinate() ++ Error  - {str(e)}\n")
 
             if self.__total_models < 2:
-                err = f"Coordinate file has {'no' if self.__total_models == 0 else ('only one' if self.__total_models == 1 else self.__total_models)} model(s). "\
-                    "Deposition of minimized average structure must be accompanied with ensemble and must be homogeneous with the ensemble."
 
-                self.report.error.appendDescription('missing_mandatory_content',
-                                                    {'file_name': file_name, 'description': err})
-                self.report.setError()
+                if not self.__remediation_mode:
 
-                if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__parseCoordinate() ++ Error  - {err}\n")
+                    err = f"Coordinate file has {'no' if self.__total_models == 0 else ('only one' if self.__total_models == 1 else self.__total_models)} model(s). "\
+                        "Deposition of minimized average structure must be accompanied with ensemble and must be homogeneous with the ensemble."
+
+                    self.report.error.appendDescription('missing_mandatory_content',
+                                                        {'file_name': file_name, 'description': err})
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write(f"+NmrDpUtility.__parseCoordinate() ++ Error  - {err}\n")
 
             elif self.__total_models < 5:
-                warn = f"Coordinate file has {self.__total_models} models. We encourage you to deposit a sufficient number of models in the ensemble."
 
-                self.report.warning.appendDescription('encouragement',
-                                                      {'file_name': file_name, 'description': warn})
-                self.report.setWarning()
+                if not self.__remediation_mode:
 
-                if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__parseCoordinate() ++ Warning  - {warn}\n")
+                    warn = f"Coordinate file has {self.__total_models} models. We encourage you to deposit a sufficient number of models in the ensemble."
+
+                    self.report.warning.appendDescription('encouragement',
+                                                          {'file_name': file_name, 'description': warn})
+                    self.report.setWarning()
+
+                    if self.__verbose:
+                        self.__lfh.write(f"+NmrDpUtility.__parseCoordinate() ++ Warning  - {warn}\n")
 
             return True
 

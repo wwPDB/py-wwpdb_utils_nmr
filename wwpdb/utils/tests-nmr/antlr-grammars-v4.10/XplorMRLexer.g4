@@ -682,7 +682,7 @@ mode ATTR_MODE; // Inside of Attribute tag
 
 // Attribute properties
 Abs:			'ABS';
-Attr_properties:	('B' | 'BCOM' 'P'? | 'CHAR' 'G'? 'E'? | 'DX' | 'DY' | 'DZ' | 'FBET' 'A'? | 'HARM' 'O'? 'N'? 'I'? 'C'? 'S'? | 'MASS' | 'Q' | 'QCOM' 'P'? | 'REFX' | 'REFY' | 'REFZ' | 'RMSD' | 'VX' | 'VY' | 'VZ' | 'X' | 'XCOM' 'P'? | 'Y' | 'YCOM' 'P'? | 'Z' | 'ZCOM' 'P'?);
+Attr_properties:	('B' | 'BCOM' 'P'? | 'CHAR' 'G'? 'E'? | 'DX' | 'DY' | 'DZ' | 'FBET' 'A'? | 'HARM' 'O'? 'N'? 'I'? 'C'? 'S'? | 'MASS' | 'Q' | 'QCOM' 'P'? | 'REFX' | 'REFY' | 'REFZ' | 'RMSD' | 'VX' | 'VY' | 'VZ' | 'X' | 'XCOM' 'P'? | 'Y' | 'YCOM' 'P'? | 'Z' | 'ZCOM' 'P'? | 'STORE1' | 'STORE2' | 'STORE3' | 'STORE4' | 'STORE5' | 'STORE6' | 'STORE7' | 'STORE8' | 'STORE9');
 Comparison_ops:		(Equ_op | Lt_op | Gt_op | Leq_op | Geq_op | Neq_op) -> popMode;
 
 SPACE_ATTR:		[ \t\r\n]+ -> skip;

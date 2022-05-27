@@ -6807,6 +6807,15 @@ class XplorMRParserListener(ParseTreeListener):
 
                     self.intersectionFactor_expressions(atomSelection)
 
+                elif attr_prop.startswith('store'):
+                    store_id = int(attr_prop[-1])
+                    self.factor['atom_id'] = [None]
+                    if len(self.storeSet[store_id]) == 0:
+                        self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
+                            f"The 'store{store_id}' clause has no effect "\
+                            "because the internal vector statement is not set.\n"
+                        validProp = False
+
                 if validProp and len(self.factor['atom_selection']) == 0:
                     self.factor['atom_id'] = [None]
                     _absolute = ' abs' if absolute else ''

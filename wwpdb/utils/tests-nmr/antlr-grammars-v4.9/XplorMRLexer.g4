@@ -710,7 +710,7 @@ mode ATTR_MODE; // Inside of Attribute tag
 
 // Attribute properties
 Abs:			A B S;
-Attr_properties:	(B | B C O M P? | C H A R G? E? | D X | D Y | D Z | F B E T A? | H A R M O? N? I? C? S? | M A S S | Q | Q C O M P? | R E F X | R E F Y | R E F Z | R M S D | V X | V Y | V Z | X | X C O M P? | Y | Y C O M P? | Z | Z C O M P?);
+Attr_properties:	(B | B C O M P? | C H A R G? E? | D X | D Y | D Z | F B E T A? | H A R M O? N? I? C? S? | M A S S | Q | Q C O M P? | R E F X | R E F Y | R E F Z | R M S D | V X | V Y | V Z | X | X C O M P? | Y | Y C O M P? | Z | Z C O M P? | S T O R E '1' | S T O R E '2' | S T O R E '3' | S T O R E '4' | S T O R E '5' | S T O R E '6' | S T O R E '7' | S T O R E '8' | S T O R E '9');
 Comparison_ops:		(Equ_op | Lt_op | Gt_op | Leq_op | Geq_op | Neq_op) -> popMode;
 
 SPACE_ATTR:		[ \t\r\n]+ -> skip;

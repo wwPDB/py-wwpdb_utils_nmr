@@ -419,7 +419,7 @@ mode ATTR_MODE; // Inside of Attribute tag
 
 // Attribute properties
 Abs:			'ABS';
-Attr_properties:	('B' | 'BCOM' 'P'? | 'CHAR' 'G'? 'E'? | 'DX' | 'DY' | 'DZ' | 'FBET' 'A'? | 'HARM' 'O'? 'N'? 'I'? 'C'? 'S'? | 'MASS' | 'Q' | 'QCOM' 'P'? | 'REFX' | 'REFY' | 'REFZ' | 'RMSD' | 'VX' | 'VY' | 'VZ' | 'X' | 'XCOM' 'P'? | 'Y' | 'YCOM' 'P'? | 'Z' | 'ZCOM' 'P'? | 'SCATTER_A1' | 'SCATTER_A2' | 'SCATTER_A3' | 'SCATTER_A4' | 'SCATTER_B1' | 'SCATTER_B2' | 'SCATTER_B3' | 'SCATTER_B4' | 'SCATTER_C' | 'SCATTER_FP' | 'SCATTER_FDP');
+Attr_properties:	('B' | 'BCOM' 'P'? | 'CHAR' 'G'? 'E'? | 'DX' | 'DY' | 'DZ' | 'FBET' 'A'? | 'HARM' 'O'? 'N'? 'I'? 'C'? 'S'? | 'MASS' | 'Q' | 'QCOM' 'P'? | 'REFX' | 'REFY' | 'REFZ' | 'RMSD' | 'VX' | 'VY' | 'VZ' | 'X' | 'XCOM' 'P'? | 'Y' | 'YCOM' 'P'? | 'Z' | 'ZCOM' 'P'? |  'STORE1' | 'STORE2' | 'STORE3' | 'STORE4' | 'STORE5' | 'STORE6' | 'STORE7' | 'STORE8' | 'STORE9' | 'SCATTER_A1' | 'SCATTER_A2' | 'SCATTER_A3' | 'SCATTER_A4' | 'SCATTER_B1' | 'SCATTER_B2' | 'SCATTER_B3' | 'SCATTER_B4' | 'SCATTER_C' | 'SCATTER_FP' | 'SCATTER_FDP');
 Comparison_ops:		(Equ_op | Lt_op | Gt_op | Leq_op | Geq_op | Neq_op) -> popMode;
 
 SPACE_ATTR:		[ \t\r\n]+ -> skip;

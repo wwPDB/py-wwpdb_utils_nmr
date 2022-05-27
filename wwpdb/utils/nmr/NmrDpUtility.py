@@ -354,7 +354,7 @@ xplor_rest_pattern = re.compile(r'\s*[Rr][Ee][Ss][Tt][Rr]?[Aa]?[Ii]?[Nn]?[Tt]?[S
 xplor_missing_end_err_msg = "missing End at"  # NOTICE: depends on ANTLR v4 and (Xplor|Cns)MRLexer.g4
 xplor_extra_end_err_msg_pattern = re.compile(r"extraneous input '[Ee][Nn][Dd]' expecting .*")  # NOTICE: depends on ANTLR v4
 xplor_extra_assi_err_msg_pattern = re.compile(r"extraneous input '[Aa][Ss][Ss][Ii][Gg]?[Nn]?' expecting L_paren")  # NOTICE: depends on ANTLR v4 and (Xplor|Cns)MRLexer.g4
-xplor_extra_ssi_err_msg_pattern = re.compile(r"extraneous input '[Aa]?[Ss][Ss][Ii][Gg]?[Nn]?' .*")  # NOTICE: depends on ANTLR v4
+xplor_extra_ssi_err_msg_pattern = re.compile(r"extraneous input '[Aa]?[Ss][Ss][Ii]\S*' .*")  # NOTICE: depends on ANTLR v4
 xplor_extra_l_paren_err_msg_pattern = re.compile(r"extraneous input '\(' expecting .*")  # NOTICE: depends on ANTLR v4
 
 cyana_ambig_pattern = re.compile(r'0\s+AMB\s.*')
@@ -3752,7 +3752,7 @@ class NmrDpUtility:
             if mr_file_path_list in self.__inputParamDict:
                 self.__file_path_list_len += len(self.__inputParamDict[mr_file_path_list])
 
-        # imcomplete assignments are edited by biocurators for conventional assigned cemical shifts (DAOTHER-7662)
+        # incomplete assignments are edited by biocurators for conventional assigned cemical shifts (DAOTHER-7662)
         for key in self.key_items['nmr-star']['chem_shift']:
             if 'remove-bad-pattern' in key:
                 key['remove-bad-pattern'] = self.__combined_mode
@@ -8619,7 +8619,7 @@ class NmrDpUtility:
                                                        or (err_message.startswith(no_viable_alt_err_msg)
                                                            and xplor_end_pattern.match(err_input)))
         xplor_assi_after_or_tag = xplor_file_type and bool(xplor_extra_assi_err_msg_pattern.match(err_message))
-        xplor_assi_imcompl_tag = xplor_file_type and bool(xplor_extra_ssi_err_msg_pattern.match(err_message))
+        xplor_assi_incompl_tag = xplor_file_type and bool(xplor_extra_ssi_err_msg_pattern.match(err_message))
         xplor_l_paren_wo_assi = xplor_file_type and bool(xplor_extra_l_paren_err_msg_pattern.match(err_message))
 
         amber_missing_end = amber_file_type and err_message.startswith(amber_missing_end_err_msg)
@@ -9320,7 +9320,10 @@ class NmrDpUtility:
                 os.remove(div_try_file)
 
             if err_message.startswith(no_viable_alt_err_msg) or err_message.startswith(extraneous_input_err_msg):
-                err_desc['previous_input'] = prev_input
+                if comment_pattern.match(prev_input):
+                    err_desc['previous_input'] = f"Do you need to comment out the succeeding lines as well?\n{prev_input}"
+                elif not xplor_assi_after_or_tag and not xplor_assi_incompl_tag:
+                    err_desc['previous_input'] = prev_input
 
             if self.__mr_debug and not corrected:
                 print('DIV-MR-EXIT #3')
@@ -9429,7 +9432,7 @@ class NmrDpUtility:
                     if prev_input is not None:
                         if comment_pattern.match(prev_input):
                             err_desc['previous_input'] = f"Do you need to comment out the succeeding lines as well?\n{prev_input}"
-                        elif not xplor_assi_after_or_tag and not xplor_assi_imcompl_tag:
+                        elif not xplor_assi_after_or_tag and not xplor_assi_incompl_tag:
                             err_desc['previous_input'] = prev_input
 
                     if self.__mr_debug:
@@ -9453,7 +9456,7 @@ class NmrDpUtility:
             if prev_input is not None:
                 if comment_pattern.match(prev_input):
                     err_desc['previous_input'] = f"Do you need to comment out the succeeding lines as well?\n{prev_input}"
-                elif not xplor_assi_after_or_tag and not xplor_assi_imcompl_tag:
+                elif not xplor_assi_after_or_tag and not xplor_assi_incompl_tag:
                     err_desc['previous_input'] = prev_input
 
             if self.__mr_debug:
@@ -9470,7 +9473,7 @@ class NmrDpUtility:
             if prev_input is not None:
                 if comment_pattern.match(prev_input):
                     err_desc['previous_input'] = f"Do you need to comment out the succeeding lines as well?\n{prev_input}"
-                elif not xplor_assi_after_or_tag and not xplor_assi_imcompl_tag:
+                elif not xplor_assi_after_or_tag and not xplor_assi_incompl_tag:
                     err_desc['previous_input'] = prev_input
 
             if self.__mr_debug:

@@ -170,7 +170,7 @@ noe_statement:
 noe_assign:
 	Assign selection selection number number? number?
 	noe_annotation*
-	(Or_op Assign? selection selection)*;
+	(Or_op Assign? selection selection numer? number? number?)*;
 
 predict_statement:
 	Cutoff Equ_op? number_s | Cuton Equ_op? number_s | From selection | To selection;

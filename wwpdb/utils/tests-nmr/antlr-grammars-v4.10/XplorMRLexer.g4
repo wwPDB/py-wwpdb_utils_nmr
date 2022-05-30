@@ -621,7 +621,7 @@ Complex:		L_paren Real Comma Real R_paren;
 Integer:		'-'? DECIMAL;
 Logical:		'TRUE' | 'FALSE' | 'ON' | 'OFF';
 Real:			('+' | '-')? (DECIMAL | DEC_DOT_DEC) ('E' ('+' | '-')? DECIMAL)?;
-Double_quote_string:	'"' ~'"'* '"';
+Double_quote_string:	'"' ~["\r\n]* '"';
 fragment DEC_DOT_DEC:	(DECIMAL '.' DECIMAL?) | ('.' DECIMAL);
 fragment DEC_DIGIT:	[0-9];
 fragment DECIMAL:	DEC_DIGIT+;
@@ -782,7 +782,7 @@ Tan_VE:			'TAN' -> pushMode(VECTOR_FUNC_MODE);
 
 Symbol_name_VE:		SYMBOL_NAME;
 Simple_name_VE:		SIMPLE_NAME;
-Double_quote_string_VE:	'"' ~'"'* '"';
+Double_quote_string_VE:	'"' ~["\r\n]* '"';
 
 SPACE_VE:		[ \t\r\n]+ -> skip;
 

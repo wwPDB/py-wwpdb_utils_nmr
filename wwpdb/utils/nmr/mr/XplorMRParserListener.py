@@ -255,17 +255,16 @@ class XplorMRParserListener(ParseTreeListener):
     __cur_vector_mode = ''
     __cur_vector_atom_prop_type = ''
 
-    # vlfc
-    __cur_vlfc_value = None
-
     # evaluate statement
     __cur_symbol_name = ''
+    __cur_vflc_op_code = ''
 
     depth = 0
 
     stackSelections = None  # stack of selection
     stackTerms = None  # stack of term
     stackFactors = None  # stack of factor
+    stackVflc = None  # stack of Vflc
 
     factor = None
 
@@ -324,6 +323,9 @@ class XplorMRParserListener(ParseTreeListener):
 
     # evaluate
     evaluate = {}
+
+    # control
+    evaluateFor = {}
 
     # Hydrogen bond database restraint
     donor_columnSel = -1
@@ -7161,6 +7163,24 @@ class XplorMRParserListener(ParseTreeListener):
                 elif ctx.Simple_names(0):
                     self.factor['type_symbols'] = [str(ctx.Simple_names(0))]
 
+                elif ctx.Symbol_name():
+                    symbol_name = str(ctx.Symbol_name())
+                    if symbol_name in self.evaluate:
+                        val = self.evaluate[symbol_name]
+                        if isinstance(val, list):
+                            self.factor['type_symbol'] = val
+                        else:
+                            self.factor['type_symbol'] = [val]
+                    elif symbol_name in self.evaluateFor:
+                        val = self.evaluateFor[symbol_name]
+                        if isinstance(val, list):
+                            self.factor['type_symbol'] = val
+                        else:
+                            self.factor['type_symbol'] = [val]
+                    else:
+                        self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
+                            f"The symbol {symbol_name!r} is not defined.\n"
+
                 self.consumeFactor_expressions("'chemical' clause", False)
 
             elif ctx.Hydrogen():
@@ -7212,6 +7232,24 @@ class XplorMRParserListener(ParseTreeListener):
 
                 elif ctx.Simple_names(0):
                     self.factor['atom_ids'] = [str(ctx.Simple_names(0))]
+
+                elif ctx.Symbol_name():
+                    symbol_name = str(ctx.Symbol_name())
+                    if symbol_name in self.evaluate:
+                        val = self.evaluate[symbol_name]
+                        if isinstance(val, list):
+                            self.factor['atom_id'] = val
+                        else:
+                            self.factor['atom_id'] = [val]
+                    elif symbol_name in self.evaluateFor:
+                        val = self.evaluateFor[symbol_name]
+                        if isinstance(val, list):
+                            self.factor['atom_id'] = val
+                        else:
+                            self.factor['atom_id'] = [val]
+                    else:
+                        self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
+                            f"The symbol {symbol_name!r} is not defined.\n"
 
             elif ctx.Not_op():
                 if self.__sel_expr_debug:
@@ -7442,7 +7480,17 @@ class XplorMRParserListener(ParseTreeListener):
                 elif ctx.Symbol_name():
                     symbol_name = str(ctx.Symbol_name())
                     if symbol_name in self.evaluate:
-                        self.factor['seq_id'] = [int(self.evaluate[symbol_name])]
+                        val = self.evaluate[symbol_name]
+                        if isinstance(val, list):
+                            self.factor['seq_id'] = [v if isinstance(v, int) else int(v) for v in val]
+                        else:
+                            self.factor['seq_id'] = [val if isinstance(val, int) else int(val)]
+                    elif symbol_name in self.evaluateFor:
+                        val = self.evaluateFor[symbol_name]
+                        if isinstance(val, list):
+                            self.factor['seq_id'] = [v if isinstance(v, int) else int(v) for v in val]
+                        else:
+                            self.factor['seq_id'] = [val if isinstance(val, int) else int(val)]
                     else:
                         self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
                             f"The symbol {symbol_name!r} is not defined.\n"
@@ -7458,6 +7506,24 @@ class XplorMRParserListener(ParseTreeListener):
 
                 elif ctx.Simple_names(0):
                     self.factor['comp_ids'] = [str(ctx.Simple_names(0))]
+
+                elif ctx.Symbol_name():
+                    symbol_name = str(ctx.Symbol_name())
+                    if symbol_name in self.evaluate:
+                        val = self.evaluate[symbol_name]
+                        if isinstance(val, list):
+                            self.factor['comp_id'] = val
+                        else:
+                            self.factor['comp_id'] = [val]
+                    elif symbol_name in self.evaluateFor:
+                        val = self.evaluateFor[symbol_name]
+                        if isinstance(val, list):
+                            self.factor['comp_id'] = val
+                        else:
+                            self.factor['comp_id'] = [val]
+                    else:
+                        self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
+                            f"The symbol {symbol_name!r} is not defined.\n"
 
             elif ctx.SegIdentifier():
                 if self.__sel_expr_debug:
@@ -7497,6 +7563,23 @@ class XplorMRParserListener(ParseTreeListener):
                         _chainId = toRegEx(chainId)
                         self.factor['chain_id'] = [ps['auth_chain_id'] for ps in self.__polySeq
                                                    if re.match(_chainId, ps['auth_chain_id'])]
+                    if ctx.Symbol_name():
+                        symbol_name = str(ctx.Symbol_name())
+                        if symbol_name in self.evaluate:
+                            val = self.evaluate[symbol_name]
+                            if isinstance(val, list):
+                                self.factor['chain_id'] = val
+                            else:
+                                self.factor['chain_id'] = [val]
+                        elif symbol_name in self.evaluateFor:
+                            val = self.evaluateFor[symbol_name]
+                            if isinstance(val, list):
+                                self.factor['chain_id'] = val
+                            else:
+                                self.factor['chain_id'] = [val]
+                        else:
+                            self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
+                                f"The symbol {symbol_name!r} is not defined.\n"
                     if len(self.factor['chain_id']) == 0:
                         if len(self.__polySeq) == 1:
                             self.factor['chain_id'] = self.__polySeq[0]['chain_id']
@@ -7754,7 +7837,9 @@ class XplorMRParserListener(ParseTreeListener):
     def enterVector_statement(self, ctx: XplorMRParser.Vector_statementContext):  # pylint: disable=unused-argument
         self.__cur_vector_mode = ''
         self.__cur_vector_atom_prop_type = ''
-        self.__cur_vlfc_value = None
+
+        self.__cur_vflc_op_code = ''
+        self.stackVflc = []
 
         self.atomSelectionSet.clear()
 
@@ -7772,8 +7857,8 @@ class XplorMRParserListener(ParseTreeListener):
                 if vector_name not in self.vectorDo:
                     self.vectorDo[vector_name] = []
                 vector = {'atom_selection': copy.copy(self.atomSelectionSet[0])}
-                if self.__cur_vlfc_value is not None:
-                    vector['value'] = self.__cur_vlfc_value
+                while self.stackVflc:
+                    vector['value'] = self.stackVflc.pop()
                 self.vectorDo[vector_name].append(vector)
 
     # Enter a parse tree produced by XplorMRParser#vector_mode.
@@ -7814,22 +7899,27 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#vflc.
     def exitVflc(self, ctx: XplorMRParser.VflcContext):
-        if self.__cur_vlfc_value is None:
-            if ctx.Double_quote_string_VE():
-                self.__cur_vlfc_value = str(ctx.Double_quote_string_VE()).strip('"').strip()
-            elif ctx.Integer_VE():
-                self.__cur_vlfc_value = int(str(ctx.Integer_VE()))
-            elif ctx.Real_VE():
-                self.__cur_vlfc_value = float(str(ctx.Integer_VE()))
-            elif ctx.Simple_name_VE():
-                self.__cur_vlfc_value = str(ctx.Simple_name_VE())
-            elif ctx.Symbol_name_VE():
-                symbol_name = str(ctx.Symbol_name_VE())
-                if symbol_name in self.evaluate:
-                    self.__cur_vlfc_value = self.evaluate[symbol_name]
-                else:
-                    self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
-                        f"The symbol {symbol_name!r} is not defined.\n"
+        if ctx.Integer_VE():
+            self.stackVflc.append(int(str(ctx.Integer_VE())))
+        elif ctx.Real_VE():
+            self.stackVflc.append(float(str(ctx.Real_VE())))
+        elif ctx.Simple_name_VE():
+            self.stackVflc.append(str(ctx.Simple_name_VE()))
+        elif ctx.Double_quote_string_VE():
+            self.stackVflc.append(str(ctx.Double_quote_string_VE()).strip('"').strip())
+        elif ctx.Symbol_name_VE():
+            symbol_name = str(ctx.Symbol_name_VE())
+            if symbol_name in self.evaluate:
+                self.stackVflc.append(self.evaluate[symbol_name])
+            elif symbol_name in self.evaluateFor:
+                self.stackVflc.append(self.evaluateFor[symbol_name])
+            else:
+                self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
+                    f"The symbol {symbol_name!r} is not defined.\n"
+        elif ctx.Atom_properties_VE():
+            pass
+        elif ctx.vector_func_call():
+            pass
 
     # Enter a parse tree produced by XplorMRParser#vector_func_call.
     def enterVector_func_call(self, ctx: XplorMRParser.Vector_func_callContext):  # pylint: disable=unused-argument
@@ -7851,20 +7941,620 @@ class XplorMRParserListener(ParseTreeListener):
     def enterEvaluate_statement(self, ctx: XplorMRParser.Evaluate_statementContext):
         if ctx.Symbol_name_VE():
             self.__cur_symbol_name = str(ctx.Symbol_name_VE())
-        self.__cur_vlfc_value = None
+
+        self.__cur_vflc_op_code = ''
+        self.stackVflc = []
 
     # Exit a parse tree produced by XplorMRParser#evaluate_statement.
     def exitEvaluate_statement(self, ctx: XplorMRParser.Evaluate_statementContext):  # pylint: disable=unused-argument
-        if self.__cur_vlfc_value is not None:
-            self.evaluate[self.__cur_symbol_name] = self.__cur_vlfc_value
+        if self.stackVflc:
+            self.evaluate[self.__cur_symbol_name] = self.stackVflc[0]
+
+            if self.__cur_vflc_op_code in ('+', '-', '*', '/', '^'):
+                s = self.stackVflc[0]
+                n = self.stackVflc[1]
+                if isinstance(s, list) and not isinstance(n, list):
+                    if self.__cur_vflc_op_code == '+':
+                        self.evaluate[self.__cur_symbol_name] = [_s + n for _s in s]
+                    elif self.__cur_vflc_op_code == '-':
+                        self.evaluate[self.__cur_symbol_name] = [_s - n for _s in s]
+                    elif self.__cur_vflc_op_code == '*':
+                        self.evaluate[self.__cur_symbol_name] = [_s * n for _s in s]
+                    elif self.__cur_vflc_op_code == '/':
+                        self.evaluate[self.__cur_symbol_name] = [_s / n for _s in s]
+                    elif self.__cur_vflc_op_code == '^':
+                        self.evaluate[self.__cur_symbol_name] = [_s ** n for _s in s]
+                elif not isinstance(s, list) and isinstance(n, list):
+                    if self.__cur_vflc_op_code == '+':
+                        self.evaluate[self.__cur_symbol_name] = [s + _n for _n in n]
+                    elif self.__cur_vflc_op_code == '-':
+                        self.evaluate[self.__cur_symbol_name] = [s - _n for _n in n]
+                    elif self.__cur_vflc_op_code == '*':
+                        self.evaluate[self.__cur_symbol_name] = [s * _n for _n in n]
+                    elif self.__cur_vflc_op_code == '/':
+                        self.evaluate[self.__cur_symbol_name] = [s / _n for _n in n]
+                    elif self.__cur_vflc_op_code == '^':
+                        self.evaluate[self.__cur_symbol_name] = [s ** _n for _n in n]
+                elif isinstance(s, list) and isinstance(n, list):
+                    if self.__cur_vflc_op_code == '+':
+                        self.evaluate[self.__cur_symbol_name] = [_s + _n for _s, _n in zip(s, n)]
+                    elif self.__cur_vflc_op_code == '-':
+                        self.evaluate[self.__cur_symbol_name] = [_s - _n for _s, _n in zip(s, n)]
+                    elif self.__cur_vflc_op_code == '*':
+                        self.evaluate[self.__cur_symbol_name] = [_s * _n for _s, _n in zip(s, n)]
+                    elif self.__cur_vflc_op_code == '/':
+                        self.evaluate[self.__cur_symbol_name] = [_s / _n for _s, _n in zip(s, n)]
+                    elif self.__cur_vflc_op_code == '^':
+                        self.evaluate[self.__cur_symbol_name] = [_s ** _n for _s, _n in zip(s, n)]
+                else:
+                    if self.__cur_vflc_op_code == '+':
+                        self.evaluate[self.__cur_symbol_name] = s + n
+                    elif self.__cur_vflc_op_code == '-':
+                        self.evaluate[self.__cur_symbol_name] = s - n
+                    elif self.__cur_vflc_op_code == '*':
+                        self.evaluate[self.__cur_symbol_name] = s * n
+                    elif self.__cur_vflc_op_code == '/':
+                        self.evaluate[self.__cur_symbol_name] = s / n
+                    elif self.__cur_vflc_op_code == '^':
+                        self.evaluate[self.__cur_symbol_name] = s ** n
+
+        self.stackVflc.clear()
 
     # Enter a parse tree produced by XplorMRParser#evaluate_operation.
     def enterEvaluate_operation(self, ctx: XplorMRParser.Evaluate_operationContext):  # pylint: disable=unused-argument
         pass
 
     # Exit a parse tree produced by XplorMRParser#evaluate_operation.
-    def exitEvaluate_operation(self, ctx: XplorMRParser.Evaluate_operationContext):  # pylint: disable=unused-argument
-        pass
+    def exitEvaluate_operation(self, ctx: XplorMRParser.Evaluate_operationContext):
+        if ctx.Add_op_VE():
+            self.__cur_vflc_op_code = '+'
+        elif ctx.Sub_op_VE():
+            self.__cur_vflc_op_code = '-'
+        elif ctx.Mul_op_VE():
+            self.__cur_vflc_op_code = '*'
+        elif ctx.Div_op_VE():
+            self.__cur_vflc_op_code = '/'
+        elif ctx.Exp_op_VE():
+            self.__cur_vflc_op_code = '^'
+
+    # Enter a parse tree produced by XplorMRParser#noe_assign_loop.
+    def enterNoe_assign_loop(self, ctx: XplorMRParser.Noe_assign_loopContext):
+        symbol_name = None
+        if ctx.Symbol_name_CF():
+            symbol_name = str(ctx.Symbol_name_CF())
+
+        if ctx.Integer_CF(0):
+            int_list = []
+            idx = 0
+            while True:
+                if ctx.Integer_CF(idx):
+                    int_list.append(int(str(ctx.Integer_CF(idx))))
+                    idx += 1
+                else:
+                    break
+            if symbol_name is not None:
+                self.evaluateFor[symbol_name] = int_list
+
+        if ctx.Real_CF(0):
+            real_list = []
+            idx = 0
+            while True:
+                if ctx.Real_CF(idx):
+                    real_list.append(float(str(ctx.Real_CF(idx))))
+                    idx += 1
+                else:
+                    break
+            if symbol_name[0] is not None:
+                self.evaluateFor[symbol_name] = real_list
+
+        if ctx.Simple_name_CF(0):
+            str_list = []
+            idx = 0
+            while True:
+                if ctx.Simple_name_CF(idx):
+                    str_list.append(str(ctx.Simple_name_CF(idx)))
+                    idx += 1
+                else:
+                    break
+            if symbol_name is not None:
+                self.evaluateFor[symbol_name] = str_list
+
+    # Exit a parse tree produced by XplorMRParser#noe_assign_loop.
+    def exitNoe_assign_loop(self, ctx: XplorMRParser.Noe_assign_loopContext):
+        if ctx.Symbol_name_CF():
+            symbol_name = str(ctx.Symbol_name_CF())
+            if symbol_name in self.evaluateFor:
+                del self.evaluateFor[symbol_name]
+
+    # Enter a parse tree produced by XplorMRParser#dihedral_assign_loop.
+    def enterDihedral_assign_loop(self, ctx: XplorMRParser.Dihedral_assign_loopContext):
+        symbol_name = None
+        if ctx.Symbol_name_CF():
+            symbol_name = str(ctx.Symbol_name_CF())
+
+        if ctx.Integer_CF(0):
+            int_list = []
+            idx = 0
+            while True:
+                if ctx.Integer_CF(idx):
+                    int_list.append(int(str(ctx.Integer_CF(idx))))
+                    idx += 1
+                else:
+                    break
+            if symbol_name is not None:
+                self.evaluateFor[symbol_name] = int_list
+
+        if ctx.Real_CF(0):
+            real_list = []
+            idx = 0
+            while True:
+                if ctx.Real_CF(idx):
+                    real_list.append(float(str(ctx.Real_CF(idx))))
+                    idx += 1
+                else:
+                    break
+            if symbol_name[0] is not None:
+                self.evaluateFor[symbol_name] = real_list
+
+        if ctx.Simple_name_CF(0):
+            str_list = []
+            idx = 0
+            while True:
+                if ctx.Simple_name_CF(idx):
+                    str_list.append(str(ctx.Simple_name_CF(idx)))
+                    idx += 1
+                else:
+                    break
+            if symbol_name is not None:
+                self.evaluateFor[symbol_name] = str_list
+
+    # Exit a parse tree produced by XplorMRParser#dihedral_assign_loop.
+    def exitDihedral_assign_loop(self, ctx: XplorMRParser.Dihedral_assign_loopContext):
+        if ctx.Symbol_name_CF():
+            symbol_name = str(ctx.Symbol_name_CF())
+            if symbol_name in self.evaluateFor:
+                del self.evaluateFor[symbol_name]
+
+    # Enter a parse tree produced by XplorMRParser#sani_assign_loop.
+    def enterSani_assign_loop(self, ctx: XplorMRParser.Sani_assign_loopContext):
+        symbol_name = None
+        if ctx.Symbol_name_CF():
+            symbol_name = str(ctx.Symbol_name_CF())
+
+        if ctx.Integer_CF(0):
+            int_list = []
+            idx = 0
+            while True:
+                if ctx.Integer_CF(idx):
+                    int_list.append(int(str(ctx.Integer_CF(idx))))
+                    idx += 1
+                else:
+                    break
+            if symbol_name is not None:
+                self.evaluateFor[symbol_name] = int_list
+
+        if ctx.Real_CF(0):
+            real_list = []
+            idx = 0
+            while True:
+                if ctx.Real_CF(idx):
+                    real_list.append(float(str(ctx.Real_CF(idx))))
+                    idx += 1
+                else:
+                    break
+            if symbol_name[0] is not None:
+                self.evaluateFor[symbol_name] = real_list
+
+        if ctx.Simple_name_CF(0):
+            str_list = []
+            idx = 0
+            while True:
+                if ctx.Simple_name_CF(idx):
+                    str_list.append(str(ctx.Simple_name_CF(idx)))
+                    idx += 1
+                else:
+                    break
+            if symbol_name is not None:
+                self.evaluateFor[symbol_name] = str_list
+
+    # Exit a parse tree produced by XplorMRParser#sani_assign_loop.
+    def exitSani_assign_loop(self, ctx: XplorMRParser.Sani_assign_loopContext):
+        if ctx.Symbol_name_CF():
+            symbol_name = str(ctx.Symbol_name_CF())
+            if symbol_name in self.evaluateFor:
+                del self.evaluateFor[symbol_name]
+
+    # Enter a parse tree produced by XplorMRParser#xadc_assign_loop.
+    def enterXadc_assign_loop(self, ctx: XplorMRParser.Xadc_assign_loopContext):
+        symbol_name = None
+        if ctx.Symbol_name_CF():
+            symbol_name = str(ctx.Symbol_name_CF())
+
+        if ctx.Integer_CF(0):
+            int_list = []
+            idx = 0
+            while True:
+                if ctx.Integer_CF(idx):
+                    int_list.append(int(str(ctx.Integer_CF(idx))))
+                    idx += 1
+                else:
+                    break
+            if symbol_name is not None:
+                self.evaluateFor[symbol_name] = int_list
+
+        if ctx.Real_CF(0):
+            real_list = []
+            idx = 0
+            while True:
+                if ctx.Real_CF(idx):
+                    real_list.append(float(str(ctx.Real_CF(idx))))
+                    idx += 1
+                else:
+                    break
+            if symbol_name[0] is not None:
+                self.evaluateFor[symbol_name] = real_list
+
+        if ctx.Simple_name_CF(0):
+            str_list = []
+            idx = 0
+            while True:
+                if ctx.Simple_name_CF(idx):
+                    str_list.append(str(ctx.Simple_name_CF(idx)))
+                    idx += 1
+                else:
+                    break
+            if symbol_name is not None:
+                self.evaluateFor[symbol_name] = str_list
+
+    # Exit a parse tree produced by XplorMRParser#xadc_assign_loop.
+    def exitXadc_assign_loop(self, ctx: XplorMRParser.Xadc_assign_loopContext):
+        if ctx.Symbol_name_CF():
+            symbol_name = str(ctx.Symbol_name_CF())
+            if symbol_name in self.evaluateFor:
+                del self.evaluateFor[symbol_name]
+
+    # Enter a parse tree produced by XplorMRParser#coup_assign_loop.
+    def enterCoup_assign_loop(self, ctx: XplorMRParser.Coup_assign_loopContext):
+        symbol_name = None
+        if ctx.Symbol_name_CF():
+            symbol_name = str(ctx.Symbol_name_CF())
+
+        if ctx.Integer_CF(0):
+            int_list = []
+            idx = 0
+            while True:
+                if ctx.Integer_CF(idx):
+                    int_list.append(int(str(ctx.Integer_CF(idx))))
+                    idx += 1
+                else:
+                    break
+            if symbol_name is not None:
+                self.evaluateFor[symbol_name] = int_list
+
+        if ctx.Real_CF(0):
+            real_list = []
+            idx = 0
+            while True:
+                if ctx.Real_CF(idx):
+                    real_list.append(float(str(ctx.Real_CF(idx))))
+                    idx += 1
+                else:
+                    break
+            if symbol_name[0] is not None:
+                self.evaluateFor[symbol_name] = real_list
+
+        if ctx.Simple_name_CF(0):
+            str_list = []
+            idx = 0
+            while True:
+                if ctx.Simple_name_CF(idx):
+                    str_list.append(str(ctx.Simple_name_CF(idx)))
+                    idx += 1
+                else:
+                    break
+            if symbol_name is not None:
+                self.evaluateFor[symbol_name] = str_list
+
+    # Exit a parse tree produced by XplorMRParser#coup_assign_loop.
+    def exitCoup_assign_loop(self, ctx: XplorMRParser.Coup_assign_loopContext):
+        if ctx.Symbol_name_CF():
+            symbol_name = str(ctx.Symbol_name_CF())
+            if symbol_name in self.evaluateFor:
+                del self.evaluateFor[symbol_name]
+
+    # Enter a parse tree produced by XplorMRParser#coll_assign_loop.
+    def enterColl_assign_loop(self, ctx: XplorMRParser.Coll_assign_loopContext):
+        symbol_name = None
+        if ctx.Symbol_name_CF():
+            symbol_name = str(ctx.Symbol_name_CF())
+
+        if ctx.Integer_CF(0):
+            int_list = []
+            idx = 0
+            while True:
+                if ctx.Integer_CF(idx):
+                    int_list.append(int(str(ctx.Integer_CF(idx))))
+                    idx += 1
+                else:
+                    break
+            if symbol_name is not None:
+                self.evaluateFor[symbol_name] = int_list
+
+        if ctx.Real_CF(0):
+            real_list = []
+            idx = 0
+            while True:
+                if ctx.Real_CF(idx):
+                    real_list.append(float(str(ctx.Real_CF(idx))))
+                    idx += 1
+                else:
+                    break
+            if symbol_name[0] is not None:
+                self.evaluateFor[symbol_name] = real_list
+
+        if ctx.Simple_name_CF(0):
+            str_list = []
+            idx = 0
+            while True:
+                if ctx.Simple_name_CF(idx):
+                    str_list.append(str(ctx.Simple_name_CF(idx)))
+                    idx += 1
+                else:
+                    break
+            if symbol_name is not None:
+                self.evaluateFor[symbol_name] = str_list
+
+    # Exit a parse tree produced by XplorMRParser#coll_assign_loop.
+    def exitColl_assign_loop(self, ctx: XplorMRParser.Coll_assign_loopContext):
+        if ctx.Symbol_name_CF():
+            symbol_name = str(ctx.Symbol_name_CF())
+            if symbol_name in self.evaluateFor:
+                del self.evaluateFor[symbol_name]
+
+    # Enter a parse tree produced by XplorMRParser#csa_assign_loop.
+    def enterCsa_assign_loop(self, ctx: XplorMRParser.Csa_assign_loopContext):
+        symbol_name = None
+        if ctx.Symbol_name_CF():
+            symbol_name = str(ctx.Symbol_name_CF())
+
+        if ctx.Integer_CF(0):
+            int_list = []
+            idx = 0
+            while True:
+                if ctx.Integer_CF(idx):
+                    int_list.append(int(str(ctx.Integer_CF(idx))))
+                    idx += 1
+                else:
+                    break
+            if symbol_name is not None:
+                self.evaluateFor[symbol_name] = int_list
+
+        if ctx.Real_CF(0):
+            real_list = []
+            idx = 0
+            while True:
+                if ctx.Real_CF(idx):
+                    real_list.append(float(str(ctx.Real_CF(idx))))
+                    idx += 1
+                else:
+                    break
+            if symbol_name[0] is not None:
+                self.evaluateFor[symbol_name] = real_list
+
+        if ctx.Simple_name_CF(0):
+            str_list = []
+            idx = 0
+            while True:
+                if ctx.Simple_name_CF(idx):
+                    str_list.append(str(ctx.Simple_name_CF(idx)))
+                    idx += 1
+                else:
+                    break
+            if symbol_name is not None:
+                self.evaluateFor[symbol_name] = str_list
+
+    # Exit a parse tree produced by XplorMRParser#csa_assign_loop.
+    def exitCsa_assign_loop(self, ctx: XplorMRParser.Csa_assign_loopContext):
+        if ctx.Symbol_name_CF():
+            symbol_name = str(ctx.Symbol_name_CF())
+            if symbol_name in self.evaluateFor:
+                del self.evaluateFor[symbol_name]
+
+    # Enter a parse tree produced by XplorMRParser#pre_assign_loop.
+    def enterPre_assign_loop(self, ctx: XplorMRParser.Pre_assign_loopContext):
+        symbol_name = None
+        if ctx.Symbol_name_CF():
+            symbol_name = str(ctx.Symbol_name_CF())
+
+        if ctx.Integer_CF(0):
+            int_list = []
+            idx = 0
+            while True:
+                if ctx.Integer_CF(idx):
+                    int_list.append(int(str(ctx.Integer_CF(idx))))
+                    idx += 1
+                else:
+                    break
+            if symbol_name is not None:
+                self.evaluateFor[symbol_name] = int_list
+
+        if ctx.Real_CF(0):
+            real_list = []
+            idx = 0
+            while True:
+                if ctx.Real_CF(idx):
+                    real_list.append(float(str(ctx.Real_CF(idx))))
+                    idx += 1
+                else:
+                    break
+            if symbol_name[0] is not None:
+                self.evaluateFor[symbol_name] = real_list
+
+        if ctx.Simple_name_CF(0):
+            str_list = []
+            idx = 0
+            while True:
+                if ctx.Simple_name_CF(idx):
+                    str_list.append(str(ctx.Simple_name_CF(idx)))
+                    idx += 1
+                else:
+                    break
+            if symbol_name is not None:
+                self.evaluateFor[symbol_name] = str_list
+
+    # Exit a parse tree produced by XplorMRParser#pre_assign_loop.
+    def exitPre_assign_loop(self, ctx: XplorMRParser.Pre_assign_loopContext):
+        if ctx.Symbol_name_CF():
+            symbol_name = str(ctx.Symbol_name_CF())
+            if symbol_name in self.evaluateFor:
+                del self.evaluateFor[symbol_name]
+
+    # Enter a parse tree produced by XplorMRParser#pcs_assign_loop.
+    def enterPcs_assign_loop(self, ctx: XplorMRParser.Pcs_assign_loopContext):
+        symbol_name = None
+        if ctx.Symbol_name_CF():
+            symbol_name = str(ctx.Symbol_name_CF())
+
+        if ctx.Integer_CF(0):
+            int_list = []
+            idx = 0
+            while True:
+                if ctx.Integer_CF(idx):
+                    int_list.append(int(str(ctx.Integer_CF(idx))))
+                    idx += 1
+                else:
+                    break
+            if symbol_name is not None:
+                self.evaluateFor[symbol_name] = int_list
+
+        if ctx.Real_CF(0):
+            real_list = []
+            idx = 0
+            while True:
+                if ctx.Real_CF(idx):
+                    real_list.append(float(str(ctx.Real_CF(idx))))
+                    idx += 1
+                else:
+                    break
+            if symbol_name[0] is not None:
+                self.evaluateFor[symbol_name] = real_list
+
+        if ctx.Simple_name_CF(0):
+            str_list = []
+            idx = 0
+            while True:
+                if ctx.Simple_name_CF(idx):
+                    str_list.append(str(ctx.Simple_name_CF(idx)))
+                    idx += 1
+                else:
+                    break
+            if symbol_name is not None:
+                self.evaluateFor[symbol_name] = str_list
+
+    # Exit a parse tree produced by XplorMRParser#pcs_assign_loop.
+    def exitPcs_assign_loop(self, ctx: XplorMRParser.Pcs_assign_loopContext):
+        if ctx.Symbol_name_CF():
+            symbol_name = str(ctx.Symbol_name_CF())
+            if symbol_name in self.evaluateFor:
+                del self.evaluateFor[symbol_name]
+
+    # Enter a parse tree produced by XplorMRParser#hbond_assign_loop.
+    def enterHbond_assign_loop(self, ctx: XplorMRParser.Hbond_assign_loopContext):
+        symbol_name = None
+        if ctx.Symbol_name_CF():
+            symbol_name = str(ctx.Symbol_name_CF())
+
+        if ctx.Integer_CF(0):
+            int_list = []
+            idx = 0
+            while True:
+                if ctx.Integer_CF(idx):
+                    int_list.append(int(str(ctx.Integer_CF(idx))))
+                    idx += 1
+                else:
+                    break
+            if symbol_name is not None:
+                self.evaluateFor[symbol_name] = int_list
+
+        if ctx.Real_CF(0):
+            real_list = []
+            idx = 0
+            while True:
+                if ctx.Real_CF(idx):
+                    real_list.append(float(str(ctx.Real_CF(idx))))
+                    idx += 1
+                else:
+                    break
+            if symbol_name[0] is not None:
+                self.evaluateFor[symbol_name] = real_list
+
+        if ctx.Simple_name_CF(0):
+            str_list = []
+            idx = 0
+            while True:
+                if ctx.Simple_name_CF(idx):
+                    str_list.append(str(ctx.Simple_name_CF(idx)))
+                    idx += 1
+                else:
+                    break
+            if symbol_name is not None:
+                self.evaluateFor[symbol_name] = str_list
+
+    # Exit a parse tree produced by XplorMRParser#hbond_assign_loop.
+    def exitHbond_assign_loop(self, ctx: XplorMRParser.Hbond_assign_loopContext):
+        if ctx.Symbol_name_CF():
+            symbol_name = str(ctx.Symbol_name_CF())
+            if symbol_name in self.evaluateFor:
+                del self.evaluateFor[symbol_name]
+
+    # Enter a parse tree produced by XplorMRParser#hbond_db_assign_loop.
+    def enterHbond_db_assign_loop(self, ctx: XplorMRParser.Hbond_db_assign_loopContext):
+        symbol_name = None
+        if ctx.Symbol_name_CF():
+            symbol_name = str(ctx.Symbol_name_CF())
+
+        if ctx.Integer_CF(0):
+            int_list = []
+            idx = 0
+            while True:
+                if ctx.Integer_CF(idx):
+                    int_list.append(int(str(ctx.Integer_CF(idx))))
+                    idx += 1
+                else:
+                    break
+            if symbol_name is not None:
+                self.evaluateFor[symbol_name] = int_list
+
+        if ctx.Real_CF(0):
+            real_list = []
+            idx = 0
+            while True:
+                if ctx.Real_CF(idx):
+                    real_list.append(float(str(ctx.Real_CF(idx))))
+                    idx += 1
+                else:
+                    break
+            if symbol_name[0] is not None:
+                self.evaluateFor[symbol_name] = real_list
+
+        if ctx.Simple_name_CF(0):
+            str_list = []
+            idx = 0
+            while True:
+                if ctx.Simple_name_CF(idx):
+                    str_list.append(str(ctx.Simple_name_CF(idx)))
+                    idx += 1
+                else:
+                    break
+            if symbol_name is not None:
+                self.evaluateFor[symbol_name] = str_list
+
+    # Exit a parse tree produced by XplorMRParser#hbond_db_assign_loop.
+    def exitHbond_db_assign_loop(self, ctx: XplorMRParser.Hbond_db_assign_loopContext):
+        if ctx.Symbol_name_CF():
+            symbol_name = str(ctx.Symbol_name_CF())
+            if symbol_name in self.evaluateFor:
+                del self.evaluateFor[symbol_name]
 
     def __getCurrentRestraint(self):
         if self.__cur_subtype == 'dist':

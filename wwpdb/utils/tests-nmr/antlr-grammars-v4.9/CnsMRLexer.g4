@@ -5,7 +5,7 @@
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-	   http://www.apache.org/licenses/LICENSE-2.0
+   http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -424,6 +424,7 @@ fragment ATM_NAME_CHAR:	ALPHA_NUM | '\'';
 fragment ATM_TYPE_CHAR:	ALPHA_NUM | '-' | '+';
 fragment SIMPLE_NAME:	START_CHAR NAME_CHAR*;
 fragment POST_WC_CHAR:	DEC_DIGIT | '\'' | P;
+fragment SYMBOL_NAME:	'$' START_CHAR+;
 
 L_paren:		'(';
 R_paren:		')';
@@ -435,7 +436,7 @@ Leq_op:			'<=';
 Geq_op:			'>=';
 Neq_op:			'#';
 
-Symbol_name:		'$' SIMPLE_NAME;
+Symbol_name:		SYMBOL_NAME;
 
 SPACE:			[ \t\r\n]+ -> skip;
 COMMENT:		'{' (COMMENT | .)*? '}' -> channel(HIDDEN);
@@ -498,8 +499,8 @@ Div_op_VE:		'/';
 Exp_op_VE:		('^' | '*' '*');
 Comma_VE:		',';
 
-Integer_VE:		'-'? DECIMAL;
-Real_VE:		('+' | '-')? (DECIMAL | DEC_DOT_DEC) (E ('+' | '-')? DECIMAL)?;
+Integer_VE:		DECIMAL;
+Real_VE:		(DECIMAL | DEC_DOT_DEC) (E ('+' | '-')? DECIMAL)?;
 
 Atom_properties_VE:	(B | B C O M P? | C H A R G? E? | C H E M I? C? A? L? | D X | D Y | D Z | F B E T A? | H A R M O? N? I? C? S? | M A S S | N A M E | Q | Q C O M P? | R E F X | R E F Y | R E F Z | R E S I D? U? E? | R E S N A? M? E? | R M S D | S E G I D? E? N? T? I? F? I? E? R? | S T O R E '1' | S T O R E '2' | S T O R E '3' | S T O R E '4' | S T O R E '5' | S T O R E '6' | S T O R E '7' | S T O R E '8' | S T O R E '9' | P S E U D? O? | V X | V Y | V Z | X | X C O M P? | Y | Y C O M P? | Z | Z C O M P?);
 
@@ -526,8 +527,8 @@ Sin_VE:			S I N -> pushMode(VECTOR_FUNC_MODE);
 Sqrt_VE:		S Q R T -> pushMode(VECTOR_FUNC_MODE);
 Tan_VE:			T A N -> pushMode(VECTOR_FUNC_MODE);
 
+Symbol_name_VE:		SYMBOL_NAME;
 Simple_name_VE:		SIMPLE_NAME;
-Symbol_name_VE:		'$' SIMPLE_NAME;
 Double_quote_string_VE:	'"' ~'"'* '"';
 
 SPACE_VE:		[ \t\r\n]+ -> skip;
@@ -563,7 +564,7 @@ In_CF:			I N;
 
 Integer_CF:		'-'? DECIMAL;
 Real_CF:		('+' | '-')? (DECIMAL | DEC_DOT_DEC) (E ('+' | '-')? DECIMAL)?;
-Symbol_name_CF:		'$' SIMPLE_NAME;
+Symbol_name_CF:		SYMBOL_NAME;
 Simple_name_CF:		SIMPLE_NAME;
 
 SPACE_CF:		[ \t\r\n]+ -> skip;

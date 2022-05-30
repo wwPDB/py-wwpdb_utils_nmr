@@ -396,6 +396,7 @@ fragment ATM_NAME_CHAR:	ALPHA_NUM | '\'';
 fragment ATM_TYPE_CHAR:	ALPHA_NUM | '-' | '+';
 fragment SIMPLE_NAME:	START_CHAR NAME_CHAR*;
 fragment POST_WC_CHAR:	DEC_DIGIT | '\'' | 'P';
+fragment SYMBOL_NAME:	'$' START_CHAR+;
 
 L_paren:		'(';
 R_paren:		')';
@@ -407,7 +408,7 @@ Leq_op:			'<=';
 Geq_op:			'>=';
 Neq_op:			'#';
 
-Symbol_name:		'$' SIMPLE_NAME;
+Symbol_name:		SYMBOL_NAME;
 
 SPACE:			[ \t\r\n]+ -> skip;
 COMMENT:		'{' (COMMENT | .)*? '}' -> channel(HIDDEN);
@@ -419,7 +420,7 @@ mode ATTR_MODE; // Inside of Attribute tag
 
 // Attribute properties
 Abs:			'ABS';
-Attr_properties:	('B' | 'BCOM' 'P'? | 'CHAR' 'G'? 'E'? | 'DX' | 'DY' | 'DZ' | 'FBET' 'A'? | 'HARM' 'O'? 'N'? 'I'? 'C'? 'S'? | 'MASS' | 'Q' | 'QCOM' 'P'? | 'REFX' | 'REFY' | 'REFZ' | 'RMSD' | 'VX' | 'VY' | 'VZ' | 'X' | 'XCOM' 'P'? | 'Y' | 'YCOM' 'P'? | 'Z' | 'ZCOM' 'P'? |  'STORE1' | 'STORE2' | 'STORE3' | 'STORE4' | 'STORE5' | 'STORE6' | 'STORE7' | 'STORE8' | 'STORE9' | 'SCATTER_A1' | 'SCATTER_A2' | 'SCATTER_A3' | 'SCATTER_A4' | 'SCATTER_B1' | 'SCATTER_B2' | 'SCATTER_B3' | 'SCATTER_B4' | 'SCATTER_C' | 'SCATTER_FP' | 'SCATTER_FDP');
+Attr_properties:	('B' | 'BCOM' 'P'? | 'CHAR' 'G'? 'E'? | 'DX' | 'DY' | 'DZ' | 'FBET' 'A'? | 'HARM' 'O'? 'N'? 'I'? 'C'? 'S'? | 'MASS' | 'Q' | 'QCOM' 'P'? | 'REFX' | 'REFY' | 'REFZ' | 'RMSD' | 'VX' | 'VY' | 'VZ' | 'X' | 'XCOM' 'P'? | 'Y' | 'YCOM' 'P'? | 'Z' | 'ZCOM' 'P'? | 'STORE1' | 'STORE2' | 'STORE3' | 'STORE4' | 'STORE5' | 'STORE6' | 'STORE7' | 'STORE8' | 'STORE9' | 'SCATTER_A1' | 'SCATTER_A2' | 'SCATTER_A3' | 'SCATTER_A4' | 'SCATTER_B1' | 'SCATTER_B2' | 'SCATTER_B3' | 'SCATTER_B4' | 'SCATTER_C' | 'SCATTER_FP' | 'SCATTER_FDP');
 Comparison_ops:		(Equ_op | Lt_op | Gt_op | Leq_op | Geq_op | Neq_op) -> popMode;
 
 SPACE_ATTR:		[ \t\r\n]+ -> skip;
@@ -470,8 +471,8 @@ Div_op_VE:		'/';
 Exp_op_VE:		('^' | '*' '*');
 Comma_VE:		',';
 
-Integer_VE:		'-'? DECIMAL;
-Real_VE:		('+' | '-')? (DECIMAL | DEC_DOT_DEC) ('E' ('+' | '-')? DECIMAL)?;
+Integer_VE:		DECIMAL;
+Real_VE:		(DECIMAL | DEC_DOT_DEC) ('E' ('+' | '-')? DECIMAL)?;
 
 Atom_properties_VE:	('B' | 'BCOM' 'P'? | 'CHAR' 'G'? 'E'? | 'CHEM' 'I'? 'C'? 'A'? 'L'? | 'DX' | 'DY' | 'DZ' | 'FBET' 'A'? | 'HARM' 'O'? 'N'? 'I'? 'C'? 'S'? | 'MASS' | 'NAME' | 'Q' | 'QCOM' 'P'? | 'REFX' | 'REFY' | 'REFZ' | 'RESI' 'D'? 'U'? 'E'? | 'RESN' 'A'? 'M'? 'E'? | 'RMSD' | 'SEGI' 'D'? 'E'? 'N'? 'T'? 'I'? 'F'? 'I'? 'E'? 'R'? | 'STORE1' | 'STORE2' | 'STORE3' | 'STORE4' | 'STORE5' | 'STORE6' | 'STORE7' | 'STORE8' | 'STORE9' | 'PSEU' 'D'? 'O'? | 'VX' | 'VY' | 'VZ' | 'X' | 'XCOM' 'P'? | 'Y' | 'YCOM' 'P'? | 'Z' | 'ZCOM' 'P'?);
 
@@ -498,8 +499,8 @@ Sin_VE:			'SIN' -> pushMode(VECTOR_FUNC_MODE);
 Sqrt_VE:		'SQRT' -> pushMode(VECTOR_FUNC_MODE);
 Tan_VE:			'TAN' -> pushMode(VECTOR_FUNC_MODE);
 
+Symbol_name_VE:		SYMBOL_NAME;
 Simple_name_VE:		SIMPLE_NAME;
-Symbol_name_VE:		'$' SIMPLE_NAME;
 Double_quote_string_VE:	'"' ~'"'* '"';
 
 SPACE_VE:		[ \t\r\n]+ -> skip;
@@ -535,7 +536,7 @@ In_CF:			'IN';
 
 Integer_CF:		'-'? DECIMAL;
 Real_CF:		('+' | '-')? (DECIMAL | DEC_DOT_DEC) ('E' ('+' | '-')? DECIMAL)?;
-Symbol_name_CF:		'$' SIMPLE_NAME;
+Symbol_name_CF:		SYMBOL_NAME;
 Simple_name_CF:		SIMPLE_NAME;
 
 SPACE_CF:		[ \t\r\n]+ -> skip;

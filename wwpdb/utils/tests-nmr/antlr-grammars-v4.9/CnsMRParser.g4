@@ -35,6 +35,11 @@ cns_mr:
 	flag_statement |
 	vector_statement |
 	evaluate_statement |
+	noe_assign_loop |		// allowing bare assign clauses for Distance restraints
+	dihedral_assign_loop |		// allowing bare assign clauses for Dihedral angle restraints
+	sani_assign_loop |		// allowing bare assign clauses for RDC restraints
+	coup_assign_loop |		// allowing bare assign clauses for Scaler J-coupling restraints
+	carbon_shift_assign_loop |	// allowing bare assign clauses for Carbon chemical shift restraints
 	noe_assign |			// allowing bare assign clauses for Distance restraints
 	dihedral_assign |		// allowing bare assign clauses for Dihedral angle restraints
 	sani_assign |			// allowing bare assign clauses for RDC restraints
@@ -88,6 +93,7 @@ angle_db_restraint:
 noe_statement:
 	Analysis Equ_op? Noe_analysis |
 	noe_assign |
+	noe_assign_loop |
 	Asymptote Simple_name number_s |
 	Averaging Simple_name_A Averaging_methods |
 	Bhig Simple_name number_s |
@@ -178,6 +184,7 @@ harmonic_assign:
 */
 sani_statement:
 	sani_assign |
+	sani_assign_loop |
 	Classification Equ_op? Simple_name |
 	Coefficients number_s number_s number_s |
 	ForceConstant Equ_op? number_s |
@@ -194,6 +201,7 @@ sani_assign:
 */
 coupling_statement:
 	coup_assign |
+	coup_assign_loop |
 	Classification Equ_op? Simple_name |
 	Coefficients number_s number_s number_s number_s |
 	Cv Equ_op? Integer |
@@ -212,6 +220,7 @@ coup_assign:
 */
 carbon_shift_statement:
 	carbon_shift_assign |
+	carbon_shift_assign_loop |
 	Classification Equ_op? Simple_name |
 	Expectation Integer Integer number_s number_s number_s |
 	ForceConstant Equ_op? number_s |
@@ -371,12 +380,12 @@ factor:
 	BondedTo factor |
 	ByGroup factor |
 	ByRes factor |
-	Chemical (Simple_names | Simple_name (Colon Simple_name)?) |
+	Chemical (Simple_names | Simple_name (Colon Simple_name)? | Symbol_name) |
 	Fbox number_f number_f number_f number_f number_f number_f |
 	Hydrogen |
 	Id Integer |
 	Known |
-	Name (Simple_names | Simple_name (Colon Simple_name)? | Double_quote_string (Colon Double_quote_string)?) |
+	Name (Simple_names | Simple_name (Colon Simple_name)? | Double_quote_string (Colon Double_quote_string)? | Symbol_name) |
 	NONE |
 	Not_op factor |
 	Point L_paren number_f Comma? number_f Comma? number_f R_paren Cut number_f |
@@ -384,9 +393,9 @@ factor:
 	Previous |
 	Pseudo |
 	Residue (Integers | Integer (Colon Integer)? | Symbol_name) |
-	Resname (Simple_names | Simple_name (Colon Simple_name)?) |
+	Resname (Simple_names | Simple_name (Colon Simple_name)? | Symbol_name) |
 	factor Saround number_f |
-	SegIdentifier (Simple_names | Simple_name (Colon Simple_name)? | Double_quote_string (Colon Double_quote_string)?) |
+	SegIdentifier (Simple_names | Simple_name (Colon Simple_name)? | Double_quote_string (Colon Double_quote_string)? | Symbol_name) |
 	Sfbox number_f number_f number_f number_f number_f number_f |
 	Store_1 | Store_2 | Store_3 | Store_4 | Store_5 | Store_6 | Store_7 | Store_8 | Store_9 |
 	Tag;
@@ -477,9 +486,33 @@ evaluate_operation:
 /* CNS: Control statement - Syntax
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
 */
+noe_assign_loop:
+	For Symbol_name_CF
+	In_CF L_paren_CF (Integer_CF* | Real_CF* | Simple_name_CF*) R_paren_CF Loop Simple_name_LL
+	(evaluate_statement | noe_assign)*
+	End Loop Simple_name_LL;
+
 dihedral_assign_loop:
 	For Symbol_name_CF
 	In_CF L_paren_CF (Integer_CF* | Real_CF* | Simple_name_CF*) R_paren_CF Loop Simple_name_LL
 	(evaluate_statement | dihedral_assign)*
+	End Loop Simple_name_LL;
+
+sani_assign_loop:
+	For Symbol_name_CF
+	In_CF L_paren_CF (Integer_CF* | Real_CF* | Simple_name_CF*) R_paren_CF Loop Simple_name_LL
+	(evaluate_statement | sani_assign)*
+	End Loop Simple_name_LL;
+
+coup_assign_loop:
+	For Symbol_name_CF
+	In_CF L_paren_CF (Integer_CF* | Real_CF* | Simple_name_CF*) R_paren_CF Loop Simple_name_LL
+	(evaluate_statement | coup_assign)*
+	End Loop Simple_name_LL;
+
+carbon_shift_assign_loop:
+	For Symbol_name_CF
+	In_CF L_paren_CF (Integer_CF* | Real_CF* | Simple_name_CF*) R_paren_CF Loop Simple_name_LL
+	(evaluate_statement | carbon_shift_assign)*
 	End Loop Simple_name_LL;
 

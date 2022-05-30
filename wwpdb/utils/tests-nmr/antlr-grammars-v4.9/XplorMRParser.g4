@@ -47,6 +47,17 @@ xplor_nih_mr:
 	flag_statement |
 	vector_statement |
 	evaluate_statement |
+	noe_assign_loop |		// allowing bare assign clauses for Distance restraints
+	dihedral_assign_loop |		// allowing bare assign clauses for Dihedral angle restraints
+	sani_assign_loop |		// allowing bare assign clauses for RDC restraints
+	hbond_assign_loop |		// allowing bare assign clauses for Hydrogen bond geometry restraints
+	hbond_db_assign_loop |		// allowing bare assign clauses for Hydrogen bond database restraints
+	coup_assign_loop |		// allowing bare assign clauses for Scaler J-coupling restraints
+	xadc_assign_loop |		// allowing bare assign clauses for Antidistance restraints
+	coll_assign_loop |		// allowing bare assign clauses for Radius of gyration restraints
+	csa_assign_loop |		// allowing bare assign clauses for CSA restraints
+	pre_assign_loop |		// allowing bare assign clauses for PRE restraints
+	pcs_assign_loop |		// allowing bare assign clauses for PCS restraints or Carbon chemical shift restraints
 	noe_assign |			// allowing bare assign clauses for Distance restraints
 	dihedral_assign |		// allowing bare assign clauses for Dihedral angle restraints
 	sani_assign |			// allowing bare assign clauses for RDC restraints
@@ -145,6 +156,7 @@ hbond_db_restraint:
 */
 noe_statement:
 	noe_assign |
+	noe_assign_loop |
 	Asymptote Simple_name number_s |
 	Averaging Simple_name_A Averaging_methods |
 	Bhig Simple_name number_s |
@@ -170,7 +182,7 @@ noe_statement:
 noe_assign:
 	Assign selection selection number number? number?
 	noe_annotation*
-	(Or_op Assign? selection selection numer? number? number?)*;
+	(Or_op Assign? selection selection number? number? number?)*;
 
 predict_statement:
 	Cutoff Equ_op? number_s | Cuton Equ_op? number_s | From selection | To selection;
@@ -202,6 +214,7 @@ dihedral_assign:
 */
 sani_statement:
 	sani_assign |
+	sani_assign_loop |
 	Classification Simple_name |
 	Coefficients number_s number_s number_s |
 	ForceConstant number_s |
@@ -307,6 +320,7 @@ harmonic_assign:
 */
 antidistance_statement:
 	xadc_assign |
+	xadc_assign_loop |
 	Classification Simple_name |
 	Expectation Integer number_s |
 	ForceConstant number_s |
@@ -324,6 +338,7 @@ xadc_assign:
 */
 coupling_statement:
 	coup_assign |
+	coup_assign_loop |
 	Classification Simple_name |
 	Coefficients number_s number_s number_s number_s |
 	Cv Equ_op? Integer |
@@ -437,6 +452,7 @@ rama_assign:
 */
 collapse_statement:
 	coll_assign |
+	coll_assign_loop |
 	Scale number_s |
 	Print |
 	Reset;
@@ -489,6 +505,7 @@ orie_assign:
 */
 csa_statement:
 	csa_assign |
+	csa_assign_loop |
 	Classification Simple_name |
 	Scale number_s |
 	Type Csa_types |
@@ -559,6 +576,7 @@ angle_db_assign:
 */
 pre_statement:
 	pre_assign |
+	pre_assign_loop |
 	Classification Equ_op? Simple_name |
 	ForceConstant Equ_op? Simple_name number_s |
 	Nrestraints Equ_op? Integer |
@@ -578,6 +596,7 @@ pre_assign:
 */
 pcs_statement:
 	pcs_assign |
+	pcs_assign_loop |
 	Classification Simple_name |
 	Tolerance Integer |
 	Coefficients number_s number_s |
@@ -659,6 +678,7 @@ pccr_assign:
 */
 hbond_statement:
 	hbond_assign |
+	hbond_assign_loop |
 	Classification Simple_name |
 	ForceConstant number_s |
 	Nrestraints Integer |
@@ -673,6 +693,7 @@ hbond_assign:
 */
 hbond_db_statement:
 	hbond_db_assign |
+	hbond_db_assign_loop |
 	Kdir Equ_op? number_s |
 	Klin Equ_op? number_s |
 	Nseg Equ_op? Integer |
@@ -711,20 +732,20 @@ factor:
 	BondedTo factor |
 	ByGroup factor |
 	ByRes factor |
-	Chemical (Simple_names | Simple_name (Colon Simple_name)?) |
+	Chemical (Simple_names | Simple_name (Colon Simple_name)? | Symbol_name) |
 	Hydrogen |
 	Id Integer |
 	Known |
-	Name (Simple_names | Simple_name (Colon Simple_name)? | Double_quote_string (Colon Double_quote_string)?) |
+	Name (Simple_names | Simple_name (Colon Simple_name)? | Double_quote_string (Colon Double_quote_string)? | Symbol_name) |
 	Not_op factor |
 	Point L_paren number_f Comma? number_f Comma? number_f R_paren Cut number_f |
 	Point L_paren Tail Equ_op? selection Comma? (Head Equ_op? selection)? R_paren Cut number_f |
 	Previous |
 	Pseudo |
 	Residue (Integers | Integer (Colon Integer)? | Symbol_name) |
-	Resname (Simple_names | Simple_name (Colon Simple_name)?) |
+	Resname (Simple_names | Simple_name (Colon Simple_name)? | Symbol_name) |
 	factor Saround number_f |
-	SegIdentifier (Simple_names | Simple_name (Colon Simple_name)? | Double_quote_string (Colon Double_quote_string)?) |
+	SegIdentifier (Simple_names | Simple_name (Colon Simple_name)? | Double_quote_string (Colon Double_quote_string)? | Symbol_name) |
 	Store_1 | Store_2 | Store_3 | Store_4 | Store_5 | Store_6 | Store_7 | Store_8 | Store_9 |
 	Tag |
 	Donor | Acceptor;
@@ -815,9 +836,69 @@ evaluate_operation:
 /* XPLOR-NIH: Control statement - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/doc/current/xplor/node24.html
 */
+noe_assign_loop:
+	For Symbol_name_CF
+	In_CF L_paren_CF (Integer_CF* | Real_CF* | Simple_name_CF*) R_paren_CF Loop Simple_name_LL
+	(evaluate_statement | noe_assign)*
+	End Loop Simple_name_LL;
+
 dihedral_assign_loop:
 	For Symbol_name_CF
 	In_CF L_paren_CF (Integer_CF* | Real_CF* | Simple_name_CF*) R_paren_CF Loop Simple_name_LL
 	(evaluate_statement | dihedral_assign)*
+	End Loop Simple_name_LL;
+
+sani_assign_loop:
+	For Symbol_name_CF
+	In_CF L_paren_CF (Integer_CF* | Real_CF* | Simple_name_CF*) R_paren_CF Loop Simple_name_LL
+	(evaluate_statement | sani_assign)*
+	End Loop Simple_name_LL;
+
+xadc_assign_loop:
+	For Symbol_name_CF
+	In_CF L_paren_CF (Integer_CF* | Real_CF* | Simple_name_CF*) R_paren_CF Loop Simple_name_LL
+	(evaluate_statement | xadc_assign)*
+	End Loop Simple_name_LL;
+
+coup_assign_loop:
+	For Symbol_name_CF
+	In_CF L_paren_CF (Integer_CF* | Real_CF* | Simple_name_CF*) R_paren_CF Loop Simple_name_LL
+	(evaluate_statement | coup_assign)*
+	End Loop Simple_name_LL;
+
+coll_assign_loop:
+	For Symbol_name_CF
+	In_CF L_paren_CF (Integer_CF* | Real_CF* | Simple_name_CF*) R_paren_CF Loop Simple_name_LL
+	(evaluate_statement | coll_assign)*
+	End Loop Simple_name_LL;
+
+csa_assign_loop:
+	For Symbol_name_CF
+	In_CF L_paren_CF (Integer_CF* | Real_CF* | Simple_name_CF*) R_paren_CF Loop Simple_name_LL
+	(evaluate_statement | csa_assign)*
+	End Loop Simple_name_LL;
+
+pre_assign_loop:
+	For Symbol_name_CF
+	In_CF L_paren_CF (Integer_CF* | Real_CF* | Simple_name_CF*) R_paren_CF Loop Simple_name_LL
+	(evaluate_statement | pre_assign)*
+	End Loop Simple_name_LL;
+
+pcs_assign_loop:
+	For Symbol_name_CF
+	In_CF L_paren_CF (Integer_CF* | Real_CF* | Simple_name_CF*) R_paren_CF Loop Simple_name_LL
+	(evaluate_statement | pcs_assign)*
+	End Loop Simple_name_LL;
+
+hbond_assign_loop:
+	For Symbol_name_CF
+	In_CF L_paren_CF (Integer_CF* | Real_CF* | Simple_name_CF*) R_paren_CF Loop Simple_name_LL
+	(evaluate_statement | hbond_assign)*
+	End Loop Simple_name_LL;
+
+hbond_db_assign_loop:
+	For Symbol_name_CF
+	In_CF L_paren_CF (Integer_CF* | Real_CF* | Simple_name_CF*) R_paren_CF Loop Simple_name_LL
+	(evaluate_statement | hbond_db_assign)*
 	End Loop Simple_name_LL;
 

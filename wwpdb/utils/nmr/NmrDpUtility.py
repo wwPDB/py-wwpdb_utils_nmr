@@ -9245,7 +9245,7 @@ class NmrDpUtility:
                     if self.__mr_debug:
                         print('DIV-MR-EXIT #5')
 
-                    return False  # not split MR file because of the lexer errors to be hundled by manual
+                    return False  # not split MR file because of the lexer errors to be handled by manual
 
             if next_input is not None and re.search(r'[A-Za-z]', next_input) is not None:
                 test_line = next_input
@@ -9280,7 +9280,7 @@ class NmrDpUtility:
 
                 has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
 
-                if not has_lexer_error:
+                if not has_lexer_error and (prev_input is None or not(prev_input.isspace() or bool(comment_pattern.match(prev_input)))):
                     os.remove(div_src_file)
                     os.remove(div_try_file)
 
@@ -9293,7 +9293,7 @@ class NmrDpUtility:
                     if self.__mr_debug:
                         print('DIV-MR-EXIT #6')
 
-                    return False  # not split MR file because of the lexer errors to be hundled by manual
+                    return False  # not split MR file because of the lexer errors to be handled by manual
 
             if div_src:
                 os.remove(file_path)
@@ -9334,7 +9334,7 @@ class NmrDpUtility:
             if self.__mr_debug:
                 print('DIV-MR-EXIT #9')
 
-            return False  # actual issue in the line before the parser error should be hundled by manual
+            return False  # actual issue in the line before the parser error should be handled by manual
 
         if prev_input is not None and comment_pattern.match(prev_input)\
            and file_type != 'nm-res-cya' and 'nm-res-cya' not in valid_types:  # CYANA MR grammar is lax to check comment
@@ -9384,7 +9384,7 @@ class NmrDpUtility:
                     if self.__mr_debug:
                         print('DIV-MR-EXIT #10')
 
-                    return False  # actual issue in the line before the parser error should be hundled by manual
+                    return False  # actual issue in the line before the parser error should be handled by manual
 
             except AttributeError:
                 pass
@@ -9713,7 +9713,7 @@ class NmrDpUtility:
                     if self.__mr_debug:
                         print('PEEL-MR-EXIT #5')
 
-                    return False | corrected  # not split MR file because of the lexer errors to be hundled by manual
+                    return False | corrected  # not split MR file because of the lexer errors to be handled by manual
 
             if div_src:
                 os.remove(file_path)

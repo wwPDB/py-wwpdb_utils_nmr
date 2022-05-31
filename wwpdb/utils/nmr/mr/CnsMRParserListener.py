@@ -481,7 +481,7 @@ class CnsMRParserListener(ParseTreeListener):
                     self.warningMessage += "[Unsupported data] "\
                         f"The symbol {self.squareExponent!r} in the 'NOE' statement is not defined so that set the default value.\n"
                     self.squareExponent = 2.0
-            if self.squareExponent <= 0.0:
+            if self.squareExponent is None or self.squareExponent <= 0.0:
                 self.warningMessage += "[Invalid data] "\
                     "The exponent value of square-well or soft-square function "\
                     f"'NOE {str(ctx.SqExponent())} {str(ctx.Simple_name())} {self.squareExponent} END' must be a positive value.\n"
@@ -495,7 +495,7 @@ class CnsMRParserListener(ParseTreeListener):
                     self.warningMessage += "[Unsupported data] "\
                         f"The symbol {self.squareOffset!r} in the 'NOE' statement is not defined so that set the default value.\n"
                     self.squareOffset = 0.0
-            if self.squareOffset < 0.0:
+            if self.squareOffset is None or self.squareOffset < 0.0:
                 self.warningMessage += "[Invalid data] "\
                     "The offset value of square-well or soft-square function "\
                     f"'NOE {str(ctx.SqOffset())} {str(ctx.Simple_name())} {self.squareOffset} END' must not be a negative value.\n"
@@ -509,7 +509,7 @@ class CnsMRParserListener(ParseTreeListener):
                     self.warningMessage += "[Unsupported data] "\
                         f"The symbol {self.rSwitch!r} in the 'NOE' statement is not defined so that set the default value.\n"
                     self.rSwitch = 10.0
-            if self.rSwitch < 0.0:
+            if self.rSwitch is None or self.rSwitch < 0.0:
                 self.warningMessage += "[Invalid data] "\
                     "The smoothing parameter of soft-square function "\
                     f"'NOE {str(ctx.Rswitch())} {str(ctx.Simple_name())} {self.rSwitch} END' must not be a negative value.\n"
@@ -523,7 +523,7 @@ class CnsMRParserListener(ParseTreeListener):
                     self.warningMessage += "[Unsupported data] "\
                         f"The symbol {self.scale!r} in the 'NOE' statement is not defined so that set the default value.\n"
                     self.scale = 1.0
-            if self.scale <= 0.0:
+            if self.scale is None or self.scale <= 0.0:
                 self.warningMessage += "[Invalid data] "\
                     f"The scale value 'NOE {str(ctx.Scale())} {str(ctx.Simple_name())} {self.scale} END' must be a positive value.\n"
 
@@ -4977,6 +4977,9 @@ class CnsMRParserListener(ParseTreeListener):
         pass
 
     def getNumber_s(self, ctx: CnsMRParser.Number_sContext):  # pylint: disable=no-self-use
+        if ctx is None:
+            return None
+
         if ctx.Real():
             return float(str(ctx.Real()))
 
@@ -4997,6 +5000,9 @@ class CnsMRParserListener(ParseTreeListener):
         pass
 
     def getNumber_a(self, ctx: CnsMRParser.Number_aContext):  # pylint: disable=no-self-use
+        if ctx is None:
+            return None
+
         if ctx.Real():
             return float(str(ctx.Real()))
 

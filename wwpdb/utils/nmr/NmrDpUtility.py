@@ -8655,9 +8655,11 @@ class NmrDpUtility:
                           and bool(comment_pattern.search(err_input)))
 
         if concat_xplor_assi and bool(xplor_assi_pattern.match(err_input)):
-            concat_xplor_assi = False
             if expecting_l_paren in err_message:
                 xplor_missing_end = True
+                concat_xplor_assi = False
+            if concat_xplor_rest or concat_xplor_set:
+                concat_xplor_assi = False
 
         reader = prev_input = next_input = None
 
@@ -9870,9 +9872,11 @@ class NmrDpUtility:
                           and bool(comment_pattern.search(err_input)))
 
         if concat_xplor_assi and bool(xplor_assi_pattern.match(err_input)):
-            concat_xplor_assi = False
             if expecting_l_paren in err_message:
                 xplor_missing_end = True
+                concat_xplor_assi = False
+            if concat_xplor_rest or concat_xplor_set:
+                concat_xplor_assi = False
 
         prev_input = None
 

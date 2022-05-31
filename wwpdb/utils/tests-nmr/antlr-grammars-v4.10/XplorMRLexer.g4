@@ -29,7 +29,7 @@ Noe:			'NOE';					// Noe { noe_statement } End
 // noe_statement
 Assign:			'ASSI' 'G'? 'N'?;			// selection selection Real Real Real [ Or_op selection selection ... ]
 Asymptote:		'ASYM' 'P'? 'T'? 'O'? 'T'? 'E'?;	// Class_names Real
-Averaging:		'AVER' 'A'? 'G'? 'I'? 'N'? 'G'? -> pushMode(AVER_MODE);		// Class_names Noe_avr_methods
+Average:		'AVER' 'A'? 'G'? (('I'? 'N'? 'G'?) | 'E'?) -> pushMode(AVER_MODE);	// Class_names Noe_avr_methods
 Bhig:			'BHIG';					// Class_names Real
 Ceiling:		'CEIL' 'I'? 'N'? 'G'?;			// = Real
 Classification:		'CLAS' 'S'? 'I'? 'F'? 'I'? 'C'? 'A'? 'T'? 'I'? 'O'? 'N'?;	// Class_name
@@ -55,7 +55,7 @@ Temperature:		'TEMP' 'E'? 'R'? 'A'? 'T'? 'U'? 'R'? 'E'?;			// = Real
 //Noe_avr_methods:	'R-6' | 'R-3' | 'SUM' | 'CENT' 'E'? 'R'?;
 
 // NOE potential statement
-//Noe_potential:	'BIHA' 'R'? 'M'? 'O'? 'N'? 'I'? 'C'? | 'LOGN' 'O'? 'R'? 'M'? 'A'? 'L'? | 'SQUA' 'R'? 'E'? | 'SOFT' 'S'? 'Q'? 'U'? 'A'? 'R'? 'E'? | 'SYMM' 'E'? 'T'? 'R'? 'Y'? | 'HIGH' | '3DPO';
+//Noe_potential:	'BIHA' 'R'? 'M'? 'O'? 'N'? 'I'? 'C'? | 'LOGN' 'O'? 'R'? 'M'? 'A'? 'L'? | 'SQUA' 'R'? 'E'? '-'? 'W'? 'E'? 'L'? 'L'? | 'SOFT' '-'? 'S'? 'Q'? 'U'? 'A'? 'R'? 'E'? | 'SYMM' 'E'? 'T'? 'R'? 'Y'? | 'HIGH' | '3DPO';
 
 // Predict statement
 Cutoff:			'CUTOFF';				// = Real
@@ -97,7 +97,7 @@ ForceConstant:		'FORC' 'E'? 'C'? 'O'? 'N'? 'S'? 'T'? 'A'? 'N'? 'T'?;		// Real
 //Reset:		'RESE' 'T'?;
 
 // RDC potential statement
-//Rdc_potential:	'SQUA' 'R'? 'E'? | 'HARM' 'O'? 'N'? 'I'? 'C'?;
+//Rdc_potential:	'SQUA' 'R'? 'E'? '-'? 'W'? 'E'? 'L'? 'L'? | 'HARM' 'O'? 'N'? 'I'? 'C'?;
 
 /* XPLOR-NIH: RDC - Syntax (XDIP)
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node419.html
@@ -109,7 +109,7 @@ Dipolar:		'DIPO' 'L'? 'A'? 'R'?;			// Dipolar { xdip_statement } End
 Type:			'TYPE' -> pushMode(TYPE_MODE);		// Rdc_dist_fix_types
 //Scale:		'SCAL' 'E'?;				// Real
 Sign:			'SIGN';					// Logical
-Average:		'AVER' 'A'? 'G'? 'E'? -> pushMode(AVER_MODE);			// Rdc_avr_methods
+//Average:		'AVER' 'A'? 'G'? 'E'? -> pushMode(AVER_MODE);			// Rdc_avr_methods
 //Coefficients:		'COEF' 'F'? 'I'? 'C'? 'I'? 'E'? 'N'? 'T'? 'S'?;			// Real Real Real
 //ForceConstant:	'FORC' 'E'? 'C'? 'O'? 'N'? 'S'? 'T'? 'A'? 'N'? 'T'?;		// Real
 //Nrestraints:		'NRES' 'T'? 'R'? 'A'? 'I'? 'N'? 'T'? 'S'?;			// Integer
@@ -703,7 +703,7 @@ mode POTE_MODE; // Inside of Potential tag
 
 Equ_op_P:		'=';
 
-Potential_types:	('BIHA' 'R'? 'M'? 'O'? 'N'? 'I'? 'C'? | 'LOGN' 'O'? 'R'? 'M'? 'A'? 'L'? | 'SQUA' 'R'? 'E'? | 'SOFT' 'S'? 'Q'? 'U'? 'A'? 'R'? 'E'? | 'SYMM' 'E'? 'T'? 'R'? 'Y'? | 'HIGH' | '3DPO' | 'HARM' 'O'? 'N'? 'I'? 'C'?) -> popMode;
+Potential_types:	('BIHA' 'R'? 'M'? 'O'? 'N'? 'I'? 'C'? | 'LOGN' 'O'? 'R'? 'M'? 'A'? 'L'? | 'SQUA' 'R'? 'E'? '-'? 'W'? 'E'? 'L'? 'L'? | 'SOFT' '-'? 'S'? 'Q'? 'U'? 'A'? 'R'? 'E'? | 'SYMM' 'E'? 'T'? 'R'? 'Y'? | 'HIGH' | '3DPO' | 'HARM' 'O'? 'N'? 'I'? 'C'?) -> popMode;
 
 Simple_name_P:		SIMPLE_NAME;
 

@@ -95,7 +95,7 @@ noe_statement:
 	noe_assign |
 	noe_assign_loop |
 	Asymptote Simple_name number_s |
-	Averaging Simple_name_A Averaging_methods |
+	Average Simple_name_A Averaging_methods |
 	Bhig Simple_name number_s |
 	Ceiling Equ_op? number_s |
 	Classification Equ_op? Simple_name |

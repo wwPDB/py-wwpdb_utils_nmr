@@ -58,7 +58,7 @@ Noe:			N O E;					// Noe { noe_statement } End
 Analysis:		A N A L Y? S? I? S? -> pushMode(ANAL_MODE);	// = Noe_analysis
 Assign:			A S S I G? N?;				// selection selection Real Real Real [ Or_op selection selection ... ]
 Asymptote:		A S Y M P? T? O? T? E?;			// Class_names Real
-Averaging:		A V E R A? G? I? N? G? -> pushMode(AVER_MODE);	// Class_names Noe_avr_methods
+Average:		A V E R A? G? ((I? N? G?) | E?) -> pushMode(AVER_MODE);	// Class_names Noe_avr_methods
 Bhig:			B H I G;				// Class_names Real
 Ceiling:		C E I L I? N? G?;			// = Real
 Classification:		C L A S S? I? F? I? C? A? T? I? O? N?;	// Class_name
@@ -99,7 +99,7 @@ Kappa:			K A P P A?;
 //Noe_avr_methods:	R '-6' | R '-3' | S U M | C E N T E? R?;
 
 // NOE potential statement
-//Noe_potential:	B I H A R? M? O? N? I? C? | L O G N O? R? M? A? L? | S Q U A R? E? | S O F T S? Q? U? A? R? E? | S Y M M E? T? R? Y? | H I G H | '3' D P O;
+//Noe_potential:	B I H A R? M? O? N? I? C? | L O G N O? R? M? A? L? | S Q U A R? E? '-'? W? E? L? L? | S O F T '-'? S? Q? U? A? R? E? | S Y M M E? T? R? Y? | H I G H | '3' D P O;
 
 // Predict statement
 Cutoff:			C U T O F F;				// = Real
@@ -169,7 +169,7 @@ ForceConstant:		F O R C E? C? O? N? S? T? A? N? T?;	// = Real
 //Reset:		R E S E T?;
 
 // RDC potential statement
-//Rdc_potential:	S Q U A R? E? | H A R M O? N? I? C?;
+//Rdc_potential:	S Q U A R? E? '-'? W? E? L? L? | H A R M O? N? I? C?;
 
 /* CNS: Scalar J-coupling restraints - Syntax
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
@@ -459,11 +459,13 @@ Averaging_methods:	(R '-6' | R '-3' | S U M | C E N T E? R?) -> popMode;
 
 Simple_name_A:		SIMPLE_NAME;
 
+SPACE_AVER:		[ \t\r\n]+ -> skip;
+
 mode POTE_MODE; // Inside of Potential tag
 
 Equ_op_P:		'=';
 
-Potential_types:	(B I H A R? M? O? N? I? C? | L O G N O? R? M? A? L? | S Q U A R? E? | S O F T S? Q? U? A? R? E? | S Y M M E? T? R? Y? | H I G H | '3' D P O | H A R M O? N? I? C? | M U L T I? P? L? E?) -> popMode;
+Potential_types:	(B I H A R? M? O? N? I? C? | L O G N O? R? M? A? L? | S Q U A R? E? '-'? W? E? L? L? | S O F T '-'? S? Q? U? A? R? E? | S Y M M E? T? R? Y? | H I G H | '3' D P O | H A R M O? N? I? C? | M U L T I? P? L? E?) -> popMode;
 
 Simple_name_P:		SIMPLE_NAME;
 

@@ -57,7 +57,7 @@ Noe:			N O E;					// Noe { noe_statement } End
 // noe_statement
 Assign:			A S S I G? N?;				// selection selection Real Real Real [ Or_op selection selection ... ]
 Asymptote:		A S Y M P? T? O? T? E?;			// Class_names Real
-Averaging:		A V E R A? G? I? N? G? -> pushMode(AVER_MODE);	// Class_names Noe_avr_methods
+Average:		A V E R A? G? ((I? N? G?) | E?) -> pushMode(AVER_MODE);	// Class_names Noe_avr_methods
 Bhig:			B H I G;				// Class_names Real
 Ceiling:		C E I L I? N? G?;			// = Real
 Classification:		C L A S S? I? F? I? C? A? T? I? O? N?;	// Class_name
@@ -83,7 +83,7 @@ Temperature:		T E M P E? R? A? T? U? R? E?;		// = Real
 //Noe_avr_methods:	R '-6' | R '-3' | S U M | C E N T E? R?;
 
 // NOE potential statement
-//Noe_potential:	B I H A R? M? O? N? I? C? | L O G N O? R? M? A? L? | S Q U A R? E? | S O F T S? Q? U? A? R? E? | S Y M M E? T? R? Y? | H I G H | '3' D P O;
+//Noe_potential:	B I H A R? M? O? N? I? C? | L O G N O? R? M? A? L? | S Q U A R? E? '-'? W? E? L? L? | S O F T '-'? S? Q? U? A? R? E? | S Y M M E? T? R? Y? | H I G H | '3' D P O;
 
 // Predict statement
 Cutoff:			C U T O F F;				// = Real
@@ -125,7 +125,7 @@ ForceConstant:		F O R C E? C? O? N? S? T? A? N? T?;	// Real
 //Reset:		R E S E T?;
 
 // RDC potential statement
-//Rdc_potential:	S Q U A R? E? | H A R M O? N? I? C?;
+//Rdc_potential:	S Q U A R? E? '-' W? E? L? L? | H A R M O? N? I? C?;
 
 /* XPLOR-NIH: RDC - Syntax (XDIP)
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node419.html
@@ -137,7 +137,7 @@ Dipolar:		D I P O L? A? R?;			// Dipolar { xdip_statement } End
 Type:			T Y P E -> pushMode(TYPE_MODE);		// Rdc_dist_fix_types
 //Scale:		S C A L E?;				// Real
 Sign:			S I G N;				// Logical
-Average:		A V E R A? G? E? -> pushMode(AVER_MODE);	// Rdc_avr_methods
+//Average:		A V E R A? G? E? -> pushMode(AVER_MODE);	// Rdc_avr_methods
 //Coefficients:		C O E F F? I? C? I? E? N? T? S?;	// Real Real Real
 //ForceConstant:	F O R C E? C? O? N? S? T? A? N? T?;	// Real
 //Nrestraints:		N R E S T? R? A? I? N? T? S?;		// Integer
@@ -731,7 +731,7 @@ mode POTE_MODE; // Inside of Potential tag
 
 Equ_op_P:		'=';
 
-Potential_types:	(B I H A R? M? O? N? I? C? | L O G N O? R? M? A? L? | S Q U A R? E? | S O F T S? Q? U? A? R? E? | S Y M M E? T? R? Y? | H I G H | '3' D P O | H A R M O? N? I? C?) -> popMode;
+Potential_types:	(B I H A R? M? O? N? I? C? | L O G N O? R? M? A? L? | S Q U A R? E? '-'? W? E? L? L? | S O F T '-'? S? Q? U? A? R? E? | S Y M M E? T? R? Y? | H I G H | '3' D P O | H A R M O? N? I? C?) -> popMode;
 
 Simple_name_P:		SIMPLE_NAME;
 

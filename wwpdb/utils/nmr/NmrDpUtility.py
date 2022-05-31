@@ -349,6 +349,7 @@ amber_extra_end_err_msg_pattern = re.compile(r"extraneous input '(?:&[Ee][Nn][Dd
 xplor_any_assi_pattern = re.compile(r'[Aa][Ss][Ss][Ii][Gg]?[Nn]?')
 xplor_any_rest_pattern = re.compile(r'[Rr][Ee][Ss][Tt][Rr]?[Aa]?[Ii]?[Nn]?[Tt]?[Ss]?')
 xplor_any_set_pattern = re.compile(r'[Ss][Ee][Tt]')
+xplor_class_pattern = re.compile(r'\s*[Cc][Ll][Aa][Ss][Ss]?[Ii]?.*')
 xplor_assi_pattern = re.compile(r'\s*[Aa][Ss][Ss][Ii][Gg]?[Nn]?.*')
 xplor_rest_pattern = re.compile(r'\s*[Rr][Ee][Ss][Tt][Rr]?[Aa]?[Ii]?[Nn]?[Tt]?[Ss]?.*')
 xplor_set_pattern = re.compile(r'\s*[Ss][Ee][Tt].*')
@@ -8638,7 +8639,8 @@ class NmrDpUtility:
         concat_xplor_assi = (xplor_file_type
                              and (err_message.startswith(mismatched_input_err_msg)
                                   or err_message.startswith(extraneous_input_err_msg))
-                             and bool(xplor_assi_pattern.search(err_input)))
+                             and bool(xplor_assi_pattern.search(err_input))
+                             and not bool(xplor_class_pattern.search(err_input)))
         concat_xplor_rest = (xplor_file_type
                              and (err_message.startswith(mismatched_input_err_msg)
                                   or err_message.startswith(extraneous_input_err_msg))
@@ -9858,7 +9860,8 @@ class NmrDpUtility:
         concat_xplor_assi = (xplor_file_type
                              and (err_message.startswith(mismatched_input_err_msg)
                                   or err_message.startswith(extraneous_input_err_msg))
-                             and bool(xplor_assi_pattern.search(err_input)))
+                             and bool(xplor_assi_pattern.search(err_input))
+                             and not bool(xplor_class_pattern.search(err_input)))
         concat_xplor_rest = (xplor_file_type
                              and (err_message.startswith(mismatched_input_err_msg)
                                   or err_message.startswith(extraneous_input_err_msg))

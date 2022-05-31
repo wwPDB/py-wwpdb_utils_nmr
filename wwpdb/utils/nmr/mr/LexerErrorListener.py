@@ -9,9 +9,11 @@
 from antlr4.error.ErrorListener import ErrorListener
 
 try:
-    from wwpdb.utils.nmr.mr.ParserListenerUtil import MAX_ERROR_REPORT
+    from wwpdb.utils.nmr.mr.ParserListenerUtil import (MAX_ERROR_REPORT,
+                                                       MAX_ERR_LINENUM_REPORT)
 except ImportError:
-    from nmr.mr.ParserListenerUtil import MAX_ERROR_REPORT
+    from nmr.mr.ParserListenerUtil import (MAX_ERROR_REPORT,
+                                           MAX_ERR_LINENUM_REPORT)
 
 
 class LexerErrorListener(ErrorListener):
@@ -23,6 +25,7 @@ class LexerErrorListener(ErrorListener):
     __inputString = None
 
     __maxErrorReport = MAX_ERROR_REPORT
+    __errLineNumOverflowed = False
 
     def __init__(self, filePath, inputString=None, maxErrorReport=MAX_ERROR_REPORT):
 
@@ -37,10 +40,17 @@ class LexerErrorListener(ErrorListener):
                 self.__inputString = None
 
         self.__maxErrorReport = maxErrorReport
+        self.__errLineNumOverflowed = False
 
     def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
 
+        if self.__errLineNumOverflowed:
+            return
+
         if line not in self.__errorLineNumber:
+            if len(self.__errorLineNumber) > MAX_ERR_LINENUM_REPORT:
+                self.__errLineNumOverflowed = True
+                return
             self.__errorLineNumber.append(line)
 
         if len(self.__messageList) >= self.__maxErrorReport:

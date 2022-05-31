@@ -9680,7 +9680,7 @@ class NmrDpUtility:
 
         offset += j + j2
 
-        if j == 0 or j3 == 0:
+        if j == 0:  # or j3 == 0:
             if div_src:
                 os.remove(file_path)
             if os.path.exists(div_try_file):

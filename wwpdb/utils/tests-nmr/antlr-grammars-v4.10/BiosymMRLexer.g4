@@ -1,5 +1,5 @@
 /*
- BIOSYM MR (Magnetic Restraint) lexer grammar for ANTLR v4.10
+ BIOSYM MR (Magnetic Restraint) lexer grammar for ANTLR v4.10 or later
  Copyright 2022 Masashi Yokochi
 
 you may not use this file except in compliance with the License.

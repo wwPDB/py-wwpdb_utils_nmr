@@ -8620,8 +8620,10 @@ class NmrDpUtility:
         xplor_ends_wo_statement = xplor_file_type and (bool(xplor_extra_end_err_msg_pattern.match(err_message))
                                                        or (err_message.startswith(no_viable_alt_err_msg)
                                                            and xplor_end_pattern.match(err_input)))
+
         xplor_assi_after_or_tag = xplor_file_type and bool(xplor_extra_assi_err_msg_pattern.match(err_message))
         xplor_assi_incompl_tag = xplor_file_type and bool(xplor_extra_ssi_err_msg_pattern.match(err_message))
+
         xplor_l_paren_wo_assi = xplor_file_type and bool(xplor_extra_l_paren_err_msg_pattern.match(err_message))
         xplor_00_origin = xplor_file_type and err_message.startswith(no_viable_alt_err_msg) and ' 00' in err_input
 
@@ -9565,8 +9567,10 @@ class NmrDpUtility:
                 return self.__divideLegacyMR(file_path, file_type, err_desc, src_path, offset) | corrected
 
             for test_file_type in ['nm-res-xpl', 'nm-res-cns', 'nm-res-amb', 'nm-aux-amb', 'nm-res-cya', 'nm-res-ros', 'nm-res-bio']:
+
                 if test_file_type == file_type:
                     continue
+
                 if test_file_type == 'nm-res-xpl':
                     test_reader = XplorMRReader(False, self.__lfh, None, None, None,
                                                 self.__ccU, self.__csStat, self.__nefT)
@@ -9839,6 +9843,7 @@ class NmrDpUtility:
         xplor_ends_wo_statement = xplor_file_type and (bool(xplor_extra_end_err_msg_pattern.match(err_message))
                                                        or (err_message.startswith(no_viable_alt_err_msg)
                                                            and xplor_end_pattern.match(err_input)))
+
         xplor_l_paren_wo_assi = xplor_file_type and bool(xplor_extra_l_paren_err_msg_pattern.match(err_message))
         xplor_00_origin = xplor_file_type and err_message.startswith(no_viable_alt_err_msg) and ' 00' in err_input
 
@@ -11067,7 +11072,7 @@ class NmrDpUtility:
 
         fileListId = self.__file_path_list_len
 
-        splitted = []
+        split_file_list = []
 
         for ar in self.__inputParamDict[ar_file_path_list]:
 
@@ -11552,7 +11557,7 @@ class NmrDpUtility:
 
                         _ar['file_name'] = dst_file
                         _ar['file_type'] = 'nm-res-oth'
-                        splitted.append(_ar)
+                        split_file_list.append(_ar)
 
                         continue
 
@@ -11581,7 +11586,7 @@ class NmrDpUtility:
                         if self.__verbose:
                             self.__lfh.write(f"+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - {err}\n")
 
-                        return False
+                        continue
 
                     if len_possible_types == 0:
                         # self.__lfh.write(f"The NMR restraint file {file_name!r} (MR format) is identified as {valid_types}.\n")
@@ -11591,22 +11596,22 @@ class NmrDpUtility:
                         if len_valid_types == 1:
                             _ar['file_name'] = dst_file
                             _ar['file_type'] = valid_types[0]
-                            splitted.append(_ar)
+                            split_file_list.append(_ar)
 
                         elif len_valid_types == 2 and 'nm-res-cns' in valid_types and 'nm-res-xpl' in valid_types:
                             _ar['file_name'] = dst_file
                             _ar['file_type'] = 'nm-res-xpl'
-                            splitted.append(_ar)
+                            split_file_list.append(_ar)
 
                         elif len_valid_types == 2 and 'nm-res-bio' in valid_types and 'nm-res-cya' in valid_types:
                             _ar['file_name'] = dst_file
                             _ar['file_type'] = 'nm-res-bio'
-                            splitted.append(_ar)
+                            split_file_list.append(_ar)
 
                         else:
                             _ar['file_name'] = dst_file
                             _ar['file_type'] = valid_types[0]
-                            splitted.append(_ar)
+                            split_file_list.append(_ar)
 
                             err = f"The NMR restraint file {file_name!r} (MR format) is identified as {valid_types}. "\
                                 "@todo: It needs to be split properly."
@@ -11624,7 +11629,7 @@ class NmrDpUtility:
 
                         _ar['file_name'] = dst_file
                         _ar['file_type'] = possible_types[0]
-                        splitted.append(_ar)
+                        split_file_list.append(_ar)
 
                         err = f"The NMR restraint file {file_name!r} (MR format) can be {possible_types}. "\
                             "@todo: It needs to be reviewed."
@@ -11640,7 +11645,7 @@ class NmrDpUtility:
 
                         _ar['file_name'] = dst_file
                         _ar['file_type'] = valid_types[0]
-                        splitted.append(_ar)
+                        split_file_list.append(_ar)
 
                         err = f"The NMR restraint file {file_name!r} (MR format) is identified as {valid_types} and can be {possible_types} as well. "\
                             "@todo: It needs to be reviewed."
@@ -11721,7 +11726,7 @@ class NmrDpUtility:
 
                             _ar['file_name'] = _dst_file
                             _ar['file_type'] = 'nm-res-oth'
-                            splitted.append(_ar)
+                            split_file_list.append(_ar)
 
                             continue
 
@@ -11751,7 +11756,7 @@ class NmrDpUtility:
                             if self.__verbose:
                                 self.__lfh.write(f"+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - {err}\n")
 
-                            return False
+                            continue
 
                         if len_possible_types == 0:
                             # self.__lfh.write(f"The NMR restraint file {file_name!r} (MR format) is identified as {valid_types}.\n")
@@ -11763,21 +11768,21 @@ class NmrDpUtility:
                                 _ar['file_type'] = valid_types[0]
                                 if distict:
                                     _ar['original_file_name'] = file_name
-                                splitted.append(_ar)
+                                split_file_list.append(_ar)
 
                             elif len_valid_types == 2 and 'nm-res-cns' in valid_types and 'nm-res-xpl' in valid_types:
                                 _ar['file_name'] = _dst_file
                                 _ar['file_type'] = 'nm-res-xpl'
                                 if distict:
                                     _ar['original_file_name'] = file_name
-                                splitted.append(_ar)
+                                split_file_list.append(_ar)
 
                             elif len_valid_types == 2 and 'nm-res-bio' in valid_types and 'nm-res-cya' in valid_types:
                                 _ar['file_name'] = _dst_file
                                 _ar['file_type'] = 'nm-res-bio'
                                 if distict:
                                     _ar['original_file_name'] = file_name
-                                splitted.append(_ar)
+                                split_file_list.append(_ar)
 
                             else:
                                 _ar['file_name'] = _dst_file
@@ -11828,10 +11833,10 @@ class NmrDpUtility:
                             if self.__verbose:
                                 self.__lfh.write(f"+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - {err}\n")
 
-        if len(splitted) > 0:
-            self.__inputParamDict[ar_file_path_list].extend(splitted)
+        if len(split_file_list) > 0:
+            self.__inputParamDict[ar_file_path_list].extend(split_file_list)
 
-            for _ar in splitted:
+            for _ar in split_file_list:
 
                 self.report.appendInputSource()
 

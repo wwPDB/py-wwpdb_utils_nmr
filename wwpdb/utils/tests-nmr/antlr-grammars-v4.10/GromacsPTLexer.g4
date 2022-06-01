@@ -50,7 +50,7 @@ System:			'system' -> pushMode(STR_ARRAY_MODE);	// any_string
 Molecules:		'molecules';			// name number
 
 Integer:		('+' | '-')? DECIMAL;
-Real:                   ('+' | '-')? (DECIMAL | DEC_DOT_DEC) ('E' | 'e')? ('+' | '-')? DECIMAL;
+Real:			('+' | '-')? (DECIMAL | DEC_DOT_DEC) (('E' | 'e') ('+' | '-')? DECIMAL)?;
 fragment DEC_DOT_DEC:	(DECIMAL '.' DECIMAL?) | ('.' DECIMAL);
 fragment DEC_DIGIT:	[0-9];
 fragment DECIMAL:	DEC_DIGIT+;

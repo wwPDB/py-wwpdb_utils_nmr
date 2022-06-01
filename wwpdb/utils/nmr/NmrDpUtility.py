@@ -154,7 +154,7 @@
 # 06-Apr-2022  M. Yokochi - detect other possible MR format if the first parsing fails (DAOTHER-7690)
 # 02-May-2022  M. Yokochi - implement recursive MR splitter guided by MR parsers (NMR restraint remediation)
 # 17-May-2022  M. Yokochi - add support for BIOSYM MR format (DAOTHER-7825, NMR restraint remediation)
-# 01-Jun-2022  M. Yokochi - add support for GROMACS PR/MR format (DAOTHER-7769, NMR restraint remediation)
+# 01-Jun-2022  M. Yokochi - add support for GROMACS PT/MR format (DAOTHER-7769, NMR restraint remediation)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi

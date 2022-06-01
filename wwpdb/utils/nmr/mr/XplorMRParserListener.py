@@ -2137,7 +2137,7 @@ class XplorMRParserListener(ParseTreeListener):
             validRange = False
             self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
                 f"The upper limit value(2)='{upper_limit_2}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
-
+        """
         if lower_limit_1 > target_value_1:
             validRange = False
             self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
@@ -2157,7 +2157,7 @@ class XplorMRParserListener(ParseTreeListener):
             validRange = False
             self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
                 f"The upper limit value(2)='{upper_limit_2}' must be grater than the target value(2) '{target_value_2}'.\n"
-
+        """
         if not validRange:
             return None
 

@@ -1,0 +1,417 @@
+data_2lyw
+
+save_entry_information
+# 
+_Entry.ID                 2LYW 
+_Entry.Assigned_BMRB_ID   21029 
+# 
+loop_
+_Audit.Revision_ID 
+_Audit.Creation_date 
+_Audit.Update_record 
+_Audit.Creation_method 
+_Audit.Entry_ID 
+1 2012-11-28 'Nomenclature checked and updated' . 2LYW 
+2 2012-11-28 'Preliminary version'              . 2LYW 
+3 2012-12-12 'Initial release'                  . 2LYW 
+stop_
+save_
+save_chemical_shift_reference_1
+# 
+_Chem_shift_reference.Sf_category    chem_shift_reference 
+_Chem_shift_reference.Sf_framecode   chemical_shift_reference_1 
+_Chem_shift_reference.Entry_ID       2LYW 
+_Chem_shift_reference.ID             1 
+# 
+loop_
+_Chem_shift_ref.Atom_type 
+_Chem_shift_ref.Atom_isotope_number 
+_Chem_shift_ref.Mol_common_name 
+_Chem_shift_ref.Atom_group 
+_Chem_shift_ref.Concentration_val 
+_Chem_shift_ref.Concentration_units 
+_Chem_shift_ref.Solvent 
+_Chem_shift_ref.Rank 
+_Chem_shift_ref.Chem_shift_units 
+_Chem_shift_ref.Chem_shift_val 
+_Chem_shift_ref.Ref_method 
+_Chem_shift_ref.Ref_type 
+_Chem_shift_ref.Indirect_shift_ratio 
+_Chem_shift_ref.Entry_ID 
+_Chem_shift_ref.Chem_shift_reference_ID 
+H 1 DSS 'methyl protons' ? ? ? ? ppm 0.00 internal direct 1.000000000 2LYW 1 
+stop_
+save_
+save_assigned_chem_shift_list_1
+# 
+_Assigned_chem_shift_list.Sf_category                assigned_chemical_shifts 
+_Assigned_chem_shift_list.Sf_framecode               assigned_chem_shift_list_1 
+_Assigned_chem_shift_list.Entry_ID                   2LYW 
+_Assigned_chem_shift_list.ID                         1 
+_Assigned_chem_shift_list.Data_file_name             NTE3-1.str 
+_Assigned_chem_shift_list.Sample_condition_list_ID   1 
+_Assigned_chem_shift_list.Chem_shift_reference_ID    1 
+# 
+loop_
+_Atom_chem_shift.ID 
+_Atom_chem_shift.Entity_assembly_ID 
+_Atom_chem_shift.Entity_ID 
+_Atom_chem_shift.Comp_index_ID 
+_Atom_chem_shift.Seq_ID 
+_Atom_chem_shift.Comp_ID 
+_Atom_chem_shift.Atom_ID 
+_Atom_chem_shift.Atom_type 
+_Atom_chem_shift.Atom_isotope_number 
+_Atom_chem_shift.Val 
+_Atom_chem_shift.Val_err 
+_Atom_chem_shift.Assign_fig_of_merit 
+_Atom_chem_shift.Ambiguity_code 
+_Atom_chem_shift.Occupancy 
+_Atom_chem_shift.Resonance_ID 
+_Atom_chem_shift.Auth_entity_assembly_ID 
+_Atom_chem_shift.Auth_asym_ID 
+_Atom_chem_shift.Auth_seq_ID 
+_Atom_chem_shift.Auth_comp_ID 
+_Atom_chem_shift.Auth_atom_ID 
+_Atom_chem_shift.Original_PDB_strand_ID 
+_Atom_chem_shift.Original_PDB_residue_no 
+_Atom_chem_shift.Original_PDB_residue_name 
+_Atom_chem_shift.Original_PDB_atom_name 
+_Atom_chem_shift.Details 
+_Atom_chem_shift.Entry_ID 
+_Atom_chem_shift.Assigned_chem_shift_list_ID 
+1   1 . 1  ? PCA H1   ? ? 7.47 0.002 ? 1 ? ? . B 1  PCA H1   B 1  PCA HN   . 2LYW ? 
+2   1 . 1  ? PCA HA   ? ? 4.33 0.004 ? 1 ? ? . B 1  PCA HA   B 1  PCA HA   . 2LYW ? 
+3   1 . 1  ? PCA HB2  ? ? 2.54 0.006 ? 1 ? ? . B 1  PCA HB2  B 1  PCA HB2  . 2LYW ? 
+4   1 . 1  ? PCA HB3  ? ? 1.96 0.002 ? 1 ? ? . B 1  PCA HB3  B 1  PCA HB1  . 2LYW ? 
+5   1 . 1  ? PCA HG2  ? ? 2.42 0.003 ? 1 ? ? . B 1  PCA HG2  B 1  PCA HG2  . 2LYW ? 
+6   1 . 1  ? PCA HG3  ? ? 1.96 0.002 ? 1 ? ? . B 1  PCA HG3  B 1  PCA HG1  . 2LYW ? 
+7   1 . 2  ? LEU H    ? ? 7.71 0.001 ? 1 ? ? . B 2  LEU H    B 2  LEU HN   . 2LYW ? 
+8   1 . 2  ? LEU HA   ? ? 4.34 0.003 ? 1 ? ? . B 2  LEU HA   B 2  LEU HA   . 2LYW ? 
+9   1 . 2  ? LEU HB2  ? ? 1.64 0.003 ? 1 ? ? . B 2  LEU HB2  B 2  LEU HB2  . 2LYW ? 
+10  1 . 2  ? LEU HB3  ? ? 1.61 0.001 ? 1 ? ? . B 2  LEU HB3  B 2  LEU HB1  . 2LYW ? 
+11  1 . 2  ? LEU HG   ? ? 1.57 0.002 ? 1 ? ? . B 2  LEU HG   B 2  LEU HG   . 2LYW ? 
+12  1 . 2  ? LEU HD11 ? ? 0.96 0.001 ? 1 ? ? . B 2  LEU HD11 B 2  LEU 2HD1 . 2LYW ? 
+13  1 . 2  ? LEU HD12 ? ? 0.96 0.001 ? 1 ? ? . B 2  LEU HD12 B 2  LEU 3HD1 . 2LYW ? 
+14  1 . 2  ? LEU HD13 ? ? 0.96 0.001 ? 1 ? ? . B 2  LEU HD13 B 2  LEU 1HD1 . 2LYW ? 
+15  1 . 2  ? LEU HD21 ? ? 0.91 0.001 ? 1 ? ? . B 2  LEU HD21 B 2  LEU 1HD2 . 2LYW ? 
+16  1 . 2  ? LEU HD22 ? ? 0.91 0.001 ? 1 ? ? . B 2  LEU HD22 B 2  LEU 2HD2 . 2LYW ? 
+17  1 . 2  ? LEU HD23 ? ? 0.91 0.001 ? 1 ? ? . B 2  LEU HD23 B 2  LEU 3HD2 . 2LYW ? 
+18  1 . 3  ? TYR H    ? ? 7.56 0.002 ? 1 ? ? . B 3  TYR H    B 3  TYR HN   . 2LYW ? 
+19  1 . 3  ? TYR HA   ? ? 4.56 0.001 ? 1 ? ? . B 3  TYR HA   B 3  TYR HA   . 2LYW ? 
+20  1 . 3  ? TYR HB3  ? ? 3.08 0.001 ? 1 ? ? . B 3  TYR HB3  B 3  TYR HB2  . 2LYW ? 
+21  1 . 3  ? TYR HB2  ? ? 3.08 0.001 ? 1 ? ? . B 3  TYR HB2  B 3  TYR HB1  . 2LYW ? 
+22  1 . 3  ? TYR HD1  ? ? 7.10 0.002 ? 1 ? ? . B 3  TYR HD1  B 3  TYR HD1  . 2LYW ? 
+23  1 . 3  ? TYR HD2  ? ? 7.10 0.002 ? 1 ? ? . B 3  TYR HD2  B 3  TYR HD2  . 2LYW ? 
+24  1 . 3  ? TYR HE1  ? ? 6.87 0.004 ? 1 ? ? . B 3  TYR HE1  B 3  TYR HE1  . 2LYW ? 
+25  1 . 3  ? TYR HE2  ? ? 6.87 0.004 ? 1 ? ? . B 3  TYR HE2  B 3  TYR HE2  . 2LYW ? 
+26  1 . 4  ? GLU H    ? ? 7.85 0.001 ? 1 ? ? . B 4  GLU H    B 4  GLU HN   . 2LYW ? 
+27  1 . 4  ? GLU HA   ? ? 4.36 0.002 ? 1 ? ? . B 4  GLU HA   B 4  GLU HA   . 2LYW ? 
+28  1 . 4  ? GLU HB3  ? ? 2.16 0.003 ? 1 ? ? . B 4  GLU HB3  B 4  GLU HB2  . 2LYW ? 
+29  1 . 4  ? GLU HB2  ? ? 2.00 0.004 ? 1 ? ? . B 4  GLU HB2  B 4  GLU HB1  . 2LYW ? 
+30  1 . 4  ? GLU HG2  ? ? 2.44 0.003 ? 1 ? ? . B 4  GLU HG2  B 4  GLU HG2  . 2LYW ? 
+31  1 . 4  ? GLU HG3  ? ? 2.44 0.003 ? 1 ? ? . B 4  GLU HG3  B 4  GLU HG1  . 2LYW ? 
+32  1 . 5  ? ASN H    ? ? 7.99 0.003 ? 1 ? ? . B 5  ASN H    B 5  ASN HN   . 2LYW ? 
+33  1 . 5  ? ASN HA   ? ? 4.75 0.003 ? 1 ? ? . B 5  ASN HA   B 5  ASN HA   . 2LYW ? 
+34  1 . 5  ? ASN HB3  ? ? 2.85 0.001 ? 1 ? ? . B 5  ASN HB3  B 5  ASN HB2  . 2LYW ? 
+35  1 . 5  ? ASN HB2  ? ? 2.85 0.001 ? 1 ? ? . B 5  ASN HB2  B 5  ASN HB1  . 2LYW ? 
+36  1 . 5  ? ASN HD22 ? ? 7.20 0.001 ? 1 ? ? . B 5  ASN HD22 B 5  ASN 2HD2 . 2LYW ? 
+37  1 . 5  ? ASN HD21 ? ? 6.56 0.001 ? 1 ? ? . B 5  ASN HD21 B 5  ASN 1HD2 . 2LYW ? 
+38  1 . 6  ? LYS H    ? ? 7.71 0.002 ? 1 ? ? . B 6  LYS H    B 6  LYS HN   . 2LYW ? 
+39  1 . 6  ? LYS HA   ? ? 4.73 0.002 ? 1 ? ? . B 6  LYS HA   B 6  LYS HA   . 2LYW ? 
+40  1 . 6  ? LYS HB3  ? ? 1.90 0.005 ? 1 ? ? . B 6  LYS HB3  B 6  LYS HB2  . 2LYW ? 
+41  1 . 6  ? LYS HB2  ? ? 1.79 0.004 ? 1 ? ? . B 6  LYS HB2  B 6  LYS HB1  . 2LYW ? 
+42  1 . 6  ? LYS HG2  ? ? 1.55 0.006 ? 1 ? ? . B 6  LYS HG2  B 6  LYS HG2  . 2LYW ? 
+43  1 . 6  ? LYS HG3  ? ? 1.55 0.006 ? 1 ? ? . B 6  LYS HG3  B 6  LYS HG1  . 2LYW ? 
+44  1 . 6  ? LYS HD3  ? ? 1.73 0.003 ? 1 ? ? . B 6  LYS HD3  B 6  LYS HD2  . 2LYW ? 
+45  1 . 6  ? LYS HD2  ? ? 1.73 0.003 ? 1 ? ? . B 6  LYS HD2  B 6  LYS HD1  . 2LYW ? 
+46  1 . 6  ? LYS HE3  ? ? 3.08 0.003 ? 1 ? ? . B 6  LYS HE3  B 6  LYS HE2  . 2LYW ? 
+47  1 . 6  ? LYS HE2  ? ? 3.08 0.003 ? 1 ? ? . B 6  LYS HE2  B 6  LYS HE1  . 2LYW ? 
+48  1 . 7  ? PRO HA   ? ? 4.47 0.002 ? 1 ? ? . B 7  PRO HA   B 7  PRO HA   . 2LYW ? 
+49  1 . 7  ? PRO HB3  ? ? 2.31 0.003 ? 1 ? ? . B 7  PRO HB3  B 7  PRO HB2  . 2LYW ? 
+50  1 . 7  ? PRO HB2  ? ? 1.97 0.002 ? 1 ? ? . B 7  PRO HB2  B 7  PRO HB1  . 2LYW ? 
+51  1 . 7  ? PRO HG3  ? ? 2.10 0.003 ? 1 ? ? . B 7  PRO HG3  B 7  PRO HG2  . 2LYW ? 
+52  1 . 7  ? PRO HG2  ? ? 2.05 0.001 ? 1 ? ? . B 7  PRO HG2  B 7  PRO HG1  . 2LYW ? 
+53  1 . 7  ? PRO HD2  ? ? 3.83 0.002 ? 1 ? ? . B 7  PRO HD2  B 7  PRO HD2  . 2LYW ? 
+54  1 . 7  ? PRO HD3  ? ? 3.65 0.003 ? 1 ? ? . B 7  PRO HD3  B 7  PRO HD1  . 2LYW ? 
+55  1 . 8  ? ARG H    ? ? 7.89 0.003 ? 1 ? ? . B 8  ARG H    B 8  ARG HN   . 2LYW ? 
+56  1 . 8  ? ARG HA   ? ? 4.46 0.002 ? 1 ? ? . B 8  ARG HA   B 8  ARG HA   . 2LYW ? 
+57  1 . 8  ? ARG HB3  ? ? 1.93 0.002 ? 1 ? ? . B 8  ARG HB3  B 8  ARG HB2  . 2LYW ? 
+58  1 . 8  ? ARG HB2  ? ? 1.80 0.002 ? 1 ? ? . B 8  ARG HB2  B 8  ARG HB1  . 2LYW ? 
+59  1 . 8  ? ARG HG3  ? ? 1.74 0.003 ? 1 ? ? . B 8  ARG HG3  B 8  ARG HG2  . 2LYW ? 
+60  1 . 8  ? ARG HG2  ? ? 1.74 0.003 ? 1 ? ? . B 8  ARG HG2  B 8  ARG HG1  . 2LYW ? 
+61  1 . 8  ? ARG HD3  ? ? 3.24 0.001 ? 1 ? ? . B 8  ARG HD3  B 8  ARG HD2  . 2LYW ? 
+62  1 . 8  ? ARG HD2  ? ? 3.24 0.001 ? 1 ? ? . B 8  ARG HD2  B 8  ARG HD1  . 2LYW ? 
+63  1 . 8  ? ARG HE   ? ? 7.09 0.003 ? 1 ? ? . B 8  ARG HE   B 8  ARG HE   . 2LYW ? 
+64  1 . 9  ? ARG H    ? ? 7.81 0.003 ? 1 ? ? . B 9  ARG H    B 9  ARG HN   . 2LYW ? 
+65  1 . 9  ? ARG HA   ? ? 4.72 0.003 ? 1 ? ? . B 9  ARG HA   B 9  ARG HA   . 2LYW ? 
+66  1 . 9  ? ARG HB3  ? ? 1.86 0.001 ? 1 ? ? . B 9  ARG HB3  B 9  ARG HB2  . 2LYW ? 
+67  1 . 9  ? ARG HB2  ? ? 1.86 0.001 ? 1 ? ? . B 9  ARG HB2  B 9  ARG HB1  . 2LYW ? 
+68  1 . 9  ? ARG HG3  ? ? 1.70 0.003 ? 1 ? ? . B 9  ARG HG3  B 9  ARG HG2  . 2LYW ? 
+69  1 . 9  ? ARG HG2  ? ? 1.70 0.003 ? 1 ? ? . B 9  ARG HG2  B 9  ARG HG1  . 2LYW ? 
+70  1 . 9  ? ARG HD3  ? ? 3.22 0.003 ? 1 ? ? . B 9  ARG HD3  B 9  ARG HD2  . 2LYW ? 
+71  1 . 9  ? ARG HD2  ? ? 3.22 0.003 ? 1 ? ? . B 9  ARG HD2  B 9  ARG HD1  . 2LYW ? 
+72  1 . 9  ? ARG HE   ? ? 7.02 0.003 ? 1 ? ? . B 9  ARG HE   B 9  ARG HE   . 2LYW ? 
+73  1 . 10 ? PRO HA   ? ? 4.46 0.002 ? 1 ? ? . B 10 PRO HA   B 10 PRO HA   . 2LYW ? 
+74  1 . 10 ? PRO HB2  ? ? 2.24 0.002 ? 1 ? ? . B 10 PRO HB2  B 10 PRO HB2  . 2LYW ? 
+75  1 . 10 ? PRO HB3  ? ? 1.95 0.002 ? 1 ? ? . B 10 PRO HB3  B 10 PRO HB1  . 2LYW ? 
+76  1 . 10 ? PRO HG2  ? ? 2.03 0.004 ? 1 ? ? . B 10 PRO HG2  B 10 PRO HG2  . 2LYW ? 
+77  1 . 10 ? PRO HG3  ? ? 2.03 0.004 ? 1 ? ? . B 10 PRO HG3  B 10 PRO HG1  . 2LYW ? 
+78  1 . 10 ? PRO HD3  ? ? 3.78 0.004 ? 1 ? ? . B 10 PRO HD3  B 10 PRO HD2  . 2LYW ? 
+79  1 . 10 ? PRO HD2  ? ? 3.62 0.002 ? 1 ? ? . B 10 PRO HD2  B 10 PRO HD1  . 2LYW ? 
+80  1 . 11 ? TYR H    ? ? 7.52 0.001 ? 1 ? ? . B 11 TYR H    B 11 TYR HN   . 2LYW ? 
+81  1 . 11 ? TYR HA   ? ? 4.64 0.003 ? 1 ? ? . B 11 TYR HA   B 11 TYR HA   . 2LYW ? 
+82  1 . 11 ? TYR HB2  ? ? 3.09 0.002 ? 1 ? ? . B 11 TYR HB2  B 11 TYR HB2  . 2LYW ? 
+83  1 . 11 ? TYR HB3  ? ? 3.02 0.002 ? 1 ? ? . B 11 TYR HB3  B 11 TYR HB1  . 2LYW ? 
+84  1 . 11 ? TYR HD2  ? ? 7.13 0.001 ? 1 ? ? . B 11 TYR HD2  B 11 TYR HD1  . 2LYW ? 
+85  1 . 11 ? TYR HD1  ? ? 7.13 0.001 ? 1 ? ? . B 11 TYR HD1  B 11 TYR HD2  . 2LYW ? 
+86  1 . 11 ? TYR HE2  ? ? 6.85 0.002 ? 1 ? ? . B 11 TYR HE2  B 11 TYR HE1  . 2LYW ? 
+87  1 . 11 ? TYR HE1  ? ? 6.85 0.002 ? 1 ? ? . B 11 TYR HE1  B 11 TYR HE2  . 2LYW ? 
+88  1 . 12 ? ILE H    ? ? 7.50 0.003 ? 1 ? ? . B 12 ILE H    B 12 ILE HN   . 2LYW ? 
+89  1 . 12 ? ILE HA   ? ? 4.27 0.002 ? 1 ? ? . B 12 ILE HA   B 12 ILE HA   . 2LYW ? 
+90  1 . 12 ? ILE HB   ? ? 1.86 0.002 ? 1 ? ? . B 12 ILE HB   B 12 ILE HB   . 2LYW ? 
+91  1 . 12 ? ILE HG13 ? ? 1.50 0.002 ? 1 ? ? . B 12 ILE HG13 B 12 ILE 1HG1 . 2LYW ? 
+92  1 . 12 ? ILE HG12 ? ? 1.16 0.004 ? 1 ? ? . B 12 ILE HG12 B 12 ILE 2HG1 . 2LYW ? 
+93  1 . 12 ? ILE HG21 ? ? 0.96 0.001 ? 1 ? ? . B 12 ILE HG21 B 12 ILE 2HG2 . 2LYW ? 
+94  1 . 12 ? ILE HG22 ? ? 0.96 0.001 ? 1 ? ? . B 12 ILE HG22 B 12 ILE 3HG2 . 2LYW ? 
+95  1 . 12 ? ILE HG23 ? ? 0.96 0.001 ? 1 ? ? . B 12 ILE HG23 B 12 ILE 1HG2 . 2LYW ? 
+96  1 . 12 ? ILE HD11 ? ? 0.91 0.005 ? 1 ? ? . B 12 ILE HD11 B 12 ILE 1HD1 . 2LYW ? 
+97  1 . 12 ? ILE HD12 ? ? 0.91 0.005 ? 1 ? ? . B 12 ILE HD12 B 12 ILE 2HD1 . 2LYW ? 
+98  1 . 12 ? ILE HD13 ? ? 0.91 0.005 ? 1 ? ? . B 12 ILE HD13 B 12 ILE 3HD1 . 2LYW ? 
+99  1 . 13 ? LEU H    ? ? 7.54 0.003 ? 1 ? ? . B 13 LEU H    B 13 LEU HN   . 2LYW ? 
+100 1 . 13 ? LEU HA   ? ? 4.48 0.002 ? 1 ? ? . B 13 LEU HA   B 13 LEU HA   . 2LYW ? 
+101 1 . 13 ? LEU HB3  ? ? 1.72 0.001 ? 1 ? ? . B 13 LEU HB3  B 13 LEU HB2  . 2LYW ? 
+102 1 . 13 ? LEU HB2  ? ? 1.72 0.001 ? 1 ? ? . B 13 LEU HB2  B 13 LEU HB1  . 2LYW ? 
+103 1 . 13 ? LEU HG   ? ? 1.71 0.001 ? 1 ? ? . B 13 LEU HG   B 13 LEU HG   . 2LYW ? 
+104 1 . 13 ? LEU HD21 ? ? 1.00 0.001 ? 1 ? ? . B 13 LEU HD21 B 13 LEU 2HD1 . 2LYW ? 
+105 1 . 13 ? LEU HD22 ? ? 1.00 0.001 ? 1 ? ? . B 13 LEU HD22 B 13 LEU 3HD1 . 2LYW ? 
+106 1 . 13 ? LEU HD23 ? ? 1.00 0.001 ? 1 ? ? . B 13 LEU HD23 B 13 LEU 1HD1 . 2LYW ? 
+107 1 . 13 ? LEU HD11 ? ? 0.96 0.001 ? 1 ? ? . B 13 LEU HD11 B 13 LEU 1HD2 . 2LYW ? 
+108 1 . 13 ? LEU HD12 ? ? 0.96 0.001 ? 1 ? ? . B 13 LEU HD12 B 13 LEU 2HD2 . 2LYW ? 
+109 1 . 13 ? LEU HD13 ? ? 0.96 0.001 ? 1 ? ? . B 13 LEU HD13 B 13 LEU 3HD2 . 2LYW ? 
+stop_
+save_
+save_assigned_chem_shift_list_2
+# 
+_Assigned_chem_shift_list.Sf_category                assigned_chemical_shifts 
+_Assigned_chem_shift_list.Sf_framecode               assigned_chem_shift_list_2 
+_Assigned_chem_shift_list.Entry_ID                   2LYW 
+_Assigned_chem_shift_list.ID                         2 
+_Assigned_chem_shift_list.Data_file_name             NTE3-2.str 
+_Assigned_chem_shift_list.Sample_condition_list_ID   1 
+_Assigned_chem_shift_list.Chem_shift_reference_ID    1 
+# 
+loop_
+_Atom_chem_shift.ID 
+_Atom_chem_shift.Entity_assembly_ID 
+_Atom_chem_shift.Entity_ID 
+_Atom_chem_shift.Comp_index_ID 
+_Atom_chem_shift.Seq_ID 
+_Atom_chem_shift.Comp_ID 
+_Atom_chem_shift.Atom_ID 
+_Atom_chem_shift.Atom_type 
+_Atom_chem_shift.Atom_isotope_number 
+_Atom_chem_shift.Val 
+_Atom_chem_shift.Val_err 
+_Atom_chem_shift.Assign_fig_of_merit 
+_Atom_chem_shift.Ambiguity_code 
+_Atom_chem_shift.Occupancy 
+_Atom_chem_shift.Resonance_ID 
+_Atom_chem_shift.Auth_entity_assembly_ID 
+_Atom_chem_shift.Auth_asym_ID 
+_Atom_chem_shift.Auth_seq_ID 
+_Atom_chem_shift.Auth_comp_ID 
+_Atom_chem_shift.Auth_atom_ID 
+_Atom_chem_shift.Original_PDB_strand_ID 
+_Atom_chem_shift.Original_PDB_residue_no 
+_Atom_chem_shift.Original_PDB_residue_name 
+_Atom_chem_shift.Original_PDB_atom_name 
+_Atom_chem_shift.Details 
+_Atom_chem_shift.Entry_ID 
+_Atom_chem_shift.Assigned_chem_shift_list_ID 
+1   2 . 1  ? VAL HA   ? ? 3.87 0.002 ? 1 ? ? . A 1  VAL HA   A 1  VAL HA   . 2LYW ? 
+2   2 . 1  ? VAL HB   ? ? 2.23 0.005 ? 1 ? ? . A 1  VAL HB   A 1  VAL HB   . 2LYW ? 
+3   2 . 1  ? VAL HG11 ? ? 1.05 0.004 ? 1 ? ? . A 1  VAL HG11 A 1  VAL 1HG1 . 2LYW ? 
+4   2 . 1  ? VAL HG12 ? ? 1.05 0.004 ? 1 ? ? . A 1  VAL HG12 A 1  VAL 2HG1 . 2LYW ? 
+5   2 . 1  ? VAL HG13 ? ? 1.05 0.004 ? 1 ? ? . A 1  VAL HG13 A 1  VAL 3HG1 . 2LYW ? 
+6   2 . 1  ? VAL HG21 ? ? 1.05 0.004 ? 1 ? ? . A 1  VAL HG21 A 1  VAL 3HG2 . 2LYW ? 
+7   2 . 1  ? VAL HG22 ? ? 1.05 0.004 ? 1 ? ? . A 1  VAL HG22 A 1  VAL 1HG2 . 2LYW ? 
+8   2 . 1  ? VAL HG23 ? ? 1.05 0.004 ? 1 ? ? . A 1  VAL HG23 A 1  VAL 2HG2 . 2LYW ? 
+9   2 . 2  ? ARG HA   ? ? 4.51 0.002 ? 1 ? ? . A 2  ARG HA   A 2  ARG HA   . 2LYW ? 
+10  2 . 2  ? ARG HB3  ? ? 1.86 0.002 ? 1 ? ? . A 2  ARG HB3  A 2  ARG HB2  . 2LYW ? 
+11  2 . 2  ? ARG HB2  ? ? 1.80 0.001 ? 1 ? ? . A 2  ARG HB2  A 2  ARG HB1  . 2LYW ? 
+12  2 . 2  ? ARG HG2  ? ? 1.67 0.001 ? 1 ? ? . A 2  ARG HG2  A 2  ARG HG2  . 2LYW ? 
+13  2 . 2  ? ARG HG3  ? ? 1.67 0.001 ? 1 ? ? . A 2  ARG HG3  A 2  ARG HG1  . 2LYW ? 
+14  2 . 2  ? ARG HD2  ? ? 3.16 0.002 ? 1 ? ? . A 2  ARG HD2  A 2  ARG HD2  . 2LYW ? 
+15  2 . 2  ? ARG HD3  ? ? 3.15 0.002 ? 1 ? ? . A 2  ARG HD3  A 2  ARG HD1  . 2LYW ? 
+16  2 . 2  ? ARG HE   ? ? 7.17 0.002 ? 1 ? ? . A 2  ARG HE   A 2  ARG HE   . 2LYW ? 
+17  2 . 3  ? ARG H    ? ? 8.20 0.003 ? 1 ? ? . A 3  ARG H    A 3  ARG HN   . 2LYW ? 
+18  2 . 3  ? ARG HA   ? ? 4.42 0.002 ? 1 ? ? . A 3  ARG HA   A 3  ARG HA   . 2LYW ? 
+19  2 . 3  ? ARG HB2  ? ? 1.85 0.002 ? 1 ? ? . A 3  ARG HB2  A 3  ARG HB2  . 2LYW ? 
+20  2 . 3  ? ARG HB3  ? ? 1.75 0.003 ? 1 ? ? . A 3  ARG HB3  A 3  ARG HB1  . 2LYW ? 
+21  2 . 3  ? ARG HG3  ? ? 1.61 0.002 ? 1 ? ? . A 3  ARG HG3  A 3  ARG HG2  . 2LYW ? 
+22  2 . 3  ? ARG HG2  ? ? 1.61 0.002 ? 1 ? ? . A 3  ARG HG2  A 3  ARG HG1  . 2LYW ? 
+23  2 . 3  ? ARG HD3  ? ? 3.11 0.001 ? 1 ? ? . A 3  ARG HD3  A 3  ARG HD2  . 2LYW ? 
+24  2 . 3  ? ARG HD2  ? ? 3.11 0.001 ? 1 ? ? . A 3  ARG HD2  A 3  ARG HD1  . 2LYW ? 
+25  2 . 3  ? ARG HE   ? ? 7.06 0.003 ? 1 ? ? . A 3  ARG HE   A 3  ARG HE   . 2LYW ? 
+26  2 . 4  ? LEU H    ? ? 7.91 0.003 ? 1 ? ? . A 4  LEU H    A 4  LEU HN   . 2LYW ? 
+27  2 . 4  ? LEU HA   ? ? 4.39 0.002 ? 1 ? ? . A 4  LEU HA   A 4  LEU HA   . 2LYW ? 
+28  2 . 4  ? LEU HB3  ? ? 1.61 0.001 ? 1 ? ? . A 4  LEU HB3  A 4  LEU HB2  . 2LYW ? 
+29  2 . 4  ? LEU HB2  ? ? 1.61 0.001 ? 1 ? ? . A 4  LEU HB2  A 4  LEU HB1  . 2LYW ? 
+30  2 . 4  ? LEU HG   ? ? 1.57 0.001 ? 1 ? ? . A 4  LEU HG   A 4  LEU HG   . 2LYW ? 
+31  2 . 4  ? LEU HD11 ? ? 0.96 0.003 ? 1 ? ? . A 4  LEU HD11 A 4  LEU 1HD1 . 2LYW ? 
+32  2 . 4  ? LEU HD12 ? ? 0.96 0.003 ? 1 ? ? . A 4  LEU HD12 A 4  LEU 2HD1 . 2LYW ? 
+33  2 . 4  ? LEU HD13 ? ? 0.96 0.003 ? 1 ? ? . A 4  LEU HD13 A 4  LEU 3HD1 . 2LYW ? 
+34  2 . 4  ? LEU HD21 ? ? 0.92 0.002 ? 1 ? ? . A 4  LEU HD21 A 4  LEU 3HD2 . 2LYW ? 
+35  2 . 4  ? LEU HD22 ? ? 0.92 0.002 ? 1 ? ? . A 4  LEU HD22 A 4  LEU 1HD2 . 2LYW ? 
+36  2 . 4  ? LEU HD23 ? ? 0.92 0.002 ? 1 ? ? . A 4  LEU HD23 A 4  LEU 2HD2 . 2LYW ? 
+37  2 . 5  ? MET H    ? ? 7.98 0.002 ? 1 ? ? . A 5  MET H    A 5  MET HN   . 2LYW ? 
+38  2 . 5  ? MET HA   ? ? 4.29 0.001 ? 1 ? ? . A 5  MET HA   A 5  MET HA   . 2LYW ? 
+39  2 . 5  ? MET HB3  ? ? 1.99 0.001 ? 1 ? ? . A 5  MET HB3  A 5  MET HB2  . 2LYW ? 
+40  2 . 5  ? MET HB2  ? ? 1.99 0.001 ? 1 ? ? . A 5  MET HB2  A 5  MET HB1  . 2LYW ? 
+41  2 . 5  ? MET HG2  ? ? 2.46 0.001 ? 1 ? ? . A 5  MET HG2  A 5  MET HG2  . 2LYW ? 
+42  2 . 5  ? MET HG3  ? ? 2.42 0.001 ? 1 ? ? . A 5  MET HG3  A 5  MET HG1  . 2LYW ? 
+43  2 . 5  ? MET HE1  ? ? 1.99 0.003 ? 1 ? ? . A 5  MET HE1  A 5  MET HE1  . 2LYW ? 
+44  2 . 5  ? MET HE2  ? ? 1.99 0.003 ? 1 ? ? . A 5  MET HE2  A 5  MET HE2  . 2LYW ? 
+45  2 . 5  ? MET HE3  ? ? 1.99 0.003 ? 1 ? ? . A 5  MET HE3  A 5  MET HE3  . 2LYW ? 
+46  2 . 6  ? PHE H    ? ? 7.61 0.003 ? 1 ? ? . A 6  PHE H    A 6  PHE HN   . 2LYW ? 
+47  2 . 6  ? PHE HA   ? ? 4.57 0.002 ? 1 ? ? . A 6  PHE HA   A 6  PHE HA   . 2LYW ? 
+48  2 . 6  ? PHE HB3  ? ? 3.21 0.002 ? 1 ? ? . A 6  PHE HB3  A 6  PHE HB2  . 2LYW ? 
+49  2 . 6  ? PHE HB2  ? ? 3.08 0.005 ? 1 ? ? . A 6  PHE HB2  A 6  PHE HB1  . 2LYW ? 
+50  2 . 6  ? PHE HD2  ? ? 7.22 0.002 ? 1 ? ? . A 6  PHE HD2  A 6  PHE HD1  . 2LYW ? 
+51  2 . 6  ? PHE HD1  ? ? 7.22 0.002 ? 1 ? ? . A 6  PHE HD1  A 6  PHE HD2  . 2LYW ? 
+52  2 . 6  ? PHE HE2  ? ? 7.33 0.003 ? 1 ? ? . A 6  PHE HE2  A 6  PHE HE1  . 2LYW ? 
+53  2 . 6  ? PHE HE1  ? ? 7.33 0.003 ? 1 ? ? . A 6  PHE HE1  A 6  PHE HE2  . 2LYW ? 
+54  2 . 6  ? PHE HZ   ? ? 7.29 0.003 ? 1 ? ? . A 6  PHE HZ   A 6  PHE HZ   . 2LYW ? 
+55  2 . 7  ? SER H    ? ? 7.80 0.001 ? 1 ? ? . A 7  SER H    A 7  SER HN   . 2LYW ? 
+56  2 . 7  ? SER HA   ? ? 4.43 0.002 ? 1 ? ? . A 7  SER HA   A 7  SER HA   . 2LYW ? 
+57  2 . 7  ? SER HB2  ? ? 3.90 0.005 ? 1 ? ? . A 7  SER HB2  A 7  SER HB2  . 2LYW ? 
+58  2 . 7  ? SER HB3  ? ? 3.82 0.005 ? 1 ? ? . A 7  SER HB3  A 7  SER HB1  . 2LYW ? 
+59  2 . 8  ? TYR H    ? ? 7.79 0.001 ? 1 ? ? . A 8  TYR H    A 8  TYR HN   . 2LYW ? 
+60  2 . 8  ? TYR HA   ? ? 4.64 0.004 ? 1 ? ? . A 8  TYR HA   A 8  TYR HA   . 2LYW ? 
+61  2 . 8  ? TYR HB3  ? ? 3.08 0.001 ? 1 ? ? . A 8  TYR HB3  A 8  TYR HB2  . 2LYW ? 
+62  2 . 8  ? TYR HB2  ? ? 3.03 0.002 ? 1 ? ? . A 8  TYR HB2  A 8  TYR HB1  . 2LYW ? 
+63  2 . 8  ? TYR HD1  ? ? 7.11 0.004 ? 1 ? ? . A 8  TYR HD1  A 8  TYR HD1  . 2LYW ? 
+64  2 . 8  ? TYR HD2  ? ? 7.11 0.004 ? 1 ? ? . A 8  TYR HD2  A 8  TYR HD2  . 2LYW ? 
+65  2 . 8  ? TYR HE1  ? ? 6.83 0.003 ? 1 ? ? . A 8  TYR HE1  A 8  TYR HE1  . 2LYW ? 
+66  2 . 8  ? TYR HE2  ? ? 6.83 0.003 ? 1 ? ? . A 8  TYR HE2  A 8  TYR HE2  . 2LYW ? 
+67  2 . 9  ? ILE H    ? ? 7.81 0.002 ? 1 ? ? . A 9  ILE H    A 9  ILE HN   . 2LYW ? 
+68  2 . 9  ? ILE HB   ? ? 1.87 0.001 ? 1 ? ? . A 9  ILE HB   A 9  ILE HB   . 2LYW ? 
+69  2 . 9  ? ILE HG13 ? ? 1.52 0.003 ? 1 ? ? . A 9  ILE HG13 A 9  ILE 1HG1 . 2LYW ? 
+70  2 . 9  ? ILE HG12 ? ? 1.17 0.005 ? 1 ? ? . A 9  ILE HG12 A 9  ILE 2HG1 . 2LYW ? 
+71  2 . 9  ? ILE HG21 ? ? 0.93 0.001 ? 1 ? ? . A 9  ILE HG21 A 9  ILE 1HG2 . 2LYW ? 
+72  2 . 9  ? ILE HG22 ? ? 0.93 0.001 ? 1 ? ? . A 9  ILE HG22 A 9  ILE 2HG2 . 2LYW ? 
+73  2 . 9  ? ILE HG23 ? ? 0.93 0.001 ? 1 ? ? . A 9  ILE HG23 A 9  ILE 3HG2 . 2LYW ? 
+74  2 . 9  ? ILE HD11 ? ? 0.89 0.001 ? 1 ? ? . A 9  ILE HD11 A 9  ILE 3HD1 . 2LYW ? 
+75  2 . 9  ? ILE HD12 ? ? 0.89 0.001 ? 1 ? ? . A 9  ILE HD12 A 9  ILE 1HD1 . 2LYW ? 
+76  2 . 9  ? ILE HD13 ? ? 0.89 0.001 ? 1 ? ? . A 9  ILE HD13 A 9  ILE 2HD1 . 2LYW ? 
+77  2 . 10 ? SER H    ? ? 7.88 0.002 ? 1 ? ? . A 10 SER H    A 10 SER HN   . 2LYW ? 
+78  2 . 10 ? SER HA   ? ? 4.46 0.003 ? 1 ? ? . A 10 SER HA   A 10 SER HA   . 2LYW ? 
+79  2 . 10 ? SER HB3  ? ? 4.01 0.004 ? 1 ? ? . A 10 SER HB3  A 10 SER HB2  . 2LYW ? 
+80  2 . 10 ? SER HB2  ? ? 3.86 0.004 ? 1 ? ? . A 10 SER HB2  A 10 SER HB1  . 2LYW ? 
+81  2 . 11 ? ASP H    ? ? 8.14 0.003 ? 1 ? ? . A 11 ASP H    A 11 ASP HN   . 2LYW ? 
+82  2 . 11 ? ASP HA   ? ? 4.68 0.001 ? 1 ? ? . A 11 ASP HA   A 11 ASP HA   . 2LYW ? 
+83  2 . 11 ? ASP HB3  ? ? 2.85 0.001 ? 1 ? ? . A 11 ASP HB3  A 11 ASP HB2  . 2LYW ? 
+84  2 . 11 ? ASP HB2  ? ? 2.85 0.001 ? 1 ? ? . A 11 ASP HB2  A 11 ASP HB1  . 2LYW ? 
+85  2 . 12 ? GLU H    ? ? 8.23 0.001 ? 1 ? ? . A 12 GLU H    A 12 GLU HN   . 2LYW ? 
+86  2 . 12 ? GLU HA   ? ? 4.27 0.003 ? 1 ? ? . A 12 GLU HA   A 12 GLU HA   . 2LYW ? 
+87  2 . 12 ? GLU HB2  ? ? 2.11 0.001 ? 1 ? ? . A 12 GLU HB2  A 12 GLU HB2  . 2LYW ? 
+88  2 . 12 ? GLU HB3  ? ? 2.02 0.002 ? 1 ? ? . A 12 GLU HB3  A 12 GLU HB1  . 2LYW ? 
+89  2 . 12 ? GLU HG3  ? ? 2.44 0.004 ? 1 ? ? . A 12 GLU HG3  A 12 GLU HG2  . 2LYW ? 
+90  2 . 12 ? GLU HG2  ? ? 2.44 0.004 ? 1 ? ? . A 12 GLU HG2  A 12 GLU HG1  . 2LYW ? 
+91  2 . 13 ? GLN H    ? ? 8.01 0.002 ? 1 ? ? . A 13 GLN H    A 13 GLN HN   . 2LYW ? 
+92  2 . 13 ? GLN HA   ? ? 4.29 0.001 ? 1 ? ? . A 13 GLN HA   A 13 GLN HA   . 2LYW ? 
+93  2 . 13 ? GLN HB3  ? ? 2.05 0.004 ? 1 ? ? . A 13 GLN HB3  A 13 GLN HB2  . 2LYW ? 
+94  2 . 13 ? GLN HB2  ? ? 2.05 0.004 ? 1 ? ? . A 13 GLN HB2  A 13 GLN HB1  . 2LYW ? 
+95  2 . 13 ? GLN HG3  ? ? 2.20 0.002 ? 1 ? ? . A 13 GLN HG3  A 13 GLN HG2  . 2LYW ? 
+96  2 . 13 ? GLN HG2  ? ? 2.20 0.002 ? 1 ? ? . A 13 GLN HG2  A 13 GLN HG1  . 2LYW ? 
+97  2 . 13 ? GLN HE21 ? ? 7.05 0.001 ? 1 ? ? . A 13 GLN HE21 A 13 GLN 2HE2 . 2LYW ? 
+98  2 . 13 ? GLN HE22 ? ? 6.35 0.002 ? 1 ? ? . A 13 GLN HE22 A 13 GLN 1HE2 . 2LYW ? 
+99  2 . 14 ? TRP H    ? ? 7.78 0.001 ? 1 ? ? . A 14 TRP H    A 14 TRP HN   . 2LYW ? 
+100 2 . 14 ? TRP HA   ? ? 4.73 0.002 ? 1 ? ? . A 14 TRP HA   A 14 TRP HA   . 2LYW ? 
+101 2 . 14 ? TRP HB3  ? ? 3.40 0.003 ? 1 ? ? . A 14 TRP HB3  A 14 TRP HB2  . 2LYW ? 
+102 2 . 14 ? TRP HB2  ? ? 3.27 0.005 ? 1 ? ? . A 14 TRP HB2  A 14 TRP HB1  . 2LYW ? 
+103 2 . 14 ? TRP HD1  ? ? 7.21 0.001 ? 1 ? ? . A 14 TRP HD1  A 14 TRP HD1  . 2LYW ? 
+104 2 . 14 ? TRP HE1  ? ? 9.48 0.001 ? 1 ? ? . A 14 TRP HE1  A 14 TRP HE1  . 2LYW ? 
+105 2 . 14 ? TRP HE3  ? ? 7.55 0.003 ? 1 ? ? . A 14 TRP HE3  A 14 TRP HE3  . 2LYW ? 
+106 2 . 14 ? TRP HZ2  ? ? 7.38 0.002 ? 1 ? ? . A 14 TRP HZ2  A 14 TRP HZ2  . 2LYW ? 
+107 2 . 14 ? TRP HZ3  ? ? 7.05 0.004 ? 1 ? ? . A 14 TRP HZ3  A 14 TRP HZ3  . 2LYW ? 
+108 2 . 14 ? TRP HH2  ? ? 7.14 0.004 ? 1 ? ? . A 14 TRP HH2  A 14 TRP HH2  . 2LYW ? 
+109 2 . 15 ? THR H    ? ? 7.29 0.002 ? 1 ? ? . A 15 THR H    A 15 THR HN   . 2LYW ? 
+110 2 . 15 ? THR HA   ? ? 4.45 0.002 ? 1 ? ? . A 15 THR HA   A 15 THR HA   . 2LYW ? 
+111 2 . 15 ? THR HB   ? ? 4.24 0.003 ? 1 ? ? . A 15 THR HB   A 15 THR HB   . 2LYW ? 
+112 2 . 15 ? THR HG21 ? ? 1.18 0.001 ? 1 ? ? . A 15 THR HG21 A 15 THR 3HG2 . 2LYW ? 
+113 2 . 15 ? THR HG22 ? ? 1.18 0.001 ? 1 ? ? . A 15 THR HG22 A 15 THR 1HG2 . 2LYW ? 
+114 2 . 15 ? THR HG23 ? ? 1.18 0.001 ? 1 ? ? . A 15 THR HG23 A 15 THR 2HG2 . 2LYW ? 
+115 2 . 16 ? PRO HA   ? ? 4.20 0.003 ? 1 ? ? . A 16 PRO HA   A 16 PRO HA   . 2LYW ? 
+116 2 . 16 ? PRO HB3  ? ? 2.21 0.003 ? 1 ? ? . A 16 PRO HB3  A 16 PRO HB2  . 2LYW ? 
+117 2 . 16 ? PRO HB2  ? ? 1.71 0.002 ? 1 ? ? . A 16 PRO HB2  A 16 PRO HB1  . 2LYW ? 
+118 2 . 16 ? PRO HG3  ? ? 1.89 0.005 ? 1 ? ? . A 16 PRO HG3  A 16 PRO HG2  . 2LYW ? 
+119 2 . 16 ? PRO HG2  ? ? 1.83 0.005 ? 1 ? ? . A 16 PRO HG2  A 16 PRO HG1  . 2LYW ? 
+120 2 . 16 ? PRO HD2  ? ? 3.51 0.005 ? 1 ? ? . A 16 PRO HD2  A 16 PRO HD2  . 2LYW ? 
+121 2 . 16 ? PRO HD3  ? ? 3.51 0.005 ? 1 ? ? . A 16 PRO HD3  A 16 PRO HD1  . 2LYW ? 
+122 2 . 17 ? PHE H    ? ? 7.23 0.001 ? 1 ? ? . A 17 PHE H    A 17 PHE HN   . 2LYW ? 
+123 2 . 17 ? PHE HA   ? ? 4.50 0.002 ? 1 ? ? . A 17 PHE HA   A 17 PHE HA   . 2LYW ? 
+124 2 . 17 ? PHE HB3  ? ? 3.14 0.001 ? 1 ? ? . A 17 PHE HB3  A 17 PHE HB2  . 2LYW ? 
+125 2 . 17 ? PHE HB2  ? ? 3.08 0.001 ? 1 ? ? . A 17 PHE HB2  A 17 PHE HB1  . 2LYW ? 
+126 2 . 17 ? PHE HD2  ? ? 7.28 0.001 ? 1 ? ? . A 17 PHE HD2  A 17 PHE HD1  . 2LYW ? 
+127 2 . 17 ? PHE HD1  ? ? 7.28 0.001 ? 1 ? ? . A 17 PHE HD1  A 17 PHE HD2  . 2LYW ? 
+128 2 . 17 ? PHE HE2  ? ? 7.33 0.005 ? 1 ? ? . A 17 PHE HE2  A 17 PHE HE1  . 2LYW ? 
+129 2 . 17 ? PHE HE1  ? ? 7.33 0.005 ? 1 ? ? . A 17 PHE HE1  A 17 PHE HE2  . 2LYW ? 
+130 2 . 17 ? PHE HZ   ? ? 7.28 0.001 ? 1 ? ? . A 17 PHE HZ   A 17 PHE HZ   . 2LYW ? 
+131 2 . 18 ? LEU H    ? ? 7.44 0.002 ? 1 ? ? . A 18 LEU H    A 18 LEU HN   . 2LYW ? 
+132 2 . 18 ? LEU HA   ? ? 4.22 0.001 ? 1 ? ? . A 18 LEU HA   A 18 LEU HA   . 2LYW ? 
+133 2 . 18 ? LEU HB2  ? ? 1.60 0.001 ? 1 ? ? . A 18 LEU HB2  A 18 LEU HB2  . 2LYW ? 
+134 2 . 18 ? LEU HB3  ? ? 1.60 0.001 ? 1 ? ? . A 18 LEU HB3  A 18 LEU HB1  . 2LYW ? 
+135 2 . 18 ? LEU HG   ? ? 1.55 0.002 ? 1 ? ? . A 18 LEU HG   A 18 LEU HG   . 2LYW ? 
+136 2 . 18 ? LEU HD11 ? ? 0.94 0.001 ? 1 ? ? . A 18 LEU HD11 A 18 LEU 1HD1 . 2LYW ? 
+137 2 . 18 ? LEU HD12 ? ? 0.94 0.001 ? 1 ? ? . A 18 LEU HD12 A 18 LEU 2HD1 . 2LYW ? 
+138 2 . 18 ? LEU HD13 ? ? 0.94 0.001 ? 1 ? ? . A 18 LEU HD13 A 18 LEU 3HD1 . 2LYW ? 
+139 2 . 18 ? LEU HD21 ? ? 0.88 0.005 ? 1 ? ? . A 18 LEU HD21 A 18 LEU 3HD2 . 2LYW ? 
+140 2 . 18 ? LEU HD22 ? ? 0.88 0.005 ? 1 ? ? . A 18 LEU HD22 A 18 LEU 1HD2 . 2LYW ? 
+141 2 . 18 ? LEU HD23 ? ? 0.88 0.005 ? 1 ? ? . A 18 LEU HD23 A 18 LEU 2HD2 . 2LYW ? 
+142 2 . 19 ? TYR H    ? ? 7.59 0.002 ? 1 ? ? . A 19 TYR H    A 19 TYR HN   . 2LYW ? 
+143 2 . 19 ? TYR HA   ? ? 4.41 0.001 ? 1 ? ? . A 19 TYR HA   A 19 TYR HA   . 2LYW ? 
+144 2 . 19 ? TYR HB2  ? ? 3.09 0.003 ? 1 ? ? . A 19 TYR HB2  A 19 TYR HB2  . 2LYW ? 
+145 2 . 19 ? TYR HB3  ? ? 2.99 0.001 ? 1 ? ? . A 19 TYR HB3  A 19 TYR HB1  . 2LYW ? 
+146 2 . 19 ? TYR HD1  ? ? 7.08 0.004 ? 1 ? ? . A 19 TYR HD1  A 19 TYR HD1  . 2LYW ? 
+147 2 . 19 ? TYR HD2  ? ? 7.08 0.004 ? 1 ? ? . A 19 TYR HD2  A 19 TYR HD2  . 2LYW ? 
+148 2 . 19 ? TYR HE1  ? ? 6.77 0.004 ? 1 ? ? . A 19 TYR HE1  A 19 TYR HE1  . 2LYW ? 
+149 2 . 19 ? TYR HE2  ? ? 6.77 0.004 ? 1 ? ? . A 19 TYR HE2  A 19 TYR HE2  . 2LYW ? 
+150 2 . 20 ? ASP H    ? ? 7.95 0.001 ? 1 ? ? . A 20 ASP H    A 20 ASP HN   . 2LYW ? 
+151 2 . 20 ? ASP HA   ? ? 4.59 0.002 ? 1 ? ? . A 20 ASP HA   A 20 ASP HA   . 2LYW ? 
+152 2 . 20 ? ASP HB2  ? ? 2.81 0.001 ? 1 ? ? . A 20 ASP HB2  A 20 ASP HB2  . 2LYW ? 
+153 2 . 20 ? ASP HB3  ? ? 2.81 0.001 ? 1 ? ? . A 20 ASP HB3  A 20 ASP HB1  . 2LYW ? 
+154 2 . 21 ? PHE H    ? ? 7.79 0.002 ? 1 ? ? . A 21 PHE H    A 21 PHE HN   . 2LYW ? 
+155 2 . 21 ? PHE HA   ? ? 4.38 0.001 ? 1 ? ? . A 21 PHE HA   A 21 PHE HA   . 2LYW ? 
+156 2 . 21 ? PHE HB2  ? ? 2.99 0.005 ? 1 ? ? . A 21 PHE HB2  A 21 PHE HB2  . 2LYW ? 
+157 2 . 21 ? PHE HB3  ? ? 2.95 0.004 ? 1 ? ? . A 21 PHE HB3  A 21 PHE HB1  . 2LYW ? 
+158 2 . 21 ? PHE HD1  ? ? 7.01 0.002 ? 1 ? ? . A 21 PHE HD1  A 21 PHE HD1  . 2LYW ? 
+159 2 . 21 ? PHE HD2  ? ? 7.01 0.002 ? 1 ? ? . A 21 PHE HD2  A 21 PHE HD2  . 2LYW ? 
+160 2 . 21 ? PHE HE1  ? ? 7.24 0.004 ? 1 ? ? . A 21 PHE HE1  A 21 PHE HE1  . 2LYW ? 
+161 2 . 21 ? PHE HE2  ? ? 7.24 0.004 ? 1 ? ? . A 21 PHE HE2  A 21 PHE HE2  . 2LYW ? 
+162 2 . 21 ? PHE HZ   ? ? 7.01 0.002 ? 1 ? ? . A 21 PHE HZ   A 21 PHE HZ   . 2LYW ? 
+163 2 . 22 ? TYR H    ? ? 7.67 0.003 ? 1 ? ? . A 22 TYR H    A 22 TYR HN   . 2LYW ? 
+164 2 . 22 ? TYR HA   ? ? 4.41 0.004 ? 1 ? ? . A 22 TYR HA   A 22 TYR HA   . 2LYW ? 
+165 2 . 22 ? TYR HB3  ? ? 2.97 0.005 ? 1 ? ? . A 22 TYR HB3  A 22 TYR HB2  . 2LYW ? 
+166 2 . 22 ? TYR HB2  ? ? 2.82 0.001 ? 1 ? ? . A 22 TYR HB2  A 22 TYR HB1  . 2LYW ? 
+167 2 . 22 ? TYR HD2  ? ? 7.08 0.003 ? 1 ? ? . A 22 TYR HD2  A 22 TYR HD1  . 2LYW ? 
+168 2 . 22 ? TYR HD1  ? ? 7.08 0.003 ? 1 ? ? . A 22 TYR HD1  A 22 TYR HD2  . 2LYW ? 
+169 2 . 22 ? TYR HE2  ? ? 6.82 0.003 ? 1 ? ? . A 22 TYR HE2  A 22 TYR HE1  . 2LYW ? 
+170 2 . 22 ? TYR HE1  ? ? 6.82 0.003 ? 1 ? ? . A 22 TYR HE1  A 22 TYR HE2  . 2LYW ? 
+171 2 . 23 ? HIS H    ? ? 7.58 0.002 ? 1 ? ? . A 23 HIS H    A 23 HIS HN   . 2LYW ? 
+172 2 . 23 ? HIS HA   ? ? 4.52 0.003 ? 1 ? ? . A 23 HIS HA   A 23 HIS HA   . 2LYW ? 
+173 2 . 23 ? HIS HB2  ? ? 3.16 0.001 ? 1 ? ? . A 23 HIS HB2  A 23 HIS HB2  . 2LYW ? 
+174 2 . 23 ? HIS HB3  ? ? 3.03 0.004 ? 1 ? ? . A 23 HIS HB3  A 23 HIS HB1  . 2LYW ? 
+175 2 . 23 ? HIS HD2  ? ? 7.11 0.005 ? 1 ? ? . A 23 HIS HD2  A 23 HIS HD2  . 2LYW ? 
+176 2 . 23 ? HIS HE1  ? ? 8.24 0.001 ? 1 ? ? . A 23 HIS HE1  A 23 HIS HE1  . 2LYW ? 
+177 2 . 24 ? TYR H    ? ? 7.49 0.002 ? 1 ? ? . A 24 TYR H    A 24 TYR HN   . 2LYW ? 
+178 2 . 24 ? TYR HA   ? ? 4.53 0.001 ? 1 ? ? . A 24 TYR HA   A 24 TYR HA   . 2LYW ? 
+179 2 . 24 ? TYR HB2  ? ? 3.13 0.002 ? 1 ? ? . A 24 TYR HB2  A 24 TYR HB2  . 2LYW ? 
+180 2 . 24 ? TYR HB3  ? ? 2.97 0.001 ? 1 ? ? . A 24 TYR HB3  A 24 TYR HB1  . 2LYW ? 
+181 2 . 24 ? TYR HD2  ? ? 7.12 0.001 ? 1 ? ? . A 24 TYR HD2  A 24 TYR HD1  . 2LYW ? 
+182 2 . 24 ? TYR HD1  ? ? 7.12 0.001 ? 1 ? ? . A 24 TYR HD1  A 24 TYR HD2  . 2LYW ? 
+183 2 . 24 ? TYR HE2  ? ? 6.82 0.005 ? 1 ? ? . A 24 TYR HE2  A 24 TYR HE1  . 2LYW ? 
+184 2 . 24 ? TYR HE1  ? ? 6.82 0.005 ? 1 ? ? . A 24 TYR HE1  A 24 TYR HE2  . 2LYW ? 
+stop_
+save_

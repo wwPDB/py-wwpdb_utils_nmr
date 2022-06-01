@@ -2344,11 +2344,11 @@ class AmberMRParserListener(ParseTreeListener):
         if self.lastComment is None:
             self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
                 "Failed to recognize AMBER atom numbers in the restraint file "\
-                "because neither AMBER parameter/topology file nor Sander comment are available."
+                "because neither AMBER parameter/topology file nor Sander comment are available.\n"
         else:
             self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
                 "Failed to recognize AMBER atom numbers in the restraint file "\
-                f"because Sander comment {self.lastComment!r} couldn't be interpreted as a {subtype_name}."
+                f"because Sander comment {self.lastComment!r} couldn't be interpreted as a {subtype_name}.\n"
 
     def updateSanderAtomNumberDict(self, factor, cifCheck=True, useDefault=True):
         """ Try to update Sander atom number dictionary.

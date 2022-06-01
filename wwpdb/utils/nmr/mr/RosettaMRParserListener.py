@@ -364,7 +364,7 @@ class RosettaMRParserListener(ParseTreeListener):
                 dstFunc['lower_linear_limit'] = f"{lower_linear_limit}"
             else:
                 if lower_linear_limit <= DIST_ERROR_MIN and self.__omitDistLimitOutlier:
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
                         f"{srcFunc}, the lower linear limit value='{lower_linear_limit}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.\n"
                     lower_linear_limit = None
                 else:
@@ -377,7 +377,7 @@ class RosettaMRParserListener(ParseTreeListener):
                 dstFunc['upper_linear_limit'] = f"{upper_linear_limit}"
             else:
                 if upper_linear_limit > DIST_ERROR_MAX and self.__omitDistLimitOutlier:
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                    self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
                         f"The upper linear limit value='{upper_linear_limit}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.\n"
                     upper_linear_limit = None
                 else:

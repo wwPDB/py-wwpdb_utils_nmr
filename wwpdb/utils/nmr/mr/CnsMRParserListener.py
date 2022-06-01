@@ -3163,18 +3163,20 @@ class CnsMRParserListener(ParseTreeListener):
                                         _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId})
                                         if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                             if self.__cur_subtype != 'plane':
+                                                checked = False
                                                 if seqId == 1 and _atomId in ('H', 'HN'):
                                                     if 'H1' in coordAtomSite['atom_id']:
-                                                        continue
+                                                        checked = True
                                                 if _atomId[0] == 'H':
                                                     ccb = next((ccb for ccb in self.__ccU.lastBonds
                                                                 if _atomId in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])), None)
                                                     if ccb is not None:
-                                                        bondedTo = ccb[self.__ccU.ccbAtomId2] if ccb[self.__ccU.ccbAtomId1] == atomId else ccb[self.__ccU.ccbAtomId1]
+                                                        bondedTo = ccb[self.__ccU.ccbAtomId2] if ccb[self.__ccU.ccbAtomId1] == _atomId else ccb[self.__ccU.ccbAtomId1]
                                                         if bondedTo[0] in ('N', 'O', 'S'):
-                                                            continue
-                                                self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                                    f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates.\n"
+                                                            checked = True
+                                                if not checked:
+                                                    self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                                                        f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates.\n"
                                     elif cca is None and 'type_symbol' not in _factor and 'atom_ids' not in _factor:
                                         if self.__reasons is None and seqKey in self.__authToLabelSeq:
                                             _, _seqId = self.__authToLabelSeq[seqKey]
@@ -3188,16 +3190,6 @@ class CnsMRParserListener(ParseTreeListener):
                                                         if 'label_seq_scheme' not in self.reasonsForReParsing:
                                                             self.reasonsForReParsing['label_seq_scheme'] = True
                                         if self.__cur_subtype != 'plane':
-                                            if seqId == 1 and _atomId in ('H', 'HN'):
-                                                if 'H1' in coordAtomSite['atom_id']:
-                                                    continue
-                                            if _atomId[0] == 'H':
-                                                ccb = next((ccb for ccb in self.__ccU.lastBonds
-                                                            if _atomId in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])), None)
-                                                if ccb is not None:
-                                                    bondedTo = ccb[self.__ccU.ccbAtomId2] if ccb[self.__ccU.ccbAtomId1] == atomId else ccb[self.__ccU.ccbAtomId1]
-                                                    if bondedTo[0] in ('N', 'O', 'S'):
-                                                        continue
                                             self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                                                 f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates.\n"
 

@@ -154,6 +154,7 @@
 # 06-Apr-2022  M. Yokochi - detect other possible MR format if the first parsing fails (DAOTHER-7690)
 # 02-May-2022  M. Yokochi - implement recursive MR splitter guided by MR parsers (NMR restraint remediation)
 # 17-May-2022  M. Yokochi - add support for BIOSYM MR format (DAOTHER-7825, NMR restraint remediation)
+# 01-Jun-2022  M. Yokochi - add support for GROMACS PR/MR format (DAOTHER-7769, NMR restraint remediation)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -6560,6 +6561,7 @@ class NmrDpUtility:
                 md5_list.append(hashlib.md5(ifp.read().encode('utf-8')).hexdigest())
 
             is_aux_amb = file_type == 'nm-aux-amb'
+            is_aux_gro = file_type == 'nm-aux-gro'
 
             if file_type == 'nm-res-xpl':
                 mr_format_name = 'XPLOR-NIH'
@@ -6573,12 +6575,14 @@ class NmrDpUtility:
                 mr_format_name = 'ROSETTA'
             elif file_type == 'nm-res-bio':
                 mr_format_name = 'BIOSYM'
+            elif file_type in ('nm-res-gro', 'nm-aux-gro'):
+                mr_format_name = 'GROMACS'
             elif file_type == 'nm-res-mr':
                 mr_format_name = 'MR'
             else:
                 mr_format_name = 'other'
 
-            atom_like_names = self.__csStat.getAtomLikeNameSet(minimum_len=(2 if file_type in ('nm-res-ros', 'nm-res-bio', 'nm-res-oth') or is_aux_amb else 1))
+            atom_like_names = self.__csStat.getAtomLikeNameSet(minimum_len=(2 if file_type in ('nm-res-ros', 'nm-res-bio', 'nm-res-oth') or is_aux_amb or is_aux_gro else 1))
             cs_atom_like_names = list(filter(is_half_spin_nuclei, atom_like_names))  # DAOTHER-7491
 
             has_chem_shift = False
@@ -6641,7 +6645,7 @@ class NmrDpUtility:
                             if len(t) == 0:
                                 continue
 
-                            if t[0] == '#' or t[0] == '!':
+                            if t[0] in ('#', '!'):
                                 break
 
                             t_lower = t.lower()
@@ -6741,7 +6745,7 @@ class NmrDpUtility:
                             if len(t) == 0:
                                 continue
 
-                            if t[0] == '#' or t[0] == '!':
+                            if t[0] in ('#', '!'):
                                 break
 
                             t_lower = t.lower()
@@ -6857,7 +6861,7 @@ class NmrDpUtility:
                             if len(t) == 0:
                                 continue
 
-                            if t[0] == '#' or t[0] == '!':
+                            if t[0] in ('#', '!'):
                                 break
 
                             if t == '&rst':
@@ -6994,7 +6998,7 @@ class NmrDpUtility:
                                     in_igr1 = False
                                     in_igr2 = False
 
-            elif file_type in ('nm-res-cya', 'nm-res-ros', 'nm-res-bio', 'nm-res-oth') or is_aux_amb:
+            elif file_type in ('nm-res-cya', 'nm-res-ros', 'nm-res-bio', 'nm-res-oth') or is_aux_amb or is_aux_gro:
 
                 if is_aux_amb:
 
@@ -7010,9 +7014,23 @@ class NmrDpUtility:
                     in_residue_label = False
                     in_residue_pointer = False
 
-                    atom_names = []
-                    residue_labels = []
-                    residue_pointers = []
+                    atom_names = 0
+                    residue_labels = 0
+                    residue_pointers = 0
+
+                elif is_aux_gro:
+
+                    has_system = False
+                    has_molecules = False
+                    has_atoms = False
+
+                    in_system = False
+                    in_molecules = False
+                    in_atoms = False
+
+                    system_names = 0
+                    molecule_names = 0
+                    atom_names = 0
 
                 atom_like_names_oth = self.__csStat.getAtomLikeNameSet(1)
                 cs_atom_like_names_oth = list(filter(is_half_spin_nuclei, atom_like_names_oth))  # DAOTHER-7491
@@ -7059,9 +7077,7 @@ class NmrDpUtility:
                                     has_amb_inpcrd = False
 
                             if line.startswith('%FLAG'):
-                                in_atom_name = False
-                                in_residue_label = False
-                                in_residue_pointer = False
+                                in_atom_name = in_residue_label = in_residue_pointer = False
 
                                 if line.startswith('%FLAG ATOM_NAME'):
                                     has_atom_name = True
@@ -7114,7 +7130,8 @@ class NmrDpUtility:
                                 end = max_char
                                 col = 0
                                 while col < max_cols and end < len_line:
-                                    atom_names.append(line[begin:end].rstrip())
+                                    if len(line[begin:end].rstrip()) > 0:
+                                        atom_names += 1
                                     begin = end
                                     end += max_char
                                     col += 1
@@ -7125,7 +7142,8 @@ class NmrDpUtility:
                                 end = max_char
                                 col = 0
                                 while col < max_cols and end < len_line:
-                                    residue_labels.append(line[begin:end].rstrip())
+                                    if len(line[begin:end].rstrip()) > 0:
+                                        residue_labels += 1
                                     begin = end
                                     end += max_char
                                     col += 1
@@ -7137,16 +7155,64 @@ class NmrDpUtility:
                                 col = 0
                                 while col < max_cols and end < len_line:
                                     try:
-                                        residue_pointers.append(int(line[begin:end].lstrip()))
+                                        _residue_pointer = line[begin:end].lstrip()
+                                        if len(_residue_pointer) > 0:
+                                            int(_residue_pointer)
+                                            residue_pointers += 1
                                     except ValueError:
                                         pass
                                     begin = end
                                     end += max_char
                                     col += 1
 
+                        elif is_aux_gro:
+
+                            if line.startswith('['):
+                                in_system = in_molecules = in_atoms = False
+
+                                if line.startswith('[ system ]'):
+                                    has_system = in_system = True
+
+                                elif line.startswith('[ molecules ]'):
+                                    has_molecules = in_molecules = True
+
+                                elif line.startswith('[ atoms ]'):
+                                    has_atoms = in_atoms = True
+
+                            elif in_system or in_molecules or in_atoms:
+                                l_split = line.split()
+                                l = ' '.join(l_split)  # noqa: E741
+
+                                if len(l) == 0 or l.startswith('#') or l.startswith('!') or l.startswith(';'):
+                                    continue
+
+                                if in_system:
+                                    system_names += 1
+
+                                elif in_molecules:
+                                    if len(l_split) == 2:
+                                        try:
+                                            num = int(l_split[1])
+                                            if num > 0 and l_split[0].isalnum():
+                                                molecule_names += 1
+                                        except ValueError:
+                                            pass
+
+                                else:  # [ atoms ]
+                                    if len(l_split) > 6:
+                                        try:
+                                            atom_num = int(l_split[0])
+                                            seq_id = int(l_split[2])
+                                            comp_id = l_split[3]
+                                            atom_id = l_split[4]
+                                            if atom_num > 0 and seq_id > 0 and comp_id in three_letter_codes and atom_id in atom_like_names_oth:
+                                                atom_names += 1
+                                        except ValueError:
+                                            pass
+
                         l = ' '.join(line.split())  # noqa: E741
 
-                        if len(l) == 0 or l.startswith('#') or l.startswith('!'):
+                        if len(l) == 0 or l.startswith('#') or l.startswith('!') or l.startswith(';'):
                             continue
 
                         s = re.split('[ ()]', l)
@@ -7165,7 +7231,7 @@ class NmrDpUtility:
                             if len(t) == 0:
                                 continue
 
-                            if t[0] == '#' or t[0] == '!':
+                            if t[0] in ('#', '!', ';'):
                                 break
 
                             name = t.upper()
@@ -7234,7 +7300,7 @@ class NmrDpUtility:
                                 if len(t) == 0:
                                     continue
 
-                                if t[0] == '#' or t[0] == '!':
+                                if t[0] in ('#', '!'):
                                     break
 
                                 if s.index(t) in prohibited_col:
@@ -7279,11 +7345,17 @@ class NmrDpUtility:
                 if is_aux_amb:
 
                     if has_atom_name and has_residue_label and has_residue_pointer and\
-                       len(atom_names) > 0 and len(residue_labels) > 0 and len(residue_pointers) > 0:
+                       atom_names > 0 and residue_labels > 0 and residue_pointers > 0:
                         has_topology = True
 
                     if has_amb_coord and (not has_first_atom or has_ens_coord):
                         has_amb_coord = False
+
+                elif is_aux_gro:
+
+                    if has_system and has_molecules and has_atoms and\
+                       system_names > 0 and molecule_names > 0 and atom_names > 0:
+                        has_topology = True
 
             if file_type in ('nm-res-cya', 'nm-res-ros', 'nm-res-bio', 'nm-res-oth') and not has_dist_restraint:  # DAOTHER-7491
 
@@ -8224,7 +8296,7 @@ class NmrDpUtility:
             if has_coordinate and not has_dist_restraint and not has_dihed_restraint and not has_rdc_restraint\
                     and not has_plane_restraint and not has_hbond_restraint:
 
-                if not is_aux_amb:
+                if not is_aux_amb and not is_aux_gro:
                     err = f"The {mr_format_name} restraint file includes coordinates. "\
                         "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
                 else:
@@ -8263,7 +8335,7 @@ class NmrDpUtility:
 
                 elif valid:
 
-                    if not is_aux_amb:
+                    if not is_aux_amb and not is_aux_gro:
                         err = f"The {mr_format_name} restraint file includes assigned chemical shifts. "\
                             "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
                     else:
@@ -8301,7 +8373,7 @@ class NmrDpUtility:
                 if 'hbond_restraint' in content_subtype:
                     has_hbond_restraint = True
 
-            if not is_aux_amb and not has_chem_shift and not has_dist_restraint and not has_dihed_restraint and not has_rdc_restraint\
+            if not is_aux_amb and not is_aux_gro and not has_chem_shift and not has_dist_restraint and not has_dihed_restraint and not has_rdc_restraint\
                and not has_plane_restraint and not has_hbond_restraint and not valid:
 
                 hint = ""
@@ -8346,7 +8418,7 @@ class NmrDpUtility:
                     subtype_name = ". It looks like to have " + subtype_name[:-2] + " instead"
 
                 hint = " Tips for AMBER topology: Proper contents starting with '%FLAG ATOM_NAME', '%FLAG RESIDUE_LABEL', "\
-                    "and '%FLAG RESIDUE_POINTER' lines must be present in the file"
+                    "and '%FLAG RESIDUE_POINTER' lines must be present in the file."
 
                 if has_coordinate:
                     hint = " Tips for AMBER coordinates: It should be directory generated by 'ambpdb' command and must not have MODEL/ENDMDL keywords "\
@@ -8354,6 +8426,38 @@ class NmrDpUtility:
 
                 err = f"{file_name} is neither AMBER topology (.prmtop) nor coordinates (.inpcrd.pdb){subtype_name}."\
                     + hint + " Did you accidentally select the wrong format? Please re-upload the AMBER parameter/topology file."
+
+                self.report.error.appendDescription('content_mismatch',
+                                                    {'file_name': file_name, 'description': err})
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMR() ++ Error  - {err}\n")
+
+            elif is_aux_gro and not has_topology:
+
+                subtype_name = ""
+                if has_chem_shift:
+                    subtype_name += "Assigned chemical shifts, "
+                if has_dist_restraint:
+                    subtype_name += "Distance restraints, "
+                if has_dihed_restraint:
+                    subtype_name += "Dihedral angle restraints, "
+                if has_rdc_restraint:
+                    subtype_name += "RDC restraints, "
+                if has_plane_restraint:
+                    subtype_name += "Planarity restraints, "
+                if has_hbond_restraint:
+                    subtype_name += "Hydrogen bond restraints, "
+
+                if len(subtype_name) > 0:
+                    subtype_name = ". It looks like to have " + subtype_name[:-2] + " instead"
+
+                hint = " Tips for GROMACS topology: Proper contents starting with '[ system ]', '[ molecules ]', "\
+                    "and '[ atoms ]' lines must be present in the file."
+
+                err = f"{file_name} is not GROMACS topology {subtype_name}."\
+                    + hint + " Did you accidentally select the wrong format? Please re-upload the GROMACS parameter/topology file."
 
                 self.report.error.appendDescription('content_mismatch',
                                                     {'file_name': file_name, 'description': err})

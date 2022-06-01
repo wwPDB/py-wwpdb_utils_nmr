@@ -24,6 +24,13 @@ R_brkt:			']';
 */
 Default:		'default';			// nbfunc comb-rule gen-pairs fudgeLJ fudgeQQ
 Moleculetype:		'moleculetype';			// name nrexcl
+Atomtypes:		'atomtypes';			// name at.num mass charge ptype V W
+Pairtypes:		'pairtypes';			// i j func cs6 cs12
+Bondtypes:		'bondtypes';			// i j func b0 kb
+Angletypes:		'angletypes';			// i j k func th0 cth
+Dihedraltypes:		'dihedraltypes';		// j k func (c{2} multi?) | c{6}
+Constrainttypes:	'constrainttypes';		// i j func b0
+Nonbond_params:		'nonbond_params';		// i j func V W | c{3}
 Atoms:			'atoms';			// nr type resnr residu atom cgnr charge (mass) (typeB) (chargeB) (massB)
 Bonds:			'bonds';			// ai aj funct c{0,2,3}
 Pairs:			'pairs';			// ai aj funct c{2,5}
@@ -43,7 +50,7 @@ System:			'system' -> pushMode(STR_ARRAY_MODE);	// any_string
 Molecules:		'molecules';			// name number
 
 Integer:		('+' | '-')? DECIMAL;
-Float:			('+' | '-')? (DECIMAL | DEC_DOT_DEC);
+Real:                   ('+' | '-')? (DECIMAL | DEC_DOT_DEC) ('E' | 'e')? ('+' | '-')? DECIMAL;
 fragment DEC_DOT_DEC:	(DECIMAL '.' DECIMAL?) | ('.' DECIMAL);
 fragment DEC_DIGIT:	[0-9];
 fragment DECIMAL:	DEC_DIGIT+;

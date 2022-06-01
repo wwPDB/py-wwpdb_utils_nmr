@@ -22,6 +22,13 @@ gromacs_pt:
 	(
 	default_statement |
 	moleculetype_statement |
+	atomtypes_statement |
+	pairtypes_statement |
+	bondtypes_statement |
+	angletypes_statement |
+	dihedraltypes_statement |
+	constrainttypes_statement |
+	nonbonded_params_statement |
 	atoms_statement |
 	bonds_statement |
 	pairs_statement |
@@ -46,7 +53,7 @@ gromacs_pt:
 */
 default_statement:
 	L_brkt Default R_brkt
-	Integer Integer Simple_name Float Float;	// nbfunc comb-rule gen-pairs fudgeLJ fudgeQQ
+	Integer Integer Simple_name Real Real;		// nbfunc comb-rule gen-pairs fudgeLJ fudgeQQ
 
 moleculetype_statement:
 	L_brkt Moleculetype R_brkt
@@ -54,6 +61,61 @@ moleculetype_statement:
 
 moleculetype:
 	Simple_name Integer;				// name nrexcl
+
+atomtypes_statement:
+	L_brkt Atomtypes R_brkt
+	atomtypes*;
+
+atomtypes:
+	Simple_name Integer Real Real Integer
+	Real Real;					// name at.num mass charge ptype V W
+
+pairtypes_statement:
+	L_brkt Pairtypes R_brkt
+	pairtypes*;
+
+pairtypes:
+	Simple_name Simple_name Integer
+	Real Real;					// i j func cs6 cs12
+
+bondtypes_statement:
+	L_brkt Bondtypes R_brkt
+	bondtypes*;
+
+bondtypes:
+	Simple_name Simple_name Integer
+	Real Real;					// i j func b0 kb
+
+angletypes_statement:
+	L_brkt Angletypes R_brkt
+	angletypes*;
+
+angletypes:
+	Simple_name Simple_name Simple_name Integer
+	Real Real;					// i j k func th0 cth
+
+dihedraltypes_statement:
+	L_brkt Dihedraltypes R_brkt
+	dihedraltypes*;
+
+dihedraltypes:
+	Simple_name Simple_name Integer Real Real
+	(Integer | Real Real Real Real);		// j k func (c{2} multi?) | c{6}
+
+constrainttypes_statement:
+	L_brkt Constrainttypes R_brkt
+	constrainttypes*;
+
+constrainttypes:
+	Simple_name Simple_name Integer Real Real;	// i j func b0
+
+nonbonded_params_statement:
+	L_brkt Nonbond_params R_brkt
+	nonbonded_params*;
+
+nonbonded_params:
+	Simple_name Simple_name Integer
+	Real Real Real?;				// i j func V W | c{3}
 
 atoms_statement:
 	L_brkt Atoms R_brkt
@@ -174,5 +236,5 @@ molecules:
 	Simple_name Integer;				// name number
 
 /* number expression in restrains */
-number:	Float | Integer;
+number:	Real | Integer;
 

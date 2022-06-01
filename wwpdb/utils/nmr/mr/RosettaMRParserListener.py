@@ -546,6 +546,8 @@ class RosettaMRParserListener(ParseTreeListener):
 
         if len(chainAssign) == 0:
             if atomId is not None:
+                if seqId == 1 and atomId in ('H', 'HN'):
+                    return self.assignCoordPolymerSequence(seqId, 'H1', fixedChainId)
                 self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                     f"{_seqId}:{atomId} is not present in the coordinates.\n"
             else:
@@ -643,6 +645,16 @@ class RosettaMRParserListener(ParseTreeListener):
         if self.__ccU.updateChemCompDict(compId):
             cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId), None)
             if cca is not None and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
+                if seqId == 1 and atomId in ('H', 'HN'):
+                    self.testCoordAtomIdConsistency(chainId, seqId, compId, 'H1', seqKey, coordAtomSite)
+                    return
+                if atomId[0] == 'H':
+                    ccb = next((ccb for ccb in self.__ccU.lastBonds
+                                if atomId in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])), None)
+                    if ccb is not None:
+                        bondedTo = ccb[self.__ccU.ccbAtomId2] if ccb[self.__ccU.ccbAtomId1] == atomId else ccb[self.__ccU.ccbAtomId1]
+                        if bondedTo[0] in ('N', 'O', 'S'):
+                            return
                 self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                     f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.\n"
 
@@ -816,7 +828,7 @@ class RosettaMRParserListener(ParseTreeListener):
                 validRange = False
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
                     f"{srcFunc}, the upper linear limit value='{upper_linear_limit}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
-
+        """
         if target_value is not None:
 
             if lower_limit is not None:
@@ -866,7 +878,7 @@ class RosettaMRParserListener(ParseTreeListener):
                 validRange = False
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
                     f"{srcFunc}, the lower linear limit value='{lower_linear_limit}' must be less than the upper limit value '{upper_linear_limit}'.\n"
-
+        """
         if lower_limit is not None and lower_linear_limit is not None:
             if lower_linear_limit > lower_limit:
                 validRange = False

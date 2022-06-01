@@ -1936,7 +1936,7 @@ class AmberMRParserListener(ParseTreeListener):
                 validRange = False
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
                     f"The upper linear limit value 'r4={self.upperLinearLimit}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
-
+        """
         if self.lowerLimit is not None and self.upperLimit is not None:
             if self.lowerLimit > self.upperLimit:
                 validRange = False
@@ -1960,7 +1960,7 @@ class AmberMRParserListener(ParseTreeListener):
                 validRange = False
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
                     f"The lower linear limit value 'r1={self.lowerLinearLimit}' must be less than the upper limit value 'r4={self.upperLinearLimit}'.\n"
-
+        """
         if self.lowerLimit is not None and self.lowerLinearLimit is not None:
             if self.lowerLinearLimit > self.lowerLimit:
                 validRange = False
@@ -2218,8 +2218,20 @@ class AmberMRParserListener(ParseTreeListener):
                                 factor['auth_seq_id'] = seqId
                                 factor['auth_atom_id'] = authAtomId
                                 if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
-                                    self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                        f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
+                                    checked = False
+                                    if factor['seq_id'] == 1 and _atomId in ('H', 'HN'):
+                                        if 'H1' in coordAtomSite['atom_id']:
+                                            checked = True
+                                    if _atomId[0] == 'H':
+                                        ccb = next((ccb for ccb in self.__ccU.lastBonds
+                                                    if _atomId in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])), None)
+                                        if ccb is not None:
+                                            bondedTo = ccb[self.__ccU.ccbAtomId2] if ccb[self.__ccU.ccbAtomId1] == _atomId else ccb[self.__ccU.ccbAtomId1]
+                                            if bondedTo[0] in ('N', 'O', 'S'):
+                                                checked = True
+                                    if not checked:
+                                        self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                                            f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
                                 return factor
                             self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                                 f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
@@ -2302,8 +2314,20 @@ class AmberMRParserListener(ParseTreeListener):
                                         factor['auth_seq_id'] = seqId
                                         factor['auth_atom_id'] = authAtomId
                                         if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
-                                            self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                                f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
+                                            checked = False
+                                            if factor['seq_id'] == 1 and _atomId in ('H', 'HN'):
+                                                if 'H1' in coordAtomSite['atom_id']:
+                                                    checked = True
+                                            if _atomId[0] == 'H':
+                                                ccb = next((ccb for ccb in self.__ccU.lastBonds
+                                                            if _atomId in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])), None)
+                                                if ccb is not None:
+                                                    bondedTo = ccb[self.__ccU.ccbAtomId2] if ccb[self.__ccU.ccbAtomId1] == _atomId else ccb[self.__ccU.ccbAtomId1]
+                                                    if bondedTo[0] in ('N', 'O', 'S'):
+                                                        checked = True
+                                            if not checked:
+                                                self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                                                    f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
                                         return factor
                                     self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                                         f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
@@ -2421,8 +2445,20 @@ class AmberMRParserListener(ParseTreeListener):
                                         del factor['iat']
                                         self.__sanderAtomNumberDict[iat] = factor
                                         if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
-                                            self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                                f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
+                                            checked = False
+                                            if factor['seq_id'] == 1 and _atomId in ('H', 'HN'):
+                                                if 'H1' in coordAtomSite['atom_id']:
+                                                    checked = True
+                                            if _atomId[0] == 'H':
+                                                ccb = next((ccb for ccb in self.__ccU.lastBonds
+                                                            if _atomId in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])), None)
+                                                if ccb is not None:
+                                                    bondedTo = ccb[self.__ccU.ccbAtomId2] if ccb[self.__ccU.ccbAtomId1] == _atomId else ccb[self.__ccU.ccbAtomId1]
+                                                    if bondedTo[0] in ('N', 'O', 'S'):
+                                                        checked = True
+                                            if not checked:
+                                                self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                                                    f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
                                         return True
 
                     elif 'igr' in factor:
@@ -2489,8 +2525,20 @@ class AmberMRParserListener(ParseTreeListener):
                                         del _factor['igr']
                                         self.__sanderAtomNumberDict[igr] = _factor
                                         if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
-                                            self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                                f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
+                                            checked = False
+                                            if factor['seq_id'] == 1 and _atomId in ('H', 'HN'):
+                                                if 'H1' in coordAtomSite['atom_id']:
+                                                    checked = True
+                                            if _atomId[0] == 'H':
+                                                ccb = next((ccb for ccb in self.__ccU.lastBonds
+                                                            if _atomId in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])), None)
+                                                if ccb is not None:
+                                                    bondedTo = ccb[self.__ccU.ccbAtomId2] if ccb[self.__ccU.ccbAtomId1] == _atomId else ccb[self.__ccU.ccbAtomId1]
+                                                    if bondedTo[0] in ('N', 'O', 'S'):
+                                                        checked = True
+                                            if not checked:
+                                                self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                                                    f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
 
                         if found:
                             return True

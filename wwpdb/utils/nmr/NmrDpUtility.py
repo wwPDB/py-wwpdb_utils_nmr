@@ -29063,6 +29063,9 @@ class NmrDpUtility:
                             if _conflicts > chain_assign['unmapped'] and chain_assign['sequence_coverage'] < self.min_seq_coverage_w_conflict:
                                 continue
 
+                            if _conflicts + offset_1 > _matched and chain_assign['sequence_coverage'] < self.low_seq_coverage:  # DAOTHER-7825 (2lyw)
+                                continue
+
                         unmapped = []
                         conflict = []
                         # offset_1 = 0
@@ -29431,6 +29434,9 @@ class NmrDpUtility:
                                     _conflicts += 1
 
                             if _conflicts > chain_assign['unmapped'] and chain_assign['sequence_coverage'] < self.min_seq_coverage_w_conflict:
+                                continue
+
+                            if _conflicts + offset_1 > _matched and chain_assign['sequence_coverage'] < self.low_seq_coverage:  # DAOTHER-7825 (2lyw)
                                 continue
 
                         unmapped = []

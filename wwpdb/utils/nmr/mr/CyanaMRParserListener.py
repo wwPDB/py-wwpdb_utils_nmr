@@ -676,6 +676,8 @@ class CyanaMRParserListener(ParseTreeListener):
                             f"The residue name {_seqId}:{compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
 
         if len(chainAssign) == 0:
+            if seqId == 1 and atomId in ('H', 'HN'):
+                return self.assignCoordPolymerSequence(seqId, compId, 'H1')
             self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                 f"{_seqId}:{compId}:{atomId} is not present in the coordinates.\n"
 
@@ -757,6 +759,16 @@ class CyanaMRParserListener(ParseTreeListener):
         if self.__ccU.updateChemCompDict(compId):
             cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId), None)
             if cca is not None and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
+                if seqId == 1 and atomId in ('H', 'HN'):
+                    self.testCoordAtomIdConsistency(chainId, seqId, compId, 'H1', seqKey, coordAtomSite)
+                    return
+                if atomId[0] == 'H':
+                    ccb = next((ccb for ccb in self.__ccU.lastBonds
+                                if atomId in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])), None)
+                    if ccb is not None:
+                        bondedTo = ccb[self.__ccU.ccbAtomId2] if ccb[self.__ccU.ccbAtomId1] == atomId else ccb[self.__ccU.ccbAtomId1]
+                        if bondedTo[0] in ('N', 'O', 'S'):
+                            return
                 self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                     f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.\n"
 
@@ -1062,7 +1074,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 validRange = False
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
                     f"The upper limit value='{upper_limit}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
-
+        """
         if target_value is not None:
 
             if lower_limit is not None:
@@ -1076,7 +1088,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
                         f"The upper limit value='{upper_limit}' must be grater than the target value '{target_value:.3f}'.\n"
-
+        """
         if not validRange:
             return None
 

@@ -8943,6 +8943,51 @@ class NmrDpUtility:
 
             if err_line_number - 1 in (i, j + j_offset) and xplor_l_paren_wo_assi:  # this should be before 'concat_comment' routine
 
+                if comment_pattern.match(prev_input) and xplor_assi_pattern.search(prev_input):
+
+                    k = k2 = 0
+
+                    with open(file_path, 'r') as ifp:
+                        for line in ifp:
+                            k += 1
+                            if k <= err_line_number:
+                                continue
+                            if k < err_line_number + 20:
+                                if xplor_assi_pattern.match(line) or comment_pattern.match(line) or line.isspace():
+                                    k2 = k
+                                    break
+                                continue
+                            break
+
+                    if k2 != 0:
+
+                        comment_code = prev_input.rstrip()[0]
+
+                        cor_src_path, cor_test = self.__getCorrectedMRFilePath(src_path)
+
+                        if cor_src_path is not None:
+
+                            k = 0
+
+                            with open(src_path, 'r') as ifp,\
+                                    open(cor_src_path, 'w') as ofp:
+                                for line in ifp:
+                                    k += 1
+                                    if k < err_line_number:
+                                        ofp.write(line)
+                                    elif k < k2:
+                                        ofp.write(comment_code + line)
+                                    else:
+                                        ofp.write(line)
+
+                            if cor_test:
+                                os.rename(cor_src_path, src_path)
+
+                            if self.__mr_debug:
+                                print('DIV-MR-EXIT #3-1')
+
+                            return True
+
                 if os.path.exists(div_src_file):
                     os.remove(div_src_file)
                 if os.path.exists(div_try_file):
@@ -8952,7 +8997,7 @@ class NmrDpUtility:
                     err_desc['previous_input'] = f"Do you need to comment out the succeeding lines as well?\n{prev_input}"
 
                 if self.__mr_debug and not corrected:
-                    print('DIV-MR-EXIT #3-1')
+                    print('DIV-MR-EXIT #3-2')
 
                 return False
 
@@ -8974,7 +9019,7 @@ class NmrDpUtility:
                         os.rename(cor_src_path, src_path)
 
                     if self.__mr_debug:
-                        print('DIV-MR-EXIT #3-2')
+                        print('DIV-MR-EXIT #3-3')
 
                     corrected = True
 
@@ -9015,7 +9060,7 @@ class NmrDpUtility:
                             os.rename(cor_src_path, src_path)
 
                         if self.__mr_debug:
-                            print('DIV-MR-EXIT #3-3')
+                            print('DIV-MR-EXIT #3-4')
 
                         corrected = True
 
@@ -9056,7 +9101,7 @@ class NmrDpUtility:
                             os.rename(cor_src_path, src_path)
 
                         if self.__mr_debug:
-                            print('DIV-MR-EXIT #3-4')
+                            print('DIV-MR-EXIT #3-5')
 
                         corrected = True
 
@@ -9129,7 +9174,7 @@ class NmrDpUtility:
                                     os.rename(cor_src_path, src_path)
 
                                 if self.__mr_debug:
-                                    print('DIV-MR-EXIT #3-5')
+                                    print('DIV-MR-EXIT #3-6')
 
                                 corrected = True
 
@@ -9187,7 +9232,7 @@ class NmrDpUtility:
                                 os.rename(cor_src_path, src_path)
 
                             if self.__mr_debug:
-                                print('DIV-MR-EXIT #3-6')
+                                print('DIV-MR-EXIT #3-7')
 
                             corrected = True
 
@@ -9220,7 +9265,7 @@ class NmrDpUtility:
                         os.rename(cor_src_path, src_path)
 
                     if self.__mr_debug:
-                        print('DIV-MR-EXIT #3-7')
+                        print('DIV-MR-EXIT #3-8')
 
                     corrected = True
 
@@ -9240,7 +9285,7 @@ class NmrDpUtility:
                         os.rename(cor_src_path, src_path)
 
                     if self.__mr_debug:
-                        print('DIV-MR-EXIT #3-8')
+                        print('DIV-MR-EXIT #3-9')
 
                     corrected = True
 
@@ -9300,7 +9345,7 @@ class NmrDpUtility:
                             os.rename(cor_src_path, src_path)
 
                         if self.__mr_debug:
-                            print('DIV-MR-EXIT #3-9')
+                            print('DIV-MR-EXIT #3-10')
 
                         corrected = True
 

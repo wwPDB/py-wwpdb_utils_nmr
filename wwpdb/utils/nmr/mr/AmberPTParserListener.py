@@ -352,16 +352,35 @@ class AmberPTParserListener(ParseTreeListener):
 
                     if atomId is not None and atomId in chemCompAtomIds:
                         atomNum['atom_id'] = atomId
+                    elif atomNum['comp_id'] != atomNum['auth_comp_id']:
+                        authCompId = translateToStdResName(atomNum['auth_comp_id'])
+                        if self.__ccU.updateChemCompDict(authCompId):
+                            chemCompAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]
+
+                            atomId = translateToStdAtomName(atomNum['auth_atom_id'], authCompId, chemCompAtomIds)
+
+                            if atomId is not None and atomId in chemCompAtomIds:
+                                atomNum['atom_id'] = atomId
+            else:
+                authCompId = translateToStdResName(atomNum['auth_comp_id'])
+                if self.__ccU.updateChemCompDict(authCompId):
+                    atomIds = self.__nefT.get_valid_star_atom_in_xplor(authCompId, atomNum['auth_atom_id'])[0]
+                    if len(atomIds) == 1:
+                        atomNum['atom_id'] = atomIds[0]
 
         for atomNum in self.__atomNumberDict.values():
             if 'atom_id' not in atomNum:
                 if 'comp_id' not in atomNum or atomNum['comp_id'] == atomNum['auth_comp_id']:
-                    self.warningMessage += f"[Unknown atom name] "\
-                        f"{atomNum['auth_atom_id']!r} is not recognized as the atom name of {atomNum['auth_comp_id']!r} residue.\n"
+                    authCompId = translateToStdResName(atomNum['auth_comp_id'])
+                    if self.__ccU.updateChemCompDict(authCompId):
+                        self.warningMessage += f"[Unknown atom name] "\
+                            f"{atomNum['auth_atom_id']!r} is not recognized as the atom name of {atomNum['auth_comp_id']!r} residue.\n"
                 else:
-                    self.warningMessage += f"[Unknown atom name] "\
-                        f"{atomNum['auth_atom_id']!r} is not recognized as the atom name of {atomNum['comp_id']!r} residue "\
-                        f"(the original residue label is {atomNum['auth_comp_id']!r}).\n"
+                    authCompId = translateToStdResName(atomNum['auth_comp_id'])
+                    if self.__ccU.updateChemCompDict(authCompId):
+                        self.warningMessage += f"[Unknown atom name] "\
+                            f"{atomNum['auth_atom_id']!r} is not recognized as the atom name of {atomNum['comp_id']!r} residue "\
+                            f"(the original residue label is {atomNum['auth_comp_id']!r}).\n"
 
         self.alignPolymerSequence()
         self.assignPolymerSequence()

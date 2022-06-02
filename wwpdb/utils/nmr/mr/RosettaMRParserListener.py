@@ -82,7 +82,7 @@ class RosettaMRParserListener(ParseTreeListener):
     angRestraints = 0       # ROSETTA: Angle restraints
     dihedRestraints = 0     # ROSETTA: Dihedral angle restraints
     rdcRestraints = 0       # ROSETTA: Residual dipolar coupling restraints
-    geoRestraints = 0       # ROSETTA: Coodinate geometry restraints
+    geoRestraints = 0       # ROSETTA: Coordinate geometry restraints
 
     # CCD accessing utility
     __ccU = None

@@ -339,7 +339,7 @@ class AmberMRParserListener(ParseTreeListener):
     inCom_funcExprs = None
 
     # collection of atom selection
-    atomSelectionSet = None
+    atomSelectionSet = []
 
     warningMessage = ''
 
@@ -636,7 +636,7 @@ class AmberMRParserListener(ParseTreeListener):
 
         self.hasFuncExprs = False
 
-        self.atomSelectionSet = []
+        self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by AmberMRParser#restraint_statement.
     def exitRestraint_statement(self, ctx: AmberMRParser.Restraint_statementContext):  # pylint: disable=unused-argument
@@ -646,6 +646,8 @@ class AmberMRParserListener(ParseTreeListener):
             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                 "Couldn't specify NMR restraint type because the number of columns in the 'iat' clause did not match.\n"
             return
+
+        atomSelection = []
 
         # conventional restraint
         if not self.hasFuncExprs:
@@ -738,7 +740,8 @@ class AmberMRParserListener(ParseTreeListener):
             if self.__atomNumberDict is not None:
 
                 for col, iat in enumerate(self.iat):
-                    atomSelection = []
+
+                    atomSelection.clear()
 
                     if self.iresid == 0:
 
@@ -1212,7 +1215,7 @@ class AmberMRParserListener(ParseTreeListener):
 
                     for col, funcExpr in enumerate(self.inPlane_funcExprs):
 
-                        atomSelection = []
+                        atomSelection.clear()
 
                         if isinstance(funcExpr, dict):
                             if 'iat' in funcExpr:
@@ -1241,7 +1244,7 @@ class AmberMRParserListener(ParseTreeListener):
 
                 for col, funcExpr in enumerate(self.funcExprs):
 
-                    atomSelection = []
+                    atomSelection.clear()
 
                     if isinstance(funcExpr, dict):
                         if 'iat' in funcExpr:
@@ -1295,7 +1298,7 @@ class AmberMRParserListener(ParseTreeListener):
 
                         for col, funcExpr in enumerate(self.inGenDist_funcExprs):
 
-                            atomSelection = []
+                            atomSelection.clear()
 
                             if isinstance(funcExpr, dict):
                                 if 'iat' in funcExpr:
@@ -1484,7 +1487,7 @@ class AmberMRParserListener(ParseTreeListener):
                         # 2nd plane
                         for col, funcExpr in enumerate(self.inPlane_funcExprs2, 4):
 
-                            atomSelection = []
+                            atomSelection.clear()
 
                             if isinstance(funcExpr, dict):
                                 if 'iat' in funcExpr:
@@ -3108,6 +3111,8 @@ class AmberMRParserListener(ParseTreeListener):
                 f"No NOESY experiment exists.\n"
             return
 
+        atomSelection = []
+
         for imix in imixes:
 
             if imix not in self.emix:
@@ -3162,7 +3167,7 @@ class AmberMRParserListener(ParseTreeListener):
 
                     self.atomSelectionSet = []
 
-                    atomSelection = []
+                    atomSelection.clear()
 
                     if _iprot in self.__atomNumberDict:
                         atomSelection.append(self.__atomNumberDict[_iprot])
@@ -3183,7 +3188,7 @@ class AmberMRParserListener(ParseTreeListener):
                             f"({chain_id}:{seq_id}:{comp_id}:{atom_id} (derived from ihp) is not a proton.\n"
                         continue
 
-                    atomSelection = []
+                    atomSelection.clear()
 
                     if _jprot in self.__atomNumberDict:
                         atomSelection.append(self.__atomNumberDict[_jprot])
@@ -3384,6 +3389,8 @@ class AmberMRParserListener(ParseTreeListener):
                 f"The number of observed chemical shifts 'nprot' is the mandatory variable.\n"
             return
 
+        atomSelection = []
+
         for n in range(1, self.nprot + 1):
 
             if n not in self.iprot:
@@ -3416,9 +3423,9 @@ class AmberMRParserListener(ParseTreeListener):
             # convert AMBER atom numbers to corresponding coordinate atoms based on AMBER parameter/topology file
             if self.__atomNumberDict is not None:
 
-                self.atomSelectionSet = []
+                self.atomSelectionSet.clear()
 
-                atomSelection = []
+                atomSelection.clear()
 
                 if _iprot in self.__atomNumberDict:
                     atomSelection.append(self.__atomNumberDict[_iprot])
@@ -3476,9 +3483,9 @@ class AmberMRParserListener(ParseTreeListener):
                 # convert AMBER atom numbers to corresponding coordinate atoms based on AMBER parameter/topology file
                 if self.__atomNumberDict is not None:
 
-                    self.atomSelectionSet = []
+                    self.atomSelectionSet.clear()
 
-                    atomSelection = []
+                    atomSelection.clear()
 
                     if _iat in self.__atomNumberDict:
                         atomSelection.append(self.__atomNumberDict[_iat])
@@ -3824,6 +3831,8 @@ class AmberMRParserListener(ParseTreeListener):
                 f"The number of observed PCS values 'nprot' is the mandatory variable.\n"
             return
 
+        atomSelection = []
+
         if self.nme < 0 and self.optphi.keys() is not None:
             self.nme = max(self.optphi.keys())
         """
@@ -3872,9 +3881,9 @@ class AmberMRParserListener(ParseTreeListener):
             # convert AMBER atom numbers to corresponding coordinate atoms based on AMBER parameter/topology file
             if self.__atomNumberDict is not None:
 
-                self.atomSelectionSet = []
+                self.atomSelectionSet.clear()
 
-                atomSelection = []
+                atomSelection.clear()
 
                 if _iprot in self.__atomNumberDict:
                     atomSelection.append(self.__atomNumberDict[_iprot])
@@ -4169,6 +4178,8 @@ class AmberMRParserListener(ParseTreeListener):
                 f"The number of observed dipolar couplings 'ndip' is the mandatory variable.\n"
             return
 
+        atomSelection = []
+
         for n in range(1, self.ndip + 1):
 
             if n not in self.id:
@@ -4213,9 +4224,9 @@ class AmberMRParserListener(ParseTreeListener):
             # convert AMBER atom numbers to corresponding coordinate atoms based on AMBER parameter/topology file
             if self.__atomNumberDict is not None:
 
-                self.atomSelectionSet = []
+                self.atomSelectionSet.clear()
 
-                atomSelection = []
+                atomSelection.clear()
 
                 if _id in self.__atomNumberDict:
                     atomSelection.append(self.__atomNumberDict[_id])
@@ -4231,7 +4242,7 @@ class AmberMRParserListener(ParseTreeListener):
 
                 self.atomSelectionSet.append(atomSelection)
 
-                atomSelection = []
+                atomSelection.clear()
 
                 if _jd in self.__atomNumberDict:
                     atomSelection.append(self.__atomNumberDict[_jd])
@@ -4676,6 +4687,8 @@ class AmberMRParserListener(ParseTreeListener):
                 f"The number of observed CSA values 'ncsa' is the mandatory variable.\n"
             return
 
+        atomSelection = []
+
         for n in range(1, self.ncsa + 1):
 
             if n not in self.icsa:
@@ -4731,9 +4744,9 @@ class AmberMRParserListener(ParseTreeListener):
             # convert AMBER atom numbers to corresponding coordinate atoms based on AMBER parameter/topology file
             if self.__atomNumberDict is not None:
 
-                self.atomSelectionSet = []
+                self.atomSelectionSet.clear()
 
-                atomSelection = []
+                atomSelection.clear()
 
                 if _icsa in self.__atomNumberDict:
                     atomSelection.append(self.__atomNumberDict[_icsa])
@@ -4749,7 +4762,7 @@ class AmberMRParserListener(ParseTreeListener):
 
                 self.atomSelectionSet.append(atomSelection)
 
-                atomSelection = []
+                atomSelection.clear()
 
                 if _jcsa in self.__atomNumberDict:
                     atomSelection.append(self.__atomNumberDict[_jcsa])
@@ -4765,7 +4778,7 @@ class AmberMRParserListener(ParseTreeListener):
 
                 self.atomSelectionSet.append(atomSelection)
 
-                atomSelection = []
+                atomSelection.clear()
 
                 if _kcsa in self.__atomNumberDict:
                     atomSelection.append(self.__atomNumberDict[_kcsa])

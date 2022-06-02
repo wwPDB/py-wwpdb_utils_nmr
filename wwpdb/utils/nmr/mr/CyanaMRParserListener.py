@@ -933,9 +933,11 @@ class CyanaMRParserListener(ParseTreeListener):
                             f"The angle identifier {str(ctx.Simple_name(1))!r} did not match with residue {compId!r}.\n"
                         return
 
+                    atomSelection = []
+
                     for atomId, offset in zip(atomNames, seqOffset):
 
-                        atomSelection = []
+                        atomSelection.clear()
 
                         _cifSeqId = cifSeqId + offset
                         _cifCompId = cifCompId if offset == 0 else (ps['comp_id'][ps['auth_seq_id'].index(_cifSeqId)] if _cifSeqId in ps['auth_seq_id'] else None)
@@ -1003,9 +1005,11 @@ class CyanaMRParserListener(ParseTreeListener):
                             f"The angle identifier {str(ctx.Simple_name(1))!r} did not match with residue {compId!r}.\n"
                         return
 
+                    atomSelection = []
+
                     for atomId, offset in zip(atomNames, seqOffset):
 
-                        atomSelection = []
+                        atomSelection.clear()
 
                         _cifSeqId = cifSeqId + offset
                         _cifCompId = cifCompId if offset == 0 else (ps['comp_id'][ps['auth_seq_id'].index(_cifSeqId)] if _cifSeqId in ps['auth_seq_id'] else None)

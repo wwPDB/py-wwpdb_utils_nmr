@@ -12,6 +12,7 @@ import re
 import copy
 
 from antlr4 import ParseTreeListener
+from rmsd.calculate_rmsd import NAMES_ELEMENT  # noqa: F401 pylint: disable=no-name-in-module, import-error, unused-import
 
 try:
     from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
@@ -22,6 +23,7 @@ try:
                                                        REPRESENTATIVE_MODEL_ID)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
+    from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
     from wwpdb.utils.nmr.AlignUtil import (hasLargeSeqGap,
                                            fillBlankCompIdWithOffset, beautifyPolySeq,
                                            getMiddleCode, getGaugeCode, getScoreOfSeqAlign,
@@ -36,6 +38,7 @@ except ImportError:
                                            REPRESENTATIVE_MODEL_ID)
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
+    from nmr.NEFTranslator.NEFTranslator import NEFTranslator
     from nmr.AlignUtil import (hasLargeSeqGap,
                                fillBlankCompIdWithOffset, beautifyPolySeq,
                                getMiddleCode, getGaugeCode, getScoreOfSeqAlign,
@@ -101,6 +104,9 @@ class AmberPTParserListener(ParseTreeListener):
     titleStatements = 0
     treeChainClassificationStatements = 0
 
+    # criterion for low sequence coverage
+    low_seq_coverage = 0.3
+
     # criterion for minimum sequence coverage when conflict occurs (NMR separated deposition)
     min_seq_coverage_w_conflict = 0.95
 
@@ -109,6 +115,9 @@ class AmberPTParserListener(ParseTreeListener):
 
     # BMRB chemical shift statistics
     __csStat = None
+
+    # NEFTranslator
+    __nefT = None
 
     # Pairwise align
     __pA = None
@@ -159,7 +168,7 @@ class AmberPTParserListener(ParseTreeListener):
 
     def __init__(self, verbose=True, log=sys.stdout,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
-                 cR=None, cC=None, ccU=None, csStat=None):
+                 cR=None, cC=None, ccU=None, csStat=None, nefT=None):
 
         if cR is not None:
             ret = checkCoordinates(verbose, log, representativeModelId, cR, cC, testTag=False)
@@ -172,6 +181,9 @@ class AmberPTParserListener(ParseTreeListener):
 
         # BMRB chemical shift statistics
         self.__csStat = BMRBChemShiftStat(verbose, log, self.__ccU) if csStat is None else csStat
+
+        # NEFTranslator
+        self.__nefT = NEFTranslator(verbose, log, self.__ccU, self.__csStat) if nefT is None else nefT
 
         # Pairwise align
         self.__pA = PairwiseAlign()
@@ -230,7 +242,9 @@ class AmberPTParserListener(ParseTreeListener):
                           in enumerate(zip(self.__residuePointer, residuePointer2), start=1)
                           if atomNumBegin <= atomNum <= atomNumEnd)
             compId = self.__residueLabel[_seqId - 1]
+            # the second condition indicates metal ions
             if terminus[atomNum - 2]\
+               or (compId == atomName and compId.title() in NAMES_ELEMENT)\
                or (len(prevAtomName) > 0 and prevAtomName[0] not in NON_METAL_ELEMENTS and prevSeqId != _seqId):
                 self.__polySeqPrmTop.append({'chain_id': chainId,
                                              'seq_id': seqIdList,
@@ -321,6 +335,12 @@ class AmberPTParserListener(ParseTreeListener):
                             f"{authCompId!r} is unknown residue name.\n"
 
             ps['comp_id'] = compIdList
+
+        nullChainIdx = [idx for idx, ps in enumerate(self.__polySeqPrmTop) if len(set(ps['comp_id'])) == 1 and ps['comp_id'][0] == '.']
+
+        if len(nullChainIdx) > 0:
+            for idx in sorted(nullChainIdx, reverse=True):
+                del self.__polySeqPrmTop[idx]
 
         for atomNum in self.__atomNumberDict.values():
             if 'comp_id' in atomNum and atomNum['comp_id'] != atomNum['auth_comp_id']\
@@ -650,6 +670,9 @@ class AmberPTParserListener(ParseTreeListener):
                         _conflicts += 1
 
                 if _conflicts > chain_assign['unmapped'] and chain_assign['sequence_coverage'] < self.min_seq_coverage_w_conflict:
+                    continue
+
+                if _conflicts + offset_1 > _matched and chain_assign['sequence_coverage'] < self.low_seq_coverage:  # DAOTHER-7825 (2lyw)
                     continue
 
                 unmapped = []

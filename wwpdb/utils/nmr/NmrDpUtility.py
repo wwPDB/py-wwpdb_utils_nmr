@@ -7793,7 +7793,7 @@ class NmrDpUtility:
                 elif file_type == 'nm-aux-amb':
 
                     reader = AmberPTReader(self.__verbose, self.__lfh, None, None, None,
-                                           self.__ccU, self.__csStat)
+                                           self.__ccU, self.__csStat, self.__nefT)
                     listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
                     err = ''
@@ -8793,7 +8793,7 @@ class NmrDpUtility:
                                            self.__ccU, self.__csStat, self.__nefT)
                 elif file_type == 'nm-aux-amb':
                     reader = AmberPTReader(self.__verbose, self.__lfh, None, None, None,
-                                           self.__ccU, self.__csStat)
+                                           self.__ccU, self.__csStat, self.__nefT)
                 elif file_type == 'nm-res-cya':
                     reader = CyanaMRReader(self.__verbose, self.__lfh, None, None, None,
                                            self.__ccU, self.__csStat, self.__nefT,
@@ -9308,7 +9308,7 @@ class NmrDpUtility:
                                            self.__ccU, self.__csStat, self.__nefT)
                 elif file_type == 'nm-aux-amb':
                     reader = AmberPTReader(self.__verbose, self.__lfh, None, None, None,
-                                           self.__ccU, self.__csStat)
+                                           self.__ccU, self.__csStat, self.__nefT)
                 elif file_type == 'nm-res-cya':
                     reader = CyanaMRReader(self.__verbose, self.__lfh, None, None, None,
                                            self.__ccU, self.__csStat, self.__nefT,
@@ -9402,7 +9402,7 @@ class NmrDpUtility:
                                            self.__ccU, self.__csStat, self.__nefT)
                 elif file_type == 'nm-aux-amb':
                     reader = AmberPTReader(self.__verbose, self.__lfh, None, None, None,
-                                           self.__ccU, self.__csStat)
+                                           self.__ccU, self.__csStat, self.__nefT)
                 elif file_type == 'nm-res-cya':
                     reader = CyanaMRReader(self.__verbose, self.__lfh, None, None, None,
                                            self.__ccU, self.__csStat, self.__nefT,
@@ -9444,7 +9444,7 @@ class NmrDpUtility:
                                            self.__ccU, self.__csStat, self.__nefT)
                 elif file_type == 'nm-aux-amb':
                     reader = AmberPTReader(self.__verbose, self.__lfh, None, None, None,
-                                           self.__ccU, self.__csStat)
+                                           self.__ccU, self.__csStat, self.__nefT)
                 elif file_type == 'nm-res-cya':
                     reader = CyanaMRReader(self.__verbose, self.__lfh, None, None, None,
                                            self.__ccU, self.__csStat, self.__nefT,
@@ -9539,7 +9539,7 @@ class NmrDpUtility:
                                            self.__ccU, self.__csStat, self.__nefT)
                 elif file_type == 'nm-aux-amb':
                     reader = AmberPTReader(self.__verbose, self.__lfh, None, None, None,
-                                           self.__ccU, self.__csStat)
+                                           self.__ccU, self.__csStat, self.__nefT)
                 elif file_type == 'nm-res-cya':
                     reader = CyanaMRReader(self.__verbose, self.__lfh, None, None, None,
                                            self.__ccU, self.__csStat, self.__nefT,
@@ -9633,7 +9633,7 @@ class NmrDpUtility:
         elif file_type == 'nm-aux-amb':
             # mr_format_name = 'AMBER'
             reader = AmberPTReader(self.__verbose, self.__lfh, None, None, None,
-                                   self.__ccU, self.__csStat)
+                                   self.__ccU, self.__csStat, self.__nefT)
         elif file_type == 'nm-res-cya':
             # mr_format_name = 'CYANA'
             reader = CyanaMRReader(self.__verbose, self.__lfh, None, None, None,
@@ -9733,7 +9733,7 @@ class NmrDpUtility:
                                                 self.__ccU, self.__csStat, self.__nefT)
                 elif test_file_type == 'nm-aux-amb':
                     test_reader = AmberPTReader(self.__verbose, self.__lfh, None, None, None,
-                                                self.__ccU, self.__csStat)
+                                                self.__ccU, self.__csStat, self.__nefT)
                 elif test_file_type == 'nm-res-cya':
                     test_reader = CyanaMRReader(self.__verbose, self.__lfh, None, None, None,
                                                 self.__ccU, self.__csStat, self.__nefT,
@@ -9871,7 +9871,7 @@ class NmrDpUtility:
                                            self.__ccU, self.__csStat, self.__nefT)
                 elif file_type == 'nm-aux-amb':
                     reader = AmberPTReader(self.__verbose, self.__lfh, None, None, None,
-                                           self.__ccU, self.__csStat)
+                                           self.__ccU, self.__csStat, self.__nefT)
                 elif file_type == 'nm-res-cya':
                     reader = CyanaMRReader(self.__verbose, self.__lfh, None, None, None,
                                            self.__ccU, self.__csStat, self.__nefT,
@@ -10396,7 +10396,7 @@ class NmrDpUtility:
                                            self.__ccU, self.__csStat, self.__nefT)
                 elif file_type == 'nm-aux-amb':
                     reader = AmberPTReader(self.__verbose, self.__lfh, None, None, None,
-                                           self.__ccU, self.__csStat)
+                                           self.__ccU, self.__csStat, self.__nefT)
                 elif file_type == 'nm-res-cya':
                     reader = CyanaMRReader(self.__verbose, self.__lfh, None, None, None,
                                            self.__ccU, self.__csStat, self.__nefT,
@@ -10535,7 +10535,7 @@ class NmrDpUtility:
                                        self.__ccU, self.__csStat, self.__nefT)
             elif file_type == 'nm-aux-amb':
                 reader = AmberPTReader(self.__verbose, self.__lfh, None, None, None,
-                                       self.__ccU, self.__csStat)
+                                       self.__ccU, self.__csStat, self.__nefT)
             elif file_type == 'nm-res-cya':
                 cya_file_ext = self.__retrieveOriginalFileExtensionOfCyanaMRFile()
                 reader = CyanaMRReader(self.__verbose, self.__lfh, None, None, None,
@@ -10891,7 +10891,7 @@ class NmrDpUtility:
             if (not is_valid or multiple_check) and file_type != 'nm-aux-amb':
 
                 reader = AmberPTReader(False, self.__lfh, None, None, None,
-                                       self.__ccU, self.__csStat)
+                                       self.__ccU, self.__csStat, self.__nefT)
                 listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
                 _content_subtype = listener.getContentSubtype() if listener is not None else None
@@ -21394,7 +21394,7 @@ class NmrDpUtility:
                     reader = AmberPTReader(self.__verbose, self.__lfh,
                                            self.__representative_model_id,
                                            self.__cR, cC,
-                                           self.__ccU, self.__csStat)
+                                           self.__ccU, self.__csStat, self.__nefT)
 
                     listener, _, _ = reader.parse(file_path, self.__cifPath)
 

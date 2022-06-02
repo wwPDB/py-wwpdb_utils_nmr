@@ -124,7 +124,7 @@ class GromacsMRReader:
                 ptR = GromacsPTReader(self.__verbose, self.__lfh,
                                       self.__representativeModelId,
                                       self.__cR, self.__cC,
-                                      self.__ccU, self.__csStat)
+                                      self.__ccU, self.__csStat, self.__nefT)
                 ptPL, _, _ = ptR.parse(ptFilePath, cifFilePath)
                 if ptPL is not None:
                     self.__atomNumberDict = ptPL.getAtomNumberDict()
@@ -203,4 +203,4 @@ if __name__ == "__main__":
     reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/2mzh/2mzh.rst',
                  '../../tests-nmr/mock-data-remediation/2mzh/2mzh.cif',
-                 '../../tests-nmr/mock-data-remediation/2mzg/2mzh.top')
+                 '../../tests-nmr/mock-data-remediation/2mzh/2mzh.top')

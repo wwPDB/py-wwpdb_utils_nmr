@@ -243,6 +243,19 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None)
             if atomId in refAtomIdList:
                 return atomId
 
+    # GROMACS atom nomenclature
+    if refCompId is not None:
+        if refCompId == 'ILE':
+            if atomId in ('HD1', 'HD2', 'HD3'):
+                return 'HD1' + atomId[-1]
+            if atomId == 'CD':
+                return 'CD1'
+        if len(refCompId) == 3 and refCompId in monDict3:
+            if atomId == 'O1':
+                return 'O'
+            if atomId == 'O2':
+                return 'OXT'
+
     if atomId.endswith("O'1"):
         atomId = atomId[:len(atomId) - 3] + "O1'"
     elif atomId.endswith("O'2"):

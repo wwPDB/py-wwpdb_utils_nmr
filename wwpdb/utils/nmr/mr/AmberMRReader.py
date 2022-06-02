@@ -124,7 +124,7 @@ class AmberMRReader:
                 ptR = AmberPTReader(self.__verbose, self.__lfh,
                                     self.__representativeModelId,
                                     self.__cR, self.__cC,
-                                    self.__ccU, self.__csStat)
+                                    self.__ccU, self.__csStat, self.__nefT)
                 ptPL, _, _ = ptR.parse(ptFilePath, cifFilePath)
                 if ptPL is not None:
                     self.__atomNumberDict = ptPL.getAtomNumberDict()
